@@ -9,9 +9,11 @@ Este sistema asegura que TODOS los módulos futuros sigan las mejores prácticas
 ## 📚 1. Documentación Actualizada
 
 ### `.github/copilot-instructions.md` ✅
+
 **Propósito**: GitHub Copilot leerá estas instrucciones automáticamente
 
 **Contenido Clave:**
+
 - ⚠️ REGLA DE ORO: Separación de responsabilidades
 - 📁 Estructura obligatoria de módulos
 - ✅ Checklist por componente
@@ -23,9 +25,11 @@ Este sistema asegura que TODOS los módulos futuros sigan las mejores prácticas
 ---
 
 ### `docs/GUIA-ESTILOS.md` ✅
+
 **Propósito**: Guía completa de mejores prácticas
 
 **Contenido (400+ líneas):**
+
 1. Principios de diseño
 2. Organización de estilos
 3. Estructura de hooks
@@ -44,18 +48,20 @@ Este sistema asegura que TODOS los módulos futuros sigan las mejores prácticas
 ---
 
 ### `MODULE_TEMPLATE.md` ✅
+
 **Propósito**: Template completo para copiar y pegar
 
 **Contenido:**
+
 - Estructura completa de carpetas
 - Template de cada tipo de archivo:
-  * types/index.ts
-  * services/*.service.ts
-  * store/*.store.ts
-  * hooks/use*.ts
-  * components/*.tsx
-  * styles/*.ts
-  * Barrel exports
+  - types/index.ts
+  - services/\*.service.ts
+  - store/\*.store.ts
+  - hooks/use\*.ts
+  - components/\*.tsx
+  - styles/\*.ts
+  - Barrel exports
 - Instrucciones de uso
 
 **Efecto**: Crear módulos nuevos en minutos
@@ -65,14 +71,17 @@ Este sistema asegura que TODOS los módulos futuros sigan las mejores prácticas
 ## 🛠️ 2. Herramientas Automatizadas
 
 ### `crear-modulo.ps1` ✅
+
 **Propósito**: Script PowerShell para generar estructura automáticamente
 
 **Uso:**
+
 ```powershell
 .\crear-modulo.ps1 -nombre "Clientes"
 ```
 
 **Lo que hace:**
+
 - ✅ Crea toda la estructura de carpetas
 - ✅ Genera archivos base (types, barrel exports)
 - ✅ Crea README con checklist
@@ -85,9 +94,11 @@ Este sistema asegura que TODOS los módulos futuros sigan las mejores prácticas
 ## 📊 3. Módulo de Referencia
 
 ### `src/modules/proyectos/` ✅ REFACTORIZADO
+
 **Propósito**: Ejemplo vivo de implementación perfecta
 
 **Archivos Clave:**
+
 ```
 proyectos/
 ├── components/
@@ -109,6 +120,7 @@ proyectos/
 ```
 
 **Métricas:**
+
 - proyecto-card.tsx: ↓ 33% líneas
 - proyecto-detalle-client.tsx: ↓ 47% líneas
 - 3 hooks nuevos
@@ -124,11 +136,13 @@ proyectos/
 ### Cómo Copilot Aprenderá el Patrón
 
 **1. Archivos que lee automáticamente:**
+
 - `.github/copilot-instructions.md` (lee SIEMPRE)
 - Archivos abiertos en el workspace
 - Patrón de archivos existentes
 
 **2. Contexto que tendrá:**
+
 ```
 User abre: nuevo-componente.tsx
 Copilot lee:
@@ -144,6 +158,7 @@ Copilot sugiere:
 ```
 
 **3. Patrones detectados:**
+
 - 🔍 Ve que TODOS los componentes tienen hook
 - 🔍 Ve que TODOS tienen .styles.ts
 - 🔍 Ve barrel exports en cada carpeta
@@ -159,11 +174,13 @@ Copilot sugiere:
 
 ```markdown
 ## Pre-creación
+
 - [ ] ¿Leí docs/GUIA-ESTILOS.md?
 - [ ] ¿Revisé src/modules/proyectos/ como referencia?
 - [ ] ¿Usé .\crear-modulo.ps1 si es módulo nuevo?
 
 ## Durante creación
+
 - [ ] ¿Lógica en hook separado?
 - [ ] ¿Estilos en .styles.ts?
 - [ ] ¿Componente < 150 líneas?
@@ -172,6 +189,7 @@ Copilot sugiere:
 - [ ] ¿Tipos TypeScript sin any?
 
 ## Post-creación
+
 - [ ] ¿Barrel export creado?
 - [ ] ¿README actualizado?
 - [ ] ¿Código sigue ejemplo de proyectos/?
@@ -184,37 +202,43 @@ Copilot sugiere:
 ### Proceso Paso a Paso:
 
 **1. Crear Módulo Nuevo**
+
 ```powershell
 .\crear-modulo.ps1 -nombre "Clientes"
 ```
 
 **2. Copilot Detecta Contexto**
+
 - Lee `.github/copilot-instructions.md`
 - Ve estructura en `src/modules/clientes/`
 - Compara con `src/modules/proyectos/` (referencia)
 
 **3. Desarrollador Escribe Código**
+
 ```tsx
 // Al escribir en clientes/components/cliente-card.tsx
 // Copilot sugiere automáticamente:
 
 'use client'
 
-import { useClienteCard } from '../hooks/useClienteCard'  // ✅ Hook separado
-import { clienteCardStyles as styles } from './cliente-card.styles'  // ✅ Estilos
+import { useClienteCard } from '../hooks/useClienteCard' // ✅ Hook separado
+import { clienteCardStyles as styles } from './cliente-card.styles' // ✅ Estilos
 
 export function ClienteCard({ cliente, onEdit, onDelete }: Props) {
-  const { handleEdit, handleDelete } = useClienteCard({ cliente, onEdit, onDelete })  // ✅ Lógica en hook
-  
+  const { handleEdit, handleDelete } = useClienteCard({
+    cliente,
+    onEdit,
+    onDelete,
+  }) // ✅ Lógica en hook
+
   return (
-    <div className={styles.container}>  // ✅ Estilos centralizados
-      ...
-    </div>
+    <div className={styles.container}> // ✅ Estilos centralizados ...</div>
   )
 }
 ```
 
 **4. Verificación**
+
 - ✅ Revisar checklist en copilot-instructions.md
 - ✅ Comparar con docs/GUIA-ESTILOS.md
 - ✅ Ver ejemplo en src/modules/proyectos/
@@ -224,6 +248,7 @@ export function ClienteCard({ cliente, onEdit, onDelete }: Props) {
 ## 📈 7. Métricas de Éxito
 
 ### Antes del Sistema:
+
 - ❌ proyecto-card.tsx: 226 líneas (lógica + UI + estilos)
 - ❌ proyecto-detalle-client.tsx: 379 líneas (god component)
 - ❌ Sin separación de responsabilidades
@@ -231,6 +256,7 @@ export function ClienteCard({ cliente, onEdit, onDelete }: Props) {
 - ❌ Componentes difíciles de mantener
 
 ### Después del Sistema:
+
 - ✅ proyecto-card.tsx: 150 líneas (solo UI)
 - ✅ useProyectoCard.ts: 75 líneas (solo lógica)
 - ✅ proyecto-card.styles.ts: 140 líneas (solo estilos)
@@ -249,6 +275,7 @@ export function ClienteCard({ cliente, onEdit, onDelete }: Props) {
 ### Para Futuros Módulos:
 
 **✅ Copilot sugerirá automáticamente:**
+
 1. Hook separado para cada componente con lógica
 2. Archivo .styles.ts para estilos
 3. useMemo y useCallback donde corresponde
@@ -257,6 +284,7 @@ export function ClienteCard({ cliente, onEdit, onDelete }: Props) {
 6. Estructura consistente con proyectos/
 
 **✅ Desarrollador tendrá:**
+
 1. Script para generar estructura (crear-modulo.ps1)
 2. Template completo para copiar (MODULE_TEMPLATE.md)
 3. Guía de referencia (docs/GUIA-ESTILOS.md)
@@ -264,6 +292,7 @@ export function ClienteCard({ cliente, onEdit, onDelete }: Props) {
 5. Checklist de verificación
 
 **✅ Resultado Garantizado:**
+
 - Código limpio desde el inicio
 - Separación de responsabilidades
 - Fácil de mantener
@@ -274,13 +303,13 @@ export function ClienteCard({ cliente, onEdit, onDelete }: Props) {
 
 ## 📚 9. Recursos Disponibles
 
-| Recurso | Ubicación | Propósito |
-|---------|-----------|-----------|
-| **Instrucciones Copilot** | `.github/copilot-instructions.md` | Guía automática para IA |
-| **Guía de Estilos** | `docs/GUIA-ESTILOS.md` | Referencia completa |
-| **Template de Módulo** | `MODULE_TEMPLATE.md` | Código para copiar |
-| **Script de Creación** | `crear-modulo.ps1` | Automatización |
-| **Módulo de Ejemplo** | `src/modules/proyectos/` | Código vivo refactorizado |
+| Recurso                   | Ubicación                         | Propósito                 |
+| ------------------------- | --------------------------------- | ------------------------- |
+| **Instrucciones Copilot** | `.github/copilot-instructions.md` | Guía automática para IA   |
+| **Guía de Estilos**       | `docs/GUIA-ESTILOS.md`            | Referencia completa       |
+| **Template de Módulo**    | `MODULE_TEMPLATE.md`              | Código para copiar        |
+| **Script de Creación**    | `crear-modulo.ps1`                | Automatización            |
+| **Módulo de Ejemplo**     | `src/modules/proyectos/`          | Código vivo refactorizado |
 
 ---
 
@@ -289,6 +318,7 @@ export function ClienteCard({ cliente, onEdit, onDelete }: Props) {
 ### Para Nuevos Módulos:
 
 1. **Ejecutar script**:
+
    ```powershell
    .\crear-modulo.ps1 -nombre "NombreModulo"
    ```
@@ -318,7 +348,7 @@ export function ClienteCard({ cliente, onEdit, onDelete }: Props) {
 ✅ **Templates** → Código listo para copiar  
 ✅ **Scripts** → Automatización de estructura  
 ✅ **Ejemplo vivo** → src/modules/proyectos/ refactorizado  
-✅ **Checklist** → Verificación paso a paso  
+✅ **Checklist** → Verificación paso a paso
 
 **Próximos módulos seguirán automáticamente el patrón de código limpio** 🚀
 

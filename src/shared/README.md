@@ -18,6 +18,7 @@ src/shared/
 ## 🎣 Hooks
 
 ### useMediaQuery
+
 Detecta breakpoints responsivos.
 
 ```tsx
@@ -29,6 +30,7 @@ const isLargeScreen = useMediaQuery('(min-width: 1280px)')
 ```
 
 ### useLocalStorage
+
 Estado persistente en localStorage con tipado.
 
 ```tsx
@@ -38,6 +40,7 @@ const [user, setUser] = useLocalStorage<User>('user', null)
 ```
 
 ### useDebounce
+
 Debounce de valores (útil para búsquedas).
 
 ```tsx
@@ -48,6 +51,7 @@ const debouncedSearch = useDebounce(search, 500)
 ```
 
 ### useClickOutside
+
 Detecta clics fuera de un elemento.
 
 ```tsx
@@ -61,6 +65,7 @@ return <div ref={ref}>Content</div>
 ```
 
 ### useScroll
+
 Detecta posición de scroll.
 
 ```tsx
@@ -70,6 +75,7 @@ const { scrollY, isScrolled } = useScroll()
 ```
 
 ### useMounted
+
 Previene problemas de hidratación en SSR.
 
 ```tsx
@@ -82,6 +88,7 @@ if (!mounted) return null
 ## 🔧 Constants
 
 ### Routes
+
 ```tsx
 import { ROUTES, NAVIGATION, ROUTE_LABELS } from '@/shared'
 
@@ -99,6 +106,7 @@ ROUTE_LABELS['/proyectos'] // 'Proyectos'
 ```
 
 ### Config
+
 ```tsx
 import { APP_CONFIG, API_CONFIG, PAGINATION } from '@/shared'
 
@@ -108,6 +116,7 @@ PAGINATION.defaultPageSize // 20
 ```
 
 ### Messages
+
 ```tsx
 import { ERROR, SUCCESS, CONFIRM, EMPTY } from '@/shared'
 
@@ -120,39 +129,41 @@ EMPTY.NO_DATA // 'No hay datos disponibles'
 ## 📘 Types
 
 ### Common Types
+
 ```tsx
-import type { 
-  ApiResponse, 
-  PaginatedResponse, 
+import type {
+  ApiResponse,
+  PaginatedResponse,
   AsyncState,
   SortConfig,
-  FilterConfig 
+  FilterConfig,
 } from '@/shared'
 
 // Respuesta API
 const response: ApiResponse<Project> = {
   success: true,
-  data: project
+  data: project,
 }
 
 // Estado asíncrono
 const [state, setState] = useState<AsyncState<Project[]>>({
   data: [],
   isLoading: false,
-  error: null
+  error: null,
 })
 ```
 
 ## 🛠️ Utils
 
 ### Format
+
 ```tsx
-import { 
-  formatCurrency, 
-  formatDate, 
+import {
+  formatCurrency,
+  formatDate,
   formatPhone,
   truncate,
-  capitalize 
+  capitalize,
 } from '@/shared'
 
 formatCurrency(1500000) // '$1,500,000'
@@ -163,13 +174,9 @@ capitalize('hello') // 'Hello'
 ```
 
 ### Validation
+
 ```tsx
-import { 
-  isValidEmail, 
-  isValidPhone, 
-  isValidNIT,
-  isInRange 
-} from '@/shared'
+import { isValidEmail, isValidPhone, isValidNIT, isInRange } from '@/shared'
 
 isValidEmail('test@email.com') // true
 isValidPhone('3001234567') // true
@@ -178,14 +185,9 @@ isInRange(5, 1, 10) // true
 ```
 
 ### Helpers
+
 ```tsx
-import { 
-  groupBy, 
-  sortBy, 
-  unique,
-  deepClone,
-  getNestedValue 
-} from '@/shared'
+import { groupBy, sortBy, unique, deepClone, getNestedValue } from '@/shared'
 
 groupBy(projects, 'estado') // { activo: [...], completado: [...] }
 sortBy(projects, 'nombre') // Sorted array
@@ -197,6 +199,7 @@ getNestedValue(obj, 'user.name') // Nested property access
 ## 🎨 Styles
 
 ### Animations (Framer Motion)
+
 ```tsx
 import { fadeInUp, staggerContainer, scaleIn } from '@/shared'
 
@@ -218,6 +221,7 @@ import { fadeInUp, staggerContainer, scaleIn } from '@/shared'
 ```
 
 ### Classes (Tailwind)
+
 ```tsx
 import { containers, buttons, inputs, badges, cn } from '@/shared'
 
@@ -245,6 +249,7 @@ import { containers, buttons, inputs, badges, cn } from '@/shared'
 ## 🧩 Components
 
 ### Loading
+
 ```tsx
 import { LoadingSpinner, LoadingOverlay, Skeleton } from '@/shared'
 
@@ -254,32 +259,35 @@ import { LoadingSpinner, LoadingOverlay, Skeleton } from '@/shared'
 ```
 
 ### EmptyState
+
 ```tsx
 import { EmptyState } from '@/shared'
 
-<EmptyState
-  icon={<FileX className="w-12 h-12" />}
-  title="No hay proyectos"
-  description="Comienza creando tu primer proyecto"
+;<EmptyState
+  icon={<FileX className='h-12 w-12' />}
+  title='No hay proyectos'
+  description='Comienza creando tu primer proyecto'
   action={{
     label: 'Crear Proyecto',
-    onClick: () => navigate('/proyectos/nuevo')
+    onClick: () => navigate('/proyectos/nuevo'),
   }}
 />
 ```
 
 ### Notification
+
 ```tsx
 import { NotificationComponent, NotificationContainer } from '@/shared'
 
-<NotificationContainer
+;<NotificationContainer
   notifications={notifications}
   onClose={removeNotification}
-  position="top-right"
+  position='top-right'
 />
 ```
 
 ### Modal
+
 ```tsx
 import { Modal, ConfirmModal } from '@/shared'
 
@@ -309,12 +317,12 @@ Importa todo desde un solo lugar:
 
 ```tsx
 // ✅ Buena práctica
-import { 
+import {
   useDebounce,
   formatCurrency,
   ROUTES,
   LoadingSpinner,
-  type ApiResponse 
+  type ApiResponse,
 } from '@/shared'
 
 // ❌ Evitar múltiples imports

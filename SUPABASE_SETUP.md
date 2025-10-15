@@ -79,6 +79,7 @@ clientes (N) ←→ viviendas (N)
 ## 🚀 Próximos Pasos
 
 Una vez completado esto:
+
 1. Reinicia el servidor de desarrollo: `npm run dev`
 2. El sistema automáticamente usará Supabase en lugar de localStorage
 3. Los datos serán persistentes y compartidos entre sesiones
@@ -86,11 +87,14 @@ Una vez completado esto:
 ## 🆘 Solución de Problemas
 
 **Error: "relation does not exist"**
+
 - Asegúrate de haber ejecutado el script SQL completo
 
 **Error: "invalid input syntax for type uuid"**
+
 - Verifica que las extensiones estén habilitadas (primera línea del SQL)
 
 **Error de autenticación**
+
 - Verifica que las variables de entorno estén correctas en `.env.local`
 - Reinicia el servidor después de cambiar `.env.local`

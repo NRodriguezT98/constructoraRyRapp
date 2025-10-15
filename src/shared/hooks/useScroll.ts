@@ -6,20 +6,20 @@ import { useState, useEffect } from 'react'
  * @returns boolean - true si se ha scrolleado más del threshold
  */
 export function useScrolled(threshold: number = 50): boolean {
-    const [scrolled, setScrolled] = useState(false)
+  const [scrolled, setScrolled] = useState(false)
 
-    useEffect(() => {
-        const handleScroll = () => {
-            setScrolled(window.scrollY > threshold)
-        }
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > threshold)
+    }
 
-        window.addEventListener('scroll', handleScroll, { passive: true })
-        handleScroll() // Check initial state
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    handleScroll() // Check initial state
 
-        return () => window.removeEventListener('scroll', handleScroll)
-    }, [threshold])
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [threshold])
 
-    return scrolled
+  return scrolled
 }
 
 /**
@@ -27,18 +27,18 @@ export function useScrolled(threshold: number = 50): boolean {
  * @returns { x: number, y: number } - Posición del scroll
  */
 export function useScrollPosition() {
-    const [position, setPosition] = useState({ x: 0, y: 0 })
+  const [position, setPosition] = useState({ x: 0, y: 0 })
 
-    useEffect(() => {
-        const handleScroll = () => {
-            setPosition({ x: window.scrollX, y: window.scrollY })
-        }
+  useEffect(() => {
+    const handleScroll = () => {
+      setPosition({ x: window.scrollX, y: window.scrollY })
+    }
 
-        window.addEventListener('scroll', handleScroll, { passive: true })
-        handleScroll() // Check initial state
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    handleScroll() // Check initial state
 
-        return () => window.removeEventListener('scroll', handleScroll)
-    }, [])
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
 
-    return position
+  return position
 }

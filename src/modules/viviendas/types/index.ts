@@ -1,22 +1,243 @@
 ﻿/**
- * Tipos TypeScript para modulo Viviendas
+ * Tipos del módulo Viviendas
  */
 
-export interface Viviendas {
+// ============================================
+// TIPOS PRINCIPALES
+// ============================================
+
+export interface Vivienda {
+  id: string
+  manzana_id: string
+  numero: string
+  estado: ViviendaEstado
+
+  // Linderos
+  lindero_norte?: string
+  lindero_sur?: string
+  lindero_oriente?: string
+  lindero_occidente?: string
+
+  // Información Legal
+  matricula_inmobiliaria?: string
+  nomenclatura?: string
+  area_lote?: number // m²
+  area_construida?: number // m²
+  tipo_vivienda?: TipoVivienda
+  certificado_tradicion_url?: string // URL en Supabase Storage
+
+  // Información Financiera
+  valor_base: number
+  es_esquinera: boolean
+  recargo_esquinera: number
+  gastos_notariales: number
+  valor_total: number // Calculado automáticamente en DB
+
+  // Asignación de Cliente
+  cliente_id?: string
+  fecha_asignacion?: string
+  fecha_pago_completo?: string
+
+  // Relaciones
+  manzanas?: {
+    nombre: string
+    proyecto_id: string
+    proyectos?: {
+      nombre: string
+    }
+  }
+  clientes?: {
+    id: string
+    nombre_completo: string
+    telefono?: string
+    email?: string
+  }
+
+  // Cálculos de Abonos (desde vista o join)
+  total_abonado?: number
+  saldo_pendiente?: number
+  porcentaje_pagado?: number
+  cantidad_abonos?: number
+
+  // Metadata
+  fecha_creacion: Date
+  fecha_actualizacion: Date
+}
+
+export interface Linderos {
+  norte: string
+  sur: string
+  oriente: string
+  occidente: string
+}
+
+export interface InformacionLegal {
+  matricula_inmobiliaria: string
+  nomenclatura: string
+  area_lote: number
+  area_construida: number
+  tipo_vivienda: TipoVivienda
+  certificado_tradicion_file?: File // Archivo a subir
+  certificado_tradicion_url?: string // URL después de subir
+}
+
+export interface ResumenFinanciero {
+  valor_base: number
+  gastos_notariales: number
+  recargo_esquinera: number
+  valor_total: number
+}
+
+// ============================================
+// TIPOS AUXILIARES
+// ============================================
+
+export interface Manzana {
+  id: string
+  proyecto_id: string
+  nombre: string
+  numero_viviendas: number
+  fecha_creacion: Date
+}
+
+export interface ManzanaConDisponibilidad extends Manzana {
+  total_viviendas: number
+  viviendas_creadas: number
+  viviendas_disponibles: number
+  tiene_disponibles: boolean
+}
+
+export interface Proyecto {
   id: string
   nombre: string
-  descripcion?: string
-  fecha_creacion: string
-  fecha_actualizacion: string
+  estado: string
 }
 
-export interface ViviendasFormData {
+export interface ConfiguracionRecargo {
+  id: string
+  tipo: TipoRecargo
   nombre: string
+  valor: number
   descripcion?: string
+  activo: boolean
 }
 
-export interface FiltroViviendas {
+// ============================================
+// FORMULARIO
+// ============================================
+
+export interface ViviendaFormData {
+  // Paso 1: Selección de ubicación
+  proyecto_id: string
+  manzana_id: string
+  numero: string
+
+  // Paso 2: Linderos
+  lindero_norte: string
+  lindero_sur: string
+  lindero_oriente: string
+  lindero_occidente: string
+
+  // Paso 3: Información Legal
+  matricula_inmobiliaria: string
+  nomenclatura: string
+  area_lote: number
+  area_construida: number
+  tipo_vivienda: TipoVivienda
+  certificado_tradicion_file?: File
+
+  // Paso 4: Información Financiera
+  valor_base: number
+  es_esquinera: boolean
+  recargo_esquinera: number
+}
+
+// ============================================
+// ENUMS Y CONSTANTES
+// ============================================
+
+export type ViviendaEstado = 'Disponible' | 'Asignada' | 'Pagada'
+
+export type TipoVivienda = 'Regular' | 'Irregular'
+
+export type TipoRecargo = 'esquinera_5M' | 'esquinera_10M' | 'gastos_notariales'
+
+// ============================================
+// FILTROS Y VISTAS
+// ============================================
+
+export interface ViviendaFiltros {
+  search?: string
+  proyecto_id?: string
+  manzana_id?: string
+  estado?: ViviendaEstado
+  tipo_vivienda?: TipoVivienda
+  es_esquinera?: boolean
+}
+
+export interface FiltrosViviendas {
   busqueda?: string
+  proyectoId?: string
+  manzanaId?: string
+  estado?: ViviendaEstado
 }
 
-export type VistaViviendas = "grid" | "lista"
+export type ViviendaVista = 'grid' | 'list' | 'table'
+
+// ============================================
+// PASOS DEL FORMULARIO
+// ============================================
+
+export type PasoFormulario = 'ubicacion' | 'linderos' | 'legal' | 'financiero' | 'resumen'
+
+export interface EstadoFormulario {
+  paso_actual: PasoFormulario
+  pasos_completados: PasoFormulario[]
+  datos: Partial<ViviendaFormData>
+  errores: Record<string, string>
+  es_valido: boolean
+}
+
+// ============================================
+// RESPUESTAS DE API
+// ============================================
+
+export interface ViviendaResponse {
+  success: boolean
+  data?: Vivienda
+  error?: string
+}
+
+export interface ViviendasListResponse {
+  success: boolean
+  data?: Vivienda[]
+  error?: string
+}
+
+export interface ManzanasDisponiblesResponse {
+  success: boolean
+  data?: ManzanaConDisponibilidad[]
+  error?: string
+}
+
+export interface ProyectosResponse {
+  success: boolean
+  data?: Proyecto[]
+  error?: string
+}
+
+export interface ConfiguracionRecargosResponse {
+  success: boolean
+  data?: ConfiguracionRecargo[]
+  error?: string
+}
+
+// ============================================
+// UTILIDADES
+// ============================================
+
+export interface OpcionRecargo {
+  label: string
+  value: number
+  tipo: TipoRecargo
+}

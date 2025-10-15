@@ -155,21 +155,22 @@ constructoraRyR-app/
 
 ## 📊 Progreso por Módulo
 
-| Módulo | Estado | Progreso | Notas |
-|--------|--------|----------|-------|
-| **Shared** | ✅ Completo | 100% | Infraestructura lista |
-| **Proyectos** | ✅ Completo | 100% | Ejemplo de referencia |
-| **Viviendas** | ⏳ Pendiente | 0% | Usar template |
-| **Clientes** | ⏳ Pendiente | 0% | Usar template |
-| **Abonos** | ⏳ Pendiente | 0% | Usar template |
-| **Renuncias** | ⏳ Pendiente | 0% | Usar template |
-| **Admin** | ⏳ Pendiente | 0% | Usar template |
+| Módulo        | Estado       | Progreso | Notas                 |
+| ------------- | ------------ | -------- | --------------------- |
+| **Shared**    | ✅ Completo  | 100%     | Infraestructura lista |
+| **Proyectos** | ✅ Completo  | 100%     | Ejemplo de referencia |
+| **Viviendas** | ⏳ Pendiente | 0%       | Usar template         |
+| **Clientes**  | ⏳ Pendiente | 0%       | Usar template         |
+| **Abonos**    | ⏳ Pendiente | 0%       | Usar template         |
+| **Renuncias** | ⏳ Pendiente | 0%       | Usar template         |
+| **Admin**     | ⏳ Pendiente | 0%       | Usar template         |
 
 ---
 
 ## 🎯 Funcionalidades Implementadas
 
 ### ✅ Infraestructura Core
+
 - [x] Landing page premium con animaciones
 - [x] Dashboard layout con sidebar
 - [x] Sistema de temas (dark/light mode)
@@ -177,6 +178,7 @@ constructoraRyR-app/
 - [x] Shared infrastructure completa
 
 ### ✅ Módulo Proyectos
+
 - [x] Listar proyectos (grid/list)
 - [x] Crear proyecto
 - [x] Editar proyecto
@@ -186,6 +188,7 @@ constructoraRyR-app/
 - [x] Estados (activo, completado, pausado)
 
 ### ⏳ Pendientes
+
 - [ ] Integración con Supabase
 - [ ] Autenticación y autorización
 - [ ] Módulos restantes (viviendas, clientes, etc.)
@@ -198,6 +201,7 @@ constructoraRyR-app/
 ## 🚀 Stack Tecnológico
 
 ### Frontend
+
 - **Framework**: Next.js 14 (App Router)
 - **Lenguaje**: TypeScript
 - **Styling**: Tailwind CSS v3
@@ -207,12 +211,14 @@ constructoraRyR-app/
 - **Temas**: next-themes
 
 ### Estado y Formularios
+
 - **Estado Global**: Zustand
 - **Formularios**: React Hook Form
 - **Validación**: Zod
 - **Fechas**: date-fns
 
 ### Backend (TODO)
+
 - **BaaS**: Supabase
 - **Database**: PostgreSQL
 - **Auth**: Supabase Auth
@@ -224,6 +230,7 @@ constructoraRyR-app/
 ## 📚 Documentación Disponible
 
 ### Guías Principales
+
 1. **ARCHITECTURE.md** - Arquitectura completa del proyecto
 2. **MODULE_TEMPLATE.md** - Template para crear módulos
 3. **SHARED_INFRASTRUCTURE.md** - Documentación de recursos compartidos
@@ -233,6 +240,7 @@ constructoraRyR-app/
 ### Referencias Rápidas
 
 **Crear nuevo módulo**:
+
 ```bash
 # 1. Seguir MODULE_TEMPLATE.md
 # 2. Copiar estructura de src/modules/proyectos/
@@ -240,16 +248,13 @@ constructoraRyR-app/
 ```
 
 **Usar recursos compartidos**:
+
 ```typescript
-import { 
-  useDebounce,
-  formatCurrency,
-  ROUTES,
-  LoadingSpinner
-} from '@/shared'
+import { useDebounce, formatCurrency, ROUTES, LoadingSpinner } from '@/shared'
 ```
 
 **Convenciones de código**:
+
 - Ver ARCHITECTURE.md sección "Convenciones de Código"
 - Seguir estructura de módulos existentes
 - Mantener separación de responsabilidades
@@ -259,6 +264,7 @@ import {
 ## 🎨 Diseño y UX
 
 ### Características
+
 - ✅ Diseño moderno y premium
 - ✅ Animaciones fluidas con Framer Motion
 - ✅ Modo oscuro/claro
@@ -270,6 +276,7 @@ import {
 - ✅ Error handling visual
 
 ### Paleta de Colores
+
 - **Primary**: Azul (#3B82F6)
 - **Success**: Verde (#10B981)
 - **Warning**: Amarillo (#F59E0B)
@@ -281,6 +288,7 @@ import {
 ## 🔧 Comandos Útiles
 
 ### Desarrollo
+
 ```bash
 npm run dev          # Iniciar servidor de desarrollo (puerto 3000)
 npm run build        # Build para producción
@@ -289,6 +297,7 @@ npm run lint         # Linter
 ```
 
 ### Testing (TODO)
+
 ```bash
 npm run test         # Tests unitarios
 npm run test:e2e     # Tests E2E
@@ -300,6 +309,7 @@ npm run test:watch   # Tests en modo watch
 ## 🎯 Próximos Pasos Recomendados
 
 ### Fase 1: Refactorización (Corto Plazo)
+
 1. **Actualizar Sidebar**
    - Usar `useMediaQuery` de shared
    - Usar `useLocalStorage` para estado
@@ -313,6 +323,7 @@ npm run test:watch   # Tests en modo watch
    - Mover todo a `src/modules/`
 
 ### Fase 2: Nuevos Módulos (Medio Plazo)
+
 1. **Módulo Viviendas**
    - Seguir MODULE_TEMPLATE.md
    - Relación con proyectos
@@ -334,6 +345,7 @@ npm run test:watch   # Tests en modo watch
    - Configuración
 
 ### Fase 3: Backend (Largo Plazo)
+
 1. **Configurar Supabase**
    - Setup inicial
    - Migración de datos
@@ -353,17 +365,20 @@ npm run test:watch   # Tests en modo watch
 ## 📈 Métricas de Calidad
 
 ### Código
+
 - ✅ **TypeScript**: 100%
 - ✅ **Errores de compilación**: 0
 - ✅ **Arquitectura**: Modular y escalable
 - ✅ **Documentación**: Completa
 
 ### Performance
+
 - ⏳ **Lighthouse Score**: Por medir
 - ⏳ **Bundle Size**: Por optimizar
 - ⏳ **Loading Time**: Por optimizar
 
 ### Testing
+
 - ⏳ **Unit Tests**: 0% (TODO)
 - ⏳ **Integration Tests**: 0% (TODO)
 - ⏳ **E2E Tests**: 0% (TODO)
@@ -373,18 +388,21 @@ npm run test:watch   # Tests en modo watch
 ## 🤝 Contribución
 
 ### Agregar un Módulo
+
 1. Leer `MODULE_TEMPLATE.md`
 2. Copiar estructura de `src/modules/proyectos/`
 3. Seguir convenciones de `ARCHITECTURE.md`
 4. Documentar en README del módulo
 
 ### Agregar Recurso Compartido
+
 1. Identificar si es hook, util, constant, etc.
 2. Crear en carpeta correspondiente de `src/shared/`
 3. Exportar en `index.ts` de esa carpeta
 4. Actualizar `src/shared/README.md`
 
 ### Reportar Issues
+
 - Usar GitHub Issues
 - Incluir pasos para reproducir
 - Screenshots si es visual

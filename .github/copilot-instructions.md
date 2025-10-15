@@ -5,6 +5,7 @@
 ### ⚠️ REGLA DE ORO: SEPARACIÓN DE RESPONSABILIDADES
 
 **NUNCA mezclar lógica con UI. SIEMPRE separar en:**
+
 1. **Hooks** (`use*.ts`) → Lógica de negocio
 2. **Componentes** (`*.tsx`) → UI presentacional pura
 3. **Estilos** (`*.styles.ts`) → Clases de Tailwind centralizadas
@@ -89,9 +90,11 @@ src/modules/[nombre-modulo]/
 ---
 
 ## Descripción del Proyecto
+
 Aplicación web moderna para la gestión administrativa de la constructora RyR, desarrollada con Next.js 15, TypeScript, Supabase y Tailwind CSS.
 
 ## Funcionalidades Principales
+
 - Gestión de proyectos de construcción
 - Sistema de documentos con categorías personalizables
 - Administración de viviendas
@@ -104,6 +107,7 @@ Aplicación web moderna para la gestión administrativa de la constructora RyR, 
 - Sincronización de datos en tiempo real
 
 ## Stack Tecnológico
+
 - **Frontend**: Next.js 15 con App Router
 - **Lenguaje**: TypeScript 5.9
 - **Styling**: Tailwind CSS 3
@@ -117,6 +121,7 @@ Aplicación web moderna para la gestión administrativa de la constructora RyR, 
 - **Validación**: Zod
 
 ## Estructura del Proyecto (Actualizada)
+
 ```
 constructoraRyR-app/
 ├── app/                    # Next.js App Router
@@ -134,6 +139,7 @@ constructoraRyR-app/
 ```
 
 ## Características de Desarrollo
+
 - Interfaz responsiva y moderna
 - Navegación instantánea entre módulos
 - Animaciones fluidas con Framer Motion

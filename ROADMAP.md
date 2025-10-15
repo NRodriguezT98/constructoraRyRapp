@@ -7,6 +7,7 @@
 **Objetivo**: Establecer infraestructura sólida y escalable
 
 **Completado**:
+
 - [x] Setup inicial del proyecto (Next.js 14 + TypeScript)
 - [x] Configuración de Tailwind CSS
 - [x] Sistema de temas (dark/light mode)
@@ -37,22 +38,20 @@
 **Objetivo**: Aplicar arquitectura a componentes existentes
 
 **Tareas**:
+
 - [ ] Refactorizar Sidebar
   - [ ] Usar `useMediaQuery` para responsive
   - [ ] Usar `useLocalStorage` para persistencia
   - [ ] Aplicar clases compartidas
   - [ ] Mejorar animaciones
-  
 - [ ] Refactorizar Navbar
   - [ ] Separar lógica de presentación
   - [ ] Crear hooks específicos
   - [ ] Usar componentes compartidos
-  
 - [ ] Migrar componentes legacy
   - [ ] Mover `components/proyectos/` a `modules/proyectos/`
   - [ ] Deprecar archivos antiguos
   - [ ] Actualizar imports
-  
 - [ ] Optimizar módulo Proyectos
   - [ ] Renombrar archivos (quitar `-new`)
   - [ ] Implementar paginación
@@ -71,6 +70,7 @@
 #### 2.1 Módulo Viviendas
 
 **Funcionalidades**:
+
 - [ ] CRUD completo de viviendas
 - [ ] Relación con proyectos
 - [ ] Estados (disponible, vendida, reservada)
@@ -79,6 +79,7 @@
 - [ ] Historial de cambios
 
 **Campos principales**:
+
 ```typescript
 interface Vivienda {
   id: string
@@ -99,6 +100,7 @@ interface Vivienda {
 #### 2.2 Módulo Clientes
 
 **Funcionalidades**:
+
 - [ ] CRUD completo de clientes
 - [ ] Tipos (natural, jurídica)
 - [ ] Documentos (CC, NIT)
@@ -108,6 +110,7 @@ interface Vivienda {
 - [ ] Exportar a Excel/PDF
 
 **Campos principales**:
+
 ```typescript
 interface Cliente {
   id: string
@@ -128,6 +131,7 @@ interface Cliente {
 #### 2.3 Módulo Abonos
 
 **Funcionalidades**:
+
 - [ ] Registro de pagos
 - [ ] Relación vivienda-cliente
 - [ ] Métodos de pago
@@ -137,6 +141,7 @@ interface Cliente {
 - [ ] Exportar movimientos
 
 **Campos principales**:
+
 ```typescript
 interface Abono {
   id: string
@@ -156,6 +161,7 @@ interface Abono {
 #### 2.4 Módulo Renuncias
 
 **Funcionalidades**:
+
 - [ ] Solicitud de renuncia
 - [ ] Workflow de aprobación
 - [ ] Cálculo de devoluciones
@@ -165,6 +171,7 @@ interface Abono {
 - [ ] Notificaciones
 
 **Campos principales**:
+
 ```typescript
 interface Renuncia {
   id: string
@@ -193,23 +200,21 @@ interface Renuncia {
 **Objetivo**: Dashboard y configuración general
 
 **Funcionalidades**:
+
 - [ ] Dashboard principal
   - [ ] KPIs principales
   - [ ] Gráficas de ventas
   - [ ] Proyectos activos
   - [ ] Ingresos mensuales
   - [ ] Viviendas disponibles
-  
 - [ ] Gestión de usuarios
   - [ ] CRUD de usuarios
   - [ ] Roles y permisos
   - [ ] Auditoría de acciones
-  
 - [ ] Configuración
   - [ ] Parámetros del sistema
   - [ ] Notificaciones
   - [ ] Temas y preferencias
-  
 - [ ] Reportes
   - [ ] Generador de reportes
   - [ ] Exportar datos
@@ -226,12 +231,14 @@ interface Renuncia {
 **Objetivo**: Conectar con backend real y eliminar localStorage
 
 #### 4.1 Setup Inicial
+
 - [ ] Crear proyecto en Supabase
 - [ ] Configurar variables de entorno
 - [ ] Crear esquema de base de datos
 - [ ] Configurar Row Level Security (RLS)
 
 #### 4.2 Migración de Servicios
+
 - [ ] Proyectos Service → Supabase
 - [ ] Viviendas Service → Supabase
 - [ ] Clientes Service → Supabase
@@ -239,6 +246,7 @@ interface Renuncia {
 - [ ] Renuncias Service → Supabase
 
 #### 4.3 Autenticación
+
 - [ ] Configurar Supabase Auth
 - [ ] Implementar login/register
 - [ ] Password reset
@@ -246,11 +254,13 @@ interface Renuncia {
 - [ ] Protected routes
 
 #### 4.4 Realtime
+
 - [ ] Configurar Supabase Realtime
 - [ ] Sincronización de datos en tiempo real
 - [ ] Notificaciones push
 
 #### 4.5 Storage
+
 - [ ] Configurar Supabase Storage
 - [ ] Upload de documentos
 - [ ] Upload de imágenes
@@ -267,26 +277,23 @@ interface Renuncia {
 **Objetivo**: Funcionalidades premium y optimización
 
 **Funcionalidades**:
+
 - [ ] Sistema de notificaciones
   - [ ] In-app notifications
   - [ ] Email notifications
   - [ ] Push notifications
-  
 - [ ] Búsqueda global
   - [ ] Búsqueda cross-module
   - [ ] Filtros avanzados
   - [ ] Resultados instantáneos
-  
 - [ ] Exportación avanzada
   - [ ] Excel con múltiples sheets
   - [ ] PDF con templates custom
   - [ ] Programar exportaciones
-  
 - [ ] Auditoría completa
   - [ ] Log de todas las acciones
   - [ ] Versionado de documentos
   - [ ] Timeline de cambios
-  
 - [ ] Analytics
   - [ ] Google Analytics
   - [ ] Custom events
@@ -303,19 +310,17 @@ interface Renuncia {
 **Objetivo**: Asegurar calidad y estabilidad
 
 **Tareas**:
+
 - [ ] Unit Tests
   - [ ] Utils y helpers
   - [ ] Custom hooks
   - [ ] Services
-  
 - [ ] Integration Tests
   - [ ] Flujos de usuario
   - [ ] API calls
-  
 - [ ] E2E Tests
   - [ ] Cypress setup
   - [ ] Critical flows
-  
 - [ ] Performance Testing
   - [ ] Lighthouse audits
   - [ ] Bundle size optimization
@@ -332,21 +337,19 @@ interface Renuncia {
 **Objetivo**: Llevar a producción
 
 **Tareas**:
+
 - [ ] Setup CI/CD
   - [ ] GitHub Actions
   - [ ] Automated testing
   - [ ] Automated deployment
-  
 - [ ] Deployment
   - [ ] Vercel setup
   - [ ] Environment variables
   - [ ] Domain configuration
-  
 - [ ] Monitoring
   - [ ] Error tracking (Sentry)
   - [ ] Performance monitoring
   - [ ] Uptime monitoring
-  
 - [ ] Documentation
   - [ ] User manual
   - [ ] Admin manual
@@ -404,16 +407,19 @@ Total estimado: 15 semanas (~3.5 meses)
 ## 🎯 Prioridades
 
 ### 🔴 Crítico (Debe hacerse)
+
 1. Fase 1: Refactorización
 2. Fase 2: Módulos Core
 3. Fase 4: Supabase Integration
 4. Fase 7: Deployment
 
 ### 🟡 Importante (Debería hacerse)
+
 1. Fase 3: Admin Panel
 2. Fase 6: Testing & QA
 
 ### 🟢 Deseable (Puede hacerse)
+
 1. Fase 5: Features Avanzadas
 
 ---
@@ -422,33 +428,40 @@ Total estimado: 15 semanas (~3.5 meses)
 
 ### Por Fase
 
-**Fase 1**: 
+**Fase 1**:
+
 - ✅ 0 warnings de compilación
 - ✅ Componentes usando shared resources
 
 **Fase 2**:
+
 - ✅ 4 módulos funcionales
 - ✅ CRUD completo en cada módulo
 - ✅ Tests unitarios básicos
 
 **Fase 3**:
+
 - ✅ Dashboard con KPIs
 - ✅ Sistema de usuarios y permisos
 
 **Fase 4**:
+
 - ✅ 0 datos en localStorage
 - ✅ Auth funcionando
 - ✅ Realtime sync activo
 
 **Fase 5**:
+
 - ✅ Sistema de notificaciones
 - ✅ Analytics configurado
 
 **Fase 6**:
+
 - ✅ 70%+ code coverage
 - ✅ Lighthouse score > 90
 
 **Fase 7**:
+
 - ✅ Deployed en producción
 - ✅ 99% uptime
 - ✅ Documentación completa
@@ -458,16 +471,19 @@ Total estimado: 15 semanas (~3.5 meses)
 ## 🔄 Metodología
 
 ### Desarrollo Iterativo
+
 - Sprint de 1 semana
 - Review al final de cada sprint
 - Ajustes según feedback
 
 ### Code Reviews
+
 - Peer review obligatorio
 - Seguir convenciones de ARCHITECTURE.md
 - Tests antes de merge
 
 ### Documentación
+
 - Actualizar README al agregar features
 - Documentar cada módulo
 - Comentarios en código complejo
@@ -476,26 +492,29 @@ Total estimado: 15 semanas (~3.5 meses)
 
 ## 🚧 Riesgos y Mitigación
 
-| Riesgo | Probabilidad | Impacto | Mitigación |
-|--------|--------------|---------|------------|
-| Cambios en requerimientos | Alta | Medio | Arquitectura flexible |
-| Problemas con Supabase | Media | Alto | Mantener fallbacks |
-| Performance issues | Media | Medio | Testing continuo |
-| Scope creep | Alta | Alto | Roadmap estricto |
-| Bugs en producción | Media | Alto | Testing exhaustivo |
+| Riesgo                    | Probabilidad | Impacto | Mitigación            |
+| ------------------------- | ------------ | ------- | --------------------- |
+| Cambios en requerimientos | Alta         | Medio   | Arquitectura flexible |
+| Problemas con Supabase    | Media        | Alto    | Mantener fallbacks    |
+| Performance issues        | Media        | Medio   | Testing continuo      |
+| Scope creep               | Alta         | Alto    | Roadmap estricto      |
+| Bugs en producción        | Media        | Alto    | Testing exhaustivo    |
 
 ---
 
 ## 📝 Notas
 
 ### Flexibilidad
+
 Este roadmap es una guía, no una ley. Puede ajustarse según:
+
 - Feedback de usuarios
 - Nuevos requerimientos
 - Problemas técnicos
 - Oportunidades de mejora
 
 ### Actualizaciones
+
 - Revisar roadmap cada 2 semanas
 - Actualizar estimaciones
 - Ajustar prioridades

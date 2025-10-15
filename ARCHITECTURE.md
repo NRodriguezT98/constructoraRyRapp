@@ -150,6 +150,7 @@ Component (Re-render)
 ### Componentes Atómicos
 
 **Atoms**: Elementos básicos
+
 ```tsx
 <Button />
 <Input />
@@ -157,6 +158,7 @@ Component (Re-render)
 ```
 
 **Molecules**: Grupos de átomos
+
 ```tsx
 <SearchBar />
 <FormField />
@@ -164,6 +166,7 @@ Component (Re-render)
 ```
 
 **Organisms**: Componentes complejos
+
 ```tsx
 <ProjectCard />
 <ProjectForm />
@@ -171,6 +174,7 @@ Component (Re-render)
 ```
 
 **Templates**: Layouts de página
+
 ```tsx
 <ProjectsPage />
 <DashboardLayout />
@@ -196,32 +200,37 @@ Sistema de temas con `next-themes`:
 
 ```tsx
 // Soporte automático dark/light mode
-className="bg-white dark:bg-gray-800"
-className="text-gray-900 dark:text-white"
+className = 'bg-white dark:bg-gray-800'
+className = 'text-gray-900 dark:text-white'
 ```
 
 ## 🔧 Stack Tecnológico
 
 ### Core
+
 - **Next.js 14**: Framework React con App Router
 - **TypeScript**: Tipado estático
 - **React 18**: UI library
 
 ### Styling
+
 - **Tailwind CSS**: Utility-first CSS
 - **Framer Motion**: Animaciones
 - **CSS Variables**: Temas dinámicos
 
 ### State Management
+
 - **Zustand**: Estado global ligero
 - **React Hook Form**: Formularios
 - **Zod**: Validación de esquemas
 
 ### Backend
+
 - **Supabase**: BaaS (PostgreSQL + Auth + Storage)
 - **Supabase Realtime**: Sincronización en tiempo real
 
 ### UI Components
+
 - **Radix UI**: Componentes accesibles
 - **Lucide React**: Iconos
 - **date-fns**: Manejo de fechas
@@ -231,6 +240,7 @@ className="text-gray-900 dark:text-white"
 ### Nomenclatura
 
 **Archivos**:
+
 ```
 PascalCase: Component.tsx, Page.tsx
 camelCase: utils.ts, helpers.ts
@@ -238,6 +248,7 @@ kebab-case: proyecto-card.tsx, empty-state.tsx
 ```
 
 **Variables y Funciones**:
+
 ```typescript
 // camelCase
 const userName = 'John'
@@ -251,6 +262,7 @@ const API_URL = 'https://...'
 ```
 
 **Tipos**:
+
 ```typescript
 // PascalCase
 type UserData = {}
@@ -326,6 +338,7 @@ export function useCustomHook() {
 ### Crear un Nuevo Módulo
 
 1. **Crear estructura**:
+
 ```bash
 src/modules/nombre-modulo/
 ├── components/
@@ -358,16 +371,19 @@ src/modules/nombre-modulo/
 ## 🧪 Testing Strategy
 
 ### Unit Tests
+
 - Utilidades (`utils/`)
 - Hooks personalizados
 - Funciones puras
 
 ### Integration Tests
+
 - Flujos completos de usuario
 - Interacción entre componentes
 - Llamadas a APIs
 
 ### E2E Tests
+
 - Flujos críticos de negocio
 - Procesos completos
 
@@ -386,10 +402,7 @@ const HeavyComponent = dynamic(() => import('./HeavyComponent'), {
 
 ```typescript
 // useMemo para cálculos costosos
-const filteredData = useMemo(
-  () => data.filter(item => item.active),
-  [data]
-)
+const filteredData = useMemo(() => data.filter(item => item.active), [data])
 
 // useCallback para funciones
 const handleClick = useCallback(() => {
@@ -410,16 +423,19 @@ export default async function Page() {
 ## 🔒 Seguridad
 
 ### Autenticación
+
 - Supabase Auth
 - Protected routes con middleware
 - Role-based access control (RBAC)
 
 ### Validación
+
 - Input validation con Zod
 - Sanitización de datos
 - CSRF protection
 
 ### Auditoría
+
 - Logs de acciones críticas
 - Versionado de documentos
 - Tracking de cambios
@@ -427,11 +443,13 @@ export default async function Page() {
 ## 📈 Escalabilidad
 
 ### Horizontal
+
 - Diseño modular permite agregar módulos fácilmente
 - Shared resources evitan duplicación
 - Clear separation of concerns
 
 ### Vertical
+
 - Optimización de queries (Supabase)
 - Caching strategies
 - CDN para assets estáticos
@@ -439,6 +457,7 @@ export default async function Page() {
 ## 🎓 Recursos de Aprendizaje
 
 ### Documentación
+
 - [Next.js Docs](https://nextjs.org/docs)
 - [TypeScript Handbook](https://www.typescriptlang.org/docs/)
 - [Tailwind CSS](https://tailwindcss.com/docs)
@@ -446,6 +465,7 @@ export default async function Page() {
 - [Framer Motion](https://www.framer.com/motion/)
 
 ### Guías Internas
+
 - `src/shared/README.md`: Recursos compartidos
 - Cada módulo tiene su `README.md`
 - Este documento (ARCHITECTURE.md)

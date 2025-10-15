@@ -11,22 +11,22 @@
 export function MiComponente() {
   const [data, setData] = useState([])
   const [loading, setLoading] = useState(false)
-  
+
   useEffect(() => {
     // ... lógica compleja
   }, [])
-  
+
   const handleClick = () => {
     // ... más lógica
   }
-  
-  return <div className="p-4 bg-white rounded...">...</div>
+
+  return <div className='rounded... bg-white p-4'>...</div>
 }
 
 // ✅ BIEN - Lógica en hook, componente solo presenta
 export function MiComponente() {
   const { data, loading, handleClick } = useMiComponente()
-  
+
   return <div className={styles.container}>...</div>
 }
 ```
@@ -51,8 +51,8 @@ export const miComponenteStyles = {
   title: 'text-2xl font-bold text-gray-900 dark:text-white...',
   button: {
     primary: 'bg-blue-600 hover:bg-blue-700 text-white...',
-    secondary: 'bg-gray-200 hover:bg-gray-300 text-gray-800...'
-  }
+    secondary: 'bg-gray-200 hover:bg-gray-300 text-gray-800...',
+  },
 }
 ```
 
@@ -97,29 +97,34 @@ export function useMiComponente(props) {
   // Estados
   const [data, setData] = useState([])
   const [loading, setLoading] = useState(false)
-  
+
   // Computed values (useMemo para cálculos pesados)
-  const total = useMemo(() => 
-    data.reduce((sum, item) => sum + item.value, 0),
+  const total = useMemo(
+    () => data.reduce((sum, item) => sum + item.value, 0),
     [data]
   )
-  
+
   // Handlers (useCallback para optimización)
-  const handleClick = useCallback(() => {
-    // lógica...
-  }, [/* dependencias */])
-  
+  const handleClick = useCallback(
+    () => {
+      // lógica...
+    },
+    [
+      /* dependencias */
+    ]
+  )
+
   // Effects
   useEffect(() => {
     // cargar datos...
   }, [])
-  
+
   // Retornar SOLO lo necesario para el componente
   return {
     data,
     loading,
     total,
-    handleClick
+    handleClick,
   }
 }
 ```
@@ -143,12 +148,8 @@ interface Props {
 
 export function MiComponente({ data, onAction }: Props) {
   const { estado, handler } = useComponente(data)
-  
-  return (
-    <div className={styles.container}>
-      {/* JSX simple */}
-    </div>
-  )
+
+  return <div className={styles.container}>{/* JSX simple */}</div>
 }
 ```
 
@@ -165,7 +166,7 @@ import { ComponenteFooter } from './componente-footer'
 
 export function MiComponente(props) {
   const logic = useComponente(props)
-  
+
   return (
     <div>
       <ComponenteHeader {...logic.header} />
@@ -179,6 +180,7 @@ export function MiComponente(props) {
 #### **Componente Large (> 200 líneas)**
 
 **¡REFACTORIZAR!** Dividir en:
+
 - Componente contenedor (orchestrator)
 - Componentes presentacionales
 - Hook personalizado
@@ -189,12 +191,14 @@ export function MiComponente(props) {
 ### 5. Convenciones de Nombres
 
 #### **Archivos**
+
 - Componentes: `kebab-case.tsx` → `proyecto-card.tsx`
 - Hooks: `camelCase.ts` → `useProyectos.ts`
 - Estilos: `kebab-case.styles.ts` → `proyecto-card.styles.ts`
 - Servicios: `kebab-case.service.ts` → `proyectos.service.ts`
 
 #### **Variables y Funciones**
+
 ```typescript
 // Estados
 const [isOpen, setIsOpen] = useState(false)
@@ -330,7 +334,7 @@ const cardClasses = "bg-white dark:bg-gray-800 rounded-xl"
 export function MiComponente({ data, onAction }: Props) {
   // Lógica en hook (fácil de testear)
   const { state } = useMiComponente(data)
-  
+
   // UI pura (fácil de testear snapshot)
   return <div data-testid="mi-componente">{state}</div>
 }

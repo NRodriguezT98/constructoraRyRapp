@@ -1,0 +1,10 @@
+#!/bin/sh
+# RyR Constructora - Pre-commit hook
+# Ejecuta linting y formateo automático antes de cada commit
+
+echo "🔍 Ejecutando verificaciones pre-commit..."
+
+# Ejecutar lint-staged para archivos staged
+npm run pre-commit
+
+echo "✅ Pre-commit completado!"

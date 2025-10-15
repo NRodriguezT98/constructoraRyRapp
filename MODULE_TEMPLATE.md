@@ -200,7 +200,7 @@ import { delay } from '@/shared/utils'
 
 /**
  * Servicio para operaciones CRUD de [NombreEntidad]
- * 
+ *
  * TODO: Conectar con Supabase
  */
 
@@ -231,7 +231,7 @@ class [NombreModulo]Service {
   async create(data: [NombreEntidad]FormData): Promise<[NombreEntidad]> {
     await delay(800)
     const items = this.getItems()
-    
+
     const newItem: [NombreEntidad] = {
       ...data,
       id: crypto.randomUUID(),
@@ -241,14 +241,14 @@ class [NombreModulo]Service {
 
     items.push(newItem)
     this.saveItems(items)
-    
+
     return newItem
   }
 
   async update(id: string, data: Partial<[NombreEntidad]FormData>): Promise<[NombreEntidad]> {
     await delay(800)
     const items = this.getItems()
-    
+
     const index = items.findIndex((item) => item.id === id)
     if (index === -1) throw new Error('[NombreEntidad] no encontrado')
 
@@ -260,7 +260,7 @@ class [NombreModulo]Service {
 
     items[index] = updatedItem
     this.saveItems(items)
-    
+
     return updatedItem
   }
 
@@ -510,7 +510,7 @@ export default function Page() {
 
 ### 9. README del Módulo
 
-```markdown
+````markdown
 # Módulo: [Nombre Módulo]
 
 > Descripción del módulo
@@ -542,10 +542,11 @@ import { use[NombreModulo] } from '@/modules/[nombre-modulo]/hooks'
 
 function MyComponent() {
   const { items, createItem, isLoading } = use[NombreModulo]()
-  
+
   // ...
 }
 ```
+````
 
 ## TODO
 
@@ -553,6 +554,7 @@ function MyComponent() {
 - [ ] Añadir paginación
 - [ ] Implementar exportación
 - [ ] Tests unitarios
+
 ```
 
 ---
@@ -579,3 +581,4 @@ function MyComponent() {
 ---
 
 **Ejemplo real**: Ver `src/modules/proyectos/` para referencia completa
+```

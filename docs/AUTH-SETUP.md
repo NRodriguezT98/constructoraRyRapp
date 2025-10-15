@@ -25,13 +25,14 @@ ALTER TABLE documentos_proyecto DISABLE ROW LEVEL SECURITY;
 Ve a tu proyecto de Supabase → Authentication → Users → Add User
 
 O usa la página de registro:
+
 ```
 http://localhost:3000/login
 ```
 
 ### 2. Flujo de Autenticación
 
-1. **Registro**: 
+1. **Registro**:
    - Ve a `/login`
    - Click en "¿No tienes cuenta? Regístrate"
    - Ingresa email y contraseña (mínimo 6 caracteres)
@@ -56,7 +57,7 @@ import { useAuth } from '@/contexts/auth-context'
 
 function MiComponente() {
   const { user, loading, signIn, signOut } = useAuth()
-  
+
   // user.id contiene el UUID real
   console.log('Usuario:', user?.id)
 }
@@ -131,6 +132,7 @@ export default function ProtectedPage() {
 **Causa**: Usuario no autenticado o RLS mal configurado
 
 **Solución**:
+
 1. Verifica que estés logueado
 2. Verifica las RLS policies en Supabase
 3. Deshabilita RLS temporalmente (opción rápida arriba)
@@ -140,6 +142,7 @@ export default function ProtectedPage() {
 **Causa**: No hay sesión activa
 
 **Solución**:
+
 1. Ve a `/login`
 2. Inicia sesión
 3. Intenta de nuevo

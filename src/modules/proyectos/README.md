@@ -32,6 +32,7 @@ src/modules/proyectos/
 ## 🎯 Principios de Arquitectura
 
 ### 1. Separación de Responsabilidades
+
 - **Components**: Solo presentación, sin lógica de negocio
 - **Hooks**: Lógica reutilizable y gestión de estado
 - **Services**: Interacción con API/base de datos
@@ -42,9 +43,11 @@ src/modules/proyectos/
 ### 2. Componentes Atómicos
 
 #### `ProyectoCard`
+
 Card individual de proyecto con toda su información y acciones.
 
 **Props:**
+
 ```typescript
 {
   proyecto: Proyecto
@@ -55,9 +58,11 @@ Card individual de proyecto con toda su información y acciones.
 ```
 
 #### `EmptyState`
+
 Componente genérico para estados vacíos.
 
 **Props:**
+
 ```typescript
 {
   title: string
@@ -69,9 +74,11 @@ Componente genérico para estados vacíos.
 ```
 
 #### `SearchBar`
+
 Barra de búsqueda con filtros y vista toggle.
 
 **Props:**
+
 ```typescript
 {
   searchValue: string
@@ -83,9 +90,11 @@ Barra de búsqueda con filtros y vista toggle.
 ```
 
 #### `PageHeader`
+
 Header reutilizable para páginas.
 
 **Props:**
+
 ```typescript
 {
   title: string
@@ -98,9 +107,11 @@ Header reutilizable para páginas.
 ### 3. Hooks Especializados
 
 #### `useProyectos()`
+
 Hook principal para gestión de proyectos.
 
 **Retorna:**
+
 ```typescript
 {
   proyectos: Proyecto[]
@@ -115,9 +126,11 @@ Hook principal para gestión de proyectos.
 ```
 
 #### `useProyectosFiltrados()`
+
 Hook para filtrado y búsqueda.
 
 **Retorna:**
+
 ```typescript
 {
   proyectos: Proyecto[]          // Proyectos filtrados
@@ -131,9 +144,11 @@ Hook para filtrado y búsqueda.
 ```
 
 #### `useVistaProyectos()`
+
 Hook para control de vista.
 
 **Retorna:**
+
 ```typescript
 {
   vista: 'grid' | 'lista'
@@ -145,9 +160,11 @@ Hook para control de vista.
 ```
 
 #### `useEstadisticasProyectos()`
+
 Hook para métricas.
 
 **Retorna:**
+
 ```typescript
 {
   total: number
@@ -163,6 +180,7 @@ Hook para métricas.
 ### 4. Constantes Centralizadas
 
 #### Estados
+
 ```typescript
 ESTADO_COLORS: Record<EstadoProyecto, string>
 ESTADO_LABELS: Record<EstadoProyecto, string>
@@ -170,6 +188,7 @@ ESTADO_ICONS: Record<EstadoProyecto, string>
 ```
 
 #### Defaults
+
 ```typescript
 PROYECTO_DEFAULTS: {
   presupuesto: number
@@ -182,6 +201,7 @@ PROYECTO_DEFAULTS: {
 ```
 
 #### Límites
+
 ```typescript
 PROYECTO_LIMITES: {
   nombreMin: number
@@ -191,6 +211,7 @@ PROYECTO_LIMITES: {
 ```
 
 #### Animaciones
+
 ```typescript
 ANIMATION_CONFIG: {
   duration: { fast, normal, slow }
@@ -202,6 +223,7 @@ ANIMATION_CONFIG: {
 ### 5. Estilos Reutilizables
 
 #### Variantes de Animación
+
 - `containerVariants`: Contenedores con stagger
 - `itemVariants`: Items individuales
 - `fadeInVariants`: Fade in simple
@@ -212,6 +234,7 @@ ANIMATION_CONFIG: {
 - `buttonTapVariants`: Tap en botones
 
 #### Clases de Estilos
+
 - `cardStyles`: Estilos para cards
 - `buttonStyles`: Estilos para botones
 - `inputStyles`: Estilos para inputs
@@ -254,28 +277,28 @@ import {
   EmptyState,
   SearchBar,
   PageHeader,
-  
+
   // Hooks
   useProyectos,
   useProyectosFiltrados,
   useVistaProyectos,
   useEstadisticasProyectos,
-  
+
   // Tipos
   Proyecto,
   ProyectoFormData,
   EstadoProyecto,
-  
+
   // Constantes
   ESTADO_COLORS,
   ESTADO_LABELS,
   PROYECTO_DEFAULTS,
-  
+
   // Estilos
   containerVariants,
   itemVariants,
   cardStyles,
-  buttonStyles
+  buttonStyles,
 } from '@/modules/proyectos'
 ```
 
@@ -286,11 +309,11 @@ import {
 ```tsx
 import { ProyectoCard } from '@/modules/proyectos'
 
-<ProyectoCard 
+;<ProyectoCard
   proyecto={proyecto}
-  onView={(p) => navigate(`/proyectos/${p.id}`)}
-  onEdit={(p) => openEditModal(p)}
-  onDelete={(id) => deleteProyecto(id)}
+  onView={p => navigate(`/proyectos/${p.id}`)}
+  onEdit={p => openEditModal(p)}
+  onDelete={id => deleteProyecto(id)}
 />
 ```
 
@@ -299,10 +322,10 @@ import { ProyectoCard } from '@/modules/proyectos'
 ```tsx
 import { EmptyState } from '@/modules/proyectos'
 
-<EmptyState
-  title="No hay proyectos"
-  description="Comienza creando tu primer proyecto"
-  actionLabel="Crear Proyecto"
+;<EmptyState
+  title='No hay proyectos'
+  description='Comienza creando tu primer proyecto'
+  actionLabel='Crear Proyecto'
   onAction={() => setModalOpen(true)}
 />
 ```

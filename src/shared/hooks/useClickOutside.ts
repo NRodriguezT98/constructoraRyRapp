@@ -5,20 +5,20 @@ import { useEffect, useRef } from 'react'
  * @param callback - Función a ejecutar cuando se hace click fuera
  */
 export function useClickOutside<T extends HTMLElement = HTMLElement>(
-    callback: () => void
+  callback: () => void
 ) {
-    const ref = useRef<T>(null)
+  const ref = useRef<T>(null)
 
-    useEffect(() => {
-        const handleClick = (event: MouseEvent) => {
-            if (ref.current && !ref.current.contains(event.target as Node)) {
-                callback()
-            }
-        }
+  useEffect(() => {
+    const handleClick = (event: MouseEvent) => {
+      if (ref.current && !ref.current.contains(event.target as Node)) {
+        callback()
+      }
+    }
 
-        document.addEventListener('mousedown', handleClick)
-        return () => document.removeEventListener('mousedown', handleClick)
-    }, [callback])
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [callback])
 
-    return ref
+  return ref
 }

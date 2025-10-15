@@ -20,7 +20,8 @@ export function ProyectosPage() {
   const [modalEliminar, setModalEliminar] = useState(false)
   const [proyectoEliminar, setProyectoEliminar] = useState<string | null>(null)
 
-  const { crearProyecto, actualizarProyecto, eliminarProyecto, cargando } = useProyectos()
+  const { crearProyecto, actualizarProyecto, eliminarProyecto, cargando } =
+    useProyectos()
   const { proyectos } = useProyectosFiltrados()
 
   const handleAbrirModal = () => setModalAbierto(true)
@@ -73,12 +74,12 @@ export function ProyectosPage() {
   const proyectoEliminando = proyectos.find(p => p.id === proyectoEliminar)
 
   return (
-    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <div className='container mx-auto px-4 py-6 sm:px-6 lg:px-8'>
       <motion.div
         variants={staggerContainer}
-        initial="hidden"
-        animate="visible"
-        className="space-y-6"
+        initial='hidden'
+        animate='visible'
+        className='space-y-6'
       >
         <ProyectosHeader onNuevoProyecto={handleAbrirModal} />
 
@@ -101,9 +102,9 @@ export function ProyectosPage() {
       <Modal
         isOpen={modalAbierto}
         onClose={handleCerrarModal}
-        title="Nuevo Proyecto"
-        description="Completa la información del nuevo proyecto de construcción"
-        size="xl"
+        title='Nuevo Proyecto'
+        description='Completa la información del nuevo proyecto de construcción'
+        size='xl'
       >
         <ProyectosForm
           onSubmit={handleCrearProyecto}
@@ -116,9 +117,9 @@ export function ProyectosPage() {
       <Modal
         isOpen={modalEditar}
         onClose={handleCerrarModal}
-        title="Editar Proyecto"
-        description="Actualiza la información del proyecto"
-        size="xl"
+        title='Editar Proyecto'
+        description='Actualiza la información del proyecto'
+        size='xl'
       >
         {proyectoEditar && (
           <ProyectosForm
@@ -137,42 +138,44 @@ export function ProyectosPage() {
           setModalEliminar(false)
           setProyectoEliminar(null)
         }}
-        title="Eliminar Proyecto"
-        description="Esta acción no se puede deshacer"
-        size="sm"
+        title='Eliminar Proyecto'
+        description='Esta acción no se puede deshacer'
+        size='sm'
       >
-        <div className="space-y-4">
-          <p className="text-sm text-gray-600 dark:text-gray-400">
+        <div className='space-y-4'>
+          <p className='text-sm text-gray-600 dark:text-gray-400'>
             ¿Estás seguro de que deseas eliminar el proyecto{' '}
-            <span className="font-semibold text-gray-900 dark:text-gray-100">
+            <span className='font-semibold text-gray-900 dark:text-gray-100'>
               "{proyectoEliminando?.nombre}"
             </span>
             ?
           </p>
           {proyectoEliminando && proyectoEliminando.manzanas.length > 0 && (
-            <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-              <p className="text-sm text-red-800 dark:text-red-300">
-                ⚠️ Este proyecto tiene <strong>{proyectoEliminando.manzanas.length} manzana(s)</strong> que también serán eliminadas.
+            <div className='rounded-lg border border-red-200 bg-red-50 p-3 dark:border-red-800 dark:bg-red-900/20'>
+              <p className='text-sm text-red-800 dark:text-red-300'>
+                ⚠️ Este proyecto tiene{' '}
+                <strong>{proyectoEliminando.manzanas.length} manzana(s)</strong>{' '}
+                que también serán eliminadas.
               </p>
             </div>
           )}
-          <div className="flex justify-end gap-3 pt-4">
+          <div className='flex justify-end gap-3 pt-4'>
             <button
-              type="button"
+              type='button'
               onClick={() => {
                 setModalEliminar(false)
                 setProyectoEliminar(null)
               }}
               disabled={cargando}
-              className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+              className='rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
             >
               Cancelar
             </button>
             <button
-              type="button"
+              type='button'
               onClick={confirmarEliminar}
               disabled={cargando}
-              className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors disabled:opacity-50"
+              className='rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-700 disabled:opacity-50'
             >
               {cargando ? 'Eliminando...' : 'Eliminar Proyecto'}
             </button>

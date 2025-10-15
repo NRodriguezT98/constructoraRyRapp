@@ -1,25 +1,19 @@
 'use client'
 
-import { useState, useRef, DragEvent } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
+import { AnimatePresence, motion } from 'framer-motion'
 import {
-  Upload,
-  FileText,
-  X,
-  Calendar,
-  Star,
-  FileCheck,
-  AlertCircle,
-  Loader2
+    AlertCircle,
+    Calendar,
+    FileCheck,
+    FileText,
+    Loader2,
+    Star,
+    Upload,
+    X,
 } from 'lucide-react'
-import { documentoConArchivoSchema } from '../../schemas/documento.schema'
-import { DocumentoFormData } from '../../../../types/documento.types'
 import { formatFileSize, getFileExtension } from '../../../../types/documento.types'
+import { useDocumentoUpload } from '../../hooks'
 import { EtiquetasInput } from '../shared/etiquetas-input'
-import { useDocumentosStore } from '../../store/documentos.store'
-import { useAuth } from '../../../../contexts/auth-context'
 
 interface DocumentoUploadProps {
   proyectoId: string
@@ -27,151 +21,34 @@ interface DocumentoUploadProps {
   onCancel?: () => void
 }
 
-type UploadFormData = {
-  titulo: string
-  descripcion?: string
-  categoria_id?: string
-  etiquetas: string[]
-  fecha_documento?: string
-  fecha_vencimiento?: string
-  es_importante: boolean
-  metadata: Record<string, any>
-}
-
 export function DocumentoUpload({
   proyectoId,
   onSuccess,
-  onCancel
+  onCancel,
 }: DocumentoUploadProps) {
-  const [isDragging, setIsDragging] = useState(false)
-  const [archivoSeleccionado, setArchivoSeleccionado] = useState<File | null>(null)
-  const [errorArchivo, setErrorArchivo] = useState<string | null>(null)
-  const fileInputRef = useRef<HTMLInputElement>(null)
-  const { user } = useAuth()
-
   const {
-    categorias,
+    isDragging,
+    archivoSeleccionado,
+    errorArchivo,
     subiendoDocumento,
-    subirDocumento
-  } = useDocumentosStore()
-
-  const {
+    categorias,
+    etiquetas,
+    esImportante,
+    fileInputRef,
     register,
     handleSubmit,
+    errors,
     setValue,
-    watch,
-    formState: { errors }
-  } = useForm<UploadFormData>({
-    defaultValues: {
-      titulo: '',
-      descripcion: '',
-      categoria_id: '',
-      etiquetas: [],
-      fecha_documento: undefined,
-      fecha_vencimiento: undefined,
-      es_importante: false,
-      metadata: {}
-    }
-  })
-
-  const etiquetas = watch('etiquetas') || []
-  const esImportante = watch('es_importante')
-
-  const validarArchivo = (file: File): boolean => {
-    setErrorArchivo(null)
-
-    try {
-      documentoConArchivoSchema.shape.archivo.parse(file)
-      return true
-    } catch (error: any) {
-      const mensajeError = error.errors?.[0]?.message || 'Archivo no válido'
-      setErrorArchivo(mensajeError)
-      return false
-    }
-  }
-
-  const handleArchivoSeleccionado = (file: File) => {
-    if (validarArchivo(file)) {
-      setArchivoSeleccionado(file)
-
-      // Autocompletar título con nombre del archivo (sin extensión)
-      if (!watch('titulo')) {
-        const nombreSinExtension = file.name.replace(/\.[^/.]+$/, '')
-        setValue('titulo', nombreSinExtension)
-      }
-    }
-  }
-
-  const handleDragOver = (e: DragEvent<HTMLDivElement>) => {
-    e.preventDefault()
-    setIsDragging(true)
-  }
-
-  const handleDragLeave = (e: DragEvent<HTMLDivElement>) => {
-    e.preventDefault()
-    setIsDragging(false)
-  }
-
-  const handleDrop = (e: DragEvent<HTMLDivElement>) => {
-    e.preventDefault()
-    setIsDragging(false)
-
-    const files = e.dataTransfer.files
-    if (files.length > 0) {
-      handleArchivoSeleccionado(files[0])
-    }
-  }
-
-  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files
-    if (files && files.length > 0) {
-      handleArchivoSeleccionado(files[0])
-    }
-  }
-
-  const eliminarArchivo = () => {
-    setArchivoSeleccionado(null)
-    setErrorArchivo(null)
-    if (fileInputRef.current) {
-      fileInputRef.current.value = ''
-    }
-  }
-
-  const onSubmit = async (data: UploadFormData) => {
-    if (!archivoSeleccionado) {
-      setErrorArchivo('Debes seleccionar un archivo')
-      return
-    }
-
-    try {
-      if (!user?.id) {
-        throw new Error('Usuario no autenticado')
-      }
-
-      await subirDocumento(
-        {
-          proyecto_id: proyectoId,
-          archivo: archivoSeleccionado,
-          titulo: data.titulo,
-          descripcion: data.descripcion,
-          categoria_id: data.categoria_id || undefined,
-          etiquetas: data.etiquetas,
-          fecha_documento: data.fecha_documento,
-          fecha_vencimiento: data.fecha_vencimiento,
-          es_importante: data.es_importante,
-          metadata: data.metadata
-        },
-        user.id
-      )
-
-      onSuccess?.()
-    } catch (error) {
-      console.error('Error al subir documento:', error)
-    }
-  }
+    handleDragOver,
+    handleDragLeave,
+    handleDrop,
+    handleFileInputChange,
+    handleClickSelectFile,
+    limpiarArchivo,
+  } = useDocumentoUpload({ proyectoId, onSuccess })
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-6">
       {/* Zona de subida de archivo */}
       {!archivoSeleccionado ? (
         <motion.div
@@ -256,7 +133,7 @@ export function DocumentoUpload({
 
             <button
               type="button"
-              onClick={eliminarArchivo}
+              onClick={limpiarArchivo}
               className="p-2 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-lg transition-colors"
             >
               <X size={20} className="text-red-600 dark:text-red-400" />
