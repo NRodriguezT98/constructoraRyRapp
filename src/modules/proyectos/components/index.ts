@@ -1,0 +1,7 @@
+﻿export { ProyectosPage } from './proyectos-page-main'
+export { ProyectosHeader } from './proyectos-header'
+export { ProyectosSearch } from './proyectos-search'
+export { ProyectosLista } from './proyectos-lista'
+export { ProyectoCard } from './proyecto-card'
+export { ProyectosEmpty } from './proyectos-empty'
+export { ProyectosForm } from './proyectos-form'
