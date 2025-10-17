@@ -1,21 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { ModuloSelector } from '@/components/modulo-selector'
 import { motion } from 'framer-motion'
+import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import {
-  X,
-  Folder,
-  FileCheck,
-  Camera,
-  Receipt,
-  FileText,
-  FileSignature,
-  Palette,
-} from 'lucide-react'
-import {
-  COLORES_CATEGORIA,
-  type CategoriaFormData,
+    COLORES_CATEGORIA,
+    type CategoriaFormData,
+    type ModuloDocumento,
 } from '../../../../types/documento.types'
 import { CategoriaIcon } from '../shared/categoria-icon'
 
@@ -52,11 +44,18 @@ export function CategoriaForm({
     categoria?.icono || 'Folder'
   )
 
+  // Estados para sistema flexible de módulos
+  const [esGlobal, setEsGlobal] = useState(categoria?.es_global ?? false)
+  const [modulosPermitidos, setModulosPermitidos] = useState<ModuloDocumento[]>(
+    categoria?.modulos_permitidos || ['proyectos']
+  )
+
   const {
     register,
     handleSubmit,
     formState: { errors },
     setValue,
+    watch,
   } = useForm<CategoriaFormData>({
     defaultValues: {
       nombre: categoria?.nombre || '',
@@ -66,6 +65,9 @@ export function CategoriaForm({
     },
   })
 
+  // Observar el valor del nombre en tiempo real
+  const nombreActual = watch('nombre')
+
   const onSubmitForm = async (data: CategoriaFormData) => {
     setGuardando(true)
     try {
@@ -73,6 +75,8 @@ export function CategoriaForm({
         ...data,
         color: colorSeleccionado,
         icono: iconoSeleccionado,
+        esGlobal,
+        modulosPermitidos,
       })
     } finally {
       setGuardando(false)
@@ -100,7 +104,7 @@ export function CategoriaForm({
             Vista previa
           </p>
           <p className='font-semibold text-gray-900 dark:text-white'>
-            {register('nombre').name || 'Nueva Categoría'}
+            {nombreActual || 'Nueva Categoría'}
           </p>
         </div>
       </div>
@@ -205,6 +209,19 @@ export function CategoriaForm({
             </motion.button>
           ))}
         </div>
+      </div>
+
+      {/* Selector de Módulos */}
+      <div>
+        <label className='mb-3 block text-sm font-medium text-gray-700 dark:text-gray-300'>
+          Disponibilidad en módulos
+        </label>
+        <ModuloSelector
+          esGlobal={esGlobal}
+          modulosPermitidos={modulosPermitidos}
+          onEsGlobalChange={setEsGlobal}
+          onModulosChange={setModulosPermitidos}
+        />
       </div>
 
       {/* Botones */}

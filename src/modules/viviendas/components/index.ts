@@ -7,7 +7,6 @@ export { PasoResumen } from './paso-resumen'
 export { PasoUbicacion } from './paso-ubicacion'
 export { ResumenFinancieroCard } from './resumen-financiero-card'
 export { ViviendaCard } from './vivienda-card'
-export { ViviendaDetalle } from './vivienda-detalle'
 export { ViviendasCard } from './viviendas-card'
 export { ViviendasEmpty } from './viviendas-empty'
 export { ViviendasFilters } from './viviendas-filters'
@@ -19,3 +18,5 @@ export { ViviendasStats } from './viviendas-stats'
 
 // Cards dinámicas por estado
 export * from './cards'
+
+// Nota: ViviendaDetalle ahora es una página en /viviendas/[id]

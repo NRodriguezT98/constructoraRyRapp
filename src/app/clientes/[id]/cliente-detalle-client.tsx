@@ -1,0 +1,418 @@
+'use client'
+
+import { useAuth } from '@/contexts/auth-context'
+import { ModalRegistrarInteres } from '@/modules/clientes/components/modals/modal-registrar-interes'
+import { useDocumentosClienteStore } from '@/modules/clientes/documentos/store/documentos-cliente.store'
+import type { Cliente } from '@/modules/clientes/types'
+import { TIPOS_DOCUMENTO } from '@/modules/clientes/types'
+import { CategoriasManager } from '@/modules/documentos/components/categorias/categorias-manager'
+import { AnimatePresence, motion } from 'framer-motion'
+import {
+    Activity,
+    ArrowLeft,
+    ChevronRight,
+    Edit2,
+    FileText,
+    Heart,
+    Trash2,
+    User,
+    X,
+} from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
+import * as styles from './cliente-detalle.styles'
+import { ActividadTab, DocumentosTab, GeneralTab, InteresesTab } from './tabs'
+
+interface ClienteDetalleClientProps {
+  clienteId: string
+}
+
+type TabType = 'general' | 'intereses' | 'documentos' | 'actividad'
+
+// Badge de estado
+function EstadoBadge({ estado }: { estado: string }) {
+  const config = {
+    Interesado: {
+      bg: 'bg-blue-100 dark:bg-blue-900/30',
+      text: 'text-blue-700 dark:text-blue-300',
+      dot: 'bg-blue-500',
+    },
+    Activo: {
+      bg: 'bg-green-100 dark:bg-green-900/30',
+      text: 'text-green-700 dark:text-green-300',
+      dot: 'bg-green-500',
+    },
+    Inactivo: {
+      bg: 'bg-gray-100 dark:bg-gray-900/30',
+      text: 'text-gray-700 dark:text-gray-300',
+      dot: 'bg-gray-500',
+    },
+  }
+
+  const { bg, text, dot } = config[estado as keyof typeof config] || config.Interesado
+
+  return (
+    <span className={`${bg} ${text} ${styles.headerClasses.statusBadge}`}>
+      <span className={`${dot} ${styles.headerClasses.statusDot}`} />
+      <span className={styles.headerClasses.statusText}>{estado}</span>
+    </span>
+  )
+}
+
+export default function ClienteDetalleClient({ clienteId }: ClienteDetalleClientProps) {
+  const router = useRouter()
+  const { user } = useAuth()
+  const [cliente, setCliente] = useState<Cliente | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [activeTab, setActiveTab] = useState<TabType>('general')
+  const [modalInteresAbierto, setModalInteresAbierto] = useState(false)
+
+  // Store de documentos
+  const {
+    modalSubirAbierto,
+    modalCategoriasAbierto,
+    cerrarModalSubir,
+    cerrarModalCategorias,
+    cargarCategorias,
+  } = useDocumentosClienteStore()
+
+  useEffect(() => {
+    const cargarCliente = async () => {
+      setLoading(true)
+      try {
+        const { clientesService } = await import('@/modules/clientes/services/clientes.service')
+        const clienteData = await clientesService.obtenerCliente(clienteId)
+        setCliente(clienteData)
+      } catch (error) {
+        console.error('Error al cargar cliente:', error)
+        setCliente(null)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    cargarCliente()
+  }, [clienteId])
+
+  // Cargar categorías al montar
+  useEffect(() => {
+    if (user?.id) {
+      cargarCategorias(user.id)
+    }
+  }, [user?.id, cargarCategorias])
+
+  const handleEditar = () => {
+    console.log('Editar cliente:', clienteId)
+    // TODO: Abrir modal de edición o navegar a página de edición
+  }
+
+  const handleEliminar = () => {
+    if (
+      window.confirm(
+        `¿Estás seguro de eliminar al cliente ${cliente?.nombre_completo}? Esta acción no se puede deshacer.`
+      )
+    ) {
+      console.log('Eliminar cliente:', clienteId)
+      router.push('/clientes')
+    }
+  }
+
+  const handleRegistrarInteres = () => {
+    setModalInteresAbierto(true)
+  }
+
+  const handleInteresRegistrado = async () => {
+    setModalInteresAbierto(false)
+    // Recargar datos del cliente para actualizar la lista de intereses
+    const cargarCliente = async () => {
+      try {
+        const { clientesService } = await import('@/modules/clientes/services/clientes.service')
+        const clienteData = await clientesService.obtenerCliente(clienteId)
+        setCliente(clienteData)
+      } catch (error) {
+        console.error('Error al recargar cliente:', error)
+      }
+    }
+    await cargarCliente()
+  }
+
+  if (loading) {
+    return (
+      <div className='flex min-h-screen items-center justify-center'>
+        <div className='text-center'>
+          <User className='mx-auto mb-4 h-16 w-16 animate-pulse text-purple-500' />
+          <p className='text-gray-600 dark:text-gray-400'>Cargando cliente...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!cliente) {
+    return (
+      <div className='flex min-h-screen items-center justify-center'>
+        <div className='text-center'>
+          <User className='mx-auto mb-4 h-16 w-16 text-gray-400' />
+          <h2 className='mb-2 text-2xl font-bold text-gray-900 dark:text-gray-100'>
+            Cliente no encontrado
+          </h2>
+          <p className='mb-6 text-gray-600 dark:text-gray-400'>
+            El cliente que buscas no existe o fue eliminado.
+          </p>
+          <button
+            onClick={() => router.push('/clientes')}
+            className='inline-flex items-center gap-2 rounded-lg bg-purple-600 px-4 py-2 text-sm font-medium text-white hover:bg-purple-700'
+          >
+            <ArrowLeft className='h-4 w-4' />
+            Volver a clientes
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  // Configuración de tabs
+  const tabs = [
+    { id: 'general' as const, label: 'Información General', icon: User, count: null },
+    {
+      id: 'intereses' as const,
+      label: 'Intereses',
+      icon: Heart,
+      count: cliente.intereses?.length || 0,
+    },
+    {
+      id: 'documentos' as const,
+      label: 'Documentos',
+      icon: FileText,
+      count: cliente.documento_identidad_url ? 1 : 0,
+    },
+    { id: 'actividad' as const, label: 'Actividad', icon: Activity, count: null },
+  ]
+
+  return (
+    <div className='container mx-auto px-4 py-6 sm:px-6 lg:px-8'>
+      <div className='space-y-6'>
+        {/* Header con gradiente */}
+        <motion.div
+          {...styles.animations.fadeInUp}
+          className={styles.headerClasses.container}
+          style={{
+            background: 'linear-gradient(135deg, #9333ea 0%, #ec4899 100%)',
+          }}
+        >
+          {/* Patrón de fondo */}
+          <div className={styles.headerClasses.backgroundPattern}>
+            <svg width='100%' height='100%' xmlns='http://www.w3.org/2000/svg'>
+              <defs>
+                <pattern
+                  id='grid'
+                  width='40'
+                  height='40'
+                  patternUnits='userSpaceOnUse'
+                >
+                  <path
+                    d='M 40 0 L 0 0 0 40'
+                    fill='none'
+                    stroke='white'
+                    strokeWidth='1'
+                  />
+                </pattern>
+              </defs>
+              <rect width='100%' height='100%' fill='url(#grid)' />
+            </svg>
+          </div>
+
+          {/* Breadcrumb */}
+          <div className={styles.headerClasses.breadcrumb}>
+            <button
+              onClick={() => router.push('/clientes')}
+              className='flex items-center gap-1 hover:text-white'
+            >
+              <User className={styles.headerClasses.breadcrumbIcon} />
+              <span>Clientes</span>
+            </button>
+            <ChevronRight className='h-4 w-4' />
+            <span className={styles.headerClasses.breadcrumbCurrent}>
+              {cliente.nombre_completo}
+            </span>
+          </div>
+
+          {/* Contenido principal */}
+          <div className={styles.headerClasses.contentWrapper}>
+            <div className={styles.headerClasses.leftSection}>
+              <div className={styles.headerClasses.iconContainer}>
+                <User className={styles.headerClasses.icon} />
+              </div>
+              <div className={styles.headerClasses.titleSection}>
+                <h1 className={styles.headerClasses.title}>{cliente.nombre_completo}</h1>
+                <p className={styles.headerClasses.subtitle}>
+                  <FileText className={styles.headerClasses.subtitleIcon} />
+                  {TIPOS_DOCUMENTO[cliente.tipo_documento]} - {cliente.numero_documento}
+                </p>
+              </div>
+            </div>
+            <div className={styles.headerClasses.actionsContainer}>
+              <EstadoBadge estado={cliente.estado} />
+              <motion.button
+                onClick={handleEditar}
+                className='inline-flex items-center gap-2 rounded-lg border border-white/30 bg-white/20 px-4 py-2 text-sm font-medium text-white backdrop-blur-sm transition-colors hover:bg-white/30'
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <Edit2 className='h-4 w-4' />
+                <span>Editar</span>
+              </motion.button>
+              <motion.button
+                onClick={handleEliminar}
+                className='inline-flex items-center gap-2 rounded-lg border border-red-400/30 bg-red-500/80 px-4 py-2 text-sm font-medium text-white backdrop-blur-sm transition-colors hover:bg-red-600'
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <Trash2 className='h-4 w-4' />
+                <span>Eliminar</span>
+              </motion.button>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Tabs */}
+        <motion.div
+          {...styles.animations.fadeInUp}
+          transition={{ delay: 0.1 }}
+          className={styles.tabsClasses.container}
+        >
+          <nav className={styles.tabsClasses.nav}>
+            {tabs.map((tab) => (
+              <motion.button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`${styles.tabsClasses.tab} ${
+                  activeTab === tab.id
+                    ? styles.tabsClasses.tabActive
+                    : styles.tabsClasses.tabInactive
+                }`}
+                whileHover={{ y: -2 }}
+              >
+                <div className={styles.tabsClasses.tabContent}>
+                  <tab.icon className={styles.tabsClasses.tabIcon} />
+                  <span>{tab.label}</span>
+                  {tab.count !== null && tab.count > 0 && (
+                    <span className={styles.tabsClasses.tabBadge}>{tab.count}</span>
+                  )}
+                </div>
+                {activeTab === tab.id && (
+                  <motion.div
+                    layoutId='activeTabCliente'
+                    className={styles.tabsClasses.tabUnderline}
+                    transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                  />
+                )}
+              </motion.button>
+            ))}
+          </nav>
+        </motion.div>
+
+        {/* Contenido de Tabs */}
+        <AnimatePresence mode='wait'>
+          <motion.div
+            key={activeTab}
+            {...styles.animations.slideIn}
+          >
+            {activeTab === 'general' && <GeneralTab cliente={cliente} />}
+            {activeTab === 'intereses' && (
+              <InteresesTab
+                cliente={cliente}
+                onRegistrarInteres={handleRegistrarInteres}
+              />
+            )}
+            {activeTab === 'documentos' && <DocumentosTab cliente={cliente} />}
+            {activeTab === 'actividad' && <ActividadTab clienteId={clienteId} />}
+          </motion.div>
+        </AnimatePresence>
+      </div>
+
+      {/* Modal de Categorías */}
+      <AnimatePresence>
+        {modalCategoriasAbierto && user?.id && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className='fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4'
+            onClick={cerrarModalCategorias}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className='w-full max-w-2xl rounded-2xl bg-white p-6 shadow-2xl dark:bg-gray-800'
+            >
+              <CategoriasManager
+                userId={user.id}
+                onClose={cerrarModalCategorias}
+              />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Modal de Subir Documento */}
+      <AnimatePresence>
+        {modalSubirAbierto && user?.id && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className='fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4'
+            onClick={cerrarModalSubir}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className='w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl dark:bg-gray-800'
+            >
+              <div className='mb-6 flex items-center justify-between'>
+                <h2 className='text-2xl font-bold text-gray-900 dark:text-white'>
+                  Subir Documento
+                </h2>
+                <button
+                  onClick={cerrarModalSubir}
+                  className='rounded-lg p-2 transition-colors hover:bg-gray-100 dark:hover:bg-gray-700'
+                >
+                  <X className='h-5 w-5' />
+                </button>
+              </div>
+
+              <p className='mb-6 text-sm text-gray-600 dark:text-gray-400'>
+                Sube documentos del cliente como cédula, referencias, carta laboral, etc.
+              </p>
+
+              {/* TODO: Componente de upload */}
+              <div className='rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 p-12 text-center dark:border-gray-600 dark:bg-gray-900'>
+                <FileText className='mx-auto mb-4 h-12 w-12 text-gray-400' />
+                <p className='text-gray-600 dark:text-gray-400'>
+                  Componente de upload en desarrollo
+                </p>
+                <p className='mt-2 text-sm text-gray-500'>
+                  Próximamente: Drag & drop, validación, formulario completo
+                </p>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Modal de Registrar Interés */}
+      {user?.id && (
+        <ModalRegistrarInteres
+          isOpen={modalInteresAbierto}
+          onClose={() => setModalInteresAbierto(false)}
+          clienteId={clienteId}
+          onSuccess={handleInteresRegistrado}
+        />
+      )}
+    </div>
+  )
+}

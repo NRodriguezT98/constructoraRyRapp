@@ -31,6 +31,9 @@ interface DocumentosState {
   modalViewerAbierto: boolean
   modalCategoriasAbierto: boolean
 
+  // Módulo actual (para recargas)
+  moduloActual: 'proyectos' | 'clientes' | 'viviendas'
+
   // Acciones - Documentos
   cargarDocumentos: (proyectoId: string) => Promise<void>
   subirDocumento: (params: any, userId: string) => Promise<void>
@@ -40,11 +43,10 @@ interface DocumentosState {
   seleccionarDocumento: (documento: DocumentoProyecto | null) => void
 
   // Acciones - Categorías
-  cargarCategorias: (userId: string) => Promise<void>
+  cargarCategorias: (userId: string, modulo?: 'proyectos' | 'clientes' | 'viviendas') => Promise<void>
   crearCategoria: (userId: string, categoria: any) => Promise<void>
   actualizarCategoria: (categoriaId: string, updates: any) => Promise<void>
   eliminarCategoria: (categoriaId: string) => Promise<void>
-  inicializarCategoriasDefault: (userId: string) => Promise<void>
 
   // Acciones - Filtros
   setFiltroCategoria: (categoriaId: string | null) => void
@@ -80,6 +82,8 @@ export const useDocumentosStore = create<DocumentosState>((set, get) => ({
   modalSubirAbierto: false,
   modalViewerAbierto: false,
   modalCategoriasAbierto: false,
+
+  moduloActual: 'proyectos', // ← Default
 
   // ============================================
   // ACCIONES - DOCUMENTOS
@@ -181,10 +185,20 @@ export const useDocumentosStore = create<DocumentosState>((set, get) => ({
   // ACCIONES - CATEGORÍAS
   // ============================================
 
-  cargarCategorias: async (userId: string) => {
+  cargarCategorias: async (userId: string, modulo?: 'proyectos' | 'clientes' | 'viviendas') => {
     set({ cargandoCategorias: true })
     try {
-      const categorias = await CategoriasService.obtenerCategorias(userId)
+      // Usar módulo pasado o el último usado
+      const moduloAUsar = modulo || get().moduloActual
+
+      // Guardar módulo actual
+      set({ moduloActual: moduloAUsar })
+
+      // ✅ Sistema flexible: filtrar por módulo especificado
+      const categorias = await CategoriasService.obtenerCategoriasPorModulo(
+        userId,
+        moduloAUsar
+      )
       set({ categorias })
     } catch (error) {
       console.error('Error cargando categorías:', error)
@@ -195,13 +209,9 @@ export const useDocumentosStore = create<DocumentosState>((set, get) => ({
 
   crearCategoria: async (userId: string, categoria: any) => {
     try {
-      const nuevaCategoria = await CategoriasService.crearCategoria(
-        userId,
-        categoria
-      )
-      set(state => ({
-        categorias: [...state.categorias, nuevaCategoria],
-      }))
+      await CategoriasService.crearCategoria(userId, categoria)
+      // ✅ Recargar categorías con el módulo actual
+      await get().cargarCategorias(userId)
     } catch (error) {
       console.error('Error creando categoría:', error)
       throw error
@@ -210,15 +220,12 @@ export const useDocumentosStore = create<DocumentosState>((set, get) => ({
 
   actualizarCategoria: async (categoriaId: string, updates: any) => {
     try {
-      const categoriaActualizada = await CategoriasService.actualizarCategoria(
-        categoriaId,
-        updates
-      )
-      set(state => ({
-        categorias: state.categorias.map(cat =>
-          cat.id === categoriaId ? categoriaActualizada : cat
-        ),
-      }))
+      await CategoriasService.actualizarCategoria(categoriaId, updates)
+      // ✅ Recargar categorías con el módulo actual
+      const userId = get().categorias.find(c => c.id === categoriaId)?.user_id
+      if (userId) {
+        await get().cargarCategorias(userId)
+      }
     } catch (error) {
       console.error('Error actualizando categoría:', error)
       throw error
@@ -233,16 +240,6 @@ export const useDocumentosStore = create<DocumentosState>((set, get) => ({
       }))
     } catch (error) {
       console.error('Error eliminando categoría:', error)
-      throw error
-    }
-  },
-
-  inicializarCategoriasDefault: async (userId: string) => {
-    try {
-      const categorias = await CategoriasService.crearCategoriasDefault(userId)
-      set({ categorias })
-    } catch (error) {
-      console.error('Error inicializando categorías:', error)
       throw error
     }
   },

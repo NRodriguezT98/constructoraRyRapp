@@ -27,18 +27,19 @@ export * from './styles'
 
 // Components (con alias para evitar conflictos)
 export {
-  LoadingSpinner,
-  LoadingOverlay,
-  LoadingDots,
-  Skeleton,
+    LoadingDots, LoadingOverlay, LoadingSpinner, Skeleton
 } from './components/ui/Loading'
 
 export { EmptyState } from './components/ui/EmptyState'
 
 export {
-  Notification as NotificationComponent,
-  NotificationContainer,
-  type NotificationType,
+    Notification as NotificationComponent,
+    NotificationContainer,
+    type NotificationType
 } from './components/ui/Notification'
 
-export { Modal, ConfirmModal } from './components/ui/Modal'
+export { ConfirmModal, Modal } from './components/ui/Modal'
+
+// Modal de confirmación moderna
+export { ModalConfirmacion } from './components/modal-confirmacion'
+export type { ModalConfirmacionProps } from './components/modal-confirmacion'

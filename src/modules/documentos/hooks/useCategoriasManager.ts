@@ -6,14 +6,19 @@ type Modo = 'lista' | 'crear' | 'editar'
 
 interface UseCategoriasManagerProps {
   userId: string
+  modulo?: 'proyectos' | 'clientes' | 'viviendas' // ← Nuevo prop
 }
 
-export function useCategoriasManager({ userId }: UseCategoriasManagerProps) {
+export function useCategoriasManager({ userId, modulo = 'proyectos' }: UseCategoriasManagerProps) {
   // Estado local
   const [modo, setModo] = useState<Modo>('lista')
   const [categoriaEditando, setCategoriaEditando] = useState<any>(null)
   const [eliminando, setEliminando] = useState<string | null>(null)
   const [cargado, setCargado] = useState(false)
+
+  // Estado para modal de confirmación de eliminación
+  const [modalEliminarAbierto, setModalEliminarAbierto] = useState(false)
+  const [categoriaAEliminar, setCategoriaAEliminar] = useState<{ id: string; nombre: string } | null>(null)
 
   // Estado global
   const {
@@ -23,16 +28,15 @@ export function useCategoriasManager({ userId }: UseCategoriasManagerProps) {
     crearCategoria,
     actualizarCategoria,
     eliminarCategoria,
-    inicializarCategoriasDefault,
   } = useDocumentosStore()
 
-  // Cargar categorías
+  // Cargar categorías - SIEMPRE recarga para filtrar por módulo
   useEffect(() => {
-    if (userId && !cargado) {
-      cargarCategorias(userId)
+    if (userId) {
+      cargarCategorias(userId, modulo) // ← Pasar módulo
       setCargado(true)
     }
-  }, [userId, cargado, cargarCategorias])
+  }, [userId, modulo, cargarCategorias])
 
   // Handlers
   const handleCrear = useCallback(
@@ -40,10 +44,13 @@ export function useCategoriasManager({ userId }: UseCategoriasManagerProps) {
       await crearCategoria(userId, {
         ...data,
         orden: categorias.length + 1,
+        // Asegurar que los módulos se pasen correctamente
+        es_global: data.esGlobal ?? false,
+        modulos_permitidos: data.esGlobal ? [] : (data.modulosPermitidos ?? [modulo]),
       })
       setModo('lista')
     },
-    [userId, categorias.length, crearCategoria]
+    [userId, categorias.length, modulo, crearCategoria]
   )
 
   const handleActualizar = useCallback(
@@ -57,21 +64,34 @@ export function useCategoriasManager({ userId }: UseCategoriasManagerProps) {
   )
 
   const handleEliminar = useCallback(
-    async (categoriaId: string) => {
-      if (!confirm('¿Estás seguro de eliminar esta categoría?')) return
-      setEliminando(categoriaId)
+    async (categoriaId: string, categoriaNombre: string) => {
+      // Abrir modal de confirmación
+      setCategoriaAEliminar({ id: categoriaId, nombre: categoriaNombre })
+      setModalEliminarAbierto(true)
+    },
+    []
+  )
+
+  const confirmarEliminar = useCallback(
+    async () => {
+      if (!categoriaAEliminar) return
+
+      setEliminando(categoriaAEliminar.id)
       try {
-        await eliminarCategoria(categoriaId)
+        await eliminarCategoria(categoriaAEliminar.id)
+        setModalEliminarAbierto(false)
+        setCategoriaAEliminar(null)
       } finally {
         setEliminando(null)
       }
     },
-    [eliminarCategoria]
+    [categoriaAEliminar, eliminarCategoria]
   )
 
-  const handleInicializarDefault = useCallback(async () => {
-    await inicializarCategoriasDefault(userId)
-  }, [userId, inicializarCategoriasDefault])
+  const cancelarEliminar = useCallback(() => {
+    setModalEliminarAbierto(false)
+    setCategoriaAEliminar(null)
+  }, [])
 
   const handleIrACrear = useCallback(() => {
     setModo('crear')
@@ -101,6 +121,10 @@ export function useCategoriasManager({ userId }: UseCategoriasManagerProps) {
     tieneCategorias,
     estaCargando,
 
+    // Estado modal eliminar
+    modalEliminarAbierto,
+    categoriaAEliminar,
+
     // Handlers de navegación
     handleIrACrear,
     handleIrAEditar,
@@ -110,6 +134,7 @@ export function useCategoriasManager({ userId }: UseCategoriasManagerProps) {
     handleCrear,
     handleActualizar,
     handleEliminar,
-    handleInicializarDefault,
+    confirmarEliminar,
+    cancelarEliminar,
   }
 }

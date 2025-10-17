@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase/client'
+import { supabase } from '@/lib/supabase/client-browser'
 import type {
     ConfiguracionRecargo,
     FiltrosViviendas,
@@ -165,7 +165,7 @@ class ViviendasService {
   }
 
   /**
-   * Obtiene una vivienda por ID
+   * Obtiene una vivienda por ID (alias para compatibilidad)
    */
   async obtenerPorId(id: string): Promise<Vivienda | null> {
     const { data, error } = await supabase
@@ -176,6 +176,65 @@ class ViviendasService {
 
     if (error) throw error
     return data
+  }
+
+  /**
+   * Obtiene una vivienda completa con relaciones (para página de detalle)
+   */
+  async obtenerVivienda(id: string): Promise<Vivienda> {
+    const { data, error } = await supabase
+      .from('viviendas')
+      .select(`
+        *,
+        manzanas (
+          nombre,
+          proyecto_id,
+          proyectos (
+            nombre
+          )
+        )
+      `)
+      .eq('id', id)
+      .single()
+
+    if (error) throw error
+    if (!data) throw new Error('Vivienda no encontrada')
+
+    const vivienda = data as unknown as Vivienda
+
+    // Si tiene cliente, obtener sus datos
+    if (vivienda.cliente_id) {
+      const { data: clienteData, error: clienteError } = await supabase
+        .from('clientes')
+        .select('id, nombre, apellido, telefono, email')
+        .eq('id', vivienda.cliente_id)
+        .single()
+
+      if (!clienteError && clienteData) {
+        vivienda.clientes = {
+          id: clienteData.id,
+          nombre_completo: `${clienteData.nombre} ${clienteData.apellido}`,
+          telefono: clienteData.telefono,
+          email: clienteData.email,
+        }
+      }
+
+      // Obtener datos de abonos
+      const { data: abonosData, error: abonosError } = await supabase
+        .from('vista_viviendas_abonos')
+        .select('*')
+        .eq('id', id)
+        .single()
+
+      if (!abonosError && abonosData) {
+        vivienda.total_abonado = Number(abonosData.total_abonado) || 0
+        vivienda.saldo_pendiente = Number(abonosData.saldo_pendiente) || vivienda.valor_total
+        vivienda.porcentaje_pagado = Number(abonosData.porcentaje_pagado) || 0
+        vivienda.cantidad_abonos = Number(abonosData.cantidad_abonos) || 0
+      }
+    }
+
+    return vivienda
   }
 
   /**
@@ -358,10 +417,10 @@ class ViviendasService {
 
     // Obtener datos de clientes para viviendas con cliente_id
     const viviendasConCliente = viviendas.filter((v) => v.cliente_id)
-    
+
     if (viviendasConCliente.length > 0) {
       const idsClientes = [...new Set(viviendasConCliente.map((v) => v.cliente_id).filter(Boolean))]
-      
+
       // Obtener datos de clientes
       const { data: clientesData, error: clientesError } = await supabase
         .from('clientes')
@@ -387,7 +446,7 @@ class ViviendasService {
 
       // Obtener cálculos de abonos
       const idsConCliente = viviendasConCliente.map((v) => v.id)
-      
+
       const { data: abonosData, error: abonosError } = await supabase
         .from('vista_viviendas_abonos')
         .select('*')

@@ -1,5 +1,6 @@
 'use client'
 
+import { ModalConfirmacion } from '@/shared'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Edit2, GripVertical, Plus, Trash2, X } from 'lucide-react'
 import { EmptyState } from '../../../../shared/components/ui/EmptyState'
@@ -11,9 +12,10 @@ import { CategoriaForm } from './categoria-form'
 interface CategoriasManagerProps {
   userId: string
   onClose: () => void
+  modulo?: 'proyectos' | 'clientes' | 'viviendas' // ← Nuevo prop
 }
 
-export function CategoriasManager({ userId, onClose }: CategoriasManagerProps) {
+export function CategoriasManager({ userId, onClose, modulo = 'proyectos' }: CategoriasManagerProps) {
   const {
     modo,
     categoriaEditando,
@@ -21,14 +23,17 @@ export function CategoriasManager({ userId, onClose }: CategoriasManagerProps) {
     categorias,
     estaCargando,
     tieneCategorias,
+    modalEliminarAbierto,
+    categoriaAEliminar,
     handleIrACrear,
     handleIrAEditar,
     handleVolverALista,
     handleCrear,
     handleActualizar,
     handleEliminar,
-    handleInicializarDefault,
-  } = useCategoriasManager({ userId })
+    confirmarEliminar,
+    cancelarEliminar,
+  } = useCategoriasManager({ userId, modulo })
 
   if (estaCargando) {
     return (
@@ -101,25 +106,15 @@ export function CategoriasManager({ userId, onClose }: CategoriasManagerProps) {
       </div>
 
       {!tieneCategorias ? (
-        <div className='space-y-4'>
-          <EmptyState
-            icon={Plus}
-            title='Sin categorías'
-            description='Crea tu primera categoría o usa las sugeridas'
-            action={{
-              label: 'Crear categoría',
-              onClick: handleIrACrear,
-            }}
-          />
-          <div className='text-center'>
-            <button
-              onClick={handleInicializarDefault}
-              className='text-sm text-blue-600 hover:underline dark:text-blue-400'
-            >
-              O usa las categorías sugeridas
-            </button>
-          </div>
-        </div>
+        <EmptyState
+          icon={Plus}
+          title='Sin categorías'
+          description='Crea tu primera categoría para organizar tus documentos'
+          action={{
+            label: 'Crear categoría',
+            onClick: handleIrACrear,
+          }}
+        />
       ) : (
         <div className='space-y-3'>
           <AnimatePresence mode='popLayout'>
@@ -169,7 +164,7 @@ export function CategoriasManager({ userId, onClose }: CategoriasManagerProps) {
                       <Edit2 size={18} />
                     </button>
                     <button
-                      onClick={() => handleEliminar(categoria.id)}
+                      onClick={() => handleEliminar(categoria.id, categoria.nombre)}
                       disabled={eliminando === categoria.id}
                       className='rounded-lg p-2 text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50 dark:text-red-400 dark:hover:bg-red-900/20'
                       title='Eliminar'
@@ -197,6 +192,34 @@ export function CategoriasManager({ userId, onClose }: CategoriasManagerProps) {
           Cerrar
         </button>
       </div>
+
+      {/* Modal de Confirmación de Eliminación */}
+      <ModalConfirmacion
+        isOpen={modalEliminarAbierto}
+        onClose={cancelarEliminar}
+        onConfirm={confirmarEliminar}
+        title="Eliminar Categoría"
+        message={
+          categoriaAEliminar ? (
+            <div className="space-y-3">
+              <p className="text-base">
+                ¿Estás seguro de eliminar la categoría{' '}
+                <span className="font-bold text-gray-900 dark:text-white">
+                  {categoriaAEliminar.nombre}
+                </span>
+                ?
+              </p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                Esta acción no se puede deshacer.
+              </p>
+            </div>
+          ) : null
+        }
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        variant="danger"
+        isLoading={eliminando === categoriaAEliminar?.id}
+      />
     </div>
   )
 }

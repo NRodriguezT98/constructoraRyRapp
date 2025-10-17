@@ -5,8 +5,11 @@
 export type EstadoDocumento = 'activo' | 'archivado' | 'eliminado'
 
 // ============================================
-// Categorías Personalizadas
+// Categorías Personalizadas - Sistema Flexible Multi-Módulo
 // ============================================
+
+export type ModuloDocumento = 'proyectos' | 'clientes' | 'viviendas'
+
 export interface CategoriaDocumento {
   id: string
   user_id: string
@@ -15,6 +18,11 @@ export interface CategoriaDocumento {
   color: string // blue, green, red, purple, yellow, etc.
   icono: string // Nombre del ícono de Lucide
   orden: number
+
+  // Sistema flexible multi-módulo
+  es_global: boolean // true = disponible en TODOS los módulos
+  modulos_permitidos: ModuloDocumento[] // ["proyectos"], ["clientes","viviendas"], etc.
+
   fecha_creacion: string
 }
 
@@ -23,6 +31,10 @@ export interface CategoriaFormData {
   descripcion?: string
   color: string
   icono: string
+
+  // Nuevos campos para sistema flexible
+  esGlobal?: boolean
+  modulosPermitidos?: ModuloDocumento[]
 }
 
 // Categorías sugeridas por defecto (opcionales)

@@ -3,14 +3,19 @@
 // ============================================
 
 import { supabase } from '../../../lib/supabase/client'
-import type { CategoriaDocumento } from '../types/documento.types'
+import type {
+  CategoriaDocumento,
+  ModuloDocumento,
+} from '../types/documento.types'
 
 export class CategoriasService {
   /**
-   * Obtener todas las categorías del usuario
+   * Obtener todas las categorías del usuario (DEPRECADO - usar obtenerCategoriasPorModulo)
+   * @deprecated Usar obtenerCategoriasPorModulo() para sistema flexible multi-módulo
    */
   static async obtenerCategorias(
-    userId: string
+    userId: string,
+    tipoEntidad?: 'proyecto' | 'cliente' | 'ambos'
   ): Promise<CategoriaDocumento[]> {
     const { data, error } = await supabase
       .from('categorias_documento')
@@ -20,11 +25,33 @@ export class CategoriasService {
       .order('nombre', { ascending: true })
 
     if (error) throw error
-    return data || []
+    return (data || []) as CategoriaDocumento[]
   }
 
   /**
-   * Crear una nueva categoría
+   * Obtener categorías disponibles para un módulo específico
+   * Sistema flexible: considera es_global y modulos_permitidos
+   * @param userId - ID del usuario
+   * @param modulo - 'proyectos' | 'clientes' | 'viviendas'
+   */
+  static async obtenerCategoriasPorModulo(
+    userId: string,
+    modulo: 'proyectos' | 'clientes' | 'viviendas'
+  ): Promise<CategoriaDocumento[]> {
+    const { data, error } = await supabase
+      .from('categorias_documento')
+      .select('*')
+      .eq('user_id', userId)
+      .or(`es_global.eq.true,modulos_permitidos.cs.{${modulo}}`)
+      .order('orden', { ascending: true })
+      .order('nombre', { ascending: true })
+
+    if (error) throw error
+    return (data || []) as CategoriaDocumento[]
+  }
+
+  /**
+   * Crear una nueva categoría con sistema flexible de módulos
    */
   static async crearCategoria(
     userId: string,
@@ -39,35 +66,57 @@ export class CategoriasService {
         color: categoria.color,
         icono: categoria.icono,
         orden: categoria.orden,
+        es_global: categoria.es_global ?? false,
+        modulos_permitidos: categoria.es_global
+          ? []
+          : categoria.modulos_permitidos ?? ['proyectos'],
       })
       .select()
       .single()
 
     if (error) throw error
-    return data
+    return data as CategoriaDocumento
   }
 
   /**
-   * Actualizar una categoría existente
+   * Actualizar una categoría existente (ahora incluye es_global y modulos_permitidos)
    */
   static async actualizarCategoria(
     categoriaId: string,
-    updates: Partial<
-      Pick<
-        CategoriaDocumento,
-        'nombre' | 'descripcion' | 'color' | 'icono' | 'orden'
-      >
-    >
+    updates: any
   ): Promise<CategoriaDocumento> {
+    // Convertir camelCase a snake_case y preparar datos
+    const updateData: any = {}
+
+    if (updates.nombre !== undefined) updateData.nombre = updates.nombre
+    if (updates.descripcion !== undefined) updateData.descripcion = updates.descripcion
+    if (updates.color !== undefined) updateData.color = updates.color
+    if (updates.icono !== undefined) updateData.icono = updates.icono
+    if (updates.orden !== undefined) updateData.orden = updates.orden
+
+    // Manejar es_global (acepta tanto camelCase como snake_case)
+    const esGlobal = updates.esGlobal ?? updates.es_global
+    if (esGlobal !== undefined) {
+      updateData.es_global = esGlobal
+      // Si es global, limpiar módulos
+      updateData.modulos_permitidos = esGlobal ? [] : (updates.modulosPermitidos ?? updates.modulos_permitidos ?? ['proyectos'])
+    } else if (updates.modulosPermitidos !== undefined || updates.modulos_permitidos !== undefined) {
+      // Solo actualizar módulos si no es global
+      updateData.modulos_permitidos = updates.modulosPermitidos ?? updates.modulos_permitidos
+    }
+
     const { data, error } = await supabase
       .from('categorias_documento')
-      .update(updates)
+      .update(updateData)
       .eq('id', categoriaId)
       .select()
       .single()
 
     if (error) throw error
-    return data
+    return {
+      ...data,
+      modulos_permitidos: data.modulos_permitidos as ModuloDocumento[],
+    } as CategoriaDocumento
   }
 
   /**
@@ -97,68 +146,16 @@ export class CategoriasService {
 
   /**
    * Crear categorías por defecto para nuevo usuario
+   * NOTA: Este método ya no es necesario porque la migración SQL
+   * crea automáticamente las categorías cuando el usuario crea su primera categoría
+   * @deprecated Las categorías se crean automáticamente en la migración SQL
    */
   static async crearCategoriasDefault(
     userId: string
   ): Promise<CategoriaDocumento[]> {
-    const categoriasDefault = [
-      {
-        user_id: userId,
-        nombre: 'Licencias y Permisos',
-        descripcion: 'Documentos legales y autorizaciones',
-        color: 'blue',
-        icono: 'FileCheck',
-        orden: 1,
-      },
-      {
-        user_id: userId,
-        nombre: 'Planos',
-        descripcion: 'Planos técnicos y arquitectónicos',
-        color: 'purple',
-        icono: 'Drafting',
-        orden: 2,
-      },
-      {
-        user_id: userId,
-        nombre: 'Contratos',
-        descripcion: 'Contratos y acuerdos',
-        color: 'green',
-        icono: 'FileSignature',
-        orden: 3,
-      },
-      {
-        user_id: userId,
-        nombre: 'Facturas',
-        descripcion: 'Comprobantes y facturas',
-        color: 'yellow',
-        icono: 'Receipt',
-        orden: 4,
-      },
-      {
-        user_id: userId,
-        nombre: 'Fotografías',
-        descripcion: 'Registro fotográfico del proyecto',
-        color: 'pink',
-        icono: 'Camera',
-        orden: 5,
-      },
-      {
-        user_id: userId,
-        nombre: 'Informes',
-        descripcion: 'Informes técnicos y reportes',
-        color: 'indigo',
-        icono: 'FileText',
-        orden: 6,
-      },
-    ]
-
-    const { data, error } = await supabase
-      .from('categorias_documento')
-      .insert(categoriasDefault)
-      .select()
-
-    if (error) throw error
-    return data || []
+    // Ya no creamos categorías por defecto desde código
+    // La migración SQL las crea automáticamente con el sistema flexible
+    return []
   }
 
   /**

@@ -1,8 +1,9 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import { Toaster } from 'sonner'
+import { ConditionalLayout } from '../components/conditional-layout'
+import { ConditionalSidebar } from '../components/conditional-sidebar'
 import { PageTransition } from '../components/page-transition'
-import { Sidebar } from '../components/sidebar'
 import { ThemeProvider } from '../components/theme-provider'
 import { AuthProvider } from '../contexts/auth-context'
 import './globals.css'
@@ -21,14 +22,32 @@ export default function RootLayout({
 }) {
   return (
     <html lang='es' suppressHydrationWarning>
+      <head>
+        {/* Suprimir warning de Supabase en desarrollo */}
+        {process.env.NODE_ENV === 'development' && (
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `
+                const originalWarn = console.warn;
+                console.warn = function(...args) {
+                  if (args[0]?.includes?.('Multiple GoTrueClient instances')) {
+                    return; // Ignorar este warning específico
+                  }
+                  originalWarn.apply(console, args);
+                };
+              `,
+            }}
+          />
+        )}
+      </head>
       <body className={inter.className} suppressHydrationWarning>
         <AuthProvider>
           <ThemeProvider>
             <div className='flex h-screen overflow-hidden bg-gray-50 dark:bg-gray-900'>
-              <Sidebar />
-              <main className='flex-1 overflow-auto custom-scrollbar'>
+              <ConditionalSidebar />
+              <ConditionalLayout>
                 <PageTransition>{children}</PageTransition>
-              </main>
+              </ConditionalLayout>
             </div>
             <Toaster position='top-right' richColors />
           </ThemeProvider>

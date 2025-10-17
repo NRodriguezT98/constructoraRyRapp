@@ -1,14 +1,12 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import React from 'react'
+import { useRouter } from 'next/navigation'
 import { Modal } from '../../../shared/components/ui/Modal'
 import { staggerContainer } from '../../../shared/styles/animations'
 import { useViviendasList } from '../hooks/useViviendasList'
 import { viviendasListStyles as styles } from '../styles/viviendasList.styles'
-import type { Vivienda } from '../types'
 import { FormularioVivienda } from './formulario-vivienda'
-import { ViviendaDetalle } from './vivienda-detalle'
 import { ViviendasEmpty } from './viviendas-empty'
 import { ViviendasFilters } from './viviendas-filters'
 import { ViviendasHeader } from './viviendas-header'
@@ -22,6 +20,7 @@ import { ViviendasStats } from './viviendas-stats'
  * Lógica delegada a useViviendasList
  */
 export function ViviendasPageMain() {
+  const router = useRouter()
   const {
     viviendas,
     cargando,
@@ -44,17 +43,8 @@ export function ViviendasPageMain() {
     totalFiltradas,
   } = useViviendasList()
 
-  const [modalDetalle, setModalDetalle] = React.useState(false)
-  const [viviendaDetalle, setViviendaDetalle] = React.useState<Vivienda | null>(null)
-
-  const abrirModalDetalle = (vivienda: Vivienda) => {
-    setViviendaDetalle(vivienda)
-    setModalDetalle(true)
-  }
-
-  const cerrarModalDetalle = () => {
-    setModalDetalle(false)
-    setViviendaDetalle(null)
+  const handleVerDetalle = (viviendaId: string) => {
+    router.push(`/viviendas/${viviendaId}` as any)
   }
 
   const viviendaEliminando = viviendas.find(v => v.id === viviendaEliminar)
@@ -74,9 +64,8 @@ export function ViviendasPageMain() {
         <ViviendasStats
           total={estadisticas.total}
           disponibles={estadisticas.disponibles}
-          vendidas={estadisticas.vendidas}
-          apartadas={estadisticas.apartadas}
-          escrituradas={estadisticas.escrituradas}
+          asignadas={estadisticas.asignadas}
+          pagadas={estadisticas.pagadas}
           valorTotal={estadisticas.valorTotal}
         />
 
@@ -95,7 +84,7 @@ export function ViviendasPageMain() {
         ) : (
           <ViviendasLista
             viviendas={viviendas}
-            onVerDetalle={abrirModalDetalle}
+            onVerDetalle={(vivienda) => handleVerDetalle(vivienda.id)}
             onAsignarCliente={(vivienda) => {
               console.log('Asignar cliente a:', vivienda)
               // TODO: Implementar lógica de asignación
@@ -202,36 +191,6 @@ export function ViviendasPageMain() {
         </div>
       </Modal>
 
-      {/* Modal Detalle de Vivienda */}
-      <Modal
-        isOpen={modalDetalle}
-        onClose={cerrarModalDetalle}
-        title=""
-        description=""
-        size="xl"
-        className="p-0"
-      >
-        {viviendaDetalle && (
-          <ViviendaDetalle
-            vivienda={viviendaDetalle}
-            onAsignarCliente={() => {
-              cerrarModalDetalle()
-              console.log('Asignar cliente desde detalle')
-            }}
-            onVerAbonos={() => {
-              console.log('Ver abonos desde detalle')
-            }}
-            onRegistrarPago={() => {
-              console.log('Registrar pago desde detalle')
-            }}
-            onEditar={() => {
-              cerrarModalDetalle()
-              abrirModalEditar(viviendaDetalle)
-            }}
-            onCerrar={cerrarModalDetalle}
-          />
-        )}
-      </Modal>
     </div>
   )
 }
