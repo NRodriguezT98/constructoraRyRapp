@@ -269,11 +269,20 @@ export interface ClienteInteres {
   fecha_actualizacion: string
   usuario_creacion?: string
 
+  // Campos nuevos (agregados 2025-10-18)
+  origen?: string // 'WhatsApp', 'Email', 'Visita Presencial', etc.
+  prioridad?: string // 'Alta', 'Media', 'Baja'
+  valor_estimado?: number
+  fecha_ultimo_contacto?: string
+  proximo_seguimiento?: string
+  negociacion_id?: string
+  fecha_conversion?: string
+
   // Relaciones opcionales (cuando se cargan desde vista)
   proyecto_nombre?: string
-  proyecto_ubicacion?: string
+  proyecto_estado?: string // Corregido: la vista tiene proyecto_estado, no proyecto_ubicacion
   vivienda_numero?: string
-  vivienda_precio?: number
+  vivienda_valor?: number // Corregido: la vista tiene vivienda_valor, no vivienda_precio
   vivienda_estado?: string
   manzana_nombre?: string
 }
@@ -349,7 +358,10 @@ export interface CrearInteresDTO {
   cliente_id: string
   proyecto_id: string
   vivienda_id?: string
+  valor_estimado?: number
   notas?: string
+  origen?: string
+  prioridad?: string
 }
 
 export interface ActualizarInteresDTO {

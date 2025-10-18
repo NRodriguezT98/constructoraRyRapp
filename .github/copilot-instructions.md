@@ -2,6 +2,25 @@
 
 ## 🎯 PRINCIPIOS FUNDAMENTALES (APLICAR SIEMPRE)
 
+### 🚨 REGLA CRÍTICA #1: VALIDACIÓN DE NOMBRES DE CAMPOS
+
+**⚠️ ANTES de escribir CUALQUIER código que interactúe con la base de datos:**
+
+1. **CONSULTAR** → `docs/DATABASE-SCHEMA-REFERENCE.md` (fuente única de verdad)
+2. **VERIFICAR** → Nombres EXACTOS de tablas y columnas
+3. **CONFIRMAR** → Formato de estados (snake_case vs PascalCase)
+4. **NUNCA ASUMIR** → Siempre verificar, nunca inventar nombres
+
+**Errores comunes que NO repetir:**
+- ❌ `estado_interes` → ✅ `estado`
+- ❌ `vivienda_precio` → ✅ `vivienda_valor`
+- ❌ `proyecto_ubicacion` → ✅ `proyecto_estado`
+- ❌ `cliente.nombre` → ✅ `cliente.nombres`
+
+**📋 Consultar checklist**: `docs/DESARROLLO-CHECKLIST.md`
+
+---
+
 ### ⚠️ REGLA DE ORO: SEPARACIÓN DE RESPONSABILIDADES
 
 **NUNCA mezclar lógica con UI. SIEMPRE separar en:**
@@ -50,6 +69,13 @@ src/modules/[nombre-modulo]/
 
 ## ✅ Checklist OBLIGATORIO por Componente
 
+### ANTES de empezar:
+- [ ] **Consulté** `docs/DATABASE-SCHEMA-REFERENCE.md` para nombres de campos
+- [ ] **Verifiqué** nombres exactos de columnas y tablas
+- [ ] **Confirmé** formato de estados/enums
+- [ ] **Revisé** checklist completo en `docs/DESARROLLO-CHECKLIST.md`
+
+### Durante desarrollo:
 - [ ] Lógica en hook separado (`use*.ts`)
 - [ ] Estilos en `.styles.ts` (no strings largos inline)
 - [ ] Componente < 150 líneas
@@ -58,11 +84,15 @@ src/modules/[nombre-modulo]/
 - [ ] Tipos TypeScript estrictos (no `any`)
 - [ ] Imports organizados (React → Next → External → Shared → Local → Hooks → Services → Types → Styles)
 - [ ] Barrel export (`index.ts`) en carpeta
+- [ ] Console.log para debugging de errores
 
 ---
 
 ## 🚫 PROHIBIDO
 
+❌ **ASUMIR nombres de campos sin verificar** en `DATABASE-SCHEMA-REFERENCE.md`
+❌ **Copiar nombres de otros archivos** sin validar en documentación
+❌ **Inventar nombres "lógicos"** sin confirmar en DB
 ❌ Lógica en componentes (useState, useEffect con lógica compleja)
 ❌ Strings de Tailwind > 100 caracteres inline
 ❌ Componentes > 150 líneas
@@ -83,6 +113,11 @@ src/modules/[nombre-modulo]/
 
 ## 📚 Documentación Completa
 
+### 🔴 CRÍTICA (consultar SIEMPRE):
+- **Schema DB**: `docs/DATABASE-SCHEMA-REFERENCE.md` ⭐ **FUENTE ÚNICA DE VERDAD**
+- **Checklist desarrollo**: `docs/DESARROLLO-CHECKLIST.md` ⭐ **OBLIGATORIO**
+
+### 📘 Desarrollo:
 - **Guía de estilos**: `docs/GUIA-ESTILOS.md`
 - **Template de módulo**: `MODULE_TEMPLATE.md`
 - **Arquitectura**: `ARCHITECTURE.md`

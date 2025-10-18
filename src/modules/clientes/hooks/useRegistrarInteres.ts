@@ -1,11 +1,12 @@
 /**
- * Hook para lógica de registro de interés (negociación)
+ * Hook para lógica de registro de interés de cliente
+ * Ahora guarda en cliente_intereses en vez de negociaciones
  */
 
-import { supabase } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase/client-browser'
 import { useCallback, useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { NegociacionesService } from '../services/negociaciones.service'
+import { interesesService } from '../services/intereses.service'
 
 interface Proyecto {
   id: string
@@ -25,9 +26,10 @@ interface Vivienda {
 interface FormData {
   proyectoId: string
   viviendaId: string
-  valorNegociado: number
-  descuentoAplicado: number
-  notas: string
+  valorEstimado?: number  // Cambiado de valorNegociado
+  notas?: string
+  origen?: string  // Nuevo
+  prioridad?: string  // Nuevo
 }
 
 interface UseRegistrarInteresProps {
@@ -55,15 +57,16 @@ export function useRegistrarInteres({ clienteId, onSuccess, onClose }: UseRegist
     defaultValues: {
       proyectoId: '',
       viviendaId: '',
-      valorNegociado: 0,
-      descuentoAplicado: 0,
+      valorEstimado: 0,
       notas: '',
+      origen: 'Otro',
+      prioridad: 'Media',
     },
   })
 
   const proyectoIdSeleccionado = watch('proyectoId')
   const viviendaIdSeleccionada = watch('viviendaId')
-  const valorNegociado = watch('valorNegociado')
+  const valorEstimado = watch('valorEstimado')
 
   // Cargar proyectos disponibles
   const cargarProyectos = useCallback(async () => {
@@ -71,15 +74,20 @@ export function useRegistrarInteres({ clienteId, onSuccess, onClose }: UseRegist
     try {
       const { data, error } = await supabase
         .from('proyectos')
-        .select('id, nombre')
-        .eq('estado', 'En Progreso')
+        .select('id, nombre, estado')
+        .in('estado', ['en_planificacion', 'en_construccion'])
         .order('nombre')
 
-      if (error) throw error
+      if (error) {
+        console.error('Error en query de proyectos:', error)
+        throw error
+      }
 
+      console.log('✅ Proyectos cargados:', data?.length || 0, data)
       setProyectos(data || [])
     } catch (error) {
-      console.error('Error al cargar proyectos:', error)
+      console.error('❌ Error al cargar proyectos:', error)
+      setProyectos([])
     } finally {
       setCargandoProyectos(false)
     }
@@ -93,7 +101,33 @@ export function useRegistrarInteres({ clienteId, onSuccess, onClose }: UseRegist
     }
 
     setCargandoViviendas(true)
+    console.log('🔍 Buscando manzanas para proyecto:', proyectoId)
     try {
+      // Primero obtenemos las manzanas del proyecto
+      const { data: manzanasData, error: manzanasError } = await supabase
+        .from('manzanas')
+        .select('id')
+        .eq('proyecto_id', proyectoId)
+
+      if (manzanasError) {
+        console.error('❌ Error al cargar manzanas:', manzanasError)
+        throw manzanasError
+      }
+
+      console.log('📦 Manzanas encontradas:', manzanasData?.length || 0, manzanasData)
+
+      const manzanaIds = manzanasData?.map((m) => m.id) || []
+
+      if (manzanaIds.length === 0) {
+        console.log('⚠️ No hay manzanas en este proyecto')
+        setViviendas([])
+        setCargandoViviendas(false)
+        return
+      }
+
+      console.log('🔍 Buscando viviendas en manzanas:', manzanaIds)
+
+      // Ahora obtenemos las viviendas de esas manzanas
       const { data, error } = await supabase
         .from('viviendas')
         .select(`
@@ -101,18 +135,23 @@ export function useRegistrarInteres({ clienteId, onSuccess, onClose }: UseRegist
           numero,
           valor_total,
           manzana_id,
-          manzanas!inner (
-            nombre,
-            proyecto_id
+          manzanas (
+            nombre
           )
         `)
-        .eq('manzanas.proyecto_id', proyectoId)
-        .eq('estado', 'Disponible')
+        .in('manzana_id', manzanaIds)
+        .eq('estado', 'disponible')
         .order('numero')
 
-      if (error) throw error
+      if (error) {
+        console.error('❌ Error en query de viviendas:', error)
+        throw error
+      }
 
-      // Mapear la respuesta al tipo correcto (manzanas es objeto, no array)
+      console.log('✅ Viviendas disponibles cargadas:', data?.length || 0)
+      console.log('📊 Datos de viviendas:', data)
+
+      // Mapear la respuesta al tipo correcto
       const viviendasMapeadas = (data || []).map((v: any) => ({
         id: v.id,
         numero: v.numero,
@@ -121,9 +160,11 @@ export function useRegistrarInteres({ clienteId, onSuccess, onClose }: UseRegist
         manzanas: v.manzanas,
       }))
 
+      console.log('🏠 Viviendas mapeadas:', viviendasMapeadas.length, viviendasMapeadas)
       setViviendas(viviendasMapeadas)
     } catch (error) {
       console.error('Error al cargar viviendas:', error)
+      setViviendas([])
     } finally {
       setCargandoViviendas(false)
     }
@@ -131,12 +172,14 @@ export function useRegistrarInteres({ clienteId, onSuccess, onClose }: UseRegist
 
   // Cargar proyectos al montar
   useEffect(() => {
+    console.log('🔄 Cargando proyectos...')
     cargarProyectos()
   }, [cargarProyectos])
 
   // Cargar viviendas cuando cambia el proyecto
   useEffect(() => {
     if (proyectoIdSeleccionado) {
+      console.log('🏗️ Proyecto seleccionado:', proyectoIdSeleccionado)
       cargarViviendas(proyectoIdSeleccionado)
       setValue('viviendaId', '') // Reset vivienda seleccionada
     } else {
@@ -149,7 +192,8 @@ export function useRegistrarInteres({ clienteId, onSuccess, onClose }: UseRegist
     if (viviendaIdSeleccionada) {
       const vivienda = viviendas.find((v) => v.id === viviendaIdSeleccionada)
       if (vivienda) {
-        setValue('valorNegociado', vivienda.valor_total)
+        console.log('🏠 Vivienda seleccionada:', vivienda.numero, '- Valor:', vivienda.valor_total)
+        setValue('valorEstimado', vivienda.valor_total)
       }
     }
   }, [viviendaIdSeleccionada, viviendas, setValue])
@@ -159,11 +203,9 @@ export function useRegistrarInteres({ clienteId, onSuccess, onClose }: UseRegist
     setErrorNegociacionExistente(false)
 
     try {
-      // Verificar si ya existe una negociación
-      const existe = await NegociacionesService.verificarNegociacionExistente(
-        clienteId,
-        data.viviendaId
-      )
+      // Verificar si ya existe un interés activo para esta vivienda
+      const interesesExistentes = await interesesService.obtenerInteresesCliente(clienteId, true)
+      const existe = interesesExistentes.some(i => i.vivienda_id === data.viviendaId)
 
       if (existe) {
         setErrorNegociacionExistente(true)
@@ -172,12 +214,14 @@ export function useRegistrarInteres({ clienteId, onSuccess, onClose }: UseRegist
       }
 
       // Registrar el interés
-      await NegociacionesService.registrarInteres({
-        clienteId,
-        viviendaId: data.viviendaId,
-        valorNegociado: data.valorNegociado,
-        descuentoAplicado: data.descuentoAplicado || 0,
+      await interesesService.crearInteres({
+        cliente_id: clienteId,
+        proyecto_id: data.proyectoId,
+        vivienda_id: data.viviendaId,
+        valor_estimado: data.valorEstimado,
         notas: data.notas,
+        origen: (data.origen as any) || 'Otro',
+        prioridad: (data.prioridad as any) || 'Media',
       })
 
       reset()
@@ -208,7 +252,7 @@ export function useRegistrarInteres({ clienteId, onSuccess, onClose }: UseRegist
     // Valores del form
     proyectoIdSeleccionado,
     viviendaIdSeleccionada,
-    valorNegociado,
+    valorEstimado,
 
     // React Hook Form
     register,

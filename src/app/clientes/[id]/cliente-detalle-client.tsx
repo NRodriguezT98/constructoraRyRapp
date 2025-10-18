@@ -1,11 +1,10 @@
 'use client'
 
 import { useAuth } from '@/contexts/auth-context'
-import { ModalRegistrarInteres } from '@/modules/clientes/components/modals/modal-registrar-interes'
+import { ModalCrearNegociacion, ModalRegistrarInteres } from '@/modules/clientes/components/modals'
 import { useDocumentosClienteStore } from '@/modules/clientes/documentos/store/documentos-cliente.store'
 import type { Cliente } from '@/modules/clientes/types'
 import { TIPOS_DOCUMENTO } from '@/modules/clientes/types'
-import { CategoriasManager } from '@/modules/documentos/components/categorias/categorias-manager'
 import { AnimatePresence, motion } from 'framer-motion'
 import {
     Activity,
@@ -13,10 +12,10 @@ import {
     ChevronRight,
     Edit2,
     FileText,
+    Handshake,
     Heart,
     Trash2,
-    User,
-    X,
+    User
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
@@ -66,13 +65,12 @@ export default function ClienteDetalleClient({ clienteId }: ClienteDetalleClient
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<TabType>('general')
   const [modalInteresAbierto, setModalInteresAbierto] = useState(false)
+  const [modalNegociacionAbierto, setModalNegociacionAbierto] = useState(false)
 
   // Store de documentos
   const {
     modalSubirAbierto,
-    modalCategoriasAbierto,
     cerrarModalSubir,
-    cerrarModalCategorias,
     cargarCategorias,
   } = useDocumentosClienteStore()
 
@@ -119,6 +117,29 @@ export default function ClienteDetalleClient({ clienteId }: ClienteDetalleClient
 
   const handleRegistrarInteres = () => {
     setModalInteresAbierto(true)
+  }
+
+  const handleCrearNegociacion = () => {
+    setModalNegociacionAbierto(true)
+  }
+
+  const handleNegociacionCreada = async (negociacionId: string) => {
+    setModalNegociacionAbierto(false)
+    console.log('Negociación creada:', negociacionId)
+    // TODO: Navegar al detalle de la negociación
+    // router.push(`/clientes/${clienteId}/negociaciones/${negociacionId}`)
+
+    // Recargar datos del cliente
+    const cargarCliente = async () => {
+      try {
+        const { clientesService } = await import('@/modules/clientes/services/clientes.service')
+        const clienteData = await clientesService.obtenerCliente(clienteId)
+        setCliente(clienteData)
+      } catch (error) {
+        console.error('Error al recargar cliente:', error)
+      }
+    }
+    await cargarCliente()
   }
 
   const handleInteresRegistrado = async () => {
@@ -253,6 +274,15 @@ export default function ClienteDetalleClient({ clienteId }: ClienteDetalleClient
             <div className={styles.headerClasses.actionsContainer}>
               <EstadoBadge estado={cliente.estado} />
               <motion.button
+                onClick={handleCrearNegociacion}
+                className='inline-flex items-center gap-2 rounded-lg border border-green-400/30 bg-green-500/80 px-4 py-2 text-sm font-medium text-white backdrop-blur-sm transition-colors hover:bg-green-600'
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <Handshake className='h-4 w-4' />
+                <span>Crear Negociación</span>
+              </motion.button>
+              <motion.button
                 onClick={handleEditar}
                 className='inline-flex items-center gap-2 rounded-lg border border-white/30 bg-white/20 px-4 py-2 text-sm font-medium text-white backdrop-blur-sm transition-colors hover:bg-white/30'
                 whileHover={{ scale: 1.05 }}
@@ -330,89 +360,22 @@ export default function ClienteDetalleClient({ clienteId }: ClienteDetalleClient
         </AnimatePresence>
       </div>
 
-      {/* Modal de Categorías */}
-      <AnimatePresence>
-        {modalCategoriasAbierto && user?.id && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className='fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4'
-            onClick={cerrarModalCategorias}
-          >
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              onClick={(e) => e.stopPropagation()}
-              className='w-full max-w-2xl rounded-2xl bg-white p-6 shadow-2xl dark:bg-gray-800'
-            >
-              <CategoriasManager
-                userId={user.id}
-                onClose={cerrarModalCategorias}
-              />
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Modal Registrar Interés */}
+      <ModalRegistrarInteres
+        isOpen={modalInteresAbierto}
+        onClose={() => setModalInteresAbierto(false)}
+        clienteId={clienteId}
+        onSuccess={handleInteresRegistrado}
+      />
 
-      {/* Modal de Subir Documento */}
-      <AnimatePresence>
-        {modalSubirAbierto && user?.id && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className='fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4'
-            onClick={cerrarModalSubir}
-          >
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              onClick={(e) => e.stopPropagation()}
-              className='w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl dark:bg-gray-800'
-            >
-              <div className='mb-6 flex items-center justify-between'>
-                <h2 className='text-2xl font-bold text-gray-900 dark:text-white'>
-                  Subir Documento
-                </h2>
-                <button
-                  onClick={cerrarModalSubir}
-                  className='rounded-lg p-2 transition-colors hover:bg-gray-100 dark:hover:bg-gray-700'
-                >
-                  <X className='h-5 w-5' />
-                </button>
-              </div>
-
-              <p className='mb-6 text-sm text-gray-600 dark:text-gray-400'>
-                Sube documentos del cliente como cédula, referencias, carta laboral, etc.
-              </p>
-
-              {/* TODO: Componente de upload */}
-              <div className='rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 p-12 text-center dark:border-gray-600 dark:bg-gray-900'>
-                <FileText className='mx-auto mb-4 h-12 w-12 text-gray-400' />
-                <p className='text-gray-600 dark:text-gray-400'>
-                  Componente de upload en desarrollo
-                </p>
-                <p className='mt-2 text-sm text-gray-500'>
-                  Próximamente: Drag & drop, validación, formulario completo
-                </p>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Modal de Registrar Interés */}
-      {user?.id && (
-        <ModalRegistrarInteres
-          isOpen={modalInteresAbierto}
-          onClose={() => setModalInteresAbierto(false)}
-          clienteId={clienteId}
-          onSuccess={handleInteresRegistrado}
-        />
-      )}
+      {/* Modal Crear Negociación */}
+      <ModalCrearNegociacion
+        isOpen={modalNegociacionAbierto}
+        onClose={() => setModalNegociacionAbierto(false)}
+        clienteId={clienteId}
+        clienteNombre={cliente?.nombre_completo}
+        onSuccess={handleNegociacionCreada}
+      />
     </div>
   )
 }

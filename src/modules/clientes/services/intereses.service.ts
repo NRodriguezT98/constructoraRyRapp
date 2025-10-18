@@ -32,7 +32,7 @@ class InteresesService {
         .eq('cliente_id', clienteId)
 
       if (soloActivos) {
-        query = query.eq('estado_interes', 'Activo')
+        query = query.eq('estado', 'Activo')
       }
 
       const { data, error } = await query.order('fecha_interes', {
@@ -49,15 +49,15 @@ class InteresesService {
           proyecto_id: row.proyecto_id,
           vivienda_id: row.vivienda_id,
           notas: row.notas,
-          estado: row.estado_interes as EstadoInteres,
+          estado: row.estado as EstadoInteres,
           motivo_descarte: row.motivo_descarte,
           fecha_interes: row.fecha_interes,
           fecha_actualizacion: row.fecha_actualizacion,
           usuario_creacion: row.usuario_creacion,
           proyecto_nombre: row.proyecto_nombre,
-          proyecto_ubicacion: row.proyecto_ubicacion,
+          proyecto_estado: row.proyecto_estado,
           vivienda_numero: row.vivienda_numero,
-          vivienda_precio: row.vivienda_precio,
+          vivienda_valor: row.vivienda_valor,
           vivienda_estado: row.vivienda_estado,
           manzana_nombre: row.manzana_nombre,
         })) || []
@@ -82,7 +82,7 @@ class InteresesService {
         .eq('proyecto_id', proyectoId)
 
       if (soloActivos) {
-        query = query.eq('estado_interes', 'Activo')
+        query = query.eq('estado', 'Activo')
       }
 
       const { data, error } = await query.order('fecha_interes', {
@@ -98,15 +98,15 @@ class InteresesService {
           proyecto_id: row.proyecto_id,
           vivienda_id: row.vivienda_id,
           notas: row.notas,
-          estado: row.estado_interes as EstadoInteres,
+          estado: row.estado as EstadoInteres,
           motivo_descarte: row.motivo_descarte,
           fecha_interes: row.fecha_interes,
           fecha_actualizacion: row.fecha_actualizacion,
           usuario_creacion: row.usuario_creacion,
           proyecto_nombre: row.proyecto_nombre,
-          proyecto_ubicacion: row.proyecto_ubicacion,
+          proyecto_estado: row.proyecto_estado,
           vivienda_numero: row.vivienda_numero,
-          vivienda_precio: row.vivienda_precio,
+          vivienda_valor: row.vivienda_valor,
           vivienda_estado: row.vivienda_estado,
           manzana_nombre: row.manzana_nombre,
         })) || []

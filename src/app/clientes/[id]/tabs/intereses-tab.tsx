@@ -1,19 +1,38 @@
 'use client'
 
+/**
+ * Tab de Intereses - Historial Simple
+ *
+ * Muestra todos los intereses del cliente con:
+ * - Estado (Activo/Descartado)
+ * - Proyecto y vivienda (si aplica)
+ * - Origen (cómo se enteró)
+ * - Notas y fechas
+ * - Acciones: Descartar, Convertir a Negociación
+ *
+ * ⚠️ NOMBRES VERIFICADOS EN: docs/DATABASE-SCHEMA-REFERENCE.md
+ */
+
+import { useListaIntereses } from '@/modules/clientes/hooks'
 import type { Cliente } from '@/modules/clientes/types'
-import { ESTADOS_INTERES } from '@/modules/clientes/types'
 import { formatDistanceToNow } from 'date-fns'
 import { es } from 'date-fns/locale'
 import {
+    AlertCircle,
     Building2,
     CheckCircle2,
     Clock,
     Heart,
     Home,
+    Mail,
     MessageSquare,
+    Phone,
     Plus,
     TrendingUp,
+    User,
+    X,
 } from 'lucide-react'
+import { useState } from 'react'
 import * as styles from '../cliente-detalle.styles'
 
 interface InteresesTabProps {
@@ -21,11 +40,52 @@ interface InteresesTabProps {
   onRegistrarInteres?: () => void
 }
 
+// Iconos para origen
+const ICONOS_ORIGEN: Record<string, typeof Phone> = {
+  'Visita Presencial': User,
+  'Llamada Telefónica': Phone,
+  'WhatsApp': MessageSquare,
+  'Email': Mail,
+  'Redes Sociales': Heart,
+  'Referido': User,
+  'Sitio Web': Building2,
+  'Otro': AlertCircle,
+}
+
 export function InteresesTab({ cliente, onRegistrarInteres }: InteresesTabProps) {
-  const intereses = cliente.intereses || []
+  const { intereses, loading, stats, descartarInteres, filtrarPorEstado, estadoFiltro, recargar } = useListaIntereses(cliente.id)
+  const [descartando, setDescartando] = useState<string | null>(null)
+
   const estadisticas = cliente.estadisticas
 
-  if (intereses.length === 0) {
+  // Descartar interés
+  const handleDescartar = async (interesId: string) => {
+    if (!confirm('¿Estás seguro de descartar este interés?')) return
+
+    setDescartando(interesId)
+    try {
+      await descartarInteres(interesId, 'Cliente ya no está interesado')
+      await recargar()
+    } catch (error) {
+      console.error('Error al descartar:', error)
+      alert('Error al descartar el interés')
+    } finally {
+      setDescartando(null)
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className='flex items-center justify-center py-12'>
+        <div className='text-center'>
+          <div className='mx-auto h-12 w-12 animate-spin rounded-full border-4 border-purple-200 border-t-purple-600'></div>
+          <p className='mt-4 text-sm text-gray-600 dark:text-gray-400'>Cargando intereses...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (intereses.length === 0 && !estadoFiltro) {
     return (
       <div className={styles.emptyStateClasses.container}>
         <Heart className={styles.emptyStateClasses.icon} />
@@ -107,8 +167,41 @@ export function InteresesTab({ cliente, onRegistrarInteres }: InteresesTabProps)
         </div>
       )}
 
-      {/* Botón para registrar nuevo interés */}
-      <div className='flex justify-end'>
+      {/* Filtros y Estadísticas de Intereses */}
+      <div className='flex flex-wrap items-center justify-between gap-4'>
+        <div className='flex flex-wrap gap-2'>
+          <button
+            onClick={() => filtrarPorEstado(null)}
+            className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+              estadoFiltro === null
+                ? 'bg-purple-600 text-white'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
+            }`}
+          >
+            Todos ({stats.total})
+          </button>
+          <button
+            onClick={() => filtrarPorEstado('Activo')}
+            className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+              estadoFiltro === 'Activo'
+                ? 'bg-green-600 text-white'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
+            }`}
+          >
+            🟢 Activos ({stats.activos})
+          </button>
+          <button
+            onClick={() => filtrarPorEstado('Descartado')}
+            className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+              estadoFiltro === 'Descartado'
+                ? 'bg-gray-600 text-white'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
+            }`}
+          >
+            ⚪ Descartados ({stats.descartados})
+          </button>
+        </div>
+
         <button
           onClick={onRegistrarInteres}
           className='inline-flex items-center gap-2 rounded-lg bg-purple-600 px-4 py-2 text-sm font-medium text-white hover:bg-purple-700 transition-colors'
@@ -119,76 +212,133 @@ export function InteresesTab({ cliente, onRegistrarInteres }: InteresesTabProps)
       </div>
 
       {/* Lista de Intereses */}
-      <div className='space-y-4'>
-        {intereses.map((interes) => (
-          <div
-            key={interes.id}
-            className='rounded-xl border-2 border-purple-200 bg-white p-5 shadow-sm transition-all hover:shadow-md dark:border-purple-700 dark:bg-purple-900/10'
-          >
-            {/* Header del interés */}
-            <div className='mb-3 flex items-start justify-between'>
-              <div className='flex items-center gap-3'>
-                <div className='flex h-12 w-12 items-center justify-center rounded-xl bg-purple-100 dark:bg-purple-900/30'>
-                  <Building2 className='h-6 w-6 text-purple-600 dark:text-purple-400' />
+      {intereses.length === 0 ? (
+        <div className='rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 p-8 text-center dark:border-gray-700 dark:bg-gray-800/50'>
+          <p className='text-gray-600 dark:text-gray-400'>
+            No hay intereses con el filtro seleccionado
+          </p>
+        </div>
+      ) : (
+        <div className='space-y-4'>
+          {intereses.map((interes) => {
+            const IconoOrigen = ICONOS_ORIGEN[interes.origen || 'Otro'] || AlertCircle
+            const esActivo = interes.estado === 'Activo'
+
+            return (
+              <div
+                key={interes.id}
+                className={`rounded-xl border-2 p-5 shadow-sm transition-all hover:shadow-md ${
+                  esActivo
+                    ? 'border-purple-200 bg-white dark:border-purple-700 dark:bg-purple-900/10'
+                    : 'border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800/50'
+                }`}
+              >
+                {/* Header del interés */}
+                <div className='mb-3 flex items-start justify-between'>
+                  <div className='flex items-center gap-3'>
+                    <div className={`flex h-12 w-12 items-center justify-center rounded-xl ${
+                      esActivo
+                        ? 'bg-purple-100 dark:bg-purple-900/30'
+                        : 'bg-gray-200 dark:bg-gray-700'
+                    }`}>
+                      <Building2 className={`h-6 w-6 ${
+                        esActivo
+                          ? 'text-purple-600 dark:text-purple-400'
+                          : 'text-gray-500 dark:text-gray-400'
+                      }`} />
+                    </div>
+                    <div>
+                      <h4 className='font-semibold text-gray-900 dark:text-gray-100'>
+                        {interes.proyecto_nombre}
+                      </h4>
+                      {interes.origen && (
+                        <div className='mt-1 flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400'>
+                          <IconoOrigen className='h-3.5 w-3.5' />
+                          <span>{interes.origen}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <span
+                    className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                      esActivo
+                        ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                        : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400'
+                    }`}
+                  >
+                    {esActivo ? '🟢 Activo' : '⚪ Descartado'}
+                  </span>
                 </div>
-                <div>
-                  <h4 className='font-semibold text-gray-900 dark:text-gray-100'>
-                    {interes.proyecto_nombre}
-                  </h4>
-                  {interes.proyecto_ubicacion && (
-                    <p className='text-sm text-gray-500 dark:text-gray-400'>
-                      {interes.proyecto_ubicacion}
+
+                {/* Vivienda (si existe) */}
+                {interes.vivienda_numero && (
+                  <div className={`mb-3 flex items-center gap-2 rounded-lg px-3 py-2 ${
+                    esActivo
+                      ? 'bg-purple-50 dark:bg-purple-900/20'
+                      : 'bg-gray-100 dark:bg-gray-700/50'
+                  }`}>
+                    <Home className={`h-4 w-4 ${
+                      esActivo
+                        ? 'text-purple-600 dark:text-purple-400'
+                        : 'text-gray-500 dark:text-gray-400'
+                    }`} />
+                    <span className={`text-sm font-medium ${
+                      esActivo
+                        ? 'text-purple-900 dark:text-purple-100'
+                        : 'text-gray-700 dark:text-gray-300'
+                    }`}>
+                      {interes.manzana_nombre ? `${interes.manzana_nombre} - ` : ''}Casa {interes.vivienda_numero}
+                    </span>
+                    {interes.vivienda_valor && (
+                      <span className='ml-auto text-sm font-semibold text-gray-900 dark:text-gray-100'>
+                        ${interes.vivienda_valor.toLocaleString('es-CO')}
+                      </span>
+                    )}
+                  </div>
+                )}
+
+                {/* Notas (si existen) */}
+                {interes.notas && (
+                  <div className='mb-3 flex items-start gap-2 rounded-lg bg-gray-50 px-3 py-2 dark:bg-gray-800/50'>
+                    <MessageSquare className='mt-0.5 h-4 w-4 flex-shrink-0 text-purple-500' />
+                    <p className='flex-1 text-sm italic text-gray-600 dark:text-gray-400'>
+                      &quot;{interes.notas}&quot;
                     </p>
+                  </div>
+                )}
+
+                {/* Footer: Fecha y Acciones */}
+                <div className='flex items-center justify-between'>
+                  <div className='flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400'>
+                    <Clock className='h-3.5 w-3.5' />
+                    <span>
+                      {formatDistanceToNow(new Date(interes.fecha_interes), {
+                        addSuffix: true,
+                        locale: es,
+                      })}
+                    </span>
+                  </div>
+
+                  {/* Acciones solo para intereses activos */}
+                  {esActivo && (
+                    <div className='flex items-center gap-2'>
+                      <button
+                        onClick={() => handleDescartar(interes.id)}
+                        disabled={descartando === interes.id}
+                        className='inline-flex items-center gap-1.5 rounded-lg bg-red-100 px-3 py-1.5 text-xs font-medium text-red-700 hover:bg-red-200 transition-colors disabled:opacity-50 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-900/50'
+                      >
+                        <X className='h-3.5 w-3.5' />
+                        {descartando === interes.id ? 'Descartando...' : 'Descartar'}
+                      </button>
+                      {/* TODO: Botón convertir a negociación */}
+                    </div>
                   )}
                 </div>
               </div>
-              <span
-                className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                  interes.estado === 'Activo'
-                    ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                    : interes.estado === 'Convertido'
-                      ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
-                      : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400'
-                }`}
-              >
-                {ESTADOS_INTERES[interes.estado]}
-              </span>
-            </div>
-
-            {/* Vivienda (si existe) */}
-            {interes.vivienda_numero && (
-              <div className='mb-3 flex items-center gap-2 rounded-lg bg-purple-50 px-3 py-2 dark:bg-purple-900/20'>
-                <Home className='h-4 w-4 text-purple-600 dark:text-purple-400' />
-                <span className='text-sm font-medium text-purple-900 dark:text-purple-100'>
-                  Manzana {interes.manzana_nombre} - Casa {interes.vivienda_numero}
-                </span>
-              </div>
-            )}
-
-            {/* Notas (si existen) */}
-            {interes.notas && (
-              <div className='mb-3 flex items-start gap-2 rounded-lg bg-gray-50 px-3 py-2 dark:bg-gray-800/50'>
-                <MessageSquare className='mt-0.5 h-4 w-4 flex-shrink-0 text-purple-500' />
-                <p className='flex-1 text-sm italic text-gray-600 dark:text-gray-400'>
-                  {interes.notas}
-                </p>
-              </div>
-            )}
-
-            {/* Fecha */}
-            <div className='flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400'>
-              <Clock className='h-3.5 w-3.5' />
-              <span>
-                Registrado{' '}
-                {formatDistanceToNow(new Date(interes.fecha_interes), {
-                  addSuffix: true,
-                  locale: es,
-                })}
-              </span>
-            </div>
-          </div>
-        ))}
-      </div>
+            )
+          })}
+        </div>
+      )}
     </div>
   )
 }
