@@ -1,17 +1,23 @@
 /**
  * Hook: useCrearNegociacion
  *
- * Gestiona la creación de negociaciones vinculando Cliente + Vivienda
+ * Gestiona la creación de negociaciones vinculando Cliente + Vivienda + Fuentes de Pago
  *
  * ⚠️ NOMBRES DE CAMPOS VERIFICADOS EN: docs/DATABASE-SCHEMA-REFERENCE.md
  *
  * Campos usados:
  * - negociaciones: cliente_id, vivienda_id, valor_negociado, descuento_aplicado, notas, estado
  * - viviendas: valor_total
+ * - fuentes_pago: negociacion_id, tipo, monto_aprobado, entidad, numero_referencia, permite_multiples_abonos
+ *
+ * 🔄 RETROCOMPATIBILIDAD:
+ * - El campo `fuentes_pago` es OPCIONAL para mantener compatibilidad con modal antiguo
+ * - Modal nuevo (modal-crear-negociacion-nuevo.tsx) → SÍ envía fuentes_pago
+ * - Modal viejo (modal-crear-negociacion.tsx) → NO envía fuentes_pago (aún funciona)
  */
 
-import type { Negociacion } from '@/modules/clientes/services/negociaciones.service'
 import { negociacionesService } from '@/modules/clientes/services/negociaciones.service'
+import type { CrearFuentePagoDTO, Negociacion } from '@/modules/clientes/types'
 import { useCallback, useState } from 'react'
 
 interface FormDataNegociacion {
@@ -20,6 +26,9 @@ interface FormDataNegociacion {
   valor_negociado: number
   descuento_aplicado: number
   notas: string
+
+  // ⭐ NUEVO: Fuentes de pago (OPCIONAL para retrocompatibilidad con modal viejo)
+  fuentes_pago?: CrearFuentePagoDTO[]
 }
 
 interface UseCrearNegociacionReturn {
@@ -80,11 +89,67 @@ export function useCrearNegociacion(): UseCrearNegociacionReturn {
       errores.push('El valor total (valor negociado - descuento) debe ser mayor a 0')
     }
 
+    // ⭐ VALIDACIONES DE FUENTES DE PAGO (solo si se proporcionan)
+    if (datos.fuentes_pago && datos.fuentes_pago.length > 0) {
+      // Validar que exista Cuota Inicial
+      const tieneCuotaInicial = datos.fuentes_pago.some(f => f.tipo === 'Cuota Inicial')
+      if (!tieneCuotaInicial) {
+        errores.push('Debe configurar la Cuota Inicial (obligatoria)')
+      }
+
+      // Validar que la suma de fuentes = valor total
+      const sumaFuentes = datos.fuentes_pago.reduce((sum, f) => sum + f.monto_aprobado, 0)
+      if (Math.abs(sumaFuentes - valorTotal) > 0.01) {
+        // Tolerancia de 1 centavo por redondeo
+        errores.push(
+          `La suma de fuentes de pago ($${sumaFuentes.toLocaleString()}) debe ser igual al valor total ($${valorTotal.toLocaleString()})`
+        )
+      }
+
+      // Validar montos individuales
+      datos.fuentes_pago.forEach(fuente => {
+        if (!fuente.monto_aprobado || fuente.monto_aprobado <= 0) {
+          errores.push(`${fuente.tipo}: El monto debe ser mayor a 0`)
+        }
+
+        // Validar datos específicos por tipo
+        if (fuente.tipo !== 'Cuota Inicial') {
+          if (!fuente.entidad || fuente.entidad.trim() === '') {
+            errores.push(`${fuente.tipo}: Debe especificar la entidad`)
+          }
+          if (!fuente.numero_referencia || fuente.numero_referencia.trim() === '') {
+            errores.push(`${fuente.tipo}: Debe especificar el número de referencia`)
+          }
+        }
+      })
+    }
+
     return {
       valido: errores.length === 0,
       errores,
     }
   }, [calcularValorTotal])
+
+  /**
+   * Validar que el cliente tenga documento de identidad
+   */
+  const validarDocumentoIdentidad = useCallback(async (clienteId: string): Promise<boolean> => {
+    try {
+      const { clientesService } = await import('@/modules/clientes/services/clientes.service')
+      const cliente = await clientesService.obtenerCliente(clienteId)
+
+      if (!cliente.documento_identidad_url) {
+        setError('El cliente debe tener cargada su cédula de ciudadanía antes de crear una negociación')
+        return false
+      }
+
+      return true
+    } catch (err) {
+      console.error('Error validando documento:', err)
+      setError('Error al validar el documento del cliente')
+      return false
+    }
+  }, [])
 
   /**
    * Crear negociación
@@ -103,6 +168,13 @@ export function useCrearNegociacion(): UseCrearNegociacionReturn {
         console.error('❌ Validación fallida:', validacion.errores)
         setError(mensajeError)
         return null
+      }
+
+      // ⚠️ VALIDACIÓN CRÍTICA: Verificar que el cliente tenga cédula cargada
+      console.log('🔍 Validando documento de identidad del cliente...')
+      const tieneDocumento = await validarDocumentoIdentidad(datos.cliente_id)
+      if (!tieneDocumento) {
+        return null // Error ya fue seteado en validarDocumentoIdentidad
       }
 
       // Verificar si ya existe negociación activa
@@ -127,9 +199,15 @@ export function useCrearNegociacion(): UseCrearNegociacionReturn {
         valor_negociado: datos.valor_negociado,
         descuento_aplicado: datos.descuento_aplicado,
         notas: datos.notas,
+        fuentes_pago: datos.fuentes_pago, // ⭐ NUEVO
       })
 
       console.log('✅ Negociación creada exitosamente:', negociacion.id)
+
+      // Disparar evento para refrescar tab de negociaciones
+      window.dispatchEvent(new Event('negociacion-creada'))
+      console.log('📢 Evento "negociacion-creada" disparado')
+
       setNegociacionCreada(negociacion)
       return negociacion
     } catch (err) {
@@ -140,7 +218,7 @@ export function useCrearNegociacion(): UseCrearNegociacionReturn {
     } finally {
       setCreando(false)
     }
-  }, [validarDatos])
+  }, [validarDatos, validarDocumentoIdentidad])
 
   /**
    * Limpiar estado

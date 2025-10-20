@@ -87,6 +87,7 @@ export class DocumentosClienteService {
       fecha_documento,
       fecha_vencimiento,
       es_importante,
+      es_documento_identidad,
       metadata,
     } = params
 
@@ -126,6 +127,7 @@ export class DocumentosClienteService {
         fecha_documento: fecha_documento || null,
         fecha_vencimiento: fecha_vencimiento || null,
         es_importante: es_importante || false,
+        es_documento_identidad: es_documento_identidad || false,
         metadata: metadata || {},
         version: 1,
         es_version_actual: true,
@@ -344,5 +346,47 @@ export class DocumentosClienteService {
     })
 
     return stats
+  }
+
+  /**
+   * Verificar si el cliente tiene cédula activa (requerido para negociaciones)
+   */
+  static async tieneCedulaActiva(clienteId: string): Promise<boolean> {
+    const { data, error } = await supabase
+      .from('documentos_cliente')
+      .select('id')
+      .eq('cliente_id', clienteId)
+      .eq('es_documento_identidad', true)
+      .eq('estado', 'activo')
+      .eq('es_version_actual', true)
+      .limit(1)
+
+    if (error) throw error
+    return (data && data.length > 0) || false
+  }
+
+  /**
+   * Obtener documento de identidad del cliente
+   */
+  static async obtenerCedula(
+    clienteId: string
+  ): Promise<DocumentoCliente | null> {
+    const { data, error } = await supabase
+      .from('documentos_cliente')
+      .select('*')
+      .eq('cliente_id', clienteId)
+      .eq('es_documento_identidad', true)
+      .eq('estado', 'activo')
+      .eq('es_version_actual', true)
+      .order('fecha_creacion', { ascending: false })
+      .limit(1)
+      .single()
+
+    if (error) {
+      if (error.code === 'PGRST116') return null // No encontrado
+      throw error
+    }
+
+    return data
   }
 }

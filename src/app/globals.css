@@ -111,4 +111,16 @@
   .animate-shimmer {
     animation: shimmer 2s infinite;
   }
+
+  /* Fix para doble flecha en selects */
+  select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+  }
+
+  /* Evitar estilos de navegador por defecto en selects */
+  select::-ms-expand {
+    display: none;
+  }
 }

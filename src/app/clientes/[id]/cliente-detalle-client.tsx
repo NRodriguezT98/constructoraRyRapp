@@ -1,32 +1,33 @@
 'use client'
 
 import { useAuth } from '@/contexts/auth-context'
-import { ModalCrearNegociacion, ModalRegistrarInteres } from '@/modules/clientes/components/modals'
+import { ModalRegistrarInteres } from '@/modules/clientes/components/modals'
 import { useDocumentosClienteStore } from '@/modules/clientes/documentos/store/documentos-cliente.store'
 import type { Cliente } from '@/modules/clientes/types'
 import { TIPOS_DOCUMENTO } from '@/modules/clientes/types'
 import { AnimatePresence, motion } from 'framer-motion'
 import {
-    Activity,
-    ArrowLeft,
-    ChevronRight,
-    Edit2,
-    FileText,
-    Handshake,
-    Heart,
-    Trash2,
-    User
+  Activity,
+  ArrowLeft,
+  ChevronRight,
+  Edit2,
+  FileText,
+  Handshake,
+  Heart,
+  Trash2,
+  User,
+  Wallet,
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import * as styles from './cliente-detalle.styles'
-import { ActividadTab, DocumentosTab, GeneralTab, InteresesTab } from './tabs'
+import { ActividadTab, DocumentosTab, GeneralTab, InteresesTab, NegociacionesTab } from './tabs'
 
 interface ClienteDetalleClientProps {
   clienteId: string
 }
 
-type TabType = 'general' | 'intereses' | 'documentos' | 'actividad'
+type TabType = 'general' | 'intereses' | 'negociaciones' | 'documentos' | 'actividad'
 
 // Badge de estado
 function EstadoBadge({ estado }: { estado: string }) {
@@ -65,7 +66,6 @@ export default function ClienteDetalleClient({ clienteId }: ClienteDetalleClient
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<TabType>('general')
   const [modalInteresAbierto, setModalInteresAbierto] = useState(false)
-  const [modalNegociacionAbierto, setModalNegociacionAbierto] = useState(false)
 
   // Store de documentos
   const {
@@ -99,6 +99,35 @@ export default function ClienteDetalleClient({ clienteId }: ClienteDetalleClient
     }
   }, [user?.id, cargarCategorias])
 
+  // Listener para cambio de tab (desde otros componentes)
+  useEffect(() => {
+    const handleCambiarTab = (event: any) => {
+      const nuevoTab = event.detail as TabType;
+      console.log('Cambiando a tab:', nuevoTab);
+      setActiveTab(nuevoTab);
+    };
+
+    window.addEventListener('cambiar-tab', handleCambiarTab);
+    return () => window.removeEventListener('cambiar-tab', handleCambiarTab);
+  }, []);
+
+  // Listener para actualización de cliente (cuando se sube cédula)
+  useEffect(() => {
+    const handleClienteActualizado = async () => {
+      console.log('Cliente actualizado, recargando datos...');
+      try {
+        const { clientesService } = await import('@/modules/clientes/services/clientes.service');
+        const clienteData = await clientesService.obtenerCliente(clienteId);
+        setCliente(clienteData);
+      } catch (error) {
+        console.error('Error al recargar cliente:', error);
+      }
+    };
+
+    window.addEventListener('cliente-actualizado', handleClienteActualizado);
+    return () => window.removeEventListener('cliente-actualizado', handleClienteActualizado);
+  }, [clienteId]);
+
   const handleEditar = () => {
     console.log('Editar cliente:', clienteId)
     // TODO: Abrir modal de edición o navegar a página de edición
@@ -120,26 +149,8 @@ export default function ClienteDetalleClient({ clienteId }: ClienteDetalleClient
   }
 
   const handleCrearNegociacion = () => {
-    setModalNegociacionAbierto(true)
-  }
-
-  const handleNegociacionCreada = async (negociacionId: string) => {
-    setModalNegociacionAbierto(false)
-    console.log('Negociación creada:', negociacionId)
-    // TODO: Navegar al detalle de la negociación
-    // router.push(`/clientes/${clienteId}/negociaciones/${negociacionId}`)
-
-    // Recargar datos del cliente
-    const cargarCliente = async () => {
-      try {
-        const { clientesService } = await import('@/modules/clientes/services/clientes.service')
-        const clienteData = await clientesService.obtenerCliente(clienteId)
-        setCliente(clienteData)
-      } catch (error) {
-        console.error('Error al recargar cliente:', error)
-      }
-    }
-    await cargarCliente()
+    // Navegar a la vista completa de crear negociación
+    router.push(`/clientes/${clienteId}/negociaciones/crear?nombre=${encodeURIComponent(cliente?.nombre_completo || '')}` as any)
   }
 
   const handleInteresRegistrado = async () => {
@@ -199,6 +210,12 @@ export default function ClienteDetalleClient({ clienteId }: ClienteDetalleClient
       label: 'Intereses',
       icon: Heart,
       count: cliente.intereses?.length || 0,
+    },
+    {
+      id: 'negociaciones' as const,
+      label: 'Negociaciones',
+      icon: Wallet,
+      count: (cliente as any).negociaciones?.length || 0,
     },
     {
       id: 'documentos' as const,
@@ -354,6 +371,9 @@ export default function ClienteDetalleClient({ clienteId }: ClienteDetalleClient
                 onRegistrarInteres={handleRegistrarInteres}
               />
             )}
+            {activeTab === 'negociaciones' && (
+              <NegociacionesTab cliente={cliente} />
+            )}
             {activeTab === 'documentos' && <DocumentosTab cliente={cliente} />}
             {activeTab === 'actividad' && <ActividadTab clienteId={clienteId} />}
           </motion.div>
@@ -366,15 +386,6 @@ export default function ClienteDetalleClient({ clienteId }: ClienteDetalleClient
         onClose={() => setModalInteresAbierto(false)}
         clienteId={clienteId}
         onSuccess={handleInteresRegistrado}
-      />
-
-      {/* Modal Crear Negociación */}
-      <ModalCrearNegociacion
-        isOpen={modalNegociacionAbierto}
-        onClose={() => setModalNegociacionAbierto(false)}
-        clienteId={clienteId}
-        clienteNombre={cliente?.nombre_completo}
-        onSuccess={handleNegociacionCreada}
       />
     </div>
   )

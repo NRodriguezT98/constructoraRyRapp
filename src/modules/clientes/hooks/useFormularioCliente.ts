@@ -4,6 +4,7 @@
  */
 
 import { useCallback, useEffect, useState } from 'react'
+import { clientesService } from '../services/clientes.service'
 import type {
     ActualizarClienteDTO,
     CrearClienteDTO,
@@ -115,8 +116,9 @@ export function useFormularioCliente({
   /**
    * Validar Step 0: Información Personal
    * Campos obligatorios: nombres, apellidos, tipo_documento, numero_documento
+   * ⚠️ VALIDACIÓN ASYNC: Verifica duplicados en la base de datos
    */
-  const validarStep0 = useCallback((): boolean => {
+  const validarStep0 = useCallback(async (): Promise<boolean> => {
     const nuevosErrores: Record<string, string> = {}
 
     // Nombres (requerido)
@@ -139,11 +141,30 @@ export function useFormularioCliente({
       nuevosErrores.numero_documento = 'El número de documento es requerido'
     } else if (!/^[0-9]+$/.test(formData.numero_documento)) {
       nuevosErrores.numero_documento = 'Solo se permiten números'
+    } else if (!clienteInicial?.id) {
+      // ⚠️ VALIDACIÓN CRÍTICA: Verificar duplicados (solo para clientes nuevos)
+      try {
+        console.log('🔍 Validando duplicados en Step 0...')
+        const clienteExistente = await clientesService.buscarPorDocumento(
+          formData.tipo_documento,
+          formData.numero_documento
+        )
+
+        if (clienteExistente) {
+          nuevosErrores.numero_documento = `Ya existe un cliente con este documento: ${clienteExistente.nombres} ${clienteExistente.apellidos}`
+          console.error('❌ Cliente duplicado encontrado en Step 0')
+        } else {
+          console.log('✅ No hay duplicados - Step 0 OK')
+        }
+      } catch (error) {
+        console.error('❌ Error verificando duplicados:', error)
+        nuevosErrores.numero_documento = 'Error al verificar duplicados. Intenta de nuevo.'
+      }
     }
 
     setErrors(nuevosErrores)
     return Object.keys(nuevosErrores).length === 0
-  }, [formData])
+  }, [formData, clienteInicial?.id])
 
   /**
    * Validar Step 1: Información de Contacto

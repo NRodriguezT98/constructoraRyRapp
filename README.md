@@ -7,12 +7,21 @@
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)
 ![Tailwind](https://img.shields.io/badge/Tailwind-3.0-cyan)
 
-## � Inicio Rápido
+## 🚨 TODOs Críticos Antes de Producción
+
+⚠️ **IMPORTANTE**: Hay funcionalidad deshabilitada temporalmente:
+
+- 🔴 **[docs/TODO-CRITICO.md](./docs/TODO-CRITICO.md)** - Lista completa de pendientes bloqueantes
+- 🔴 **[docs/PENDIENTES-Y-PROXIMOS-PASOS.md](./docs/PENDIENTES-Y-PROXIMOS-PASOS.md)** - Próximos pasos
+
+**Buscar en código**: `⚠️ BYPASS TEMPORAL` para ver validaciones temporalmente deshabilitadas
+
+## 🎯 Inicio Rápido
 
 **¿Primera vez aquí?** Lee estos documentos en orden:
 
-1. 📄 **[QUICK-START.md](./QUICK-START.md)** - Estar desarrollando en 45 minutos
-2. �📋 **[LISTO-PARA-DESARROLLAR.md](./LISTO-PARA-DESARROLLAR.md)** - ¿Estás listo para desarrollar?
+1. 📄 **[docs/01-setup/QUICK-START.md](./docs/01-setup/QUICK-START.md)** - Estar desarrollando en 45 minutos
+2. 📋 **[docs/01-setup/LISTO-PARA-DESARROLLAR.md](./docs/01-setup/LISTO-PARA-DESARROLLAR.md)** - ¿Estás listo para desarrollar?
 3. 🗄️ **[docs/SUPABASE-SETUP-RAPIDO.md](./docs/SUPABASE-SETUP-RAPIDO.md)** - Configurar base de datos (30 min)
 
 ---
@@ -135,10 +144,11 @@ src/
 
 ### Documentación Detallada
 
-- 📐 [ARCHITECTURE.md](./ARCHITECTURE.md) - Arquitectura completa
-- 📋 [MODULE_TEMPLATE.md](./MODULE_TEMPLATE.md) - Template para nuevos módulos
-- 🌍 [SHARED_INFRASTRUCTURE.md](./SHARED_INFRASTRUCTURE.md) - Recursos compartidos
-- 📊 [PROJECT_INDEX.md](./PROJECT_INDEX.md) - Índice general del proyecto
+- � **[docs/INDEX.md](./docs/INDEX.md)** ⭐ - **ÍNDICE COMPLETO DE DOCUMENTACIÓN**
+- 🗄️ **[supabase/INDEX.md](./supabase/INDEX.md)** ⭐ - **ÍNDICE DE SCRIPTS SQL**
+- �📐 [docs/02-arquitectura/ARCHITECTURE.md](./docs/02-arquitectura/ARCHITECTURE.md) - Arquitectura completa
+- 📋 [docs/02-arquitectura/MODULE_TEMPLATE.md](./docs/02-arquitectura/MODULE_TEMPLATE.md) - Template para nuevos módulos
+- 🌍 [docs/02-arquitectura/SHARED_INFRASTRUCTURE.md](./docs/02-arquitectura/SHARED_INFRASTRUCTURE.md) - Recursos compartidos
 
 ## 📁 Estructura del Proyecto
 
@@ -318,19 +328,20 @@ npm install
 
 ### 🔥 Documentación Esencial (Lee esto primero)
 
-- **[QUICK-START.md](./QUICK-START.md)** - Guía rápida de 45 minutos
-- **[LISTO-PARA-DESARROLLAR.md](./LISTO-PARA-DESARROLLAR.md)** - ¿Estás listo?
+- **📚 [docs/INDEX.md](./docs/INDEX.md)** ⭐⭐⭐ - **ÍNDICE COMPLETO DE TODA LA DOCUMENTACIÓN**
+- **🗄️ [supabase/INDEX.md](./supabase/INDEX.md)** ⭐⭐⭐ - **ÍNDICE DE TODOS LOS SQL**
+- **[docs/01-setup/QUICK-START.md](./docs/01-setup/QUICK-START.md)** - Guía rápida de 45 minutos
+- **[docs/01-setup/LISTO-PARA-DESARROLLAR.md](./docs/01-setup/LISTO-PARA-DESARROLLAR.md)** - ¿Estás listo?
 - **[docs/EVALUACION-BASES.md](./docs/EVALUACION-BASES.md)** - Estado completo del proyecto
 - **[docs/SUPABASE-SETUP-RAPIDO.md](./docs/SUPABASE-SETUP-RAPIDO.md)** - Configurar DB en 30 min
 
 ### 📖 Documentación Interna
 
-- [Arquitectura](./ARCHITECTURE.md)
-- [Template de Módulos](./MODULE_TEMPLATE.md)
-- [Guía de Estilos](./docs/GUIA-ESTILOS.md)
-- [Shared Resources](./src/shared/README.md)
-- [Índice del Proyecto](./PROJECT_INDEX.md)
-- [Índice de Documentos](./DOCS_INDEX.md) - Todos los documentos
+- [docs/02-arquitectura/ARCHITECTURE.md](./docs/02-arquitectura/ARCHITECTURE.md) - Arquitectura
+- [docs/02-arquitectura/MODULE_TEMPLATE.md](./docs/02-arquitectura/MODULE_TEMPLATE.md) - Template de Módulos
+- [docs/GUIA-ESTILOS.md](./docs/GUIA-ESTILOS.md) - Guía de Estilos
+- [src/shared/README.md](./src/shared/README.md) - Shared Resources
+- [docs/DATABASE-SCHEMA-REFERENCE.md](./docs/DATABASE-SCHEMA-REFERENCE.md) ⭐ - Schema de DB
 
 ### Documentación Externa
 
@@ -391,6 +402,40 @@ Privado - RyR Constructora © 2025
 ```
 
 **Guía completa**: [docs/SUPABASE-SETUP-RAPIDO.md](./docs/SUPABASE-SETUP-RAPIDO.md)
+
+---
+
+## 📚 Documentación Organizada
+
+Esta aplicación tiene **documentación completa y organizada**:
+
+### 📁 Estructura de Documentación
+```
+docs/
+├── INDEX.md                    ⭐⭐⭐ ÍNDICE MAESTRO
+├── 01-setup/                  # Configuración inicial
+├── 02-arquitectura/           # Arquitectura y diseño
+├── 03-modulos/                # Docs por módulo
+├── 04-fixes/                  # Correcciones
+├── 05-migraciones/            # Migraciones
+├── 06-testing/                # Testing
+├── 07-seguridad/              # Seguridad
+├── 08-guias/                  # Guías de uso
+└── 09-resumen/                # Resúmenes
+
+supabase/
+├── INDEX.md                    ⭐⭐⭐ ÍNDICE SQL
+├── migrations/                # Migraciones versionadas
+├── schemas/                   # Esquemas de DB
+├── policies/                  # RLS policies
+├── functions/                 # Funciones SQL
+├── storage/                   # Storage setup
+└── verification/              # Scripts de verificación
+```
+
+**Ver índices completos**:
+- 📚 [docs/INDEX.md](./docs/INDEX.md) - Toda la documentación
+- 🗄️ [supabase/INDEX.md](./supabase/INDEX.md) - Todos los SQL
 
 ---
 

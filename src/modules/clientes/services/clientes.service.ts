@@ -149,6 +149,8 @@ class ClientesService {
     tipo_documento: string,
     numero_documento: string
   ): Promise<Cliente | null> {
+    console.log('🔍 Buscando cliente duplicado:', { tipo_documento, numero_documento })
+
     const { data, error } = await supabase
       .from('clientes')
       .select('*')
@@ -157,9 +159,16 @@ class ClientesService {
       .maybeSingle()
 
     if (error) {
-      // Log del error pero no bloquear el flujo
-      console.warn('Error buscando cliente por documento:', error)
-      return null
+      // Si es error de "no encontrado", está bien (no hay duplicado)
+      // Si es otro error, lanzarlo
+      console.error('Error buscando cliente por documento:', error)
+      throw error
+    }
+
+    if (data) {
+      console.log('⚠️ Cliente duplicado encontrado:', data.id)
+    } else {
+      console.log('✅ No hay cliente duplicado')
     }
 
     return data as Cliente | null
@@ -169,6 +178,12 @@ class ClientesService {
    * Crear un nuevo cliente
    */
   async crearCliente(datos: CrearClienteDTO): Promise<Cliente> {
+    console.log('📝 Iniciando creación de cliente:', {
+      tipo_documento: datos.tipo_documento,
+      numero_documento: datos.numero_documento,
+      nombres: datos.nombres
+    })
+
     // Verificar que no exista cliente con el mismo documento
     const clienteExistente = await this.buscarPorDocumento(
       datos.tipo_documento,
@@ -176,10 +191,12 @@ class ClientesService {
     )
 
     if (clienteExistente) {
-      throw new Error(
-        `Ya existe un cliente con ${datos.tipo_documento} ${datos.numero_documento}`
-      )
+      const error = `Ya existe un cliente registrado con ${datos.tipo_documento} ${datos.numero_documento}.\n\nCliente existente: ${clienteExistente.nombres} ${clienteExistente.apellidos}`
+      console.error('❌ Cliente duplicado:', error)
+      throw new Error(error)
     }
+
+    console.log('✅ Validación de duplicados OK, procediendo a crear...')
 
     const {
       data: { user },
@@ -188,16 +205,25 @@ class ClientesService {
     // Excluir interes_inicial (no es un campo de la tabla clientes)
     const { interes_inicial, ...datosCliente } = datos
 
+    // 🔧 Sanitizar campos de fecha: convertir strings vacíos a null
+    const datosLimpios = {
+      ...datosCliente,
+      fecha_nacimiento: datosCliente.fecha_nacimiento || null,
+      usuario_creacion: user?.id,
+    }
+
     const { data, error } = await supabase
       .from('clientes')
-      .insert({
-        ...datosCliente,
-        usuario_creacion: user?.id,
-      })
+      .insert(datosLimpios)
       .select()
       .single()
 
-    if (error) throw error
+    if (error) {
+      console.error('❌ Error insertando en DB:', error)
+      throw error
+    }
+
+    console.log('✅ Cliente creado exitosamente:', data.id)
     return data as Cliente
   }
 
@@ -208,9 +234,15 @@ class ClientesService {
     id: string,
     datos: ActualizarClienteDTO
   ): Promise<Cliente> {
+    // 🔧 Sanitizar campos de fecha: convertir strings vacíos a null
+    const datosLimpios = {
+      ...datos,
+      fecha_nacimiento: datos.fecha_nacimiento || null,
+    }
+
     const { data, error } = await supabase
       .from('clientes')
-      .update(datos)
+      .update(datosLimpios)
       .eq('id', id)
       .select()
       .single()

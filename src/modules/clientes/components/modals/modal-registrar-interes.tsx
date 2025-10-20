@@ -6,7 +6,7 @@
 'use client'
 
 import { AnimatePresence, motion } from 'framer-motion'
-import { AlertCircle, Building2, ChevronRight, DollarSign, Home, Loader2, MessageSquare, Sparkles, X } from 'lucide-react'
+import { AlertCircle, Building2, ChevronRight, Home, Loader2, MessageSquare, Sparkles, X } from 'lucide-react'
 import { useRegistrarInteres } from '../../hooks/useRegistrarInteres'
 
 interface ModalRegistrarInteresProps {
@@ -157,7 +157,6 @@ export function ModalRegistrarInteres({
     errorNegociacionExistente,
     proyectoIdSeleccionado,
     viviendaIdSeleccionada,
-    valorEstimado,
     register,
     handleSubmit,
     errors,
@@ -317,26 +316,6 @@ export function ModalRegistrarInteres({
               </p>
             </motion.div>
           )}
-
-          {/* Valor Estimado */}
-          <MoneyInput
-            icon={DollarSign}
-            label="Valor Estimado"
-            required
-            value={valorEstimado}
-            onChange={() => {}} // El valor se actualiza automáticamente desde el hook
-            error={errors.valorEstimado?.message}
-          />
-          <input
-            type="hidden"
-            {...register('valorEstimado', {
-              required: 'El valor estimado es requerido',
-              min: { value: 1, message: 'El valor debe ser mayor a 0' },
-            })}
-          />
-          <p className="text-sm text-gray-500 dark:text-gray-400 -mt-4">
-            Se actualiza automáticamente con el valor de la vivienda. Puedes modificarlo si es necesario.
-          </p>
 
           {/* Origen del Interés */}
           <ModernSelect

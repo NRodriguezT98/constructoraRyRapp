@@ -1,0 +1,1 @@
+export { useCrearNegociacionPage } from './useCrearNegociacionPage';

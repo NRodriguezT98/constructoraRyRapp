@@ -9,3 +9,7 @@ export * from './estadisticas-clientes'
 export * from './formulario-cliente-container'
 export { FormularioCliente } from './formulario-cliente-modern'
 export * from './lista-clientes'
+
+// Componentes de negociaciones
+export * from './fuente-pago-card'
+export * from './stepper-negociacion'

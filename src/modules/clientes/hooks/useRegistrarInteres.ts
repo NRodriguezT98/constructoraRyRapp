@@ -26,10 +26,9 @@ interface Vivienda {
 interface FormData {
   proyectoId: string
   viviendaId: string
-  valorEstimado?: number  // Cambiado de valorNegociado
   notas?: string
-  origen?: string  // Nuevo
-  prioridad?: string  // Nuevo
+  origen?: string
+  prioridad?: string
 }
 
 interface UseRegistrarInteresProps {
@@ -57,7 +56,6 @@ export function useRegistrarInteres({ clienteId, onSuccess, onClose }: UseRegist
     defaultValues: {
       proyectoId: '',
       viviendaId: '',
-      valorEstimado: 0,
       notas: '',
       origen: 'Otro',
       prioridad: 'Media',
@@ -66,7 +64,6 @@ export function useRegistrarInteres({ clienteId, onSuccess, onClose }: UseRegist
 
   const proyectoIdSeleccionado = watch('proyectoId')
   const viviendaIdSeleccionada = watch('viviendaId')
-  const valorEstimado = watch('valorEstimado')
 
   // Cargar proyectos disponibles
   const cargarProyectos = useCallback(async () => {
@@ -187,22 +184,25 @@ export function useRegistrarInteres({ clienteId, onSuccess, onClose }: UseRegist
     }
   }, [proyectoIdSeleccionado, cargarViviendas, setValue])
 
-  // Actualizar valor negociado cuando cambia la vivienda
-  useEffect(() => {
-    if (viviendaIdSeleccionada) {
-      const vivienda = viviendas.find((v) => v.id === viviendaIdSeleccionada)
-      if (vivienda) {
-        console.log('🏠 Vivienda seleccionada:', vivienda.numero, '- Valor:', vivienda.valor_total)
-        setValue('valorEstimado', vivienda.valor_total)
-      }
-    }
-  }, [viviendaIdSeleccionada, viviendas, setValue])
-
   const handleRegistrar = async (data: FormData) => {
     setGuardando(true)
     setErrorNegociacionExistente(false)
 
     try {
+      // ⚠️ PENDIENTE: Validación de cédula (TEMPORALMENTE DESHABILITADA)
+      // TODO: Rehabilitar cuando se ejecute migración SQL en Supabase
+      // Archivo: supabase/migrations/20250120_add_es_documento_identidad.sql
+      // Documentación: PENDIENTE-VALIDACION-CEDULA.md
+      /*
+      const tieneCedula = await DocumentosClienteService.tieneCedulaActiva(clienteId)
+      if (!tieneCedula) {
+        toast.error('Debes subir la cédula del cliente antes de crear una negociación')
+        setGuardando(false)
+        return
+      }
+      */
+      console.warn('⚠️ BYPASS TEMPORAL: Validación de cédula deshabilitada - Ver PENDIENTE-VALIDACION-CEDULA.md')
+
       // Verificar si ya existe un interés activo para esta vivienda
       const interesesExistentes = await interesesService.obtenerInteresesCliente(clienteId, true)
       const existe = interesesExistentes.some(i => i.vivienda_id === data.viviendaId)
@@ -213,12 +213,11 @@ export function useRegistrarInteres({ clienteId, onSuccess, onClose }: UseRegist
         return
       }
 
-      // Registrar el interés
+      // Registrar el interés (sin valor_estimado)
       await interesesService.crearInteres({
         cliente_id: clienteId,
         proyecto_id: data.proyectoId,
         vivienda_id: data.viviendaId,
-        valor_estimado: data.valorEstimado,
         notas: data.notas,
         origen: (data.origen as any) || 'Otro',
         prioridad: (data.prioridad as any) || 'Media',
@@ -252,7 +251,6 @@ export function useRegistrarInteres({ clienteId, onSuccess, onClose }: UseRegist
     // Valores del form
     proyectoIdSeleccionado,
     viviendaIdSeleccionada,
-    valorEstimado,
 
     // React Hook Form
     register,

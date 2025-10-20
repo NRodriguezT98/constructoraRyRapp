@@ -39,6 +39,12 @@ export interface ActualizarFuentePagoDTO {
   fecha_completado?: string
 }
 
+export interface SubirCartaAprobacionDTO {
+  fuentePagoId: string
+  archivo: File
+  tipoDocumento: 'aprobacion' | 'asignacion'
+}
+
 export interface FuentePago {
   id: string
   negociacion_id: string
@@ -267,6 +273,93 @@ class FuentesPagoService {
     } catch (error) {
       console.error('❌ Error verificando cierre financiero:', error)
       return false
+    }
+  }
+
+  /**
+   * Subir carta de aprobación/asignación para una fuente de pago
+   */
+  async subirCartaAprobacion(datos: SubirCartaAprobacionDTO): Promise<string> {
+    try {
+      console.log('📤 Subiendo carta de aprobación:', datos.tipoDocumento)
+
+      const { fuentePagoId, archivo, tipoDocumento } = datos
+
+      // Obtener la fuente de pago para validar
+      const fuente = await this.obtenerFuentePago(fuentePagoId)
+      if (!fuente) {
+        throw new Error('Fuente de pago no encontrada')
+      }
+
+      // Generar nombre del archivo
+      const timestamp = new Date().getTime()
+      const extension = archivo.name.split('.').pop()
+      const nombreArchivo = `fuentes-pago/${fuentePagoId}/${tipoDocumento}-${timestamp}.${extension}`
+
+      // Subir archivo a Supabase Storage
+      const { error: uploadError } = await supabase.storage
+        .from('documentos-clientes')
+        .upload(nombreArchivo, archivo, {
+          upsert: true,
+        })
+
+      if (uploadError) throw uploadError
+
+      // Obtener URL pública
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from('documentos-clientes').getPublicUrl(nombreArchivo)
+
+      // Actualizar la fuente de pago con la URL del documento
+      const campoActualizar = tipoDocumento === 'aprobacion'
+        ? 'carta_aprobacion_url'
+        : 'carta_asignacion_url'
+
+      await this.actualizarFuentePago(fuentePagoId, {
+        [campoActualizar]: publicUrl,
+      })
+
+      console.log('✅ Carta de aprobación subida:', publicUrl)
+      return publicUrl
+    } catch (error) {
+      console.error('❌ Error subiendo carta de aprobación:', error)
+      throw error
+    }
+  }
+
+  /**
+   * Validar que las fuentes requeridas tengan sus documentos
+   */
+  async validarDocumentosRequeridos(negociacionId: string): Promise<{
+    valido: boolean
+    errores: string[]
+  }> {
+    try {
+      const fuentes = await this.obtenerFuentesPagoNegociacion(negociacionId)
+      const errores: string[] = []
+
+      for (const fuente of fuentes) {
+        // Crédito Hipotecario requiere carta de aprobación
+        if (fuente.tipo === 'Crédito Hipotecario' && !fuente.carta_aprobacion_url) {
+          errores.push('Crédito Hipotecario requiere carta de aprobación del banco')
+        }
+
+        // Subsidio Caja Compensación requiere carta de aprobación
+        if (fuente.tipo === 'Subsidio Caja Compensación' && !fuente.carta_aprobacion_url) {
+          errores.push('Subsidio Caja Compensación requiere carta de aprobación')
+        }
+      }
+
+      return {
+        valido: errores.length === 0,
+        errores,
+      }
+    } catch (error) {
+      console.error('❌ Error validando documentos:', error)
+      return {
+        valido: false,
+        errores: ['Error al validar documentos requeridos'],
+      }
     }
   }
 }

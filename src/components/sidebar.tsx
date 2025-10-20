@@ -1,5 +1,6 @@
 'use client'
 
+import { useAuth } from '@/contexts/auth-context'
 import { AnimatePresence, motion } from 'framer-motion'
 import {
     BarChart3,
@@ -18,8 +19,8 @@ import {
     Users
 } from 'lucide-react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { ThemeToggle } from './theme-toggle'
-import { Badge } from './ui/badge'
 import { Button } from './ui/button'
 import { Input } from './ui/input'
 import { useSidebar } from './useSidebar'
@@ -35,7 +36,6 @@ const navigationGroups = [
         icon: BarChart3,
         color: 'from-blue-500 to-blue-600',
         description: 'Panel principal',
-        notifications: 0,
       },
       {
         name: 'Proyectos',
@@ -43,7 +43,6 @@ const navigationGroups = [
         icon: Building2,
         color: 'from-emerald-500 to-emerald-600',
         description: 'Gestión de proyectos',
-        notifications: 3,
       },
       {
         name: 'Viviendas',
@@ -51,7 +50,6 @@ const navigationGroups = [
         icon: Home,
         color: 'from-cyan-500 to-cyan-600',
         description: 'Administrar viviendas',
-        notifications: 0,
       },
     ],
   },
@@ -64,7 +62,6 @@ const navigationGroups = [
         icon: Users,
         color: 'from-purple-500 to-purple-600',
         description: 'Base de clientes',
-        notifications: 2,
       },
       {
         name: 'Abonos',
@@ -72,7 +69,6 @@ const navigationGroups = [
         icon: CreditCard,
         color: 'from-orange-500 to-orange-600',
         description: 'Gestión de pagos',
-        notifications: 5,
       },
       {
         name: 'Renuncias',
@@ -80,7 +76,6 @@ const navigationGroups = [
         icon: FileX,
         color: 'from-red-500 to-red-600',
         description: 'Cancelaciones',
-        notifications: 1,
       },
     ],
   },
@@ -93,7 +88,6 @@ const navigationGroups = [
         icon: Shield,
         color: 'from-indigo-500 to-indigo-600',
         description: 'Panel admin',
-        notifications: 0,
       },
       {
         name: 'Reportes',
@@ -101,13 +95,14 @@ const navigationGroups = [
         icon: FileText,
         color: 'from-gray-500 to-gray-600',
         description: 'Informes y reportes',
-        notifications: 0,
       },
     ],
   },
 ]
 
 export function Sidebar() {
+  const { user, signOut } = useAuth()
+  const router = useRouter()
   const {
     isExpanded,
     isMobile,
@@ -117,6 +112,35 @@ export function Sidebar() {
     closeSidebar,
     isActive,
   } = useSidebar()
+
+  const handleSignOut = async () => {
+    try {
+      await signOut()
+      router.push('/login')
+    } catch (error) {
+      console.error('Error al cerrar sesión:', error)
+    }
+  }
+
+  // Obtener iniciales del usuario
+  const getUserInitials = () => {
+    if (!user?.email) return 'U'
+    const email = user.email
+    const firstLetter = email.charAt(0).toUpperCase()
+    return firstLetter
+  }
+
+  // Obtener nombre para mostrar
+  const getDisplayName = () => {
+    if (user?.user_metadata?.full_name) {
+      return user.user_metadata.full_name
+    }
+    if (user?.email) {
+      // Extraer nombre del email (parte antes del @)
+      return user.email.split('@')[0].replace(/[._-]/g, ' ')
+    }
+    return 'Usuario'
+  }
 
   const sidebarVariants = {
     expanded: { width: 280 },
@@ -350,19 +374,7 @@ export function Sidebar() {
                                   </div>
                                 </div>
 
-                                {/* Notifications Badge */}
-                                {item.notifications > 0 && (
-                                  <Badge
-                                    variant={active ? 'secondary' : 'default'}
-                                    className={`ml-2 flex h-5 w-5 items-center justify-center p-0 text-xs ${
-                                      active
-                                        ? 'border-white/30 bg-white/20 text-white'
-                                        : 'border-red-600 bg-red-500 text-white'
-                                    }`}
-                                  >
-                                    {item.notifications}
-                                  </Badge>
-                                )}
+                                {/* Notifications Badge - REMOVIDO */}
                               </motion.div>
                             )}
                           </AnimatePresence>
@@ -371,11 +383,6 @@ export function Sidebar() {
                           {!isExpanded && (
                             <div className='pointer-events-none absolute left-full z-50 ml-2 whitespace-nowrap rounded-lg bg-gray-900 px-3 py-1 text-sm text-white opacity-0 transition-opacity duration-200 group-hover:opacity-100 dark:bg-gray-700'>
                               {item.name}
-                              {item.notifications > 0 && (
-                                <span className='ml-2 inline-flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-xs text-white'>
-                                  {item.notifications}
-                                </span>
-                              )}
                             </div>
                           )}
 
@@ -426,8 +433,22 @@ export function Sidebar() {
             {!isExpanded && (
               <div className='flex flex-col space-y-2'>
                 <ThemeToggle />
-                <Button variant='ghost' size='sm' className='p-2'>
+                <Button
+                  variant='ghost'
+                  size='sm'
+                  className='p-2'
+                  title='Configuración'
+                >
                   <Settings className='h-4 w-4' />
+                </Button>
+                <Button
+                  variant='ghost'
+                  size='sm'
+                  className='p-2 hover:bg-red-100 dark:hover:bg-red-900/20'
+                  onClick={handleSignOut}
+                  title='Cerrar sesión'
+                >
+                  <LogOut className='h-4 w-4 text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400' />
                 </Button>
               </div>
             )}
@@ -445,18 +466,24 @@ export function Sidebar() {
                 className='flex items-center space-x-3 rounded-xl bg-gray-50 p-3 dark:bg-gray-800'
               >
                 <div className='flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-r from-blue-500 to-indigo-600'>
-                  <span className='text-sm font-medium text-white'>U</span>
+                  <span className='text-sm font-medium text-white'>{getUserInitials()}</span>
                 </div>
-                <div className='flex-1'>
-                  <div className='text-sm font-medium text-gray-900 dark:text-gray-100'>
-                    Usuario Admin
+                <div className='flex-1 min-w-0'>
+                  <div className='text-sm font-medium text-gray-900 dark:text-gray-100 truncate'>
+                    {getDisplayName()}
                   </div>
-                  <div className='text-xs text-gray-500 dark:text-gray-400'>
-                    admin@ryr.com
+                  <div className='text-xs text-gray-500 dark:text-gray-400 truncate'>
+                    {user?.email || 'usuario@ryr.com'}
                   </div>
                 </div>
-                <Button variant='ghost' size='sm' className='p-1'>
-                  <LogOut className='h-4 w-4' />
+                <Button
+                  variant='ghost'
+                  size='sm'
+                  className='p-1 hover:bg-red-100 dark:hover:bg-red-900/20'
+                  onClick={handleSignOut}
+                  title='Cerrar sesión'
+                >
+                  <LogOut className='h-4 w-4 text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400' />
                 </Button>
               </motion.div>
             )}

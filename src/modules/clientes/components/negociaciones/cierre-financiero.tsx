@@ -22,6 +22,7 @@ import {
     CheckCircle2,
     CreditCard,
     DollarSign,
+    FileText,
     Home,
     Info,
     Loader2,
@@ -30,6 +31,7 @@ import {
     Shield,
     Trash2,
     TrendingUp,
+    Upload,
     Wallet,
     X
 } from 'lucide-react'
@@ -41,6 +43,8 @@ interface FuentePago {
   monto_aprobado: number
   entidad?: string
   numero_referencia?: string
+  carta_aprobacion_url?: string
+  carta_asignacion_url?: string
 }
 
 interface CierreFinancieroProps {
@@ -121,6 +125,7 @@ export function CierreFinanciero({
   const [cargando, setCargando] = useState(true)
   const [guardando, setGuardando] = useState(false)
   const [activando, setActivando] = useState(false)
+  const [subiendoArchivo, setSubiendoArchivo] = useState<string | null>(null) // ID de fuente subiendo
   const [error, setError] = useState<string | null>(null)
   const [totales, setTotales] = useState({
     total: 0,
@@ -154,6 +159,8 @@ export function CierreFinanciero({
           monto_aprobado: f.monto_aprobado || 0,
           entidad: f.entidad,
           numero_referencia: f.numero_referencia,
+          carta_aprobacion_url: f.carta_aprobacion_url,
+          carta_asignacion_url: f.carta_asignacion_url,
         }))
       )
     } catch (err: any) {
@@ -218,6 +225,44 @@ export function CierreFinanciero({
     setError(null)
   }
 
+  const subirCartaAprobacion = async (
+    fuenteId: string,
+    archivo: File,
+    tipoDocumento: 'aprobacion' | 'asignacion'
+  ) => {
+    try {
+      setSubiendoArchivo(fuenteId)
+      setError(null)
+
+      const url = await fuentesPagoService.subirCartaAprobacion({
+        fuentePagoId: fuenteId,
+        archivo,
+        tipoDocumento,
+      })
+
+      // Actualizar la fuente en el estado local
+      setFuentesPago((prev) =>
+        prev.map((f) =>
+          f.id === fuenteId
+            ? {
+                ...f,
+                [tipoDocumento === 'aprobacion'
+                  ? 'carta_aprobacion_url'
+                  : 'carta_asignacion_url']: url,
+              }
+            : f
+        )
+      )
+
+      alert('✅ Documento subido correctamente')
+    } catch (err: any) {
+      console.error('Error subiendo documento:', err)
+      setError(`Error subiendo documento: ${err.message}`)
+    } finally {
+      setSubiendoArchivo(null)
+    }
+  }
+
   const guardarFuentes = async () => {
     try {
       setGuardando(true)
@@ -235,6 +280,18 @@ export function CierreFinanciero({
         const config = TIPOS_FUENTE[fuente.tipo]
         if (config.requiereEntidad && !fuente.entidad?.trim()) {
           setError(`La fuente "${fuente.tipo}" requiere especificar la entidad`)
+          return
+        }
+      }
+
+      // ⚠️ Validar documentos requeridos
+      for (const fuente of fuentesPago) {
+        if (fuente.tipo === 'Crédito Hipotecario' && !fuente.carta_aprobacion_url) {
+          setError('Crédito Hipotecario requiere carta de aprobación del banco')
+          return
+        }
+        if (fuente.tipo === 'Subsidio Caja Compensación' && !fuente.carta_aprobacion_url) {
+          setError('Subsidio Caja Compensación requiere carta de aprobación')
           return
         }
       }
@@ -476,21 +533,40 @@ export function CierreFinanciero({
 
                     {/* Formulario */}
                     <div className="space-y-4 p-4">
-                      {/* Monto Aprobado */}
+                      {/* Monto (Cuota Inicial) o Monto Aprobado (otras fuentes) */}
                       <div>
                         <label className="mb-2 flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
                           <DollarSign className="h-4 w-4 text-purple-500" />
-                          Monto Aprobado <span className="text-red-500">*</span>
+                          {fuente.tipo === 'Cuota Inicial' ? 'Monto' : 'Monto Aprobado'}{' '}
+                          <span className="text-red-500">*</span>
                         </label>
-                        <input
-                          type="number"
-                          value={fuente.monto_aprobado || ''}
-                          onChange={(e) =>
-                            actualizarFuente(index, 'monto_aprobado', Number(e.target.value))
-                          }
-                          placeholder="0"
-                          className="w-full rounded-lg border-2 border-gray-200 bg-white px-4 py-2 text-gray-900 transition-all focus:border-purple-500 focus:outline-none focus:ring-4 focus:ring-purple-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
-                        />
+                        <div className="relative">
+                          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">
+                            $
+                          </span>
+                          <input
+                            type="text"
+                            value={
+                              fuente.monto_aprobado
+                                ? fuente.monto_aprobado.toLocaleString('es-CO')
+                                : ''
+                            }
+                            onChange={(e) => {
+                              const valor = e.target.value.replace(/\./g, '').replace(/,/g, '')
+                              const numero = Number(valor)
+                              if (!isNaN(numero)) {
+                                actualizarFuente(index, 'monto_aprobado', numero)
+                              }
+                            }}
+                            placeholder="0"
+                            className="w-full rounded-lg border-2 border-gray-200 bg-white px-4 py-2 pl-8 text-gray-900 transition-all focus:border-purple-500 focus:outline-none focus:ring-4 focus:ring-purple-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+                          />
+                        </div>
+                        {fuente.tipo === 'Cuota Inicial' && (
+                          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                            Dinero que el cliente ya tiene disponible
+                          </p>
+                        )}
                       </div>
 
                       {/* Entidad (si se requiere) */}
@@ -498,38 +574,131 @@ export function CierreFinanciero({
                         <div>
                           <label className="mb-2 flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
                             <Building2 className="h-4 w-4 text-purple-500" />
-                            Entidad {config.requiereEntidad && <span className="text-red-500">*</span>}
+                            {fuente.tipo === 'Crédito Hipotecario' ? 'Banco' : 'Entidad'}{' '}
+                            {config.requiereEntidad && <span className="text-red-500">*</span>}
+                          </label>
+                          {fuente.tipo === 'Crédito Hipotecario' ? (
+                            <select
+                              value={fuente.entidad || ''}
+                              onChange={(e) => actualizarFuente(index, 'entidad', e.target.value)}
+                              className="w-full rounded-lg border-2 border-gray-200 bg-white px-4 py-2 text-gray-900 transition-all focus:border-purple-500 focus:outline-none focus:ring-4 focus:ring-purple-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+                            >
+                              <option value="">Selecciona un banco</option>
+                              <option value="Bancolombia">Bancolombia</option>
+                              <option value="Banco de Bogotá">Banco de Bogotá</option>
+                              <option value="Banco Agrario">Banco Agrario</option>
+                              <option value="Fondo Nacional del Ahorro">Fondo Nacional del Ahorro</option>
+                              <option value="BBVA">BBVA</option>
+                              <option value="Banco Caja Social">Banco Caja Social</option>
+                              <option value="Banco Popular">Banco Popular</option>
+                            </select>
+                          ) : (
+                            <input
+                              type="text"
+                              value={fuente.entidad || ''}
+                              onChange={(e) => actualizarFuente(index, 'entidad', e.target.value)}
+                              placeholder="Ej: Comfandi"
+                              className="w-full rounded-lg border-2 border-gray-200 bg-white px-4 py-2 text-gray-900 transition-all focus:border-purple-500 focus:outline-none focus:ring-4 focus:ring-purple-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+                            />
+                          )}
+                        </div>
+                      )}
+
+                      {/* Número de Referencia (solo para fuentes que NO son Cuota Inicial) */}
+                      {fuente.tipo !== 'Cuota Inicial' && (
+                        <div>
+                          <label className="mb-2 flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                            <CreditCard className="h-4 w-4 text-purple-500" />
+                            Número de Referencia
                           </label>
                           <input
                             type="text"
-                            value={fuente.entidad || ''}
-                            onChange={(e) => actualizarFuente(index, 'entidad', e.target.value)}
-                            placeholder={
-                              fuente.tipo === 'Crédito Hipotecario'
-                                ? 'Ej: Banco Davivienda'
-                                : 'Ej: Comfandi'
+                            value={fuente.numero_referencia || ''}
+                            onChange={(e) =>
+                              actualizarFuente(index, 'numero_referencia', e.target.value)
                             }
+                            placeholder="Ej: CRED-2024-001"
                             className="w-full rounded-lg border-2 border-gray-200 bg-white px-4 py-2 text-gray-900 transition-all focus:border-purple-500 focus:outline-none focus:ring-4 focus:ring-purple-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
                           />
                         </div>
                       )}
 
-                      {/* Número de Referencia */}
-                      <div>
-                        <label className="mb-2 flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                          <CreditCard className="h-4 w-4 text-purple-500" />
-                          Número de Referencia
-                        </label>
-                        <input
-                          type="text"
-                          value={fuente.numero_referencia || ''}
-                          onChange={(e) =>
-                            actualizarFuente(index, 'numero_referencia', e.target.value)
-                          }
-                          placeholder="Ej: CRED-2024-001"
-                          className="w-full rounded-lg border-2 border-gray-200 bg-white px-4 py-2 text-gray-900 transition-all focus:border-purple-500 focus:outline-none focus:ring-4 focus:ring-purple-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
-                        />
-                      </div>
+                      {/* Carta de Aprobación (REQUERIDA para Crédito Hipotecario y Subsidio Caja) */}
+                      {(fuente.tipo === 'Crédito Hipotecario' || fuente.tipo === 'Subsidio Caja Compensación') && fuente.id && (
+                        <div>
+                          <label className="mb-2 flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                            <FileText className="h-4 w-4 text-purple-500" />
+                            Carta de Aprobación <span className="text-red-500">*</span>
+                          </label>
+                          {fuente.carta_aprobacion_url ? (
+                            <div className="flex items-center gap-2 rounded-lg border-2 border-green-200 bg-green-50 p-3 dark:border-green-700 dark:bg-green-900/20">
+                              <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400" />
+                              <div className="flex-1">
+                                <p className="text-sm font-medium text-green-900 dark:text-green-100">
+                                  Documento cargado
+                                </p>
+                                <a
+                                  href={fuente.carta_aprobacion_url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-xs text-green-600 hover:underline dark:text-green-400"
+                                >
+                                  Ver documento
+                                </a>
+                              </div>
+                              <label className="cursor-pointer rounded-lg bg-green-600 px-3 py-1 text-xs text-white hover:bg-green-700">
+                                <Upload className="inline h-3 w-3 mr-1" />
+                                Cambiar
+                                <input
+                                  type="file"
+                                  accept=".pdf,.jpg,.jpeg,.png"
+                                  className="hidden"
+                                  disabled={subiendoArchivo === fuente.id}
+                                  onChange={(e) => {
+                                    const file = e.target.files?.[0]
+                                    if (file && fuente.id) {
+                                      subirCartaAprobacion(fuente.id, file, 'aprobacion')
+                                    }
+                                  }}
+                                />
+                              </label>
+                            </div>
+                          ) : (
+                            <label className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border-2 border-dashed border-purple-300 bg-purple-50 p-4 transition-colors hover:border-purple-500 hover:bg-purple-100 dark:border-purple-700 dark:bg-purple-900/20 dark:hover:bg-purple-900/40">
+                              {subiendoArchivo === fuente.id ? (
+                                <>
+                                  <Loader2 className="h-5 w-5 animate-spin text-purple-600" />
+                                  <span className="text-sm font-medium text-purple-600 dark:text-purple-400">
+                                    Subiendo...
+                                  </span>
+                                </>
+                              ) : (
+                                <>
+                                  <Upload className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                                  <span className="text-sm font-medium text-purple-600 dark:text-purple-400">
+                                    Subir carta de aprobación (PDF, JPG, PNG)
+                                  </span>
+                                  <input
+                                    type="file"
+                                    accept=".pdf,.jpg,.jpeg,.png"
+                                    className="hidden"
+                                    disabled={subiendoArchivo === fuente.id}
+                                    onChange={(e) => {
+                                      const file = e.target.files?.[0]
+                                      if (file && fuente.id) {
+                                        subirCartaAprobacion(fuente.id, file, 'aprobacion')
+                                      }
+                                    }}
+                                  />
+                                </>
+                              )}
+                            </label>
+                          )}
+                          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                            Documento obligatorio antes de activar la negociación
+                          </p>
+                        </div>
+                      )}
                     </div>
                   </motion.div>
                 )

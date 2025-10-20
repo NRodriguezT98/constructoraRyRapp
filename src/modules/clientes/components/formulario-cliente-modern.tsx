@@ -7,28 +7,28 @@
 
 import { AnimatePresence, motion } from 'framer-motion'
 import {
-  Building2,
-  Calendar,
-  Check,
-  ChevronLeft,
-  ChevronRight,
-  FileText,
-  Heart,
-  Home,
-  Mail,
-  MapPin,
-  MessageSquare,
-  Phone,
-  Sparkles,
-  User,
-  Users,
-  X,
+    Building2,
+    Calendar,
+    Check,
+    ChevronLeft,
+    ChevronRight,
+    FileText,
+    Heart,
+    Home,
+    Mail,
+    MapPin,
+    MessageSquare,
+    Phone,
+    Sparkles,
+    User,
+    Users,
+    X,
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import type { CrearClienteDTO, OrigenCliente, TipoDocumento } from '../types'
 import {
-  ORIGENES_CLIENTE,
-  TIPOS_DOCUMENTO,
+    ORIGENES_CLIENTE,
+    TIPOS_DOCUMENTO,
 } from '../types'
 
 interface FormularioClienteProps {
@@ -47,8 +47,8 @@ interface FormularioClienteProps {
   cargandoViviendas?: boolean
   onProyectoChange?: (proyectoId: string) => void
   onViviendaChange?: (viviendaId: string) => void
-  // Validaciones por step
-  validarStep0?: () => boolean
+  // Validaciones por step (Step 0 es async para verificar duplicados)
+  validarStep0?: () => Promise<boolean>
   validarStep1?: () => boolean
   validarStep2?: () => boolean
   validarStep3?: () => boolean
@@ -194,12 +194,13 @@ export function FormularioCliente({
     }
   }, [isOpen])
 
-  const nextStep = () => {
+  const nextStep = async () => {
     // Validar el step actual antes de avanzar
     let esValido = true
 
     if (currentStep === 0 && validarStep0) {
-      esValido = validarStep0()
+      // ⚠️ Step 0 es ASYNC (verifica duplicados en DB)
+      esValido = await validarStep0()
     } else if (currentStep === 1 && validarStep1) {
       esValido = validarStep1()
     } else if (currentStep === 2 && validarStep2) {
@@ -224,7 +225,7 @@ export function FormularioCliente({
    * Cambiar a un step específico desde el stepper
    * Valida todos los pasos intermedios antes de permitir el salto
    */
-  const goToStep = (targetStep: number) => {
+  const goToStep = async (targetStep: number) => {
     // Si el paso target es anterior o igual al actual, permitir sin validación
     if (targetStep <= currentStep) {
       setCurrentStep(targetStep)
@@ -236,7 +237,8 @@ export function FormularioCliente({
       let esValido = true
 
       if (i === 0 && validarStep0) {
-        esValido = validarStep0()
+        // ⚠️ Step 0 es ASYNC (verifica duplicados en DB)
+        esValido = await validarStep0()
       } else if (i === 1 && validarStep1) {
         esValido = validarStep1()
       } else if (i === 2 && validarStep2) {
