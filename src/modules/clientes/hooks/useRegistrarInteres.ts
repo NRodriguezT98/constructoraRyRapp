@@ -137,7 +137,7 @@ export function useRegistrarInteres({ clienteId, onSuccess, onClose }: UseRegist
           )
         `)
         .in('manzana_id', manzanaIds)
-        .eq('estado', 'disponible')
+        .eq('estado', 'Disponible')
         .order('numero')
 
       if (error) {

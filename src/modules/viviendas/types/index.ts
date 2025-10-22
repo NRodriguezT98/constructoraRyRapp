@@ -35,8 +35,10 @@ export interface Vivienda {
 
   // Asignación de Cliente
   cliente_id?: string
+  negociacion_id?: string // ⭐ NUEVO (2025-10-22): FK a negociaciones
   fecha_asignacion?: string
   fecha_pago_completo?: string
+  fecha_entrega?: string // ⭐ NUEVO (2025-10-22): Requerida cuando estado='Entregada'
 
   // Relaciones
   manzanas?: {
@@ -156,7 +158,15 @@ export interface ViviendaFormData {
 // ENUMS Y CONSTANTES
 // ============================================
 
-export type ViviendaEstado = 'Disponible' | 'Asignada' | 'Pagada'
+/**
+ * ✅ VERIFICADO en: docs/DATABASE-SCHEMA-REFERENCE.md
+ * CHECK constraint: viviendas_estado_check (3 estados)
+ *
+ * CAMBIOS (2025-10-22):
+ * ❌ ELIMINADOS: 'Pagada'
+ * ✅ ACTUALIZADOS: 'Reservada' → 'Asignada', 'Vendida' → 'Entregada'
+ */
+export type ViviendaEstado = 'Disponible' | 'Asignada' | 'Entregada'
 
 export type TipoVivienda = 'Regular' | 'Irregular'
 

@@ -169,7 +169,7 @@ export function useViviendasList() {
     const total = viviendas.length
     const disponibles = viviendas.filter(v => v.estado === 'Disponible').length
     const asignadas = viviendas.filter(v => v.estado === 'Asignada').length
-    const pagadas = viviendas.filter(v => v.estado === 'Pagada').length
+    const entregadas = viviendas.filter(v => v.estado === 'Entregada').length
 
     const valorTotal = viviendas.reduce((sum, v) => sum + (v.valor_total || 0), 0)
 
@@ -177,7 +177,7 @@ export function useViviendasList() {
       total,
       disponibles,
       asignadas,
-      pagadas,
+      entregadas,
       valorTotal,
     }
   }, [viviendas])

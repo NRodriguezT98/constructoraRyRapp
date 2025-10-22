@@ -1,6 +1,6 @@
 'use client'
 
-import { CierreFinanciero } from '@/modules/clientes/components/negociaciones'
+import { ConfigurarFuentesPago } from '@/modules/clientes/components/negociaciones'
 import { useNegociacion } from '@/modules/clientes/hooks'
 import { AnimatePresence, motion } from 'framer-motion'
 import {
@@ -132,35 +132,17 @@ export default function NegociacionDetalleClient({
     totales,
     cargando,
     error,
-    estadoLegible,
-    estaEnProceso,
-    esActiva,
-    puedeActivarse,
-    puedeCompletarse,
-    pasarACierreFinanciero,
-    activarNegociacion,
     completarNegociacion,
-    cancelarNegociacion,
     registrarRenuncia,
     recargarNegociacion,
+    puedeCompletarse,
+    esActiva,
+    estaSuspendida,
+    estadoLegible,
   } = useNegociacion(negociacionId)
 
-  const [mostrarCierre, setMostrarCierre] = useState(false)
   const [motivoCancelacion, setMotivoCancelacion] = useState('')
-  const [mostrarModalCancelar, setMostrarModalCancelar] = useState(false)
   const [mostrarModalRenuncia, setMostrarModalRenuncia] = useState(false)
-
-  const handleCancelar = async () => {
-    if (!motivoCancelacion.trim()) {
-      alert('Debes especificar el motivo de cancelación')
-      return
-    }
-    const ok = await cancelarNegociacion(motivoCancelacion)
-    if (ok) {
-      setMostrarModalCancelar(false)
-      setMotivoCancelacion('')
-    }
-  }
 
   const handleRenuncia = async () => {
     if (!motivoCancelacion.trim()) {
@@ -312,39 +294,27 @@ export default function NegociacionDetalleClient({
             animate={{ opacity: 1, y: 0 }}
             className="space-y-6 lg:col-span-2"
           >
-            {/* Cierre Financiero */}
-            {(negociacion.estado === 'Cierre Financiero' || negociacion.estado === 'Activa' || mostrarCierre) && (
+            {/* Configurar Fuentes de Pago */}
+            {esActiva && (
               <div className="rounded-xl border bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-                <CierreFinanciero
+                <h3 className="mb-4 text-lg font-semibold">Configurar Fuentes de Pago</h3>
+                <ConfigurarFuentesPago
                   negociacionId={negociacionId}
                   valorTotal={negociacion.valor_total}
-                  onCierreCompleto={() => recargarNegociacion()}
-                  onCancelar={() => setMostrarCierre(false)}
+                  onFuentesActualizadas={() => recargarNegociacion()}
                 />
               </div>
             )}
 
             {/* Acciones */}
-            {!['Completada', 'Cancelada', 'Renuncia'].includes(negociacion.estado) && (
+            {negociacion.estado === 'Activa' && (
               <div className="rounded-xl border bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
                 <h3 className="mb-4 text-lg font-semibold">Acciones</h3>
                 <div className="flex flex-wrap gap-3">
-                  {estaEnProceso && (
-                    <button
-                      onClick={async () => {
-                        const ok = await pasarACierreFinanciero()
-                        if (ok) setMostrarCierre(true)
-                      }}
-                      className="rounded-lg bg-purple-600 px-4 py-2 text-white hover:bg-purple-700"
-                    >
-                      Configurar Cierre Financiero
-                    </button>
-                  )}
-
                   {puedeCompletarse && (
                     <button
                       onClick={async () => {
-                        if (confirm('¿Confirmar que la negociación está completada?')) {
+                        if (confirm('¿Confirmar que la negociación está completada (100% pagado)?')) {
                           await completarNegociacion()
                         }
                       }}
@@ -355,15 +325,8 @@ export default function NegociacionDetalleClient({
                   )}
 
                   <button
-                    onClick={() => setMostrarModalCancelar(true)}
-                    className="rounded-lg border-2 border-red-500 px-4 py-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20"
-                  >
-                    Cancelar Negociación
-                  </button>
-
-                  <button
                     onClick={() => setMostrarModalRenuncia(true)}
-                    className="rounded-lg border-2 border-gray-500 px-4 py-2 text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-900/20"
+                    className="rounded-lg border-2 border-orange-500 px-4 py-2 text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/20"
                   >
                     Registrar Renuncia
                   </button>
@@ -407,55 +370,6 @@ export default function NegociacionDetalleClient({
           </motion.div>
         </div>
       </div>
-
-      {/* Modal Cancelar */}
-      <AnimatePresence>
-        {mostrarModalCancelar && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setMostrarModalCancelar(false)}
-              className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm"
-            />
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl dark:bg-gray-800"
-              >
-                <h3 className="mb-4 text-xl font-bold">Cancelar Negociación</h3>
-                <p className="mb-4 text-sm text-gray-600 dark:text-gray-400">
-                  Especifica el motivo de la cancelación:
-                </p>
-                <textarea
-                  value={motivoCancelacion}
-                  onChange={(e) => setMotivoCancelacion(e.target.value)}
-                  rows={4}
-                  className="w-full rounded-lg border p-3 dark:border-gray-600 dark:bg-gray-700"
-                  placeholder="Ej: Cliente no cumplió con los requisitos financieros..."
-                />
-                <div className="mt-4 flex gap-3">
-                  <button
-                    onClick={() => setMostrarModalCancelar(false)}
-                    className="flex-1 rounded-lg border px-4 py-2 hover:bg-gray-50 dark:border-gray-600 dark:hover:bg-gray-700"
-                  >
-                    Cancelar
-                  </button>
-                  <button
-                    onClick={handleCancelar}
-                    className="flex-1 rounded-lg bg-red-600 px-4 py-2 text-white hover:bg-red-700"
-                  >
-                    Confirmar Cancelación
-                  </button>
-                </div>
-              </motion.div>
-            </div>
-          </>
-        )}
-      </AnimatePresence>
 
       {/* Modal Renuncia */}
       <AnimatePresence>

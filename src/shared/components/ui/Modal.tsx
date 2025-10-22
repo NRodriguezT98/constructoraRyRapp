@@ -71,13 +71,13 @@ export function Modal({
           />
 
           {/* Modal Container */}
-          <div className='fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4 sm:p-6'>
+          <div className='fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-3 sm:p-4'>
             <div
               ref={modalRef}
               className={cn(
-                'relative my-8 w-full',
+                'relative my-4 w-full',
                 'bg-white dark:bg-gray-900',
-                'rounded-2xl shadow-2xl',
+                'rounded-xl shadow-2xl',
                 'border border-gray-200/80 dark:border-gray-700/50',
                 'overflow-hidden',
                 sizeClasses[size],
@@ -85,21 +85,21 @@ export function Modal({
               )}
             >
               {/* Borde superior con gradiente */}
-              <div className='absolute left-0 right-0 top-0 h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500' />
+              <div className='absolute left-0 right-0 top-0 h-0.5 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500' />
 
               {/* Header */}
               {(title || showCloseButton) && (
-                <div className='relative flex items-start justify-between border-b border-gray-200/50 bg-gradient-to-b from-gray-50/50 to-transparent p-6 dark:border-gray-700/50 dark:from-gray-800/30 sm:p-8'>
-                  <div className='flex-1 pr-4'>
+                <div className='relative flex items-start justify-between border-b border-gray-200/50 bg-gradient-to-b from-gray-50/50 to-transparent p-4 dark:border-gray-700/50 dark:from-gray-800/30'>
+                  <div className='flex-1 pr-3'>
                     {title && (
-                      <div className='mb-2'>
-                        <h2 className='bg-gradient-to-r from-gray-900 via-gray-700 to-gray-900 bg-clip-text text-2xl font-black text-transparent dark:from-white dark:via-gray-200 dark:to-white sm:text-3xl'>
+                      <div className='mb-1'>
+                        <h2 className='bg-gradient-to-r from-gray-900 via-gray-700 to-gray-900 bg-clip-text text-xl font-black text-transparent dark:from-white dark:via-gray-200 dark:to-white'>
                           {title}
                         </h2>
                       </div>
                     )}
                     {description && (
-                      <p className='text-base font-medium leading-relaxed text-gray-600 dark:text-gray-400'>
+                      <p className='text-sm font-medium leading-relaxed text-gray-600 dark:text-gray-400'>
                         {description}
                       </p>
                     )}
@@ -109,22 +109,22 @@ export function Modal({
                   {showCloseButton && (
                     <button
                       onClick={onClose}
-                      className='flex-shrink-0 rounded-xl bg-gray-100 p-2.5 text-gray-600 transition-colors hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700'
+                      className='flex-shrink-0 rounded-lg bg-gray-100 p-2 text-gray-600 transition-colors hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700'
                     >
-                      <X className='h-5 w-5' />
+                      <X className='h-4 w-4' />
                     </button>
                   )}
                 </div>
               )}
 
               {/* Content con scroll suave */}
-              <div className='custom-scrollbar max-h-[calc(90vh-280px)] overflow-y-auto p-6 sm:p-8'>
+              <div className='custom-scrollbar max-h-[calc(90vh-200px)] overflow-y-auto p-4'>
                 {children}
               </div>
 
               {/* Footer */}
               {footer && (
-                <div className='flex flex-col items-stretch justify-end gap-3 border-t border-gray-200/50 bg-gradient-to-t from-gray-50/80 to-transparent p-6 dark:border-gray-700/50 dark:from-gray-800/30 sm:flex-row sm:items-center sm:p-8'>
+                <div className='flex flex-col items-stretch justify-end gap-2 border-t border-gray-200/50 bg-gradient-to-t from-gray-50/80 to-transparent p-4 dark:border-gray-700/50 dark:from-gray-800/30 sm:flex-row sm:items-center'>
                   {footer}
                 </div>
               )}
@@ -177,7 +177,7 @@ export function ConfirmModal({
             onClick={onClose}
             disabled={isLoading}
             className={cn(
-              'rounded-xl px-6 py-3 font-semibold transition-colors',
+              'rounded-lg px-4 py-2 text-sm font-semibold transition-colors',
               'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300',
               'hover:bg-gray-200 dark:hover:bg-gray-700',
               'border border-gray-300 dark:border-gray-600',
@@ -193,7 +193,7 @@ export function ConfirmModal({
             onClick={handleConfirm}
             disabled={isLoading}
             className={cn(
-              'rounded-xl px-6 py-3 font-bold text-white shadow-lg transition-shadow hover:shadow-xl',
+              'rounded-lg px-4 py-2 text-sm font-bold text-white shadow-md transition-shadow hover:shadow-lg',
               'disabled:cursor-not-allowed disabled:opacity-50',
               'w-full sm:w-auto',
               variant === 'danger'
@@ -211,7 +211,7 @@ export function ConfirmModal({
         </>
       }
     >
-      <p className='text-lg leading-relaxed text-gray-700 dark:text-gray-300'>
+      <p className='text-sm leading-relaxed text-gray-700 dark:text-gray-300'>
         {message}
       </p>
     </Modal>

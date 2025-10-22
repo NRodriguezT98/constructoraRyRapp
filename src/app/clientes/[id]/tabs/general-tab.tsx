@@ -59,7 +59,7 @@ function InfoField({
 
 export function GeneralTab({ cliente }: GeneralTabProps) {
   return (
-    <div className='space-y-6'>
+    <div className='space-y-4'>
       {/* Información Personal */}
       <div className={styles.infoCardClasses.card}>
         <div className={styles.infoCardClasses.header}>
@@ -105,23 +105,23 @@ export function GeneralTab({ cliente }: GeneralTabProps) {
 
           {/* Documento de Identidad (si existe URL) */}
           {cliente.documento_identidad_url && (
-            <div className='mt-4'>
+            <div className='mt-3'>
               <a
                 href={cliente.documento_identidad_url}
                 target='_blank'
                 rel='noopener noreferrer'
-                className='flex items-center gap-3 rounded-xl border-2 border-blue-200 bg-blue-50 px-4 py-3 transition-all hover:border-blue-300 hover:bg-blue-100 dark:border-blue-800 dark:bg-blue-950/30 dark:hover:border-blue-700 dark:hover:bg-blue-900/40'
+                className='flex items-center gap-2.5 rounded-lg border-2 border-blue-200 bg-blue-50 px-3 py-2.5 transition-all hover:border-blue-300 hover:bg-blue-100 dark:border-blue-800 dark:bg-blue-950/30 dark:hover:border-blue-700 dark:hover:bg-blue-900/40'
               >
-                <FileText className='h-5 w-5 text-blue-600 dark:text-blue-400' />
+                <FileText className='h-4 w-4 text-blue-600 dark:text-blue-400' />
                 <div className='flex-1'>
-                  <p className='font-semibold text-blue-900 dark:text-blue-100'>
+                  <p className='text-sm font-semibold text-blue-900 dark:text-blue-100'>
                     Documento de Identidad
                   </p>
-                  <p className='text-xs text-blue-600 dark:text-blue-400'>
+                  <p className='text-[10px] text-blue-600 dark:text-blue-400'>
                     Haz clic para ver o descargar
                   </p>
                 </div>
-                <Eye className='h-5 w-5 text-blue-600 dark:text-blue-400' />
+                <Eye className='h-4 w-4 text-blue-600 dark:text-blue-400' />
               </a>
             </div>
           )}
@@ -179,8 +179,8 @@ export function GeneralTab({ cliente }: GeneralTabProps) {
           </div>
 
           {/* Notas */}
-          <div className='mt-4'>
-            <div className='flex items-start gap-3'>
+          <div className='mt-3'>
+            <div className='flex items-start gap-2.5'>
               <div className={styles.infoCardClasses.fieldIconContainer}>
                 <MessageSquare className={styles.infoCardClasses.fieldIcon} />
               </div>
@@ -189,7 +189,7 @@ export function GeneralTab({ cliente }: GeneralTabProps) {
                 <p
                   className={
                     cliente.notas
-                      ? 'mt-1 text-sm text-gray-700 dark:text-gray-300'
+                      ? 'mt-0.5 text-xs text-gray-700 dark:text-gray-300'
                       : styles.infoCardClasses.fieldValueEmpty
                   }
                 >

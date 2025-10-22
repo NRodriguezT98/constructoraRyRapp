@@ -22,9 +22,9 @@ export function ClientesHeader({ onNuevoCliente }: ClientesHeaderProps) {
       animate='animate'
     >
       <div className='flex items-center justify-between'>
-        <div className='flex items-center gap-4'>
-          <div className='rounded-2xl bg-gradient-to-r from-purple-500 to-violet-600 p-3 shadow-lg'>
-            <Users className='h-8 w-8 text-white' />
+        <div className='flex items-center gap-3'>
+          <div className='rounded-xl bg-gradient-to-r from-purple-500 to-violet-600 p-2.5 shadow-lg'>
+            <Users className='h-6 w-6 text-white' />
           </div>
           <div>
             <h1 className={clientesStyles.headerTitle}>Gestión de Clientes</h1>
@@ -39,7 +39,7 @@ export function ClientesHeader({ onNuevoCliente }: ClientesHeaderProps) {
           onClick={onNuevoCliente}
           className={`${clientesStyles.button} ${clientesStyles.buttonPrimary}`}
         >
-          <Plus className='h-5 w-5' />
+          <Plus className='h-4 w-4' />
           Nuevo Cliente
         </button>
       </div>

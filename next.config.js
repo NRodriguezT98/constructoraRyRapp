@@ -14,7 +14,7 @@ const nextConfig = {
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     formats: ['image/webp'],
   },
-  typedRoutes: true,
+  typedRoutes: false,
   // Configuración de puerto fijo y optimizaciones
   env: {
     PORT: '3000',

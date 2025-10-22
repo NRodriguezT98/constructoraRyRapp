@@ -2,16 +2,16 @@
 
 import { motion } from 'framer-motion'
 import { useState } from 'react'
-import { staggerContainer } from '../../../shared/styles/animations'
 import { Modal } from '../../../shared/components/ui/Modal'
+import { staggerContainer } from '../../../shared/styles/animations'
 import { useProyectos, useProyectosFiltrados } from '../hooks/useProyectos'
-import { ProyectosHeader } from './proyectos-header'
-import { ProyectosSearch } from './proyectos-search'
-import { ProyectosLista } from './proyectos-lista'
+import type { Proyecto, ProyectoFormData } from '../types'
 import { ProyectosEmpty } from './proyectos-empty'
-import { ProyectosSkeleton } from './proyectos-skeleton'
 import { ProyectosForm } from './proyectos-form'
-import type { ProyectoFormData, Proyecto } from '../types'
+import { ProyectosHeader } from './proyectos-header'
+import { ProyectosLista } from './proyectos-lista'
+import { ProyectosSearch } from './proyectos-search'
+import { ProyectosSkeleton } from './proyectos-skeleton'
 
 export function ProyectosPage() {
   const [modalAbierto, setModalAbierto] = useState(false)
@@ -74,12 +74,12 @@ export function ProyectosPage() {
   const proyectoEliminando = proyectos.find(p => p.id === proyectoEliminar)
 
   return (
-    <div className='container mx-auto px-4 py-6 sm:px-6 lg:px-8'>
+    <div className='container mx-auto px-4 py-4 sm:px-4 lg:px-6'>
       <motion.div
         variants={staggerContainer}
         initial='hidden'
         animate='visible'
-        className='space-y-6'
+        className='space-y-4'
       >
         <ProyectosHeader onNuevoProyecto={handleAbrirModal} />
 

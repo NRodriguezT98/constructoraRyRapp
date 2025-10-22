@@ -59,8 +59,8 @@ export function ViviendasCard({
         <div className={viviendaCardStyles.header}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Home className="w-5 h-5 text-muted-foreground" />
-              <h3 className="font-semibold">Vivienda #{vivienda.numero}</h3>
+              <Home className="w-4 h-4 text-muted-foreground" />
+              <h3 className="text-base font-semibold">Vivienda #{vivienda.numero}</h3>
             </div>
             <Badge className={`${viviendaCardStyles.badge} ${estadoColors[vivienda.estado]}`}>
               {estadoLabels[vivienda.estado]}
@@ -70,33 +70,37 @@ export function ViviendasCard({
 
         {/* Content */}
         <div className={viviendaCardStyles.content}>
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <MapPin className="w-4 h-4" />
-              <span>Área: {vivienda.area} m²</span>
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <MapPin className="w-3.5 h-3.5" />
+              <span>Área: {vivienda.area_construida || vivienda.area} m²</span>
             </div>
 
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">Habitaciones:</span>
-              <span className="font-medium">{vivienda.habitaciones || 'N/A'}</span>
-            </div>
+            {vivienda.tipo_vivienda && (
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-muted-foreground">Tipo:</span>
+                <span className="font-medium">{vivienda.tipo_vivienda}</span>
+              </div>
+            )}
 
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">Baños:</span>
-              <span className="font-medium">{vivienda.banos || 'N/A'}</span>
-            </div>
+            {vivienda.nomenclatura && (
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-muted-foreground">Nomenclatura:</span>
+                <span className="font-medium">{vivienda.nomenclatura}</span>
+              </div>
+            )}
           </div>
 
-          <div className="pt-3 border-t">
-            <div className="text-lg font-bold text-primary">
-              {formatCurrency(vivienda.precio)}
+          <div className="pt-2.5 border-t">
+            <div className="text-base font-bold text-primary">
+              {formatCurrency(vivienda.valor_total || vivienda.precio)}
             </div>
           </div>
         </div>
 
         {/* Footer */}
         <div className={viviendaCardStyles.footer}>
-          <div className="text-xs text-muted-foreground">
+          <div className="text-[10px] text-muted-foreground">
             ID: {vivienda.id.slice(0, 8)}...
           </div>
 
@@ -111,7 +115,7 @@ export function ViviendasCard({
                   onEdit(vivienda)
                 }}
               >
-                <Edit className="w-4 h-4" />
+                <Edit className="w-3.5 h-3.5" />
               </Button>
             )}
 
@@ -125,7 +129,7 @@ export function ViviendasCard({
                   onDelete(vivienda.id)
                 }}
               >
-                <Trash2 className="w-4 h-4" />
+                <Trash2 className="w-3.5 h-3.5" />
               </Button>
             )}
           </div>

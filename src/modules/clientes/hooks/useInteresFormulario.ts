@@ -84,7 +84,7 @@ export function useInteresFormulario() {
         `
         )
         .eq('manzanas.proyecto_id', proyectoId)
-        .eq('estado', 'disponible')
+        .eq('estado', 'Disponible')
         .order('numero')
 
       if (error) throw error

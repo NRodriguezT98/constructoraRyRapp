@@ -21,16 +21,16 @@ export function BreadcrumbsNegociacion({
   return (
     <nav className={pageStyles.breadcrumbs.container}>
       <Link href={"/" as any} className={pageStyles.breadcrumbs.link}>
-        <Home className="h-4 w-4" />
+        <Home className="h-3.5 w-3.5" />
       </Link>
 
-      <ChevronRight className="h-4 w-4 text-gray-400" />
+      <ChevronRight className="h-3 w-3" />
 
       <Link href={"/clientes" as any} className={pageStyles.breadcrumbs.link}>
         Clientes
       </Link>
 
-      <ChevronRight className="h-4 w-4 text-gray-400" />
+      <ChevronRight className="h-3 w-3" />
 
       <Link
         href={`/clientes/${clienteId}` as any}
@@ -39,7 +39,7 @@ export function BreadcrumbsNegociacion({
         {clienteNombre || 'Cliente'}
       </Link>
 
-      <ChevronRight className="h-4 w-4 text-gray-400" />
+      <ChevronRight className="h-3 w-3" />
 
       <span className={pageStyles.breadcrumbs.current}>
         Crear Negociación

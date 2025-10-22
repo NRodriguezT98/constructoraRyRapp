@@ -2,13 +2,12 @@
  * Hook useNegociacion
  *
  * Gestiona el ciclo completo de una negociación:
- * 1. Crear negociación (En Proceso)
- * 2. Configurar fuentes de pago (Cierre Financiero)
- * 3. Activar negociación (Activa)
- * 4. Registrar abonos y seguimiento
- * 5. Completar, cancelar o registrar renuncia
+ * 1. Crear negociación (estado: 'Activa')
+ * 2. Configurar fuentes de pago
+ * 3. Registrar abonos y seguimiento
+ * 4. Completar o registrar renuncia
  *
- * ⚠️ NOMBRES DE CAMPOS VERIFICADOS EN: docs/DATABASE-SCHEMA-REFERENCE.md
+ * ⚠️ NOMBRES DE CAMPOS VERIFICADOS EN: docs/DATABASE-SCHEMA-REFERENCE-ACTUALIZADO.md
  */
 
 'use client'
@@ -31,10 +30,7 @@ interface UseNegociacionReturn {
   error: string | null
 
   // Acciones de estado
-  pasarACierreFinanciero: () => Promise<boolean>
-  activarNegociacion: () => Promise<boolean>
   completarNegociacion: () => Promise<boolean>
-  cancelarNegociacion: (motivo: string) => Promise<boolean>
   registrarRenuncia: (motivo: string) => Promise<boolean>
 
   // Operaciones CRUD
@@ -42,11 +38,9 @@ interface UseNegociacionReturn {
   recargarNegociacion: () => Promise<void>
 
   // Helpers
-  puedeActivarse: boolean
   puedeCompletarse: boolean
   esActiva: boolean
-  estaEnProceso: boolean
-  estaCancelada: boolean
+  estaSuspendida: boolean
   estadoLegible: string
 }
 
@@ -113,70 +107,27 @@ export function useNegociacion(negociacionId: string): UseNegociacionReturn {
 
   /**
    * Helpers de estado
+   * Estados permitidos: 'Activa', 'Suspendida', 'Cerrada por Renuncia', 'Completada'
    */
-  const estaEnProceso = negociacion?.estado === 'En Proceso'
   const esActiva = negociacion?.estado === 'Activa'
-  const estaCancelada = negociacion?.estado === 'Cancelada' || negociacion?.estado === 'Renuncia'
-  const cierreCompleto = Math.abs(totales.diferencia) < 1
-  const puedeActivarse = negociacion?.estado === 'Cierre Financiero' && cierreCompleto
+  const estaSuspendida = negociacion?.estado === 'Suspendida'
   const puedeCompletarse = esActiva && totales.porcentajeCubierto >= 100
 
   const estadoLegible =
-    negociacion?.estado === 'En Proceso'
-      ? 'En Proceso'
-      : negociacion?.estado === 'Cierre Financiero'
-        ? 'Configurando Fuentes de Pago'
-        : negociacion?.estado === 'Activa'
-          ? 'Negociación Activa'
+    negociacion?.estado === 'Activa'
+      ? 'Negociación Activa'
+      : negociacion?.estado === 'Suspendida'
+        ? 'Suspendida'
+        : negociacion?.estado === 'Cerrada por Renuncia'
+          ? 'Cerrada por Renuncia'
           : negociacion?.estado === 'Completada'
             ? 'Completada'
-            : negociacion?.estado === 'Cancelada'
-              ? 'Cancelada'
-              : negociacion?.estado === 'Renuncia'
-                ? 'Renuncia del Cliente'
-                : 'Desconocido'
-
-  /**
-   * Pasar a Cierre Financiero
-   */
-  const pasarACierreFinanciero = useCallback(async (): Promise<boolean> => {
-    try {
-      setError(null)
-      await negociacionesService.pasarACierreFinanciero(negociacionId)
-      await cargarDatos()
-      return true
-    } catch (err: any) {
-      console.error('Error pasando a cierre financiero:', err)
-      setError(`Error: ${err.message}`)
-      return false
-    }
-  }, [negociacionId, cargarDatos])
-
-  /**
-   * Activar negociación
-   */
-  const activarNegociacion = useCallback(async (): Promise<boolean> => {
-    try {
-      setError(null)
-
-      // Verificar que el cierre esté completo
-      if (!cierreCompleto) {
-        setError('El cierre financiero debe estar completo (100%) para activar la negociación')
-        return false
-      }
-
-      await negociacionesService.activarNegociacion(negociacionId)
-      await cargarDatos()
-      return true
-    } catch (err: any) {
-      console.error('Error activando negociación:', err)
-      setError(`Error: ${err.message}`)
-      return false
-    }
-  }, [negociacionId, cierreCompleto, cargarDatos])
+            : 'Desconocido'
 
   /**
    * Completar negociación
+   * ✅ Estado final: 'Completada'
+   * Requisito: Estar en estado 'Activa' y tener pago completo (100%)
    */
   const completarNegociacion = useCallback(async (): Promise<boolean> => {
     try {
@@ -198,32 +149,9 @@ export function useNegociacion(negociacionId: string): UseNegociacionReturn {
   }, [negociacionId, puedeCompletarse, cargarDatos])
 
   /**
-   * Cancelar negociación
-   */
-  const cancelarNegociacion = useCallback(
-    async (motivo: string): Promise<boolean> => {
-      try {
-        setError(null)
-
-        if (!motivo?.trim()) {
-          setError('Debes especificar el motivo de cancelación')
-          return false
-        }
-
-        await negociacionesService.cancelarNegociacion(negociacionId, motivo)
-        await cargarDatos()
-        return true
-      } catch (err: any) {
-        console.error('Error cancelando negociación:', err)
-        setError(`Error: ${err.message}`)
-        return false
-      }
-    },
-    [negociacionId, cargarDatos]
-  )
-
-  /**
    * Registrar renuncia del cliente
+   * ✅ Cambia estado de negociación a 'Cerrada por Renuncia'
+   * ✅ Crea registro en tabla renuncias
    */
   const registrarRenuncia = useCallback(
     async (motivo: string): Promise<boolean> => {
@@ -235,7 +163,7 @@ export function useNegociacion(negociacionId: string): UseNegociacionReturn {
           return false
         }
 
-        await negociacionesService.registrarRenuncia(negociacionId, motivo)
+        await negociacionesService.cerrarPorRenuncia(negociacionId)
         await cargarDatos()
         return true
       } catch (err: any) {
@@ -275,10 +203,7 @@ export function useNegociacion(negociacionId: string): UseNegociacionReturn {
     error,
 
     // Acciones
-    pasarACierreFinanciero,
-    activarNegociacion,
     completarNegociacion,
-    cancelarNegociacion,
     registrarRenuncia,
 
     // CRUD
@@ -286,11 +211,9 @@ export function useNegociacion(negociacionId: string): UseNegociacionReturn {
     recargarNegociacion: cargarDatos,
 
     // Helpers
-    puedeActivarse,
     puedeCompletarse,
     esActiva,
-    estaEnProceso,
-    estaCancelada,
+    estaSuspendida,
     estadoLegible,
   }
 }

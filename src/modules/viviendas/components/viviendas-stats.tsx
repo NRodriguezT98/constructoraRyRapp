@@ -7,7 +7,7 @@ interface ViviendasStatsProps {
   total: number
   disponibles: number
   asignadas: number
-  pagadas: number
+  entregadas: number
   valorTotal: number
 }
 
@@ -19,7 +19,7 @@ export function ViviendasStats({
   total,
   disponibles,
   asignadas,
-  pagadas,
+  entregadas,
   valorTotal,
 }: ViviendasStatsProps) {
   const stats = [
@@ -42,8 +42,8 @@ export function ViviendasStats({
       color: 'text-blue-600 dark:text-blue-400',
     },
     {
-      label: 'Pagadas',
-      value: pagadas,
+      label: 'Entregadas',
+      value: entregadas,
       icon: CheckCircle2,
       color: 'text-emerald-600 dark:text-emerald-400',
     },

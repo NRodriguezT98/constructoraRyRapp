@@ -65,7 +65,7 @@ export function ViviendasPageMain() {
           total={estadisticas.total}
           disponibles={estadisticas.disponibles}
           asignadas={estadisticas.asignadas}
-          pagadas={estadisticas.pagadas}
+          entregadas={estadisticas.entregadas}
           valorTotal={estadisticas.valorTotal}
         />
 

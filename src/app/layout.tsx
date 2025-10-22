@@ -1,11 +1,11 @@
+import { ConditionalLayout } from '@/components/conditional-layout'
+import { ConditionalSidebar } from '@/components/conditional-sidebar'
+import { PageTransition } from '@/components/page-transition'
+import { ThemeProvider } from '@/components/theme-provider'
+import { AuthProvider } from '@/contexts/auth-context'
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import { Toaster } from 'sonner'
-import { ConditionalLayout } from '../components/conditional-layout'
-import { ConditionalSidebar } from '../components/conditional-sidebar'
-import { PageTransition } from '../components/page-transition'
-import { ThemeProvider } from '../components/theme-provider'
-import { AuthProvider } from '../contexts/auth-context'
 import './globals.css'
 
 const inter = Inter({ subsets: ['latin'] })

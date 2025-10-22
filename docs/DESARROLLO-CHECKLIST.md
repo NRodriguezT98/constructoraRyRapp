@@ -6,21 +6,42 @@
 
 ## 🎯 ANTES DE EMPEZAR (OBLIGATORIO)
 
-### 1. Identificar Datos que Usarás
+### 1. Verificar Documentación de Base de Datos ⭐ CRÍTICO
+
+- [ ] **Abrí** `docs/DATABASE-SCHEMA-REFERENCE.md`
+- [ ] **Verifiqué** la fecha de última actualización del documento
+- [ ] Si está desactualizado (>7 días): ejecutar `actualizar-docs-db.ps1`
+- [ ] **Identifiqué** qué tabla(s) necesito consultar
+- [ ] **Copié** los nombres EXACTOS de columnas (NO escribí de memoria)
+- [ ] **Confirmé** qué campos son obligatorios vs opcionales
+- [ ] **Verifiqué** los tipos de datos de cada campo
+- [ ] Si hay enums: **anoté** los valores permitidos
+
+### 2. Verificar Nombres de Campos (NUNCA ASUMIR)
+
+- [ ] ❌ NO asumí ningún nombre de campo sin verificar
+- [ ] ❌ NO copié código antiguo sin validar
+- [ ] ✅ Consulté `DATABASE-SCHEMA-REFERENCE.md` para cada campo
+- [ ] ✅ Copié los nombres exactos desde la documentación
+- [ ] ✅ Verifiqué el formato de estados/enums (exactos)
+- [ ] ✅ Si hay duda: ejecuté query de verificación en Supabase
+
+**Query rápida de verificación:**
+```sql
+SELECT column_name, data_type, is_nullable
+FROM information_schema.columns
+WHERE table_name = 'nombre_tabla' AND table_schema = 'public'
+ORDER BY ordinal_position;
+```
+
+### 3. Identificar Datos que Usarás
 
 - [ ] ¿Qué tabla(s) de la DB necesito consultar?
-- [ ] ¿Necesito una vista o tabla directa?
-- [ ] **Consulté** `docs/DATABASE-SCHEMA-REFERENCE.md`?
-- [ ] **Anoté** los nombres EXACTOS de las columnas que usaré
+- [ ] ¿Necesito joins con otras tablas?
+- [ ] ¿Hay relaciones (foreign keys) que debo seguir?
+- [ ] ¿Los campos que necesito están en la tabla o son calculados?
 
-### 2. Verificar Nombres de Campos
-
-- [ ] Copié los nombres de columnas desde `DATABASE-SCHEMA-REFERENCE.md`
-- [ ] NO asumí ningún nombre de campo
-- [ ] Verifiqué el formato de estados (snake_case vs PascalCase)
-- [ ] Si hay dudas: abrí Supabase Table Editor y confirmé
-
-### 3. Verificar Servicios Existentes
+### 4. Verificar Servicios Existentes
 
 - [ ] ¿Ya existe un servicio para esta tabla?
   - `src/modules/clientes/services/intereses.service.ts`

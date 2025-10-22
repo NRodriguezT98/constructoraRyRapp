@@ -24,15 +24,15 @@ export function FilterButton({
     <button
       onClick={onClick}
       className={cn(
-        'flex items-center gap-2 rounded-xl px-4 py-3 font-semibold transition-colors',
+        'flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-semibold transition-colors',
         active
-          ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/25'
-          : 'border-2 border-gray-200 bg-white text-gray-700 hover:border-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:border-blue-500',
+          ? 'bg-blue-600 text-white shadow-md shadow-blue-500/25'
+          : 'border border-gray-200 bg-white text-gray-700 hover:border-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:border-blue-500',
         className
       )}
       type='button'
     >
-      <Filter className='h-4 w-4' />
+      <Filter className='h-3.5 w-3.5' />
       <span className='hidden sm:inline'>{label}</span>
     </button>
   )

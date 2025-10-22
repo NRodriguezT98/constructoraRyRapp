@@ -156,8 +156,8 @@ export default function ViviendaDetalleClient({
   ]
 
   return (
-    <div className='min-h-screen bg-gradient-to-br from-gray-50 via-white to-emerald-50/30 p-6 dark:from-gray-900 dark:via-gray-900 dark:to-emerald-950/20'>
-      <div className='mx-auto max-w-7xl space-y-6'>
+    <div className='min-h-screen bg-gradient-to-br from-gray-50 via-white to-emerald-50/30 p-4 dark:from-gray-900 dark:via-gray-900 dark:to-emerald-950/20'>
+      <div className='mx-auto max-w-7xl space-y-4'>
         {/* Botón Volver */}
         <motion.div {...styles.animations.fadeInUp}>
           <Button

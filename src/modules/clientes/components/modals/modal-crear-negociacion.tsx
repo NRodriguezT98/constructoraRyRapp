@@ -231,7 +231,7 @@ export function ModalCrearNegociacion({
       const disponibles = todasViviendas.filter(
         (v: any) =>
           manzanaIds.includes(v.manzana_id) &&
-          v.estado === 'disponible'
+          v.estado === 'Disponible'
       )
 
       setViviendas(disponibles)

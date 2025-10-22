@@ -47,7 +47,7 @@ export const OPCIONES_RECARGO: OpcionRecargo[] = [
 export const VIVIENDA_ESTADOS = [
   { value: 'Disponible', label: 'Disponible' },
   { value: 'Asignada', label: 'Asignada' },
-  { value: 'Pagada', label: 'Pagada' },
+  { value: 'Entregada', label: 'Entregada' },
 ] as const
 
 // ============================================
@@ -96,19 +96,19 @@ export const REGEX_PATTERNS = {
 export const ESTADO_COLORS: Record<ViviendaEstado, string> = {
   Disponible: 'text-green-600 bg-green-100 dark:bg-green-900 dark:text-green-300',
   Asignada: 'text-blue-600 bg-blue-100 dark:bg-blue-900 dark:text-blue-300',
-  Pagada: 'text-emerald-600 bg-emerald-100 dark:bg-emerald-900 dark:text-emerald-300',
+  Entregada: 'text-emerald-600 bg-emerald-100 dark:bg-emerald-900 dark:text-emerald-300',
 }
 
 export const ESTADO_LABELS: Record<ViviendaEstado, string> = {
   Disponible: 'Disponible',
   Asignada: 'Asignada',
-  Pagada: 'Pagada',
+  Entregada: 'Entregada',
 }
 
 export const ESTADO_ICONS: Record<ViviendaEstado, string> = {
   Disponible: 'Home',
   Asignada: 'Clock',
-  Pagada: 'CheckCircle',
+  Entregada: 'CheckCircle',
 }
 
 // ============================================

@@ -19,14 +19,14 @@ export function ViewToggle({ value, onChange, className }: ViewToggleProps) {
   return (
     <div
       className={cn(
-        'flex overflow-hidden rounded-xl border-2 border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800',
+        'flex overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800',
         className
       )}
     >
       <button
         onClick={() => onChange('grid')}
         className={cn(
-          'relative px-4 py-3 transition-all duration-200',
+          'relative px-3 py-2 transition-all duration-200',
           value === 'grid'
             ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white'
             : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-700/50 dark:hover:text-gray-200'
@@ -49,7 +49,7 @@ export function ViewToggle({ value, onChange, className }: ViewToggleProps) {
       <button
         onClick={() => onChange('lista')}
         className={cn(
-          'relative px-4 py-3 transition-all duration-200',
+          'relative px-3 py-2 transition-all duration-200',
           value === 'lista'
             ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white'
             : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-700/50 dark:hover:text-gray-200'

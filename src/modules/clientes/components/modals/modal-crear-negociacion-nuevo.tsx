@@ -24,19 +24,19 @@ import type { CrearFuentePagoDTO, TipoFuentePago } from '@/modules/clientes/type
 import { validarSumaTotal } from '@/modules/clientes/utils/validar-edicion-fuentes'
 import { AnimatePresence, motion } from 'framer-motion'
 import {
-  AlertCircle,
-  ArrowLeft,
-  ArrowRight,
-  Building2,
-  CheckCircle2,
-  ChevronRight,
-  DollarSign,
-  Home,
-  Loader2,
-  MessageSquare,
-  Sparkles,
-  User,
-  X,
+    AlertCircle,
+    ArrowLeft,
+    ArrowRight,
+    Building2,
+    CheckCircle2,
+    ChevronRight,
+    DollarSign,
+    Home,
+    Loader2,
+    MessageSquare,
+    Sparkles,
+    User,
+    X,
 } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
@@ -237,7 +237,7 @@ export function ModalCrearNegociacionNuevo({
           )
         `)
         .eq('manzanas.proyecto_id', proyectoId)
-        .eq('estado', 'disponible')
+        .eq('estado', 'Disponible')
         .order('numero')
 
       if (error) throw error

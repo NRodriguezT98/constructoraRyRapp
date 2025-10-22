@@ -39,25 +39,25 @@ export function FilterPanel<T = string>({
   return (
     <div
       className={cn(
-        'overflow-hidden rounded-xl border border-gray-200 bg-gradient-to-br from-gray-50 to-gray-100/50 p-4 dark:border-gray-700 dark:from-gray-800/50 dark:to-gray-900/50',
+        'overflow-hidden rounded-lg border border-gray-200 bg-gradient-to-br from-gray-50 to-gray-100/50 p-3 dark:border-gray-700 dark:from-gray-800/50 dark:to-gray-900/50',
         className
       )}
     >
-      <div className='mb-3 flex items-center gap-2'>
-        <Sparkles className='h-4 w-4 text-blue-600 dark:text-blue-400' />
-        <span className='text-sm font-semibold text-gray-700 dark:text-gray-300'>
+      <div className='mb-2 flex items-center gap-1.5'>
+        <Sparkles className='h-3.5 w-3.5 text-blue-600 dark:text-blue-400' />
+        <span className='text-xs font-semibold text-gray-700 dark:text-gray-300'>
           {title}
         </span>
       </div>
 
-      <div className='flex flex-wrap gap-2'>
+      <div className='flex flex-wrap gap-1.5'>
         {/* Botón "Todos" */}
         <button
           onClick={() => onChange(undefined)}
           className={cn(
-            'rounded-lg px-4 py-2 text-sm font-semibold transition-colors',
+            'rounded-md px-3 py-1.5 text-xs font-semibold transition-colors',
             value === undefined
-              ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-md'
+              ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-sm'
               : 'border border-gray-200 bg-white text-gray-700 hover:border-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:border-blue-500'
           )}
           type='button'
@@ -71,9 +71,9 @@ export function FilterPanel<T = string>({
             key={String(option.value)}
             onClick={() => onChange(option.value)}
             className={cn(
-              'rounded-lg px-4 py-2 text-sm font-semibold transition-colors',
+              'rounded-md px-3 py-1.5 text-xs font-semibold transition-colors',
               value === option.value
-                ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-md'
+                ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-sm'
                 : 'border border-gray-200 bg-white text-gray-700 hover:border-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:border-blue-500'
             )}
             type='button'

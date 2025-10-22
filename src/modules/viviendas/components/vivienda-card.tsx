@@ -6,7 +6,7 @@
 import type { Vivienda } from '../types'
 import { ViviendaCardAsignada } from './cards/vivienda-card-asignada'
 import { ViviendaCardDisponible } from './cards/vivienda-card-disponible'
-import { ViviendaCardPagada } from './cards/vivienda-card-pagada'
+import { ViviendaCardEntregada } from './cards/vivienda-card-entregada'
 
 interface ViviendaCardProps {
   vivienda: Vivienda
@@ -54,9 +54,9 @@ export function ViviendaCard({
         />
       )
 
-    case 'Pagada':
+    case 'Entregada':
       return (
-        <ViviendaCardPagada
+        <ViviendaCardEntregada
           vivienda={vivienda}
           onVerAbonos={onVerAbonos}
           onGenerarEscritura={onGenerarEscritura}

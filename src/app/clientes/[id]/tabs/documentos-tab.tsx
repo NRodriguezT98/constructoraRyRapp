@@ -51,29 +51,29 @@ export function DocumentosTab({ cliente }: DocumentosTabProps) {
   // Si está mostrando categorías (PATRÓN IGUAL A PROYECTOS)
   if (showCategorias && user) {
     return (
-      <div className='space-y-6'>
+      <div className='space-y-4'>
         {/* Header con botón volver */}
-        <div className='rounded-xl border border-purple-200 bg-white p-6 shadow-sm dark:border-purple-800 dark:bg-gray-800'>
-          <div className='mb-6 flex items-center gap-3'>
+        <div className='rounded-lg border border-purple-200 bg-white p-4 shadow-sm dark:border-purple-800 dark:bg-gray-800'>
+          <div className='mb-4 flex items-center gap-2.5'>
             <button
               onClick={() => setShowCategorias(false)}
-              className='flex items-center gap-2 rounded-lg border border-purple-300 bg-white px-4 py-2 text-sm font-medium text-purple-700 transition-colors hover:bg-purple-50 dark:border-purple-700 dark:bg-gray-700 dark:text-purple-300 dark:hover:bg-gray-600'
+              className='flex items-center gap-1.5 rounded-lg border border-purple-300 bg-white px-3 py-1.5 text-xs font-medium text-purple-700 transition-colors hover:bg-purple-50 dark:border-purple-700 dark:bg-gray-700 dark:text-purple-300 dark:hover:bg-gray-600'
             >
-              <ArrowLeft className='h-4 w-4' />
+              <ArrowLeft className='h-3.5 w-3.5' />
               <span>Volver a Documentos</span>
             </button>
           </div>
 
-          <h2 className='text-2xl font-bold text-gray-900 dark:text-white'>
+          <h2 className='text-xl font-bold text-gray-900 dark:text-white'>
             Gestionar Categorías
           </h2>
-          <p className='mt-2 text-sm text-gray-500 dark:text-gray-400'>
+          <p className='mt-1.5 text-xs text-gray-500 dark:text-gray-400'>
             Organiza los documentos del cliente con categorías personalizadas
           </p>
         </div>
 
         {/* Gestor de categorías */}
-        <div className='rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-800'>
+        <div className='rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-gray-800'>
           <CategoriasManager
             userId={user.id}
             onClose={() => setShowCategorias(false)}
@@ -87,8 +87,8 @@ export function DocumentosTab({ cliente }: DocumentosTabProps) {
   // Si está mostrando formulario de upload (PATRÓN IGUAL A PROYECTOS)
   if (showUpload && user) {
     return (
-      <div className='space-y-6'>
-        <div className='rounded-xl border border-purple-200 bg-white p-6 shadow-sm dark:border-purple-800 dark:bg-gray-800'>
+      <div className='space-y-4'>
+        <div className='rounded-lg border border-purple-200 bg-white p-4 shadow-sm dark:border-purple-800 dark:bg-gray-800'>
           <DocumentoUploadCliente
             clienteId={cliente.id}
             onSuccess={() => {
@@ -103,7 +103,7 @@ export function DocumentosTab({ cliente }: DocumentosTabProps) {
   }
 
   return (
-    <div className='space-y-6'>
+    <div className='space-y-4'>
       {/* Sección de Documentos de Identidad (PRIORITARIA) */}
       <SeccionDocumentosIdentidad
         clienteId={cliente.id}
@@ -124,35 +124,35 @@ export function DocumentosTab({ cliente }: DocumentosTabProps) {
       <div className="border-t border-gray-200 dark:border-gray-700"></div>
 
       {/* Header con acciones */}
-      <div className='rounded-xl border border-purple-200 bg-white p-6 shadow-sm dark:border-purple-800 dark:bg-gray-800'>
+      <div className='rounded-lg border border-purple-200 bg-white p-4 shadow-sm dark:border-purple-800 dark:bg-gray-800'>
         <div className='flex items-center justify-between'>
-          <div className='flex items-center gap-3'>
-            <div className='rounded-lg bg-gradient-to-br from-purple-500 to-pink-600 p-3'>
-              <FileText className='h-6 w-6 text-white' />
+          <div className='flex items-center gap-2.5'>
+            <div className='rounded-lg bg-gradient-to-br from-purple-500 to-pink-600 p-2.5'>
+              <FileText className='h-5 w-5 text-white' />
             </div>
             <div>
-              <h2 className='text-xl font-bold text-gray-900 dark:text-white'>
+              <h2 className='text-base font-bold text-gray-900 dark:text-white'>
                 Otros Documentos
               </h2>
-              <p className='text-sm text-gray-500 dark:text-gray-400'>
+              <p className='text-xs text-gray-500 dark:text-gray-400'>
                 {totalDocumentos} {totalDocumentos === 1 ? 'documento' : 'documentos'} almacenados
               </p>
             </div>
           </div>
 
-          <div className='flex gap-2'>
+          <div className='flex gap-1.5'>
             <button
               onClick={() => setShowCategorias(true)}
-              className='flex items-center gap-2 rounded-lg border border-purple-300 bg-white px-4 py-2 text-sm font-medium text-purple-700 transition-colors hover:bg-purple-50 dark:border-purple-700 dark:bg-gray-700 dark:text-purple-300 dark:hover:bg-gray-600'
+              className='flex items-center gap-1.5 rounded-lg border border-purple-300 bg-white px-3 py-1.5 text-xs font-medium text-purple-700 transition-colors hover:bg-purple-50 dark:border-purple-700 dark:bg-gray-700 dark:text-purple-300 dark:hover:bg-gray-600'
             >
-              <FolderCog className='h-4 w-4' />
+              <FolderCog className='h-3.5 w-3.5' />
               <span>Categorías</span>
             </button>
             <button
               onClick={() => setShowUpload(true)}
-              className='flex items-center gap-2 rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 px-4 py-2 text-sm font-medium text-white shadow-md transition-all hover:from-purple-700 hover:to-pink-700 hover:shadow-lg'
+              className='flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 px-3 py-1.5 text-xs font-medium text-white shadow-md transition-all hover:from-purple-700 hover:to-pink-700 hover:shadow-lg'
             >
-              <Upload className='h-4 w-4' />
+              <Upload className='h-3.5 w-3.5' />
               <span>Subir Documento</span>
             </button>
           </div>

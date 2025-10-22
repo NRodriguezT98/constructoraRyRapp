@@ -1,5 +1,5 @@
 /**
- * Componente Cierre Financiero
+ * Componente Configurar Fuentes de Pago
  *
  * Gestiona las 4 fuentes de pago para completar el valor de la negociación:
  * 1. Cuota Inicial (permite múltiples abonos)
@@ -7,13 +7,12 @@
  * 3. Subsidio Mi Casa Ya (pago único)
  * 4. Subsidio Caja de Compensación (pago único)
  *
- * ⚠️ NOMBRES DE CAMPOS VERIFICADOS EN: docs/DATABASE-SCHEMA-REFERENCE.md
+ * ⚠️ NOMBRES DE CAMPOS VERIFICADOS EN: docs/DATABASE-SCHEMA-REFERENCE-ACTUALIZADO.md
  */
 
 'use client'
 
 import { fuentesPagoService } from '@/modules/clientes/services/fuentes-pago.service'
-import { negociacionesService } from '@/modules/clientes/services/negociaciones.service'
 import { AnimatePresence, motion } from 'framer-motion'
 import {
     AlertCircle,
@@ -30,10 +29,8 @@ import {
     Save,
     Shield,
     Trash2,
-    TrendingUp,
     Upload,
-    Wallet,
-    X
+    Wallet
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
@@ -47,11 +44,10 @@ interface FuentePago {
   carta_asignacion_url?: string
 }
 
-interface CierreFinancieroProps {
+interface ConfigurarFuentesPagoProps {
   negociacionId: string
   valorTotal: number
-  onCierreCompleto: () => void
-  onCancelar: () => void
+  onFuentesActualizadas?: () => void
 }
 
 // Configuración de las fuentes de pago
@@ -114,17 +110,15 @@ const TIPOS_FUENTE = {
   },
 } as const
 
-export function CierreFinanciero({
+export function ConfigurarFuentesPago({
   negociacionId,
   valorTotal,
-  onCierreCompleto,
-  onCancelar,
-}: CierreFinancieroProps) {
+  onFuentesActualizadas,
+}: ConfigurarFuentesPagoProps) {
   // Estado
   const [fuentesPago, setFuentesPago] = useState<FuentePago[]>([])
   const [cargando, setCargando] = useState(true)
   const [guardando, setGuardando] = useState(false)
-  const [activando, setActivando] = useState(false)
   const [subiendoArchivo, setSubiendoArchivo] = useState<string | null>(null) // ID de fuente subiendo
   const [error, setError] = useState<string | null>(null)
   const [totales, setTotales] = useState({
@@ -317,11 +311,11 @@ export function CierreFinanciero({
         }
       }
 
-      // Pasar negociación a "Cierre Financiero"
-      await negociacionesService.pasarACierreFinanciero(negociacionId)
-
       // Recargar fuentes
       await cargarFuentesPago()
+
+      // Notificar actualización
+      onFuentesActualizadas?.()
 
       alert('✅ Fuentes de pago guardadas correctamente')
     } catch (err: any) {
@@ -332,36 +326,9 @@ export function CierreFinanciero({
     }
   }
 
-  const activarNegociacion = async () => {
-    try {
-      setActivando(true)
-      setError(null)
-
-      // Verificar que el cierre esté completo
-      const completo = await fuentesPagoService.verificarCierreFinancieroCompleto(
-        negociacionId,
-        valorTotal
-      )
-
-      if (!completo) {
-        setError(
-          'El cierre financiero no está completo. La suma de las fuentes debe ser igual al valor total de la negociación.'
-        )
-        return
-      }
-
-      // Activar negociación
-      await negociacionesService.activarNegociacion(negociacionId)
-
-      // Notificar éxito
-      onCierreCompleto()
-    } catch (err: any) {
-      console.error('Error activando negociación:', err)
-      setError(`Error activando negociación: ${err.message}`)
-    } finally {
-      setActivando(false)
-    }
-  }
+  // ✅ NOTA: La función activarNegociacion fue eliminada.
+  // Las negociaciones ahora se crean directamente en estado 'Activa'.
+  // Este componente solo gestiona las fuentes de pago, no cambia el estado de la negociación.
 
   if (cargando) {
     return (
@@ -380,17 +347,11 @@ export function CierreFinanciero({
       <div className="rounded-xl bg-gradient-to-r from-purple-600 to-blue-600 p-6 text-white">
         <div className="flex items-start justify-between">
           <div>
-            <h2 className="text-2xl font-bold">Cierre Financiero</h2>
+            <h2 className="text-2xl font-bold">Configurar Fuentes de Pago</h2>
             <p className="mt-2 text-purple-100">
               Configura las fuentes de pago para completar el valor de la negociación
             </p>
           </div>
-          <button
-            onClick={onCancelar}
-            className="rounded-lg bg-white/10 p-2 backdrop-blur-sm transition-colors hover:bg-white/20"
-          >
-            <X className="h-5 w-5" />
-          </button>
         </div>
 
         {/* Resumen de valores */}
@@ -723,7 +684,7 @@ export function CierreFinanciero({
         </motion.div>
       )}
 
-      {/* Estado del cierre */}
+      {/* Estado de las fuentes */}
       {fuentesPago.length > 0 && (
         <div
           className={`rounded-xl border-2 p-4 ${
@@ -746,7 +707,7 @@ export function CierreFinanciero({
                     : 'text-yellow-900 dark:text-yellow-100'
                 }`}
               >
-                {cierreCompleto ? '¡Cierre Financiero Completo!' : 'Cierre Incompleto'}
+                {cierreCompleto ? '¡Fuentes de Pago Completas!' : 'Configuración Incompleta'}
               </p>
               <p
                 className={`mt-1 text-sm ${
@@ -756,7 +717,7 @@ export function CierreFinanciero({
                 }`}
               >
                 {cierreCompleto
-                  ? 'Las fuentes de pago cubren el 100% del valor de la negociación. Puedes activar la negociación.'
+                  ? 'Las fuentes de pago cubren el 100% del valor de la negociación.'
                   : `La suma de las fuentes debe ser igual al valor total (${
                       totales.diferencia > 0 ? 'falta' : 'excede'
                     } $${Math.abs(totales.diferencia).toLocaleString('es-CO')})`}
@@ -766,20 +727,13 @@ export function CierreFinanciero({
         </div>
       )}
 
-      {/* Botones de acción */}
-      <div className="flex gap-3">
-        <button
-          onClick={onCancelar}
-          className="flex-1 rounded-xl border-2 border-gray-200 bg-white px-6 py-3 font-semibold text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
-        >
-          Cancelar
-        </button>
-
-        {fuentesPago.length > 0 && !cierreCompleto && (
+      {/* Botón de acción */}
+      {fuentesPago.length > 0 && (
+        <div className="flex justify-end">
           <button
             onClick={guardarFuentes}
             disabled={guardando}
-            className="flex-1 rounded-xl bg-purple-600 px-6 py-3 font-semibold text-white shadow-lg transition-all hover:bg-purple-700 hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-50"
+            className="rounded-xl bg-purple-600 px-6 py-3 font-semibold text-white shadow-lg transition-all hover:bg-purple-700 hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-50"
           >
             {guardando ? (
               <span className="flex items-center justify-center gap-2">
@@ -793,28 +747,8 @@ export function CierreFinanciero({
               </span>
             )}
           </button>
-        )}
-
-        {cierreCompleto && (
-          <button
-            onClick={activarNegociacion}
-            disabled={activando}
-            className="flex-1 rounded-xl bg-gradient-to-r from-green-600 to-emerald-600 px-6 py-3 font-semibold text-white shadow-lg transition-all hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {activando ? (
-              <span className="flex items-center justify-center gap-2">
-                <Loader2 className="h-5 w-5 animate-spin" />
-                Activando...
-              </span>
-            ) : (
-              <span className="flex items-center justify-center gap-2">
-                <TrendingUp className="h-5 w-5" />
-                Activar Negociación
-              </span>
-            )}
-          </button>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   )
 }

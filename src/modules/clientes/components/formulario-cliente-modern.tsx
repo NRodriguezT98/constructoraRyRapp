@@ -64,21 +64,21 @@ function ModernInput({
 }: any) {
   return (
     <div className='group'>
-      <label className='mb-2 flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300'>
-        <Icon className='h-4 w-4 text-purple-500' />
+      <label className='mb-1.5 flex items-center gap-1.5 text-xs font-medium text-gray-700 dark:text-gray-300'>
+        <Icon className='h-3.5 w-3.5 text-purple-500' />
         {label}
         {required && <span className='text-red-500'>*</span>}
       </label>
       <div className='relative'>
         <input
           {...props}
-          className='w-full rounded-xl border-2 border-gray-200 bg-white px-4 py-3 text-gray-900 transition-all placeholder:text-gray-400 hover:border-purple-300 focus:border-purple-500 focus:outline-none focus:ring-4 focus:ring-purple-500/10 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:hover:border-purple-600 dark:focus:border-purple-500'
+          className='w-full rounded-lg border-2 border-gray-200 bg-white px-3 py-2 text-gray-900 transition-all placeholder:text-gray-400 hover:border-purple-300 focus:border-purple-500 focus:outline-none focus:ring-4 focus:ring-purple-500/10 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:hover:border-purple-600 dark:focus:border-purple-500'
         />
         {error && (
           <motion.p
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className='mt-1.5 flex items-center gap-1 text-sm text-red-500'
+            className='mt-1 flex items-center gap-0.5 text-xs text-red-500'
           >
             <span className='font-medium'>⚠</span> {error}
           </motion.p>
@@ -99,24 +99,24 @@ function ModernSelect({
 }: any) {
   return (
     <div className='group'>
-      <label className='mb-2 flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300'>
-        <Icon className='h-4 w-4 text-purple-500' />
+      <label className='mb-1.5 flex items-center gap-1.5 text-xs font-medium text-gray-700 dark:text-gray-300'>
+        <Icon className='h-3.5 w-3.5 text-purple-500' />
         {label}
         {required && <span className='text-red-500'>*</span>}
       </label>
       <div className='relative'>
         <select
           {...props}
-          className='w-full appearance-none rounded-xl border-2 border-gray-200 bg-white px-4 py-3 text-gray-900 transition-all hover:border-purple-300 focus:border-purple-500 focus:outline-none focus:ring-4 focus:ring-purple-500/10 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:hover:border-purple-600'
+          className='w-full appearance-none rounded-lg border-2 border-gray-200 bg-white px-3 py-2 text-gray-900 transition-all hover:border-purple-300 focus:border-purple-500 focus:outline-none focus:ring-4 focus:ring-purple-500/10 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:hover:border-purple-600'
         >
           {children}
         </select>
-        <ChevronRight className='pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 rotate-90 text-gray-400' />
+        <ChevronRight className='pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 rotate-90 text-gray-400' />
         {error && (
           <motion.p
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className='mt-1.5 flex items-center gap-1 text-sm text-red-500'
+            className='mt-1 flex items-center gap-0.5 text-xs text-red-500'
           >
             <span className='font-medium'>⚠</span> {error}
           </motion.p>
@@ -135,20 +135,20 @@ function ModernTextarea({
 }: any) {
   return (
     <div className='group'>
-      <label className='mb-2 flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300'>
-        <Icon className='h-4 w-4 text-purple-500' />
+      <label className='mb-1.5 flex items-center gap-1.5 text-xs font-medium text-gray-700 dark:text-gray-300'>
+        <Icon className='h-3.5 w-3.5 text-purple-500' />
         {label}
       </label>
       <div className='relative'>
         <textarea
           {...props}
-          className='w-full rounded-xl border-2 border-gray-200 bg-white px-4 py-3 text-gray-900 transition-all placeholder:text-gray-400 hover:border-purple-300 focus:border-purple-500 focus:outline-none focus:ring-4 focus:ring-purple-500/10 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:hover:border-purple-600'
+          className='w-full rounded-lg border-2 border-gray-200 bg-white px-3 py-2 text-gray-900 transition-all placeholder:text-gray-400 hover:border-purple-300 focus:border-purple-500 focus:outline-none focus:ring-4 focus:ring-purple-500/10 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:hover:border-purple-600'
         />
         {error && (
           <motion.p
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className='mt-1.5 flex items-center gap-1 text-sm text-red-500'
+            className='mt-1 flex items-center gap-0.5 text-xs text-red-500'
           >
             <span className='font-medium'>⚠</span> {error}
           </motion.p>
@@ -275,30 +275,30 @@ export function FormularioCliente({
             exit={{ scale: 0.95, opacity: 0, y: 20 }}
             transition={{ type: 'spring', duration: 0.5, bounce: 0.3 }}
             onClick={(e) => e.stopPropagation()}
-            className='relative w-full max-w-4xl max-h-[90vh] overflow-hidden rounded-3xl bg-white shadow-2xl dark:bg-gray-900'
+            className='relative w-full max-w-4xl max-h-[90vh] overflow-hidden rounded-2xl bg-white shadow-2xl dark:bg-gray-900'
           >
             {/* Header con gradiente animado */}
-            <div className='relative overflow-hidden bg-gradient-to-r from-purple-600 via-violet-600 to-fuchsia-600 px-8 py-6'>
+            <div className='relative overflow-hidden bg-gradient-to-r from-purple-600 via-violet-600 to-fuchsia-600 px-6 py-5'>
               {/* Patrón de fondo animado */}
               <div className='absolute inset-0 opacity-20'>
                 <div className='absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(255,255,255,0.3),transparent)]' />
               </div>
 
               <div className='relative flex items-center justify-between'>
-                <div className='flex items-center gap-4'>
+                <div className='flex items-center gap-3'>
                   <motion.div
                     initial={{ rotate: -180, scale: 0 }}
                     animate={{ rotate: 0, scale: 1 }}
                     transition={{ type: 'spring', delay: 0.2 }}
-                    className='flex h-14 w-14 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-sm ring-2 ring-white/30'
+                    className='flex h-12 w-12 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm ring-2 ring-white/30'
                   >
-                    <Sparkles className='h-7 w-7 text-white' />
+                    <Sparkles className='h-6 w-6 text-white' />
                   </motion.div>
                   <div>
-                    <h2 className='text-2xl font-bold text-white'>
+                    <h2 className='text-xl font-bold text-white'>
                       {esEdicion ? 'Editar Cliente' : 'Nuevo Cliente'}
                     </h2>
-                    <p className='text-sm text-purple-100'>
+                    <p className='text-xs text-purple-100'>
                       {esEdicion
                         ? 'Actualiza la información del cliente'
                         : 'Paso ' + (currentStep + 1) + ' de ' + steps.length}
@@ -307,15 +307,15 @@ export function FormularioCliente({
                 </div>
                 <button
                   onClick={onClose}
-                  className='group rounded-xl p-2.5 text-white/80 transition-all hover:bg-white/20 hover:text-white hover:rotate-90'
+                  className='group rounded-lg p-2 text-white/80 transition-all hover:bg-white/20 hover:text-white hover:rotate-90'
                   type='button'
                 >
-                  <X className='h-6 w-6 transition-transform' />
+                  <X className='h-5 w-5 transition-transform' />
                 </button>
               </div>
 
               {/* Steps Indicator */}
-              <div className='relative mt-6 flex items-center justify-between'>
+              <div className='relative mt-5 flex items-center justify-between'>
                 {steps.map((step, idx) => {
                   const StepIcon = step.icon
                   const isActive = currentStep === step.id
@@ -333,7 +333,7 @@ export function FormularioCliente({
                           animate={{
                             scale: isActive ? 1.15 : 1,
                           }}
-                          className={`flex h-11 w-11 items-center justify-center rounded-xl shadow-lg transition-all ${
+                          className={`flex h-10 w-10 items-center justify-center rounded-lg shadow-lg transition-all ${
                             isCompleted
                               ? 'bg-white text-purple-600'
                               : isActive
@@ -342,13 +342,13 @@ export function FormularioCliente({
                           }`}
                         >
                           {isCompleted ? (
-                            <Check className='h-5 w-5' />
+                            <Check className='h-4 w-4' />
                           ) : (
-                            <StepIcon className='h-5 w-5' />
+                            <StepIcon className='h-4 w-4' />
                           )}
                         </motion.div>
                         <span
-                          className={`hidden text-sm font-semibold sm:block ${
+                          className={`hidden text-xs font-semibold sm:block ${
                             isActive
                               ? 'text-white'
                               : 'text-white/70'
@@ -358,7 +358,7 @@ export function FormularioCliente({
                         </span>
                       </button>
                       {idx < steps.length - 1 && (
-                        <div className='mx-3 h-1 flex-1 overflow-hidden rounded-full bg-white/20'>
+                        <div className='mx-2.5 h-1 flex-1 overflow-hidden rounded-full bg-white/20'>
                           <motion.div
                             initial={false}
                             animate={{
@@ -376,8 +376,8 @@ export function FormularioCliente({
             </div>
 
             {/* Form Content con scroll */}
-            <div className='max-h-[calc(90vh-240px)] overflow-y-auto'>
-              <form onSubmit={onSubmit} className='p-8'>
+            <div className='max-h-[calc(90vh-210px)] overflow-y-auto'>
+              <form onSubmit={onSubmit} className='p-6'>
                 <AnimatePresence mode='wait'>
                   <motion.div
                     key={currentStep}
@@ -388,18 +388,18 @@ export function FormularioCliente({
                   >
                     {/* Step 0: Información Personal */}
                     {currentStep === 0 && (
-                      <div className='space-y-6'>
-                        <div className='mb-6'>
-                          <h3 className='text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2'>
-                            <User className='h-5 w-5 text-purple-500' />
+                      <div className='space-y-4'>
+                        <div className='mb-5'>
+                          <h3 className='text-base font-semibold text-gray-900 dark:text-white flex items-center gap-1.5'>
+                            <User className='h-4 w-4 text-purple-500' />
                             Información Personal
                           </h3>
-                          <p className='mt-1 text-sm text-gray-500 dark:text-gray-400'>
+                          <p className='mt-0.5 text-xs text-gray-500 dark:text-gray-400'>
                             Datos básicos de identificación del cliente
                           </p>
                         </div>
 
-                        <div className='grid grid-cols-1 gap-6 md:grid-cols-2'>
+                        <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
                           <ModernInput
                             icon={User}
                             label='Nombres'
@@ -468,18 +468,18 @@ export function FormularioCliente({
 
                     {/* Step 1: Información de Contacto */}
                     {currentStep === 1 && (
-                      <div className='space-y-6'>
-                        <div className='mb-6'>
-                          <h3 className='text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2'>
-                            <Phone className='h-5 w-5 text-purple-500' />
+                      <div className='space-y-4'>
+                        <div className='mb-5'>
+                          <h3 className='text-base font-semibold text-gray-900 dark:text-white flex items-center gap-1.5'>
+                            <Phone className='h-4 w-4 text-purple-500' />
                             Información de Contacto
                           </h3>
-                          <p className='mt-1 text-sm text-gray-500 dark:text-gray-400'>
+                          <p className='mt-0.5 text-xs text-gray-500 dark:text-gray-400'>
                             Datos para comunicarnos con el cliente
                           </p>
                         </div>
 
-                        <div className='grid grid-cols-1 gap-6 md:grid-cols-2'>
+                        <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
                           <ModernInput
                             icon={Phone}
                             label='Teléfono Principal'
@@ -547,18 +547,18 @@ export function FormularioCliente({
 
                     {/* Step 2: Interés en Proyectos/Viviendas */}
                     {currentStep === 2 && !esEdicion && (
-                      <div className='space-y-6'>
-                        <div className='mb-6'>
-                          <h3 className='text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2'>
-                            <Heart className='h-5 w-5 text-rose-500' />
+                      <div className='space-y-4'>
+                        <div className='mb-5'>
+                          <h3 className='text-base font-semibold text-gray-900 dark:text-white flex items-center gap-1.5'>
+                            <Heart className='h-4 w-4 text-rose-500' />
                             ¿En qué está interesado?
                           </h3>
-                          <p className='mt-1 text-sm text-gray-500 dark:text-gray-400'>
+                          <p className='mt-0.5 text-xs text-gray-500 dark:text-gray-400'>
                             Opcional: Registra el proyecto o vivienda de interés del cliente
                           </p>
                         </div>
 
-                        <div className='grid grid-cols-1 gap-6'>
+                        <div className='grid grid-cols-1 gap-4'>
                           <ModernSelect
                             icon={Building2}
                             label='Proyecto de Interés'
@@ -588,7 +588,7 @@ export function FormularioCliente({
                               initial={{ opacity: 0, height: 0 }}
                               animate={{ opacity: 1, height: 'auto' }}
                               exit={{ opacity: 0, height: 0 }}
-                              className='space-y-6'
+                              className='space-y-4'
                             >
                               <ModernSelect
                                 icon={Home}
@@ -640,9 +640,9 @@ export function FormularioCliente({
                           )}
 
                           {!formData.interes_inicial?.proyecto_id && (
-                            <div className='rounded-xl border-2 border-dashed border-gray-200 bg-gray-50 p-6 text-center dark:border-gray-700 dark:bg-gray-800/50'>
-                              <Heart className='mx-auto h-12 w-12 text-gray-300 dark:text-gray-600' />
-                              <p className='mt-3 text-sm text-gray-500 dark:text-gray-400'>
+                            <div className='rounded-lg border-2 border-dashed border-gray-200 bg-gray-50 p-5 text-center dark:border-gray-700 dark:bg-gray-800/50'>
+                              <Heart className='mx-auto h-10 w-10 text-gray-300 dark:text-gray-600' />
+                              <p className='mt-2.5 text-xs text-gray-500 dark:text-gray-400'>
                                 Si el cliente no tiene un proyecto específico en mente,
                                 <br />
                                 puedes dejar esta sección vacía y continuar.
@@ -655,18 +655,18 @@ export function FormularioCliente({
 
                     {/* Step 3: Información Adicional */}
                     {currentStep === 3 && (
-                      <div className='space-y-6'>
-                        <div className='mb-6'>
-                          <h3 className='text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2'>
-                            <MessageSquare className='h-5 w-5 text-purple-500' />
+                      <div className='space-y-4'>
+                        <div className='mb-5'>
+                          <h3 className='text-base font-semibold text-gray-900 dark:text-white flex items-center gap-1.5'>
+                            <MessageSquare className='h-4 w-4 text-purple-500' />
                             Información Adicional
                           </h3>
-                          <p className='mt-1 text-sm text-gray-500 dark:text-gray-400'>
+                          <p className='mt-0.5 text-xs text-gray-500 dark:text-gray-400'>
                             Datos complementarios y observaciones
                           </p>
                         </div>
 
-                        <div className='grid grid-cols-1 gap-6'>
+                        <div className='grid grid-cols-1 gap-4'>
                           <ModernSelect
                             icon={Users}
                             label='¿Cómo nos conoció?'
@@ -720,23 +720,23 @@ export function FormularioCliente({
             </div>
 
             {/* Footer con botones */}
-            <div className='border-t border-gray-200 bg-gray-50 px-8 py-5 dark:border-gray-800 dark:bg-gray-900/50'>
+            <div className='border-t border-gray-200 bg-gray-50 px-6 py-4 dark:border-gray-800 dark:bg-gray-900/50'>
               <div className='flex items-center justify-between'>
                 <button
                   type='button'
                   onClick={prevStep}
                   disabled={currentStep === 0}
-                  className='flex items-center gap-2 rounded-xl border-2 border-gray-300 px-5 py-2.5 font-medium text-gray-700 transition-all hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-40 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800'
+                  className='flex items-center gap-1.5 rounded-lg border-2 border-gray-300 px-4 py-2 font-medium text-gray-700 transition-all hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-40 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800'
                 >
-                  <ChevronLeft className='h-5 w-5' />
+                  <ChevronLeft className='h-4 w-4' />
                   Anterior
                 </button>
 
-                <div className='flex gap-3'>
+                <div className='flex gap-2.5'>
                   <button
                     type='button'
                     onClick={onClose}
-                    className='rounded-xl border-2 border-gray-300 px-6 py-2.5 font-medium text-gray-700 transition-all hover:bg-gray-100 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800'
+                    className='rounded-lg border-2 border-gray-300 px-5 py-2 font-medium text-gray-700 transition-all hover:bg-gray-100 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800'
                     disabled={isSubmitting}
                   >
                     Cancelar
@@ -746,30 +746,30 @@ export function FormularioCliente({
                     <button
                       type='button'
                       onClick={nextStep}
-                      className='flex items-center gap-2 rounded-xl bg-gradient-to-r from-purple-600 to-violet-600 px-6 py-2.5 font-medium text-white shadow-lg shadow-purple-500/30 transition-all hover:shadow-xl hover:shadow-purple-500/40 hover:-translate-y-0.5'
+                      className='flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-purple-600 to-violet-600 px-5 py-2 font-medium text-white shadow-lg shadow-purple-500/30 transition-all hover:shadow-xl hover:shadow-purple-500/40 hover:-translate-y-0.5'
                     >
                       Siguiente
-                      <ChevronRight className='h-5 w-5' />
+                      <ChevronRight className='h-4 w-4' />
                     </button>
                   ) : (
                     <button
                       type='submit'
                       onClick={onSubmit}
                       disabled={isSubmitting}
-                      className='group flex items-center gap-2 rounded-xl bg-gradient-to-r from-purple-600 to-violet-600 px-6 py-2.5 font-medium text-white shadow-lg shadow-purple-500/30 transition-all hover:shadow-xl hover:shadow-purple-500/40 hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0'
+                      className='group flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-purple-600 to-violet-600 px-5 py-2 font-medium text-white shadow-lg shadow-purple-500/30 transition-all hover:shadow-xl hover:shadow-purple-500/40 hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0'
                     >
                       {isSubmitting ? (
                         <>
                           <motion.div
                             animate={{ rotate: 360 }}
                             transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                            className='h-5 w-5 rounded-full border-2 border-white border-t-transparent'
+                            className='h-4 w-4 rounded-full border-2 border-white border-t-transparent'
                           />
                           Guardando...
                         </>
                       ) : (
                         <>
-                          <Check className='h-5 w-5' />
+                          <Check className='h-4 w-4' />
                           {esEdicion ? 'Actualizar Cliente' : 'Crear Cliente'}
                         </>
                       )}

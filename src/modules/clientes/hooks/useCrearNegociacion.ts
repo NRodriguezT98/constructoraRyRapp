@@ -111,17 +111,10 @@ export function useCrearNegociacion(): UseCrearNegociacionReturn {
         if (!fuente.monto_aprobado || fuente.monto_aprobado <= 0) {
           errores.push(`${fuente.tipo}: El monto debe ser mayor a 0`)
         }
-
-        // Validar datos específicos por tipo
-        if (fuente.tipo !== 'Cuota Inicial') {
-          if (!fuente.entidad || fuente.entidad.trim() === '') {
-            errores.push(`${fuente.tipo}: Debe especificar la entidad`)
-          }
-          if (!fuente.numero_referencia || fuente.numero_referencia.trim() === '') {
-            errores.push(`${fuente.tipo}: Debe especificar el número de referencia`)
-          }
-        }
       })
+
+      // Nota: Las validaciones de entidad y numero_referencia se hacen
+      // en los pasos del wizard antes de llegar aquí
     }
 
     return {
@@ -185,7 +178,7 @@ export function useCrearNegociacion(): UseCrearNegociacionReturn {
       )
 
       if (yaExiste) {
-        const mensajeError = 'Ya existe una negociación activa para este cliente y vivienda'
+        const mensajeError = 'Ya existe una negociación activa para este cliente con esta vivienda.\n\nPara crear una nueva negociación, primero debe cancelar o completar la negociación existente.'
         console.warn('⚠️', mensajeError)
         setError(mensajeError)
         return null
@@ -211,7 +204,29 @@ export function useCrearNegociacion(): UseCrearNegociacionReturn {
       setNegociacionCreada(negociacion)
       return negociacion
     } catch (err) {
-      const mensajeError = err instanceof Error ? err.message : 'Error al crear negociación'
+      let mensajeError = 'Error al crear negociación'
+
+      // Manejar errores específicos de PostgreSQL
+      if (err && typeof err === 'object' && 'code' in err) {
+        const pgError = err as { code: string; message: string }
+
+        if (pgError.code === '23505') {
+          // Violación de constraint único
+          if (pgError.message.includes('negociaciones_cliente_vivienda_unica')) {
+            mensajeError = 'Ya existe una negociación activa para este cliente con esta vivienda.\n\nPara crear una nueva negociación, primero debe cancelar o completar la negociación existente desde el perfil del cliente.'
+          } else {
+            mensajeError = 'Ya existe un registro con estos datos. Por favor, verifique la información.'
+          }
+        } else if (pgError.code === '23503') {
+          // Violación de foreign key
+          mensajeError = 'Error de referencia: Verifique que el cliente y la vivienda existan.'
+        } else {
+          mensajeError = pgError.message || mensajeError
+        }
+      } else if (err instanceof Error) {
+        mensajeError = err.message
+      }
+
       console.error('❌ Error creando negociación:', err)
       setError(mensajeError)
       return null

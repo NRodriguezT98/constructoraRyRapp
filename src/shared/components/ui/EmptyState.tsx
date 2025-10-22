@@ -41,13 +41,13 @@ export function EmptyState({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
       className={cn(
-        'flex flex-col items-center justify-center px-6 py-16 text-center',
+        'flex flex-col items-center justify-center px-4 py-8 text-center',
         className
       )}
     >
-      {/* Fondo decorativo con partículas */}
+      {/* Fondo decorativo con menos partículas */}
       <div className='pointer-events-none absolute inset-0 overflow-hidden'>
-        {particlePositions.map((pos, i) => (
+        {particlePositions.slice(0, 4).map((pos, i) => (
           <motion.div
             key={i}
             className='absolute h-1 w-1 rounded-full bg-gradient-to-r from-blue-500/20 to-purple-500/20'
@@ -69,7 +69,7 @@ export function EmptyState({
         ))}
       </div>
 
-      {/* Ícono principal con efectos premium */}
+      {/* Ícono compacto */}
       {Icon && (
         <motion.div
           initial={{ scale: 0 }}
@@ -80,11 +80,11 @@ export function EmptyState({
             damping: 15,
             delay: 0.1,
           }}
-          className='relative mb-6'
+          className='relative mb-4'
         >
-          {/* Resplandor exterior animado */}
+          {/* Resplandor sutil */}
           <motion.div
-            className='absolute inset-0 rounded-full bg-gradient-to-r from-gray-400 to-gray-500 opacity-20 blur-2xl dark:from-gray-500 dark:to-gray-600'
+            className='absolute inset-0 rounded-full bg-gradient-to-r from-gray-400 to-gray-500 opacity-20 blur-xl dark:from-gray-500 dark:to-gray-600'
             animate={{
               scale: [1, 1.2, 1],
               opacity: [0.2, 0.3, 0.2],
@@ -96,76 +96,31 @@ export function EmptyState({
             }}
           />
 
-          {/* Círculos decorativos */}
-          <motion.div
-            className='absolute -inset-4 rounded-full border-2 border-dashed border-gray-300 dark:border-gray-600'
-            animate={{
-              rotate: [0, 360],
-            }}
-            transition={{
-              duration: 20,
-              repeat: Infinity,
-              ease: 'linear',
-            }}
-          />
-
           {/* Contenedor del ícono */}
-          <div className='relative rounded-full bg-gradient-to-br from-gray-100 to-gray-200 p-6 shadow-lg dark:from-gray-800 dark:to-gray-700'>
-            <motion.div
-              animate={{
-                y: [0, -8, 0],
-              }}
-              transition={{
-                duration: 3,
-                repeat: Infinity,
-                ease: 'easeInOut',
-              }}
-            >
-              <Icon
-                className='h-16 w-16 text-gray-400 dark:text-gray-500'
-                strokeWidth={1.5}
-              />
-            </motion.div>
-          </div>
-
-          {/* Destellos decorativos */}
-          {[...Array(3)].map((_, i) => (
-            <motion.div
-              key={i}
-              className='absolute h-2 w-2 rounded-full bg-gradient-to-r from-blue-400 to-purple-400'
-              style={{
-                top: `${20 + i * 20}%`,
-                right: `${-10 + i * 5}%`,
-              }}
-              animate={{
-                scale: [1, 1.5, 1],
-                opacity: [0.3, 0.8, 0.3],
-              }}
-              transition={{
-                duration: 2,
-                repeat: Infinity,
-                delay: i * 0.3,
-              }}
+          <div className='relative rounded-full bg-gradient-to-br from-gray-100 to-gray-200 p-4 shadow-md dark:from-gray-800 dark:to-gray-700'>
+            <Icon
+              className='h-10 w-10 text-gray-400 dark:text-gray-500'
+              strokeWidth={1.5}
             />
-          ))}
+          </div>
         </motion.div>
       )}
 
-      {/* Título con gradiente sutil */}
+      {/* Título compacto */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
-        className='mb-3'
+        className='mb-2'
       >
-        <h3 className='text-2xl font-bold text-gray-900 dark:text-white'>
+        <h3 className='text-lg font-bold text-gray-900 dark:text-white'>
           {title}
         </h3>
         {/* Línea decorativa */}
         <motion.div
-          className='mx-auto mt-2 h-1 rounded-full bg-gradient-to-r from-transparent via-gray-300 to-transparent dark:via-gray-600'
+          className='mx-auto mt-1 h-0.5 rounded-full bg-gradient-to-r from-transparent via-gray-300 to-transparent dark:via-gray-600'
           initial={{ width: 0 }}
-          animate={{ width: '60%' }}
+          animate={{ width: '50%' }}
           transition={{ delay: 0.4, duration: 0.6 }}
         />
       </motion.div>
@@ -176,21 +131,21 @@ export function EmptyState({
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className='mb-8 max-w-md text-base leading-relaxed text-gray-600 dark:text-gray-400'
+          className='mb-5 max-w-md text-sm leading-relaxed text-gray-600 dark:text-gray-400'
         >
           {description}
         </motion.p>
       )}
 
-      {/* Botón de acción premium */}
+      {/* Botón de acción compacto */}
       {action && (
         <motion.button
           onClick={action.onClick}
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
-          className='group relative overflow-hidden rounded-xl px-8 py-4 font-bold text-white shadow-lg'
-          whileHover={{ scale: 1.05, y: -2 }}
+          className='group relative overflow-hidden rounded-lg px-4 py-2 text-sm font-bold text-white shadow-md'
+          whileHover={{ scale: 1.03 }}
           whileTap={{ scale: 0.98 }}
         >
           {/* Gradiente de fondo */}
@@ -198,55 +153,17 @@ export function EmptyState({
 
           {/* Resplandor en hover */}
           <motion.div
-            className='absolute inset-0 bg-gradient-to-r from-blue-400 via-purple-400 to-blue-400 opacity-0 blur-xl transition-opacity duration-500 group-hover:opacity-100'
+            className='absolute inset-0 bg-gradient-to-r from-blue-400 via-purple-400 to-blue-400 opacity-0 blur-lg transition-opacity duration-500 group-hover:opacity-100'
             initial={false}
           />
 
-          {/* Efecto de brillo deslizante */}
-          <motion.div
-            className='absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent'
-            animate={{
-              x: ['-200%', '200%'],
-            }}
-            transition={{
-              duration: 3,
-              repeat: Infinity,
-              ease: 'easeInOut',
-              repeatDelay: 1,
-            }}
-          />
-
           {/* Contenido del botón */}
-          <span className='relative flex items-center gap-3 text-base'>
+          <span className='relative flex items-center gap-2'>
             {ActionIcon && (
-              <motion.div
-                animate={{
-                  rotate: [0, 15, -15, 0],
-                }}
-                transition={{
-                  duration: 0.5,
-                  repeat: Infinity,
-                  repeatDelay: 3,
-                }}
-              >
-                <ActionIcon className='h-5 w-5' strokeWidth={2.5} />
-              </motion.div>
+              <ActionIcon className='h-4 w-4' strokeWidth={2.5} />
             )}
             {action.label}
-
-            {/* Sparkles decorativo */}
-            <motion.div
-              animate={{
-                rotate: [0, 360],
-              }}
-              transition={{
-                duration: 3,
-                repeat: Infinity,
-                ease: 'linear',
-              }}
-            >
-              <Sparkles className='h-4 w-4' />
-            </motion.div>
+            <Sparkles className='h-3.5 w-3.5' />
           </span>
         </motion.button>
       )}

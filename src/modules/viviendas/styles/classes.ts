@@ -6,25 +6,25 @@ import { cn } from '@/lib/utils'
 
 export const viviendasPageStyles = {
   container: cn(
-    'flex flex-col gap-6 p-6',
+    'flex flex-col gap-4 p-4',
     'min-h-screen bg-background'
   ),
 
   header: cn(
     'flex items-center justify-between',
-    'mb-6'
+    'mb-4'
   ),
 
   grid: cn(
-    'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'
+    'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'
   ),
 
   loadingGrid: cn(
-    'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'
+    'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'
   ),
 
   loadingCard: cn(
-    'h-64 bg-muted animate-pulse rounded-lg'
+    'h-56 bg-muted animate-pulse rounded-lg'
   ),
 } as const
 
@@ -37,28 +37,28 @@ export const viviendaCardStyles = {
   ),
 
   header: cn(
-    'p-4 border-b bg-muted/30'
+    'p-3 border-b bg-muted/30'
   ),
 
   content: cn(
-    'p-4 space-y-3'
+    'p-3 space-y-2.5'
   ),
 
   footer: cn(
-    'p-4 border-t bg-muted/20',
+    'p-3 border-t bg-muted/20',
     'flex items-center justify-between'
   ),
 
   badge: cn(
-    'px-2 py-1 rounded-full text-xs font-medium'
+    'px-2 py-0.5 rounded-full text-[10px] font-medium'
   ),
 
   actions: cn(
-    'flex items-center gap-2'
+    'flex items-center gap-1.5'
   ),
 
   button: cn(
-    'p-2 rounded-md transition-colors',
+    'p-1.5 rounded-md transition-colors',
     'hover:bg-muted'
   ),
 } as const

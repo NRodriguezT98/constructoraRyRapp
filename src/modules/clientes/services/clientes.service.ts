@@ -60,7 +60,7 @@ class ClientesService {
       .select(
         `
         *,
-        negociaciones (
+        negociaciones!negociaciones_cliente_id_fkey (
           id,
           estado,
           valor_total,
@@ -68,13 +68,13 @@ class ClientesService {
           saldo_pendiente,
           porcentaje_pagado,
           fecha_negociacion,
-          fecha_cierre_financiero,
-          viviendas (
+          fecha_completada,
+          viviendas!negociaciones_vivienda_id_fkey (
             numero,
             tipo_vivienda,
-            manzanas (
+            manzanas!viviendas_manzana_id_fkey (
               nombre,
-              proyectos (
+              proyectos!manzanas_proyecto_id_fkey (
                 nombre
               )
             )

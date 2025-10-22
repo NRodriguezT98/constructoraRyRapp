@@ -1,17 +1,16 @@
 /**
  * Servicio de Negociaciones
  *
- * Gestiona la vinculación Cliente + Vivienda + Cierre Financiero
+ * Gestiona la vinculación Cliente + Vivienda + Pagos
  *
  * ⚠️ NOMBRES DE CAMPOS VERIFICADOS EN: docs/DATABASE-SCHEMA-REFERENCE.md
+ * ✅ ACTUALIZADO: 2025-10-22 (Migración 003)
  *
- * Estados de negociación:
- * - 'En Proceso' → Negociando
- * - 'Cierre Financiero' → Configurando fuentes de pago
- * - 'Activa' → Recibiendo abonos
- * - 'Completada' → 100% pagado
- * - 'Cancelada' → No se concretó
- * - 'Renuncia' → Cliente renunció
+ * Estados de negociación (CHECK constraint: negociaciones_estado_check):
+ * - 'Activa' → Negociación activa recibiendo abonos
+ * - 'Suspendida' → Temporalmente pausada
+ * - 'Cerrada por Renuncia' → Cliente renunció (vinculada a tabla renuncias)
+ * - 'Completada' → 100% pagado y entregado
  */
 
 import { supabase } from '@/lib/supabase/client-browser'
@@ -42,11 +41,7 @@ export interface ActualizarNegociacionDTO {
   estado?: EstadoNegociacion
   valor_negociado?: number
   descuento_aplicado?: number
-  fecha_cierre_financiero?: string
-  fecha_activacion?: string
-  fecha_completada?: string
-  fecha_cancelacion?: string
-  motivo_cancelacion?: string
+  fecha_completada?: string // ⭐ Requerida cuando estado='Completada'
   notas?: string
 }
 
@@ -57,19 +52,18 @@ class NegociacionesService {
   /**
    * Crear nueva negociación CON o SIN fuentes de pago (transaccional)
    *
-   * 🔄 RETROCOMPATIBILIDAD:
-   * - Si `fuentes_pago` se proporciona → Estado "Cierre Financiero" (nuevo flujo)
-   * - Si NO se proporciona → Estado "En Proceso" (flujo antiguo)
+   * ✅ FLUJO SIMPLIFICADO (2025-10-22):
+   * - Negociación se crea DIRECTO en estado 'Activa'
+   * - Fuentes de pago son OPCIONALES (se pueden agregar después)
+   * - Cliente pasa a 'Activo'
+   * - Vivienda pasa a 'Asignada'
    *
-   * Flujo completo (nuevo):
-   * 1. Crear negociación
-   * 2. Crear todas las fuentes de pago
-   * 3. Actualizar vivienda → 'reservada'
+   * Pasos:
+   * 1. Crear negociación en estado 'Activa'
+   * 2. [Opcional] Crear fuentes de pago si se proporcionan
+   * 3. Actualizar vivienda → 'Asignada'
    * 4. Actualizar cliente → 'Activo'
    * 5. Si algún paso falla, se hace rollback
-   *
-   * Flujo simple (antiguo):
-   * 1. Crear negociación en estado "En Proceso"
    */
   async crearNegociacion(datos: CrearNegociacionDTO): Promise<Negociacion> {
     try {
@@ -77,11 +71,11 @@ class NegociacionesService {
 
       console.log('📝 Creando negociación:', {
         ...datos,
-        modo: tieneFuentesPago ? 'CON fuentes de pago (nuevo)' : 'SIN fuentes (antiguo)',
+        fuentes: tieneFuentesPago ? `${datos.fuentes_pago!.length} fuentes` : 'sin fuentes',
       })
 
       // ==========================================
-      // PASO 1: Crear negociación
+      // PASO 1: Crear negociación en estado 'Activa'
       // ==========================================
       const { data: negociacion, error: errorNegociacion } = await supabase
         .from('negociaciones')
@@ -91,8 +85,7 @@ class NegociacionesService {
           valor_negociado: datos.valor_negociado,
           descuento_aplicado: datos.descuento_aplicado || 0,
           notas: datos.notas,
-          // ⭐ Estado depende del flujo:
-          estado: tieneFuentesPago ? 'Cierre Financiero' : 'En Proceso',
+          estado: 'Activa', // ⭐ SIEMPRE 'Activa' (simplificado)
         })
         .select()
         .single()
@@ -102,10 +95,10 @@ class NegociacionesService {
         throw errorNegociacion
       }
 
-      console.log('✅ Negociación creada:', negociacion.id)
+      console.log('✅ Negociación creada en estado "Activa":', negociacion.id)
 
       // ==========================================
-      // PASO 2: Crear fuentes de pago (si existen)
+      // PASO 2: Crear fuentes de pago (OPCIONAL)
       // ==========================================
       if (datos.fuentes_pago && datos.fuentes_pago.length > 0) {
         console.log(`📝 Creando ${datos.fuentes_pago.length} fuentes de pago...`)
@@ -118,7 +111,7 @@ class NegociacionesService {
           numero_referencia: fuente.numero_referencia || null,
           carta_aprobacion_url: fuente.carta_aprobacion_url || null,
           carta_asignacion_url: fuente.carta_asignacion_url || null,
-          permite_multiples_abonos: fuente.tipo === 'Cuota Inicial', // Auto-configurado
+          permite_multiples_abonos: fuente.tipo === 'Cuota Inicial',
           estado: 'Pendiente',
         }))
 
@@ -128,65 +121,68 @@ class NegociacionesService {
 
         if (errorFuentes) {
           console.error('❌ Error creando fuentes de pago:', errorFuentes)
-
-          // ROLLBACK: Eliminar negociación
+          // ROLLBACK
           await supabase.from('negociaciones').delete().eq('id', negociacion.id)
-          console.warn('⚠️ Rollback: Negociación eliminada')
-
           throw new Error(`Error creando fuentes de pago: ${errorFuentes.message}`)
         }
 
         console.log('✅ Fuentes de pago creadas')
-
-        // ==========================================
-        // PASO 3: Actualizar vivienda → 'reservada' (SOLO NUEVO FLUJO)
-        // ==========================================
-        console.log('📝 Actualizando vivienda a estado "reservada"...')
-        const { error: errorVivienda } = await supabase
-          .from('viviendas')
-          .update({ estado: 'reservada' })
-          .eq('id', datos.vivienda_id)
-
-        if (errorVivienda) {
-          console.error('❌ Error actualizando vivienda:', errorVivienda)
-
-          // ROLLBACK: Eliminar fuentes + negociación
-          await supabase.from('fuentes_pago').delete().eq('negociacion_id', negociacion.id)
-          await supabase.from('negociaciones').delete().eq('id', negociacion.id)
-          console.warn('⚠️ Rollback: Negociación y fuentes eliminadas')
-
-          throw new Error(`Error actualizando vivienda: ${errorVivienda.message}`)
-        }
-
-        console.log('✅ Vivienda actualizada a "reservada"')
-
-        // ==========================================
-        // PASO 4: Actualizar cliente → 'Activo' (SOLO NUEVO FLUJO)
-        // ==========================================
-        console.log('📝 Actualizando cliente a estado "Activo"...')
-        const { error: errorCliente } = await supabase
-          .from('clientes')
-          .update({ estado: 'Activo' })
-          .eq('id', datos.cliente_id)
-
-        if (errorCliente) {
-          console.error('❌ Error actualizando cliente:', errorCliente)
-
-          // ROLLBACK: Eliminar fuentes + negociación + revertir vivienda
-          await supabase.from('fuentes_pago').delete().eq('negociacion_id', negociacion.id)
-          await supabase.from('negociaciones').delete().eq('id', negociacion.id)
-          await supabase.from('viviendas').update({ estado: 'disponible' }).eq('id', datos.vivienda_id)
-          console.warn('⚠️ Rollback: Todo revertido')
-
-          throw new Error(`Error actualizando cliente: ${errorCliente.message}`)
-        }
-
-        console.log('✅ Cliente actualizado a "Activo"')
-        console.log('✅ ¡Negociación creada exitosamente con cierre financiero completo!')
-      } else {
-        // Flujo antiguo: solo se crea la negociación
-        console.log('✅ Negociación creada en estado "En Proceso" (flujo antiguo)')
       }
+
+      // ==========================================
+      // PASO 3: Actualizar vivienda → 'Asignada'
+      // ==========================================
+      console.log('📝 Actualizando vivienda a estado "Asignada"...')
+      const { error: errorVivienda } = await supabase
+        .from('viviendas')
+        .update({
+          estado: 'Asignada',
+          cliente_id: datos.cliente_id,
+          negociacion_id: negociacion.id, // ⭐ NUEVO campo
+          fecha_asignacion: new Date().toISOString(),
+        })
+        .eq('id', datos.vivienda_id)
+
+      if (errorVivienda) {
+        console.error('❌ Error actualizando vivienda:', errorVivienda)
+        // ROLLBACK
+        if (tieneFuentesPago) {
+          await supabase.from('fuentes_pago').delete().eq('negociacion_id', negociacion.id)
+        }
+        await supabase.from('negociaciones').delete().eq('id', negociacion.id)
+        throw new Error(`Error actualizando vivienda: ${errorVivienda.message}`)
+      }
+
+      console.log('✅ Vivienda actualizada a "Asignada"')
+
+      // ==========================================
+      // PASO 4: Actualizar cliente → 'Activo'
+      // ==========================================
+      console.log('📝 Actualizando cliente a estado "Activo"...')
+      const { error: errorCliente } = await supabase
+        .from('clientes')
+        .update({ estado: 'Activo' })
+        .eq('id', datos.cliente_id)
+
+      if (errorCliente) {
+        console.error('❌ Error actualizando cliente:', errorCliente)
+        // ROLLBACK completo
+        if (tieneFuentesPago) {
+          await supabase.from('fuentes_pago').delete().eq('negociacion_id', negociacion.id)
+        }
+        await supabase.from('negociaciones').delete().eq('id', negociacion.id)
+        await supabase.from('viviendas').update({
+          estado: 'Disponible',
+          cliente_id: null,
+          negociacion_id: null,
+          fecha_asignacion: null,
+        }).eq('id', datos.vivienda_id)
+        throw new Error(`Error actualizando cliente: ${errorCliente.message}`)
+      }
+
+      console.log('✅ Cliente actualizado a "Activo"')
+      console.log('🎉 ¡Negociación creada exitosamente!')
+
       return negociacion as Negociacion
 
     } catch (error) {
@@ -221,12 +217,37 @@ class NegociacionesService {
     try {
       const { data, error } = await supabase
         .from('negociaciones')
-        .select('*')
+        .select(`
+          *,
+          vivienda:viviendas!negociaciones_vivienda_id_fkey (
+            id,
+            numero,
+            valor_base,
+            estado,
+            manzanas!viviendas_manzana_id_fkey (
+              id,
+              nombre,
+              proyecto:proyectos!manzanas_proyecto_id_fkey (
+                id,
+                nombre,
+                estado,
+                ubicacion
+              )
+            )
+          )
+        `)
         .eq('cliente_id', clienteId)
         .order('fecha_creacion', { ascending: false })
 
       if (error) throw error
-      return (data as Negociacion[]) || []
+
+      // Mapear para tener proyecto en el nivel superior
+      const negociacionesConProyecto = (data || []).map((neg: any) => ({
+        ...neg,
+        proyecto: neg.vivienda?.manzanas?.proyecto || null
+      }))
+
+      return negociacionesConProyecto as Negociacion[]
     } catch (error) {
       console.error('❌ Error obteniendo negociaciones del cliente:', error)
       return []
@@ -242,7 +263,7 @@ class NegociacionesService {
         .from('negociaciones')
         .select('*')
         .eq('vivienda_id', viviendaId)
-        .in('estado', ['En Proceso', 'Cierre Financiero', 'Activa'])
+        .in('estado', ['Activa', 'Suspendida']) // ⭐ ACTUALIZADO: Solo estados activos
         .order('fecha_creacion', { ascending: false })
         .limit(1)
         .single()
@@ -283,54 +304,42 @@ class NegociacionesService {
   }
 
   /**
-   * Pasar negociación a Cierre Financiero
+   * Suspender negociación (pausar temporalmente)
    */
-  async pasarACierreFinanciero(id: string): Promise<Negociacion> {
+  async suspenderNegociacion(id: string, motivo?: string): Promise<Negociacion> {
     return this.actualizarNegociacion(id, {
-      estado: 'Cierre Financiero',
-      fecha_cierre_financiero: new Date().toISOString(),
+      estado: 'Suspendida',
+      notas: motivo ? `[SUSPENDIDA] ${motivo}` : undefined,
     })
   }
 
   /**
-   * Activar negociación (cuando cierre financiero está completo)
+   * Reactivar negociación suspendida
    */
-  async activarNegociacion(id: string): Promise<Negociacion> {
+  async reactivarNegociacion(id: string): Promise<Negociacion> {
     return this.actualizarNegociacion(id, {
       estado: 'Activa',
-      fecha_activacion: new Date().toISOString(),
     })
   }
 
   /**
    * Completar negociación (100% pagado)
+   * ⚠️ Requiere fecha_completada (constraint de DB)
    */
   async completarNegociacion(id: string): Promise<Negociacion> {
     return this.actualizarNegociacion(id, {
       estado: 'Completada',
-      fecha_completada: new Date().toISOString(),
+      fecha_completada: new Date().toISOString(), // ⭐ REQUERIDO por constraint
     })
   }
 
   /**
-   * Cancelar negociación
+   * Cerrar negociación por renuncia
+   * ⚠️ Debe tener registro en tabla 'renuncias'
    */
-  async cancelarNegociacion(id: string, motivo: string): Promise<Negociacion> {
+  async cerrarPorRenuncia(id: string): Promise<Negociacion> {
     return this.actualizarNegociacion(id, {
-      estado: 'Cancelada',
-      fecha_cancelacion: new Date().toISOString(),
-      motivo_cancelacion: motivo,
-    })
-  }
-
-  /**
-   * Registrar renuncia
-   */
-  async registrarRenuncia(id: string, motivo: string): Promise<Negociacion> {
-    return this.actualizarNegociacion(id, {
-      estado: 'Renuncia',
-      fecha_cancelacion: new Date().toISOString(),
-      motivo_cancelacion: motivo,
+      estado: 'Cerrada por Renuncia',
     })
   }
 
@@ -347,7 +356,7 @@ class NegociacionesService {
         .select('id', { count: 'exact', head: true })
         .eq('cliente_id', clienteId)
         .eq('vivienda_id', viviendaId)
-        .in('estado', ['En Proceso', 'Cierre Financiero', 'Activa'])
+        .in('estado', ['Activa', 'Suspendida']) // ⭐ ACTUALIZADO
 
       if (error) throw error
       return (count ?? 0) > 0
@@ -358,16 +367,31 @@ class NegociacionesService {
   }
 
   /**
-   * Eliminar negociación (solo si está en 'En Proceso')
+   * Eliminar negociación (solo si está recién creada y sin movimientos)
+   * ⚠️ PRECAUCIÓN: Verificar que no tenga abonos antes de eliminar
    */
   async eliminarNegociacion(id: string): Promise<void> {
     try {
-      // Verificar estado primero
-      const negociacion = await this.obtenerNegociacion(id)
-      if (!negociacion) throw new Error('Negociación no encontrada')
+      // Verificar que no tenga abonos
+      const { data: abonos } = await supabase
+        .from('abonos')
+        .select('id')
+        .eq('negociacion_id', id)
+        .limit(1)
 
-      if (negociacion.estado !== 'En Proceso') {
-        throw new Error('Solo se pueden eliminar negociaciones en proceso')
+      if (abonos && abonos.length > 0) {
+        throw new Error('No se puede eliminar una negociación con abonos registrados')
+      }
+
+      // Verificar que no tenga fuentes de pago
+      const { data: fuentes } = await supabase
+        .from('fuentes_pago')
+        .select('id')
+        .eq('negociacion_id', id)
+        .limit(1)
+
+      if (fuentes && fuentes.length > 0) {
+        throw new Error('No se puede eliminar una negociación con fuentes de pago')
       }
 
       const { error } = await supabase

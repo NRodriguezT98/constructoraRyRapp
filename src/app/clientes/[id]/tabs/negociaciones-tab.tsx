@@ -2,8 +2,10 @@
 
 import { negociacionesService } from '@/modules/clientes/services/negociaciones.service'
 import type { Cliente } from '@/modules/clientes/types'
+import { Tooltip } from '@/shared/components/ui'
 import { formatDistanceToNow } from 'date-fns'
 import { es } from 'date-fns/locale'
+import { AnimatePresence, motion } from 'framer-motion'
 import {
     AlertCircle,
     ArrowRight,
@@ -25,27 +27,36 @@ interface NegociacionesTabProps {
 }
 
 // Colores por estado
+// ✅ ACTUALIZADO (2025-10-22): Estados según migración 003
+// Consultar: docs/DATABASE-SCHEMA-REFERENCE-ACTUALIZADO.md
 const ESTADOS_CONFIG = {
-  'En Proceso': {
-    color: 'blue',
-    icon: Clock,
-    bg: 'bg-blue-100 dark:bg-blue-900/30',
-    text: 'text-blue-700 dark:text-blue-300',
-    border: 'border-blue-200 dark:border-blue-800'
-  },
-  'Completada': {
+  'Activa': {
     color: 'green',
     icon: CheckCircle2,
     bg: 'bg-green-100 dark:bg-green-900/30',
     text: 'text-green-700 dark:text-green-300',
     border: 'border-green-200 dark:border-green-800'
   },
-  'Cancelada': {
-    color: 'red',
+  'Suspendida': {
+    color: 'yellow',
+    icon: Clock,
+    bg: 'bg-yellow-100 dark:bg-yellow-900/30',
+    text: 'text-yellow-700 dark:text-yellow-300',
+    border: 'border-yellow-200 dark:border-yellow-800'
+  },
+  'Cerrada por Renuncia': {
+    color: 'gray',
     icon: XCircle,
-    bg: 'bg-red-100 dark:bg-red-900/30',
-    text: 'text-red-700 dark:text-red-300',
-    border: 'border-red-200 dark:border-red-800'
+    bg: 'bg-gray-100 dark:bg-gray-900/30',
+    text: 'text-gray-700 dark:text-gray-300',
+    border: 'border-gray-200 dark:border-gray-800'
+  },
+  'Completada': {
+    color: 'blue',
+    icon: Building2,
+    bg: 'bg-blue-100 dark:bg-blue-900/30',
+    text: 'text-blue-700 dark:text-blue-300',
+    border: 'border-blue-200 dark:border-blue-800'
   },
 }
 
@@ -97,24 +108,24 @@ export function NegociacionesTab({ cliente }: NegociacionesTabProps) {
   if (loading) return <p className="text-sm text-gray-500">Cargando negociaciones...</p>
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Banner de advertencia si NO tiene cédula */}
       {!tieneCedula && (
-        <div className="bg-orange-50 dark:bg-orange-900/20 border-2 border-orange-200 dark:border-orange-800 rounded-xl p-5">
-          <div className="flex items-start gap-3">
-            <AlertCircle className="w-6 h-6 text-orange-600 dark:text-orange-400 flex-shrink-0 mt-0.5" />
+        <div className="bg-orange-50 dark:bg-orange-900/20 border-2 border-orange-200 dark:border-orange-800 rounded-lg p-4">
+          <div className="flex items-start gap-2.5">
+            <AlertCircle className="w-5 h-5 text-orange-600 dark:text-orange-400 flex-shrink-0 mt-0.5" />
             <div className="flex-1">
-              <h3 className="text-base font-semibold text-orange-900 dark:text-orange-200 mb-2">
+              <h3 className="text-sm font-semibold text-orange-900 dark:text-orange-200 mb-1.5">
                 Cédula de ciudadanía requerida
               </h3>
-              <p className="text-sm text-orange-700 dark:text-orange-300 mb-3">
+              <p className="text-xs text-orange-700 dark:text-orange-300 mb-2.5">
                 Para crear negociaciones, primero debes subir la cédula del cliente en la pestaña <strong>"Documentos"</strong>.
               </p>
               <button
                 onClick={cambiarATabDocumentos}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors text-sm font-medium"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors text-xs font-medium"
               >
-                <ArrowRight className="w-4 h-4" />
+                <ArrowRight className="w-3.5 h-3.5" />
                 Ir a Documentos
               </button>
             </div>
@@ -124,54 +135,69 @@ export function NegociacionesTab({ cliente }: NegociacionesTabProps) {
 
       {/* Header con botón de crear */}
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+        <h3 className="text-base font-semibold text-gray-900 dark:text-white">
           Negociaciones ({negociaciones.length})
         </h3>
 
-        <button
-          disabled={!tieneCedula}
-          onClick={() => {
-            if (tieneCedula) {
-              router.push(`/clientes/${cliente.id}/negociaciones/crear?nombre=${encodeURIComponent(cliente.nombre_completo || cliente.nombres || '')}` as any)
-            }
-          }}
-          className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium transition-all ${
-            tieneCedula
-              ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700 shadow-md hover:shadow-lg'
-              : 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'
-          }`}
-          title={!tieneCedula ? 'Primero debes subir la cédula del cliente' : 'Crear nueva negociación'}
+        <Tooltip
+          content={
+            !tieneCedula ? (
+              <div className="flex flex-col gap-1">
+                <span className="font-semibold">⚠️ Cédula requerida</span>
+                <span className="text-xs opacity-90">
+                  Primero debes subir la cédula del cliente
+                </span>
+              </div>
+            ) : (
+              'Crear nueva negociación para este cliente'
+            )
+          }
+          side="left"
         >
-          {tieneCedula ? (
-            <>
-              <Plus className="w-4 h-4" />
-              Crear Negociación
-            </>
-          ) : (
-            <>
-              <Lock className="w-4 h-4" />
-              Crear Negociación
-            </>
-          )}
-        </button>
+          <button
+            disabled={!tieneCedula}
+            onClick={() => {
+              if (tieneCedula) {
+                router.push(`/clientes/${cliente.id}/negociaciones/crear?nombre=${encodeURIComponent(cliente.nombre_completo || cliente.nombres || '')}` as any)
+              }
+            }}
+            className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-lg font-medium transition-all ${
+              tieneCedula
+                ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700 shadow-md hover:shadow-lg'
+                : 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'
+            }`}
+          >
+            {tieneCedula ? (
+              <>
+                <Plus className="w-3.5 h-3.5" />
+                Crear Negociación
+              </>
+            ) : (
+              <>
+                <Lock className="w-3.5 h-3.5" />
+                Crear Negociación
+              </>
+            )}
+          </button>
+        </Tooltip>
       </div>
 
       {negociaciones.length === 0 && (
-        <div className="rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 p-8 text-center dark:border-gray-700 dark:bg-gray-800/50">
-          <Building2 className="mx-auto mb-4 h-16 w-16 text-gray-400" />
-          <h3 className="mb-2 text-lg font-semibold text-gray-900 dark:text-white">
+        <div className="rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 p-6 text-center dark:border-gray-700 dark:bg-gray-800/50">
+          <Building2 className="mx-auto mb-3 h-12 w-12 text-gray-400" />
+          <h3 className="mb-1.5 text-base font-semibold text-gray-900 dark:text-white">
             Sin negociaciones activas
           </h3>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
+          <p className="text-xs text-gray-600 dark:text-gray-400">
             Este cliente no tiene negociaciones registradas todavía.
           </p>
         </div>
       )}
 
       {/* Lista de Negociaciones con diseño mejorado */}
-      <div className="space-y-4">
+      <div className="space-y-3">
         {negociaciones.map((negociacion) => {
-          const estadoConfig = ESTADOS_CONFIG[negociacion.estado as keyof typeof ESTADOS_CONFIG] || ESTADOS_CONFIG['En Proceso']
+          const estadoConfig = ESTADOS_CONFIG[negociacion.estado as keyof typeof ESTADOS_CONFIG] || ESTADOS_CONFIG['Activa']
           const IconoEstado = estadoConfig.icon
 
           // Calcular valor con descuento
@@ -182,7 +208,7 @@ export function NegociacionesTab({ cliente }: NegociacionesTabProps) {
           return (
             <div
               key={negociacion.id}
-              className={`group relative overflow-hidden rounded-2xl border-2 ${estadoConfig.border} bg-white p-6 shadow-sm transition-all hover:shadow-xl dark:bg-gray-800`}
+              className={`group relative overflow-hidden rounded-xl border-2 ${estadoConfig.border} bg-white p-4 shadow-sm transition-all hover:shadow-xl dark:bg-gray-800`}
             >
               {/* Barra de color lateral */}
               <div
@@ -190,18 +216,18 @@ export function NegociacionesTab({ cliente }: NegociacionesTabProps) {
               />
 
               {/* Header */}
-              <div className="mb-4 flex items-start justify-between">
-                <div className="flex items-center gap-3">
-                  <div className={`flex h-14 w-14 items-center justify-center rounded-xl ${estadoConfig.bg}`}>
-                    <Building2 className={`h-7 w-7 ${estadoConfig.text}`} />
+              <div className="mb-3 flex items-start justify-between">
+                <div className="flex items-center gap-2.5">
+                  <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${estadoConfig.bg}`}>
+                    <Building2 className={`h-5 w-5 ${estadoConfig.text}`} />
                   </div>
                   <div>
-                    <h4 className="text-lg font-bold text-gray-900 dark:text-white">
+                    <h4 className="text-base font-bold text-gray-900 dark:text-white">
                       {negociacion.proyecto?.nombre || 'Proyecto sin nombre'}
                     </h4>
-                    <div className="flex items-center gap-2 mt-1">
-                      <Home className="h-4 w-4 text-gray-500" />
-                      <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                    <div className="flex items-center gap-1.5 mt-0.5">
+                      <Home className="h-3.5 w-3.5 text-gray-500" />
+                      <span className="text-xs font-medium text-gray-600 dark:text-gray-400">
                         {negociacion.vivienda?.manzanas?.nombre ? `${negociacion.vivienda.manzanas.nombre} - ` : ''}
                         Casa {negociacion.vivienda?.numero || '—'}
                       </span>
@@ -210,54 +236,54 @@ export function NegociacionesTab({ cliente }: NegociacionesTabProps) {
                 </div>
 
                 {/* Badge de Estado */}
-                <span className={`inline-flex items-center gap-1.5 rounded-full ${estadoConfig.bg} ${estadoConfig.text} px-3 py-1.5 text-xs font-semibold`}>
-                  <IconoEstado className="h-3.5 w-3.5" />
+                <span className={`inline-flex items-center gap-1 rounded-full ${estadoConfig.bg} ${estadoConfig.text} px-2.5 py-1 text-[10px] font-semibold`}>
+                  <IconoEstado className="h-3 w-3" />
                   {negociacion.estado}
                 </span>
               </div>
 
               {/* Información del Valor */}
-              <div className="mb-4 grid grid-cols-1 gap-3 md:grid-cols-3">
+              <div className="mb-3 grid grid-cols-1 gap-2.5 md:grid-cols-3">
                 {/* Valor Base */}
-                <div className="rounded-lg bg-gray-50 p-3 dark:bg-gray-700/50">
-                  <div className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400 mb-1">
-                    <DollarSign className="h-3.5 w-3.5" />
+                <div className="rounded-lg bg-gray-50 p-2.5 dark:bg-gray-700/50">
+                  <div className="flex items-center gap-1.5 text-[10px] text-gray-600 dark:text-gray-400 mb-0.5">
+                    <DollarSign className="h-3 w-3" />
                     <span>Valor Base</span>
                   </div>
-                  <p className="text-lg font-bold text-gray-900 dark:text-white">
+                  <p className="text-base font-bold text-gray-900 dark:text-white">
                     ${valorBase.toLocaleString('es-CO')}
                   </p>
                 </div>
 
                 {/* Descuento */}
                 {descuento > 0 && (
-                  <div className="rounded-lg bg-orange-50 p-3 dark:bg-orange-900/20">
-                    <div className="flex items-center gap-2 text-xs text-orange-600 dark:text-orange-400 mb-1">
-                      <DollarSign className="h-3.5 w-3.5" />
+                  <div className="rounded-lg bg-orange-50 p-2.5 dark:bg-orange-900/20">
+                    <div className="flex items-center gap-1.5 text-[10px] text-orange-600 dark:text-orange-400 mb-0.5">
+                      <DollarSign className="h-3 w-3" />
                       <span>Descuento</span>
                     </div>
-                    <p className="text-lg font-bold text-orange-700 dark:text-orange-300">
+                    <p className="text-base font-bold text-orange-700 dark:text-orange-300">
                       -${descuento.toLocaleString('es-CO')}
                     </p>
                   </div>
                 )}
 
                 {/* Valor Final */}
-                <div className="rounded-lg bg-green-50 p-3 dark:bg-green-900/20">
-                  <div className="flex items-center gap-2 text-xs text-green-600 dark:text-green-400 mb-1">
-                    <DollarSign className="h-3.5 w-3.5" />
+                <div className="rounded-lg bg-green-50 p-2.5 dark:bg-green-900/20">
+                  <div className="flex items-center gap-1.5 text-[10px] text-green-600 dark:text-green-400 mb-0.5">
+                    <DollarSign className="h-3 w-3" />
                     <span>Valor Final</span>
                   </div>
-                  <p className="text-lg font-bold text-green-700 dark:text-green-300">
+                  <p className="text-base font-bold text-green-700 dark:text-green-300">
                     ${valorFinal.toLocaleString('es-CO')}
                   </p>
                 </div>
               </div>
 
               {/* Footer: Fecha y Acciones */}
-              <div className="flex items-center justify-between border-t border-gray-200 pt-4 dark:border-gray-700">
-                <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
-                  <Calendar className="h-3.5 w-3.5" />
+              <div className="flex items-center justify-between border-t border-gray-200 pt-3 dark:border-gray-700">
+                <div className="flex items-center gap-1.5 text-[10px] text-gray-500 dark:text-gray-400">
+                  <Calendar className="h-3 w-3" />
                   <span>
                     Creada{' '}
                     {negociacion.fecha_creacion
@@ -271,16 +297,38 @@ export function NegociacionesTab({ cliente }: NegociacionesTabProps) {
 
                 <button
                   onClick={() => router.push(`/clientes/${cliente.id}/negociaciones/${negociacion.id}` as any)}
-                  className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 px-4 py-2 text-sm font-medium text-white shadow-md transition-all hover:from-purple-700 hover:to-pink-700 hover:shadow-lg"
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 px-3 py-1.5 text-xs font-medium text-white shadow-md transition-all hover:from-purple-700 hover:to-pink-700 hover:shadow-lg"
                 >
                   <span>Ver Detalle</span>
-                  <ArrowRight className="h-4 w-4" />
+                  <ArrowRight className="h-3.5 w-3.5" />
                 </button>
               </div>
             </div>
           )
         })}
       </div>
+
+      {/* FAB: Botón flotante cuando hay muchas negociaciones */}
+      <AnimatePresence>
+        {negociaciones.length > 5 && tieneCedula && (
+          <Tooltip content="Crear nueva negociación" side="left">
+            <motion.button
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0, opacity: 0 }}
+              transition={{ type: 'spring', stiffness: 260, damping: 20 }}
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={() => {
+                router.push(`/clientes/${cliente.id}/negociaciones/crear?nombre=${encodeURIComponent(cliente.nombre_completo || cliente.nombres || '')}` as any)
+              }}
+              className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-2xl hover:shadow-purple-500/50 transition-shadow"
+            >
+              <Plus className="h-6 w-6" />
+            </motion.button>
+          </Tooltip>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

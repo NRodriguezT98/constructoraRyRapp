@@ -1,15 +1,9 @@
-/**
- * Paso 2: Fuentes de Pago
- * Configuración de todas las fuentes de financiamiento
- */
-
-'use client'
+﻿'use client'
 
 import { FuentePagoCard } from '@/modules/clientes/components'
 import type { TipoFuentePago } from '@/modules/clientes/types'
 import { motion } from 'framer-motion'
-import { AlertCircle, CheckCircle2 } from 'lucide-react'
-import { animations, modalStyles } from '../styles'
+import { AlertCircle, CheckCircle2, DollarSign, Info } from 'lucide-react'
 import type { FuentePagoConfig, FuentePagoConfiguracion } from '../types'
 
 interface Paso2FuentesPagoProps {
@@ -32,30 +26,20 @@ export function Paso2FuentesPago({
   onFuenteConfigChange,
 }: Paso2FuentesPagoProps) {
   return (
-    <motion.div {...animations.step} className={modalStyles.content.fullWidth}>
-      {/* Resumen del Valor */}
-      <div className="rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 p-6 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200 dark:border-blue-800">
-        <div className="text-center">
-          <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-            Valor Total a Financiar
-          </p>
-          <p className="mt-2 text-4xl font-bold text-gray-900 dark:text-white">
-            ${valorTotal.toLocaleString('es-CO')}
-          </p>
-          <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-            Configura las fuentes de pago para cubrir este monto
-          </p>
-        </div>
-      </div>
-
-      {/* Fuentes de Pago - Todas opcionales */}
-      <div className="space-y-4">
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -10 }}
+      transition={{ duration: 0.25 }}
+      className="space-y-3"
+    >
+      <div className="space-y-3">
         {fuentes.map((fuente) => (
           <FuentePagoCard
             key={fuente.tipo}
             tipo={fuente.tipo}
             config={fuente.config}
-            obligatorio={false} // Ninguna es obligatoria
+            obligatorio={false}
             enabled={fuente.enabled}
             valorTotal={valorTotal}
             onEnabledChange={(enabled) => onFuenteEnabledChange(fuente.tipo, enabled)}
@@ -64,78 +48,98 @@ export function Paso2FuentesPago({
         ))}
       </div>
 
-      {/* Validación Visual */}
       <div
-        className={`rounded-xl border-2 p-6 transition-all ${
+        className={`rounded-lg border-2 p-4 transition-all ${
           sumaCierra
-            ? 'border-green-500 bg-green-50 dark:bg-green-900/20'
+            ? 'border-green-500 bg-green-50 dark:bg-green-950/30'
             : totalFuentes > 0
-              ? 'border-red-500 bg-red-50 dark:bg-red-900/20'
-              : 'border-gray-300 bg-gray-50 dark:border-gray-700 dark:bg-gray-800/50'
+              ? 'border-red-500 bg-red-50 dark:bg-red-950/30'
+              : 'border-gray-200 bg-gray-50 dark:border-gray-800 dark:bg-gray-900/50'
         }`}
       >
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-              Total Fuentes de Pago:
+            <span className="text-xs font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
+              <DollarSign className="w-3.5 h-3.5" />
+              Total Fuentes de Pago
             </span>
-            <span className="text-xl font-bold text-gray-900 dark:text-white">
+            <span className={`text-base font-semibold ${
+              sumaCierra
+                ? 'text-green-600 dark:text-green-400'
+                : totalFuentes > 0
+                  ? 'text-red-600 dark:text-red-400'
+                  : 'text-gray-600 dark:text-gray-400'
+            }`}>
               ${totalFuentes.toLocaleString('es-CO')}
             </span>
           </div>
 
+          <div className="h-px bg-gray-200 dark:bg-gray-700" />
+
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-              Valor Total Vivienda:
+            <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
+              Diferencia
             </span>
-            <span className="text-xl font-bold text-gray-900 dark:text-white">
-              ${valorTotal.toLocaleString('es-CO')}
+            <span className={`text-base font-semibold ${
+              sumaCierra
+                ? 'text-green-600 dark:text-green-400'
+                : 'text-red-600 dark:text-red-400'
+            }`}>
+              ${diferencia.toLocaleString('es-CO')}
             </span>
           </div>
 
-          <div className="border-t-2 border-gray-300 pt-3 dark:border-gray-600">
+          <motion.div
+            initial={{ opacity: 0, y: -5 }}
+            animate={{ opacity: 1, y: 0 }}
+            className={`flex items-start gap-2.5 p-3 rounded-lg ${
+              sumaCierra
+                ? 'bg-green-100 dark:bg-green-900/20'
+                : totalFuentes > 0
+                  ? 'bg-red-100 dark:bg-red-900/20'
+                  : 'bg-gray-100 dark:bg-gray-800/50'
+            }`}
+          >
             {sumaCierra ? (
-              <div className="flex items-center gap-3 text-green-600 dark:text-green-400">
-                <CheckCircle2 className="h-6 w-6" />
+              <>
+                <CheckCircle2 className="w-4 h-4 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
                 <div>
-                  <p className="font-bold">¡Financiamiento completo!</p>
-                  <p className="text-sm">Las fuentes cubren exactamente el valor total.</p>
-                </div>
-              </div>
-            ) : diferencia > 0 ? (
-              <div className="flex items-center gap-3 text-red-600 dark:text-red-400">
-                <AlertCircle className="h-6 w-6" />
-                <div>
-                  <p className="font-bold">Faltan ${Math.abs(diferencia).toLocaleString('es-CO')}</p>
-                  <p className="text-sm">
-                    Ajusta los montos o agrega más fuentes para cubrir el total.
+                  <p className="text-xs font-medium text-green-800 dark:text-green-200">
+                    ¡Perfecto! Las fuentes cubren exactamente el valor total
+                  </p>
+                  <p className="text-[10px] text-green-700 dark:text-green-300 mt-0.5">
+                    Puedes continuar al siguiente paso
                   </p>
                 </div>
-              </div>
-            ) : diferencia < 0 ? (
-              <div className="flex items-center gap-3 text-red-600 dark:text-red-400">
-                <AlertCircle className="h-6 w-6" />
+              </>
+            ) : totalFuentes > 0 ? (
+              <>
+                <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
                 <div>
-                  <p className="font-bold">
-                    Excedente de ${Math.abs(diferencia).toLocaleString('es-CO')}
+                  <p className="text-xs font-medium text-red-800 dark:text-red-200">
+                    Las fuentes no coinciden con el valor total
                   </p>
-                  <p className="text-sm">
-                    Las fuentes superan el valor total. Reduce los montos.
+                  <p className="text-[10px] text-red-700 dark:text-red-300 mt-0.5">
+                    {diferencia > 0
+                      ? `Falta cubrir $${diferencia.toLocaleString('es-CO')}`
+                      : `Sobra $${Math.abs(diferencia).toLocaleString('es-CO')}`}
                   </p>
                 </div>
-              </div>
+              </>
             ) : (
-              <div className="flex items-center gap-3 text-gray-600 dark:text-gray-400">
-                <AlertCircle className="h-6 w-6" />
+              <>
+                <Info className="w-4 h-4 text-gray-600 dark:text-gray-400 flex-shrink-0 mt-0.5" />
                 <div>
-                  <p className="font-bold">Configura las fuentes de pago</p>
-                  <p className="text-sm">
-                    Debes cubrir los ${valorTotal.toLocaleString('es-CO')} del valor total.
+                  <p className="text-xs font-medium text-gray-700 dark:text-gray-300">
+                    Activa y configura las fuentes de pago necesarias
+                  </p>
+                  <p className="text-[10px] text-gray-600 dark:text-gray-400 mt-0.5">
+                    La suma debe ser exactamente ${valorTotal.toLocaleString('es-CO')}
                   </p>
                 </div>
-              </div>
+              </>
             )}
-          </div>
+          </motion.div>
         </div>
       </div>
     </motion.div>

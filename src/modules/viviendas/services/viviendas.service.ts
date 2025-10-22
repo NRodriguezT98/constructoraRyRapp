@@ -1,11 +1,11 @@
 import { supabase } from '@/lib/supabase/client-browser'
 import type {
-    ConfiguracionRecargo,
-    FiltrosViviendas,
-    ManzanaConDisponibilidad,
-    Proyecto,
-    Vivienda,
-    ViviendaFormData,
+  ConfiguracionRecargo,
+  FiltrosViviendas,
+  ManzanaConDisponibilidad,
+  Proyecto,
+  Vivienda,
+  ViviendaFormData,
 } from '../types'
 
 /**
@@ -127,9 +127,15 @@ class ViviendasService {
       .select('valor')
       .eq('tipo', 'gastos_notariales')
       .eq('activo', true)
-      .single()
+      .maybeSingle()
 
-    if (error) throw error
+    // Si no hay error y hay data, retornar el valor
+    // Si no existe configuración, retornar default
+    if (error) {
+      console.error('Error obteniendo gastos notariales:', error)
+      return 5_000_000 // Default si hay error
+    }
+
     return data?.valor || 5_000_000 // Default si no existe
   }
 
@@ -261,7 +267,7 @@ class ViviendasService {
     const viviendaData = {
       manzana_id: formData.manzana_id,
       numero: formData.numero,
-      estado: 'disponible' as const,
+      estado: 'Disponible' as const,
 
       // Linderos
       lindero_norte: formData.lindero_norte,

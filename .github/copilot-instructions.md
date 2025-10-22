@@ -6,15 +6,18 @@
 
 **⚠️ ANTES de escribir CUALQUIER código que interactúe con la base de datos:**
 
-1. **CONSULTAR** → `docs/DATABASE-SCHEMA-REFERENCE.md` (fuente única de verdad)
+1. **CONSULTAR** → `docs/DATABASE-SCHEMA-REFERENCE-ACTUALIZADO.md` (fuente única de verdad) ⭐
 2. **VERIFICAR** → Nombres EXACTOS de tablas y columnas
-3. **CONFIRMAR** → Formato de estados (snake_case vs PascalCase)
-4. **NUNCA ASUMIR** → Siempre verificar, nunca inventar nombres
+3. **CONFIRMAR** → Estados permitidos en sección de ENUMS
+4. **VALIDAR** → Constraints críticos antes de inserts/updates
+5. **NUNCA ASUMIR** → Siempre verificar, nunca inventar nombres
 
 **Errores comunes que NO repetir:**
+- ❌ `estado = 'En Proceso'` → ✅ `estado = 'Activa'` (negociaciones)
+- ❌ `estado = 'reservada'` → ✅ `estado = 'Asignada'` (viviendas)
 - ❌ `estado_interes` → ✅ `estado`
-- ❌ `vivienda_precio` → ✅ `vivienda_valor`
-- ❌ `proyecto_ubicacion` → ✅ `proyecto_estado`
+- ❌ `vivienda_precio` → ✅ `vivienda.valor_base`
+- ❌ `proyecto_ubicacion` → ✅ `proyecto.estado`
 - ❌ `cliente.nombre` → ✅ `cliente.nombres`
 
 **📋 Consultar checklist**: `docs/DESARROLLO-CHECKLIST.md`
@@ -114,7 +117,7 @@ src/modules/[nombre-modulo]/
 ## 📚 Documentación Completa
 
 ### 🔴 CRÍTICA (consultar SIEMPRE):
-- **Schema DB**: `docs/DATABASE-SCHEMA-REFERENCE.md` ⭐ **FUENTE ÚNICA DE VERDAD**
+- **Schema DB**: `docs/DATABASE-SCHEMA-REFERENCE-ACTUALIZADO.md` ⭐ **FUENTE ÚNICA DE VERDAD**
 - **Checklist desarrollo**: `docs/DESARROLLO-CHECKLIST.md` ⭐ **OBLIGATORIO**
 
 ### 📘 Desarrollo:

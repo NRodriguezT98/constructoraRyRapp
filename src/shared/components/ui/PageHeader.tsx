@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { LucideIcon, Sparkles, ArrowRight } from 'lucide-react'
+import { ArrowRight, LucideIcon } from 'lucide-react'
 import { staggerItem } from '../../styles/animations'
 import { cn } from '../../utils/helpers'
 
@@ -40,12 +40,12 @@ export function PageHeader({
   return (
     <motion.div
       variants={staggerItem}
-      className={cn('relative mb-12', className)}
+      className={cn('relative mb-6', className)}
     >
-      {/* Fondo decorativo con gradientes animados */}
+      {/* Fondo decorativo simplificado */}
       <div className='pointer-events-none absolute inset-0 -z-10 overflow-hidden'>
         <motion.div
-          className='absolute -left-10 -top-10 h-72 w-72 rounded-full bg-blue-500/10 blur-3xl dark:bg-blue-500/5'
+          className='absolute -left-6 -top-6 h-40 w-40 rounded-full bg-blue-500/10 blur-2xl dark:bg-blue-500/5'
           animate={{
             scale: [1, 1.2, 1],
             opacity: [0.3, 0.5, 0.3],
@@ -56,37 +56,24 @@ export function PageHeader({
             ease: 'easeInOut',
           }}
         />
-        <motion.div
-          className='absolute -right-10 -top-10 h-72 w-72 rounded-full bg-purple-500/10 blur-3xl dark:bg-purple-500/5'
-          animate={{
-            scale: [1.2, 1, 1.2],
-            opacity: [0.5, 0.3, 0.5],
-          }}
-          transition={{
-            duration: 8,
-            repeat: Infinity,
-            ease: 'easeInOut',
-            delay: 1,
-          }}
-        />
       </div>
 
-      <div className='flex flex-col gap-8 sm:flex-row sm:items-center sm:justify-between'>
-        <div className='flex items-start gap-6'>
-          {/* Ícono premium con múltiples capas de efectos */}
+      <div className='flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>
+        <div className='flex items-start gap-4'>
+          {/* Ícono compacto */}
           <motion.div
             className='relative flex-shrink-0'
-            whileHover={{ scale: 1.08, rotate: 5 }}
+            whileHover={{ scale: 1.05 }}
             transition={{ type: 'spring', stiffness: 400, damping: 15 }}
           >
-            {/* Resplandor exterior animado */}
+            {/* Resplandor sutil */}
             <motion.div
               className={cn(
-                'absolute inset-0 rounded-2xl opacity-30 blur-2xl',
+                'absolute inset-0 rounded-xl opacity-30 blur-lg',
                 `bg-gradient-to-r ${iconColor}`
               )}
               animate={{
-                scale: [1, 1.3, 1],
+                scale: [1, 1.2, 1],
                 opacity: [0.3, 0.5, 0.3],
               }}
               transition={{
@@ -96,86 +83,33 @@ export function PageHeader({
               }}
             />
 
-            {/* Anillo de brillo rotatorio */}
-            <motion.div
-              className={cn(
-                'absolute -inset-2 rounded-2xl opacity-20 blur-xl',
-                `bg-gradient-to-r ${iconColor}`
-              )}
-              animate={{
-                rotate: [0, 360],
-              }}
-              transition={{
-                duration: 20,
-                repeat: Infinity,
-                ease: 'linear',
-              }}
-            />
-
-            {/* Contenedor del ícono con glassmorphism */}
+            {/* Contenedor del ícono compacto */}
             <div
               className={cn(
-                'relative rounded-2xl border border-white/20 p-5 shadow-2xl backdrop-blur-sm',
+                'relative rounded-xl border border-white/20 p-3 shadow-lg backdrop-blur-sm',
                 `bg-gradient-to-br ${iconColor}`
               )}
             >
-              <motion.div
-                animate={{
-                  y: [0, -3, 0],
-                }}
-                transition={{
-                  duration: 2,
-                  repeat: Infinity,
-                  ease: 'easeInOut',
-                }}
-              >
-                <Icon
-                  className='h-10 w-10 text-white drop-shadow-lg'
-                  strokeWidth={2.5}
-                />
-              </motion.div>
+              <Icon
+                className='h-7 w-7 text-white drop-shadow-lg'
+                strokeWidth={2.5}
+              />
             </div>
-
-            {/* Destello decorativo */}
-            <motion.div
-              className='absolute -right-1 -top-1 h-3 w-3 rounded-full bg-white shadow-lg'
-              animate={{
-                scale: [1, 1.5, 1],
-                opacity: [1, 0.5, 1],
-              }}
-              transition={{
-                duration: 2,
-                repeat: Infinity,
-                ease: 'easeInOut',
-              }}
-            />
           </motion.div>
 
-          {/* Título y descripción premium */}
+          {/* Título y descripción compactos */}
           <div className='min-w-0 flex-1'>
-            {/* Título con efectos avanzados */}
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
-              className='mb-3'
+              className='mb-1.5'
             >
               <h1 className='relative inline-block'>
-                {/* Sombra de texto con color */}
-                <span
-                  className={cn(
-                    'absolute inset-0 bg-clip-text text-transparent opacity-50 blur-lg',
-                    `bg-gradient-to-r ${titleGradient}`
-                  )}
-                  aria-hidden='true'
-                >
-                  {title}
-                </span>
-
-                {/* Texto principal con gradiente animado */}
+                {/* Texto principal compacto */}
                 <motion.span
                   className={cn(
-                    'relative bg-clip-text text-4xl font-black text-transparent md:text-5xl lg:text-6xl',
+                    'relative bg-clip-text text-2xl font-black text-transparent md:text-3xl',
                     `bg-gradient-to-r ${titleGradient}`
                   )}
                   style={{
@@ -193,10 +127,10 @@ export function PageHeader({
                   {title}
                 </motion.span>
 
-                {/* Línea decorativa animada */}
+                {/* Línea decorativa más delgada */}
                 <motion.div
                   className={cn(
-                    'mt-3 h-1.5 rounded-full',
+                    'mt-1.5 h-1 rounded-full',
                     `bg-gradient-to-r ${titleGradient}`
                   )}
                   initial={{ width: 0 }}
@@ -206,26 +140,16 @@ export function PageHeader({
               </h1>
             </motion.div>
 
-            {/* Descripción mejorada */}
+            {/* Descripción compacta */}
             {description && (
               <motion.div
-                className='flex items-center gap-2'
+                className='flex items-center gap-1.5'
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.2 }}
               >
-                <motion.div
-                  className='h-1 w-1 rounded-full bg-gradient-to-r from-blue-500 to-purple-500'
-                  animate={{
-                    scale: [1, 1.5, 1],
-                  }}
-                  transition={{
-                    duration: 2,
-                    repeat: Infinity,
-                    ease: 'easeInOut',
-                  }}
-                />
-                <p className='text-lg font-medium text-gray-600 dark:text-gray-300 md:text-xl'>
+                <div className='h-1 w-1 rounded-full bg-gradient-to-r from-blue-500 to-purple-500' />
+                <p className='text-sm font-medium text-gray-600 dark:text-gray-300'>
                   {description}
                 </p>
               </motion.div>
@@ -233,12 +157,12 @@ export function PageHeader({
           </div>
         </div>
 
-        {/* Botón de acción premium */}
+        {/* Botón de acción compacto */}
         {action && (
           <motion.button
             onClick={action.onClick}
-            className='group relative flex-shrink-0 overflow-hidden rounded-2xl px-8 py-4 font-bold text-white shadow-2xl'
-            whileHover={{ scale: 1.05, y: -2 }}
+            className='group relative flex-shrink-0 overflow-hidden rounded-xl px-4 py-2 font-bold text-white shadow-lg'
+            whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.98 }}
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -249,71 +173,18 @@ export function PageHeader({
 
             {/* Resplandor en hover */}
             <motion.div
-              className='absolute inset-0 bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 opacity-0 blur-xl transition-opacity duration-500 group-hover:opacity-100'
+              className='absolute inset-0 bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 opacity-0 blur-lg transition-opacity duration-500 group-hover:opacity-100'
               initial={false}
             />
 
-            {/* Efecto de brillo que se desliza */}
-            <motion.div
-              className='absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent'
-              animate={{
-                x: ['-200%', '200%'],
-              }}
-              transition={{
-                duration: 3,
-                repeat: Infinity,
-                ease: 'easeInOut',
-                repeatDelay: 1,
-              }}
-            />
-
             {/* Contenido del botón */}
-            <span className='relative flex items-center gap-3 whitespace-nowrap text-base'>
+            <span className='relative flex items-center gap-2 whitespace-nowrap text-sm'>
               {ActionIcon && (
-                <motion.div
-                  animate={{
-                    rotate: [0, 15, -15, 0],
-                  }}
-                  transition={{
-                    duration: 0.5,
-                    repeat: Infinity,
-                    repeatDelay: 3,
-                  }}
-                >
-                  <ActionIcon className='h-5 w-5' strokeWidth={2.5} />
-                </motion.div>
+                <ActionIcon className='h-4 w-4' strokeWidth={2.5} />
               )}
               {action.label}
-
-              {/* Flecha animada */}
-              <motion.span
-                animate={{
-                  x: [0, 4, 0],
-                }}
-                transition={{
-                  duration: 1,
-                  repeat: Infinity,
-                  ease: 'easeInOut',
-                }}
-              >
-                <ArrowRight className='h-5 w-5' strokeWidth={2.5} />
-              </motion.span>
+              <ArrowRight className='h-4 w-4' strokeWidth={2.5} />
             </span>
-
-            {/* Sparkles decorativos */}
-            <motion.div
-              className='absolute -right-1 -top-1'
-              animate={{
-                rotate: [0, 360],
-              }}
-              transition={{
-                duration: 3,
-                repeat: Infinity,
-                ease: 'linear',
-              }}
-            >
-              <Sparkles className='h-4 w-4 text-white opacity-75' />
-            </motion.div>
           </motion.button>
         )}
       </div>

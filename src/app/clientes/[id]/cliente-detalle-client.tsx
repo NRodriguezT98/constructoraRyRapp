@@ -5,6 +5,7 @@ import { ModalRegistrarInteres } from '@/modules/clientes/components/modals'
 import { useDocumentosClienteStore } from '@/modules/clientes/documentos/store/documentos-cliente.store'
 import type { Cliente } from '@/modules/clientes/types'
 import { TIPOS_DOCUMENTO } from '@/modules/clientes/types'
+import { Tooltip } from '@/shared/components/ui'
 import { AnimatePresence, motion } from 'framer-motion'
 import {
   Activity,
@@ -14,6 +15,7 @@ import {
   FileText,
   Handshake,
   Heart,
+  Lock,
   Trash2,
   User,
   Wallet,
@@ -149,6 +151,12 @@ export default function ClienteDetalleClient({ clienteId }: ClienteDetalleClient
   }
 
   const handleCrearNegociacion = () => {
+    // Verificar si tiene cédula antes de navegar
+    if (!cliente?.documento_identidad_url) {
+      alert('⚠️ Para crear negociaciones, primero debes subir la cédula del cliente en la pestaña "Documentos".')
+      setActiveTab('documentos')
+      return
+    }
     // Navegar a la vista completa de crear negociación
     router.push(`/clientes/${clienteId}/negociaciones/crear?nombre=${encodeURIComponent(cliente?.nombre_completo || '')}` as any)
   }
@@ -227,8 +235,8 @@ export default function ClienteDetalleClient({ clienteId }: ClienteDetalleClient
   ]
 
   return (
-    <div className='container mx-auto px-4 py-6 sm:px-6 lg:px-8'>
-      <div className='space-y-6'>
+    <div className='container mx-auto px-4 py-4 sm:px-4 lg:px-6'>
+      <div className='space-y-4'>
         {/* Header con gradiente */}
         <motion.div
           {...styles.animations.fadeInUp}
@@ -290,15 +298,40 @@ export default function ClienteDetalleClient({ clienteId }: ClienteDetalleClient
             </div>
             <div className={styles.headerClasses.actionsContainer}>
               <EstadoBadge estado={cliente.estado} />
-              <motion.button
-                onClick={handleCrearNegociacion}
-                className='inline-flex items-center gap-2 rounded-lg border border-green-400/30 bg-green-500/80 px-4 py-2 text-sm font-medium text-white backdrop-blur-sm transition-colors hover:bg-green-600'
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+              <Tooltip
+                content={
+                  !cliente.documento_identidad_url ? (
+                    <div className="flex flex-col gap-1">
+                      <span className="font-semibold">⚠️ Cédula requerida</span>
+                      <span className="text-xs opacity-90">
+                        Ve a la pestaña "Documentos" para subirla
+                      </span>
+                    </div>
+                  ) : (
+                    'Crear nueva negociación para este cliente'
+                  )
+                }
+                side="bottom"
               >
-                <Handshake className='h-4 w-4' />
-                <span>Crear Negociación</span>
-              </motion.button>
+                <motion.button
+                  onClick={handleCrearNegociacion}
+                  disabled={!cliente.documento_identidad_url}
+                  className={`inline-flex items-center gap-2 rounded-lg border px-4 py-2 text-sm font-medium backdrop-blur-sm transition-colors ${
+                    cliente.documento_identidad_url
+                      ? 'border-green-400/30 bg-green-500/80 text-white hover:bg-green-600'
+                      : 'border-gray-400/30 bg-gray-300 text-gray-500 cursor-not-allowed dark:bg-gray-700 dark:text-gray-400'
+                  }`}
+                  whileHover={cliente.documento_identidad_url ? { scale: 1.05 } : {}}
+                  whileTap={cliente.documento_identidad_url ? { scale: 0.95 } : {}}
+                >
+                  {cliente.documento_identidad_url ? (
+                    <Handshake className='h-4 w-4' />
+                  ) : (
+                    <Lock className='h-4 w-4' />
+                  )}
+                  <span>Crear Negociación</span>
+                </motion.button>
+              </Tooltip>
               <motion.button
                 onClick={handleEditar}
                 className='inline-flex items-center gap-2 rounded-lg border border-white/30 bg-white/20 px-4 py-2 text-sm font-medium text-white backdrop-blur-sm transition-colors hover:bg-white/30'

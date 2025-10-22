@@ -189,8 +189,8 @@ export default function ProyectoDetalleClient({
   ]
 
   return (
-    <div className='min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50/30 p-6 dark:from-gray-900 dark:via-gray-900 dark:to-blue-950/20'>
-      <div className='mx-auto max-w-7xl space-y-6'>
+    <div className='min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50/30 p-4 dark:from-gray-900 dark:via-gray-900 dark:to-blue-950/20'>
+      <div className='mx-auto max-w-7xl space-y-4'>
         {/* Botón Volver */}
         <motion.div {...styles.animations.fadeInUp}>
           <Button
@@ -421,7 +421,7 @@ export default function ProyectoDetalleClient({
           <motion.div
             key='info'
             {...styles.animations.fadeInUp}
-            className='grid gap-6 lg:grid-cols-2'
+            className='grid gap-4 lg:grid-cols-2'
           >
             {/* Descripción */}
             <motion.div
@@ -561,23 +561,23 @@ export default function ProyectoDetalleClient({
                     </p>
                   </div>
                 ) : (
-                  <div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-3'>
+                  <div className='grid gap-3 sm:grid-cols-2 lg:grid-cols-3'>
                     {proyecto.manzanas.map((manzana, index) => (
                       <motion.div
                         key={manzana.id}
                         {...styles.animations.scaleIn}
                         transition={{ delay: index * 0.1 }}
-                        className='rounded-lg border border-gray-200 bg-white p-4 transition-all hover:border-blue-300 hover:shadow-md dark:border-gray-700 dark:bg-gray-800'
+                        className='rounded-lg border border-gray-200 bg-white p-3 transition-all hover:border-blue-300 hover:shadow-md dark:border-gray-700 dark:bg-gray-800'
                       >
-                        <div className='mb-2 flex items-center justify-between'>
-                          <h4 className='font-semibold text-gray-900 dark:text-gray-100'>
+                        <div className='mb-1.5 flex items-center justify-between'>
+                          <h4 className='text-sm font-semibold text-gray-900 dark:text-gray-100'>
                             {manzana.nombre}
                           </h4>
-                          <Badge variant='outline'>
+                          <Badge variant='outline' className='text-xs'>
                             {manzana.totalViviendas}
                           </Badge>
                         </div>
-                        <p className='text-sm text-gray-600 dark:text-gray-400'>
+                        <p className='text-xs text-gray-600 dark:text-gray-400'>
                           {manzana.totalViviendas} vivienda
                           {manzana.totalViviendas !== 1 ? 's' : ''}
                         </p>

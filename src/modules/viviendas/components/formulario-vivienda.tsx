@@ -92,7 +92,7 @@ export function FormularioVivienda({ viviendaId, onSuccess, onCancel }: Formular
   const proyectoSeleccionado = proyectos.find((p) => p.id === formData.proyecto_id)
 
   return (
-    <div className="mx-auto max-w-5xl p-6">
+    <div className="mx-auto max-w-5xl p-4">
       {/* Stepper */}
       <div className={wizardClasses.stepper}>
         {PASOS_FORMULARIO.map((paso, index) => {

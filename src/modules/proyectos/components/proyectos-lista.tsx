@@ -2,12 +2,12 @@
 
 import { motion } from 'framer-motion'
 import {
-  staggerContainer,
-  staggerItem,
+    staggerContainer,
+    staggerItem,
 } from '../../../shared/styles/animations'
 import { useProyectosStore } from '../store/proyectos.store'
-import { ProyectoCard } from './proyecto-card'
 import type { Proyecto } from '../types'
+import { ProyectoCard } from './proyecto-card'
 
 interface ProyectosListaProps {
   proyectos: Proyecto[]
@@ -29,8 +29,8 @@ export function ProyectosLista({
       animate='visible'
       className={
         vista === 'grid'
-          ? 'grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3'
-          : 'space-y-4'
+          ? 'grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3'
+          : 'space-y-3'
       }
     >
       {proyectos.map(proyecto => (

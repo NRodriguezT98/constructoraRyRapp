@@ -9,7 +9,16 @@
 
 export type TipoDocumento = 'CC' | 'CE' | 'TI' | 'NIT' | 'PP' | 'PEP'
 
-export type EstadoCliente = 'Interesado' | 'Activo' | 'Inactivo'
+/**
+ * ✅ VERIFICADO en: docs/DATABASE-SCHEMA-REFERENCE.md
+ * CHECK constraint: clientes_estado_check (5 estados)
+ */
+export type EstadoCliente =
+  | 'Interesado'
+  | 'Activo'
+  | 'En Proceso de Renuncia' // ⭐ NUEVO (2025-10-22)
+  | 'Inactivo'
+  | 'Propietario' // ⭐ NUEVO (2025-10-22)
 
 export type OrigenCliente =
   | 'Referido'
@@ -23,13 +32,19 @@ export type OrigenCliente =
 
 export type EstadoInteres = 'Activo' | 'Descartado' | 'Convertido'
 
+/**
+ * ✅ VERIFICADO en: docs/DATABASE-SCHEMA-REFERENCE.md
+ * CHECK constraint: negociaciones_estado_check (4 estados)
+ *
+ * CAMBIOS (2025-10-22):
+ * ❌ ELIMINADOS: 'En Proceso', 'Cierre Financiero', 'Cancelada', 'Renuncia'
+ * ✅ NUEVOS: 'Suspendida', 'Cerrada por Renuncia'
+ */
 export type EstadoNegociacion =
-  | 'En Proceso'
-  | 'Cierre Financiero'
   | 'Activa'
+  | 'Suspendida' // ⭐ NUEVO
+  | 'Cerrada por Renuncia' // ⭐ NUEVO (reemplaza 'Renuncia')
   | 'Completada'
-  | 'Cancelada'
-  | 'Renuncia'
 
 export type TipoFuentePago =
   | 'Cuota Inicial'
@@ -109,13 +124,7 @@ export interface Negociacion {
 
   // Fechas
   fecha_negociacion: string
-  fecha_cierre_financiero?: string
-  fecha_activacion?: string
-  fecha_completada?: string
-  fecha_cancelacion?: string
-
-  // Motivos
-  motivo_cancelacion?: string
+  fecha_completada?: string // ⭐ NUEVO: Requerida cuando estado='Completada'
 
   // Documentos
   promesa_compraventa_url?: string
@@ -313,6 +322,93 @@ export interface NegociacionCompleta extends Negociacion {
 }
 
 // =====================================================
+// RENUNCIAS (Migración 004 - 2025-10-22)
+// =====================================================
+
+/**
+ * ✅ VERIFICADO en: docs/DATABASE-SCHEMA-REFERENCE.md
+ * CHECK constraint: renuncias_estado_check (3 estados)
+ */
+export type EstadoRenuncia =
+  | 'Pendiente Devolución'
+  | 'Cerrada'
+  | 'Cancelada'
+
+export interface Renuncia {
+  id: string
+
+  // Relaciones (IDs duplicados para histórico)
+  vivienda_id: string
+  cliente_id: string
+  negociacion_id: string
+
+  // Información básica
+  motivo: string
+  fecha_renuncia: string
+  estado: EstadoRenuncia
+
+  // Información financiera (calculada automáticamente)
+  monto_a_devolver: number // NOT NULL, calculado por trigger
+  requiere_devolucion: boolean
+
+  // Snapshot de datos al momento de la renuncia (JSON)
+  vivienda_datos_snapshot?: Record<string, any> // { numero, manzana, proyecto, valor }
+  cliente_datos_snapshot?: Record<string, any> // { nombre, documento, contacto }
+  negociacion_datos_snapshot?: Record<string, any> // { valor_total, pagos_realizados }
+  abonos_snapshot?: Record<string, any> // Lista de abonos realizados
+
+  // Seguimiento de resolución
+  fecha_devolucion?: string // Cuando se hizo la devolución efectiva
+  metodo_devolucion?: string // 'Transferencia', 'Cheque', 'Efectivo'
+  referencia_devolucion?: string // Número de transacción/cheque
+  comprobante_devolucion_url?: string // Documento de respaldo
+
+  // Cancelación de renuncia
+  fecha_cancelacion?: string
+  motivo_cancelacion?: string // Requerido cuando estado='Cancelada'
+  usuario_cancelacion?: string
+
+  // Cierre administrativo
+  fecha_cierre?: string
+  usuario_cierre?: string
+  notas_cierre?: string
+
+  // Auditoría
+  fecha_creacion: string
+  fecha_actualizacion: string
+  usuario_registro?: string
+
+  // Relaciones opcionales (cuando se cargan)
+  clientes?: Cliente
+  viviendas?: {
+    id: string
+    numero: string
+    manzanas?: {
+      nombre: string
+      proyectos?: {
+        nombre: string
+      }
+    }
+  }
+  negociaciones?: Negociacion
+}
+
+export const ESTADOS_RENUNCIA: Record<EstadoRenuncia, string> = {
+  'Pendiente Devolución': 'Pendiente Devolución',
+  Cerrada: 'Cerrada',
+  Cancelada: 'Cancelada',
+}
+
+export const METODOS_DEVOLUCION = [
+  'Transferencia Bancaria',
+  'Cheque',
+  'Efectivo',
+  'Consignación',
+] as const
+
+export type MetodoDevolucion = (typeof METODOS_DEVOLUCION)[number]
+
+// =====================================================
 // DTOs (Data Transfer Objects)
 // =====================================================
 
@@ -412,6 +508,28 @@ export interface CompletarProcesoDTO {
   notas?: string
 }
 
+// DTOs para Renuncias
+export interface CrearRenunciaDTO {
+  negociacion_id: string
+  motivo: string
+  notas_cierre?: string
+}
+
+export interface ProcesarDevolucionDTO {
+  fecha_devolucion: string
+  metodo_devolucion: MetodoDevolucion
+  referencia_devolucion?: string
+  comprobante_devolucion_url?: string
+}
+
+export interface CancelarRenunciaDTO {
+  motivo_cancelacion: string
+}
+
+export interface CerrarRenunciaDTO {
+  notas_cierre?: string
+}
+
 // =====================================================
 // FILTROS Y BÚSQUEDA
 // =====================================================
@@ -451,7 +569,9 @@ export const TIPOS_DOCUMENTO: Record<TipoDocumento, string> = {
 export const ESTADOS_CLIENTE: Record<EstadoCliente, string> = {
   Interesado: 'Interesado',
   Activo: 'Activo',
+  'En Proceso de Renuncia': 'En Proceso de Renuncia', // ⭐ NUEVO
   Inactivo: 'Inactivo',
+  Propietario: 'Propietario', // ⭐ NUEVO
 }
 
 export const ESTADOS_INTERES: Record<EstadoInteres, string> = {
@@ -472,12 +592,10 @@ export const ORIGENES_CLIENTE: Record<OrigenCliente, string> = {
 }
 
 export const ESTADOS_NEGOCIACION: Record<EstadoNegociacion, string> = {
-  'En Proceso': 'En Proceso',
-  'Cierre Financiero': 'Cierre Financiero',
   Activa: 'Activa',
+  Suspendida: 'Suspendida', // ⭐ NUEVO
+  'Cerrada por Renuncia': 'Cerrada por Renuncia', // ⭐ NUEVO
   Completada: 'Completada',
-  Cancelada: 'Cancelada',
-  Renuncia: 'Renuncia',
 }
 
 export const TIPOS_FUENTE_PAGO: Record<TipoFuentePago, string> = {
