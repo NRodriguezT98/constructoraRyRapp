@@ -61,14 +61,7 @@ const navigationGroups = [
         href: '/clientes',
         icon: Users,
         color: 'from-purple-500 to-purple-600',
-        description: 'Base de clientes',
-      },
-      {
-        name: 'Negociaciones',
-        href: '/negociaciones',
-        icon: FileText,
-        color: 'from-indigo-500 to-purple-600',
-        description: 'Gestión de ventas',
+        description: 'Base de clientes y negociaciones',
       },
       {
         name: 'Abonos',
