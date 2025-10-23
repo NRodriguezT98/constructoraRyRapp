@@ -90,6 +90,13 @@ const navigationGroups = [
         description: 'Panel admin',
       },
       {
+        name: 'Procesos',
+        href: '/admin/procesos',
+        icon: Settings,
+        color: 'from-blue-500 to-indigo-600',
+        description: 'Gestión de procesos',
+      },
+      {
         name: 'Reportes',
         href: '/reportes',
         icon: FileText,

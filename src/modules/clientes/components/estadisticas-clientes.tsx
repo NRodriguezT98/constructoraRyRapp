@@ -1,13 +1,13 @@
 /**
- * Componente de Estadísticas de Clientes
- * Presentacional puro - recibe datos por props
+ * 📊 Estadísticas Premium de Clientes
+ * Cards con glassmorphism, hover effects y gradientes únicos
  */
 
 'use client'
 
 import { motion } from 'framer-motion'
 import { UserCheck, UserPlus, Users, UserX } from 'lucide-react'
-import { clientesStyles, fadeInUp, staggerContainer } from '../styles'
+import { metricasClientesColors, clientesListaStyles as styles } from '../styles/clientes-lista.styles'
 
 interface EstadisticasClientesProps {
   total: number
@@ -27,48 +27,55 @@ export function EstadisticasClientes({
       label: 'Total Clientes',
       value: total,
       icon: Users,
-      color: 'text-purple-600 dark:text-purple-400',
-      bgColor: 'bg-purple-100 dark:bg-purple-900/30',
+      colors: metricasClientesColors.total
     },
     {
       label: 'Interesados',
       value: interesados,
       icon: UserPlus,
-      color: 'text-blue-600 dark:text-blue-400',
-      bgColor: 'bg-blue-100 dark:bg-blue-900/30',
+      colors: metricasClientesColors.interesados
     },
     {
       label: 'Activos',
       value: activos,
       icon: UserCheck,
-      color: 'text-green-600 dark:text-green-400',
-      bgColor: 'bg-green-100 dark:bg-green-900/30',
+      colors: metricasClientesColors.activos
     },
     {
       label: 'Inactivos',
       value: inactivos,
       icon: UserX,
-      color: 'text-gray-600 dark:text-gray-400',
-      bgColor: 'bg-gray-100 dark:bg-gray-900/30',
+      colors: metricasClientesColors.inactivos
     },
   ]
 
   return (
     <motion.div
-      className={clientesStyles.statsGrid}
-      variants={staggerContainer}
-      initial='initial'
-      animate='animate'
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.1 }}
+      className={styles.metricas.grid}
     >
-      {stats.map((stat) => (
-        <motion.div key={stat.label} className={clientesStyles.statCard} variants={fadeInUp}>
-          <div className='flex items-center justify-between'>
-            <div>
-              <p className={clientesStyles.statLabel}>{stat.label}</p>
-              <p className={clientesStyles.statValue}>{stat.value}</p>
+      {stats.map((stat, index) => (
+        <motion.div
+          key={stat.label}
+          whileHover={{ scale: 1.02, y: -4 }}
+          transition={{ type: 'spring', stiffness: 300 }}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          style={{ transitionDelay: `${index * 0.05}s` }}
+          className={styles.metricas.card}
+        >
+          <div className={`${styles.metricas.cardGlow} bg-gradient-to-br ${stat.colors.glowColor}`} />
+          <div className={styles.metricas.content}>
+            <div className={`${styles.metricas.iconCircle} bg-gradient-to-br ${stat.colors.gradient} shadow-${stat.colors.gradient.split('-')[1]}-500/50`}>
+              <stat.icon className={styles.metricas.icon} />
             </div>
-            <div className={`rounded-full p-3 ${stat.bgColor}`}>
-              <stat.icon className={`h-6 w-6 ${stat.color}`} />
+            <div className={styles.metricas.textGroup}>
+              <p className={`${styles.metricas.value} bg-gradient-to-br ${stat.colors.textGradient}`}>
+                {stat.value}
+              </p>
+              <p className={styles.metricas.label}>{stat.label}</p>
             </div>
           </div>
         </motion.div>

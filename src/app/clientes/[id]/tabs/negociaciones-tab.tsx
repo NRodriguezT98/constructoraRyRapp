@@ -1,5 +1,6 @@
 'use client'
 
+import { obtenerFuentesPagoConAbonos } from '@/modules/abonos/services/abonos.service'
 import { negociacionesService } from '@/modules/clientes/services/negociaciones.service'
 import type { Cliente } from '@/modules/clientes/types'
 import { Tooltip } from '@/shared/components/ui'
@@ -12,6 +13,7 @@ import {
     Building2,
     Calendar,
     CheckCircle2,
+    ChevronLeft,
     Clock,
     DollarSign,
     Home,
@@ -21,6 +23,12 @@ import {
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
+import {
+    AccionesSection,
+    FuentesPagoSection,
+    ProgressSection,
+    UltimosAbonosSection,
+} from './negociaciones'
 
 interface NegociacionesTabProps {
   cliente: Cliente
@@ -64,8 +72,38 @@ export function NegociacionesTab({ cliente }: NegociacionesTabProps) {
   const router = useRouter()
   const [negociaciones, setNegociaciones] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [negociacionActiva, setNegociacionActiva] = useState<any | null>(null)
+  const [fuentesPago, setFuentesPago] = useState<any[]>([])
+  const [abonos, setAbonos] = useState<any[]>([])
+  const [loadingDatos, setLoadingDatos] = useState(false)
 
   const tieneCedula = !!cliente.documento_identidad_url
+
+  // Función para cargar fuentes de pago y abonos de la negociación seleccionada
+  const cargarDatosNegociacion = async (negociacionId: string) => {
+    setLoadingDatos(true)
+    try {
+      // Cargar fuentes de pago con abonos
+      const fuentesData = await obtenerFuentesPagoConAbonos(negociacionId)
+      console.log('💰 Fuentes de pago cargadas:', fuentesData)
+      setFuentesPago(fuentesData)
+
+      // Extraer todos los abonos de todas las fuentes
+      const todosAbonos = fuentesData.flatMap((fuente: any) => fuente.abonos || [])
+      // Ordenar por fecha descendente
+      todosAbonos.sort((a: any, b: any) =>
+        new Date(b.fecha_abono).getTime() - new Date(a.fecha_abono).getTime()
+      )
+      console.log('📝 Total abonos:', todosAbonos.length)
+      setAbonos(todosAbonos)
+    } catch (err) {
+      console.error('Error cargando datos de negociación:', err)
+      setFuentesPago([])
+      setAbonos([])
+    } finally {
+      setLoadingDatos(false)
+    }
+  }
 
   // Función para cargar negociaciones
   const cargarNegociaciones = async () => {
@@ -80,6 +118,19 @@ export function NegociacionesTab({ cliente }: NegociacionesTabProps) {
     } finally {
       setLoading(false)
     }
+  }
+
+  // Función para ver detalle de una negociación
+  const verDetalleNegociacion = async (negociacion: any) => {
+    setNegociacionActiva(negociacion)
+    await cargarDatosNegociacion(negociacion.id)
+  }
+
+  // Función para volver a la lista
+  const volverALista = () => {
+    setNegociacionActiva(null)
+    setFuentesPago([])
+    setAbonos([])
   }
 
   // Cargar al montar
@@ -107,6 +158,116 @@ export function NegociacionesTab({ cliente }: NegociacionesTabProps) {
 
   if (loading) return <p className="text-sm text-gray-500">Cargando negociaciones...</p>
 
+  // 🔥 VISTA DETALLADA: Si hay una negociación activa/suspendida
+  if (negociacionActiva) {
+    const valorFinal = (negociacionActiva.valor_negociado || 0) - (negociacionActiva.descuento_aplicado || 0)
+
+    // Calcular totales desde los datos reales
+    const totalAbonado = abonos.reduce((sum: number, abono: any) => sum + (abono.monto || 0), 0)
+    const totalFuentesPago = fuentesPago.reduce((sum: number, fuente: any) => sum + (fuente.monto_aprobado || 0), 0)
+
+    // Transformar fuentes de pago al formato esperado por el componente
+    const fuentesTransformadas = fuentesPago.map((fuente: any) => ({
+      tipo: fuente.tipo,
+      monto: fuente.monto_aprobado || 0,
+      entidad: fuente.entidad || undefined, // Banco o entidad financiera
+      numero_referencia: fuente.numero_referencia || undefined, // Número de crédito
+      detalles: fuente.observaciones || undefined,
+      monto_recibido: fuente.monto_recibido || 0, // Para validar si se puede editar
+    }))
+
+    return (
+      <div className="space-y-5">
+        {/* Header con botón volver */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+              <Building2 className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+              {negociacionActiva.proyecto?.nombre || 'Proyecto'}
+            </h3>
+            <div className="flex items-center gap-2 mt-1">
+              <Home className="w-4 h-4 text-gray-500" />
+              <span className="text-sm text-gray-600 dark:text-gray-400">
+                {negociacionActiva.vivienda?.manzanas?.nombre ? `${negociacionActiva.vivienda.manzanas.nombre} - ` : ''}
+                Casa {negociacionActiva.vivienda?.numero || '—'}
+              </span>
+              <span className="mx-2 text-gray-400">•</span>
+              <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
+                negociacionActiva.estado === 'Activa'
+                  ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
+                  : 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300'
+              }`}>
+                {negociacionActiva.estado}
+              </span>
+            </div>
+          </div>
+
+          <button
+            onClick={volverALista}
+            className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+          >
+            <ChevronLeft className="w-4 h-4" />
+            Volver a la lista
+          </button>
+        </div>
+
+        {/* Secciones */}
+        <ProgressSection
+          valorNegociado={negociacionActiva.valor_negociado || 0}
+          descuento={negociacionActiva.descuento_aplicado || 0}
+          totalAbonado={totalAbonado}
+          totalFuentesPago={totalFuentesPago}
+        />
+
+        <FuentesPagoSection
+          fuentesPago={fuentesTransformadas}
+          valorTotal={valorFinal}
+          negociacionEstado={negociacionActiva.estado}
+          onEditar={() => {
+            // TODO: abrir modal de configurar fuentes de pago
+            alert('⚠️ Modal de edición de fuentes de pago en desarrollo.\n\n📋 REGLAS DE EDICIÓN:\n\n1. CUOTA INICIAL: Siempre editable (nuevo monto debe ser >= lo ya abonado)\n\n2. CRÉDITO HIPOTECARIO Y SUBSIDIOS: Solo editables si NO han sido desembolsados\n\n3. SUMA TOTAL: Debe coincidir con el valor de la vivienda')
+          }}
+        />
+
+        <UltimosAbonosSection
+          abonos={abonos.map((abono: any) => ({
+            id: abono.id,
+            monto: abono.monto,
+            fecha_abono: abono.fecha_abono,
+            metodo_pago: abono.metodo_pago,
+            numero_recibo: abono.numero_recibo,
+            observaciones: abono.observaciones,
+          }))}
+          onVerTodos={() => {
+            alert(`📊 Vista completa de abonos en desarrollo.\n\n📋 Total de abonos: ${abonos.length}\n💰 Total abonado: $${totalAbonado.toLocaleString('es-CO')}\n\n💡 La vista completa mostrará:\n- Todos los abonos históricos\n- Filtros por fecha y fuente\n- Exportar a Excel\n- Detalles de cada transacción`)
+          }}
+        />
+
+        <AccionesSection
+          estado={negociacionActiva.estado}
+          onRegistrarAbono={() => {
+            // Redirigir al módulo de abonos con cliente y negociación preseleccionados
+            router.push(
+              `/abonos?cliente_id=${cliente.id}&negociacion_id=${negociacionActiva.id}&cliente_nombre=${encodeURIComponent(cliente.nombre_completo || cliente.nombres || '')}` as any
+            )
+          }}
+          onSuspender={() => {
+            alert('⏸️ Modal de Suspender Negociación en desarrollo.\n\n❓ ¿Por qué suspender?\n- Cliente viajó temporalmente\n- Problemas financieros temporales\n- Pausa en el proyecto\n\n⚠️ La negociación puede reactivarse después.')
+          }}
+          onRenunciar={() => {
+            alert('❌ Modal de Renuncia en desarrollo.\n\n⚠️ ACCIÓN IRREVERSIBLE\n\n- Cliente renuncia a la compra\n- Se liberará la vivienda\n- No se puede revertir\n- Se debe indicar motivo de renuncia')
+          }}
+          onGenerarPDF={() => {
+            alert('📄 Generación de PDF en desarrollo.\n\n📋 El PDF incluirá:\n- Información de la negociación\n- Fuentes de pago\n- Historial de abonos\n- Estado actual\n- Firma digital')
+          }}
+        />
+
+
+      </div>
+    )
+  }
+
+  // 🔥 VISTA DE LISTA: Cuando no hay negociación activa o usuario quiere ver todas
   return (
     <div className="space-y-4">
       {/* Banner de advertencia si NO tiene cédula */}
@@ -296,7 +457,7 @@ export function NegociacionesTab({ cliente }: NegociacionesTabProps) {
                 </div>
 
                 <button
-                  onClick={() => router.push(`/clientes/${cliente.id}/negociaciones/${negociacion.id}` as any)}
+                  onClick={() => verDetalleNegociacion(negociacion)}
                   className="inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 px-3 py-1.5 text-xs font-medium text-white shadow-md transition-all hover:from-purple-700 hover:to-pink-700 hover:shadow-lg"
                 >
                   <span>Ver Detalle</span>

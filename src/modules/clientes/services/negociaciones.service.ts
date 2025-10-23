@@ -14,6 +14,11 @@
  */
 
 import { supabase } from '@/lib/supabase/client-browser'
+import {
+    crearProcesoDesdePlantilla,
+    obtenerPlantillaPredeterminada
+} from '@/modules/admin/procesos/services/procesos.service'
+import { TipoFuentePago } from '@/modules/admin/procesos/types'
 import type { EstadoNegociacion, Negociacion } from '@/modules/clientes/types'
 
 // DTOs
@@ -181,6 +186,60 @@ class NegociacionesService {
       }
 
       console.log('✅ Cliente actualizado a "Activo"')
+
+      // ==========================================
+      // PASO 5: Crear proceso desde plantilla predeterminada
+      // ==========================================
+      try {
+        console.log('📝 Creando proceso de negociación desde plantilla predeterminada...')
+
+        // Obtener plantilla predeterminada
+        const plantilla = await obtenerPlantillaPredeterminada()
+
+        if (!plantilla) {
+          console.warn('⚠️ No hay plantilla predeterminada. Omitiendo creación de proceso.')
+        } else {
+          // Mapear fuentes de pago de negociación a enum de procesos
+          const fuentesProceso: TipoFuentePago[] = []
+
+          if (datos.fuentes_pago && datos.fuentes_pago.length > 0) {
+            datos.fuentes_pago.forEach(fuente => {
+              switch (fuente.tipo) {
+                case 'Crédito Hipotecario':
+                  fuentesProceso.push(TipoFuentePago.CREDITO_HIPOTECARIO)
+                  break
+                case 'Subsidio Caja de Compensación':
+                  fuentesProceso.push(TipoFuentePago.SUBSIDIO_CAJA)
+                  break
+                case 'Recursos Propios':
+                  fuentesProceso.push(TipoFuentePago.RECURSOS_PROPIOS)
+                  break
+                case 'Cesantías':
+                  fuentesProceso.push(TipoFuentePago.CESANTIAS)
+                  break
+                default:
+                  fuentesProceso.push(TipoFuentePago.OTRO)
+              }
+            })
+          } else {
+            // Si no hay fuentes, asumir recursos propios
+            fuentesProceso.push(TipoFuentePago.RECURSOS_PROPIOS)
+          }
+
+          // Crear proceso
+          await crearProcesoDesdePlantilla({
+            negociacionId: negociacion.id,
+            plantillaId: plantilla.id,
+            fuentesPago: fuentesProceso
+          })
+
+          console.log('✅ Proceso de negociación creado con', fuentesProceso.length, 'fuentes de pago')
+        }
+      } catch (errorProceso) {
+        // No fallar la negociación si el proceso no se puede crear
+        console.error('⚠️ Error creando proceso (no crítico):', errorProceso)
+      }
+
       console.log('🎉 ¡Negociación creada exitosamente!')
 
       return negociacion as Negociacion

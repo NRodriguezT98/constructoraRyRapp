@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion'
 import { ArrowRight, Building2, Home, User } from 'lucide-react'
 import Link from 'next/link'
+import { getAvatarGradient, seleccionClienteStyles as styles } from '../styles/seleccion-cliente.styles'
 import { NegociacionConAbonos } from '../types'
 
 interface ClienteCardProps {
@@ -10,8 +11,8 @@ interface ClienteCardProps {
 }
 
 /**
- * Tarjeta compacta de cliente con resumen de negociación
- * Diseño tipo lista con hover effect
+ * 💳 Tarjeta premium de cliente con glassmorphism
+ * Hover effect, gradientes y progress bar animado
  */
 export function ClienteCard({ negociacion }: ClienteCardProps) {
   const { cliente, vivienda, proyecto } = negociacion
@@ -22,98 +23,105 @@ export function ClienteCard({ negociacion }: ClienteCardProps) {
   const valorTotal = negociacion.valor_total || 0
   const porcentajePagado = negociacion.porcentaje_pagado || 0
 
-  // Construir descripción completa de la vivienda
-  const descripcionVivienda = vivienda.numero
-    ? `Casa N° ${vivienda.numero}`
-    : 'Vivienda'
+  // Obtener gradient único para el avatar basado en el nombre
+  const avatarGradient = getAvatarGradient(nombreCompleto)
 
   return (
     <Link href={`/abonos/${cliente.id}`}>
       <motion.div
-        className="group bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-lg p-3 hover:border-orange-300 dark:hover:border-orange-700 hover:shadow-lg transition-all duration-300 cursor-pointer"
-        whileHover={{ scale: 1.01, y: -2 }}
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
+        whileHover={{ y: -4 }}
+        transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+        className={styles.card.container}
       >
-        {/* Fila principal */}
-        <div className="flex items-start justify-between gap-4 mb-3">
-          {/* Columna izquierda: Cliente */}
-          <div className="flex items-start gap-3 flex-1 min-w-0">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-r from-orange-500 to-amber-500 flex items-center justify-center flex-shrink-0">
-              <User className="w-5 h-5 text-white" />
-            </div>
+        {/* Glow effect */}
+        <div className={styles.card.glow} />
 
-            <div className="flex-1 min-w-0">
-              <h3 className="text-base font-bold text-gray-900 dark:text-white truncate mb-0.5">
-                {nombreCompleto}
-              </h3>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mb-1.5">
-                CC {cliente.numero_documento}
-              </p>
+        {/* Content */}
+        <div className={styles.card.content}>
+          {/* TOP ROW: Cliente + Financiero */}
+          <div className={styles.card.topRow}>
+            {/* CLIENTE SECTION (Left) */}
+            <div className={styles.card.clienteSection}>
+              {/* Avatar con gradient único */}
+              <div className={`${styles.card.avatarCircle} bg-gradient-to-br ${avatarGradient}`}>
+                <User className={styles.card.avatarIcon} />
+              </div>
 
-              {/* Info de la vivienda - debajo del nombre */}
-              <div className="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-300 flex-wrap">
-                {proyecto && (
-                  <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded">
-                    <Building2 className="w-3 h-3" />
-                    <span className="font-medium">{proyecto.nombre}</span>
+              {/* Info del cliente */}
+              <div className={styles.card.clienteInfo}>
+                <h3 className={styles.card.clienteNombre}>{nombreCompleto}</h3>
+                <p className={styles.card.clienteDocumento}>CC {cliente.numero_documento}</p>
+
+                {/* Badges: Proyecto + Vivienda */}
+                <div className={styles.card.viviendaBadges}>
+                  {proyecto && (
+                    <div className={styles.card.proyectoBadge}>
+                      <Building2 className={styles.card.badgeIcon} />
+                      <span>{proyecto.nombre}</span>
+                    </div>
+                  )}
+                  <div className={styles.card.viviendaBadge}>
+                    <Home className={styles.card.badgeIcon} />
+                    <span>
+                      {vivienda.manzana?.nombre ? `Mz. ${vivienda.manzana.nombre}` : ''}
+                      {vivienda.manzana?.nombre && vivienda.numero ? ' - ' : ''}
+                      {vivienda.numero ? `N° ${vivienda.numero}` : 'Vivienda'}
+                    </span>
                   </div>
-                )}
-                <div className="flex items-center gap-1 bg-orange-50 dark:bg-orange-900/20 px-1.5 py-0.5 rounded">
-                  <Home className="w-3 h-3 text-orange-600 dark:text-orange-400" />
-                  <span className="font-medium text-orange-700 dark:text-orange-300">
-                    {vivienda.manzana?.nombre ? `Mz. ${vivienda.manzana.nombre}` : ''}
-                    {vivienda.manzana?.nombre && vivienda.numero ? ' - ' : ''}
-                    {vivienda.numero ? `Casa N° ${vivienda.numero}` : 'Vivienda'}
-                  </span>
                 </div>
               </div>
             </div>
-          </div>
 
-          {/* Columna derecha: Resumen financiero */}
-          <div className="flex items-center gap-3">
-            <div className="grid grid-cols-3 gap-2 text-center">
-              <div className="bg-gray-50 dark:bg-gray-900/50 rounded px-2 py-1.5">
-                <p className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Total</p>
-                <p className="text-sm font-bold text-gray-900 dark:text-white">
-                  ${(valorTotal / 1_000_000).toFixed(1)}M
-                </p>
+            {/* FINANCIERO SECTION (Right) */}
+            <div className="flex items-center gap-4">
+              {/* Grid de métricas */}
+              <div className={styles.card.financieroGrid}>
+                {/* Total */}
+                <div className={`${styles.card.metricBox} bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700`}>
+                  <p className={styles.card.metricLabel}>Total</p>
+                  <p className={`${styles.card.metricValue} text-gray-900 dark:text-white`}>
+                    ${(valorTotal / 1_000_000).toFixed(1)}M
+                  </p>
+                </div>
+
+                {/* Pagado */}
+                <div className={`${styles.card.metricBox} bg-gradient-to-br from-green-50 to-emerald-100 dark:from-green-900/20 dark:to-emerald-900/30`}>
+                  <p className={styles.card.metricLabel}>Pagado</p>
+                  <p className={`${styles.card.metricValue} text-green-600 dark:text-green-400`}>
+                    ${(totalAbonado / 1_000_000).toFixed(1)}M
+                  </p>
+                </div>
+
+                {/* Pendiente */}
+                <div className={`${styles.card.metricBox} bg-gradient-to-br from-orange-50 to-amber-100 dark:from-orange-900/20 dark:to-amber-900/30`}>
+                  <p className={styles.card.metricLabel}>Pendiente</p>
+                  <p className={`${styles.card.metricValue} text-orange-600 dark:text-orange-400`}>
+                    ${(saldoPendiente / 1_000_000).toFixed(1)}M
+                  </p>
+                </div>
               </div>
-              <div className="bg-green-50 dark:bg-green-900/20 rounded px-2 py-1.5">
-                <p className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Pagado</p>
-                <p className="text-sm font-bold text-green-600 dark:text-green-400">
-                  ${(totalAbonado / 1_000_000).toFixed(1)}M
-                </p>
-              </div>
-              <div className="bg-orange-50 dark:bg-orange-900/20 rounded px-2 py-1.5">
-                <p className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Pendiente</p>
-                <p className="text-sm font-bold text-orange-600 dark:text-orange-400">
-                  ${(saldoPendiente / 1_000_000).toFixed(1)}M
-                </p>
-              </div>
+
+              {/* Arrow icon con animación */}
+              <ArrowRight className={styles.card.arrowIcon} />
             </div>
-
-            {/* Ícono de acción */}
-            <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-orange-500 group-hover:translate-x-1 transition-all flex-shrink-0" />
           </div>
-        </div>
 
-        {/* Barra de progreso - debajo */}
-        <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
-          <div className="flex justify-between items-center mb-1.5">
-            <span className="text-xs font-medium text-gray-600 dark:text-gray-400">
-              Progreso de pago
-            </span>
-            <span className="text-xs font-bold text-orange-600 dark:text-orange-400">
-              {porcentajePagado.toFixed(1)}%
-            </span>
-          </div>
-          <div className="h-2 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden">
-            <div
-              className="h-full bg-gradient-to-r from-orange-500 to-amber-500 transition-all duration-500 shadow-sm"
-              style={{ width: `${porcentajePagado}%` }}
-            />
+          {/* PROGRESS BAR (Bottom) */}
+          <div className={styles.card.progressSection}>
+            <div className={styles.card.progressHeader}>
+              <span className={styles.card.progressLabel}>Progreso de pago</span>
+              <span className={styles.card.progressPercent}>
+                {porcentajePagado.toFixed(1)}%
+              </span>
+            </div>
+            <div className={styles.card.progressBar}>
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: `${porcentajePagado}%` }}
+                transition={{ duration: 0.8, ease: 'easeOut', delay: 0.2 }}
+                className={styles.card.progressFill}
+              />
+            </div>
           </div>
         </div>
       </motion.div>

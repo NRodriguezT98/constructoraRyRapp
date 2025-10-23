@@ -7,17 +7,17 @@
 
 import { ModalConfirmacion } from '@/shared'
 import { useRouter } from 'next/navigation'
-import { useCallback, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import {
     ClientesHeader,
     EstadisticasClientes,
+    FiltrosClientes,
     FormularioClienteContainer,
     ListaClientes,
 } from '../components'
 import { useClientes } from '../hooks'
 import { useClientesStore } from '../store/clientes.store'
-import { clientesStyles } from '../styles'
-import type { ClienteResumen } from '../types'
+import type { ClienteResumen, EstadoCliente, OrigenCliente } from '../types'
 
 export function ClientesPageMain() {
   const router = useRouter()
@@ -38,6 +38,40 @@ export function ClientesPageMain() {
   // Estado para modal de confirmación de eliminación
   const [modalEliminarAbierto, setModalEliminarAbierto] = useState(false)
   const [clienteAEliminar, setClienteAEliminar] = useState<ClienteResumen | null>(null)
+
+  // Estados para filtros locales
+  const [busqueda, setBusqueda] = useState('')
+  const [estadoFiltro, setEstadoFiltro] = useState<EstadoCliente | 'Todos'>('Todos')
+  const [origenFiltro, setOrigenFiltro] = useState<OrigenCliente | 'Todos'>('Todos')
+
+  // Filtrar clientes localmente
+  const clientesFiltrados = useMemo(() => {
+    let resultado = [...clientes]
+
+    // Filtro por búsqueda
+    if (busqueda.trim()) {
+      const termino = busqueda.toLowerCase().trim()
+      resultado = resultado.filter(
+        (cliente) =>
+          cliente.nombre_completo.toLowerCase().includes(termino) ||
+          cliente.numero_documento.toLowerCase().includes(termino) ||
+          cliente.telefono?.toLowerCase().includes(termino) ||
+          cliente.email?.toLowerCase().includes(termino)
+      )
+    }
+
+    // Filtro por estado
+    if (estadoFiltro !== 'Todos') {
+      resultado = resultado.filter((cliente) => cliente.estado === estadoFiltro)
+    }
+
+    // Filtro por origen
+    if (origenFiltro !== 'Todos') {
+      resultado = resultado.filter((cliente) => cliente.origen === origenFiltro)
+    }
+
+    return resultado
+  }, [clientes, busqueda, estadoFiltro, origenFiltro])
 
   // =====================================================
   // HANDLERS
@@ -108,12 +142,15 @@ export function ClientesPageMain() {
   // =====================================================
 
   return (
-    <div className={clientesStyles.pageContainer}>
-      <div className={clientesStyles.contentContainer}>
-        {/* Header */}
-        <ClientesHeader onNuevoCliente={handleNuevoCliente} />
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50 to-violet-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+        {/* Header Hero + FAB */}
+        <ClientesHeader
+          onNuevoCliente={handleNuevoCliente}
+          totalClientes={estadisticas.total}
+        />
 
-        {/* Estadísticas */}
+        {/* Estadísticas Premium */}
         <EstadisticasClientes
           total={estadisticas.total}
           interesados={estadisticas.interesados}
@@ -121,9 +158,21 @@ export function ClientesPageMain() {
           inactivos={estadisticas.inactivos}
         />
 
-        {/* Lista de Clientes */}
+        {/* 🔍 Filtros Premium */}
+        <FiltrosClientes
+          busqueda={busqueda}
+          estadoSeleccionado={estadoFiltro}
+          origenSeleccionado={origenFiltro}
+          onBusquedaChange={setBusqueda}
+          onEstadoChange={setEstadoFiltro}
+          onOrigenChange={setOrigenFiltro}
+          totalResultados={clientesFiltrados.length}
+          totalClientes={clientes.length}
+        />
+
+        {/* Lista de Clientes (sin cambios en cards) */}
         <ListaClientes
-          clientes={clientes}
+          clientes={clientesFiltrados}
           isLoading={isLoading}
           onVerCliente={handleVerCliente}
           onEditarCliente={handleEditarCliente}

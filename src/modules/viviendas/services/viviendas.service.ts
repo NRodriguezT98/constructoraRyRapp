@@ -225,18 +225,34 @@ class ViviendasService {
         }
       }
 
-      // Obtener datos de abonos
-      const { data: abonosData, error: abonosError } = await supabase
-        .from('vista_viviendas_abonos')
-        .select('*')
-        .eq('id', id)
-        .single()
+      // Obtener datos de abonos: vivienda → negociacion → abonos_historial
+      if (vivienda.negociacion_id) {
+        const { data: abonosData, error: abonosError } = await supabase
+          .from('abonos_historial' as any)
+          .select('monto')
+          .eq('negociacion_id', vivienda.negociacion_id)
 
-      if (!abonosError && abonosData) {
-        vivienda.total_abonado = Number(abonosData.total_abonado) || 0
-        vivienda.saldo_pendiente = Number(abonosData.saldo_pendiente) || vivienda.valor_total
-        vivienda.porcentaje_pagado = Number(abonosData.porcentaje_pagado) || 0
-        vivienda.cantidad_abonos = Number(abonosData.cantidad_abonos) || 0
+        if (!abonosError && abonosData) {
+          const totalAbonado = (abonosData as any[]).reduce((sum: number, abono: any) => sum + Number(abono.monto), 0)
+          vivienda.total_abonado = totalAbonado
+          vivienda.saldo_pendiente = vivienda.valor_total - totalAbonado
+          vivienda.porcentaje_pagado = vivienda.valor_total > 0
+            ? Math.round((totalAbonado / vivienda.valor_total) * 100 * 100) / 100
+            : 0
+          vivienda.cantidad_abonos = abonosData.length
+        } else {
+          // Sin abonos
+          vivienda.total_abonado = 0
+          vivienda.saldo_pendiente = vivienda.valor_total
+          vivienda.porcentaje_pagado = 0
+          vivienda.cantidad_abonos = 0
+        }
+      } else {
+        // Sin negociación = sin abonos
+        vivienda.total_abonado = 0
+        vivienda.saldo_pendiente = vivienda.valor_total
+        vivienda.porcentaje_pagado = 0
+        vivienda.cantidad_abonos = 0
       }
     }
 
@@ -289,12 +305,12 @@ class ViviendasService {
       es_esquinera: formData.es_esquinera,
       recargo_esquinera: formData.recargo_esquinera,
       gastos_notariales: gastosNotariales,
-      precio: valorTotal, // Compatibilidad con campo antiguo
+      // valor_total se calcula automáticamente en la BD
     }
 
     const { data, error } = await supabase
       .from('viviendas')
-      .insert(viviendaData)
+      .insert(viviendaData as any) // Cast temporal hasta regenerar types
       .select()
       .single()
 
@@ -430,7 +446,7 @@ class ViviendasService {
       // Obtener datos de clientes
       const { data: clientesData, error: clientesError } = await supabase
         .from('clientes')
-        .select('id, nombre, apellido, telefono, email')
+        .select('id, nombres, apellidos, telefono, email')
         .in('id', idsClientes)
 
       if (!clientesError && clientesData) {
@@ -441,7 +457,7 @@ class ViviendasService {
             if (cliente) {
               vivienda.clientes = {
                 id: cliente.id,
-                nombre_completo: `${cliente.nombre} ${cliente.apellido}`,
+                nombre_completo: `${cliente.nombres} ${cliente.apellidos}`,
                 telefono: cliente.telefono,
                 email: cliente.email,
               }
@@ -450,25 +466,41 @@ class ViviendasService {
         })
       }
 
-      // Obtener cálculos de abonos
-      const idsConCliente = viviendasConCliente.map((v) => v.id)
+      // Obtener cálculos de abonos: vivienda → negociacion → abonos_historial
+      const viviendasConNegociacion = viviendasConCliente.filter(v => v.negociacion_id)
+      const negociacionIds = viviendasConNegociacion.map((v) => v.negociacion_id!)
 
-      const { data: abonosData, error: abonosError } = await supabase
-        .from('vista_viviendas_abonos')
-        .select('*')
-        .in('id', idsConCliente)
+      if (negociacionIds.length > 0) {
+        const { data: abonosData, error: abonosError } = await supabase
+          .from('abonos_historial' as any)
+          .select('negociacion_id, monto')
+          .in('negociacion_id', negociacionIds)
 
-      if (!abonosError && abonosData) {
-        // Mapear datos de abonos a las viviendas
-        viviendas.forEach((vivienda) => {
-          const datosAbonos = abonosData.find((a) => a.id === vivienda.id)
-          if (datosAbonos) {
-            vivienda.total_abonado = Number(datosAbonos.total_abonado) || 0
-            vivienda.saldo_pendiente = Number(datosAbonos.saldo_pendiente) || vivienda.valor_total
-            vivienda.porcentaje_pagado = Number(datosAbonos.porcentaje_pagado) || 0
-            vivienda.cantidad_abonos = Number(datosAbonos.cantidad_abonos) || 0
-          }
-        })
+        if (!abonosError && abonosData) {
+          // Agrupar abonos por negociación
+          const abonosPorNegociacion = (abonosData as any[]).reduce((acc: Record<string, number>, abono: any) => {
+            if (!acc[abono.negociacion_id]) {
+              acc[abono.negociacion_id] = 0
+            }
+            acc[abono.negociacion_id] += Number(abono.monto)
+            return acc
+          }, {})
+
+          // Mapear datos de abonos a las viviendas
+          viviendas.forEach((vivienda) => {
+            if (vivienda.negociacion_id) {
+              const totalAbonado = abonosPorNegociacion[vivienda.negociacion_id] || 0
+              const cantidadAbonos = (abonosData as any[]).filter((a: any) => a.negociacion_id === vivienda.negociacion_id).length
+
+              vivienda.total_abonado = totalAbonado
+              vivienda.saldo_pendiente = vivienda.valor_total - totalAbonado
+              vivienda.porcentaje_pagado = vivienda.valor_total > 0
+                ? Math.round((totalAbonado / vivienda.valor_total) * 100 * 100) / 100
+                : 0
+              vivienda.cantidad_abonos = cantidadAbonos
+            }
+          })
+        }
       }
     }
 

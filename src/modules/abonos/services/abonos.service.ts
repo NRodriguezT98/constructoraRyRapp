@@ -19,7 +19,9 @@ import type {
 
 /**
  * Obtiene todas las negociaciones en estado activo
- * Estados considerados: 'En Proceso', 'Cierre Financiero', 'Activa'
+ * ✅ ACTUALIZADO (2025-10-23): Estados según migración 003
+ * Estados considerados: 'Activa' (negociaciones activas que permiten abonos)
+ * Consultar: docs/DATABASE-SCHEMA-REFERENCE-ACTUALIZADO.md
  */
 export async function obtenerNegociacionesActivas(): Promise<NegociacionConAbonos[]> {
   const supabase = createClient();
@@ -27,15 +29,17 @@ export async function obtenerNegociacionesActivas(): Promise<NegociacionConAbono
   console.log('🔍 Obteniendo negociaciones activas...');
 
   // Query con campos REALES verificados en DB
+  // Solo negociaciones 'Activa' permiten registrar abonos
+  // Especificamos la relación exacta para evitar ambigüedad
   const { data, error } = await supabase
     .from('negociaciones')
     .select(`
       *,
-      clientes(id, nombres, apellidos, numero_documento, telefono, email, ciudad),
-      viviendas(id, numero, manzana_id, precio, area, tipo_vivienda),
-      fuentes_pago(*)
+      clientes!negociaciones_cliente_id_fkey(id, nombres, apellidos, numero_documento, telefono, email, ciudad),
+      viviendas!negociaciones_vivienda_id_fkey(id, numero, manzana_id, valor_base, area, tipo_vivienda),
+      fuentes_pago!fuentes_pago_negociacion_id_fkey(*)
     `)
-    .in('estado', ['En Proceso', 'Cierre Financiero', 'Activa'])
+    .eq('estado', 'Activa')
     .order('fecha_creacion', { ascending: false });
 
   if (error) {
@@ -100,9 +104,9 @@ export async function obtenerNegociacionPorId(
     .from('negociaciones')
     .select(`
       *,
-      clientes(*),
-      viviendas(*),
-      fuentes_pago(*)
+      clientes!negociaciones_cliente_id_fkey(*),
+      viviendas!negociaciones_vivienda_id_fkey(*),
+      fuentes_pago!fuentes_pago_negociacion_id_fkey(*)
     `)
     .eq('id', negociacionId)
     .single();
