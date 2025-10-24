@@ -40,7 +40,6 @@ export interface DocumentoCliente {
   fecha_documento: string | null
   fecha_vencimiento: string | null
   es_importante: boolean
-  es_documento_identidad: boolean // 🆔 Marca si es cédula/pasaporte (requerido para negociaciones)
 
   // Timestamps
   fecha_creacion: string
@@ -60,7 +59,6 @@ export interface SubirDocumentoClienteParams {
   fecha_documento?: string
   fecha_vencimiento?: string
   es_importante?: boolean
-  es_documento_identidad?: boolean // 🆔 Marcar si es documento de identidad
   metadata?: Record<string, any>
 }
 

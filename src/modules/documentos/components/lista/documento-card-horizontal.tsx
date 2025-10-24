@@ -8,8 +8,10 @@ import {
     Archive,
     Calendar,
     Download,
+    Edit3,
     Eye,
     FileText,
+    FolderPlus,
     MoreVertical,
     Star,
     Tag,
@@ -31,6 +33,8 @@ interface DocumentoCardHorizontalProps {
   onToggleImportante: (documento: DocumentoProyecto) => void
   onArchive: (documento: DocumentoProyecto) => void
   onDelete: (documento: DocumentoProyecto) => void
+  onRename?: (documento: DocumentoProyecto) => void
+  onAsignarCategoria?: (documento: DocumentoProyecto) => void
 }
 
 export function DocumentoCardHorizontal({
@@ -41,6 +45,8 @@ export function DocumentoCardHorizontal({
   onToggleImportante,
   onArchive,
   onDelete,
+  onRename,
+  onAsignarCategoria,
 }: DocumentoCardHorizontalProps) {
   const { menuAbierto, menuRef, toggleMenu, cerrarMenu } = useDocumentoCard()
 
@@ -59,8 +65,7 @@ export function DocumentoCardHorizontal({
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: 20 }}
-      whileHover={{ scale: 1.01 }}
-      className='group relative flex items-center gap-4 overflow-hidden rounded-xl border border-gray-200 bg-white p-4 shadow-sm transition-all duration-200 hover:shadow-lg dark:border-gray-700 dark:bg-gray-800'
+      className='group relative flex items-center gap-4 rounded-xl border border-gray-200 bg-white p-4 shadow-sm transition-all duration-200 hover:shadow-lg dark:border-gray-700 dark:bg-gray-800'
     >
       {/* SECCIÓN IZQUIERDA: Icono + Categoría + Badges */}
       <div className='flex flex-shrink-0 flex-col items-center gap-2'>
@@ -232,8 +237,19 @@ export function DocumentoCardHorizontal({
           <Download size={18} />
         </button>
 
+        {/* Botón Asignar Categoría */}
+        {onAsignarCategoria && (
+          <button
+            onClick={() => onAsignarCategoria(documento)}
+            className='flex items-center justify-center rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 p-2.5 text-white transition-all hover:from-amber-600 hover:to-orange-600'
+            title={categoria ? `Cambiar categoría (actual: ${categoria.nombre})` : 'Asignar categoría'}
+          >
+            <FolderPlus size={18} />
+          </button>
+        )}
+
         {/* Menú de opciones */}
-        <div className='relative' ref={menuRef}>
+        <div className='relative z-30' ref={menuRef}>
           <button
             onClick={toggleMenu}
             className='flex items-center justify-center rounded-lg p-2.5 transition-colors hover:bg-gray-100 dark:hover:bg-gray-700'
@@ -247,7 +263,7 @@ export function DocumentoCardHorizontal({
               initial={{ opacity: 0, scale: 0.95, y: -10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: -10 }}
-              className='absolute right-0 top-full z-20 mt-2 w-48 rounded-xl border border-gray-200 bg-white py-2 shadow-xl dark:border-gray-700 dark:bg-gray-800'
+              className='absolute right-0 top-full z-50 mt-2 w-48 rounded-xl border border-gray-200 bg-white py-2 shadow-xl dark:border-gray-700 dark:bg-gray-800'
             >
               <button
                 onClick={() => {
@@ -268,6 +284,19 @@ export function DocumentoCardHorizontal({
                   ? 'Quitar importante'
                   : 'Marcar importante'}
               </button>
+
+              {onRename && (
+                <button
+                  onClick={() => {
+                    onRename(documento)
+                    cerrarMenu()
+                  }}
+                  className='flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
+                >
+                  <Edit3 size={16} />
+                  Renombrar
+                </button>
+              )}
 
               <button
                 onClick={() => {

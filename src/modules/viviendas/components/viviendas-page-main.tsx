@@ -1,9 +1,10 @@
 'use client'
 
+import { usePerformanceMonitor } from '@/hooks/usePerformanceMonitor'
 import { motion } from 'framer-motion'
 import { useRouter } from 'next/navigation'
+import { useEffect } from 'react'
 import { Modal } from '../../../shared/components/ui/Modal'
-import { staggerContainer } from '../../../shared/styles/animations'
 import { useViviendasList } from '../hooks/useViviendasList'
 import { viviendasListStyles as styles } from '../styles/viviendasList.styles'
 import { FormularioVivienda } from './formulario-vivienda'
@@ -20,6 +21,7 @@ import { ViviendasStats } from './viviendas-stats'
  * Lógica delegada a useViviendasList
  */
 export function ViviendasPageMain() {
+  const { markDataLoaded, mark } = usePerformanceMonitor('ViviendasPage')
   const router = useRouter()
   const {
     viviendas,
@@ -43,6 +45,20 @@ export function ViviendasPageMain() {
     totalFiltradas,
   } = useViviendasList()
 
+  // =====================================================
+  // PERFORMANCE MONITORING
+  // =====================================================
+
+  useEffect(() => {
+    if (!cargando && viviendas.length >= 0) {
+      mark(`Datos cargados (${viviendas.length} viviendas)`)
+      markDataLoaded()
+    }
+    // ⭐ Solo depende de cargando y cantidad de viviendas
+    // markDataLoaded y mark son funciones estables (useCallback)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cargando, viviendas.length])
+
   const handleVerDetalle = (viviendaId: string) => {
     router.push(`/viviendas/${viviendaId}` as any)
   }
@@ -51,10 +67,11 @@ export function ViviendasPageMain() {
 
   return (
     <div className={styles.container}>
+      {/* Animación simplificada para navegación instantánea */}
       <motion.div
-        variants={staggerContainer}
-        initial="hidden"
-        animate="visible"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.15 }}
         className={styles.content}
       >
         {/* Header */}

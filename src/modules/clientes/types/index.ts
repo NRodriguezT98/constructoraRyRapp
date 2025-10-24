@@ -86,6 +86,7 @@ export interface Cliente {
 
   // Documentos
   documento_identidad_url?: string
+  documento_identidad_titulo?: string | null // Título personalizado para mostrar
 
   // Notas
   notas?: string
@@ -434,6 +435,7 @@ export interface CrearClienteDTO {
 
   // Documentos
   documento_identidad_url?: string
+  documento_identidad_titulo?: string | null // Título personalizado
 
   // Notas
   notas?: string
@@ -448,6 +450,7 @@ export interface CrearClienteDTO {
 
 export interface ActualizarClienteDTO extends Partial<CrearClienteDTO> {
   estado?: EstadoCliente
+  documento_identidad_titulo?: string | null // Permitir actualizar título
 }
 
 export interface CrearInteresDTO {

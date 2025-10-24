@@ -23,9 +23,9 @@ export default function LoginPage() {
   const [showResetPassword, setShowResetPassword] = useState(false)
 
   return (
-    <div className='relative flex min-h-screen items-center justify-center overflow-hidden'>
-      {/* Fondo personalizado */}
-      <div className='absolute inset-0 z-0'>
+    <div className='relative flex min-h-screen w-full items-center justify-center overflow-hidden'>
+      {/* Fondo personalizado - FULL WIDTH */}
+      <div className='fixed inset-0 z-0 h-screen w-screen'>
         <Image
           src='/images/fondo-login.png'
           alt='Fondo RyR Constructora'
@@ -40,8 +40,8 @@ export default function LoginPage() {
       </div>
 
       {/* Contenido del login */}
-      <div className='relative z-10 w-full max-w-6xl px-4'>
-        <div className='grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-12'>
+      <div className='relative z-10 w-full max-w-7xl px-4'>
+        <div className='grid grid-cols-1 items-center gap-12 lg:grid-cols-2'>
           {/* Lado izquierdo - Branding */}
           <motion.div
             initial={{ opacity: 0, x: -50 }}

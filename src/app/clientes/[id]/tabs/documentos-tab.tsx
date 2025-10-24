@@ -1,13 +1,13 @@
 'use client'
 
 import { useAuth } from '@/contexts/auth-context'
-import SeccionDocumentosIdentidad from '@/modules/clientes/components/documentos/seccion-documentos-identidad'
 import { DocumentoUploadCliente } from '@/modules/clientes/documentos/components/documento-upload-cliente'
 import { DocumentosListaCliente } from '@/modules/clientes/documentos/components/documentos-lista-cliente'
 import { useDocumentosClienteStore } from '@/modules/clientes/documentos/store/documentos-cliente.store'
 import type { Cliente } from '@/modules/clientes/types'
 import { CategoriasManager } from '@/modules/documentos/components/categorias/categorias-manager'
 import { ArrowLeft, FileText, FolderCog, Upload } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
 interface DocumentosTabProps {
@@ -15,6 +15,7 @@ interface DocumentosTabProps {
 }
 
 export function DocumentosTab({ cliente }: DocumentosTabProps) {
+  const router = useRouter()
   const { user } = useAuth()
   const {
     documentos,
@@ -28,9 +29,9 @@ export function DocumentosTab({ cliente }: DocumentosTabProps) {
   } = useDocumentosClienteStore()
 
   // Estados locales para vistas (PATRÓN IGUAL A PROYECTOS)
-  const [cedulaUrl, setCedulaUrl] = useState<string | null>(cliente.documento_identidad_url)
   const [showUpload, setShowUpload] = useState(false)
   const [showCategorias, setShowCategorias] = useState(false)
+  const [uploadTipoCedula, setUploadTipoCedula] = useState(false) // Flag para indicar si se está subiendo cédula
 
   // Cargar documentos y categorías al montar
   useEffect(() => {
@@ -40,13 +41,8 @@ export function DocumentosTab({ cliente }: DocumentosTabProps) {
     }
   }, [cliente.id, user, cargarDocumentos, cargarCategorias])
 
-  // Sincronizar con cambios en el cliente
-  useEffect(() => {
-    setCedulaUrl(cliente.documento_identidad_url)
-  }, [cliente.documento_identidad_url])
-
-  const tieneCedula = !!cedulaUrl
-  const totalDocumentos = documentos.length
+  const tieneCedula = !!cliente.documento_identidad_url
+  const totalDocumentos = documentos.length + (tieneCedula ? 1 : 0)
 
   // Si está mostrando categorías (PATRÓN IGUAL A PROYECTOS)
   if (showCategorias && user) {
@@ -91,11 +87,23 @@ export function DocumentosTab({ cliente }: DocumentosTabProps) {
         <div className='rounded-lg border border-purple-200 bg-white p-4 shadow-sm dark:border-purple-800 dark:bg-gray-800'>
           <DocumentoUploadCliente
             clienteId={cliente.id}
+            esCedula={uploadTipoCedula}
+            numeroDocumento={cliente.numero_documento}
+            nombreCliente={`${cliente.nombres} ${cliente.apellidos}`}
             onSuccess={() => {
               setShowUpload(false)
-              cargarDocumentos(cliente.id)
+              setUploadTipoCedula(false)
+              // Si era cédula, refrescar ruta para obtener datos actualizados
+              if (uploadTipoCedula) {
+                router.refresh() // ✅ Revalida datos del servidor SIN recargar página
+              } else {
+                cargarDocumentos(cliente.id)
+              }
             }}
-            onCancel={() => setShowUpload(false)}
+            onCancel={() => {
+              setShowUpload(false)
+              setUploadTipoCedula(false)
+            }}
           />
         </div>
       </div>
@@ -104,25 +112,6 @@ export function DocumentosTab({ cliente }: DocumentosTabProps) {
 
   return (
     <div className='space-y-4'>
-      {/* Sección de Documentos de Identidad (PRIORITARIA) */}
-      <SeccionDocumentosIdentidad
-        clienteId={cliente.id}
-        clienteNombre={`${cliente.nombres} ${cliente.apellidos}`}
-        numeroDocumento={cliente.numero_documento}
-        documentoIdentidadUrl={cedulaUrl}
-        onActualizar={(nuevaUrl) => {
-          console.log('Actualizando cédula en UI:', nuevaUrl);
-          setCedulaUrl(nuevaUrl);
-          // Forzar recarga del cliente si es necesario
-          if (typeof window !== 'undefined') {
-            window.dispatchEvent(new CustomEvent('cliente-actualizado'));
-          }
-        }}
-      />
-
-      {/* Separador visual */}
-      <div className="border-t border-gray-200 dark:border-gray-700"></div>
-
       {/* Header con acciones */}
       <div className='rounded-lg border border-purple-200 bg-white p-4 shadow-sm dark:border-purple-800 dark:bg-gray-800'>
         <div className='flex items-center justify-between'>
@@ -132,7 +121,7 @@ export function DocumentosTab({ cliente }: DocumentosTabProps) {
             </div>
             <div>
               <h2 className='text-base font-bold text-gray-900 dark:text-white'>
-                Otros Documentos
+                Documentos del Cliente
               </h2>
               <p className='text-xs text-gray-500 dark:text-gray-400'>
                 {totalDocumentos} {totalDocumentos === 1 ? 'documento' : 'documentos'} almacenados
@@ -141,6 +130,20 @@ export function DocumentosTab({ cliente }: DocumentosTabProps) {
           </div>
 
           <div className='flex gap-1.5'>
+            {/* Botón especial para subir cédula si no existe */}
+            {!tieneCedula && (
+              <button
+                onClick={() => {
+                  setUploadTipoCedula(true)
+                  setShowUpload(true)
+                }}
+                className='flex items-center gap-1.5 rounded-lg border-2 border-amber-400 bg-amber-50 px-3 py-1.5 text-xs font-medium text-amber-700 transition-all hover:bg-amber-100 dark:border-amber-600 dark:bg-amber-900/20 dark:text-amber-400 dark:hover:bg-amber-900/30'
+              >
+                <FileText className='h-3.5 w-3.5' />
+                <span>Subir Cédula</span>
+              </button>
+            )}
+
             <button
               onClick={() => setShowCategorias(true)}
               className='flex items-center gap-1.5 rounded-lg border border-purple-300 bg-white px-3 py-1.5 text-xs font-medium text-purple-700 transition-colors hover:bg-purple-50 dark:border-purple-700 dark:bg-gray-700 dark:text-purple-300 dark:hover:bg-gray-600'
@@ -160,7 +163,12 @@ export function DocumentosTab({ cliente }: DocumentosTabProps) {
       </div>
 
       {/* Lista de documentos - USANDO COMPONENTE DE PROYECTOS (CONSISTENTE) */}
-      <DocumentosListaCliente clienteId={cliente.id} />
+      <DocumentosListaCliente
+        clienteId={cliente.id}
+        cedulaUrl={cliente.documento_identidad_url}
+        numeroDocumento={cliente.numero_documento}
+        cedulaTituloPersonalizado={cliente.documento_identidad_titulo}
+      />
     </div>
   )
 }

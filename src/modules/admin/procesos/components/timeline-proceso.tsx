@@ -7,6 +7,8 @@
  * Diseño premium con timeline vertical y glassmorphism.
  */
 
+import { useAuth } from '@/contexts/auth-context'
+import { createBrowserClient } from '@supabase/ssr'
 import { AnimatePresence, motion } from 'framer-motion'
 import {
     AlertCircle,
@@ -33,6 +35,7 @@ interface TimelineProcesoProps {
 }
 
 export function TimelineProceso({ negociacionId }: TimelineProcesoProps) {
+  const { user } = useAuth()
   const {
     pasos,
     progreso,
@@ -41,11 +44,13 @@ export function TimelineProceso({ negociacionId }: TimelineProcesoProps) {
     actualizando,
     completarPaso,
     iniciarPaso,
+    agregarDocumento,
     puedeCompletar,
     limpiarError
   } = useProcesoNegociacion({ negociacionId })
 
   const [pasoExpandido, setPasoExpandido] = useState<string | null>(null)
+  const [subiendoDoc, setSubiendoDoc] = useState<string | null>(null)
 
   // ===================================
   // HANDLERS
@@ -65,6 +70,135 @@ export function TimelineProceso({ negociacionId }: TimelineProcesoProps) {
     await completarPaso(pasoId, {
       notas: 'Completado manualmente'
     })
+  }
+
+  const handleAdjuntarDocumento = async (pasoId: string, documentoId: string, documentoNombre: string, file: File) => {
+    if (!user) {
+      alert('❌ No hay usuario autenticado')
+      return
+    }
+
+    setSubiendoDoc(documentoId)
+
+    try {
+      const supabase = createBrowserClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      )
+
+      console.log('📤 Subiendo documento:', {
+        pasoId,
+        documentoId,
+        documentoNombre,
+        fileName: file.name,
+        size: file.size
+      })
+
+      // 1. Validar tamaño (máx 10MB)
+      if (file.size > 10 * 1024 * 1024) {
+        alert('❌ El archivo no puede superar los 10MB')
+        return
+      }
+
+      // 2. Validar tipo de archivo
+      const extensionesPermitidas = ['.pdf', '.jpg', '.jpeg', '.png', '.doc', '.docx']
+      const extension = '.' + file.name.split('.').pop()?.toLowerCase()
+
+      if (!extensionesPermitidas.includes(extension)) {
+        alert('❌ Tipo de archivo no permitido. Usa: PDF, JPG, PNG, DOC, DOCX')
+        return
+      }
+
+      // 3. Construir path del storage
+      // Formato: userId/procesos/negociacionId/pasoId/documentoNombre_timestamp.ext
+      const timestamp = Date.now()
+      const nombreLimpio = documentoNombre
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '') // Remover acentos
+        .replace(/\s+/g, '_') // Espacios -> guión bajo
+        .replace(/[^a-zA-Z0-9_]/g, '') // Solo alfanuméricos
+
+      const storagePath = `${user.id}/procesos/${negociacionId}/${pasoId}/${nombreLimpio}_${timestamp}${extension}`
+
+      console.log('📁 Path de subida:', storagePath)
+
+      // 4. Subir a Supabase Storage
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('documentos-procesos')
+        .upload(storagePath, file, {
+          cacheControl: '3600',
+          upsert: true // Permitir sobrescribir
+        })
+
+      if (uploadError) {
+        console.error('❌ Error en Storage:', uploadError)
+        throw uploadError
+      }
+
+      console.log('✅ Archivo subido:', uploadData)
+
+      // 5. Obtener URL pública
+      const { data: { publicUrl } } = supabase.storage
+        .from('documentos-procesos')
+        .getPublicUrl(storagePath)
+
+      console.log('🔗 URL pública:', publicUrl)
+
+      // 6. Guardar URL en proceso
+      const exito = await agregarDocumento(pasoId, documentoId, publicUrl)
+
+      if (!exito) {
+        throw new Error('No se pudo guardar la URL del documento')
+      }
+
+      console.log('✅ Documento agregado al proceso')
+
+      // 7. 🆕 TAMBIÉN guardar en documentos_cliente para que aparezca en pestaña "Documentos"
+      const { data: negociacion } = await supabase
+        .from('negociaciones')
+        .select('cliente_id')
+        .eq('id', negociacionId)
+        .single()
+
+      if (negociacion?.cliente_id) {
+        const { error: insertError } = await supabase
+          .from('documentos_cliente')
+          .insert({
+            cliente_id: negociacion.cliente_id,
+            categoria_id: null, // Usuario asignará categoría manualmente desde pestaña Documentos
+            titulo: documentoNombre,
+            descripcion: `Subido desde proceso - Paso ${pasoId}`,
+            nombre_archivo: `${nombreLimpio}_${timestamp}${extension}`,
+            nombre_original: file.name,
+            tamano_bytes: file.size,
+            tipo_mime: file.type,
+            url_storage: publicUrl,
+            subido_por: user.id,
+            es_importante: false,
+            es_version_actual: true,
+            version: 1,
+            estado: 'activo',
+            etiquetas: ['Proceso', 'Negociación']
+          })
+
+        if (insertError) {
+          console.warn('⚠️ No se pudo guardar en documentos_cliente:', insertError)
+          console.error('Detalle del error:', insertError)
+        } else {
+          console.log('✅ Documento también guardado en documentos_cliente')
+        }
+      } else {
+        console.warn('⚠️ No se encontró cliente_id para la negociación')
+      }
+
+      alert(`✅ Documento "${documentoNombre}" subido correctamente`)
+
+    } catch (error: any) {
+      console.error('❌ Error completo:', error)
+      alert(`❌ Error al subir documento: ${error.message || 'Error desconocido'}`)
+    } finally {
+      setSubiendoDoc(null)
+    }
   }
 
   // ===================================
@@ -142,8 +276,10 @@ export function TimelineProceso({ negociacionId }: TimelineProcesoProps) {
               onToggle={() => togglePaso(paso.id)}
               onIniciar={() => handleIniciar(paso.id)}
               onCompletar={() => handleCompletar(paso.id)}
+              onAdjuntarDocumento={handleAdjuntarDocumento}
               puedeCompletar={puedeCompletar(paso)}
               deshabilitado={actualizando}
+              subiendoDoc={subiendoDoc}
             />
           ))}
         </div>
@@ -218,8 +354,10 @@ interface PasoItemProps {
   onToggle: () => void
   onIniciar: () => void
   onCompletar: () => void
+  onAdjuntarDocumento: (pasoId: string, documentoId: string, documentoNombre: string, file: File) => Promise<void>
   puedeCompletar: boolean
   deshabilitado: boolean
+  subiendoDoc: string | null
 }
 
 function PasoItem({
@@ -229,8 +367,10 @@ function PasoItem({
   onToggle,
   onIniciar,
   onCompletar,
+  onAdjuntarDocumento,
   puedeCompletar,
-  deshabilitado
+  deshabilitado,
+  subiendoDoc
 }: PasoItemProps) {
   const isCompletado = paso.estado === EstadoPaso.COMPLETADO
   const isEnProceso = paso.estado === EstadoPaso.EN_PROCESO
@@ -397,9 +537,39 @@ function PasoItem({
                                 <Download className="w-4 h-4" />
                               </a>
                             ) : (
-                              <button className="p-2 rounded-lg bg-gray-100 text-gray-400 hover:bg-gray-200 transition-colors">
-                                <Upload className="w-4 h-4" />
-                              </button>
+                              <div className="relative">
+                                <input
+                                  type="file"
+                                  id={`upload-${doc.id}`}
+                                  className="hidden"
+                                  accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                                  onChange={(e) => {
+                                    const file = e.target.files?.[0]
+                                    if (file) {
+                                      onAdjuntarDocumento(paso.id, doc.id, doc.nombre, file)
+                                      // Limpiar input para permitir re-upload del mismo archivo
+                                      e.target.value = ''
+                                    }
+                                  }}
+                                  disabled={subiendoDoc === doc.id}
+                                />
+                                <label
+                                  htmlFor={`upload-${doc.id}`}
+                                  className={`
+                                    p-2 rounded-lg transition-colors cursor-pointer inline-flex items-center gap-2
+                                    ${subiendoDoc === doc.id
+                                      ? 'bg-blue-100 text-blue-400'
+                                      : 'bg-gray-100 text-gray-600 hover:bg-blue-100 hover:text-blue-600'
+                                    }
+                                  `}
+                                >
+                                  {subiendoDoc === doc.id ? (
+                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                  ) : (
+                                    <Upload className="w-4 h-4" />
+                                  )}
+                                </label>
+                              </div>
                             )}
                           </div>
                         )

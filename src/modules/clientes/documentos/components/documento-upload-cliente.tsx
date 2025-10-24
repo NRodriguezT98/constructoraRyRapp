@@ -1,6 +1,7 @@
 'use client'
 
 import { useAuth } from '@/contexts/auth-context'
+import { supabase } from '@/lib/supabase/client-browser'
 import { EtiquetasInput } from '@/modules/documentos/components/shared/etiquetas-input'
 import { AnimatePresence, motion } from 'framer-motion'
 import {
@@ -31,12 +32,18 @@ type UploadFormData = {
 
 interface DocumentoUploadClienteProps {
   clienteId: string
+  esCedula?: boolean // Flag para indicar si se está subiendo la cédula
+  numeroDocumento?: string // Número de documento para el nombre del archivo
+  nombreCliente?: string // Nombre completo del cliente para archivo descriptivo
   onSuccess?: () => void
   onCancel?: () => void
 }
 
 export function DocumentoUploadCliente({
   clienteId,
+  esCedula = false,
+  numeroDocumento,
+  nombreCliente,
   onSuccess,
   onCancel,
 }: DocumentoUploadClienteProps) {
@@ -166,6 +173,84 @@ export function DocumentoUploadCliente({
     }
 
     try {
+      // Si es cédula, subir directamente al perfil del cliente
+      if (esCedula) {
+        // Importar dinámicamente solo el servicio de clientes
+        const { clientesService } = await import('@/modules/clientes/services/clientes.service')
+
+        // Verificar autenticación usando la instancia global
+        const { data: { session } } = await supabase.auth.getSession()
+        console.log('🔐 Sesión actual:', session?.user?.id)
+        console.log('🔐 User ID del contexto:', user.id)
+
+        if (!session?.user) {
+          toast.error('No hay sesión activa. Por favor, inicia sesión nuevamente.')
+          return
+        }
+
+        // Validar que sea PDF o imagen
+        if (!archivoSeleccionado.type.match(/^(application\/pdf|image\/(jpeg|jpg|png|webp))$/)) {
+          toast.error('La cédula debe ser un PDF o imagen (JPG, PNG, WEBP)')
+          return
+        }
+
+        // Subir a storage - Path simplificado de 2 niveles
+        const extension = archivoSeleccionado.name.split('.').pop()
+
+        // Generar nombre descriptivo usando nombre del cliente
+        // Formato: Cedula_Laura_Duque_11522266.pdf
+        let nombreArchivo = `cedula-${numeroDocumento || clienteId}.${extension}`
+        if (nombreCliente) {
+          // Limpiar nombre: remover acentos, reemplazar espacios por guión bajo
+          const nombreLimpio = nombreCliente
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '') // Remover acentos
+            .replace(/\s+/g, '_') // Espacios -> guión bajo
+            .replace(/[^a-zA-Z0-9_]/g, '') // Solo alfanuméricos y guión bajo
+
+          nombreArchivo = `Cedula_${nombreLimpio}_${numeroDocumento}.${extension}`
+        }
+
+        // Cambiado a path simple: userId/nombreArchivo
+        const storagePath = `${session.user.id}/${nombreArchivo}`
+
+        console.log('📁 Path de subida:', storagePath)
+        console.log('📁 Debe empezar con:', `${session.user.id}/`)
+
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('documentos-clientes')
+          .upload(storagePath, archivoSeleccionado, {
+            cacheControl: '3600',
+            upsert: true // Permitir sobrescribir si ya existe
+          })
+
+        if (uploadError) {
+          console.error('Error al subir cédula:', uploadError)
+          console.error('Storage path:', storagePath)
+          console.error('User ID:', user.id)
+          console.error('Detalles del error:', uploadError)
+          toast.error(`Error al subir la cédula: ${uploadError.message}`)
+          return
+        }
+
+        // Obtener URL pública
+        const { data: { publicUrl } } = supabase.storage
+          .from('documentos-clientes')
+          .getPublicUrl(storagePath)
+
+        // Actualizar cliente con la URL de la cédula
+        await clientesService.actualizarCliente(clienteId, {
+          documento_identidad_url: publicUrl
+        })
+
+        toast.success('Cédula subida exitosamente')
+        reset()
+        limpiarArchivo()
+        onSuccess?.()
+        return
+      }
+
+      // Si es documento regular, usar el flujo normal
       await subirDocumento(
         {
           archivo: archivoSeleccionado,
@@ -241,20 +326,32 @@ export function DocumentoUploadCliente({
             className="space-y-4"
             animate={{ scale: isDragging ? 1.05 : 1 }}
           >
-            <div className="w-20 h-20 mx-auto bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl flex items-center justify-center">
-              <Upload size={40} className="text-white" />
+            <div className={`w-20 h-20 mx-auto ${esCedula ? 'bg-gradient-to-br from-amber-500 to-orange-600' : 'bg-gradient-to-br from-purple-500 to-pink-600'} rounded-2xl flex items-center justify-center`}>
+              {esCedula ? (
+                <FileText size={40} className="text-white" />
+              ) : (
+                <Upload size={40} className="text-white" />
+              )}
             </div>
 
             <div>
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                {isDragging ? '¡Suelta el archivo aquí!' : 'Arrastra un archivo o haz clic'}
+                {esCedula
+                  ? (isDragging ? '¡Suelta la cédula aquí!' : 'Subir Cédula de Ciudadanía')
+                  : (isDragging ? '¡Suelta el archivo aquí!' : 'Arrastra un archivo o haz clic')
+                }
               </h3>
               <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                PDF, imágenes, Word, Excel
+                {esCedula ? 'PDF o imagen (JPG, PNG, WEBP)' : 'PDF, imágenes, Word, Excel'}
               </p>
               <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">
                 Tamaño máximo: 10 MB
               </p>
+              {esCedula && (
+                <p className="text-xs text-amber-600 dark:text-amber-400 mt-2 font-medium">
+                  ⚠️ La cédula es requerida para crear negociaciones
+                </p>
+              )}
             </div>
           </motion.div>
 
@@ -308,7 +405,7 @@ export function DocumentoUploadCliente({
 
       {/* Formulario de metadatos */}
       <AnimatePresence>
-        {archivoSeleccionado && (
+        {archivoSeleccionado && !esCedula && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
@@ -434,17 +531,17 @@ export function DocumentoUploadCliente({
         <button
           type="submit"
           disabled={!archivoSeleccionado || subiendoDocumento}
-          className="px-6 py-2.5 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-xl font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+          className={`px-6 py-2.5 ${esCedula ? 'bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700' : 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700'} text-white rounded-xl font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2`}
         >
           {subiendoDocumento ? (
             <>
               <Loader2 size={18} className="animate-spin" />
-              Subiendo...
+              {esCedula ? 'Subiendo cédula...' : 'Subiendo...'}
             </>
           ) : (
             <>
               <FileCheck size={18} />
-              Subir documento
+              {esCedula ? 'Subir cédula' : 'Subir documento'}
             </>
           )}
         </button>

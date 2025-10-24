@@ -1,7 +1,8 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
-import { AnimatePresence, motion } from 'framer-motion'
+import { usePerformanceMonitor } from '@/hooks/usePerformanceMonitor'
+import { motion } from 'framer-motion'
 import {
     Calendar,
     CreditCard,
@@ -13,6 +14,7 @@ import {
     TrendingUp
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import { useEffect } from 'react'
 import { useAbonosList } from '../hooks/useAbonosList'
 import { AbonoCard } from './abono-card'
 import { abonosListStyles, metricasIconColors } from './abonos-list.styles'
@@ -36,6 +38,7 @@ const formatCurrency = (value: number) => {
  * Lista TODOS los abonos del sistema con filtros y diseño premium
  */
 export function AbonosListPage() {
+  const { markDataLoaded, mark } = usePerformanceMonitor('AbonosPage')
   const router = useRouter()
   const {
     abonos,
@@ -48,6 +51,20 @@ export function AbonosListPage() {
     isLoading,
     error
   } = useAbonosList()
+
+  // =====================================================
+  // PERFORMANCE MONITORING
+  // =====================================================
+
+  useEffect(() => {
+    if (!isLoading && abonos.length >= 0) {
+      mark(`Datos cargados (${abonos.length} abonos)`)
+      markDataLoaded()
+    }
+    // ⭐ Solo depende de isLoading y cantidad de abonos
+    // markDataLoaded y mark son funciones estables (useCallback)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoading, abonos.length])
 
   const handleAnularAbono = (abonoId: string) => {
     // TODO: Implementar anulación de abonos
@@ -113,17 +130,15 @@ export function AbonosListPage() {
 
   return (
     <div className={s.container}>
+      {/* Animación simplificada para navegación instantánea */}
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.15 }}
         className={s.page}
       >
         {/* ✨ HEADER HERO */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className={s.header.container}
-        >
+        <div className={s.header.container}>
           <div className={s.header.pattern} />
           <div className={s.header.content}>
             <div className={s.header.titleGroup}>
@@ -142,20 +157,12 @@ export function AbonosListPage() {
               </span>
             </div>
           </div>
-        </motion.div>
+        </div>
 
         {/* 📊 MÉTRICAS GLASSMORPHISM */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className={s.metricas.container}
-        >
+        <div className={s.metricas.container}>
           {/* Total Abonos */}
-          <motion.div
-            whileHover={{ scale: 1.02 }}
-            className={s.metricas.card}
-          >
+          <div className={s.metricas.card}>
             <div className={`${s.metricas.cardGlow} ${s.gradients.primary}`} />
             <div className={s.metricas.content}>
               <div className={s.metricas.info}>
@@ -171,13 +178,10 @@ export function AbonosListPage() {
                 <div className={`${s.metricas.iconGlow} ${metricasIconColors.total.glow}`} />
               </div>
             </div>
-          </motion.div>
+          </div>
 
           {/* Monto Total */}
-          <motion.div
-            whileHover={{ scale: 1.02 }}
-            className={s.metricas.card}
-          >
+          <div className={s.metricas.card}>
             <div className={`${s.metricas.cardGlow} ${s.gradients.success}`} />
             <div className={s.metricas.content}>
               <div className={s.metricas.info}>
@@ -193,13 +197,10 @@ export function AbonosListPage() {
                 <div className={`${s.metricas.iconGlow} ${metricasIconColors.monto.glow}`} />
               </div>
             </div>
-          </motion.div>
+          </div>
 
           {/* Abonos Este Mes */}
-          <motion.div
-            whileHover={{ scale: 1.02 }}
-            className={s.metricas.card}
-          >
+          <div className={s.metricas.card}>
             <div className={`${s.metricas.cardGlow} ${s.gradients.primary}`} />
             <div className={s.metricas.content}>
               <div className={s.metricas.info}>
@@ -215,13 +216,10 @@ export function AbonosListPage() {
                 <div className={`${s.metricas.iconGlow} ${metricasIconColors.mes.glow}`} />
               </div>
             </div>
-          </motion.div>
+          </div>
 
           {/* Recaudado Este Mes */}
-          <motion.div
-            whileHover={{ scale: 1.02 }}
-            className={s.metricas.card}
-          >
+          <div className={s.metricas.card}>
             <div className={`${s.metricas.cardGlow} ${s.gradients.warning}`} />
             <div className={s.metricas.content}>
               <div className={s.metricas.info}>
@@ -237,15 +235,11 @@ export function AbonosListPage() {
                 <div className={`${s.metricas.iconGlow} ${metricasIconColors.recaudado.glow}`} />
               </div>
             </div>
-          </motion.div>
-        </motion.div>
+          </div>
+        </div>
 
         {/* 🔍 FILTROS */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-        >
+        <div>
           <FiltrosAbonos
             filtros={filtros}
             proyectos={proyectosUnicos}
@@ -254,37 +248,21 @@ export function AbonosListPage() {
             totalResultados={abonos.length}
             totalAbonos={abonosCompletos.length}
           />
-        </motion.div>
+        </div>
 
         {/* 🃏 LISTA DE ABONOS */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.3 }}
-          className="space-y-3"
-        >
-          <AnimatePresence mode="popLayout">
-            {abonos.length > 0 ? (
-              abonos.map((abono, index) => (
-                <motion.div
-                  key={abono.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  transition={{ delay: index * 0.05 }}
-                >
-                  <AbonoCard
-                    abono={abono}
-                    onAnular={handleAnularAbono}
-                  />
-                </motion.div>
-              ))
-            ) : (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className={s.empty.container}
-              >
+        <div className="space-y-3">
+          {abonos.length > 0 ? (
+            abonos.map((abono) => (
+              <div key={abono.id}>
+                <AbonoCard
+                  abono={abono}
+                  onAnular={handleAnularAbono}
+                />
+              </div>
+            ))
+          ) : (
+            <div className={s.empty.container}>
                 <div className={s.empty.iconWrapper}>
                   <CreditCard className={s.empty.icon} />
                   <div className={`${s.empty.iconGlow} bg-blue-500`} />
@@ -299,19 +277,13 @@ export function AbonosListPage() {
                   <Plus className="w-4 h-4 mr-2" />
                   Registrar Primer Abono
                 </Button>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </motion.div>
+            </div>
+          )}
+        </div>
       </motion.div>
 
       {/* 🎈 FAB - Floating Action Button */}
-      <motion.div
-        initial={{ scale: 0, rotate: -180 }}
-        animate={{ scale: 1, rotate: 0 }}
-        transition={{ type: "spring", stiffness: 260, damping: 20, delay: 0.5 }}
-        className={s.fab.container}
-      >
+      <div className={s.fab.container}>
         <Button onClick={handleRegistrarAbono} className={s.fab.button}>
           <div className={s.fab.buttonGlow} />
           <div className={s.fab.buttonContent}>
@@ -319,7 +291,7 @@ export function AbonosListPage() {
             <span className={s.fab.text}>Registrar Abono</span>
           </div>
         </Button>
-      </motion.div>
+      </div>
     </div>
   )
 }

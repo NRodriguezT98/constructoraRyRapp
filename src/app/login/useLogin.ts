@@ -35,6 +35,9 @@ export function useLogin(): UseLoginReturn {
   const router = useRouter()
   const searchParams = useSearchParams()
 
+  // Obtener ruta de redirección (puede ser null en SSR/build)
+  const redirectedFrom = searchParams?.get('redirectedFrom') || null
+
   // Rate limiting POR EMAIL (5 intentos por email)
   const {
     estaBloqueado,
@@ -70,8 +73,6 @@ export function useLogin(): UseLoginReturn {
         // 📝 Registrar evento de auditoría
         auditLogService.logLoginExitoso(email)
 
-        // Obtener ruta de redirección si existe
-        const redirectedFrom = searchParams.get('redirectedFrom')
         // Si redirectedFrom es '/' (raíz) o no existe, redirigir al dashboard
         const redirectTo = redirectedFrom && redirectedFrom !== '/' ? redirectedFrom : '/'
 
@@ -108,7 +109,7 @@ export function useLogin(): UseLoginReturn {
         setLoading(false)
       }
     },
-    [email, password, signIn, router, searchParams, verificarBloqueo, minutosRestantes, registrarIntentoFallido, resetearIntentos, intentosRestantes]
+    [email, password, signIn, router, redirectedFrom, verificarBloqueo, minutosRestantes, registrarIntentoFallido, resetearIntentos, intentosRestantes]
   )
 
   return {

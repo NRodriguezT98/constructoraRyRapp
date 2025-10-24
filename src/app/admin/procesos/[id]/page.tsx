@@ -13,12 +13,13 @@ export const metadata = {
 }
 
 interface EditarPlantillaPageProps {
-  params: {
+  params: Promise<{
     id: string
-  }
+  }>
 }
 
-export default function EditarPlantillaPage({ params }: EditarPlantillaPageProps) {
+export default async function EditarPlantillaPage({ params }: EditarPlantillaPageProps) {
+  const { id } = await params
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-8">
       <div className="max-w-4xl mx-auto">
@@ -72,7 +73,7 @@ export default function EditarPlantillaPage({ params }: EditarPlantillaPageProps
             <div className="rounded-xl bg-gray-50 border border-gray-200 p-4">
               <h3 className="font-semibold text-gray-900 mb-2">ID de esta plantilla:</h3>
               <code className="block px-4 py-2 rounded-lg bg-gray-800 text-green-400 font-mono text-sm break-all">
-                {params.id}
+                {id}
               </code>
               <p className="text-xs text-gray-500 mt-2">
                 Usa este ID para buscar la plantilla en Supabase

@@ -1,11 +1,11 @@
 import { supabase } from '@/lib/supabase/client-browser'
 import type {
-  ConfiguracionRecargo,
-  FiltrosViviendas,
-  ManzanaConDisponibilidad,
-  Proyecto,
-  Vivienda,
-  ViviendaFormData,
+    ConfiguracionRecargo,
+    FiltrosViviendas,
+    ManzanaConDisponibilidad,
+    Proyecto,
+    Vivienda,
+    ViviendaFormData,
 } from '../types'
 
 /**
@@ -400,109 +400,101 @@ class ViviendasService {
 
   /**
    * Lista viviendas con filtros opcionales
-   * Incluye relaciones con manzanas, proyectos
-   * Los datos de clientes se obtienen por separado si es necesario
+   * OPTIMIZADO: Usa vista_viviendas_completas (1 query vs 3-4 queries)
+   * Incluye relaciones con manzanas, proyectos, clientes y cálculos de abonos
    */
   async listar(filtros?: FiltrosViviendas): Promise<Vivienda[]> {
-    let query = supabase
-      .from('viviendas')
-      .select(`
-        *,
-        manzanas (
-          nombre,
-          proyecto_id,
-          proyectos (
-            nombre
-          )
-        )
-      `)
-      .order('fecha_creacion', { ascending: false })
+    // Query a la vista optimizada
+    // @ts-ignore - vista_viviendas_completas no está en types generados aún
+    const queryBuilder = supabase.from('vista_viviendas_completas').select('*')
 
     // Aplicar filtros si existen
+    // @ts-ignore
+    let query = queryBuilder
+
     if (filtros?.proyectoId) {
-      query = query.eq('manzanas.proyecto_id', filtros.proyectoId)
+      // @ts-ignore
+      query = query.eq('proyecto_id', filtros.proyectoId)
     }
 
     if (filtros?.manzanaId) {
+      // @ts-ignore
       query = query.eq('manzana_id', filtros.manzanaId)
     }
 
     if (filtros?.estado) {
+      // @ts-ignore
       query = query.eq('estado', filtros.estado)
     }
 
     const { data, error } = await query
 
-    if (error) throw error
-
-    const viviendas = (data || []) as unknown as Vivienda[]
-
-    // Obtener datos de clientes para viviendas con cliente_id
-    const viviendasConCliente = viviendas.filter((v) => v.cliente_id)
-
-    if (viviendasConCliente.length > 0) {
-      const idsClientes = [...new Set(viviendasConCliente.map((v) => v.cliente_id).filter(Boolean))]
-
-      // Obtener datos de clientes
-      const { data: clientesData, error: clientesError } = await supabase
-        .from('clientes')
-        .select('id, nombres, apellidos, telefono, email')
-        .in('id', idsClientes)
-
-      if (!clientesError && clientesData) {
-        // Mapear clientes a viviendas
-        viviendas.forEach((vivienda) => {
-          if (vivienda.cliente_id) {
-            const cliente = clientesData.find((c) => c.id === vivienda.cliente_id)
-            if (cliente) {
-              vivienda.clientes = {
-                id: cliente.id,
-                nombre_completo: `${cliente.nombres} ${cliente.apellidos}`,
-                telefono: cliente.telefono,
-                email: cliente.email,
-              }
-            }
-          }
-        })
-      }
-
-      // Obtener cálculos de abonos: vivienda → negociacion → abonos_historial
-      const viviendasConNegociacion = viviendasConCliente.filter(v => v.negociacion_id)
-      const negociacionIds = viviendasConNegociacion.map((v) => v.negociacion_id!)
-
-      if (negociacionIds.length > 0) {
-        const { data: abonosData, error: abonosError } = await supabase
-          .from('abonos_historial' as any)
-          .select('negociacion_id, monto')
-          .in('negociacion_id', negociacionIds)
-
-        if (!abonosError && abonosData) {
-          // Agrupar abonos por negociación
-          const abonosPorNegociacion = (abonosData as any[]).reduce((acc: Record<string, number>, abono: any) => {
-            if (!acc[abono.negociacion_id]) {
-              acc[abono.negociacion_id] = 0
-            }
-            acc[abono.negociacion_id] += Number(abono.monto)
-            return acc
-          }, {})
-
-          // Mapear datos de abonos a las viviendas
-          viviendas.forEach((vivienda) => {
-            if (vivienda.negociacion_id) {
-              const totalAbonado = abonosPorNegociacion[vivienda.negociacion_id] || 0
-              const cantidadAbonos = (abonosData as any[]).filter((a: any) => a.negociacion_id === vivienda.negociacion_id).length
-
-              vivienda.total_abonado = totalAbonado
-              vivienda.saldo_pendiente = vivienda.valor_total - totalAbonado
-              vivienda.porcentaje_pagado = vivienda.valor_total > 0
-                ? Math.round((totalAbonado / vivienda.valor_total) * 100 * 100) / 100
-                : 0
-              vivienda.cantidad_abonos = cantidadAbonos
-            }
-          })
-        }
-      }
+    if (error) {
+      console.error('Error cargando viviendas desde vista:', error)
+      throw error
     }
+
+    // Transformar datos de vista (flat) a estructura esperada (nested)
+    const viviendas: Vivienda[] = (data || []).map((row: any) => ({
+      // Campos base de vivienda
+      id: row.id,
+      manzana_id: row.manzana_id,
+      numero: row.numero,
+      estado: row.estado,
+      cliente_id: row.cliente_id,
+      negociacion_id: row.negociacion_id,
+
+      // Linderos
+      lindero_norte: row.lindero_norte,
+      lindero_sur: row.lindero_sur,
+      lindero_oriente: row.lindero_oriente,
+      lindero_occidente: row.lindero_occidente,
+
+      // Información Legal
+      matricula_inmobiliaria: row.matricula_inmobiliaria,
+      nomenclatura: row.nomenclatura,
+      area: row.area,
+      area_lote: row.area_lote,
+      area_construida: row.area_construida,
+      tipo_vivienda: row.tipo_vivienda,
+      certificado_tradicion_url: row.certificado_tradicion_url,
+
+      // Información Financiera
+      valor_base: row.valor_base,
+      es_esquinera: row.es_esquinera,
+      recargo_esquinera: row.recargo_esquinera,
+      gastos_notariales: row.gastos_notariales,
+      valor_total: row.valor_total,
+
+      // Auditoría
+      fecha_creacion: row.fecha_creacion,
+      fecha_actualizacion: row.fecha_actualizacion,
+
+      // Relación con manzana (nested)
+      manzanas: {
+        nombre: row.manzana_nombre,
+        proyecto_id: row.proyecto_id,
+        proyectos: {
+          nombre: row.proyecto_nombre,
+        },
+      },
+
+      // Relación con cliente (nested) - solo si tiene cliente
+      ...(row.cliente_id && {
+        clientes: {
+          id: row.cliente_id_data,
+          nombre_completo: `${row.cliente_nombres} ${row.cliente_apellidos}`,
+          telefono: row.cliente_telefono,
+          email: row.cliente_email,
+        },
+      }),
+
+      // Cálculos de abonos (ya vienen calculados de la vista)
+      total_abonado: Number(row.total_abonado) || 0,
+      cantidad_abonos: Number(row.cantidad_abonos) || 0,
+      porcentaje_pagado: Number(row.porcentaje_pagado) || 0,
+      saldo_pendiente: Number(row.saldo_pendiente) || row.valor_total,
+    }))
 
     return viviendas
   }  // ============================================

@@ -8,6 +8,7 @@ import {
     Archive,
     Calendar,
     Download,
+    Edit3,
     Eye,
     FileText,
     MoreVertical,
@@ -31,6 +32,7 @@ interface DocumentoCardProps {
   onToggleImportante: (documento: DocumentoProyecto) => void
   onArchive: (documento: DocumentoProyecto) => void
   onDelete: (documento: DocumentoProyecto) => void
+  onRename?: (documento: DocumentoProyecto) => void
 }
 
 export function DocumentoCard({
@@ -41,6 +43,7 @@ export function DocumentoCard({
   onToggleImportante,
   onArchive,
   onDelete,
+  onRename,
 }: DocumentoCardProps) {
   const { menuAbierto, menuRef, toggleMenu, cerrarMenu } = useDocumentoCard()
 
@@ -152,6 +155,19 @@ export function DocumentoCard({
                     ? 'Quitar importante'
                     : 'Marcar importante'}
                 </button>
+
+                {onRename && (
+                  <button
+                    onClick={() => {
+                      onRename(documento)
+                      cerrarMenu()
+                    }}
+                    className='flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
+                  >
+                    <Edit3 size={16} />
+                    Renombrar
+                  </button>
+                )}
 
                 <button
                   onClick={() => {

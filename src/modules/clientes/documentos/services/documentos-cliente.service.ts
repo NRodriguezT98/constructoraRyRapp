@@ -87,7 +87,6 @@ export class DocumentosClienteService {
       fecha_documento,
       fecha_vencimiento,
       es_importante,
-      es_documento_identidad,
       metadata,
     } = params
 
@@ -127,7 +126,6 @@ export class DocumentosClienteService {
         fecha_documento: fecha_documento || null,
         fecha_vencimiento: fecha_vencimiento || null,
         es_importante: es_importante || false,
-        es_documento_identidad: es_documento_identidad || false,
         metadata: metadata || {},
         version: 1,
         es_version_actual: true,
@@ -247,6 +245,33 @@ export class DocumentosClienteService {
   }
 
   /**
+   * Renombrar documento (actualizar título)
+   */
+  static async renombrarDocumento(
+    documentoId: string,
+    nuevoTitulo: string
+  ): Promise<void> {
+    // Validar título
+    if (!nuevoTitulo || nuevoTitulo.trim().length === 0) {
+      throw new Error('El título no puede estar vacío')
+    }
+
+    if (nuevoTitulo.length > 200) {
+      throw new Error('El título no puede exceder 200 caracteres')
+    }
+
+    const { error } = await supabase
+      .from('documentos_cliente')
+      .update({
+        titulo: nuevoTitulo.trim(),
+        fecha_actualizacion: new Date().toISOString()
+      })
+      .eq('id', documentoId)
+
+    if (error) throw error
+  }
+
+  /**
    * Archivar documento (soft delete)
    */
   static async archivarDocumento(documentoId: string): Promise<void> {
@@ -349,44 +374,42 @@ export class DocumentosClienteService {
   }
 
   /**
+   * @deprecated Esta función ya no se usa. La cédula se obtiene de clientes.documento_identidad_url
    * Verificar si el cliente tiene cédula activa (requerido para negociaciones)
    */
   static async tieneCedulaActiva(clienteId: string): Promise<boolean> {
-    const { data, error } = await supabase
-      .from('documentos_cliente')
-      .select('id')
-      .eq('cliente_id', clienteId)
-      .eq('es_documento_identidad', true)
-      .eq('estado', 'activo')
-      .eq('es_version_actual', true)
-      .limit(1)
-
-    if (error) throw error
-    return (data && data.length > 0) || false
+    // La cédula ahora se almacena en clientes.documento_identidad_url
+    // Ya no se usa documentos_cliente para esto
+    return false
   }
 
   /**
+   * @deprecated Esta función ya no se usa. La cédula se obtiene de clientes.documento_identidad_url
    * Obtener documento de identidad del cliente
    */
   static async obtenerCedula(
     clienteId: string
   ): Promise<DocumentoCliente | null> {
-    const { data, error } = await supabase
+    // La cédula ahora se almacena en clientes.documento_identidad_url
+    // Ya no se usa documentos_cliente para esto
+    return null
+  }
+
+  /**
+   * Actualizar categoría de un documento
+   */
+  static async actualizarCategoria(
+    documentoId: string,
+    categoriaId: string | null
+  ): Promise<void> {
+    const { error } = await supabase
       .from('documentos_cliente')
-      .select('*')
-      .eq('cliente_id', clienteId)
-      .eq('es_documento_identidad', true)
-      .eq('estado', 'activo')
-      .eq('es_version_actual', true)
-      .order('fecha_creacion', { ascending: false })
-      .limit(1)
-      .single()
+      .update({
+        categoria_id: categoriaId,
+        fecha_actualizacion: new Date().toISOString()
+      })
+      .eq('id', documentoId)
 
-    if (error) {
-      if (error.code === 'PGRST116') return null // No encontrado
-      throw error
-    }
-
-    return data
+    if (error) throw error
   }
 }

@@ -35,6 +35,7 @@ interface DocumentosClienteState {
   subirDocumento: (params: any, userId: string) => Promise<void>
   eliminarDocumento: (documentoId: string) => Promise<void>
   actualizarDocumento: (documentoId: string, updates: Partial<DocumentoCliente>) => Promise<void>
+  actualizarDocumentoLocal: (documentoId: string, updates: Partial<DocumentoCliente>) => void
 
   // Acciones - Categorías
   cargarCategorias: (userId: string) => Promise<void>
@@ -136,6 +137,16 @@ export const useDocumentosClienteStore = create<DocumentosClienteState>((set, ge
       console.error('Error al actualizar documento:', error)
       throw error
     }
+  },
+
+  // Actualizar documento localmente (sin llamar al servidor)
+  // Útil para optimistic updates
+  actualizarDocumentoLocal: (documentoId: string, updates: Partial<DocumentoCliente>) => {
+    set((state) => ({
+      documentos: state.documentos.map((d) =>
+        d.id === documentoId ? { ...d, ...updates } : d
+      ),
+    }))
   },
 
   // Cargar categorías
