@@ -123,7 +123,8 @@ export function DocumentosAgrupados({
                         onArchive={onArchive}
                         onDelete={onDelete}
                         onRename={onRename}
-                        onAsignarCategoria={onAsignarCategoria}
+                        // No permitir categorizar la cédula (ya tiene categoría fija)
+                        onAsignarCategoria={documento.id === 'cedula-ciudadania' ? undefined : onAsignarCategoria}
                       />
                     ))}
                   </div>
@@ -181,7 +182,8 @@ export function DocumentosAgrupados({
                       onArchive={onArchive}
                       onDelete={onDelete}
                       onRename={onRename}
-                      onAsignarCategoria={onAsignarCategoria}
+                      // No permitir categorizar la cédula (ya tiene categoría fija)
+                      onAsignarCategoria={documento.id === 'cedula-ciudadania' ? undefined : onAsignarCategoria}
                     />
                   ))}
                 </div>

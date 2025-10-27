@@ -2,7 +2,7 @@
 // SERVICE: Gestión de Categorías de Documentos
 // ============================================
 
-import { supabase } from '../../../lib/supabase/client'
+import { supabase } from '../../../lib/supabase/client-browser'
 import type {
   CategoriaDocumento,
   ModuloDocumento,
@@ -31,23 +31,38 @@ export class CategoriasService {
   /**
    * Obtener categorías disponibles para un módulo específico
    * Sistema flexible: considera es_global y modulos_permitidos
-   * @param userId - ID del usuario
+   * Ahora las categorías son compartidas entre usuarios
    * @param modulo - 'proyectos' | 'clientes' | 'viviendas'
    */
   static async obtenerCategoriasPorModulo(
-    userId: string,
+    userId: string, // Mantenemos por compatibilidad pero ya no se usa para filtrar
     modulo: 'proyectos' | 'clientes' | 'viviendas'
   ): Promise<CategoriaDocumento[]> {
+    // Traer TODAS las categorías globales (no filtrar por user_id)
     const { data, error } = await supabase
       .from('categorias_documento')
       .select('*')
-      .eq('user_id', userId)
-      .or(`es_global.eq.true,modulos_permitidos.cs.{${modulo}}`)
+      .eq('es_global', true) // Solo categorías globales
       .order('orden', { ascending: true })
       .order('nombre', { ascending: true })
 
-    if (error) throw error
-    return (data || []) as CategoriaDocumento[]
+    if (error) {
+      console.error('❌ Error al obtener categorías:', error)
+      throw error
+    }
+
+    // Filtrar por módulo en JavaScript
+    const filtradas = (data || []).filter((cat: any) => {
+      // Si tiene modulos_permitidos y contiene el módulo actual
+      if (cat.modulos_permitidos && Array.isArray(cat.modulos_permitidos)) {
+        return cat.modulos_permitidos.includes(modulo)
+      }
+
+      // Si es global sin módulos específicos, incluir en todos
+      return true
+    })
+
+    return filtradas as CategoriaDocumento[]
   }
 
   /**

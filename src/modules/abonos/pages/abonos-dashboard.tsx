@@ -1,11 +1,15 @@
-'use client';
+'use client'
 
-// =====================================================
-// DASHBOARD: Módulo de Abonos
-// Página principal del sistema de gestión de abonos
-// =====================================================
+/**
+ * 💰 DASHBOARD - MÓDULO DE ABONOS
+ *
+ * Página principal del sistema de gestión de abonos.
+ *
+ * ⭐ REFACTORIZADO: Usa componentes shared
+ */
 
-import { AnimatePresence, motion } from 'framer-motion';
+import { StatCard } from '@/shared/components/display'
+import { AnimatePresence, motion } from 'framer-motion'
 import {
     AlertCircle,
     CheckCircle2,
@@ -15,12 +19,12 @@ import {
     Plus,
     RefreshCw,
     TrendingUp,
-    X
-} from 'lucide-react';
-import { useState } from 'react';
-import { useAbonos } from '../hooks/useAbonos';
-import { useRegistrarAbono } from '../hooks/useRegistrarAbono';
-import { METODOS_PAGO_OPTIONS, TIPO_FUENTE_LABELS } from '../types';
+    X,
+} from 'lucide-react'
+import { useState } from 'react'
+import { useAbonos } from '../hooks/useAbonos'
+import { useRegistrarAbono } from '../hooks/useRegistrarAbono'
+import { METODOS_PAGO_OPTIONS, TIPO_FUENTE_LABELS } from '../types'
 
 export function AbonosDashboard() {
   const {
@@ -555,40 +559,6 @@ export function AbonosDashboard() {
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
-  );
-}
-
-// =====================================================
-// COMPONENTE: StatCard
-// =====================================================
-
-interface StatCardProps {
-  icon: any;
-  label: string;
-  value: string | number;
-  color: 'blue' | 'green' | 'purple' | 'orange';
-}
-
-function StatCard({ icon: Icon, label, value, color }: StatCardProps) {
-  const colorClasses = {
-    blue: 'bg-blue-100 text-blue-600',
-    green: 'bg-green-100 text-green-600',
-    purple: 'bg-purple-100 text-purple-600',
-    orange: 'bg-orange-100 text-orange-600',
-  };
-
-  return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-      <div className="flex items-center gap-3">
-        <div className={`p-3 rounded-lg ${colorClasses[color]}`}>
-          <Icon className="w-6 h-6" />
-        </div>
-        <div>
-          <p className="text-sm text-gray-600">{label}</p>
-          <p className="text-xl font-bold text-gray-900 mt-1">{value}</p>
-        </div>
-      </div>
     </div>
   );
 }

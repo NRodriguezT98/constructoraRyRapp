@@ -244,7 +244,7 @@ export async function crearProcesoDesdePlantilla(
     return fuentesPagoRequeridas.some(fp => datos.fuentesPago.includes(fp))
   })
 
-  // Crear instancias en la base de datos
+  // Crear instancias en la base de datos (SIN dependencias primero)
   const instancias = pasosFiltrados.map(paso => ({
     negociacion_id: datos.negociacionId,
     nombre: paso.nombre,
@@ -253,7 +253,7 @@ export async function crearProcesoDesdePlantilla(
     es_obligatorio: paso.obligatorio,
     permite_omitir: paso.permiteOmitir,
     estado: EstadoPaso.PENDIENTE,
-    depende_de: paso.condiciones.dependeDe.length > 0 ? paso.condiciones.dependeDe : null,
+    depende_de: null, // Lo mapearemos después con los UUIDs reales
     documentos_requeridos: paso.documentos,
     documentos_urls: null,
     fecha_limite: null,
@@ -268,6 +268,50 @@ export async function crearProcesoDesdePlantilla(
   if (error) {
     console.error('Error al crear procesos:', error)
     throw new Error('No se pudieron crear los procesos de negociación')
+  }
+
+  // 🔥 MAPEO DE DEPENDENCIAS: ID de plantilla → UUID real de instancia
+  const mapeoIds: { [key: string]: string } = {}
+  pasosFiltrados.forEach((paso, index) => {
+    if (data && data[index]) {
+      mapeoIds[paso.id] = data[index].id // paso_01 → uuid-real
+    }
+  })
+
+  // Actualizar dependencias con UUIDs reales
+  const actualizaciones = data
+    ?.filter((_, index) => {
+      const pasoOriginal = pasosFiltrados[index]
+      return pasoOriginal.condiciones.dependeDe.length > 0
+    })
+    .map((instancia, index) => {
+      const pasoOriginal = pasosFiltrados.find(p => mapeoIds[p.id] === instancia.id)
+      if (!pasoOriginal) return null
+
+      // Convertir IDs de plantilla a UUIDs reales
+      const dependenciasReales = pasoOriginal.condiciones.dependeDe
+        .map(idPlantilla => mapeoIds[idPlantilla])
+        .filter(Boolean) // Eliminar nulls/undefined
+
+      return {
+        id: instancia.id,
+        depende_de: dependenciasReales.length > 0 ? dependenciasReales : null
+      }
+    })
+    .filter(Boolean)
+
+  // Ejecutar actualizaciones de dependencias
+  if (actualizaciones && actualizaciones.length > 0) {
+    for (const actualizacion of actualizaciones) {
+      const { error: updateError } = await supabase
+        .from('procesos_negociacion')
+        .update({ depende_de: actualizacion!.depende_de })
+        .eq('id', actualizacion!.id)
+
+      if (updateError) {
+        console.error('⚠️ Error al actualizar dependencias:', updateError)
+      }
+    }
   }
 
   return (data || []).map(mapProcesoFromDB)
@@ -334,12 +378,13 @@ export async function obtenerProgresoNegociacion(
   const procesos = await obtenerProcesosNegociacion(negociacionId)
 
   const completados = procesos.filter(p => p.estado === EstadoPaso.COMPLETADO).length
-  const pendientes = procesos.filter(p => p.estado === EstadoPaso.PENDIENTE).length
   const enProceso = procesos.filter(p => p.estado === EstadoPaso.EN_PROCESO).length
+  const pendientes = procesos.filter(p => p.estado === EstadoPaso.PENDIENTE).length
   const omitidos = procesos.filter(p => p.estado === EstadoPaso.OMITIDO).length
 
-  const pasoActual = procesos.find(p => p.estado === EstadoPaso.EN_PROCESO)
-    || procesos.find(p => p.estado === EstadoPaso.PENDIENTE)
+  const pasoActual = procesos.find(p =>
+    p.estado === EstadoPaso.EN_PROCESO || p.estado === EstadoPaso.PENDIENTE
+  )
 
   return {
     negociacionId,

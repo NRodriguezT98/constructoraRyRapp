@@ -1,8 +1,7 @@
 ﻿'use client'
 
-import { usePerformanceMonitor } from '@/hooks/usePerformanceMonitor'
 import { motion } from 'framer-motion'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Modal } from '../../../shared/components/ui/Modal'
 import { useProyectos, useProyectosFiltrados } from '../hooks/useProyectos'
 import type { Proyecto, ProyectoFormData } from '../types'
@@ -14,7 +13,6 @@ import { ProyectosSearch } from './proyectos-search'
 import { ProyectosSkeleton } from './proyectos-skeleton'
 
 export function ProyectosPage() {
-  const { markDataLoaded, mark } = usePerformanceMonitor('ProyectosPage')
   const [modalAbierto, setModalAbierto] = useState(false)
   const [modalEditar, setModalEditar] = useState(false)
   const [proyectoEditar, setProyectoEditar] = useState<Proyecto | null>(null)
@@ -24,20 +22,6 @@ export function ProyectosPage() {
   const { crearProyecto, actualizarProyecto, eliminarProyecto, cargando } =
     useProyectos()
   const { proyectos } = useProyectosFiltrados()
-
-  // =====================================================
-  // PERFORMANCE MONITORING
-  // =====================================================
-
-  useEffect(() => {
-    if (!cargando && proyectos.length >= 0) {
-      mark(`Datos cargados (${proyectos.length} proyectos)`)
-      markDataLoaded()
-    }
-    // ⭐ Solo depende de cargando y cantidad de proyectos
-    // markDataLoaded y mark son funciones estables (useCallback)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cargando, proyectos.length])
 
   const handleAbrirModal = () => setModalAbierto(true)
   const handleCerrarModal = () => {

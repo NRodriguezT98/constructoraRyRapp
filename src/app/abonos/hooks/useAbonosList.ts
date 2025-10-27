@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase/client'
+import { supabase } from '@/lib/supabase/client-browser'
 import { useEffect, useMemo, useState } from 'react'
 
 /**

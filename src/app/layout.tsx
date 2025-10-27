@@ -3,7 +3,8 @@ import { ConditionalSidebar } from '@/components/conditional-sidebar'
 // import { PageTransition } from '@/components/page-transition' // ← DESHABILITADO para navegación instantánea
 import { ThemeProvider } from '@/components/theme-provider'
 import { AuthProvider } from '@/contexts/auth-context'
-import { PerformanceDebugPanel } from '@/hooks/PerformanceDebugPanel'
+import { UnsavedChangesProvider } from '@/contexts/unsaved-changes-context'
+import { AlertModal, ConfirmModal, ModalProvider } from '@/shared/components/modals'
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import { Toaster } from 'sonner'
@@ -44,17 +45,22 @@ export default function RootLayout({
       <body className={inter.className} suppressHydrationWarning>
         <AuthProvider>
           <ThemeProvider>
-            <div className='flex h-screen overflow-hidden bg-gray-50 dark:bg-gray-900'>
-              <ConditionalSidebar />
-              <ConditionalLayout>
-                {/* PageTransition deshabilitado para navegación instantánea (-400ms) */}
-                {children}
-              </ConditionalLayout>
-            </div>
-            <Toaster position='top-right' richColors />
+            <ModalProvider>
+              <UnsavedChangesProvider>
+                <div className='flex h-screen overflow-hidden bg-gray-50 dark:bg-gray-900'>
+                  <ConditionalSidebar />
+                  <ConditionalLayout>
+                    {/* PageTransition deshabilitado para navegación instantánea (-400ms) */}
+                    {children}
+                  </ConditionalLayout>
+                </div>
+                <Toaster position='top-right' richColors />
 
-            {/* Panel de Debug de Rendimiento (solo en desarrollo) */}
-            {process.env.NODE_ENV === 'development' && <PerformanceDebugPanel />}
+                {/* Modales globales */}
+                <ConfirmModal />
+                <AlertModal />
+              </UnsavedChangesProvider>
+            </ModalProvider>
           </ThemeProvider>
         </AuthProvider>
       </body>

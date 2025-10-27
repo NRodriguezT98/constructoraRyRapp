@@ -65,15 +65,15 @@ export function DocumentoCardHorizontal({
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: 20 }}
-      className='group relative flex items-center gap-4 rounded-xl border border-gray-200 bg-white p-4 shadow-sm transition-all duration-200 hover:shadow-lg dark:border-gray-700 dark:bg-gray-800'
+      className='group relative flex items-center gap-3 rounded-xl border border-gray-200 bg-white p-4 shadow-sm transition-all duration-200 hover:shadow-lg dark:border-gray-700 dark:bg-gray-800'
     >
-      {/* SECCIÓN IZQUIERDA: Icono + Categoría + Badges */}
-      <div className='flex flex-shrink-0 flex-col items-center gap-2'>
+      {/* SECCIÓN IZQUIERDA: Icono de categoría compacto */}
+      <div className='flex flex-shrink-0'>
         {/* Icono de categoría */}
         <div className='relative'>
           {categoria ? (
             <div
-              className='flex h-16 w-16 items-center justify-center rounded-xl bg-gradient-to-br shadow-md'
+              className='flex h-14 w-14 items-center justify-center rounded-lg bg-gradient-to-br shadow-md'
               style={{
                 background: `linear-gradient(135deg, ${categoria.color}22, ${categoria.color}44)`
               }}
@@ -81,59 +81,61 @@ export function DocumentoCardHorizontal({
               <CategoriaIcon
                 icono={categoria.icono}
                 color={categoria.color}
-                size={28}
+                size={24}
               />
             </div>
           ) : (
-            <div className='flex h-16 w-16 items-center justify-center rounded-xl bg-gray-100 shadow-md dark:bg-gray-700'>
-              <FileText size={28} className='text-gray-400' />
+            <div className='flex h-14 w-14 items-center justify-center rounded-lg bg-gray-100 shadow-md dark:bg-gray-700'>
+              <FileText size={24} className='text-gray-400' />
             </div>
           )}
 
           {/* Badge de importante (esquina del icono) */}
           {documento.es_importante && (
             <div className='absolute -right-1 -top-1'>
-              <div className='flex h-6 w-6 items-center justify-center rounded-full bg-yellow-500 shadow-lg'>
-                <Star size={12} className='fill-white text-white' />
+              <div className='flex h-5 w-5 items-center justify-center rounded-full bg-yellow-500 shadow-lg'>
+                <Star size={10} className='fill-white text-white' />
               </div>
             </div>
           )}
         </div>
-
-        {/* Categoría nombre */}
-        {categoria && (
-          <span
-            className='rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white shadow-sm'
-            style={{ backgroundColor: categoria.color }}
-          >
-            {categoria.nombre}
-          </span>
-        )}
       </div>
 
       {/* SECCIÓN CENTRO: Información principal */}
-      <div className='flex min-w-0 flex-1 flex-col gap-2'>
-        {/* Título + Badges de estado */}
+      <div className='flex min-w-0 flex-1 flex-col gap-1.5'>
+        {/* Badge de categoría + Badges de vencimiento */}
+        <div className='flex items-center gap-2'>
+          {/* Badge de categoría (compacto) */}
+          {categoria && (
+            <span
+              className='inline-flex max-w-[160px] items-center gap-1 truncate rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white shadow-sm'
+              style={{ backgroundColor: categoria.color }}
+              title={categoria.nombre}
+            >
+              {categoria.nombre}
+            </span>
+          )}
+
+          {/* Badges de vencimiento */}
+          {estaVencido && (
+            <span className='flex items-center gap-1 rounded-md bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700 dark:bg-red-900/30 dark:text-red-300'>
+              <AlertCircle size={12} />
+              Vencido
+            </span>
+          )}
+          {!estaVencido && estaProximoAVencer && (
+            <span className='flex items-center gap-1 rounded-md bg-orange-100 px-2 py-0.5 text-xs font-medium text-orange-700 dark:bg-orange-900/30 dark:text-orange-300'>
+              <AlertCircle size={12} />
+              Por vencer
+            </span>
+          )}
+        </div>
+
+        {/* Título */}
         <div className='flex items-start gap-2'>
           <h3 className='flex-1 truncate text-base font-semibold text-gray-900 dark:text-white'>
             {documento.titulo}
           </h3>
-
-          {/* Badges de vencimiento */}
-          <div className='flex flex-shrink-0 gap-1'>
-            {estaVencido && (
-              <span className='flex items-center gap-1 rounded-md bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700 dark:bg-red-900/30 dark:text-red-300'>
-                <AlertCircle size={12} />
-                Vencido
-              </span>
-            )}
-            {!estaVencido && estaProximoAVencer && (
-              <span className='flex items-center gap-1 rounded-md bg-orange-100 px-2 py-0.5 text-xs font-medium text-orange-700 dark:bg-orange-900/30 dark:text-orange-300'>
-                <AlertCircle size={12} />
-                Por vencer
-              </span>
-            )}
-          </div>
         </div>
 
         {/* Descripción */}

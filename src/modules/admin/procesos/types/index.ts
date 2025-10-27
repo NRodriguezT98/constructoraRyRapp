@@ -23,11 +23,10 @@ export enum EstadoPaso {
  * Tipos de fuentes de pago que condicionan pasos
  */
 export enum TipoFuentePago {
+  CUOTA_INICIAL = 'Cuota Inicial',
   CREDITO_HIPOTECARIO = 'Crédito Hipotecario',
-  SUBSIDIO_CAJA = 'Subsidio Caja de Compensación',
-  RECURSOS_PROPIOS = 'Recursos Propios',
-  CESANTIAS = 'Cesantías',
-  OTRO = 'Otro'
+  SUBSIDIO_CAJA = 'Subsidio de Caja de Compensación Familiar',
+  SUBSIDIO_MI_CASA_YA = 'Subsidio Mi Casa Ya'
 }
 
 // ===================================

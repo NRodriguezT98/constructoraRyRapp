@@ -1,10 +1,9 @@
-import { supabase } from '../../../lib/supabase/client'
-import type { Database } from '../../../lib/supabase/database.types'
+import { supabase } from '../../../lib/supabase/client-browser'
 import type {
-  Proyecto,
-  ProyectoFormData,
-  Manzana,
-  EstadoManzana,
+    EstadoManzana,
+    Manzana,
+    Proyecto,
+    ProyectoFormData,
 } from '../types'
 
 /**

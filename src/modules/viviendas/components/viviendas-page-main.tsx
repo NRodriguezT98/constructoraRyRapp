@@ -1,9 +1,7 @@
 'use client'
 
-import { usePerformanceMonitor } from '@/hooks/usePerformanceMonitor'
 import { motion } from 'framer-motion'
 import { useRouter } from 'next/navigation'
-import { useEffect } from 'react'
 import { Modal } from '../../../shared/components/ui/Modal'
 import { useViviendasList } from '../hooks/useViviendasList'
 import { viviendasListStyles as styles } from '../styles/viviendasList.styles'
@@ -21,7 +19,6 @@ import { ViviendasStats } from './viviendas-stats'
  * Lógica delegada a useViviendasList
  */
 export function ViviendasPageMain() {
-  const { markDataLoaded, mark } = usePerformanceMonitor('ViviendasPage')
   const router = useRouter()
   const {
     viviendas,
@@ -44,20 +41,6 @@ export function ViviendasPageMain() {
     estadisticas,
     totalFiltradas,
   } = useViviendasList()
-
-  // =====================================================
-  // PERFORMANCE MONITORING
-  // =====================================================
-
-  useEffect(() => {
-    if (!cargando && viviendas.length >= 0) {
-      mark(`Datos cargados (${viviendas.length} viviendas)`)
-      markDataLoaded()
-    }
-    // ⭐ Solo depende de cargando y cantidad de viviendas
-    // markDataLoaded y mark son funciones estables (useCallback)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cargando, viviendas.length])
 
   const handleVerDetalle = (viviendaId: string) => {
     router.push(`/viviendas/${viviendaId}` as any)

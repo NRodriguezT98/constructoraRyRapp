@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useAuth } from '../../../contexts/auth-context'
+import { useModal } from '../../../shared/components/modals'
 import { DocumentosService } from '../services'
 import { useDocumentosStore } from '../store/documentos.store'
 import { DocumentoProyecto } from '../types'
@@ -20,6 +21,7 @@ export function useDocumentosLista({
   const [modalViewerAbierto, setModalViewerAbierto] = useState(false)
 
   const { user } = useAuth()
+  const { confirm } = useModal()
 
   // Estado global del store
   const {
@@ -114,7 +116,14 @@ export function useDocumentosLista({
 
   const handleArchive = useCallback(
     async (documento: DocumentoProyecto) => {
-      if (confirm(`¿Archivar el documento "${documento.titulo}"?`)) {
+      const confirmed = await confirm({
+        title: 'Archivar documento',
+        message: `¿Estás seguro de que deseas archivar "${documento.titulo}"?`,
+        confirmText: 'Archivar',
+        variant: 'warning'
+      })
+
+      if (confirmed) {
         try {
           await DocumentosService.archivarDocumento(documento.id)
           await cargarDocumentos(proyectoId)
@@ -123,16 +132,20 @@ export function useDocumentosLista({
         }
       }
     },
-    [proyectoId, cargarDocumentos]
+    [proyectoId, cargarDocumentos, confirm]
   )
 
   const handleDelete = useCallback(
     async (documento: DocumentoProyecto) => {
-      if (
-        confirm(
-          `¿Eliminar permanentemente el documento "${documento.titulo}"? Esta acción no se puede deshacer.`
-        )
-      ) {
+      const confirmed = await confirm({
+        title: '¿Eliminar documento?',
+        message: `Se eliminará permanentemente "${documento.titulo}".\n\nEsta acción no se puede deshacer.`,
+        confirmText: 'Eliminar',
+        cancelText: 'Cancelar',
+        variant: 'danger'
+      })
+
+      if (confirmed) {
         try {
           await eliminarDocumento(documento.id)
         } catch (error) {
@@ -140,7 +153,7 @@ export function useDocumentosLista({
         }
       }
     },
-    [eliminarDocumento]
+    [eliminarDocumento, confirm]
   )
 
   // Helpers

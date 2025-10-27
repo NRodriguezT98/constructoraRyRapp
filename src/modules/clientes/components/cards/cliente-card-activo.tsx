@@ -1,6 +1,8 @@
 /**
  * 💳 ClienteCardActivo - Card premium con glassmorphism
  * Muestra vivienda, proyecto, progreso de pago con gradientes purple→violet
+ *
+ * ⭐ REFACTORIZADO: Usa hook useClienteCardActivo para lógica
  */
 
 'use client'
@@ -19,8 +21,8 @@ import {
     TrendingUp,
     User
 } from 'lucide-react'
-import { useEffect, useState } from 'react'
 import { getAvatarGradient } from '../../../abonos/styles/seleccion-cliente.styles'
+import { useClienteCardActivo } from '../../hooks'
 import { clientesListaStyles as styles } from '../../styles/clientes-lista.styles'
 import type { ClienteResumen } from '../../types'
 
@@ -32,17 +34,6 @@ interface ClienteCardActivoProps {
   onRegistrarAbono?: (cliente: ClienteResumen) => void
 }
 
-interface DatosNegociacion {
-  proyecto: string
-  manzana: string
-  numero: string
-  valorTotal: number
-  valorPagado: number
-  porcentaje: number
-  ultimaCuota: Date | null
-  totalAbonos: number
-}
-
 export function ClienteCardActivo({
   cliente,
   onVer,
@@ -50,85 +41,16 @@ export function ClienteCardActivo({
   onEliminar,
   onRegistrarAbono
 }: ClienteCardActivoProps) {
-  const [datosVivienda, setDatosVivienda] = useState<DatosNegociacion | null>(null)
-  const [cargando, setCargando] = useState(true)
+  // =====================================================
+  // HOOK: Toda la lógica está en useClienteCardActivo
+  // =====================================================
+  const { datosVivienda, cargando, valorRestante } = useClienteCardActivo({
+    clienteId: cliente.id,
+  })
 
-  useEffect(() => {
-    const cargarDatosNegociacion = async () => {
-      try {
-        setCargando(true)
-        // Importar dinámicamente para evitar problemas de SSR
-        const { supabase } = await import('@/lib/supabase/client-browser')
-
-        // Obtener negociación activa del cliente con sus relaciones
-        const { data: negociacion, error } = await supabase
-          .from('negociaciones')
-          .select(`
-            id,
-            valor_total,
-            total_abonado,
-            porcentaje_pagado,
-            viviendas!negociaciones_vivienda_id_fkey (
-              numero,
-              manzanas!viviendas_manzana_id_fkey (
-                nombre,
-                proyectos!manzanas_proyecto_id_fkey (
-                  nombre
-                )
-              )
-            ),
-            abonos_historial!abonos_historial_negociacion_id_fkey (
-              fecha_abono
-            )
-          `)
-          .eq('cliente_id', cliente.id)
-          .eq('estado', 'Activa')
-          .order('fecha_negociacion', { ascending: false })
-          .limit(1)
-          .maybeSingle() // ✅ Cambio: Permite 0 o 1 resultado sin error
-
-        if (error) {
-          console.error('❌ Error consultando negociación activa:', error)
-          setDatosVivienda(null)
-          return
-        }
-
-        if (!negociacion) {
-          console.warn('⚠️ Cliente activo sin negociación encontrada')
-          setDatosVivienda(null)
-          return
-        }
-
-        // Obtener última fecha de abono
-        const abonos = (negociacion.abonos_historial || []) as Array<{ fecha_abono: string }>
-        const ultimaCuota = abonos.length > 0
-          ? new Date(abonos.sort((a, b) =>
-              new Date(b.fecha_abono).getTime() - new Date(a.fecha_abono).getTime()
-            )[0].fecha_abono)
-          : null
-
-        setDatosVivienda({
-          proyecto: negociacion.viviendas?.manzanas?.proyectos?.nombre || 'Sin proyecto',
-          manzana: negociacion.viviendas?.manzanas?.nombre || '-',
-          numero: negociacion.viviendas?.numero || '-',
-          valorTotal: negociacion.valor_total || 0,
-          valorPagado: negociacion.total_abonado || 0,
-          porcentaje: Math.round(negociacion.porcentaje_pagado || 0),
-          ultimaCuota,
-          totalAbonos: abonos.length,
-        })
-      } catch (err) {
-        console.error('Error cargando datos de negociación:', err)
-        setDatosVivienda(null)
-      } finally {
-        setCargando(false)
-      }
-    }
-
-    cargarDatosNegociacion()
-  }, [cliente.id])
-
-  const valorRestante = datosVivienda ? datosVivienda.valorTotal - datosVivienda.valorPagado : 0
+  // =====================================================
+  // UTILIDADES DE FORMATO
+  // =====================================================
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('es-CO', {
@@ -141,9 +63,15 @@ export function ClienteCardActivo({
   const tiempoUltimaCuota = datosVivienda?.ultimaCuota
     ? formatDistanceToNow(datosVivienda.ultimaCuota, {
         addSuffix: true,
-        locale: es
+        locale: es,
       })
     : null
+
+  const avatarGradient = getAvatarGradient(cliente.nombre_completo)
+
+  // =====================================================
+  // RENDER
+  // =====================================================
 
   // Si está cargando, mostrar skeleton
   if (cargando) {
@@ -166,8 +94,6 @@ export function ClienteCardActivo({
 
   // Si no hay datos de negociación, mostrar mensaje
   if (!datosVivienda) {
-    const avatarGradient = getAvatarGradient(cliente.nombre_completo)
-
     return (
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -240,8 +166,6 @@ export function ClienteCardActivo({
       </motion.div>
     )
   }
-
-  const avatarGradient = getAvatarGradient(cliente.nombre_completo)
 
   return (
     <motion.div

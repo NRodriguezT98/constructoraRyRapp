@@ -1,145 +1,27 @@
 /**
- * Modal para registrar interés de cliente en vivienda
- * Diseño moderno con glassmorphism y animaciones
+ * 💼 MODAL - REGISTRAR INTERÉS
+ *
+ * Modal para registrar interés de cliente en vivienda.
+ * Diseño moderno con glassmorphism y animaciones.
+ *
+ * ⭐ REFACTORIZADO:
+ * - Usa componentes shared de formulario
+ * - Usa estilos centralizados del design system
  */
 
 'use client'
 
+import { ModernSelect, ModernTextarea } from '@/shared/components/forms'
 import { AnimatePresence, motion } from 'framer-motion'
-import { AlertCircle, Building2, ChevronRight, Home, Loader2, MessageSquare, Sparkles, X } from 'lucide-react'
+import { AlertCircle, Building2, Home, Loader2, MessageSquare, Sparkles, X } from 'lucide-react'
 import { useRegistrarInteres } from '../../hooks/useRegistrarInteres'
+import { sharedAlertStyles, sharedButtonStyles, sharedModalStyles } from '../../styles'
 
 interface ModalRegistrarInteresProps {
   isOpen: boolean
   onClose: () => void
   clienteId: string
   onSuccess: () => void
-}
-
-// Componente de Input Moderno
-function ModernInput({ icon: Icon, label, error, required, className = '', ...props }: any) {
-  return (
-    <div className="group">
-      <label className="mb-2 flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-        <Icon className="h-4 w-4 text-purple-500" />
-        {label}
-        {required && <span className="text-red-500">*</span>}
-      </label>
-      <div className="relative">
-        <input
-          {...props}
-          className={`w-full rounded-xl border-2 border-gray-200 bg-white px-4 py-3 text-gray-900 transition-all placeholder:text-gray-400 hover:border-purple-300 focus:border-purple-500 focus:outline-none focus:ring-4 focus:ring-purple-500/10 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:hover:border-purple-600 dark:focus:border-purple-500 ${className}`}
-        />
-        {error && (
-          <motion.p
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mt-1.5 flex items-center gap-1 text-sm text-red-500"
-          >
-            <span className="font-medium">⚠</span> {error}
-          </motion.p>
-        )}
-      </div>
-    </div>
-  )
-}
-
-// Componente de Select Moderno
-function ModernSelect({ icon: Icon, label, error, required, children, ...props }: any) {
-  return (
-    <div className="group">
-      <label className="mb-2 flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-        <Icon className="h-4 w-4 text-purple-500" />
-        {label}
-        {required && <span className="text-red-500">*</span>}
-      </label>
-      <div className="relative">
-        <select
-          {...props}
-          className="w-full appearance-none rounded-xl border-2 border-gray-200 bg-white px-4 py-3 pr-10 text-gray-900 transition-all hover:border-purple-300 focus:border-purple-500 focus:outline-none focus:ring-4 focus:ring-purple-500/10 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:hover:border-purple-600"
-        >
-          {children}
-        </select>
-        <ChevronRight className="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 rotate-90 text-gray-400" />
-        {error && (
-          <motion.p
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mt-1.5 flex items-center gap-1 text-sm text-red-500"
-          >
-            <span className="font-medium">⚠</span> {error}
-          </motion.p>
-        )}
-      </div>
-    </div>
-  )
-}
-
-// Componente de Textarea Moderno
-function ModernTextarea({ icon: Icon, label, error, ...props }: any) {
-  return (
-    <div className="group">
-      <label className="mb-2 flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-        <Icon className="h-4 w-4 text-purple-500" />
-        {label}
-      </label>
-      <div className="relative">
-        <textarea
-          {...props}
-          className="w-full rounded-xl border-2 border-gray-200 bg-white px-4 py-3 text-gray-900 transition-all placeholder:text-gray-400 hover:border-purple-300 focus:border-purple-500 focus:outline-none focus:ring-4 focus:ring-purple-500/10 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:hover:border-purple-600 resize-none"
-        />
-        {error && (
-          <motion.p
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mt-1.5 flex items-center gap-1 text-sm text-red-500"
-          >
-            <span className="font-medium">⚠</span> {error}
-          </motion.p>
-        )}
-      </div>
-    </div>
-  )
-}
-
-// Componente de Input de Moneda con Formato
-function MoneyInput({ icon: Icon, label, error, required, value, onChange, ...props }: any) {
-  const formatCurrency = (val: number) => {
-    return new Intl.NumberFormat('es-CO', {
-      style: 'currency',
-      currency: 'COP',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(val)
-  }
-
-  return (
-    <div className="group">
-      <label className="mb-2 flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-        <Icon className="h-4 w-4 text-purple-500" />
-        {label}
-        {required && <span className="text-red-500">*</span>}
-      </label>
-      <div className="relative">
-        <div className="absolute inset-0 rounded-xl border-2 border-gray-200 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 dark:border-gray-700 pointer-events-none" />
-        <div className="relative flex items-center px-4 py-3">
-          <span className="text-2xl font-bold text-green-600 dark:text-green-400">
-            {value ? formatCurrency(value) : '$0'}
-          </span>
-        </div>
-        <input type="hidden" value={value || 0} onChange={onChange} {...props} />
-        {error && (
-          <motion.p
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mt-1.5 flex items-center gap-1 text-sm text-red-500"
-          >
-            <span className="font-medium">⚠</span> {error}
-          </motion.p>
-        )}
-      </div>
-    </div>
-  )
 }
 
 export function ModalRegistrarInteres({
@@ -171,7 +53,7 @@ export function ModalRegistrarInteres({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-md p-4"
+          className={sharedModalStyles.overlay}
           onClick={onClose}
         >
           <motion.div
@@ -180,30 +62,30 @@ export function ModalRegistrarInteres({
             exit={{ scale: 0.95, opacity: 0, y: 20 }}
             transition={{ type: 'spring', duration: 0.5, bounce: 0.3 }}
             onClick={(e) => e.stopPropagation()}
-            className="relative w-full max-w-2xl max-h-[90vh] overflow-hidden rounded-3xl bg-white shadow-2xl dark:bg-gray-900"
+            className={sharedModalStyles.container.medium}
           >
             {/* Header con gradiente animado */}
-            <div className="relative overflow-hidden bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 px-8 py-6">
+            <div className={sharedModalStyles.header.wrapper}>
               {/* Patrón de fondo animado */}
               <div className="absolute inset-0 opacity-20">
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(255,255,255,0.3),transparent)]" />
               </div>
 
-              <div className="relative flex items-center justify-between">
-                <div className="flex items-center gap-4">
+              <div className={sharedModalStyles.header.content}>
+                <div className={sharedModalStyles.header.titleSection}>
                   <motion.div
                     initial={{ rotate: -180, scale: 0 }}
                     animate={{ rotate: 0, scale: 1 }}
                     transition={{ type: 'spring', delay: 0.2 }}
-                    className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-sm ring-2 ring-white/30"
+                    className={sharedModalStyles.header.iconSmall}
                   >
                     <Sparkles className="h-7 w-7 text-white" />
                   </motion.div>
                   <div>
-                    <h2 className="text-2xl font-bold text-white">
+                    <h2 className={sharedModalStyles.header.title}>
                       Registrar Nuevo Interés
                     </h2>
-                    <p className="text-sm text-blue-100">
+                    <p className={sharedModalStyles.header.subtitle}>
                       Registra el interés del cliente en una vivienda
                     </p>
                   </div>
@@ -212,7 +94,7 @@ export function ModalRegistrarInteres({
                 <button
                   type="button"
                   onClick={onClose}
-                  className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 text-white backdrop-blur-sm transition-all hover:bg-white/20 hover:rotate-90"
+                  className={sharedModalStyles.header.closeButton}
                 >
                   <X className="h-5 w-5" />
                 </button>
@@ -229,14 +111,14 @@ export function ModalRegistrarInteres({
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
-                className="bg-red-50 dark:bg-red-900/20 border-2 border-red-200 dark:border-red-800 rounded-lg p-4 flex items-start gap-3"
+                className={sharedAlertStyles.base + ' ' + sharedAlertStyles.error}
               >
-                <AlertCircle className="w-5 h-5 text-red-500 dark:text-red-400 flex-shrink-0 mt-0.5" />
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-red-800 dark:text-red-300">
+                <AlertCircle className={sharedAlertStyles.icon + ' w-5 h-5 text-red-500 dark:text-red-400'} />
+                <div className={sharedAlertStyles.content}>
+                  <p className={sharedAlertStyles.title + ' text-red-800 dark:text-red-300'}>
                     Ya existe un interés registrado para esta vivienda
                   </p>
-                  <p className="text-sm text-red-600 dark:text-red-400 mt-1">
+                  <p className={sharedAlertStyles.message + ' text-red-600 dark:text-red-400'}>
                     Este cliente ya tiene un interés activo en la vivienda seleccionada.
                   </p>
                 </div>
@@ -364,13 +246,13 @@ export function ModalRegistrarInteres({
         </div>
 
         {/* Footer con botones */}
-        <div className="border-t border-gray-200 bg-gray-50 px-8 py-4 dark:border-gray-700 dark:bg-gray-800/50">
-          <div className="flex justify-end gap-3">
+        <div className={sharedModalStyles.footer.wrapper}>
+          <div className={sharedModalStyles.footer.content}>
             <motion.button
               type="button"
               onClick={handleCancelar}
               disabled={guardando}
-              className="rounded-xl border-2 border-gray-300 bg-white px-6 py-2.5 text-sm font-semibold text-gray-700 transition-all hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+              className={sharedButtonStyles.secondary}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
@@ -379,7 +261,7 @@ export function ModalRegistrarInteres({
             <motion.button
               type="submit"
               disabled={guardando || !viviendaIdSeleccionada}
-              className="rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 px-6 py-2.5 text-sm font-semibold text-white transition-all hover:from-purple-700 hover:to-pink-700 disabled:cursor-not-allowed disabled:opacity-50"
+              className={sharedButtonStyles.primary}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >

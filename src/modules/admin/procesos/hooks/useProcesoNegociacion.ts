@@ -7,14 +7,13 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import {
-    actualizarProceso,
-    obtenerProcesosNegociacion,
-    obtenerProgresoNegociacion
+  actualizarProceso,
+  obtenerProcesosNegociacion,
+  obtenerProgresoNegociacion
 } from '../services/procesos.service'
 import type {
-    ActualizarProcesoDTO,
-    ProcesoNegociacion,
-    ProgresoNegociacion
+  ProcesoNegociacion,
+  ProgresoNegociacion
 } from '../types'
 import { EstadoPaso } from '../types'
 
@@ -29,16 +28,22 @@ interface UseProcesoNegociacionReturn {
   loading: boolean
   error: string | null
   actualizando: boolean
+  pasoEnEdicion: string | null
 
   // Operaciones
   cargarProceso: () => Promise<void>
-  completarPaso: (pasoId: string, datos: ActualizarProcesoDTO) => Promise<boolean>
+  completarPaso: (pasoId: string, fechaCompletado: Date) => Promise<boolean>
   iniciarPaso: (pasoId: string) => Promise<boolean>
+  descartarCambios: (pasoId: string) => Promise<boolean>
   omitirPaso: (pasoId: string, motivo: string) => Promise<boolean>
   agregarDocumento: (pasoId: string, nombreDoc: string, url: string) => Promise<boolean>
+  eliminarDocumento: (pasoId: string, documentoId: string) => Promise<boolean>
 
   // Utilidades
   puedeCompletar: (paso: ProcesoNegociacion) => boolean
+  puedeIniciar: (paso: ProcesoNegociacion) => boolean
+  estaBloqueado: (paso: ProcesoNegociacion) => boolean
+  obtenerDependenciasIncompletas: (paso: ProcesoNegociacion) => ProcesoNegociacion[]
   obtenerPasoActual: () => ProcesoNegociacion | undefined
   limpiarError: () => void
 }
@@ -58,6 +63,7 @@ export function useProcesoNegociacion({
   const [loading, setLoading] = useState(false)
   const [actualizando, setActualizando] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [pasoEnEdicion, setPasoEnEdicion] = useState<string | null>(null)
 
   // ===================================
   // OPERACIONES
@@ -88,20 +94,26 @@ export function useProcesoNegociacion({
   }, [negociacionId])
 
   /**
-   * Completa un paso
+   * Completa un paso con fecha específica
    */
   const completarPaso = useCallback(async (
     pasoId: string,
-    datos: ActualizarProcesoDTO
+    fechaCompletado: Date
   ): Promise<boolean> => {
     setActualizando(true)
     setError(null)
 
     try {
+      const paso = pasos.find(p => p.id === pasoId)
+      if (!paso) throw new Error('Paso no encontrado')
+
+      // Usar fecha_inicio existente o la fecha de completado si no existe
+      const fechaInicio = paso.fechaInicio || fechaCompletado.toISOString()
+
       const actualizado = await actualizarProceso(pasoId, {
-        ...datos,
         estado: EstadoPaso.COMPLETADO,
-        fechaCompletado: new Date().toISOString()
+        fechaInicio,
+        fechaCompletado: fechaCompletado.toISOString()
       })
 
       // Actualizar en lista
@@ -112,6 +124,9 @@ export function useProcesoNegociacion({
       // Recalcular progreso
       await obtenerProgresoNegociacion(negociacionId).then(setProgreso)
 
+      // Limpiar paso en edición
+      setPasoEnEdicion(null)
+
       return true
     } catch (err) {
       const mensaje = err instanceof Error ? err.message : 'Error al completar paso'
@@ -121,7 +136,7 @@ export function useProcesoNegociacion({
     } finally {
       setActualizando(false)
     }
-  }, [negociacionId])
+  }, [negociacionId, pasos])
 
   /**
    * Inicia un paso
@@ -142,11 +157,49 @@ export function useProcesoNegociacion({
 
       await obtenerProgresoNegociacion(negociacionId).then(setProgreso)
 
+      // Marcar como en edición
+      setPasoEnEdicion(pasoId)
+
       return true
     } catch (err) {
       const mensaje = err instanceof Error ? err.message : 'Error al iniciar paso'
       setError(mensaje)
       console.error('Error en iniciarPaso:', err)
+      return false
+    } finally {
+      setActualizando(false)
+    }
+  }, [negociacionId])
+
+  /**
+   * Descarta cambios en un paso y vuelve a Pendiente
+   */
+  const descartarCambios = useCallback(async (pasoId: string): Promise<boolean> => {
+    setActualizando(true)
+    setError(null)
+
+    try {
+      const actualizado = await actualizarProceso(pasoId, {
+        estado: EstadoPaso.PENDIENTE,
+        fechaInicio: null,
+        documentosUrls: null, // Eliminar documentos subidos
+        notas: null
+      })
+
+      setPasos(prev => prev.map(p =>
+        p.id === pasoId ? actualizado : p
+      ))
+
+      await obtenerProgresoNegociacion(negociacionId).then(setProgreso)
+
+      // Limpiar paso en edición
+      setPasoEnEdicion(null)
+
+      return true
+    } catch (err) {
+      const mensaje = err instanceof Error ? err.message : 'Error al descartar cambios'
+      setError(mensaje)
+      console.error('Error en descartarCambios:', err)
       return false
     } finally {
       setActualizando(false)
@@ -227,9 +280,99 @@ export function useProcesoNegociacion({
     }
   }, [pasos])
 
+  /**
+   * Elimina un documento de un paso
+   */
+  const eliminarDocumento = useCallback(async (
+    pasoId: string,
+    documentoId: string
+  ): Promise<boolean> => {
+    setActualizando(true)
+    setError(null)
+
+    try {
+      const paso = pasos.find(p => p.id === pasoId)
+      if (!paso) throw new Error('Paso no encontrado')
+
+      const documentosActuales = paso.documentosUrls || {}
+      const { [documentoId]: removed, ...nuevosDocumentos } = documentosActuales
+
+      const actualizado = await actualizarProceso(pasoId, {
+        documentosUrls: Object.keys(nuevosDocumentos).length > 0 ? nuevosDocumentos : null
+      })
+
+      setPasos(prev => prev.map(p =>
+        p.id === pasoId ? actualizado : p
+      ))
+
+      return true
+    } catch (err) {
+      const mensaje = err instanceof Error ? err.message : 'Error al eliminar documento'
+      setError(mensaje)
+      console.error('Error en eliminarDocumento:', err)
+      return false
+    } finally {
+      setActualizando(false)
+    }
+  }, [pasos])
+
   // ===================================
   // UTILIDADES
   // ===================================
+
+  /**
+   * Verifica si un paso está bloqueado por dependencias
+   */
+  const estaBloqueado = useCallback((paso: ProcesoNegociacion): boolean => {
+    // Si ya está completado u omitido, no está bloqueado
+    if (paso.estado === EstadoPaso.COMPLETADO || paso.estado === EstadoPaso.OMITIDO) {
+      return false
+    }
+
+    // Verificar si tiene dependencias sin completar
+    if (paso.dependeDe && paso.dependeDe.length > 0) {
+      const dependencias = pasos.filter(p => paso.dependeDe?.includes(p.id))
+      const todasCompletadas = dependencias.every(
+        d => d.estado === EstadoPaso.COMPLETADO || d.estado === EstadoPaso.OMITIDO
+      )
+
+      return !todasCompletadas // Bloqueado si NO todas están completadas
+    }
+
+    return false // No está bloqueado si no tiene dependencias
+  }, [pasos])
+
+  /**
+   * Obtiene los pasos dependientes que están incompletos
+   */
+  const obtenerDependenciasIncompletas = useCallback((paso: ProcesoNegociacion): ProcesoNegociacion[] => {
+    if (!paso.dependeDe || paso.dependeDe.length === 0) {
+      return []
+    }
+
+    return pasos.filter(p =>
+      paso.dependeDe?.includes(p.id) &&
+      p.estado !== EstadoPaso.COMPLETADO &&
+      p.estado !== EstadoPaso.OMITIDO
+    )
+  }, [pasos])
+
+  /**
+   * Verifica si un paso puede iniciarse
+   */
+  const puedeIniciar = useCallback((paso: ProcesoNegociacion): boolean => {
+    // Si ya está en proceso, completado u omitido, no se puede iniciar
+    if (paso.estado !== EstadoPaso.PENDIENTE) {
+      return false
+    }
+
+    // Si está bloqueado por dependencias, no se puede iniciar
+    if (estaBloqueado(paso)) {
+      return false
+    }
+
+    return true
+  }, [estaBloqueado])
 
   /**
    * Verifica si un paso puede completarse
@@ -240,14 +383,9 @@ export function useProcesoNegociacion({
       return false
     }
 
-    // Verificar dependencias
-    if (paso.dependeDe && paso.dependeDe.length > 0) {
-      const dependencias = pasos.filter(p => paso.dependeDe?.includes(p.id))
-      const todasCompletadas = dependencias.every(
-        d => d.estado === EstadoPaso.COMPLETADO || d.estado === EstadoPaso.OMITIDO
-      )
-
-      if (!todasCompletadas) return false
+    // Debe estar en proceso para completarse
+    if (paso.estado !== EstadoPaso.EN_PROCESO) {
+      return false
     }
 
     // Verificar documentos obligatorios
@@ -304,16 +442,22 @@ export function useProcesoNegociacion({
     loading,
     error,
     actualizando,
+    pasoEnEdicion,
 
     // Operaciones
     cargarProceso,
     completarPaso,
     iniciarPaso,
+    descartarCambios,
     omitirPaso,
     agregarDocumento,
+    eliminarDocumento,
 
     // Utilidades
     puedeCompletar,
+    puedeIniciar,
+    estaBloqueado,
+    obtenerDependenciasIncompletas,
     obtenerPasoActual,
     limpiarError
   }

@@ -5,10 +5,9 @@
 
 'use client'
 
-import { usePerformanceMonitor } from '@/hooks/usePerformanceMonitor'
 import { ModalConfirmacion } from '@/shared'
 import { useRouter } from 'next/navigation'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import {
     ClientesHeader,
     EstadisticasClientes,
@@ -21,7 +20,6 @@ import { useClientesStore } from '../store/clientes.store'
 import type { ClienteResumen, EstadoCliente, OrigenCliente } from '../types'
 
 export function ClientesPageMain() {
-  const { markDataLoaded, mark } = usePerformanceMonitor('ClientesPageMain')
   const router = useRouter()
   const {
     clientes,
@@ -74,21 +72,6 @@ export function ClientesPageMain() {
 
     return resultado
   }, [clientes, busqueda, estadoFiltro, origenFiltro])
-
-  // =====================================================
-  // PERFORMANCE MONITORING
-  // =====================================================
-
-  // Marcar cuando los datos se hayan cargado completamente
-  useEffect(() => {
-    if (!isLoading && clientes.length >= 0) {
-      mark(`Datos cargados (${clientes.length} clientes)`)
-      markDataLoaded()
-    }
-    // ⭐ Solo depende de isLoading y cantidad de clientes
-    // markDataLoaded y mark son funciones estables (useCallback)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLoading, clientes.length])
 
   // =====================================================
   // HANDLERS

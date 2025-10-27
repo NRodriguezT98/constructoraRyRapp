@@ -12,6 +12,7 @@ import {
 import type { StepNumber } from '@/modules/clientes/components/modals/modal-crear-negociacion/types'
 import { useCrearNegociacion } from '@/modules/clientes/hooks'
 import { validarSumaTotal } from '@/modules/clientes/utils/validar-edicion-fuentes'
+import { useModal } from '@/shared/components/modals'
 import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
@@ -27,6 +28,7 @@ export function useCrearNegociacionPage({
   valorVivienda,
 }: UseCrearNegociacionPageProps) {
   const router = useRouter()
+  const { confirm } = useModal()
 
   // ============================================
   // HOOKS EXTERNOS
@@ -274,11 +276,19 @@ export function useCrearNegociacionPage({
     }
   }, [])
 
-  const handleCancel = useCallback(() => {
-    if (confirm('¿Estás seguro de cancelar? Se perderá toda la información ingresada.')) {
+  const handleCancel = useCallback(async () => {
+    const confirmed = await confirm({
+      title: '¿Cancelar creación?',
+      message: 'Se perderá toda la información ingresada.',
+      confirmText: 'Cancelar Negociación',
+      cancelText: 'Continuar Editando',
+      variant: 'warning'
+    })
+
+    if (confirmed) {
       router.push(`/clientes/${clienteId}` as any)
     }
-  }, [clienteId, router])
+  }, [clienteId, router, confirm])
 
   // ============================================
   // SUBMIT

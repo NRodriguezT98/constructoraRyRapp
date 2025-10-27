@@ -8,11 +8,11 @@
  * 4. Subsidio Caja de Compensación (pago único)
  *
  * ⚠️ NOMBRES DE CAMPOS VERIFICADOS EN: docs/DATABASE-SCHEMA-REFERENCE-ACTUALIZADO.md
+ * ⭐ REFACTORIZADO: Usa hook useConfigurarFuentesPago para lógica
  */
 
 'use client'
 
-import { fuentesPagoService } from '@/modules/clientes/services/fuentes-pago.service'
 import { AnimatePresence, motion } from 'framer-motion'
 import {
     AlertCircle,
@@ -32,17 +32,7 @@ import {
     Upload,
     Wallet
 } from 'lucide-react'
-import { useEffect, useState } from 'react'
-
-interface FuentePago {
-  id?: string
-  tipo: 'Cuota Inicial' | 'Crédito Hipotecario' | 'Subsidio Mi Casa Ya' | 'Subsidio Caja Compensación'
-  monto_aprobado: number
-  entidad?: string
-  numero_referencia?: string
-  carta_aprobacion_url?: string
-  carta_asignacion_url?: string
-}
+import { useConfigurarFuentesPago, type FuentePago } from '../../hooks'
 
 interface ConfigurarFuentesPagoProps {
   negociacionId: string
@@ -115,220 +105,28 @@ export function ConfigurarFuentesPago({
   valorTotal,
   onFuentesActualizadas,
 }: ConfigurarFuentesPagoProps) {
-  // Estado
-  const [fuentesPago, setFuentesPago] = useState<FuentePago[]>([])
-  const [cargando, setCargando] = useState(true)
-  const [guardando, setGuardando] = useState(false)
-  const [subiendoArchivo, setSubiendoArchivo] = useState<string | null>(null) // ID de fuente subiendo
-  const [error, setError] = useState<string | null>(null)
-  const [totales, setTotales] = useState({
-    total: 0,
-    porcentaje: 0,
-    diferencia: 0,
-  })
+  // =====================================================
+  // HOOK: Toda la lógica está en useConfigurarFuentesPago
+  // =====================================================
+  const {
+    fuentesPago,
+    cargando,
+    guardando,
+    subiendoArchivo,
+    error,
+    totales,
+    cierreCompleto,
+    porcentajeCubierto,
+    agregarFuente,
+    actualizarFuente,
+    eliminarFuente,
+    subirCartaAprobacion,
+    guardarFuentes,
+  } = useConfigurarFuentesPago({ negociacionId, valorTotal, onFuentesActualizadas })
 
-  /**
-   * Cargar fuentes de pago existentes
-   */
-  useEffect(() => {
-    cargarFuentesPago()
-  }, [negociacionId])
-
-  /**
-   * Calcular totales cuando cambian las fuentes
-   */
-  useEffect(() => {
-    calcularTotales()
-  }, [fuentesPago, valorTotal])
-
-  const cargarFuentesPago = async () => {
-    try {
-      setCargando(true)
-      setError(null)
-      const data = await fuentesPagoService.obtenerFuentesPagoNegociacion(negociacionId)
-      setFuentesPago(
-        data.map((f: any) => ({
-          id: f.id,
-          tipo: f.tipo,
-          monto_aprobado: f.monto_aprobado || 0,
-          entidad: f.entidad,
-          numero_referencia: f.numero_referencia,
-          carta_aprobacion_url: f.carta_aprobacion_url,
-          carta_asignacion_url: f.carta_asignacion_url,
-        }))
-      )
-    } catch (err: any) {
-      console.error('Error cargando fuentes:', err)
-      setError(`Error cargando fuentes de pago: ${err.message}`)
-    } finally {
-      setCargando(false)
-    }
-  }
-
-  const calcularTotales = () => {
-    const total = fuentesPago.reduce((sum, f) => sum + (f.monto_aprobado || 0), 0)
-    const porcentaje = valorTotal > 0 ? (total / valorTotal) * 100 : 0
-    const diferencia = valorTotal - total
-
-    setTotales({ total, porcentaje, diferencia })
-  }
-
-  const agregarFuente = (tipo: FuentePago['tipo']) => {
-    // Verificar si ya existe este tipo (excepto Cuota Inicial que puede repetirse)
-    if (tipo !== 'Cuota Inicial') {
-      const existe = fuentesPago.some((f) => f.tipo === tipo)
-      if (existe) {
-        setError(`Ya existe una fuente de tipo "${tipo}"`)
-        return
-      }
-    }
-
-    setFuentesPago([
-      ...fuentesPago,
-      {
-        tipo,
-        monto_aprobado: 0,
-        entidad: '',
-        numero_referencia: '',
-      },
-    ])
-    setError(null)
-  }
-
-  const actualizarFuente = (index: number, campo: keyof FuentePago, valor: any) => {
-    const nuevasFuentes = [...fuentesPago]
-    nuevasFuentes[index] = { ...nuevasFuentes[index], [campo]: valor }
-    setFuentesPago(nuevasFuentes)
-  }
-
-  const eliminarFuente = async (index: number) => {
-    const fuente = fuentesPago[index]
-
-    // Si tiene ID, eliminar de la BD
-    if (fuente.id) {
-      try {
-        await fuentesPagoService.eliminarFuentePago(fuente.id)
-      } catch (err: any) {
-        setError(`Error eliminando fuente: ${err.message}`)
-        return
-      }
-    }
-
-    // Eliminar del estado
-    setFuentesPago(fuentesPago.filter((_, i) => i !== index))
-    setError(null)
-  }
-
-  const subirCartaAprobacion = async (
-    fuenteId: string,
-    archivo: File,
-    tipoDocumento: 'aprobacion' | 'asignacion'
-  ) => {
-    try {
-      setSubiendoArchivo(fuenteId)
-      setError(null)
-
-      const url = await fuentesPagoService.subirCartaAprobacion({
-        fuentePagoId: fuenteId,
-        archivo,
-        tipoDocumento,
-      })
-
-      // Actualizar la fuente en el estado local
-      setFuentesPago((prev) =>
-        prev.map((f) =>
-          f.id === fuenteId
-            ? {
-                ...f,
-                [tipoDocumento === 'aprobacion'
-                  ? 'carta_aprobacion_url'
-                  : 'carta_asignacion_url']: url,
-              }
-            : f
-        )
-      )
-
-      alert('✅ Documento subido correctamente')
-    } catch (err: any) {
-      console.error('Error subiendo documento:', err)
-      setError(`Error subiendo documento: ${err.message}`)
-    } finally {
-      setSubiendoArchivo(null)
-    }
-  }
-
-  const guardarFuentes = async () => {
-    try {
-      setGuardando(true)
-      setError(null)
-
-      // Validar que todas las fuentes tengan monto > 0
-      const invalidas = fuentesPago.filter((f) => !f.monto_aprobado || f.monto_aprobado <= 0)
-      if (invalidas.length > 0) {
-        setError('Todas las fuentes deben tener un monto aprobado mayor a 0')
-        return
-      }
-
-      // Validar entidades requeridas
-      for (const fuente of fuentesPago) {
-        const config = TIPOS_FUENTE[fuente.tipo]
-        if (config.requiereEntidad && !fuente.entidad?.trim()) {
-          setError(`La fuente "${fuente.tipo}" requiere especificar la entidad`)
-          return
-        }
-      }
-
-      // ⚠️ Validar documentos requeridos
-      for (const fuente of fuentesPago) {
-        if (fuente.tipo === 'Crédito Hipotecario' && !fuente.carta_aprobacion_url) {
-          setError('Crédito Hipotecario requiere carta de aprobación del banco')
-          return
-        }
-        if (fuente.tipo === 'Subsidio Caja Compensación' && !fuente.carta_aprobacion_url) {
-          setError('Subsidio Caja Compensación requiere carta de aprobación')
-          return
-        }
-      }
-
-      // Guardar cada fuente
-      for (const fuente of fuentesPago) {
-        if (fuente.id) {
-          // Actualizar existente
-          await fuentesPagoService.actualizarFuentePago(fuente.id, {
-            monto_aprobado: fuente.monto_aprobado,
-            entidad: fuente.entidad,
-            numero_referencia: fuente.numero_referencia,
-          })
-        } else {
-          // Crear nueva
-          await fuentesPagoService.crearFuentePago({
-            negociacion_id: negociacionId,
-            tipo: fuente.tipo,
-            monto_aprobado: fuente.monto_aprobado,
-            entidad: fuente.entidad,
-            numero_referencia: fuente.numero_referencia,
-          })
-        }
-      }
-
-      // Recargar fuentes
-      await cargarFuentesPago()
-
-      // Notificar actualización
-      onFuentesActualizadas?.()
-
-      alert('✅ Fuentes de pago guardadas correctamente')
-    } catch (err: any) {
-      console.error('Error guardando fuentes:', err)
-      setError(`Error guardando fuentes: ${err.message}`)
-    } finally {
-      setGuardando(false)
-    }
-  }
-
-  // ✅ NOTA: La función activarNegociacion fue eliminada.
-  // Las negociaciones ahora se crean directamente en estado 'Activa'.
-  // Este componente solo gestiona las fuentes de pago, no cambia el estado de la negociación.
+  // =====================================================
+  // RENDER
+  // =====================================================
 
   if (cargando) {
     return (
@@ -337,9 +135,6 @@ export function ConfigurarFuentesPago({
       </div>
     )
   }
-
-  const cierreCompleto = Math.abs(totales.diferencia) < 1 // Margen de error de 1 peso
-  const porcentajeCubierto = totales.porcentaje
 
   return (
     <div className="space-y-6">
@@ -419,7 +214,7 @@ export function ConfigurarFuentesPago({
             return (
               <button
                 key={tipo}
-                onClick={() => agregarFuente(tipo)}
+                onClick={() => agregarFuente(tipo, config.permiteMultiples)}
                 disabled={deshabilitado}
                 className={`group relative overflow-hidden rounded-xl border-2 p-4 text-left transition-all ${
                   deshabilitado

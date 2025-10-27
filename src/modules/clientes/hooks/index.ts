@@ -1,5 +1,7 @@
 // Barrel export para hooks del módulo de clientes
+export * from './useClienteCardActivo'
 export * from './useClientes'
+export * from './useConfigurarFuentesPago'
 export * from './useCrearNegociacion'
 export * from './useFormularioCliente'
 export * from './useInteresFormulario'

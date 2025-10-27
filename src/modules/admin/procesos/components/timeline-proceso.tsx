@@ -5,30 +5,33 @@
  *
  * Muestra el progreso del proceso de compra del cliente.
  * Diseño premium con timeline vertical y glassmorphism.
+ *
+ * ⚠️ SISTEMA DE PROTECCIÓN:
+ * - Usuario debe "Iniciar Paso" para trabajar en él
+ * - Advertencia beforeunload si hay cambios sin guardar
+ * - Modal de fecha al completar para registro preciso
  */
 
 import { useAuth } from '@/contexts/auth-context'
-import { createBrowserClient } from '@supabase/ssr'
+import { useUnsavedChanges } from '@/contexts/unsaved-changes-context'
+import { useModal } from '@/shared/components/modals'
 import { AnimatePresence, motion } from 'framer-motion'
-import {
-    AlertCircle,
-    CheckCircle2,
-    ChevronDown,
-    ChevronUp,
-    Circle,
-    Clock,
-    Download,
-    FileText,
-    Loader2,
-    Play,
-    Upload,
-    X
-} from 'lucide-react'
-import { useState } from 'react'
+import { AlertCircle, FileText, Loader2, X } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { useCallback, useEffect, useState } from 'react'
 import { useProcesoNegociacion } from '../hooks'
-import { procesosStyles as styles } from '../styles/procesos.styles'
+import { subirDocumento } from '../services/documentos-proceso.service'
+import { recargarPlantilla } from '../services/plantilla-reload.service'
+import { actualizarProceso } from '../services/procesos.service'
 import type { ProcesoNegociacion } from '../types'
 import { EstadoPaso } from '../types'
+import { HeaderProceso } from './header-proceso'
+import { ModalFechaCompletado } from './modal-fecha-completado'
+import { PasoItem } from './paso-item'
+import { timelineProcesoStyles as styles } from './timeline-proceso.styles'
+
+// 🔧 Modo desarrollo (solo visible si esta variable está en true)
+const IS_DEV_MODE = process.env.NEXT_PUBLIC_DEV_MODE === 'true'
 
 interface TimelineProcesoProps {
   negociacionId: string
@@ -36,21 +39,76 @@ interface TimelineProcesoProps {
 
 export function TimelineProceso({ negociacionId }: TimelineProcesoProps) {
   const { user } = useAuth()
+  const { confirm } = useModal()
+  const router = useRouter()
+  const { setHasUnsavedChanges, setMessage, setOnDiscard } = useUnsavedChanges()
   const {
     pasos,
     progreso,
     loading,
     error,
     actualizando,
+    pasoEnEdicion,
     completarPaso,
     iniciarPaso,
+    descartarCambios,
     agregarDocumento,
+    eliminarDocumento,
     puedeCompletar,
+    puedeIniciar,
+    estaBloqueado,
+    obtenerDependenciasIncompletas,
     limpiarError
   } = useProcesoNegociacion({ negociacionId })
 
   const [pasoExpandido, setPasoExpandido] = useState<string | null>(null)
   const [subiendoDoc, setSubiendoDoc] = useState<string | null>(null)
+  const [recargandoPlantilla, setRecargandoPlantilla] = useState(false)
+
+  // Modal de fecha
+  const [modalFechaAbierto, setModalFechaAbierto] = useState(false)
+  const [pasoACompletar, setPasoACompletar] = useState<ProcesoNegociacion | null>(null)
+
+  // Crear callback estable para descartar cambios
+  // IMPORTANTE: NO usa descartarCambios del hook porque ese llama setPasoEnEdicion(null)
+  // lo cual causa un re-render durante el render del context
+  const handleDiscardCallback = useCallback(async () => {
+    if (!pasoEnEdicion) return
+
+    try {
+      // Llamar directamente al servicio sin modificar el estado local
+      // El context limpiará pasoEnEdicion cuando cambie la ruta
+      await actualizarProceso(pasoEnEdicion, {
+        estado: EstadoPaso.PENDIENTE,
+        fechaInicio: null,
+        documentosUrls: null,
+        notas: null
+      })
+    } catch (err) {
+      console.error('Error al descartar cambios:', err)
+    }
+  }, [pasoEnEdicion])
+
+  // Sincronizar estado de cambios sin guardar con context global
+  useEffect(() => {
+    if (pasoEnEdicion) {
+      setHasUnsavedChanges(true)
+      setMessage(
+        'Tienes un paso iniciado con cambios sin guardar.\n\n' +
+        'Si sales ahora:\n\n' +
+        '• Se eliminarán los documentos adjuntos\n' +
+        '• Se borrará la fecha de inicio\n' +
+        '• El paso volverá a estado Pendiente'
+      )
+      // Registrar callback de descarte para cuando el usuario confirme salir
+      console.log('🔧 Registrando onDiscard callback:', typeof handleDiscardCallback)
+      setOnDiscard(handleDiscardCallback)
+    } else {
+      setHasUnsavedChanges(false)
+      setMessage(null)
+      setOnDiscard(null)
+    }
+  }, [pasoEnEdicion, setHasUnsavedChanges, setMessage, setOnDiscard, handleDiscardCallback])
 
   // ===================================
   // HANDLERS
@@ -60,146 +118,194 @@ export function TimelineProceso({ negociacionId }: TimelineProcesoProps) {
     setPasoExpandido(prev => prev === pasoId ? null : pasoId)
   }
 
-  const handleIniciar = async (pasoId: string) => {
-    await iniciarPaso(pasoId)
+  const handleIniciarPaso = async (pasoId: string) => {
+    const confirmed = await confirm({
+      title: '¿Iniciar trabajo en este paso?',
+      message: 'Se registrará la fecha de inicio y podrás adjuntar documentos.',
+      confirmText: 'Iniciar Paso',
+      variant: 'info'
+    })
+
+    if (!confirmed) return
+
+    const exito = await iniciarPaso(pasoId)
+    if (exito) {
+      setPasoExpandido(pasoId)
+    }
   }
 
-  const handleCompletar = async (pasoId: string) => {
-    if (!confirm('¿Marcar este paso como completado?')) return
+  const handleAbrirModalCompletar = (paso: ProcesoNegociacion) => {
+    setPasoACompletar(paso)
+    setModalFechaAbierto(true)
+  }
 
-    await completarPaso(pasoId, {
-      notas: 'Completado manualmente'
+  const handleConfirmarCompletado = async (fecha: Date) => {
+    if (!pasoACompletar) return
+
+    const exito = await completarPaso(pasoACompletar.id, fecha)
+
+    if (exito) {
+      setModalFechaAbierto(false)
+      setPasoACompletar(null)
+      setPasoExpandido(null)
+    }
+  }
+
+  const handleDescartarCambios = async (pasoId: string) => {
+    const confirmed = await confirm({
+      title: '⚠️ ¿Descartar cambios?',
+      message:
+        'Esta acción revertirá lo siguiente:\n\n' +
+        '• Se eliminarán los documentos adjuntos\n' +
+        '• Se borrará la fecha de inicio\n' +
+        '• El paso volverá a estado Pendiente\n\n' +
+        'Esta acción no se puede deshacer.',
+      confirmText: 'Descartar Cambios',
+      cancelText: 'Cancelar',
+      variant: 'warning'
     })
+
+    if (!confirmed) return
+
+    const exito = await descartarCambios(pasoId)
+    if (exito) {
+      setPasoExpandido(null)
+    }
+  }
+
+  const handleRecargarPlantilla = async () => {
+    const confirmed = await confirm({
+      title: '⚠️ DESARROLLO: Recargar plantilla',
+      message:
+        'Esta acción hará lo siguiente:\n\n' +
+        '• Eliminará todos los pasos actuales\n' +
+        '• Los reemplazará con los de la plantilla predeterminada\n' +
+        '• Los documentos subidos NO se eliminarán\n\n' +
+        'Esta función solo debe usarse en DESARROLLO.',
+      confirmText: 'Recargar Plantilla',
+      cancelText: 'Cancelar',
+      variant: 'warning'
+    })
+
+    if (!confirmed) return
+
+    setRecargandoPlantilla(true)
+
+    try {
+      const resultado = await recargarPlantilla(negociacionId)
+
+      if (resultado.exito) {
+        await confirm({
+          title: '✅ Plantilla recargada',
+          message: `Se crearon ${resultado.pasos} pasos correctamente.\n\nRefresca la página para ver los cambios.`,
+          confirmText: 'Entendido',
+          variant: 'success'
+        })
+        window.location.reload()
+      } else {
+        await confirm({
+          title: '❌ Error',
+          message: resultado.error || 'Error desconocido',
+          confirmText: 'Entendido',
+          variant: 'danger'
+        })
+      }
+    } catch (error: any) {
+      await confirm({
+        title: '❌ Error',
+        message: error.message || 'Error desconocido',
+        confirmText: 'Entendido',
+        variant: 'danger'
+      })
+    } finally {
+      setRecargandoPlantilla(false)
+    }
   }
 
   const handleAdjuntarDocumento = async (pasoId: string, documentoId: string, documentoNombre: string, file: File) => {
     if (!user) {
-      alert('❌ No hay usuario autenticado')
+      await confirm({
+        title: '❌ Error',
+        message: 'No hay usuario autenticado',
+        confirmText: 'Entendido',
+        variant: 'danger'
+      })
       return
     }
 
     setSubiendoDoc(documentoId)
 
     try {
-      const supabase = createBrowserClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-      )
-
-      console.log('📤 Subiendo documento:', {
+      const resultado = await subirDocumento({
+        file,
+        userId: user.id,
+        negociacionId,
         pasoId,
         documentoId,
-        documentoNombre,
-        fileName: file.name,
-        size: file.size
+        documentoNombre
       })
 
-      // 1. Validar tamaño (máx 10MB)
-      if (file.size > 10 * 1024 * 1024) {
-        alert('❌ El archivo no puede superar los 10MB')
-        return
-      }
+      if (resultado.exito && resultado.url) {
+        const exito = await agregarDocumento(pasoId, documentoId, resultado.url)
 
-      // 2. Validar tipo de archivo
-      const extensionesPermitidas = ['.pdf', '.jpg', '.jpeg', '.png', '.doc', '.docx']
-      const extension = '.' + file.name.split('.').pop()?.toLowerCase()
-
-      if (!extensionesPermitidas.includes(extension)) {
-        alert('❌ Tipo de archivo no permitido. Usa: PDF, JPG, PNG, DOC, DOCX')
-        return
-      }
-
-      // 3. Construir path del storage
-      // Formato: userId/procesos/negociacionId/pasoId/documentoNombre_timestamp.ext
-      const timestamp = Date.now()
-      const nombreLimpio = documentoNombre
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '') // Remover acentos
-        .replace(/\s+/g, '_') // Espacios -> guión bajo
-        .replace(/[^a-zA-Z0-9_]/g, '') // Solo alfanuméricos
-
-      const storagePath = `${user.id}/procesos/${negociacionId}/${pasoId}/${nombreLimpio}_${timestamp}${extension}`
-
-      console.log('📁 Path de subida:', storagePath)
-
-      // 4. Subir a Supabase Storage
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('documentos-procesos')
-        .upload(storagePath, file, {
-          cacheControl: '3600',
-          upsert: true // Permitir sobrescribir
-        })
-
-      if (uploadError) {
-        console.error('❌ Error en Storage:', uploadError)
-        throw uploadError
-      }
-
-      console.log('✅ Archivo subido:', uploadData)
-
-      // 5. Obtener URL pública
-      const { data: { publicUrl } } = supabase.storage
-        .from('documentos-procesos')
-        .getPublicUrl(storagePath)
-
-      console.log('🔗 URL pública:', publicUrl)
-
-      // 6. Guardar URL en proceso
-      const exito = await agregarDocumento(pasoId, documentoId, publicUrl)
-
-      if (!exito) {
-        throw new Error('No se pudo guardar la URL del documento')
-      }
-
-      console.log('✅ Documento agregado al proceso')
-
-      // 7. 🆕 TAMBIÉN guardar en documentos_cliente para que aparezca en pestaña "Documentos"
-      const { data: negociacion } = await supabase
-        .from('negociaciones')
-        .select('cliente_id')
-        .eq('id', negociacionId)
-        .single()
-
-      if (negociacion?.cliente_id) {
-        const { error: insertError } = await supabase
-          .from('documentos_cliente')
-          .insert({
-            cliente_id: negociacion.cliente_id,
-            categoria_id: null, // Usuario asignará categoría manualmente desde pestaña Documentos
-            titulo: documentoNombre,
-            descripcion: `Subido desde proceso - Paso ${pasoId}`,
-            nombre_archivo: `${nombreLimpio}_${timestamp}${extension}`,
-            nombre_original: file.name,
-            tamano_bytes: file.size,
-            tipo_mime: file.type,
-            url_storage: publicUrl,
-            subido_por: user.id,
-            es_importante: false,
-            es_version_actual: true,
-            version: 1,
-            estado: 'activo',
-            etiquetas: ['Proceso', 'Negociación']
+        if (exito) {
+          await confirm({
+            title: '✅ Documento subido',
+            message: `"${documentoNombre}" se subió correctamente`,
+            confirmText: 'Entendido',
+            variant: 'success'
           })
-
-        if (insertError) {
-          console.warn('⚠️ No se pudo guardar en documentos_cliente:', insertError)
-          console.error('Detalle del error:', insertError)
         } else {
-          console.log('✅ Documento también guardado en documentos_cliente')
+          throw new Error('No se pudo guardar la URL del documento')
         }
       } else {
-        console.warn('⚠️ No se encontró cliente_id para la negociación')
+        throw new Error(resultado.error || 'Error al subir documento')
       }
-
-      alert(`✅ Documento "${documentoNombre}" subido correctamente`)
-
     } catch (error: any) {
       console.error('❌ Error completo:', error)
-      alert(`❌ Error al subir documento: ${error.message || 'Error desconocido'}`)
+      await confirm({
+        title: '❌ Error al subir documento',
+        message: error.message || 'Error desconocido',
+        confirmText: 'Entendido',
+        variant: 'danger'
+      })
     } finally {
       setSubiendoDoc(null)
     }
   }
+
+  const handleEliminarDocumento = async (pasoId: string, documentoId: string, documentoNombre: string) => {
+    const confirmed = await confirm({
+      title: '¿Eliminar documento?',
+      message: `Se eliminará "${documentoNombre}".\n\nEsta acción no se puede deshacer.`,
+      confirmText: 'Eliminar',
+      variant: 'danger'
+    })
+
+    if (!confirmed) return
+
+    const exito = await eliminarDocumento(pasoId, documentoId)
+
+    if (exito) {
+      await confirm({
+        title: '✅ Documento eliminado',
+        message: 'El documento se eliminó correctamente.',
+        confirmText: 'Entendido',
+        variant: 'success'
+      })
+    }
+  }
+
+  // ===================================
+  // SISTEMA DE ADVERTENCIA: Cambios sin guardar
+  // ===================================
+
+  // El context global (UnsavedChangesProvider) ya maneja:
+  // - Protección de cierre de pestaña/navegador
+  // - Protección de navegación interna
+  // - Modal de confirmación personalizado
+
+  // Solo necesitamos sincronizar el estado (hecho arriba en useEffect)
 
   // ===================================
   // RENDER: LOADING
@@ -235,9 +341,57 @@ export function TimelineProceso({ negociacionId }: TimelineProcesoProps) {
   // ===================================
 
   return (
-    <div className="space-y-6">
+    <div className={styles.container}>
       {/* Header con Progreso */}
-      <Header progreso={progreso} />
+      <HeaderProceso
+        progreso={progreso}
+        onRecargarPlantilla={IS_DEV_MODE ? handleRecargarPlantilla : undefined}
+        recargando={recargandoPlantilla}
+      />
+
+      {/* Banner de Advertencia: Paso en Proceso */}
+      <AnimatePresence>
+        {pasoEnEdicion && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="mb-6 rounded-2xl bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-red-500/10
+                       dark:from-amber-500/20 dark:via-orange-500/20 dark:to-red-500/20
+                       border-2 border-amber-500/30 dark:border-amber-500/40
+                       shadow-lg shadow-amber-500/10 dark:shadow-amber-500/5
+                       overflow-hidden"
+          >
+            <div className="p-6 flex items-center gap-4">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600
+                            flex items-center justify-center flex-shrink-0
+                            shadow-lg shadow-amber-500/30 animate-pulse">
+                <AlertCircle className="w-6 h-6 text-white" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-bold text-amber-900 dark:text-amber-100 mb-1">
+                  ⚠️ Paso en Proceso
+                </h3>
+                <p className="text-sm text-amber-800 dark:text-amber-200">
+                  Tienes cambios sin guardar. <strong>No podrás salir de esta página</strong> hasta que <strong>completes</strong> el paso o <strong>descartes</strong> los cambios.
+                </p>
+              </div>
+              <button
+                onClick={() => pasoEnEdicion && handleDescartarCambios(pasoEnEdicion)}
+                className="px-4 py-2 rounded-xl text-sm font-semibold
+                         bg-white dark:bg-gray-800
+                         text-amber-900 dark:text-amber-100
+                         hover:bg-amber-50 dark:hover:bg-gray-700
+                         border border-amber-300 dark:border-amber-600
+                         shadow-sm hover:shadow-md
+                         transition-all duration-200"
+              >
+                Descartar Cambios
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Error Alert */}
       <AnimatePresence>
@@ -274,362 +428,33 @@ export function TimelineProceso({ negociacionId }: TimelineProcesoProps) {
               index={index}
               isExpanded={pasoExpandido === paso.id}
               onToggle={() => togglePaso(paso.id)}
-              onIniciar={() => handleIniciar(paso.id)}
-              onCompletar={() => handleCompletar(paso.id)}
+              onIniciar={() => handleIniciarPaso(paso.id)}
+              onCompletar={() => handleAbrirModalCompletar(paso)}
+              onDescartar={() => handleDescartarCambios(paso.id)}
               onAdjuntarDocumento={handleAdjuntarDocumento}
+              onEliminarDocumento={handleEliminarDocumento}
+              puedeIniciar={puedeIniciar(paso)}
               puedeCompletar={puedeCompletar(paso)}
+              estaBloqueado={estaBloqueado(paso)}
+              dependenciasIncompletas={obtenerDependenciasIncompletas(paso)}
               deshabilitado={actualizando}
               subiendoDoc={subiendoDoc}
             />
           ))}
         </div>
       </div>
+
+      {/* Modal de Fecha Completado */}
+      <ModalFechaCompletado
+        isOpen={modalFechaAbierto}
+        pasoNombre={pasoACompletar?.nombre || ''}
+        fechaInicio={pasoACompletar?.fechaInicio || undefined}
+        onConfirm={handleConfirmarCompletado}
+        onCancel={() => {
+          setModalFechaAbierto(false)
+          setPasoACompletar(null)
+        }}
+      />
     </div>
-  )
-}
-
-// ===================================
-// COMPONENTE: HEADER CON PROGRESO
-// ===================================
-
-interface HeaderProps {
-  progreso: any
-}
-
-function Header({ progreso }: HeaderProps) {
-  if (!progreso) return null
-
-  return (
-    <div className="rounded-2xl bg-gradient-to-br from-purple-600 via-violet-600 to-indigo-600 p-6 shadow-xl">
-      <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-white">
-          Proceso de Compra
-        </h2>
-        <span className="rounded-full bg-white/20 backdrop-blur-xl px-4 py-2 text-sm font-semibold text-white">
-          {progreso.porcentajeCompletado}% Completado
-        </span>
-      </div>
-
-      {/* Barra de Progreso */}
-      <div className="mb-4 h-3 overflow-hidden rounded-full bg-white/20 backdrop-blur-xl">
-        <motion.div
-          initial={{ width: 0 }}
-          animate={{ width: `${progreso.porcentajeCompletado}%` }}
-          transition={{ duration: 1, ease: 'easeOut' }}
-          className="h-full bg-gradient-to-r from-green-400 to-emerald-500 shadow-lg"
-        />
-      </div>
-
-      {/* Estadísticas */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-white">
-        <div className="text-center">
-          <div className="text-2xl font-bold">{progreso.pasosCompletados}</div>
-          <div className="text-xs text-white/80">Completados</div>
-        </div>
-        <div className="text-center">
-          <div className="text-2xl font-bold">{progreso.pasosEnProceso}</div>
-          <div className="text-xs text-white/80">En Proceso</div>
-        </div>
-        <div className="text-center">
-          <div className="text-2xl font-bold">{progreso.pasosPendientes}</div>
-          <div className="text-xs text-white/80">Pendientes</div>
-        </div>
-        <div className="text-center">
-          <div className="text-2xl font-bold">{progreso.totalPasos}</div>
-          <div className="text-xs text-white/80">Total Pasos</div>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-// ===================================
-// COMPONENTE: PASO ITEM
-// ===================================
-
-interface PasoItemProps {
-  paso: ProcesoNegociacion
-  index: number
-  isExpanded: boolean
-  onToggle: () => void
-  onIniciar: () => void
-  onCompletar: () => void
-  onAdjuntarDocumento: (pasoId: string, documentoId: string, documentoNombre: string, file: File) => Promise<void>
-  puedeCompletar: boolean
-  deshabilitado: boolean
-  subiendoDoc: string | null
-}
-
-function PasoItem({
-  paso,
-  index,
-  isExpanded,
-  onToggle,
-  onIniciar,
-  onCompletar,
-  onAdjuntarDocumento,
-  puedeCompletar,
-  deshabilitado,
-  subiendoDoc
-}: PasoItemProps) {
-  const isCompletado = paso.estado === EstadoPaso.COMPLETADO
-  const isEnProceso = paso.estado === EstadoPaso.EN_PROCESO
-  const isPendiente = paso.estado === EstadoPaso.PENDIENTE
-  const isOmitido = paso.estado === EstadoPaso.OMITIDO
-
-  // Iconos según estado
-  const getIcon = () => {
-    if (isCompletado) return <CheckCircle2 className="w-5 h-5 text-green-600" />
-    if (isEnProceso) return <Clock className="w-5 h-5 text-blue-600 animate-pulse" />
-    if (isOmitido) return <X className="w-5 h-5 text-gray-400" />
-    return <Circle className="w-5 h-5 text-gray-300" />
-  }
-
-  // Color del dot según estado
-  const getDotClasses = () => {
-    if (isCompletado) return 'bg-gradient-to-br from-green-500 to-emerald-600'
-    if (isEnProceso) return 'bg-gradient-to-br from-blue-500 to-indigo-600 animate-pulse'
-    if (isOmitido) return 'bg-gray-400'
-    return 'bg-gray-300'
-  }
-
-  // Badge de estado
-  const getBadge = () => {
-    if (isCompletado) {
-      return (
-        <span className="px-2.5 py-1 rounded-full bg-green-100 text-green-700 text-xs font-medium">
-          ✓ Completado
-        </span>
-      )
-    }
-    if (isEnProceso) {
-      return (
-        <span className="px-2.5 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-medium">
-          ⏱ En Proceso
-        </span>
-      )
-    }
-    if (isOmitido) {
-      return (
-        <span className="px-2.5 py-1 rounded-full bg-gray-100 text-gray-700 text-xs font-medium">
-          Omitido
-        </span>
-      )
-    }
-    return (
-      <span className="px-2.5 py-1 rounded-full bg-amber-100 text-amber-700 text-xs font-medium">
-        Pendiente
-      </span>
-    )
-  }
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, x: -20 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ delay: index * 0.05 }}
-      className={styles.timeline.item.container}
-    >
-      {/* Dot */}
-      <div className={`${styles.timeline.item.dot} ${getDotClasses()}`}>
-        {index + 1}
-      </div>
-
-      {/* Contenido */}
-      <div className={styles.timeline.item.content}>
-        <div
-          onClick={onToggle}
-          className="cursor-pointer rounded-xl bg-white/80 backdrop-blur-xl border border-gray-200/50 p-4 hover:shadow-lg transition-all"
-        >
-          {/* Header del Paso */}
-          <div className="flex items-start justify-between mb-2">
-            <div className="flex-1">
-              <div className="flex items-center gap-3 mb-2">
-                {getIcon()}
-                <h3 className={styles.timeline.item.title}>{paso.nombre}</h3>
-              </div>
-              {paso.descripcion && (
-                <p className={styles.timeline.item.description}>{paso.descripcion}</p>
-              )}
-            </div>
-
-            <button className="p-2 rounded-lg hover:bg-gray-100 transition-colors">
-              {isExpanded ? (
-                <ChevronUp className="w-4 h-4 text-gray-600" />
-              ) : (
-                <ChevronDown className="w-4 h-4 text-gray-600" />
-              )}
-            </button>
-          </div>
-
-          {/* Badges */}
-          <div className="flex flex-wrap items-center gap-2 mb-3">
-            {getBadge()}
-
-            {paso.esObligatorio && (
-              <span className="px-2.5 py-1 rounded-full bg-red-100 text-red-700 text-xs font-medium">
-                Obligatorio
-              </span>
-            )}
-          </div>
-
-          {/* Fechas */}
-          {(paso.fechaInicio || paso.fechaCompletado) && (
-            <div className="flex items-center gap-4 text-xs text-gray-500 pt-3 border-t border-gray-200">
-              {paso.fechaInicio && (
-                <span>Iniciado: {new Date(paso.fechaInicio).toLocaleDateString()}</span>
-              )}
-              {paso.fechaCompletado && (
-                <span>Completado: {new Date(paso.fechaCompletado).toLocaleDateString()}</span>
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* Contenido Expandido */}
-        <AnimatePresence>
-          {isExpanded && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="overflow-hidden"
-            >
-              <div className="mt-3 rounded-xl bg-gray-50 p-4 space-y-4">
-                {/* Documentos Requeridos */}
-                {paso.documentosRequeridos && paso.documentosRequeridos.length > 0 && (
-                  <div>
-                    <h4 className="text-sm font-semibold text-gray-900 mb-2">
-                      Documentos Requeridos:
-                    </h4>
-                    <div className="space-y-2">
-                      {paso.documentosRequeridos.map(doc => {
-                        const subido = paso.documentosUrls?.[doc.id] || paso.documentosUrls?.[doc.nombre]
-
-                        return (
-                          <div
-                            key={doc.id}
-                            className="flex items-center justify-between p-3 rounded-lg bg-white border border-gray-200"
-                          >
-                            <div className="flex items-center gap-2">
-                              <FileText className="w-4 h-4 text-gray-400" />
-                              <div>
-                                <div className="text-sm font-medium text-gray-900">
-                                  {doc.nombre}
-                                  {doc.obligatorio && (
-                                    <span className="ml-2 text-xs text-red-600">*</span>
-                                  )}
-                                </div>
-                                {doc.descripcion && (
-                                  <div className="text-xs text-gray-500">{doc.descripcion}</div>
-                                )}
-                              </div>
-                            </div>
-
-                            {subido ? (
-                              <a
-                                href={subido}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="p-2 rounded-lg bg-green-100 text-green-600 hover:bg-green-200 transition-colors"
-                              >
-                                <Download className="w-4 h-4" />
-                              </a>
-                            ) : (
-                              <div className="relative">
-                                <input
-                                  type="file"
-                                  id={`upload-${doc.id}`}
-                                  className="hidden"
-                                  accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
-                                  onChange={(e) => {
-                                    const file = e.target.files?.[0]
-                                    if (file) {
-                                      onAdjuntarDocumento(paso.id, doc.id, doc.nombre, file)
-                                      // Limpiar input para permitir re-upload del mismo archivo
-                                      e.target.value = ''
-                                    }
-                                  }}
-                                  disabled={subiendoDoc === doc.id}
-                                />
-                                <label
-                                  htmlFor={`upload-${doc.id}`}
-                                  className={`
-                                    p-2 rounded-lg transition-colors cursor-pointer inline-flex items-center gap-2
-                                    ${subiendoDoc === doc.id
-                                      ? 'bg-blue-100 text-blue-400'
-                                      : 'bg-gray-100 text-gray-600 hover:bg-blue-100 hover:text-blue-600'
-                                    }
-                                  `}
-                                >
-                                  {subiendoDoc === doc.id ? (
-                                    <Loader2 className="w-4 h-4 animate-spin" />
-                                  ) : (
-                                    <Upload className="w-4 h-4" />
-                                  )}
-                                </label>
-                              </div>
-                            )}
-                          </div>
-                        )
-                      })}
-                    </div>
-                  </div>
-                )}
-
-                {/* Notas */}
-                {paso.notas && (
-                  <div>
-                    <h4 className="text-sm font-semibold text-gray-900 mb-2">Notas:</h4>
-                    <p className="text-sm text-gray-600 bg-white rounded-lg p-3 border border-gray-200">
-                      {paso.notas}
-                    </p>
-                  </div>
-                )}
-
-                {/* Acciones */}
-                <div className="flex items-center gap-2 pt-3 border-t border-gray-200">
-                  {isPendiente && (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        onIniciar()
-                      }}
-                      disabled={deshabilitado}
-                      className="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center gap-2"
-                    >
-                      <Play className="w-4 h-4" />
-                      Iniciar Paso
-                    </button>
-                  )}
-
-                  {(isPendiente || isEnProceso) && puedeCompletar && (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        onCompletar()
-                      }}
-                      disabled={deshabilitado}
-                      className="px-4 py-2 rounded-lg bg-green-600 text-white text-sm font-medium hover:bg-green-700 transition-colors disabled:opacity-50 flex items-center gap-2"
-                    >
-                      <CheckCircle2 className="w-4 h-4" />
-                      Marcar Completado
-                    </button>
-                  )}
-
-                  {!puedeCompletar && (isPendiente || isEnProceso) && (
-                    <div className="text-xs text-amber-600 flex items-center gap-1">
-                      <AlertCircle className="w-3.5 h-3.5" />
-                      Completa los requisitos para avanzar
-                    </div>
-                  )}
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-    </motion.div>
   )
 }

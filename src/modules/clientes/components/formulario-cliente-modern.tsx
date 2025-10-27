@@ -1,35 +1,37 @@
 /**
- * Componente FormularioCliente - Modal moderno para crear/editar clientes
- * Diseño moderno con steps, animaciones y glassmorphism
+ * 📋 FORMULARIO CLIENTE - Modal Moderno
+ *
+ * Formulario multi-step para crear/editar clientes.
+ * Diseño moderno con animaciones y glassmorphism.
+ *
+ * ⭐ REFACTORIZADO: Usa componentes shared de formulario
  */
 
 'use client'
 
+import { ModernInput, ModernSelect, ModernTextarea } from '@/shared/components/forms'
 import { AnimatePresence, motion } from 'framer-motion'
 import {
-    Building2,
-    Calendar,
-    Check,
-    ChevronLeft,
-    ChevronRight,
-    FileText,
-    Heart,
-    Home,
-    Mail,
-    MapPin,
-    MessageSquare,
-    Phone,
-    Sparkles,
-    User,
-    Users,
-    X,
+  Building2,
+  Calendar,
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  FileText,
+  Heart,
+  Home,
+  Mail,
+  MapPin,
+  MessageSquare,
+  Phone,
+  Sparkles,
+  User,
+  Users,
+  X,
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import type { CrearClienteDTO, OrigenCliente, TipoDocumento } from '../types'
-import {
-    ORIGENES_CLIENTE,
-    TIPOS_DOCUMENTO,
-} from '../types'
+import { ORIGENES_CLIENTE, TIPOS_DOCUMENTO } from '../types'
 
 interface FormularioClienteProps {
   isOpen: boolean
@@ -52,110 +54,6 @@ interface FormularioClienteProps {
   validarStep1?: () => boolean
   validarStep2?: () => boolean
   validarStep3?: () => boolean
-}
-
-// Componente de Input Moderno
-function ModernInput({
-  icon: Icon,
-  label,
-  error,
-  required,
-  ...props
-}: any) {
-  return (
-    <div className='group'>
-      <label className='mb-1.5 flex items-center gap-1.5 text-xs font-medium text-gray-700 dark:text-gray-300'>
-        <Icon className='h-3.5 w-3.5 text-purple-500' />
-        {label}
-        {required && <span className='text-red-500'>*</span>}
-      </label>
-      <div className='relative'>
-        <input
-          {...props}
-          className='w-full rounded-lg border-2 border-gray-200 bg-white px-3 py-2 text-gray-900 transition-all placeholder:text-gray-400 hover:border-purple-300 focus:border-purple-500 focus:outline-none focus:ring-4 focus:ring-purple-500/10 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:hover:border-purple-600 dark:focus:border-purple-500'
-        />
-        {error && (
-          <motion.p
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className='mt-1 flex items-center gap-0.5 text-xs text-red-500'
-          >
-            <span className='font-medium'>⚠</span> {error}
-          </motion.p>
-        )}
-      </div>
-    </div>
-  )
-}
-
-// Componente de Select Moderno
-function ModernSelect({
-  icon: Icon,
-  label,
-  error,
-  required,
-  children,
-  ...props
-}: any) {
-  return (
-    <div className='group'>
-      <label className='mb-1.5 flex items-center gap-1.5 text-xs font-medium text-gray-700 dark:text-gray-300'>
-        <Icon className='h-3.5 w-3.5 text-purple-500' />
-        {label}
-        {required && <span className='text-red-500'>*</span>}
-      </label>
-      <div className='relative'>
-        <select
-          {...props}
-          className='w-full appearance-none rounded-lg border-2 border-gray-200 bg-white px-3 py-2 text-gray-900 transition-all hover:border-purple-300 focus:border-purple-500 focus:outline-none focus:ring-4 focus:ring-purple-500/10 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:hover:border-purple-600'
-        >
-          {children}
-        </select>
-        <ChevronRight className='pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 rotate-90 text-gray-400' />
-        {error && (
-          <motion.p
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className='mt-1 flex items-center gap-0.5 text-xs text-red-500'
-          >
-            <span className='font-medium'>⚠</span> {error}
-          </motion.p>
-        )}
-      </div>
-    </div>
-  )
-}
-
-// Componente de Textarea Moderno
-function ModernTextarea({
-  icon: Icon,
-  label,
-  error,
-  ...props
-}: any) {
-  return (
-    <div className='group'>
-      <label className='mb-1.5 flex items-center gap-1.5 text-xs font-medium text-gray-700 dark:text-gray-300'>
-        <Icon className='h-3.5 w-3.5 text-purple-500' />
-        {label}
-      </label>
-      <div className='relative'>
-        <textarea
-          {...props}
-          className='w-full rounded-lg border-2 border-gray-200 bg-white px-3 py-2 text-gray-900 transition-all placeholder:text-gray-400 hover:border-purple-300 focus:border-purple-500 focus:outline-none focus:ring-4 focus:ring-purple-500/10 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:hover:border-purple-600'
-        />
-        {error && (
-          <motion.p
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className='mt-1 flex items-center gap-0.5 text-xs text-red-500'
-          >
-            <span className='font-medium'>⚠</span> {error}
-          </motion.p>
-        )}
-      </div>
-    </div>
-  )
 }
 
 export function FormularioCliente({

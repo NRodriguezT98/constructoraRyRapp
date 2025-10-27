@@ -1,9 +1,14 @@
 /**
- * Componente DetalleCliente - Modal de solo lectura para ver información completa
+ * 👤 DETALLE CLIENTE - Modal de Solo Lectura
+ *
+ * Modal para ver información completa del cliente.
+ *
+ * ⭐ REFACTORIZADO: Usa componentes extraídos
  */
 
 'use client'
 
+import { InfoField } from '@/shared/components/display'
 import { formatDistanceToNow } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { AnimatePresence, motion } from 'framer-motion'
@@ -26,11 +31,11 @@ import {
     TrendingUp,
     User,
     Users,
-    X,
-    XCircle,
+    X
 } from 'lucide-react'
 import type { Cliente } from '../types'
 import { ESTADOS_INTERES, ORIGENES_CLIENTE, TIPOS_DOCUMENTO } from '../types'
+import { EstadoBadge } from './estado-badge'
 
 interface DetalleClienteProps {
   isOpen: boolean
@@ -38,72 +43,6 @@ interface DetalleClienteProps {
   cliente: Cliente | null
   onEditar?: () => void
   onEliminar?: () => void
-}
-
-// Componente para mostrar un campo de información
-function InfoField({
-  icon: Icon,
-  label,
-  value,
-  className = '',
-  showEmpty = false,
-}: {
-  icon: any
-  label: string
-  value: string | undefined | null
-  className?: string
-  showEmpty?: boolean
-}) {
-  // Si no tiene valor y no queremos mostrar vacíos, no renderizar
-  if (!value && !showEmpty) return null
-
-  return (
-    <div className={`flex items-start gap-3 ${className}`}>
-      <div className='flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-purple-100 dark:bg-purple-900/30'>
-        <Icon className='h-5 w-5 text-purple-600 dark:text-purple-400' />
-      </div>
-      <div className='flex-1'>
-        <p className='text-sm font-medium text-gray-500 dark:text-gray-400'>
-          {label}
-        </p>
-        <p className={`mt-1 text-base font-semibold ${value ? 'text-gray-900 dark:text-white' : 'text-gray-400 dark:text-gray-600 italic'}`}>
-          {value || 'No especificado'}
-        </p>
-      </div>
-    </div>
-  )
-}
-
-// Badge de estado
-function EstadoBadge({ estado }: { estado: string }) {
-  const config = {
-    Interesado: {
-      bg: 'bg-blue-100 dark:bg-blue-900/30',
-      text: 'text-blue-700 dark:text-blue-300',
-      icon: Clock,
-    },
-    Activo: {
-      bg: 'bg-green-100 dark:bg-green-900/30',
-      text: 'text-green-700 dark:text-green-300',
-      icon: CheckCircle2,
-    },
-    Inactivo: {
-      bg: 'bg-gray-100 dark:bg-gray-900/30',
-      text: 'text-gray-700 dark:text-gray-300',
-      icon: XCircle,
-    },
-  }
-
-  const { bg, text, icon: Icon } = config[estado as keyof typeof config] || config.Interesado
-
-  return (
-    <span
-      className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold ${bg} ${text}`}
-    >
-      <Icon className='h-4 w-4' />
-      {estado}
-    </span>
-  )
 }
 
 export function DetalleCliente({

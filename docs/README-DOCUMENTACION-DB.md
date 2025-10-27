@@ -8,9 +8,41 @@ Eliminar completamente los errores causados por:
 - ❌ Documentación desactualizada
 - ❌ Copiar código sin verificar
 
-## 🔄 Proceso Completo
+## � NUEVO: Script Automatizado (Recomendado)
+
+**Ejecuta desde la raíz del proyecto:**
+
+```powershell
+.\scripts\actualizar-docs-db-simple.ps1
+```
+
+✅ **Extrae automáticamente:**
+- Todas las tablas y columnas
+- Tipos de datos
+- Campos requeridos/opcionales
+- Valores por defecto
+- ENUMs (tipos personalizados)
+- Foreign Keys (relaciones)
+
+✅ **Genera:** `docs/DATABASE-SCHEMA-REFERENCE-ACTUALIZADO.md`
+
+**Requisitos:**
+- PostgreSQL instalado (`psql` en PATH)
+- `.env.local` configurado con `DATABASE_URL`
+
+---
+
+## �🔄 Proceso Completo
 
 ### 1️⃣ Generar Documentación (Cuando cambies la DB)
+
+**OPCIÓN A: Script Automatizado (Recomendado)**
+```powershell
+# Ejecutar script automatizado
+.\scripts\actualizar-docs-db-simple.ps1
+```
+
+**OPCIÓN B: Manual (Alternativa)**
 
 ```powershell
 # Ejecutar script automatizado

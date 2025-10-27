@@ -1,7 +1,6 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
-import { usePerformanceMonitor } from '@/hooks/usePerformanceMonitor'
 import { motion } from 'framer-motion'
 import {
     Calendar,
@@ -14,7 +13,6 @@ import {
     TrendingUp
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { useEffect } from 'react'
 import { useAbonosList } from '../hooks/useAbonosList'
 import { AbonoCard } from './abono-card'
 import { abonosListStyles, metricasIconColors } from './abonos-list.styles'
@@ -38,7 +36,6 @@ const formatCurrency = (value: number) => {
  * Lista TODOS los abonos del sistema con filtros y diseño premium
  */
 export function AbonosListPage() {
-  const { markDataLoaded, mark } = usePerformanceMonitor('AbonosPage')
   const router = useRouter()
   const {
     abonos,
@@ -51,20 +48,6 @@ export function AbonosListPage() {
     isLoading,
     error
   } = useAbonosList()
-
-  // =====================================================
-  // PERFORMANCE MONITORING
-  // =====================================================
-
-  useEffect(() => {
-    if (!isLoading && abonos.length >= 0) {
-      mark(`Datos cargados (${abonos.length} abonos)`)
-      markDataLoaded()
-    }
-    // ⭐ Solo depende de isLoading y cantidad de abonos
-    // markDataLoaded y mark son funciones estables (useCallback)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLoading, abonos.length])
 
   const handleAnularAbono = (abonoId: string) => {
     // TODO: Implementar anulación de abonos

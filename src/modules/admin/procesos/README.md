@@ -120,8 +120,9 @@ const procesos = await crearProcesoDesdePlantilla({
   negociacionId: 'uuid-negociacion',
   plantillaId: 'uuid-plantilla',
   fuentesPago: [
+    TipoFuentePago.CUOTA_INICIAL,
     TipoFuentePago.CREDITO_HIPOTECARIO,
-    TipoFuentePago.RECURSOS_PROPIOS
+    TipoFuentePago.SUBSIDIO_CAJA
   ]
 })
 ```

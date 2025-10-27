@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '../../../contexts/auth-context'
+import { useModal } from '../../../shared/components/modals'
 import { DocumentosService } from '../../documentos/services'
 import { useDocumentosStore } from '../../documentos/store/documentos.store'
 import { Proyecto } from '../types'
@@ -10,6 +11,7 @@ import { Proyecto } from '../types'
  */
 export function useProyectoDetalle(proyectoId: string) {
   const { user } = useAuth()
+  const { confirm } = useModal()
   const [proyecto, setProyecto] = useState<Proyecto | null>(null)
   const [cargando, setCargando] = useState(true)
   const [urlPreview, setUrlPreview] = useState<string | null>(null)
@@ -99,7 +101,15 @@ export function useProyectoDetalle(proyectoId: string) {
   // Handler: Eliminar documento
   const handleDeleteDocumento = async () => {
     if (!documentoSeleccionado) return
-    if (confirm('¿Estás seguro de eliminar este documento?')) {
+
+    const confirmed = await confirm({
+      title: '¿Eliminar documento?',
+      message: 'Esta acción no se puede deshacer.',
+      confirmText: 'Eliminar',
+      variant: 'danger'
+    })
+
+    if (confirmed) {
       await eliminarDocumento(documentoSeleccionado.id)
       cerrarModalViewer()
     }
