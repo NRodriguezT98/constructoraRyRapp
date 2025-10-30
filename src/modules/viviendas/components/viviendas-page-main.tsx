@@ -49,13 +49,13 @@ export function ViviendasPageMain() {
   const viviendaEliminando = viviendas.find(v => v.id === viviendaEliminar)
 
   return (
-    <div className={styles.container}>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50 to-teal-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950">
       {/* Animación simplificada para navegación instantánea */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.15 }}
-        className={styles.content}
+        className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6"
       >
         {/* Header */}
         <ViviendasHeader onNuevaVivienda={abrirModalCrear} totalViviendas={estadisticas.total} />

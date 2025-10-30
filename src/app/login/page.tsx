@@ -1,6 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
+import { Eye, EyeOff } from 'lucide-react'
 import Image from 'next/image'
 import { useState } from 'react'
 import { ResetPasswordModal } from './reset-password-modal'
@@ -21,6 +22,7 @@ export default function LoginPage() {
   } = useLogin()
 
   const [showResetPassword, setShowResetPassword] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
 
   return (
     <div className='relative flex min-h-screen w-full items-center justify-center overflow-hidden'>
@@ -128,15 +130,29 @@ export default function LoginPage() {
                     <label className='mb-2 block text-sm font-medium text-white/90'>
                       Contraseña
                     </label>
-                    <input
-                      type='password'
-                      value={password}
-                      onChange={e => setPassword(e.target.value)}
-                      className='w-full rounded-lg border border-white/20 bg-white/10 px-4 py-3 text-white placeholder-white/50 backdrop-blur-sm transition-all focus:border-white/40 focus:outline-none focus:ring-2 focus:ring-white/20'
-                      placeholder='••••••••'
-                      required
-                      minLength={6}
-                    />
+                    <div className='relative'>
+                      <input
+                        type={showPassword ? 'text' : 'password'}
+                        value={password}
+                        onChange={e => setPassword(e.target.value)}
+                        className='w-full rounded-lg border border-white/20 bg-white/10 px-4 py-3 pr-12 text-white placeholder-white/50 backdrop-blur-sm transition-all focus:border-white/40 focus:outline-none focus:ring-2 focus:ring-white/20'
+                        placeholder='••••••••'
+                        required
+                        minLength={6}
+                      />
+                      <button
+                        type='button'
+                        onClick={() => setShowPassword(!showPassword)}
+                        className='absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-1.5 text-white/70 transition-all hover:bg-white/10 hover:text-white'
+                        tabIndex={-1}
+                      >
+                        {showPassword ? (
+                          <EyeOff className='h-5 w-5' />
+                        ) : (
+                          <Eye className='h-5 w-5' />
+                        )}
+                      </button>
+                    </div>
                   </div>
 
                   {error && (

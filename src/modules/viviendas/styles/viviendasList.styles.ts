@@ -1,14 +1,25 @@
 /**
- * Estilos centralizados para el listado de viviendas
- * Todas las clases de Tailwind en un solo lugar
+ * 🎨 ESTILOS CENTRALIZADOS - LISTA DE VIVIENDAS
+ *
+ * Sistema de diseño premium con glassmorphism para la vista de lista de viviendas.
+ * Identidad visual: Green→Teal→Blue (diferenciación del módulo de clientes)
+ *
+ * Características:
+ * - Glassmorphism con backdrop-blur-xl
+ * - Gradientes green→teal→blue (identidad del módulo)
+ * - Animaciones fluidas con Framer Motion
+ * - Responsive design (mobile, tablet, desktop)
+ * - Dark mode compatible
+ * - Shadows premium con green/blue tints
+ * - Grid de 2 columnas (consistente con clientes)
  */
 
 export const viviendasListStyles = {
   // ============================================
   // CONTENEDOR PRINCIPAL
   // ============================================
-  container: 'container mx-auto px-4 py-4 sm:px-4 lg:px-6',
-  content: 'space-y-4',
+  container: 'min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50 to-teal-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950',
+  content: 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6',
 
   // ============================================
   // HEADER
@@ -50,7 +61,7 @@ export const viviendasListStyles = {
   },
 
   // ============================================
-  // GRID / LISTA
+  // GRID / LISTA (3 columnas optimizado)
   // ============================================
   grid: {
     container: 'grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3',
