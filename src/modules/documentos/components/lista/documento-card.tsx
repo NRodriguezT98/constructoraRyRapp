@@ -2,7 +2,7 @@
 
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
-import { motion } from 'framer-motion'
+import { AnimatePresence, motion } from 'framer-motion'
 import {
     AlertCircle,
     Archive,
@@ -11,6 +11,9 @@ import {
     Edit3,
     Eye,
     FileText,
+    FileUp,
+    History,
+    Lock,
     MoreVertical,
     Star,
     Tag,
@@ -21,7 +24,12 @@ import {
     formatFileSize,
     getFileExtension,
 } from '../../../../types/documento.types'
+import {
+    DocumentoNuevaVersionModal,
+    DocumentoVersionesModal
+} from '../../../clientes/documentos/components'
 import { useDocumentoCard } from '../../hooks'
+import { BadgeEstadoProceso } from '../badge-estado-proceso'
 import { CategoriaIcon } from '../shared/categoria-icon'
 
 interface DocumentoCardProps {
@@ -33,6 +41,7 @@ interface DocumentoCardProps {
   onArchive: (documento: DocumentoProyecto) => void
   onDelete: (documento: DocumentoProyecto) => void
   onRename?: (documento: DocumentoProyecto) => void
+  onRefresh?: () => void | Promise<void> // 🆕 Callback para refrescar después de versión
 }
 
 export function DocumentoCard({
@@ -44,8 +53,30 @@ export function DocumentoCard({
   onArchive,
   onDelete,
   onRename,
+  onRefresh, // 🆕 Prop de refresh
 }: DocumentoCardProps) {
-  const { menuAbierto, menuRef, toggleMenu, cerrarMenu } = useDocumentoCard()
+  const {
+    menuAbierto,
+    menuRef,
+    toggleMenu,
+    cerrarMenu,
+    estaProtegido,
+    procesoInfo,
+    estadoProceso, // ✅ NUEVO
+    verificando,
+    modalVersionesAbierto,
+    abrirModalVersiones,
+    cerrarModalVersiones,
+    modalNuevaVersionAbierto,
+    abrirModalNuevaVersion,
+    cerrarModalNuevaVersion,
+  } = useDocumentoCard(documento.id)
+
+  const esDocumentoDeProceso = documento.etiquetas?.some(
+    etiqueta => etiqueta.toLowerCase() === 'proceso' || etiqueta.toLowerCase() === 'negociación'
+  )
+
+  const tieneVersiones = documento.version > 1 || documento.documento_padre_id
 
   const estaProximoAVencer = documento.fecha_vencimiento
     ? new Date(documento.fecha_vencimiento) <=
@@ -93,6 +124,19 @@ export function DocumentoCard({
         </div>
       )}
 
+      {/* Badge de proceso completado */}
+      {estaProtegido && procesoInfo && (
+        <div className='absolute left-4 bottom-4 z-10'>
+          <div className='flex items-center gap-1.5 rounded-full bg-emerald-600 px-3 py-1.5 text-xs font-bold text-white shadow-lg'>
+            <Lock size={12} />
+            <span>Proceso Completado</span>
+            {procesoInfo.pasoNombre && (
+              <span className='ml-1 opacity-90'>• {procesoInfo.pasoNombre}</span>
+            )}
+          </div>
+        </div>
+      )}
+
       <div className='flex flex-1 flex-col p-6'>
         {/* Header con icono y menú */}
         <div className='mb-4 flex items-start justify-between'>
@@ -123,21 +167,30 @@ export function DocumentoCard({
           {/* Menú de acciones */}
           <div className='relative' ref={menuRef}>
             <button
-              onClick={toggleMenu}
+              type="button"
+              onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                toggleMenu()
+              }}
               className='rounded-lg p-2 opacity-0 transition-colors hover:bg-gray-100 group-hover:opacity-100 dark:hover:bg-gray-700'
             >
               <MoreVertical size={18} className='text-gray-500' />
             </button>
 
-            {menuAbierto && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95, y: -10 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95, y: -10 }}
-                className='absolute right-0 top-full z-20 mt-2 w-48 rounded-xl border border-gray-200 bg-white py-2 shadow-xl dark:border-gray-700 dark:bg-gray-800'
-              >
+            <AnimatePresence>
+              {menuAbierto && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95, y: -10 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                  className='absolute right-0 top-full z-20 mt-2 w-48 rounded-xl border border-gray-200 bg-white py-2 shadow-xl dark:border-gray-700 dark:bg-gray-800'
+                >
                 <button
-                  onClick={() => {
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
                     onToggleImportante(documento)
                     cerrarMenu()
                   }}
@@ -158,7 +211,10 @@ export function DocumentoCard({
 
                 {onRename && (
                   <button
-                    onClick={() => {
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
                       onRename(documento)
                       cerrarMenu()
                     }}
@@ -169,8 +225,43 @@ export function DocumentoCard({
                   </button>
                 )}
 
+                {/* Botón Ver Historial - si tiene versiones */}
+                {tieneVersiones && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      abrirModalVersiones()
+                    }}
+                    className='flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-purple-600 transition-colors hover:bg-purple-50 dark:text-purple-400 dark:hover:bg-purple-900/20'
+                  >
+                    <History size={16} />
+                    Ver Historial (v{documento.version})
+                  </button>
+                )}
+
+                {/* Botón Nueva Versión - solo para documentos de proceso */}
+                {esDocumentoDeProceso && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      abrirModalNuevaVersion()
+                    }}
+                    className='flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-blue-600 transition-colors hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/20'
+                  >
+                    <FileUp size={16} />
+                    Nueva Versión
+                  </button>
+                )}
+
                 <button
-                  onClick={() => {
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
                     onArchive(documento)
                     cerrarMenu()
                   }}
@@ -182,18 +273,42 @@ export function DocumentoCard({
 
                 <div className='my-2 border-t border-gray-200 dark:border-gray-700' />
 
-                <button
-                  onClick={() => {
-                    onDelete(documento)
-                    cerrarMenu()
-                  }}
-                  className='flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-red-600 transition-colors hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20'
-                >
-                  <Trash2 size={16} />
-                  Eliminar
-                </button>
+                {/* Botón eliminar - oculto si el documento está protegido */}
+                {!estaProtegido && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      onDelete(documento)
+                      cerrarMenu()
+                    }}
+                    className='flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-red-600 transition-colors hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20'
+                  >
+                    <Trash2 size={16} />
+                    Eliminar
+                  </button>
+                )}
+
+                {/* Mensaje informativo si está protegido */}
+                {estaProtegido && (
+                  <div className='px-4 py-3 text-xs text-gray-500 dark:text-gray-400'>
+                    <div className='flex items-start gap-2'>
+                      <Lock size={14} className='mt-0.5 flex-shrink-0 text-emerald-600' />
+                      <div>
+                        <p className='font-medium text-emerald-600 dark:text-emerald-400'>
+                          Documento protegido
+                        </p>
+                        <p className='mt-1 leading-relaxed'>
+                          Este documento pertenece a un proceso completado y no puede eliminarse.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </motion.div>
-            )}
+              )}
+            </AnimatePresence>
           </div>
         </div>
 
@@ -241,6 +356,13 @@ export function DocumentoCard({
                 +{documento.etiquetas.length - 3}
               </span>
             )}
+          </div>
+        )}
+
+        {/* ✅ NUEVO: Badge de estado del proceso */}
+        {estadoProceso.esDeProceso && estadoProceso.estadoPaso && (
+          <div className='mb-4'>
+            <BadgeEstadoProceso estadoPaso={estadoProceso.estadoPaso} />
           </div>
         )}
 
@@ -302,6 +424,29 @@ export function DocumentoCard({
           }}
         />
       )}
+
+      {/* Modales */}
+      <DocumentoVersionesModal
+        isOpen={modalVersionesAbierto}
+        documentoId={documento.id}
+        onClose={cerrarModalVersiones}
+        onVersionRestaurada={async () => {
+          cerrarModalVersiones()
+          // 🆕 Refrescar lista de documentos
+          await onRefresh?.()
+        }}
+      />
+
+      <DocumentoNuevaVersionModal
+        isOpen={modalNuevaVersionAbierto}
+        documento={documento as any}
+        onClose={cerrarModalNuevaVersion}
+        onVersionCreada={async () => {
+          cerrarModalNuevaVersion()
+          // 🆕 Refrescar lista de documentos
+          await onRefresh?.()
+        }}
+      />
     </motion.div>
   )
 }

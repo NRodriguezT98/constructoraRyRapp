@@ -97,8 +97,15 @@ export const timelineProcesoStyles = {
              flex items-center justify-center text-white text-sm font-bold
              shadow-lg ring-4 ring-white dark:ring-gray-900
              transition-all duration-300`,
+
       completado: `bg-gradient-to-br from-green-500 to-emerald-600
-                   dark:from-green-600 dark:to-emerald-700`,
+                   dark:from-green-600 dark:to-emerald-700
+                   shadow-green-500/50`,
+
+      enProceso: `bg-gradient-to-br from-blue-500 to-cyan-600
+                  dark:from-blue-600 dark:to-cyan-700
+                  shadow-xl shadow-blue-500/50`,
+
       omitido: 'bg-gray-400 dark:bg-gray-600',
       bloqueado: 'bg-gray-400 dark:bg-gray-600 opacity-50',
       pendiente: 'bg-gray-300 dark:bg-gray-700'
@@ -107,12 +114,36 @@ export const timelineProcesoStyles = {
     content: 'flex-1 pb-2',
 
     card: {
-      base: `rounded-xl bg-white/80 dark:bg-gray-800/80
-             backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50
-             p-4 hover:shadow-lg dark:hover:shadow-2xl
-             transition-all duration-300
-             hover:border-purple-300 dark:hover:border-purple-600`,
-      bloqueado: 'opacity-60 cursor-not-allowed',
+      base: `rounded-xl backdrop-blur-xl border
+             p-4 transition-all duration-300`,
+
+      // Estados específicos
+      completado: `bg-gradient-to-br from-green-50/90 via-emerald-50/90 to-green-50/90
+                   dark:from-green-900/20 dark:via-emerald-900/20 dark:to-green-900/20
+                   border-green-300/50 dark:border-green-700/50
+                   shadow-md shadow-green-500/10 dark:shadow-green-500/5
+                   opacity-75 hover:opacity-100
+                   hover:shadow-lg hover:shadow-green-500/20 dark:hover:shadow-green-500/10
+                   cursor-pointer`,
+
+      enProceso: `bg-gradient-to-br from-blue-50 via-cyan-50 to-blue-50
+                  dark:from-blue-900/30 dark:via-cyan-900/30 dark:to-blue-900/30
+                  border-2 border-blue-400 dark:border-blue-500
+                  shadow-xl shadow-blue-500/20 dark:shadow-blue-500/10
+                  ring-4 ring-blue-200/50 dark:ring-blue-800/30
+                  hover:shadow-2xl hover:shadow-blue-500/30
+                  cursor-pointer`,
+
+      pendiente: `bg-white/80 dark:bg-gray-800/80
+                  border-gray-200/50 dark:border-gray-700/50
+                  hover:shadow-lg dark:hover:shadow-2xl
+                  hover:border-purple-300 dark:hover:border-purple-600
+                  cursor-pointer`,
+
+      bloqueado: `bg-gray-100/50 dark:bg-gray-900/50
+                  border-gray-300/30 dark:border-gray-700/30
+                  opacity-60 cursor-not-allowed`,
+
       clickable: 'cursor-pointer'
     },
 
@@ -130,24 +161,36 @@ export const timelineProcesoStyles = {
 
     badges: {
       container: 'flex flex-wrap items-center gap-2 mb-3',
-      completado: `px-2.5 py-1 rounded-full bg-green-100 dark:bg-green-900/30
+
+      completado: `px-2.5 py-1 rounded-full bg-gradient-to-r from-green-100 to-emerald-100
+                   dark:from-green-900/30 dark:to-emerald-900/30
                    text-green-700 dark:text-green-300 text-xs font-medium
-                   border border-green-200 dark:border-green-800/50`,
-      enProceso: `px-2.5 py-1 rounded-full bg-blue-100 dark:bg-blue-900/30
-                  text-blue-700 dark:text-blue-300 text-xs font-medium
-                  flex items-center gap-1
-                  border border-blue-200 dark:border-blue-800/50`,
-      pulseDot: 'w-2 h-2 rounded-full bg-blue-500 dark:bg-blue-400 animate-pulse',
+                   border border-green-200 dark:border-green-800/50
+                   shadow-sm shadow-green-500/10`,
+
+      enProceso: `px-2.5 py-1 rounded-full bg-gradient-to-r from-blue-100 to-cyan-100
+                  dark:from-blue-900/30 dark:to-cyan-900/30
+                  text-blue-700 dark:text-blue-300 text-xs font-semibold
+                  flex items-center gap-1.5
+                  border-2 border-blue-300 dark:border-blue-600
+                  shadow-md shadow-blue-500/20`,
+
+      pulseDot: `w-2 h-2 rounded-full bg-blue-500 dark:bg-blue-400
+                 shadow-lg shadow-blue-500/50 animate-pulse`,
+
       omitido: `px-2.5 py-1 rounded-full bg-gray-100 dark:bg-gray-800/50
                 text-gray-700 dark:text-gray-300 text-xs font-medium
                 border border-gray-200 dark:border-gray-700/50`,
+
       bloqueado: `px-2.5 py-1 rounded-full bg-gray-200 dark:bg-gray-700/50
                   text-gray-600 dark:text-gray-400 text-xs font-medium
                   flex items-center gap-1
                   border border-gray-300 dark:border-gray-600/50`,
+
       pendiente: `px-2.5 py-1 rounded-full bg-amber-100 dark:bg-amber-900/30
                   text-amber-700 dark:text-amber-300 text-xs font-medium
                   border border-amber-200 dark:border-amber-800/50`,
+
       obligatorio: `px-2.5 py-1 rounded-full bg-red-100 dark:bg-red-900/30
                     text-red-700 dark:text-red-300 text-xs font-medium
                     border border-red-200 dark:border-red-800/50`

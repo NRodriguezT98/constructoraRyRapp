@@ -5,9 +5,9 @@
  */
 
 export const modalFechaStyles = {
-  overlay: 'fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4',
+  overlay: 'fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4',
 
-  container: 'bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden',
+  container: 'bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full overflow-hidden',
 
   header: {
     container: 'bg-gradient-to-r from-green-600 to-emerald-600 p-6',
@@ -28,26 +28,27 @@ export const modalFechaStyles = {
   body: {
     container: 'p-6 space-y-4',
 
-    label: 'block text-sm font-semibold text-gray-700 mb-2',
-    description: 'text-xs text-gray-500 mb-3',
+    label: 'block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2',
+    description: 'text-xs text-gray-500 dark:text-gray-400 mb-3',
 
-    input: `w-full px-4 py-3 rounded-xl border-2 border-gray-200
+    input: `w-full px-4 py-3 rounded-xl border-2 border-gray-200 dark:border-gray-600
+            bg-white dark:bg-gray-700 text-gray-900 dark:text-white
             focus:border-green-500 focus:ring-4 focus:ring-green-500/10
-            transition-all outline-none text-gray-900 font-medium`,
+            transition-all outline-none font-medium`,
 
     info: {
       container: 'mt-3 space-y-2',
-      item: 'text-xs text-gray-500'
+      item: 'text-xs text-gray-500 dark:text-gray-400'
     },
 
-    error: 'mt-2 text-sm text-red-600 font-medium'
+    error: 'mt-2 text-sm text-red-600 dark:text-red-400 font-medium'
   },
 
   footer: {
-    container: 'bg-gray-50 px-6 py-4 flex items-center justify-end gap-3',
+    container: 'bg-gray-50 dark:bg-gray-900/50 px-6 py-4 flex items-center justify-end gap-3',
 
-    buttonCancel: `px-4 py-2.5 rounded-xl text-gray-700 font-medium
-                   hover:bg-gray-200 transition-colors`,
+    buttonCancel: `px-4 py-2.5 rounded-xl text-gray-700 dark:text-gray-300 font-medium
+                   hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors`,
 
     buttonConfirm: `px-6 py-2.5 rounded-xl bg-gradient-to-r from-green-600 to-emerald-600
                     text-white font-semibold shadow-lg hover:shadow-xl

@@ -15,6 +15,7 @@
 import { useAuth } from '@/contexts/auth-context'
 import { useUnsavedChanges } from '@/contexts/unsaved-changes-context'
 import { useModal } from '@/shared/components/modals'
+import { createBrowserClient } from '@supabase/ssr'
 import { AnimatePresence, motion } from 'framer-motion'
 import { AlertCircle, FileText, Loader2, X } from 'lucide-react'
 import { useRouter } from 'next/navigation'
@@ -49,6 +50,7 @@ export function TimelineProceso({ negociacionId }: TimelineProcesoProps) {
     error,
     actualizando,
     pasoEnEdicion,
+    pasoRecuperado,
     completarPaso,
     iniciarPaso,
     descartarCambios,
@@ -68,6 +70,7 @@ export function TimelineProceso({ negociacionId }: TimelineProcesoProps) {
   // Modal de fecha
   const [modalFechaAbierto, setModalFechaAbierto] = useState(false)
   const [pasoACompletar, setPasoACompletar] = useState<ProcesoNegociacion | null>(null)
+  const [fechaNegociacion, setFechaNegociacion] = useState<string | null>(null)
 
   // Crear callback estable para descartar cambios
   // IMPORTANTE: NO usa descartarCambios del hook porque ese llama setPasoEnEdicion(null)
@@ -109,6 +112,37 @@ export function TimelineProceso({ negociacionId }: TimelineProcesoProps) {
       setOnDiscard(null)
     }
   }, [pasoEnEdicion, setHasUnsavedChanges, setMessage, setOnDiscard, handleDiscardCallback])
+
+  // Obtener fecha de negociación para el modal de completado
+  useEffect(() => {
+    async function obtenerFechaNegociacion() {
+      try {
+        const supabase = createBrowserClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL!,
+          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+        )
+
+        const { data, error } = await supabase
+          .from('negociaciones')
+          .select('fecha_negociacion')
+          .eq('id', negociacionId)
+          .single()
+
+        if (error) {
+          console.error('Error al obtener fecha de negociación:', error)
+          return
+        }
+
+        if (data?.fecha_negociacion) {
+          setFechaNegociacion(data.fecha_negociacion)
+        }
+      } catch (err) {
+        console.error('Error inesperado al obtener fecha de negociación:', err)
+      }
+    }
+
+    obtenerFechaNegociacion()
+  }, [negociacionId])
 
   // ===================================
   // HANDLERS
@@ -180,7 +214,9 @@ export function TimelineProceso({ negociacionId }: TimelineProcesoProps) {
         'Esta acción hará lo siguiente:\n\n' +
         '• Eliminará todos los pasos actuales\n' +
         '• Los reemplazará con los de la plantilla predeterminada\n' +
-        '• Los documentos subidos NO se eliminarán\n\n' +
+        '• Los documentos subidos NO se eliminarán\n' +
+        '• ACTUALIZARÁ las categorías de documentos configuradas\n\n' +
+        'Usa esto para sincronizar cambios en la plantilla.\n' +
         'Esta función solo debe usarse en DESARROLLO.',
       confirmText: 'Recargar Plantilla',
       cancelText: 'Cancelar',
@@ -222,7 +258,14 @@ export function TimelineProceso({ negociacionId }: TimelineProcesoProps) {
     }
   }
 
-  const handleAdjuntarDocumento = async (pasoId: string, documentoId: string, documentoNombre: string, file: File) => {
+  const handleAdjuntarDocumento = async (
+    pasoId: string,
+    pasoNombre: string,
+    documentoId: string,
+    documentoNombre: string,
+    file: File,
+    categoriaId?: string | null
+  ) => {
     if (!user) {
       await confirm({
         title: '❌ Error',
@@ -241,8 +284,10 @@ export function TimelineProceso({ negociacionId }: TimelineProcesoProps) {
         userId: user.id,
         negociacionId,
         pasoId,
+        pasoNombre,
         documentoId,
-        documentoNombre
+        documentoNombre,
+        categoriaId  // ✅ NUEVO: Pasar categoriaId al servicio
       })
 
       if (resultado.exito && resultado.url) {
@@ -284,16 +329,8 @@ export function TimelineProceso({ negociacionId }: TimelineProcesoProps) {
 
     if (!confirmed) return
 
-    const exito = await eliminarDocumento(pasoId, documentoId)
-
-    if (exito) {
-      await confirm({
-        title: '✅ Documento eliminado',
-        message: 'El documento se eliminó correctamente.',
-        confirmText: 'Entendido',
-        variant: 'success'
-      })
-    }
+    await eliminarDocumento(pasoId, documentoId)
+    // Eliminado modal de confirmación de éxito - la eliminación es inmediata en la UI
   }
 
   // ===================================
@@ -393,6 +430,37 @@ export function TimelineProceso({ negociacionId }: TimelineProcesoProps) {
         )}
       </AnimatePresence>
 
+      {/* Banner de Recuperación Automática */}
+      <AnimatePresence>
+        {pasoRecuperado && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="mb-6"
+          >
+            <div className="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20
+                          border-2 border-blue-300 dark:border-blue-600
+                          rounded-2xl p-5 flex items-center gap-4
+                          shadow-lg shadow-blue-500/10">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-600
+                            flex items-center justify-center flex-shrink-0
+                            shadow-lg shadow-blue-500/30">
+                <FileText className="w-6 h-6 text-white" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-bold text-blue-900 dark:text-blue-100 mb-1">
+                  🔄 Trabajo Recuperado
+                </h3>
+                <p className="text-sm text-blue-800 dark:text-blue-200">
+                  Se ha recuperado automáticamente el paso que estabas editando. Tus documentos y cambios se mantienen guardados.
+                </p>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Error Alert */}
       <AnimatePresence>
         {error && (
@@ -449,6 +517,8 @@ export function TimelineProceso({ negociacionId }: TimelineProcesoProps) {
         isOpen={modalFechaAbierto}
         pasoNombre={pasoACompletar?.nombre || ''}
         fechaInicio={pasoACompletar?.fechaInicio || undefined}
+        fechaNegociacion={fechaNegociacion || undefined}
+        ordenPaso={pasoACompletar?.orden || undefined}
         onConfirm={handleConfirmarCompletado}
         onCancel={() => {
           setModalFechaAbierto(false)

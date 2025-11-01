@@ -58,6 +58,9 @@ export function DocumentosListaCliente({
     // Utilidades
     getCategoriaByDocumento,
 
+    // 🆕 Funciones de actualización
+    refrescarDocumentos,
+
     // Filtros
     busqueda,
     categoriaFiltro,
@@ -126,6 +129,7 @@ export function DocumentosListaCliente({
           onDelete={handleDelete}
           onRename={handleRename}
           onAsignarCategoria={handleAsignarCategoria}
+          onRefresh={refrescarDocumentos} // 🆕 Callback para refrescar
         />
       ) : (
         <AnimatePresence mode='popLayout'>
@@ -156,6 +160,7 @@ export function DocumentosListaCliente({
                       onArchive={handleArchive}
                       onDelete={handleDelete}
                       onRename={handleRename}
+                      onRefresh={refrescarDocumentos} // 🆕 Callback para refrescar después de versión
                     />
                   </motion.div>
                 )
@@ -182,6 +187,7 @@ export function DocumentosListaCliente({
                     onArchive={handleArchive}
                     onDelete={handleDelete}
                     onRename={handleRename}
+                    onRefresh={refrescarDocumentos} // 🆕 Callback para refrescar después de versión
                     // No permitir categorizar la cédula (ya tiene categoría fija)
                     onAsignarCategoria={documento.id === 'cedula-ciudadania' ? undefined : handleAsignarCategoria}
                   />

@@ -16,6 +16,7 @@ interface DocumentosAgrupadosProps {
   onDelete: (doc: any) => void
   onRename: (doc: any) => void
   onAsignarCategoria: (doc: any) => void
+  onRefresh?: () => void | Promise<void> // 🆕 Callback para refrescar
 }
 
 export function DocumentosAgrupados({
@@ -28,6 +29,7 @@ export function DocumentosAgrupados({
   onDelete,
   onRename,
   onAsignarCategoria,
+  onRefresh, // 🆕 Prop de refresh
 }: DocumentosAgrupadosProps) {
   const [categoriasExpandidas, setCategoriasExpandidas] = useState<Set<string>>(
     new Set(categorias.map(c => c.id))
@@ -123,6 +125,7 @@ export function DocumentosAgrupados({
                         onArchive={onArchive}
                         onDelete={onDelete}
                         onRename={onRename}
+                        onRefresh={onRefresh} // 🆕 Callback para refrescar
                         // No permitir categorizar la cédula (ya tiene categoría fija)
                         onAsignarCategoria={documento.id === 'cedula-ciudadania' ? undefined : onAsignarCategoria}
                       />
@@ -182,6 +185,7 @@ export function DocumentosAgrupados({
                       onArchive={onArchive}
                       onDelete={onDelete}
                       onRename={onRename}
+                      onRefresh={onRefresh} // 🆕 Callback para refrescar
                       // No permitir categorizar la cédula (ya tiene categoría fija)
                       onAsignarCategoria={documento.id === 'cedula-ciudadania' ? undefined : onAsignarCategoria}
                     />

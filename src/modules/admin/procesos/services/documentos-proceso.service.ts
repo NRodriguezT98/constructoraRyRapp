@@ -21,8 +21,10 @@ interface SubirDocumentoParams {
   userId: string
   negociacionId: string
   pasoId: string
+  pasoNombre?: string  // Nombre del paso para mostrar en la descripción
   documentoId: string
   documentoNombre: string
+  categoriaId?: string | null  // ✅ NUEVO: ID de la categoría a asignar automáticamente
 }
 
 interface ResultadoSubida {
@@ -97,7 +99,10 @@ function obtenerExtension(fileName: string): string {
 // ===================================
 
 export async function subirDocumento(params: SubirDocumentoParams): Promise<ResultadoSubida> {
-  const { file, userId, negociacionId, pasoId, documentoId, documentoNombre } = params
+  const { file, userId, negociacionId, pasoId, pasoNombre, documentoId, documentoNombre, categoriaId } = params
+
+  // 🔍 DEBUG: Verificar que categoriaId llega correctamente
+  console.log('📋 Subiendo documento con categoriaId:', categoriaId)
 
   try {
     // 1. Validar archivo
@@ -142,13 +147,18 @@ export async function subirDocumento(params: SubirDocumentoParams): Promise<Resu
         .replace(/\s+/g, '_')
         .replace(/[^a-zA-Z0-9_]/g, '')
 
+      // Generar descripción legible con el nombre del paso
+      const descripcion = pasoNombre
+        ? `Subido desde proceso - Paso: ${pasoNombre}`
+        : `Subido desde proceso - Paso ${pasoId}`
+
       await supabase
         .from('documentos_cliente')
         .insert({
           cliente_id: negociacion.cliente_id,
-          categoria_id: null,
+          categoria_id: categoriaId || null,  // ✅ NUEVO: Asignar categoría automáticamente
           titulo: documentoNombre,
-          descripcion: `Subido desde proceso - Paso ${pasoId}`,
+          descripcion,
           nombre_archivo: `${nombreLimpio}_${Date.now()}${extension}`,
           nombre_original: file.name,
           tamano_bytes: file.size,
@@ -172,11 +182,11 @@ export async function subirDocumento(params: SubirDocumentoParams): Promise<Resu
 }
 
 // ===================================
-// ELIMINAR DOCUMENTO (Storage)
+// ELIMINAR DOCUMENTO (Storage + DB)
 // ===================================
 
 /**
- * Elimina un documento del Storage de Supabase.
+ * Elimina un documento del Storage de Supabase y de la tabla documentos_cliente.
  * Nota: La URL ya se elimina de la DB mediante el hook useProcesoNegociacion
  */
 export async function eliminarDocumentoStorage(url: string): Promise<boolean> {
@@ -192,16 +202,30 @@ export async function eliminarDocumentoStorage(url: string): Promise<boolean> {
 
     const storagePath = pathParts[1]
 
-    // Eliminar del storage
-    const { error } = await supabase.storage
+    // 1. Eliminar registro de documentos_cliente
+    const { error: dbError } = await supabase
+      .from('documentos_cliente')
+      .delete()
+      .eq('url_storage', url)
+
+    if (dbError) {
+      console.error('❌ Error al eliminar de documentos_cliente:', dbError)
+      // Continuar con Storage aunque falle DB
+    } else {
+      console.log('✅ Registro eliminado de documentos_cliente')
+    }
+
+    // 2. Eliminar del storage
+    const { error: storageError } = await supabase.storage
       .from(CONFIG.bucketName)
       .remove([storagePath])
 
-    if (error) {
-      console.error('❌ Error al eliminar del storage:', error)
+    if (storageError) {
+      console.error('❌ Error al eliminar del storage:', storageError)
       return false
     }
 
+    console.log('✅ Archivo eliminado del Storage')
     return true
 
   } catch (error: any) {

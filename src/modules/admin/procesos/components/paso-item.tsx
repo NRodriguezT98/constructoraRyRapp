@@ -10,8 +10,9 @@
 
 'use client'
 
+import { formatDateForDisplay } from '@/lib/utils/date.utils'
 import { AnimatePresence, motion } from 'framer-motion'
-import { AlertCircle, ChevronDown, ChevronUp } from 'lucide-react'
+import { AlertCircle, CheckCircle2, ChevronDown, ChevronUp } from 'lucide-react'
 import type { ProcesoNegociacion } from '../types'
 import {
     getBadgePorEstado,
@@ -32,8 +33,8 @@ interface PasoItemProps {
   onIniciar: () => void
   onCompletar: () => void
   onDescartar: () => void
-  onAdjuntarDocumento: (pasoId: string, documentoId: string, documentoNombre: string, file: File) => Promise<void>
-  onEliminarDocumento: (pasoId: string, documentoId: string, documentoNombre: string) => Promise<void>
+  onAdjuntarDocumento: (pasoId: string, pasoNombre: string, documentoId: string, documentoNombre: string, file: File, categoriaId?: string | null) => Promise<void>
+  onEliminarDocumento: (pasoId: string, documentoId: string, url: string) => Promise<void>
   puedeIniciar: boolean
   puedeCompletar: boolean
   estaBloqueado: boolean
@@ -79,9 +80,28 @@ export function PasoItem({
           onClick={!isBloqueado ? onToggle : undefined}
           className={`
             ${styles.paso.card.base}
-            ${isBloqueado ? styles.paso.card.bloqueado : styles.paso.card.clickable}
+            ${isCompletado ? styles.paso.card.completado : ''}
+            ${isEnProceso ? styles.paso.card.enProceso : ''}
+            ${isPendiente && !isBloqueado ? styles.paso.card.pendiente : ''}
+            ${isBloqueado ? styles.paso.card.bloqueado : ''}
+            relative
           `}
         >
+          {/* Indicador "EN CURSO" para paso activo */}
+          {isEnProceso && (
+            <div className="absolute -top-3 -right-3 bg-gradient-to-r from-blue-500 to-cyan-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg shadow-blue-500/30 flex items-center gap-1.5">
+              <div className="w-2 h-2 rounded-full bg-white animate-pulse"></div>
+              EN CURSO
+            </div>
+          )}
+
+          {/* Marca de completado para pasos finalizados */}
+          {isCompletado && (
+            <div className="absolute -top-2 -right-2 bg-gradient-to-br from-green-500 to-emerald-600 text-white rounded-full p-1.5 shadow-lg shadow-green-500/30">
+              <CheckCircle2 className="w-4 h-4" />
+            </div>
+          )}
+
           {/* Header del Paso */}
           <div className={styles.paso.header.container}>
             <div className={styles.paso.header.left}>
@@ -146,10 +166,10 @@ export function PasoItem({
           {(paso.fechaInicio || paso.fechaCompletado) && (
             <div className={styles.paso.fechas.container}>
               {paso.fechaInicio && (
-                <span>Iniciado: {new Date(paso.fechaInicio).toLocaleDateString()}</span>
+                <span>Fecha Diligenciado: {formatDateForDisplay(paso.fechaInicio)}</span>
               )}
               {paso.fechaCompletado && (
-                <span>Completado: {new Date(paso.fechaCompletado).toLocaleDateString()}</span>
+                <span>Fecha Paso Completado: {formatDateForDisplay(paso.fechaCompletado)}</span>
               )}
             </div>
           )}
@@ -239,7 +259,7 @@ export function PasoItem({
                             isCompletado={isCompletado}
                             deshabilitado={deshabilitado}
                             subiendoDoc={subiendoDoc}
-                            onAdjuntar={(file) => onAdjuntarDocumento(paso.id, doc.id, doc.nombre, file)}
+                            onAdjuntar={(file) => onAdjuntarDocumento(paso.id, paso.nombre, doc.id, doc.nombre, file, doc.categoriaId)}
                             onEliminar={() => onEliminarDocumento(paso.id, doc.id, doc.nombre)}
                           />
                         )

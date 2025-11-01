@@ -187,6 +187,7 @@ export function AlertModal() {
 
               {/* Botón cerrar */}
               <button
+                type="button"
                 onClick={closeAlert}
                 className={styles.modal.closeButton}
               >
@@ -197,6 +198,7 @@ export function AlertModal() {
             {/* Footer con botón */}
             <div className={styles.footer}>
               <button
+                type="button"
                 onClick={closeAlert}
                 className={styles.button[variant]}
               >

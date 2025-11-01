@@ -7,13 +7,13 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import {
-  actualizarProceso,
-  obtenerProcesosNegociacion,
-  obtenerProgresoNegociacion
+    actualizarProceso,
+    obtenerProcesosNegociacion,
+    obtenerProgresoNegociacion
 } from '../services/procesos.service'
 import type {
-  ProcesoNegociacion,
-  ProgresoNegociacion
+    ProcesoNegociacion,
+    ProgresoNegociacion
 } from '../types'
 import { EstadoPaso } from '../types'
 
@@ -29,6 +29,7 @@ interface UseProcesoNegociacionReturn {
   error: string | null
   actualizando: boolean
   pasoEnEdicion: string | null
+  pasoRecuperado: string | null // ID del paso recuperado (para mostrar banner)
 
   // Operaciones
   cargarProceso: () => Promise<void>
@@ -64,13 +65,14 @@ export function useProcesoNegociacion({
   const [actualizando, setActualizando] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [pasoEnEdicion, setPasoEnEdicion] = useState<string | null>(null)
+  const [pasoRecuperado, setPasoRecuperado] = useState<string | null>(null) // Para mostrar banner
 
   // ===================================
   // OPERACIONES
   // ===================================
 
   /**
-   * Carga el proceso completo
+   * Carga el proceso completo y recupera automáticamente pasos en edición
    */
   const cargarProceso = useCallback(async () => {
     setLoading(true)
@@ -84,6 +86,20 @@ export function useProcesoNegociacion({
 
       setPasos(pasosData)
       setProgreso(progresoData)
+
+      // 🔄 RECUPERACIÓN AUTOMÁTICA: Buscar paso en "En Proceso"
+      const pasoEnProceso = pasosData.find(p => p.estado === EstadoPaso.EN_PROCESO)
+
+      if (pasoEnProceso) {
+        console.log('🔄 Recuperando paso en proceso:', pasoEnProceso.nombre)
+        setPasoEnEdicion(pasoEnProceso.id)
+        setPasoRecuperado(pasoEnProceso.id)
+
+        // Limpiar el banner después de 10 segundos
+        setTimeout(() => {
+          setPasoRecuperado(null)
+        }, 10000)
+      }
     } catch (err) {
       const mensaje = err instanceof Error ? err.message : 'Error al cargar proceso'
       setError(mensaje)
@@ -173,16 +189,42 @@ export function useProcesoNegociacion({
 
   /**
    * Descarta cambios en un paso y vuelve a Pendiente
+   * Incluye limpieza completa de documentos del Storage y DB
    */
   const descartarCambios = useCallback(async (pasoId: string): Promise<boolean> => {
     setActualizando(true)
     setError(null)
 
     try {
+      const paso = pasos.find(p => p.id === pasoId)
+      if (!paso) throw new Error('Paso no encontrado')
+
+      // 1. ELIMINAR DOCUMENTOS DEL STORAGE
+      if (paso.documentosUrls && Object.keys(paso.documentosUrls).length > 0) {
+        console.log('🗑️ Eliminando documentos del Storage...', paso.documentosUrls)
+
+        const { eliminarDocumentoStorage } = await import('../services/documentos-proceso.service')
+
+        for (const [nombreDoc, url] of Object.entries(paso.documentosUrls)) {
+          try {
+            const eliminado = await eliminarDocumentoStorage(url)
+            if (eliminado) {
+              console.log(`✅ Documento "${nombreDoc}" eliminado del Storage`)
+            } else {
+              console.warn(`⚠️ No se pudo eliminar "${nombreDoc}" del Storage`)
+            }
+          } catch (error) {
+            console.error(`❌ Error al eliminar "${nombreDoc}":`, error)
+            // Continuar con los demás documentos aunque uno falle
+          }
+        }
+      }
+
+      // 2. ACTUALIZAR PROCESO EN DB (limpiar todo)
       const actualizado = await actualizarProceso(pasoId, {
         estado: EstadoPaso.PENDIENTE,
         fechaInicio: null,
-        documentosUrls: null, // Eliminar documentos subidos
+        documentosUrls: null, // Eliminar referencias a documentos
         notas: null
       })
 
@@ -195,6 +237,7 @@ export function useProcesoNegociacion({
       // Limpiar paso en edición
       setPasoEnEdicion(null)
 
+      console.log('✅ Cambios descartados completamente')
       return true
     } catch (err) {
       const mensaje = err instanceof Error ? err.message : 'Error al descartar cambios'
@@ -204,7 +247,7 @@ export function useProcesoNegociacion({
     } finally {
       setActualizando(false)
     }
-  }, [negociacionId])
+  }, [negociacionId, pasos])
 
   /**
    * Omite un paso
@@ -443,6 +486,7 @@ export function useProcesoNegociacion({
     error,
     actualizando,
     pasoEnEdicion,
+    pasoRecuperado,
 
     // Operaciones
     cargarProceso,

@@ -7,6 +7,7 @@
 
 'use client'
 
+import { createBrowserClient } from '@supabase/ssr'
 import { AnimatePresence, motion } from 'framer-motion'
 import {
     AlertCircle,
@@ -17,6 +18,7 @@ import {
     Plus,
     Trash2
 } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { TipoFuentePago, type PasoPlantilla } from '../types'
 import { formularioPlantillaStyles as styles } from './formulario-plantilla.styles'
 
@@ -33,6 +35,12 @@ interface PasoPlantillaItemProps {
   pasosDisponibles: PasoPlantilla[]
 }
 
+interface Categoria {
+  id: string
+  nombre: string
+  color: string
+}
+
 export function PasoPlantillaItem({
   paso,
   index,
@@ -46,6 +54,24 @@ export function PasoPlantillaItem({
   pasosDisponibles
 }: PasoPlantillaItemProps) {
   const hasErrors = !paso.nombre.trim()
+  const [categorias, setCategorias] = useState<Categoria[]>([])
+
+  // ✅ NUEVO: Cargar categorías disponibles
+  useEffect(() => {
+    const supabase = createBrowserClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    )
+
+    supabase
+      .from('categorias_documento')  // ✅ CORREGIDO: nombre correcto de la tabla (singular)
+      .select('id, nombre, color')
+      .eq('es_global', true)
+      .order('nombre')
+      .then(({ data }) => {
+        if (data) setCategorias(data)
+      })
+  }, [])
 
   return (
     <motion.div
@@ -285,6 +311,29 @@ export function PasoPlantillaItem({
                             placeholder="Nombre del documento"
                             className={styles.pasoItem.documento.input}
                           />
+
+                          {/* ✅ NUEVO: Selector de categoría */}
+                          <div className="flex items-center gap-3 mt-2">
+                            <label className="text-xs font-medium text-gray-600">
+                              Categoría:
+                            </label>
+                            <select
+                              value={doc.categoriaId || ''}
+                              onChange={(e) => onActualizarDocumento(doc.id, {
+                                categoriaId: e.target.value || null
+                              })}
+                              className="flex-1 px-2 py-1 text-sm border border-gray-300 rounded-lg
+                                       focus:outline-none focus:ring-2 focus:ring-blue-500
+                                       bg-white text-gray-900"
+                            >
+                              <option value="">Sin categoría</option>
+                              {categorias.map(cat => (
+                                <option key={cat.id} value={cat.id}>
+                                  {cat.nombre}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
 
                           <div className={styles.pasoItem.documento.checkboxContainer}>
                             <label className={styles.pasoItem.documento.checkboxLabel}>

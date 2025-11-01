@@ -43,6 +43,7 @@ export interface DocumentoRequerido {
   obligatorio: boolean
   tiposArchivo: string[] // ['application/pdf', 'image/*']
   ejemploUrl?: string
+  categoriaId?: string | null  // ✅ NUEVO: ID de la categoría para auto-asignar al subir
 }
 
 // ===================================

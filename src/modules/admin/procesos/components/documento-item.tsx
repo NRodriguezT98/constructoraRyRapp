@@ -71,7 +71,12 @@ export function DocumentoItem({
             {/* Botón Eliminar (solo si está en proceso) */}
             {isEnProceso && (
               <button
-                onClick={onEliminar}
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  onEliminar()
+                }}
                 disabled={deshabilitado}
                 className={styles.expanded.documento.deleteButton}
                 title="Eliminar documento"

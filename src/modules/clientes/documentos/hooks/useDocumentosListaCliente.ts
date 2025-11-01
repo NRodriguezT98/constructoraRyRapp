@@ -239,7 +239,8 @@ export function useDocumentosListaCliente({
         })
 
         toast.success('Cédula eliminada correctamente')
-        router.refresh()
+        // Recargar documentos sin refresh de página
+        await cargarDocumentos(clienteId)
       } catch (error) {
         console.error('Error al eliminar cédula:', error)
         toast.error('Error al eliminar la cédula')
@@ -399,6 +400,9 @@ export function useDocumentosListaCliente({
 
     // Utilidades
     getCategoriaByDocumento,
+
+    // 🆕 Funciones de actualización
+    refrescarDocumentos: () => cargarDocumentos(clienteId),
 
     // Filtros (desde store)
     busqueda,

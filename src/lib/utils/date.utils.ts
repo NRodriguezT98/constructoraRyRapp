@@ -53,6 +53,13 @@ export function formatDateForDisplay(
 ): string {
   if (!dateString) return ''
 
+  // Si la fecha está en formato YYYY-MM-DD (sin hora), agregar hora del mediodía
+  // para evitar problemas de timezone al parsear
+  let dateToFormat = dateString
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
+    dateToFormat = `${dateString}T12:00:00`
+  }
+
   const defaultOptions: Intl.DateTimeFormatOptions = {
     day: '2-digit',
     month: 'long',
@@ -62,7 +69,7 @@ export function formatDateForDisplay(
 
   const finalOptions = { ...defaultOptions, ...options }
 
-  return new Date(dateString).toLocaleDateString('es-CO', finalOptions)
+  return new Date(dateToFormat).toLocaleDateString('es-CO', finalOptions)
 }
 
 /**
@@ -112,6 +119,7 @@ export function getTodayDateString(): string {
 
 /**
  * Convierte una fecha de la DB a formato YYYY-MM-DD (para inputs date)
+ * SIN problemas de timezone - extrae directamente de la cadena ISO
  *
  * @param dateString - Fecha en formato ISO o timestamp de la DB
  * @returns Fecha en formato YYYY-MM-DD
@@ -120,11 +128,26 @@ export function getTodayDateString(): string {
  * ```ts
  * formatDateForInput("2025-10-23T12:00:00")
  * // → "2025-10-23"
+ * formatDateForInput("2025-10-24T00:00:00Z")
+ * // → "2025-10-24"  (sin restar días por timezone)
  * ```
  */
 export function formatDateForInput(dateString: string): string {
   if (!dateString) return ''
 
+  // Si la fecha ya está en formato YYYY-MM-DD, retornarla tal cual
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
+    return dateString
+  }
+
+  // Extraer fecha de la cadena ISO sin conversión de timezone
+  // "2025-10-24T00:00:00Z" -> "2025-10-24"
+  const match = dateString.match(/^(\d{4}-\d{2}-\d{2})/)
+  if (match) {
+    return match[1]
+  }
+
+  // Fallback: usar Date solo si no hay otra opción
   const date = new Date(dateString)
   const year = date.getFullYear()
   const month = String(date.getMonth() + 1).padStart(2, '0')

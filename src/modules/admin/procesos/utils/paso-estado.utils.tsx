@@ -33,9 +33,11 @@ export function getClasesDotPorEstado(
   styles: any
 ) {
   const isCompletado = paso.estado === EstadoPaso.COMPLETADO
+  const isEnProceso = paso.estado === EstadoPaso.EN_PROCESO
   const isOmitido = paso.estado === EstadoPaso.OMITIDO
 
   if (isCompletado) return styles.paso.dot.completado
+  if (isEnProceso) return styles.paso.dot.enProceso
   if (isOmitido) return styles.paso.dot.omitido
   if (estaBloqueado) return styles.paso.dot.bloqueado
   return styles.paso.dot.pendiente
@@ -50,9 +52,21 @@ export function getContenidoDot(
   index: number,
   estaBloqueado: boolean
 ) {
+  const isCompletado = paso.estado === EstadoPaso.COMPLETADO
+  const isEnProceso = paso.estado === EstadoPaso.EN_PROCESO
+
+  if (isCompletado) {
+    return <CheckCircle2 className="w-4 h-4 text-white" />
+  }
+
+  if (isEnProceso) {
+    return <Circle className="w-4 h-4 text-white animate-spin" style={{ animationDuration: '4s' }} />
+  }
+
   if (estaBloqueado) {
     return <Lock className="w-3 h-3 text-white" />
   }
+
   return index + 1
 }
 

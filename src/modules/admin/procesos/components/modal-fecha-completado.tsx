@@ -7,15 +7,19 @@
  * Aparece al presionar "Completar Paso".
  */
 
+import { formatDateForDisplay, formatDateForInput } from '@/lib/utils/date.utils'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Calendar, X } from 'lucide-react'
 import { useState } from 'react'
+import { createPortal } from 'react-dom'
 import { modalFechaStyles as styles } from './modal-fecha-completado.styles'
 
 interface ModalFechaCompletadoProps {
   isOpen: boolean
   pasoNombre: string
   fechaInicio?: string // Fecha cuando se inició el paso
+  fechaNegociacion?: string // Fecha de inicio de la negociación
+  ordenPaso?: number // Orden del paso (para saber si es el paso 1)
   onConfirm: (fecha: Date) => void
   onCancel: () => void
 }
@@ -24,6 +28,8 @@ export function ModalFechaCompletado({
   isOpen,
   pasoNombre,
   fechaInicio,
+  fechaNegociacion,
+  ordenPaso,
   onConfirm,
   onCancel
 }: ModalFechaCompletadoProps) {
@@ -31,10 +37,21 @@ export function ModalFechaCompletado({
   const hoy = new Date()
   const fechaPorDefecto = hoy.toISOString().split('T')[0] // YYYY-MM-DD
 
-  // Fecha mínima: fecha de inicio del paso (si existe) o hace 30 días
-  const fechaMinima = fechaInicio
-    ? new Date(fechaInicio).toISOString().split('T')[0]
-    : new Date(hoy.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+  // Fecha mínima:
+  // - Si es el paso 1 (orden === 1), usar fecha_negociacion
+  // - Si no es paso 1 pero tiene fechaInicio, usar fechaInicio
+  // - Si no tiene ninguna, usar hace 30 días como fallback
+  const calcularFechaMinima = () => {
+    if (ordenPaso === 1 && fechaNegociacion) {
+      return formatDateForInput(fechaNegociacion)
+    }
+    if (fechaInicio) {
+      return formatDateForInput(fechaInicio)
+    }
+    return new Date(hoy.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+  }
+
+  const fechaMinima = calcularFechaMinima()
 
   const [fecha, setFecha] = useState(fechaPorDefecto)
   const [error, setError] = useState<string | null>(null)
@@ -49,13 +66,15 @@ export function ModalFechaCompletado({
       return
     }
 
-    // Validar que no sea anterior a fecha de inicio
-    if (fechaInicio) {
-      const fechaInicioDate = new Date(fechaInicio)
-      if (fechaSeleccionada < fechaInicioDate) {
+    // Validar que no sea anterior a fecha mínima permitida
+    const fechaMinimaDate = new Date(fechaMinima)
+    if (fechaSeleccionada < fechaMinimaDate) {
+      if (ordenPaso === 1) {
+        setError('La fecha no puede ser anterior al inicio de la negociación')
+      } else {
         setError('La fecha no puede ser anterior al inicio del paso')
-        return
       }
+      return
     }
 
     onConfirm(fechaSeleccionada)
@@ -66,7 +85,10 @@ export function ModalFechaCompletado({
     setError(null) // Limpiar error al cambiar fecha
   }
 
-  return (
+  // No renderizar en el servidor
+  if (typeof window === 'undefined') return null
+
+  const modalContent = (
     <AnimatePresence>
       {isOpen && (
         <motion.div
@@ -129,21 +151,17 @@ export function ModalFechaCompletado({
 
                 {/* Información adicional */}
                 <div className={styles.body.info.container}>
-                  {fechaInicio && (
+                  {ordenPaso === 1 && fechaNegociacion ? (
                     <p className={styles.body.info.item}>
-                      📌 Paso iniciado: {new Date(fechaInicio).toLocaleDateString('es-CO', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                      })}
+                      📌 Inicio de negociación: {formatDateForDisplay(fechaNegociacion)}
                     </p>
-                  )}
+                  ) : fechaInicio ? (
+                    <p className={styles.body.info.item}>
+                      📌 Paso iniciado: {formatDateForDisplay(fechaInicio)}
+                    </p>
+                  ) : null}
                   <p className={styles.body.info.item}>
-                    📅 Fecha mínima permitida: {new Date(fechaMinima).toLocaleDateString('es-CO', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric'
-                    })}
+                    📅 Fecha mínima permitida: {formatDateForDisplay(fechaMinima)}
                   </p>
                 </div>
 
@@ -180,4 +198,7 @@ export function ModalFechaCompletado({
       )}
     </AnimatePresence>
   )
+
+  // Renderizar en portal directamente en el body
+  return createPortal(modalContent, document.body)
 }

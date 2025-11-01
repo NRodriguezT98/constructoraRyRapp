@@ -196,6 +196,7 @@ export function ConfirmModal() {
 
               {/* Botón cerrar */}
               <button
+                type="button"
                 onClick={() => closeConfirm(false)}
                 className={styles.modal.closeButton}
               >
@@ -206,12 +207,14 @@ export function ConfirmModal() {
             {/* Footer con botones */}
             <div className={styles.footer}>
               <button
+                type="button"
                 onClick={() => closeConfirm(false)}
                 className={styles.button.cancel}
               >
                 {confirmState.cancelText || 'Cancelar'}
               </button>
               <button
+                type="button"
                 onClick={() => closeConfirm(true)}
                 className={styles.button.confirm[variant]}
               >
