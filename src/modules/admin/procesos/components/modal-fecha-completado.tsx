@@ -7,7 +7,7 @@
  * Aparece al presionar "Completar Paso".
  */
 
-import { formatDateForDisplay, formatDateForInput } from '@/lib/utils/date.utils'
+import { formatDateForDisplay, formatDateForInput, getTodayDateString } from '@/lib/utils/date.utils'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Calendar, X } from 'lucide-react'
 import { useState } from 'react'
@@ -20,7 +20,9 @@ interface ModalFechaCompletadoProps {
   fechaInicio?: string // Fecha cuando se inició el paso
   fechaNegociacion?: string // Fecha de inicio de la negociación
   ordenPaso?: number // Orden del paso (para saber si es el paso 1)
-  onConfirm: (fecha: Date) => void
+  fechaCompletadoDependencia?: string // Fecha de completado del paso del que depende
+  nombrePasoDependencia?: string // Nombre del paso del que depende
+  onConfirm: (fechaString: string) => void // ✅ Cambiar a string para evitar conversión Date
   onCancel: () => void
 }
 
@@ -30,25 +32,38 @@ export function ModalFechaCompletado({
   fechaInicio,
   fechaNegociacion,
   ordenPaso,
+  fechaCompletadoDependencia,
+  nombrePasoDependencia,
   onConfirm,
   onCancel
 }: ModalFechaCompletadoProps) {
   // Fecha por defecto: hoy
-  const hoy = new Date()
-  const fechaPorDefecto = hoy.toISOString().split('T')[0] // YYYY-MM-DD
+  // ⚠️ CRÍTICO: Usar getTodayDateString() en lugar de toISOString().split('T')[0]
+  // para evitar problemas de zona horaria (UTC vs local)
+  const fechaPorDefecto = getTodayDateString()
 
-  // Fecha mínima:
-  // - Si es el paso 1 (orden === 1), usar fecha_negociacion
-  // - Si no es paso 1 pero tiene fechaInicio, usar fechaInicio
-  // - Si no tiene ninguna, usar hace 30 días como fallback
+  // Fecha mínima CRÍTICA:
+  // - Paso 1: fecha_negociacion (inicio de la negociación)
+  // - Otros pasos: fecha_completado del paso del que depende (para mantener cronología)
   const calcularFechaMinima = () => {
+    // Paso 1: Usar fecha de negociación
     if (ordenPaso === 1 && fechaNegociacion) {
       return formatDateForInput(fechaNegociacion)
     }
-    if (fechaInicio) {
-      return formatDateForInput(fechaInicio)
+
+    // Otros pasos: Usar fecha de completado del paso del que depende
+    if (fechaCompletadoDependencia) {
+      return formatDateForInput(fechaCompletadoDependencia)
     }
-    return new Date(hoy.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+
+    // Fallback (no debería llegar aquí en uso normal)
+    // ⚠️ Usar getTodayDateString() y restar 30 días manualmente
+    const hoy = new Date()
+    const hace30Dias = new Date(hoy.getTime() - 30 * 24 * 60 * 60 * 1000)
+    const year = hace30Dias.getFullYear()
+    const month = String(hace30Dias.getMonth() + 1).padStart(2, '0')
+    const day = String(hace30Dias.getDate()).padStart(2, '0')
+    return `${year}-${month}-${day}`
   }
 
   const fechaMinima = calcularFechaMinima()
@@ -58,26 +73,25 @@ export function ModalFechaCompletado({
 
   const handleConfirmar = () => {
     // Validar que la fecha no sea futura
-    const fechaSeleccionada = new Date(fecha)
-    const ahora = new Date()
-
-    if (fechaSeleccionada > ahora) {
+    if (fecha > fechaPorDefecto) {
       setError('La fecha no puede ser futura')
       return
     }
 
     // Validar que no sea anterior a fecha mínima permitida
-    const fechaMinimaDate = new Date(fechaMinima)
-    if (fechaSeleccionada < fechaMinimaDate) {
+    if (fecha < fechaMinima) {
       if (ordenPaso === 1) {
         setError('La fecha no puede ser anterior al inicio de la negociación')
+      } else if (nombrePasoDependencia) {
+        setError(`La fecha debe ser posterior o igual a "${nombrePasoDependencia}"`)
       } else {
         setError('La fecha no puede ser anterior al inicio del paso')
       }
       return
     }
 
-    onConfirm(fechaSeleccionada)
+    // ✅ Pasar el STRING directamente (no crear Date object)
+    onConfirm(fecha)
   }
 
   const handleFechaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -152,16 +166,29 @@ export function ModalFechaCompletado({
                 {/* Información adicional */}
                 <div className={styles.body.info.container}>
                   {ordenPaso === 1 && fechaNegociacion ? (
-                    <p className={styles.body.info.item}>
-                      📌 Inicio de negociación: {formatDateForDisplay(fechaNegociacion)}
-                    </p>
-                  ) : fechaInicio ? (
-                    <p className={styles.body.info.item}>
-                      📌 Paso iniciado: {formatDateForDisplay(fechaInicio)}
-                    </p>
+                    <>
+                      <p className={styles.body.info.item}>
+                        📌 Inicio de negociación: {formatDateForDisplay(fechaNegociacion)}
+                      </p>
+                      <p className={styles.body.info.item}>
+                        📅 Fecha mínima: {formatDateForDisplay(fechaMinima)}
+                      </p>
+                    </>
+                  ) : fechaCompletadoDependencia && nombrePasoDependencia ? (
+                    <>
+                      <p className={styles.body.info.item}>
+                        ⛓️ Depende de: <strong>{nombrePasoDependencia}</strong>
+                      </p>
+                      <p className={styles.body.info.item}>
+                        ✅ Completado: {formatDateForDisplay(fechaCompletadoDependencia)}
+                      </p>
+                      <p className={styles.body.info.item}>
+                        📅 Fecha mínima permitida: {formatDateForDisplay(fechaMinima)}
+                      </p>
+                    </>
                   ) : null}
                   <p className={styles.body.info.item}>
-                    📅 Fecha mínima permitida: {formatDateForDisplay(fechaMinima)}
+                    📅 Fecha máxima: Hoy ({formatDateForDisplay(fechaPorDefecto)})
                   </p>
                 </div>
 

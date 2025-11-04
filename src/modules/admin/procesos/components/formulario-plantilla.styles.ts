@@ -80,7 +80,7 @@ export const formularioPlantillaStyles = {
     }`,
     header: {
       container: 'flex items-center gap-3 p-4 cursor-pointer',
-      gripIcon: 'w-5 h-5 text-gray-400 flex-shrink-0',
+      gripIcon: 'w-5 h-5 text-gray-400 flex-shrink-0 cursor-grab active:cursor-grabbing hover:text-blue-500 transition-colors',
       numberBadge: 'flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 text-white font-bold text-sm flex-shrink-0',
       content: 'flex-1 min-w-0',
       title: 'font-medium text-gray-900 truncate',

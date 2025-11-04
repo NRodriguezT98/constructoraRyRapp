@@ -3,9 +3,11 @@
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
+import { getTodayDateString } from '@/lib/utils/date.utils'
 import { AnimatePresence, motion } from 'framer-motion'
 import { AlertCircle, Calendar, CheckCircle2, DollarSign, FileText, X } from 'lucide-react'
 import type { FuentePagoConAbonos } from '../types'
+import { AlertaValidacionDesembolso } from './modal-registrar-abono/AlertaValidacionDesembolso'
 import { CampoMonto } from './modal-registrar-abono/CampoMonto'
 import { MetodosPagoSelector } from './modal-registrar-abono/MetodosPagoSelector'
 import { ModalHeader } from './modal-registrar-abono/ModalHeader'
@@ -16,6 +18,7 @@ interface ModalRegistrarAbonoProps {
   open: boolean
   onClose: () => void
   negociacionId: string
+  clienteId: string  // ✅ NUEVO: Necesario para redirección al proceso
   fuentesPago: FuentePagoConAbonos[]
   fuenteInicial?: FuentePagoConAbonos
   onSuccess: () => void
@@ -25,6 +28,7 @@ export function ModalRegistrarAbono({
   open,
   onClose,
   negociacionId,
+  clienteId,
   fuentesPago,
   fuenteInicial,
   onSuccess,
@@ -40,9 +44,11 @@ export function ModalRegistrarAbono({
     montoAutomatico,
     saldoPendiente,
     montoIngresado,
+    validacionDesembolso,
     handleSubmit,
     updateField,
     selectMetodo,
+    limpiarValidacion,
     formatCurrency,
   } = useModalRegistrarAbono({
     negociacionId,
@@ -99,7 +105,7 @@ export function ModalRegistrarAbono({
                   type="date"
                   id="fecha_abono"
                   value={formData.fecha_abono}
-                  max={new Date().toISOString().split('T')[0]}
+                  max={getTodayDateString()}
                   onChange={(e) => updateField('fecha_abono', e.target.value)}
                   className={modalStyles.form.input}
                 />
@@ -128,9 +134,16 @@ export function ModalRegistrarAbono({
                 />
               </motion.div>
 
-              {/* Error general */}
+              {/* Error general o alerta de validación */}
               <AnimatePresence>
-                {errors.submit && (
+                {validacionDesembolso && !validacionDesembolso.permitido ? (
+                  <AlertaValidacionDesembolso
+                    resultado={validacionDesembolso}
+                    negociacionId={negociacionId}
+                    clienteId={clienteId}
+                    onDismiss={limpiarValidacion}
+                  />
+                ) : errors.submit ? (
                   <motion.div
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -140,7 +153,7 @@ export function ModalRegistrarAbono({
                     <AlertCircle className={modalStyles.form.errorAlertIcon} />
                     <p className={modalStyles.form.errorAlertText}>{errors.submit}</p>
                   </motion.div>
-                )}
+                ) : null}
               </AnimatePresence>
             </div>
           </div>

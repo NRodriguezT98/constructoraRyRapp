@@ -5,6 +5,7 @@
 
 'use client'
 
+import { construirURLCliente } from '@/lib/utils/slug.utils'
 import { ModalConfirmacion } from '@/shared'
 import { useRouter } from 'next/navigation'
 import { useCallback, useMemo, useState } from 'react'
@@ -84,8 +85,12 @@ export function ClientesPageMain() {
 
   const handleVerCliente = useCallback(
     (cliente: ClienteResumen) => {
-      // Navegar a la página de detalle en lugar de abrir modal
-      router.push(`/clientes/${cliente.id}`)
+      // Navegar a la página de detalle con URL amigable
+      const url = construirURLCliente({
+        id: cliente.id,
+        nombre_completo: cliente.nombre_completo
+      })
+      router.push(url)
     },
     [router]
   )

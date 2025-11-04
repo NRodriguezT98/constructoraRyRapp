@@ -3,7 +3,7 @@
  * Carga proyectos y viviendas disponibles
  */
 
-import { supabase } from '@/lib/supabase/client-browser'
+import { supabase } from '@/lib/supabase/client'
 import { useCallback, useEffect, useState } from 'react'
 
 interface Proyecto {

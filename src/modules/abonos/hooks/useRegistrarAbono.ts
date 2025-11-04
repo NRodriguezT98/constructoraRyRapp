@@ -5,6 +5,7 @@
 // Hook para formulario de registro de abonos
 // =====================================================
 
+import { formatDateToISO, getTodayDateString } from '@/lib/utils/date.utils';
 import { useState } from 'react';
 import type { CrearAbonoDTO, MetodoPago } from '../types';
 
@@ -20,7 +21,7 @@ interface FormData {
 const initialFormData: FormData = {
   fuente_pago_id: '',
   monto: 0,
-  fecha_abono: new Date().toISOString().split('T')[0],
+  fecha_abono: getTodayDateString(), // ✅ Usar utilidad para evitar problema de timezone
   metodo_pago: 'Transferencia',
   numero_referencia: '',
   notas: '',
@@ -88,7 +89,7 @@ export function useRegistrarAbono() {
       negociacion_id: negociacionId,
       fuente_pago_id: formData.fuente_pago_id,
       monto: formData.monto,
-      fecha_abono: new Date(formData.fecha_abono).toISOString(),
+      fecha_abono: formatDateToISO(formData.fecha_abono), // ✅ Pasar string directamente
       metodo_pago: formData.metodo_pago,
       numero_referencia: formData.numero_referencia || undefined,
       notas: formData.notas || undefined,

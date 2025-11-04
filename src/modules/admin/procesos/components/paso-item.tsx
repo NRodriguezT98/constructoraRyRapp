@@ -33,8 +33,12 @@ interface PasoItemProps {
   onIniciar: () => void
   onCompletar: () => void
   onDescartar: () => void
+  onOmitir: () => void
   onAdjuntarDocumento: (pasoId: string, pasoNombre: string, documentoId: string, documentoNombre: string, file: File, categoriaId?: string | null) => Promise<void>
   onEliminarDocumento: (pasoId: string, documentoId: string, url: string) => Promise<void>
+  onCorregirFecha: () => void
+  onCorregirDocumento: () => void
+  esAdministrador: boolean
   puedeIniciar: boolean
   puedeCompletar: boolean
   estaBloqueado: boolean
@@ -51,8 +55,12 @@ export function PasoItem({
   onIniciar,
   onCompletar,
   onDescartar,
+  onOmitir,
   onAdjuntarDocumento,
   onEliminarDocumento,
+  onCorregirFecha,
+  onCorregirDocumento,
+  esAdministrador,
   puedeIniciar,
   puedeCompletar,
   estaBloqueado,
@@ -60,7 +68,7 @@ export function PasoItem({
   deshabilitado,
   subiendoDoc
 }: PasoItemProps) {
-  const { isCompletado, isEnProceso, isPendiente, isBloqueado } = getEstadoPaso(paso, estaBloqueado)
+  const { isCompletado, isEnProceso, isPendiente, isBloqueado, isOmitido } = getEstadoPaso(paso, estaBloqueado)
 
   return (
     <motion.div
@@ -166,18 +174,35 @@ export function PasoItem({
           {(paso.fechaInicio || paso.fechaCompletado) && (
             <div className={styles.paso.fechas.container}>
               {paso.fechaInicio && (
-                <span>Fecha Diligenciado: {formatDateForDisplay(paso.fechaInicio)}</span>
+                <span>Iniciado el: {formatDateForDisplay(paso.fechaInicio)}</span>
               )}
               {paso.fechaCompletado && (
-                <span>Fecha Paso Completado: {formatDateForDisplay(paso.fechaCompletado)}</span>
+                <span>Completado el: {formatDateForDisplay(paso.fechaCompletado)}</span>
               )}
+            </div>
+          )}
+
+          {/* Motivo de Omisión */}
+          {isOmitido && paso.motivoOmision && (
+            <div className="mt-3 p-3 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/50">
+              <div className="flex items-start gap-2">
+                <AlertCircle className="w-4 h-4 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <p className="text-xs font-semibold text-amber-900 dark:text-amber-200 mb-1">
+                    Motivo de Omisión:
+                  </p>
+                  <p className="text-xs text-amber-800 dark:text-amber-300 italic">
+                    "{paso.motivoOmision}"
+                  </p>
+                </div>
+              </div>
             </div>
           )}
         </div>
 
         {/* Contenido Expandido */}
         <AnimatePresence>
-          {isExpanded && !isBloqueado && (
+          {isExpanded && !isBloqueado && !isOmitido && (
             <motion.div
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: 'auto', opacity: 1 }}
@@ -186,62 +211,26 @@ export function PasoItem({
               className={styles.expanded.container}
             >
               <div className={styles.expanded.content}>
-                {/* Alerta: Debes iniciar el paso */}
+                {/* Alerta: Paso pendiente simplificada */}
                 {isPendiente && (
                   <div className={styles.expanded.alertPendiente.container}>
                     <div className={styles.expanded.alertPendiente.content}>
                       <AlertCircle className={styles.expanded.alertPendiente.icon} />
                       <div className={styles.expanded.alertPendiente.text}>
-                        <p className={styles.expanded.alertPendiente.title}>Paso no iniciado</p>
+                        <p className={styles.expanded.alertPendiente.title}>Paso pendiente</p>
                         <p className={styles.expanded.alertPendiente.subtitle}>
-                          Presiona "Iniciar Paso" para empezar a trabajar en este paso.
+                          Adjunta un documento para iniciar este paso automáticamente.
                         </p>
-
-                        {/* Mostrar requisitos sin iniciar el paso */}
-                        {paso.documentosRequeridos && paso.documentosRequeridos.length > 0 && (
-                          <div className="mt-3 pt-3 border-t border-blue-200 dark:border-blue-800/50">
-                            <p className="text-xs font-semibold text-blue-900 dark:text-blue-100 mb-2">
-                              📋 Documentos que necesitarás:
-                            </p>
-                            <ul className="space-y-1.5">
-                              {paso.documentosRequeridos.map(doc => (
-                                <li key={doc.id} className="flex items-start gap-2 text-xs">
-                                  <span className={`
-                                    mt-0.5 flex-shrink-0 w-1.5 h-1.5 rounded-full
-                                    ${doc.obligatorio
-                                      ? 'bg-red-500 dark:bg-red-400'
-                                      : 'bg-blue-400 dark:bg-blue-500'}
-                                  `} />
-                                  <span className="text-blue-800 dark:text-blue-200">
-                                    <span className="font-medium">{doc.nombre}</span>
-                                    {doc.obligatorio && (
-                                      <span className="ml-1.5 text-[10px] px-1.5 py-0.5 rounded bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 font-semibold">
-                                        Obligatorio
-                                      </span>
-                                    )}
-                                    {!doc.obligatorio && (
-                                      <span className="ml-1.5 text-[10px] px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
-                                        Opcional
-                                      </span>
-                                    )}
-                                    {doc.descripcion && (
-                                      <span className="block mt-0.5 text-blue-600 dark:text-blue-400 italic">
-                                        {doc.descripcion}
-                                      </span>
-                                    )}
-                                  </span>
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        )}
+                        <p className="text-xs mt-2 text-blue-700 dark:text-blue-300">
+                          ℹ️ Los documentos marcados con <span className="text-red-600 dark:text-red-400 font-bold">*</span> son obligatorios para completar el paso.
+                        </p>
                       </div>
                     </div>
                   </div>
                 )}
 
-                {/* Documentos Requeridos - Solo visible si está En Proceso o Completado */}
-                {(isEnProceso || isCompletado) && paso.documentosRequeridos && paso.documentosRequeridos.length > 0 && (
+                {/* Documentos Requeridos - Visible en Pendiente, En Proceso o Completado */}
+                {(isPendiente || isEnProceso || isCompletado) && paso.documentosRequeridos && paso.documentosRequeridos.length > 0 && (
                   <div>
                     <h4 className={styles.expanded.section.title}>
                       Documentos Requeridos:
@@ -255,6 +244,7 @@ export function PasoItem({
                             key={doc.id}
                             documento={doc}
                             urlSubido={urlSubido}
+                            isPendiente={isPendiente}
                             isEnProceso={isEnProceso}
                             isCompletado={isCompletado}
                             deshabilitado={deshabilitado}
@@ -282,12 +272,16 @@ export function PasoItem({
                 <AccionesPaso
                   isPendiente={isPendiente}
                   isEnProceso={isEnProceso}
-                  puedeIniciar={puedeIniciar}
+                  isCompletado={isCompletado}
                   puedeCompletar={puedeCompletar}
+                  permiteOmitir={paso.permiteOmitir}
                   deshabilitado={deshabilitado}
-                  onIniciar={onIniciar}
+                  esAdministrador={esAdministrador}
                   onCompletar={onCompletar}
                   onDescartar={onDescartar}
+                  onOmitir={onOmitir}
+                  onCorregirFecha={onCorregirFecha}
+                  onCorregirDocumento={onCorregirDocumento}
                 />
               </div>
             </motion.div>

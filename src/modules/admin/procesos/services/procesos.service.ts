@@ -386,6 +386,9 @@ export async function obtenerProgresoNegociacion(
     p.estado === EstadoPaso.EN_PROCESO || p.estado === EstadoPaso.PENDIENTE
   )
 
+  // ✅ FIX: Los pasos omitidos también cuentan como progreso finalizado
+  const pasosFinalizados = completados + omitidos
+
   return {
     negociacionId,
     totalPasos: procesos.length,
@@ -393,7 +396,7 @@ export async function obtenerProgresoNegociacion(
     pasosPendientes: pendientes,
     pasosEnProceso: enProceso,
     pasosOmitidos: omitidos,
-    porcentajeCompletado: procesos.length > 0 ? Math.round((completados / procesos.length) * 100) : 0,
+    porcentajeCompletado: procesos.length > 0 ? Math.round((pasosFinalizados / procesos.length) * 100) : 0,
     pasoActual,
     diasTranscurridos: 0, // TODO: calcular desde fecha inicio negociación
     diasEstimadosRestantes: 0 // TODO: calcular según pasos restantes

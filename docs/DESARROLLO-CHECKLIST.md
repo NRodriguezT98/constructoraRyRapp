@@ -8,7 +8,7 @@
 
 ### 1. Verificar Documentación de Base de Datos ⭐ CRÍTICO
 
-- [ ] **Abrí** `docs/DATABASE-SCHEMA-REFERENCE.md`
+- [ ] **Abrí** `docs/DATABASE-SCHEMA-REFERENCE-ACTUALIZADO.md`
 - [ ] **Verifiqué** la fecha de última actualización del documento
 - [ ] Si está desactualizado (>7 días): ejecutar `actualizar-docs-db.ps1`
 - [ ] **Identifiqué** qué tabla(s) necesito consultar
@@ -21,7 +21,7 @@
 
 - [ ] ❌ NO asumí ningún nombre de campo sin verificar
 - [ ] ❌ NO copié código antiguo sin validar
-- [ ] ✅ Consulté `DATABASE-SCHEMA-REFERENCE.md` para cada campo
+- [ ] ✅ Consulté `DATABASE-SCHEMA-REFERENCE-ACTUALIZADO.md` para cada campo
 - [ ] ✅ Copié los nombres exactos desde la documentación
 - [ ] ✅ Verifiqué el formato de estados/enums (exactos)
 - [ ] ✅ Si hay duda: ejecuté query de verificación en Supabase
@@ -35,14 +35,39 @@ WHERE table_name = 'nombre_tabla' AND table_schema = 'public'
 ORDER BY ordinal_position;
 ```
 
-### 3. Identificar Datos que Usarás
+### 3. Manejo de Fechas 🕐 **CRÍTICO** ⚠️
+
+**⚠️ NUNCA usar `.toISOString().split('T')[0]` - Causa desfase de ±1 día**
+
+- [ ] **Leí** `docs/MANEJO-FECHAS-ZONA-HORARIA.md`
+- [ ] Para obtener HOY: uso `getTodayDateString()`
+- [ ] Para guardar en DB: uso `formatDateToISO(stringYYYY-MM-DD)`
+- [ ] Para mostrar en input date: uso `formatDateForInput(dbString)`
+- [ ] **NO** creo Date objects innecesariamente
+- [ ] **NO** uso `.toISOString()` directamente
+
+**Reglas obligatorias:**
+```typescript
+// ✅ CORRECTO
+import { getTodayDateString, formatDateToISO, formatDateForInput } from '@/lib/utils/date.utils'
+
+const hoy = getTodayDateString() // → "2025-10-28"
+const fechaDB = formatDateToISO('2025-10-28') // → "2025-10-28T12:00:00"
+const fechaInput = formatDateForInput(dbFecha) // → "2025-10-28"
+
+// ❌ PROHIBIDO
+new Date().toISOString().split('T')[0] // ❌ Cambia el día
+new Date(input).toISOString() // ❌ Conversión UTC incorrecta
+```
+
+### 4. Identificar Datos que Usarás
 
 - [ ] ¿Qué tabla(s) de la DB necesito consultar?
 - [ ] ¿Necesito joins con otras tablas?
 - [ ] ¿Hay relaciones (foreign keys) que debo seguir?
 - [ ] ¿Los campos que necesito están en la tabla o son calculados?
 
-### 4. Verificar Servicios Existentes
+### 5. Verificar Servicios Existentes
 
 - [ ] ¿Ya existe un servicio para esta tabla?
   - `src/modules/clientes/services/intereses.service.ts`

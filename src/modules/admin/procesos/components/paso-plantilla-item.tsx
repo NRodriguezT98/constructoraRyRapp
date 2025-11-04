@@ -8,7 +8,7 @@
 'use client'
 
 import { createBrowserClient } from '@supabase/ssr'
-import { AnimatePresence, motion } from 'framer-motion'
+import { AnimatePresence, motion, Reorder } from 'framer-motion'
 import {
     AlertCircle,
     ChevronDown,
@@ -74,12 +74,20 @@ export function PasoPlantillaItem({
   }, [])
 
   return (
-    <motion.div
-      layout
+    <Reorder.Item
+      value={paso}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, x: -20 }}
+      transition={{ duration: 0.2 }}
       className={styles.pasoItem.container(hasErrors)}
+      style={{ cursor: 'grab' }}
+      whileDrag={{
+        cursor: 'grabbing',
+        scale: 1.02,
+        boxShadow: '0 10px 30px rgba(0, 0, 0, 0.2)',
+        zIndex: 1000
+      }}
     >
       {/* Header del paso */}
       <div onClick={onToggle} className={styles.pasoItem.header.container}>
@@ -382,6 +390,6 @@ export function PasoPlantillaItem({
           </motion.div>
         )}
       </AnimatePresence>
-    </motion.div>
+    </Reorder.Item>
   )
 }

@@ -1,15 +1,16 @@
 import { Button } from '@/components/ui/button'
 import { formatDateForDisplay } from '@/lib/utils/date.utils'
+import { construirURLCliente } from '@/lib/utils/slug.utils'
 import { motion } from 'framer-motion'
 import {
-    Ban,
-    Building2,
-    Calendar,
-    CreditCard,
-    Eye,
-    FileText,
-    Home,
-    User
+  Ban,
+  Building2,
+  Calendar,
+  CreditCard,
+  Eye,
+  FileText,
+  Home,
+  User
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { abonosListStyles, infoIconColors } from './abonos-list.styles'
@@ -69,7 +70,12 @@ export function AbonoCard({ abono, onAnular }: AbonoCardProps) {
   }
 
   const handleVerDetalle = () => {
-    router.push(`/abonos/${abono.cliente.id}`)
+    // Generar URL amigable con slug de cliente
+    const clienteUrl = construirURLCliente({
+      id: abono.cliente.id,
+      nombre_completo: `${abono.cliente.nombres} ${abono.cliente.apellidos}`
+    })
+    router.push(clienteUrl.replace('/clientes/', '/abonos/'))
   }
 
   const handleAnular = () => {

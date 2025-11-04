@@ -2,7 +2,7 @@
 // SERVICE: Gestión de Documentos de Proyecto
 // ============================================
 
-import { supabase } from '../../../lib/supabase/client-browser'
+import { supabase } from '@/lib/supabase/client'
 import type { DocumentoProyecto } from '../types/documento.types'
 
 const BUCKET_NAME = 'documentos-proyectos'

@@ -14,6 +14,7 @@ import { timelineProcesoStyles as styles } from './timeline-proceso.styles'
 interface DocumentoItemProps {
   documento: DocumentoRequerido
   urlSubido?: string
+  isPendiente: boolean
   isEnProceso: boolean
   isCompletado: boolean
   deshabilitado: boolean
@@ -25,6 +26,7 @@ interface DocumentoItemProps {
 export function DocumentoItem({
   documento,
   urlSubido,
+  isPendiente,
   isEnProceso,
   isCompletado,
   deshabilitado,
@@ -33,7 +35,8 @@ export function DocumentoItem({
   onEliminar
 }: DocumentoItemProps) {
   const estaSubiendo = subiendoDoc === documento.id
-  const mostrarAcciones = isEnProceso || isCompletado
+  const mostrarAcciones = isPendiente || isEnProceso || isCompletado
+  const puedeAdjuntar = isPendiente || isEnProceso
 
   return (
     <div className={styles.expanded.documento.container}>
@@ -100,18 +103,24 @@ export function DocumentoItem({
                     e.target.value = ''
                   }
                 }}
-                disabled={estaSubiendo || !isEnProceso}
+                disabled={estaSubiendo || !puedeAdjuntar}
               />
               <label
                 htmlFor={`upload-${documento.id}`}
                 className={
                   estaSubiendo
                     ? `${styles.expanded.documento.uploadLabel.base} ${styles.expanded.documento.uploadLabel.uploading}`
-                    : !isEnProceso
+                    : !puedeAdjuntar
                       ? `${styles.expanded.documento.uploadLabel.base} ${styles.expanded.documento.uploadLabel.disabled}`
                       : `${styles.expanded.documento.uploadLabel.base} ${styles.expanded.documento.uploadLabel.active}`
                 }
-                title={isEnProceso ? 'Adjuntar documento' : 'Inicia el paso para adjuntar'}
+                title={
+                  isPendiente
+                    ? 'Adjuntar documento (inicia el paso automáticamente)'
+                    : isEnProceso
+                      ? 'Adjuntar documento'
+                      : 'Paso completado - no se pueden adjuntar más documentos'
+                }
               >
                 {estaSubiendo ? (
                   <Loader2 className="w-4 h-4 animate-spin" />

@@ -10,7 +10,7 @@
  * ⚠️ NOMBRES DE CAMPOS VERIFICADOS EN: docs/DATABASE-SCHEMA-REFERENCE.md
  */
 
-import { supabase } from '@/lib/supabase/client-browser'
+import { supabase } from '@/lib/supabase/client'
 
 // Tipos de fuente de pago
 export type TipoFuentePago =

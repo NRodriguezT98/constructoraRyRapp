@@ -3,31 +3,27 @@
 /**
  * 📊 TIMELINE DE PROCESO DE NEGOCIACIÓN
  *
- * Muestra el progreso del proceso de compra del cliente.
+ * Componente presentacional que muestra el progreso del proceso de compra.
  * Diseño premium con timeline vertical y glassmorphism.
  *
- * ⚠️ SISTEMA DE PROTECCIÓN:
- * - Usuario debe "Iniciar Paso" para trabajar en él
- * - Advertencia beforeunload si hay cambios sin guardar
- * - Modal de fecha al completar para registro preciso
+ * ✅ SEPARACIÓN DE RESPONSABILIDADES:
+ * - Lógica de negocio → useProcesoNegociacion
+ * - Lógica de UI → useTimelineProceso
+ * - Presentación → Este componente (SOLO JSX)
  */
 
-import { useAuth } from '@/contexts/auth-context'
 import { useUnsavedChanges } from '@/contexts/unsaved-changes-context'
-import { useModal } from '@/shared/components/modals'
-import { createBrowserClient } from '@supabase/ssr'
+import { ModalCorregirDocumentos } from '@/modules/procesos/components/ModalCorregirDocumentos'
+import { ModalCorregirFecha } from '@/modules/procesos/components/ModalCorregirFecha'
 import { AnimatePresence, motion } from 'framer-motion'
 import { AlertCircle, FileText, Loader2, X } from 'lucide-react'
-import { useRouter } from 'next/navigation'
-import { useCallback, useEffect, useState } from 'react'
-import { useProcesoNegociacion } from '../hooks'
-import { subirDocumento } from '../services/documentos-proceso.service'
-import { recargarPlantilla } from '../services/plantilla-reload.service'
+import { useCallback, useEffect } from 'react'
+import { useTimelineProceso } from '../hooks'
 import { actualizarProceso } from '../services/procesos.service'
-import type { ProcesoNegociacion } from '../types'
 import { EstadoPaso } from '../types'
 import { HeaderProceso } from './header-proceso'
 import { ModalFechaCompletado } from './modal-fecha-completado'
+import { ModalOmitirPaso } from './modal-omitir-paso'
 import { PasoItem } from './paso-item'
 import { timelineProcesoStyles as styles } from './timeline-proceso.styles'
 
@@ -39,49 +35,21 @@ interface TimelineProcesoProps {
 }
 
 export function TimelineProceso({ negociacionId }: TimelineProcesoProps) {
-  const { user } = useAuth()
-  const { confirm } = useModal()
-  const router = useRouter()
   const { setHasUnsavedChanges, setMessage, setOnDiscard } = useUnsavedChanges()
-  const {
-    pasos,
-    progreso,
-    loading,
-    error,
-    actualizando,
-    pasoEnEdicion,
-    pasoRecuperado,
-    completarPaso,
-    iniciarPaso,
-    descartarCambios,
-    agregarDocumento,
-    eliminarDocumento,
-    puedeCompletar,
-    puedeIniciar,
-    estaBloqueado,
-    obtenerDependenciasIncompletas,
-    limpiarError
-  } = useProcesoNegociacion({ negociacionId })
 
-  const [pasoExpandido, setPasoExpandido] = useState<string | null>(null)
-  const [subiendoDoc, setSubiendoDoc] = useState<string | null>(null)
-  const [recargandoPlantilla, setRecargandoPlantilla] = useState(false)
-
-  // Modal de fecha
-  const [modalFechaAbierto, setModalFechaAbierto] = useState(false)
-  const [pasoACompletar, setPasoACompletar] = useState<ProcesoNegociacion | null>(null)
-  const [fechaNegociacion, setFechaNegociacion] = useState<string | null>(null)
+  // ✅ TODO extraído al hook personalizado
+  const timeline = useTimelineProceso({ negociacionId })
 
   // Crear callback estable para descartar cambios
   // IMPORTANTE: NO usa descartarCambios del hook porque ese llama setPasoEnEdicion(null)
   // lo cual causa un re-render durante el render del context
   const handleDiscardCallback = useCallback(async () => {
-    if (!pasoEnEdicion) return
+    if (!timeline.pasoEnEdicion) return
 
     try {
       // Llamar directamente al servicio sin modificar el estado local
       // El context limpiará pasoEnEdicion cuando cambie la ruta
-      await actualizarProceso(pasoEnEdicion, {
+      await actualizarProceso(timeline.pasoEnEdicion, {
         estado: EstadoPaso.PENDIENTE,
         fechaInicio: null,
         documentosUrls: null,
@@ -90,11 +58,11 @@ export function TimelineProceso({ negociacionId }: TimelineProcesoProps) {
     } catch (err) {
       console.error('Error al descartar cambios:', err)
     }
-  }, [pasoEnEdicion])
+  }, [timeline.pasoEnEdicion])
 
   // Sincronizar estado de cambios sin guardar con context global
   useEffect(() => {
-    if (pasoEnEdicion) {
+    if (timeline.pasoEnEdicion) {
       setHasUnsavedChanges(true)
       setMessage(
         'Tienes un paso iniciado con cambios sin guardar.\n\n' +
@@ -103,252 +71,19 @@ export function TimelineProceso({ negociacionId }: TimelineProcesoProps) {
         '• Se borrará la fecha de inicio\n' +
         '• El paso volverá a estado Pendiente'
       )
-      // Registrar callback de descarte para cuando el usuario confirme salir
-      console.log('🔧 Registrando onDiscard callback:', typeof handleDiscardCallback)
       setOnDiscard(handleDiscardCallback)
     } else {
       setHasUnsavedChanges(false)
       setMessage(null)
       setOnDiscard(null)
     }
-  }, [pasoEnEdicion, setHasUnsavedChanges, setMessage, setOnDiscard, handleDiscardCallback])
-
-  // Obtener fecha de negociación para el modal de completado
-  useEffect(() => {
-    async function obtenerFechaNegociacion() {
-      try {
-        const supabase = createBrowserClient(
-          process.env.NEXT_PUBLIC_SUPABASE_URL!,
-          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-        )
-
-        const { data, error } = await supabase
-          .from('negociaciones')
-          .select('fecha_negociacion')
-          .eq('id', negociacionId)
-          .single()
-
-        if (error) {
-          console.error('Error al obtener fecha de negociación:', error)
-          return
-        }
-
-        if (data?.fecha_negociacion) {
-          setFechaNegociacion(data.fecha_negociacion)
-        }
-      } catch (err) {
-        console.error('Error inesperado al obtener fecha de negociación:', err)
-      }
-    }
-
-    obtenerFechaNegociacion()
-  }, [negociacionId])
-
-  // ===================================
-  // HANDLERS
-  // ===================================
-
-  const togglePaso = (pasoId: string) => {
-    setPasoExpandido(prev => prev === pasoId ? null : pasoId)
-  }
-
-  const handleIniciarPaso = async (pasoId: string) => {
-    const confirmed = await confirm({
-      title: '¿Iniciar trabajo en este paso?',
-      message: 'Se registrará la fecha de inicio y podrás adjuntar documentos.',
-      confirmText: 'Iniciar Paso',
-      variant: 'info'
-    })
-
-    if (!confirmed) return
-
-    const exito = await iniciarPaso(pasoId)
-    if (exito) {
-      setPasoExpandido(pasoId)
-    }
-  }
-
-  const handleAbrirModalCompletar = (paso: ProcesoNegociacion) => {
-    setPasoACompletar(paso)
-    setModalFechaAbierto(true)
-  }
-
-  const handleConfirmarCompletado = async (fecha: Date) => {
-    if (!pasoACompletar) return
-
-    const exito = await completarPaso(pasoACompletar.id, fecha)
-
-    if (exito) {
-      setModalFechaAbierto(false)
-      setPasoACompletar(null)
-      setPasoExpandido(null)
-    }
-  }
-
-  const handleDescartarCambios = async (pasoId: string) => {
-    const confirmed = await confirm({
-      title: '⚠️ ¿Descartar cambios?',
-      message:
-        'Esta acción revertirá lo siguiente:\n\n' +
-        '• Se eliminarán los documentos adjuntos\n' +
-        '• Se borrará la fecha de inicio\n' +
-        '• El paso volverá a estado Pendiente\n\n' +
-        'Esta acción no se puede deshacer.',
-      confirmText: 'Descartar Cambios',
-      cancelText: 'Cancelar',
-      variant: 'warning'
-    })
-
-    if (!confirmed) return
-
-    const exito = await descartarCambios(pasoId)
-    if (exito) {
-      setPasoExpandido(null)
-    }
-  }
-
-  const handleRecargarPlantilla = async () => {
-    const confirmed = await confirm({
-      title: '⚠️ DESARROLLO: Recargar plantilla',
-      message:
-        'Esta acción hará lo siguiente:\n\n' +
-        '• Eliminará todos los pasos actuales\n' +
-        '• Los reemplazará con los de la plantilla predeterminada\n' +
-        '• Los documentos subidos NO se eliminarán\n' +
-        '• ACTUALIZARÁ las categorías de documentos configuradas\n\n' +
-        'Usa esto para sincronizar cambios en la plantilla.\n' +
-        'Esta función solo debe usarse en DESARROLLO.',
-      confirmText: 'Recargar Plantilla',
-      cancelText: 'Cancelar',
-      variant: 'warning'
-    })
-
-    if (!confirmed) return
-
-    setRecargandoPlantilla(true)
-
-    try {
-      const resultado = await recargarPlantilla(negociacionId)
-
-      if (resultado.exito) {
-        await confirm({
-          title: '✅ Plantilla recargada',
-          message: `Se crearon ${resultado.pasos} pasos correctamente.\n\nRefresca la página para ver los cambios.`,
-          confirmText: 'Entendido',
-          variant: 'success'
-        })
-        window.location.reload()
-      } else {
-        await confirm({
-          title: '❌ Error',
-          message: resultado.error || 'Error desconocido',
-          confirmText: 'Entendido',
-          variant: 'danger'
-        })
-      }
-    } catch (error: any) {
-      await confirm({
-        title: '❌ Error',
-        message: error.message || 'Error desconocido',
-        confirmText: 'Entendido',
-        variant: 'danger'
-      })
-    } finally {
-      setRecargandoPlantilla(false)
-    }
-  }
-
-  const handleAdjuntarDocumento = async (
-    pasoId: string,
-    pasoNombre: string,
-    documentoId: string,
-    documentoNombre: string,
-    file: File,
-    categoriaId?: string | null
-  ) => {
-    if (!user) {
-      await confirm({
-        title: '❌ Error',
-        message: 'No hay usuario autenticado',
-        confirmText: 'Entendido',
-        variant: 'danger'
-      })
-      return
-    }
-
-    setSubiendoDoc(documentoId)
-
-    try {
-      const resultado = await subirDocumento({
-        file,
-        userId: user.id,
-        negociacionId,
-        pasoId,
-        pasoNombre,
-        documentoId,
-        documentoNombre,
-        categoriaId  // ✅ NUEVO: Pasar categoriaId al servicio
-      })
-
-      if (resultado.exito && resultado.url) {
-        const exito = await agregarDocumento(pasoId, documentoId, resultado.url)
-
-        if (exito) {
-          await confirm({
-            title: '✅ Documento subido',
-            message: `"${documentoNombre}" se subió correctamente`,
-            confirmText: 'Entendido',
-            variant: 'success'
-          })
-        } else {
-          throw new Error('No se pudo guardar la URL del documento')
-        }
-      } else {
-        throw new Error(resultado.error || 'Error al subir documento')
-      }
-    } catch (error: any) {
-      console.error('❌ Error completo:', error)
-      await confirm({
-        title: '❌ Error al subir documento',
-        message: error.message || 'Error desconocido',
-        confirmText: 'Entendido',
-        variant: 'danger'
-      })
-    } finally {
-      setSubiendoDoc(null)
-    }
-  }
-
-  const handleEliminarDocumento = async (pasoId: string, documentoId: string, documentoNombre: string) => {
-    const confirmed = await confirm({
-      title: '¿Eliminar documento?',
-      message: `Se eliminará "${documentoNombre}".\n\nEsta acción no se puede deshacer.`,
-      confirmText: 'Eliminar',
-      variant: 'danger'
-    })
-
-    if (!confirmed) return
-
-    await eliminarDocumento(pasoId, documentoId)
-    // Eliminado modal de confirmación de éxito - la eliminación es inmediata en la UI
-  }
-
-  // ===================================
-  // SISTEMA DE ADVERTENCIA: Cambios sin guardar
-  // ===================================
-
-  // El context global (UnsavedChangesProvider) ya maneja:
-  // - Protección de cierre de pestaña/navegador
-  // - Protección de navegación interna
-  // - Modal de confirmación personalizado
-
-  // Solo necesitamos sincronizar el estado (hecho arriba en useEffect)
+  }, [timeline.pasoEnEdicion, setHasUnsavedChanges, setMessage, setOnDiscard, handleDiscardCallback])
 
   // ===================================
   // RENDER: LOADING
   // ===================================
 
-  if (loading) {
+  if (timeline.loading) {
     return (
       <div className={styles.loading.container}>
         <Loader2 className={styles.loading.spinner} />
@@ -360,7 +95,7 @@ export function TimelineProceso({ negociacionId }: TimelineProcesoProps) {
   // RENDER: SIN PROCESO
   // ===================================
 
-  if (!loading && pasos.length === 0) {
+  if (!timeline.loading && timeline.pasos.length === 0) {
     return (
       <div className={styles.empty.container}>
         <FileText className={styles.empty.icon} />
@@ -381,14 +116,14 @@ export function TimelineProceso({ negociacionId }: TimelineProcesoProps) {
     <div className={styles.container}>
       {/* Header con Progreso */}
       <HeaderProceso
-        progreso={progreso}
-        onRecargarPlantilla={IS_DEV_MODE ? handleRecargarPlantilla : undefined}
-        recargando={recargandoPlantilla}
+        progreso={timeline.progreso}
+        onRecargarPlantilla={IS_DEV_MODE ? timeline.handleRecargarPlantilla : undefined}
+        recargando={timeline.recargandoPlantilla}
       />
 
       {/* Banner de Advertencia: Paso en Proceso */}
       <AnimatePresence>
-        {pasoEnEdicion && (
+        {timeline.pasoEnEdicion && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
@@ -414,7 +149,7 @@ export function TimelineProceso({ negociacionId }: TimelineProcesoProps) {
                 </p>
               </div>
               <button
-                onClick={() => pasoEnEdicion && handleDescartarCambios(pasoEnEdicion)}
+                onClick={() => timeline.pasoEnEdicion && timeline.handleDescartarCambios(timeline.pasoEnEdicion)}
                 className="px-4 py-2 rounded-xl text-sm font-semibold
                          bg-white dark:bg-gray-800
                          text-amber-900 dark:text-amber-100
@@ -432,7 +167,7 @@ export function TimelineProceso({ negociacionId }: TimelineProcesoProps) {
 
       {/* Banner de Recuperación Automática */}
       <AnimatePresence>
-        {pasoRecuperado && (
+        {timeline.pasoRecuperado && (
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -463,7 +198,7 @@ export function TimelineProceso({ negociacionId }: TimelineProcesoProps) {
 
       {/* Error Alert */}
       <AnimatePresence>
-        {error && (
+        {timeline.error && (
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -473,9 +208,9 @@ export function TimelineProceso({ negociacionId }: TimelineProcesoProps) {
             <AlertCircle className={styles.error.icon} />
             <div className={styles.error.content}>
               <p className={styles.error.title}>Error</p>
-              <p className={styles.error.message}>{error}</p>
+              <p className={styles.error.message}>{timeline.error}</p>
             </div>
-            <button onClick={limpiarError} className={styles.error.close}>
+            <button onClick={timeline.limpiarError} className={styles.error.close}>
               <X className={styles.error.closeIcon} />
             </button>
           </motion.div>
@@ -489,24 +224,28 @@ export function TimelineProceso({ negociacionId }: TimelineProcesoProps) {
           <div className={styles.timeline.line} />
 
           {/* Pasos */}
-          {pasos.map((paso, index) => (
+          {timeline.pasos.map((paso, index) => (
             <PasoItem
               key={paso.id}
               paso={paso}
               index={index}
-              isExpanded={pasoExpandido === paso.id}
-              onToggle={() => togglePaso(paso.id)}
-              onIniciar={() => handleIniciarPaso(paso.id)}
-              onCompletar={() => handleAbrirModalCompletar(paso)}
-              onDescartar={() => handleDescartarCambios(paso.id)}
-              onAdjuntarDocumento={handleAdjuntarDocumento}
-              onEliminarDocumento={handleEliminarDocumento}
-              puedeIniciar={puedeIniciar(paso)}
-              puedeCompletar={puedeCompletar(paso)}
-              estaBloqueado={estaBloqueado(paso)}
-              dependenciasIncompletas={obtenerDependenciasIncompletas(paso)}
-              deshabilitado={actualizando}
-              subiendoDoc={subiendoDoc}
+              isExpanded={timeline.pasoExpandido === paso.id}
+              onToggle={() => timeline.togglePaso(paso.id)}
+              onIniciar={() => timeline.handleIniciarPaso(paso.id)}
+              onCompletar={() => timeline.handleAbrirModalCompletar(paso)}
+              onDescartar={() => timeline.handleDescartarCambios(paso.id)}
+              onOmitir={() => timeline.handleOmitirPaso(paso)}
+              onAdjuntarDocumento={timeline.handleAdjuntarDocumento}
+              onEliminarDocumento={timeline.handleEliminarDocumento}
+              onCorregirFecha={() => timeline.handleAbrirModalCorregirFecha(paso)}
+              onCorregirDocumento={() => timeline.handleAbrirModalCorregirDoc(paso)}
+              esAdministrador={timeline.esAdministrador}
+              puedeIniciar={timeline.puedeIniciar(paso)}
+              puedeCompletar={timeline.puedeCompletar(paso)}
+              estaBloqueado={timeline.estaBloqueado(paso)}
+              dependenciasIncompletas={timeline.obtenerDependenciasIncompletas(paso)}
+              deshabilitado={timeline.actualizando}
+              subiendoDoc={timeline.subiendoDoc}
             />
           ))}
         </div>
@@ -514,17 +253,72 @@ export function TimelineProceso({ negociacionId }: TimelineProcesoProps) {
 
       {/* Modal de Fecha Completado */}
       <ModalFechaCompletado
-        isOpen={modalFechaAbierto}
-        pasoNombre={pasoACompletar?.nombre || ''}
-        fechaInicio={pasoACompletar?.fechaInicio || undefined}
-        fechaNegociacion={fechaNegociacion || undefined}
-        ordenPaso={pasoACompletar?.orden || undefined}
-        onConfirm={handleConfirmarCompletado}
-        onCancel={() => {
-          setModalFechaAbierto(false)
-          setPasoACompletar(null)
-        }}
+        isOpen={timeline.modalFechaAbierto}
+        pasoNombre={timeline.pasoACompletar?.nombre || ''}
+        fechaInicio={timeline.pasoACompletar?.fechaInicio || undefined}
+        fechaNegociacion={timeline.fechaNegociacion || undefined}
+        ordenPaso={timeline.pasoACompletar?.orden || undefined}
+        fechaCompletadoDependencia={
+          timeline.pasoACompletar?.dependeDe && timeline.pasoACompletar.dependeDe.length > 0
+            ? timeline.pasos.find(p => p.id === timeline.pasoACompletar!.dependeDe![0])?.fechaCompletado || undefined
+            : undefined
+        }
+        nombrePasoDependencia={
+          timeline.pasoACompletar?.dependeDe && timeline.pasoACompletar.dependeDe.length > 0
+            ? timeline.pasos.find(p => p.id === timeline.pasoACompletar!.dependeDe![0])?.nombre || undefined
+            : undefined
+        }
+        onConfirm={timeline.handleConfirmarCompletado}
+        onCancel={timeline.handleCancelarCompletado}
       />
+
+      {/* Modal de Omitir Paso */}
+      <ModalOmitirPaso
+        isOpen={timeline.modalOmitirAbierto}
+        pasoNombre={timeline.pasoAOmitir?.nombre || ''}
+        onConfirm={timeline.handleConfirmarOmision}
+        onClose={timeline.handleCancelarOmision}
+        loading={timeline.actualizando}
+      />
+
+      {/* Modales de Corrección (Solo Admin) */}
+      {timeline.esAdministrador && (
+        <>
+          {/* Modal Corregir Fecha */}
+          {timeline.pasoACorregirFecha && (
+            <ModalCorregirFecha
+              paso={{
+                id: timeline.pasoACorregirFecha.id,
+                nombre: timeline.pasoACorregirFecha.nombre,
+                fecha_completado: timeline.pasoACorregirFecha.fechaCompletado!
+              }}
+              open={timeline.modalCorregirFechaAbierto}
+              onClose={timeline.handleCerrarModalCorregirFecha}
+              onSuccess={timeline.handleSuccessCorregirFecha}
+            />
+          )}
+
+          {/* Modal Corregir Documentos */}
+          {timeline.pasoACorregirDoc && (
+            <ModalCorregirDocumentos
+              paso={{
+                id: timeline.pasoACorregirDoc.id,
+                nombre: timeline.pasoACorregirDoc.nombre
+              }}
+              documentos={timeline.pasoACorregirDoc.documentosRequeridos?.map(doc => ({
+                id: doc.id,
+                nombre_archivo: doc.nombre,
+                fecha_subida: doc.fechaSubida || new Date().toISOString(),
+                categoria_id: doc.categoriaId || '',
+                url_storage: doc.url || ''
+              })) || []}
+              open={timeline.modalCorregirDocAbierto}
+              onClose={timeline.handleCerrarModalCorregirDoc}
+              onSuccess={timeline.handleSuccessCorregirDoc}
+            />
+          )}
+        </>
+      )}
     </div>
   )
 }

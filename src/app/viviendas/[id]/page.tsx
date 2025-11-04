@@ -1,3 +1,4 @@
+import { resolverSlugVivienda } from '@/lib/utils/slug.utils'
 import ViviendaDetalleClient from './vivienda-detalle-client'
 
 interface PageProps {
@@ -7,5 +8,8 @@ interface PageProps {
 export default async function ViviendaDetallePage({ params }: PageProps) {
   const { id } = await params
 
-  return <ViviendaDetalleClient viviendaId={id} />
+  // Resolver slug a UUID si es necesario
+  const viviendaUUID = await resolverSlugVivienda(id) || id
+
+  return <ViviendaDetalleClient viviendaId={viviendaUUID} />
 }

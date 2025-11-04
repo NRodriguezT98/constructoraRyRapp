@@ -1,14 +1,15 @@
 ﻿'use client'
 
+import { CanDelete, CanEdit } from '@/modules/usuarios/components'
 import { motion } from 'framer-motion'
 import {
-  MapPin,
-  Building2,
-  Calendar,
-  Home,
-  Edit2,
-  Trash2,
-  Eye,
+    Building2,
+    Calendar,
+    Edit2,
+    Eye,
+    Home,
+    MapPin,
+    Trash2,
 } from 'lucide-react'
 import { formatDate } from '../../../shared/utils/format'
 import { cn } from '../../../shared/utils/helpers'
@@ -105,29 +106,33 @@ export function ProyectoCard({
               >
                 <Eye className={styles.button.icon} />
               </button>
-              <button
-                onClick={handleEdit}
-                className={cn(styles.button.base, styles.button.edit)}
-                title='Editar proyecto'
-              >
-                <Edit2 className={styles.button.icon} />
-              </button>
-              <button
-                onClick={handleDelete}
-                className={cn(
-                  styles.button.base,
-                  confirmDelete
-                    ? styles.button.deleteConfirm
-                    : styles.button.delete
-                )}
-                title={
-                  confirmDelete
-                    ? '¿Confirmar eliminación?'
-                    : 'Eliminar proyecto'
-                }
-              >
-                <Trash2 className={styles.button.icon} />
-              </button>
+              <CanEdit modulo="proyectos">
+                <button
+                  onClick={handleEdit}
+                  className={cn(styles.button.base, styles.button.edit)}
+                  title='Editar proyecto'
+                >
+                  <Edit2 className={styles.button.icon} />
+                </button>
+              </CanEdit>
+              <CanDelete modulo="proyectos">
+                <button
+                  onClick={handleDelete}
+                  className={cn(
+                    styles.button.base,
+                    confirmDelete
+                      ? styles.button.deleteConfirm
+                      : styles.button.delete
+                  )}
+                  title={
+                    confirmDelete
+                      ? '¿Confirmar eliminación?'
+                      : 'Eliminar proyecto'
+                  }
+                >
+                  <Trash2 className={styles.button.icon} />
+                </button>
+              </CanDelete>
             </div>
           </div>
         </div>
@@ -155,29 +160,33 @@ export function ProyectoCard({
           >
             <Eye className={styles.button.icon} />
           </button>
-          <button
-            onClick={handleEdit}
-            className={cn(
-              styles.button.base,
-              'text-white backdrop-blur-sm hover:bg-white/20'
-            )}
-            title='Editar'
-          >
-            <Edit2 className={styles.button.icon} />
-          </button>
-          <button
-            onClick={handleDelete}
-            className={cn(
-              styles.button.base,
-              'backdrop-blur-sm',
-              confirmDelete
-                ? 'bg-red-500 text-white'
-                : 'text-white hover:bg-white/20'
-            )}
-            title={confirmDelete ? '¿Confirmar?' : 'Eliminar'}
-          >
-            <Trash2 className={styles.button.icon} />
-          </button>
+          <CanEdit modulo="proyectos">
+            <button
+              onClick={handleEdit}
+              className={cn(
+                styles.button.base,
+                'text-white backdrop-blur-sm hover:bg-white/20'
+              )}
+              title='Editar'
+            >
+              <Edit2 className={styles.button.icon} />
+            </button>
+          </CanEdit>
+          <CanDelete modulo="proyectos">
+            <button
+              onClick={handleDelete}
+              className={cn(
+                styles.button.base,
+                'backdrop-blur-sm',
+                confirmDelete
+                  ? 'bg-red-500 text-white'
+                  : 'text-white hover:bg-white/20'
+              )}
+              title={confirmDelete ? '¿Confirmar?' : 'Eliminar'}
+            >
+              <Trash2 className={styles.button.icon} />
+            </button>
+          </CanDelete>
         </div>
 
         {/* Icono del proyecto */}

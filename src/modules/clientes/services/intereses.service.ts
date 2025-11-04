@@ -8,7 +8,7 @@
  */
 
 // @ts-nocheck
-import { supabase } from '@/lib/supabase/client-browser'
+import { supabase } from '@/lib/supabase/client'
 import type {
     ActualizarInteresDTO,
     ClienteInteres,

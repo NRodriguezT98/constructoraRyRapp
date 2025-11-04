@@ -5,6 +5,7 @@
  * Maneja carga, actualización de pasos y upload de documentos.
  */
 
+import { formatDateToISO, getTodayDateString } from '@/lib/utils/date.utils'
 import { useCallback, useEffect, useState } from 'react'
 import {
     actualizarProceso,
@@ -33,12 +34,13 @@ interface UseProcesoNegociacionReturn {
 
   // Operaciones
   cargarProceso: () => Promise<void>
-  completarPaso: (pasoId: string, fechaCompletado: Date) => Promise<boolean>
+  completarPaso: (pasoId: string, fechaCompletadoString: string) => Promise<boolean> // ✅ Cambiar a string
   iniciarPaso: (pasoId: string) => Promise<boolean>
   descartarCambios: (pasoId: string) => Promise<boolean>
   omitirPaso: (pasoId: string, motivo: string) => Promise<boolean>
   agregarDocumento: (pasoId: string, nombreDoc: string, url: string) => Promise<boolean>
   eliminarDocumento: (pasoId: string, documentoId: string) => Promise<boolean>
+  adjuntarConAutoInicio: (pasoId: string, nombreDoc: string, url: string) => Promise<boolean> // ✅ NUEVO
 
   // Utilidades
   puedeCompletar: (paso: ProcesoNegociacion) => boolean
@@ -111,10 +113,13 @@ export function useProcesoNegociacion({
 
   /**
    * Completa un paso con fecha específica
+   *
+   * ⚠️ CRÍTICO: Recibe string YYYY-MM-DD directamente del input
+   * para evitar conversión a Date object que causa problemas de timezone.
    */
   const completarPaso = useCallback(async (
     pasoId: string,
-    fechaCompletado: Date
+    fechaCompletadoString: string // ✅ String YYYY-MM-DD del input
   ): Promise<boolean> => {
     setActualizando(true)
     setError(null)
@@ -124,12 +129,13 @@ export function useProcesoNegociacion({
       if (!paso) throw new Error('Paso no encontrado')
 
       // Usar fecha_inicio existente o la fecha de completado si no existe
-      const fechaInicio = paso.fechaInicio || fechaCompletado.toISOString()
+      // ✅ Pasar string directamente a formatDateToISO()
+      const fechaInicio = paso.fechaInicio || formatDateToISO(fechaCompletadoString)
 
       const actualizado = await actualizarProceso(pasoId, {
         estado: EstadoPaso.COMPLETADO,
         fechaInicio,
-        fechaCompletado: fechaCompletado.toISOString()
+        fechaCompletado: formatDateToISO(fechaCompletadoString) // ✅ String → ISO
       })
 
       // Actualizar en lista
@@ -156,6 +162,8 @@ export function useProcesoNegociacion({
 
   /**
    * Inicia un paso
+   *
+   * ⚠️ CRÍTICO: Usar getTodayDateString() y formatDateToISO() para preservar zona horaria local
    */
   const iniciarPaso = useCallback(async (pasoId: string): Promise<boolean> => {
     setActualizando(true)
@@ -164,7 +172,7 @@ export function useProcesoNegociacion({
     try {
       const actualizado = await actualizarProceso(pasoId, {
         estado: EstadoPaso.EN_PROCESO,
-        fechaInicio: new Date().toISOString()
+        fechaInicio: formatDateToISO(getTodayDateString()) // ✅ Preserva día local
       })
 
       setPasos(prev => prev.map(p =>
@@ -251,6 +259,8 @@ export function useProcesoNegociacion({
 
   /**
    * Omite un paso
+   *
+   * ⚠️ CRÍTICO: Usar getTodayDateString() y formatDateToISO() para preservar zona horaria local
    */
   const omitirPaso = useCallback(async (
     pasoId: string,
@@ -263,7 +273,7 @@ export function useProcesoNegociacion({
       const actualizado = await actualizarProceso(pasoId, {
         estado: EstadoPaso.OMITIDO,
         motivoOmision: motivo,
-        fechaCompletado: new Date().toISOString()
+        fechaCompletado: formatDateToISO(getTodayDateString()) // ✅ Preserva día local
       })
 
       setPasos(prev => prev.map(p =>
@@ -322,6 +332,73 @@ export function useProcesoNegociacion({
       setActualizando(false)
     }
   }, [pasos])
+
+  /**
+   * 🔄 Adjunta documento con AUTO-INICIO de paso
+   *
+   * Si el paso está en "Pendiente", lo inicia automáticamente
+   * antes de adjuntar el documento. Esto mejora la UX eliminando
+   * el paso manual de "Iniciar Paso".
+   *
+   * @param pasoId - ID del paso
+   * @param nombreDoc - Nombre del documento (key en documentos_urls)
+   * @param url - URL del documento en Storage
+   * @returns true si tuvo éxito, false si falló
+   */
+  const adjuntarConAutoInicio = useCallback(async (
+    pasoId: string,
+    nombreDoc: string,
+    url: string
+  ): Promise<boolean> => {
+    setActualizando(true)
+    setError(null)
+
+    try {
+      const paso = pasos.find(p => p.id === pasoId)
+      if (!paso) throw new Error('Paso no encontrado')
+
+      // 🔄 AUTO-INICIO: Si está Pendiente, iniciar automáticamente
+      if (paso.estado === EstadoPaso.PENDIENTE) {
+        console.log('🔄 Auto-iniciando paso:', paso.nombre)
+
+        // Verificar dependencias manualmente
+        const dependenciasIncompletas = pasos.filter(p =>
+          paso.dependeDe?.includes(p.id) &&
+          p.estado !== EstadoPaso.COMPLETADO &&
+          p.estado !== EstadoPaso.OMITIDO
+        )
+
+        if (dependenciasIncompletas.length > 0) {
+          throw new Error('No se puede iniciar el paso. Completa los pasos anteriores primero.')
+        }
+
+        const iniciado = await iniciarPaso(pasoId)
+        if (!iniciado) {
+          throw new Error('No se pudo iniciar el paso automáticamente')
+        }
+
+        // Esperar brevemente a que el estado se actualice
+        await new Promise(resolve => setTimeout(resolve, 150))
+      }
+
+      // Agregar documento normalmente
+      const resultado = await agregarDocumento(pasoId, nombreDoc, url)
+
+      if (resultado) {
+        console.log('✅ Documento adjuntado exitosamente (con auto-inicio si fue necesario)')
+      }
+
+      return resultado
+
+    } catch (err) {
+      const mensaje = err instanceof Error ? err.message : 'Error al adjuntar documento'
+      setError(mensaje)
+      console.error('Error en adjuntarConAutoInicio:', err)
+      return false
+    } finally {
+      setActualizando(false)
+    }
+  }, [pasos, iniciarPaso, agregarDocumento])
 
   /**
    * Elimina un documento de un paso
@@ -496,6 +573,7 @@ export function useProcesoNegociacion({
     omitirPaso,
     agregarDocumento,
     eliminarDocumento,
+    adjuntarConAutoInicio, // ✅ NUEVO
 
     // Utilidades
     puedeCompletar,

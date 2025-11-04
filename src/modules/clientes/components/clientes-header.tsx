@@ -6,6 +6,7 @@
 
 'use client'
 
+import { CanCreate } from '@/modules/usuarios/components'
 import { motion } from 'framer-motion'
 import { Plus, Users } from 'lucide-react'
 import { clientesListaStyles as styles } from '../styles/clientes-lista.styles'
@@ -47,25 +48,27 @@ export function ClientesHeader({ onNuevoCliente, totalClientes }: ClientesHeader
         </div>
       </motion.div>
 
-      {/* 🎈 FAB SUPERIOR DERECHO */}
-      <motion.div
-        initial={{ scale: 0, rotate: -180 }}
-        animate={{ scale: 1, rotate: 0 }}
-        transition={{ type: 'spring', stiffness: 260, damping: 20, delay: 0.2 }}
-        className={styles.fab.container}
-      >
-        <button
-          type="button"
-          onClick={onNuevoCliente}
-          className={styles.fab.button}
+      {/* 🎈 FAB SUPERIOR DERECHO (Solo si puede crear) */}
+      <CanCreate modulo="clientes">
+        <motion.div
+          initial={{ scale: 0, rotate: -180 }}
+          animate={{ scale: 1, rotate: 0 }}
+          transition={{ type: 'spring', stiffness: 260, damping: 20, delay: 0.2 }}
+          className={styles.fab.container}
         >
-          <div className={styles.fab.buttonGlow} />
-          <div className={styles.fab.buttonContent}>
-            <Plus className={styles.fab.icon} />
-            <span className={styles.fab.text}>Nuevo Cliente</span>
-          </div>
-        </button>
-      </motion.div>
+          <button
+            type="button"
+            onClick={onNuevoCliente}
+            className={styles.fab.button}
+          >
+            <div className={styles.fab.buttonGlow} />
+            <div className={styles.fab.buttonContent}>
+              <Plus className={styles.fab.icon} />
+              <span className={styles.fab.text}>Nuevo Cliente</span>
+            </div>
+          </button>
+        </motion.div>
+      </CanCreate>
     </>
   )
 }

@@ -1,6 +1,6 @@
 'use client'
 
-import { supabase } from '@/lib/supabase/client-browser'
+import { supabase } from '@/lib/supabase/client'; // Cliente tradicional con PKCE
 import { traducirErrorSupabase } from '@/lib/utils/traducir-errores'
 import { AnimatePresence, motion } from 'framer-motion'
 import { X } from 'lucide-react'

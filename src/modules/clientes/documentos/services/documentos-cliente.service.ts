@@ -2,7 +2,7 @@
 // SERVICE: Gestión de Documentos de Cliente
 // ============================================
 
-import { supabase } from '@/lib/supabase/client-browser'
+import { supabase } from '@/lib/supabase/client'
 import type { DocumentoCliente, SubirDocumentoClienteParams } from '../types'
 
 const BUCKET_NAME = 'documentos-clientes'

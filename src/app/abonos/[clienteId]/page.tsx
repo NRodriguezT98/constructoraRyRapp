@@ -1,5 +1,6 @@
 'use client'
 
+import { resolverSlugCliente } from '@/lib/utils/slug.utils'
 import { ModalRegistrarAbono } from '@/modules/abonos/components/modal-registrar-abono'
 import { motion } from 'framer-motion'
 import { Loader2, Wallet } from 'lucide-react'
@@ -15,8 +16,19 @@ interface PageProps {
 
 export default function AbonosDetallePage({ params }: PageProps) {
   const resolvedParams = React.use(params)
-  const clienteId = resolvedParams.clienteId
+  const clienteIdOrSlug = resolvedParams.clienteId
   const router = useRouter()
+
+  // Resolver slug a UUID
+  const [clienteId, setClienteId] = React.useState<string | null>(null)
+  const [isResolving, setIsResolving] = React.useState(true)
+
+  React.useEffect(() => {
+    resolverSlugCliente(clienteIdOrSlug).then(uuid => {
+      setClienteId(uuid)
+      setIsResolving(false)
+    })
+  }, [clienteIdOrSlug])
 
   const {
     negociacion,
@@ -37,8 +49,8 @@ export default function AbonosDetallePage({ params }: PageProps) {
     router.push('/abonos')
   }
 
-  // Loading state
-  if (isLoading || !negociacion) {
+  // Loading states
+  if (isResolving || !clienteId || isLoading || !negociacion) {
     return (
       <div className={containerStyles.page}>
         <div className="flex items-center justify-center min-h-screen">
@@ -77,6 +89,7 @@ export default function AbonosDetallePage({ params }: PageProps) {
                 <FuentePagoCard
                   key={fuente.id}
                   fuente={fuente}
+                  negociacionId={negociacion.id}
                   onRegistrarAbono={handleRegistrarAbono}
                   index={index}
                   validacion={validarFuentePago[fuente.id]}
@@ -102,6 +115,7 @@ export default function AbonosDetallePage({ params }: PageProps) {
             open={modalAbonoOpen}
             onClose={handleCerrarModal}
             negociacionId={negociacion.id}
+            clienteId={clienteId}
             fuentesPago={negociacion.fuentes_pago}
             fuenteInicial={fuenteSeleccionada}
             onSuccess={handleAbonoRegistrado}

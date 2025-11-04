@@ -13,7 +13,7 @@
  * - 'Completada' → 100% pagado y entregado
  */
 
-import { supabase } from '@/lib/supabase/client-browser'
+import { supabase } from '@/lib/supabase/client'
 import {
     crearProcesoDesdePlantilla,
     obtenerPlantillaPredeterminada

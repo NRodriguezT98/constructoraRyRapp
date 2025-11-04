@@ -59,7 +59,7 @@ export function useClienteCardActivo({ clienteId }: UseClienteCardActivoProps) {
     try {
       setCargando(true)
       // Importar dinámicamente para evitar problemas de SSR
-      const { supabase } = await import('@/lib/supabase/client-browser')
+      const { supabase } = await import('@/lib/supabase/client')
 
       // Obtener negociación activa del cliente con sus relaciones
       const { data: negociacion, error } = await supabase

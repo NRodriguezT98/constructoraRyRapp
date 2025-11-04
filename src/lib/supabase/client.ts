@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js'
+import { createBrowserClient } from '@supabase/ssr'
 import type { Database } from './database.types'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
@@ -9,18 +9,20 @@ if (!supabaseUrl || !supabaseAnonKey) {
 }
 
 // ============================================
-// NOTA: Warning "Multiple GoTrueClient instances" en desarrollo
+// CONFIGURACIÓN CON @supabase/ssr
 // ============================================
-// Este warning aparece en desarrollo debido a Next.js hot-reload.
-// No afecta funcionalidad y desaparece en producción.
-// La instancia es singleton y funciona correctamente.
+// Usa createBrowserClient de @supabase/ssr
+// Esto permite que el cliente y el middleware compartan
+// la misma sesión vía cookies
+//
+// PKCE se usa AUTOMÁTICAMENTE para:
+// - resetPasswordForEmail()
+// - signInWithOAuth()
+//
+// Password-based auth para signInWithPassword()
 // ============================================
 
-export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    persistSession: true,
-    autoRefreshToken: true,
-    detectSessionInUrl: true,
-    storageKey: 'ryr-constructora-auth',
-  },
-})
+export const supabase = createBrowserClient<Database>(
+  supabaseUrl,
+  supabaseAnonKey
+)

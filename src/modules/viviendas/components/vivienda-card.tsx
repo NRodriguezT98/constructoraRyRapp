@@ -48,6 +48,7 @@ export function ViviendaCard({
       return (
         <ViviendaCardAsignada
           vivienda={vivienda}
+          onVerDetalle={onVerDetalle}
           onVerAbonos={onVerAbonos}
           onRegistrarPago={onRegistrarPago}
           onEditar={onEditar}
@@ -58,8 +59,8 @@ export function ViviendaCard({
       return (
         <ViviendaCardEntregada
           vivienda={vivienda}
+          onVerDetalle={onVerDetalle}
           onVerAbonos={onVerAbonos}
-          onGenerarEscritura={onGenerarEscritura}
           onEditar={onEditar}
         />
       )

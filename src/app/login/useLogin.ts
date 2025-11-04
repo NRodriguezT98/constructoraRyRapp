@@ -54,6 +54,8 @@ export function useLogin(): UseLoginReturn {
       e.preventDefault()
       setError('')
 
+      console.log('📝 handleSubmit llamado')
+
       // Verificar si está bloqueado
       if (verificarBloqueo()) {
         setError(
@@ -62,9 +64,16 @@ export function useLogin(): UseLoginReturn {
         return
       }
 
+      // Prevenir múltiples submissions
+      if (loading) {
+        console.warn('⚠️ Login ya en progreso, ignorando...')
+        return
+      }
+
       setLoading(true)
 
       try {
+        console.log('🔐 Intentando login:', email)
         await signIn(email, password)
 
         // Login exitoso: resetear intentos fallidos
@@ -73,10 +82,21 @@ export function useLogin(): UseLoginReturn {
         // 📝 Registrar evento de auditoría
         auditLogService.logLoginExitoso(email)
 
-        // Si redirectedFrom es '/' (raíz) o no existe, redirigir al dashboard
-        const redirectTo = redirectedFrom && redirectedFrom !== '/' ? redirectedFrom : '/'
+        console.log('✅ Login exitoso, redirigiendo...')
 
-        // Redirección con recarga completa para que middleware detecte la sesión
+        // Si redirectedFrom es '/' (raíz), '/login', '/auth/login' o no existe, redirigir al dashboard
+        const isInvalidRedirect =
+          !redirectedFrom ||
+          redirectedFrom === '/' ||
+          redirectedFrom === '/login' ||
+          redirectedFrom.startsWith('/auth/')
+
+        const redirectTo = isInvalidRedirect ? '/' : redirectedFrom
+
+        console.log('🔀 Redirigiendo a:', redirectTo)
+
+        // Usar window.location para redirección completa
+        // Esto asegura que el middleware valide la nueva sesión
         window.location.href = redirectTo
       } catch (err: any) {
         // Calcular intentos restantes DESPUÉS de este fallo

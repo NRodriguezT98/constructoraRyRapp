@@ -1,5 +1,6 @@
 import { getTodayDateString } from '@/lib/utils/date.utils'
 import { useEffect, useState } from 'react'
+import { validarDesembolso, type ResultadoValidacion } from '../../services/validacion-desembolsos.service'
 import type { FuentePagoConAbonos } from '../../types'
 
 interface UseModalRegistrarAbonoProps {
@@ -33,6 +34,7 @@ export function useModalRegistrarAbono({
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [loading, setLoading] = useState(false)
   const [metodoSeleccionado, setMetodoSeleccionado] = useState('Transferencia')
+  const [validacionDesembolso, setValidacionDesembolso] = useState<ResultadoValidacion | null>(null)
 
   // Actualizar monto si cambia el tipo de fuente
   useEffect(() => {
@@ -74,6 +76,24 @@ export function useModalRegistrarAbono({
     setLoading(true)
 
     try {
+      // ✅ VALIDACIÓN: Verificar que el paso del proceso esté completado (solo para desembolsos)
+      if (esDesembolsoCompleto) {
+        const resultadoValidacion = await validarDesembolso(
+          negociacionId,
+          fuentePreseleccionada.tipo
+        )
+
+        setValidacionDesembolso(resultadoValidacion)
+
+        if (!resultadoValidacion.permitido) {
+          setErrors({
+            submit: resultadoValidacion.razon || 'No se puede registrar el desembolso en este momento.',
+          })
+          setLoading(false)
+          return
+        }
+      }
+
       const response = await fetch('/api/abonos/registrar', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -101,6 +121,7 @@ export function useModalRegistrarAbono({
       })
       setErrors({})
       setMetodoSeleccionado('Transferencia')
+      setValidacionDesembolso(null)
 
       onSuccess()
       onClose()
@@ -124,6 +145,12 @@ export function useModalRegistrarAbono({
     updateField('metodo_pago', metodo)
   }
 
+  // Limpiar validación de desembolso
+  const limpiarValidacion = () => {
+    setValidacionDesembolso(null)
+    setErrors((prev) => ({ ...prev, submit: '' }))
+  }
+
   // Formatear moneda
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('es-CO', {
@@ -144,11 +171,13 @@ export function useModalRegistrarAbono({
     montoAutomatico,
     saldoPendiente,
     montoIngresado,
+    validacionDesembolso,
 
     // Handlers
     handleSubmit,
     updateField,
     selectMetodo,
+    limpiarValidacion,
 
     // Utilidades
     formatCurrency,

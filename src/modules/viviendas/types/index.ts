@@ -1,5 +1,5 @@
-Ôªø/**
- * Tipos del m√≥dulo Viviendas
+/**
+ * Tipos del mÛdulo Viviendas
  */
 
 // ============================================
@@ -18,27 +18,27 @@ export interface Vivienda {
   lindero_oriente?: string
   lindero_occidente?: string
 
-  // Informaci√≥n Legal
+  // InformaciÛn Legal
   matricula_inmobiliaria?: string
   nomenclatura?: string
-  area_lote?: number // m¬≤
-  area_construida?: number // m¬≤
+  area_lote?: number // m≤
+  area_construida?: number // m≤
   tipo_vivienda?: TipoVivienda
   certificado_tradicion_url?: string // URL en Supabase Storage
 
-  // Informaci√≥n Financiera
+  // InformaciÛn Financiera
   valor_base: number
   es_esquinera: boolean
   recargo_esquinera: number
   gastos_notariales: number
-  valor_total: number // Calculado autom√°ticamente en DB
+  valor_total: number // Calculado autom·ticamente en DB
 
-  // Asignaci√≥n de Cliente
+  // AsignaciÛn de Cliente
   cliente_id?: string
-  negociacion_id?: string // ‚≠ê NUEVO (2025-10-22): FK a negociaciones
+  negociacion_id?: string // ? NUEVO (2025-10-22): FK a negociaciones
   fecha_asignacion?: string
   fecha_pago_completo?: string
-  fecha_entrega?: string // ‚≠ê NUEVO (2025-10-22): Requerida cuando estado='Entregada'
+  fecha_entrega?: string // ? NUEVO (2025-10-22): Requerida cuando estado='Entregada'
 
   // Relaciones
   manzanas?: {
@@ -55,7 +55,7 @@ export interface Vivienda {
     email?: string
   }
 
-  // C√°lculos de Abonos (desde vista o join)
+  // C·lculos de Abonos (desde vista o join)
   total_abonado?: number
   saldo_pendiente?: number
   porcentaje_pagado?: number
@@ -80,7 +80,7 @@ export interface InformacionLegal {
   area_construida: number
   tipo_vivienda: TipoVivienda
   certificado_tradicion_file?: File // Archivo a subir
-  certificado_tradicion_url?: string // URL despu√©s de subir
+  certificado_tradicion_url?: string // URL despuÈs de subir
 }
 
 export interface ResumenFinanciero {
@@ -129,7 +129,7 @@ export interface ConfiguracionRecargo {
 // ============================================
 
 export interface ViviendaFormData {
-  // Paso 1: Selecci√≥n de ubicaci√≥n
+  // Paso 1: SelecciÛn de ubicaciÛn
   proyecto_id: string
   manzana_id: string
   numero: string
@@ -140,7 +140,7 @@ export interface ViviendaFormData {
   lindero_oriente: string
   lindero_occidente: string
 
-  // Paso 3: Informaci√≥n Legal
+  // Paso 3: InformaciÛn Legal
   matricula_inmobiliaria: string
   nomenclatura: string
   area_lote: number
@@ -148,7 +148,7 @@ export interface ViviendaFormData {
   tipo_vivienda: TipoVivienda
   certificado_tradicion_file?: File
 
-  // Paso 4: Informaci√≥n Financiera
+  // Paso 4: InformaciÛn Financiera
   valor_base: number
   es_esquinera: boolean
   recargo_esquinera: number
@@ -159,12 +159,12 @@ export interface ViviendaFormData {
 // ============================================
 
 /**
- * ‚úÖ VERIFICADO en: docs/DATABASE-SCHEMA-REFERENCE.md
+ * ? VERIFICADO en: docs/DATABASE-SCHEMA-REFERENCE.md
  * CHECK constraint: viviendas_estado_check (3 estados)
  *
  * CAMBIOS (2025-10-22):
- * ‚ùå ELIMINADOS: 'Pagada'
- * ‚úÖ ACTUALIZADOS: 'Reservada' ‚Üí 'Asignada', 'Vendida' ‚Üí 'Entregada'
+ * ? ELIMINADOS: 'Pagada'
+ * ? ACTUALIZADOS: 'Reservada' ? 'Asignada', 'Vendida' ? 'Entregada'
  */
 export type ViviendaEstado = 'Disponible' | 'Asignada' | 'Entregada'
 

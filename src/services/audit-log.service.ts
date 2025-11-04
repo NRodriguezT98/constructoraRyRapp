@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase/client-browser'
+import { supabase } from '@/lib/supabase/client'
 
 export type TipoEventoSeguridad =
   | 'login_exitoso'
@@ -62,9 +62,8 @@ class AuditLogService {
       if (error) {
         console.error('❌ Error registrando evento de auditoría:', error)
         // No lanzar error para no interrumpir el flujo principal
-      } else {
-        console.log(`📝 Evento registrado: ${tipo} - ${usuarioEmail}`)
       }
+      // Registro exitoso silencioso (sin logs en desarrollo)
     } catch (error) {
       console.error('❌ Excepción en logSecurityEvent:', error)
       // Fallar silenciosamente para no afectar la experiencia del usuario

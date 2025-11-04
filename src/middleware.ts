@@ -31,21 +31,41 @@ export async function middleware(req: NextRequest) {
   const supabase = createMiddlewareClient(req, res)
 
   // Verificar sesión actual
-  const { data: { session } } = await supabase.auth.getSession()
+  const { data: { session }, error } = await supabase.auth.getSession()
+
+  // Debug logging
+  if (process.env.NODE_ENV === 'development') {
+    console.log('🔍 Middleware:', {
+      path: req.nextUrl.pathname,
+      hasSession: !!session,
+      user: session?.user?.email,
+      error: error?.message
+    })
+  }
 
   // Si NO está autenticado y NO está en ruta pública → redirigir a login
   if (!session && !isPublicPath) {
     const redirectUrl = req.nextUrl.clone()
     redirectUrl.pathname = '/login'
+
     // Guardar la ruta original para redirigir después del login
-    redirectUrl.searchParams.set('redirectedFrom', req.nextUrl.pathname)
+    // EXCEPTO si es una ruta /auth/* inválida
+    const originalPath = req.nextUrl.pathname
+    if (!originalPath.startsWith('/auth/')) {
+      redirectUrl.searchParams.set('redirectedFrom', originalPath)
+    }
+
     return NextResponse.redirect(redirectUrl)
   }
 
   // Si SÍ está autenticado y está intentando acceder a login → redirigir a dashboard
-  if (session && isPublicPath) {
+  if (session && req.nextUrl.pathname === '/login') {
     const redirectUrl = req.nextUrl.clone()
-    redirectUrl.pathname = '/'
+    // Si venía de algún lado válido, redirigir ahí; sino al dashboard
+    const from = req.nextUrl.searchParams.get('redirectedFrom')
+    const isValidRedirect = from && from !== '/' && !from.startsWith('/auth/') && from !== '/login'
+    redirectUrl.pathname = isValidRedirect ? from : '/'
+    redirectUrl.searchParams.delete('redirectedFrom')
     return NextResponse.redirect(redirectUrl)
   }
 

@@ -100,12 +100,21 @@ export function formatDateTimeForDisplay(dateString: string): string {
 /**
  * Obtiene la fecha actual en formato YYYY-MM-DD (para inputs date)
  *
- * @returns Fecha de hoy en formato YYYY-MM-DD
+ * ⚠️ CRÍTICO: NO usar new Date().toISOString().split('T')[0]
+ * porque toISOString() convierte a UTC y puede cambiar el día
+ * en zonas horarias negativas como Colombia (UTC-5).
+ *
+ * @returns Fecha de hoy en formato YYYY-MM-DD en zona horaria local
  *
  * @example
  * ```ts
+ * // Hoy es 24 octubre 2025, 10:00 PM en Colombia
  * getTodayDateString()
- * // → "2025-10-23"
+ * // → "2025-10-24" ✅ (correcto)
+ *
+ * // ❌ NUNCA usar:
+ * new Date().toISOString().split('T')[0]
+ * // → "2025-10-25" (incorrecto, suma 1 día por UTC)
  * ```
  */
 export function getTodayDateString(): string {
@@ -115,6 +124,55 @@ export function getTodayDateString(): string {
   const day = String(today.getDate()).padStart(2, '0')
 
   return `${year}-${month}-${day}`
+}
+
+/**
+ * Convierte string YYYY-MM-DD o Date object a formato ISO preservando zona horaria LOCAL
+ *
+ * ⚠️ CRÍTICO: Esta función PARSEA el string directamente sin crear Date object
+ * para evitar conversiones de timezone que cambian el día.
+ *
+ * @param input - String en formato YYYY-MM-DD del input date, o Date object
+ * @returns String ISO con fecha local y hora del mediodía
+ *
+ * @example
+ * ```ts
+ * // ✅ CORRECTO - Desde input date
+ * const inputValue = '2025-10-28' // Del input type="date"
+ * formatDateToISO(inputValue)
+ * // → "2025-10-28T12:00:00" (preserva el día exacto)
+ *
+ * // ✅ CORRECTO - Fecha actual
+ * formatDateToISO(getTodayDateString())
+ * // → "2025-10-28T12:00:00"
+ *
+ * // ❌ EVITAR - Pasar Date object (puede tener timezone issues)
+ * formatDateToISO(new Date('2025-10-28'))
+ * // → Puede fallar en ciertas horas del día
+ * ```
+ */
+export function formatDateToISO(input: string | Date): string {
+  // Si es string YYYY-MM-DD, usarlo directamente (PREFERIDO)
+  if (typeof input === 'string') {
+    // Validar formato YYYY-MM-DD
+    if (/^\d{4}-\d{2}-\d{2}$/.test(input)) {
+      return `${input}T12:00:00`
+    }
+
+    // Si es un string ISO completo, extraer solo la fecha
+    const match = input.match(/^(\d{4}-\d{2}-\d{2})/)
+    if (match) {
+      return `${match[1]}T12:00:00`
+    }
+  }
+
+  // Fallback: Si es Date object, extraer componentes en timezone local
+  const date = typeof input === 'string' ? new Date(input) : input
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+
+  return `${year}-${month}-${day}T12:00:00`
 }
 
 /**

@@ -5,6 +5,7 @@
 
 'use client'
 
+import { CanDelete, CanEdit } from '@/modules/usuarios/components'
 import { formatDistanceToNow } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { motion } from 'framer-motion'
@@ -83,26 +84,30 @@ export function ClienteCardInteresado({
               <Eye className='h-4 w-4' />
             </button>
           )}
-          {onEditar && (
-            <button
-              type='button'
-              onClick={() => onEditar(cliente)}
-              className='rounded-lg p-2 text-white backdrop-blur-sm transition-all hover:bg-white/20'
-              title='Editar cliente'
-            >
-              <Edit className='h-4 w-4' />
-            </button>
-          )}
-          {onEliminar && (
-            <button
-              type='button'
-              onClick={() => onEliminar(cliente)}
-              className='rounded-lg p-2 text-white backdrop-blur-sm transition-all hover:bg-white/20'
-              title='Eliminar cliente'
-            >
-              <Trash2 className='h-4 w-4' />
-            </button>
-          )}
+          <CanEdit modulo="clientes">
+            {onEditar && (
+              <button
+                type='button'
+                onClick={() => onEditar(cliente)}
+                className='rounded-lg p-2 text-white backdrop-blur-sm transition-all hover:bg-white/20'
+                title='Editar cliente'
+              >
+                <Edit className='h-4 w-4' />
+              </button>
+            )}
+          </CanEdit>
+          <CanDelete modulo="clientes">
+            {onEliminar && (
+              <button
+                type='button'
+                onClick={() => onEliminar(cliente)}
+                className='rounded-lg p-2 text-white backdrop-blur-sm transition-all hover:bg-white/20'
+                title='Eliminar cliente'
+              >
+                <Trash2 className='h-4 w-4' />
+              </button>
+            )}
+          </CanDelete>
         </div>
 
         {/* Icono flotante del cliente */}

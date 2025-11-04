@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase/client-browser'
+import { supabase } from '@/lib/supabase/client'
 import type {
     ConfiguracionRecargo,
     FiltrosViviendas,
@@ -212,14 +212,14 @@ class ViviendasService {
     if (vivienda.cliente_id) {
       const { data: clienteData, error: clienteError } = await supabase
         .from('clientes')
-        .select('id, nombre, apellido, telefono, email')
+        .select('id, nombres, apellidos, telefono, email')
         .eq('id', vivienda.cliente_id)
         .single()
 
       if (!clienteError && clienteData) {
         vivienda.clientes = {
           id: clienteData.id,
-          nombre_completo: `${clienteData.nombre} ${clienteData.apellido}`,
+          nombre_completo: `${clienteData.nombres} ${clienteData.apellidos}`,
           telefono: clienteData.telefono,
           email: clienteData.email,
         }

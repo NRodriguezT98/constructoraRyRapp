@@ -14,7 +14,7 @@
  */
 
 import { useAuth } from '@/contexts/auth-context'
-import { supabase } from '@/lib/supabase/client-browser'
+import { supabase } from '@/lib/supabase/client'
 import { DragEvent, useCallback, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'

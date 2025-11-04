@@ -1,9 +1,10 @@
 'use client'
 
+import { RequireView } from '@/modules/usuarios/components'
 import { motion } from 'framer-motion'
 import { FileX } from 'lucide-react'
 
-export default function RenunciasPage() {
+function RenunciasContent() {
   return (
     <div className='min-h-screen bg-gradient-to-br from-red-50 via-rose-50 to-pink-100 p-4 dark:from-gray-900 dark:via-red-900/20 dark:to-rose-900/30'>
       <div className='container mx-auto px-4 py-4'>
@@ -30,5 +31,13 @@ export default function RenunciasPage() {
         </motion.div>
       </div>
     </div>
+  )
+}
+
+export default function RenunciasPage() {
+  return (
+    <RequireView modulo="renuncias">
+      <RenunciasContent />
+    </RequireView>
   )
 }

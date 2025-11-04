@@ -5,6 +5,7 @@
  */
 
 import { ListaPlantillas } from '@/modules/admin/procesos/components'
+import { RequireView } from '@/modules/usuarios/components'
 
 export const metadata = {
   title: 'Gestión de Procesos | RyR Constructora',
@@ -12,5 +13,9 @@ export const metadata = {
 }
 
 export default function ProcesosPage() {
-  return <ListaPlantillas />
+  return (
+    <RequireView modulo="procesos">
+      <ListaPlantillas />
+    </RequireView>
+  )
 }

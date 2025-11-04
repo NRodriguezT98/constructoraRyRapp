@@ -1,4 +1,4 @@
-﻿// Barrel exports para estilos de viviendas
+// Barrel exports para estilos de viviendas
 export * from './animations'
 export * from './classes'
 export * from './vivienda-form.styles'

@@ -1,7 +1,14 @@
 /**
  * 📄 SERVICIO DE DOCUMENTOS DE PROCESO
  *
+ * ✅ SISTEMA UNIFICADO con documentos de clientes.
+ *
  * Maneja la subida y eliminación de documentos adjuntos a pasos del proceso.
+ * Usa el mismo bucket ('documentos-clientes') y tabla ('documentos_cliente')
+ * que el sistema principal de documentos de clientes.
+ *
+ * Path de storage: {user_id}/{cliente_id}/{nombreArchivo}
+ *
  * Incluye validación de archivos y almacenamiento en Supabase Storage.
  */
 
@@ -40,7 +47,7 @@ interface ResultadoSubida {
 const CONFIG = {
   maxTamanoMB: 10,
   extensionesPermitidas: ['.pdf', '.jpg', '.jpeg', '.png', '.doc', '.docx'],
-  bucketName: 'documentos-procesos'
+  bucketName: 'documentos-clientes'  // ✅ UNIFICADO: Usar el mismo bucket que documentos de clientes
 } as const
 
 // ===================================
@@ -73,10 +80,13 @@ function validarArchivo(file: File): { valido: boolean; error?: string } {
 // UTILIDADES
 // ===================================
 
+/**
+ * Construye el path de storage usando la misma estructura que documentos de clientes
+ * Path: {user_id}/{cliente_id}/{nombreArchivo}
+ */
 function construirStoragePath(
   userId: string,
-  negociacionId: string,
-  pasoId: string,
+  clienteId: string,
   documentoNombre: string,
   extension: string
 ): string {
@@ -87,7 +97,9 @@ function construirStoragePath(
     .replace(/\s+/g, '_')
     .replace(/[^a-zA-Z0-9_]/g, '')
 
-  return `${userId}/procesos/${negociacionId}/${pasoId}/${nombreLimpio}_${timestamp}${extension}`
+  // ✅ UNIFICADO: Misma estructura que documentos de clientes
+  const nombreArchivo = `${nombreLimpio}_${timestamp}${extension}`
+  return `${userId}/${clienteId}/${nombreArchivo}`
 }
 
 function obtenerExtension(fileName: string): string {
@@ -111,11 +123,23 @@ export async function subirDocumento(params: SubirDocumentoParams): Promise<Resu
       return { exito: false, error: validacion.error }
     }
 
-    // 2. Construir path
-    const extension = obtenerExtension(file.name)
-    const storagePath = construirStoragePath(userId, negociacionId, pasoId, documentoNombre, extension)
+    // 2. Obtener cliente_id de la negociación (necesario para el path unificado)
+    const { data: negociacion, error: negError } = await supabase
+      .from('negociaciones')
+      .select('cliente_id')
+      .eq('id', negociacionId)
+      .single()
 
-    // 3. Subir a Storage
+    if (negError || !negociacion?.cliente_id) {
+      console.error('❌ Error al obtener cliente_id:', negError)
+      return { exito: false, error: 'No se pudo obtener el cliente asociado' }
+    }
+
+    // 3. Construir path usando estructura unificada: {user_id}/{cliente_id}/{nombreArchivo}
+    const extension = obtenerExtension(file.name)
+    const storagePath = construirStoragePath(userId, negociacion.cliente_id, documentoNombre, extension)
+
+    // 4. Subir a Storage (bucket unificado)
     const { error: uploadError } = await supabase.storage
       .from(CONFIG.bucketName)
       .upload(storagePath, file, {
@@ -128,49 +152,48 @@ export async function subirDocumento(params: SubirDocumentoParams): Promise<Resu
       return { exito: false, error: uploadError.message }
     }
 
-    // 4. Obtener URL pública
+    // 5. Obtener URL pública
     const { data: { publicUrl } } = supabase.storage
       .from(CONFIG.bucketName)
       .getPublicUrl(storagePath)
 
-    // 5. Guardar en documentos_cliente
-    const { data: negociacion } = await supabase
-      .from('negociaciones')
-      .select('cliente_id')
-      .eq('id', negociacionId)
-      .single()
+    // 6. Guardar en documentos_cliente (tabla unificada)
+    const nombreLimpio = documentoNombre
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/\s+/g, '_')
+      .replace(/[^a-zA-Z0-9_]/g, '')
 
-    if (negociacion?.cliente_id) {
-      const nombreLimpio = documentoNombre
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .replace(/\s+/g, '_')
-        .replace(/[^a-zA-Z0-9_]/g, '')
+    // Generar descripción legible con el nombre del paso
+    const descripcion = pasoNombre
+      ? `Subido desde proceso - Paso: ${pasoNombre}`
+      : `Subido desde proceso - Paso ${pasoId}`
 
-      // Generar descripción legible con el nombre del paso
-      const descripcion = pasoNombre
-        ? `Subido desde proceso - Paso: ${pasoNombre}`
-        : `Subido desde proceso - Paso ${pasoId}`
+    const { error: dbError } = await supabase
+      .from('documentos_cliente')
+      .insert({
+        cliente_id: negociacion.cliente_id,
+        categoria_id: categoriaId || null,  // ✅ Asignar categoría automáticamente
+        titulo: documentoNombre,
+        descripcion,
+        nombre_archivo: `${nombreLimpio}_${Date.now()}${extension}`,
+        nombre_original: file.name,
+        tamano_bytes: file.size,
+        tipo_mime: file.type,
+        url_storage: publicUrl,
+        subido_por: userId,
+        es_importante: false,
+        es_version_actual: true,
+        version: 1,
+        estado: 'activo',
+        etiquetas: ['Proceso', 'Negociación']
+      })
 
-      await supabase
-        .from('documentos_cliente')
-        .insert({
-          cliente_id: negociacion.cliente_id,
-          categoria_id: categoriaId || null,  // ✅ NUEVO: Asignar categoría automáticamente
-          titulo: documentoNombre,
-          descripcion,
-          nombre_archivo: `${nombreLimpio}_${Date.now()}${extension}`,
-          nombre_original: file.name,
-          tamano_bytes: file.size,
-          tipo_mime: file.type,
-          url_storage: publicUrl,
-          subido_por: userId,
-          es_importante: false,
-          es_version_actual: true,
-          version: 1,
-          estado: 'activo',
-          etiquetas: ['Proceso', 'Negociación']
-        })
+    if (dbError) {
+      console.error('❌ Error al guardar en documentos_cliente:', dbError)
+      // Intentar eliminar archivo del storage si falla la DB
+      await supabase.storage.from(CONFIG.bucketName).remove([storagePath])
+      return { exito: false, error: 'Error al registrar el documento en la base de datos' }
     }
 
     return { exito: true, url: publicUrl }

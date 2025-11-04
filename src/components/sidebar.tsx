@@ -83,6 +83,13 @@ const navigationGroups = [
     title: 'Sistema',
     items: [
       {
+        name: 'Usuarios',
+        href: '/usuarios',
+        icon: Users,
+        color: 'from-violet-500 to-violet-600',
+        description: 'Gestión de usuarios',
+      },
+      {
         name: 'Administración',
         href: '/admin',
         icon: Shield,
@@ -108,7 +115,7 @@ const navigationGroups = [
 ]
 
 export function Sidebar() {
-  const { user, signOut } = useAuth()
+  const { user, perfil, signOut } = useAuth()
   const router = useRouter()
   const {
     isExpanded,
@@ -131,22 +138,59 @@ export function Sidebar() {
 
   // Obtener iniciales del usuario
   const getUserInitials = () => {
-    if (!user?.email) return 'U'
-    const email = user.email
-    const firstLetter = email.charAt(0).toUpperCase()
-    return firstLetter
+    if (perfil?.nombres && perfil?.apellidos) {
+      return `${perfil.nombres.charAt(0)}${perfil.apellidos.charAt(0)}`.toUpperCase()
+    }
+    if (perfil?.nombres) {
+      return perfil.nombres.charAt(0).toUpperCase()
+    }
+    if (user?.email) {
+      return user.email.charAt(0).toUpperCase()
+    }
+    return 'U'
   }
 
-  // Obtener nombre para mostrar
+  // Obtener nombre completo para mostrar
   const getDisplayName = () => {
-    if (user?.user_metadata?.full_name) {
-      return user.user_metadata.full_name
+    if (perfil?.nombres && perfil?.apellidos) {
+      return `${perfil.nombres} ${perfil.apellidos}`
+    }
+    if (perfil?.nombres) {
+      return perfil.nombres
     }
     if (user?.email) {
       // Extraer nombre del email (parte antes del @)
       return user.email.split('@')[0].replace(/[._-]/g, ' ')
     }
     return 'Usuario'
+  }
+
+  // Obtener color según rol
+  const getRolColor = () => {
+    switch (perfil?.rol) {
+      case 'Administrador':
+        return 'from-red-500 to-pink-600'
+      case 'Gerente':
+        return 'from-orange-500 to-amber-600'
+      case 'Vendedor':
+        return 'from-blue-500 to-indigo-600'
+      default:
+        return 'from-gray-500 to-gray-600'
+    }
+  }
+
+  // Obtener badge color según rol
+  const getRolBadgeColor = () => {
+    switch (perfil?.rol) {
+      case 'Administrador':
+        return 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+      case 'Gerente':
+        return 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400'
+      case 'Vendedor':
+        return 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+      default:
+        return 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400'
+    }
   }
 
   const sidebarVariants = {
@@ -332,8 +376,8 @@ export function Sidebar() {
                           whileTap={{ scale: 0.98 }}
                           className={`group relative flex items-center rounded-lg px-2.5 py-2 transition-all duration-200 ${
                             active
-                              ? `bg-gradient-to-r ${item.color} text-white shadow-md`
-                              : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800'
+                              ? `bg-gradient-to-r ${item.color} text-white shadow-lg border-l-4 border-white/30`
+                              : 'text-gray-700 hover:bg-white/5 dark:text-gray-300 dark:hover:bg-white/5'
                           }`}
                         >
                           {/* Icon */}
@@ -470,28 +514,45 @@ export function Sidebar() {
                 animate='expanded'
                 exit='collapsed'
                 transition={{ duration: 0.2 }}
-                className='flex items-center space-x-2 rounded-lg bg-gray-50 p-2 dark:bg-gray-800'
+                className='rounded-lg bg-gradient-to-br from-gray-50 to-gray-100 p-2.5 shadow-sm dark:from-gray-800 dark:to-gray-800/50'
               >
-                <div className='flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-r from-blue-500 to-indigo-600'>
-                  <span className='text-xs font-medium text-white'>{getUserInitials()}</span>
-                </div>
-                <div className='flex-1 min-w-0'>
-                  <div className='text-xs font-medium text-gray-900 dark:text-gray-100 truncate'>
-                    {getDisplayName()}
+                <div className='flex items-start space-x-2.5'>
+                  {/* Avatar con gradiente según rol */}
+                  <div className={`flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-gradient-to-br ${getRolColor()} shadow-md`}>
+                    <span className='text-sm font-bold text-white'>{getUserInitials()}</span>
                   </div>
-                  <div className='text-[10px] text-gray-500 dark:text-gray-400 truncate'>
-                    {user?.email || 'usuario@ryr.com'}
+
+                  {/* Info del usuario */}
+                  <div className='flex-1 min-w-0 space-y-1'>
+                    {/* Nombre completo */}
+                    <div className='text-xs font-semibold text-gray-900 dark:text-gray-100 truncate'>
+                      {getDisplayName()}
+                    </div>
+
+                    {/* Email */}
+                    <div className='text-[10px] text-gray-500 dark:text-gray-400 truncate'>
+                      {user?.email || 'usuario@ryr.com'}
+                    </div>
+
+                    {/* Badge de Rol */}
+                    <div className='flex items-center'>
+                      <span className={`inline-flex items-center rounded-md px-1.5 py-0.5 text-[9px] font-medium ${getRolBadgeColor()}`}>
+                        {perfil?.rol || 'Sin rol'}
+                      </span>
+                    </div>
                   </div>
+
+                  {/* Botón logout */}
+                  <Button
+                    variant='ghost'
+                    size='sm'
+                    className='flex-shrink-0 p-1.5 hover:bg-red-100 dark:hover:bg-red-900/20'
+                    onClick={handleSignOut}
+                    title='Cerrar sesión'
+                  >
+                    <LogOut className='h-3.5 w-3.5 text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400' />
+                  </Button>
                 </div>
-                <Button
-                  variant='ghost'
-                  size='sm'
-                  className='p-1 hover:bg-red-100 dark:hover:bg-red-900/20'
-                  onClick={handleSignOut}
-                  title='Cerrar sesión'
-                >
-                  <LogOut className='h-3.5 w-3.5 text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400' />
-                </Button>
               </motion.div>
             )}
           </AnimatePresence>

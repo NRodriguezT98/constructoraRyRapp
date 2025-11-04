@@ -2,10 +2,10 @@
 // SERVICE: Gestión de Categorías de Documentos
 // ============================================
 
-import { supabase } from '../../../lib/supabase/client-browser'
+import { supabase } from '@/lib/supabase/client'
 import type {
-  CategoriaDocumento,
-  ModuloDocumento,
+    CategoriaDocumento,
+    ModuloDocumento,
 } from '../types/documento.types'
 
 export class CategoriasService {

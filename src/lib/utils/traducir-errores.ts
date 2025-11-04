@@ -22,6 +22,8 @@ export function traducirErrorSupabase(errorMessage: string): string {
     'Unable to validate email': 'No se pudo validar el email.',
     'Token expired': 'El enlace ha expirado. Solicita uno nuevo.',
     'Invalid token': 'Enlace inválido.',
+    'New password should be different from the old password': 'La nueva contraseña debe ser diferente a la anterior.',
+    'New password should be different': 'La nueva contraseña debe ser diferente a la anterior.',
 
     // Errores de conexión
     'Network error': 'Error de conexión. Verifica tu internet.',

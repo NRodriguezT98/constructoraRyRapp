@@ -1,13 +1,14 @@
 'use client'
 
-import { Button } from '@/components/ui/button'
+import { BotonRegistrarDesembolso } from '@/modules/abonos/components/BotonRegistrarDesembolso'
 import type { FuentePagoConAbonos } from '@/modules/abonos/types'
 import { motion } from 'framer-motion'
-import { Banknote, Building2, Clock, Gift, Home, Plus } from 'lucide-react'
+import { Banknote, Building2, Clock, Gift, Home } from 'lucide-react'
 import { animations, colorSchemes, fuentesStyles } from '../styles/abonos-detalle.styles'
 
 interface FuentePagoCardProps {
   fuente: FuentePagoConAbonos
+  negociacionId: string  // ✅ NUEVO: Necesario para validación
   onRegistrarAbono: (fuente: FuentePagoConAbonos) => void
   index: number
   validacion?: {
@@ -17,7 +18,7 @@ interface FuentePagoCardProps {
   }
 }
 
-export function FuentePagoCard({ fuente, onRegistrarAbono, index, validacion }: FuentePagoCardProps) {
+export function FuentePagoCard({ fuente, negociacionId, onRegistrarAbono, index, validacion }: FuentePagoCardProps) {
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('es-CO', {
       style: 'currency',
@@ -65,7 +66,6 @@ export function FuentePagoCard({ fuente, onRegistrarAbono, index, validacion }: 
       className={cardClassName}
       variants={animations.fadeInUp}
       transition={{ delay: 0.3 + index * 0.1 }}
-      whileHover={{ scale: validacion?.estaCompletamentePagada ? 1.01 : 1.02, y: -5 }}
     >
       {/* Borde lateral con gradiente (verde si está completada) */}
       <div
@@ -105,30 +105,15 @@ export function FuentePagoCard({ fuente, onRegistrarAbono, index, validacion }: 
             </div>
           </div>
 
-          {/* Botón de registrar abono (condicional) */}
-          {validacion?.puedeRegistrarAbono ? (
-            <Button
-              onClick={() => onRegistrarAbono(fuente)}
-              className={fuentesStyles.button}
-              style={{ background: `linear-gradient(to right, ${colorScheme.from}, ${colorScheme.to})` }}
-            >
-              <Plus className={fuentesStyles.buttonIcon} />
-              Registrar Abono
-            </Button>
-          ) : (
-            <div className="flex flex-col items-end gap-1">
-              <div className="px-4 py-2 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
-                <span className="text-sm font-medium text-green-700 dark:text-green-400">
-                  ✓ Completada
-                </span>
-              </div>
-              {validacion?.razonBloqueo && (
-                <span className="text-xs text-gray-500 dark:text-gray-400">
-                  {validacion.razonBloqueo}
-                </span>
-              )}
-            </div>
-          )}
+          {/* Botón de registrar abono/desembolso con validación */}
+          <BotonRegistrarDesembolso
+            negociacionId={negociacionId}
+            tipoFuente={fuente.tipo}
+            fuenteCompletada={validacion?.estaCompletamentePagada || false}
+            onClick={() => onRegistrarAbono(fuente)}
+            className={fuentesStyles.button}
+            colorScheme={colorScheme}
+          />
         </div>
 
         {/* Grid de métricas */}

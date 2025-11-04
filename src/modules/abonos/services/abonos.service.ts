@@ -3,7 +3,7 @@
 // Lógica de negocio y comunicación con Supabase
 // =====================================================
 
-import { createClient } from '@/lib/supabase/client-browser';
+import { supabase } from '@/lib/supabase/client';
 import type {
     AbonoHistorial,
     CrearAbonoDTO,
@@ -24,8 +24,6 @@ import type {
  * Consultar: docs/DATABASE-SCHEMA-REFERENCE-ACTUALIZADO.md
  */
 export async function obtenerNegociacionesActivas(): Promise<NegociacionConAbonos[]> {
-  const supabase = createClient();
-
   console.log('🔍 Obteniendo negociaciones activas...');
 
   // Query con campos REALES verificados en DB
@@ -98,8 +96,6 @@ export async function obtenerNegociacionesActivas(): Promise<NegociacionConAbono
 export async function obtenerNegociacionPorId(
   negociacionId: string
 ): Promise<NegociacionConAbonos | null> {
-  const supabase = createClient();
-
   const { data, error } = await supabase
     .from('negociaciones')
     .select(`
@@ -146,8 +142,6 @@ export async function obtenerNegociacionPorId(
 export async function obtenerFuentesPagoConAbonos(
   negociacionId: string
 ): Promise<FuentePagoConAbonos[]> {
-  const supabase = createClient();
-
   const { data, error } = await supabase
     .from('fuentes_pago')
     .select(`
@@ -178,16 +172,14 @@ export async function obtenerFuentesPagoConAbonos(
 
 /**
  * Registra un nuevo abono
+/**
+ * Registra un nuevo abono
  * Los triggers automáticamente actualizarán monto_recibido
  */
 export async function registrarAbono(
   datos: CrearAbonoDTO
 ): Promise<AbonoHistorial> {
-  const supabase = createClient();
-
   console.log('🔍 Registrando abono:', datos);
-
-  // Validar que el monto sea positivo
   if (datos.monto <= 0) {
     throw new Error('El monto debe ser mayor a cero');
   }
@@ -249,15 +241,13 @@ export async function registrarAbono(
 
 /**
  * Obtiene el historial de abonos con filtros opcionales
+/**
+ * Obtiene el historial de abonos con filtros opcionales
  */
 export async function obtenerHistorialAbonos(
   filtros: FiltrosAbonos = {}
 ): Promise<AbonoHistorial[]> {
-  const supabase = createClient();
-
   let query = supabase
-    .from('abonos_historial' as any)
-    .select('*')
     .order('fecha_abono', { ascending: false });
 
   // Aplicar filtros
@@ -330,11 +320,11 @@ export async function obtenerEstadisticasAbonos(
 
 /**
  * Elimina un abono (reversa la operación)
+/**
+ * Elimina un abono (reversa la operación)
  * El trigger automáticamente actualizará monto_recibido
  */
 export async function eliminarAbono(abonoId: string): Promise<void> {
-  const supabase = createClient();
-
   console.log('🗑️ Eliminando abono:', abonoId);
 
   const { error } = await supabase

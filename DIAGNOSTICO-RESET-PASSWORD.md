@@ -7,13 +7,11 @@
 **El token NO viene en hash fragment, viene en query params con formato PKCE**
 
 **URL Esperada (formato legacy):**
-
 ```
 http://localhost:3000/reset-password#access_token=...&type=recovery
 ```
 
 **URL Real (formato PKCE actual de Supabase):**
-
 ```
 http://localhost:3000/reset-password?code=3d2e64be-7a17-4c72-8bf2-cc4a7b4fd4c9
 ```
@@ -58,12 +56,12 @@ if (code) {
 
 **Diferencias:**
 
-| Formato Legacy         | Formato PKCE                    |
-| ---------------------- | ------------------------------- |
-| `#access_token=...`    | `?code=...`                     |
-| Token en hash fragment | Code en query params            |
-| Menos seguro           | Más seguro                      |
-| Token visible en URL   | Code se intercambia server-side |
+| Formato Legacy | Formato PKCE |
+|---------------|--------------|
+| `#access_token=...` | `?code=...` |
+| Token en hash fragment | Code en query params |
+| Menos seguro | Más seguro |
+| Token visible en URL | Code se intercambia server-side |
 
 ### ⚙️ Por Qué Cambió:
 
@@ -72,7 +70,6 @@ Supabase Auth migró a PKCE por defecto para mayor seguridad. El hash fragment p
 ### Logs Esperados vs Actuales:
 
 **ESPERADO:**
-
 ```
 === INICIANDO VERIFICACIÓN DE TOKEN ===
 Current URL: localhost:3000/reset-password#access_token=...&type=recovery
@@ -86,7 +83,6 @@ Current URL: localhost:3000/reset-password#access_token=...&type=recovery
 ```
 
 **ACTUAL (según screenshot):**
-
 ```
 Hash params: { eObject }
 Auth event: SIGNED_IN
@@ -97,24 +93,20 @@ Updating password...
 ## 🎯 Hipótesis del Problema
 
 ### Hipótesis #1: La promesa de updateUser() nunca se resuelve
-
 - **Causa posible**: Supabase auth cuelga la promesa cuando hay sesión de recovery
 - **Solución**: Timeout de 2 segundos para forzar éxito si no hay error
 
 ### Hipótesis #2: El evento SIGNED_IN inicial interfiere
-
 - **Causa posible**: El evento SIGNED_IN que se dispara al cargar la página marca `updateInProgressRef` antes del submit
 - **Solución**: Resetear `updateInProgressRef` después de validar token
 
 ### Hipótesis #3: Error silencioso en updateUser
-
 - **Causa posible**: Hay un error pero no se está capturando correctamente
 - **Solución**: Logging exhaustivo implementado
 
 ## 🔧 Cambios Implementados
 
 ### 1. Logging Exhaustivo
-
 ```typescript
 console.log('=== RESPUESTA COMPLETA DE updateUser ===')
 console.log('Full response:', JSON.stringify(updateResult, null, 2))
@@ -123,14 +115,11 @@ console.log('Error:', updateResult.error)
 ```
 
 ### 2. Fallback de Timeout
-
 ```typescript
 // Si después de 2s no hay evento SIGNED_IN, marcar como exitoso
 setTimeout(() => {
   if (updateInProgressRef.current) {
-    console.log(
-      '⚠️ Evento SIGNED_IN no llegó, marcando como exitoso manualmente'
-    )
+    console.log('⚠️ Evento SIGNED_IN no llegó, marcando como exitoso manualmente')
     setSuccess(true)
     // ... redirect
   }
@@ -138,7 +127,6 @@ setTimeout(() => {
 ```
 
 ### 3. Tracking de Eventos
-
 ```typescript
 console.log('🔔 AUTH EVENT:', event)
 console.log('   Update in progress?', updateInProgressRef.current)
@@ -162,7 +150,6 @@ console.log('   Update in progress?', updateInProgressRef.current)
 ## 🚨 Posibles Causas Raíz
 
 ### A. Configuración de Supabase Auth
-
 ```sql
 -- Verificar en Supabase Dashboard:
 -- Authentication > Settings > Email Templates
@@ -174,14 +161,12 @@ console.log('   Update in progress?', updateInProgressRef.current)
 ```
 
 ### B. Política de Sesiones
-
 ```typescript
 // ¿Supabase está creando múltiples sesiones?
 // Verificar en Application > Storage > supabase.auth.token
 ```
 
 ### C. CORS o Network Issues
-
 ```
 // ¿Hay errores de red en Network tab?
 // Buscar: POST /auth/v1/user
@@ -202,15 +187,13 @@ Si los eventos de Supabase son inconsistentes, podemos:
 ```typescript
 // Estrategia #1: Polling de sesión
 const checkPasswordUpdated = async () => {
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const { data: { user } } = await supabase.auth.getUser()
   // Si user existe después de update, fue exitoso
 }
 
 // Estrategia #2: No depender de eventos, solo de promesa + timeout
 const result = await Promise.race([
   supabase.auth.updateUser({ password }),
-  new Promise((_, reject) => setTimeout(() => reject('timeout'), 5000)),
+  new Promise((_, reject) => setTimeout(() => reject('timeout'), 5000))
 ])
 ```

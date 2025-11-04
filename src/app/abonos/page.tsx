@@ -1,3 +1,4 @@
+import { RequireView } from '@/modules/usuarios/components'
 import { AbonosListPage } from './components/abonos-list-page'
 
 /**
@@ -7,5 +8,9 @@ import { AbonosListPage } from './components/abonos-list-page'
  * Lista TODOS los abonos del sistema con filtros y búsqueda
  */
 export default function AbonosPage() {
-  return <AbonosListPage />
+  return (
+    <RequireView modulo="abonos">
+      <AbonosListPage />
+    </RequireView>
+  )
 }

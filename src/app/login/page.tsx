@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion'
 import { Eye, EyeOff } from 'lucide-react'
 import Image from 'next/image'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { ResetPasswordModal } from './reset-password-modal'
 import { useLogin } from './useLogin'
 
@@ -23,6 +23,21 @@ export default function LoginPage() {
 
   const [showResetPassword, setShowResetPassword] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
+
+  // Limpiar sesiones corruptas al montar
+  useEffect(() => {
+    // Solo limpiar si hay parámetros sospechosos que indiquen loop
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('redirectedFrom')) {
+      // Dar tiempo al middleware para procesar
+      setTimeout(() => {
+        // Verificación silenciosa de sesión corrupta
+        if (window.location.pathname === '/login') {
+          // Sesión limpiada por middleware
+        }
+      }, 1000)
+    }
+  }, [])
 
   return (
     <div className='relative flex min-h-screen w-full items-center justify-center overflow-hidden'>
@@ -60,7 +75,6 @@ export default function LoginPage() {
                 sizes='(max-width: 768px) 100vw, 50vw'
                 className='object-contain drop-shadow-2xl'
                 style={{ filter: 'drop-shadow(0 0 30px rgba(255, 255, 255, 0.3))' }}
-                priority
               />
             </div>
 
@@ -95,9 +109,11 @@ export default function LoginPage() {
                   src='/images/logo1-dark.png'
                   alt='Logo RyR Constructora'
                   fill
+                  sizes='(max-width: 768px) 90vw, 448px'
                   className='object-contain drop-shadow-2xl'
                   style={{ filter: 'drop-shadow(0 0 30px rgba(255, 255, 255, 0.3))' }}
                   priority
+                  loading='eager'
                 />
               </div>
 

@@ -8,7 +8,7 @@
 'use client'
 
 import { useModal } from '@/shared/components/modals'
-import { AnimatePresence, motion } from 'framer-motion'
+import { AnimatePresence, motion, Reorder } from 'framer-motion'
 import { AlertCircle, ArrowLeft, FileText, Plus, Save, Settings } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
@@ -167,6 +167,11 @@ export function FormularioPlantilla({ plantillaId }: FormularioPlantillaProps) {
         ? { ...p, documentos: [...p.documentos, nuevoDoc] }
         : p
     ))
+  }
+
+  // Handler para reordenar pasos mediante drag & drop
+  const handleReordenar = (nuevoPasos: PasoPlantilla[]) => {
+    setPasos(nuevoPasos)
   }
 
   // Handler para eliminar documento
@@ -329,7 +334,12 @@ export function FormularioPlantilla({ plantillaId }: FormularioPlantillaProps) {
               </button>
             </div>
           ) : (
-            <div className="space-y-3">
+            <Reorder.Group
+              axis="y"
+              values={pasos}
+              onReorder={handleReordenar}
+              className="space-y-3"
+            >
               <AnimatePresence mode="popLayout">
                 {pasos.map((paso, index) => (
                   <PasoPlantillaItem
@@ -351,7 +361,7 @@ export function FormularioPlantilla({ plantillaId }: FormularioPlantillaProps) {
                   />
                 ))}
               </AnimatePresence>
-            </div>
+            </Reorder.Group>
           )}
         </div>
       </div>

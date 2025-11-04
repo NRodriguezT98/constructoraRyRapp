@@ -1,7 +1,9 @@
 'use client'
 
+import { construirURLVivienda } from '@/lib/utils/slug.utils'
 import { motion } from 'framer-motion'
 import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 import { Modal } from '../../../shared/components/ui/Modal'
 import { useViviendasList } from '../hooks/useViviendasList'
 import { viviendasListStyles as styles } from '../styles/viviendasList.styles'
@@ -42,8 +44,24 @@ export function ViviendasPageMain() {
     totalFiltradas,
   } = useViviendasList()
 
-  const handleVerDetalle = (viviendaId: string) => {
-    router.push(`/viviendas/${viviendaId}` as any)
+  const handleVerDetalle = (vivienda: any) => {
+    // Validar que tenemos id y numero
+    if (!vivienda?.id || !vivienda?.numero) {
+      console.error('handleVerDetalle - Datos inválidos:', { vivienda })
+      toast.error('Error: Datos de vivienda incompletos')
+      return
+    }
+
+    // Construir URL amigable con slug
+    const url = construirURLVivienda(
+      {
+        id: vivienda.id,
+        numero: vivienda.numero
+      },
+      vivienda.manzanas?.nombre || undefined,
+      vivienda.manzanas?.proyectos?.nombre || undefined
+    )
+    router.push(url as any)
   }
 
   const viviendaEliminando = viviendas.find(v => v.id === viviendaEliminar)
@@ -84,7 +102,7 @@ export function ViviendasPageMain() {
         ) : (
           <ViviendasLista
             viviendas={viviendas}
-            onVerDetalle={(vivienda) => handleVerDetalle(vivienda.id)}
+            onVerDetalle={handleVerDetalle}
             onAsignarCliente={(vivienda) => {
               console.log('Asignar cliente a:', vivienda)
               // TODO: Implementar lógica de asignación

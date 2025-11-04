@@ -41,6 +41,7 @@ import { pageStyles } from './styles'
 
 interface CrearNegociacionPageProps {
   clienteId: string
+  clienteSlug?: string // Slug para breadcrumbs (opcional para backward compatibility)
   clienteNombre?: string
   viviendaId?: string
   valorVivienda?: number
@@ -48,6 +49,7 @@ interface CrearNegociacionPageProps {
 
 export function CrearNegociacionPage({
   clienteId,
+  clienteSlug,
   clienteNombre,
   viviendaId,
   valorVivienda,
@@ -69,7 +71,7 @@ export function CrearNegociacionPage({
       <div className={pageStyles.inner}>
         {/* Breadcrumbs */}
         <BreadcrumbsNegociacion
-          clienteId={clienteId}
+          clienteId={clienteSlug || clienteId}
           clienteNombre={clienteNombre}
         />
 

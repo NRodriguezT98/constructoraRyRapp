@@ -17,6 +17,7 @@ interface Progreso {
   pasosCompletados: number
   pasosEnProceso: number
   pasosPendientes: number
+  pasosOmitidos: number
   totalPasos: number
   porcentajeCompletado: number
 }
@@ -71,6 +72,10 @@ export function HeaderProceso({ progreso, onRecargarPlantilla, recargando }: Hea
         <div className={styles.header.stats.item}>
           <div className={styles.header.stats.value}>{progreso.pasosCompletados}</div>
           <div className={styles.header.stats.label}>Completados</div>
+        </div>
+        <div className={styles.header.stats.item}>
+          <div className={styles.header.stats.value}>{progreso.pasosOmitidos || 0}</div>
+          <div className={styles.header.stats.label}>Omitidos</div>
         </div>
         <div className={styles.header.stats.item}>
           <div className={styles.header.stats.value}>{progreso.pasosEnProceso || 0}</div>

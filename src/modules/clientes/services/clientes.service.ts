@@ -3,7 +3,7 @@
  * Gestión completa del módulo de clientes
  */
 
-import { supabase } from '@/lib/supabase/client-browser'
+import { supabase } from '@/lib/supabase/client'
 import type {
     ActualizarClienteDTO,
     Cliente,

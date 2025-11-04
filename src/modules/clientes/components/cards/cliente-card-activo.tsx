@@ -7,6 +7,7 @@
 
 'use client'
 
+import { CanDelete, CanEdit } from '@/modules/usuarios/components'
 import { formatDistanceToNow } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { motion } from 'framer-motion'
@@ -115,26 +116,30 @@ export function ClienteCardActivo({
                 <Eye className={styles.clienteCard.actionIcon} />
               </button>
             )}
-            {onEditar && (
-              <button
-                type="button"
-                onClick={() => onEditar(cliente)}
-                className={styles.clienteCard.actionButton}
-                title="Editar cliente"
-              >
-                <Edit className={styles.clienteCard.actionIcon} />
-              </button>
-            )}
-            {onEliminar && (
-              <button
-                type="button"
-                onClick={() => onEliminar(cliente)}
-                className={styles.clienteCard.actionButton}
-                title="Eliminar cliente"
-              >
-                <Trash2 className={styles.clienteCard.actionIcon} />
-              </button>
-            )}
+            <CanEdit modulo="clientes">
+              {onEditar && (
+                <button
+                  type="button"
+                  onClick={() => onEditar(cliente)}
+                  className={styles.clienteCard.actionButton}
+                  title="Editar cliente"
+                >
+                  <Edit className={styles.clienteCard.actionIcon} />
+                </button>
+              )}
+            </CanEdit>
+            <CanDelete modulo="clientes">
+              {onEliminar && (
+                <button
+                  type="button"
+                  onClick={() => onEliminar(cliente)}
+                  className={styles.clienteCard.actionButton}
+                  title="Eliminar cliente"
+                >
+                  <Trash2 className={styles.clienteCard.actionIcon} />
+                </button>
+              )}
+            </CanDelete>
           </div>
 
           {/* Avatar + título */}
@@ -192,26 +197,30 @@ export function ClienteCardActivo({
               <Eye className={styles.clienteCard.actionIcon} />
             </button>
           )}
-          {onEditar && (
-            <button
-              type="button"
-              onClick={() => onEditar(cliente)}
-              className={styles.clienteCard.actionButton}
-              title="Editar cliente"
-            >
-              <Edit className={styles.clienteCard.actionIcon} />
-            </button>
-          )}
-          {onEliminar && (
-            <button
-              type="button"
-              onClick={() => onEliminar(cliente)}
-              className={styles.clienteCard.actionButton}
-              title="Eliminar cliente"
-            >
-              <Trash2 className={styles.clienteCard.actionIcon} />
-            </button>
-          )}
+          <CanEdit modulo="clientes">
+            {onEditar && (
+              <button
+                type="button"
+                onClick={() => onEditar(cliente)}
+                className={styles.clienteCard.actionButton}
+                title="Editar cliente"
+              >
+                <Edit className={styles.clienteCard.actionIcon} />
+              </button>
+            )}
+          </CanEdit>
+          <CanDelete modulo="clientes">
+            {onEliminar && (
+              <button
+                type="button"
+                onClick={() => onEliminar(cliente)}
+                className={styles.clienteCard.actionButton}
+                title="Eliminar cliente"
+              >
+                <Trash2 className={styles.clienteCard.actionIcon} />
+              </button>
+            )}
+          </CanDelete>
         </div>
 
         {/* AVATAR + TÍTULO + BADGE */}

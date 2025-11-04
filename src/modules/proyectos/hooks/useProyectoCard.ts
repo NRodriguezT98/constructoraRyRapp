@@ -1,5 +1,6 @@
-import { useState, useCallback, useMemo } from 'react'
+import { construirURLProyecto } from '@/lib/utils/slug.utils'
 import { useRouter } from 'next/navigation'
+import { useCallback, useMemo, useState } from 'react'
 import type { Proyecto } from '../types'
 
 interface UseProyectoCardProps {
@@ -58,9 +59,13 @@ export function useProyectoCard({
   const handleViewDetails = useCallback(
     (e: React.MouseEvent) => {
       e.stopPropagation()
-      router.push(`/proyectos/${proyecto.id}`)
+      const url = construirURLProyecto({
+        id: proyecto.id,
+        nombre: proyecto.nombre
+      })
+      router.push(url)
     },
-    [proyecto.id, router]
+    [proyecto.id, proyecto.nombre, router]
   )
 
   // Handler: Toggle menú

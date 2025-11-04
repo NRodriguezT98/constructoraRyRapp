@@ -1,6 +1,7 @@
 'use client'
 
-import { supabase } from '@/lib/supabase/client-browser'
+import { supabase } from '@/lib/supabase/client'
+import type { Usuario } from '@/modules/usuarios/types'
 import { auditLogService } from '@/services/audit-log.service'
 import { User } from '@supabase/supabase-js'
 import { createContext, useContext, useEffect, useState } from 'react'
@@ -11,30 +12,85 @@ const CHECK_INTERVAL = 5 * 60 * 1000 // Verificar cada 5 minutos
 
 interface AuthContextType {
   user: User | null
+  perfil: Usuario | null
   loading: boolean
   signIn: (email: string, password: string) => Promise<void>
   signUp: (email: string, password: string) => Promise<void>
   signOut: () => Promise<void>
+  refrescarPerfil: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
+  const [perfil, setPerfil] = useState<Usuario | null>(null)
   const [loading, setLoading] = useState(true)
+
+  /**
+   * Cargar perfil de usuario desde tabla usuarios
+   */
+  const cargarPerfil = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('usuarios')
+        .select('*')
+        .eq('id', userId)
+        .single()
+
+      if (error) {
+        console.error('Error cargando perfil:', error)
+        setPerfil(null)
+        return
+      }
+
+      setPerfil(data as Usuario)
+
+      // Actualizar último acceso
+      await supabase
+        .from('usuarios')
+        .update({ ultimo_acceso: new Date().toISOString() })
+        .eq('id', userId)
+    } catch (error) {
+      console.error('Excepción en cargarPerfil:', error)
+      setPerfil(null)
+    }
+  }
+
+  /**
+   * Refrescar perfil del usuario actual
+   */
+  const refrescarPerfil = async () => {
+    if (user?.id) {
+      await cargarPerfil(user.id)
+    }
+  }
 
   useEffect(() => {
     // Verificar sesión actual
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(({ data: { session }, error }) => {
       setUser(session?.user ?? null)
+
+      // Cargar perfil si hay sesión
+      if (session?.user) {
+        cargarPerfil(session.user.id)
+      }
+
       setLoading(false)
     })
 
     // Escuchar cambios en autenticación
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
       setUser(session?.user ?? null)
+
+      // Cargar o limpiar perfil según sesión
+      if (session?.user) {
+        await cargarPerfil(session.user.id)
+      } else {
+        setPerfil(null)
+      }
     })
 
     // Verificar timeout de sesión periódicamente
@@ -87,11 +143,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
+    console.log('🔐 === INICIANDO LOGIN (PKCE) ===')
+    console.log('Email:', email)
+
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     })
-    if (error) throw error
+
+    console.log('Respuesta signInWithPassword:', {
+      success: !error,
+      hasSession: !!data?.session,
+      hasUser: !!data?.user,
+      error: error?.message
+    })
+
+    if (error) {
+      console.error('❌ Error en signIn:', error)
+      throw error
+    }
+
+    console.log('✅ Login exitoso:', data.user?.email)
   }
 
   const signUp = async (email: string, password: string) => {
@@ -117,7 +189,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, loading, signIn, signUp, signOut }}>
+    <AuthContext.Provider value={{ user, perfil, loading, signIn, signUp, signOut, refrescarPerfil }}>
       {children}
     </AuthContext.Provider>
   )

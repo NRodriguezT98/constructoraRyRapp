@@ -1,4 +1,4 @@
-Ôªø// Barrel exports para componentes de viviendas
+// Barrel exports para componentes de viviendas
 export { FormularioVivienda } from './formulario-vivienda'
 export { PasoFinanciero } from './paso-financiero'
 export { PasoLegal } from './paso-legal'
@@ -16,7 +16,7 @@ export { ViviendasPageMain } from './viviendas-page-main'
 export { ViviendasSkeleton } from './viviendas-skeleton'
 export { ViviendasStats } from './viviendas-stats'
 
-// Cards din√°micas por estado
+// Cards din·micas por estado
 export * from './cards'
 
-// Nota: ViviendaDetalle ahora es una p√°gina en /viviendas/[id]
+// Nota: ViviendaDetalle ahora es una p·gina en /viviendas/[id]

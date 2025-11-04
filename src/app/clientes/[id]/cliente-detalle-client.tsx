@@ -1,6 +1,8 @@
 'use client'
 
 import { useAuth } from '@/contexts/auth-context'
+import { construirURLCliente, resolverSlugCliente } from '@/lib/utils/slug.utils'
+import { ProgresoProcesoBadge } from '@/modules/admin/procesos/components'
 import { ModalRegistrarInteres } from '@/modules/clientes/components/modals'
 import { useDocumentosClienteStore } from '@/modules/clientes/documentos/store/documentos-cliente.store'
 import type { Cliente } from '@/modules/clientes/types'
@@ -8,17 +10,17 @@ import { TIPOS_DOCUMENTO } from '@/modules/clientes/types'
 import { Tooltip } from '@/shared/components/ui'
 import { AnimatePresence, motion } from 'framer-motion'
 import {
-  Activity,
-  ArrowLeft,
-  ChevronRight,
-  Edit2,
-  FileText,
-  Handshake,
-  Heart,
-  Lock,
-  Trash2,
-  User,
-  Wallet,
+    Activity,
+    ArrowLeft,
+    ChevronRight,
+    Edit2,
+    FileText,
+    Handshake,
+    Heart,
+    Lock,
+    Trash2,
+    User,
+    Wallet,
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
@@ -26,7 +28,7 @@ import * as styles from './cliente-detalle.styles'
 import { ActividadTab, DocumentosTab, GeneralTab, InteresesTab, NegociacionesTab } from './tabs'
 
 interface ClienteDetalleClientProps {
-  clienteId: string
+  clienteId: string  // Puede ser slug o UUID
 }
 
 type TabType = 'general' | 'intereses' | 'negociaciones' | 'documentos' | 'actividad'
@@ -68,6 +70,7 @@ export default function ClienteDetalleClient({ clienteId }: ClienteDetalleClient
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<TabType>('general')
   const [modalInteresAbierto, setModalInteresAbierto] = useState(false)
+  const [clienteUUID, setClienteUUID] = useState<string | null>(null)
 
   // Store de documentos
   const {
@@ -76,12 +79,29 @@ export default function ClienteDetalleClient({ clienteId }: ClienteDetalleClient
     cargarCategorias,
   } = useDocumentosClienteStore()
 
+  // ✅ NUEVO: Resolver slug a UUID
   useEffect(() => {
+    const resolverSlug = async () => {
+      const uuid = await resolverSlugCliente(clienteId)
+      if (uuid) {
+        setClienteUUID(uuid)
+      } else {
+        console.error('No se pudo resolver el cliente')
+        router.push('/clientes')
+      }
+    }
+
+    resolverSlug()
+  }, [clienteId, router])
+
+  useEffect(() => {
+    if (!clienteUUID) return
+
     const cargarCliente = async () => {
       setLoading(true)
       try {
         const { clientesService } = await import('@/modules/clientes/services/clientes.service')
-        const clienteData = await clientesService.obtenerCliente(clienteId)
+        const clienteData = await clientesService.obtenerCliente(clienteUUID)
         setCliente(clienteData)
       } catch (error) {
         console.error('Error al cargar cliente:', error)
@@ -92,7 +112,7 @@ export default function ClienteDetalleClient({ clienteId }: ClienteDetalleClient
     }
 
     cargarCliente()
-  }, [clienteId])
+  }, [clienteUUID])
 
   // Cargar categorías al montar
   useEffect(() => {
@@ -115,11 +135,13 @@ export default function ClienteDetalleClient({ clienteId }: ClienteDetalleClient
 
   // Listener para actualización de cliente (cuando se sube cédula)
   useEffect(() => {
+    if (!clienteUUID) return
+
     const handleClienteActualizado = async () => {
       console.log('Cliente actualizado, recargando datos...');
       try {
         const { clientesService } = await import('@/modules/clientes/services/clientes.service');
-        const clienteData = await clientesService.obtenerCliente(clienteId);
+        const clienteData = await clientesService.obtenerCliente(clienteUUID);
         setCliente(clienteData);
       } catch (error) {
         console.error('Error al recargar cliente:', error);
@@ -128,10 +150,10 @@ export default function ClienteDetalleClient({ clienteId }: ClienteDetalleClient
 
     window.addEventListener('cliente-actualizado', handleClienteActualizado);
     return () => window.removeEventListener('cliente-actualizado', handleClienteActualizado);
-  }, [clienteId]);
+  }, [clienteUUID]);
 
   const handleEditar = () => {
-    console.log('Editar cliente:', clienteId)
+    console.log('Editar cliente:', clienteUUID)
     // TODO: Abrir modal de edición o navegar a página de edición
   }
 
@@ -141,7 +163,7 @@ export default function ClienteDetalleClient({ clienteId }: ClienteDetalleClient
         `¿Estás seguro de eliminar al cliente ${cliente?.nombre_completo}? Esta acción no se puede deshacer.`
       )
     ) {
-      console.log('Eliminar cliente:', clienteId)
+      console.log('Eliminar cliente:', clienteUUID)
       router.push('/clientes')
     }
   }
@@ -157,8 +179,13 @@ export default function ClienteDetalleClient({ clienteId }: ClienteDetalleClient
       setActiveTab('documentos')
       return
     }
-    // Navegar a la vista completa de crear negociación
-    router.push(`/clientes/${clienteId}/negociaciones/crear?nombre=${encodeURIComponent(cliente?.nombre_completo || '')}` as any)
+    // Navegar a la vista completa de crear negociación con URL amigable
+    const clienteSlug = construirURLCliente({
+      id: clienteUUID,
+      nombres: cliente.nombres,
+      apellidos: cliente.apellidos
+    }).split('/').pop() // Extraer solo el slug
+    router.push(`/clientes/${clienteSlug}/negociaciones/crear?nombre=${encodeURIComponent(cliente?.nombre_completo || '')}` as any)
   }
 
   const handleInteresRegistrado = async () => {
@@ -242,7 +269,7 @@ export default function ClienteDetalleClient({ clienteId }: ClienteDetalleClient
           {...styles.animations.fadeInUp}
           className={styles.headerClasses.container}
           style={{
-            background: 'linear-gradient(135deg, #9333ea 0%, #ec4899 100%)',
+            background: 'linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%)',
           }}
         >
           {/* Patrón de fondo */}
@@ -294,6 +321,8 @@ export default function ClienteDetalleClient({ clienteId }: ClienteDetalleClient
                   <FileText className={styles.headerClasses.subtitleIcon} />
                   {TIPOS_DOCUMENTO[cliente.tipo_documento]} - {cliente.numero_documento}
                 </p>
+                {/* Badge de Progreso del Proceso - Versión Expandida */}
+                <ProgresoProcesoBadge clienteId={clienteUUID} variant="expanded" />
               </div>
             </div>
             <div className={styles.headerClasses.actionsContainer}>
@@ -408,7 +437,7 @@ export default function ClienteDetalleClient({ clienteId }: ClienteDetalleClient
               <NegociacionesTab cliente={cliente} />
             )}
             {activeTab === 'documentos' && <DocumentosTab cliente={cliente} />}
-            {activeTab === 'actividad' && <ActividadTab clienteId={clienteId} />}
+            {activeTab === 'actividad' && <ActividadTab clienteId={clienteUUID} />}
           </motion.div>
         </AnimatePresence>
       </div>
@@ -417,7 +446,7 @@ export default function ClienteDetalleClient({ clienteId }: ClienteDetalleClient
       <ModalRegistrarInteres
         isOpen={modalInteresAbierto}
         onClose={() => setModalInteresAbierto(false)}
-        clienteId={clienteId}
+        clienteId={clienteUUID}
         onSuccess={handleInteresRegistrado}
       />
     </div>

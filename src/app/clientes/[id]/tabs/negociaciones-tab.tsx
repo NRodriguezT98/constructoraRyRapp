@@ -1,5 +1,6 @@
 'use client'
 
+import { construirURLCliente } from '@/lib/utils/slug.utils'
 import { obtenerFuentesPagoConAbonos } from '@/modules/abonos/services/abonos.service'
 import { negociacionesService } from '@/modules/clientes/services/negociaciones.service'
 import type { Cliente } from '@/modules/clientes/types'
@@ -319,7 +320,13 @@ export function NegociacionesTab({ cliente }: NegociacionesTabProps) {
             disabled={!tieneCedula}
             onClick={() => {
               if (tieneCedula) {
-                router.push(`/clientes/${cliente.id}/negociaciones/crear?nombre=${encodeURIComponent(cliente.nombre_completo || cliente.nombres || '')}` as any)
+                const clienteSlug = construirURLCliente({
+                  id: cliente.id,
+                  nombre_completo: cliente.nombre_completo,
+                  nombres: cliente.nombres,
+                  apellidos: cliente.apellidos
+                }).split('/').pop()
+                router.push(`/clientes/${clienteSlug}/negociaciones/crear?nombre=${encodeURIComponent(cliente.nombre_completo || cliente.nombres || '')}` as any)
               }
             }}
             className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-lg font-medium transition-all ${
@@ -481,7 +488,13 @@ export function NegociacionesTab({ cliente }: NegociacionesTabProps) {
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
               onClick={() => {
-                router.push(`/clientes/${cliente.id}/negociaciones/crear?nombre=${encodeURIComponent(cliente.nombre_completo || cliente.nombres || '')}` as any)
+                const clienteSlug = construirURLCliente({
+                  id: cliente.id,
+                  nombre_completo: cliente.nombre_completo,
+                  nombres: cliente.nombres,
+                  apellidos: cliente.apellidos
+                }).split('/').pop()
+                router.push(`/clientes/${clienteSlug}/negociaciones/crear?nombre=${encodeURIComponent(cliente.nombre_completo || cliente.nombres || '')}` as any)
               }}
               className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-2xl hover:shadow-purple-500/50 transition-shadow"
             >

@@ -4,6 +4,7 @@
  * Página para crear una nueva negociación con cierre financiero completo
  */
 
+import { resolverSlugCliente } from '@/lib/utils/slug.utils'
 import { CrearNegociacionPage } from '@/modules/clientes/pages/crear-negociacion'
 import { Metadata } from 'next'
 
@@ -27,9 +28,13 @@ export default async function Page({ params, searchParams }: PageProps) {
   const { id } = await params
   const search = await searchParams
 
+  // Resolver slug a UUID
+  const clienteUUID = await resolverSlugCliente(id) || id
+
   return (
     <CrearNegociacionPage
-      clienteId={id}
+      clienteId={clienteUUID}
+      clienteSlug={id} // Pasar el slug original para links
       clienteNombre={search.nombre}
       viviendaId={search.viviendaId}
       valorVivienda={search.valor ? parseFloat(search.valor) : undefined}

@@ -1,7 +1,7 @@
 'use client';
 
 import { useAuth } from '@/contexts/auth-context';
-import { supabase } from '@/lib/supabase/client-browser';
+import { supabase } from '@/lib/supabase/client';
 import { AnimatePresence, motion } from 'framer-motion';
 import { AlertCircle, FileText, Upload, X } from 'lucide-react';
 import { useState } from 'react';
