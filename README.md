@@ -410,6 +410,7 @@ Privado - RyR Constructora © 2025
 Esta aplicación tiene **documentación completa y organizada**:
 
 ### 📁 Estructura de Documentación
+
 ```
 docs/
 ├── INDEX.md                    ⭐⭐⭐ ÍNDICE MAESTRO
@@ -434,6 +435,7 @@ supabase/
 ```
 
 **Ver índices completos**:
+
 - 📚 [docs/INDEX.md](./docs/INDEX.md) - Toda la documentación
 - 🗄️ [supabase/INDEX.md](./supabase/INDEX.md) - Todos los SQL
 

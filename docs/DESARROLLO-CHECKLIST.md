@@ -27,6 +27,7 @@
 - [ ] ✅ Si hay duda: ejecuté query de verificación en Supabase
 
 **Query rápida de verificación:**
+
 ```sql
 SELECT column_name, data_type, is_nullable
 FROM information_schema.columns
@@ -121,13 +122,13 @@ ORDER BY ordinal_position;
 const { data } = await supabase
   .from('intereses')
   .select('*')
-  .eq('estado_interes', 'activo')  // ❌ Columna no existe
+  .eq('estado_interes', 'activo') // ❌ Columna no existe
 
 // ✅ CORRECTO (verificado en doc)
 const { data } = await supabase
   .from('cliente_intereses')
   .select('*')
-  .eq('estado', 'Activo')  // ✅ Nombre y valor correctos
+  .eq('estado', 'Activo') // ✅ Nombre y valor correctos
 ```
 
 ---
