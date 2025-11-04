@@ -5,6 +5,7 @@ import { Eye, EyeOff } from 'lucide-react'
 import Image from 'next/image'
 import { useEffect, useState } from 'react'
 import { ResetPasswordModal } from './reset-password-modal'
+import { Toast } from './toast-notification'
 import { useLogin } from './useLogin'
 
 export default function LoginPage() {
@@ -16,6 +17,8 @@ export default function LoginPage() {
     estaBloqueado,
     minutosRestantes,
     intentosRestantes,
+    loginExitoso,
+    mensajeExito,
     setEmail,
     setPassword,
     handleSubmit,
@@ -23,6 +26,7 @@ export default function LoginPage() {
 
   const [showResetPassword, setShowResetPassword] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
+  const [showToast, setShowToast] = useState(false)
 
   // Limpiar sesiones corruptas al montar
   useEffect(() => {
@@ -38,6 +42,13 @@ export default function LoginPage() {
       }, 1000)
     }
   }, [])
+
+  // Mostrar toast cuando login es exitoso
+  useEffect(() => {
+    if (loginExitoso) {
+      setShowToast(true)
+    }
+  }, [loginExitoso])
 
   return (
     <div className='relative flex min-h-screen w-full items-center justify-center overflow-hidden'>
@@ -56,68 +67,53 @@ export default function LoginPage() {
         <div className='absolute inset-0 bg-gradient-to-br from-black/60 via-black/50 to-black/70' />
       </div>
 
-      {/* Contenido del login */}
-      <div className='relative z-10 w-full max-w-7xl px-4'>
-        <div className='grid grid-cols-1 items-center gap-12 lg:grid-cols-2'>
-          {/* Lado izquierdo - Branding */}
-          <motion.div
-            initial={{ opacity: 0, x: -50 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6 }}
-            className='hidden flex-col justify-center space-y-6 lg:flex'
-          >
-            {/* Logo principal - versión dark optimizada */}
-            <div className='relative mb-4 h-32 w-full'>
-              <Image
-                src='/images/logo1-dark.png'
-                alt='Logo RyR Constructora'
-                fill
-                sizes='(max-width: 768px) 100vw, 50vw'
-                className='object-contain drop-shadow-2xl'
-                style={{ filter: 'drop-shadow(0 0 30px rgba(255, 255, 255, 0.3))' }}
-              />
-            </div>
+      {/* Contenido del login - ABSOLUTAMENTE CENTRADO */}
+      <div className='relative z-10 mx-auto flex max-w-2xl flex-col items-center justify-center px-4'>
+        {/* Branding - Logo principal centrado */}
+        <motion.div
+          initial={{ opacity: 0, y: -30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className='mb-8 flex w-full flex-col items-center justify-center space-y-4 text-center'
+        >
+          {/* Logo principal - versión dark optimizada */}
+          <div className='relative h-28 w-full max-w-md'>
+            <Image
+              src='/images/logo1-dark.png'
+              alt='Logo RyR Constructora'
+              fill
+              sizes='(max-width: 768px) 100vw, 600px'
+              className='object-contain drop-shadow-2xl'
+              style={{ filter: 'drop-shadow(0 0 30px rgba(255, 255, 255, 0.3))' }}
+              priority
+            />
+          </div>
 
-            {/* Logo secundario - versión dark optimizada */}
-            <div className='relative mb-6 h-24 w-full'>
-              <Image
-                src='/images/logo2-dark.png'
-                alt='Logo RyR Constructora 2'
-                fill
-                sizes='(max-width: 768px) 100vw, 50vw'
-                className='object-contain drop-shadow-xl'
-                style={{ filter: 'drop-shadow(0 0 20px rgba(255, 255, 255, 0.2))' }}
-              />
-            </div>
+          <h2 className='mt-4 max-w-xl text-2xl font-bold text-white drop-shadow-lg lg:text-3xl'>
+            Bienvenido al Sistema de Gestión Administrativa de la Constructora RyR
+          </h2>
+        </motion.div>
 
-            <h2 className='mb-4 text-4xl font-bold text-white drop-shadow-lg'>
-              Bienvenido al Sistema de Gestión Administrativa de la Constructora RyR
-            </h2>
-          </motion.div>
+        {/* Formulario - Centrado debajo de los logos */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.3 }}
+          className='w-full max-w-md'
+        >
+          <div className='rounded-2xl border border-white/20 bg-white/10 p-8 shadow-2xl backdrop-blur-xl'>
+                {/* Logo secundario dentro del formulario */}
+                <div className='relative mb-6 h-16 w-full'>
+                  <Image
+                    src='/images/logo2-dark.png'
+                    alt='Logo RyR Constructora 2'
+                    fill
+                    sizes='(max-width: 768px) 100vw, 600px'
+                    className='object-contain drop-shadow-xl'
+                    style={{ filter: 'drop-shadow(0 0 20px rgba(255, 255, 255, 0.2))' }}
+                  />
+                </div>
 
-          {/* Lado derecho - Formulario */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className='flex items-center justify-center'
-          >
-            <div className='w-full max-w-md'>
-              {/* Logo móvil (solo visible en pantallas pequeñas) - versión dark */}
-              <div className='relative mb-6 flex h-24 justify-center lg:hidden'>
-                <Image
-                  src='/images/logo1-dark.png'
-                  alt='Logo RyR Constructora'
-                  fill
-                  sizes='(max-width: 768px) 90vw, 448px'
-                  className='object-contain drop-shadow-2xl'
-                  style={{ filter: 'drop-shadow(0 0 30px rgba(255, 255, 255, 0.3))' }}
-                  priority
-                  loading='eager'
-                />
-              </div>
-
-              <div className='rounded-2xl border border-white/20 bg-white/10 p-8 shadow-2xl backdrop-blur-xl'>
                 <div className='mb-8 text-center'>
                   <h1 className='mb-2 text-3xl font-bold text-white drop-shadow-md'>
                     Bienvenido
@@ -189,14 +185,34 @@ export default function LoginPage() {
 
                   <button
                     type='submit'
-                    disabled={loading || estaBloqueado}
+                    disabled={loading || estaBloqueado || loginExitoso}
                     className={`w-full rounded-lg py-3 font-semibold text-white shadow-lg transition-all hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-50 ${
                       estaBloqueado
-                        ? 'bg-gradient-to-r from-red-600 to-red-700'
-                        : 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500'
+                        ? 'bg-gradient-to-r from-red-800 to-red-900'
+                        : loginExitoso
+                          ? 'bg-gradient-to-r from-green-600 to-green-700'
+                          : 'bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600'
                     }`}
                   >
-                    {loading ? (
+                    {loginExitoso ? (
+                      <span className='flex items-center justify-center gap-2'>
+                        <svg
+                          className='h-5 w-5'
+                          xmlns='http://www.w3.org/2000/svg'
+                          fill='none'
+                          viewBox='0 0 24 24'
+                          stroke='currentColor'
+                        >
+                          <path
+                            strokeLinecap='round'
+                            strokeLinejoin='round'
+                            strokeWidth={2}
+                            d='M5 13l4 4L19 7'
+                          />
+                        </svg>
+                        ¡Inicio Exitoso!
+                      </span>
+                    ) : loading ? (
                       <span className='flex items-center justify-center gap-2'>
                         <svg
                           className='h-5 w-5 animate-spin'
@@ -218,7 +234,7 @@ export default function LoginPage() {
                             d='M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z'
                           ></path>
                         </svg>
-                        Cargando...
+                        Validando...
                       </span>
                     ) : estaBloqueado ? (
                       `🔒 Bloqueado (${minutosRestantes} min)`
@@ -237,15 +253,22 @@ export default function LoginPage() {
                   </button>
                 </div>
               </div>
-            </div>
-          </motion.div>
-        </div>
+        </motion.div>
       </div>
 
       {/* Modal de Reset Password */}
       <ResetPasswordModal
         isOpen={showResetPassword}
         onClose={() => setShowResetPassword(false)}
+      />
+
+      {/* Toast de Notificación de Éxito */}
+      <Toast
+        show={showToast}
+        message={mensajeExito}
+        onClose={() => setShowToast(false)}
+        type="success"
+        duration={2000}
       />
     </div>
   )

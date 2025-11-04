@@ -71,17 +71,22 @@ export function ProtectedRoute({
   children,
   loading = <LoadingPage />,
 }: ProtectedRouteProps) {
+  console.warn('⚠️ [SISTEMA ANTIGUO] ProtectedRoute ejecutado - ESTO NO DEBERÍA PASAR CON MIDDLEWARE')
+  console.warn('  Módulo:', modulo, '| Acción:', accion || acciones)
+
   const router = useRouter()
   const { perfil, loading: authLoading } = useAuth()
-  const { puede, puedeAlguno, puedeTodos } = usePermissions()
+  const { puede, puedeAlguno, puedeTodos, permisosLoading } = usePermissions()
 
   useEffect(() => {
-    // Esperar a que cargue la autenticación
-    if (authLoading) return
+    // Esperar a que cargue autenticación Y permisos
+    if (authLoading || permisosLoading) {
+      return
+    }
 
     // Si no está autenticado, redirigir al login
     if (!perfil) {
-      router.push('/auth/login')
+      router.push('/login')
       return
     }
 
@@ -113,11 +118,11 @@ export function ProtectedRoute({
 
     // Redirigir si no tiene permiso
     if (!tienePermiso) {
-      console.warn(`ProtectedRoute: Sin permiso para ${modulo} - ${accion || acciones?.join(', ')}`)
       router.push(redirectTo)
     }
   }, [
     authLoading,
+    permisosLoading,
     perfil,
     modulo,
     accion,
@@ -130,8 +135,8 @@ export function ProtectedRoute({
     redirectTo,
   ])
 
-  // Mostrar loading mientras valida
-  if (authLoading) {
+  // Mostrar loading mientras valida autenticación O permisos
+  if (authLoading || permisosLoading) {
     return <>{loading}</>
   }
 
@@ -160,16 +165,39 @@ export function ProtectedRoute({
 }
 
 /**
- * Componente de loading por defecto
+ * Componente de loading moderno
+ * Diseño minimalista sin mencionar detalles técnicos
  */
 function LoadingPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-950">
       <div className="text-center">
-        <div className="inline-block h-12 w-12 animate-spin rounded-full border-4 border-solid border-violet-600 border-r-transparent"></div>
-        <p className="mt-4 text-sm text-gray-600 dark:text-gray-400">
-          Verificando permisos...
-        </p>
+        {/* Spinner moderno con efecto de pulso */}
+        <div className="relative inline-flex items-center justify-center">
+          {/* Círculo exterior con pulso */}
+          <div className="absolute h-20 w-20 rounded-full bg-violet-500/20 dark:bg-violet-400/20 animate-ping"></div>
+
+          {/* Círculo medio giratorio */}
+          <div className="absolute h-16 w-16 rounded-full border-4 border-violet-200 dark:border-violet-900"></div>
+
+          {/* Spinner principal */}
+          <div className="relative h-16 w-16 animate-spin rounded-full border-4 border-transparent border-t-violet-600 dark:border-t-violet-400 border-r-violet-500 dark:border-r-violet-500"></div>
+
+          {/* Punto central con pulso */}
+          <div className="absolute h-3 w-3 rounded-full bg-violet-600 dark:bg-violet-400 animate-pulse"></div>
+        </div>
+
+        {/* Texto genérico y amigable */}
+        <div className="mt-8 space-y-2">
+          <p className="text-sm font-medium text-gray-700 dark:text-gray-300 animate-pulse">
+            Cargando...
+          </p>
+          <div className="flex items-center justify-center gap-1">
+            <div className="h-1.5 w-1.5 rounded-full bg-violet-600 dark:bg-violet-400 animate-bounce" style={{ animationDelay: '0ms' }}></div>
+            <div className="h-1.5 w-1.5 rounded-full bg-violet-600 dark:bg-violet-400 animate-bounce" style={{ animationDelay: '150ms' }}></div>
+            <div className="h-1.5 w-1.5 rounded-full bg-violet-600 dark:bg-violet-400 animate-bounce" style={{ animationDelay: '300ms' }}></div>
+          </div>
+        </div>
       </div>
     </div>
   )
@@ -194,6 +222,9 @@ interface RequireViewProps {
 }
 
 export function RequireView({ modulo, redirectTo, children }: RequireViewProps) {
+  console.warn('⚠️ [SISTEMA ANTIGUO] RequireView ejecutado - ESTO NO DEBERÍA PASAR CON MIDDLEWARE')
+  console.warn('  Módulo:', modulo)
+
   return (
     <ProtectedRoute modulo={modulo} accion="ver" redirectTo={redirectTo}>
       {children}
@@ -221,17 +252,19 @@ interface RequireAdminProps {
 export function RequireAdmin({ redirectTo = '/dashboard', children }: RequireAdminProps) {
   const router = useRouter()
   const { perfil, loading: authLoading } = useAuth()
-  const { esAdmin } = usePermissions()
+  const { esAdmin, permisosLoading } = usePermissions()
 
   useEffect(() => {
-    if (authLoading) return
+    // ⭐ SOLUCIÓN IDEAL: Esperar a que cargue autenticación Y permisos
+    if (authLoading || permisosLoading) return
 
     if (!perfil || !esAdmin) {
       router.push(redirectTo)
     }
-  }, [authLoading, perfil, esAdmin, router, redirectTo])
+  }, [authLoading, permisosLoading, perfil, esAdmin, router, redirectTo])
 
-  if (authLoading) {
+  // ⭐ MEJORADO: Mostrar loading mientras valida autenticación O permisos
+  if (authLoading || permisosLoading) {
     return <LoadingPage />
   }
 

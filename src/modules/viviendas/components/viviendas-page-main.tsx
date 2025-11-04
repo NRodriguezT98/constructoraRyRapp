@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { Modal } from '../../../shared/components/ui/Modal'
 import { useViviendasList } from '../hooks/useViviendasList'
-import { viviendasListStyles as styles } from '../styles/viviendasList.styles'
+import { viviendasStyles as styles } from '../styles/viviendas.styles'
 import { FormularioVivienda } from './formulario-vivienda'
 import { ViviendasEmpty } from './viviendas-empty'
 import { ViviendasFilters } from './viviendas-filters'
@@ -16,11 +16,49 @@ import { ViviendasSkeleton } from './viviendas-skeleton'
 import { ViviendasStats } from './viviendas-stats'
 
 /**
+ * Permisos del usuario (pasados desde Server Component)
+ */
+interface PermisosUsuario {
+  canCreate: boolean
+  canEdit: boolean
+  canDelete: boolean
+  canView: boolean
+  isAdmin: boolean
+}
+
+interface ViviendasPageMainProps {
+  canCreate?: boolean
+  canEdit?: boolean
+  canDelete?: boolean
+  canView?: boolean
+  isAdmin?: boolean
+}
+
+/**
  * Página principal de viviendas
  * Orquesta todos los componentes hijos
  * Lógica delegada a useViviendasList
+ *
+ * ✅ PROTEGIDA POR MIDDLEWARE
+ * - Recibe permisos como props desde Server Component
+ * - No necesita validar autenticación (ya validada)
+ * - Solo maneja UI y lógica de negocio
  */
-export function ViviendasPageMain() {
+export function ViviendasPageMain({
+  canCreate = false,
+  canEdit = false,
+  canDelete = false,
+  canView = true,
+  isAdmin = false,
+}: ViviendasPageMainProps = {}) {
+  console.log('🏠 [VIVIENDAS MAIN] Client Component montado con permisos:', {
+    canCreate,
+    canEdit,
+    canDelete,
+    canView,
+    isAdmin,
+  })
+
   const router = useRouter()
   const {
     viviendas,
@@ -67,16 +105,19 @@ export function ViviendasPageMain() {
   const viviendaEliminando = viviendas.find(v => v.id === viviendaEliminar)
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50 to-teal-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950">
+    <div className={styles.container.page}>
       {/* Animación simplificada para navegación instantánea */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.15 }}
-        className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6"
+        className={styles.container.content}
       >
-        {/* Header */}
-        <ViviendasHeader onNuevaVivienda={abrirModalCrear} totalViviendas={estadisticas.total} />
+        {/* Header - Botón solo si puede crear */}
+        <ViviendasHeader
+          onNuevaVivienda={canCreate ? abrirModalCrear : undefined}
+          totalViviendas={estadisticas.total}
+        />
 
         {/* Estadísticas */}
         <ViviendasStats

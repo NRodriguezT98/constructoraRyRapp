@@ -1,43 +1,27 @@
 /**
  * ============================================
- * COMPONENTE: ProtectedAction
+ * COMPONENTES: ProtectedAction
  * ============================================
  *
- * Renderiza children solo si el usuario tiene los permisos necesarios.
- * Permite condicionar UI sin lógica de permisos en cada componente.
+ * Componentes wrapper para condicionar renderizado basado en permisos.
+ * Simplifican el uso del sistema de permisos en la UI.
  *
  * @example
- * // Mostrar botón solo si puede crear clientes
- * <ProtectedAction modulo="clientes" accion="crear">
- *   <Button>Crear Cliente</Button>
- * </ProtectedAction>
+ * // Mostrar botón solo si puede crear
+ * <CanCreate modulo="proyectos">
+ *   <CreateButton />
+ * </CanCreate>
  *
  * @example
- * // Mostrar solo si puede editar O eliminar
- * <ProtectedAction modulo="proyectos" acciones={['editar', 'eliminar']}>
- *   <MenuActions />
- * </ProtectedAction>
- *
- * @example
- * // Mostrar solo si puede editar Y eliminar
- * <ProtectedAction modulo="usuarios" acciones={['editar', 'eliminar']} requireAll>
- *   <AdminPanel />
- * </ProtectedAction>
- *
- * @example
- * // Mostrar fallback si no tiene permiso
- * <ProtectedAction
- *   modulo="reportes"
- *   accion="exportar"
- *   fallback={<Text>No tienes permiso para exportar</Text>}
- * >
- *   <ExportButton />
- * </ProtectedAction>
+ * // Mostrar acciones con fallback
+ * <CanEdit modulo="clientes" fallback={<DisabledButton />}>
+ *   <EditButton />
+ * </CanEdit>
  */
 
 'use client'
 
-import { type ReactNode } from 'react'
+import type { ReactNode } from 'react'
 import { usePermissions } from '../hooks/usePermissions'
 import type { Accion, Modulo } from '../types'
 
@@ -57,13 +41,13 @@ interface ProtectedActionProps {
   /** Contenido a renderizar si tiene permiso */
   children: ReactNode
 
-  /** Contenido alternativo si NO tiene permiso */
+  /** Contenido a mostrar si NO tiene permiso */
   fallback?: ReactNode
-
-  /** Si true, renderiza children siempre pero con opacity reducida cuando no tiene permiso */
-  showDisabled?: boolean
 }
 
+/**
+ * Componente base para proteger acciones basadas en permisos
+ */
 export function ProtectedAction({
   modulo,
   accion,
@@ -71,14 +55,13 @@ export function ProtectedAction({
   requireAll = false,
   children,
   fallback = null,
-  showDisabled = false,
 }: ProtectedActionProps) {
   const { puede, puedeAlguno, puedeTodos } = usePermissions()
 
   // Validación: no puede usar accion y acciones juntos
   if (accion && acciones) {
     console.error('ProtectedAction: No uses "accion" y "acciones" al mismo tiempo')
-    return null
+    return <>{fallback}</>
   }
 
   // Determinar si tiene permiso
@@ -96,63 +79,22 @@ export function ProtectedAction({
     }
   } else {
     console.error('ProtectedAction: Debes proporcionar "accion" o "acciones"')
-    return null
+    return <>{fallback}</>
   }
 
-  // Modo disabled: mostrar siempre pero opaco
-  if (showDisabled && !tienePermiso) {
-    return (
-      <div className="opacity-40 pointer-events-none" aria-disabled="true">
-        {children}
-      </div>
-    )
-  }
-
-  // Renderizar según permiso
-  if (tienePermiso) {
-    return <>{children}</>
-  }
-
-  return <>{fallback}</>
+  return tienePermiso ? <>{children}</> : <>{fallback}</>
 }
 
 /**
- * Componente simplificado para solo verificar SI puede ver/acceder
- *
- * @example
- * <CanView modulo="clientes">
- *   <ClientesPage />
- * </CanView>
+ * Componente simplificado para verificar permiso de CREAR
  */
-interface CanViewProps {
+interface SimpleActionProps {
   modulo: Modulo
   children: ReactNode
   fallback?: ReactNode
 }
 
-export function CanView({ modulo, children, fallback = null }: CanViewProps) {
-  return (
-    <ProtectedAction modulo={modulo} accion="ver" fallback={fallback}>
-      {children}
-    </ProtectedAction>
-  )
-}
-
-/**
- * Componente simplificado para verificar SI puede crear
- *
- * @example
- * <CanCreate modulo="proyectos">
- *   <CreateButton />
- * </CanCreate>
- */
-interface CanCreateProps {
-  modulo: Modulo
-  children: ReactNode
-  fallback?: ReactNode
-}
-
-export function CanCreate({ modulo, children, fallback = null }: CanCreateProps) {
+export function CanCreate({ modulo, children, fallback }: SimpleActionProps) {
   return (
     <ProtectedAction modulo={modulo} accion="crear" fallback={fallback}>
       {children}
@@ -161,20 +103,9 @@ export function CanCreate({ modulo, children, fallback = null }: CanCreateProps)
 }
 
 /**
- * Componente simplificado para verificar SI puede editar
- *
- * @example
- * <CanEdit modulo="viviendas">
- *   <EditButton />
- * </CanEdit>
+ * Componente simplificado para verificar permiso de EDITAR
  */
-interface CanEditProps {
-  modulo: Modulo
-  children: ReactNode
-  fallback?: ReactNode
-}
-
-export function CanEdit({ modulo, children, fallback = null }: CanEditProps) {
+export function CanEdit({ modulo, children, fallback }: SimpleActionProps) {
   return (
     <ProtectedAction modulo={modulo} accion="editar" fallback={fallback}>
       {children}
@@ -183,20 +114,9 @@ export function CanEdit({ modulo, children, fallback = null }: CanEditProps) {
 }
 
 /**
- * Componente simplificado para verificar SI puede eliminar
- *
- * @example
- * <CanDelete modulo="abonos">
- *   <DeleteButton />
- * </CanDelete>
+ * Componente simplificado para verificar permiso de ELIMINAR
  */
-interface CanDeleteProps {
-  modulo: Modulo
-  children: ReactNode
-  fallback?: ReactNode
-}
-
-export function CanDelete({ modulo, children, fallback = null }: CanDeleteProps) {
+export function CanDelete({ modulo, children, fallback }: SimpleActionProps) {
   return (
     <ProtectedAction modulo={modulo} accion="eliminar" fallback={fallback}>
       {children}
@@ -205,12 +125,51 @@ export function CanDelete({ modulo, children, fallback = null }: CanDeleteProps)
 }
 
 /**
- * Componente para solo administradores
- *
- * @example
- * <AdminOnly fallback={<Text>Solo administradores</Text>}>
- *   <DangerZone />
- * </AdminOnly>
+ * Componente simplificado para verificar permiso de VER
+ */
+export function CanView({ modulo, children, fallback }: SimpleActionProps) {
+  return (
+    <ProtectedAction modulo={modulo} accion="ver" fallback={fallback}>
+      {children}
+    </ProtectedAction>
+  )
+}
+
+/**
+ * Componente simplificado para verificar permiso de APROBAR
+ */
+export function CanApprove({ modulo, children, fallback }: SimpleActionProps) {
+  return (
+    <ProtectedAction modulo={modulo} accion="aprobar" fallback={fallback}>
+      {children}
+    </ProtectedAction>
+  )
+}
+
+/**
+ * Componente simplificado para verificar permiso de RECHAZAR
+ */
+export function CanReject({ modulo, children, fallback }: SimpleActionProps) {
+  return (
+    <ProtectedAction modulo={modulo} accion="rechazar" fallback={fallback}>
+      {children}
+    </ProtectedAction>
+  )
+}
+
+/**
+ * Componente simplificado para verificar permiso de EXPORTAR
+ */
+export function CanExport({ modulo, children, fallback }: SimpleActionProps) {
+  return (
+    <ProtectedAction modulo={modulo} accion="exportar" fallback={fallback}>
+      {children}
+    </ProtectedAction>
+  )
+}
+
+/**
+ * Componente para verificar si el usuario es Administrador
  */
 interface AdminOnlyProps {
   children: ReactNode
@@ -220,4 +179,12 @@ interface AdminOnlyProps {
 export function AdminOnly({ children, fallback = null }: AdminOnlyProps) {
   const { esAdmin } = usePermissions()
   return esAdmin ? <>{children}</> : <>{fallback}</>
+}
+
+/**
+ * Componente para verificar si el usuario es Gerente o superior
+ */
+export function ManagerOrAbove({ children, fallback = null }: AdminOnlyProps) {
+  const { esAdmin, esGerente } = usePermissions()
+  return esAdmin || esGerente ? <>{children}</> : <>{fallback}</>
 }

@@ -173,14 +173,15 @@ export async function validarCorreccionFecha(
   let fechaMinima: Date | undefined
   let fechaMaxima: Date | undefined
 
-  // 1. Obtener paso
+  // 1. Obtener paso y negociación
   const { data: paso, error } = await supabase
     .from('procesos_negociacion')
     .select(`
       *,
       negociaciones (
         id,
-        estado
+        estado,
+        fecha_negociacion
       )
     `)
     .eq('id', pasoId)
@@ -201,7 +202,23 @@ export async function validarCorreccionFecha(
     errores.push('La fecha no puede ser futura')
   }
 
-  // 4. Obtener paso anterior
+  // 4. CRÍTICO: No puede ser anterior a la fecha de inicio de negociación
+  if (paso.negociaciones.fecha_negociacion) {
+    const fechaInicioNegociacion = new Date(paso.negociaciones.fecha_negociacion)
+
+    // Establecer fecha mínima como la fecha de inicio de negociación
+    if (!fechaMinima || fechaInicioNegociacion > fechaMinima) {
+      fechaMinima = fechaInicioNegociacion
+    }
+
+    if (nuevaFecha < fechaInicioNegociacion) {
+      errores.push(
+        `La fecha no puede ser anterior a la fecha de inicio de la negociación (${formatDate(fechaInicioNegociacion)})`
+      )
+    }
+  }
+
+  // 5. Obtener paso anterior
   const { data: pasoAnterior } = await supabase
     .from('procesos_negociacion')
     .select('fecha_completado, estado, nombre')
@@ -211,7 +228,11 @@ export async function validarCorreccionFecha(
 
   if (pasoAnterior?.estado === 'Completado' && pasoAnterior.fecha_completado) {
     const fechaAnterior = new Date(pasoAnterior.fecha_completado)
-    fechaMinima = fechaAnterior
+
+    // Actualizar fechaMinima si el paso anterior es más reciente
+    if (!fechaMinima || fechaAnterior > fechaMinima) {
+      fechaMinima = fechaAnterior
+    }
 
     if (nuevaFecha < fechaAnterior) {
       errores.push(
@@ -220,7 +241,7 @@ export async function validarCorreccionFecha(
     }
   }
 
-  // 5. Obtener paso siguiente
+  // 6. Obtener paso siguiente
   const { data: pasoSiguiente } = await supabase
     .from('procesos_negociacion')
     .select('fecha_completado, estado, nombre')
@@ -239,7 +260,7 @@ export async function validarCorreccionFecha(
     }
   }
 
-  // 6. Verificar si hay pasos posteriores completados (para advertencia admin)
+  // 7. Verificar si hay pasos posteriores completados (para advertencia admin)
   const { data: pasosPosterioresCompletados } = await supabase
     .from('procesos_negociacion')
     .select('id, nombre, orden')

@@ -83,15 +83,51 @@ new Date(input).toISOString() // ❌ Conversión UTC incorrecta
 ### Separación de Responsabilidades (OBLIGATORIO)
 
 - [ ] Lógica en hook separado (`use*.ts`)
-- [ ] Estilos en archivo `.styles.ts`
 - [ ] Componente < 150 líneas (solo UI presentacional)
 - [ ] No hay lógica de negocio en el componente
+
+### Componentes Estandarizados ⭐ **OBLIGATORIO**
+
+- [ ] **Importé** componentes de `@/shared/components/layout`
+- [ ] **Consulté** `docs/TEMPLATE-MODULO-ESTANDAR.md` antes de empezar
+- [ ] **Uso ModuleContainer** como contenedor principal (NO `<div className="min-h-screen...">`)
+- [ ] **Uso ModuleHeader** para encabezado con título/descripción/acciones
+- [ ] **Uso Card** para secciones de contenido (NO `<div className="bg-white...">`)
+- [ ] **Uso Button** para acciones (NO crear botones custom con className)
+- [ ] **Uso Badge** para etiquetas de estado
+- [ ] **Uso LoadingState** para estado de carga
+- [ ] **Uso EmptyState** para estado vacío (con acción si aplica)
+- [ ] **Uso ErrorState** para errores (con retry si aplica)
+
+```typescript
+// ✅ IMPORT OBLIGATORIO
+import {
+  ModuleContainer,
+  ModuleHeader,
+  Card,
+  Button,
+  Badge,
+  LoadingState,
+  EmptyState,
+  ErrorState,
+} from '@/shared/components/layout'
+```
+
+### Diseño y Modo Oscuro
+
+- [ ] **Todos** los elementos personalizados tienen variante `dark:*`
+- [ ] **Responsive** verificado: móvil, tablet, desktop
+- [ ] **Sin strings largos** de Tailwind (>100 chars) - usar componentes
+- [ ] **Padding consistente**: usar props de componentes estandarizados
+- [ ] **Bordes redondeados**: `rounded-xl` (componentes ya lo incluyen)
 
 ### Imports de Datos
 
 - [ ] Usé el servicio correcto (no creé fetch directo)
 - [ ] Los nombres de campos coinciden con `DATABASE-SCHEMA-REFERENCE.md`
-- [ ] Manejé estados de carga y error
+- [ ] Manejé estados de carga con LoadingState
+- [ ] Manejé errores con ErrorState
+- [ ] Manejé estado vacío con EmptyState
 - [ ] Agregué tipos TypeScript estrictos
 
 ---

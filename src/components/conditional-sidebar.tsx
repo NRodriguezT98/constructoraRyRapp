@@ -1,7 +1,7 @@
 'use client'
 
 import { usePathname } from 'next/navigation'
-import { Sidebar } from './sidebar'
+import { SidebarCompact as Sidebar } from './sidebar-compact'
 
 /**
  * Componente que renderiza el Sidebar condicionalmente
@@ -21,5 +21,5 @@ export function ConditionalSidebar() {
     return null
   }
 
-  return <Sidebar />
+  return <div suppressHydrationWarning><Sidebar /></div>
 }

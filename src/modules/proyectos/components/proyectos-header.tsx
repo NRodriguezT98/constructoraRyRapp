@@ -1,11 +1,10 @@
 ﻿'use client'
 
-import { CanCreate } from '@/modules/usuarios/components'
 import { motion } from 'framer-motion'
 import { Building2, Plus, Sparkles } from 'lucide-react'
 
 interface ProyectosHeaderProps {
-  onNuevoProyecto: () => void
+  onNuevoProyecto?: () => void
 }
 
 export function ProyectosHeader({ onNuevoProyecto }: ProyectosHeaderProps) {
@@ -27,7 +26,7 @@ export function ProyectosHeader({ onNuevoProyecto }: ProyectosHeaderProps) {
       </div>
 
       {/* Botón CTA compacto (solo si puede crear) */}
-      <CanCreate modulo="proyectos">
+      {onNuevoProyecto && (
         <motion.button
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
@@ -39,7 +38,7 @@ export function ProyectosHeader({ onNuevoProyecto }: ProyectosHeaderProps) {
           <span className='relative'>Nuevo Proyecto</span>
           <Sparkles className='relative h-3.5 w-3.5 opacity-70' />
         </motion.button>
-      </CanCreate>
+      )}
     </div>
   )
 }

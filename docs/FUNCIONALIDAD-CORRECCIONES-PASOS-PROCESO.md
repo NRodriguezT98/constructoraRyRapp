@@ -220,7 +220,125 @@ useEffect(() => {
 
 ---
 
-### 3. **Correcciones de Bugs** ✅
+### 3. **Validaciones Implementadas en el Servicio** ✅
+
+**Archivo**: `src/modules/procesos/services/correcciones.service.ts`
+**Función**: `validarCorreccionFecha(pasoId: string, nuevaFecha: Date)`
+
+#### Validaciones en Orden de Ejecución:
+
+```typescript
+// 1️⃣ VALIDACIÓN: Paso existe y tiene negociación válida
+const { data: paso, error } = await supabase
+  .from('procesos_negociacion')
+  .select(`
+    *,
+    negociaciones (
+      id,
+      estado,
+      fecha_negociacion  // ⭐ Campo para validación de fecha mínima
+    )
+  `)
+  .eq('id', pasoId)
+  .single()
+
+// 2️⃣ VALIDACIÓN: Proceso no está finalizado
+if (['Completado', 'Cancelado'].includes(paso.negociaciones.estado)) {
+  errores.push('No se puede corregir fecha de proceso finalizado')
+}
+
+// 3️⃣ VALIDACIÓN: No puede ser fecha futura
+const ahora = new Date()
+if (nuevaFecha > ahora) {
+  errores.push('La fecha no puede ser futura')
+}
+
+// 4️⃣ VALIDACIÓN CRÍTICA: No puede ser anterior a inicio de negociación ⭐
+if (paso.negociaciones.fecha_negociacion) {
+  const fechaInicioNegociacion = new Date(paso.negociaciones.fecha_negociacion)
+
+  if (nuevaFecha < fechaInicioNegociacion) {
+    errores.push(
+      `La fecha no puede ser anterior a la fecha de inicio de la negociación (${formatDate(fechaInicioNegociacion)})`
+    )
+  }
+}
+
+// 5️⃣ VALIDACIÓN: No puede ser anterior al paso previo
+const { data: pasoAnterior } = await supabase
+  .from('procesos_negociacion')
+  .select('fecha_completado, estado, nombre')
+  .eq('negociacion_id', paso.negociacion_id)
+  .eq('orden', paso.orden - 1)
+  .maybeSingle()
+
+if (pasoAnterior?.estado === 'Completado' && pasoAnterior.fecha_completado) {
+  const fechaAnterior = new Date(pasoAnterior.fecha_completado)
+  if (nuevaFecha < fechaAnterior) {
+    errores.push(
+      `La fecha debe ser posterior al paso anterior: ${pasoAnterior.nombre} (${formatDate(fechaAnterior)})`
+    )
+  }
+  fechaMinima = fechaAnterior
+}
+
+// 6️⃣ VALIDACIÓN: No puede ser posterior al paso siguiente (si está completado)
+const { data: pasoSiguiente } = await supabase
+  .from('procesos_negociacion')
+  .select('fecha_completado, estado, nombre')
+  .eq('negociacion_id', paso.negociacion_id)
+  .eq('orden', paso.orden + 1)
+  .maybeSingle()
+
+if (pasoSiguiente?.estado === 'Completado' && pasoSiguiente.fecha_completado) {
+  const fechaSiguiente = new Date(pasoSiguiente.fecha_completado)
+  if (nuevaFecha > fechaSiguiente) {
+    errores.push(
+      `La fecha debe ser anterior al paso siguiente: ${pasoSiguiente.nombre} (${formatDate(fechaSiguiente)})`
+    )
+  }
+  fechaMaxima = fechaSiguiente
+}
+
+// 7️⃣ ADVERTENCIA ADMIN: Detección de pasos posteriores
+const { data: pasosPosterioresCompletados } = await supabase
+  .from('procesos_negociacion')
+  .select('id, nombre, orden')
+  .eq('negociacion_id', paso.negociacion_id)
+  .gt('orden', paso.orden)
+  .eq('estado', 'Completado')
+
+const hayPasosPosteriores = pasosPosterioresCompletados && pasosPosterioresCompletados.length > 0
+
+// ⭐ Retorna resultado con flags especiales para Admins
+return {
+  valida: errores.length === 0,
+  errores,
+  fechaMinima,
+  fechaMaxima: fechaMaxima || ahora,
+  requiereConfirmacionAdmin: hayPasosPosteriores,
+  advertenciaAdmin: hayPasosPosteriores
+    ? `⚠️ ADVERTENCIA: Hay ${pasosPosterioresCompletados.length} paso(s) posterior(es) completado(s). La corrección podría afectar la cronología del proceso.`
+    : undefined
+}
+```
+
+**Orden de prioridad de validaciones**:
+1. ✅ Paso existe
+2. ✅ Proceso no finalizado
+3. ✅ No futuro
+4. ⭐ **No antes de fecha_negociacion** (CRÍTICO - agregado 4/nov/2025)
+5. ✅ No antes de paso anterior
+6. ✅ No después de paso siguiente
+7. ⚠️ Advertencia si hay pasos posteriores
+
+**Referencias**:
+- 📚 `docs/06-testing/VALIDACION-FECHA-INICIO-NEGOCIACION.md` - Documentación completa de validación #4
+- 📚 `docs/DATABASE-SCHEMA-REFERENCE-ACTUALIZADO.md` - Schema de tabla negociaciones
+
+---
+
+### 4. **Correcciones de Bugs** ✅
 
 #### Bug #1: Rol de usuario incorrecto
 **Problema**: `user.role` retornaba `'authenticated'` en lugar del rol real
@@ -381,6 +499,7 @@ Timeline se recarga con datos actualizados
 3. **Advertencias Especiales**: Los Admins ven advertencia AMBAR cuando hay pasos posteriores completados, pero pueden continuar
 4. **Sin restricción de 48 horas**: Eliminado porque no es útil para Administradores
 5. **Auditoría Completa**: Implementada en servicio pero requiere tablas de BD (pendiente)
+6. ⭐ **Validación Crítica**: Fechas no pueden ser anteriores a `fecha_negociacion` (inicio de negociación)
 
 ---
 
@@ -396,11 +515,16 @@ Timeline se recarga con datos actualizados
 **Próximos pasos**:
 1. Completar testing manual de ambos modales
 2. Verificar que advertencias AMBAR aparezcan correctamente
-3. Corregir cualquier bug que se encuentre durante testing
-4. Marcar TODO como completado
-5. (Opcional) Implementar tablas de auditoría si se requiere historial completo
+3. ⭐ **Probar validación de fecha_negociacion** (caso crítico agregado hoy)
+4. Corregir cualquier bug que se encuentre durante testing
+5. Marcar TODO como completado
+6. (Opcional) Implementar tablas de auditoría si se requiere historial completo
+
+**Archivos de referencia para testing**:
+- 📋 `docs/06-testing/TODO-TESTING-CORRECCIONES-PROCESO.md` - Checklist completo
+- ⭐ `docs/06-testing/VALIDACION-FECHA-INICIO-NEGOCIACION.md` - Validación crítica
 
 ---
 
-**Última actualización**: 3 de noviembre de 2025
-**Estado**: Implementación completa, pendiente testing manual
+**Última actualización**: 4 de noviembre de 2025
+**Estado**: Implementación completa + validación crítica agregada, pendiente testing manual

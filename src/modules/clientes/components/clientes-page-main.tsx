@@ -1,6 +1,11 @@
 /**
  * Componente principal del módulo de Clientes
  * Orquesta la lógica con el hook y presenta los componentes
+ *
+ * ✅ PROTEGIDO POR MIDDLEWARE
+ * - Recibe permisos como props desde Server Component
+ * - No necesita validar autenticación (ya validada)
+ * - Solo maneja UI y lógica de negocio
  */
 
 'use client'
@@ -10,17 +15,42 @@ import { ModalConfirmacion } from '@/shared'
 import { useRouter } from 'next/navigation'
 import { useCallback, useMemo, useState } from 'react'
 import {
-    ClientesHeader,
-    EstadisticasClientes,
-    FiltrosClientes,
-    FormularioClienteContainer,
-    ListaClientes,
+  ClientesHeader,
+  EstadisticasClientes,
+  FiltrosClientes,
+  FormularioClienteContainer,
+  ListaClientes,
 } from '../components'
 import { useClientes } from '../hooks'
 import { useClientesStore } from '../store/clientes.store'
 import type { ClienteResumen, EstadoCliente, OrigenCliente } from '../types'
 
-export function ClientesPageMain() {
+/**
+ * Permisos del usuario (pasados desde Server Component)
+ */
+interface ClientesPageMainProps {
+  canCreate?: boolean
+  canEdit?: boolean
+  canDelete?: boolean
+  canView?: boolean
+  isAdmin?: boolean
+}
+
+export function ClientesPageMain({
+  canCreate = false,
+  canEdit = false,
+  canDelete = false,
+  canView = true,
+  isAdmin = false,
+}: ClientesPageMainProps = {}) {
+  console.log('👥 [CLIENTES MAIN] Client Component montado con permisos:', {
+    canCreate,
+    canEdit,
+    canDelete,
+    canView,
+    isAdmin,
+  })
+
   const router = useRouter()
   const {
     clientes,
@@ -151,7 +181,7 @@ export function ClientesPageMain() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
         {/* Header Hero + FAB */}
         <ClientesHeader
-          onNuevoCliente={handleNuevoCliente}
+          onNuevoCliente={canCreate ? handleNuevoCliente : undefined}
           totalClientes={estadisticas.total}
         />
 
@@ -175,14 +205,14 @@ export function ClientesPageMain() {
           totalClientes={clientes.length}
         />
 
-        {/* Lista de Clientes (sin cambios en cards) */}
+        {/* Lista de Clientes */}
         <ListaClientes
           clientes={clientesFiltrados}
           isLoading={isLoading}
           onVerCliente={handleVerCliente}
-          onEditarCliente={handleEditarCliente}
-          onEliminarCliente={handleEliminarCliente}
-          onNuevoCliente={handleNuevoCliente}
+          onEditarCliente={canEdit ? handleEditarCliente : undefined}
+          onEliminarCliente={canDelete ? handleEliminarCliente : undefined}
+          onNuevoCliente={canCreate ? handleNuevoCliente : undefined}
         />
 
         {/* Formulario Modal */}

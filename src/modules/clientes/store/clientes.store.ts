@@ -12,6 +12,7 @@ interface ClientesState {
   clienteSeleccionado: Cliente | null
   isLoading: boolean
   error: string | null
+  datosInicializados: boolean // Flag para evitar cargas duplicadas
 
   // Filtros
   filtros: FiltrosClientes
@@ -27,6 +28,7 @@ interface ClientesState {
   setClienteSeleccionado: (cliente: Cliente | null) => void
   setIsLoading: (isLoading: boolean) => void
   setError: (error: string | null) => void
+  setDatosInicializados: (inicializado: boolean) => void
 
   // Acciones - Filtros
   setFiltros: (filtros: FiltrosClientes) => void
@@ -54,6 +56,7 @@ const estadoInicial = {
   clienteSeleccionado: null,
   isLoading: true, // Iniciar en true para mostrar skeletons en primera carga
   error: null,
+  datosInicializados: false, // No se han cargado datos aún
   filtros: {},
   busqueda: '',
   modalFormularioAbierto: false,
@@ -69,6 +72,7 @@ export const useClientesStore = create<ClientesState>((set) => ({
   setClienteSeleccionado: (clienteSeleccionado) => set({ clienteSeleccionado }),
   setIsLoading: (isLoading) => set({ isLoading }),
   setError: (error) => set({ error }),
+  setDatosInicializados: (datosInicializados) => set({ datosInicializados }),
 
   // Acciones - Filtros
   setFiltros: (filtros) => set({ filtros }),

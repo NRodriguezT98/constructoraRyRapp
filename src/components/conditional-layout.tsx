@@ -14,13 +14,13 @@ export function ConditionalLayout({ children }: { children: React.ReactNode }) {
   const isPublicRoute = publicRoutes.some(route => pathname.startsWith(route))
 
   if (isPublicRoute) {
-    // Layout para rutas públicas (login, etc)
-    return <>{children}</>
+    // Layout para rutas públicas (login, etc) - CENTRADO
+    return <div className='flex-1 flex items-center justify-center' suppressHydrationWarning>{children}</div>
   }
 
   // Layout para rutas autenticadas (con sidebar)
   return (
-    <main className='flex-1 overflow-auto custom-scrollbar'>
+    <main className='flex-1 overflow-auto custom-scrollbar' suppressHydrationWarning>
       {children}
     </main>
   )

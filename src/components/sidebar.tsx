@@ -3,6 +3,7 @@
 import { useAuth } from '@/contexts/auth-context'
 import { AnimatePresence, motion } from 'framer-motion'
 import {
+    Activity,
     BarChart3,
     Building2,
     ChevronLeft,
@@ -88,6 +89,13 @@ const navigationGroups = [
         icon: Users,
         color: 'from-violet-500 to-violet-600',
         description: 'Gestión de usuarios',
+      },
+      {
+        name: 'Auditorías',
+        href: '/auditorias',
+        icon: Activity,
+        color: 'from-teal-500 to-teal-600',
+        description: 'Registro de auditorías',
       },
       {
         name: 'Administración',

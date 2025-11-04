@@ -1,126 +1,108 @@
-'use client'
+﻿'use client'
 
+import { supabase } from '@/lib/supabase/client'
 import { motion } from 'framer-motion'
 import { Search, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { VIVIENDA_ESTADOS } from '../constants'
-import { viviendasService } from '../services/viviendas.service'
-import type { FiltrosViviendas, Proyecto } from '../types'
+import { viviendasStyles as styles } from '../styles/viviendas.styles'
+
+export interface FiltrosViviendas {
+  search: string
+  proyecto_id: string
+  estado: string
+}
 
 interface ViviendasFiltersProps {
   filtros: FiltrosViviendas
   onFiltrosChange: (filtros: Partial<FiltrosViviendas>) => void
   onLimpiarFiltros: () => void
+  resultadosCount: number
 }
 
-/**
- * Barra de filtros para viviendas
- * Componente presentacional con mínima lógica local (solo para cargar proyectos)
- */
 export function ViviendasFilters({
   filtros,
   onFiltrosChange,
   onLimpiarFiltros,
+  resultadosCount
 }: ViviendasFiltersProps) {
-  const [proyectos, setProyectos] = useState<Proyecto[]>([])
-  const [mostrarFiltros, setMostrarFiltros] = useState(false)
+  const [proyectos, setProyectos] = useState<Array<{ id: string; nombre: string }>>([])
 
-  // Cargar proyectos al montar
   useEffect(() => {
-    viviendasService.obtenerProyectos().then(setProyectos).catch(console.error)
+    const cargarProyectos = async () => {
+      const { data } = await supabase.from('proyectos').select('id, nombre').order('nombre')
+      if (data) setProyectos(data)
+    }
+    cargarProyectos()
   }, [])
 
-  const hayFiltrosActivos = filtros.busqueda || filtros.proyectoId || filtros.estado
-
   return (
-    <div className='space-y-3'>
-      {/* Barra de búsqueda y selectores */}
-      <div className='flex flex-col gap-2.5 sm:flex-row sm:items-center'>
-        {/* Búsqueda moderna */}
-        <div className='relative flex-1'>
-          <Search className='absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400' />
+    <motion.div
+      initial={{ opacity: 0, y: -20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, delay: 0.2 }}
+      className={styles.filtros.container}
+    >
+      <div className={styles.filtros.grid}>
+        <div className={styles.filtros.searchWrapper}>
+          <label className={styles.filtros.label}>Buscar vivienda</label>
+          <Search className={styles.filtros.searchIcon} />
           <input
-            type='text'
-            value={filtros.busqueda || ''}
-            onChange={e => onFiltrosChange({ busqueda: e.target.value })}
-            placeholder='Buscar por matrícula, nomenclatura o número...'
-            className='h-9 w-full rounded-xl border border-gray-200 bg-white pl-9 pr-4 text-sm text-gray-900 placeholder-gray-400 shadow-sm transition-all focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder-gray-500 dark:focus:border-emerald-400'
+            type="text"
+            value={filtros.search}
+            onChange={(e) => onFiltrosChange({ search: e.target.value })}
+            placeholder="Buscar número, manzana, lote..."
+            className={styles.filtros.searchInput}
           />
         </div>
 
-        {/* Filtros rápidos */}
-        <div className='flex gap-2'>
+        <div className={styles.filtros.selectWrapper}>
+          <label className={styles.filtros.label}>Proyecto</label>
           <select
-            value={filtros.proyectoId || ''}
-            onChange={e => onFiltrosChange({ proyectoId: e.target.value || undefined })}
-            className='h-9 min-w-[160px] rounded-xl border border-gray-200 bg-white px-3 text-sm text-gray-900 shadow-sm transition-all focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 dark:border-gray-700 dark:bg-gray-800 dark:text-white'
+            value={filtros.proyecto_id}
+            onChange={(e) => onFiltrosChange({ proyecto_id: e.target.value })}
+            className={styles.filtros.select}
           >
-            <option value=''>Todos los proyectos</option>
-            {proyectos.map(proyecto => (
+            <option value="">Todos los proyectos</option>
+            {proyectos.map((proyecto) => (
               <option key={proyecto.id} value={proyecto.id}>
                 {proyecto.nombre}
               </option>
             ))}
           </select>
+        </div>
 
-          <button
-            onClick={() => setMostrarFiltros(!mostrarFiltros)}
-            className={`flex h-9 items-center gap-1.5 rounded-xl border px-3 text-xs font-medium shadow-sm transition-all ${
-              mostrarFiltros || filtros.estado
-                ? 'border-emerald-500 bg-emerald-50 text-emerald-600 dark:border-emerald-400 dark:bg-emerald-500/10 dark:text-emerald-400'
-                : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-750'
-            }`}
+        <div className={styles.filtros.selectWrapper}>
+          <label className={styles.filtros.label}>Estado</label>
+          <select
+            value={filtros.estado}
+            onChange={(e) => onFiltrosChange({ estado: e.target.value })}
+            className={styles.filtros.select}
           >
-            Estado
-            {filtros.estado && <span className='text-[10px]'>✓</span>}
-          </button>
-
-          {hayFiltrosActivos && (
-            <motion.button
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              onClick={onLimpiarFiltros}
-              className='flex h-9 w-9 items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-400 shadow-sm transition-all hover:bg-gray-50 hover:text-gray-600 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-750'
-              title='Limpiar filtros'
-            >
-              <X className='h-4 w-4' />
-            </motion.button>
-          )}
+            <option value="">Todos los estados</option>
+            <option value="Disponible">Disponible</option>
+            <option value="Asignada">Asignada</option>
+            <option value="Entregada">Entregada</option>
+            <option value="Pagada">Pagada</option>
+          </select>
         </div>
       </div>
 
-      {/* Panel de estados desplegable */}
-      {mostrarFiltros && (
-        <motion.div
-          initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: 'auto' }}
-          exit={{ opacity: 0, height: 0 }}
-          className='overflow-hidden rounded-lg border border-gray-200 bg-white p-3 shadow-sm dark:border-gray-700 dark:bg-gray-800'
-        >
-          <h3 className='mb-2.5 text-xs font-semibold text-gray-900 dark:text-white'>
-            Filtrar por estado
-          </h3>
-          <div className='flex flex-wrap gap-1.5'>
-            {VIVIENDA_ESTADOS.map(estado => (
-              <button
-                key={estado.value}
-                onClick={() =>
-                  onFiltrosChange({
-                    estado: filtros.estado === estado.value ? undefined : (estado.value as any),
-                  })
-                }
-                className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-all ${
-                  filtros.estado === estado.value
-                    ? 'bg-emerald-100 text-emerald-700 ring-2 ring-emerald-500 dark:bg-emerald-500/20 dark:text-emerald-400 dark:ring-emerald-400'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
-                }`}
-              >
-                {estado.label}
-              </button>
-            ))}
-          </div>
-        </motion.div>
-      )}
-    </div>
+      <div className={styles.filtros.footer}>
+        <p className={styles.filtros.resultCount}>
+          {resultadosCount} {resultadosCount === 1 ? 'resultado' : 'resultados'}
+        </p>
+        {(filtros.search || filtros.proyecto_id || filtros.estado) && (
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={onLimpiarFiltros}
+            className={styles.filtros.clearButton}
+          >
+            <X className="w-4 h-4" />
+            Limpiar filtros
+          </motion.button>
+        )}
+      </div>
+    </motion.div>
   )
 }

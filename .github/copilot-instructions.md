@@ -36,6 +36,123 @@
 
 ---
 
+### 🎨 REGLA CRÍTICA #2: DISEÑO VISUAL ESTANDARIZADO (COMPACTO)
+
+**⚠️ AL crear CUALQUIER módulo de UI:**
+
+1. **CONSULTAR** → `docs/ESTANDAR-DISENO-VISUAL-MODULOS.md` (referencia de diseño) ⭐
+2. **COPIAR** → Estructura exacta de módulo de Viviendas como base (referencia compacta)
+3. **PERSONALIZAR** → Solo colores según paleta del módulo
+4. **VALIDAR** → Header, métricas y filtros idénticos en tamaño/distribución
+5. **VERIFICAR** → Glassmorphism, animaciones y dark mode completos
+
+**Elementos OBLIGATORIOS** (copiar estándar compacto):
+
+```typescript
+// 1. HEADER HERO (rounded-2xl, p-6, gradiente de 3 colores - COMPACTO)
+<motion.div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[COLOR]-600 via-[COLOR]-600 to-[COLOR]-600 dark:from-[COLOR]-700 dark:via-[COLOR]-700 dark:to-[COLOR]-800 p-6 shadow-2xl shadow-[COLOR]-500/20">
+  <div className="absolute inset-0 bg-grid-white/10 [mask-image:linear-gradient(0deg,transparent,black,transparent)]" />
+  <div className="relative z-10">
+    <div className="flex items-center justify-between">
+      <div className="flex items-center gap-3">
+        <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
+          <Icon className="w-6 h-6 text-white" />
+        </div>
+        <div className="space-y-0.5">
+          <h1 className="text-2xl font-bold text-white">Título</h1>
+          <p className="text-[COLOR]-100 dark:text-[COLOR]-200 text-xs">Descripción • Contexto</p>
+        </div>
+      </div>
+      <div className="flex items-center gap-2">
+        <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-white text-xs font-medium">
+          <Icon className="w-3.5 h-3.5" />
+          {count} Items
+        </span>
+        <motion.button className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/20 backdrop-blur-md border border-white/30 text-white text-sm font-medium hover:bg-white/30 transition-all shadow-lg">
+          <Plus className="w-4 h-4" />
+          Acción
+        </motion.button>
+      </div>
+    </div>
+  </div>
+</motion.div>
+
+// 2. MÉTRICAS (4 cards, grid gap-3, p-4 - COMPACTO)
+<motion.div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+  <motion.div
+    whileHover={{ scale: 1.02, y: -4 }}
+    transition={{ type: 'spring', stiffness: 300 }}
+    className="group relative overflow-hidden rounded-xl backdrop-blur-xl bg-white/80 dark:bg-gray-800/80 border border-gray-200/50 dark:border-gray-700/50 p-4 shadow-lg hover:shadow-2xl transition-all duration-300"
+  >
+    <div className="absolute inset-0 bg-gradient-to-br from-[COLOR]-500/20 to-[COLOR]-500/20 opacity-0 group-hover:opacity-10 transition-opacity duration-300" />
+    <div className="relative z-10 flex items-center gap-3">
+      <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[COLOR]-500 to-[COLOR]-600 flex items-center justify-center shadow-lg shadow-[COLOR]-500/50">
+        <Icon className="w-5 h-5 text-white" />
+      </div>
+      <div className="flex-1">
+        <p className="text-xl font-bold bg-gradient-to-br from-[COLOR]-600 via-[COLOR]-600 to-[COLOR]-600 bg-clip-text text-transparent">
+          {value}
+        </p>
+        <p className="text-xs text-gray-600 dark:text-gray-400 mt-0.5 font-medium">Label</p>
+      </div>
+    </div>
+  </motion.div>
+</motion.div>
+
+// 3. FILTROS (sticky, p-3, horizontal flex - COMPACTO)
+<motion.div className="sticky top-4 z-40 backdrop-blur-xl bg-white/90 dark:bg-gray-800/90 rounded-xl border border-gray-200/50 dark:border-gray-700/50 p-3 shadow-2xl shadow-[COLOR]-500/10">
+  <div className="flex items-center gap-2">
+    <div className="relative flex-1">
+      <label className="sr-only">Buscar</label>
+      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500 pointer-events-none" />
+      <input className="w-full pl-10 pr-3 py-2 bg-gray-50 dark:bg-gray-900/50 border-2 border-gray-200 dark:border-gray-700 rounded-lg focus:border-[COLOR]-500 focus:ring-2 focus:ring-[COLOR]-500/20 transition-all text-sm placeholder:text-gray-400" placeholder="Buscar..." />
+    </div>
+    <select className="px-3 py-2 bg-gray-50 dark:bg-gray-900/50 border-2 border-gray-200 dark:border-gray-700 rounded-lg focus:border-[COLOR]-500 focus:ring-2 focus:ring-[COLOR]-500/20 transition-all text-sm min-w-[180px]">
+      <option>Todos</option>
+    </select>
+  </div>
+  <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
+    <p className="text-xs text-gray-600 dark:text-gray-400 font-medium">{count} resultados</p>
+  </div>
+</motion.div>
+```
+
+**Archivo de estilos** (`styles/[modulo].styles.ts`):
+```typescript
+export const moduloStyles = {
+  container: { page: '...', content: 'py-6 space-y-4' }, // Compacto
+  header: { container: 'p-6 rounded-2xl', ... },          // Compacto
+  metricas: { grid: 'gap-3', card: 'p-4 rounded-xl', ... }, // Compacto
+  filtros: { container: 'p-3 rounded-xl', grid: 'flex gap-2', ... }, // Compacto
+}
+```
+
+**Paleta de colores por módulo**:
+- **Viviendas**: Naranja/Ámbar (`from-orange-600 via-amber-600 to-yellow-600`) - ⭐ REFERENCIA COMPACTA
+- **Auditorías**: Azul/Índigo/Púrpura (`from-blue-600 via-indigo-600 to-purple-600`)
+- **Proyectos**: Verde/Esmeralda (`from-green-600 via-emerald-600 to-teal-600`)
+- **Clientes**: Cyan/Azul (`from-cyan-600 via-blue-600 to-indigo-600`)
+- **Negociaciones**: Rosa/Púrpura (`from-pink-600 via-purple-600 to-indigo-600`)
+- **Abonos**: Azul/Índigo (`from-blue-600 via-indigo-600 to-purple-600`)
+- **Documentos**: Rojo/Rosa (`from-red-600 via-rose-600 to-pink-600`)
+
+**Dimensiones CRÍTICAS (estándar compacto)**:
+- Header: `p-6 rounded-2xl`, título `text-2xl`, icon `w-10 h-10`, badge `px-3 py-1.5`
+- Métricas: `p-4 rounded-xl gap-3`, icon `w-10 h-10`, valor `text-xl`
+- Filtros: `p-3 rounded-xl`, layout `flex gap-2`, inputs `py-2`, labels `sr-only`
+- Espaciado: `py-6 space-y-4` (30% menos espacio vertical)
+
+**Errores comunes que NO repetir:**
+- ❌ Usar dimensiones antiguas (p-8, text-3xl) → ✅ Usar estándar compacto
+- ❌ Grid de filtros → ✅ Flex horizontal con gap-2
+- ❌ Labels visibles en filtros → ✅ Labels sr-only (accesibilidad)
+- ❌ No usar glassmorphism (`backdrop-blur-xl`) → ✅ Aplicar en todos los cards
+- ❌ Olvidar animaciones hover → ✅ `whileHover={{ scale: 1.02, y: -4 }}`
+- ❌ No usar gradientes de 3 colores → ✅ `from-[COLOR] via-[COLOR] to-[COLOR]`
+- ❌ Olvidar pattern overlay → ✅ `bg-grid-white/10`
+
+---
+
 ## 📁 Estructura OBLIGATORIA de Módulos
 
 Al crear cualquier módulo nuevo, SEGUIR esta estructura:
@@ -76,18 +193,27 @@ src/modules/[nombre-modulo]/
 - [ ] **Consulté** `docs/DATABASE-SCHEMA-REFERENCE.md` para nombres de campos
 - [ ] **Verifiqué** nombres exactos de columnas y tablas
 - [ ] **Confirmé** formato de estados/enums
+- [ ] **Revisé** `docs/TEMPLATE-MODULO-ESTANDAR.md` para estructura
+- [ ] **Importé** componentes de `@/shared/components/layout`
 - [ ] **Revisé** checklist completo en `docs/DESARROLLO-CHECKLIST.md`
 
 ### Durante desarrollo:
+- [ ] **Usar ModuleContainer** como contenedor principal
+- [ ] **Usar ModuleHeader** para encabezado
+- [ ] **Usar Card** para secciones de contenido
+- [ ] **Usar Button** para acciones (NO crear botones custom)
+- [ ] **Usar Badge** para etiquetas
+- [ ] **Usar LoadingState/EmptyState/ErrorState** para estados de UI
 - [ ] Lógica en hook separado (`use*.ts`)
-- [ ] Estilos en `.styles.ts` (no strings largos inline)
 - [ ] Componente < 150 líneas
 - [ ] `useMemo` para valores calculados
 - [ ] `useCallback` para funciones como props
 - [ ] Tipos TypeScript estrictos (no `any`)
-- [ ] Imports organizados (React → Next → External → Shared → Local → Hooks → Services → Types → Styles)
+- [ ] Imports organizados (React → Next → External → Shared → Local → Hooks → Services → Types)
 - [ ] Barrel export (`index.ts`) en carpeta
 - [ ] Console.log para debugging de errores
+- [ ] **Modo oscuro verificado** en todos los elementos custom
+- [ ] **Responsive verificado** (móvil, tablet, desktop)
 
 ---
 
@@ -96,6 +222,9 @@ src/modules/[nombre-modulo]/
 ❌ **ASUMIR nombres de campos sin verificar** en `DATABASE-SCHEMA-REFERENCE.md`
 ❌ **Copiar nombres de otros archivos** sin validar en documentación
 ❌ **Inventar nombres "lógicos"** sin confirmar en DB
+❌ **Crear componentes de UI sin usar los estandarizados** (ModuleContainer, Card, Button, etc.)
+❌ **Olvidar modo oscuro** (dark:* en elementos personalizados)
+❌ **No usar estados de UI** (LoadingState, EmptyState, ErrorState)
 ❌ Lógica en componentes (useState, useEffect con lógica compleja)
 ❌ Strings de Tailwind > 100 caracteres inline
 ❌ Componentes > 150 líneas
@@ -106,11 +235,16 @@ src/modules/[nombre-modulo]/
 
 ## ✅ REQUERIDO
 
+✅ **Usar componentes estandarizados de `@/shared/components/layout`**
+✅ **Consultar TEMPLATE-MODULO-ESTANDAR.md antes de crear módulo**
+✅ **Validar con checklist de GUIA-DISENO-MODULOS.md**
 ✅ Hook personalizado por componente con lógica
-✅ Archivo `.styles.ts` con estilos centralizados
+✅ Archivo `.styles.ts` con estilos centralizados (solo si necesario)
 ✅ Barrel exports (`index.ts`) en cada carpeta
 ✅ Componentes presentacionales puros
 ✅ Tipos TypeScript estrictos
+✅ Modo oscuro en TODOS los elementos
+✅ Estados de UI (loading, empty, error)
 
 ---
 
@@ -119,10 +253,12 @@ src/modules/[nombre-modulo]/
 ### 🔴 CRÍTICA (consultar SIEMPRE):
 - **Schema DB**: `docs/DATABASE-SCHEMA-REFERENCE-ACTUALIZADO.md` ⭐ **FUENTE ÚNICA DE VERDAD**
 - **Checklist desarrollo**: `docs/DESARROLLO-CHECKLIST.md` ⭐ **OBLIGATORIO**
+- **Sistema de estandarización**: `docs/SISTEMA-ESTANDARIZACION-MODULOS.md` ⭐ **DISEÑO CONSISTENTE**
 
 ### 📘 Desarrollo:
-- **Guía de estilos**: `docs/GUIA-ESTILOS.md`
-- **Template de módulo**: `MODULE_TEMPLATE.md`
+- **Guía de diseño**: `docs/GUIA-DISENO-MODULOS.md`
+- **Template de módulo**: `docs/TEMPLATE-MODULO-ESTANDAR.md`
+- **Componentes compartidos**: `src/shared/components/layout/`
 - **Arquitectura**: `ARCHITECTURE.md`
 
 ---

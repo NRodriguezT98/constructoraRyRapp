@@ -1,0 +1,200 @@
+/**
+ * ============================================
+ * MIDDLEWARE: Autenticación y Permisos
+ * ============================================
+ *
+ * Intercepta TODAS las requests ANTES de llegar a las páginas.
+ * Valida autenticación y permisos en el SERVIDOR.
+ *
+ * VENTAJAS:
+ * - ✅ Validación server-side (más segura)
+ * - ✅ Sin flash de loading
+ * - ✅ Caché de permisos (menos queries)
+ * - ✅ Solo envía código si está autorizado
+ * - ✅ Redirección instantánea
+ */
+
+import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs'
+import { NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
+
+// ============================================
+// TIPOS
+// ============================================
+
+type Rol = 'Administrador' | 'Gerente' | 'Vendedor'
+
+interface PermisosCacheEntry {
+  rol: Rol
+  usuarioId: string
+  expira: number
+}
+
+// ============================================
+// CACHÉ DE PERMISOS (en memoria, TTL 5 min)
+// ============================================
+
+const permisosCache = new Map<string, PermisosCacheEntry>()
+
+function obtenerPermisosCacheados(userId: string): PermisosCacheEntry | null {
+  const cached = permisosCache.get(userId)
+  if (!cached) return null
+
+  if (cached.expira < Date.now()) {
+    permisosCache.delete(userId)
+    return null
+  }
+
+  return cached
+}
+
+function guardarPermisosEnCache(userId: string, rol: Rol) {
+  permisosCache.set(userId, {
+    rol,
+    usuarioId: userId,
+    expira: Date.now() + 5 * 60 * 1000 // 5 minutos
+  })
+}
+
+// ============================================
+// CONFIGURACIÓN DE RUTAS
+// ============================================
+
+// Rutas públicas (no requieren autenticación)
+const RUTAS_PUBLICAS = [
+  '/login',
+  '/reset-password',
+  '/update-password',
+]
+
+// Mapeo de rutas a roles permitidos
+const MAPA_PERMISOS: Record<string, Rol[]> = {
+  // Módulos principales
+  '/viviendas': ['Administrador', 'Gerente', 'Vendedor'],
+  '/clientes': ['Administrador', 'Gerente', 'Vendedor'],
+  '/proyectos': ['Administrador', 'Gerente', 'Vendedor'],
+
+  // Módulos restringidos
+  '/abonos': ['Administrador', 'Gerente'],
+  '/renuncias': ['Administrador', 'Gerente'],
+  '/auditorias': ['Administrador'],
+
+  // Administración
+  '/admin': ['Administrador'],
+}
+
+// ============================================
+// VALIDACIÓN DE ACCESO
+// ============================================
+
+function validarAccesoRuta(pathname: string, rol: Rol): boolean {
+  // Buscar coincidencia exacta o por prefijo
+  for (const [ruta, rolesPermitidos] of Object.entries(MAPA_PERMISOS)) {
+    if (pathname === ruta || pathname.startsWith(`${ruta}/`)) {
+      return rolesPermitidos.includes(rol)
+    }
+  }
+
+  // Si no está en el mapa, es accesible por todos autenticados
+  // (dashboard, perfil, etc.)
+  return true
+}
+
+// ============================================
+// MIDDLEWARE PRINCIPAL
+// ============================================
+
+export async function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl
+
+  // ============================================
+  // 1. RUTAS PÚBLICAS → Permitir sin autenticación
+  // ============================================
+
+  if (RUTAS_PUBLICAS.some(ruta => pathname.startsWith(ruta))) {
+    return NextResponse.next()
+  }
+
+  // ============================================
+  // 2. VERIFICAR SESIÓN
+  // ============================================
+
+  const res = NextResponse.next()
+  const supabase = createMiddlewareClient({ req: request, res })
+
+  const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+
+  if (!session || sessionError) {
+    // Sin sesión → Redirigir a login con URL de retorno
+    const redirectUrl = request.nextUrl.clone()
+    redirectUrl.pathname = '/login'
+    redirectUrl.searchParams.set('redirect', pathname)
+    return NextResponse.redirect(redirectUrl)
+  }
+
+  // ============================================
+  // 3. OBTENER PERMISOS (con caché)
+  // ============================================
+
+  const userId = session.user.id
+  let permisos = obtenerPermisosCacheados(userId)
+
+  if (!permisos) {
+    // No hay caché → Consultar DB
+    const { data: usuario, error: userError } = await supabase
+      .from('usuarios')
+      .select('rol')
+      .eq('id', userId)
+      .single()
+
+    if (userError || !usuario) {
+      // Error obteniendo usuario → Redirigir a login
+      await supabase.auth.signOut()
+      return NextResponse.redirect(new URL('/login', request.url))
+    }
+
+    // Guardar en caché
+    guardarPermisosEnCache(userId, usuario.rol as Rol)
+    permisos = { rol: usuario.rol as Rol, usuarioId: userId, expira: 0 }
+  }
+
+  // ============================================
+  // 4. VALIDAR ACCESO A LA RUTA
+  // ============================================
+
+  const tieneAcceso = validarAccesoRuta(pathname, permisos.rol)
+
+  if (!tieneAcceso) {
+    // Sin permiso → Redirigir a dashboard
+    return NextResponse.redirect(new URL('/dashboard', request.url))
+  }
+
+  // ============================================
+  // 5. PERMITIR ACCESO (agregar headers opcionales)
+  // ============================================
+
+  // Headers personalizados para usar en Server Components
+  res.headers.set('x-user-id', userId)
+  res.headers.set('x-user-rol', permisos.rol)
+  res.headers.set('x-user-email', session.user.email || '')
+
+  return res
+}
+
+// ============================================
+// CONFIGURACIÓN: Qué rutas interceptar
+// ============================================
+
+export const config = {
+  matcher: [
+    /*
+     * Interceptar todas las rutas EXCEPTO:
+     * - _next/static (archivos estáticos)
+     * - _next/image (optimización de imágenes)
+     * - favicon.ico
+     * - archivos públicos (*.png, *.jpg, etc.)
+     * - rutas API explícitas
+     */
+    '/((?!_next/static|_next/image|favicon.ico|.*\\..*|api).*)',
+  ],
+}

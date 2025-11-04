@@ -1,11 +1,75 @@
-# 🚀 Autenticación - Referencia Rápida
+# 🚀 Autenticación V3.0 - Referencia Rápida
 
-> **Acceso rápido a soluciones comunes**
-> Para documentación completa: [`SISTEMA-AUTENTICACION-COMPLETO.md`](./SISTEMA-AUTENTICACION-COMPLETO.md)
+> **Sistema Server Components - Soluciones Rápidas**
+> **Versión**: 3.0.0 | **Actualizado**: Nov 4, 2025
+>
+> Para documentación completa:
+> - **Sistema V3.0**: [`AUTENTICACION-SERVER-COMPONENTS-V3.md`](./AUTENTICACION-SERVER-COMPONENTS-V3.md) ⭐ **NUEVO**
+> - **Login/Reset V2.0**: [`SISTEMA-AUTENTICACION-COMPLETO.md`](./SISTEMA-AUTENTICACION-COMPLETO.md)
 
 ---
 
-## ⚡ Soluciones Rápidas
+## ⚡ NUEVO SISTEMA - Server Components
+
+### 🎯 Arquitectura en 3 Capas
+
+```
+1. MIDDLEWARE      → Valida auth + rol
+2. SERVER COMPONENT → Calcula permisos
+3. CLIENT COMPONENT → Renderiza UI
+```
+
+**Regla**: Permisos SIEMPRE en servidor, NUNCA en cliente.
+
+---
+
+## ⚡ Soluciones Rápidas V3.0
+
+### 🔴 "Cannot read 'canCreate' of undefined"
+
+**Causa**: Props no llegan al Client Component
+
+**Solución**:
+```typescript
+// ✅ Server Component (page.tsx)
+export default async function Page() {
+  const permisos = await getServerPermissions()
+  return <Content {...permisos} /> // ← Spread operator
+}
+
+// ✅ Client Component
+export function Content({
+  canCreate = false, // ← Default value
+  canEdit = false,
+}: Props = {}) { // ← Default object
+  return <div>{canCreate && <Button />}</div>
+}
+```
+
+---
+
+### 🔴 Infinite re-renders (componente monta 8+ veces)
+
+**Causa**: useEffect con función en dependencias
+
+**Solución**:
+```typescript
+// ❌ INCORRECTO
+const { cargarDatos } = useStore()
+useEffect(() => {
+  cargarDatos() // Se llama en cada render
+}, [cargarDatos])
+
+// ✅ CORRECTO
+const { cargarDatos, datosInicializados } = useStore()
+useEffect(() => {
+  if (!datosInicializados) {
+    cargarDatos()
+  }
+}, [datosInicializados, cargarDatos])
+```
+
+---
 
 ### 🔴 EMERGENCIA: Reset password no funciona
 

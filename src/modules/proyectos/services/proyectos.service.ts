@@ -1,13 +1,15 @@
 import { supabase } from '@/lib/supabase/client'
+import { auditService } from '@/services/audit.service'
 import type {
-    EstadoManzana,
-    Manzana,
-    Proyecto,
-    ProyectoFormData,
+  EstadoManzana,
+  Manzana,
+  Proyecto,
+  ProyectoFormData,
 } from '../types'
 
 /**
  * Servicio para gestionar proyectos usando Supabase
+ * Incluye auditoría completa de todas las operaciones CRUD
  */
 class ProyectosService {
   // CRUD Operations
@@ -123,8 +125,8 @@ class ProyectosService {
       }
     }
 
-    // 3. Retornar proyecto completo
-    return {
+    // 3. Preparar objeto completo para retornar
+    const proyectoCompleto: Proyecto = {
       id: proyecto.id,
       nombre: proyecto.nombre,
       descripcion: proyecto.descripcion,
@@ -132,7 +134,7 @@ class ProyectosService {
       fechaInicio: proyecto.fecha_inicio,
       fechaFinEstimada: proyecto.fecha_fin_estimada,
       presupuesto: proyecto.presupuesto,
-      estado: proyecto.estado,
+      estado: proyecto.estado as any, // Type assertion para evitar error de tipos con Supabase
       progreso: proyecto.progreso,
       responsable: proyecto.responsable,
       telefono: proyecto.telefono,
@@ -141,12 +143,31 @@ class ProyectosService {
       fechaCreacion: proyecto.fecha_creacion,
       fechaActualizacion: proyecto.fecha_actualizacion,
     }
+
+    // 4. 🔍 AUDITORÍA DETALLADA: Registrar creación del proyecto con todos los detalles
+    try {
+      await auditService.auditarCreacionProyecto(proyectoCompleto, manzanas)
+    } catch (auditError) {
+      console.error('Error al auditar creación de proyecto:', auditError)
+      // No lanzamos error, la auditoría es secundaria
+    }
+
+    return proyectoCompleto
   }
 
   async actualizarProyecto(
     id: string,
     data: Partial<ProyectoFormData>
   ): Promise<Proyecto> {
+    // 1. 🔍 AUDITORÍA: Obtener datos ANTES de actualizar
+    let proyectoAnterior: Proyecto | null = null
+    try {
+      proyectoAnterior = await this.obtenerProyecto(id)
+    } catch (error) {
+      console.error('Error al obtener proyecto para auditoría:', error)
+    }
+
+    // 2. Preparar datos para actualización
     const updateData: any = {}
 
     // Mapear campos de la aplicación a campos de DB
@@ -163,6 +184,7 @@ class ProyectosService {
     if (data.telefono) updateData.telefono = data.telefono
     if (data.email) updateData.email = data.email
 
+    // 3. Actualizar en DB
     const { data: proyecto, error } = await supabase
       .from('proyectos')
       .update(updateData)
@@ -184,15 +206,63 @@ class ProyectosService {
       throw new Error(`Error al actualizar proyecto: ${error.message}`)
     }
 
-    return this.transformarProyectoDeDB(proyecto)
+    const proyectoActualizado = this.transformarProyectoDeDB(proyecto)
+
+    // 4. 🔍 AUDITORÍA: Registrar actualización
+    if (proyectoAnterior) {
+      try {
+        await auditService.auditarActualizacion(
+          'proyectos',
+          id,
+          proyectoAnterior,
+          proyectoActualizado,
+          {
+            campos_modificados: Object.keys(updateData),
+          },
+          'proyectos'
+        )
+      } catch (auditError) {
+        console.error('Error al auditar actualización de proyecto:', auditError)
+      }
+    }
+
+    return proyectoActualizado
   }
 
   async eliminarProyecto(id: string): Promise<void> {
+    // 1. 🔍 AUDITORÍA: Obtener datos ANTES de eliminar
+    let proyectoEliminado: Proyecto | null = null
+    try {
+      proyectoEliminado = await this.obtenerProyecto(id)
+    } catch (error) {
+      console.error('Error al obtener proyecto para auditoría:', error)
+    }
+
+    // 2. Eliminar de DB
     const { error } = await supabase.from('proyectos').delete().eq('id', id)
 
     if (error) {
       console.error('Error al eliminar proyecto:', error)
       throw new Error(`Error al eliminar proyecto: ${error.message}`)
+    }
+
+    // 3. 🔍 AUDITORÍA: Registrar eliminación
+    if (proyectoEliminado) {
+      try {
+        await auditService.auditarEliminacion(
+          'proyectos',
+          id,
+          proyectoEliminado,
+          {
+            nombre_proyecto: proyectoEliminado.nombre,
+            total_manzanas: proyectoEliminado.manzanas.length,
+            estado_al_eliminar: proyectoEliminado.estado,
+          },
+          'proyectos'
+        )
+      } catch (auditError) {
+        console.error('Error al auditar eliminación de proyecto:', auditError)
+      }
     }
   }
 
@@ -206,7 +276,7 @@ class ProyectosService {
       fechaInicio: data.fecha_inicio,
       fechaFinEstimada: data.fecha_fin_estimada,
       presupuesto: data.presupuesto,
-      estado: data.estado,
+      estado: data.estado as any, // Type assertion para evitar error de tipos con Supabase
       progreso: data.progreso,
       responsable: data.responsable,
       telefono: data.telefono,

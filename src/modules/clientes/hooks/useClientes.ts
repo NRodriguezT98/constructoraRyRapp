@@ -16,12 +16,14 @@ export function useClientes() {
     error,
     filtros,
     busqueda,
+    datosInicializados,
     setClientes,
     setClienteSeleccionado,
     setIsLoading,
     setError,
     setFiltros,
     setBusqueda,
+    setDatosInicializados,
     agregarCliente,
     actualizarCliente: actualizarClienteStore,
     eliminarCliente: eliminarClienteStore,
@@ -38,6 +40,7 @@ export function useClientes() {
     try {
       const clientesCargados = await clientesService.obtenerClientes(filtros)
       setClientes(clientesCargados)
+      setDatosInicializados(true) // Marcar datos como inicializados
     } catch (err) {
       const mensaje = err instanceof Error ? err.message : 'Error al cargar clientes'
       setError(mensaje)
@@ -45,7 +48,7 @@ export function useClientes() {
     } finally {
       setIsLoading(false)
     }
-  }, [filtros, setClientes, setIsLoading, setError])
+  }, [filtros, setClientes, setIsLoading, setError, setDatosInicializados])
 
   // =====================================================
   // CARGAR CLIENTE POR ID
@@ -255,12 +258,15 @@ export function useClientes() {
   }, [clientes])
 
   // =====================================================
-  // CARGAR DATOS AL MONTAR
+  // CARGAR DATOS AL MONTAR (solo si no están inicializados)
   // =====================================================
 
   useEffect(() => {
-    cargarClientes()
-  }, []) // Solo al montar - cargarClientes tiene dependencias pero no queremos recargar siempre
+    if (!datosInicializados) {
+      console.log('👥 [CLIENTES HOOK] Cargando datos iniciales...')
+      cargarClientes()
+    }
+  }, [datosInicializados]) // Solo depende del flag, no de cargarClientes
 
   // =====================================================
   // RETURN

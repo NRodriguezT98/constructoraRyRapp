@@ -13,6 +13,8 @@ interface UseLoginReturn {
   estaBloqueado: boolean
   minutosRestantes: number
   intentosRestantes: number
+  loginExitoso: boolean
+  mensajeExito: string
   setEmail: (email: string) => void
   setPassword: (password: string) => void
   handleSubmit: (e: React.FormEvent) => Promise<void>
@@ -29,6 +31,8 @@ export function useLogin(): UseLoginReturn {
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [loginExitoso, setLoginExitoso] = useState(false)
+  const [mensajeExito, setMensajeExito] = useState('')
 
   // Hooks externos
   const { signIn } = useAuth()
@@ -82,9 +86,9 @@ export function useLogin(): UseLoginReturn {
         // 📝 Registrar evento de auditoría
         auditLogService.logLoginExitoso(email)
 
-        console.log('✅ Login exitoso, redirigiendo...')
+        console.log('✅ Login exitoso, mostrando notificación...')
 
-        // Si redirectedFrom es '/' (raíz), '/login', '/auth/login' o no existe, redirigir al dashboard
+        // Determinar ruta de redirección
         const isInvalidRedirect =
           !redirectedFrom ||
           redirectedFrom === '/' ||
@@ -92,12 +96,19 @@ export function useLogin(): UseLoginReturn {
           redirectedFrom.startsWith('/auth/')
 
         const redirectTo = isInvalidRedirect ? '/' : redirectedFrom
+        const destinoNombre = isInvalidRedirect ? 'Dashboard' : redirectedFrom.replace('/', '')
 
-        console.log('🔀 Redirigiendo a:', redirectTo)
+        // Mostrar notificación de éxito
+        setLoginExitoso(true)
+        setMensajeExito(`¡Bienvenido! Redirigiendo a ${destinoNombre}...`)
 
-        // Usar window.location para redirección completa
-        // Esto asegura que el middleware valide la nueva sesión
-        window.location.href = redirectTo
+        // Esperar 1.5 segundos antes de redirigir (tiempo para mostrar notificación)
+        setTimeout(() => {
+          console.log('🔀 Redirigiendo a:', redirectTo)
+          // Usar window.location para redirección completa
+          // Esto asegura que el middleware valide la nueva sesión
+          window.location.href = redirectTo
+        }, 1500)
       } catch (err: any) {
         // Calcular intentos restantes DESPUÉS de este fallo
         const nuevoIntentosFallidos = intentosRestantes - 1
@@ -140,6 +151,8 @@ export function useLogin(): UseLoginReturn {
     estaBloqueado,
     minutosRestantes,
     intentosRestantes,
+    loginExitoso,
+    mensajeExito,
     setEmail,
     setPassword,
     handleSubmit,

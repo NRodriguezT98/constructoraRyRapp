@@ -7,16 +7,16 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import {
-    obtenerFuentesPagoConAbonos,
-    obtenerHistorialAbonos,
-    obtenerNegociacionesActivas,
-    registrarAbono,
+  obtenerFuentesPagoConAbonos,
+  obtenerHistorialAbonos,
+  obtenerNegociacionesActivas,
+  registrarAbono,
 } from '../services/abonos.service';
 import type {
-    AbonoHistorial,
-    CrearAbonoDTO,
-    FuentePagoConAbonos,
-    NegociacionConAbonos,
+  AbonoHistorial,
+  CrearAbonoDTO,
+  FuentePagoConAbonos,
+  NegociacionConAbonos,
 } from '../types';
 
 export function useAbonos() {
@@ -28,12 +28,17 @@ export function useAbonos() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [datosInicializados, setDatosInicializados] = useState(false); // Flag para evitar cargas duplicadas
 
-  // Cargar negociaciones activas al montar
+  // Cargar negociaciones activas al montar (solo si no están inicializados)
   useEffect(() => {
-    cargarNegociaciones();
+    if (!datosInicializados) {
+      console.log('💰 [ABONOS HOOK] Cargando datos iniciales...')
+      cargarNegociaciones();
+      setDatosInicializados(true);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [datosInicializados]);
 
   // Cargar fuentes e historial cuando se selecciona una negociación
   useEffect(() => {

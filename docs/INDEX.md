@@ -214,7 +214,80 @@ SQL obsoletos o en desuso.
 
 ---
 
-## 🔄 Mantenimiento
+## � Nueva Estructura Organizacional (Noviembre 2025)
+
+### 📁 `/docs/migrations`
+Documentación sobre migraciones de base de datos.
+
+- `EJECUTAR-MIGRACION-ABONOS.md` - Migración del módulo de abonos
+- `EJECUTAR-MIGRACION-CEDULA-TITULO.md` - Migración de cédula y título
+- `ejecutar-migraciones-vscode.md` - Guía para ejecutar migraciones desde VSCode
+- `EJECUTAR-MIGRACION-NEGOCIACIONES.md` - Migración de negociaciones
+
+### 📁 `/docs/fixes`
+Documentación de correcciones y solución de problemas (adicionales a la carpeta 04-fixes).
+
+- `FIX-CAMPOS-INEXISTENTES-CLIENTES.md` - Corrección de campos en clientes
+- `DIAGNOSTICO-RESET-PASSWORD.md` - Diagnóstico de reset de contraseña
+
+### 📁 `/docs/optimization`
+Documentación de optimizaciones de rendimiento.
+
+- `EJECUTAR-OPTIMIZACION-ABONOS.md` - Optimización del módulo de abonos
+- `EJECUTAR-OPTIMIZACION-VIVIENDAS.md` - Optimización del módulo de viviendas
+- `OPTIMIZACION-NAVEGACION-INSTANTANEA.md` - Optimización de navegación
+- `OPTIMIZACION-PERFORMANCE-RESUMEN.md` - Resumen de optimizaciones
+
+### 📁 `/docs/guides`
+Guías de desarrollo y uso adicionales (complementan la carpeta 08-guias).
+
+- `GUIA-TEST-PRODUCCION.md` - Guía para testing en producción
+- `GUIA-COPY-TABLE-SCHEMA.md` - Guía para copiar esquemas de tablas
+- `DOCS-GUIA.md` - Guía general de documentación
+
+### 📁 `/docs/database`
+Documentación del esquema de base de datos.
+
+- `SISTEMA-CATEGORIAS-DOCUMENTOS.md` - Sistema de categorías de documentos
+- `SISTEMA-DOCUMENTACION-DB-RESUMEN.md` - Resumen de documentación de DB
+- `PLANTILLA-CAMPOS-MANUAL.md` - Plantilla para campos manuales
+- `esquema-actual.txt` - Esquema actual de la base de datos
+- `esquema-completo-limpio.txt` - Esquema completo limpio
+
+### 📁 `/docs` (Raíz - Archivos organizados)
+- `PLAN-MODULO-ABONOS.md` - Plan de desarrollo del módulo de abonos
+- `FLUJO-DOCUMENTOS-PROCESOS.md` - Flujo de procesos de documentos
+- `MODO-DESARROLLO-PROCESOS.md` - Modo de desarrollo para procesos
+- `CREAR-BUCKET-PROCESOS.md` - Creación de buckets de storage
+- `ACTUALIZACION-TYPESCRIPT-TYPES.md` - Actualización de tipos TypeScript
+- `ANALISIS-REFACTORIZACION.md` - Análisis de refactorización
+- `TODO-DEBUG-CATEGORIAS.md` - Tareas pendientes de debugging
+
+### 📁 `/supabase/fixes`
+Scripts SQL para correcciones.
+
+- `eliminar-campo-es-documento-identidad.sql` - Eliminar campo obsoleto
+- `fix-rls-categorias.sql` - Corregir RLS de categorías
+- `fix-storage-rls-policies.sql` - Corregir políticas de storage
+
+### 📁 `/supabase/verification` (Actualizada)
+Scripts SQL de verificación (adicionados).
+
+- `verificar-esquema-documentos.sql` - Verificar esquema de documentos
+- `verificar-columna-cedula-titulo.sql` - Verificar columna cédula/título
+- `ver-todas-politicas-storage.sql` - Ver todas las políticas de storage
+- `validar-db.sql` - Validar base de datos
+
+### 📁 `/scripts/sql`
+Scripts SQL de utilidades.
+
+- `generar-doc-markdown.sql` - Generar documentación en markdown
+- `queries-verificacion-tablas.sql` - Queries de verificación de tablas
+- `extraer-schema-completo.sql` - Extraer esquema completo
+
+---
+
+## �🔄 Mantenimiento
 
 - **Actualizar**: Este índice cuando se agreguen nuevos documentos
 - **Archivar**: Mover documentos obsoletos a `docs/archive/`
@@ -223,5 +296,5 @@ SQL obsoletos o en desuso.
 
 ---
 
-**Última actualización**: Octubre 20, 2025
+**Última actualización**: 4 de noviembre de 2025
 **Mantenido por**: Equipo de desarrollo RyR

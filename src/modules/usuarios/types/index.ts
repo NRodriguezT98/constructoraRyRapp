@@ -177,6 +177,7 @@ export type Modulo =
   | 'abonos'
   | 'renuncias'
   | 'usuarios'
+  | 'auditorias'
   | 'procesos'
   | 'reportes'
   | 'administracion'
@@ -216,6 +217,7 @@ export const PERMISOS_POR_ROL: Record<Rol, Record<Modulo, Accion[]>> = {
     abonos: ['ver', 'crear', 'editar', 'eliminar', 'aprobar', 'rechazar', 'exportar'],
     renuncias: ['ver', 'crear', 'editar', 'eliminar', 'aprobar', 'rechazar'],
     usuarios: ['ver', 'crear', 'editar', 'eliminar', 'gestionar'],
+    auditorias: ['ver', 'exportar'],
     procesos: ['ver', 'crear', 'editar', 'eliminar', 'gestionar'],
     reportes: ['ver', 'exportar'],
     administracion: ['ver', 'gestionar'],
@@ -227,6 +229,7 @@ export const PERMISOS_POR_ROL: Record<Rol, Record<Modulo, Accion[]>> = {
     abonos: ['ver', 'crear', 'editar', 'aprobar', 'rechazar', 'exportar'],
     renuncias: ['ver', 'aprobar', 'rechazar'],
     usuarios: ['ver'],
+    auditorias: [],
     procesos: ['ver', 'crear', 'editar'],
     reportes: ['ver', 'exportar'],
     administracion: ['ver'],
@@ -238,6 +241,7 @@ export const PERMISOS_POR_ROL: Record<Rol, Record<Modulo, Accion[]>> = {
     abonos: ['ver', 'crear'],
     renuncias: ['ver', 'crear'],
     usuarios: [],
+    auditorias: [],
     procesos: ['ver'],
     reportes: [],
     administracion: [],
@@ -313,6 +317,17 @@ export const DESCRIPCION_PERMISOS: Record<Modulo, Record<Accion, string>> = {
     aprobar: 'N/A',
     rechazar: 'N/A',
     importar: 'N/A',
+  },
+  auditorias: {
+    ver: 'Ver registros de auditoría del sistema',
+    exportar: 'Exportar registros de auditoría',
+    crear: 'N/A',
+    editar: 'N/A',
+    eliminar: 'N/A',
+    aprobar: 'N/A',
+    rechazar: 'N/A',
+    importar: 'N/A',
+    gestionar: 'N/A',
   },
   procesos: {
     ver: 'Ver procesos de negociación',

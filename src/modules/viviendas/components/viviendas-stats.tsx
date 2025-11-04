@@ -1,9 +1,10 @@
-'use client'
+﻿'use client'
 
-import { CheckCircle2, Clock, Home } from 'lucide-react'
-import { viviendasListStyles as styles } from '../styles/viviendasList.styles'
+import { motion } from 'framer-motion'
+import { CheckCircle, DoorOpen, Home, Key } from 'lucide-react'
+import { viviendasStyles as styles } from '../styles/viviendas.styles'
 
-interface ViviendasStatsProps {
+export interface ViviendasStatsProps {
   total: number
   disponibles: number
   asignadas: number
@@ -11,55 +12,88 @@ interface ViviendasStatsProps {
   valorTotal: number
 }
 
-/**
- * Estadísticas del listado de viviendas
- * Componente presentacional puro
- */
 export function ViviendasStats({
   total,
   disponibles,
   asignadas,
   entregadas,
-  valorTotal,
+  valorTotal
 }: ViviendasStatsProps) {
-  const stats = [
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('es-CO', {
+      style: 'currency',
+      currency: 'COP',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(value)
+  }
+
+  const metricas = [
     {
-      label: 'Total',
-      value: total,
       icon: Home,
-      color: 'text-blue-600 dark:text-blue-400',
+      label: 'Total Viviendas',
+      value: total.toString(),
+      gradient: 'from-orange-500 to-amber-600',
+      shadow: 'shadow-orange-500/50'
     },
     {
+      icon: CheckCircle,
       label: 'Disponibles',
-      value: disponibles,
-      icon: CheckCircle2,
-      color: 'text-green-600 dark:text-green-400',
+      value: disponibles.toString(),
+      gradient: 'from-green-500 to-emerald-600',
+      shadow: 'shadow-green-500/50'
     },
     {
+      icon: Key,
       label: 'Asignadas',
-      value: asignadas,
-      icon: Clock,
-      color: 'text-blue-600 dark:text-blue-400',
+      value: asignadas.toString(),
+      gradient: 'from-blue-500 to-indigo-600',
+      shadow: 'shadow-blue-500/50'
     },
     {
+      icon: DoorOpen,
       label: 'Entregadas',
-      value: entregadas,
-      icon: CheckCircle2,
-      color: 'text-emerald-600 dark:text-emerald-400',
-    },
+      value: entregadas.toString(),
+      gradient: 'from-purple-500 to-pink-600',
+      shadow: 'shadow-purple-500/50'
+    }
   ]
 
   return (
-    <div className={styles.stats.container}>
-      {stats.map(stat => (
-        <div key={stat.label} className={styles.stats.card}>
-          <div className="flex items-center justify-between">
-            <p className={styles.stats.label}>{stat.label}</p>
-            <stat.icon className={`h-4 w-4 ${stat.color}`} />
-          </div>
-          <p className={styles.stats.value}>{stat.value}</p>
-        </div>
-      ))}
-    </div>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, delay: 0.1 }}
+      className={styles.metricas.grid}
+    >
+      {metricas.map((metrica, index) => {
+        const Icon = metrica.icon
+        return (
+          <motion.div
+            key={metrica.label}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.1 + index * 0.1 }}
+            whileHover={{ scale: 1.02, y: -4 }}
+            className={styles.metricas.card}
+          >
+            <div className={styles.metricas.cardGlow} />
+            <div className={styles.metricas.content}>
+              <div
+                className={`${styles.metricas.iconCircle} bg-gradient-to-br ${metrica.gradient} ${metrica.shadow}`}
+              >
+                <Icon className={styles.metricas.icon} />
+              </div>
+              <div className={styles.metricas.textGroup}>
+                <p className={`${styles.metricas.value} ${metrica.gradient}`}>
+                  {metrica.value}
+                </p>
+                <p className={styles.metricas.label}>{metrica.label}</p>
+              </div>
+            </div>
+          </motion.div>
+        )
+      })}
+    </motion.div>
   )
 }

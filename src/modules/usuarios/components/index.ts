@@ -12,11 +12,12 @@ export { ModalEditarUsuario } from './ModalEditarUsuario'
 export { usuariosStyles } from './usuarios.styles'
 export { UsuariosHeader } from './UsuariosHeader'
 
-// Control de acceso
+// Componentes de protección de acciones
 export {
-    AdminOnly, CanCreate, CanDelete, CanEdit, CanView, ProtectedAction
+  AdminOnly, CanApprove, CanCreate, CanDelete, CanEdit, CanExport, CanReject, CanView, ManagerOrAbove, ProtectedAction
 } from './ProtectedAction'
 
+// Componentes de protección de rutas
 export {
-    ProtectedRoute, RequireAdmin, RequireView
+  ProtectedRoute, RequireAdmin, RequireView
 } from './ProtectedRoute'

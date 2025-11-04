@@ -18,18 +18,45 @@ import { useAuth } from '@/contexts/auth-context'
 import { useMemo } from 'react'
 import type { Accion, Modulo, Rol } from '../types'
 import {
-    DESCRIPCION_PERMISOS,
-    obtenerModulosConAcceso,
-    obtenerPermisos,
-    PERMISOS_POR_ROL,
-    tieneAlgunPermiso as verificarAlgunPermiso,
-    tienePermiso as verificarPermiso,
-    tieneTodosLosPermisos as verificarTodosPermisos,
+  DESCRIPCION_PERMISOS,
+  obtenerModulosConAcceso,
+  obtenerPermisos,
+  PERMISOS_POR_ROL,
+  tieneAlgunPermiso as verificarAlgunPermiso,
+  tienePermiso as verificarPermiso,
+  tieneTodosLosPermisos as verificarTodosPermisos,
 } from '../types'
 
 export function usePermissions() {
-  const { perfil } = useAuth()
+  console.log('🔐 [SISTEMA ANTIGUO] usePermissions ejecutado')
+
+  const { perfil, loading: authLoading } = useAuth()
   const rol = perfil?.rol as Rol | undefined
+
+  /**
+   * Estado de carga de permisos
+   * - true: Permisos están cargando
+   * - false: Permisos listos para usar o sin sesión
+   */
+  const permisosLoading = useMemo(() => {
+    // Si auth está cargando, permisos también están cargando
+    if (authLoading) {
+      return true
+    }
+
+    // Si NO hay perfil después de cargar auth, no hay sesión
+    if (!perfil) {
+      return false
+    }
+
+    // Si hay perfil pero no rol, permisos aún cargando
+    if (!rol) {
+      return true
+    }
+
+    // Permisos completamente listos: hay perfil Y rol
+    return false
+  }, [authLoading, perfil, rol])
 
   /**
    * Verifica si el usuario actual tiene un permiso específico
@@ -151,6 +178,7 @@ export function usePermissions() {
 
     // Estado
     tieneRol: !!rol,
+    permisosLoading, // ⭐ NUEVO: Exponer estado de carga
   }
 }
 

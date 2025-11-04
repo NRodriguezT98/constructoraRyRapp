@@ -1,10 +1,32 @@
-import { ClientesPageMain } from '@/modules/clientes/components'
-import { RequireView } from '@/modules/usuarios/components'
+/**
+ * ============================================
+ * PÁGINA: Clientes
+ * ============================================
+ *
+ * ✅ PROTEGIDA POR MIDDLEWARE
+ * - Middleware ya validó autenticación
+ * - Middleware ya validó permisos (Administrador, Gerente, Vendedor)
+ * - No necesita <RequireView> wrapper
+ *
+ * ARQUITECTURA:
+ * - Server Component (sin 'use client')
+ * - Obtiene permisos del servidor
+ * - Pasa permisos como props al Client Component
+ */
 
-export default function ClientesPage() {
-  return (
-    <RequireView modulo="clientes">
-      <ClientesPageMain />
-    </RequireView>
-  )
+import { getServerPermissions } from '@/lib/auth/server'
+import { ClientesPageMain } from '@/modules/clientes/components'
+
+export default async function ClientesPage() {
+  console.log('👥 [CLIENTES PAGE] Server Component renderizando')
+
+  // ✅ Obtener permisos desde el servidor
+  // No hay query a DB aquí - usa React cache del servicio auth
+  const permisos = await getServerPermissions()
+
+  console.log('👥 [CLIENTES PAGE] Permisos recibidos:', permisos)
+
+  // ✅ Pasar permisos como props
+  // El Client Component solo maneja UI
+  return <ClientesPageMain {...permisos} />
 }

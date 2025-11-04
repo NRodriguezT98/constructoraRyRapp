@@ -3,14 +3,14 @@
 import { Button } from '@/components/ui/button'
 import { motion } from 'framer-motion'
 import {
-    Calendar,
-    CreditCard,
-    DollarSign,
-    Loader2,
-    Plus,
-    Receipt,
-    Sparkles,
-    TrendingUp
+  Calendar,
+  CreditCard,
+  DollarSign,
+  Loader2,
+  Plus,
+  Receipt,
+  Sparkles,
+  TrendingUp
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useAbonosList } from '../hooks/useAbonosList'
@@ -30,12 +30,42 @@ const formatCurrency = (value: number) => {
 }
 
 /**
+ * Permisos del usuario (pasados desde Server Component)
+ */
+interface AbonosListPageProps {
+  canCreate?: boolean
+  canEdit?: boolean
+  canDelete?: boolean
+  canView?: boolean
+  isAdmin?: boolean
+}
+
+/**
  * 🎨 COMPONENTE: AbonosListPage
  *
  * Vista principal moderna del módulo de abonos
  * Lista TODOS los abonos del sistema con filtros y diseño premium
+ *
+ * ✅ PROTEGIDO POR MIDDLEWARE
+ * - Recibe permisos como props desde Server Component
+ * - No necesita validar autenticación (ya validada)
+ * - Solo maneja UI y lógica de negocio
  */
-export function AbonosListPage() {
+export function AbonosListPage({
+  canCreate = false,
+  canEdit = false,
+  canDelete = false,
+  canView = true,
+  isAdmin = false,
+}: AbonosListPageProps = {}) {
+  console.log('💰 [ABONOS LIST] Client Component montado con permisos:', {
+    canCreate,
+    canEdit,
+    canDelete,
+    canView,
+    isAdmin,
+  })
+
   const router = useRouter()
   const {
     abonos,
@@ -50,11 +80,19 @@ export function AbonosListPage() {
   } = useAbonosList()
 
   const handleAnularAbono = (abonoId: string) => {
-    // TODO: Implementar anulación de abonos
+    // TODO: Implementar anulación de abonos (requiere permiso canDelete)
+    if (!canDelete) {
+      console.warn('Usuario sin permiso para anular abonos')
+      return
+    }
     console.log('Anular abono:', abonoId)
   }
 
   const handleRegistrarAbono = () => {
+    if (!canCreate) {
+      console.warn('Usuario sin permiso para crear abonos')
+      return
+    }
     router.push('/abonos/registrar')
   }
 
@@ -256,25 +294,29 @@ export function AbonosListPage() {
                     ? 'Intenta ajustar los filtros de búsqueda'
                     : 'Comienza registrando tu primer abono'}
                 </p>
-                <Button onClick={handleRegistrarAbono} className={s.empty.button}>
-                  <Plus className="w-4 h-4 mr-2" />
-                  Registrar Primer Abono
-                </Button>
+                {canCreate && (
+                  <Button onClick={handleRegistrarAbono} className={s.empty.button}>
+                    <Plus className="w-4 h-4 mr-2" />
+                    Registrar Primer Abono
+                  </Button>
+                )}
             </div>
           )}
         </div>
       </motion.div>
 
       {/* 🎈 FAB - Floating Action Button */}
-      <div className={s.fab.container}>
-        <Button onClick={handleRegistrarAbono} className={s.fab.button}>
-          <div className={s.fab.buttonGlow} />
-          <div className={s.fab.buttonContent}>
-            <Plus className={s.fab.icon} />
-            <span className={s.fab.text}>Registrar Abono</span>
-          </div>
-        </Button>
-      </div>
+      {canCreate && (
+        <div className={s.fab.container}>
+          <Button onClick={handleRegistrarAbono} className={s.fab.button}>
+            <div className={s.fab.buttonGlow} />
+            <div className={s.fab.buttonContent}>
+              <Plus className={s.fab.icon} />
+              <span className={s.fab.text}>Registrar Abono</span>
+            </div>
+          </Button>
+        </div>
+      )}
     </div>
   )
 }

@@ -34,6 +34,7 @@ interface UseProcesoNegociacionReturn {
 
   // Operaciones
   cargarProceso: () => Promise<void>
+  refrescar: () => Promise<void> // ✅ Alias de cargarProceso
   completarPaso: (pasoId: string, fechaCompletadoString: string) => Promise<boolean> // ✅ Cambiar a string
   iniciarPaso: (pasoId: string) => Promise<boolean>
   descartarCambios: (pasoId: string) => Promise<boolean>
@@ -567,6 +568,7 @@ export function useProcesoNegociacion({
 
     // Operaciones
     cargarProceso,
+    refrescar: cargarProceso, // ✅ Alias para compatibilidad con código existente
     completarPaso,
     iniciarPaso,
     descartarCambios,

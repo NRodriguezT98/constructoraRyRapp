@@ -3,89 +3,220 @@ import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
 
 /**
- * Middleware de autenticación para Next.js 15 con Supabase SSR
- * Protege todas las rutas excepto las públicas (login, registro, etc)
+ * ============================================
+ * MIDDLEWARE: Autenticación y Autorización
+ * ============================================
  *
- * IMPORTANTE: Usa @supabase/ssr para manejar cookies correctamente
+ * Intercepta TODAS las requests ANTES de llegar a las páginas.
+ * Valida autenticación y permisos en el SERVIDOR.
+ *
+ * ARQUITECTURA:
+ * 1. Rutas públicas → Pasan sin validación
+ * 2. Assets estáticos → Pasan sin validación
+ * 3. Verificar sesión → Si no hay, redirect a /login
+ * 4. Verificar permisos → Si no tiene acceso, redirect a /dashboard
+ * 5. Agregar headers con info de usuario → Para Server Components
  */
+
+// ============================================
+// CONFIGURACIÓN DE RUTAS
+// ============================================
+
+/** Rutas públicas que NO requieren autenticación */
+const PUBLIC_ROUTES = [
+  '/login',
+  '/reset-password',
+  '/update-password',
+]
+
+/**
+ * Mapeo de rutas a roles permitidos
+ * Si una ruta no está aquí, es accesible por todos los autenticados
+ */
+const ROUTE_PERMISSIONS: Record<string, string[]> = {
+  // Módulos principales
+  '/viviendas': ['Administrador', 'Gerente', 'Vendedor'],
+  '/clientes': ['Administrador', 'Gerente', 'Vendedor'],
+  '/proyectos': ['Administrador', 'Gerente', 'Vendedor'],
+
+  // Módulos restringidos
+  '/abonos': ['Administrador', 'Gerente'],
+  '/renuncias': ['Administrador', 'Gerente'],
+  '/auditorias': ['Administrador'],
+
+  // Administración
+  '/admin': ['Administrador'],
+}
+
+// ============================================
+// HELPERS
+// ============================================
+
+/** Verificar si una ruta es pública */
+function isPublicRoute(pathname: string): boolean {
+  return PUBLIC_ROUTES.some(route => pathname.startsWith(route))
+}
+
+/** Verificar si una ruta es un asset estático */
+function isStaticAsset(pathname: string): boolean {
+  return (
+    pathname.startsWith('/_next') ||
+    pathname.startsWith('/images') ||
+    pathname.startsWith('/favicon.ico') ||
+    pathname.startsWith('/icon.svg') ||
+    pathname.match(/\.(png|jpg|jpeg|gif|svg|webp|ico|css|js)$/) !== null
+  )
+}
+
+/** Verificar si el usuario tiene acceso a una ruta */
+function canAccessRoute(pathname: string, userRole: string): boolean {
+  // Buscar permiso por coincidencia de prefijo
+  for (const [route, allowedRoles] of Object.entries(ROUTE_PERMISSIONS)) {
+    if (pathname === route || pathname.startsWith(`${route}/`)) {
+      return allowedRoles.includes(userRole)
+    }
+  }
+
+  // Si no está en el mapa, es accesible por todos autenticados
+  return true
+}
+
+// ============================================
+// MIDDLEWARE PRINCIPAL
+// ============================================
+
 export async function middleware(req: NextRequest) {
-  // Rutas públicas (accesibles sin autenticación)
-  const publicPaths = ['/login', '/reset-password']
-  const isPublicPath = publicPaths.some(path => req.nextUrl.pathname.startsWith(path))
+  const { pathname } = req.nextUrl
 
-  // Rutas de assets (CSS, JS, imágenes, etc)
-  const isAsset = req.nextUrl.pathname.startsWith('/_next') ||
-                  req.nextUrl.pathname.startsWith('/images') ||
-                  req.nextUrl.pathname.startsWith('/favicon.ico') ||
-                  req.nextUrl.pathname.startsWith('/icon.svg')
+  console.log('🔒 [MIDDLEWARE] Interceptando:', pathname)
 
-  // Permitir acceso a assets sin verificación
-  if (isAsset) {
+  // ============================================
+  // 1. ASSETS ESTÁTICOS → Permitir sin validación
+  // ============================================
+
+  if (isStaticAsset(pathname)) {
+    console.log('  ↳ Asset estático, permitir sin validación')
     return NextResponse.next()
   }
 
-  // Crear respuesta para manejar cookies
-  const res = NextResponse.next()
+  // ============================================
+  // 2. RUTAS PÚBLICAS → Permitir sin validación
+  // ============================================
 
-  // Crear cliente de Supabase con manejo correcto de cookies
-  const supabase = createMiddlewareClient(req, res)
-
-  // Verificar sesión actual
-  const { data: { session }, error } = await supabase.auth.getSession()
-
-  // Debug logging
-  if (process.env.NODE_ENV === 'development') {
-    console.log('🔍 Middleware:', {
-      path: req.nextUrl.pathname,
-      hasSession: !!session,
-      user: session?.user?.email,
-      error: error?.message
-    })
+  if (isPublicRoute(pathname)) {
+    console.log('  ↳ Ruta pública, permitir sin validación')
+    return NextResponse.next()
   }
 
-  // Si NO está autenticado y NO está en ruta pública → redirigir a login
-  if (!session && !isPublicPath) {
+  console.log('  ↳ Ruta protegida, validando autenticación...')  // ============================================
+  // 3. CREAR CLIENTE SUPABASE PARA MIDDLEWARE
+  // ============================================
+
+  const res = NextResponse.next()
+  const supabase = createMiddlewareClient(req, res)
+
+  // ============================================
+  // 4. VERIFICAR SESIÓN (SEGURO)
+  // ============================================
+
+  // ✅ SEGURO: getUser() valida el token con Supabase Auth
+  // (en lugar de getSession() que solo lee cookies)
+  const { data: { user }, error: authError } = await supabase.auth.getUser()
+
+  if (!user || authError) {
+    console.log('  ❌ Sin sesión válida, redirigir a /login')
+    // Sin sesión válida → Redirigir a login con URL de retorno
     const redirectUrl = req.nextUrl.clone()
     redirectUrl.pathname = '/login'
 
-    // Guardar la ruta original para redirigir después del login
-    // EXCEPTO si es una ruta /auth/* inválida
-    const originalPath = req.nextUrl.pathname
-    if (!originalPath.startsWith('/auth/')) {
-      redirectUrl.searchParams.set('redirectedFrom', originalPath)
+    // Guardar ruta original para redirect después del login
+    if (pathname !== '/') {
+      redirectUrl.searchParams.set('redirect', pathname)
     }
 
     return NextResponse.redirect(redirectUrl)
   }
 
-  // Si SÍ está autenticado y está intentando acceder a login → redirigir a dashboard
-  if (session && req.nextUrl.pathname === '/login') {
+  console.log('  ✅ Usuario autenticado:', user.email)
+
+  // ============================================
+  // 5. SI ESTÁ EN /login CON SESIÓN → Redirigir según parámetro o a dashboard
+  // ============================================
+
+  if (pathname === '/login') {
     const redirectUrl = req.nextUrl.clone()
-    // Si venía de algún lado válido, redirigir ahí; sino al dashboard
-    const from = req.nextUrl.searchParams.get('redirectedFrom')
-    const isValidRedirect = from && from !== '/' && !from.startsWith('/auth/') && from !== '/login'
-    redirectUrl.pathname = isValidRedirect ? from : '/'
-    redirectUrl.searchParams.delete('redirectedFrom')
+    const from = req.nextUrl.searchParams.get('redirect')
+    redirectUrl.pathname = from && from !== '/' ? from : '/'
+    redirectUrl.searchParams.delete('redirect')
+
     return NextResponse.redirect(redirectUrl)
   }
 
-  // Caso normal: permitir acceso con cookies actualizadas
+  // ============================================
+  // 6. OBTENER ROL DEL USUARIO (con permisos)
+  // ============================================
+
+  const { data: usuario, error: userError } = await supabase
+    .from('usuarios')
+    .select('rol, email, nombres')
+    .eq('id', user.id)
+    .single()
+
+  if (userError || !usuario) {
+    console.log('  ❌ Error obteniendo usuario de DB, cerrar sesión')
+    // Error obteniendo usuario → Cerrar sesión y redirigir
+    await supabase.auth.signOut()
+    return NextResponse.redirect(new URL('/login', req.url))
+  }
+
+  console.log('  ✅ Rol del usuario:', usuario.rol)
+
+  // ============================================
+  // 7. VERIFICAR PERMISOS PARA LA RUTA
+  // ============================================
+
+  const hasAccess = canAccessRoute(pathname, usuario.rol)
+
+  if (!hasAccess) {
+    console.log('  ⛔ Sin permiso para esta ruta, redirigir a /dashboard')
+    // Sin permiso → Redirigir a dashboard
+    return NextResponse.redirect(new URL('/dashboard', req.url))
+  }
+
+  console.log('  ✅ Acceso autorizado')
+  console.log('  📝 Headers agregados: userId, rol, email, nombres')
+
+  // ============================================
+  // 8. AGREGAR HEADERS CON INFO DE USUARIO
+  // ============================================
+  // Estos headers están disponibles en Server Components
+  // Evita tener que hacer queries adicionales
+
+  res.headers.set('x-user-id', user.id)
+  res.headers.set('x-user-rol', usuario.rol)
+  res.headers.set('x-user-email', usuario.email || user.email || '')
+  res.headers.set('x-user-nombres', usuario.nombres || '')
+
+  // ============================================
+  // 9. PERMITIR ACCESO
+  // ============================================
+
   return res
 }
 
-/**
- * Configuración del matcher
- * Define qué rutas serán procesadas por el middleware
- */
+// ============================================
+// CONFIGURACIÓN: QUÉ RUTAS INTERCEPTAR
+// ============================================
+
 export const config = {
+  /*
+   * Interceptar todas las rutas EXCEPTO:
+   * - _next/static (archivos estáticos de Next.js)
+   * - _next/image (optimización de imágenes)
+   * - favicon.ico, robots.txt, etc.
+   * - Archivos con extensiones de imagen/CSS/JS
+   */
   matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - api routes (optional, if you have API routes)
-     */
-    '/((?!_next/static|_next/image|favicon.ico|api).*)',
+    '/((?!_next/static|_next/image|favicon.ico|robots.txt|.*\\.(?:png|jpg|jpeg|gif|svg|webp|ico|css|js)).*)',
   ],
 }

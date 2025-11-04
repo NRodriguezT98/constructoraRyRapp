@@ -12,7 +12,41 @@ import { ProyectosLista } from './proyectos-lista'
 import { ProyectosSearch } from './proyectos-search'
 import { ProyectosSkeleton } from './proyectos-skeleton'
 
-export function ProyectosPage() {
+/**
+ * Permisos del usuario (pasados desde Server Component)
+ */
+interface ProyectosPageProps {
+  canCreate?: boolean
+  canEdit?: boolean
+  canDelete?: boolean
+  canView?: boolean
+  isAdmin?: boolean
+}
+
+/**
+ * Página principal de proyectos
+ * Orquesta todos los componentes hijos
+ *
+ * ✅ PROTEGIDA POR MIDDLEWARE
+ * - Recibe permisos como props desde Server Component
+ * - No necesita validar autenticación (ya validada)
+ * - Solo maneja UI y lógica de negocio
+ */
+export function ProyectosPage({
+  canCreate = false,
+  canEdit = false,
+  canDelete = false,
+  canView = true,
+  isAdmin = false,
+}: ProyectosPageProps = {}) {
+  console.log('🏗️ [PROYECTOS MAIN] Client Component montado con permisos:', {
+    canCreate,
+    canEdit,
+    canDelete,
+    canView,
+    isAdmin,
+  })
+
   const [modalAbierto, setModalAbierto] = useState(false)
   const [modalEditar, setModalEditar] = useState(false)
   const [proyectoEditar, setProyectoEditar] = useState<Proyecto | null>(null)
@@ -81,19 +115,19 @@ export function ProyectosPage() {
         transition={{ duration: 0.15 }}
         className='space-y-4'
       >
-        <ProyectosHeader onNuevoProyecto={handleAbrirModal} />
+        <ProyectosHeader onNuevoProyecto={canCreate ? handleAbrirModal : undefined} />
 
         <ProyectosSearch />
 
         {cargando ? (
           <ProyectosSkeleton />
         ) : proyectos.length === 0 ? (
-          <ProyectosEmpty onCrear={handleAbrirModal} />
+          <ProyectosEmpty onCrear={canCreate ? handleAbrirModal : undefined} />
         ) : (
           <ProyectosLista
             proyectos={proyectos}
-            onEdit={handleEditarProyecto}
-            onDelete={handleEliminarProyecto}
+            onEdit={canEdit ? handleEditarProyecto : undefined}
+            onDelete={canDelete ? handleEliminarProyecto : undefined}
           />
         )}
       </motion.div>

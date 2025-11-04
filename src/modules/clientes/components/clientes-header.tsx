@@ -6,13 +6,12 @@
 
 'use client'
 
-import { CanCreate } from '@/modules/usuarios/components'
 import { motion } from 'framer-motion'
 import { Plus, Users } from 'lucide-react'
 import { clientesListaStyles as styles } from '../styles/clientes-lista.styles'
 
 interface ClientesHeaderProps {
-  onNuevoCliente: () => void
+  onNuevoCliente?: () => void
   totalClientes: number
 }
 
@@ -49,7 +48,7 @@ export function ClientesHeader({ onNuevoCliente, totalClientes }: ClientesHeader
       </motion.div>
 
       {/* 🎈 FAB SUPERIOR DERECHO (Solo si puede crear) */}
-      <CanCreate modulo="clientes">
+      {onNuevoCliente && (
         <motion.div
           initial={{ scale: 0, rotate: -180 }}
           animate={{ scale: 1, rotate: 0 }}
@@ -68,7 +67,7 @@ export function ClientesHeader({ onNuevoCliente, totalClientes }: ClientesHeader
             </div>
           </button>
         </motion.div>
-      </CanCreate>
+      )}
     </>
   )
 }

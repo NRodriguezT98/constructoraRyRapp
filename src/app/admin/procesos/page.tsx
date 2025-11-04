@@ -1,21 +1,25 @@
 /**
- * 📄 PÁGINA: LISTA DE PLANTILLAS DE PROCESO
+ * 📄 PÁGINA: LISTA DE PLANTILLAS DE PROCESO (Server Component)
  *
  * Ruta: /admin/procesos
  */
 
-import { ListaPlantillas } from '@/modules/admin/procesos/components'
-import { RequireView } from '@/modules/usuarios/components'
+import { getServerPermissions } from '@/lib/auth/server'
+import ProcesosContent from './procesos-content'
 
 export const metadata = {
   title: 'Gestión de Procesos | RyR Constructora',
   description: 'Administra las plantillas de proceso de negociación'
 }
 
-export default function ProcesosPage() {
-  return (
-    <RequireView modulo="procesos">
-      <ListaPlantillas />
-    </RequireView>
-  )
+export default async function ProcesosPage() {
+  console.log('🔄 [PROCESOS PAGE] Server Component renderizando')
+
+  // Obtener permisos del usuario autenticado
+  const permisos = await getServerPermissions()
+
+  console.log('🔄 [PROCESOS PAGE] Permisos recibidos:', permisos)
+
+  // Renderizar contenido con permisos
+  return <ProcesosContent {...permisos} />
 }

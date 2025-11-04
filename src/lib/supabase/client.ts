@@ -22,7 +22,16 @@ if (!supabaseUrl || !supabaseAnonKey) {
 // Password-based auth para signInWithPassword()
 // ============================================
 
-export const supabase = createBrowserClient<Database>(
+// Cliente Supabase singleton para el navegador
+const supabase = createBrowserClient<Database>(
   supabaseUrl,
   supabaseAnonKey
 )
+
+// Exportar función createClient para compatibilidad
+export function createClient() {
+  return supabase
+}
+
+// Exportar también el cliente directamente para uso legacy
+export { supabase }
