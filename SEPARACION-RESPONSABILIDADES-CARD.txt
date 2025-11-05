@@ -1,0 +1,122 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                 🚨 SEPARACIÓN DE RESPONSABILIDADES 🚨                         ║
+║                           REGLA #0 INVIOLABLE                                ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ 📐 ESTRUCTURA OBLIGATORIA                                                   │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  src/modules/[modulo]/                                                      │
+│  ├── components/                                                            │
+│  │   ├── Componente.tsx        ← SOLO UI (< 150 líneas)                    │
+│  │   └── Componente.styles.ts  ← SOLO estilos                              │
+│  ├── hooks/                                                                 │
+│  │   └── useComponente.ts      ← SOLO lógica                               │
+│  ├── services/                                                              │
+│  │   └── modulo.service.ts     ← SOLO API/DB                               │
+│  └── types/                                                                 │
+│      └── index.ts               ← SOLO tipos                               │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ ❓ ¿DÓNDE VA MI CÓDIGO?                                                     │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  ┌─────────────────────────────────┬────────────────────────────────────┐  │
+│  │ CÓDIGO                          │ UBICACIÓN                          │  │
+│  ├─────────────────────────────────┼────────────────────────────────────┤  │
+│  │ JSX / Renderizado              │ components/*.tsx                   │  │
+│  │ useState / useEffect           │ hooks/use*.ts                      │  │
+│  │ fetch / supabase / axios       │ services/*.service.ts              │  │
+│  │ Tailwind > 80 chars            │ styles/*.styles.ts                 │  │
+│  │ Funciones puras                │ utils/*.ts                         │  │
+│  │ Tipos / Interfaces             │ types/index.ts                     │  │
+│  └─────────────────────────────────┴────────────────────────────────────┘  │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ ✅ EJEMPLO CORRECTO                                                         │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  // hooks/useUsuarios.ts                                                    │
+│  export function useUsuarios() {                                            │
+│    const [users, setUsers] = useState([])                                   │
+│    const { fetchUsers } = useUsuariosService()                              │
+│                                                                             │
+│    useEffect(() => {                                                        │
+│      fetchUsers().then(setUsers)                                            │
+│    }, [])                                                                   │
+│                                                                             │
+│    return { users }                                                         │
+│  }                                                                          │
+│                                                                             │
+│  // components/Usuarios.tsx                                                 │
+│  export function Usuarios() {                                               │
+│    const { users } = useUsuarios()  // ← Hook con lógica                   │
+│    return <div>{users.map(...)}</div>                                       │
+│  }                                                                          │
+│                                                                             │
+│  // services/usuarios.service.ts                                            │
+│  export class UsuariosService {                                             │
+│    async fetchUsers() {                                                     │
+│      return await supabase.from('users').select('*')                        │
+│    }                                                                        │
+│  }                                                                          │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ ❌ PROHIBIDO                                                                │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  ❌ Lógica en componentes (useState/useEffect complejos)                    │
+│  ❌ API/DB directo en componentes (fetch, supabase, axios)                  │
+│  ❌ Strings Tailwind > 80 caracteres inline                                 │
+│  ❌ Componentes > 150 líneas                                                │
+│  ❌ Hooks > 200 líneas                                                      │
+│  ❌ Services > 300 líneas                                                   │
+│  ❌ Código duplicado                                                        │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ 📏 LÍMITES MÁXIMOS                                                          │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  Componente .tsx ............ 150 líneas                                    │
+│  Hook use*.ts ............... 200 líneas                                    │
+│  Service .service.ts ........ 300 líneas                                    │
+│  String Tailwind inline ..... 80 caracteres                                 │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ 🔍 CHECKLIST PRE-COMMIT                                                     │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  [ ] Componente < 150 líneas                                                │
+│  [ ] Sin useState/useEffect en componente                                   │
+│  [ ] Sin fetch/supabase en componente                                       │
+│  [ ] Strings Tailwind < 80 caracteres                                       │
+│  [ ] Lógica en hooks                                                        │
+│  [ ] API calls en services                                                  │
+│  [ ] Barrel exports (index.ts)                                              │
+│  [ ] No hay código duplicado                                                │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                            🎯 REGLA DE ORO                                   ║
+║                                                                              ║
+║         ¿Dónde va este código?                                               ║
+║                                                                              ║
+║         Si dudas → va en el HOOK, NO en el componente                        ║
+║                                                                              ║
+║                  Esta regla NO es negociable 🚨                              ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+📚 Docs: docs/ARQUITECTURA-SEPARACION-RESPONSABILIDADES.md
+⚡ Quick: docs/SEPARACION-RESPONSABILIDADES-QUICK-REF.md

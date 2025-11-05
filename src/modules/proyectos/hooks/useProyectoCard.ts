@@ -27,6 +27,17 @@ export function useProyectoCard({
     return proyecto.manzanas.reduce((sum, m) => sum + m.totalViviendas, 0)
   }, [proyecto.manzanas])
 
+  // Computed: Total de viviendas vendidas
+  const viviendasVendidas = useMemo(() => {
+    return proyecto.manzanas.reduce((sum, m) => sum + m.viviendasVendidas, 0)
+  }, [proyecto.manzanas])
+
+  // Computed: Porcentaje de progreso de ventas
+  const progresoVentas = useMemo(() => {
+    if (totalViviendas === 0) return 0
+    return Math.round((viviendasVendidas / totalViviendas) * 100)
+  }, [viviendasVendidas, totalViviendas])
+
   // Handler: Eliminar con confirmación
   const handleDelete = useCallback(
     (e?: React.MouseEvent) => {
@@ -84,6 +95,8 @@ export function useProyectoCard({
     showMenu,
     confirmDelete,
     totalViviendas,
+    viviendasVendidas,
+    progresoVentas,
 
     // Handlers
     handleDelete,

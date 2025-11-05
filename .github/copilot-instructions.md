@@ -1,8 +1,167 @@
-# RyR Constructora - Sistema de Gestión Administrativa
+si por # RyR Constructora - Sistema de Gestión Administrativa
 
 ## 🎯 PRINCIPIOS FUNDAMENTALES (APLICAR SIEMPRE)
 
-### 🚨 REGLA CRÍTICA #1: VALIDACIÓN DE NOMBRES DE CAMPOS
+### 🚨 REGLA CRÍTICA #-1: UBICACIÓN DE RUTAS NEXT.JS (VERIFICAR PRIMERO)
+
+**⚠️ ANTES de crear CUALQUIER archivo de ruta/página (`page.tsx`, `layout.tsx`):**
+
+1. **CONSULTAR** → `.github/PROYECTO-ESTRUCTURA.md` (ubicación correcta de App Directory) ⭐
+2. **VERIFICAR** → App Directory está en `src/app/` (NO en `app/` raíz)
+3. **CREAR** → Rutas SIEMPRE en `src/app/[modulo]/[subruta]/page.tsx`
+4. **NUNCA** → Crear carpeta `app/` en raíz del proyecto
+5. **VALIDAR** → Después de crear, verificar que NO exista `app/` en raíz
+
+**Error común que NO repetir:**
+- ❌ `app/viviendas/nueva/page.tsx` → ✅ `src/app/viviendas/nueva/page.tsx`
+- ❌ Crear `app/` en raíz → ✅ Solo usar `src/app/`
+- ❌ Asumir ubicación sin verificar → ✅ Consultar PROYECTO-ESTRUCTURA.md
+
+**Comando de verificación obligatorio:**
+```powershell
+# Antes de crear ruta, verificar que app/ NO existe en raíz
+if (Test-Path "app/") { Write-Host "ERROR: app/ existe en raíz" }
+```
+
+---
+
+### �� REGLA CRÍTICA #0: SEPARACIÓN DE RESPONSABILIDADES (INVIOLABLE)
+
+**⚠️ ESTA REGLA ES ABSOLUTA Y NO NEGOCIABLE ⚠️**
+
+**TODA implementación, módulo, componente o funcionalidad DEBE cumplir CON:**
+
+#### 📐 **ARQUITECTURA OBLIGATORIA (PATRÓN ESTRICTO):**
+
+```
+src/modules/[nombre-modulo]/
+├── components/
+│   ├── [Componente].tsx              # ← SOLO UI PRESENTACIONAL (< 150 líneas)
+│   ├── [Componente].styles.ts        # ← SOLO estilos centralizados
+│   └── index.ts
+├── hooks/
+│   ├── use[Componente].ts            # ← SOLO LÓGICA DE NEGOCIO
+│   └── index.ts
+├── services/
+│   └── [nombre].service.ts           # ← SOLO llamadas API/DB
+├── types/
+│   └── index.ts                      # ← SOLO tipos TypeScript
+└── utils/
+    └── [helpers].ts                  # ← SOLO funciones puras
+```
+
+#### 🚫 **PROHIBICIONES ABSOLUTAS:**
+
+```typescript
+// ❌ PROHIBIDO: Lógica en componentes
+export function MiComponente() {
+  const [data, setData] = useState([])
+
+  useEffect(() => {
+    // ❌ NUNCA: fetch, cálculos complejos, transformaciones
+    fetch('/api/data').then(setData)
+  }, [])
+
+  const valorCalculado = data.reduce((acc, item) => acc + item.valor, 0) // ❌ NUNCA
+
+  return <div>{valorCalculado}</div>
+}
+
+// ❌ PROHIBIDO: Estilos inline extensos
+<div className="flex items-center gap-3 p-4 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 border border-blue-200 dark:border-blue-800 shadow-lg hover:shadow-2xl transition-all duration-300">
+  {/* ❌ NUNCA: strings de Tailwind > 80 caracteres */}
+</div>
+
+// ❌ PROHIBIDO: Servicios en componentes
+export function MiComponente() {
+  const handleSubmit = async () => {
+    await supabase.from('tabla').insert(data) // ❌ NUNCA: llamadas directas a DB
+  }
+}
+```
+
+#### ✅ **IMPLEMENTACIÓN CORRECTA (OBLIGATORIA):**
+
+```typescript
+// ✅ 1. HOOK CON LÓGICA (hooks/useMiComponente.ts)
+export function useMiComponente() {
+  const [data, setData] = useState([])
+  const { fetchData } = useMiComponenteService() // ← Service separado
+
+  useEffect(() => {
+    fetchData().then(setData)
+  }, [])
+
+  const valorCalculado = useMemo(() =>
+    data.reduce((acc, item) => acc + item.valor, 0),
+    [data]
+  )
+
+  return { data, valorCalculado }
+}
+
+// ✅ 2. COMPONENTE PRESENTACIONAL (components/MiComponente.tsx)
+export function MiComponente() {
+  const { data, valorCalculado } = useMiComponente() // ← Hook con lógica
+
+  return (
+    <div className={styles.container}> {/* ← Estilos centralizados */}
+      <span className={styles.valor}>{valorCalculado}</span>
+    </div>
+  )
+}
+
+// ✅ 3. ESTILOS CENTRALIZADOS (components/MiComponente.styles.ts)
+export const miComponenteStyles = {
+  container: 'flex items-center gap-3 p-4 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/30',
+  valor: 'text-xl font-bold text-blue-600 dark:text-blue-400'
+}
+
+// ✅ 4. SERVICE CON API/DB (services/miComponente.service.ts)
+export class MiComponenteService {
+  async fetchData() {
+    const { data } = await supabase.from('tabla').select('*')
+    return data
+  }
+}
+```
+
+#### 📏 **LÍMITES ESTRICTOS:**
+
+- **Componente `.tsx`**: Máximo **150 líneas** (si excede → refactorizar)
+- **Hook `use*.ts`**: Máximo **200 líneas** (si excede → dividir en sub-hooks)
+- **Service `.service.ts`**: Máximo **300 líneas** (si excede → dividir por dominio)
+- **Estilos `.styles.ts`**: Sin límite (pero organizados por secciones)
+- **String de Tailwind inline**: Máximo **80 caracteres** (si excede → extraer a `.styles.ts`)
+
+#### 🔍 **CHECKLIST DE VALIDACIÓN (antes de commit):**
+
+- [ ] ¿El componente tiene useState/useEffect con lógica compleja? → ❌ **Mover a hook**
+- [ ] ¿El componente tiene fetch/axios/supabase? → ❌ **Mover a service**
+- [ ] ¿El componente tiene cálculos/transformaciones? → ❌ **Mover a hook con useMemo**
+- [ ] ¿El componente tiene strings de Tailwind > 80 chars? → ❌ **Mover a .styles.ts**
+- [ ] ¿El archivo tiene > 150 líneas? → ❌ **Refactorizar en componentes pequeños**
+- [ ] ¿Hay código duplicado entre componentes? → ❌ **Extraer a shared/utils**
+
+#### 🎯 **BENEFICIOS INNEGOCIABLES:**
+
+1. **Mantenibilidad**: Cambios localizados, bajo riesgo
+2. **Testabilidad**: Hooks y services testeables independientemente
+3. **Reusabilidad**: Lógica compartible entre componentes
+4. **Escalabilidad**: Crecimiento ordenado sin "spaghetti code"
+5. **Legibilidad**: Código limpio y autodocumentado
+
+#### ⚡ **CONSECUENCIAS DE VIOLACIÓN:**
+
+- ❌ **Code review rechazado**
+- ❌ **Refactorización obligatoria antes de merge**
+- ❌ **Deuda técnica que bloquea nuevas features**
+
+**📌 REGLA DE ORO:** Si te preguntas "¿Esto va en el componente o en el hook?" → **SIEMPRE en el hook**
+
+---
+
+### �🚨 REGLA CRÍTICA #1: VALIDACIÓN DE NOMBRES DE CAMPOS
 
 **⚠️ ANTES de escribir CUALQUIER código que interactúe con la base de datos:**
 
@@ -219,38 +378,45 @@ src/modules/[nombre-modulo]/
 
 ## 🚫 PROHIBIDO
 
+❌ **VIOLAR SEPARACIÓN DE RESPONSABILIDADES** (lógica/vista/estilos mezclados)
+❌ **Componentes > 150 líneas** sin refactorizar
+❌ **Lógica de negocio en componentes** (useState, useEffect con lógica compleja)
+❌ **Llamadas a API/DB directas en componentes** (usar services)
+❌ **Strings de Tailwind > 80 caracteres inline** (extraer a .styles.ts)
+❌ **Código duplicado entre componentes** (extraer a shared/utils)
 ❌ **ASUMIR nombres de campos sin verificar** en `DATABASE-SCHEMA-REFERENCE.md`
 ❌ **Copiar nombres de otros archivos** sin validar en documentación
 ❌ **Inventar nombres "lógicos"** sin confirmar en DB
 ❌ **Crear componentes de UI sin usar los estandarizados** (ModuleContainer, Card, Button, etc.)
 ❌ **Olvidar modo oscuro** (dark:* en elementos personalizados)
 ❌ **No usar estados de UI** (LoadingState, EmptyState, ErrorState)
-❌ Lógica en componentes (useState, useEffect con lógica compleja)
-❌ Strings de Tailwind > 100 caracteres inline
-❌ Componentes > 150 líneas
-❌ Usar `any` en TypeScript
-❌ Duplicar código (extraer a shared/)
+❌ **Usar `any` en TypeScript** (siempre tipar correctamente)
 
 ---
 
 ## ✅ REQUERIDO
 
+✅ **SEPARACIÓN ESTRICTA: Hooks (lógica) + Componentes (UI) + Estilos (centralizados)**
+✅ **Hook personalizado por componente** con toda la lógica
+✅ **Service por módulo** para llamadas API/DB
+✅ **Archivo `.styles.ts`** para strings de Tailwind > 80 caracteres
+✅ **Componentes presentacionales puros** (< 150 líneas)
+✅ **useMemo/useCallback** para optimización
+✅ **Barrel exports (`index.ts`)** en cada carpeta
+✅ **Tipos TypeScript estrictos** (sin any)
 ✅ **Usar componentes estandarizados de `@/shared/components/layout`**
 ✅ **Consultar TEMPLATE-MODULO-ESTANDAR.md antes de crear módulo**
 ✅ **Validar con checklist de GUIA-DISENO-MODULOS.md**
-✅ Hook personalizado por componente con lógica
-✅ Archivo `.styles.ts` con estilos centralizados (solo si necesario)
-✅ Barrel exports (`index.ts`) en cada carpeta
-✅ Componentes presentacionales puros
-✅ Tipos TypeScript estrictos
-✅ Modo oscuro en TODOS los elementos
-✅ Estados de UI (loading, empty, error)
+✅ **Modo oscuro en TODOS los elementos**
+✅ **Estados de UI (loading, empty, error)**
+✅ **Imports organizados** (React → Next → External → Shared → Local → Hooks → Services → Types)
 
 ---
 
 ## 📚 Documentación Completa
 
 ### 🔴 CRÍTICA (consultar SIEMPRE):
+- **Separación de responsabilidades**: `docs/ARQUITECTURA-SEPARACION-RESPONSABILIDADES.md` ⭐ **PATRÓN INVIOLABLE**
 - **Schema DB**: `docs/DATABASE-SCHEMA-REFERENCE-ACTUALIZADO.md` ⭐ **FUENTE ÚNICA DE VERDAD**
 - **Checklist desarrollo**: `docs/DESARROLLO-CHECKLIST.md` ⭐ **OBLIGATORIO**
 - **Sistema de estandarización**: `docs/SISTEMA-ESTANDARIZACION-MODULOS.md` ⭐ **DISEÑO CONSISTENTE**

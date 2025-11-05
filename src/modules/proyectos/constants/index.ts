@@ -1,38 +1,45 @@
 import { EstadoProyecto } from '../types'
 
-// Array de estados para filtros
+// Array de estados SIMPLIFICADOS para filtros (incluyendo "Todos")
 export const ESTADOS_PROYECTO = [
-  { value: 'en_planificacion' as EstadoProyecto, label: 'En Planificación' },
-  { value: 'en_construccion' as EstadoProyecto, label: 'En Construcción' },
+  { value: undefined as unknown as EstadoProyecto, label: 'Todos' }, // Filtro por defecto
+  { value: 'en_proceso' as EstadoProyecto, label: 'En Proceso' },
   { value: 'completado' as EstadoProyecto, label: 'Completado' },
-  { value: 'pausado' as EstadoProyecto, label: 'Pausado' },
 ]
 
-// Colores por estado
+// Colores por estado (simplificados)
 export const ESTADO_COLORS: Record<EstadoProyecto, string> = {
-  en_planificacion:
-    'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400',
-  en_construccion:
-    'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400',
+  en_proceso:
+    'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400 border border-blue-200 dark:border-blue-800',
   completado:
-    'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400',
-  pausado: 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400',
+    'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400 border border-green-200 dark:border-green-800',
+  // Mantener compatibilidad con estados antiguos (migración)
+  en_planificacion:
+    'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400 border border-blue-200 dark:border-blue-800',
+  en_construccion:
+    'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400 border border-blue-200 dark:border-blue-800',
+  pausado:
+    'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400 border border-gray-200 dark:border-gray-800',
 }
 
-// Labels de estado
+// Labels de estado (simplificados)
 export const ESTADO_LABELS: Record<EstadoProyecto, string> = {
-  en_planificacion: 'En Planificación',
-  en_construccion: 'En Construcción',
+  en_proceso: 'En Proceso',
   completado: 'Completado',
-  pausado: 'Pausado',
+  // Compatibilidad
+  en_planificacion: 'En Proceso',
+  en_construccion: 'En Proceso',
+  pausado: 'En Proceso',
 }
 
-// Iconos por estado
+// Iconos por estado (simplificados)
 export const ESTADO_ICONS: Record<EstadoProyecto, string> = {
-  en_planificacion: '📋',
-  en_construccion: '🏗️',
+  en_proceso: '🏗️',
   completado: '✅',
-  pausado: '⏸️',
+  // Compatibilidad
+  en_planificacion: '🏗️',
+  en_construccion: '🏗️',
+  pausado: '🏗️',
 }
 
 // Valores por defecto para proyectos

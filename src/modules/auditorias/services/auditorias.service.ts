@@ -20,7 +20,7 @@ class AuditoriasService {
   async obtenerAuditorias(
     params: ConsultaAuditoriaParams = {}
   ): Promise<ResultadoPaginado<AuditoriaRegistro>> {
-    let query = supabase
+    let query = (supabase as any)
       .from('audit_log')
       .select('*', { count: 'exact' })
       .order('fecha_evento', { ascending: false })
@@ -80,7 +80,7 @@ class AuditoriasService {
     registroId: string,
     limite: number = 100
   ): Promise<AuditoriaRegistro[]> {
-    const { data, error } = await supabase.rpc('obtener_historial_registro', {
+    const { data, error } = await (supabase as any).rpc('obtener_historial_registro', {
       p_tabla: tabla,
       p_registro_id: registroId,
       p_limit: limite,

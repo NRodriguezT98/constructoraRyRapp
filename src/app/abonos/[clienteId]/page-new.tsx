@@ -192,7 +192,7 @@ export default function ClienteDetallePage() {
                     <Building className="w-4 h-4" />
                     <span>{proyecto.nombre}</span>
                     <span className="text-white/60">•</span>
-                    <span>Vivienda #{vivienda.numero_vivienda}</span>
+                    <span>Vivienda #{vivienda.numero}</span>
                   </div>
                 </div>
               </div>

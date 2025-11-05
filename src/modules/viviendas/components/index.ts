@@ -1,10 +1,19 @@
 // Barrel exports para componentes de viviendas
 export { FormularioVivienda } from './formulario-vivienda'
+export { NuevaViviendaView } from './nueva-vivienda-view'
 export { PasoFinanciero } from './paso-financiero'
 export { PasoLegal } from './paso-legal'
 export { PasoLinderos } from './paso-linderos'
 export { PasoResumen } from './paso-resumen'
 export { PasoUbicacion } from './paso-ubicacion'
+
+// Componentes de la nueva vista dedicada
+export { PasoFinancieroNuevo } from './paso-financiero-nuevo'
+export { PasoLegalNuevo } from './paso-legal-nuevo'
+export { PasoLinderosNuevo } from './paso-linderos-nuevo'
+export { PasoResumenNuevo } from './paso-resumen-nuevo'
+export { PasoUbicacionNuevo } from './paso-ubicacion-nuevo'
+export { PreviewSidebar } from './preview-sidebar'
 export { ResumenFinancieroCard } from './resumen-financiero-card'
 export { ViviendaCard } from './vivienda-card'
 export { ViviendasCard } from './viviendas-card'
@@ -16,7 +25,7 @@ export { ViviendasPageMain } from './viviendas-page-main'
 export { ViviendasSkeleton } from './viviendas-skeleton'
 export { ViviendasStats } from './viviendas-stats'
 
-// Cards dinámicas por estado
+// Cards dinï¿½micas por estado
 export * from './cards'
 
-// Nota: ViviendaDetalle ahora es una página en /viviendas/[id]
+// Nota: ViviendaDetalle ahora es una pï¿½gina en /viviendas/[id]

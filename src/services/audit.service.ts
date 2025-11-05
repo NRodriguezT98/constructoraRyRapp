@@ -191,7 +191,7 @@ class AuditService {
       }
 
       // Insertar en la base de datos
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('audit_log')
         .insert(auditData)
 
@@ -251,31 +251,21 @@ class AuditService {
   ): Promise<void> {
     const totalViviendas = manzanas.reduce((sum, m) => sum + (m.totalViviendas || m.numero_viviendas || 0), 0)
 
-    const metadataDetallada = {
-      // Información del proyecto
+    // 🔍 Solo incluir campos que realmente tienen valores significativos
+    const metadataDetallada: Record<string, any> = {
+      // Información BÁSICA del proyecto (siempre se captura)
       proyecto_nombre: proyecto.nombre,
       proyecto_ubicacion: proyecto.ubicacion,
       proyecto_descripcion: proyecto.descripcion,
-      proyecto_estado: proyecto.estado,
-      proyecto_presupuesto: proyecto.presupuesto,
-      proyecto_presupuesto_formateado: `$${proyecto.presupuesto?.toLocaleString('es-CO')}`,
-      proyecto_responsable: proyecto.responsable,
-      proyecto_telefono: proyecto.telefono,
-      proyecto_email: proyecto.email,
-      proyecto_fecha_inicio: proyecto.fechaInicio || proyecto.fecha_inicio,
-      proyecto_fecha_fin_estimada: proyecto.fechaFinEstimada || proyecto.fecha_fin_estimada,
 
       // Resumen de manzanas
       total_manzanas: manzanas.length,
       total_viviendas_planificadas: totalViviendas,
 
-      // Detalle de cada manzana
+      // Detalle de cada manzana (solo campos reales)
       manzanas_detalle: manzanas.map(m => ({
         nombre: m.nombre,
         numero_viviendas: m.totalViviendas || m.numero_viviendas,
-        precio_base: m.precioBase,
-        superficie_total: m.superficieTotal,
-        estado: m.estado || 'planificada'
       })),
 
       // Nombres de manzanas (para visualización rápida)
@@ -283,6 +273,36 @@ class AuditService {
 
       // Timestamp
       timestamp_creacion: new Date().toISOString()
+    }
+
+    // 📊 Campos OPCIONALES: Solo agregar si tienen valor real (no por defecto)
+    if (proyecto.estado && proyecto.estado !== 'en_planificacion') {
+      metadataDetallada.proyecto_estado = proyecto.estado
+    }
+
+    if (proyecto.presupuesto && proyecto.presupuesto > 0) {
+      metadataDetallada.proyecto_presupuesto = proyecto.presupuesto
+      metadataDetallada.proyecto_presupuesto_formateado = `$${proyecto.presupuesto.toLocaleString('es-CO')}`
+    }
+
+    if (proyecto.responsable && proyecto.responsable !== 'RyR Constructora') {
+      metadataDetallada.proyecto_responsable = proyecto.responsable
+    }
+
+    if (proyecto.telefono && proyecto.telefono !== '+57 300 000 0000') {
+      metadataDetallada.proyecto_telefono = proyecto.telefono
+    }
+
+    if (proyecto.email && proyecto.email !== 'info@ryrconstrucora.com') {
+      metadataDetallada.proyecto_email = proyecto.email
+    }
+
+    if (proyecto.fechaInicio || proyecto.fecha_inicio) {
+      metadataDetallada.proyecto_fecha_inicio = proyecto.fechaInicio || proyecto.fecha_inicio
+    }
+
+    if (proyecto.fechaFinEstimada || proyecto.fecha_fin_estimada) {
+      metadataDetallada.proyecto_fecha_fin_estimada = proyecto.fechaFinEstimada || proyecto.fecha_fin_estimada
     }
 
     return this.registrarAccion({
@@ -508,7 +528,7 @@ class AuditService {
     limit = 100
   ): Promise<AuditLogRecord[]> {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('audit_log')
         .select('*')
         .eq('tabla', tabla)
@@ -542,7 +562,7 @@ class AuditService {
     limit = 100
   ): Promise<ActividadUsuario[]> {
     try {
-      const { data, error } = await supabase.rpc('obtener_actividad_usuario', {
+      const { data, error } = await (supabase as any).rpc('obtener_actividad_usuario', {
         p_usuario_id: usuarioId,
         p_dias: dias,
         p_limit: limit
@@ -571,7 +591,7 @@ class AuditService {
    */
   async obtenerCambiosRecientes(limit = 100): Promise<AuditLogRecord[]> {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('audit_log')
         .select('*')
         .order('fecha_evento', { ascending: false })
@@ -599,7 +619,7 @@ class AuditService {
    */
   async obtenerResumenPorModulo(): Promise<ResumenPorModulo[]> {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('v_auditoria_por_modulo')
         .select('*')
         .order('total_eventos', { ascending: false })
@@ -626,7 +646,7 @@ class AuditService {
    */
   async detectarEliminacionesMasivas(dias = 7, umbral = 5) {
     try {
-      const { data, error } = await supabase.rpc('detectar_eliminaciones_masivas', {
+      const { data, error } = await (supabase as any).rpc('detectar_eliminaciones_masivas', {
         p_dias: dias,
         p_umbral: umbral
       })

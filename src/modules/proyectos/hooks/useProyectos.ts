@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from 'react'
 import { useProyectosStore } from '../store/proyectos.store'
-import { Proyecto, FiltroProyecto } from '../types'
+import { FiltroProyecto } from '../types'
 
 // Hook principal para manejar proyectos
 export function useProyectos() {
@@ -80,11 +80,28 @@ export function useProyectosFiltrados() {
       )
     }
 
-    // Filtro por estado
+    // Filtro por estado (con compatibilidad para estados antiguos)
     if (filtros.estado) {
-      resultado = resultado.filter(
-        proyecto => proyecto.estado === filtros.estado
-      )
+      if (filtros.estado === 'en_proceso') {
+        // "En Proceso" incluye: en_proceso, en_planificacion, en_construccion, pausado
+        resultado = resultado.filter(
+          proyecto =>
+            proyecto.estado === 'en_proceso' ||
+            proyecto.estado === 'en_planificacion' ||
+            proyecto.estado === 'en_construccion' ||
+            proyecto.estado === 'pausado'
+        )
+      } else if (filtros.estado === 'completado') {
+        // "Completado" solo incluye completado
+        resultado = resultado.filter(
+          proyecto => proyecto.estado === 'completado'
+        )
+      } else {
+        // Filtro directo para otros estados (compatibilidad)
+        resultado = resultado.filter(
+          proyecto => proyecto.estado === filtros.estado
+        )
+      }
     }
 
     // Filtro por fechas
@@ -146,20 +163,23 @@ export function useVistaProyectos() {
   }
 }
 
-// Hook para estadísticas básicas
+// Hook para estadísticas básicas (simplificadas)
 export function useEstadisticasProyectos() {
   const { proyectos } = useProyectosStore()
 
   const estadisticas = useMemo(() => {
     const total = proyectos.length
-    const enPlanificacion = proyectos.filter(
-      p => p.estado === 'en_planificacion'
+
+    // Estados simplificados: en_proceso y completado
+    const enProceso = proyectos.filter(
+      p =>
+        p.estado === 'en_proceso' ||
+        p.estado === 'en_planificacion' ||
+        p.estado === 'en_construccion' ||
+        p.estado === 'pausado'
     ).length
-    const enConstruccion = proyectos.filter(
-      p => p.estado === 'en_construccion'
-    ).length
+
     const completados = proyectos.filter(p => p.estado === 'completado').length
-    const pausados = proyectos.filter(p => p.estado === 'pausado').length
 
     const presupuestoTotal = proyectos.reduce(
       (sum, p) => sum + p.presupuesto,
@@ -173,10 +193,8 @@ export function useEstadisticasProyectos() {
 
     return {
       total,
-      enPlanificacion,
-      enConstruccion,
+      enProceso,
       completados,
-      pausados,
       presupuestoTotal,
       progresoPromedio: Math.round(progresoPromedio),
     }

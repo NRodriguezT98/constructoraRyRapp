@@ -1,10 +1,10 @@
 import { supabase } from '@/lib/supabase/client'
 import { auditService } from '@/services/audit.service'
 import type {
-  EstadoManzana,
-  Manzana,
-  Proyecto,
-  ProyectoFormData,
+    EstadoManzana,
+    Manzana,
+    Proyecto,
+    ProyectoFormData,
 } from '../types'
 
 /**
@@ -184,7 +184,7 @@ class ProyectosService {
     if (data.telefono) updateData.telefono = data.telefono
     if (data.email) updateData.email = data.email
 
-    // 3. Actualizar en DB
+    // 3. Actualizar proyecto en DB
     const { data: proyecto, error } = await supabase
       .from('proyectos')
       .update(updateData)
@@ -204,6 +204,82 @@ class ProyectosService {
     if (error) {
       console.error('Error al actualizar proyecto:', error)
       throw new Error(`Error al actualizar proyecto: ${error.message}`)
+    }
+
+    // 4. ✅ Actualizar manzanas si se proporcionaron
+    if (data.manzanas && data.manzanas.length > 0) {
+      console.log('📝 Actualizando manzanas del proyecto:', id)
+
+      // Obtener IDs de manzanas existentes
+      const manzanasExistentesIds = (proyecto.manzanas || []).map((m: any) => m.id)
+
+      // Procesar cada manzana
+      for (const manzana of data.manzanas) {
+        const manzanaData = {
+          proyecto_id: id,
+          nombre: manzana.nombre,
+          numero_viviendas: manzana.totalViviendas,
+        }
+
+        // Si la manzana tiene ID y existe en DB → Actualizar
+        if ((manzana as any).id && manzanasExistentesIds.includes((manzana as any).id)) {
+          const { error: updateError } = await supabase
+            .from('manzanas')
+            .update(manzanaData)
+            .eq('id', (manzana as any).id)
+
+          if (updateError) {
+            console.error('Error al actualizar manzana:', updateError)
+          } else {
+            console.log('✅ Manzana actualizada:', manzana.nombre)
+          }
+        }
+        // Si NO tiene ID o NO existe en DB → Crear nueva
+        else {
+          const { error: insertError } = await supabase
+            .from('manzanas')
+            .insert(manzanaData)
+
+          if (insertError) {
+            console.error('Error al crear manzana:', insertError)
+          } else {
+            console.log('✅ Manzana creada:', manzana.nombre)
+          }
+        }
+      }
+
+      // Eliminar manzanas que ya no están en el formulario
+      // (Solo las que NO tienen viviendas - validación granular)
+      const manzanasFormularioIds = data.manzanas
+        .map((m: any) => m.id)
+        .filter(Boolean)
+
+      const manzanasAEliminar = manzanasExistentesIds.filter(
+        id => !manzanasFormularioIds.includes(id)
+      )
+
+      for (const manzanaId of manzanasAEliminar) {
+        // Verificar que no tenga viviendas antes de eliminar
+        const { count } = await supabase
+          .from('viviendas')
+          .select('*', { count: 'exact', head: true })
+          .eq('manzana_id', manzanaId)
+
+        if (count === 0) {
+          const { error: deleteError } = await supabase
+            .from('manzanas')
+            .delete()
+            .eq('id', manzanaId)
+
+          if (deleteError) {
+            console.error('Error al eliminar manzana:', deleteError)
+          } else {
+            console.log('✅ Manzana eliminada:', manzanaId)
+          }
+        } else {
+          console.warn('⚠️ Manzana con viviendas no eliminada:', manzanaId)
+        }
+      }
     }
 
     const proyectoActualizado = this.transformarProyectoDeDB(proyecto)

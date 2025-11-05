@@ -308,9 +308,9 @@ export function TimelineProceso({ negociacionId }: TimelineProcesoProps) {
               documentos={timeline.pasoACorregirDoc.documentosRequeridos?.map(doc => ({
                 id: doc.id,
                 nombre_archivo: doc.nombre,
-                fecha_subida: doc.fechaSubida || new Date().toISOString(),
+                fecha_subida: new Date().toISOString(),
                 categoria_id: doc.categoriaId || '',
-                url_storage: doc.url || ''
+                url_storage: ''
               })) || []}
               open={timeline.modalCorregirDocAbierto}
               onClose={timeline.handleCerrarModalCorregirDoc}

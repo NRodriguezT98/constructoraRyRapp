@@ -1,5 +1,5 @@
 /**
- * Tipos del módulo Viviendas
+ * Tipos del mï¿½dulo Viviendas
  */
 
 // ============================================
@@ -18,22 +18,22 @@ export interface Vivienda {
   lindero_oriente?: string
   lindero_occidente?: string
 
-  // Información Legal
+  // Informaciï¿½n Legal
   matricula_inmobiliaria?: string
   nomenclatura?: string
-  area_lote?: number // m²
-  area_construida?: number // m²
+  area_lote?: number // mï¿½
+  area_construida?: number // mï¿½
   tipo_vivienda?: TipoVivienda
   certificado_tradicion_url?: string // URL en Supabase Storage
 
-  // Información Financiera
+  // Informaciï¿½n Financiera
   valor_base: number
   es_esquinera: boolean
   recargo_esquinera: number
   gastos_notariales: number
-  valor_total: number // Calculado automáticamente en DB
+  valor_total: number // Calculado automï¿½ticamente en DB
 
-  // Asignación de Cliente
+  // Asignaciï¿½n de Cliente
   cliente_id?: string
   negociacion_id?: string // ? NUEVO (2025-10-22): FK a negociaciones
   fecha_asignacion?: string
@@ -55,7 +55,7 @@ export interface Vivienda {
     email?: string
   }
 
-  // Cálculos de Abonos (desde vista o join)
+  // Cï¿½lculos de Abonos (desde vista o join)
   total_abonado?: number
   saldo_pendiente?: number
   porcentaje_pagado?: number
@@ -80,7 +80,7 @@ export interface InformacionLegal {
   area_construida: number
   tipo_vivienda: TipoVivienda
   certificado_tradicion_file?: File // Archivo a subir
-  certificado_tradicion_url?: string // URL después de subir
+  certificado_tradicion_url?: string // URL despuï¿½s de subir
 }
 
 export interface ResumenFinanciero {
@@ -129,7 +129,7 @@ export interface ConfiguracionRecargo {
 // ============================================
 
 export interface ViviendaFormData {
-  // Paso 1: Selección de ubicación
+  // Paso 1: Selecciï¿½n de ubicaciï¿½n
   proyecto_id: string
   manzana_id: string
   numero: string
@@ -140,7 +140,7 @@ export interface ViviendaFormData {
   lindero_oriente: string
   lindero_occidente: string
 
-  // Paso 3: Información Legal
+  // Paso 3: Informaciï¿½n Legal
   matricula_inmobiliaria: string
   nomenclatura: string
   area_lote: number
@@ -148,7 +148,7 @@ export interface ViviendaFormData {
   tipo_vivienda: TipoVivienda
   certificado_tradicion_file?: File
 
-  // Paso 4: Información Financiera
+  // Paso 4: Informaciï¿½n Financiera
   valor_base: number
   es_esquinera: boolean
   recargo_esquinera: number
@@ -186,10 +186,10 @@ export interface ViviendaFiltros {
 }
 
 export interface FiltrosViviendas {
-  busqueda?: string
-  proyectoId?: string
-  manzanaId?: string
-  estado?: ViviendaEstado
+  search: string
+  proyecto_id: string
+  manzana_id?: string
+  estado: string
 }
 
 export type ViviendaVista = 'grid' | 'list' | 'table'

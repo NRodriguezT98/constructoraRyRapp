@@ -7,6 +7,29 @@
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)
 ![Tailwind](https://img.shields.io/badge/Tailwind-3.0-cyan)
 
+## 🚨 REGLA #0: SEPARACIÓN DE RESPONSABILIDADES (INVIOLABLE)
+
+⚠️ **TODA implementación DEBE seguir este patrón:**
+
+```typescript
+// ✅ CORRECTO
+hooks/use*.ts       → LÓGICA (useState, useEffect, cálculos)
+components/*.tsx    → UI PURA (< 150 líneas, solo renderizado)
+services/*.service  → API/DB (fetch, supabase)
+styles/*.styles.ts  → ESTILOS (Tailwind > 80 chars)
+```
+
+```typescript
+// ❌ PROHIBIDO
+components/*.tsx → ❌ fetch, useState complejo, cálculos
+                 ❌ strings Tailwind > 80 caracteres
+                 ❌ > 150 líneas de código
+```
+
+📖 **Documentación completa**: [`docs/ARQUITECTURA-SEPARACION-RESPONSABILIDADES.md`](./docs/ARQUITECTURA-SEPARACION-RESPONSABILIDADES.md)
+
+---
+
 ## 🚨 TODOs Críticos Antes de Producción
 
 ⚠️ **IMPORTANTE**: Hay funcionalidad deshabilitada temporalmente:
@@ -23,6 +46,29 @@
 1. 📄 **[docs/01-setup/QUICK-START.md](./docs/01-setup/QUICK-START.md)** - Estar desarrollando en 45 minutos
 2. 📋 **[docs/01-setup/LISTO-PARA-DESARROLLAR.md](./docs/01-setup/LISTO-PARA-DESARROLLAR.md)** - ¿Estás listo para desarrollar?
 3. 🗄️ **[docs/SUPABASE-SETUP-RAPIDO.md](./docs/SUPABASE-SETUP-RAPIDO.md)** - Configurar base de datos (30 min)
+
+---
+
+## 🧹 Limpieza Completa del Sistema
+
+**¿Necesitas empezar de cero?** Limpia TODOS los datos (desarrollo):
+
+```powershell
+# Limpieza completa guiada (RECOMENDADO)
+.\limpiar-sistema-completo.ps1
+
+# Verificar qué archivos están protegidos
+.\verificar-archivos-protegidos.ps1
+
+# Ver guía completa
+# docs/GUIA-LIMPIEZA-COMPLETA-SISTEMA.md
+```
+
+⚠️ **Advertencia**: Elimina TODOS los datos (Storage + Base de Datos). Irreversible.
+
+🛡️ **Protección automática**: Tus **plantillas de proceso** NO se eliminan
+
+📖 **Guía rápida**: [`LIMPIEZA-RAPIDA.md`](./LIMPIEZA-RAPIDA.md)
 
 ---
 

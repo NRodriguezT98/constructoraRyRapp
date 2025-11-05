@@ -248,6 +248,8 @@ export async function obtenerHistorialAbonos(
   filtros: FiltrosAbonos = {}
 ): Promise<AbonoHistorial[]> {
   let query = supabase
+    .from('abonos_historial')
+    .select('*')
     .order('fecha_abono', { ascending: false });
 
   // Aplicar filtros

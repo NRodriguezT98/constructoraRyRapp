@@ -1,3 +1,4 @@
+import { AnimatePresence, motion } from 'framer-motion'
 import { X } from 'lucide-react'
 import { useEffect } from 'react'
 import { useClickOutside } from '../../hooks/useClickOutside'
@@ -15,6 +16,8 @@ interface ModalProps {
   closeOnEscape?: boolean
   showCloseButton?: boolean
   className?: string
+  icon?: React.ReactNode
+  gradientColor?: 'orange' | 'green' | 'cyan' | 'pink' | 'blue' | 'purple'
 }
 
 const sizeClasses = {
@@ -23,6 +26,39 @@ const sizeClasses = {
   lg: 'max-w-4xl',
   xl: 'max-w-6xl',
   full: 'max-w-[95vw]',
+}
+
+const gradientClasses = {
+  orange: {
+    border: 'from-orange-500 via-amber-500 to-yellow-500',
+    icon: 'from-orange-500 to-amber-600',
+    shadow: 'shadow-orange-500/30',
+  },
+  green: {
+    border: 'from-green-500 via-emerald-500 to-teal-500',
+    icon: 'from-green-500 to-emerald-600',
+    shadow: 'shadow-green-500/30',
+  },
+  cyan: {
+    border: 'from-cyan-500 via-blue-500 to-indigo-500',
+    icon: 'from-cyan-500 to-blue-600',
+    shadow: 'shadow-cyan-500/30',
+  },
+  pink: {
+    border: 'from-pink-500 via-purple-500 to-indigo-500',
+    icon: 'from-pink-500 to-purple-600',
+    shadow: 'shadow-pink-500/30',
+  },
+  blue: {
+    border: 'from-blue-500 via-indigo-500 to-purple-500',
+    icon: 'from-blue-500 to-indigo-600',
+    shadow: 'shadow-blue-500/30',
+  },
+  purple: {
+    border: 'from-blue-500 via-purple-500 to-pink-500',
+    icon: 'from-blue-500 to-purple-600',
+    shadow: 'shadow-blue-500/30',
+  },
 }
 
 export function Modal({
@@ -37,10 +73,14 @@ export function Modal({
   closeOnEscape = true,
   showCloseButton = true,
   className,
+  icon,
+  gradientColor = 'purple',
 }: ModalProps) {
   const modalRef = useClickOutside<HTMLDivElement>(() => {
     if (closeOnBackdrop) onClose()
   })
+
+  const gradient = gradientClasses[gradientColor]
 
   useEffect(() => {
     if (!closeOnEscape) return
@@ -61,78 +101,102 @@ export function Modal({
   }, [isOpen, onClose, closeOnEscape])
 
   return (
-    <>
+    <AnimatePresence>
       {isOpen && (
         <>
-          {/* Backdrop Optimizado */}
-          <div
-            className='fixed inset-0 z-50 bg-black/50 backdrop-blur-sm transition-opacity dark:bg-black/70'
+          {/* Backdrop con animación */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
+            className='fixed inset-0 z-50 bg-black/50 backdrop-blur-sm dark:bg-black/70'
             onClick={closeOnBackdrop ? onClose : undefined}
           />
 
           {/* Modal Container */}
           <div className='fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-3 sm:p-4'>
-            <div
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              transition={{ duration: 0.2, ease: 'easeOut' }}
               ref={modalRef}
               className={cn(
                 'relative my-4 w-full',
                 'bg-white dark:bg-gray-900',
-                'rounded-xl shadow-2xl',
-                'border border-gray-200/80 dark:border-gray-700/50',
+                'rounded-2xl shadow-2xl',
+                'border border-gray-200/50 dark:border-gray-700/50',
                 'overflow-hidden',
                 sizeClasses[size],
                 className
               )}
             >
               {/* Borde superior con gradiente */}
-              <div className='absolute left-0 right-0 top-0 h-0.5 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500' />
+              <div className={cn(
+                'absolute left-0 right-0 top-0 h-1 bg-gradient-to-r',
+                gradient.border
+              )} />
 
-              {/* Header */}
+              {/* Header mejorado */}
               {(title || showCloseButton) && (
-                <div className='relative flex items-start justify-between border-b border-gray-200/50 bg-gradient-to-b from-gray-50/50 to-transparent p-4 dark:border-gray-700/50 dark:from-gray-800/30'>
-                  <div className='flex-1 pr-3'>
-                    {title && (
-                      <div className='mb-1'>
-                        <h2 className='bg-gradient-to-r from-gray-900 via-gray-700 to-gray-900 bg-clip-text text-xl font-black text-transparent dark:from-white dark:via-gray-200 dark:to-white'>
-                          {title}
-                        </h2>
+                <div className='relative px-6 py-5 border-b border-gray-200/50 dark:border-gray-700/50 bg-gradient-to-b from-gray-50/50 to-transparent dark:from-gray-800/30'>
+                  <div className='flex items-start gap-4'>
+                    {/* Ícono */}
+                    {icon && (
+                      <div className={cn(
+                        'w-12 h-12 rounded-xl flex items-center justify-center shadow-lg flex-shrink-0',
+                        'bg-gradient-to-br',
+                        gradient.icon,
+                        gradient.shadow
+                      )}>
+                        {icon}
                       </div>
                     )}
-                    {description && (
-                      <p className='text-sm font-medium leading-relaxed text-gray-600 dark:text-gray-400'>
-                        {description}
-                      </p>
+
+                    {/* Títulos */}
+                    <div className='flex-1 min-w-0'>
+                      {title && (
+                        <h2 className='text-2xl font-bold text-gray-900 dark:text-white mb-1'>
+                          {title}
+                        </h2>
+                      )}
+                      {description && (
+                        <p className='text-sm text-gray-600 dark:text-gray-400 leading-relaxed'>
+                          {description}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Botón de cerrar mejorado */}
+                    {showCloseButton && (
+                      <button
+                        onClick={onClose}
+                        className='flex-shrink-0 w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 flex items-center justify-center transition-colors'
+                      >
+                        <X className='h-5 w-5 text-gray-600 dark:text-gray-400' />
+                      </button>
                     )}
                   </div>
-
-                  {/* Botón de cerrar */}
-                  {showCloseButton && (
-                    <button
-                      onClick={onClose}
-                      className='flex-shrink-0 rounded-lg bg-gray-100 p-2 text-gray-600 transition-colors hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700'
-                    >
-                      <X className='h-4 w-4' />
-                    </button>
-                  )}
                 </div>
               )}
 
-              {/* Content con scroll suave */}
-              <div className='custom-scrollbar max-h-[calc(90vh-200px)] overflow-y-auto p-4'>
+              {/* Content con scroll personalizado */}
+              <div className='custom-scrollbar max-h-[calc(90vh-240px)] overflow-y-auto p-6'>
                 {children}
               </div>
 
-              {/* Footer */}
+              {/* Footer mejorado */}
               {footer && (
-                <div className='flex flex-col items-stretch justify-end gap-2 border-t border-gray-200/50 bg-gradient-to-t from-gray-50/80 to-transparent p-4 dark:border-gray-700/50 dark:from-gray-800/30 sm:flex-row sm:items-center'>
+                <div className='px-6 py-4 border-t border-gray-200/50 dark:border-gray-700/50 bg-gray-50/50 dark:bg-gray-800/30 flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-3'>
                   {footer}
                 </div>
               )}
-            </div>
+            </motion.div>
           </div>
         </>
       )}
-    </>
+    </AnimatePresence>
   )
 }
 

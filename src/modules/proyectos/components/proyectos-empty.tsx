@@ -3,7 +3,7 @@
 import { EmptyState } from '../../../shared/components/ui/EmptyState'
 
 interface ProyectosEmptyProps {
-  onCrear: () => void
+  onCrear?: () => void
 }
 
 export function ProyectosEmpty({ onCrear }: ProyectosEmptyProps) {
@@ -11,10 +11,10 @@ export function ProyectosEmpty({ onCrear }: ProyectosEmptyProps) {
     <EmptyState
       title='No hay proyectos'
       description='Comienza creando tu primer proyecto de construcción'
-      action={{
+      action={onCrear ? {
         label: 'Crear Proyecto',
         onClick: onCrear,
-      }}
+      } : undefined}
     />
   )
 }

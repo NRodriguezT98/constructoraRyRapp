@@ -42,9 +42,12 @@ export interface Documento {
 }
 
 export type EstadoProyecto =
+  // Nuevos estados simplificados
+  | 'en_proceso'
+  | 'completado'
+  // Estados antiguos (compatibilidad para migración)
   | 'en_planificacion'
   | 'en_construccion'
-  | 'completado'
   | 'pausado'
 
 export type EstadoManzana = 'planificada' | 'en_construccion' | 'completada'
@@ -81,6 +84,7 @@ export interface ProyectoFormData {
 }
 
 export interface ManzanaFormData {
+  id?: string // ID de la manzana en DB (si ya existe)
   nombre: string
   totalViviendas: number
   precioBase: number

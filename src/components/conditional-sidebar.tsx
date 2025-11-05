@@ -1,11 +1,19 @@
 'use client'
 
 import { usePathname } from 'next/navigation'
-import { SidebarCompact as Sidebar } from './sidebar-compact'
+import { SidebarFloatingGlass as Sidebar } from './sidebar-floating-glass'
 
 /**
  * Componente que renderiza el Sidebar condicionalmente
  * Solo se muestra si NO estamos en rutas públicas como /login
+ *
+ * Usando: SidebarFloatingGlass (Diseño premium con glassmorphism)
+ * Características:
+ * - Efecto flotante con padding
+ * - Glassmorphism completo
+ * - Corona 👑 para administradores
+ * - Animaciones fluidas
+ * - Items más espaciados y respirables
  */
 export function ConditionalSidebar() {
   const pathname = usePathname()

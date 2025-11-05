@@ -113,9 +113,8 @@ export function ViviendasPageMain({
         transition={{ duration: 0.15 }}
         className={styles.container.content}
       >
-        {/* Header - Botón solo si puede crear */}
+        {/* Header - Navegación a vista dedicada */}
         <ViviendasHeader
-          onNuevaVivienda={canCreate ? abrirModalCrear : undefined}
           totalViviendas={estadisticas.total}
         />
 

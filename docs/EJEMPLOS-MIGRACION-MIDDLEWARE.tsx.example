@@ -24,12 +24,12 @@
 // ❌ ANTES: Con RequireView (client-side)
 // src/app/viviendas/page.tsx
 import { RequireView } from '@/modules/usuarios/components'
-import { ViviendasPageMain } from '@/modules/viviendas/components'
+import { ViviendasPageMain as ViviendaPageComponent } from '@/modules/viviendas/components'
 
 export default function ViviendasPageAntes() {
   return (
     <RequireView modulo="viviendas">  {/* ← Validación CLIENT-SIDE */}
-      <ViviendasPageMain />
+      <ViviendaPageComponent />
     </RequireView>
   )
 }

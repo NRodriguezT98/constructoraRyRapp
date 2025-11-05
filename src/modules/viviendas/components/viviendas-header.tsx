@@ -2,14 +2,20 @@
 
 import { motion } from 'framer-motion'
 import { Home, Plus } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 import { viviendasStyles as styles } from '../styles/viviendas.styles'
 
 interface ViviendasHeaderProps {
-  onNuevaVivienda: () => void
   totalViviendas: number
 }
 
-export function ViviendasHeader({ onNuevaVivienda, totalViviendas }: ViviendasHeaderProps) {
+export function ViviendasHeader({ totalViviendas }: ViviendasHeaderProps) {
+  const router = useRouter()
+
+  const handleNuevaVivienda = () => {
+    router.push('/viviendas/nueva')
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -39,7 +45,7 @@ export function ViviendasHeader({ onNuevaVivienda, totalViviendas }: ViviendasHe
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              onClick={onNuevaVivienda}
+              onClick={handleNuevaVivienda}
               className={styles.header.button}
             >
               <Plus className="w-4 h-4" />

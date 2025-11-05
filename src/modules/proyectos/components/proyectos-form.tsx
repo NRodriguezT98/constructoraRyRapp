@@ -1,44 +1,26 @@
+/**
+ * ProyectosForm - Componente presentacional PREMIUM
+ * ✅ Separación de responsabilidades ESTRICTA
+ * ✅ Diseño premium con gradientes naranja/ámbar
+ * ✅ Animaciones Framer Motion
+ * ✅ Modo oscuro completo
+ */
+
 'use client'
 
-import { zodResolver } from '@hookform/resolvers/zod'
-import { Building, Home, Layers, Plus, Trash2 } from 'lucide-react'
-import { useFieldArray, useForm } from 'react-hook-form'
-import { z } from 'zod'
+import { AnimatePresence, motion } from 'framer-motion'
+import { AlertCircle, Building2, FileText, Home, Loader2, Lock, LockOpen, MapPin, Plus, Trash2 } from 'lucide-react'
 import { cn } from '../../../shared/utils/helpers'
+import { useProyectosForm } from '../hooks/useProyectosForm'
+import { proyectosFormPremiumStyles as styles } from '../styles/proyectos-form-premium.styles'
 import type { ProyectoFormData } from '../types'
-import { buttonClasses, fieldClasses, manzanaClasses, sectionClasses } from './proyectos-form.styles'
-
-// Schema completo de validación
-const manzanaSchema = z.object({
-  nombre: z.string().min(1, 'El nombre de la manzana es obligatorio'),
-  totalViviendas: z
-    .number()
-    .min(1, 'Mínimo 1 vivienda')
-    .max(100, 'Máximo 100 viviendas'),
-})
-
-const proyectoSchema = z.object({
-  nombre: z
-    .string()
-    .min(3, 'El nombre del proyecto es obligatorio (mínimo 3 caracteres)')
-    .max(255, 'Máximo 255 caracteres'),
-  descripcion: z
-    .string()
-    .min(10, 'La descripción es obligatoria (mínimo 10 caracteres)'),
-  ubicacion: z
-    .string()
-    .min(5, 'La ubicación es obligatoria (mínimo 5 caracteres)')
-    .max(500, 'Máximo 500 caracteres'),
-  manzanas: z.array(manzanaSchema).min(1, 'Debe agregar al menos una manzana'),
-})
-
-type ProyectoFormSchema = z.infer<typeof proyectoSchema>
 
 interface ProyectosFormProps {
   onSubmit: (data: ProyectoFormData) => void | Promise<void>
   onCancel: () => void
   isLoading?: boolean
   initialData?: Partial<ProyectoFormData>
+  isEditing?: boolean
 }
 
 export function ProyectosForm({
@@ -46,277 +28,431 @@ export function ProyectosForm({
   onCancel,
   isLoading,
   initialData,
+  isEditing = false,
 }: ProyectosFormProps) {
+  // Hook con toda la lógica
   const {
     register,
     handleSubmit,
-    control,
-    watch,
-    formState: { errors },
-  } = useForm<ProyectoFormSchema>({
-    resolver: zodResolver(proyectoSchema),
-    defaultValues: {
-      nombre: initialData?.nombre || '',
-      descripcion: initialData?.descripcion || '',
-      ubicacion: initialData?.ubicacion || '',
-      manzanas: initialData?.manzanas || [],
-    },
-  })
-
-  const { fields, append, remove } = useFieldArray({
-    control,
-    name: 'manzanas',
-  })
-
-  const handleAgregarManzana = () => {
-    append({
-      nombre: `${String.fromCharCode(65 + fields.length)}`,
-      totalViviendas: 0,
-    })
-  }
-
-  const onSubmitForm = (data: ProyectoFormSchema) => {
-    // Completar con valores por defecto para los campos no incluidos en el formulario
-    const formDataCompleto: ProyectoFormData = {
-      ...data,
-      // Agregar campos faltantes a las manzanas
-      manzanas: data.manzanas.map(m => ({
-        ...m,
-        precioBase: 0,
-        superficieTotal: 0,
-        ubicacion: '',
-      })),
-      // Campos del proyecto con valores por defecto
-      fechaInicio: new Date().toISOString(),
-      fechaFinEstimada: new Date(
-        Date.now() + 365 * 24 * 60 * 60 * 1000
-      ).toISOString(),
-      presupuesto: 0,
-      estado: 'en_planificacion',
-      responsable: 'RyR Constructora',
-      telefono: '+57 300 000 0000',
-      email: 'info@ryrconstrucora.com',
-    }
-    onSubmit(formDataCompleto)
-  }
-
-  const totalManzanas = fields.length
-  const totalViviendas =
-    watch('manzanas')?.reduce((sum, m) => sum + (m.totalViviendas || 0), 0) || 0
+    errors,
+    fields,
+    handleAgregarManzana,
+    handleEliminarManzana,
+    totalManzanas,
+    totalViviendas,
+    manzanasWatch, // ✅ Valores reales de las manzanas
+    getButtonText,
+    canRemoveManzana,
+    esManzanaEditable,
+    esManzanaEliminable,
+    obtenerMotivoBloqueado,
+    validandoManzanas,
+    manzanasState,
+  } = useProyectosForm({ initialData, onSubmit, isEditing })
 
   return (
-    <form onSubmit={handleSubmit(onSubmitForm)} className='space-y-5'>
-      {/* Layout de 2 columnas en desktop, 1 en mobile */}
-      <div className='grid grid-cols-1 gap-5 lg:grid-cols-2'>
-        {/* COLUMNA IZQUIERDA: Información General */}
-        <div className={sectionClasses.card}>
-          <div className={sectionClasses.header}>
-            <div className={sectionClasses.icon}>
-              <Building className='h-4 w-4' />
+    <motion.form
+      {...styles.animations.container}
+      onSubmit={handleSubmit}
+      className={styles.form}
+    >
+      {/* BADGE STICKY SUPERIOR - RESUMEN */}
+      <div className={styles.badgeSticky.container}>
+        <div className={styles.badgeSticky.content}>
+          <div className={styles.badgeSticky.badges}>
+            <div className={styles.badgeSticky.manzanasBadge}>
+              <Building2 className={styles.badgeSticky.manzanasIcon} />
+              <span className={styles.badgeSticky.manzanasCount}>{totalManzanas}</span>
+              <span className={styles.badgeSticky.manzanasLabel}>
+                {totalManzanas === 1 ? 'Manzana' : 'Manzanas'}
+              </span>
             </div>
-            <h3 className={sectionClasses.title}>Información General</h3>
+            <div className={styles.badgeSticky.viviendasBadge}>
+              <Home className={styles.badgeSticky.viviendasIcon} />
+              <span className={styles.badgeSticky.viviendasCount}>{totalViviendas}</span>
+              <span className={styles.badgeSticky.viviendasLabel}>
+                {totalViviendas === 1 ? 'Vivienda' : 'Viviendas'}
+              </span>
+            </div>
+            {isEditing && (
+              <motion.div
+                {...styles.animations.editingBadge}
+                className={styles.badgeSticky.editingBadge}
+              >
+                Editando
+              </motion.div>
+            )}
           </div>
-
-          <div className='space-y-4'>
-            {/* Nombre */}
-            <div>
-              <label className={fieldClasses.label}>
-                Nombre del Proyecto <span className='text-red-500'>*</span>
-              </label>
-              <input
-                {...register('nombre')}
-                className={cn(
-                  fieldClasses.input,
-                  errors.nombre && 'border-red-500 focus:border-red-500'
-                )}
-                placeholder='Ej: Urbanización Las Américas II'
-              />
-              {errors.nombre && (
-                <p className={fieldClasses.error}>{errors.nombre.message}</p>
-              )}
-            </div>
-
-            {/* Ubicación */}
-            <div>
-              <label className={fieldClasses.label}>
-                Ubicación <span className='text-red-500'>*</span>
-              </label>
-              <input
-                {...register('ubicacion')}
-                className={cn(
-                  fieldClasses.input,
-                  errors.ubicacion && 'border-red-500 focus:border-red-500'
-                )}
-                placeholder='Dirección completa del proyecto'
-              />
-              {errors.ubicacion && (
-                <p className={fieldClasses.error}>{errors.ubicacion.message}</p>
-              )}
-            </div>
-
-            {/* Descripción */}
-            <div>
-              <label className={fieldClasses.label}>
-                Descripción <span className='text-red-500'>*</span>
-              </label>
-              <textarea
-                {...register('descripcion')}
-                className={cn(
-                  fieldClasses.textarea,
-                  errors.descripcion && 'border-red-500 focus:border-red-500'
-                )}
-                placeholder='Describe las características principales del proyecto...'
-                rows={5}
-              />
-              {errors.descripcion && (
-                <p className={fieldClasses.error}>{errors.descripcion.message}</p>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* COLUMNA DERECHA: Manzanas */}
-        <div className={sectionClasses.card}>
-          <div className='flex items-center justify-between'>
-            <div className={sectionClasses.header}>
-              <div className={sectionClasses.icon}>
-                <Layers className='h-4 w-4' />
-              </div>
-              <div>
-                <h3 className={sectionClasses.title}>
-                  Manzanas <span className='text-red-500'>*</span>
-                </h3>
-                <p className='text-xs text-gray-500 dark:text-gray-400'>
-                  {totalManzanas} {totalManzanas === 1 ? 'manzana' : 'manzanas'} •{' '}
-                  {totalViviendas} {totalViviendas === 1 ? 'vivienda' : 'viviendas'}
-                </p>
-              </div>
-            </div>
-            <button
-              type='button'
-              onClick={handleAgregarManzana}
-              className={buttonClasses.add}
-            >
-              <Plus className='h-3.5 w-3.5' />
-              Agregar
-            </button>
-          </div>
-
-          {errors.manzanas && !Array.isArray(errors.manzanas) && (
-            <p className={fieldClasses.error}>{errors.manzanas.message}</p>
-          )}
-
-          {fields.length === 0 ? (
-            <div className='rounded-lg border-2 border-dashed border-gray-300 bg-gray-50/50 py-8 text-center dark:border-gray-700 dark:bg-gray-800/30'>
-              <Layers className='mx-auto mb-2 h-8 w-8 text-gray-400' />
-              <p className='text-sm font-medium text-gray-500 dark:text-gray-400'>
-                No hay manzanas agregadas
-              </p>
-              <p className='mt-0.5 text-xs text-gray-400 dark:text-gray-500'>
-                Haz clic en "Agregar" para comenzar
-              </p>
-            </div>
-          ) : (
-            <div className='space-y-3'>
-              {fields.map((field, index) => (
-                <div key={field.id} className={manzanaClasses.card}>
-                  <div className={manzanaClasses.header}>
-                    <div className='flex items-center gap-2'>
-                      <div className={manzanaClasses.icon}>
-                        <Home className='h-3.5 w-3.5' />
-                      </div>
-                      <h4 className={manzanaClasses.title}>Manzana {index + 1}</h4>
-                    </div>
-                    <button
-                      type='button'
-                      onClick={() => remove(index)}
-                      className={buttonClasses.delete}
-                    >
-                      <Trash2 className='h-3.5 w-3.5' />
-                    </button>
-                  </div>
-
-                  <div className={manzanaClasses.grid}>
-                    {/* Nombre */}
-                    <div>
-                      <label className={manzanaClasses.label}>
-                        Nombre <span className='text-red-500'>*</span>
-                      </label>
-                      <input
-                        {...register(`manzanas.${index}.nombre`)}
-                        className={cn(
-                          manzanaClasses.input,
-                          errors.manzanas?.[index]?.nombre && 'border-red-500'
-                        )}
-                        placeholder='A'
-                      />
-                      {errors.manzanas?.[index]?.nombre && (
-                        <p className={manzanaClasses.error}>
-                          {errors.manzanas[index]?.nombre?.message}
-                        </p>
-                      )}
-                    </div>
-
-                    {/* Total Viviendas */}
-                    <div>
-                      <label className={manzanaClasses.label}>
-                        N° Viviendas <span className='text-red-500'>*</span>
-                      </label>
-                      <input
-                        type='number'
-                        {...register(`manzanas.${index}.totalViviendas`, {
-                          valueAsNumber: true,
-                        })}
-                        className={cn(
-                          manzanaClasses.input,
-                          errors.manzanas?.[index]?.totalViviendas &&
-                            'border-red-500'
-                        )}
-                        placeholder='0'
-                        min='1'
-                      />
-                      {errors.manzanas?.[index]?.totalViviendas && (
-                        <p className={manzanaClasses.error}>
-                          {errors.manzanas[index]?.totalViviendas?.message}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
         </div>
       </div>
 
-      {/* Botones de Acción */}
-      <div className='flex justify-end gap-3'>
+      {/* LAYOUT DE 2 COLUMNAS */}
+      <div className={styles.grid}>
+        {/* COLUMNA IZQUIERDA: Información General */}
+        <motion.div
+          {...styles.animations.infoSection}
+          className={styles.infoSection.container}
+        >
+          {/* Header */}
+          <div className={styles.infoSection.header}>
+            <div className={styles.infoSection.headerIcon}>
+              <Building2 className={styles.infoSection.headerIconSvg} />
+            </div>
+            <h3 className={styles.infoSection.headerTitle}>Información General</h3>
+          </div>
+
+          <div className={styles.infoSection.content}>
+            {/* Campo: Nombre */}
+            <div className={styles.field.container}>
+              <label className={styles.field.label}>
+                Nombre del Proyecto <span className={styles.field.required}>*</span>
+              </label>
+              <div className={styles.field.inputWrapper}>
+                <Building2 className={styles.field.inputIcon} />
+                <input
+                  {...register('nombre')}
+                  type='text'
+                  placeholder='Ej: Urbanización Los Pinos'
+                  className={cn(
+                    styles.field.input,
+                    errors.nombre && styles.field.inputError
+                  )}
+                />
+              </div>
+              {errors.nombre && (
+                <motion.div {...styles.animations.errorMessage} className={styles.field.error}>
+                  <AlertCircle className={styles.field.errorIcon} />
+                  {errors.nombre.message}
+                </motion.div>
+              )}
+            </div>
+
+            {/* Campo: Ubicación */}
+            <div className={styles.field.container}>
+              <label className={styles.field.label}>
+                Ubicación <span className={styles.field.required}>*</span>
+              </label>
+              <div className={styles.field.inputWrapper}>
+                <MapPin className={styles.field.inputIcon} />
+                <input
+                  {...register('ubicacion')}
+                  type='text'
+                  placeholder='Ej: Guacarí, Valle del Cauca'
+                  className={cn(
+                    styles.field.input,
+                    errors.ubicacion && styles.field.inputError
+                  )}
+                />
+              </div>
+              {errors.ubicacion && (
+                <motion.div {...styles.animations.errorMessage} className={styles.field.error}>
+                  <AlertCircle className={styles.field.errorIcon} />
+                  {errors.ubicacion.message}
+                </motion.div>
+              )}
+            </div>
+
+            {/* Campo: Descripción */}
+            <div>
+              <label className={styles.field.label}>
+                Descripción <span className={styles.field.required}>*</span>
+              </label>
+              <div className={styles.field.textareaWrapper}>
+                <FileText className={styles.field.textareaIcon} />
+                <textarea
+                  {...register('descripcion')}
+                  rows={4}
+                  placeholder='Descripción breve del proyecto...'
+                  className={cn(
+                    styles.field.textarea,
+                    errors.descripcion && styles.field.textareaError
+                  )}
+                />
+              </div>
+              {errors.descripcion && (
+                <motion.div {...styles.animations.errorMessage} className={styles.field.error}>
+                  <AlertCircle className={styles.field.errorIcon} />
+                  {errors.descripcion.message}
+                </motion.div>
+              )}
+            </div>
+          </div>
+        </motion.div>
+
+        {/* COLUMNA DERECHA: Manzanas */}
+        <motion.div
+          {...styles.animations.manzanasSection}
+          className={styles.manzanasSection.container}
+        >
+          {/* Header */}
+          <div className={styles.manzanasSection.header}>
+            <div className={styles.manzanasSection.headerLeft}>
+              <div className={styles.manzanasSection.headerIcon}>
+                <Building2 className={styles.manzanasSection.headerIconSvg} />
+              </div>
+              <h3 className={styles.manzanasSection.headerTitle}>
+                Manzanas del Proyecto {isEditing && '(Solo lectura)'}
+              </h3>
+            </div>
+            {!isEditing && (
+              <button
+                type='button'
+                onClick={handleAgregarManzana}
+                className={styles.manzanasSection.addButton}
+              >
+                <Plus className={styles.manzanasSection.addButtonIcon} />
+                Agregar
+              </button>
+            )}
+          </div>
+
+          {/* Error general de manzanas */}
+          {errors.manzanas && !Array.isArray(errors.manzanas) && (
+            <motion.div
+              {...styles.animations.errorMessage}
+              className={styles.manzanasSection.errorMessage}
+            >
+              <AlertCircle className={styles.manzanasSection.errorIcon} />
+              {errors.manzanas.message}
+            </motion.div>
+          )}
+
+          {/* Mensaje informativo en modo edición */}
+          {isEditing && fields.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="rounded-lg border-2 border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/30 p-4 mb-4"
+            >
+              <div className="flex items-start gap-3">
+                <AlertCircle className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+                <div className="space-y-2 flex-1">
+                  <p className="text-sm font-semibold text-blue-900 dark:text-blue-100">
+                    ℹ️ Edición inteligente de manzanas
+                  </p>
+                  <p className="text-xs text-blue-700 dark:text-blue-300 leading-relaxed">
+                    Solo puedes modificar las manzanas que <strong>NO tienen viviendas creadas</strong>.
+                    Las manzanas con viviendas están protegidas para mantener la integridad de datos.
+                  </p>
+                  <div className="flex items-center gap-4 text-xs text-blue-700 dark:text-blue-300 mt-2">
+                    <div className="flex items-center gap-1.5">
+                      <LockOpen className="w-4 h-4 text-green-600 dark:text-green-400" />
+                      <span>Sin viviendas = Editable</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <Lock className="w-4 h-4 text-red-600 dark:text-red-400" />
+                      <span>Con viviendas = Bloqueada</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Lista de manzanas con AnimatePresence */}
+          <div className={styles.manzanasSection.list}>
+            {fields.length === 0 ? (
+              <div className={styles.manzanasSection.emptyState}>
+                <Building2 className={styles.manzanasSection.emptyIcon} />
+                <p className={styles.manzanasSection.emptyTitle}>
+                  No hay manzanas agregadas
+                </p>
+                <p className={styles.manzanasSection.emptySubtitle}>
+                  Haz clic en "Agregar" para comenzar
+                </p>
+              </div>
+            ) : (
+              <AnimatePresence mode='popLayout'>
+                {fields.map((field, index) => {
+                  const esEditable = esManzanaEditable(index)
+                  const esEliminable = esManzanaEliminable(index)
+                  const manzanaReal = manzanasWatch?.[index] // ✅ Valor real del formulario
+                  const motivoBloqueado = manzanaReal?.id ? obtenerMotivoBloqueado(manzanaReal.id) : ''
+                  const estadoManzana = manzanaReal?.id ? manzanasState.get(manzanaReal.id) : null
+
+                  // Debug logging
+                  if (isEditing && index === 0) {
+                    console.log('🎨 [ProyectosForm] Renderizando manzana:', {
+                      index,
+                      manzanaId: manzanaReal?.id,
+                      nombre: manzanaReal?.nombre,
+                      esEditable,
+                      esEliminable,
+                      estadoManzana,
+                      totalManzanasEnState: manzanasState.size,
+                    })
+                  }
+
+                  return (
+                    <motion.div
+                      key={field.id}
+                      {...styles.animations.manzanaCard}
+                      className={cn(
+                        styles.manzanaCard.container,
+                        !esEditable && 'opacity-75 ring-2 ring-red-200 dark:ring-red-800'
+                      )}
+                    >
+                      {/* Header de la manzana */}
+                      <div className={styles.manzanaCard.header}>
+                        <div className={styles.manzanaCard.headerLeft}>
+                          <Building2 className={styles.manzanaCard.headerIcon} />
+                          <span className={styles.manzanaCard.headerTitle}>
+                            Manzana #{index + 1}
+                          </span>
+                          {/* Badge de estado */}
+                          {isEditing && estadoManzana && (
+                            <div className="flex items-center gap-1.5">
+                              {esEditable ? (
+                                <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-100 dark:bg-green-900/30 border border-green-300 dark:border-green-700">
+                                  <LockOpen className="w-3 h-3 text-green-600 dark:text-green-400" />
+                                  <span className="text-[10px] font-medium text-green-700 dark:text-green-300">
+                                    Editable
+                                  </span>
+                                </div>
+                              ) : (
+                                <div
+                                  className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-700"
+                                  title={motivoBloqueado}
+                                >
+                                  <Lock className="w-3 h-3 text-red-600 dark:text-red-400" />
+                                  <span className="text-[10px] font-medium text-red-700 dark:text-red-300">
+                                    {estadoManzana.cantidadViviendas} vivienda{estadoManzana.cantidadViviendas !== 1 ? 's' : ''}
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                        {(!isEditing || esEliminable) && canRemoveManzana() && (
+                          <button
+                            type='button'
+                            onClick={() => handleEliminarManzana(index)}
+                            className={styles.manzanaCard.deleteButton}
+                            title={!esEliminable ? motivoBloqueado : 'Eliminar manzana'}
+                          >
+                            <Trash2 className={styles.manzanaCard.deleteIcon} />
+                          </button>
+                        )}
+                      </div>
+
+                    {/* Campos */}
+                    <div className={styles.manzanaCard.grid}>
+                      {/* Nombre */}
+                      <div className={styles.manzanaCard.field.container}>
+                        <label className={styles.manzanaCard.field.label}>
+                          Nombre de la manzana
+                        </label>
+                        <input
+                          {...register(`manzanas.${index}.nombre`)}
+                          type='text'
+                          placeholder='Nombre'
+                          disabled={!esEditable}
+                          className={cn(
+                            styles.manzanaCard.field.input,
+                            errors.manzanas?.[index]?.nombre &&
+                              styles.manzanaCard.field.inputError,
+                            !esEditable && 'opacity-60 cursor-not-allowed bg-gray-100 dark:bg-gray-800'
+                          )}
+                        />
+                        {errors.manzanas?.[index]?.nombre && (
+                          <motion.p
+                            {...styles.animations.errorMessage}
+                            className={styles.manzanaCard.field.error}
+                          >
+                            <AlertCircle className={styles.manzanaCard.field.errorIcon} />
+                            {errors.manzanas[index]?.nombre?.message}
+                          </motion.p>
+                        )}
+                      </div>
+
+                      {/* Cantidad Viviendas */}
+                      <div className={styles.manzanaCard.field.container}>
+                        <label className={styles.manzanaCard.field.label}>
+                          Cantidad de viviendas
+                        </label>
+                        <div className={styles.manzanaCard.field.inputWrapper}>
+                          <Home className={styles.manzanaCard.field.inputIcon} />
+                          <input
+                            {...register(`manzanas.${index}.totalViviendas`, {
+                              valueAsNumber: true,
+                            })}
+                            type='number'
+                            min='1'
+                            placeholder='N° Viviendas'
+                            disabled={!esEditable}
+                            className={cn(
+                              styles.manzanaCard.field.inputWithIcon,
+                              errors.manzanas?.[index]?.totalViviendas &&
+                                styles.manzanaCard.field.inputError,
+                              !esEditable && 'opacity-60 cursor-not-allowed bg-gray-100 dark:bg-gray-800'
+                            )}
+                          />
+                        </div>
+                        {errors.manzanas?.[index]?.totalViviendas && (
+                          <motion.p
+                            {...styles.animations.errorMessage}
+                            className={styles.manzanaCard.field.error}
+                          >
+                            <AlertCircle className={styles.manzanaCard.field.errorIcon} />
+                            {errors.manzanas[index]?.totalViviendas?.message}
+                          </motion.p>
+                        )}
+                      </div>
+
+                      {/* Mensaje de por qué está bloqueada */}
+                      {!esEditable && motivoBloqueado && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: 'auto' }}
+                          className="col-span-2 mt-2 p-2 rounded-lg bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800"
+                        >
+                          <p className="text-xs text-red-700 dark:text-red-300 flex items-start gap-2">
+                            <Lock className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
+                            <span>{motivoBloqueado}</span>
+                          </p>
+                        </motion.div>
+                      )}
+                    </div>
+                  </motion.div>
+                  )
+                })}
+              </AnimatePresence>
+            )}
+          </div>
+        </motion.div>
+      </div>
+
+      {/* BOTONES FOOTER */}
+      <motion.div
+        {...styles.animations.footer}
+        className={styles.footer.container}
+      >
         <button
           type='button'
           onClick={onCancel}
           disabled={isLoading}
-          className={buttonClasses.secondary}
+          className={styles.footer.cancelButton}
         >
           Cancelar
         </button>
         <button
           type='submit'
           disabled={isLoading}
-          className={buttonClasses.primary}
+          className={styles.footer.submitButton}
         >
           {isLoading ? (
-            <span className='flex items-center gap-2'>
-              <span className='animate-spin'>⏳</span>
+            <>
+              <Loader2 className={styles.footer.submitButtonIcon} />
               Guardando...
-            </span>
+            </>
           ) : (
-            <span className='flex items-center gap-2'>
-              <Building className='h-4 w-4' />
-              Crear Proyecto
-            </span>
+            <>
+              <Building2 className={styles.footer.submitButtonIcon} />
+              {getButtonText(isEditing)}
+            </>
           )}
         </button>
-      </div>
-    </form>
+      </motion.div>
+    </motion.form>
   )
 }
