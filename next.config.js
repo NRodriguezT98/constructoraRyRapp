@@ -21,13 +21,22 @@ const nextConfig = {
 
   // ⚡ OPTIMIZACIONES DE DESARROLLO
   reactStrictMode: true, // Detectar problemas de renderizado
-  swcMinify: true, // SWC es 17x más rápido que Babel
+
+  // 🚀 TURBOPACK (Next.js 15+)
+  turbopack: {
+    rules: {
+      '*.svg': {
+        loaders: ['@svgr/webpack'],
+        as: '*.js',
+      },
+    },
+    resolveAlias: {
+      '@': './src',
+    },
+  },
 
   // 🚀 EXPERIMENTAL: Mejoras de Performance
   experimental: {
-    // Compila solo lo que cambia (incremental)
-    incrementalCacheHandlerPath: undefined,
-
     // Optimiza imports de librerías grandes
     optimizePackageImports: [
       'lucide-react',
@@ -36,29 +45,29 @@ const nextConfig = {
       '@radix-ui/react-dropdown-menu',
       'react-hook-form',
       'zod',
+      'recharts',
+      'date-fns',
     ],
 
-    // Turbopack para compilación ultra-rápida (Next.js 14+)
-    // turbo: {
-    //   rules: {
-    //     '*.svg': {
-    //       loaders: ['@svgr/webpack'],
-    //       as: '*.js',
-    //     },
-    //   },
-    // },
+    // ⚡ Optimizaciones adicionales
+    optimizeCss: true, // Optimiza CSS
+    optimizeServerReact: true, // Optimiza Server Components
+    serverActions: {
+      bodySizeLimit: '2mb',
+    },
   },
 
-  // ⚡ WEBPACK OPTIMIZATIONS (si no usas Turbopack)
+  // ⚡ WEBPACK OPTIMIZATIONS
   webpack: (config, { dev, isServer }) => {
     // Solo en desarrollo
     if (dev) {
-      // Cacheo agresivo de módulos compilados
+      // ⚡ Cacheo agresivo de módulos compilados
       config.cache = {
         type: 'filesystem',
         buildDependencies: {
           config: [__filename],
         },
+        maxMemoryGenerations: 5,
       }
 
       // Reduce logging innecesario
@@ -66,6 +75,20 @@ const nextConfig = {
 
       // Optimiza resolución de módulos
       config.resolve.symlinks = false
+
+      // ⚡ Optimizaciones adicionales
+      config.optimization = {
+        ...config.optimization,
+        removeAvailableModules: false,
+        removeEmptyChunks: false,
+        splitChunks: false, // Desactivar en dev para más velocidad
+      }
+
+      // ⚡ Reducir checks innecesarios
+      config.watchOptions = {
+        ignored: ['**/node_modules', '**/.git', '**/.next'],
+        poll: false, // Usar eventos nativos del FS (más rápido)
+      }
     }
 
     return config
@@ -86,9 +109,6 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: false, // Validar en build
   },
-
-  // 🚀 Deshabilitar telemetría (privacidad + velocidad)
-  telemetry: false,
 }
 
 module.exports = nextConfig

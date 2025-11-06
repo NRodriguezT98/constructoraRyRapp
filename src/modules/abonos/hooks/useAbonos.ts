@@ -7,16 +7,16 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import {
-  obtenerFuentesPagoConAbonos,
-  obtenerHistorialAbonos,
-  obtenerNegociacionesActivas,
-  registrarAbono,
+    obtenerFuentesPagoConAbonos,
+    obtenerHistorialAbonos,
+    obtenerNegociacionesActivas,
+    registrarAbono,
 } from '../services/abonos.service';
 import type {
-  AbonoHistorial,
-  CrearAbonoDTO,
-  FuentePagoConAbonos,
-  NegociacionConAbonos,
+    AbonoHistorial,
+    CrearAbonoDTO,
+    FuentePagoConAbonos,
+    NegociacionConAbonos,
 } from '../types';
 
 export function useAbonos() {
@@ -32,24 +32,48 @@ export function useAbonos() {
 
   // Cargar negociaciones activas al montar (solo si no están inicializados)
   useEffect(() => {
+    let cancelado = false
+
     if (!datosInicializados) {
       console.log('💰 [ABONOS HOOK] Cargando datos iniciales...')
-      cargarNegociaciones();
-      setDatosInicializados(true);
+      cargarNegociaciones().catch(error => {
+        if (!cancelado) {
+          console.error('💰 [ABONOS HOOK] Error en carga inicial:', error)
+        }
+      })
+      if (!cancelado) {
+        setDatosInicializados(true)
+      }
+    }
+
+    return () => {
+      cancelado = true
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [datosInicializados]);
+  }, [datosInicializados])
 
   // Cargar fuentes e historial cuando se selecciona una negociación
   useEffect(() => {
+    let cancelado = false
+
     if (negociacionSeleccionada) {
-      cargarDatosNegociacion(negociacionSeleccionada);
+      cargarDatosNegociacion(negociacionSeleccionada).catch(error => {
+        if (!cancelado) {
+          console.error('💰 [ABONOS HOOK] Error cargando datos negociación:', error)
+        }
+      })
     } else {
-      setFuentesPago([]);
-      setHistorial([]);
+      if (!cancelado) {
+        setFuentesPago([])
+        setHistorial([])
+      }
+    }
+
+    return () => {
+      cancelado = true
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [negociacionSeleccionada]);
+  }, [negociacionSeleccionada])
 
   // =====================================================
   // FUNCIONES

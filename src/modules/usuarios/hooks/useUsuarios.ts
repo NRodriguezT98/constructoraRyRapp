@@ -236,8 +236,23 @@ export function useUsuarios() {
 
   // Cargar datos iniciales
   useEffect(() => {
-    cargarUsuarios()
-    cargarEstadisticas()
+    let cancelado = false
+
+    const inicializar = async () => {
+      try {
+        await Promise.all([cargarUsuarios(), cargarEstadisticas()])
+      } catch (error) {
+        if (!cancelado) {
+          console.error('[USUARIOS] Error en carga inicial:', error)
+        }
+      }
+    }
+
+    inicializar()
+
+    return () => {
+      cancelado = true
+    }
   }, [cargarUsuarios, cargarEstadisticas])
 
   return {

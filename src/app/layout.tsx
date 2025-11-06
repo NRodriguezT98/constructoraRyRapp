@@ -4,6 +4,7 @@ import { ConditionalSidebar } from '@/components/conditional-sidebar'
 import { ThemeProvider } from '@/components/theme-provider'
 import { AuthProvider } from '@/contexts/auth-context'
 import { UnsavedChangesProvider } from '@/contexts/unsaved-changes-context'
+import { ReactQueryProvider } from '@/lib/react-query'
 import { AlertModal, ConfirmModal, ModalProvider } from '@/shared/components/modals'
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
@@ -46,26 +47,28 @@ export default function RootLayout({
         )}
       </head>
       <body className={inter.className} suppressHydrationWarning>
-        <AuthProvider>
-          <ThemeProvider>
-            <ModalProvider>
-              <UnsavedChangesProvider>
-                <div className='flex h-screen overflow-hidden bg-gray-50 dark:bg-gray-900'>
-                  <ConditionalSidebar />
-                  <ConditionalLayout>
-                    {/* PageTransition deshabilitado para navegación instantánea (-400ms) */}
-                    {children}
-                  </ConditionalLayout>
-                </div>
-                <Toaster position='top-right' richColors />
+        <ReactQueryProvider>
+          <AuthProvider>
+            <ThemeProvider>
+              <ModalProvider>
+                <UnsavedChangesProvider>
+                  <div className='flex h-screen overflow-hidden bg-gray-50 dark:bg-gray-900'>
+                    <ConditionalSidebar />
+                    <ConditionalLayout>
+                      {/* PageTransition deshabilitado para navegación instantánea (-400ms) */}
+                      {children}
+                    </ConditionalLayout>
+                  </div>
+                  <Toaster position='top-right' richColors />
 
-                {/* Modales globales */}
-                <ConfirmModal />
-                <AlertModal />
-              </UnsavedChangesProvider>
-            </ModalProvider>
-          </ThemeProvider>
-        </AuthProvider>
+                  {/* Modales globales */}
+                  <ConfirmModal />
+                  <AlertModal />
+                </UnsavedChangesProvider>
+              </ModalProvider>
+            </ThemeProvider>
+          </AuthProvider>
+        </ReactQueryProvider>
       </body>
     </html>
   )

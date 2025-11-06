@@ -25,6 +25,8 @@ export function useProyectoDetalle(proyectoId: string) {
 
   // Cargar proyecto
   useEffect(() => {
+    let cancelado = false
+
     const cargarProyecto = async () => {
       setCargando(true)
       try {
@@ -34,34 +36,47 @@ export function useProyectoDetalle(proyectoId: string) {
 
         // Simulación temporal
         await new Promise(resolve => setTimeout(resolve, 500))
-        setProyecto({
-          id: proyectoId,
-          nombre: 'Proyecto Ejemplo',
-          descripcion: 'Descripción del proyecto',
-          ubicacion: 'Ubicación ejemplo',
-          estado: 'en_construccion',
-          fechaInicio: new Date().toISOString(),
-          fechaFinEstimada: new Date().toISOString(),
-          presupuesto: 1000000,
-          manzanas: [],
-          responsable: 'Responsable',
-          telefono: '123456789',
-          email: 'test@test.com',
-          fechaCreacion: new Date().toISOString(),
-          fechaActualizacion: new Date().toISOString(),
-        })
+
+        if (!cancelado) {
+          setProyecto({
+            id: proyectoId,
+            nombre: 'Proyecto Ejemplo',
+            descripcion: 'Descripción del proyecto',
+            ubicacion: 'Ubicación ejemplo',
+            estado: 'en_construccion',
+            fechaInicio: new Date().toISOString(),
+            fechaFinEstimada: new Date().toISOString(),
+            presupuesto: 1000000,
+            manzanas: [],
+            responsable: 'Responsable',
+            telefono: '123456789',
+            email: 'test@test.com',
+            fechaCreacion: new Date().toISOString(),
+            fechaActualizacion: new Date().toISOString(),
+          })
+        }
       } catch (error) {
-        console.error('Error al cargar proyecto:', error)
+        if (!cancelado) {
+          console.error('Error al cargar proyecto:', error)
+        }
       } finally {
-        setCargando(false)
+        if (!cancelado) {
+          setCargando(false)
+        }
       }
     }
 
     cargarProyecto()
+
+    return () => {
+      cancelado = true
+    }
   }, [proyectoId])
 
   // Cargar URL de preview para el visor
   useEffect(() => {
+    let cancelado = false
+
     if (modalViewerAbierto && documentoSeleccionado) {
       const cargarPreview = async () => {
         try {
@@ -69,14 +84,24 @@ export function useProyectoDetalle(proyectoId: string) {
             documentoSeleccionado.url_storage,
             3600
           )
-          setUrlPreview(url)
+          if (!cancelado) {
+            setUrlPreview(url)
+          }
         } catch (error) {
-          console.error('Error cargando preview:', error)
+          if (!cancelado) {
+            console.error('Error cargando preview:', error)
+          }
         }
       }
       cargarPreview()
     } else {
-      setUrlPreview(null)
+      if (!cancelado) {
+        setUrlPreview(null)
+      }
+    }
+
+    return () => {
+      cancelado = true
     }
   }, [modalViewerAbierto, documentoSeleccionado])
 

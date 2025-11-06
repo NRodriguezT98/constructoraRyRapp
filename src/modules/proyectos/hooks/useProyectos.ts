@@ -19,21 +19,27 @@ export function useProyectos() {
 
   // Cargar proyectos al montar el componente (solo una vez)
   useEffect(() => {
+    let cancelado = false
+
     if (!datosInicializados) {
       console.log('🏗️ [PROYECTOS HOOK] Cargando datos iniciales...')
-      obtenerProyectos().then(() => {
-        setDatosInicializados(true)
-      }).catch((error) => {
-        console.error('❌ [PROYECTOS HOOK] Error cargando datos:', error)
-      })
+      obtenerProyectos()
+        .then(() => {
+          if (!cancelado) {
+            setDatosInicializados(true)
+          }
+        })
+        .catch((error) => {
+          if (!cancelado) {
+            console.error('❌ [PROYECTOS HOOK] Error cargando datos:', error)
+          }
+        })
     }
 
-    // ✅ Cleanup: Limpiar flag si el componente se desmonta antes de terminar
     return () => {
-      // No hacemos nada aquí porque queremos mantener datosInicializados
-      // para evitar recargas innecesarias al navegar
+      cancelado = true
     }
-  }, [datosInicializados]) // ← Solo depende del flag booleano
+  }, [datosInicializados, obtenerProyectos])
 
   return {
     proyectos,
@@ -58,26 +64,30 @@ export function useProyecto(id?: string) {
   } = useProyectosStore()
 
   useEffect(() => {
-    let mounted = true
+    let cancelado = false
 
     if (id) {
-      obtenerProyecto(id).then(proyecto => {
-        if (proyecto && mounted) {
-          setProyectoActual(proyecto)
-        }
-      }).catch((error) => {
-        console.error('❌ [PROYECTO HOOK] Error cargando proyecto:', error)
-      })
+      obtenerProyecto(id)
+        .then(proyecto => {
+          if (proyecto && !cancelado) {
+            setProyectoActual(proyecto)
+          }
+        })
+        .catch((error) => {
+          if (!cancelado) {
+            console.error('❌ [PROYECTO HOOK] Error cargando proyecto:', error)
+          }
+        })
     } else {
-      if (mounted) {
+      if (!cancelado) {
         setProyectoActual(undefined)
       }
     }
 
     return () => {
-      mounted = false
+      cancelado = true
     }
-  }, [id]) // ← Solo depende del ID (string primitivo)
+  }, [id, obtenerProyecto, setProyectoActual])
 
   return {
     proyecto: proyectoActual,

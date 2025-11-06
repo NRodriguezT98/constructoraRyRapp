@@ -3,12 +3,12 @@
 import { useCallback, useEffect, useState } from 'react'
 import { auditoriasService } from '../services/auditorias.service'
 import type {
-  AuditoriaRegistro,
-  EliminacionMasiva,
-  EstadisticasAuditoria,
-  FiltrosAuditoria,
-  ResumenModulo,
-  VistaAuditoria,
+    AuditoriaRegistro,
+    EliminacionMasiva,
+    EstadisticasAuditoria,
+    FiltrosAuditoria,
+    ResumenModulo,
+    VistaAuditoria,
 } from '../types'
 
 export function useAuditorias() {
@@ -111,7 +111,10 @@ export function useAuditorias() {
       const resumen = await auditoriasService.obtenerResumenModulos()
       setResumenModulos(resumen)
     } catch (err) {
-      console.error('Error al cargar resumen de módulos:', err)
+      // Ignorar error si el componente se desmontó
+      if (err instanceof Error && err.name !== 'AbortError') {
+        console.error('Error al cargar resumen de módulos:', err)
+      }
     }
   }, [])
 
@@ -124,7 +127,10 @@ export function useAuditorias() {
         await auditoriasService.detectarEliminacionesMasivas(7, 5)
       setEliminacionesMasivas(eliminaciones)
     } catch (err) {
-      console.error('Error al cargar eliminaciones masivas:', err)
+      // Ignorar error si el componente se desmontó
+      if (err instanceof Error && err.name !== 'AbortError') {
+        console.error('Error al cargar eliminaciones masivas:', err)
+      }
     }
   }, [])
 
@@ -136,7 +142,10 @@ export function useAuditorias() {
       const stats = await auditoriasService.obtenerEstadisticas()
       setEstadisticas(stats)
     } catch (err) {
-      console.error('[Auditorías] Error al cargar estadísticas:', err)
+      // Ignorar error si el componente se desmontó
+      if (err instanceof Error && err.name !== 'AbortError') {
+        console.error('[Auditorías] Error al cargar estadísticas:', err)
+      }
     }
   }, [])
 

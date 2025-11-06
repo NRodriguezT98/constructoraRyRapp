@@ -262,11 +262,21 @@ export function useClientes() {
   // =====================================================
 
   useEffect(() => {
+    let cancelado = false
+
     if (!datosInicializados) {
       console.log('👥 [CLIENTES HOOK] Cargando datos iniciales...')
-      cargarClientes()
+      cargarClientes().catch(error => {
+        if (!cancelado) {
+          console.error('👥 [CLIENTES HOOK] Error en carga inicial:', error)
+        }
+      })
     }
-  }, [datosInicializados]) // Solo depende del flag, no de cargarClientes
+
+    return () => {
+      cancelado = true
+    }
+  }, [datosInicializados, cargarClientes])
 
   // =====================================================
   // RETURN

@@ -82,9 +82,27 @@ export function AuditoriasView({
 
   // Cargar datos adicionales al montar
   useEffect(() => {
-    cargarEstadisticas()
-    cargarResumenModulos()
-    cargarEliminacionesMasivas()
+    let cancelado = false
+
+    const cargarDatos = async () => {
+      try {
+        await Promise.all([
+          cargarEstadisticas(),
+          cargarResumenModulos(),
+          cargarEliminacionesMasivas(),
+        ])
+      } catch (error) {
+        if (!cancelado) {
+          console.error('[AUDITORIAS] Error al cargar datos:', error)
+        }
+      }
+    }
+
+    cargarDatos()
+
+    return () => {
+      cancelado = true
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []) // Solo ejecutar al montar
 

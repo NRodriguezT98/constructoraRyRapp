@@ -25,7 +25,38 @@ if (!supabaseUrl || !supabaseAnonKey) {
 // Cliente Supabase singleton para el navegador
 const supabase = createBrowserClient<Database>(
   supabaseUrl,
-  supabaseAnonKey
+  supabaseAnonKey,
+  {
+    // ⚡ OPTIMIZACIONES DE DESARROLLO
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+      detectSessionInUrl: true,
+      flowType: 'pkce',
+
+      // ⚡ Reducir frecuencia de refresh (menos overhead)
+      debug: process.env.NODE_ENV === 'development' ? false : false,
+    },
+
+    // ⚡ Configuración de requests
+    global: {
+      headers: {
+        'x-application-name': 'constructora-ryr',
+      },
+    },
+
+    // ⚡ Configuración de cache para desarrollo
+    db: {
+      schema: 'public',
+    },
+
+    // ⚡ Configuración de realtime (desactivar si no usas)
+    realtime: {
+      params: {
+        eventsPerSecond: 2, // Reducir frecuencia de eventos
+      },
+    },
+  }
 )
 
 // Exportar función createClient para compatibilidad
