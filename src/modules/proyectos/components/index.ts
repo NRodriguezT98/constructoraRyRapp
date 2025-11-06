@@ -1,14 +1,14 @@
 // Barrel exports para componentes de proyectos
-// Permite importar múltiples componentes en una sola línea
+// Permite importar mï¿½ltiples componentes en una sola lï¿½nea
 
 // Componentes principales
 export { ProyectosPage } from './proyectos-page-main'
 export { ProyectoCard } from './proyecto-card'
 export { ProyectosForm } from './proyectos-form'
 
-// Componentes de lista y búsqueda
+// Componentes de lista y bÃºsqueda
 export { ProyectosLista } from './proyectos-lista'
-export { ProyectosSearch } from './proyectos-search'
+// âŒ ProyectosSearch eliminado - reemplazado por ProyectosFiltrosPremium
 export { ProyectosHeader } from './proyectos-header'
 
 // Estados

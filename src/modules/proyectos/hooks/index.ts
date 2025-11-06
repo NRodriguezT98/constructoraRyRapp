@@ -3,7 +3,7 @@
 
 export { useDetectarCambios } from './useDetectarCambios'
 export { useProyectoCard } from './useProyectoCard'
-export { useProyectoDetalle } from './useProyectoDetalle'
+// ❌ useProyectoDetalle eliminado - nunca se implementó
 
 // ✅ Hooks con Zustand (DEPRECADO - usar React Query)
 export {
