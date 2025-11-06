@@ -13,7 +13,7 @@
 ### ✅ Validación Exitosa de JWT Claims
 ```javascript
 user_rol: "Administrador"
-user_nombres: "Nicolás"  
+user_nombres: "Nicolás"
 user_email: "n_rodriguez98@outlook.com"
 ```
 
@@ -246,7 +246,7 @@ export const getServerUserProfile = cache(async () => {
 
 - [x] **Test 2**: JWT Claims verificados ✅
   - [x] user_rol: "Administrador" ✅
-  - [x] user_nombres: "Nicolás" ✅  
+  - [x] user_nombres: "Nicolás" ✅
   - [x] user_email: "n_rodriguez98@outlook.com" ✅
 
 - [x] **Test 3**: Middleware funcionando ✅

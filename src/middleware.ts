@@ -155,7 +155,7 @@ export async function middleware(req: NextRequest) {
   // ============================================
   // 6. OBTENER ROL DEL USUARIO DESDE JWT (OPTIMIZADO)
   // ============================================
-  
+
   // ✅ OPTIMIZACIÓN: Leer desde JWT claims (0 queries DB)
   // Antes: 50 queries/min | Después: 0 queries/min
   const rol = (user as any).app_metadata?.user_rol || 'Vendedor'

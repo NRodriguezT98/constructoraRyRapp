@@ -40,7 +40,7 @@ export const getServerSession = cache(async () => {
 })/**
  * Obtener perfil completo del usuario autenticado
  * Incluye rol y permisos
- * 
+ *
  * ✅ OPTIMIZADO: Lee desde JWT claims (no hace query a DB)
  */
 export const getServerUserProfile = cache(async (): Promise<Usuario | null> => {
