@@ -49,7 +49,7 @@ class ViviendasService {
       .order('nombre')
 
     if (error) throw error
-    return data || []
+    return (data || []) as ManzanaConDisponibilidad[]
   }
 
   /**
@@ -82,22 +82,39 @@ class ViviendasService {
    * Verifica si una matrícula inmobiliaria ya existe
    */
   async verificarMatriculaUnica(matricula: string, viviendaId?: string): Promise<boolean> {
-    let query = supabase
-      .from('viviendas')
-      .select('id')
-      .eq('matricula_inmobiliaria', matricula)
+    console.log('🔍 [VERIFICAR MATRICULA] Buscando:', matricula, 'excluyendo ID:', viviendaId || 'ninguno')
 
-    // Si estamos editando, excluir la vivienda actual
-    if (viviendaId) {
-      query = query.neq('id', viviendaId)
+    try {
+      let query = supabase
+        .from('viviendas')
+        .select('id, matricula_inmobiliaria')
+        .eq('matricula_inmobiliaria', matricula)
+
+      // Si estamos editando, excluir la vivienda actual
+      if (viviendaId) {
+        query = query.neq('id', viviendaId)
+      }
+
+      console.log('🔍 [VERIFICAR MATRICULA] Ejecutando query...')
+      const { data, error } = await query
+      console.log('🔍 [VERIFICAR MATRICULA] Query completada')
+
+      if (error) {
+        console.error('❌ [VERIFICAR MATRICULA] Error en query:', error)
+        throw error
+      }
+
+      console.log('📊 [VERIFICAR MATRICULA] Resultados encontrados:', data?.length || 0, data)
+
+      // Retorna true si NO existe (es única)
+      const esUnica = !data || data.length === 0
+      console.log('✅ [VERIFICAR MATRICULA] Es única?:', esUnica)
+
+      return esUnica
+    } catch (error) {
+      console.error('❌ [VERIFICAR MATRICULA] Error capturado:', error)
+      throw error
     }
-
-    const { data, error } = await query
-
-    if (error) throw error
-
-    // Retorna true si NO existe (es única)
-    return !data || data.length === 0
   }
 
   // ============================================
@@ -115,7 +132,7 @@ class ViviendasService {
       .order('tipo')
 
     if (error) throw error
-    return data || []
+    return (data || []) as ConfiguracionRecargo[]
   }
 
   /**
@@ -153,7 +170,7 @@ class ViviendasService {
       .order('fecha_creacion', { ascending: false })
 
     if (error) throw error
-    return data || []
+    return (data || []) as unknown as Vivienda[]
   }
 
   /**
@@ -167,7 +184,7 @@ class ViviendasService {
       .order('numero')
 
     if (error) throw error
-    return data || []
+    return (data || []) as unknown as Vivienda[]
   }
 
   /**
@@ -181,7 +198,7 @@ class ViviendasService {
       .single()
 
     if (error) throw error
-    return data
+    return data as unknown as Vivienda
   }
 
   /**
@@ -263,15 +280,31 @@ class ViviendasService {
    * Crea una nueva vivienda
    */
   async crear(formData: ViviendaFormData): Promise<Vivienda> {
+    console.log('🏗️ [CREAR VIVIENDA] Iniciando creación...')
+    console.log('📄 [CREAR VIVIENDA] formData.certificado_tradicion_file:', formData.certificado_tradicion_file)
+
+    // ✅ VALIDAR MATRÍCULA ÚNICA
+    console.log('🔍 [CREAR VIVIENDA] Validando unicidad de matrícula:', formData.matricula_inmobiliaria)
+    const esUnica = await this.verificarMatriculaUnica(formData.matricula_inmobiliaria)
+    if (!esUnica) {
+      console.error('❌ [CREAR VIVIENDA] Matrícula duplicada:', formData.matricula_inmobiliaria)
+      throw new Error(`La matrícula inmobiliaria "${formData.matricula_inmobiliaria}" ya está registrada en otra vivienda.`)
+    }
+    console.log('✅ [CREAR VIVIENDA] Matrícula única validada')
+
     // Subir certificado si existe
     let certificadoUrl: string | undefined
 
     if (formData.certificado_tradicion_file) {
+      console.log('📤 [CREAR VIVIENDA] Subiendo certificado a Storage...')
       certificadoUrl = await this.subirCertificado(
         formData.certificado_tradicion_file,
         formData.manzana_id,
         formData.numero
       )
+      console.log('✅ [CREAR VIVIENDA] Certificado subido, URL:', certificadoUrl)
+    } else {
+      console.log('⚠️ [CREAR VIVIENDA] No hay certificado para subir')
     }
 
     // Calcular valor total
@@ -308,14 +341,26 @@ class ViviendasService {
       // valor_total se calcula automáticamente en la BD
     }
 
+    console.log('💾 [CREAR VIVIENDA] Datos a insertar:', {
+      ...viviendaData,
+      certificado_tradicion_url: certificadoUrl // Destacar este campo
+    })
+
     const { data, error } = await supabase
       .from('viviendas')
       .insert(viviendaData as any) // Cast temporal hasta regenerar types
       .select()
       .single()
 
-    if (error) throw error
-    return data
+    if (error) {
+      console.error('❌ [CREAR VIVIENDA] Error al insertar:', error)
+      throw error
+    }
+
+    console.log('✅ [CREAR VIVIENDA] Vivienda creada exitosamente:', data)
+    console.log('🔍 [CREAR VIVIENDA] certificado_tradicion_url en DB:', (data as any).certificado_tradicion_url)
+
+    return data as unknown as Vivienda
   }
 
   /**
@@ -325,6 +370,17 @@ class ViviendasService {
     id: string,
     formData: Partial<ViviendaFormData>
   ): Promise<Vivienda> {
+    // ✅ VALIDAR MATRÍCULA ÚNICA (si se está cambiando)
+    if (formData.matricula_inmobiliaria !== undefined) {
+      console.log('🔍 [ACTUALIZAR VIVIENDA] Validando unicidad de matrícula:', formData.matricula_inmobiliaria)
+      const esUnica = await this.verificarMatriculaUnica(formData.matricula_inmobiliaria, id)
+      if (!esUnica) {
+        console.error('❌ [ACTUALIZAR VIVIENDA] Matrícula duplicada:', formData.matricula_inmobiliaria)
+        throw new Error(`La matrícula inmobiliaria "${formData.matricula_inmobiliaria}" ya está registrada en otra vivienda.`)
+      }
+      console.log('✅ [ACTUALIZAR VIVIENDA] Matrícula única validada')
+    }
+
     // Si hay nuevo certificado, subirlo
     let certificadoUrl: string | undefined
 
@@ -379,7 +435,7 @@ class ViviendasService {
       .single()
 
     if (error) throw error
-    return data
+    return data as unknown as Vivienda
   }
 
   /**
@@ -412,14 +468,14 @@ class ViviendasService {
     // @ts-ignore
     let query = queryBuilder
 
-    if (filtros?.proyectoId) {
+    if (filtros?.proyecto_id) {
       // @ts-ignore
-      query = query.eq('proyecto_id', filtros.proyectoId)
+      query = query.eq('proyecto_id', filtros.proyecto_id)
     }
 
-    if (filtros?.manzanaId) {
+    if (filtros?.manzana_id) {
       // @ts-ignore
-      query = query.eq('manzana_id', filtros.manzanaId)
+      query = query.eq('manzana_id', filtros.manzana_id)
     }
 
     if (filtros?.estado) {
@@ -502,6 +558,32 @@ class ViviendasService {
   // ============================================
 
   /**
+   * Actualiza solo el certificado de tradición de una vivienda
+   */
+  async actualizarCertificado(viviendaId: string, file: File): Promise<string> {
+    // Obtener datos de la vivienda
+    const vivienda = await this.obtenerPorId(viviendaId)
+    if (!vivienda) throw new Error('Vivienda no encontrada')
+
+    // Subir nuevo certificado
+    const certificadoUrl = await this.subirCertificado(
+      file,
+      vivienda.manzana_id,
+      vivienda.numero
+    )
+
+    // Actualizar solo el campo certificado_tradicion_url
+    const { error } = await supabase
+      .from('viviendas')
+      .update({ certificado_tradicion_url: certificadoUrl })
+      .eq('id', viviendaId)
+
+    if (error) throw error
+
+    return certificadoUrl
+  }
+
+  /**
    * Sube un certificado de tradición a Supabase Storage
    */
   private async subirCertificado(
@@ -509,22 +591,35 @@ class ViviendasService {
     manzanaId: string,
     numeroVivienda: string
   ): Promise<string> {
+    console.log('📤 [SUBIR CERTIFICADO] Iniciando upload...')
+    console.log('📤 [SUBIR CERTIFICADO] File:', file.name, file.type, file.size)
+    console.log('📤 [SUBIR CERTIFICADO] Bucket destino: documentos-proyectos')
+
     const fileName = `certificado_${manzanaId}_${numeroVivienda}_${Date.now()}.pdf`
     const filePath = `certificados/${fileName}`
 
-    const { error } = await supabase.storage
+    console.log('📤 [SUBIR CERTIFICADO] Path completo:', filePath)
+
+    const { error: uploadError } = await supabase.storage
       .from('documentos-proyectos')
       .upload(filePath, file, {
         cacheControl: '3600',
         upsert: false,
       })
 
-    if (error) throw error
+    if (uploadError) {
+      console.error('❌ [SUBIR CERTIFICADO] Error al subir:', uploadError)
+      throw uploadError
+    }
+
+    console.log('✅ [SUBIR CERTIFICADO] Archivo subido exitosamente')
 
     // Obtener URL pública
     const {
       data: { publicUrl },
     } = supabase.storage.from('documentos-proyectos').getPublicUrl(filePath)
+
+    console.log('🔗 [SUBIR CERTIFICADO] URL pública generada:', publicUrl)
 
     return publicUrl
   }

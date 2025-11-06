@@ -2,6 +2,7 @@
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { DocumentosVivienda } from '@/modules/viviendas/components/documentos-vivienda'
 import type { Vivienda } from '@/modules/viviendas/types'
 import { formatCurrency, formatDate } from '@/shared/utils'
 import { motion } from 'framer-motion'
@@ -15,7 +16,6 @@ import {
     DollarSign,
     Edit2,
     FileText,
-    FolderOpen,
     Home,
     Info,
     Mail,
@@ -25,7 +25,7 @@ import {
     Receipt,
     Trash2,
     User,
-    UserPlus,
+    UserPlus
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
@@ -58,6 +58,8 @@ export default function ViviendaDetalleClient({
   const [activeTab, setActiveTab] = useState<TabType>('info')
 
   useEffect(() => {
+    let mounted = true
+
     const cargarVivienda = async () => {
       setLoading(true)
       try {
@@ -65,16 +67,26 @@ export default function ViviendaDetalleClient({
           '@/modules/viviendas/services/viviendas.service'
         )
         const viviendaData = await viviendasService.obtenerVivienda(viviendaId)
+
+        if (!mounted) return
+
         setVivienda(viviendaData)
       } catch (error) {
+        if (!mounted) return
+
         console.error('Error al cargar vivienda:', error)
         setVivienda(null)
       } finally {
-        setLoading(false)
+        if (mounted) setLoading(false)
       }
     }
 
     cargarVivienda()
+
+    return () => {
+      mounted = false
+      setLoading(false) // ✅ Limpiar loading para evitar skeleton pegado
+    }
   }, [viviendaId])
 
   const handleAsignarCliente = () => {
@@ -726,39 +738,8 @@ function LinderosTab({ vivienda }: { vivienda: Vivienda }) {
 // ============================================
 function DocumentosTab({ viviendaId }: { viviendaId: string }) {
   return (
-    <motion.div key='documentos' {...styles.animations.fadeInUp}>
-      <Card>
-        <CardHeader>
-          <div className='flex items-center justify-between'>
-            <CardTitle className='flex items-center gap-2'>
-              <FileText className='h-5 w-5 text-blue-600' />
-              Documentos de la Vivienda
-            </CardTitle>
-            <Button>
-              <Plus className='mr-2 h-4 w-4' />
-              Subir Documento
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className='py-12 text-center'>
-            <FolderOpen className='mx-auto mb-4 h-16 w-16 text-gray-400' />
-            <p className='mb-2 text-lg font-semibold text-gray-900 dark:text-gray-100'>
-              Sistema de documentos en desarrollo
-            </p>
-            <p className='text-sm text-gray-600 dark:text-gray-400'>
-              Próximamente podrás gestionar:
-            </p>
-            <ul className='mt-4 space-y-2 text-sm text-gray-600 dark:text-gray-400'>
-              <li>📄 Certificado de Tradición y Libertad</li>
-              <li>📐 Planos y diseños</li>
-              <li>📝 Escrituras</li>
-              <li>🏗️ Licencias de construcción</li>
-              <li>📋 Otros documentos legales</li>
-            </ul>
-          </div>
-        </CardContent>
-      </Card>
+    <motion.div key='documentos' initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
+      <DocumentosVivienda viviendaId={viviendaId} />
     </motion.div>
   )
 }

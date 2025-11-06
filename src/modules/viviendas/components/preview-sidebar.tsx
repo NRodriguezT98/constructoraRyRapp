@@ -195,13 +195,13 @@ export function PreviewSidebar({ data, proyectoNombre, manzanaNombre, resumenFin
 
               {/* Items de la sección */}
               <div className="space-y-2">
-                <AnimatePresence mode="wait">
+                <AnimatePresence>
                   {section.items.map((item, itemIndex) => {
                     const ItemIcon = item.icon
 
                     return (
                       <motion.div
-                        key={itemIndex}
+                        key={`item-${itemIndex}`}
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}

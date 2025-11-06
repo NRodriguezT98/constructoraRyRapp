@@ -36,7 +36,7 @@ export class DocumentosService {
       .order('fecha_creacion', { ascending: false })
 
     if (error) throw error
-    return data || []
+    return (data || []) as DocumentoProyecto[]
   }
 
   /**
@@ -55,7 +55,7 @@ export class DocumentosService {
       .order('version', { ascending: false })
 
     if (error) throw error
-    return data || []
+    return (data || []) as unknown as DocumentoProyecto[]
   }
 
   /**
@@ -76,7 +76,7 @@ export class DocumentosService {
       .order('fecha_vencimiento', { ascending: true })
 
     if (error) throw error
-    return data || []
+    return (data || []) as unknown as DocumentoProyecto[]
   }
 
   /**
@@ -149,7 +149,7 @@ export class DocumentosService {
       throw dbError
     }
 
-    return documento
+    return documento as unknown as DocumentoProyecto
   }
 
   /**
@@ -221,7 +221,7 @@ export class DocumentosService {
       throw dbError
     }
 
-    return nuevaVersion
+    return nuevaVersion as unknown as DocumentoProyecto
   }
 
   /**
@@ -319,7 +319,7 @@ export class DocumentosService {
       .single()
 
     if (error) throw error
-    return data
+    return data as unknown as DocumentoProyecto
   }
 
   /**
@@ -336,7 +336,7 @@ export class DocumentosService {
       .order('version', { ascending: false })
 
     if (error) throw error
-    return data || []
+    return (data || []) as unknown as DocumentoProyecto[]
   }
 
   /**
@@ -357,7 +357,7 @@ export class DocumentosService {
       .order('fecha_creacion', { ascending: false })
 
     if (error) throw error
-    return data || []
+    return (data || []) as unknown as DocumentoProyecto[]
   }
 
   /**
@@ -376,7 +376,7 @@ export class DocumentosService {
       .order('fecha_creacion', { ascending: false })
 
     if (error) throw error
-    return data || []
+    return (data || []) as unknown as DocumentoProyecto[]
   }
 
   /**
@@ -394,7 +394,7 @@ export class DocumentosService {
       .order('fecha_creacion', { ascending: false })
 
     if (error) throw error
-    return data || []
+    return (data || []) as unknown as DocumentoProyecto[]
   }
 
   /**
@@ -412,7 +412,7 @@ export class DocumentosService {
       .single()
 
     if (error) throw error
-    return data
+    return data as unknown as DocumentoProyecto
   }
 
   /**

@@ -327,7 +327,7 @@ export async function corregirFecha({
   if (updateError) throw updateError
 
   // 4. Registrar en auditoría usando función SQL
-  const { error: auditoriaError } = await supabase.rpc('registrar_correccion_paso', {
+  const { error: auditoriaError } = await (supabase.rpc as any)('registrar_correccion_paso', {
     p_tipo_correccion: 'fecha_completado',
     p_paso_id: pasoId,
     p_documento_id: null,
@@ -362,8 +362,8 @@ export async function corregirDocumento({
 }: CorreccionDocumentoParams): Promise<string> {
 
   // 1. Obtener documento anterior
-  const { data: docAnterior, error: docError } = await supabase
-    .from('documentos_cliente')
+  const { data: docAnterior, error: docError } = await (supabase
+    .from('documentos_cliente') as any)
     .select('*, paso_negociacion_id, categoria_id, cliente_id')
     .eq('id', documentoAnteriorId)
     .single()
@@ -389,7 +389,7 @@ export async function corregirDocumento({
   }
 
   // 3. Crear nuevo registro de documento
-  const { data: nuevoDoc, error: insertError } = await supabase
+  const { data: nuevoDoc, error: insertError } = await (supabase as any)
     .from('documentos_procesos_historial')
     .insert({
       paso_negociacion_id: pasoId,
@@ -415,7 +415,7 @@ export async function corregirDocumento({
   }
 
   // 4. Marcar documento anterior como reemplazado
-  const { error: marcadoError } = await supabase.rpc('marcar_documento_reemplazado', {
+  const { error: marcadoError } = await (supabase.rpc as any)('marcar_documento_reemplazado', {
     p_documento_anterior_id: documentoAnteriorId,
     p_documento_nuevo_id: nuevoDoc.id,
     p_motivo: motivo
@@ -426,7 +426,7 @@ export async function corregirDocumento({
   }
 
   // 5. Registrar en auditoría
-  await supabase.rpc('registrar_correccion_paso', {
+  await (supabase.rpc as any)('registrar_correccion_paso', {
     p_tipo_correccion: 'documento_reemplazado',
     p_paso_id: pasoId,
     p_documento_id: documentoAnteriorId,
@@ -455,7 +455,7 @@ export async function obtenerCorrecciones(
   negociacionId: string
 ): Promise<AuditoriaCorreccion[]> {
 
-  const { data, error } = await supabase
+  const { data, error } = await (supabase as any)
     .from('vista_auditoria_correcciones')
     .select('*')
     .eq('negociacion_id', negociacionId)
@@ -466,7 +466,7 @@ export async function obtenerCorrecciones(
     return []
   }
 
-  return data || []
+  return (data || []) as unknown as AuditoriaCorreccion[]
 }
 
 /**
@@ -475,7 +475,7 @@ export async function obtenerCorrecciones(
 export async function obtenerDocumentosReemplazados(
   negociacionId: string
 ) {
-  const { data, error } = await supabase
+  const { data, error } = await (supabase as any)
     .from('vista_documentos_reemplazados')
     .select('*')
     .eq('negociacion_id', negociacionId)

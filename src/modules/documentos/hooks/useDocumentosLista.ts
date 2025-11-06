@@ -71,11 +71,25 @@ export function useDocumentosLista({
 
   // Cargar datos iniciales
   useEffect(() => {
-    cargarDocumentos(proyectoId)
-    if (user?.id) {
-      cargarCategorias(user.id)
+    let mounted = true
+
+    const inicializar = async () => {
+      try {
+        await cargarDocumentos(proyectoId)
+        if (user?.id && mounted) {
+          await cargarCategorias(user.id)
+        }
+      } catch (error) {
+        console.error('❌ [DOCUMENTOS LISTA] Error inicializando:', error)
+      }
     }
-  }, [proyectoId, user?.id, cargarDocumentos, cargarCategorias])
+
+    inicializar()
+
+    return () => {
+      mounted = false
+    }
+  }, [proyectoId, user?.id]) // ← Solo IDs primitivos
 
   // Handlers
   const handleView = useCallback(

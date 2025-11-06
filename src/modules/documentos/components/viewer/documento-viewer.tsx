@@ -1,24 +1,22 @@
 'use client'
 
-import { motion, AnimatePresence } from 'framer-motion'
-import {
-  X,
-  Download,
-  Star,
-  Calendar,
-  User,
-  FileText,
-  Tag as TagIcon,
-  Clock,
-  FolderOpen,
-  ExternalLink,
-  Trash2,
-  Edit,
-} from 'lucide-react'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
-import { DocumentoProyecto } from '../../../../types/documento.types'
-import { formatFileSize, getFileIcon } from '../../../../types/documento.types'
+import { AnimatePresence, motion } from 'framer-motion'
+import {
+    Calendar,
+    Clock,
+    Download,
+    Edit,
+    FileText,
+    FolderOpen,
+    Star,
+    Tag as TagIcon,
+    Trash2,
+    User,
+    X
+} from 'lucide-react'
+import { DocumentoProyecto, formatFileSize, getFileIcon } from '../../../../types/documento.types'
 import { CategoriaIcon } from '../shared/categoria-icon'
 
 interface DocumentoViewerProps {
@@ -295,8 +293,8 @@ export function DocumentoViewer({
                         </div>
                       )}
 
-                    {documento.fecha_subida &&
-                      !isNaN(new Date(documento.fecha_subida).getTime()) && (
+                    {documento.fecha_creacion &&
+                      !isNaN(new Date(documento.fecha_creacion).getTime()) && (
                         <div className='flex items-start gap-2 text-sm'>
                           <User
                             size={16}
@@ -307,7 +305,7 @@ export function DocumentoViewer({
                               Subido
                             </p>
                             <p className='font-medium text-gray-900 dark:text-white'>
-                              {format(new Date(documento.fecha_subida), 'PPP', {
+                              {format(new Date(documento.fecha_creacion), 'PPP', {
                                 locale: es,
                               })}
                             </p>
@@ -352,7 +350,7 @@ export function DocumentoViewer({
                           Tipo
                         </span>
                         <span className='font-medium text-gray-900 dark:text-white'>
-                          {documento.extension?.toUpperCase()}
+                          {documento.nombre_archivo?.split('.').pop()?.toUpperCase() || 'N/A'}
                         </span>
                       </div>
                       <div className='flex justify-between'>

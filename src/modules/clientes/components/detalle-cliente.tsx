@@ -222,9 +222,9 @@ export function DetalleCliente({
                                 <h4 className='font-semibold text-gray-900 dark:text-gray-100'>
                                   {interes.proyecto_nombre}
                                 </h4>
-                                {interes.proyecto_ubicacion && (
+                                {interes.proyecto_estado && (
                                   <p className='text-xs text-gray-500 dark:text-gray-400'>
-                                    {interes.proyecto_ubicacion}
+                                    {interes.proyecto_estado}
                                   </p>
                                 )}
                               </div>

@@ -27,6 +27,8 @@ export function PasoLegalNuevo({ register, errors, setValue }: PasoLegalProps) {
     const file = e.target.files?.[0]
     if (!file) return
 
+    console.log('📄 [PASO LEGAL] Archivo seleccionado:', file.name, file.type, file.size)
+
     // Validar tipo
     if (file.type !== 'application/pdf') {
       setFileError('Solo se permiten archivos PDF')
@@ -42,9 +44,11 @@ export function PasoLegalNuevo({ register, errors, setValue }: PasoLegalProps) {
     setFileError('')
     setCertificadoFile(file)
     setValue('certificado_tradicion_file', file)
+    console.log('✅ [PASO LEGAL] Archivo guardado en formulario')
   }
 
   const removeFile = () => {
+    console.log('🗑️ [PASO LEGAL] Archivo eliminado')
     setCertificadoFile(null)
     setValue('certificado_tradicion_file', undefined)
     if (fileInputRef.current) {

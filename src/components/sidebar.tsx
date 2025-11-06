@@ -8,6 +8,7 @@ import {
     Building2,
     ChevronLeft,
     ChevronRight,
+    ClipboardList,
     CreditCard,
     FileText,
     FileX,
@@ -105,11 +106,11 @@ const navigationGroups = [
         description: 'Panel admin',
       },
       {
-        name: 'Procesos',
+        name: 'Plantillas Proceso',
         href: '/admin/procesos',
-        icon: Settings,
-        color: 'from-blue-500 to-indigo-600',
-        description: 'Gestión de procesos',
+        icon: ClipboardList,
+        color: 'from-rose-500 to-pink-600',
+        description: 'Plantillas de negociación',
       },
       {
         name: 'Reportes',

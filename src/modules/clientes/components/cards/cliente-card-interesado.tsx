@@ -188,9 +188,9 @@ export function ClienteCardInteresado({
                     <p className='font-medium text-purple-900 dark:text-purple-100'>
                       {interes.proyecto_nombre}
                     </p>
-                    {interes.proyecto_ubicacion && (
+                    {interes.proyecto_estado && (
                       <p className='text-xs text-purple-600 dark:text-purple-400'>
-                        {interes.proyecto_ubicacion}
+                        {interes.proyecto_estado}
                       </p>
                     )}
                   </div>
@@ -203,14 +203,14 @@ export function ClienteCardInteresado({
                     <span className='text-xs font-medium text-purple-700 dark:text-purple-300'>
                       Manzana {interes.manzana_nombre} - Casa {interes.vivienda_numero}
                     </span>
-                    {interes.vivienda_precio && (
+                    {interes.vivienda_valor && (
                       <span className='ml-auto text-xs text-gray-600 dark:text-gray-400'>
                         {new Intl.NumberFormat('es-CO', {
                           style: 'currency',
                           currency: 'COP',
                           minimumFractionDigits: 0,
                           maximumFractionDigits: 0,
-                        }).format(interes.vivienda_precio)}
+                        }).format(interes.vivienda_valor)}
                       </span>
                     )}
                   </div>

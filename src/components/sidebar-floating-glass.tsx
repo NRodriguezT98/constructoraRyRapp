@@ -8,6 +8,7 @@ import {
     Building2,
     ChevronLeft,
     ChevronRight,
+    ClipboardList,
     CreditCard,
     Crown,
     FileText,
@@ -98,6 +99,13 @@ const navigationGroups = [
         icon: Activity,
         color: 'from-teal-500 to-cyan-500',
         description: 'Registro de actividad',
+      },
+      {
+        name: 'Plantillas Proceso',
+        href: '/admin/procesos',
+        icon: ClipboardList,
+        color: 'from-rose-500 to-pink-500',
+        description: 'Plantillas de negociación',
       },
       {
         name: 'Recargos',

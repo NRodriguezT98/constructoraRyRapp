@@ -7,6 +7,7 @@ import {
     BarChart3,
     Building2,
     ChevronDown,
+    ClipboardList,
     CreditCard,
     FileText,
     FileX,
@@ -64,6 +65,7 @@ const navigation = [
     icon: Shield,
     color: 'violet',
     items: [
+      { name: 'Plantillas Proceso', href: '/admin/procesos', icon: ClipboardList, color: 'rose' },
       { name: 'Usuarios', href: '/usuarios', icon: Users, color: 'violet' },
       { name: 'Auditorías', href: '/auditorias', icon: Activity, color: 'teal' },
       { name: 'Admin', href: '/admin', icon: Shield, color: 'indigo' },
@@ -78,6 +80,7 @@ const colorMap: Record<string, string> = {
   purple: 'from-purple-500 to-purple-600',
   orange: 'from-orange-500 to-orange-600',
   red: 'from-red-500 to-red-600',
+  rose: 'from-rose-500 to-rose-600',
   gray: 'from-gray-500 to-gray-600',
   violet: 'from-violet-500 to-violet-600',
   teal: 'from-teal-500 to-teal-600',

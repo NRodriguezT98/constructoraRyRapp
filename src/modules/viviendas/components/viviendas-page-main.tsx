@@ -132,6 +132,7 @@ export function ViviendasPageMain({
           filtros={filtros}
           onFiltrosChange={actualizarFiltros}
           onLimpiarFiltros={limpiarFiltros}
+          resultadosCount={viviendas.length}
         />
 
         {/* Contenido Principal */}

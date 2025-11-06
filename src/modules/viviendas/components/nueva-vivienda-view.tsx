@@ -224,44 +224,60 @@ export function NuevaViviendaView() {
               {/* COLUMNA IZQUIERDA: Formulario */}
               <div className={styles.content.formColumn}>
                 <AnimatePresence mode="wait">
-                  {pasoActual === 1 && (
-                    <PasoUbicacionNuevo
-                      register={register}
-                      errors={errors}
-                      setValue={setValue}
-                      watch={watch}
-                    />
-                  )}
-                  {pasoActual === 2 && (
-                    <PasoLinderosNuevo
-                      register={register}
-                      errors={errors}
-                    />
-                  )}
-                  {pasoActual === 3 && (
-                    <PasoLegalNuevo
-                      register={register}
-                      errors={errors}
-                      setValue={setValue}
-                    />
-                  )}
-                  {pasoActual === 4 && (
-                    <PasoFinancieroNuevo
-                      register={register}
-                      errors={errors}
-                      watch={watch}
-                      setValue={setValue}
-                      resumenFinanciero={resumenFinanciero}
-                      configuracionRecargos={configuracionRecargos}
-                    />
-                  )}
-                  {pasoActual === 5 && (
-                    <PasoResumenNuevo
-                      formData={formData}
-                      proyectoNombre={proyectoNombre}
-                      manzanaNombre={manzanaNombre}
-                    />
-                  )}
+                  {(() => {
+                    switch (pasoActual) {
+                      case 1:
+                        return (
+                          <PasoUbicacionNuevo
+                            key="paso-1"
+                            register={register}
+                            errors={errors}
+                            setValue={setValue}
+                            watch={watch}
+                          />
+                        )
+                      case 2:
+                        return (
+                          <PasoLinderosNuevo
+                            key="paso-2"
+                            register={register}
+                            errors={errors}
+                          />
+                        )
+                      case 3:
+                        return (
+                          <PasoLegalNuevo
+                            key="paso-3"
+                            register={register}
+                            errors={errors}
+                            setValue={setValue}
+                          />
+                        )
+                      case 4:
+                        return (
+                          <PasoFinancieroNuevo
+                            key="paso-4"
+                            register={register}
+                            errors={errors}
+                            watch={watch}
+                            setValue={setValue}
+                            resumenFinanciero={resumenFinanciero}
+                            configuracionRecargos={configuracionRecargos}
+                          />
+                        )
+                      case 5:
+                        return (
+                          <PasoResumenNuevo
+                            key="paso-5"
+                            formData={formData}
+                            proyectoNombre={proyectoNombre}
+                            manzanaNombre={manzanaNombre}
+                          />
+                        )
+                      default:
+                        return null
+                    }
+                  })()}
                 </AnimatePresence>
               </div>
 

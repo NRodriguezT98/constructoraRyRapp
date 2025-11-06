@@ -12,23 +12,23 @@ import type { Proyecto } from '@/modules/proyectos/types'
 import { formatCurrency, formatDate } from '@/shared/utils/format'
 import { motion } from 'framer-motion'
 import {
-    Activity,
-    ArrowLeft,
-    Building2,
-    Calendar,
-    ChevronRight,
-    DollarSign,
-    Edit2,
-    FileText,
-    FolderOpen,
-    Home,
-    Info,
-    Mail,
-    MapPin,
-    Phone,
-    Plus,
-    Trash2,
-    Users,
+  Activity,
+  ArrowLeft,
+  Building2,
+  Calendar,
+  ChevronRight,
+  DollarSign,
+  Edit2,
+  FileText,
+  FolderOpen,
+  Home,
+  Info,
+  Mail,
+  MapPin,
+  Phone,
+  Plus,
+  Trash2,
+  Users,
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
@@ -70,6 +70,8 @@ export default function ProyectoDetalleClient({
   const [showCategorias, setShowCategorias] = useState(false)
 
   useEffect(() => {
+    let mounted = true
+
     const cargarProyecto = async () => {
       setLoading(true)
       try {
@@ -78,16 +80,26 @@ export default function ProyectoDetalleClient({
           '@/modules/proyectos/services/proyectos.service'
         )
         const proyectoData = await proyectosService.obtenerProyecto(proyectoId)
+
+        if (!mounted) return
+
         setProyecto(proyectoData)
       } catch (error) {
+        if (!mounted) return
+
         console.error('Error al cargar proyecto:', error)
         setProyecto(null)
       } finally {
-        setLoading(false)
+        if (mounted) setLoading(false)
       }
     }
 
     cargarProyecto()
+
+    return () => {
+      mounted = false
+      setLoading(false) // ✅ Limpiar loading
+    }
   }, [proyectoId])
 
   const handleDelete = () => {

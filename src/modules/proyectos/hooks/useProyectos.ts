@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useProyectosStore } from '../store/proyectos.store'
 import { FiltroProyecto } from '../types'
 
@@ -15,10 +15,25 @@ export function useProyectos() {
     limpiarError,
   } = useProyectosStore()
 
-  // Cargar proyectos al montar el componente
+  const [datosInicializados, setDatosInicializados] = useState(false)
+
+  // Cargar proyectos al montar el componente (solo una vez)
   useEffect(() => {
-    obtenerProyectos()
-  }, [obtenerProyectos])
+    if (!datosInicializados) {
+      console.log('🏗️ [PROYECTOS HOOK] Cargando datos iniciales...')
+      obtenerProyectos().then(() => {
+        setDatosInicializados(true)
+      }).catch((error) => {
+        console.error('❌ [PROYECTOS HOOK] Error cargando datos:', error)
+      })
+    }
+
+    // ✅ Cleanup: Limpiar flag si el componente se desmonta antes de terminar
+    return () => {
+      // No hacemos nada aquí porque queremos mantener datosInicializados
+      // para evitar recargas innecesarias al navegar
+    }
+  }, [datosInicializados]) // ← Solo depende del flag booleano
 
   return {
     proyectos,
@@ -43,16 +58,26 @@ export function useProyecto(id?: string) {
   } = useProyectosStore()
 
   useEffect(() => {
+    let mounted = true
+
     if (id) {
       obtenerProyecto(id).then(proyecto => {
-        if (proyecto) {
+        if (proyecto && mounted) {
           setProyectoActual(proyecto)
         }
+      }).catch((error) => {
+        console.error('❌ [PROYECTO HOOK] Error cargando proyecto:', error)
       })
     } else {
-      setProyectoActual(undefined)
+      if (mounted) {
+        setProyectoActual(undefined)
+      }
     }
-  }, [id, obtenerProyecto, setProyectoActual])
+
+    return () => {
+      mounted = false
+    }
+  }, [id]) // ← Solo depende del ID (string primitivo)
 
   return {
     proyecto: proyectoActual,

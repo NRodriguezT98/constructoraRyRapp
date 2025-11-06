@@ -1,12 +1,12 @@
 import { supabase } from '@/lib/supabase/client'
 import type {
-    ActividadUsuario,
-    AuditoriaRegistro,
-    ConsultaAuditoriaParams,
-    EliminacionMasiva,
-    EstadisticasAuditoria,
-    ResultadoPaginado,
-    ResumenModulo,
+  ActividadUsuario,
+  AuditoriaRegistro,
+  ConsultaAuditoriaParams,
+  EliminacionMasiva,
+  EstadisticasAuditoria,
+  ResultadoPaginado,
+  ResumenModulo,
 } from '../types'
 
 /**
@@ -183,7 +183,7 @@ class AuditoriasService {
 
     if (error) {
       console.error('Error al obtener resumen por módulos:', error)
-      throw new Error(`Error al obtener resumen por módulos: ${error.message}`)
+      throw new Error(`Error al obtener resumen de seguridad: ${error.message}`)
     }
 
     return (data || []).map((item: any) => ({
@@ -266,7 +266,7 @@ class AuditoriasService {
         ([, a], [, b]) => (b as number) - (a as number)
       )[0]?.[0] as any) || 'CREATE'
 
-    // Total eliminaciones
+    // Total de eliminaciones
     const { count: eliminacionesTotales } = await supabase
       .from('audit_log')
       .select('*', { count: 'exact', head: true })

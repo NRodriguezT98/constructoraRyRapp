@@ -5,11 +5,11 @@
 
 import { supabase } from '@/lib/supabase/client'
 import type {
-    ActualizarClienteDTO,
-    Cliente,
-    ClienteResumen,
-    CrearClienteDTO,
-    FiltrosClientes,
+  ActualizarClienteDTO,
+  Cliente,
+  ClienteResumen,
+  CrearClienteDTO,
+  FiltrosClientes,
 } from '../types'
 
 class ClientesService {
@@ -47,7 +47,28 @@ class ClientesService {
     })
 
     if (error) throw error
-    return (data || []) as ClienteResumen[]
+
+    // Transformar datos de la vista al formato ClienteResumen
+    return (data || []).map((item) => ({
+      id: item.id || '',
+      tipo_documento: item.tipo_documento as any || 'CC',
+      numero_documento: item.numero_documento || '',
+      nombres: item.nombre_completo?.split(' ')[0] || '',
+      apellidos: item.nombre_completo?.split(' ').slice(1).join(' ') || '',
+      nombre_completo: item.nombre_completo || '',
+      telefono: item.telefono || '',
+      email: item.email || '',
+      estado: item.estado as any || 'Interesado',
+      origen: item.origen as any || 'Otro',
+      fecha_creacion: item.fecha_creacion || new Date().toISOString(),
+      fecha_actualizacion: item.fecha_creacion || new Date().toISOString(),
+      estadisticas: {
+        total_negociaciones: item.total_negociaciones || 0,
+        negociaciones_activas: item.negociaciones_activas || 0,
+        negociaciones_completadas: item.negociaciones_completadas || 0,
+        ultima_negociacion: item.ultima_negociacion || undefined,
+      },
+    }))
   }
 
   /**
@@ -122,13 +143,13 @@ class ClientesService {
       proyecto_id: interes.proyecto_id,
       vivienda_id: interes.vivienda_id,
       proyecto_nombre: interes.proyecto_nombre,
-      proyecto_ubicacion: interes.proyecto_ubicacion,
+      proyecto_estado: interes.proyecto_estado,
       vivienda_numero: interes.vivienda_numero,
       vivienda_estado: interes.vivienda_estado,
-      vivienda_precio: interes.vivienda_precio,
+      vivienda_valor: interes.vivienda_valor,
       manzana_nombre: interes.manzana_nombre,
       notas: interes.notas,
-      estado: interes.estado_interes,
+      estado: interes.estado,
       motivo_descarte: interes.motivo_descarte,
       fecha_interes: interes.fecha_interes,
       fecha_actualizacion: interes.fecha_actualizacion,
@@ -139,7 +160,7 @@ class ClientesService {
       ...clienteData,
       intereses,
       estadisticas,
-    } as Cliente
+    } as unknown as Cliente
   }
 
   /**

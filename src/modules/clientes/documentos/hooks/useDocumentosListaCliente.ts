@@ -64,14 +64,28 @@ export function useDocumentosListaCliente({
 
   // ✅ CARGAR DATOS AL MONTAR
   useEffect(() => {
-    if (clienteId) {
-      cargarDocumentos(clienteId)
+    let mounted = true
+
+    const inicializar = async () => {
+      try {
+        if (clienteId) {
+          await cargarDocumentos(clienteId)
+        }
+
+        if (user?.id && mounted) {
+          await cargarCategorias(user.id)
+        }
+      } catch (error) {
+        console.error('❌ [DOCUMENTOS CLIENTE] Error inicializando:', error)
+      }
     }
 
-    if (user?.id) {
-      cargarCategorias(user.id)
+    inicializar()
+
+    return () => {
+      mounted = false
     }
-  }, [clienteId, user, cargarDocumentos, cargarCategorias])
+  }, [clienteId, user?.id]) // ← Solo IDs primitivos
 
   // ✅ CATEGORÍA "Documentos de Identidad"
   const categoriaIdentidad = useMemo(() => {

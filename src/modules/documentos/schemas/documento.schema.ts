@@ -68,6 +68,10 @@ export const categoriaFormSchema = z.object({
     .default('blue'),
 
   icono: z.string().min(1, 'Debe seleccionar un ícono').default('Folder'),
+
+  // Nuevos campos para sistema flexible
+  esGlobal: z.boolean().optional(),
+  modulosPermitidos: z.array(z.enum(['proyectos', 'clientes', 'viviendas'])).optional(),
 })
 
 export type CategoriaFormData = z.infer<typeof categoriaFormSchema>

@@ -93,7 +93,7 @@ export function ViviendasCard({
 
           <div className="pt-2.5 border-t">
             <div className="text-base font-bold text-primary">
-              {formatCurrency(vivienda.valor_total || vivienda.precio)}
+              {formatCurrency(vivienda.valor_total)}
             </div>
           </div>
         </div>

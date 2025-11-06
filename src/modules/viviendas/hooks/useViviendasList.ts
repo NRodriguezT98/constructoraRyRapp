@@ -27,34 +27,80 @@ export function useViviendasList() {
 
   // Filtros
   const [filtros, setFiltros] = useState<FiltrosViviendas>({
-    busqueda: '',
-    proyectoId: undefined,
-    manzanaId: undefined,
-    estado: undefined,
+    search: '',
+    proyecto_id: '',
+    manzana_id: undefined,
+    estado: '',
   })
 
   // ============================================
   // CARGAR VIVIENDAS
   // ============================================
-  const cargarViviendas = useCallback(async () => {
+  useEffect(() => {
+    let mounted = true
+    const abortController = new AbortController()
+
+    const cargarViviendas = async () => {
+      try {
+        setCargando(true)
+        setError(null)
+
+        // Pequeño delay para evitar múltiples llamadas en Strict Mode
+        await new Promise(resolve => setTimeout(resolve, 100))
+
+        if (!mounted || abortController.signal.aborted) return
+
+        const data = await viviendasService.listar(filtros)
+
+        if (!mounted || abortController.signal.aborted) return
+
+        setViviendas(data)
+      } catch (err) {
+        if (!mounted || abortController.signal.aborted) return
+
+        const mensaje = err instanceof Error ? err.message : 'Error al cargar viviendas'
+        setError(mensaje)
+        toast.error(mensaje)
+      } finally {
+        if (mounted && !abortController.signal.aborted) setCargando(false)
+      }
+    }
+
+    cargarViviendas()
+
+    return () => {
+      mounted = false
+      abortController.abort()
+      setCargando(false)
+    }
+  }, [filtros.search, filtros.proyecto_id, filtros.manzana_id, filtros.estado])
+
+  // Función para refrescar manualmente
+  const refrescarViviendas = useCallback(async () => {
+    let mounted = true
+
     try {
       setCargando(true)
       setError(null)
       const data = await viviendasService.listar(filtros)
+
+      if (!mounted) return
+
       setViviendas(data)
     } catch (err) {
+      if (!mounted) return
+
       const mensaje = err instanceof Error ? err.message : 'Error al cargar viviendas'
       setError(mensaje)
       toast.error(mensaje)
     } finally {
-      setCargando(false)
+      if (mounted) setCargando(false)
+    }
+
+    return () => {
+      mounted = false
     }
   }, [filtros])
-
-  // Cargar al montar y cuando cambien filtros
-  useEffect(() => {
-    cargarViviendas()
-  }, [cargarViviendas])
 
   // ============================================
   // VIVIENDAS FILTRADAS (MEMOIZADAS)
@@ -63,8 +109,8 @@ export function useViviendasList() {
     let resultado = [...viviendas]
 
     // Filtro por búsqueda (matrícula, nomenclatura, número)
-    if (filtros.busqueda) {
-      const termino = filtros.busqueda.toLowerCase()
+    if (filtros.search) {
+      const termino = filtros.search.toLowerCase()
       resultado = resultado.filter(
         vivienda =>
           vivienda.matricula_inmobiliaria?.toLowerCase().includes(termino) ||
@@ -74,16 +120,16 @@ export function useViviendasList() {
     }
 
     // Filtro por proyecto
-    if (filtros.proyectoId) {
+    if (filtros.proyecto_id) {
       resultado = resultado.filter(
-        vivienda => vivienda.manzanas?.proyecto_id === filtros.proyectoId
+        vivienda => vivienda.manzanas?.proyecto_id === filtros.proyecto_id
       )
     }
 
     // Filtro por manzana
-    if (filtros.manzanaId) {
+    if (filtros.manzana_id) {
       resultado = resultado.filter(
-        vivienda => vivienda.manzana_id === filtros.manzanaId
+        vivienda => vivienda.manzana_id === filtros.manzana_id
       )
     }
 
@@ -134,12 +180,12 @@ export function useViviendasList() {
       toast.success('Vivienda eliminada correctamente')
       setModalEliminar(false)
       setViviendaEliminar(null)
-      cargarViviendas()
+      refrescarViviendas()
     } catch (err) {
       const mensaje = err instanceof Error ? err.message : 'Error al eliminar vivienda'
       toast.error(mensaje)
     }
-  }, [viviendaEliminar, cargarViviendas])
+  }, [viviendaEliminar, refrescarViviendas])
 
   const cancelarEliminar = useCallback(() => {
     setModalEliminar(false)
@@ -155,10 +201,10 @@ export function useViviendasList() {
 
   const limpiarFiltros = useCallback(() => {
     setFiltros({
-      busqueda: '',
-      proyectoId: undefined,
-      manzanaId: undefined,
-      estado: undefined,
+      search: '',
+      proyecto_id: '',
+      manzana_id: undefined,
+      estado: '',
     })
   }, [])
 
@@ -211,7 +257,7 @@ export function useViviendasList() {
     limpiarFiltros,
 
     // Acciones
-    refrescar: cargarViviendas,
+    refrescar: refrescarViviendas,
 
     // Estadísticas
     estadisticas,

@@ -7,6 +7,7 @@ import {
     BarChart3,
     Building2,
     ChevronRight,
+    ClipboardList,
     CreditCard,
     FileText,
     FileX,
@@ -57,6 +58,7 @@ const navigationGroups = [
   {
     title: 'Sistema',
     items: [
+      { name: 'Plantillas Proceso', href: '/admin/procesos', icon: ClipboardList },
       { name: 'Usuarios', href: '/usuarios', icon: Users },
       { name: 'Auditorías', href: '/auditorias', icon: Activity },
       { name: 'Admin', href: '/admin', icon: Shield },

@@ -209,21 +209,23 @@ class NegociacionesService {
                   fuentesProceso.push(TipoFuentePago.CREDITO_HIPOTECARIO)
                   break
                 case 'Subsidio Caja de Compensación':
+                case 'Subsidio Caja Compensación':
                   fuentesProceso.push(TipoFuentePago.SUBSIDIO_CAJA)
                   break
-                case 'Recursos Propios':
-                  fuentesProceso.push(TipoFuentePago.RECURSOS_PROPIOS)
+                case 'Subsidio Mi Casa Ya':
+                  fuentesProceso.push(TipoFuentePago.SUBSIDIO_MI_CASA_YA)
                   break
-                case 'Cesantías':
-                  fuentesProceso.push(TipoFuentePago.CESANTIAS)
+                case 'Cuota Inicial':
+                  fuentesProceso.push(TipoFuentePago.CUOTA_INICIAL)
                   break
                 default:
-                  fuentesProceso.push(TipoFuentePago.OTRO)
+                  // Por defecto, usar Cuota Inicial si no reconocemos el tipo
+                  fuentesProceso.push(TipoFuentePago.CUOTA_INICIAL)
               }
             })
           } else {
-            // Si no hay fuentes, asumir recursos propios
-            fuentesProceso.push(TipoFuentePago.RECURSOS_PROPIOS)
+            // Si no hay fuentes, asumir Cuota Inicial
+            fuentesProceso.push(TipoFuentePago.CUOTA_INICIAL)
           }
 
           // Crear proceso
@@ -433,7 +435,7 @@ class NegociacionesService {
     try {
       // Verificar que no tenga abonos
       const { data: abonos } = await supabase
-        .from('abonos')
+        .from('abonos_historial')
         .select('id')
         .eq('negociacion_id', id)
         .limit(1)

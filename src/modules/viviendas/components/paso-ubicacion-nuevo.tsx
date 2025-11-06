@@ -36,45 +36,69 @@ export function PasoUbicacionNuevo({ register, errors, setValue, watch }: PasoUb
 
   // Cargar proyectos al montar
   useEffect(() => {
+    let mounted = true
+
     async function cargarProyectos() {
       try {
-        setCargandoProyectos(true)
+        console.log('🏗️ [PASO 1] Cargando proyectos...')
+        if (mounted) setCargandoProyectos(true)
         const data = await proyectosService.obtenerProyectos()
-        setProyectos(data)
+        console.log('✅ [PASO 1] Proyectos cargados:', data.length)
+        if (mounted) setProyectos(data)
       } catch (error) {
-        console.error('Error cargando proyectos:', error)
+        console.error('❌ [PASO 1] Error cargando proyectos:', error)
       } finally {
-        setCargandoProyectos(false)
+        if (mounted) setCargandoProyectos(false)
       }
     }
+
     cargarProyectos()
+
+    return () => {
+      mounted = false
+    }
   }, [])
 
   // Cargar manzanas cuando se selecciona un proyecto
   useEffect(() => {
+    let mounted = true
+
     async function cargarManzanas() {
       if (!proyectoSeleccionado) {
-        setManzanas([])
-        setNumerosDisponibles([])
+        console.log('⚠️ [PASO 1] No hay proyecto seleccionado')
+        if (mounted) {
+          setManzanas([])
+          setNumerosDisponibles([])
+        }
         return
       }
 
+      console.log('🏗️ [PASO 1] Proyecto seleccionado:', proyectoSeleccionado)
+
       try {
-        setCargandoManzanas(true)
+        if (mounted) setCargandoManzanas(true)
         const data = await viviendasService.obtenerManzanasDisponibles(proyectoSeleccionado)
-        setManzanas(data)
+        console.log('✅ [PASO 1] Manzanas cargadas:', data.length)
+        if (mounted) setManzanas(data)
       } catch (error) {
-        console.error('Error cargando manzanas:', error)
-        setManzanas([])
+        console.error('❌ [PASO 1] Error cargando manzanas:', error)
+        if (mounted) setManzanas([])
       } finally {
-        setCargandoManzanas(false)
+        if (mounted) setCargandoManzanas(false)
       }
     }
+
     cargarManzanas()
+
+    return () => {
+      mounted = false
+    }
   }, [proyectoSeleccionado])
 
   // Cargar números disponibles cuando se selecciona una manzana
   useEffect(() => {
+    let mounted = true
+
     async function cargarNumerosDisponibles() {
       if (!manzanaSeleccionada) {
         setNumerosDisponibles([])
@@ -93,27 +117,54 @@ export function PasoUbicacionNuevo({ register, errors, setValue, watch }: PasoUb
         const todosNumeros = Array.from({ length: manzana.total_viviendas }, (_, i) => i + 1)
         const disponibles = todosNumeros.filter(num => !numerosUsados.includes(num))
 
-        setNumerosDisponibles(disponibles)
+        if (mounted) {
+          setNumerosDisponibles(disponibles)
+        }
       } catch (error) {
         console.error('Error cargando números disponibles:', error)
-        setNumerosDisponibles([])
+        if (mounted) {
+          setNumerosDisponibles([])
+        }
       }
     }
+
     cargarNumerosDisponibles()
-  }, [manzanaSeleccionada, manzanas])
+
+    return () => {
+      mounted = false
+    }
+  }, [manzanaSeleccionada, manzanas.length]) // ← CAMBIO: manzanas.length en lugar de manzanas completo
 
   // Limpiar manzana y número cuando cambia el proyecto
   useEffect(() => {
     setValue('manzana_id', '')
     setValue('numero', '')
-  }, [proyectoSeleccionado, setValue])
+  }, [proyectoSeleccionado]) // ← CAMBIO: Removido setValue de dependencias
 
   // Limpiar número cuando cambia la manzana
   useEffect(() => {
     setValue('numero', '')
-  }, [manzanaSeleccionada, setValue])
+  }, [manzanaSeleccionada]) // ← CAMBIO: Removido setValue de dependencias
 
   const manzanaInfo = manzanas.find(m => m.id === manzanaSeleccionada)
+
+  const handleProyectoChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const value = e.target.value
+    console.log('📌 [PASO 1] Usuario seleccionó proyecto:', value)
+    setValue('proyecto_id', value)
+  }
+
+  const handleManzanaChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const value = e.target.value
+    console.log('📌 [PASO 1] Usuario seleccionó manzana:', value)
+    setValue('manzana_id', value)
+  }
+
+  const handleNumeroChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const value = e.target.value
+    console.log('📌 [PASO 1] Usuario seleccionó número:', value)
+    setValue('numero', value)
+  }
 
   return (
     <motion.div
@@ -144,6 +195,7 @@ export function PasoUbicacionNuevo({ register, errors, setValue, watch }: PasoUb
             {...register('proyecto_id')}
             id="proyecto_id"
             disabled={cargandoProyectos}
+            onChange={handleProyectoChange}
             className={cn(
               styles.field.select,
               errors.proyecto_id && styles.field.inputError
@@ -180,6 +232,7 @@ export function PasoUbicacionNuevo({ register, errors, setValue, watch }: PasoUb
             {...register('manzana_id')}
             id="manzana_id"
             disabled={!proyectoSeleccionado || cargandoManzanas}
+            onChange={handleManzanaChange}
             className={cn(
               styles.field.select,
               errors.manzana_id && styles.field.inputError
@@ -236,6 +289,7 @@ export function PasoUbicacionNuevo({ register, errors, setValue, watch }: PasoUb
             {...register('numero')}
             id="numero"
             disabled={!manzanaSeleccionada || numerosDisponibles.length === 0}
+            onChange={handleNumeroChange}
             className={cn(
               styles.field.select,
               errors.numero && styles.field.inputError

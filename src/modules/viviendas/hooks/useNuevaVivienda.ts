@@ -36,6 +36,7 @@ const paso3Schema = z.object({
   area_lote: z.number().min(1, 'El área del lote debe ser mayor a 0'),
   area_construida: z.number().min(1, 'El área construida debe ser mayor a 0'),
   tipo_vivienda: z.enum(['Regular', 'Irregular']),
+  certificado_tradicion_file: z.instanceof(File).optional(),
 })
 
 const paso4Schema = z.object({
@@ -133,6 +134,7 @@ export function useNuevaVivienda({ onSubmit }: UseNuevaViviendaParams) {
     watch,
     setValue,
     trigger,
+    setError,
     formState: { errors },
   } = useForm<ViviendaFormSchema>({
     resolver: zodResolver(viviendaSchema),
@@ -193,19 +195,160 @@ export function useNuevaVivienda({ onSubmit }: UseNuevaViviendaParams) {
   // ==================== VALIDACIÓN POR PASO ====================
 
   const validarPasoActual = useCallback(async (): Promise<boolean> => {
+    console.log('🔍 [VALIDAR PASO] Iniciando validación del paso:', pasoActual)
+
+    // 🔍 DEBUGGING: Ver valores actuales del formulario
+    const valoresActuales = watch()
+    console.log('📋 [VALIDAR PASO] Valores actuales del formulario:', valoresActuales)
+
     const config = PASOS_CONFIG.find(p => p.id === pasoActual)
-    if (!config || pasoActual === 5) return true // Paso 5 no requiere validación
+    if (!config || pasoActual === 5) {
+      console.log('✅ [VALIDAR PASO] Paso sin validación requerida')
+      return true
+    }
 
     try {
-      // Validar solo los campos del paso actual
+      // ✅ PASO 3: Validación manual completa (esperando async ANTES de setError)
+      if (pasoActual === 3) {
+        console.log('🔍 [PASO 3] Iniciando validación manual completa')
+
+        const matricula = watch('matricula_inmobiliaria')
+        const nomenclatura = watch('nomenclatura')
+        const areaLote = watch('area_lote')
+        const areaConstruida = watch('area_construida')
+        const tipoVivienda = watch('tipo_vivienda')
+
+        console.log('📋 [PASO 3] Valores:', { matricula, nomenclatura, areaLote, areaConstruida, tipoVivienda })
+
+        // Objeto para acumular errores
+        const erroresDetectados: Array<{ campo: string; mensaje: string }> = []
+
+        // 1. Validar matrícula (básica)
+        if (!matricula || matricula.trim() === '') {
+          erroresDetectados.push({
+            campo: 'matricula_inmobiliaria',
+            mensaje: 'La matrícula inmobiliaria es obligatoria'
+          })
+        }
+
+        // 2. Validar nomenclatura
+        if (!nomenclatura || nomenclatura.trim() === '') {
+          erroresDetectados.push({
+            campo: 'nomenclatura',
+            mensaje: 'La nomenclatura es obligatoria'
+          })
+        }
+
+        // 3. Validar área lote
+        if (!areaLote || areaLote <= 0) {
+          erroresDetectados.push({
+            campo: 'area_lote',
+            mensaje: 'El área del lote debe ser mayor a 0'
+          })
+        }
+
+        // 4. Validar área construida
+        if (!areaConstruida || areaConstruida <= 0) {
+          erroresDetectados.push({
+            campo: 'area_construida',
+            mensaje: 'El área construida debe ser mayor a 0'
+          })
+        }
+
+        // 5. Validar tipo vivienda
+        if (!tipoVivienda || (tipoVivienda !== 'Regular' && tipoVivienda !== 'Irregular')) {
+          erroresDetectados.push({
+            campo: 'tipo_vivienda',
+            mensaje: 'Selecciona un tipo de vivienda válido'
+          })
+        }
+
+        // 6. Validar matrícula duplicada (ASYNC - esperar ANTES de setError)
+        if (matricula && matricula.trim() !== '' && erroresDetectados.findIndex(e => e.campo === 'matricula_inmobiliaria') === -1) {
+          console.log('🔍 [PASO 3] Validando unicidad de matrícula:', matricula)
+
+          try {
+            // Timeout de 10 segundos para la validación
+            const timeoutPromise = new Promise<boolean>((_, reject) => {
+              setTimeout(() => reject(new Error('Timeout validando matrícula')), 10000)
+            })
+
+            const validacionPromise = viviendasService.verificarMatriculaUnica(matricula)
+
+            const esUnica = await Promise.race([validacionPromise, timeoutPromise])
+            console.log('📊 [PASO 3] Resultado verificarMatriculaUnica:', esUnica)
+
+            if (!esUnica) {
+              console.error('❌ [PASO 3] Matrícula duplicada:', matricula)
+              erroresDetectados.push({
+                campo: 'matricula_inmobiliaria',
+                mensaje: `La matrícula inmobiliaria "${matricula}" ya está registrada en otra vivienda.`
+              })
+            } else {
+              console.log('✅ [PASO 3] Matrícula única validada')
+            }
+          } catch (error) {
+            console.error('❌ [PASO 3] Error verificando matrícula:', error)
+
+            // Si es timeout, permitir continuar pero con advertencia
+            if (error instanceof Error && error.message.includes('Timeout')) {
+              console.warn('⚠️ [PASO 3] Timeout en validación - permitiendo continuar')
+            } else {
+              // Para otros errores, agregar mensaje de error
+              erroresDetectados.push({
+                campo: 'matricula_inmobiliaria',
+                mensaje: 'Error al verificar la matrícula. Intenta nuevamente.'
+              })
+            }
+          }
+        }
+
+        // 7. AHORA SÍ: Establecer TODOS los errores al mismo tiempo
+        if (erroresDetectados.length > 0) {
+          console.error('❌ [PASO 3] Errores encontrados:', erroresDetectados)
+
+          erroresDetectados.forEach(error => {
+            setError(error.campo as any, {
+              type: 'manual',
+              message: error.mensaje
+            })
+          })
+
+          return false
+        }
+
+        console.log('✅ [PASO 3] Validación manual completada exitosamente')
+        return true
+      }
+
+      // Para otros pasos, usar validación Zod normal
       const camposDelPaso = Object.keys(config.schema.shape)
+      console.log('📋 [VALIDAR PASO] Campos a validar:', camposDelPaso)
+
       const esValido = await trigger(camposDelPaso as any)
-      return esValido
+      console.log('📊 [VALIDAR PASO] Resultado validación Zod:', esValido)
+
+      if (!esValido) {
+        console.error('❌ [VALIDAR PASO] Validación Zod falló')
+
+        // 🔍 DEBUGGING: Ver qué campos tienen errores
+        console.log('🔍 [VALIDAR PASO] Errores detectados:', errors)
+
+        // Mostrar detalles de cada campo con error
+        Object.keys(errors).forEach(campo => {
+          console.log(`  ❌ Campo "${campo}":`, errors[campo as keyof typeof errors]?.message)
+        })
+
+        return false
+      }
+
+      console.log('✅ [VALIDAR PASO] Validación completada exitosamente')
+      return true
     } catch (error) {
-      console.error('Error validando paso:', error)
+      console.error('❌ [VALIDAR PASO] Error en validación:', error)
       return false
     }
-  }, [pasoActual, trigger])
+  }, [pasoActual, trigger, watch, setError])
 
   // Validar todos los pasos anteriores a un paso específico
   const validarPasosAnteriores = useCallback(async (hastaElPaso: number): Promise<boolean> => {
@@ -232,7 +375,11 @@ export function useNuevaVivienda({ onSubmit }: UseNuevaViviendaParams) {
   // ==================== NAVEGACIÓN ====================
 
   const irSiguiente = useCallback(async () => {
+    console.log('🔍 [IR SIGUIENTE] Paso actual:', pasoActual, 'Total pasos:', totalPasos)
+
     const esValido = await validarPasoActual()
+
+    console.log('📊 [IR SIGUIENTE] ¿Paso válido?:', esValido)
 
     if (!esValido) {
       console.log('❌ Paso inválido, no se puede continuar')
@@ -240,8 +387,11 @@ export function useNuevaVivienda({ onSubmit }: UseNuevaViviendaParams) {
     }
 
     if (pasoActual < totalPasos) {
+      console.log('➡️ [IR SIGUIENTE] Avanzando al paso:', pasoActual + 1)
       setPasoActual(prev => prev + 1)
       window.scrollTo({ top: 0, behavior: 'smooth' })
+    } else {
+      console.log('🏁 [IR SIGUIENTE] Ya estás en el último paso')
     }
   }, [pasoActual, totalPasos, validarPasoActual])
 
@@ -288,21 +438,51 @@ export function useNuevaVivienda({ onSubmit }: UseNuevaViviendaParams) {
   // ==================== SUBMIT ====================
 
   const onSubmitForm = async (data: ViviendaFormSchema) => {
+    console.log('🚀 [SUBMIT FORM] ¡FORMULARIO ENVIADO!')
+    console.log('📍 [SUBMIT FORM] Paso actual:', pasoActual)
+    console.log('📝 [SUBMIT FORM] Datos:', data)
+
     try {
       setSubmitting(true)
-      console.log('📝 Enviando vivienda:', data)
+      console.log('📝 [NUEVA VIVIENDA] Enviando formulario completo:', data)
+      console.log('📄 [NUEVA VIVIENDA] Certificado en data:', data.certificado_tradicion_file)
+      console.log('📄 [NUEVA VIVIENDA] Tipo de certificado:', typeof data.certificado_tradicion_file)
+
+      if (data.certificado_tradicion_file) {
+        console.log('✅ [NUEVA VIVIENDA] Archivo File detectado:', {
+          name: data.certificado_tradicion_file.name,
+          size: data.certificado_tradicion_file.size,
+          type: data.certificado_tradicion_file.type
+        })
+      } else {
+        console.warn('⚠️ [NUEVA VIVIENDA] NO hay certificado en el formulario')
+      }
 
       // Transformar datos al formato esperado
       const viviendaData: ViviendaFormData = {
         ...data,
       }
 
+      console.log('🚀 [NUEVA VIVIENDA] Llamando a viviendasService.crear()...')
       await onSubmit(viviendaData)
 
       // Redirigir después de guardar
       router.push('/viviendas')
     } catch (error) {
-      console.error('Error al crear vivienda:', error)
+      console.error('❌ [NUEVA VIVIENDA] Error al crear vivienda:', error)
+
+      // Si es error de matrícula duplicada, mostrar en el campo correspondiente
+      if (error instanceof Error && error.message.includes('matrícula inmobiliaria')) {
+        setError('matricula_inmobiliaria', {
+          type: 'manual',
+          message: error.message
+        })
+        // Volver al paso 3 donde está el campo de matrícula
+        setPasoActual(3)
+      } else {
+        // Otros errores se muestran en consola
+        console.error('Error inesperado:', error)
+      }
     } finally {
       setSubmitting(false)
     }

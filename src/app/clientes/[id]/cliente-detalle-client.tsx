@@ -10,17 +10,17 @@ import { TIPOS_DOCUMENTO } from '@/modules/clientes/types'
 import { Tooltip } from '@/shared/components/ui'
 import { AnimatePresence, motion } from 'framer-motion'
 import {
-    Activity,
-    ArrowLeft,
-    ChevronRight,
-    Edit2,
-    FileText,
-    Handshake,
-    Heart,
-    Lock,
-    Trash2,
-    User,
-    Wallet,
+  Activity,
+  ArrowLeft,
+  ChevronRight,
+  Edit2,
+  FileText,
+  Handshake,
+  Heart,
+  Lock,
+  Trash2,
+  User,
+  Wallet,
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
@@ -97,21 +97,33 @@ export default function ClienteDetalleClient({ clienteId }: ClienteDetalleClient
   useEffect(() => {
     if (!clienteUUID) return
 
+    let mounted = true
+
     const cargarCliente = async () => {
       setLoading(true)
       try {
         const { clientesService } = await import('@/modules/clientes/services/clientes.service')
         const clienteData = await clientesService.obtenerCliente(clienteUUID)
+
+        if (!mounted) return
+
         setCliente(clienteData)
       } catch (error) {
+        if (!mounted) return
+
         console.error('Error al cargar cliente:', error)
         setCliente(null)
       } finally {
-        setLoading(false)
+        if (mounted) setLoading(false)
       }
     }
 
     cargarCliente()
+
+    return () => {
+      mounted = false
+      setLoading(false) // ✅ Limpiar loading
+    }
   }, [clienteUUID])
 
   // Cargar categorías al montar
@@ -119,7 +131,7 @@ export default function ClienteDetalleClient({ clienteId }: ClienteDetalleClient
     if (user?.id) {
       cargarCategorias(user.id)
     }
-  }, [user?.id, cargarCategorias])
+  }, [user?.id]) // ← Solo user.id, no cargarCategorias
 
   // Listener para cambio de tab (desde otros componentes)
   useEffect(() => {

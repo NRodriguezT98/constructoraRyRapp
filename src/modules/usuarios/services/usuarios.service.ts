@@ -67,9 +67,10 @@ class UsuariosService {
         query = query.eq('estado', filtros.estado)
       }
 
-      if (filtros?.creado_por) {
-        query = query.eq('creado_por', filtros.creado_por)
-      }
+      // Note: vista_usuarios_completos no tiene campo creado_por
+      // if (filtros?.creado_por) {
+      //   query = query.eq('creado_por', filtros.creado_por)
+      // }
 
       // Ordenar por fecha de creación descendente
       query = query.order('fecha_creacion', { ascending: false })
@@ -81,7 +82,7 @@ class UsuariosService {
         throw new Error(`Error al obtener usuarios: ${error.message}`)
       }
 
-      return data || []
+      return (data || []) as unknown as UsuarioCompleto[]
     } catch (error) {
       console.error('Excepción en obtenerUsuarios:', error)
       throw error
@@ -105,7 +106,7 @@ class UsuariosService {
         throw new Error(`Error al obtener usuario: ${error.message}`)
       }
 
-      return data
+      return data as unknown as UsuarioCompleto
     } catch (error) {
       console.error('Excepción en obtenerUsuarioPorId:', error)
       throw error
@@ -223,7 +224,7 @@ class UsuariosService {
         throw new Error(`Error al actualizar usuario: ${error.message}`)
       }
 
-      return data
+      return data as unknown as Usuario
     } catch (error) {
       console.error('Excepción en actualizarUsuario:', error)
       throw error
@@ -260,7 +261,6 @@ class UsuariosService {
   async resetearIntentosFallidos(id: string): Promise<void> {
     try {
       await this.actualizarUsuario(id, {
-        intentos_fallidos: 0,
         estado: 'Activo',
       })
     } catch (error) {

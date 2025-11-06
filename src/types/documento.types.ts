@@ -118,6 +118,8 @@ export interface DocumentoProyecto {
   es_importante: boolean
   fecha_creacion: string
   fecha_actualizacion: string
+  // Relación opcional (cuando se carga con join)
+  categoria?: CategoriaDocumento
 }
 
 export interface DocumentoFormData {

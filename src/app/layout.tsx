@@ -15,6 +15,9 @@ const inter = Inter({ subsets: ['latin'] })
 export const metadata: Metadata = {
   title: 'RyR Constructora - Sistema de Gestión',
   description: 'Sistema de gestión administrativa para constructora RyR',
+  icons: {
+    icon: '/icon.svg',
+  },
 }
 
 export default function RootLayout({
