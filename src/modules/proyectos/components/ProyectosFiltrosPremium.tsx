@@ -11,25 +11,31 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import { Filter, Search, X } from 'lucide-react'
 import { ESTADOS_PROYECTO } from '../constants'
-// ✅ REACT QUERY: Hook de filtros con cache inteligente
-import { useProyectosFiltradosQuery } from '../hooks'
 import { proyectosPageStyles as styles } from '../styles/proyectos-page.styles'
+import type { FiltroProyecto } from '../types'
 
 interface ProyectosFiltrosPremiumProps {
   totalResultados?: number
+  // ✅ Props para sincronizar filtros con el componente padre
+  filtros?: FiltroProyecto
+  onActualizarFiltros?: (filtros: Partial<FiltroProyecto>) => void
+  onLimpiarFiltros?: () => void
 }
 
-export function ProyectosFiltrosPremium({ totalResultados = 0 }: ProyectosFiltrosPremiumProps) {
-  const { filtros, actualizarFiltros, limpiarFiltros } = useProyectosFiltradosQuery()
-
+export function ProyectosFiltrosPremium({ 
+  totalResultados = 0,
+  filtros = { busqueda: '', estado: undefined },
+  onActualizarFiltros = () => {},
+  onLimpiarFiltros = () => {}
+}: ProyectosFiltrosPremiumProps) {
   const hasFilters = Boolean(filtros.busqueda || filtros.estado)
 
   const handleLimpiarFiltros = () => {
-    limpiarFiltros()
+    onLimpiarFiltros()
   }
 
   const handleToggleEstado = (estado: string | undefined) => {
-    actualizarFiltros({
+    onActualizarFiltros({
       estado: estado as any,
     })
   }
@@ -48,7 +54,7 @@ export function ProyectosFiltrosPremium({ totalResultados = 0 }: ProyectosFiltro
             id="search-proyectos"
             type="text"
             value={filtros.busqueda || ''}
-            onChange={e => actualizarFiltros({ busqueda: e.target.value })}
+            onChange={e => onActualizarFiltros({ busqueda: e.target.value })}
             placeholder="Buscar por nombre, ubicación..."
             className={styles.filtros.searchInput}
           />
@@ -57,7 +63,7 @@ export function ProyectosFiltrosPremium({ totalResultados = 0 }: ProyectosFiltro
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.8 }}
-              onClick={() => actualizarFiltros({ busqueda: '' })}
+              onClick={() => onActualizarFiltros({ busqueda: '' })}
               className={styles.filtros.searchClearButton}
               aria-label="Limpiar búsqueda"
             >

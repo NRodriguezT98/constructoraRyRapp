@@ -70,7 +70,7 @@ export function ProyectosPage({
   // ✅ REACT QUERY: Hooks con cache inteligente (reemplazan Zustand)
   const { crearProyecto, actualizarProyecto, eliminarProyecto, cargando } =
     useProyectosQuery()
-  const { proyectos, filtros, limpiarFiltros, totalProyectos } = useProyectosFiltradosQuery()
+  const { proyectos, filtros, actualizarFiltros, limpiarFiltros, totalProyectos } = useProyectosFiltradosQuery()
   const estadisticas = useEstadisticasProyectosQuery()
 
   // Detectar si hay filtros activos
@@ -162,7 +162,12 @@ export function ProyectosPage({
         />
 
         {/* Filtros Premium */}
-        <ProyectosFiltrosPremium totalResultados={proyectos.length} />
+        <ProyectosFiltrosPremium 
+          totalResultados={proyectos.length}
+          filtros={filtros}
+          onActualizarFiltros={actualizarFiltros}
+          onLimpiarFiltros={limpiarFiltros}
+        />
 
         {/* Contenido Principal */}
         {cargando ? (
