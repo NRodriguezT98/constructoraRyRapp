@@ -11,7 +11,8 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import { Filter, Search, X } from 'lucide-react'
 import { ESTADOS_PROYECTO } from '../constants'
-import { useProyectosStore } from '../store/proyectos.store'
+// ✅ REACT QUERY: Hook de filtros con cache inteligente
+import { useProyectosFiltradosQuery } from '../hooks'
 import { proyectosPageStyles as styles } from '../styles/proyectos-page.styles'
 
 interface ProyectosFiltrosPremiumProps {
@@ -19,16 +20,16 @@ interface ProyectosFiltrosPremiumProps {
 }
 
 export function ProyectosFiltrosPremium({ totalResultados = 0 }: ProyectosFiltrosPremiumProps) {
-  const { filtros, setFiltros } = useProyectosStore()
+  const { filtros, actualizarFiltros, limpiarFiltros } = useProyectosFiltradosQuery()
 
   const hasFilters = Boolean(filtros.busqueda || filtros.estado)
 
   const handleLimpiarFiltros = () => {
-    setFiltros({ busqueda: '', estado: undefined })
+    limpiarFiltros()
   }
 
   const handleToggleEstado = (estado: string | undefined) => {
-    setFiltros({
+    actualizarFiltros({
       estado: estado as any,
     })
   }
@@ -47,7 +48,7 @@ export function ProyectosFiltrosPremium({ totalResultados = 0 }: ProyectosFiltro
             id="search-proyectos"
             type="text"
             value={filtros.busqueda || ''}
-            onChange={e => setFiltros({ busqueda: e.target.value })}
+            onChange={e => actualizarFiltros({ busqueda: e.target.value })}
             placeholder="Buscar por nombre, ubicación..."
             className={styles.filtros.searchInput}
           />
@@ -56,7 +57,7 @@ export function ProyectosFiltrosPremium({ totalResultados = 0 }: ProyectosFiltro
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.8 }}
-              onClick={() => setFiltros({ busqueda: '' })}
+              onClick={() => actualizarFiltros({ busqueda: '' })}
               className={styles.filtros.searchClearButton}
               aria-label="Limpiar búsqueda"
             >

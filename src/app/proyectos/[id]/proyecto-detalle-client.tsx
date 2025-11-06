@@ -7,7 +7,8 @@ import { useAuth } from '@/contexts/auth-context'
 import { CategoriasManager } from '@/modules/documentos/components/categorias/categorias-manager'
 import { DocumentosLista } from '@/modules/documentos/components/lista/documentos-lista'
 import { DocumentoUpload } from '@/modules/documentos/components/upload/documento-upload'
-import { useProyectosStore } from '@/modules/proyectos/store/proyectos.store'
+// ✅ REACT QUERY: Hooks con cache inteligente (reemplazan Zustand)
+import { useProyectoQuery, useProyectosQuery } from '@/modules/proyectos/hooks'
 import type { Proyecto } from '@/modules/proyectos/types'
 import { formatCurrency, formatDate } from '@/shared/utils/format'
 import { motion } from 'framer-motion'
@@ -62,49 +63,20 @@ export default function ProyectoDetalleClient({
 }: ProyectoDetalleClientProps) {
   const router = useRouter()
   const { user } = useAuth()
-  const { eliminarProyecto } = useProyectosStore()
-  const [proyecto, setProyecto] = useState<Proyecto | null>(null)
-  const [loading, setLoading] = useState(true)
+  
+  // ✅ REACT QUERY: Hook de detalle con cache (reemplaza useEffect + service)
+  const { proyecto, cargando: loading } = useProyectoQuery(proyectoId)
+  const { eliminarProyecto } = useProyectosQuery()
+  
   const [activeTab, setActiveTab] = useState<TabType>('info')
   const [showUpload, setShowUpload] = useState(false)
   const [showCategorias, setShowCategorias] = useState(false)
 
-  useEffect(() => {
-    let mounted = true
+  // ✅ REACT QUERY: Ya NO necesitamos useEffect, el hook maneja todo automáticamente
 
-    const cargarProyecto = async () => {
-      setLoading(true)
-      try {
-        // Importar el servicio dinámicamente
-        const { proyectosService } = await import(
-          '@/modules/proyectos/services/proyectos.service'
-        )
-        const proyectoData = await proyectosService.obtenerProyecto(proyectoId)
-
-        if (!mounted) return
-
-        setProyecto(proyectoData)
-      } catch (error) {
-        if (!mounted) return
-
-        console.error('Error al cargar proyecto:', error)
-        setProyecto(null)
-      } finally {
-        if (mounted) setLoading(false)
-      }
-    }
-
-    cargarProyecto()
-
-    return () => {
-      mounted = false
-      setLoading(false) // ✅ Limpiar loading
-    }
-  }, [proyectoId])
-
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (window.confirm('¿Estás seguro de eliminar este proyecto?')) {
-      eliminarProyecto(proyectoId)
+      await eliminarProyecto(proyectoId)
       router.push('/proyectos')
     }
   }
