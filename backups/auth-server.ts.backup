@@ -40,8 +40,6 @@ export const getServerSession = cache(async () => {
 })/**
  * Obtener perfil completo del usuario autenticado
  * Incluye rol y permisos
- * 
- * ✅ OPTIMIZADO: Lee desde JWT claims (no hace query a DB)
  */
 export const getServerUserProfile = cache(async (): Promise<Usuario | null> => {
   const session = await getServerSession()
@@ -50,37 +48,19 @@ export const getServerUserProfile = cache(async (): Promise<Usuario | null> => {
     return null
   }
 
-  const user = session.user
+  const supabase = await createServerSupabaseClient()
 
-  // ✅ Leer rol, nombres y email desde JWT claims
-  const rol = (user as any).app_metadata?.user_rol || 'Vendedor'
-  const nombres = (user as any).app_metadata?.user_nombres || ''
-  const email = (user as any).app_metadata?.user_email || user.email || ''
+  const { data: usuario, error } = await supabase
+    .from('usuarios')
+    .select('*')
+    .eq('id', session.user.id)
+    .single()
 
-  // Construir objeto Usuario básico desde JWT
-  // NOTA: Campos adicionales (telefono, apellidos, etc.) solo se obtienen
-  // si realmente se necesitan mediante query separada y explícita
-  const perfil: Partial<Usuario> = {
-    id: user.id,
-    rol: rol as 'Administrador' | 'Gerente' | 'Vendedor',
-    nombres,
-    email,
-    // Campos requeridos por tipo Usuario pero no disponibles en JWT:
-    apellidos: '', // No disponible en JWT
-    telefono: null, // No disponible en JWT
-    estado: 'Activo', // Asumimos activo si tiene sesión válida
-    avatar_url: null,
-    preferencias: {},
-    creado_por: null,
-    ultimo_acceso: new Date().toISOString(),
-    fecha_creacion: user.created_at || '',
-    fecha_actualizacion: new Date().toISOString(),
-    debe_cambiar_password: false,
-    intentos_fallidos: 0,
-    bloqueado_hasta: null,
+  if (error || !usuario) {
+    return null
   }
 
-  return perfil as Usuario
+  return usuario as Usuario
 })
 
 /**

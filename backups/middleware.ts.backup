@@ -153,26 +153,29 @@ export async function middleware(req: NextRequest) {
   }
 
   // ============================================
-  // 6. OBTENER ROL DEL USUARIO DESDE JWT (OPTIMIZADO)
+  // 6. OBTENER ROL DEL USUARIO (con permisos)
   // ============================================
-  
-  // ✅ OPTIMIZACIÓN: Leer desde JWT claims (0 queries DB)
-  // Antes: 50 queries/min | Después: 0 queries/min
-  const rol = (user as any).app_metadata?.user_rol || 'Vendedor'
-  const nombres = (user as any).app_metadata?.user_nombres || ''
-  const email = (user as any).app_metadata?.user_email || user.email || ''
 
-  console.log('  ✅ Datos del usuario (desde JWT):', {
-    rol,
-    nombres,
-    email: email || user.email
-  })
+  const { data: usuario, error: userError } = await supabase
+    .from('usuarios')
+    .select('rol, email, nombres')
+    .eq('id', user.id)
+    .single()
+
+  if (userError || !usuario) {
+    console.log('  ❌ Error obteniendo usuario de DB, cerrar sesión')
+    // Error obteniendo usuario → Cerrar sesión y redirigir
+    await supabase.auth.signOut()
+    return NextResponse.redirect(new URL('/login', req.url))
+  }
+
+  console.log('  ✅ Rol del usuario:', usuario.rol)
 
   // ============================================
   // 7. VERIFICAR PERMISOS PARA LA RUTA
   // ============================================
 
-  const hasAccess = canAccessRoute(pathname, rol)
+  const hasAccess = canAccessRoute(pathname, usuario.rol)
 
   if (!hasAccess) {
     console.log('  ⛔ Sin permiso para esta ruta, redirigir a /dashboard')
@@ -190,9 +193,9 @@ export async function middleware(req: NextRequest) {
   // Evita tener que hacer queries adicionales
 
   res.headers.set('x-user-id', user.id)
-  res.headers.set('x-user-rol', rol)
-  res.headers.set('x-user-email', email)
-  res.headers.set('x-user-nombres', nombres)
+  res.headers.set('x-user-rol', usuario.rol)
+  res.headers.set('x-user-email', usuario.email || user.email || '')
+  res.headers.set('x-user-nombres', usuario.nombres || '')
 
   // ============================================
   // 9. PERMITIR ACCESO
