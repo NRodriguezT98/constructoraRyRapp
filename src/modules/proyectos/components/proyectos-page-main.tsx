@@ -5,11 +5,12 @@ import { Building2 } from 'lucide-react'
 import { useState } from 'react'
 import { Modal } from '../../../shared/components/ui/Modal'
 import { useDetectarCambios } from '../hooks/useDetectarCambios'
+// ✅ REACT QUERY: Nuevos hooks con cache inteligente
 import {
-  useEstadisticasProyectos,
-  useProyectos,
-  useProyectosFiltrados,
-} from '../hooks/useProyectos'
+  useEstadisticasProyectosQuery,
+  useProyectosFiltradosQuery,
+  useProyectosQuery,
+} from '../hooks'
 import { proyectosPageStyles as styles } from '../styles/proyectos-page.styles'
 import type { Proyecto, ProyectoFormData } from '../types'
 import { ConfirmarCambiosModal } from './ConfirmarCambiosModal'
@@ -66,10 +67,11 @@ export function ProyectosPage({
   const [modalConfirmarCambios, setModalConfirmarCambios] = useState(false)
   const [datosEdicion, setDatosEdicion] = useState<ProyectoFormData | null>(null)
 
+  // ✅ REACT QUERY: Hooks con cache inteligente (reemplazan Zustand)
   const { crearProyecto, actualizarProyecto, eliminarProyecto, cargando } =
-    useProyectos()
-  const { proyectos, filtros, limpiarFiltros, totalProyectos } = useProyectosFiltrados()
-  const estadisticas = useEstadisticasProyectos()
+    useProyectosQuery()
+  const { proyectos, filtros, limpiarFiltros, totalProyectos } = useProyectosFiltradosQuery()
+  const estadisticas = useEstadisticasProyectosQuery()
 
   // Detectar si hay filtros activos
   const hayFiltrosActivos = Boolean(filtros.busqueda || filtros.estado)
