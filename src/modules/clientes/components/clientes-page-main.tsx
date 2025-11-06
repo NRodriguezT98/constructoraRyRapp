@@ -20,13 +20,13 @@ import { ModalConfirmacion } from '@/shared'
 import { useRouter } from 'next/navigation'
 import { useCallback, useMemo, useState } from 'react'
 import {
-  ClientesHeader,
-  EstadisticasClientes,
-  FiltrosClientes,
-  FormularioClienteContainer,
-  ListaClientes,
+    ClientesHeader,
+    EstadisticasClientes,
+    FiltrosClientes,
+    FormularioClienteContainer,
+    ListaClientes,
 } from '../components'
-import { useClientesList, useEliminarClienteMutation } from '../hooks'
+import { useClientesList } from '../hooks'
 import type { ClienteResumen, EstadoCliente, OrigenCliente } from '../types'
 
 /**

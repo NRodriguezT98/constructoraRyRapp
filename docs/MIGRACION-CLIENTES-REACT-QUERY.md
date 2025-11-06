@@ -1,7 +1,7 @@
 # 🎯 Migración Módulo Clientes a React Query
 
-**Estado**: ✅ **COMPLETADA 100%**  
-**Fecha**: 2025-01-06  
+**Estado**: ✅ **COMPLETADA 100%**
+**Fecha**: 2025-01-06
 **Patrón**: Basado en Viviendas y Auth (React Query v5)
 
 ---
@@ -302,9 +302,9 @@ const actualizarMutation = useActualizarClienteMutation()
 | **cliente-detalle-client.tsx** | ✅ Migrado | Sí | -30 (fetch manual) |
 | **formulario-cliente-container.tsx** | ✅ Migrado | Sí | -10 (Zustand) |
 
-**Estado**: ✅ **MÓDULO CLIENTES 100% MIGRADO A REACT QUERY**  
-**Compatibilidad**: ✅ **100% BACKWARD COMPATIBLE**  
-**Zustand Store**: ⚠️ **PUEDE SER ELIMINADO** (ya no se usa)  
+**Estado**: ✅ **MÓDULO CLIENTES 100% MIGRADO A REACT QUERY**
+**Compatibilidad**: ✅ **100% BACKWARD COMPATIBLE**
+**Zustand Store**: ⚠️ **PUEDE SER ELIMINADO** (ya no se usa)
 **Próximo paso**: Deprecar y eliminar `src/modules/clientes/store/clientes.store.ts`
 
 ---

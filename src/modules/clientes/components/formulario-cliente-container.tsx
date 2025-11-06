@@ -7,10 +7,10 @@
 
 import { useCallback } from 'react'
 import {
-  useActualizarClienteMutation,
-  useCrearClienteMutation,
-  useFormularioCliente,
-  useInteresFormulario,
+    useActualizarClienteMutation,
+    useCrearClienteMutation,
+    useFormularioCliente,
+    useInteresFormulario,
 } from '../hooks'
 import { interesesService } from '../services/intereses.service'
 import type { ActualizarClienteDTO, Cliente, CrearClienteDTO } from '../types'

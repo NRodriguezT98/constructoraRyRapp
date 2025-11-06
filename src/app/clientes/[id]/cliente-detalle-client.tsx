@@ -6,22 +6,21 @@ import { ProgresoProcesoBadge } from '@/modules/admin/procesos/components'
 import { ModalRegistrarInteres } from '@/modules/clientes/components/modals'
 import { useDocumentosClienteStore } from '@/modules/clientes/documentos/store/documentos-cliente.store'
 import { useClienteQuery } from '@/modules/clientes/hooks'
-import type { Cliente } from '@/modules/clientes/types'
 import { TIPOS_DOCUMENTO } from '@/modules/clientes/types'
 import { Tooltip } from '@/shared/components/ui'
 import { AnimatePresence, motion } from 'framer-motion'
 import {
-  Activity,
-  ArrowLeft,
-  ChevronRight,
-  Edit2,
-  FileText,
-  Handshake,
-  Heart,
-  Lock,
-  Trash2,
-  User,
-  Wallet,
+    Activity,
+    ArrowLeft,
+    ChevronRight,
+    Edit2,
+    FileText,
+    Handshake,
+    Heart,
+    Lock,
+    Trash2,
+    User,
+    Wallet,
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
