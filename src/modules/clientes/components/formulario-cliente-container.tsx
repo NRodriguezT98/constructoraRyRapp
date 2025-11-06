@@ -1,13 +1,18 @@
 /**
- * Contenedor FormularioClienteContainer - Conecta el formulario con la lógica
+ * ✅ MIGRADO A REACT QUERY
+ * Contenedor FormularioClienteContainer - Conecta el formulario con mutations
  */
 
 'use client'
 
 import { useCallback } from 'react'
-import { useClientes, useFormularioCliente, useInteresFormulario } from '../hooks'
+import {
+  useActualizarClienteMutation,
+  useCrearClienteMutation,
+  useFormularioCliente,
+  useInteresFormulario,
+} from '../hooks'
 import { interesesService } from '../services/intereses.service'
-import { useClientesStore } from '../store/clientes.store'
 import type { ActualizarClienteDTO, Cliente, CrearClienteDTO } from '../types'
 import { FormularioCliente } from './formulario-cliente-modern'
 
@@ -18,8 +23,12 @@ interface FormularioClienteContainerProps {
 export function FormularioClienteContainer({
   clienteSeleccionado,
 }: FormularioClienteContainerProps) {
-  const { modalFormularioAbierto, cerrarModalFormulario } = useClientesStore()
-  const { crearCliente, actualizarCliente } = useClientes()
+  // ✅ REACT QUERY MUTATIONS
+  const crearMutation = useCrearClienteMutation()
+  const actualizarMutation = useActualizarClienteMutation()
+
+  // Estado del modal (se controla desde useClientesList)
+  const modalAbierto = !!clienteSeleccionado || crearMutation.isPending || actualizarMutation.isPending
 
   // Hook de interés (solo para nuevos clientes)
   const {
@@ -37,11 +46,14 @@ export function FormularioClienteContainer({
   const handleFormSubmit = useCallback(
     async (datos: CrearClienteDTO | ActualizarClienteDTO) => {
       if (clienteSeleccionado?.id) {
-        // Editar cliente existente
-        await actualizarCliente(clienteSeleccionado.id, datos as ActualizarClienteDTO)
+        // ✅ Editar cliente existente con mutation
+        await actualizarMutation.mutateAsync({
+          id: clienteSeleccionado.id,
+          datos: datos as ActualizarClienteDTO,
+        })
       } else {
-        // Crear nuevo cliente
-        const nuevoCliente = await crearCliente(datos as CrearClienteDTO)
+        // ✅ Crear nuevo cliente con mutation
+        const nuevoCliente = await crearMutation.mutateAsync(datos as CrearClienteDTO)
 
         // Si tiene interés inicial, registrarlo
         const interesData = getInteresData()
@@ -60,13 +72,12 @@ export function FormularioClienteContainer({
         }
         resetInteres()
       }
-      cerrarModalFormulario()
+      // El modal se cerrará automáticamente cuando clienteSeleccionado sea null
     },
     [
       clienteSeleccionado,
-      crearCliente,
-      actualizarCliente,
-      cerrarModalFormulario,
+      crearMutation,
+      actualizarMutation,
       getInteresData,
       resetInteres,
     ]
@@ -75,8 +86,8 @@ export function FormularioClienteContainer({
   // Función de cancelación
   const handleFormCancel = useCallback(() => {
     resetInteres()
-    cerrarModalFormulario()
-  }, [cerrarModalFormulario, resetInteres])
+    // El componente padre (useClientesList) debe manejar el cierre
+  }, [resetInteres])
 
   const {
     formData,
@@ -102,11 +113,11 @@ export function FormularioClienteContainer({
 
   return (
     <FormularioCliente
-      isOpen={modalFormularioAbierto}
+      isOpen={modalAbierto}
       onClose={handleFormCancel}
       formData={formData}
       errors={errors}
-      isSubmitting={isSubmitting}
+      isSubmitting={isSubmitting || crearMutation.isPending || actualizarMutation.isPending}
       esEdicion={esEdicion}
       onSubmit={handleSubmit}
       onChange={handleChange}

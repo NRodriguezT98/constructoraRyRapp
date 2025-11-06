@@ -90,6 +90,10 @@ export interface ManzanaFormData {
   precioBase: number
   superficieTotal: number
   ubicacion?: string
+  // ✅ Campos opcionales para validación (pre-cargados por useProyectoConValidacion)
+  cantidadViviendasCreadas?: number
+  esEditable?: boolean
+  motivoBloqueado?: string
 }
 
 // Estados de UI

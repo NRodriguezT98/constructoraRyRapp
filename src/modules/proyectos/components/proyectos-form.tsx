@@ -268,20 +268,15 @@ export function ProyectosForm({
                   const esEliminable = esManzanaEliminable(index)
                   const manzanaReal = manzanasWatch?.[index] // ✅ Valor real del formulario
                   const motivoBloqueado = manzanaReal?.id ? obtenerMotivoBloqueado(manzanaReal.id) : ''
-                  const estadoManzana = manzanaReal?.id ? manzanasState.get(manzanaReal.id) : null
 
-                  // Debug logging
-                  if (isEditing && index === 0) {
-                    console.log('🎨 [ProyectosForm] Renderizando manzana:', {
-                      index,
-                      manzanaId: manzanaReal?.id,
-                      nombre: manzanaReal?.nombre,
-                      esEditable,
-                      esEliminable,
-                      estadoManzana,
-                      totalManzanasEnState: manzanasState.size,
-                    })
-                  }
+                  // ✅ OPTIMIZACIÓN: Usar datos precargados si existen, sino usar manzanasState (fallback)
+                  const cantidadViviendasCreadas = manzanaReal?.cantidadViviendasCreadas ??
+                    (manzanaReal?.id ? manzanasState.get(manzanaReal.id)?.cantidadViviendas : undefined)
+
+                  const tieneValidacion = isEditing && (
+                    manzanaReal?.esEditable !== undefined ||
+                    (manzanaReal?.id && manzanasState.has(manzanaReal.id))
+                  )
 
                   return (
                     <motion.div
@@ -300,7 +295,7 @@ export function ProyectosForm({
                             Manzana #{index + 1}
                           </span>
                           {/* Badge de estado */}
-                          {isEditing && estadoManzana && (
+                          {tieneValidacion && (
                             <div className="flex items-center gap-1.5">
                               {esEditable ? (
                                 <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-100 dark:bg-green-900/30 border border-green-300 dark:border-green-700">
@@ -309,14 +304,14 @@ export function ProyectosForm({
                                     Editable
                                   </span>
                                 </div>
-                              ) : (
+                              ) : cantidadViviendasCreadas !== undefined && cantidadViviendasCreadas > 0 && (
                                 <div
                                   className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-700"
                                   title={motivoBloqueado}
                                 >
                                   <Lock className="w-3 h-3 text-red-600 dark:text-red-400" />
                                   <span className="text-[10px] font-medium text-red-700 dark:text-red-300">
-                                    {estadoManzana.cantidadViviendas} vivienda{estadoManzana.cantidadViviendas !== 1 ? 's' : ''}
+                                    {cantidadViviendasCreadas} vivienda{cantidadViviendasCreadas !== 1 ? 's' : ''}
                                   </span>
                                 </div>
                               )}

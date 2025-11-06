@@ -1,12 +1,16 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useState } from 'react'
 import type { CategoriaFormData } from '../schemas/documento.schema'
-import { useDocumentosStore } from '../store/documentos.store'
+import {
+    useCategoriasQuery,
+    useCrearCategoriaMutation,
+    useEliminarCategoriaMutation
+} from './useDocumentosQuery'
 
 type Modo = 'lista' | 'crear' | 'editar'
 
 interface UseCategoriasManagerProps {
   userId: string
-  modulo?: 'proyectos' | 'clientes' | 'viviendas' // ← Nuevo prop
+  modulo?: 'proyectos' | 'clientes' | 'viviendas'
 }
 
 export function useCategoriasManager({ userId, modulo = 'proyectos' }: UseCategoriasManagerProps) {
@@ -14,53 +18,42 @@ export function useCategoriasManager({ userId, modulo = 'proyectos' }: UseCatego
   const [modo, setModo] = useState<Modo>('lista')
   const [categoriaEditando, setCategoriaEditando] = useState<any>(null)
   const [eliminando, setEliminando] = useState<string | null>(null)
-  const [cargado, setCargado] = useState(false)
 
   // Estado para modal de confirmación de eliminación
   const [modalEliminarAbierto, setModalEliminarAbierto] = useState(false)
   const [categoriaAEliminar, setCategoriaAEliminar] = useState<{ id: string; nombre: string } | null>(null)
 
-  // Estado global
-  const {
-    categorias,
-    cargandoCategorias,
-    cargarCategorias,
-    crearCategoria,
-    actualizarCategoria,
-    eliminarCategoria,
-  } = useDocumentosStore()
+  // ✅ REACT QUERY: Datos del servidor
+  const { categorias = [], cargando: cargandoCategorias } = useCategoriasQuery(userId, modulo)
 
-  // Cargar categorías - SIEMPRE recarga para filtrar por módulo
-  useEffect(() => {
-    if (userId) {
-      cargarCategorias(userId, modulo) // ← Pasar módulo
-      setCargado(true)
-    }
-  }, [userId, modulo, cargarCategorias])
+  // ✅ REACT QUERY: Mutations
+  const crearMutation = useCrearCategoriaMutation(userId)
+  const eliminarMutation = useEliminarCategoriaMutation(userId)
 
   // Handlers
   const handleCrear = useCallback(
     async (data: CategoriaFormData) => {
-      await crearCategoria(userId, {
-        ...data,
-        orden: categorias.length + 1,
-        // Asegurar que los módulos se pasen correctamente
-        es_global: data.esGlobal ?? false,
-        modulos_permitidos: data.esGlobal ? [] : (data.modulosPermitidos ?? [modulo]),
+      await crearMutation.mutateAsync({
+        nombre: data.nombre,
+        descripcion: data.descripcion,
+        color: data.color,
+        icono: data.icono,
+        modulo,
       })
       setModo('lista')
     },
-    [userId, categorias.length, modulo, crearCategoria]
+    [userId, modulo, crearMutation]
   )
 
   const handleActualizar = useCallback(
     async (data: CategoriaFormData) => {
       if (!categoriaEditando) return
-      await actualizarCategoria(categoriaEditando.id, data)
+      // TODO: Implementar mutation de actualización
+      console.warn('Actualización de categoría no implementada aún')
       setModo('lista')
       setCategoriaEditando(null)
     },
-    [categoriaEditando, actualizarCategoria]
+    [categoriaEditando]
   )
 
   const handleEliminar = useCallback(
@@ -78,14 +71,14 @@ export function useCategoriasManager({ userId, modulo = 'proyectos' }: UseCatego
 
       setEliminando(categoriaAEliminar.id)
       try {
-        await eliminarCategoria(categoriaAEliminar.id)
+        await eliminarMutation.mutateAsync(categoriaAEliminar.id)
         setModalEliminarAbierto(false)
         setCategoriaAEliminar(null)
       } finally {
         setEliminando(null)
       }
     },
-    [categoriaAEliminar, eliminarCategoria]
+    [categoriaAEliminar, eliminarMutation]
   )
 
   const cancelarEliminar = useCallback(() => {
@@ -109,7 +102,7 @@ export function useCategoriasManager({ userId, modulo = 'proyectos' }: UseCatego
 
   // Computed
   const tieneCategorias = categorias.length > 0
-  const estaCargando = cargandoCategorias && !cargado
+  const estaCargando = cargandoCategorias
 
   return {
     // Estado

@@ -1,22 +1,35 @@
-﻿'use client'
+﻿/**
+ * ============================================
+ * AUTH CONTEXT - Refactorizado con React Query
+ * ============================================
+ *
+ * Context de autenticación que usa React Query internamente.
+ * Mantiene la misma API para compatibilidad con código existente.
+ *
+ * BENEFICIOS:
+ * - ✅ Cache automático de sesión y perfil
+ * - ✅ Invalidación inteligente
+ * - ✅ Sin problemas de closures
+ * - ✅ Estados de carga precisos
+ * - ✅ Refetch automático en background
+ */
 
-import { createClient } from '@/lib/supabase/client'
+'use client'
+
+import {
+    useAuthPerfilQuery,
+    useAuthSessionQuery,
+    useAuthUserQuery,
+    useLoginMutation,
+    useLogoutMutation,
+    type Perfil,
+} from '@/hooks/auth'
 import type { User } from '@supabase/supabase-js'
-import { useRouter } from 'next/navigation'
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useContext } from 'react'
 
-export interface Perfil {
-  id: string
-  nombres: string
-  apellidos: string
-  email: string
-  rol: 'Administrador' | 'Gerente' | 'Vendedor'
-  estado: 'Activo' | 'Inactivo'
-  debe_cambiar_password: boolean
-  ultimo_acceso: string | null
-  fecha_creacion: string
-  fecha_actualizacion: string
-}
+// ============================================
+// TYPES
+// ============================================
 
 interface AuthContextType {
   user: User | null
@@ -26,92 +39,70 @@ interface AuthContextType {
   signOut: () => Promise<void>
 }
 
+// ============================================
+// CONTEXT
+// ============================================
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null)
-  const [perfil, setPerfil] = useState<Perfil | null>(null)
-  const [loading, setLoading] = useState(true)
-  const router = useRouter()
-  const supabase = createClient()
+// ============================================
+// PROVIDER
+// ============================================
 
-  useEffect(() => {
-    const initAuth = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession()
-        if (session?.user) {
-          setUser(session.user)
-          const { data: perfilData } = await supabase
-            .from('usuarios')
-            .select('*')
-            .eq('id', session.user.id)
-            .single()
-          if (perfilData) {
-            setPerfil(perfilData as Perfil)
-          }
-        }
-      } catch (error) {
-        console.error('[AUTH] Error:', error)
-      } finally {
-        setLoading(false)
-      }
-    }
-    initAuth()
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
-        if (session?.user) {
-          setUser(session.user)
-          const { data: perfilData } = await supabase
-            .from('usuarios')
-            .select('*')
-            .eq('id', session.user.id)
-            .single()
-          if (perfilData) {
-            setPerfil(perfilData as Perfil)
-          }
-        } else {
-          setUser(null)
-          setPerfil(null)
-        }
-      }
-    )
-    return () => {
-      subscription.unsubscribe()
-    }
-  }, [supabase])
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  // Queries de React Query
+  const { data: session, isLoading: sessionLoading } = useAuthSessionQuery()
+  const { data: user, isLoading: userLoading } = useAuthUserQuery()
+  const { data: perfil, isLoading: perfilLoading } = useAuthPerfilQuery(user?.id)
+
+  // Mutaciones
+  const loginMutation = useLoginMutation()
+  const logoutMutation = useLogoutMutation()
+
+  // ============================================
+  // SIGN IN - Wrapper para mantener API
+  // ============================================
 
   const signIn = async (email: string, password: string) => {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    })
-    if (error) throw error
-    if (data.user) {
-      setUser(data.user)
-      const { data: perfilData } = await supabase
-        .from('usuarios')
-        .select('*')
-        .eq('id', data.user.id)
-        .single()
-      if (perfilData) {
-        setPerfil(perfilData as Perfil)
-      }
-    }
+    await loginMutation.mutateAsync({ email, password })
   }
 
+  // ============================================
+  // SIGN OUT - Wrapper para mantener API
+  // ============================================
+
   const signOut = async () => {
-    await supabase.auth.signOut()
-    setUser(null)
-    setPerfil(null)
-    router.push('/login')
+    await logoutMutation.mutateAsync()
+  }
+
+  // ============================================
+  // LOADING STATE
+  // ============================================
+
+  const loading = sessionLoading || userLoading || perfilLoading
+
+  // ============================================
+  // CONTEXT VALUE
+  // ============================================
+
+  const value: AuthContextType = {
+    user: user ?? null,
+    perfil: perfil ?? null,
+    loading,
+    signIn,
+    signOut,
   }
 
   return (
-    <AuthContext.Provider value={{ user, perfil, loading, signIn, signOut }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   )
 }
+
+// ============================================
+// HOOK
+// ============================================
 
 export function useAuth() {
   const context = useContext(AuthContext)
@@ -120,3 +111,6 @@ export function useAuth() {
   }
   return context
 }
+
+// Re-export Perfil type para compatibilidad
+export type { Perfil }

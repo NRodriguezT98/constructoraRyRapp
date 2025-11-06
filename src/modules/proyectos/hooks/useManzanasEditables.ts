@@ -35,15 +35,12 @@ export function useManzanasEditables(): UseManzanasEditablesReturn {
   const validarManzanas = useCallback(async (manzanasIds: string[]) => {
     if (manzanasIds.length === 0) return
 
-    console.log('🔍 [useManzanasEditables] Iniciando validación de manzanas:', manzanasIds)
     setCargando(true)
     const newState = new Map<string, ManzanaEditableState>()
 
     try {
       // Consultar viviendas por cada manzana
       for (const manzanaId of manzanasIds) {
-        console.log(`🔄 Procesando manzana ID: ${manzanaId}`)
-
         // Obtener datos de la manzana (maybeSingle permite 0 filas sin error)
         const { data: manzana, error: manzanaError } = await supabase
           .from('manzanas')
@@ -52,15 +49,12 @@ export function useManzanasEditables(): UseManzanasEditablesReturn {
           .maybeSingle() // ← CAMBIO CRÍTICO: permite 0 resultados
 
         if (manzanaError) {
-          console.error('❌ Error obteniendo manzana:', manzanaId, manzanaError)
-          console.error('❌ Código de error:', manzanaError.code)
-          console.error('❌ Mensaje:', manzanaError.message)
+          console.error('Error obteniendo manzana:', manzanaId, manzanaError)
           continue
         }
 
         // Si la manzana NO existe en DB, es una manzana nueva (aún no persistida)
         if (!manzana) {
-          console.warn('⚠️ Manzana NO encontrada en DB (probablemente es nueva):', manzanaId)
           // Marcamos como editable porque no está en DB todavía
           newState.set(manzanaId, {
             id: manzanaId,
@@ -72,8 +66,6 @@ export function useManzanasEditables(): UseManzanasEditablesReturn {
           continue
         }
 
-        console.log('✅ Manzana encontrada:', manzana.nombre, '(ID:', manzanaId, ')')
-
         // Contar viviendas asociadas
         const { count, error: countError } = await supabase
           .from('viviendas')
@@ -81,20 +73,12 @@ export function useManzanasEditables(): UseManzanasEditablesReturn {
           .eq('manzana_id', manzanaId)
 
         if (countError) {
-          console.error('❌ Error contando viviendas para manzana:', manzana.nombre, countError)
-          console.error('❌ Código de error:', countError.code)
-          console.error('❌ Mensaje:', countError.message)
+          console.error('Error contando viviendas para manzana:', manzana.nombre, countError)
           continue
         }
 
         const cantidadViviendas = count || 0
         const esEditable = cantidadViviendas === 0
-
-        console.log(
-          `📊 Manzana "${manzana.nombre}": ${cantidadViviendas} viviendas → ${
-            esEditable ? '🔓 EDITABLE' : '🔒 BLOQUEADA'
-          }`
-        )
 
         newState.set(manzanaId, {
           id: manzanaId,
@@ -105,10 +89,9 @@ export function useManzanasEditables(): UseManzanasEditablesReturn {
         })
       }
 
-      console.log('✅ [useManzanasEditables] Validación completada. Estado final:', newState)
       setManzanasState(newState)
     } catch (error) {
-      console.error('❌ [useManzanasEditables] Error validando manzanas:', error)
+      console.error('Error validando manzanas:', error)
     } finally {
       setCargando(false)
     }

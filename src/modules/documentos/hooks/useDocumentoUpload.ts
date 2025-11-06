@@ -2,7 +2,7 @@ import { DragEvent, useCallback, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useAuth } from '../../../contexts/auth-context'
 import { documentoConArchivoSchema } from '../schemas/documento.schema'
-import { useDocumentosStore } from '../store/documentos.store'
+import { useCategoriasQuery, useSubirDocumentoMutation } from './useDocumentosQuery'
 
 type UploadFormData = {
   titulo: string
@@ -35,8 +35,11 @@ export function useDocumentoUpload({
   // Auth
   const { user } = useAuth()
 
-  // Store
-  const { categorias, subiendoDocumento, subirDocumento } = useDocumentosStore()
+  // Categorías desde React Query
+  const { categorias = [] } = useCategoriasQuery(user?.id, 'proyectos')
+
+  // Mutation para subir documento
+  const { mutateAsync: subirDocumento, isPending: subiendoDocumento } = useSubirDocumentoMutation(proyectoId)
 
   // Form
   const {
@@ -155,15 +158,15 @@ export function useDocumentoUpload({
       }
 
       try {
-        await subirDocumento(
-          {
-            ...data,
-            archivo: archivoSeleccionado,
-            proyecto_id: proyectoId,
-            subido_por: user.id,
-          },
-          user.id
-        )
+        await subirDocumento({
+          archivo: archivoSeleccionado,
+          titulo: data.titulo,
+          descripcion: data.descripcion,
+          categoriaId: data.categoria_id,
+          etiquetas: data.etiquetas,
+          esImportante: data.es_importante,
+          userId: user.id,
+        })
 
         // Reset form
         reset()
@@ -173,7 +176,7 @@ export function useDocumentoUpload({
         console.error('Error al subir documento:', error)
       }
     },
-    [archivoSeleccionado, user, proyectoId, subirDocumento, reset, limpiarArchivo, onSuccess]
+    [archivoSeleccionado, user, subirDocumento, reset, limpiarArchivo, onSuccess]
   )
 
   // Helpers

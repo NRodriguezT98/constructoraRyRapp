@@ -2,7 +2,7 @@
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { DocumentosVivienda } from '@/modules/viviendas/components/documentos-vivienda'
+import { DocumentoUploadVivienda, DocumentosListaVivienda } from '@/modules/viviendas/components/documentos'
 import type { Vivienda } from '@/modules/viviendas/types'
 import { formatCurrency, formatDate } from '@/shared/utils'
 import { motion } from 'framer-motion'
@@ -24,6 +24,7 @@ import {
     Plus,
     Receipt,
     Trash2,
+    Upload,
     User,
     UserPlus
 } from 'lucide-react'
@@ -737,9 +738,52 @@ function LinderosTab({ vivienda }: { vivienda: Vivienda }) {
 // TAB: DOCUMENTACIÓN
 // ============================================
 function DocumentosTab({ viviendaId }: { viviendaId: string }) {
+  // Estado local para vistas
+  const [showUpload, setShowUpload] = useState(false)
+
+  // Si está mostrando formulario de upload
+  if (showUpload) {
+    return (
+      <DocumentoUploadVivienda
+        viviendaId={viviendaId}
+        onSuccess={() => setShowUpload(false)}
+        onCancel={() => setShowUpload(false)}
+      />
+    )
+  }
+
+  // Vista principal: Lista de documentos
   return (
-    <motion.div key='documentos' initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
-      <DocumentosVivienda viviendaId={viviendaId} />
+    <motion.div key='documentos' initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="space-y-4">
+      {/* Header con acciones */}
+      <div className='rounded-lg border border-orange-200 bg-white p-4 shadow-sm dark:border-orange-800 dark:bg-gray-800'>
+        <div className='flex items-center justify-between'>
+          <div className='flex items-center gap-2.5'>
+            <div className='rounded-lg bg-gradient-to-br from-orange-500 to-amber-600 p-2.5'>
+              <FileText className='h-5 w-5 text-white' />
+            </div>
+            <div>
+              <h2 className='text-base font-bold text-gray-900 dark:text-white'>
+                Documentos de la Vivienda
+              </h2>
+              <p className='text-xs text-gray-500 dark:text-gray-400'>
+                Certificados, planos, escrituras y más
+              </p>
+            </div>
+          </div>
+
+          <button
+            onClick={() => setShowUpload(true)}
+            className='flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-orange-600 to-amber-600 px-3 py-1.5 text-xs font-medium text-white shadow-md transition-all hover:from-orange-700 hover:to-amber-700 hover:shadow-lg'
+          >
+            <Upload className='h-3.5 w-3.5' />
+            <span>Subir Documento</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Lista de documentos */}
+      <DocumentosListaVivienda viviendaId={viviendaId} />
     </motion.div>
   )
 }

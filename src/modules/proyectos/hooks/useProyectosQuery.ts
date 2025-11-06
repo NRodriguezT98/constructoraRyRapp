@@ -21,7 +21,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { proyectosService } from '../services/proyectos.service'
-import type { FiltroProyecto, Proyecto, ProyectoFormData } from '../types'
+import type { FiltroProyecto, ProyectoFormData } from '../types'
 
 // ============================================
 // QUERY KEYS (Constantes para cache)
@@ -48,10 +48,7 @@ export function useProyectosQuery() {
     refetch: refrescar,
   } = useQuery({
     queryKey: proyectosKeys.lists(),
-    queryFn: async () => {
-      console.log('🏗️ [REACT QUERY] Fetching proyectos...')
-      return await proyectosService.obtenerProyectos()
-    },
+    queryFn: () => proyectosService.obtenerProyectos(),
     staleTime: 5 * 60 * 1000, // 5 minutos - datos frescos
     gcTime: 10 * 60 * 1000, // 10 minutos - retención en cache
   })
@@ -60,43 +57,36 @@ export function useProyectosQuery() {
   const crearProyectoMutation = useMutation({
     mutationFn: (data: ProyectoFormData) => proyectosService.crearProyecto(data),
     onSuccess: (nuevoProyecto) => {
-      // Invalidar cache de lista de proyectos
       queryClient.invalidateQueries({ queryKey: proyectosKeys.lists() })
-      
       toast.success('Proyecto creado correctamente', {
         description: `${nuevoProyecto.nombre} ha sido creado exitosamente`,
       })
-      
-      console.log('✅ [REACT QUERY] Proyecto creado:', nuevoProyecto.id)
     },
     onError: (error: Error) => {
       toast.error('Error al crear proyecto', {
         description: error.message,
       })
-      console.error('❌ [REACT QUERY] Error crear proyecto:', error)
     },
   })
 
   // ✅ MUTATION: Actualizar proyecto
   const actualizarProyectoMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Partial<ProyectoFormData> }) =>
-      proyectosService.actualizarProyecto(id, data),
+    mutationFn: ({ id, data }: { id: string; data: Partial<ProyectoFormData> }) => {
+      return proyectosService.actualizarProyecto(id, data)
+    },
     onSuccess: (proyectoActualizado) => {
       // Invalidar cache de lista Y detalle
       queryClient.invalidateQueries({ queryKey: proyectosKeys.lists() })
       queryClient.invalidateQueries({ queryKey: proyectosKeys.detail(proyectoActualizado.id) })
-      
+
       toast.success('Proyecto actualizado', {
         description: `${proyectoActualizado.nombre} ha sido actualizado`,
       })
-      
-      console.log('✅ [REACT QUERY] Proyecto actualizado:', proyectoActualizado.id)
     },
     onError: (error: Error) => {
       toast.error('Error al actualizar proyecto', {
         description: error.message,
       })
-      console.error('❌ [REACT QUERY] Error actualizar proyecto:', error)
     },
   })
 
@@ -104,19 +94,14 @@ export function useProyectosQuery() {
   const eliminarProyectoMutation = useMutation({
     mutationFn: (id: string) => proyectosService.eliminarProyecto(id),
     onSuccess: (_, id) => {
-      // Invalidar cache de lista y remover detalle
       queryClient.invalidateQueries({ queryKey: proyectosKeys.lists() })
       queryClient.removeQueries({ queryKey: proyectosKeys.detail(id) })
-      
       toast.success('Proyecto eliminado correctamente')
-      
-      console.log('✅ [REACT QUERY] Proyecto eliminado:', id)
     },
     onError: (error: Error) => {
       toast.error('Error al eliminar proyecto', {
         description: error.message,
       })
-      console.error('❌ [REACT QUERY] Error eliminar proyecto:', error)
     },
   })
 
@@ -125,8 +110,9 @@ export function useProyectosQuery() {
     cargando,
     error: error as Error | null,
     crearProyecto: crearProyectoMutation.mutateAsync,
-    actualizarProyecto: (id: string, data: Partial<ProyectoFormData>) =>
-      actualizarProyectoMutation.mutateAsync({ id, data }),
+    actualizarProyecto: (id: string, data: Partial<ProyectoFormData>) => {
+      return actualizarProyectoMutation.mutateAsync({ id, data })
+    },
     eliminarProyecto: eliminarProyectoMutation.mutateAsync,
     refrescar,
     // Estados de mutations
@@ -146,12 +132,11 @@ export function useProyectoQuery(id?: string) {
     error,
   } = useQuery({
     queryKey: proyectosKeys.detail(id!),
-    queryFn: async () => {
-      console.log('🏗️ [REACT QUERY] Fetching proyecto detalle:', id)
-      return await proyectosService.obtenerProyecto(id!)
-    },
+    queryFn: () => proyectosService.obtenerProyecto(id!),
     enabled: !!id, // Solo ejecutar si hay ID
     staleTime: 3 * 60 * 1000, // 3 minutos para detalles
+    retry: 2, // Reintentar 2 veces si falla
+    retryDelay: 1000, // Esperar 1s entre reintentos
   })
 
   return {
@@ -286,7 +271,7 @@ export function useEstadisticasProyectos() {
     const completados = proyectos.filter(p => p.estado === 'completado').length
 
     const presupuestoTotal = proyectos.reduce((sum, p) => sum + p.presupuesto, 0)
-    
+
     const progresoPromedio =
       proyectos.length > 0
         ? proyectos.reduce((sum, p) => sum + (p.progreso || 0), 0) / proyectos.length

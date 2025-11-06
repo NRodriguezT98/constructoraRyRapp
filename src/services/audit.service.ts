@@ -196,13 +196,11 @@ class AuditService {
         .insert(auditData)
 
       if (error) {
-        console.error('❌ Error registrando auditoría:', error)
+        console.error('Error registrando auditoría:', error)
         // No lanzamos error para no interrumpir el flujo principal
-      } else {
-        console.log(`✅ Auditoría registrada: ${accion} en ${tabla} (${registroId})`)
       }
     } catch (error) {
-      console.error('❌ Excepción en auditoría:', error)
+      console.error('Excepción en auditoría:', error)
       // Fallar silenciosamente para no interrumpir el flujo de la aplicación
     }
   }

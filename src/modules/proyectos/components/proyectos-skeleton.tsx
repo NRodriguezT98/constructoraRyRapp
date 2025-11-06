@@ -2,10 +2,11 @@
 
 import { motion } from 'framer-motion'
 import { Skeleton } from '../../../shared/components/ui/Loading'
-import { useVistaProyectos } from '../hooks/useProyectos'
+// ✅ REACT QUERY: Hooks con cache inteligente
+import { useVistaProyectosQuery } from '../hooks'
 
 export function ProyectosSkeleton() {
-  const { vista } = useVistaProyectos()
+  const { vista } = useVistaProyectosQuery()
 
   // Generar 6 skeletons para simular carga
   const skeletons = Array.from({ length: 6 })

@@ -1,186 +1,179 @@
 /**
- * ============================================
- * HOOK: useDocumentosVivienda
- * ============================================
- * Gestiona la lógica de documentos de una vivienda
- * Sigue el patrón de useDocumentosListaCliente
+ * @file useDocumentosVivienda.ts
+ * @description Hook de React Query para gestión de documentos de viviendas
+ * @module viviendas/hooks
  */
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
-import type { Vivienda } from '../types'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { toast } from 'sonner'
+import {
+    type ActualizarDocumentoParams,
+    documentosViviendaService,
+    type SubirDocumentoParams,
+} from '../services/documentos-vivienda.service'
 
-interface UseDocumentosViviendaProps {
-  viviendaId: string
-}
+/**
+ * Hook para gestionar documentos de una vivienda
+ */
+export function useDocumentosVivienda(viviendaId: string) {
+  const queryClient = useQueryClient()
 
-interface DocumentoVirtual {
-  id: string
-  titulo: string
-  descripcion: string
-  url_storage: string
-  nombre_original: string
-  nombre_archivo: string
-  tipo_mime: string
-  tamano_bytes: number
-  es_importante: boolean
-  fecha_subida: string
-}
+  // ✅ QUERY: Obtener documentos
+  const {
+    data: documentos = [],
+    isLoading,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: ['documentos-vivienda', viviendaId],
+    queryFn: () => documentosViviendaService.obtenerDocumentos(viviendaId),
+    staleTime: 1000 * 60 * 5, // 5 minutos
+    gcTime: 1000 * 60 * 10, // 10 minutos en caché
+    enabled: !!viviendaId, // Solo ejecutar si hay ID
+  })
 
-export function useDocumentosVivienda({ viviendaId }: UseDocumentosViviendaProps) {
-  const [vivienda, setVivienda] = useState<Vivienda | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [uploading, setUploading] = useState(false)
+  // ✅ MUTATION: Subir documento
+  const subirMutation = useMutation({
+    mutationFn: (params: SubirDocumentoParams) =>
+      documentosViviendaService.subirDocumento(params),
+    onMutate: () => {
+      toast.loading('Subiendo documento...', { id: 'upload-doc' })
+    },
+    onSuccess: (data) => {
+      // Invalidar queries relacionadas
+      queryClient.invalidateQueries({
+        queryKey: ['documentos-vivienda', viviendaId],
+      })
+      queryClient.invalidateQueries({
+        queryKey: ['estadisticas-documentos-vivienda', viviendaId],
+      })
 
-  // ✅ CARGAR DATOS DE LA VIVIENDA
-  useEffect(() => {
-    let mounted = true
+      toast.success(`Documento "${data.titulo}" subido correctamente`, {
+        id: 'upload-doc',
+      })
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Error al subir documento', {
+        id: 'upload-doc',
+      })
+    },
+  })
 
-    const cargarVivienda = async () => {
-      setLoading(true)
-      setError(null)
+  // ✅ MUTATION: Actualizar documento
+  const actualizarMutation = useMutation({
+    mutationFn: (params: ActualizarDocumentoParams) =>
+      documentosViviendaService.actualizarDocumento(params),
+    onMutate: () => {
+      toast.loading('Actualizando documento...', { id: 'update-doc' })
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({
+        queryKey: ['documentos-vivienda', viviendaId],
+      })
 
-      try {
-        console.log('🔍 [DOCUMENTOS VIVIENDA] Cargando vivienda:', viviendaId)
-        const { viviendasService } = await import('../services/viviendas.service')
-        const viviendaData = await viviendasService.obtenerVivienda(viviendaId)
+      toast.success(`Documento "${data.titulo}" actualizado`, {
+        id: 'update-doc',
+      })
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Error al actualizar', {
+        id: 'update-doc',
+      })
+    },
+  })
 
-        if (!mounted) return // ← Prevenir actualizaciones si el componente se desmontó
+  // ✅ MUTATION: Eliminar documento
+  const eliminarMutation = useMutation({
+    mutationFn: (id: string) =>
+      documentosViviendaService.eliminarDocumento(id),
+    onMutate: () => {
+      toast.loading('Eliminando documento...', { id: 'delete-doc' })
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['documentos-vivienda', viviendaId],
+      })
+      queryClient.invalidateQueries({
+        queryKey: ['estadisticas-documentos-vivienda', viviendaId],
+      })
 
-        console.log('📄 [DOCUMENTOS VIVIENDA] Vivienda cargada:', viviendaData)
-        console.log('📄 [DOCUMENTOS VIVIENDA] Certificado URL:', viviendaData.certificado_tradicion_url)
-        setVivienda(viviendaData)
-      } catch (err) {
-        if (!mounted) return
-        console.error('❌ Error al cargar documentos de vivienda:', err)
-        setError(err instanceof Error ? err.message : 'Error desconocido')
-      } finally {
-        if (mounted) setLoading(false)
-      }
-    }
+      toast.success('Documento eliminado correctamente', {
+        id: 'delete-doc',
+      })
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Error al eliminar', {
+        id: 'delete-doc',
+      })
+    },
+  })
 
-    cargarVivienda()
+  // ✅ MUTATION: Descargar documento
+  const descargarMutation = useMutation({
+    mutationFn: async ({
+      id,
+      nombreOriginal,
+    }: {
+      id: string
+      nombreOriginal: string
+    }) => {
+      const blob = await documentosViviendaService.descargarDocumento(id)
 
-    return () => {
-      mounted = false
-      setLoading(false) // ✅ Limpiar estado de cargando
-    }
-  }, [viviendaId]) // ← Solo depende de viviendaId, no de la función
+      // Crear link de descarga
+      const url = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = nombreOriginal
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      window.URL.revokeObjectURL(url)
 
-  // ✅ FUNCIÓN PARA REFRESCAR MANUALMENTE
-  const refrescar = useCallback(async () => {
-    setLoading(true)
-    setError(null)
-
-    try {
-      const { viviendasService } = await import('../services/viviendas.service')
-      const viviendaData = await viviendasService.obtenerVivienda(viviendaId)
-      setVivienda(viviendaData)
-    } catch (err) {
-      console.error('❌ Error al refrescar:', err)
-      setError(err instanceof Error ? err.message : 'Error desconocido')
-    } finally {
-      setLoading(false)
-    }
-  }, [viviendaId])
-
-  // ✅ DOCUMENTO VIRTUAL PARA CERTIFICADO DE TRADICIÓN
-  const certificadoDocumento = useMemo((): DocumentoVirtual | null => {
-    console.log('🔍 [CERTIFICADO MEMO] Evaluando certificado...')
-    console.log('🔍 [CERTIFICADO MEMO] Vivienda:', vivienda)
-    console.log('🔍 [CERTIFICADO MEMO] certificado_tradicion_url:', vivienda?.certificado_tradicion_url)
-
-    if (!vivienda?.certificado_tradicion_url) {
-      console.log('❌ [CERTIFICADO MEMO] No hay URL de certificado')
-      return null
-    }
-
-    const matricula = vivienda.matricula_inmobiliaria || 'N/A'
-    const fechaCreacion = typeof vivienda.fecha_creacion === 'string'
-      ? vivienda.fecha_creacion
-      : new Date().toISOString()
-
-    const doc = {
-      id: 'certificado-tradicion',
-      titulo: 'Certificado de Tradición y Libertad',
-      descripcion: `Matrícula Inmobiliaria: ${matricula}`,
-      url_storage: vivienda.certificado_tradicion_url,
-      nombre_original: `certificado-tradicion-${matricula}.pdf`,
-      nombre_archivo: `certificado-tradicion-${matricula}.pdf`,
-      tipo_mime: 'application/pdf',
-      tamano_bytes: 1024,
-      es_importante: true,
-      fecha_subida: fechaCreacion,
-    }
-
-    console.log('✅ [CERTIFICADO MEMO] Documento creado:', doc)
-    return doc
-  }, [vivienda])
-
-  // ✅ LISTA DE TODOS LOS DOCUMENTOS (actualmente solo certificado)
-  const documentos = useMemo(() => {
-    const docs: DocumentoVirtual[] = []
-
-    if (certificadoDocumento) {
-      docs.push(certificadoDocumento)
-    }
-
-    return docs
-  }, [certificadoDocumento])
-
-  // ✅ HANDLERS
-  const handleVerDocumento = useCallback((url: string) => {
-    window.open(url, '_blank', 'noopener,noreferrer')
-  }, [])
-
-  const handleDescargarDocumento = useCallback((url: string, nombreArchivo: string) => {
-    const link = document.createElement('a')
-    link.href = url
-    link.download = nombreArchivo
-    link.target = '_blank'
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-  }, [])
-
-  const handleSubirCertificado = useCallback(async (file: File) => {
-    setUploading(true)
-    setError(null)
-
-    try {
-      console.log('📤 [DOCUMENTOS VIVIENDA] Subiendo certificado...')
-      const { viviendasService } = await import('../services/viviendas.service')
-      const url = await viviendasService.actualizarCertificado(viviendaId, file)
-      console.log('✅ [DOCUMENTOS VIVIENDA] Certificado subido:', url)
-
-      // Recargar datos
-      await refrescar()
-    } catch (err) {
-      console.error('❌ Error al subir certificado:', err)
-      setError(err instanceof Error ? err.message : 'Error al subir certificado')
-      throw err
-    } finally {
-      setUploading(false)
-    }
-  }, [viviendaId, refrescar])
+      return true
+    },
+    onMutate: () => {
+      toast.loading('Descargando documento...', { id: 'download-doc' })
+    },
+    onSuccess: () => {
+      toast.success('Descarga iniciada', { id: 'download-doc' })
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Error al descargar', {
+        id: 'download-doc',
+      })
+    },
+  })
 
   return {
-    // Estado
-    vivienda,
-    loading,
-    error,
-    uploading,
-
-    // Documentos
+    // Data
     documentos,
-    certificadoDocumento,
-    hasCertificado: !!certificadoDocumento,
-    totalDocumentos: documentos.length,
+    isLoading,
+    error,
 
-    // Handlers
-    handleVerDocumento,
-    handleDescargarDocumento,
-    handleSubirCertificado,
-    refrescar,
+    // Actions
+    subirDocumento: subirMutation.mutateAsync,
+    actualizarDocumento: actualizarMutation.mutateAsync,
+    eliminarDocumento: eliminarMutation.mutateAsync,
+    descargarDocumento: descargarMutation.mutateAsync,
+    refetch,
+
+    // States
+    isSubiendo: subirMutation.isPending,
+    isActualizando: actualizarMutation.isPending,
+    isEliminando: eliminarMutation.isPending,
+    isDescargando: descargarMutation.isPending,
   }
+}
+
+/**
+ * Hook para obtener estadísticas de documentos
+ */
+export function useEstadisticasDocumentosVivienda(viviendaId: string) {
+  return useQuery({
+    queryKey: ['estadisticas-documentos-vivienda', viviendaId],
+    queryFn: () =>
+      documentosViviendaService.obtenerEstadisticas(viviendaId),
+    staleTime: 1000 * 60 * 5,
+    enabled: !!viviendaId,
+  })
 }

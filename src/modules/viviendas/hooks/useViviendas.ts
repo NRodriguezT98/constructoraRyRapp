@@ -1,7 +1,7 @@
-import { useCallback, useMemo, useState } from 'react'
-
+﻿import { useCallback, useMemo } from 'react'
+import { useViviendasQuery, useCrearViviendaMutation, useActualizarViviendaMutation, useEliminarViviendaMutation } from './useViviendasQuery'
 import type { Tables } from '@/lib/supabase/database.types'
-import { logger } from '@/shared/utils/logger'
+import type { FiltrosViviendas } from '../types'
 
 type Vivienda = Tables<'viviendas'>
 
@@ -15,119 +15,36 @@ interface UseViviendasReturn {
   eliminarVivienda: (id: string) => Promise<void>
 }
 
-export function useViviendas(): UseViviendasReturn {
-  const [viviendas, setViviendas] = useState<Vivienda[]>([])
-  const [cargando, setCargando] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+/**
+ * Hook para gestión de viviendas
+ * Refactorizado con React Query
+ */
+export function useViviendas(filtros?: FiltrosViviendas): UseViviendasReturn {
+  const { data: viviendas = [], isLoading: cargando, error, refetch } = useViviendasQuery(filtros || {})
+  const crearMutation = useCrearViviendaMutation()
+  const actualizarMutation = useActualizarViviendaMutation()
+  const eliminarMutation = useEliminarViviendaMutation()
 
   const refrescar = useCallback(async () => {
-    logger.debug('Refrescando lista de viviendas', {
-      module: 'VIVIENDAS',
-      action: 'refrescar',
-    })
-
-    setCargando(true)
-    setError(null)
-
-    try {
-      // TODO: Implementar llamada a API
-      // const data = await getViviendas()
-      // setViviendas(data)
-
-      // Datos mock temporales
-      setViviendas([])
-
-      logger.success('Viviendas cargadas exitosamente', {
-        module: 'VIVIENDAS',
-        metadata: { count: 0 },
-      })
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : 'Error desconocido'
-      setError(errorMessage)
-      logger.error('Error cargando viviendas', err as Error, {
-        module: 'VIVIENDAS',
-        action: 'refrescar',
-      })
-    } finally {
-      setCargando(false)
-    }
-  }, [])
+    await refetch()
+  }, [refetch])
 
   const crearVivienda = useCallback(async (data: any) => {
-    logger.debug('Creando nueva vivienda', {
-      module: 'VIVIENDAS',
-      action: 'crear',
-      metadata: data,
-    })
-
-    try {
-      // TODO: Implementar creación
-      logger.success('Vivienda creada exitosamente', {
-        module: 'VIVIENDAS',
-      })
-    } catch (err) {
-      logger.error('Error creando vivienda', err as Error, {
-        module: 'VIVIENDAS',
-        action: 'crear',
-      })
-      throw err
-    }
-  }, [])
+    await crearMutation.mutateAsync(data)
+  }, [crearMutation])
 
   const actualizarVivienda = useCallback(async (id: string, data: any) => {
-    logger.debug('Actualizando vivienda', {
-      module: 'VIVIENDAS',
-      action: 'actualizar',
-      metadata: { id, ...data },
-    })
-
-    try {
-      // TODO: Implementar actualización
-      logger.success('Vivienda actualizada exitosamente', {
-        module: 'VIVIENDAS',
-        metadata: { id },
-      })
-    } catch (err) {
-      logger.error('Error actualizando vivienda', err as Error, {
-        module: 'VIVIENDAS',
-        action: 'actualizar',
-      })
-      throw err
-    }
-  }, [])
+    await actualizarMutation.mutateAsync({ id, data })
+  }, [actualizarMutation])
 
   const eliminarVivienda = useCallback(async (id: string) => {
-    logger.debug('Eliminando vivienda', {
-      module: 'VIVIENDAS',
-      action: 'eliminar',
-      metadata: { id },
-    })
-
-    try {
-      // TODO: Implementar eliminación
-      logger.success('Vivienda eliminada exitosamente', {
-        module: 'VIVIENDAS',
-        metadata: { id },
-      })
-    } catch (err) {
-      logger.error('Error eliminando vivienda', err as Error, {
-        module: 'VIVIENDAS',
-        action: 'eliminar',
-      })
-      throw err
-    }
-  }, [])
-
-  // Cargar viviendas al inicializar
-  useMemo(() => {
-    refrescar()
-  }, [refrescar])
+    await eliminarMutation.mutateAsync(id)
+  }, [eliminarMutation])
 
   return {
     viviendas,
     cargando,
-    error,
+    error: error?.message || null,
     refrescar,
     crearVivienda,
     actualizarVivienda,

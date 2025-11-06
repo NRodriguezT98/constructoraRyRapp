@@ -5,6 +5,7 @@ import { construirURLCliente, resolverSlugCliente } from '@/lib/utils/slug.utils
 import { ProgresoProcesoBadge } from '@/modules/admin/procesos/components'
 import { ModalRegistrarInteres } from '@/modules/clientes/components/modals'
 import { useDocumentosClienteStore } from '@/modules/clientes/documentos/store/documentos-cliente.store'
+import { useClienteQuery } from '@/modules/clientes/hooks'
 import type { Cliente } from '@/modules/clientes/types'
 import { TIPOS_DOCUMENTO } from '@/modules/clientes/types'
 import { Tooltip } from '@/shared/components/ui'
@@ -66,11 +67,17 @@ function EstadoBadge({ estado }: { estado: string }) {
 export default function ClienteDetalleClient({ clienteId }: ClienteDetalleClientProps) {
   const router = useRouter()
   const { user } = useAuth()
-  const [cliente, setCliente] = useState<Cliente | null>(null)
-  const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<TabType>('general')
   const [modalInteresAbierto, setModalInteresAbierto] = useState(false)
   const [clienteUUID, setClienteUUID] = useState<string | null>(null)
+
+  // ✅ REACT QUERY: Cargar cliente automáticamente
+  const {
+    data: cliente,
+    isLoading: loading,
+    error,
+    refetch: recargarCliente,
+  } = useClienteQuery(clienteUUID)
 
   // Store de documentos
   const {
@@ -79,7 +86,7 @@ export default function ClienteDetalleClient({ clienteId }: ClienteDetalleClient
     cargarCategorias,
   } = useDocumentosClienteStore()
 
-  // ✅ NUEVO: Resolver slug a UUID
+  // ✅ Resolver slug a UUID
   useEffect(() => {
     const resolverSlug = async () => {
       const uuid = await resolverSlugCliente(clienteId)
@@ -94,75 +101,37 @@ export default function ClienteDetalleClient({ clienteId }: ClienteDetalleClient
     resolverSlug()
   }, [clienteId, router])
 
-  useEffect(() => {
-    if (!clienteUUID) return
-
-    let mounted = true
-
-    const cargarCliente = async () => {
-      setLoading(true)
-      try {
-        const { clientesService } = await import('@/modules/clientes/services/clientes.service')
-        const clienteData = await clientesService.obtenerCliente(clienteUUID)
-
-        if (!mounted) return
-
-        setCliente(clienteData)
-      } catch (error) {
-        if (!mounted) return
-
-        console.error('Error al cargar cliente:', error)
-        setCliente(null)
-      } finally {
-        if (mounted) setLoading(false)
-      }
-    }
-
-    cargarCliente()
-
-    return () => {
-      mounted = false
-      setLoading(false) // ✅ Limpiar loading
-    }
-  }, [clienteUUID])
-
   // Cargar categorías al montar
   useEffect(() => {
     if (user?.id) {
       cargarCategorias(user.id)
     }
-  }, [user?.id]) // ← Solo user.id, no cargarCategorias
+  }, [user?.id, cargarCategorias])
 
   // Listener para cambio de tab (desde otros componentes)
   useEffect(() => {
     const handleCambiarTab = (event: any) => {
-      const nuevoTab = event.detail as TabType;
-      console.log('Cambiando a tab:', nuevoTab);
-      setActiveTab(nuevoTab);
-    };
+      const nuevoTab = event.detail as TabType
+      console.log('Cambiando a tab:', nuevoTab)
+      setActiveTab(nuevoTab)
+    }
 
-    window.addEventListener('cambiar-tab', handleCambiarTab);
-    return () => window.removeEventListener('cambiar-tab', handleCambiarTab);
-  }, []);
+    window.addEventListener('cambiar-tab', handleCambiarTab)
+    return () => window.removeEventListener('cambiar-tab', handleCambiarTab)
+  }, [])
 
   // Listener para actualización de cliente (cuando se sube cédula)
   useEffect(() => {
     if (!clienteUUID) return
 
-    const handleClienteActualizado = async () => {
-      console.log('Cliente actualizado, recargando datos...');
-      try {
-        const { clientesService } = await import('@/modules/clientes/services/clientes.service');
-        const clienteData = await clientesService.obtenerCliente(clienteUUID);
-        setCliente(clienteData);
-      } catch (error) {
-        console.error('Error al recargar cliente:', error);
-      }
-    };
+    const handleClienteActualizado = () => {
+      console.log('Cliente actualizado, recargando datos...')
+      recargarCliente() // ✅ React Query refetch
+    }
 
-    window.addEventListener('cliente-actualizado', handleClienteActualizado);
-    return () => window.removeEventListener('cliente-actualizado', handleClienteActualizado);
-  }, [clienteUUID]);
+    window.addEventListener('cliente-actualizado', handleClienteActualizado)
+    return () => window.removeEventListener('cliente-actualizado', handleClienteActualizado)
+  }, [clienteUUID, recargarCliente])
 
   const handleEditar = () => {
     console.log('Editar cliente:', clienteUUID)
@@ -187,32 +156,29 @@ export default function ClienteDetalleClient({ clienteId }: ClienteDetalleClient
   const handleCrearNegociacion = () => {
     // Verificar si tiene cédula antes de navegar
     if (!cliente?.documento_identidad_url) {
-      alert('⚠️ Para crear negociaciones, primero debes subir la cédula del cliente en la pestaña "Documentos".')
+      alert(
+        '⚠️ Para crear negociaciones, primero debes subir la cédula del cliente en la pestaña "Documentos".'
+      )
       setActiveTab('documentos')
       return
     }
     // Navegar a la vista completa de crear negociación con URL amigable
     const clienteSlug = construirURLCliente({
-      id: clienteUUID,
+      id: clienteUUID!,
       nombres: cliente.nombres,
-      apellidos: cliente.apellidos
-    }).split('/').pop() // Extraer solo el slug
-    router.push(`/clientes/${clienteSlug}/negociaciones/crear?nombre=${encodeURIComponent(cliente?.nombre_completo || '')}` as any)
+      apellidos: cliente.apellidos,
+    })
+      .split('/')
+      .pop() // Extraer solo el slug
+    router.push(
+      `/clientes/${clienteSlug}/negociaciones/crear?nombre=${encodeURIComponent(cliente?.nombre_completo || '')}` as any
+    )
   }
 
   const handleInteresRegistrado = async () => {
     setModalInteresAbierto(false)
-    // Recargar datos del cliente para actualizar la lista de intereses
-    const cargarCliente = async () => {
-      try {
-        const { clientesService } = await import('@/modules/clientes/services/clientes.service')
-        const clienteData = await clientesService.obtenerCliente(clienteId)
-        setCliente(clienteData)
-      } catch (error) {
-        console.error('Error al recargar cliente:', error)
-      }
-    }
-    await cargarCliente()
+    // ✅ React Query refetch automático
+    recargarCliente()
   }
 
   if (loading) {

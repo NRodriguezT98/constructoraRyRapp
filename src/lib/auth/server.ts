@@ -19,19 +19,14 @@ import { cache } from 'react'
  * (en lugar de getSession() que solo lee cookies)
  */
 export const getServerSession = cache(async () => {
-  console.log('🔐 [SERVER AUTH] getServerSession() llamado')
-
   const supabase = await createServerSupabaseClient()
 
   // ✅ CAMBIO: getUser() valida el token, getSession() solo lee cookies
   const { data: { user }, error } = await supabase.auth.getUser()
 
   if (error || !user) {
-    console.log('  ❌ Sin sesión en server')
     return null
   }
-
-  console.log('  ✅ Sesión obtenida:', user.email)
 
   // Retornar objeto compatible con tipo Session
   return {
@@ -120,12 +115,9 @@ export async function canAccessModule(modulo: string): Promise<boolean> {
  * Para usar en Server Components
  */
 export async function getServerPermissions() {
-  console.log('🔑 [SERVER AUTH] getServerPermissions() llamado')
-
   const perfil = await getServerUserProfile()
 
   if (!perfil) {
-    console.log('  ❌ Sin perfil, permisos denegados')
     return {
       canCreate: false,
       canEdit: false,
@@ -144,8 +136,6 @@ export async function getServerPermissions() {
     canView: true, // Si llegó hasta aquí, tiene acceso
     isAdmin: rol === 'Administrador',
   }
-
-  console.log('  ✅ Permisos calculados:', { rol, ...permisos })
 
   return permisos
 }

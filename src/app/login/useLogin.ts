@@ -1,3 +1,4 @@
+import { showLoginSuccessToast } from '@/components/toasts/custom-toasts'
 import { traducirErrorSupabase } from '@/lib/utils/traducir-errores'
 import { auditLogService } from '@/services/audit-log.service'
 import { useRouter, useSearchParams } from 'next/navigation'
@@ -35,7 +36,7 @@ export function useLogin(): UseLoginReturn {
   const [mensajeExito, setMensajeExito] = useState('')
 
   // Hooks externos
-  const { signIn } = useAuth()
+  const { signIn, perfil } = useAuth()
   const router = useRouter()
   const searchParams = useSearchParams()
 
@@ -98,9 +99,12 @@ export function useLogin(): UseLoginReturn {
         const redirectTo = isInvalidRedirect ? '/' : redirectedFrom
         const destinoNombre = isInvalidRedirect ? 'Dashboard' : redirectedFrom.replace('/', '')
 
-        // Mostrar notificación de éxito
+        // Mostrar notificación de éxito moderna
         setLoginExitoso(true)
         setMensajeExito(`¡Bienvenido! Redirigiendo a ${destinoNombre}...`)
+
+        // Toast moderno personalizado (sin esperar perfil)
+        showLoginSuccessToast()
 
         // Esperar 1.5 segundos antes de redirigir (tiempo para mostrar notificación)
         setTimeout(() => {

@@ -1,19 +1,24 @@
-// ============================================
-// STORE: Documentos (Zustand)
-// ============================================
+/**
+ * ============================================
+ * STORE: Documentos (Zustand - SOLO UI)
+ * ============================================
+ *
+ * REFACTORIZADO: Eliminadas acciones de servidor
+ * - ❌ cargarDocumentos, subirDocumento, etc (ahora en React Query)
+ * - ✅ Solo estado UI: filtros, modales, búsqueda
+ *
+ * USAR:
+ * - useDocumentosQuery para datos del servidor
+ * - useDocumentosStore para estado UI
+ */
 
 import { create } from 'zustand'
-import { CategoriasService, DocumentosService } from '../services'
-import type {
-    CategoriaDocumento,
-    DocumentoProyecto,
-} from '../types'
+import type { DocumentoProyecto } from '../types'
 
 interface DocumentosState {
-  // Datos
-  documentos: DocumentoProyecto[]
-  categorias: CategoriaDocumento[]
-  documentoSeleccionado: DocumentoProyecto | null
+  // ============================================
+  // ESTADO UI (Solo esto debe estar aquí)
+  // ============================================
 
   // Filtros y búsqueda
   categoriaFiltro: string | null
@@ -21,228 +26,54 @@ interface DocumentosState {
   busqueda: string
   soloImportantes: boolean
 
-  // Estados de carga
-  cargandoDocumentos: boolean
-  cargandoCategorias: boolean
-  subiendoDocumento: boolean
-
-  // UI
+  // UI Modales
   modalSubirAbierto: boolean
   modalViewerAbierto: boolean
   modalCategoriasAbierto: boolean
 
-  // Módulo actual (para recargas)
+  // UI Documento seleccionado
+  documentoSeleccionado: DocumentoProyecto | null
+
+  // Módulo actual (para filtrar categorías)
   moduloActual: 'proyectos' | 'clientes' | 'viviendas'
 
-  // Acciones - Documentos
-  cargarDocumentos: (proyectoId: string) => Promise<void>
-  subirDocumento: (params: any, userId: string) => Promise<void>
-  actualizarDocumento: (documentoId: string, updates: any) => Promise<void>
-  eliminarDocumento: (documentoId: string) => Promise<void>
-  toggleImportante: (documentoId: string) => Promise<void>
-  seleccionarDocumento: (documento: DocumentoProyecto | null) => void
+  // ============================================
+  // ACCIONES - FILTROS
+  // ============================================
 
-  // Acciones - Categorías
-  cargarCategorias: (userId: string, modulo?: 'proyectos' | 'clientes' | 'viviendas') => Promise<void>
-  crearCategoria: (userId: string, categoria: any) => Promise<void>
-  actualizarCategoria: (categoriaId: string, updates: any) => Promise<void>
-  eliminarCategoria: (categoriaId: string) => Promise<void>
-
-  // Acciones - Filtros
   setFiltroCategoria: (categoriaId: string | null) => void
   setFiltroEtiquetas: (etiquetas: string[]) => void
   setBusqueda: (busqueda: string) => void
   toggleSoloImportantes: () => void
   limpiarFiltros: () => void
 
-  // Acciones - UI
+  // ============================================
+  // ACCIONES - UI
+  // ============================================
+
   abrirModalSubir: () => void
   cerrarModalSubir: () => void
   abrirModalViewer: (documento: DocumentoProyecto) => void
   cerrarModalViewer: () => void
   abrirModalCategorias: () => void
   cerrarModalCategorias: () => void
+  seleccionarDocumento: (documento: DocumentoProyecto | null) => void
+  setModuloActual: (modulo: 'proyectos' | 'clientes' | 'viviendas') => void
 }
 
-export const useDocumentosStore = create<DocumentosState>((set, get) => ({
+export const useDocumentosStore = create<DocumentosState>((set) => ({
   // Estado inicial
-  documentos: [],
-  categorias: [],
-  documentoSeleccionado: null,
-
   categoriaFiltro: null,
   etiquetasFiltro: [],
   busqueda: '',
   soloImportantes: false,
 
-  cargandoDocumentos: true,
-  cargandoCategorias: true,
-  subiendoDocumento: false,
-
   modalSubirAbierto: false,
   modalViewerAbierto: false,
   modalCategoriasAbierto: false,
 
-  moduloActual: 'proyectos', // ← Default
-
-  // ============================================
-  // ACCIONES - DOCUMENTOS
-  // ============================================
-
-  cargarDocumentos: async (proyectoId: string) => {
-    set({ cargandoDocumentos: true })
-    try {
-      const documentos =
-        await DocumentosService.obtenerDocumentosPorProyecto(proyectoId)
-      set({ documentos })
-    } catch (error) {
-      console.error('Error cargando documentos:', error)
-    } finally {
-      set({ cargandoDocumentos: false })
-    }
-  },
-
-  subirDocumento: async (params: any, userId: string) => {
-    set({ subiendoDocumento: true })
-    try {
-      const nuevoDocumento = await DocumentosService.subirDocumento(
-        params,
-        userId
-      )
-      set(state => ({
-        documentos: [nuevoDocumento, ...state.documentos],
-        modalSubirAbierto: false,
-      }))
-    } catch (error) {
-      console.error('Error subiendo documento:', error)
-      throw error
-    } finally {
-      set({ subiendoDocumento: false })
-    }
-  },
-
-  actualizarDocumento: async (documentoId: string, updates: any) => {
-    try {
-      const documentoActualizado = await DocumentosService.actualizarDocumento(
-        documentoId,
-        updates
-      )
-      set(state => ({
-        documentos: state.documentos.map(doc =>
-          doc.id === documentoId ? documentoActualizado : doc
-        ),
-        documentoSeleccionado:
-          state.documentoSeleccionado?.id === documentoId
-            ? documentoActualizado
-            : state.documentoSeleccionado,
-      }))
-    } catch (error) {
-      console.error('Error actualizando documento:', error)
-      throw error
-    }
-  },
-
-  eliminarDocumento: async (documentoId: string) => {
-    try {
-      await DocumentosService.eliminarDocumento(documentoId)
-      set(state => ({
-        documentos: state.documentos.filter(doc => doc.id !== documentoId),
-        documentoSeleccionado: null,
-        modalViewerAbierto: false,
-      }))
-    } catch (error) {
-      console.error('Error eliminando documento:', error)
-      throw error
-    }
-  },
-
-  toggleImportante: async (documentoId: string) => {
-    try {
-      const documento = get().documentos.find(doc => doc.id === documentoId)
-      if (!documento) return
-
-      const documentoActualizado = await DocumentosService.toggleImportante(
-        documentoId,
-        !documento.es_importante
-      )
-
-      set(state => ({
-        documentos: state.documentos.map(doc =>
-          doc.id === documentoId ? documentoActualizado : doc
-        ),
-      }))
-    } catch (error) {
-      console.error('Error toggle importante:', error)
-      throw error
-    }
-  },
-
-  seleccionarDocumento: (documento: DocumentoProyecto | null) => {
-    set({ documentoSeleccionado: documento })
-  },
-
-  // ============================================
-  // ACCIONES - CATEGORÍAS
-  // ============================================
-
-  cargarCategorias: async (userId: string, modulo?: 'proyectos' | 'clientes' | 'viviendas') => {
-    set({ cargandoCategorias: true })
-    try {
-      // Usar módulo pasado o el último usado
-      const moduloAUsar = modulo || get().moduloActual
-
-      // Guardar módulo actual
-      set({ moduloActual: moduloAUsar })
-
-      // ✅ Sistema flexible: filtrar por módulo especificado
-      const categorias = await CategoriasService.obtenerCategoriasPorModulo(
-        userId,
-        moduloAUsar
-      )
-      set({ categorias })
-    } catch (error) {
-      console.error('Error cargando categorías:', error)
-    } finally {
-      set({ cargandoCategorias: false })
-    }
-  },
-
-  crearCategoria: async (userId: string, categoria: any) => {
-    try {
-      await CategoriasService.crearCategoria(userId, categoria)
-      // ✅ Recargar categorías con el módulo actual
-      await get().cargarCategorias(userId)
-    } catch (error) {
-      console.error('Error creando categoría:', error)
-      throw error
-    }
-  },
-
-  actualizarCategoria: async (categoriaId: string, updates: any) => {
-    try {
-      await CategoriasService.actualizarCategoria(categoriaId, updates)
-      // ✅ Recargar categorías con el módulo actual
-      const userId = get().categorias.find(c => c.id === categoriaId)?.user_id
-      if (userId) {
-        await get().cargarCategorias(userId)
-      }
-    } catch (error) {
-      console.error('Error actualizando categoría:', error)
-      throw error
-    }
-  },
-
-  eliminarCategoria: async (categoriaId: string) => {
-    try {
-      await CategoriasService.eliminarCategoria(categoriaId)
-      set(state => ({
-        categorias: state.categorias.filter(cat => cat.id !== categoriaId),
-      }))
-    } catch (error) {
-      console.error('Error eliminando categoría:', error)
-      throw error
-    }
-  },
+  documentoSeleccionado: null,
+  moduloActual: 'proyectos',
 
   // ============================================
   // ACCIONES - FILTROS
@@ -261,7 +92,7 @@ export const useDocumentosStore = create<DocumentosState>((set, get) => ({
   },
 
   toggleSoloImportantes: () => {
-    set(state => ({ soloImportantes: !state.soloImportantes }))
+    set((state) => ({ soloImportantes: !state.soloImportantes }))
   },
 
   limpiarFiltros: () => {
@@ -306,71 +137,63 @@ export const useDocumentosStore = create<DocumentosState>((set, get) => ({
   cerrarModalCategorias: () => {
     set({ modalCategoriasAbierto: false })
   },
+
+  seleccionarDocumento: (documento: DocumentoProyecto | null) => {
+    set({ documentoSeleccionado: documento })
+  },
+
+  setModuloActual: (modulo: 'proyectos' | 'clientes' | 'viviendas') => {
+    set({ moduloActual: modulo })
+  },
 }))
 
 // ============================================
-// SELECTORES
+// SELECTORES (mantener solo helpers de UI)
 // ============================================
 
-// Documentos filtrados
-export const selectDocumentosFiltrados = (state: DocumentosState) => {
-  let documentos = state.documentos
+// Helper para lógica de filtrado (usado por hooks)
+export function filtrarDocumentos(
+  documentos: DocumentoProyecto[],
+  filtros: {
+    categoriaFiltro: string | null
+    etiquetasFiltro: string[]
+    busqueda: string
+    soloImportantes: boolean
+  }
+): DocumentoProyecto[] {
+  let resultado = documentos
 
   // Filtro por categoría
-  if (state.categoriaFiltro) {
-    documentos = documentos.filter(
-      doc => doc.categoria_id === state.categoriaFiltro
+  if (filtros.categoriaFiltro) {
+    resultado = resultado.filter(
+      (doc) => doc.categoria_id === filtros.categoriaFiltro
     )
   }
 
   // Filtro por etiquetas
-  if (state.etiquetasFiltro.length > 0) {
-    documentos = documentos.filter(doc =>
-      state.etiquetasFiltro.some(etiqueta => doc.etiquetas?.includes(etiqueta))
+  if (filtros.etiquetasFiltro.length > 0) {
+    resultado = resultado.filter((doc) =>
+      filtros.etiquetasFiltro.some((etiqueta) =>
+        doc.etiquetas?.includes(etiqueta)
+      )
     )
   }
 
   // Filtro solo importantes
-  if (state.soloImportantes) {
-    documentos = documentos.filter(doc => doc.es_importante)
+  if (filtros.soloImportantes) {
+    resultado = resultado.filter((doc) => doc.es_importante)
   }
 
   // Búsqueda por texto
-  if (state.busqueda) {
-    const busquedaLower = state.busqueda.toLowerCase()
-    documentos = documentos.filter(
-      doc =>
+  if (filtros.busqueda) {
+    const busquedaLower = filtros.busqueda.toLowerCase()
+    resultado = resultado.filter(
+      (doc) =>
         doc.titulo.toLowerCase().includes(busquedaLower) ||
         doc.nombre_original.toLowerCase().includes(busquedaLower) ||
         doc.descripcion?.toLowerCase().includes(busquedaLower)
     )
   }
 
-  return documentos
-}
-
-// Estadísticas
-export const selectEstadisticas = (state: DocumentosState) => {
-  const total = state.documentos.length
-  const importantes = state.documentos.filter(doc => doc.es_importante).length
-  const porVencer = state.documentos.filter(doc => {
-    if (!doc.fecha_vencimiento) return false
-    const fechaVenc = new Date(doc.fecha_vencimiento)
-    const hoy = new Date()
-    const diasDiff =
-      (fechaVenc.getTime() - hoy.getTime()) / (1000 * 60 * 60 * 24)
-    return diasDiff > 0 && diasDiff <= 30
-  }).length
-
-  const porCategoria = state.categorias.map(cat => ({
-    categoria: cat,
-    count: state.documentos.filter(doc => doc.categoria_id === cat.id).length,
-  }))
-
-  return {
-    total,
-    importantes,
-    porVencer,
-    porCategoria,
-  }
+  return resultado
 }

@@ -1,39 +1,29 @@
 'use client'
 
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useAuth } from '@/contexts/auth-context'
-import { CategoriasManager } from '@/modules/documentos/components/categorias/categorias-manager'
-import { DocumentosLista } from '@/modules/documentos/components/lista/documentos-lista'
-import { DocumentoUpload } from '@/modules/documentos/components/upload/documento-upload'
 // ✅ REACT QUERY: Hooks con cache inteligente (reemplazan Zustand)
 import { useProyectoQuery, useProyectosQuery } from '@/modules/proyectos/hooks'
-import type { Proyecto } from '@/modules/proyectos/types'
 import { formatCurrency, formatDate } from '@/shared/utils/format'
 import { motion } from 'framer-motion'
 import {
-  Activity,
-  ArrowLeft,
-  Building2,
-  Calendar,
-  ChevronRight,
-  DollarSign,
-  Edit2,
-  FileText,
-  FolderOpen,
-  Home,
-  Info,
-  Mail,
-  MapPin,
-  Phone,
-  Plus,
-  Trash2,
-  Users,
+    Activity,
+    ArrowLeft,
+    Building2,
+    Calendar,
+    ChevronRight,
+    DollarSign,
+    Edit2,
+    FileText,
+    Home,
+    Info,
+    MapPin,
+    Trash2,
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import * as styles from './proyecto-detalle.styles'
+import { DocumentosTab, GeneralTab, ManzanasTab } from './tabs'
 
 interface ProyectoDetalleClientProps {
   proyectoId: string
@@ -63,16 +53,12 @@ export default function ProyectoDetalleClient({
 }: ProyectoDetalleClientProps) {
   const router = useRouter()
   const { user } = useAuth()
-  
-  // ✅ REACT QUERY: Hook de detalle con cache (reemplaza useEffect + service)
-  const { proyecto, cargando: loading } = useProyectoQuery(proyectoId)
-  const { eliminarProyecto } = useProyectosQuery()
-  
-  const [activeTab, setActiveTab] = useState<TabType>('info')
-  const [showUpload, setShowUpload] = useState(false)
-  const [showCategorias, setShowCategorias] = useState(false)
 
-  // ✅ REACT QUERY: Ya NO necesitamos useEffect, el hook maneja todo automáticamente
+  // ✅ REACT QUERY: Hook de detalle con cache (reemplaza useEffect + service)
+  const { proyecto, cargando: loading, error } = useProyectoQuery(proyectoId)
+  const { eliminarProyecto } = useProyectosQuery()
+
+  const [activeTab, setActiveTab] = useState<TabType>('info')
 
   const handleDelete = async () => {
     if (window.confirm('¿Estás seguro de eliminar este proyecto?')) {
@@ -86,6 +72,27 @@ export default function ProyectoDetalleClient({
     console.log('Editar proyecto:', proyectoId)
   }
 
+  // Manejo de error antes del loading
+  if (error) {
+    return (
+      <div className='flex min-h-screen items-center justify-center'>
+        <div className='text-center'>
+          <Building2 className='mx-auto mb-4 h-16 w-16 text-red-500' />
+          <h2 className='mb-2 text-2xl font-bold text-gray-900 dark:text-gray-100'>
+            Error al cargar proyecto
+          </h2>
+          <p className='mb-6 text-gray-600 dark:text-gray-400'>
+            {error.message || 'Ocurrió un error inesperado'}
+          </p>
+          <Button onClick={() => router.push('/proyectos')}>
+            <ArrowLeft className='mr-2 h-4 w-4' />
+            Volver a proyectos
+          </Button>
+        </div>
+      </div>
+    )
+  }
+
   if (loading) {
     return (
       <div className='flex min-h-screen items-center justify-center'>
@@ -93,6 +100,9 @@ export default function ProyectoDetalleClient({
           <Building2 className='mx-auto mb-4 h-16 w-16 animate-pulse text-blue-500' />
           <p className='text-gray-600 dark:text-gray-400'>
             Cargando proyecto...
+          </p>
+          <p className='text-xs text-gray-500 dark:text-gray-500 mt-2'>
+            ID: {proyectoId}
           </p>
         </div>
       </div>
@@ -400,179 +410,12 @@ export default function ProyectoDetalleClient({
           </nav>
         </motion.div>
 
-        {/* Contenido de Tabs */}
-        {activeTab === 'info' && (
-          <motion.div
-            key='info'
-            {...styles.animations.fadeInUp}
-            className='grid gap-4 lg:grid-cols-2'
-          >
-            {/* Descripción */}
-            <motion.div
-              {...styles.animations.fadeInLeft}
-              className={styles.infoCardClasses.card}
-            >
-              <div className={styles.infoCardClasses.header}>
-                <div
-                  className={`${styles.infoCardClasses.iconContainer} bg-gradient-to-br ${styles.gradients.descripcion}`}
-                >
-                  <Building2 className={styles.infoCardClasses.icon} />
-                </div>
-                <h3 className={styles.infoCardClasses.title}>
-                  Descripción del Proyecto
-                </h3>
-              </div>
-              <div className={styles.infoCardClasses.content}>
-                <p>{proyecto.descripcion}</p>
-              </div>
-            </motion.div>
+        {/* Contenido de Tabs - Componentes Modulares */}
+        {activeTab === 'info' && <GeneralTab proyecto={proyecto} />}
 
-            {/* Información de Contacto */}
-            <motion.div
-              {...styles.animations.fadeInLeft}
-              transition={{ delay: 0.1 }}
-              className={styles.infoCardClasses.card}
-            >
-              <div className={styles.infoCardClasses.header}>
-                <div
-                  className={`${styles.infoCardClasses.iconContainer} bg-gradient-to-br ${styles.gradients.contacto}`}
-                >
-                  <Users className={styles.infoCardClasses.icon} />
-                </div>
-                <h3 className={styles.infoCardClasses.title}>
-                  Información de Contacto
-                </h3>
-              </div>
-              <div className={styles.infoCardClasses.content}>
-                <div>
-                  <p className={styles.infoCardClasses.label}>Responsable</p>
-                  <p className={styles.infoCardClasses.value}>
-                    {proyecto.responsable}
-                  </p>
-                </div>
-                <div className={styles.infoCardClasses.row}>
-                  <Phone className={styles.infoCardClasses.rowIcon} />
-                  <span>{proyecto.telefono}</span>
-                </div>
-                <div className={styles.infoCardClasses.row}>
-                  <Mail className={styles.infoCardClasses.rowIcon} />
-                  <span>{proyecto.email}</span>
-                </div>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
+        {activeTab === 'documentos' && <DocumentosTab proyecto={proyecto} />}
 
-        {activeTab === 'documentos' && (
-          <motion.div key='documentos' {...styles.animations.fadeInUp}>
-            <Card>
-              <CardHeader>
-                <div className='flex items-center justify-between'>
-                  <CardTitle className='flex items-center gap-2'>
-                    <FileText className='h-5 w-5 text-blue-600' />
-                    Documentos del Proyecto
-                  </CardTitle>
-                  <div className='flex gap-2'>
-                    <Button
-                      variant='outline'
-                      onClick={() => setShowCategorias(true)}
-                    >
-                      <FolderOpen className='mr-2 h-4 w-4' />
-                      Categorías
-                    </Button>
-                    <Button onClick={() => setShowUpload(true)}>
-                      <Plus className='mr-2 h-4 w-4' />
-                      Subir Documento
-                    </Button>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                {showCategorias ? (
-                  <div className='space-y-4'>
-                    <div className='flex items-center justify-between'>
-                      <h3 className='text-lg font-semibold'>
-                        Gestionar Categorías
-                      </h3>
-                      <Button
-                        variant='ghost'
-                        size='sm'
-                        onClick={() => setShowCategorias(false)}
-                      >
-                        Volver a Documentos
-                      </Button>
-                    </div>
-                    <CategoriasManager
-                      userId={user?.id || ''}
-                      onClose={() => setShowCategorias(false)}
-                    />
-                  </div>
-                ) : showUpload ? (
-                  <DocumentoUpload
-                    proyectoId={proyectoId}
-                    onSuccess={() => setShowUpload(false)}
-                    onCancel={() => setShowUpload(false)}
-                  />
-                ) : (
-                  <DocumentosLista proyectoId={proyectoId} />
-                )}
-              </CardContent>
-            </Card>
-          </motion.div>
-        )}
-
-        {activeTab === 'manzanas' && (
-          <motion.div key='manzanas' {...styles.animations.fadeInUp}>
-            <Card>
-              <CardHeader>
-                <div className='flex items-center justify-between'>
-                  <CardTitle className='flex items-center gap-2'>
-                    <Home className='h-5 w-5 text-blue-600' />
-                    Manzanas del Proyecto
-                  </CardTitle>
-                  <Button size='sm'>
-                    <Plus className='mr-2 h-4 w-4' />
-                    Agregar Manzana
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent>
-                {proyecto.manzanas.length === 0 ? (
-                  <div className='py-12 text-center'>
-                    <Home className='mx-auto mb-4 h-12 w-12 text-gray-400' />
-                    <p className='text-gray-600 dark:text-gray-400'>
-                      No hay manzanas registradas en este proyecto
-                    </p>
-                  </div>
-                ) : (
-                  <div className='grid gap-3 sm:grid-cols-2 lg:grid-cols-3'>
-                    {proyecto.manzanas.map((manzana, index) => (
-                      <motion.div
-                        key={manzana.id}
-                        {...styles.animations.scaleIn}
-                        transition={{ delay: index * 0.1 }}
-                        className='rounded-lg border border-gray-200 bg-white p-3 transition-all hover:border-blue-300 hover:shadow-md dark:border-gray-700 dark:bg-gray-800'
-                      >
-                        <div className='mb-1.5 flex items-center justify-between'>
-                          <h4 className='text-sm font-semibold text-gray-900 dark:text-gray-100'>
-                            {manzana.nombre}
-                          </h4>
-                          <Badge variant='outline' className='text-xs'>
-                            {manzana.totalViviendas}
-                          </Badge>
-                        </div>
-                        <p className='text-xs text-gray-600 dark:text-gray-400'>
-                          {manzana.totalViviendas} vivienda
-                          {manzana.totalViviendas !== 1 ? 's' : ''}
-                        </p>
-                      </motion.div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </motion.div>
-        )}
+        {activeTab === 'manzanas' && <ManzanasTab proyecto={proyecto} />}
       </div>
     </div>
   )

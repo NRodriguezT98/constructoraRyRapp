@@ -103,6 +103,9 @@ export const gradients = {
   descripcion: 'from-blue-500 to-indigo-600',
   contacto: 'from-purple-500 to-violet-600',
   progreso: 'from-blue-500 to-purple-600',
+  ubicacion: 'from-green-500 to-teal-600',
+  detalles: 'from-amber-500 to-orange-600',
+  cronograma: 'from-pink-500 to-rose-600',
 }
 
 // Animaciones Framer Motion

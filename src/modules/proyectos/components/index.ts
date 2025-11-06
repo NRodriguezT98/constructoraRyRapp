@@ -2,9 +2,9 @@
 // Permite importar m�ltiples componentes en una sola l�nea
 
 // Componentes principales
-export { ProyectosPage } from './proyectos-page-main'
 export { ProyectoCard } from './proyecto-card'
 export { ProyectosForm } from './proyectos-form'
+export { ProyectosPage } from './proyectos-page-main'
 
 // Componentes de lista y búsqueda
 export { ProyectosLista } from './proyectos-lista'

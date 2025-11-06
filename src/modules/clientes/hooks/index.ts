@@ -1,4 +1,10 @@
 // Barrel export para hooks del módulo de clientes
+
+// ✅ React Query Hooks (NUEVOS - Usar estos)
+export * from './useClientesList'
+export * from './useClientesQuery'
+
+// Legacy Hooks (Compatibilidad)
 export * from './useClienteCardActivo'
 export * from './useClientes'
 export * from './useConfigurarFuentesPago'

@@ -8,6 +8,7 @@ import { useDetectarCambios } from '../hooks/useDetectarCambios'
 // ✅ REACT QUERY: Nuevos hooks con cache inteligente
 import {
   useEstadisticasProyectosQuery,
+  useProyectoConValidacion,
   useProyectosFiltradosQuery,
   useProyectosQuery,
 } from '../hooks'
@@ -66,12 +67,22 @@ export function ProyectosPage({
   const [proyectoEliminar, setProyectoEliminar] = useState<string | null>(null)
   const [modalConfirmarCambios, setModalConfirmarCambios] = useState(false)
   const [datosEdicion, setDatosEdicion] = useState<ProyectoFormData | null>(null)
+  const [datosConfirmacion, setDatosConfirmacion] = useState<{
+    proyectoId: string
+    data: ProyectoFormData
+  } | null>(null)
 
   // ✅ REACT QUERY: Hooks con cache inteligente (reemplazan Zustand)
-  const { crearProyecto, actualizarProyecto, eliminarProyecto, cargando } =
+  const { crearProyecto, actualizarProyecto, eliminarProyecto, cargando, actualizando } =
     useProyectosQuery()
   const { proyectos, filtros, actualizarFiltros, limpiarFiltros, totalProyectos } = useProyectosFiltradosQuery()
   const estadisticas = useEstadisticasProyectosQuery()
+
+  // ✅ Hook optimizado: Carga proyecto con validación de manzanas (1 query con JOIN)
+  const {
+    data: proyectoConValidacion,
+    isLoading: cargandoValidacion,
+  } = useProyectoConValidacion(proyectoEditar?.id)
 
   // Detectar si hay filtros activos
   const hayFiltrosActivos = Boolean(filtros.busqueda || filtros.estado)
@@ -79,13 +90,18 @@ export function ProyectosPage({
   // Hook para detectar cambios
   const cambiosDetectados = useDetectarCambios(proyectoEditar, datosEdicion)
 
+  // Proyecto que se va a eliminar (lookup por ID)
+  const proyectoEliminando = proyectos.find(p => p.id === proyectoEliminar)
+
   const handleAbrirModal = () => setModalAbierto(true)
+
   const handleCerrarModal = () => {
     setModalAbierto(false)
     setModalEditar(false)
     setProyectoEditar(null)
     setModalConfirmarCambios(false)
     setDatosEdicion(null)
+    setDatosConfirmacion(null)
   }
 
   const handleCrearProyecto = async (data: ProyectoFormData) => {
@@ -93,7 +109,7 @@ export function ProyectosPage({
       await crearProyecto(data)
       handleCerrarModal()
     } catch (error) {
-      console.error('Error al crear proyecto:', error)
+      // Error ya manejado por React Query con toast
     }
   }
 
@@ -105,24 +121,25 @@ export function ProyectosPage({
   const handleActualizarProyecto = async (data: ProyectoFormData) => {
     if (!proyectoEditar) return
 
-    // Guardar datos para comparación
+    // Guardar datos para confirmación
     setDatosEdicion(data)
-
-    // Si no hay cambios, cerrar directamente
-    const resumen = useDetectarCambios.length // temporal, se calculará en el componente
+    setDatosConfirmacion({
+      proyectoId: proyectoEditar.id,
+      data: data,
+    })
 
     // Abrir modal de confirmación de cambios
     setModalConfirmarCambios(true)
   }
 
   const confirmarActualizacion = async () => {
-    if (!proyectoEditar || !datosEdicion) return
+    if (!datosConfirmacion) return
 
     try {
-      await actualizarProyecto(proyectoEditar.id, datosEdicion)
+      await actualizarProyecto(datosConfirmacion.proyectoId, datosConfirmacion.data)
       handleCerrarModal()
     } catch (error) {
-      console.error('Error al actualizar proyecto:', error)
+      // Error ya manejado por React Query con toast
     }
   }
 
@@ -133,16 +150,15 @@ export function ProyectosPage({
 
   const confirmarEliminar = async () => {
     if (!proyectoEliminar) return
+
     try {
       await eliminarProyecto(proyectoEliminar)
       setModalEliminar(false)
       setProyectoEliminar(null)
     } catch (error) {
-      console.error('Error al eliminar proyecto:', error)
+      // Error ya manejado por React Query con toast
     }
   }
-
-  const proyectoEliminando = proyectos.find(p => p.id === proyectoEliminar)
 
   return (
     <div className={styles.container.page}>
@@ -162,7 +178,7 @@ export function ProyectosPage({
         />
 
         {/* Filtros Premium */}
-        <ProyectosFiltrosPremium 
+        <ProyectosFiltrosPremium
           totalResultados={proyectos.length}
           filtros={filtros}
           onActualizarFiltros={actualizarFiltros}
@@ -221,26 +237,51 @@ export function ProyectosPage({
         size='xl'
         gradientColor='orange'
         icon={<Building2 className="w-6 h-6 text-white" />}
+        closeOnEscape={!modalConfirmarCambios}
+        closeOnBackdrop={!modalConfirmarCambios}
       >
-        {proyectoEditar && (
+        {cargandoValidacion ? (
+          <div className="flex items-center justify-center p-12">
+            <div className="text-center space-y-3">
+              <div className="w-12 h-12 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto" />
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                Cargando datos del proyecto...
+              </p>
+            </div>
+          </div>
+        ) : proyectoConValidacion ? (
           <ProyectosForm
             onSubmit={handleActualizarProyecto}
             onCancel={handleCerrarModal}
             isLoading={cargando}
             initialData={{
-              ...proyectoEditar,
-              manzanas: proyectoEditar.manzanas.map(m => ({
-                id: m.id, // ✅ PRESERVAR ID REAL DE LA DB
+              nombre: proyectoConValidacion.nombre,
+              descripcion: proyectoConValidacion.descripcion,
+              ubicacion: proyectoConValidacion.ubicacion,
+              fechaInicio: proyectoConValidacion.fechaInicio,
+              fechaFinEstimada: proyectoConValidacion.fechaFinEstimada,
+              presupuesto: proyectoConValidacion.presupuesto,
+              estado: proyectoConValidacion.estado,
+              responsable: proyectoConValidacion.responsable,
+              telefono: proyectoConValidacion.telefono,
+              email: proyectoConValidacion.email,
+              // ✅ Manzanas CON validación pre-cargada (sin queries adicionales)
+              manzanas: proyectoConValidacion.manzanas.map(m => ({
+                id: m.id,
                 nombre: m.nombre,
                 totalViviendas: m.totalViviendas,
-                precioBase: m.precioBase,
-                superficieTotal: m.superficieTotal,
-                ubicacion: m.ubicacion,
+                precioBase: 0, // No está en DB pero se requiere en tipo
+                superficieTotal: 0,
+                ubicacion: '',
+                // ✅ Datos de validación (para el formulario)
+                cantidadViviendasCreadas: m.cantidadViviendasCreadas,
+                esEditable: m.esEditable,
+                motivoBloqueado: m.motivoBloqueado,
               })),
             }}
             isEditing={true}
           />
-        )}
+        ) : null}
       </Modal>
 
       {/* Modal Confirmar Cambios */}
@@ -249,7 +290,7 @@ export function ProyectosPage({
         onClose={() => setModalConfirmarCambios(false)}
         onConfirm={confirmarActualizacion}
         cambios={cambiosDetectados}
-        isLoading={cargando}
+        isLoading={actualizando}
       />
 
       {/* Modal Confirmar Eliminación */}

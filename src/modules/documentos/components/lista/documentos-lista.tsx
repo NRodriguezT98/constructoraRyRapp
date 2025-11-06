@@ -27,6 +27,7 @@ export function DocumentosLista({
     documentoSeleccionado,
     modalViewerAbierto,
     documentosFiltrados,
+    categorias,
     cargandoDocumentos,
     hasDocumentos,
     handleView,
@@ -49,7 +50,11 @@ export function DocumentosLista({
   return (
     <div className='space-y-6'>
       {/* Filtros */}
-      <DocumentosFiltros onChangeVista={setVista} />
+      <DocumentosFiltros
+        documentos={documentosFiltrados}
+        categorias={categorias}
+        onChangeVista={setVista}
+      />
 
       {/* Lista de documentos */}
       {documentosFiltrados.length === 0 ? (

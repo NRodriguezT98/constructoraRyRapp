@@ -1,31 +1,22 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
-import { toast } from 'sonner'
-import { viviendasService } from '../services/viviendas.service'
+﻿import { useCallback, useMemo, useState } from 'react'
 import type { FiltrosViviendas, Vivienda } from '../types'
+import { useEliminarViviendaMutation, useViviendasQuery } from './useViviendasQuery'
 
 /**
  * Hook para gestión del listado de viviendas
+ * Refactorizado con React Query
  * Responsabilidades:
- * - Cargar y actualizar lista de viviendas
  * - Gestionar filtros y búsqueda
  * - Control del modal crear/editar
- * - Paginación (futura)
  * - Selección y eliminación
  */
 export function useViviendasList() {
-  // ============================================
-  // ESTADO
-  // ============================================
-  const [viviendas, setViviendas] = useState<Vivienda[]>([])
-  const [cargando, setCargando] = useState(true)
-  const [error, setError] = useState<string | null>(null)
   const [modalAbierto, setModalAbierto] = useState(false)
   const [modalEditar, setModalEditar] = useState(false)
   const [viviendaEditar, setViviendaEditar] = useState<Vivienda | null>(null)
   const [modalEliminar, setModalEliminar] = useState(false)
   const [viviendaEliminar, setViviendaEliminar] = useState<string | null>(null)
 
-  // Filtros
   const [filtros, setFiltros] = useState<FiltrosViviendas>({
     search: '',
     proyecto_id: '',
@@ -33,82 +24,12 @@ export function useViviendasList() {
     estado: '',
   })
 
-  // ============================================
-  // CARGAR VIVIENDAS
-  // ============================================
-  useEffect(() => {
-    let mounted = true
-    const abortController = new AbortController()
+  const { data: viviendas = [], isLoading: cargando, error, refetch } = useViviendasQuery(filtros)
+  const eliminarMutation = useEliminarViviendaMutation()
 
-    const cargarViviendas = async () => {
-      try {
-        setCargando(true)
-        setError(null)
-
-        // Pequeño delay para evitar múltiples llamadas en Strict Mode
-        await new Promise(resolve => setTimeout(resolve, 100))
-
-        if (!mounted || abortController.signal.aborted) return
-
-        const data = await viviendasService.listar(filtros)
-
-        if (!mounted || abortController.signal.aborted) return
-
-        setViviendas(data)
-      } catch (err) {
-        if (!mounted || abortController.signal.aborted) return
-
-        const mensaje = err instanceof Error ? err.message : 'Error al cargar viviendas'
-        setError(mensaje)
-        toast.error(mensaje)
-      } finally {
-        if (mounted && !abortController.signal.aborted) setCargando(false)
-      }
-    }
-
-    cargarViviendas()
-
-    return () => {
-      mounted = false
-      abortController.abort()
-      setCargando(false)
-    }
-  }, [filtros.search, filtros.proyecto_id, filtros.manzana_id, filtros.estado])
-
-  // Función para refrescar manualmente
-  const refrescarViviendas = useCallback(async () => {
-    let mounted = true
-
-    try {
-      setCargando(true)
-      setError(null)
-      const data = await viviendasService.listar(filtros)
-
-      if (!mounted) return
-
-      setViviendas(data)
-    } catch (err) {
-      if (!mounted) return
-
-      const mensaje = err instanceof Error ? err.message : 'Error al cargar viviendas'
-      setError(mensaje)
-      toast.error(mensaje)
-    } finally {
-      if (mounted) setCargando(false)
-    }
-
-    return () => {
-      mounted = false
-    }
-  }, [filtros])
-
-  // ============================================
-  // VIVIENDAS FILTRADAS (MEMOIZADAS)
-  // ============================================
   const viviendasFiltradas = useMemo(() => {
     let resultado = [...viviendas]
 
-    // Filtro por búsqueda (matrícula, nomenclatura, número)
     if (filtros.search) {
       const termino = filtros.search.toLowerCase()
       resultado = resultado.filter(
@@ -119,21 +40,18 @@ export function useViviendasList() {
       )
     }
 
-    // Filtro por proyecto
     if (filtros.proyecto_id) {
       resultado = resultado.filter(
         vivienda => vivienda.manzanas?.proyecto_id === filtros.proyecto_id
       )
     }
 
-    // Filtro por manzana
     if (filtros.manzana_id) {
       resultado = resultado.filter(
         vivienda => vivienda.manzana_id === filtros.manzana_id
       )
     }
 
-    // Filtro por estado
     if (filtros.estado) {
       resultado = resultado.filter(
         vivienda => vivienda.estado === filtros.estado
@@ -143,9 +61,6 @@ export function useViviendasList() {
     return resultado
   }, [viviendas, filtros])
 
-  // ============================================
-  // CONTROL DE MODAL
-  // ============================================
   const abrirModalCrear = useCallback(() => {
     setModalAbierto(true)
     setModalEditar(false)
@@ -164,9 +79,6 @@ export function useViviendasList() {
     setViviendaEditar(null)
   }, [])
 
-  // ============================================
-  // ELIMINAR VIVIENDA
-  // ============================================
   const abrirModalEliminar = useCallback((id: string) => {
     setViviendaEliminar(id)
     setModalEliminar(true)
@@ -175,26 +87,16 @@ export function useViviendasList() {
   const confirmarEliminar = useCallback(async () => {
     if (!viviendaEliminar) return
 
-    try {
-      await viviendasService.eliminar(viviendaEliminar)
-      toast.success('Vivienda eliminada correctamente')
-      setModalEliminar(false)
-      setViviendaEliminar(null)
-      refrescarViviendas()
-    } catch (err) {
-      const mensaje = err instanceof Error ? err.message : 'Error al eliminar vivienda'
-      toast.error(mensaje)
-    }
-  }, [viviendaEliminar, refrescarViviendas])
+    await eliminarMutation.mutateAsync(viviendaEliminar)
+    setModalEliminar(false)
+    setViviendaEliminar(null)
+  }, [viviendaEliminar, eliminarMutation])
 
   const cancelarEliminar = useCallback(() => {
     setModalEliminar(false)
     setViviendaEliminar(null)
   }, [])
 
-  // ============================================
-  // ACTUALIZAR FILTROS
-  // ============================================
   const actualizarFiltros = useCallback((nuevosFiltros: Partial<FiltrosViviendas>) => {
     setFiltros(prev => ({ ...prev, ...nuevosFiltros }))
   }, [])
@@ -208,9 +110,6 @@ export function useViviendasList() {
     })
   }, [])
 
-  // ============================================
-  // ESTADÍSTICAS
-  // ============================================
   const estadisticas = useMemo(() => {
     const total = viviendas.length
     const disponibles = viviendas.filter(v => v.estado === 'Disponible').length
@@ -228,17 +127,12 @@ export function useViviendasList() {
     }
   }, [viviendas])
 
-  // ============================================
-  // RETURN
-  // ============================================
   return {
-    // Estado
     viviendas: viviendasFiltradas,
     todasLasViviendas: viviendas,
     cargando,
-    error,
+    error: error?.message || null,
 
-    // Modal
     modalAbierto,
     modalEditar,
     viviendaEditar,
@@ -251,15 +145,12 @@ export function useViviendasList() {
     confirmarEliminar,
     cancelarEliminar,
 
-    // Filtros
     filtros,
     actualizarFiltros,
     limpiarFiltros,
 
-    // Acciones
-    refrescar: refrescarViviendas,
+    refrescar: refetch,
 
-    // Estadísticas
     estadisticas,
     totalFiltradas: viviendasFiltradas.length,
   }

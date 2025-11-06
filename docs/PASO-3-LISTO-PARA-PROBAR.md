@@ -132,7 +132,7 @@ El servidor de desarrollo está corriendo en: **http://localhost:3000**
    Status: fresh ✅
    Last updated: hace 2s
    Cache: 10 datos
-   
+
 📦 proyectos › detail › abc-123
    Status: stale ⚠️
    Last updated: hace 3m
@@ -143,7 +143,7 @@ El servidor de desarrollo está corriendo en: **http://localhost:3000**
 ```
 🔄 Mutation: createProyecto
    Status: success ✅
-   
+
 🔄 Mutation: updateProyecto
    Status: success ✅
 ```
@@ -153,7 +153,7 @@ El servidor de desarrollo está corriendo en: **http://localhost:3000**
 ## ❓ Problemas Comunes y Soluciones
 
 ### ❌ DevTools NO aparece en esquina inferior derecha
-**Solución**: 
+**Solución**:
 - Verifica que estés en modo **desarrollo** (no build)
 - Recarga la página (Ctrl+R)
 - El botón es pequeño, busca el logo de TanStack

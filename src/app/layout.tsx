@@ -1,3 +1,4 @@
+import { AutoLogoutProvider } from '@/components/auto-logout-provider'
 import { ConditionalLayout } from '@/components/conditional-layout'
 import { ConditionalSidebar } from '@/components/conditional-sidebar'
 // import { PageTransition } from '@/components/page-transition' // ← DESHABILITADO para navegación instantánea
@@ -49,6 +50,9 @@ export default function RootLayout({
       <body className={inter.className} suppressHydrationWarning>
         <ReactQueryProvider>
           <AuthProvider>
+            {/* Sistema de auto-logout por inactividad */}
+            <AutoLogoutProvider />
+
             <ThemeProvider>
               <ModalProvider>
                 <UnsavedChangesProvider>

@@ -5,7 +5,6 @@ import { Eye, EyeOff } from 'lucide-react'
 import Image from 'next/image'
 import { useEffect, useState } from 'react'
 import { ResetPasswordModal } from './reset-password-modal'
-import { Toast } from './toast-notification'
 import { useLogin } from './useLogin'
 
 export default function LoginPage() {
@@ -44,11 +43,12 @@ export default function LoginPage() {
   }, [])
 
   // Mostrar toast cuando login es exitoso
-  useEffect(() => {
-    if (loginExitoso) {
-      setShowToast(true)
-    }
-  }, [loginExitoso])
+  // ❌ DESACTIVADO: Ahora usamos toast moderno personalizado en useLogin.ts
+  // useEffect(() => {
+  //   if (loginExitoso) {
+  //     setShowToast(true)
+  //   }
+  // }, [loginExitoso])
 
   return (
     <div className='relative flex min-h-screen w-full items-center justify-center overflow-hidden'>
@@ -262,14 +262,14 @@ export default function LoginPage() {
         onClose={() => setShowResetPassword(false)}
       />
 
-      {/* Toast de Notificación de Éxito */}
-      <Toast
+      {/* ❌ TOAST VIEJO DESACTIVADO - Ahora usamos toast moderno en useLogin.ts */}
+      {/* <Toast
         show={showToast}
         message={mensajeExito}
         onClose={() => setShowToast(false)}
         type="success"
         duration={2000}
-      />
+      /> */}
     </div>
   )
 }

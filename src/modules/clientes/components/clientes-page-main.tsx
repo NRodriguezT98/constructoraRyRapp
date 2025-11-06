@@ -6,6 +6,11 @@
  * - Recibe permisos como props desde Server Component
  * - No necesita validar autenticación (ya validada)
  * - Solo maneja UI y lógica de negocio
+ *
+ * ✅ MIGRADO A REACT QUERY
+ * - Usa useClientesList() para gestión de estado
+ * - Cache automático y refetch inteligente
+ * - Eliminado Zustand store (deprecado)
  */
 
 'use client'
@@ -21,8 +26,7 @@ import {
   FormularioClienteContainer,
   ListaClientes,
 } from '../components'
-import { useClientes } from '../hooks'
-import { useClientesStore } from '../store/clientes.store'
+import { useClientesList, useEliminarClienteMutation } from '../hooks'
 import type { ClienteResumen, EstadoCliente, OrigenCliente } from '../types'
 
 /**
@@ -52,25 +56,28 @@ export function ClientesPageMain({
   })
 
   const router = useRouter()
+
+  // ✅ REACT QUERY: Hook de lista con gestión de estado
   const {
     clientes,
     isLoading,
     estadisticas,
-    cargarCliente,
-    eliminarCliente,
-  } = useClientes()
+    modalCrear,
+    modalEditar,
+    modalEliminar,
+    clienteEditar,
+    clienteEliminar,
+    abrirModalCrear,
+    abrirModalEditar,
+    cerrarModal,
+    abrirModalEliminar,
+    confirmarEliminar,
+    cancelarEliminar,
+    filtros,
+    actualizarFiltros,
+  } = useClientesList()
 
-  const {
-    clienteSeleccionado,
-    abrirModalFormulario,
-    setClienteSeleccionado,
-  } = useClientesStore()
-
-  // Estado para modal de confirmación de eliminación
-  const [modalEliminarAbierto, setModalEliminarAbierto] = useState(false)
-  const [clienteAEliminar, setClienteAEliminar] = useState<ClienteResumen | null>(null)
-
-  // Estados para filtros locales
+  // Estados para filtros locales (compatibilidad UI)
   const [busqueda, setBusqueda] = useState('')
   const [estadoFiltro, setEstadoFiltro] = useState<EstadoCliente | 'Todos'>('Todos')
   const [origenFiltro, setOrigenFiltro] = useState<OrigenCliente | 'Todos'>('Todos')
@@ -109,16 +116,15 @@ export function ClientesPageMain({
   // =====================================================
 
   const handleNuevoCliente = useCallback(() => {
-    setClienteSeleccionado(null)
-    abrirModalFormulario()
-  }, [setClienteSeleccionado, abrirModalFormulario])
+    abrirModalCrear()
+  }, [abrirModalCrear])
 
   const handleVerCliente = useCallback(
     (cliente: ClienteResumen) => {
       // Navegar a la página de detalle con URL amigable
       const url = construirURLCliente({
         id: cliente.id,
-        nombre_completo: cliente.nombre_completo
+        nombre_completo: cliente.nombre_completo,
       })
       router.push(url)
     },
@@ -126,51 +132,18 @@ export function ClientesPageMain({
   )
 
   const handleEditarCliente = useCallback(
-    async (cliente: ClienteResumen) => {
-      // Abrir modal inmediatamente con datos básicos
-      setClienteSeleccionado(cliente as any)
-      abrirModalFormulario()
-
-      // Cargar datos completos en background
-      const clienteCompleto = await cargarCliente(cliente.id)
-      if (clienteCompleto) {
-        setClienteSeleccionado(clienteCompleto as any)
-      }
+    (cliente: ClienteResumen) => {
+      abrirModalEditar(cliente)
     },
-    [cargarCliente, setClienteSeleccionado, abrirModalFormulario]
+    [abrirModalEditar]
   )
 
   const handleEliminarCliente = useCallback(
-    async (cliente: ClienteResumen) => {
-      setClienteAEliminar(cliente)
-      setModalEliminarAbierto(true)
+    (cliente: ClienteResumen) => {
+      abrirModalEliminar(cliente.id)
     },
-    []
+    [abrirModalEliminar]
   )
-
-  const confirmarEliminacion = useCallback(async () => {
-    if (!clienteAEliminar) return
-
-    try {
-      await eliminarCliente(clienteAEliminar.id)
-      setModalEliminarAbierto(false)
-      setClienteAEliminar(null)
-    } catch (error) {
-      // Mostrar error al usuario
-      const mensaje = error instanceof Error
-        ? error.message
-        : 'Error desconocido al eliminar cliente'
-
-      alert(`❌ Error al eliminar:\n\n${mensaje}`)
-
-      console.error('Error eliminando cliente:', error)
-    }
-  }, [clienteAEliminar, eliminarCliente])
-
-  const cancelarEliminacion = useCallback(() => {
-    setModalEliminarAbierto(false)
-    setClienteAEliminar(null)
-  }, [])
 
   // =====================================================
   // RENDER
@@ -216,22 +189,22 @@ export function ClientesPageMain({
         />
 
         {/* Formulario Modal */}
-        <FormularioClienteContainer clienteSeleccionado={clienteSeleccionado} />
+        <FormularioClienteContainer clienteSeleccionado={clienteEditar || null} />
 
         {/* Modal de Confirmación de Eliminación */}
         <ModalConfirmacion
-          isOpen={modalEliminarAbierto}
-          onClose={cancelarEliminacion}
-          onConfirm={confirmarEliminacion}
+          isOpen={modalEliminar}
+          onClose={cancelarEliminar}
+          onConfirm={confirmarEliminar}
           title="Eliminar Cliente"
           message={
-            clienteAEliminar ? (
+            clienteEliminar ? (
               <div className="space-y-4">
                 {/* Pregunta principal */}
                 <p className="text-base">
                   ¿Estás seguro de eliminar al cliente{' '}
                   <span className="font-bold text-gray-900 dark:text-white">
-                    {clienteAEliminar.nombre_completo}
+                    {clientes.find((c) => c.id === clienteEliminar)?.nombre_completo}
                   </span>
                   ?
                 </p>

@@ -22,7 +22,7 @@ interface ProyectosFiltrosPremiumProps {
   onLimpiarFiltros?: () => void
 }
 
-export function ProyectosFiltrosPremium({ 
+export function ProyectosFiltrosPremium({
   totalResultados = 0,
   filtros = { busqueda: '', estado: undefined },
   onActualizarFiltros = () => {},

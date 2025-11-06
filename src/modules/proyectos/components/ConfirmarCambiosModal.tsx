@@ -9,7 +9,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { AlertTriangle, Building2, CheckCircle2, Home, Pencil, Plus, Trash2, X } from 'lucide-react'
+import { AlertTriangle, Building2, CheckCircle2, Home, Loader2, Pencil, Plus, Trash2, X } from 'lucide-react'
 import { useConfirmarCambiosModal } from '../hooks/useConfirmarCambiosModal'
 import type { ResumenCambios } from '../hooks/useDetectarCambios'
 import { confirmarCambiosStyles as styles } from './ConfirmarCambiosModal.styles'
@@ -39,7 +39,9 @@ export function ConfirmarCambiosModal({
     getConfirmButtonText,
   } = useConfirmarCambiosModal({ cambios, isLoading })
 
-  if (!isOpen) return null
+  if (!isOpen) {
+    return null
+  }
 
   return (
     <div className={styles.overlay}>
@@ -47,14 +49,20 @@ export function ConfirmarCambiosModal({
       <motion.div
         {...styles.animations.overlay}
         className={styles.overlayBg}
-        onClick={onClose}
+        onClick={(e) => {
+          if (!isLoading) {
+            onClose()
+          }
+        }}
       />
 
       {/* Modal */}
       <motion.div
         {...styles.animations.modal}
         className={styles.modal}
-        onClick={(e) => e.stopPropagation()}
+        onClick={(e) => {
+          e.stopPropagation()
+        }}
       >
         {/* Header */}
         <div className={styles.header.container}>
@@ -71,7 +79,11 @@ export function ConfirmarCambiosModal({
                 </p>
               </div>
             </div>
-            <button onClick={onClose} className={styles.header.closeButton}>
+            <button
+              onClick={onClose}
+              disabled={isLoading}
+              className={styles.header.closeButton}
+            >
               <X className={styles.header.closeIcon} />
             </button>
           </div>
@@ -203,9 +215,19 @@ export function ConfirmarCambiosModal({
               type="button"
               onClick={onConfirm}
               disabled={isLoading}
-              className={styles.footer.confirmButton}
+              className={`${styles.footer.confirmButton} ${isLoading ? 'opacity-90 cursor-not-allowed' : ''}`}
             >
-              {getConfirmButtonText()}
+              {isLoading ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <span>Guardando cambios...</span>
+                </>
+              ) : (
+                <>
+                  <CheckCircle2 className="w-5 h-5" />
+                  <span>Confirmar y Guardar</span>
+                </>
+              )}
             </button>
           </div>
         </div>

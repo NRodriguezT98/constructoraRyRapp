@@ -1,9 +1,30 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+/**
+ * ============================================
+ * USE DOCUMENTOS LISTA (REACT QUERY)
+ * ============================================
+ *
+ * Hook principal para gestión de documentos
+ * Migrado de Zustand a React Query
+ *
+ * CAMBIOS:
+ * - ✅ React Query para datos del servidor
+ * - ✅ Zustand solo para estado UI (filtros, vista)
+ * - ✅ Sin useEffect manual
+ * - ✅ Cache automático
+ */
+
+import { useCallback, useMemo, useState } from 'react'
 import { useAuth } from '../../../contexts/auth-context'
 import { useModal } from '../../../shared/components/modals'
 import { DocumentosService } from '../services'
 import { useDocumentosStore } from '../store/documentos.store'
 import { DocumentoProyecto } from '../types'
+import {
+  useCategoriasQuery,
+  useDocumentosProyectoQuery,
+  useEliminarDocumentoMutation,
+  useToggleImportanteMutation,
+} from './useDocumentosQuery'
 
 interface UseDocumentosListaProps {
   proyectoId: string
@@ -23,22 +44,23 @@ export function useDocumentosLista({
   const { user } = useAuth()
   const { confirm } = useModal()
 
-  // Estado global del store
+  // ✅ REACT QUERY: Datos del servidor (cache automático)
+  const { documentos, cargando: cargandoDocumentos, refrescar } = useDocumentosProyectoQuery(proyectoId)
+  const { categorias } = useCategoriasQuery(user?.id, 'proyectos')
+
+  // ✅ REACT QUERY: Mutations
+  const eliminarMutation = useEliminarDocumentoMutation(proyectoId)
+  const toggleImportanteMutation = useToggleImportanteMutation(proyectoId)
+
+  // ✅ ZUSTAND: Solo estado UI (filtros, búsqueda)
   const {
-    documentos,
-    categorias,
-    cargandoDocumentos,
-    cargarDocumentos,
-    cargarCategorias,
-    toggleImportante,
-    eliminarDocumento,
     categoriaFiltro,
     etiquetasFiltro,
     busqueda,
     soloImportantes,
   } = useDocumentosStore()
 
-  // Filtrado de documentos
+  // Filtrado de documentos (local)
   const documentosFiltrados = useMemo(() => {
     let filtered = documentos
 
@@ -69,28 +91,6 @@ export function useDocumentosLista({
     return filtered
   }, [documentos, categoriaFiltro, etiquetasFiltro, busqueda, soloImportantes])
 
-  // Cargar datos iniciales
-  useEffect(() => {
-    let mounted = true
-
-    const inicializar = async () => {
-      try {
-        await cargarDocumentos(proyectoId)
-        if (user?.id && mounted) {
-          await cargarCategorias(user.id)
-        }
-      } catch (error) {
-        console.error('❌ [DOCUMENTOS LISTA] Error inicializando:', error)
-      }
-    }
-
-    inicializar()
-
-    return () => {
-      mounted = false
-    }
-  }, [proyectoId, user?.id]) // ← Solo IDs primitivos
-
   // Handlers
   const handleView = useCallback(
     (documento: DocumentoProyecto) => {
@@ -120,12 +120,12 @@ export function useDocumentosLista({
   const handleToggleImportante = useCallback(
     async (documento: DocumentoProyecto) => {
       try {
-        await toggleImportante(documento.id)
+        await toggleImportanteMutation.mutateAsync(documento.id)
       } catch (error) {
         console.error('Error al actualizar documento:', error)
       }
     },
-    [toggleImportante]
+    [toggleImportanteMutation]
   )
 
   const handleArchive = useCallback(
@@ -140,13 +140,13 @@ export function useDocumentosLista({
       if (confirmed) {
         try {
           await DocumentosService.archivarDocumento(documento.id)
-          await cargarDocumentos(proyectoId)
+          await refrescar()
         } catch (error) {
           console.error('Error al archivar documento:', error)
         }
       }
     },
-    [proyectoId, cargarDocumentos, confirm]
+    [refrescar, confirm]
   )
 
   const handleDelete = useCallback(
@@ -161,13 +161,13 @@ export function useDocumentosLista({
 
       if (confirmed) {
         try {
-          await eliminarDocumento(documento.id)
+          await eliminarMutation.mutateAsync(documento.id)
         } catch (error) {
           console.error('Error al eliminar documento:', error)
         }
       }
     },
-    [eliminarDocumento, confirm]
+    [eliminarMutation, confirm]
   )
 
   // Helpers

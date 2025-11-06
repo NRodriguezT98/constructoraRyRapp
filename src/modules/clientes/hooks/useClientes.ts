@@ -1,298 +1,150 @@
 /**
- * Hook principal para la gestión de clientes
- * Contiene toda la lógica de negocio del módulo
+ * ============================================
+ * HOOK: useClientes (REFACTORIZADO CON REACT QUERY)
+ * ============================================
+ *
+ * Hook principal para la gestión de clientes.
+ * Migrado desde Zustand store a React Query.
+ *
+ * DEPRECATION WARNING:
+ * Este hook mantiene compatibilidad con código legacy.
+ * Para nuevos componentes, usar directamente:
+ * - useClientesList() - Para listas
+ * - useClienteQuery(id) - Para detalles
+ * - useCrearClienteMutation() - Para crear
+ * - etc.
  */
 
-import { useCallback, useEffect, useMemo } from 'react'
-import { clientesService } from '../services/clientes.service'
-import { useClientesStore } from '../store/clientes.store'
+import { useCallback, useState } from 'react'
 import type { ActualizarClienteDTO, CrearClienteDTO, FiltrosClientes } from '../types'
+import {
+    useActualizarClienteMutation,
+    useCambiarEstadoClienteMutation,
+    useClienteQuery,
+    useClientesQuery,
+    useCrearClienteMutation,
+    useEliminarClienteMutation,
+    useSubirDocumentoIdentidadMutation,
+} from './useClientesQuery'
 
-export function useClientes() {
+export function useClientes(filtros?: FiltrosClientes) {
+  // =====================================================
+  // ESTADO LOCAL
+  // =====================================================
+
+  const [clienteSeleccionadoId, setClienteSeleccionadoId] = useState<string | null>(null)
+
+  // =====================================================
+  // REACT QUERY HOOKS
+  // =====================================================
+
   const {
-    clientes,
-    clienteSeleccionado,
+    data: clientes = [],
     isLoading,
     error,
-    filtros,
-    busqueda,
-    datosInicializados,
-    setClientes,
-    setClienteSeleccionado,
-    setIsLoading,
-    setError,
-    setFiltros,
-    setBusqueda,
-    setDatosInicializados,
-    agregarCliente,
-    actualizarCliente: actualizarClienteStore,
-    eliminarCliente: eliminarClienteStore,
-  } = useClientesStore()
+    refetch: cargarClientes,
+  } = useClientesQuery(filtros)
+
+  const { data: clienteSeleccionado } = useClienteQuery(clienteSeleccionadoId)
+
+  const crearMutation = useCrearClienteMutation()
+  const actualizarMutation = useActualizarClienteMutation()
+  const eliminarMutation = useEliminarClienteMutation()
+  const cambiarEstadoMutation = useCambiarEstadoClienteMutation()
+  const subirDocumentoMutation = useSubirDocumentoIdentidadMutation()
 
   // =====================================================
-  // CARGAR CLIENTES
+  // ACCIONES (Wrappers para mantener compatibilidad)
   // =====================================================
 
-  const cargarClientes = useCallback(async () => {
-    setIsLoading(true)
-    setError(null)
-
-    try {
-      const clientesCargados = await clientesService.obtenerClientes(filtros)
-      setClientes(clientesCargados)
-      setDatosInicializados(true) // Marcar datos como inicializados
-    } catch (err) {
-      const mensaje = err instanceof Error ? err.message : 'Error al cargar clientes'
-      setError(mensaje)
-      console.error('Error cargando clientes:', err)
-    } finally {
-      setIsLoading(false)
-    }
-  }, [filtros, setClientes, setIsLoading, setError, setDatosInicializados])
-
-  // =====================================================
-  // CARGAR CLIENTE POR ID
-  // =====================================================
-
+  /**
+   * Cargar cliente por ID
+   */
   const cargarCliente = useCallback(
     async (id: string) => {
-      // NO usar setIsLoading aquí - es para la lista completa
-      // Esta función se usa en background para cargar detalles
-      setError(null)
-
-      try {
-        const cliente = await clientesService.obtenerCliente(id)
-        setClienteSeleccionado(cliente)
-        return cliente
-      } catch (err) {
-        const mensaje = err instanceof Error ? err.message : 'Error al cargar cliente'
-        setError(mensaje)
-        console.error('Error cargando cliente:', err)
-        return null
-      }
+      setClienteSeleccionadoId(id)
+      // React Query se encarga de cargar automáticamente
+      return clienteSeleccionado
     },
-    [setClienteSeleccionado, setError]
+    [clienteSeleccionado]
   )
 
-  // =====================================================
-  // CREAR CLIENTE
-  // =====================================================
-
+  /**
+   * Crear cliente
+   */
   const crearCliente = useCallback(
     async (datos: CrearClienteDTO) => {
-      setIsLoading(true)
-      setError(null)
-
-      try {
-        const nuevoCliente = await clientesService.crearCliente(datos)
-        agregarCliente({
-          ...nuevoCliente,
-          estadisticas: {
-            total_negociaciones: 0,
-            negociaciones_activas: 0,
-            negociaciones_completadas: 0,
-          },
-        })
-        return nuevoCliente
-      } catch (err) {
-        const mensaje = err instanceof Error ? err.message : 'Error al crear cliente'
-        setError(mensaje)
-        console.error('Error creando cliente:', err)
-        throw err
-      } finally {
-        setIsLoading(false)
-      }
+      return crearMutation.mutateAsync(datos)
     },
-    [agregarCliente, setIsLoading, setError]
+    [crearMutation]
   )
 
-  // =====================================================
-  // ACTUALIZAR CLIENTE
-  // =====================================================
-
+  /**
+   * Actualizar cliente
+   */
   const actualizarCliente = useCallback(
     async (id: string, datos: ActualizarClienteDTO) => {
-      setIsLoading(true)
-      setError(null)
-
-      try {
-        const clienteActualizado = await clientesService.actualizarCliente(id, datos)
-        actualizarClienteStore(id, clienteActualizado)
-
-        // Si es el cliente seleccionado, actualizarlo también
-        if (clienteSeleccionado?.id === id) {
-          setClienteSeleccionado({ ...clienteSeleccionado, ...clienteActualizado })
-        }
-
-        return clienteActualizado
-      } catch (err) {
-        const mensaje = err instanceof Error ? err.message : 'Error al actualizar cliente'
-        setError(mensaje)
-        console.error('Error actualizando cliente:', err)
-        throw err
-      } finally {
-        setIsLoading(false)
-      }
+      return actualizarMutation.mutateAsync({ id, datos })
     },
-    [
-      actualizarClienteStore,
-      clienteSeleccionado,
-      setClienteSeleccionado,
-      setIsLoading,
-      setError,
-    ]
+    [actualizarMutation]
   )
 
-  // =====================================================
-  // ELIMINAR CLIENTE
-  // =====================================================
-
+  /**
+   * Eliminar cliente
+   */
   const eliminarCliente = useCallback(
     async (id: string) => {
-      setIsLoading(true)
-      setError(null)
-
-      try {
-        await clientesService.eliminarCliente(id)
-        eliminarClienteStore(id)
-      } catch (err) {
-        const mensaje = err instanceof Error ? err.message : 'Error al eliminar cliente'
-        setError(mensaje)
-        console.error('Error eliminando cliente:', err)
-        throw err
-      } finally {
-        setIsLoading(false)
-      }
+      await eliminarMutation.mutateAsync(id)
     },
-    [eliminarClienteStore, setIsLoading, setError]
+    [eliminarMutation]
   )
 
-  // =====================================================
-  // CAMBIAR ESTADO
-  // =====================================================
-
+  /**
+   * Cambiar estado
+   */
   const cambiarEstado = useCallback(
-    async (id: string, nuevoEstado: 'Interesado' | 'Activo' | 'Inactivo') => {
-      return actualizarCliente(id, { estado: nuevoEstado })
+    async (id: string, estado: 'Interesado' | 'Activo' | 'Inactivo') => {
+      return cambiarEstadoMutation.mutateAsync({ id, estado })
     },
-    [actualizarCliente]
+    [cambiarEstadoMutation]
   )
 
-  // =====================================================
-  // SUBIR DOCUMENTO
-  // =====================================================
-
+  /**
+   * Subir documento de identidad
+   */
   const subirDocumentoIdentidad = useCallback(
     async (clienteId: string, archivo: File) => {
-      setIsLoading(true)
-      setError(null)
-
-      try {
-        const url = await clientesService.subirDocumentoIdentidad(clienteId, archivo)
-        actualizarClienteStore(clienteId, { documento_identidad_url: url })
-        return url
-      } catch (err) {
-        const mensaje = err instanceof Error ? err.message : 'Error al subir documento'
-        setError(mensaje)
-        console.error('Error subiendo documento:', err)
-        throw err
-      } finally {
-        setIsLoading(false)
-      }
+      return subirDocumentoMutation.mutateAsync({ clienteId, archivo })
     },
-    [actualizarClienteStore, setIsLoading, setError]
+    [subirDocumentoMutation]
   )
 
   // =====================================================
-  // FILTROS Y BÚSQUEDA
+  // ESTADÍSTICAS COMPUTADAS
   // =====================================================
 
-  const aplicarFiltros = useCallback(
-    (nuevosFiltros: FiltrosClientes) => {
-      setFiltros(nuevosFiltros)
-    },
-    [setFiltros]
-  )
-
-  const aplicarBusqueda = useCallback(
-    (termino: string) => {
-      setBusqueda(termino)
-      setFiltros({ ...filtros, busqueda: termino })
-    },
-    [filtros, setBusqueda, setFiltros]
-  )
+  const estadisticas = {
+    total: clientes.length,
+    interesados: clientes.filter((c) => c.estado === 'Interesado').length,
+    activos: clientes.filter((c) => c.estado === 'Activo').length,
+    inactivos: clientes.filter((c) => c.estado === 'Inactivo').length,
+  }
 
   // =====================================================
-  // CLIENTES FILTRADOS (computado)
-  // =====================================================
-
-  const clientesFiltrados = useMemo(() => {
-    let resultado = [...clientes]
-
-    // Búsqueda local adicional (por si no está en filtros del servidor)
-    if (busqueda) {
-      const terminoBusqueda = busqueda.toLowerCase()
-      resultado = resultado.filter(
-        (cliente) =>
-          cliente.nombre_completo.toLowerCase().includes(terminoBusqueda) ||
-          cliente.numero_documento.toLowerCase().includes(terminoBusqueda) ||
-          cliente.telefono?.toLowerCase().includes(terminoBusqueda) ||
-          cliente.email?.toLowerCase().includes(terminoBusqueda)
-      )
-    }
-
-    return resultado
-  }, [clientes, busqueda])
-
-  // =====================================================
-  // ESTADÍSTICAS (computado)
-  // =====================================================
-
-  const estadisticas = useMemo(() => {
-    return {
-      total: clientes.length,
-      interesados: clientes.filter((c) => c.estado === 'Interesado').length,
-      activos: clientes.filter((c) => c.estado === 'Activo').length,
-      inactivos: clientes.filter((c) => c.estado === 'Inactivo').length,
-    }
-  }, [clientes])
-
-  // =====================================================
-  // CARGAR DATOS AL MONTAR (solo si no están inicializados)
-  // =====================================================
-
-  useEffect(() => {
-    let cancelado = false
-
-    if (!datosInicializados) {
-      console.log('👥 [CLIENTES HOOK] Cargando datos iniciales...')
-      cargarClientes().catch(error => {
-        if (!cancelado) {
-          console.error('👥 [CLIENTES HOOK] Error en carga inicial:', error)
-        }
-      })
-    }
-
-    return () => {
-      cancelado = true
-    }
-  }, [datosInicializados, cargarClientes])
-
-  // =====================================================
-  // RETURN
+  // RETURN (Compatibilidad con código legacy)
   // =====================================================
 
   return {
     // Estado
-    clientes: clientesFiltrados,
-    clienteSeleccionado,
-    isLoading,
-    error,
+    clientes,
+    clienteSeleccionado: clienteSeleccionado || null,
+    isLoading:
+      isLoading ||
+      crearMutation.isPending ||
+      actualizarMutation.isPending ||
+      eliminarMutation.isPending,
+    error: error?.message || null,
     estadisticas,
-
-    // Filtros
-    filtros,
-    busqueda,
 
     // Acciones
     cargarClientes,
@@ -302,7 +154,15 @@ export function useClientes() {
     eliminarCliente,
     cambiarEstado,
     subirDocumentoIdentidad,
-    aplicarFiltros,
-    aplicarBusqueda,
+
+    // Filtros (legacy - deprecado)
+    filtros: filtros || {},
+    busqueda: filtros?.busqueda || '',
+    aplicarFiltros: () => {
+      console.warn('useClientes.aplicarFiltros() está deprecado. Usar useClientesList()')
+    },
+    aplicarBusqueda: () => {
+      console.warn('useClientes.aplicarBusqueda() está deprecado. Usar useClientesList()')
+    },
   }
 }

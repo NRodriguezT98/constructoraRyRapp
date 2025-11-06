@@ -171,18 +171,18 @@ class ProyectosService {
     const updateData: any = {}
 
     // Mapear campos de la aplicación a campos de DB
-    if (data.nombre) updateData.nombre = data.nombre
-    if (data.descripcion) updateData.descripcion = data.descripcion
-    if (data.ubicacion) updateData.ubicacion = data.ubicacion
-    if (data.fechaInicio) updateData.fecha_inicio = data.fechaInicio
-    if (data.fechaFinEstimada)
+    if (data.nombre !== undefined) updateData.nombre = data.nombre
+    if (data.descripcion !== undefined) updateData.descripcion = data.descripcion
+    if (data.ubicacion !== undefined) updateData.ubicacion = data.ubicacion
+    if (data.fechaInicio !== undefined) updateData.fecha_inicio = data.fechaInicio
+    if (data.fechaFinEstimada !== undefined)
       updateData.fecha_fin_estimada = data.fechaFinEstimada
     if (data.presupuesto !== undefined)
       updateData.presupuesto = data.presupuesto
-    if (data.estado) updateData.estado = data.estado
-    if (data.responsable) updateData.responsable = data.responsable
-    if (data.telefono) updateData.telefono = data.telefono
-    if (data.email) updateData.email = data.email
+    if (data.estado !== undefined) updateData.estado = data.estado
+    if (data.responsable !== undefined) updateData.responsable = data.responsable
+    if (data.telefono !== undefined) updateData.telefono = data.telefono
+    if (data.email !== undefined) updateData.email = data.email
 
     // 3. Actualizar proyecto en DB
     const { data: proyecto, error } = await supabase
@@ -208,8 +208,6 @@ class ProyectosService {
 
     // 4. ✅ Actualizar manzanas si se proporcionaron
     if (data.manzanas && data.manzanas.length > 0) {
-      console.log('📝 Actualizando manzanas del proyecto:', id)
-
       // Obtener IDs de manzanas existentes
       const manzanasExistentesIds = (proyecto.manzanas || []).map((m: any) => m.id)
 
@@ -230,8 +228,6 @@ class ProyectosService {
 
           if (updateError) {
             console.error('Error al actualizar manzana:', updateError)
-          } else {
-            console.log('✅ Manzana actualizada:', manzana.nombre)
           }
         }
         // Si NO tiene ID o NO existe en DB → Crear nueva
@@ -242,8 +238,6 @@ class ProyectosService {
 
           if (insertError) {
             console.error('Error al crear manzana:', insertError)
-          } else {
-            console.log('✅ Manzana creada:', manzana.nombre)
           }
         }
       }
@@ -273,11 +267,7 @@ class ProyectosService {
 
           if (deleteError) {
             console.error('Error al eliminar manzana:', deleteError)
-          } else {
-            console.log('✅ Manzana eliminada:', manzanaId)
           }
-        } else {
-          console.warn('⚠️ Manzana con viviendas no eliminada:', manzanaId)
         }
       }
     }

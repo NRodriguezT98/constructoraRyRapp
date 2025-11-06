@@ -1,37 +1,42 @@
 'use client'
 
-import { motion, AnimatePresence } from 'framer-motion'
-import { useState, useMemo } from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
 import {
-  Search,
-  Filter,
-  X,
-  Star,
-  Calendar,
-  Tag as TagIcon,
-  SlidersHorizontal,
-  Grid3x3,
-  List as ListIcon,
+    Calendar,
+    Filter,
+    Grid3x3,
+    List as ListIcon,
+    Search,
+    SlidersHorizontal,
+    Star,
+    Tag as TagIcon,
+    X,
 } from 'lucide-react'
+import { useMemo, useState } from 'react'
 import { useDocumentosStore } from '../../store/documentos.store'
+import type { CategoriaDocumento, DocumentoProyecto } from '../../types'
 
 type VistaDocumentos = 'grid' | 'lista'
 
 interface DocumentosFiltrosProps {
+  documentos: DocumentoProyecto[]
+  categorias: CategoriaDocumento[]
   onChangeVista?: (vista: VistaDocumentos) => void
 }
 
-export function DocumentosFiltros({ onChangeVista }: DocumentosFiltrosProps) {
+export function DocumentosFiltros({
+  documentos = [],
+  categorias = [],
+  onChangeVista
+}: DocumentosFiltrosProps) {
   const [mostrarFiltrosAvanzados, setMostrarFiltrosAvanzados] = useState(false)
   const [vista, setVista] = useState<VistaDocumentos>('grid')
 
   const {
-    categorias,
     categoriaFiltro,
     etiquetasFiltro,
     busqueda,
     soloImportantes,
-    documentos,
     setFiltroCategoria,
     setFiltroEtiquetas,
     setBusqueda,
