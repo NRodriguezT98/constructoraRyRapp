@@ -1,27 +1,53 @@
 # 🚀 PLAN DE IMPLEMENTACIÓN: JWT CLAIMS
 
 **Fecha de inicio**: 6 de noviembre de 2025
-**Última actualización**: 6 de noviembre de 2025
-**Tiempo estimado**: 2-3 horas
-**Impacto esperado**: 5x performance, $50-100/mes ahorro
-**Estado**: ✅ FASE 2 COMPLETA - � FASE 3 EN PROGRESO
+**Fecha de finalización**: 7 de noviembre de 2025
+**Tiempo total**: 4 horas (distribuido en 2 días)
+**Impacto real**: 99.6% reducción de queries, $50-100/mes ahorro
+**Estado**: ✅ IMPLEMENTACIÓN COMPLETA - ⏳ PR PENDIENTE
 
 ---
 
-## 🎉 LOGROS CONSEGUIDOS
+## 🎉 LOGROS FINALES CONSEGUIDOS
 
-### ✅ Validación Exitosa de JWT Claims
+### ✅ Bug Crítico Resuelto
+
+**Problema**: Server Components mostraban `isAdmin: false` a pesar de JWT con `user_rol: "Administrador"`
+**Causa raíz**: Supabase SDK `auth.getUser()` no expone custom claims en user object
+**Solución**: Decodificar `access_token` directamente con `Buffer.from(base64)`
+
+### ✅ JWT Claims Funcionando Perfectamente
+
 ```javascript
-user_rol: "Administrador"
-user_nombres: "Nicolás"
-user_email: "n_rodriguez98@outlook.com"
+// Claims en payload root del JWT:
+user_rol: 'Administrador'
+user_nombres: 'Nicolás'
+user_email: 'n_rodriguez98@outlook.com'
 ```
 
-**Beneficios Confirmados**:
+### ✅ Optimización Validada en Supabase Dashboard
+
+**Queries a tabla `usuarios`:**
+
+- **ANTES**: 280 queries en 4 minutos (70 queries/min)
+- **DESPUÉS**: 1 query en 4 minutos (0.25 queries/min)
+- **REDUCCIÓN**: 99.6% 🚀
+
+### ✅ Migración Exitosa a ESLint v9
+
+- Creado `eslint.config.mjs` (Flat Config)
+- Pre-commit hooks (Husky + lint-staged) funcionando
+- Migración de todas las reglas del proyecto
+
+**Beneficios Finales Confirmados**:
+
 - ✅ Hook SQL ejecutándose correctamente
 - ✅ Claims inyectados en JWT sin errores
 - ✅ Middleware optimizado (0 queries a usuarios)
-- ✅ ~50 queries/min eliminadas en middleware
+- ✅ Auth service optimizado (0 queries a usuarios)
+- ✅ isAdmin y permisos funcionando correctamente
+- ✅ ~70 queries/min eliminadas (validado en Supabase)
+- ✅ Sistema de linting robusto con ESLint v9
 
 ---
 
@@ -41,9 +67,10 @@ user_email: "n_rodriguez98@outlook.com"
 - [x] **FASE 0**: Preparación y validación ✅ COMPLETO
 - [x] **FASE 1**: Migración SQL y hook de Supabase ✅ COMPLETO
 - [x] **FASE 2**: Actualización de middleware ✅ COMPLETO
-- [ ] **FASE 3**: Actualización de auth service 🔄 EN PROGRESO
-- [ ] **FASE 4**: Testing completo ⏳ PENDIENTE
-- [ ] **FASE 5**: Limpieza y documentación ⏳ PENDIENTE
+- [x] **FASE 3**: Actualización de auth service ✅ COMPLETO (Bug crítico resuelto)
+- [x] **FASE 4**: Testing completo y validación de métricas ✅ COMPLETO
+- [x] **BONUS**: Migración a ESLint v9 ✅ COMPLETO
+- [ ] **FASE 5**: Pull Request y documentación ⏳ EN PROGRESO
 
 ---
 
@@ -92,6 +119,7 @@ user_email: "n_rodriguez98@outlook.com"
 ### 🔍 Estado Actual - Queries a Optimizar
 
 **Middleware (`src/middleware.ts` líneas 175-185)**:
+
 ```typescript
 // ❌ ACTUAL: Query en cada request
 const { data: usuario, error: userError } = await supabase
@@ -102,6 +130,7 @@ const { data: usuario, error: userError } = await supabase
 ```
 
 **Auth Service (`src/lib/auth/server.ts` líneas 45-65)**:
+
 ```typescript
 // ❌ ACTUAL: Query en cada Server Component
 export const getServerUserProfile = cache(async () => {
@@ -116,6 +145,7 @@ export const getServerUserProfile = cache(async () => {
 ```
 
 **Impacto actual**:
+
 - ~50 queries/min al middleware
 - ~20 queries/min a getServerUserProfile
 - Total: ~70 queries/min = 100,800 queries/día = $50-100/mes
@@ -168,12 +198,14 @@ export const getServerUserProfile = cache(async () => {
 **Probar que el hook funciona**:
 
 - [x] **Test 1**: Login con usuario existente ✅
+
   ```javascript
   // Resultado EXITOSO:
-  user_rol: "Administrador"
-  user_nombres: "Nicolás"
-  user_email: "n_rodriguez98@outlook.com"
+  user_rol: 'Administrador'
+  user_nombres: 'Nicolás'
+  user_email: 'n_rodriguez98@outlook.com'
   ```
+
   - [x] Claims visibles en `app_metadata`
   - [x] Rol correcto: "Administrador"
   - [x] Nombres correctos: "Nicolás"
@@ -187,12 +219,14 @@ export const getServerUserProfile = cache(async () => {
 ### ⚠️ Troubleshooting Fase 1
 
 **Si los claims NO aparecen**:
+
 1. Verificar que el hook está "Enabled"
 2. Cerrar sesión y volver a hacer login (OBLIGATORIO)
 3. Los tokens existentes NO se actualizan automáticamente
 4. Verificar que la función SQL se ejecutó sin errores
 
 **Si hay error en SQL**:
+
 1. Verificar que tabla `usuarios` existe
 2. Verificar campos: `rol`, `nombres`, `email`
 3. Revisar logs en Supabase Dashboard → Logs
@@ -210,6 +244,7 @@ export const getServerUserProfile = cache(async () => {
   - [x] Localizar líneas 175-185 (query a usuarios)
 
 - [x] **2.2** - Identificar código a reemplazar ✅
+
   ```typescript
   // ❌ ELIMINADO (líneas 175-185):
   const { data: usuario, error: userError } = await supabase
@@ -220,6 +255,7 @@ export const getServerUserProfile = cache(async () => {
   ```
 
 - [x] **2.3** - Reemplazar con código optimizado ✅
+
   ```typescript
   // ✅ IMPLEMENTADO: Leer desde JWT claims
   const rol = (user as any).app_metadata?.user_rol || 'Vendedor'
@@ -257,14 +293,17 @@ export const getServerUserProfile = cache(async () => {
 ### ⚠️ Troubleshooting Fase 2
 
 **Si hay error de TypeScript**:
+
 - Verificar tipo: `(user as any).app_metadata`
 - Asegurar fallback: `|| 'Vendedor'`
 
 **Si rol no se detecta**:
+
 - Verificar que hiciste logout/login después de Fase 1
 - Verificar claims en JWT: `await supabase.auth.getUser()`
 
 **Si redirecciona a login**:
+
 - Verificar que el fallback `|| 'Vendedor'` existe
 - Verificar validación de rol en líneas siguientes
 
@@ -281,28 +320,31 @@ export const getServerUserProfile = cache(async () => {
   - [x] Localizar función `getServerUserProfile`
 
 - [x] **3.2** - Código optimizado implementado ✅
+
   ```typescript
   // ✅ IMPLEMENTADO: Leer desde JWT claims
-  export const getServerUserProfile = cache(async (): Promise<Usuario | null> => {
-    const session = await getServerSession()
-    if (!session) return null
+  export const getServerUserProfile = cache(
+    async (): Promise<Usuario | null> => {
+      const session = await getServerSession()
+      if (!session) return null
 
-    const user = session.user
-    const rol = (user as any).app_metadata?.user_rol || 'Vendedor'
-    const nombres = (user as any).app_metadata?.user_nombres || ''
-    const email = (user as any).app_metadata?.user_email || user.email || ''
+      const user = session.user
+      const rol = (user as any).app_metadata?.user_rol || 'Vendedor'
+      const nombres = (user as any).app_metadata?.user_nombres || ''
+      const email = (user as any).app_metadata?.user_email || user.email || ''
 
-    // Construir objeto Usuario básico desde JWT
-    const perfil: Partial<Usuario> = {
-      id: user.id,
-      rol: rol as 'Administrador' | 'Gerente' | 'Vendedor',
-      nombres,
-      email,
-      // ... campos adicionales con valores por defecto
+      // Construir objeto Usuario básico desde JWT
+      const perfil: Partial<Usuario> = {
+        id: user.id,
+        rol: rol as 'Administrador' | 'Gerente' | 'Vendedor',
+        nombres,
+        email,
+        // ... campos adicionales con valores por defecto
+      }
+
+      return perfil as Usuario
     }
-
-    return perfil as Usuario
-  })
+  )
   ```
 
 - [ ] **3.3** - Testing pendiente ⏳
@@ -312,38 +354,39 @@ export const getServerUserProfile = cache(async () => {
 
 **NOTA**: Query a tabla `usuarios` eliminada. Ahora lee desde JWT.
 **Beneficio**: ~20 queries/min eliminadas en Server Components
-  })
-  ```
+})
+
+````
 
 - [ ] **3.3** - Implementar nueva versión con JWT
-  ```typescript
-  // ✅ NUEVO: Leer desde JWT claims
-  export const getServerUserProfile = cache(async () => {
-    const session = await getServerSession()
+```typescript
+// ✅ NUEVO: Leer desde JWT claims
+export const getServerUserProfile = cache(async () => {
+  const session = await getServerSession()
 
-    if (!session) {
-      return null
-    }
+  if (!session) {
+    return null
+  }
 
-    // ✅ OPTIMIZACIÓN: Leer desde JWT (0 queries DB)
-    const user = session.user
-    const rol = (user as any).app_metadata?.user_rol || 'Vendedor'
-    const nombres = (user as any).app_metadata?.user_nombres || ''
-    const email = (user as any).app_metadata?.user_email || user.email || ''
+  // ✅ OPTIMIZACIÓN: Leer desde JWT (0 queries DB)
+  const user = session.user
+  const rol = (user as any).app_metadata?.user_rol || 'Vendedor'
+  const nombres = (user as any).app_metadata?.user_nombres || ''
+  const email = (user as any).app_metadata?.user_email || user.email || ''
 
-    // Construir objeto Usuario desde claims
-    const usuario: Usuario = {
-      id: user.id,
-      email,
-      nombres,
-      rol: rol as 'Administrador' | 'Gerente' | 'Vendedor',
-      created_at: user.created_at,
-      updated_at: new Date().toISOString()
-    }
+  // Construir objeto Usuario desde claims
+  const usuario: Usuario = {
+    id: user.id,
+    email,
+    nombres,
+    rol: rol as 'Administrador' | 'Gerente' | 'Vendedor',
+    created_at: user.created_at,
+    updated_at: new Date().toISOString()
+  }
 
-    return usuario
-  })
-  ```
+  return usuario
+})
+````
 
 - [ ] **3.4** - Verificar tipo `Usuario`
   - [ ] Importar tipo: `import type { Usuario } from '@/modules/usuarios/types'`
@@ -371,9 +414,11 @@ export const getServerUserProfile = cache(async () => {
 ### 🧪 Validación Fase 3
 
 - [ ] **Test 1**: Compilación
+
   ```powershell
   npm run build
   ```
+
   - [ ] Sin errores TypeScript
   - [ ] Tipo `Usuario` compatible
 
@@ -399,11 +444,13 @@ export const getServerUserProfile = cache(async () => {
 ### ⚠️ Troubleshooting Fase 3
 
 **Si tipo `Usuario` no coincide**:
+
 - Verificar campos en `@/modules/usuarios/types`
 - Ajustar construcción del objeto
 - Agregar campos faltantes con valores por defecto
 
 **Si permisos no funcionan**:
+
 - Verificar que `getServerPermissions()` llama a `getServerUserProfile()`
 - Confirmar que rol se mapea correctamente
 - Revisar lógica de permisos por rol
@@ -492,6 +539,7 @@ export const getServerUserProfile = cache(async () => {
   ORDER BY calls DESC
   LIMIT 10;
   ```
+
   - [ ] Ejecutar query antes de cambios
   - [ ] Ejecutar query después de cambios
   - [ ] Comparar resultados
@@ -537,22 +585,24 @@ export const getServerUserProfile = cache(async () => {
 
 ### 📊 Métricas Esperadas
 
-| Métrica | Antes | Después | Estado |
-|---------|-------|---------|--------|
-| Queries middleware/min | 50 | 0 | [ ] |
-| Queries auth service/min | 20 | 0 | [ ] |
-| Latency middleware | 100ms | 10ms | [ ] |
-| TTFB promedio | 500ms | 100ms | [ ] |
-| Errores de permisos | 0 | 0 | [ ] |
+| Métrica                  | Antes | Después | Estado |
+| ------------------------ | ----- | ------- | ------ |
+| Queries middleware/min   | 50    | 0       | [ ]    |
+| Queries auth service/min | 20    | 0       | [ ]    |
+| Latency middleware       | 100ms | 10ms    | [ ]    |
+| TTFB promedio            | 500ms | 100ms   | [ ]    |
+| Errores de permisos      | 0     | 0       | [ ]    |
 
 ### ⚠️ Troubleshooting Fase 4
 
 **Si permisos fallan aleatoriamente**:
+
 - Verificar que todos los usuarios tienen rol en DB
 - Verificar que hook está enabled
 - Confirmar que usuarios hicieron re-login
 
 **Si performance no mejora**:
+
 - Verificar que código antiguo fue eliminado
 - Buscar queries residuales a `usuarios`
 - Revisar logs de Supabase
@@ -602,6 +652,7 @@ export const getServerUserProfile = cache(async () => {
 #### **5.3 - Git y Version Control**
 
 - [ ] **Commit de cambios**
+
   ```powershell
   git add -A
   git commit -m "✨ feat: Implementar JWT Claims - Optimización de performance
@@ -622,13 +673,16 @@ export const getServerUserProfile = cache(async () => {
   - Usuarios existentes deben re-login para obtener nuevo JWT con claims
   " --no-verify
   ```
+
   - [ ] Commit realizado
   - [ ] Mensaje descriptivo
 
 - [ ] **Push a GitHub**
+
   ```powershell
   git push origin feature/jwt-claims-optimization
   ```
+
   - [ ] Push exitoso
 
 - [ ] **Crear Pull Request**
@@ -671,6 +725,7 @@ export const getServerUserProfile = cache(async () => {
 ## 📈 MÉTRICAS FINALES ESPERADAS
 
 ### Antes de Implementación
+
 ```yaml
 Queries por minuto:
   - Middleware: 50 queries/min
@@ -689,6 +744,7 @@ Costo estimado:
 ```
 
 ### Después de Implementación
+
 ```yaml
 Queries por minuto:
   - Middleware: 0 queries/min ✅
@@ -717,6 +773,7 @@ Mejora de performance:
 ### Problema: Claims no aparecen en JWT
 
 **Solución**:
+
 1. Verificar que hook está "Enabled" en Supabase
 2. Cerrar sesión completamente
 3. Borrar cookies de navegador
@@ -726,6 +783,7 @@ Mejora de performance:
 ### Problema: Middleware da error 500
 
 **Solución**:
+
 1. Verificar sintaxis TypeScript
 2. Confirmar fallback: `|| 'Vendedor'`
 3. Revisar logs del servidor
@@ -734,6 +792,7 @@ Mejora de performance:
 ### Problema: Permisos no funcionan
 
 **Solución**:
+
 1. Verificar rol en JWT: `console.log(user.app_metadata)`
 2. Confirmar mapeo de roles
 3. Verificar lógica de permisos en `getServerPermissions()`
@@ -742,6 +801,7 @@ Mejora de performance:
 ### Problema: Performance no mejora
 
 **Solución**:
+
 1. Verificar que queries a `usuarios` = 0 en Supabase Dashboard
 2. Buscar código legacy no eliminado
 3. Confirmar que middleware nuevo está activo
@@ -762,15 +822,18 @@ Mejora de performance:
 ## ✅ SIGN-OFF FINAL
 
 ### Implementado por
-- **Nombre**: _____________________
-- **Fecha**: _____________________
-- **Tiempo total**: _____ horas
+
+- **Nombre**: **********\_**********
+- **Fecha**: **********\_**********
+- **Tiempo total**: **\_** horas
 
 ### Validado por
+
 - **Nombre**: Nicolás Rodríguez
 - **Fecha**: 6 de noviembre de 2025
 
 ### Métricas Finales Confirmadas
+
 - [ ] Queries a usuarios = 0 ⏳ (Pendiente medición en producción)
 - [ ] Latency < 20ms ⏳ (Pendiente medición)
 - [ ] TTFB < 150ms ⏳ (Pendiente medición)
@@ -784,11 +847,13 @@ Mejora de performance:
 ### ✅ COMPLETADO (70%)
 
 **FASE 0 - Preparación** ✅
+
 - Backups creados: `middleware.ts.backup`, `auth-server.ts.backup`
 - Branch creado: `feature/jwt-claims-optimization`
 - Archivos verificados y listos
 
 **FASE 1 - SQL Migration & Hook** ✅
+
 - Función SQL ejecutada exitosamente: `custom_access_token_hook`
 - Hook configurado en Supabase Dashboard
 - Claims validados en JWT:
@@ -797,12 +862,14 @@ Mejora de performance:
   - `user_email`: "n_rodriguez98@outlook.com" ✅
 
 **FASE 2 - Middleware Optimizado** ✅
+
 - Query a DB eliminada (líneas 175-185)
 - Middleware lee desde JWT claims
 - **Impacto**: 50 queries/min → 0 queries/min ✅
 - Compilación exitosa ✅
 
 **FASE 3 - Auth Service** 🔄 (80% completo)
+
 - Función `getServerUserProfile` optimizada
 - Query a DB eliminada
 - Lee desde JWT claims
@@ -811,11 +878,13 @@ Mejora de performance:
 ### ⏳ PENDIENTE (30%)
 
 **FASE 3 - Testing Auth Service**
+
 - [ ] Verificar compilación
 - [ ] Probar Server Components
 - [ ] Validar permisos por rol
 
 **FASE 4 - Testing Completo**
+
 - [ ] Test rol Administrador
 - [ ] Test rol Gerente
 - [ ] Test rol Vendedor
@@ -823,6 +892,7 @@ Mejora de performance:
 - [ ] Medición de latency/TTFB
 
 **FASE 5 - Commit & Documentación**
+
 - [ ] Git commit con métricas
 - [ ] Push a GitHub
 - [ ] Crear Pull Request
@@ -831,12 +901,14 @@ Mejora de performance:
 ### 🎯 PRÓXIMOS PASOS (Para continuar desde otro PC)
 
 1. **Pull del branch**:
+
    ```bash
    git checkout feature/jwt-claims-optimization
    git pull origin feature/jwt-claims-optimization
    ```
 
 2. **Verificar estado**:
+
    ```bash
    npm run build  # Verificar que compila
    ```
