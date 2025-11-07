@@ -7,26 +7,26 @@ import type { Vivienda } from '@/modules/viviendas/types'
 import { formatCurrency, formatDate } from '@/shared/utils'
 import { motion } from 'framer-motion'
 import {
-    Activity,
-    ArrowLeft,
-    Building2,
-    Calendar,
-    ChevronRight,
-    Compass,
-    DollarSign,
-    Edit2,
-    FileText,
-    Home,
-    Info,
-    Mail,
-    MapPin,
-    Phone,
-    Plus,
-    Receipt,
-    Trash2,
-    Upload,
-    User,
-    UserPlus
+  Activity,
+  ArrowLeft,
+  Building2,
+  Calendar,
+  ChevronRight,
+  Compass,
+  DollarSign,
+  Edit2,
+  FileText,
+  Home,
+  Info,
+  Mail,
+  MapPin,
+  Phone,
+  Plus,
+  Receipt,
+  Trash2,
+  Upload,
+  User,
+  UserPlus
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
@@ -740,14 +740,23 @@ function LinderosTab({ vivienda }: { vivienda: Vivienda }) {
 function DocumentosTab({ viviendaId }: { viviendaId: string }) {
   // Estado local para vistas
   const [showUpload, setShowUpload] = useState(false)
+  const [uploadCertificadoTradicion, setUploadCertificadoTradicion] = useState(false)
 
-  // Si está mostrando formulario de upload
-  if (showUpload) {
+  // Si está mostrando formulario de upload (normal o certificado)
+  if (showUpload || uploadCertificadoTradicion) {
     return (
       <DocumentoUploadVivienda
         viviendaId={viviendaId}
-        onSuccess={() => setShowUpload(false)}
-        onCancel={() => setShowUpload(false)}
+        onSuccess={() => {
+          setShowUpload(false)
+          setUploadCertificadoTradicion(false)
+        }}
+        onCancel={() => {
+          setShowUpload(false)
+          setUploadCertificadoTradicion(false)
+        }}
+        categoriaPreseleccionada={uploadCertificadoTradicion ? 'Certificado de Tradición' : undefined}
+        bloquearCategoria={uploadCertificadoTradicion}
       />
     )
   }
@@ -783,7 +792,10 @@ function DocumentosTab({ viviendaId }: { viviendaId: string }) {
       </div>
 
       {/* Lista de documentos */}
-      <DocumentosListaVivienda viviendaId={viviendaId} />
+      <DocumentosListaVivienda
+        viviendaId={viviendaId}
+        onSubirDocumento={() => setUploadCertificadoTradicion(true)}
+      />
     </motion.div>
   )
 }

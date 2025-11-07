@@ -144,6 +144,39 @@ export function useDocumentosVivienda(viviendaId: string) {
     },
   })
 
+  // ✅ MUTATION: Ver documento (obtener URL firmada)
+  const verDocumentoMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const url = await documentosViviendaService.obtenerUrlFirmada(id, 3600) // 1 hora
+      return url
+    },
+    onSuccess: (url) => {
+      // Abrir en nueva pestaña
+      window.open(url, '_blank', 'noopener,noreferrer')
+      toast.success('Abriendo documento en nueva pestaña...', {
+        duration: 2000,
+      })
+    },
+    onError: (error: Error) => {
+      const message = error.message || 'Error al abrir documento'
+
+      // Mostrar mensaje más amigable si el archivo no existe
+      if (message.includes('no existe en Storage')) {
+        toast.error(
+          'El archivo físico no se encuentra disponible. Podría haber sido eliminado.',
+          {
+            duration: 5000,
+            description: 'Contacta al administrador si necesitas recuperar este documento.',
+          }
+        )
+      } else {
+        toast.error(message, {
+          duration: 4000,
+        })
+      }
+    },
+  })
+
   return {
     // Data
     documentos,
@@ -155,6 +188,7 @@ export function useDocumentosVivienda(viviendaId: string) {
     actualizarDocumento: actualizarMutation.mutateAsync,
     eliminarDocumento: eliminarMutation.mutateAsync,
     descargarDocumento: descargarMutation.mutateAsync,
+    verDocumento: verDocumentoMutation.mutateAsync,
     refetch,
 
     // States
@@ -162,6 +196,7 @@ export function useDocumentosVivienda(viviendaId: string) {
     isActualizando: actualizarMutation.isPending,
     isEliminando: eliminarMutation.isPending,
     isDescargando: descargarMutation.isPending,
+    isViendoDocumento: verDocumentoMutation.isPending,
   }
 }
 

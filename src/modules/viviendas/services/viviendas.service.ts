@@ -360,6 +360,61 @@ class ViviendasService {
     console.log('✅ [CREAR VIVIENDA] Vivienda creada exitosamente:', data)
     console.log('🔍 [CREAR VIVIENDA] certificado_tradicion_url en DB:', (data as any).certificado_tradicion_url)
 
+    // 📄 CREAR REGISTRO EN DOCUMENTOS_VIVIENDA si hay certificado
+    if (certificadoUrl && formData.certificado_tradicion_file) {
+      console.log('📝 [CREAR VIVIENDA] Creando registro de documento para certificado...')
+
+      try {
+        // 1. Obtener categoría "Certificado de Tradición"
+        const { data: categoria } = await supabase
+          .from('categorias_documento')
+          .select('id')
+          .eq('nombre', 'Certificado de Tradición')
+          .contains('modulos_permitidos', ['viviendas'])
+          .eq('es_sistema', true)
+          .maybeSingle()
+
+        // 2. Obtener usuario actual
+        const { data: { user } } = await supabase.auth.getUser()
+
+        // 3. Crear registro en documentos_vivienda
+        const { error: docError } = await supabase
+          .from('documentos_vivienda')
+          .insert({
+            vivienda_id: data.id,
+            categoria_id: categoria?.id || null,
+            titulo: 'Certificado de Tradición y Libertad',
+            descripcion: 'Documento oficial de tradición y libertad de la vivienda (subido en creación)',
+            nombre_archivo: formData.certificado_tradicion_file.name,
+            nombre_original: formData.certificado_tradicion_file.name,
+            tamano_bytes: formData.certificado_tradicion_file.size,
+            tipo_mime: formData.certificado_tradicion_file.type,
+            url_storage: certificadoUrl,
+            etiquetas: ['certificado', 'tradición', 'legal'],
+            version: 1,
+            es_version_actual: true,
+            estado: 'activo',
+            subido_por: user?.id || null,
+            es_importante: true,
+            metadata: {
+              origen: 'creacion_vivienda',
+              matricula: formData.matricula_inmobiliaria,
+              nomenclatura: formData.nomenclatura
+            }
+          })
+
+        if (docError) {
+          console.error('❌ [CREAR VIVIENDA] Error al crear documento:', docError)
+          console.warn('⚠️ [CREAR VIVIENDA] El certificado se subió pero no se creó el registro. Puedes subirlo manualmente.')
+        } else {
+          console.log('✅ [CREAR VIVIENDA] Documento de certificado creado exitosamente')
+        }
+      } catch (error) {
+        console.error('❌ [CREAR VIVIENDA] Error inesperado al crear documento:', error)
+        console.warn('⚠️ [CREAR VIVIENDA] El certificado se subió pero no se creó el registro. Puedes subirlo manualmente.')
+      }
+    }
+
     return data as unknown as Vivienda
   }
 

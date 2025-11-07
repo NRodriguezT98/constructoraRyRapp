@@ -2,6 +2,59 @@ si por # RyR Constructora - Sistema de Gestión Administrativa
 
 ## 🎯 PRINCIPIOS FUNDAMENTALES (APLICAR SIEMPRE)
 
+### 🚨 REGLA CRÍTICA #-2: EJECUCIÓN DE SQL EN SUPABASE (NUNCA COPIAR/PEGAR)
+
+**⚠️ CUANDO necesites ejecutar CUALQUIER script SQL en Supabase:**
+
+1. **NUNCA** → Copiar/pegar manualmente en Supabase SQL Editor
+2. **SIEMPRE** → Usar script automatizado desde terminal
+3. **COMANDO** → `npm run db:exec <archivo.sql>` o `node ejecutar-sql.js <archivo.sql>`
+
+**Métodos disponibles (en orden de preferencia):**
+
+```bash
+# Método 1: NPM Script (RECOMENDADO) ⭐
+npm run db:exec supabase/storage/mi-archivo.sql
+npm run db:exec:storage-viviendas  # Alias predefinido
+
+# Método 2: Node.js directo
+node ejecutar-sql.js supabase/migrations/mi-migracion.sql
+
+# Método 3: PowerShell (requiere psql)
+.\ejecutar-sql.ps1 -SqlFile "supabase\policies\mi-policy.sql"
+```
+
+**Ventajas del script automatizado:**
+- ✅ Ejecución en 1 comando
+- ✅ Logs detallados con tiempo de ejecución
+- ✅ Manejo de errores robusto
+- ✅ No requiere abrir navegador
+- ✅ Reproducible y auditable
+- ✅ Integrable en CI/CD
+
+**Casos de uso:**
+```bash
+# Políticas RLS de Storage
+npm run db:exec supabase/storage/storage-documentos-viviendas.sql
+
+# Migraciones
+node ejecutar-sql.js supabase/migrations/001_crear_tabla.sql
+
+# Seeds de datos
+node ejecutar-sql.js supabase/seeds/categorias-sistema.sql
+
+# Verificaciones
+node ejecutar-sql.js supabase/verification/DIAGNOSTICO.sql
+```
+
+**Documentación completa:** `docs/EJECUTAR-SQL-DIRECTAMENTE.md`
+
+**Error común que NO repetir:**
+- ❌ "Copia este SQL y pégalo en Supabase SQL Editor"
+- ✅ "Ejecuta: `npm run db:exec supabase/storage/mi-archivo.sql`"
+
+---
+
 ### 🚨 REGLA CRÍTICA #-1: UBICACIÓN DE RUTAS NEXT.JS (VERIFICAR PRIMERO)
 
 **⚠️ ANTES de crear CUALQUIER archivo de ruta/página (`page.tsx`, `layout.tsx`):**
@@ -378,6 +431,7 @@ src/modules/[nombre-modulo]/
 
 ## 🚫 PROHIBIDO
 
+❌ **COPIAR/PEGAR SQL en Supabase SQL Editor** (usar `npm run db:exec <archivo.sql>`)
 ❌ **VIOLAR SEPARACIÓN DE RESPONSABILIDADES** (lógica/vista/estilos mezclados)
 ❌ **Componentes > 150 líneas** sin refactorizar
 ❌ **Lógica de negocio en componentes** (useState, useEffect con lógica compleja)
@@ -396,6 +450,7 @@ src/modules/[nombre-modulo]/
 
 ## ✅ REQUERIDO
 
+✅ **EJECUTAR SQL con script automatizado** (`npm run db:exec <archivo.sql>`)
 ✅ **SEPARACIÓN ESTRICTA: Hooks (lógica) + Componentes (UI) + Estilos (centralizados)**
 ✅ **Hook personalizado por componente** con toda la lógica
 ✅ **Service por módulo** para llamadas API/DB
@@ -416,6 +471,7 @@ src/modules/[nombre-modulo]/
 ## 📚 Documentación Completa
 
 ### 🔴 CRÍTICA (consultar SIEMPRE):
+- **Ejecutar SQL automático**: `docs/EJECUTAR-SQL-DIRECTAMENTE.md` ⭐ **NO MÁS COPY/PASTE**
 - **Separación de responsabilidades**: `docs/ARQUITECTURA-SEPARACION-RESPONSABILIDADES.md` ⭐ **PATRÓN INVIOLABLE**
 - **Schema DB**: `docs/DATABASE-SCHEMA-REFERENCE-ACTUALIZADO.md` ⭐ **FUENTE ÚNICA DE VERDAD**
 - **Checklist desarrollo**: `docs/DESARROLLO-CHECKLIST.md` ⭐ **OBLIGATORIO**

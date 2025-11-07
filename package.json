@@ -26,8 +26,11 @@
     "analyze": "cross-env ANALYZE=true next build",
     "check-all": "npm run type-check && npm run lint && npm run format:check",
     "setup:supabase": "node scripts/setup-supabase.js",
-    "db:types": "npx supabase gen types typescript --project-id $SUPABASE_PROJECT_ID --schema public > src/lib/supabase/database.types.ts",
+    "db:types": "node scripts/generar-types-flexible.js",
+    "db:types:original": "npx supabase gen types typescript --project-id $SUPABASE_PROJECT_ID --schema public > src/lib/supabase/database.types.ts",
     "db:setup": "npx supabase db reset && npm run db:types",
+    "db:exec": "node ejecutar-sql.js",
+    "db:exec:storage-viviendas": "node ejecutar-sql.js supabase/storage/storage-documentos-viviendas.sql",
     "prepare": "husky",
     "pre-commit": "lint-staged",
     "postinstall": "echo 'RyR Constructora - Dependencias instaladas correctamente'"
@@ -54,6 +57,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
+    "dotenv": "^17.2.3",
     "eslint": "^9.37.0",
     "eslint-config-next": "^15.5.5",
     "framer-motion": "^12.23.24",
@@ -81,6 +85,7 @@
     "cross-env": "^10.1.0",
     "husky": "^9.1.7",
     "lint-staged": "^16.2.4",
+    "pg": "^8.16.3",
     "prettier": "^3.6.2",
     "prettier-plugin-tailwindcss": "^0.7.0"
   },

@@ -17,12 +17,18 @@ interface DocumentoUploadViviendaProps {
   viviendaId: string
   onSuccess: () => void
   onCancel: () => void
+  categoriaPreseleccionada?: string // Nombre de categoría a pre-seleccionar
+  bloquearCategoria?: boolean // Si true, no permite cambiar la categoría
+  documentoIdReemplazar?: string // Si se proporciona, crea nueva versión de este documento
 }
 
 export function DocumentoUploadVivienda({
   viviendaId,
   onSuccess,
   onCancel,
+  categoriaPreseleccionada,
+  bloquearCategoria = false,
+  documentoIdReemplazar,
 }: DocumentoUploadViviendaProps) {
   const {
     // Estados
@@ -40,7 +46,11 @@ export function DocumentoUploadVivienda({
     handleDescripcionChange,
     handleSubmit,
     removeSelectedFile,
-  } = useDocumentoUploadVivienda({ viviendaId, onSuccess })
+  } = useDocumentoUploadVivienda({
+    viviendaId,
+    onSuccess,
+    categoriaPreseleccionada,
+  })
 
   const { categoriasSistema, isLoading: loadingCategorias } = useCategoriasSistemaViviendas()
 
@@ -151,7 +161,7 @@ export function DocumentoUploadVivienda({
           {/* Categoría */}
           <div>
             <label htmlFor="categoria" className="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300">
-              Categoría
+              Categoría {bloquearCategoria && <span className="text-orange-600">(Pre-seleccionada)</span>}
             </label>
             <div className="relative">
               <FolderOpen className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400 dark:text-gray-500" />
@@ -160,7 +170,7 @@ export function DocumentoUploadVivienda({
                 value={selectedCategoria}
                 onChange={handleCategoriaChange}
                 className="w-full rounded-lg border-2 border-gray-200 bg-white py-2.5 pl-10 pr-4 text-sm font-medium text-gray-900 transition-all focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:bg-gray-900/50 dark:text-white dark:focus:border-orange-600"
-                disabled={uploading || loadingCategorias}
+                disabled={uploading || loadingCategorias || bloquearCategoria}
                 required
               >
                 <option value="">Seleccionar categoría</option>
@@ -171,9 +181,15 @@ export function DocumentoUploadVivienda({
                 ))}
               </select>
             </div>
-            <p className="mt-1.5 text-xs text-gray-500 dark:text-gray-400">
-              💡 Si el nombre del archivo coincide con una categoría, se asignará automáticamente
-            </p>
+            {bloquearCategoria ? (
+              <p className="mt-1.5 text-xs text-orange-600 dark:text-orange-400 font-medium">
+                🔒 Esta categoría está bloqueada para este documento
+              </p>
+            ) : (
+              <p className="mt-1.5 text-xs text-gray-500 dark:text-gray-400">
+                💡 Si el nombre del archivo coincide con una categoría, se asignará automáticamente
+              </p>
+            )}
           </div>
 
           {/* Título */}

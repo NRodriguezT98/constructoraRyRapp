@@ -16,14 +16,36 @@ import {
     MapPin,
     Maximize,
 } from 'lucide-react'
+import { useEffect } from 'react'
 
 interface PasoResumenProps {
   formData: any
   proyectoNombre?: string | null
   manzanaNombre?: string | null
+  gastosNotariales?: number
 }
 
-export function PasoResumenNuevo({ formData, proyectoNombre, manzanaNombre }: PasoResumenProps) {
+export function PasoResumenNuevo({ formData, proyectoNombre, manzanaNombre, gastosNotariales = 5_000_000 }: PasoResumenProps) {
+  // 🔍 LOGGER: Detectar cuando se monta el componente
+  useEffect(() => {
+    console.log('\n\n')
+    console.log('╔═══════════════════════════════════════════════════════════════╗')
+    console.log('║  🎯 PASO RESUMEN NUEVO - COMPONENTE MONTADO                  ║')
+    console.log('╚═══════════════════════════════════════════════════════════════╝')
+    console.log('📍 [PASO RESUMEN] Timestamp:', new Date().toISOString())
+    console.log('📍 [PASO RESUMEN] Proyecto:', proyectoNombre)
+    console.log('📍 [PASO RESUMEN] Manzana:', manzanaNombre)
+    console.log('📍 [PASO RESUMEN] Datos del formulario:', formData)
+    console.log('╔═══════════════════════════════════════════════════════════════╗')
+    console.log('║  ⚠️ SI LEES ESTO, ESTÁS EN EL PASO 5 (RESUMEN)              ║')
+    console.log('║  👉 Deberías poder leer la información antes de confirmar    ║')
+    console.log('╚═══════════════════════════════════════════════════════════════╝')
+    console.log('\n\n')
+
+    return () => {
+      console.log('\n⚠️ [PASO RESUMEN] COMPONENTE DESMONTADO\n')
+    }
+  }, [])
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('es-CO', {
       style: 'currency',
@@ -72,11 +94,12 @@ export function PasoResumenNuevo({ formData, proyectoNombre, manzanaNombre }: Pa
       color: 'orange',
       items: [
         { label: 'Valor Base', value: formatCurrency(formData.valor_base), icon: DollarSign },
+        { label: 'Gastos Notariales', value: formatCurrency(gastosNotariales), icon: FileText },
         { label: 'Es Esquinera', value: formData.es_esquinera ? 'Sí' : 'No', icon: CheckCircle },
         ...(formData.es_esquinera ? [{ label: 'Recargo Esquinera', value: formatCurrency(formData.recargo_esquinera), icon: DollarSign }] : []),
         {
           label: 'Valor Total',
-          value: formatCurrency((formData.valor_base || 0) + (formData.recargo_esquinera || 0)),
+          value: formatCurrency((formData.valor_base || 0) + gastosNotariales + (formData.recargo_esquinera || 0)),
           icon: DollarSign,
           highlight: true,
         },

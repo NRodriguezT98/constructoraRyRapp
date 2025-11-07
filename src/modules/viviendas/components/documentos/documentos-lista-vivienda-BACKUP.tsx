@@ -16,23 +16,21 @@ import {
   ChevronDown,
   ChevronUp,
   Clock,
+  Download,
+  Eye,
   FileText,
   Filter,
-  Folder,
   FolderOpen,
-  Grid,
-  Plus,
+  RefreshCw,
+  RotateCcw,
   Search,
   Star,
+  Trash2,
   Upload,
   X
 } from 'lucide-react'
 import { useState } from 'react'
-import { useCarpetasVivienda } from '../../hooks/useCarpetasVivienda'
 import { useDocumentosListaVivienda, type OrdenDocumentos } from '../../hooks/useDocumentosListaVivienda'
-import { CarpetaDocumentos } from './carpeta-documentos'
-import { CrearCarpetaModal } from './crear-carpeta-modal'
-import { DocumentoCardCompacto } from './documento-card-compacto'
 import { DocumentoNuevaVersionModal } from './documento-nueva-version-modal'
 import { DocumentoVersionesModalVivienda } from './documento-versiones-modal-vivienda'
 import { documentosListaStyles as styles } from './documentos-lista.styles'
@@ -78,16 +76,6 @@ export function DocumentosListaVivienda({
     tieneCertificadoTradicion,
   } = useDocumentosListaVivienda({ viviendaId })
 
-  // Hook de carpetas
-  const {
-    arbolCarpetas,
-    carpetasPlanas,
-    crearCarpeta,
-    actualizarCarpeta,
-    eliminarCarpeta,
-    isLoading: isLoadingCarpetas
-  } = useCarpetasVivienda(viviendaId)
-
   const [categoriasAbiertas, setCategoriasAbiertas] = useState<Record<string, boolean>>({})
   const [documentoIdHistorial, setDocumentoIdHistorial] = useState<string | null>(null)
   const [documentoNuevaVersion, setDocumentoNuevaVersion] = useState<{
@@ -95,57 +83,11 @@ export function DocumentosListaVivienda({
     titulo: string
   } | null>(null)
 
-  // Estados para vista de carpetas
-  const [vistaCarpetas, setVistaCarpetas] = useState(true) // true = carpetas, false = categorías
-  const [modalCarpeta, setModalCarpeta] = useState<{
-    isOpen: boolean
-    carpetaPadreId?: string | null
-    carpetaEditar?: any
-  }>({ isOpen: false })
-
   const toggleCategoria = (categoria: string) => {
     setCategoriasAbiertas((prev) => ({
       ...prev,
       [categoria]: !prev[categoria],
     }))
-  }
-
-  // Handlers para carpetas
-  const handleCrearCarpeta = (carpetaPadreId?: string | null) => {
-    setModalCarpeta({ isOpen: true, carpetaPadreId })
-  }
-
-  const handleEditarCarpeta = (carpetaId: string) => {
-    const carpeta = carpetasPlanas.find(c => c.id === carpetaId)
-    if (carpeta) {
-      setModalCarpeta({ isOpen: true, carpetaEditar: carpeta })
-    }
-  }
-
-  const handleEliminarCarpeta = async (carpetaId: string) => {
-    if (confirm('¿Estás seguro de eliminar esta carpeta? Los documentos no se eliminarán.')) {
-      try {
-        await eliminarCarpeta(carpetaId)
-      } catch (error) {
-        console.error('Error eliminando carpeta:', error)
-      }
-    }
-  }
-
-  const handleSubmitCarpeta = async (data: any) => {
-    if (modalCarpeta.carpetaEditar) {
-      // Editar
-      await actualizarCarpeta({
-        id: modalCarpeta.carpetaEditar.id,
-        ...data
-      })
-    } else {
-      // Crear
-      await crearCarpeta({
-        viviendaId,
-        ...data
-      })
-    }
   }
 
   if (isLoading) {
@@ -237,61 +179,15 @@ export function DocumentosListaVivienda({
         </div>
       </div>
 
-      {/* Toggle de Vista: Carpetas vs Categorías */}
-      <div className="flex items-center justify-between px-4 py-3 bg-white dark:bg-gray-800 rounded-xl border-2 border-gray-200 dark:border-gray-700 shadow-sm">
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Vista:</span>
-          <div className="inline-flex rounded-lg bg-gray-100 dark:bg-gray-900 p-1">
-            <button
-              onClick={() => setVistaCarpetas(true)}
-              className={`
-                px-4 py-1.5 rounded-md text-sm font-medium transition-all
-                ${vistaCarpetas
-                  ? 'bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-sm'
-                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
-                }
-              `}
-            >
-              <Folder className="w-4 h-4 inline mr-1.5" />
-              Carpetas
-            </button>
-            <button
-              onClick={() => setVistaCarpetas(false)}
-              className={`
-                px-4 py-1.5 rounded-md text-sm font-medium transition-all
-                ${!vistaCarpetas
-                  ? 'bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-sm'
-                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
-                }
-              `}
-            >
-              <Grid className="w-4 h-4 inline mr-1.5" />
-              Categorías
-            </button>
-          </div>
-        </div>
-
-        {/* Botón crear carpeta (solo en vista de carpetas) */}
-        {vistaCarpetas && (
-          <button
-            onClick={() => handleCrearCarpeta()}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium shadow-sm"
-          >
-            <Plus className="w-4 h-4" />
-            Nueva Carpeta
-          </button>
-        )}
-      </div>
-
-      {/* 🔍 FASE 2: Barra de Filtros Avanzada - COMPACTA Y HORIZONTAL */}
+      {/* 🔍 FASE 2: Barra de Filtros Avanzada */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         className={styles.filtrosAvanzados.container}
       >
-        {/* Grid de 12 columnas: Búsqueda (5) + Categoría (3) + Importantes (2) + Orden (2) */}
+        {/* Fila superior: Búsqueda + Categoría */}
         <div className={styles.filtrosAvanzados.filaSuperior}>
-          {/* Barra de búsqueda - 5 columnas */}
+          {/* Barra de búsqueda */}
           <div className={styles.filtrosAvanzados.busqueda.container}>
             <label htmlFor="busqueda-docs" className={styles.filtrosAvanzados.busqueda.label}>
               Buscar documentos
@@ -302,7 +198,7 @@ export function DocumentosListaVivienda({
               type="text"
               value={busqueda}
               onChange={(e) => setBusqueda(e.target.value)}
-              placeholder="Buscar por título, descripción..."
+              placeholder="Buscar por título, descripción o categoría..."
               className={styles.filtrosAvanzados.busqueda.input}
             />
             {busqueda && (
@@ -316,7 +212,7 @@ export function DocumentosListaVivienda({
             )}
           </div>
 
-          {/* Filtro por categoría - 3 columnas */}
+          {/* Filtro por categoría */}
           <div className={styles.filtrosAvanzados.categoria.container}>
             <label htmlFor="filtro-categoria" className={styles.filtrosAvanzados.categoria.label}>
               Filtrar por categoría
@@ -327,7 +223,7 @@ export function DocumentosListaVivienda({
               onChange={(e) => setCategoriaFiltro(e.target.value)}
               className={styles.filtrosAvanzados.categoria.select}
             >
-              <option value="todas">Todas</option>
+              <option value="todas">Todas las categorías</option>
               {categoriasDisponibles.map((cat) => (
                 <option key={cat} value={cat}>
                   {cat}
@@ -336,49 +232,30 @@ export function DocumentosListaVivienda({
             </select>
             <ChevronDown className={styles.filtrosAvanzados.categoria.icon} />
           </div>
-
-          {/* Toggle Importantes - 2 columnas */}
-          <div className={styles.filtrosAvanzados.toggleImportantes.container}>
-            <button
-              onClick={() => setSoloImportantes(!soloImportantes)}
-              className={`${styles.filtrosAvanzados.toggleImportantes.button} ${
-                soloImportantes
-                  ? styles.filtrosAvanzados.toggleImportantes.buttonActive
-                  : styles.filtrosAvanzados.toggleImportantes.buttonInactive
-              }`}
-              title={soloImportantes ? 'Mostrar todos' : 'Solo importantes'}
-            >
-              <Star
-                className={styles.filtrosAvanzados.toggleImportantes.icon}
-                fill={soloImportantes ? 'currentColor' : 'none'}
-              />
-              <span className="hidden sm:inline">Importantes</span>
-            </button>
-          </div>
-
-          {/* Ordenamiento - 2 columnas */}
-          <div className={styles.filtrosAvanzados.ordenamiento.container}>
-            <label htmlFor="ordenamiento" className={styles.filtrosAvanzados.ordenamiento.label}>
-              Ordenar
-            </label>
-            <select
-              id="ordenamiento"
-              value={ordenamiento}
-              onChange={(e) => setOrdenamiento(e.target.value as OrdenDocumentos)}
-              className={styles.filtrosAvanzados.ordenamiento.select}
-            >
-              <option value="reciente">Más reciente</option>
-              <option value="antiguo">Más antiguo</option>
-              <option value="nombre">Nombre A-Z</option>
-              <option value="tamano">Tamaño</option>
-            </select>
-          </div>
         </div>
 
-        {/* Fila inferior: Chips de filtros activos + Contador */}
+        {/* Fila inferior: Chips de filtros + Ordenamiento */}
         <div className={styles.filtrosAvanzados.filaInferior}>
           {/* Chips de filtros activos */}
           <div className={styles.filtrosAvanzados.chips.container}>
+            {/* Chip: Solo Importantes */}
+            <button
+              onClick={() => setSoloImportantes(!soloImportantes)}
+              className={styles.filtrosAvanzados.chips.chip}
+              style={{
+                opacity: soloImportantes ? 1 : 0.5,
+                borderWidth: soloImportantes ? '2px' : '1px',
+              }}
+            >
+              <Star className={styles.filtrosAvanzados.chips.chipIcon} />
+              Solo Importantes
+              {soloImportantes && (
+                <span className={styles.filtrosAvanzados.chips.removeButton}>
+                  <X className={styles.filtrosAvanzados.chips.removeIcon} />
+                </span>
+              )}
+            </button>
+
             {/* Chip: Filtro activo (categoría) */}
             {categoriaFiltro !== 'todas' && (
               <button
@@ -408,8 +285,29 @@ export function DocumentosListaVivienda({
             )}
           </div>
 
-          {/* Contador de resultados */}
-          <div className="flex items-center gap-2">
+          {/* Ordenamiento + Contador */}
+          <div className="flex items-center gap-3">
+            <div className={styles.filtrosAvanzados.ordenamiento.container}>
+              <label
+                htmlFor="ordenamiento"
+                className={styles.filtrosAvanzados.ordenamiento.label}
+              >
+                Ordenar:
+              </label>
+              <select
+                id="ordenamiento"
+                value={ordenamiento}
+                onChange={(e) => setOrdenamiento(e.target.value as OrdenDocumentos)}
+                className={styles.filtrosAvanzados.ordenamiento.select}
+              >
+                <option value="fecha-desc">Más reciente</option>
+                <option value="fecha-asc">Más antiguo</option>
+                <option value="nombre-asc">Nombre A-Z</option>
+                <option value="nombre-desc">Nombre Z-A</option>
+                <option value="categoria">Por categoría</option>
+              </select>
+            </div>
+
             <p className={styles.filtrosAvanzados.contador}>
               {documentosFiltrados.length} resultado{documentosFiltrados.length !== 1 ? 's' : ''}
             </p>
@@ -422,25 +320,24 @@ export function DocumentosListaVivienda({
         <div className={styles.importantes.container}>
           <div className={styles.importantes.header}>
             <h3 className={styles.importantes.title}>
-              <Star className="w-4 h-4 text-red-600 fill-red-600" />
+              <Star className="w-5 h-5 text-red-600" />
               Documentos Importantes
               <span className={styles.importantes.badge}>{documentosImportantes.length}</span>
             </h3>
           </div>
-          <div className="space-y-1">
+          <div className="space-y-2">
             {documentosImportantes.map((doc) => (
-              <DocumentoCardCompacto
+              <DocumentoCard
                 key={doc.id}
                 documento={doc}
                 onVer={handleVer}
                 onDescargar={handleDescargar}
-                onNuevaVersion={(id, titulo) => setDocumentoNuevaVersion({ id, titulo })}
-                onHistorial={setDocumentoIdHistorial}
+                onNuevaVersion={() => setDocumentoNuevaVersion({ id: doc.id, titulo: doc.titulo })}
+                onHistorial={() => setDocumentoIdHistorial(doc.id)}
                 onEliminar={canDelete ? handleEliminar : undefined}
                 isViendoDocumento={isViendoDocumento}
                 isDescargando={isDescargando}
                 isEliminando={isEliminando}
-                mostrarCategoria={true}
               />
             ))}
           </div>
@@ -453,110 +350,71 @@ export function DocumentosListaVivienda({
           <div className={styles.recientes.header}>
             <h3 className={styles.recientes.title}>
               <Clock className="w-4 h-4" />
-              Recientes
-              <span className={styles.recientes.subtitle}>· últimos 7 días</span>
+              Recientes (últimos 7 días)
             </h3>
           </div>
           <div className="space-y-1">
             {documentosRecientes.map((doc) => (
-              <DocumentoCardCompacto
-                key={doc.id}
-                documento={doc}
-                onVer={handleVer}
-                onDescargar={handleDescargar}
-                onNuevaVersion={(id, titulo) => setDocumentoNuevaVersion({ id, titulo })}
-                onHistorial={setDocumentoIdHistorial}
-                onEliminar={canDelete ? handleEliminar : undefined}
-                isViendoDocumento={isViendoDocumento}
-                isDescargando={isDescargando}
-                isEliminando={isEliminando}
-                mostrarCategoria={true}
-              />
+              <div key={doc.id} className={styles.recientes.item}>
+                <div className={styles.recientes.info}>
+                  <p className={styles.recientes.nombre}>{doc.titulo}</p>
+                  <p className={styles.recientes.meta}>
+                    {doc.categoria?.nombre} •{' '}
+                    {new Date(doc.fecha_creacion).toLocaleDateString('es-ES', {
+                      day: 'numeric',
+                      month: 'short',
+                    })}
+                  </p>
+                </div>
+                <div className={styles.recientes.actions}>
+                  <button
+                    onClick={() => handleVer(doc.id)}
+                    className={`${styles.actionButton.base} ${styles.actionButton.ver}`}
+                    title="Ver"
+                  >
+                    <Eye className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => handleDescargar(doc.id, doc.nombre_original)}
+                    className={`${styles.actionButton.base} ${styles.actionButton.descargar}`}
+                    title="Descargar"
+                  >
+                    <Download className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
             ))}
           </div>
-        </div>
-      )}
-
-      {/* Vista de Carpetas */}
-      {vistaCarpetas && (
-        <div className="space-y-3">
-          {isLoadingCarpetas ? (
-            <div className="flex items-center justify-center py-12">
-              <div className="flex flex-col items-center gap-3">
-                <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
-                <p className="text-sm text-gray-600 dark:text-gray-400">Cargando carpetas...</p>
-              </div>
-            </div>
-          ) : arbolCarpetas && arbolCarpetas.length > 0 ? (
-            arbolCarpetas.map(carpeta => (
-              <CarpetaDocumentos
-                key={carpeta.id}
-                carpeta={carpeta}
-                documentos={documentos}
-                nivel={0}
-                onVerDocumento={handleVer}
-                onDescargarDocumento={handleDescargar}
-                onNuevaVersionDocumento={(id, titulo) => setDocumentoNuevaVersion({ id, titulo })}
-                onHistorialDocumento={setDocumentoIdHistorial}
-                onEliminarDocumento={canDelete ? handleEliminar : undefined}
-                onCrearSubcarpeta={handleCrearCarpeta}
-                onEditarCarpeta={handleEditarCarpeta}
-                onEliminarCarpeta={handleEliminarCarpeta}
-                isViendoDocumento={isViendoDocumento}
-                isDescargando={isDescargando}
-                isEliminando={isEliminando}
-              />
-            ))
-          ) : (
-            <div className="flex flex-col items-center justify-center py-12 px-4">
-              <div className="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-4">
-                <Folder className="w-8 h-8 text-gray-400" />
-              </div>
-              <p className="text-sm font-medium text-gray-900 dark:text-white mb-1">Sin carpetas</p>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mb-4 text-center">
-                No hay carpetas creadas para esta vivienda
-              </p>
-              <button
-                onClick={() => handleCrearCarpeta()}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                <Plus className="w-4 h-4" />
-                Crear primera carpeta
-              </button>
-            </div>
-          )}
         </div>
       )}
 
       {/* Documentos por Categoría */}
-      {!vistaCarpetas && (
-        <div className={styles.categorias.container}>
-          <h3 className={styles.categorias.header}>
-            <FolderOpen className="w-5 h-5" />
-            Por Categoría
-          </h3>
-          <div className="space-y-3">
-            {Object.entries(documentosPorCategoria).map(([categoria, grupo]) => (
-              <CategoriaAccordion
-                key={categoria}
-                categoria={categoria}
-                color={grupo.color}
-                documentos={grupo.documentos}
-                isOpen={categoriasAbiertas[categoria]}
-                onToggle={() => toggleCategoria(categoria)}
-                onVer={handleVer}
-                onDescargar={handleDescargar}
-                onNuevaVersion={(id, titulo) => setDocumentoNuevaVersion({ id, titulo })}
-                onHistorial={setDocumentoIdHistorial}
-                onEliminar={canDelete ? handleEliminar : undefined}
-                isViendoDocumento={isViendoDocumento}
-                isDescargando={isDescargando}
-                isEliminando={isEliminando}
-              />
-            ))}
-          </div>
+      <div className={styles.categorias.container}>
+        <h3 className={styles.categorias.header}>
+          <FolderOpen className="w-5 h-5" />
+          Por Categoría
+        </h3>
+        <div className="space-y-3">
+          {Object.entries(documentosPorCategoria).map(([categoria, grupo]) => (
+            <CategoriaAccordion
+              key={categoria}
+              categoria={categoria}
+              color={grupo.color}
+              documentos={grupo.documentos}
+              isOpen={categoriasAbiertas[categoria]}
+              onToggle={() => toggleCategoria(categoria)}
+              onVer={handleVer}
+              onDescargar={handleDescargar}
+              onNuevaVersion={(id, titulo) => setDocumentoNuevaVersion({ id, titulo })}
+              onHistorial={setDocumentoIdHistorial}
+              onEliminar={canDelete ? handleEliminar : undefined}
+              isViendoDocumento={isViendoDocumento}
+              isDescargando={isDescargando}
+              isEliminando={isEliminando}
+            />
+          ))}
         </div>
-      )}
+      </div>
 
       {/* Modales */}
       {documentoNuevaVersion && (
@@ -576,16 +434,103 @@ export function DocumentosListaVivienda({
           onClose={() => setDocumentoIdHistorial(null)}
         />
       )}
+    </div>
+  )
+}
 
-      {/* Modal de Carpetas */}
-      <CrearCarpetaModal
-        isOpen={modalCarpeta.isOpen}
-        carpetaPadreId={modalCarpeta.carpetaPadreId}
-        carpetaEditar={modalCarpeta.carpetaEditar}
-        carpetasDisponibles={carpetasPlanas || []}
-        onClose={() => setModalCarpeta({ isOpen: false })}
-        onSubmit={handleSubmitCarpeta}
-      />
+// Componente auxiliar para card de documento
+interface DocumentoCardProps {
+  documento: any
+  onVer: (id: string) => void
+  onDescargar: (id: string, nombreOriginal: string) => void
+  onNuevaVersion: () => void
+  onHistorial: () => void
+  onEliminar?: (id: string, titulo: string) => void
+  isViendoDocumento: boolean
+  isDescargando: boolean
+  isEliminando: boolean
+}
+
+function DocumentoCard({
+  documento: doc,
+  onVer,
+  onDescargar,
+  onNuevaVersion,
+  onHistorial,
+  onEliminar,
+  isViendoDocumento,
+  isDescargando,
+  isEliminando,
+}: DocumentoCardProps) {
+  return (
+    <div className={styles.docCard.container}>
+      <div className={styles.docCard.iconContainer}>
+        <FileText className={styles.docCard.icon} />
+      </div>
+      <div className={styles.docCard.content}>
+        <h4 className={styles.docCard.title}>{doc.titulo}</h4>
+        <div className={styles.docCard.meta}>
+          {doc.categoria && (
+            <span
+              className={styles.docCard.badge}
+              style={{
+                backgroundColor: `${doc.categoria.color}20`,
+                color: doc.categoria.color,
+              }}
+            >
+              {doc.categoria.nombre}
+            </span>
+          )}
+          <span className="text-xs text-gray-500 dark:text-gray-400">
+            {new Date(doc.fecha_creacion).toLocaleDateString('es-ES', {
+              day: 'numeric',
+              month: 'short',
+            })}
+          </span>
+        </div>
+      </div>
+      <div className={styles.docCard.actions}>
+        <button
+          onClick={() => onVer(doc.id)}
+          disabled={isViendoDocumento}
+          className={`${styles.actionButton.base} ${styles.actionButton.ver}`}
+          title="Ver"
+        >
+          <Eye className="w-4 h-4" />
+        </button>
+        <button
+          onClick={() => onDescargar(doc.id, doc.nombre_original)}
+          disabled={isDescargando}
+          className={`${styles.actionButton.base} ${styles.actionButton.descargar}`}
+          title="Descargar"
+        >
+          <Download className="w-4 h-4" />
+        </button>
+        <button
+          onClick={onNuevaVersion}
+          className={`${styles.actionButton.base} ${styles.actionButton.nuevaVersion}`}
+          title="Nueva Versión"
+        >
+          <RefreshCw className="w-4 h-4" />
+        </button>
+        <button
+          onClick={onHistorial}
+          className={`${styles.actionButton.base} ${styles.actionButton.historial}`}
+          title="Historial"
+        >
+          <RotateCcw className="w-4 h-4" />
+        </button>
+        {onEliminar && (
+          <button
+            onClick={() => onEliminar(doc.id, doc.titulo)}
+            disabled={isEliminando}
+            className={`${styles.actionButton.base} ${styles.actionButton.eliminar}`}
+            title="Eliminar"
+          >
+            <Trash2 className="w-4 h-4" />
+          </button>
+        )}
+      </div>
     </div>
   )
 }
@@ -643,18 +588,17 @@ function CategoriaAccordion({
       {isOpen && (
         <div className={styles.accordion.content}>
           {documentos.map((doc) => (
-            <DocumentoCardCompacto
+            <DocumentoCard
               key={doc.id}
               documento={doc}
               onVer={onVer}
               onDescargar={onDescargar}
-              onNuevaVersion={onNuevaVersion}
-              onHistorial={onHistorial}
+              onNuevaVersion={() => onNuevaVersion(doc.id, doc.titulo)}
+              onHistorial={() => onHistorial(doc.id)}
               onEliminar={onEliminar}
               isViendoDocumento={isViendoDocumento}
               isDescargando={isDescargando}
               isEliminando={isEliminando}
-              mostrarCategoria={false}
             />
           ))}
         </div>

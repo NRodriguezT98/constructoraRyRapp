@@ -8,7 +8,7 @@
 
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useRouter } from 'next/navigation'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { viviendasService } from '../services/viviendas.service'
@@ -105,6 +105,22 @@ export function useNuevaVivienda({ onSubmit }: UseNuevaViviendaParams) {
   const [submitting, setSubmitting] = useState(false)
   const [gastosNotariales, setGastosNotariales] = useState(5_000_000) // Default: 5M
   const [configuracionRecargos, setConfiguracionRecargos] = useState<any[]>([])
+
+  // 🔒 GUARDIA CRÍTICA: Ref para trackear si el usuario hizo click explícito en "Guardar"
+  const submitAutorizadoRef = useRef(false)
+
+  // 🔍 LOGGER: Detectar cambios en pasoActual
+  useEffect(() => {
+    console.log('\n🔔 [PASO ACTUAL CAMBIÓ] ═══════════════════════════════════════')
+    console.log('📍 [PASO ACTUAL] Nuevo valor:', pasoActual)
+    console.log('📍 [PASO ACTUAL] Timestamp:', new Date().toISOString())
+    console.log('📍 [PASO ACTUAL] Paso config:', PASOS_CONFIG.find(p => p.id === pasoActual)?.titulo)
+    console.log('📍 [PASO ACTUAL] ¿Es último paso?:', pasoActual === PASOS_CONFIG.length)
+    console.log('🔔 [PASO ACTUAL] ═══════════════════════════════════════\n')
+
+    // 🔒 RESET: Al cambiar de paso, resetear autorización de submit
+    submitAutorizadoRef.current = false
+  }, [pasoActual])
 
   // Cargar gastos notariales y configuración de recargos desde DB
   useEffect(() => {
@@ -375,24 +391,45 @@ export function useNuevaVivienda({ onSubmit }: UseNuevaViviendaParams) {
   // ==================== NAVEGACIÓN ====================
 
   const irSiguiente = useCallback(async () => {
-    console.log('🔍 [IR SIGUIENTE] Paso actual:', pasoActual, 'Total pasos:', totalPasos)
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+    console.log('🔍 [IR SIGUIENTE] ⬇️ INICIANDO NAVEGACIÓN AL SIGUIENTE PASO')
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+    console.log('📍 [IR SIGUIENTE] Paso actual:', pasoActual)
+    console.log('📍 [IR SIGUIENTE] Total pasos:', totalPasos)
+    console.log('📍 [IR SIGUIENTE] ¿Es último paso?:', pasoActual === totalPasos)
+    console.log('📍 [IR SIGUIENTE] Timestamp:', new Date().toISOString())
 
+    console.log('\n🔍 [IR SIGUIENTE] 📋 VALIDANDO PASO ACTUAL...')
     const esValido = await validarPasoActual()
-
-    console.log('📊 [IR SIGUIENTE] ¿Paso válido?:', esValido)
+    console.log('📊 [IR SIGUIENTE] ✅ Resultado validación:', esValido)
 
     if (!esValido) {
-      console.log('❌ Paso inválido, no se puede continuar')
+      console.log('❌ [IR SIGUIENTE] 🚫 VALIDACIÓN FALLÓ - NO SE PUEDE CONTINUAR')
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n')
       return
     }
 
     if (pasoActual < totalPasos) {
-      console.log('➡️ [IR SIGUIENTE] Avanzando al paso:', pasoActual + 1)
-      setPasoActual(prev => prev + 1)
+      const siguientePaso = pasoActual + 1
+      console.log('\n➡️ [IR SIGUIENTE] ✅ AVANZANDO AL SIGUIENTE PASO')
+      console.log('📍 [IR SIGUIENTE] Desde paso:', pasoActual, '→ A paso:', siguientePaso)
+      console.log('📍 [IR SIGUIENTE] Ejecutando setPasoActual(' + siguientePaso + ')...')
+
+      setPasoActual(prev => {
+        console.log('📍 [IR SIGUIENTE] 🔄 setPasoActual ejecutado: prev =', prev, '→ nuevo valor =', prev + 1)
+        return prev + 1
+      })
+
+      console.log('📍 [IR SIGUIENTE] ⬆️ Scroll to top...')
       window.scrollTo({ top: 0, behavior: 'smooth' })
+
+      console.log('✅ [IR SIGUIENTE] 🎉 NAVEGACIÓN COMPLETADA AL PASO:', siguientePaso)
     } else {
-      console.log('🏁 [IR SIGUIENTE] Ya estás en el último paso')
+      console.log('\n🏁 [IR SIGUIENTE] ⚠️ YA ESTÁS EN EL ÚLTIMO PASO')
+      console.log('📍 [IR SIGUIENTE] Paso actual:', pasoActual, '=== Total pasos:', totalPasos)
     }
+
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n')
   }, [pasoActual, totalPasos, validarPasoActual])
 
   const irAtras = useCallback(() => {
@@ -438,9 +475,51 @@ export function useNuevaVivienda({ onSubmit }: UseNuevaViviendaParams) {
   // ==================== SUBMIT ====================
 
   const onSubmitForm = async (data: ViviendaFormSchema) => {
-    console.log('🚀 [SUBMIT FORM] ¡FORMULARIO ENVIADO!')
+    console.log('\n\n')
+    console.log('════════════════════════════════════════════════════════════════')
+    console.log('🚀 [SUBMIT FORM] ⚠️⚠️⚠️ FORMULARIO ENVIADO ⚠️⚠️⚠️')
+    console.log('════════════════════════════════════════════════════════════════')
     console.log('📍 [SUBMIT FORM] Paso actual:', pasoActual)
-    console.log('📝 [SUBMIT FORM] Datos:', data)
+    console.log('📍 [SUBMIT FORM] Total pasos:', totalPasos)
+    console.log('📍 [SUBMIT FORM] ¿Es último paso?:', pasoActual === 5)
+    console.log('📍 [SUBMIT FORM] Timestamp:', new Date().toISOString())
+    console.log('� [SUBMIT FORM] ¿Autorizado por usuario?:', submitAutorizadoRef.current)
+    console.log('�📍 [SUBMIT FORM] Stack trace:')
+    console.trace('SUBMIT FORM TRACE')
+    console.log('📝 [SUBMIT FORM] Datos recibidos:', Object.keys(data))
+
+    // 🔒 GUARDIA CRÍTICA #1: Verificar que el usuario autorizó el submit
+    if (!submitAutorizadoRef.current) {
+      console.log('\n⛔⛔⛔ [SUBMIT FORM] 🚫 SUBMIT NO AUTORIZADO ⛔⛔⛔')
+      console.log('📍 [SUBMIT FORM] Razón: Submit NO fue iniciado por click del usuario')
+      console.log('� [SUBMIT FORM] Posible causa: Auto-submit de React Hook Form o Enter en input')
+      console.log('📍 [SUBMIT FORM] Acción: BLOQUEANDO submit completamente')
+      console.log('════════════════════════════════════════════════════════════════\n\n')
+      return // ← BLOQUEAR COMPLETAMENTE
+    }
+
+    // �🚨 GUARDIA CRÍTICA #2: PREVENIR SUBMIT HASTA ESTAR EN PASO 5 (RESUMEN)
+    if (pasoActual < 5) {
+      console.log('\n⚠️⚠️⚠️ [SUBMIT FORM] 🚫 SUBMIT BLOQUEADO ⚠️⚠️⚠️')
+      console.log('📍 [SUBMIT FORM] Razón: No estás en el paso final (Resumen)')
+      console.log('📍 [SUBMIT FORM] Paso actual:', pasoActual, '< Paso requerido: 5')
+      console.log('➡️ [SUBMIT FORM] Acción: Avanzando al siguiente paso en lugar de crear vivienda')
+      console.log('════════════════════════════════════════════════════════════════\n\n')
+
+      // Resetear autorización y avanzar
+      submitAutorizadoRef.current = false
+      await irSiguiente()
+      return
+    }
+
+    console.log('\n✅✅✅ [SUBMIT FORM] ✅ SUBMIT PERMITIDO ✅✅✅')
+    console.log('📍 [SUBMIT FORM] Estás en paso 5 (Resumen)')
+    console.log('📍 [SUBMIT FORM] Submit autorizado por usuario')
+    console.log('📍 [SUBMIT FORM] Procediendo a crear vivienda...')
+    console.log('════════════════════════════════════════════════════════════════\n')
+
+    // Resetear autorización después de usar
+    submitAutorizadoRef.current = false
 
     try {
       setSubmitting(true)
@@ -523,6 +602,17 @@ export function useNuevaVivienda({ onSubmit }: UseNuevaViviendaParams) {
     }
   }, [formData])
 
+  // 🔒 Función para autorizar submit desde botón "Guardar Vivienda"
+  const autorizarSubmit = useCallback(() => {
+    console.log('\n🔓 [AUTORIZAR SUBMIT] ════════════════════════════════')
+    console.log('📍 [AUTORIZAR SUBMIT] Usuario hizo click en "Guardar Vivienda"')
+    console.log('📍 [AUTORIZAR SUBMIT] Paso actual:', pasoActual)
+    console.log('📍 [AUTORIZAR SUBMIT] Autorizando submit...')
+    submitAutorizadoRef.current = true
+    console.log('✅ [AUTORIZAR SUBMIT] Submit autorizado exitosamente')
+    console.log('🔓 [AUTORIZAR SUBMIT] ════════════════════════════════\n')
+  }, [pasoActual])
+
   return {
     // Form state
     register,
@@ -547,6 +637,7 @@ export function useNuevaVivienda({ onSubmit }: UseNuevaViviendaParams) {
 
     // Submit
     submitting,
+    autorizarSubmit, // ← NUEVA función para autorizar submit
 
     // Preview
     previewData,

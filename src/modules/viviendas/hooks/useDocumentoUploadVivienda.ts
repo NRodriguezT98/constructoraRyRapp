@@ -13,11 +13,13 @@ import { useDocumentosVivienda } from './useDocumentosVivienda'
 interface UseDocumentoUploadViviendaParams {
   viviendaId: string
   onSuccess: () => void
+  categoriaPreseleccionada?: string
 }
 
 export function useDocumentoUploadVivienda({
   viviendaId,
   onSuccess,
+  categoriaPreseleccionada,
 }: UseDocumentoUploadViviendaParams) {
   // ✅ React Query hooks
   const { subirDocumento, isSubiendo } = useDocumentosVivienda(viviendaId)
@@ -25,7 +27,9 @@ export function useDocumentoUploadVivienda({
 
   // ✅ Estados locales
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
-  const [selectedCategoriaNombre, setSelectedCategoriaNombre] = useState<string>('')
+  const [selectedCategoriaNombre, setSelectedCategoriaNombre] = useState<string>(
+    categoriaPreseleccionada || ''
+  )
   const [titulo, setTitulo] = useState<string>('')
   const [descripcion, setDescripcion] = useState<string>('')
   const [error, setError] = useState<string | null>(null)

@@ -4,8 +4,8 @@
 // REACT QUERY HOOKS (Datos del servidor)
 // ============================================
 export {
-    useActualizarCertificadoMutation, useActualizarViviendaMutation, useConfiguracionRecargosQuery, useCrearViviendaMutation, useEliminarViviendaMutation, useGastosNotarialesQuery, useManzanasDisponiblesQuery, useNumerosOcupadosQuery, useProyectosActivosQuery, useSiguienteNumeroViviendaQuery, useViviendaQuery, useViviendasQuery, verificarMatriculaUnica,
-    viviendasKeys
+  useActualizarCertificadoMutation, useActualizarViviendaMutation, useConfiguracionRecargosQuery, useCrearViviendaMutation, useEliminarViviendaMutation, useGastosNotarialesQuery, useManzanasDisponiblesQuery, useNumerosOcupadosQuery, useProyectosActivosQuery, useSiguienteNumeroViviendaQuery, useViviendaQuery, useViviendasQuery, verificarMatriculaUnica,
+  viviendasKeys
 } from './useViviendasQuery'
 
 // ============================================
@@ -15,6 +15,7 @@ export { useCategoriasSistemaViviendas } from './useCategoriasSistemaViviendas'
 export { useDocumentosListaVivienda } from './useDocumentosListaVivienda'
 export { useDocumentosVivienda, useEstadisticasDocumentosVivienda } from './useDocumentosVivienda'
 export { useDocumentoUploadVivienda } from './useDocumentoUploadVivienda'
+export { useDocumentoVersiones } from './useDocumentoVersiones'
 
 // ============================================
 // HOOKS DE LÓGICA UI (Por refactorizar)

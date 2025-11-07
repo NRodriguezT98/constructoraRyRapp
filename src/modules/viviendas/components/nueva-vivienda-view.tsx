@@ -66,9 +66,11 @@ export function NuevaViviendaView() {
     irAPaso,
     cancelar,
     submitting,
+    autorizarSubmit, // ← NUEVA función para autorizar submit
     previewData,
     formData,
     pasos,
+    gastosNotariales,
     resumenFinanciero,
     configuracionRecargos,
   } = useNuevaVivienda({
@@ -76,6 +78,19 @@ export function NuevaViviendaView() {
       await viviendasService.crear(data)
     },
   })
+
+  // 🔍 LOGGER: Monitorear renderizados del componente
+  useEffect(() => {
+    console.log('\n🎨 [NUEVA VIVIENDA VIEW] ████████████ RENDERIZADO ████████████')
+    console.log('📍 [COMPONENT] Paso actual:', pasoActual)
+    console.log('📍 [COMPONENT] Paso config:', pasoActualConfig?.titulo)
+    console.log('📍 [COMPONENT] Total pasos:', totalPasos)
+    console.log('📍 [COMPONENT] ¿Es primer paso?:', esPrimerPaso)
+    console.log('📍 [COMPONENT] ¿Es último paso?:', esUltimoPaso)
+    console.log('📍 [COMPONENT] ¿Submitting?:', submitting)
+    console.log('📍 [COMPONENT] Timestamp:', new Date().toISOString())
+    console.log('🎨 [NUEVA VIVIENDA VIEW] ████████████████████████████████████\n')
+  }, [pasoActual, pasoActualConfig, totalPasos, esPrimerPaso, esUltimoPaso, submitting])
 
   // Cargar nombres de proyecto y manzana cuando cambian los IDs
   const proyectoId = watch('proyecto_id')
@@ -217,16 +232,57 @@ export function NuevaViviendaView() {
         </motion.div>
 
         {/* FORMULARIO */}
-        <form onSubmit={handleSubmit}>
+        {/* ⚠️ IMPORTANTE: El submit está protegido en useNuevaVivienda.onSubmitForm */}
+        {/* Solo se procesa cuando pasoActual === 5 (Resumen) */}
+        {/* Si se presiona Enter en pasos 1-4, avanza al siguiente paso en lugar de crear */}
+        {/* 🔒 CRÍTICO: onSubmit con preventDefault para evitar auto-submit de React Hook Form */}
+        <form onSubmit={(e) => {
+          console.log('\n\n')
+          console.log('╔═══════════════════════════════════════════════════════════════╗')
+          console.log('║  ⚠️⚠️⚠️ FORM ONSUBMIT DISPARADO ⚠️⚠️⚠️                      ║')
+          console.log('╚═══════════════════════════════════════════════════════════════╝')
+          console.log('📍 [FORM SUBMIT] Paso actual:', pasoActual)
+          console.log('📍 [FORM SUBMIT] Timestamp:', new Date().toISOString())
+          console.log('📍 [FORM SUBMIT] Event:', e)
+          console.log('📍 [FORM SUBMIT] Event type:', e.type)
+          console.log('📍 [FORM SUBMIT] Event submitter:', (e.nativeEvent as SubmitEvent).submitter)
+          console.log('📍 [FORM SUBMIT] ¿Es último paso?:', pasoActual === 5)
+
+          // 🚨 PREVENIR AUTO-SUBMIT: Si no estamos en paso 5, bloquear submit
+          if (pasoActual < 5) {
+            console.log('⚠️⚠️⚠️ [FORM SUBMIT] 🚫 SUBMIT BLOQUEADO - No estás en paso 5')
+            console.log('📍 [FORM SUBMIT] Llamando preventDefault() y stopPropagation()')
+            e.preventDefault()
+            e.stopPropagation()
+            console.log('╔═══════════════════════════════════════════════════════════════╗\n\n')
+            return false
+          }
+
+          console.log('📍 [FORM SUBMIT] Delegando a handleSubmit()...')
+          console.log('╔═══════════════════════════════════════════════════════════════╗\n\n')
+
+          handleSubmit(e)
+        }}>
           {/* CONTENIDO DEL PASO ACTUAL */}
           <motion.div {...styles.animations.step} key={pasoActual} className={styles.content.container}>
-            <div className={styles.content.grid}>
+            {/* Grid condicional: 1 columna en paso 5 (sin sidebar), 2 columnas en pasos 1-4 */}
+            <div className={cn(
+              pasoActual === 5 ? 'grid grid-cols-1' : styles.content.grid
+            )}>
               {/* COLUMNA IZQUIERDA: Formulario */}
-              <div className={styles.content.formColumn}>
+              <div className={cn(
+                pasoActual === 5 ? 'space-y-6' : styles.content.formColumn
+              )}>
                 <AnimatePresence mode="wait">
                   {(() => {
+                    console.log('🎬 [RENDER PASO] ═══════════════════════════════════════')
+                    console.log('📍 [RENDER PASO] Renderizando paso:', pasoActual)
+                    console.log('📍 [RENDER PASO] Timestamp:', new Date().toISOString())
+
                     switch (pasoActual) {
                       case 1:
+                        console.log('✅ [RENDER PASO] → Renderizando: PasoUbicacionNuevo')
+                        console.log('🎬 [RENDER PASO] ═══════════════════════════════════════\n')
                         return (
                           <PasoUbicacionNuevo
                             key="paso-1"
@@ -237,6 +293,8 @@ export function NuevaViviendaView() {
                           />
                         )
                       case 2:
+                        console.log('✅ [RENDER PASO] → Renderizando: PasoLinderosNuevo')
+                        console.log('🎬 [RENDER PASO] ═══════════════════════════════════════\n')
                         return (
                           <PasoLinderosNuevo
                             key="paso-2"
@@ -245,6 +303,8 @@ export function NuevaViviendaView() {
                           />
                         )
                       case 3:
+                        console.log('✅ [RENDER PASO] → Renderizando: PasoLegalNuevo')
+                        console.log('🎬 [RENDER PASO] ═══════════════════════════════════════\n')
                         return (
                           <PasoLegalNuevo
                             key="paso-3"
@@ -254,6 +314,8 @@ export function NuevaViviendaView() {
                           />
                         )
                       case 4:
+                        console.log('✅ [RENDER PASO] → Renderizando: PasoFinancieroNuevo')
+                        console.log('🎬 [RENDER PASO] ═══════════════════════════════════════\n')
                         return (
                           <PasoFinancieroNuevo
                             key="paso-4"
@@ -266,43 +328,51 @@ export function NuevaViviendaView() {
                           />
                         )
                       case 5:
+                        console.log('✅ [RENDER PASO] → Renderizando: PasoResumenNuevo')
+                        console.log('⚠️ [RENDER PASO] 🎯 ESTÁS EN EL PASO FINAL (RESUMEN)')
+                        console.log('🎬 [RENDER PASO] ═══════════════════════════════════════\n')
                         return (
                           <PasoResumenNuevo
                             key="paso-5"
                             formData={formData}
                             proyectoNombre={proyectoNombre}
                             manzanaNombre={manzanaNombre}
+                            gastosNotariales={gastosNotariales}
                           />
                         )
                       default:
+                        console.log('❌ [RENDER PASO] → PASO INVÁLIDO:', pasoActual)
+                        console.log('🎬 [RENDER PASO] ═══════════════════════════════════════\n')
                         return null
                     }
                   })()}
                 </AnimatePresence>
               </div>
 
-              {/* COLUMNA DERECHA: Preview */}
-              <div className={styles.content.previewColumn}>
-                <PreviewSidebarReal
-                  data={{
-                    ...previewData,
-                    legal: {
-                      matricula: previewData.legal.matricula,
-                      nomenclatura: previewData.legal.nomenclatura,
-                      areaLote: previewData.legal.areaLote,
-                      areaConstruida: previewData.legal.areaConstruida,
-                      tipo: previewData.legal.tipoVivienda,
-                    },
-                    financiero: {
-                      ...previewData.financiero,
-                      valorTotal: resumenFinanciero.valor_total,
-                    }
-                  }}
-                  proyectoNombre={proyectoNombre}
-                  manzanaNombre={manzanaNombre}
-                  resumenFinanciero={resumenFinanciero}
-                />
-              </div>
+              {/* COLUMNA DERECHA: Preview (oculto en paso 5 porque es redundante) */}
+              {pasoActual !== 5 && (
+                <div className={styles.content.previewColumn}>
+                  <PreviewSidebarReal
+                    data={{
+                      ...previewData,
+                      legal: {
+                        matricula: previewData.legal.matricula,
+                        nomenclatura: previewData.legal.nomenclatura,
+                        areaLote: previewData.legal.areaLote,
+                        areaConstruida: previewData.legal.areaConstruida,
+                        tipo: previewData.legal.tipoVivienda,
+                      },
+                      financiero: {
+                        ...previewData.financiero,
+                        valorTotal: resumenFinanciero.valor_total,
+                      }
+                    }}
+                    proyectoNombre={proyectoNombre}
+                    manzanaNombre={manzanaNombre}
+                    resumenFinanciero={resumenFinanciero}
+                  />
+                </div>
+              )}
             </div>
           </motion.div>
 
@@ -326,30 +396,78 @@ export function NuevaViviendaView() {
               </span>
 
               {/* Botón Siguiente/Guardar */}
-              {esUltimoPaso ? (
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className={styles.navigation.submitButton}
-                >
-                  {submitting ? (
-                    <>
-                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      Guardando...
-                    </>
-                  ) : (
-                    <>
-                      <Check className={styles.navigation.submitIcon} />
-                      Guardar Vivienda
-                    </>
-                  )}
-                </button>
-              ) : (
-                <button onClick={irSiguiente} className={styles.navigation.nextButton} type="button">
-                  Siguiente
-                  <ChevronRight className={styles.navigation.nextIcon} />
-                </button>
-              )}
+              {(() => {
+                console.log('🔘 [BOTÓN] ═══════════════════════════════════════')
+                console.log('📍 [BOTÓN] esUltimoPaso:', esUltimoPaso)
+                console.log('📍 [BOTÓN] pasoActual:', pasoActual)
+                console.log('📍 [BOTÓN] totalPasos:', totalPasos)
+                console.log('📍 [BOTÓN] submitting:', submitting)
+
+                if (esUltimoPaso) {
+                  console.log('✅ [BOTÓN] → Renderizando: BOTÓN GUARDAR (type="submit")')
+                  console.log('⚠️ [BOTÓN] 🎯 AL PRESIONAR ESTE BOTÓN SE CREARÁ LA VIVIENDA')
+                  console.log('🔘 [BOTÓN] ═══════════════════════════════════════\n')
+
+                  return (
+                    <button
+                      type="submit"
+                      disabled={submitting}
+                      className={styles.navigation.submitButton}
+                      onClick={(e) => {
+                        console.log('\n🖱️ [BOTÓN GUARDAR] ══════════════════════════════════')
+                        console.log('📍 [BOTÓN GUARDAR] CLICK EN BOTÓN "Guardar Vivienda"')
+                        console.log('📍 [BOTÓN GUARDAR] Paso actual:', pasoActual)
+                        console.log('📍 [BOTÓN GUARDAR] Timestamp:', new Date().toISOString())
+                        console.log('� [BOTÓN GUARDAR] Autorizando submit...')
+
+                        // 🔒 AUTORIZAR SUBMIT: Marcar que el usuario hizo click explícitamente
+                        autorizarSubmit()
+
+                        console.log('✅ [BOTÓN GUARDAR] Submit autorizado exitosamente')
+                        console.log('📍 [BOTÓN GUARDAR] El formulario se enviará ahora')
+                        console.log('🖱️ [BOTÓN GUARDAR] ══════════════════════════════════\n')
+
+                        // El submit se dispara automáticamente porque type="submit"
+                      }}
+                    >
+                      {submitting ? (
+                        <>
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                          Guardando...
+                        </>
+                      ) : (
+                        <>
+                          <Check className={styles.navigation.submitIcon} />
+                          Guardar Vivienda
+                        </>
+                      )}
+                    </button>
+                  )
+                } else {
+                  console.log('✅ [BOTÓN] → Renderizando: BOTÓN SIGUIENTE (type="button")')
+                  console.log('📍 [BOTÓN] Al presionar este botón se llamará irSiguiente()')
+                  console.log('🔘 [BOTÓN] ═══════════════════════════════════════\n')
+
+                  return (
+                    <button
+                      onClick={() => {
+                        console.log('\n🖱️ [BOTÓN SIGUIENTE] ════════════════════════════════')
+                        console.log('📍 [BOTÓN SIGUIENTE] CLICK EN BOTÓN "Siguiente"')
+                        console.log('📍 [BOTÓN SIGUIENTE] Paso actual:', pasoActual)
+                        console.log('📍 [BOTÓN SIGUIENTE] Timestamp:', new Date().toISOString())
+                        console.log('📍 [BOTÓN SIGUIENTE] Llamando a irSiguiente()...')
+                        console.log('🖱️ [BOTÓN SIGUIENTE] ════════════════════════════════\n')
+                        irSiguiente()
+                      }}
+                      className={styles.navigation.nextButton}
+                      type="button"
+                    >
+                      Siguiente
+                      <ChevronRight className={styles.navigation.nextIcon} />
+                    </button>
+                  )
+                }
+              })()}
             </div>
           </motion.div>
         </form>
