@@ -11,7 +11,7 @@
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { motion } from 'framer-motion'
-import { FileText, FolderOpen, Upload } from 'lucide-react'
+import { Download, FileText, FolderOpen, Trash2, Upload } from 'lucide-react'
 import { useRef, useState } from 'react'
 import { useDocumentosVivienda } from '../hooks'
 
@@ -21,13 +21,14 @@ interface DocumentosViviendaProps {
 
 export function DocumentosVivienda({ viviendaId }: DocumentosViviendaProps) {
   const {
-    loading,
-    uploading,
-    certificadoDocumento,
-    hasCertificado,
-    handleVerDocumento,
-    handleSubirCertificado,
-  } = useDocumentosVivienda({ viviendaId })
+    documentos,
+    isLoading,
+    subirDocumento,
+    eliminarDocumento,
+    descargarDocumento,
+    isSubiendo,
+    isEliminando,
+  } = useDocumentosVivienda(viviendaId)
 
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [uploadError, setUploadError] = useState<string | null>(null)
@@ -50,7 +51,16 @@ export function DocumentosVivienda({ viviendaId }: DocumentosViviendaProps) {
 
     try {
       setUploadError(null)
-      await handleSubirCertificado(file)
+      
+      // Buscar categoría "Certificado de Tradición"
+      await subirDocumento({
+        viviendaId,
+        archivo: file,
+        titulo: 'Certificado de Tradición y Libertad',
+        descripcion: 'Documento oficial de tradición y libertad de la vivienda',
+        categoriaNombre: 'Certificado de Tradición',
+      })
+
       // Limpiar input
       if (fileInputRef.current) fileInputRef.current.value = ''
     } catch (error) {
@@ -58,7 +68,32 @@ export function DocumentosVivienda({ viviendaId }: DocumentosViviendaProps) {
     }
   }
 
-  if (loading) {
+  const handleDescargar = async (documentoId: string, nombreOriginal: string) => {
+    try {
+      await descargarDocumento({ id: documentoId, nombreOriginal })
+    } catch (error) {
+      console.error('Error al descargar:', error)
+    }
+  }
+
+  const handleEliminar = async (documentoId: string) => {
+    if (!confirm('¿Estás seguro de eliminar este documento?')) return
+    
+    try {
+      await eliminarDocumento(documentoId)
+    } catch (error) {
+      console.error('Error al eliminar:', error)
+    }
+  }
+
+  // Buscar certificado de tradición
+  const certificadoDocumento = documentos.find(
+    (doc) => doc.titulo?.toLowerCase().includes('certificado') || 
+             doc.titulo?.toLowerCase().includes('tradición')
+  )
+  const hasCertificado = !!certificadoDocumento
+
+  if (isLoading) {
     return (
       <Card>
         <CardContent className='py-12 text-center'>
@@ -88,10 +123,10 @@ export function DocumentosVivienda({ viviendaId }: DocumentosViviendaProps) {
               />
               <Button
                 onClick={() => fileInputRef.current?.click()}
-                disabled={uploading}
+                disabled={isSubiendo}
               >
                 <Upload className='mr-2 h-4 w-4' />
-                {uploading ? 'Subiendo...' : 'Subir Certificado'}
+                {isSubiendo ? 'Subiendo...' : 'Subir Certificado'}
               </Button>
             </>
           )}
@@ -104,7 +139,7 @@ export function DocumentosVivienda({ viviendaId }: DocumentosViviendaProps) {
           </div>
         )}
 
-        {hasCertificado ? (
+        {hasCertificado && certificadoDocumento ? (
           <div className='space-y-4'>
             {/* Certificado de Tradición */}
             <motion.div
@@ -121,23 +156,38 @@ export function DocumentosVivienda({ viviendaId }: DocumentosViviendaProps) {
                       {certificadoDocumento.titulo}
                     </h4>
                     <p className='mb-2 text-sm text-gray-600 dark:text-gray-400'>
-                      {certificadoDocumento.descripcion}
+                      {certificadoDocumento.descripcion || 'Certificado de Tradición y Libertad'}
                     </p>
                     <div className='flex items-center gap-2'>
                       <span className='inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-700 dark:bg-green-900/30 dark:text-green-400'>
                         <span className='h-1.5 w-1.5 rounded-full bg-green-600'></span>
                         Disponible
                       </span>
+                      {certificadoDocumento.tamano_bytes && (
+                        <span className='text-xs text-gray-500'>
+                          {(certificadoDocumento.tamano_bytes / 1024 / 1024).toFixed(2)} MB
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>
-                <button
-                  onClick={() => handleVerDocumento(certificadoDocumento.url_storage)}
-                  className='flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700'
-                >
-                  <FileText className='h-4 w-4' />
-                  Ver Documento
-                </button>
+                <div className='flex gap-2'>
+                  <Button
+                    size='sm'
+                    variant='outline'
+                    onClick={() => handleDescargar(certificadoDocumento.id, certificadoDocumento.nombre_original)}
+                  >
+                    <Download className='h-4 w-4' />
+                  </Button>
+                  <Button
+                    size='sm'
+                    variant='destructive'
+                    onClick={() => handleEliminar(certificadoDocumento.id)}
+                    disabled={isEliminando}
+                  >
+                    <Trash2 className='h-4 w-4' />
+                  </Button>
+                </div>
               </div>
             </motion.div>
 
