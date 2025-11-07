@@ -8,11 +8,14 @@
 
 'use client'
 
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { useRef, useState } from 'react'
+
 import { motion } from 'framer-motion'
 import { Download, FileText, FolderOpen, Trash2, Upload } from 'lucide-react'
-import { useRef, useState } from 'react'
+
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+
 import { useDocumentosVivienda } from '../hooks'
 
 interface DocumentosViviendaProps {
@@ -51,7 +54,7 @@ export function DocumentosVivienda({ viviendaId }: DocumentosViviendaProps) {
 
     try {
       setUploadError(null)
-      
+
       // Buscar categoría "Certificado de Tradición"
       await subirDocumento({
         viviendaId,
@@ -63,33 +66,39 @@ export function DocumentosVivienda({ viviendaId }: DocumentosViviendaProps) {
 
       // Limpiar input
       if (fileInputRef.current) fileInputRef.current.value = ''
-    } catch (error) {
+    } catch {
       setUploadError('Error al subir el archivo. Intenta nuevamente.')
     }
   }
 
-  const handleDescargar = async (documentoId: string, nombreOriginal: string) => {
+  const handleDescargar = async (
+    documentoId: string,
+    nombreOriginal: string
+  ) => {
     try {
       await descargarDocumento({ id: documentoId, nombreOriginal })
-    } catch (error) {
-      console.error('Error al descargar:', error)
+    } catch {
+      // Error manejado por el hook
     }
   }
 
   const handleEliminar = async (documentoId: string) => {
-    if (!confirm('¿Estás seguro de eliminar este documento?')) return
-    
+    // eslint-disable-next-line no-alert
+    const confirmado = confirm('¿Estás seguro de eliminar este documento?')
+    if (!confirmado) return
+
     try {
       await eliminarDocumento(documentoId)
-    } catch (error) {
-      console.error('Error al eliminar:', error)
+    } catch {
+      // Error manejado por el hook
     }
   }
 
   // Buscar certificado de tradición
   const certificadoDocumento = documentos.find(
-    (doc) => doc.titulo?.toLowerCase().includes('certificado') || 
-             doc.titulo?.toLowerCase().includes('tradición')
+    doc =>
+      doc.titulo?.toLowerCase().includes('certificado') ||
+      doc.titulo?.toLowerCase().includes('tradición')
   )
   const hasCertificado = !!certificadoDocumento
 
@@ -98,7 +107,9 @@ export function DocumentosVivienda({ viviendaId }: DocumentosViviendaProps) {
       <Card>
         <CardContent className='py-12 text-center'>
           <FileText className='mx-auto mb-4 h-16 w-16 animate-pulse text-gray-400' />
-          <p className='text-gray-600 dark:text-gray-400'>Cargando documentos...</p>
+          <p className='text-gray-600 dark:text-gray-400'>
+            Cargando documentos...
+          </p>
         </CardContent>
       </Card>
     )
@@ -156,7 +167,8 @@ export function DocumentosVivienda({ viviendaId }: DocumentosViviendaProps) {
                       {certificadoDocumento.titulo}
                     </h4>
                     <p className='mb-2 text-sm text-gray-600 dark:text-gray-400'>
-                      {certificadoDocumento.descripcion || 'Certificado de Tradición y Libertad'}
+                      {certificadoDocumento.descripcion ||
+                        'Certificado de Tradición y Libertad'}
                     </p>
                     <div className='flex items-center gap-2'>
                       <span className='inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-700 dark:bg-green-900/30 dark:text-green-400'>
@@ -165,7 +177,12 @@ export function DocumentosVivienda({ viviendaId }: DocumentosViviendaProps) {
                       </span>
                       {certificadoDocumento.tamano_bytes && (
                         <span className='text-xs text-gray-500'>
-                          {(certificadoDocumento.tamano_bytes / 1024 / 1024).toFixed(2)} MB
+                          {(
+                            certificadoDocumento.tamano_bytes /
+                            1024 /
+                            1024
+                          ).toFixed(2)}{' '}
+                          MB
                         </span>
                       )}
                     </div>
@@ -175,7 +192,12 @@ export function DocumentosVivienda({ viviendaId }: DocumentosViviendaProps) {
                   <Button
                     size='sm'
                     variant='outline'
-                    onClick={() => handleDescargar(certificadoDocumento.id, certificadoDocumento.nombre_original)}
+                    onClick={() =>
+                      handleDescargar(
+                        certificadoDocumento.id,
+                        certificadoDocumento.nombre_original
+                      )
+                    }
                   >
                     <Download className='h-4 w-4' />
                   </Button>
@@ -194,8 +216,9 @@ export function DocumentosVivienda({ viviendaId }: DocumentosViviendaProps) {
             {/* Mensaje informativo */}
             <div className='rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800/50'>
               <p className='text-sm text-gray-600 dark:text-gray-400'>
-                💡 <strong>Próximamente:</strong> Podrás subir y gestionar más documentos
-                como planos, escrituras, licencias y otros documentos legales.
+                💡 <strong>Próximamente:</strong> Podrás subir y gestionar más
+                documentos como planos, escrituras, licencias y otros documentos
+                legales.
               </p>
             </div>
           </div>

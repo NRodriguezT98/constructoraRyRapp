@@ -1,6 +1,7 @@
-import { createMiddlewareClient } from '@/lib/supabase/middleware'
 import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
+
+import { createMiddlewareClient } from '@/lib/supabase/middleware'
 
 /**
  * ============================================
@@ -23,11 +24,7 @@ import { NextResponse } from 'next/server'
 // ============================================
 
 /** Rutas públicas que NO requieren autenticación */
-const PUBLIC_ROUTES = [
-  '/login',
-  '/reset-password',
-  '/update-password',
-]
+const PUBLIC_ROUTES = ['/login', '/reset-password', '/update-password']
 
 /**
  * Mapeo de rutas a roles permitidos
@@ -108,7 +105,7 @@ export async function middleware(req: NextRequest) {
     return NextResponse.next()
   }
 
-  console.log('  ↳ Ruta protegida, validando autenticación...')  // ============================================
+  console.log('  ↳ Ruta protegida, validando autenticación...') // ============================================
   // 3. CREAR CLIENTE SUPABASE PARA MIDDLEWARE
   // ============================================
 
@@ -121,7 +118,10 @@ export async function middleware(req: NextRequest) {
 
   // ✅ SEGURO: getUser() valida el token con Supabase Auth
   // (en lugar de getSession() que solo lee cookies)
-  const { data: { user }, error: authError } = await supabase.auth.getUser()
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser()
 
   if (!user || authError) {
     console.log('  ❌ Sin sesión válida, redirigir a /login')
@@ -138,6 +138,11 @@ export async function middleware(req: NextRequest) {
   }
 
   console.log('  ✅ Usuario autenticado:', user.email)
+
+  // También obtener sesión para acceso al token
+  const {
+    data: { session },
+  } = await supabase.auth.getSession()
 
   // ============================================
   // 5. SI ESTÁ EN /login CON SESIÓN → Redirigir según parámetro o a dashboard
@@ -158,14 +163,32 @@ export async function middleware(req: NextRequest) {
 
   // ✅ OPTIMIZACIÓN: Leer desde JWT claims (0 queries DB)
   // Antes: 50 queries/min | Después: 0 queries/min
-  const rol = (user as any).app_metadata?.user_rol || 'Vendedor'
-  const nombres = (user as any).app_metadata?.user_nombres || ''
-  const email = (user as any).app_metadata?.user_email || user.email || ''
+  let rol = 'Vendedor'
+  let nombres = ''
+  let email = user.email || ''
+
+  // Decodificar JWT para leer custom claims
+  if (session?.access_token) {
+    try {
+      // Decodificar JWT (formato: header.payload.signature)
+      const payload = JSON.parse(
+        Buffer.from(session.access_token.split('.')[1], 'base64').toString()
+      )
+
+      // Leer claims custom del payload
+      rol = payload.user_rol || 'Vendedor'
+      nombres = payload.user_nombres || ''
+      email = payload.user_email || user.email || ''
+    } catch (error) {
+      console.error('❌ Error decodificando JWT:', error)
+      // Fallback a valores por defecto
+    }
+  }
 
   console.log('  ✅ Datos del usuario (desde JWT):', {
     rol,
     nombres,
-    email: email || user.email
+    email,
   })
 
   // ============================================

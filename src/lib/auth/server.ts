@@ -7,9 +7,10 @@
  * Proporciona funciones helper para obtener sesión y permisos.
  */
 
+import { cache } from 'react'
+
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import type { Usuario } from '@/modules/usuarios/types'
-import { cache } from 'react'
 
 /**
  * Obtener sesión actual del usuario
@@ -22,22 +23,30 @@ export const getServerSession = cache(async () => {
   const supabase = await createServerSupabaseClient()
 
   // ✅ CAMBIO: getUser() valida el token, getSession() solo lee cookies
-  const { data: { user }, error } = await supabase.auth.getUser()
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser()
 
   if (error || !user) {
     return null
   }
 
+  // También obtener la sesión completa para acceder al access_token
+  const {
+    data: { session },
+  } = await supabase.auth.getSession()
+
   // Retornar objeto compatible con tipo Session
   return {
     user,
-    access_token: '', // No necesitamos el token aquí
-    expires_at: 0,
-    expires_in: 0,
-    refresh_token: '',
-    token_type: 'bearer',
+    access_token: session?.access_token || '',
+    expires_at: session?.expires_at || 0,
+    expires_in: session?.expires_in || 0,
+    refresh_token: session?.refresh_token || '',
+    token_type: 'bearer' as const,
   }
-})/**
+}) /**
  * Obtener perfil completo del usuario autenticado
  * Incluye rol y permisos
  *
@@ -51,11 +60,34 @@ export const getServerUserProfile = cache(async (): Promise<Usuario | null> => {
   }
 
   const user = session.user
+  let rol = 'Vendedor'
+  let nombres = ''
+  let email: string = user.email || ''
 
-  // ✅ Leer rol, nombres y email desde JWT claims
-  const rol = (user as any).app_metadata?.user_rol || 'Vendedor'
-  const nombres = (user as any).app_metadata?.user_nombres || ''
-  const email = (user as any).app_metadata?.user_email || user.email || ''
+  // ✅ Decodificar JWT para leer custom claims
+  // Los claims custom están en el root del JWT payload, no en user.app_metadata
+  if (session.access_token) {
+    try {
+      // Decodificar JWT (formato: header.payload.signature)
+      const payload = JSON.parse(
+        Buffer.from(session.access_token.split('.')[1], 'base64').toString()
+      )
+
+      // Leer claims custom del payload
+      rol = payload.user_rol || 'Vendedor'
+      nombres = payload.user_nombres || ''
+      email = payload.user_email || user.email || ''
+
+      console.log('✅ [AUTH SERVICE] Claims leídos del JWT:', {
+        rol,
+        nombres,
+        email,
+      })
+    } catch (error) {
+      console.error('❌ [AUTH SERVICE] Error decodificando JWT:', error)
+      // Fallback a valores por defecto
+    }
+  }
 
   // Construir objeto Usuario básico desde JWT
   // NOTA: Campos adicionales (telefono, apellidos, etc.) solo se obtienen
@@ -86,7 +118,9 @@ export const getServerUserProfile = cache(async (): Promise<Usuario | null> => {
 /**
  * Verificar si el usuario tiene un rol específico
  */
-export async function hasRole(rol: 'Administrador' | 'Gerente' | 'Vendedor'): Promise<boolean> {
+export async function hasRole(
+  rol: 'Administrador' | 'Gerente' | 'Vendedor'
+): Promise<boolean> {
   const perfil = await getServerUserProfile()
   return perfil?.rol === rol
 }
@@ -111,13 +145,13 @@ export async function canAccessModule(modulo: string): Promise<boolean> {
 
   // Matriz de permisos: qué roles pueden acceder a qué módulos
   const modulePermissions: Record<string, string[]> = {
-    'viviendas': ['Administrador', 'Gerente', 'Vendedor'],
-    'clientes': ['Administrador', 'Gerente', 'Vendedor'],
-    'proyectos': ['Administrador', 'Gerente', 'Vendedor'],
-    'abonos': ['Administrador', 'Gerente'],
-    'renuncias': ['Administrador', 'Gerente'],
-    'auditorias': ['Administrador'],
-    'admin': ['Administrador'],
+    viviendas: ['Administrador', 'Gerente', 'Vendedor'],
+    clientes: ['Administrador', 'Gerente', 'Vendedor'],
+    proyectos: ['Administrador', 'Gerente', 'Vendedor'],
+    abonos: ['Administrador', 'Gerente'],
+    renuncias: ['Administrador', 'Gerente'],
+    auditorias: ['Administrador'],
+    admin: ['Administrador'],
   }
 
   const allowedRoles = modulePermissions[modulo]
