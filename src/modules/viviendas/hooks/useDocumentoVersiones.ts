@@ -193,5 +193,6 @@ export function useDocumentoVersiones({
     cancelarRestauracion,
     handleRestaurar,
     handleEliminar,
+    cargarVersiones, // ✅ Exportar para refrescar desde el modal
   }
 }

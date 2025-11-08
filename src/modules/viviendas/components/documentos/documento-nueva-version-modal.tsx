@@ -34,6 +34,7 @@ export function DocumentoNuevaVersionModal({
   const { user } = useAuth()
   const queryClient = useQueryClient() // ✅ NUEVO: Para invalidar caché
   const [archivo, setArchivo] = useState<File | null>(null)
+  const [titulo, setTitulo] = useState('') // ✅ NUEVO: Título editable
   const [cambios, setCambios] = useState('')
   const [subiendo, setSubiendo] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -60,6 +61,10 @@ export function DocumentoNuevaVersionModal({
 
     setError(null)
     setArchivo(file)
+
+    // ✅ NUEVO: Auto-completar título con nombre del archivo (sin extensión)
+    const nombreSinExtension = file.name.replace(/\.[^/.]+$/, '')
+    setTitulo(nombreSinExtension)
   }
 
   const handleSubmit = async (e: FormEvent) => {
@@ -67,6 +72,11 @@ export function DocumentoNuevaVersionModal({
 
     if (!archivo) {
       setError('Debes seleccionar un archivo')
+      return
+    }
+
+    if (!titulo.trim()) {
+      setError('Debes ingresar un título para el documento')
       return
     }
 
@@ -82,8 +92,9 @@ export function DocumentoNuevaVersionModal({
       const nuevaVersion = await service.crearNuevaVersion(
         documentoId,
         archivo,
-        user.id,
-        cambios || undefined
+        user.email || user.id, // ✅ Enviar email, fallback a ID
+        cambios || undefined,
+        titulo.trim() || undefined // ✅ NUEVO: Enviar título personalizado
       )
 
       // ✅ NUEVO: Invalidar caché de React Query para actualizar la lista
@@ -108,6 +119,7 @@ export function DocumentoNuevaVersionModal({
   const handleClose = () => {
     if (subiendo) return
     setArchivo(null)
+    setTitulo('') // ✅ NUEVO: Limpiar título
     setCambios('')
     setError(null)
     onClose()
@@ -218,6 +230,28 @@ export function DocumentoNuevaVersionModal({
               )}
             </div>
 
+            {/* Título del documento */}
+            {archivo && (
+              <div>
+                <label htmlFor="titulo" className="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300">
+                  Título del documento *
+                </label>
+                <input
+                  id="titulo"
+                  type="text"
+                  value={titulo}
+                  onChange={(e) => setTitulo(e.target.value)}
+                  placeholder="Ej: Certificado de Tradición Actualizado"
+                  className="w-full rounded-lg border-2 border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-900 transition-all focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:bg-gray-900/50 dark:text-white dark:focus:border-orange-600"
+                  disabled={subiendo}
+                  required
+                />
+                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                  💡 Puedes editar el título para hacerlo más descriptivo
+                </p>
+              </div>
+            )}
+
             {/* Descripción de cambios */}
             <div>
               <label htmlFor="cambios" className="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300">
@@ -246,7 +280,7 @@ export function DocumentoNuevaVersionModal({
               </button>
               <button
                 type="submit"
-                disabled={!archivo || subiendo}
+                disabled={!archivo || !titulo.trim() || subiendo}
                 className="flex-1 rounded-lg bg-gradient-to-r from-orange-600 to-amber-600 px-4 py-2.5 text-sm font-medium text-white transition-all hover:from-orange-700 hover:to-amber-700 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {subiendo ? (

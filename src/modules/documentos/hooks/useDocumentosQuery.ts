@@ -267,7 +267,41 @@ export function useCrearCategoriaMutation(userId: string) {
 }
 
 // ============================================
-// 8. HOOK: useEliminarCategoriaMutation
+// 8. HOOK: useActualizarCategoriaMutation
+// ============================================
+export function useActualizarCategoriaMutation(userId: string) {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({
+      categoriaId,
+      updates,
+    }: {
+      categoriaId: string
+      updates: {
+        nombre?: string
+        descripcion?: string
+        color?: string
+        icono?: string
+        orden?: number
+      }
+    }) => CategoriasService.actualizarCategoria(categoriaId, updates),
+    onSuccess: (categoriaActualizada) => {
+      queryClient.invalidateQueries({ queryKey: documentosKeys.categorias(userId) })
+      toast.success('Categoría actualizada', {
+        description: categoriaActualizada.nombre,
+      })
+    },
+    onError: (error: Error) => {
+      toast.error('Error al actualizar categoría', {
+        description: error.message,
+      })
+    },
+  })
+}
+
+// ============================================
+// 9. HOOK: useEliminarCategoriaMutation
 // ============================================
 export function useEliminarCategoriaMutation(userId: string) {
   const queryClient = useQueryClient()

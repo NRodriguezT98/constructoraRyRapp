@@ -12,30 +12,20 @@
 
 import { motion } from 'framer-motion'
 import {
-  AlertTriangle,
-  ChevronDown,
-  ChevronUp,
-  Clock,
-  FileText,
-  Filter,
-  Folder,
-  FolderOpen,
-  Grid,
-  Plus,
-  Search,
-  Star,
-  Upload,
-  X
+    AlertTriangle,
+    ChevronDown,
+    FileText,
+    Search,
+    Star,
+    Upload,
+    X
 } from 'lucide-react'
 import { useState } from 'react'
-import { useCarpetasVivienda } from '../../hooks/useCarpetasVivienda'
 import { useDocumentosListaVivienda, type OrdenDocumentos } from '../../hooks/useDocumentosListaVivienda'
-import { CarpetaDocumentos } from './carpeta-documentos'
-import { CrearCarpetaModal } from './crear-carpeta-modal'
 import { DocumentoCardCompacto } from './documento-card-compacto'
 import { DocumentoNuevaVersionModal } from './documento-nueva-version-modal'
+import { DocumentoRenombrarModal } from './documento-renombrar-modal'
 import { DocumentoVersionesModalVivienda } from './documento-versiones-modal-vivienda'
-import { documentosListaStyles as styles } from './documentos-lista.styles'
 
 interface DocumentosListaViviendaProps {
   viviendaId: string
@@ -78,74 +68,22 @@ export function DocumentosListaVivienda({
     tieneCertificadoTradicion,
   } = useDocumentosListaVivienda({ viviendaId })
 
-  // Hook de carpetas
-  const {
-    arbolCarpetas,
-    carpetasPlanas,
-    crearCarpeta,
-    actualizarCarpeta,
-    eliminarCarpeta,
-    isLoading: isLoadingCarpetas
-  } = useCarpetasVivienda(viviendaId)
-
   const [categoriasAbiertas, setCategoriasAbiertas] = useState<Record<string, boolean>>({})
   const [documentoIdHistorial, setDocumentoIdHistorial] = useState<string | null>(null)
   const [documentoNuevaVersion, setDocumentoNuevaVersion] = useState<{
     id: string
     titulo: string
   } | null>(null)
-
-  // Estados para vista de carpetas
-  const [vistaCarpetas, setVistaCarpetas] = useState(true) // true = carpetas, false = categorías
-  const [modalCarpeta, setModalCarpeta] = useState<{
-    isOpen: boolean
-    carpetaPadreId?: string | null
-    carpetaEditar?: any
-  }>({ isOpen: false })
+  const [documentoRenombrar, setDocumentoRenombrar] = useState<{
+    id: string
+    titulo: string
+  } | null>(null) // ✅ NUEVO
 
   const toggleCategoria = (categoria: string) => {
     setCategoriasAbiertas((prev) => ({
       ...prev,
       [categoria]: !prev[categoria],
     }))
-  }
-
-  // Handlers para carpetas
-  const handleCrearCarpeta = (carpetaPadreId?: string | null) => {
-    setModalCarpeta({ isOpen: true, carpetaPadreId })
-  }
-
-  const handleEditarCarpeta = (carpetaId: string) => {
-    const carpeta = carpetasPlanas.find(c => c.id === carpetaId)
-    if (carpeta) {
-      setModalCarpeta({ isOpen: true, carpetaEditar: carpeta })
-    }
-  }
-
-  const handleEliminarCarpeta = async (carpetaId: string) => {
-    if (confirm('¿Estás seguro de eliminar esta carpeta? Los documentos no se eliminarán.')) {
-      try {
-        await eliminarCarpeta(carpetaId)
-      } catch (error) {
-        console.error('Error eliminando carpeta:', error)
-      }
-    }
-  }
-
-  const handleSubmitCarpeta = async (data: any) => {
-    if (modalCarpeta.carpetaEditar) {
-      // Editar
-      await actualizarCarpeta({
-        id: modalCarpeta.carpetaEditar.id,
-        ...data
-      })
-    } else {
-      // Crear
-      await crearCarpeta({
-        viviendaId,
-        ...data
-      })
-    }
   }
 
   if (isLoading) {
@@ -173,7 +111,7 @@ export function DocumentosListaVivienda({
     return (
       <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-800">
         <div className="py-12 text-center">
-          <FolderOpen className="mx-auto mb-4 h-16 w-16 text-gray-400" />
+          <FileText className="mx-auto mb-4 h-16 w-16 text-gray-400" />
           <p className="mb-2 text-lg font-semibold text-gray-900 dark:text-gray-100">
             No hay documentos adjuntos
           </p>
@@ -186,30 +124,30 @@ export function DocumentosListaVivienda({
   }
 
   return (
-    <div className={styles.container}>
+    <div className="space-y-4">
       {/* Banner de advertencia si falta certificado */}
       {!tieneCertificadoTradicion && (
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className={styles.warningBanner.container}
+          className="rounded-lg border-l-4 border-red-500 bg-red-50 dark:bg-red-900/20 p-4"
         >
-          <div className={styles.warningBanner.content}>
-            <div className={styles.warningBanner.iconContainer}>
-              <AlertTriangle className={styles.warningBanner.icon} />
-            </div>
-            <div className={styles.warningBanner.textContainer}>
-              <h4 className={styles.warningBanner.title}>
-                ⚠️ Falta Certificado de Tradición y Libertad
+          <div className="flex items-start gap-3">
+            <AlertTriangle className="h-5 w-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <h4 className="text-sm font-bold text-red-900 dark:text-red-100">
+                Falta Certificado de Tradición y Libertad
               </h4>
-              <p className={styles.warningBanner.description}>
-                Este documento es fundamental para la vivienda. Se recomienda subirlo lo antes
-                posible.
+              <p className="text-xs text-red-800 dark:text-red-200 mt-1">
+                Este documento es fundamental para la vivienda.
               </p>
               {onSubirDocumento && (
-                <button onClick={onSubirDocumento} className={styles.warningBanner.button}>
-                  <Upload className="h-4 w-4" />
-                  Subir Certificado de Tradición
+                <button
+                  onClick={onSubirDocumento}
+                  className="mt-2 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-600 text-white hover:bg-red-700 text-xs font-medium transition-colors"
+                >
+                  <Upload className="h-3.5 w-3.5" />
+                  Subir Certificado
                 </button>
               )}
             </div>
@@ -217,217 +155,90 @@ export function DocumentosListaVivienda({
         </motion.div>
       )}
 
-      {/* Estadísticas */}
-      <div className={styles.estadisticas.container}>
-        <div className={styles.estadisticas.item}>
-          <div className={styles.estadisticas.value}>{estadisticas.totalDocumentos}</div>
-          <div className={styles.estadisticas.label}>Documentos</div>
+      {/* BARRA DE ACCIONES COMPACTA - Todo en una línea */}
+      <div className="flex items-center gap-3">
+        {/* Búsqueda */}
+        <div className="flex-1 relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+          <input
+            type="text"
+            value={busqueda}
+            onChange={(e) => setBusqueda(e.target.value)}
+            placeholder="Buscar documentos..."
+            className="w-full pl-10 pr-10 py-2 bg-white dark:bg-slate-800 border border-gray-300 dark:border-gray-600 rounded-lg text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+          />
+          {busqueda && (
+            <button
+              onClick={() => setBusqueda('')}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          )}
         </div>
-        <div className={styles.estadisticas.item}>
-          <div className={styles.estadisticas.value}>{estadisticas.totalImportantes}</div>
-          <div className={styles.estadisticas.label}>Importantes</div>
-        </div>
-        <div className={styles.estadisticas.item}>
-          <div className={styles.estadisticas.value}>{estadisticas.totalCategorias}</div>
-          <div className={styles.estadisticas.label}>Categorías</div>
-        </div>
-        <div className={styles.estadisticas.item}>
-          <div className={styles.estadisticas.value}>{estadisticas.espacioUsadoMB}</div>
-          <div className={styles.estadisticas.label}>MB Usados</div>
-        </div>
+
+        {/* Filtro Categoría */}
+        <select
+          value={categoriaFiltro}
+          onChange={(e) => setCategoriaFiltro(e.target.value)}
+          className="px-3 py-2 bg-white dark:bg-slate-800 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent min-w-[180px]"
+        >
+          <option value="todas">📁 Todas las categorías</option>
+          {categoriasDisponibles.map((cat) => (
+            <option key={cat} value={cat}>
+              {cat}
+            </option>
+          ))}
+        </select>
+
+        {/* Toggle Importantes */}
+        <button
+          onClick={() => setSoloImportantes(!soloImportantes)}
+          className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 whitespace-nowrap ${
+            soloImportantes
+              ? 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 border border-orange-300 dark:border-orange-700'
+              : 'bg-white dark:bg-slate-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-slate-700'
+          }`}
+        >
+          <Star className="h-4 w-4" fill={soloImportantes ? 'currentColor' : 'none'} />
+          <span className="hidden sm:inline">Importantes</span>
+        </button>
+
+        {/* Ordenamiento */}
+        <select
+          value={ordenamiento}
+          onChange={(e) => setOrdenamiento(e.target.value as OrdenDocumentos)}
+          className="px-3 py-2 bg-white dark:bg-slate-800 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent min-w-[140px]"
+        >
+          <option value="reciente">📅 Más reciente</option>
+          <option value="antiguo">📅 Más antiguo</option>
+          <option value="nombre">🔤 Nombre A-Z</option>
+          <option value="tamano">📏 Tamaño</option>
+        </select>
       </div>
 
-      {/* Toggle de Vista: Carpetas vs Categorías */}
-      <div className="flex items-center justify-between px-4 py-3 bg-white dark:bg-gray-800 rounded-xl border-2 border-gray-200 dark:border-gray-700 shadow-sm">
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Vista:</span>
-          <div className="inline-flex rounded-lg bg-gray-100 dark:bg-gray-900 p-1">
-            <button
-              onClick={() => setVistaCarpetas(true)}
-              className={`
-                px-4 py-1.5 rounded-md text-sm font-medium transition-all
-                ${vistaCarpetas
-                  ? 'bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-sm'
-                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
-                }
-              `}
-            >
-              <Folder className="w-4 h-4 inline mr-1.5" />
-              Carpetas
-            </button>
-            <button
-              onClick={() => setVistaCarpetas(false)}
-              className={`
-                px-4 py-1.5 rounded-md text-sm font-medium transition-all
-                ${!vistaCarpetas
-                  ? 'bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-sm'
-                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
-                }
-              `}
-            >
-              <Grid className="w-4 h-4 inline mr-1.5" />
-              Categorías
-            </button>
-          </div>
-        </div>
-
-        {/* Botón crear carpeta (solo en vista de carpetas) */}
-        {vistaCarpetas && (
-          <button
-            onClick={() => handleCrearCarpeta()}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium shadow-sm"
-          >
-            <Plus className="w-4 h-4" />
-            Nueva Carpeta
-          </button>
-        )}
+      {/* Contador de resultados */}
+      <div className="flex items-center justify-between px-1">
+        <p className="text-sm text-gray-600 dark:text-gray-400">
+          {documentosFiltrados.length} documento{documentosFiltrados.length !== 1 ? 's' : ''}
+          {categoriaFiltro !== 'todas' && ` en ${categoriaFiltro}`}
+          {busqueda && ` con "${busqueda}"`}
+        </p>
       </div>
 
-      {/* 🔍 FASE 2: Barra de Filtros Avanzada - COMPACTA Y HORIZONTAL */}
-      <motion.div
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        className={styles.filtrosAvanzados.container}
-      >
-        {/* Grid de 12 columnas: Búsqueda (5) + Categoría (3) + Importantes (2) + Orden (2) */}
-        <div className={styles.filtrosAvanzados.filaSuperior}>
-          {/* Barra de búsqueda - 5 columnas */}
-          <div className={styles.filtrosAvanzados.busqueda.container}>
-            <label htmlFor="busqueda-docs" className={styles.filtrosAvanzados.busqueda.label}>
-              Buscar documentos
-            </label>
-            <Search className={styles.filtrosAvanzados.busqueda.icon} />
-            <input
-              id="busqueda-docs"
-              type="text"
-              value={busqueda}
-              onChange={(e) => setBusqueda(e.target.value)}
-              placeholder="Buscar por título, descripción..."
-              className={styles.filtrosAvanzados.busqueda.input}
-            />
-            {busqueda && (
-              <button
-                onClick={() => setBusqueda('')}
-                className={styles.filtrosAvanzados.busqueda.clearButton}
-                title="Limpiar búsqueda"
-              >
-                <X className={styles.filtrosAvanzados.busqueda.clearIcon} />
-              </button>
-            )}
-          </div>
-
-          {/* Filtro por categoría - 3 columnas */}
-          <div className={styles.filtrosAvanzados.categoria.container}>
-            <label htmlFor="filtro-categoria" className={styles.filtrosAvanzados.categoria.label}>
-              Filtrar por categoría
-            </label>
-            <select
-              id="filtro-categoria"
-              value={categoriaFiltro}
-              onChange={(e) => setCategoriaFiltro(e.target.value)}
-              className={styles.filtrosAvanzados.categoria.select}
-            >
-              <option value="todas">Todas</option>
-              {categoriasDisponibles.map((cat) => (
-                <option key={cat} value={cat}>
-                  {cat}
-                </option>
-              ))}
-            </select>
-            <ChevronDown className={styles.filtrosAvanzados.categoria.icon} />
-          </div>
-
-          {/* Toggle Importantes - 2 columnas */}
-          <div className={styles.filtrosAvanzados.toggleImportantes.container}>
-            <button
-              onClick={() => setSoloImportantes(!soloImportantes)}
-              className={`${styles.filtrosAvanzados.toggleImportantes.button} ${
-                soloImportantes
-                  ? styles.filtrosAvanzados.toggleImportantes.buttonActive
-                  : styles.filtrosAvanzados.toggleImportantes.buttonInactive
-              }`}
-              title={soloImportantes ? 'Mostrar todos' : 'Solo importantes'}
-            >
-              <Star
-                className={styles.filtrosAvanzados.toggleImportantes.icon}
-                fill={soloImportantes ? 'currentColor' : 'none'}
-              />
-              <span className="hidden sm:inline">Importantes</span>
-            </button>
-          </div>
-
-          {/* Ordenamiento - 2 columnas */}
-          <div className={styles.filtrosAvanzados.ordenamiento.container}>
-            <label htmlFor="ordenamiento" className={styles.filtrosAvanzados.ordenamiento.label}>
-              Ordenar
-            </label>
-            <select
-              id="ordenamiento"
-              value={ordenamiento}
-              onChange={(e) => setOrdenamiento(e.target.value as OrdenDocumentos)}
-              className={styles.filtrosAvanzados.ordenamiento.select}
-            >
-              <option value="reciente">Más reciente</option>
-              <option value="antiguo">Más antiguo</option>
-              <option value="nombre">Nombre A-Z</option>
-              <option value="tamano">Tamaño</option>
-            </select>
-          </div>
-        </div>
-
-        {/* Fila inferior: Chips de filtros activos + Contador */}
-        <div className={styles.filtrosAvanzados.filaInferior}>
-          {/* Chips de filtros activos */}
-          <div className={styles.filtrosAvanzados.chips.container}>
-            {/* Chip: Filtro activo (categoría) */}
-            {categoriaFiltro !== 'todas' && (
-              <button
-                onClick={() => setCategoriaFiltro('todas')}
-                className={styles.filtrosAvanzados.chips.chip}
-              >
-                <Filter className={styles.filtrosAvanzados.chips.chipIcon} />
-                {categoriaFiltro}
-                <span className={styles.filtrosAvanzados.chips.removeButton}>
-                  <X className={styles.filtrosAvanzados.chips.removeIcon} />
-                </span>
-              </button>
-            )}
-
-            {/* Chip: Búsqueda activa */}
-            {busqueda && (
-              <button
-                onClick={() => setBusqueda('')}
-                className={styles.filtrosAvanzados.chips.chip}
-              >
-                <Search className={styles.filtrosAvanzados.chips.chipIcon} />
-                "{busqueda.substring(0, 20)}{busqueda.length > 20 ? '...' : ''}"
-                <span className={styles.filtrosAvanzados.chips.removeButton}>
-                  <X className={styles.filtrosAvanzados.chips.removeIcon} />
-                </span>
-              </button>
-            )}
-          </div>
-
-          {/* Contador de resultados */}
-          <div className="flex items-center gap-2">
-            <p className={styles.filtrosAvanzados.contador}>
-              {documentosFiltrados.length} resultado{documentosFiltrados.length !== 1 ? 's' : ''}
-            </p>
-          </div>
-        </div>
-      </motion.div>
-
-      {/* Documentos Importantes */}
+      {/* ⭐ Documentos Importantes */}
       {documentosImportantes.length > 0 && (
-        <div className={styles.importantes.container}>
-          <div className={styles.importantes.header}>
-            <h3 className={styles.importantes.title}>
-              <Star className="w-4 h-4 text-red-600 fill-red-600" />
+        <div className="rounded-lg border-2 border-red-200 dark:border-red-800 bg-red-50/50 dark:bg-red-900/10 p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <Star className="w-4 h-4 text-red-600 dark:text-red-400 fill-red-600 dark:fill-red-400" />
+            <h3 className="text-sm font-semibold text-red-900 dark:text-red-100">
               Documentos Importantes
-              <span className={styles.importantes.badge}>{documentosImportantes.length}</span>
             </h3>
+            <span className="inline-flex items-center justify-center min-w-[24px] h-6 px-2 rounded-full text-xs font-bold bg-red-200 dark:bg-red-800 text-red-900 dark:text-red-100">
+              {documentosImportantes.length}
+            </span>
           </div>
-          <div className="space-y-1">
+          <div className="space-y-1.5">
             {documentosImportantes.map((doc) => (
               <DocumentoCardCompacto
                 key={doc.id}
@@ -435,6 +246,7 @@ export function DocumentosListaVivienda({
                 onVer={handleVer}
                 onDescargar={handleDescargar}
                 onNuevaVersion={(id, titulo) => setDocumentoNuevaVersion({ id, titulo })}
+                onRenombrar={(id, titulo) => setDocumentoRenombrar({ id, titulo })} // ✅ NUEVO
                 onHistorial={setDocumentoIdHistorial}
                 onEliminar={canDelete ? handleEliminar : undefined}
                 isViendoDocumento={isViendoDocumento}
@@ -447,116 +259,90 @@ export function DocumentosListaVivienda({
         </div>
       )}
 
-      {/* Documentos Recientes */}
-      {documentosRecientes.length > 0 && (
-        <div className={styles.recientes.container}>
-          <div className={styles.recientes.header}>
-            <h3 className={styles.recientes.title}>
-              <Clock className="w-4 h-4" />
-              Recientes
-              <span className={styles.recientes.subtitle}>· últimos 7 días</span>
-            </h3>
-          </div>
-          <div className="space-y-1">
-            {documentosRecientes.map((doc) => (
-              <DocumentoCardCompacto
-                key={doc.id}
-                documento={doc}
-                onVer={handleVer}
-                onDescargar={handleDescargar}
-                onNuevaVersion={(id, titulo) => setDocumentoNuevaVersion({ id, titulo })}
-                onHistorial={setDocumentoIdHistorial}
-                onEliminar={canDelete ? handleEliminar : undefined}
-                isViendoDocumento={isViendoDocumento}
-                isDescargando={isDescargando}
-                isEliminando={isEliminando}
-                mostrarCategoria={true}
-              />
-            ))}
-          </div>
-        </div>
-      )}
+      {/*  Documentos por Categoría - MODERN COLLAPSIBLE */}
+      <div className="space-y-2">
+        {Object.entries(documentosPorCategoria).map(([categoria, grupo]) => {
+          const isOpen = categoriasAbiertas[categoria] ?? false
 
-      {/* Vista de Carpetas */}
-      {vistaCarpetas && (
-        <div className="space-y-3">
-          {isLoadingCarpetas ? (
-            <div className="flex items-center justify-center py-12">
-              <div className="flex flex-col items-center gap-3">
-                <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
-                <p className="text-sm text-gray-600 dark:text-gray-400">Cargando carpetas...</p>
-              </div>
-            </div>
-          ) : arbolCarpetas && arbolCarpetas.length > 0 ? (
-            arbolCarpetas.map(carpeta => (
-              <CarpetaDocumentos
-                key={carpeta.id}
-                carpeta={carpeta}
-                documentos={documentos}
-                nivel={0}
-                onVerDocumento={handleVer}
-                onDescargarDocumento={handleDescargar}
-                onNuevaVersionDocumento={(id, titulo) => setDocumentoNuevaVersion({ id, titulo })}
-                onHistorialDocumento={setDocumentoIdHistorial}
-                onEliminarDocumento={canDelete ? handleEliminar : undefined}
-                onCrearSubcarpeta={handleCrearCarpeta}
-                onEditarCarpeta={handleEditarCarpeta}
-                onEliminarCarpeta={handleEliminarCarpeta}
-                isViendoDocumento={isViendoDocumento}
-                isDescargando={isDescargando}
-                isEliminando={isEliminando}
-              />
-            ))
-          ) : (
-            <div className="flex flex-col items-center justify-center py-12 px-4">
-              <div className="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-4">
-                <Folder className="w-8 h-8 text-gray-400" />
-              </div>
-              <p className="text-sm font-medium text-gray-900 dark:text-white mb-1">Sin carpetas</p>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mb-4 text-center">
-                No hay carpetas creadas para esta vivienda
-              </p>
+          return (
+            <motion.div
+              key={categoria}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-800"
+            >
+              {/* Header - Always visible */}
               <button
-                onClick={() => handleCrearCarpeta()}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                onClick={() => toggleCategoria(categoria)}
+                className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors rounded-t-lg"
               >
-                <Plus className="w-4 h-4" />
-                Crear primera carpeta
-              </button>
-            </div>
-          )}
-        </div>
-      )}
+                {/* Chevron */}
+                <motion.div
+                  animate={{ rotate: isOpen ? 90 : 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="flex-shrink-0"
+                >
+                  <ChevronDown className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+                </motion.div>
 
-      {/* Documentos por Categoría */}
-      {!vistaCarpetas && (
-        <div className={styles.categorias.container}>
-          <h3 className={styles.categorias.header}>
-            <FolderOpen className="w-5 h-5" />
-            Por Categoría
-          </h3>
-          <div className="space-y-3">
-            {Object.entries(documentosPorCategoria).map(([categoria, grupo]) => (
-              <CategoriaAccordion
-                key={categoria}
-                categoria={categoria}
-                color={grupo.color}
-                documentos={grupo.documentos}
-                isOpen={categoriasAbiertas[categoria]}
-                onToggle={() => toggleCategoria(categoria)}
-                onVer={handleVer}
-                onDescargar={handleDescargar}
-                onNuevaVersion={(id, titulo) => setDocumentoNuevaVersion({ id, titulo })}
-                onHistorial={setDocumentoIdHistorial}
-                onEliminar={canDelete ? handleEliminar : undefined}
-                isViendoDocumento={isViendoDocumento}
-                isDescargando={isDescargando}
-                isEliminando={isEliminando}
-              />
-            ))}
-          </div>
-        </div>
-      )}
+                {/* Icon */}
+                <div
+                  className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center"
+                  style={{ backgroundColor: `${grupo.color}20` }}
+                >
+                  <FileText className="w-4 h-4" style={{ color: grupo.color }} />
+                </div>
+
+                {/* Category Name */}
+                <h3 className="flex-1 text-sm font-semibold text-gray-900 dark:text-gray-100">
+                  {categoria}
+                </h3>
+
+                {/* Counter Badge */}
+                <span
+                  className="flex-shrink-0 inline-flex items-center justify-center min-w-[24px] h-6 px-2 rounded-full text-xs font-bold"
+                  style={{
+                    backgroundColor: `${grupo.color}20`,
+                    color: grupo.color,
+                  }}
+                >
+                  {grupo.documentos.length}
+                </span>
+              </button>
+
+              {/* Content - Collapsible */}
+              <motion.div
+                initial={false}
+                animate={{
+                  height: isOpen ? 'auto' : 0,
+                  opacity: isOpen ? 1 : 0,
+                }}
+                transition={{ duration: 0.3, ease: 'easeInOut' }}
+                style={{ overflow: isOpen ? 'visible' : 'hidden' }}
+              >
+                <div className="px-4 pb-3 space-y-1.5 border-t border-gray-100 dark:border-gray-700 pt-2 rounded-b-lg">
+                  {grupo.documentos.map((doc) => (
+                    <DocumentoCardCompacto
+                      key={doc.id}
+                      documento={doc}
+                      onVer={handleVer}
+                      onDescargar={handleDescargar}
+                      onNuevaVersion={(id, titulo) => setDocumentoNuevaVersion({ id, titulo })}
+                      onRenombrar={(id, titulo) => setDocumentoRenombrar({ id, titulo })}
+                      onHistorial={setDocumentoIdHistorial}
+                      onEliminar={canDelete ? handleEliminar : undefined}
+                      isViendoDocumento={isViendoDocumento}
+                      isDescargando={isDescargando}
+                      isEliminando={isEliminando}
+                      mostrarCategoria={false}
+                    />
+                  ))}
+                </div>
+              </motion.div>
+            </motion.div>
+          )
+        })}
+      </div>
 
       {/* Modales */}
       {documentoNuevaVersion && (
@@ -577,87 +363,14 @@ export function DocumentosListaVivienda({
         />
       )}
 
-      {/* Modal de Carpetas */}
-      <CrearCarpetaModal
-        isOpen={modalCarpeta.isOpen}
-        carpetaPadreId={modalCarpeta.carpetaPadreId}
-        carpetaEditar={modalCarpeta.carpetaEditar}
-        carpetasDisponibles={carpetasPlanas || []}
-        onClose={() => setModalCarpeta({ isOpen: false })}
-        onSubmit={handleSubmitCarpeta}
-      />
-    </div>
-  )
-}
-
-// Componente auxiliar para accordion de categoría
-interface CategoriaAccordionProps {
-  categoria: string
-  color: string
-  documentos: any[]
-  isOpen: boolean
-  onToggle: () => void
-  onVer: (id: string) => void
-  onDescargar: (id: string, nombreOriginal: string) => void
-  onNuevaVersion: (id: string, titulo: string) => void
-  onHistorial: (id: string) => void
-  onEliminar?: (id: string, titulo: string) => void
-  isViendoDocumento: boolean
-  isDescargando: boolean
-  isEliminando: boolean
-}
-
-function CategoriaAccordion({
-  categoria,
-  color,
-  documentos,
-  isOpen,
-  onToggle,
-  onVer,
-  onDescargar,
-  onNuevaVersion,
-  onHistorial,
-  onEliminar,
-  isViendoDocumento,
-  isDescargando,
-  isEliminando,
-}: CategoriaAccordionProps) {
-  return (
-    <div className={styles.accordion.container} style={{ borderColor: `${color}40` }}>
-      <button
-        onClick={onToggle}
-        className={styles.accordion.trigger}
-        style={{ background: `linear-gradient(to right, ${color}, ${color}DD)` }}
-      >
-        <div className={styles.accordion.triggerContent}>
-          <FolderOpen className={styles.accordion.icon} />
-          <span className={styles.accordion.title}>{categoria}</span>
-          <span className={styles.accordion.counter}>{documentos.length}</span>
-        </div>
-        {isOpen ? (
-          <ChevronUp className={styles.accordion.chevron} />
-        ) : (
-          <ChevronDown className={styles.accordion.chevron} />
-        )}
-      </button>
-      {isOpen && (
-        <div className={styles.accordion.content}>
-          {documentos.map((doc) => (
-            <DocumentoCardCompacto
-              key={doc.id}
-              documento={doc}
-              onVer={onVer}
-              onDescargar={onDescargar}
-              onNuevaVersion={onNuevaVersion}
-              onHistorial={onHistorial}
-              onEliminar={onEliminar}
-              isViendoDocumento={isViendoDocumento}
-              isDescargando={isDescargando}
-              isEliminando={isEliminando}
-              mostrarCategoria={false}
-            />
-          ))}
-        </div>
+      {documentoRenombrar && (
+        <DocumentoRenombrarModal
+          isOpen={!!documentoRenombrar}
+          documentoId={documentoRenombrar.id}
+          tituloActual={documentoRenombrar.titulo}
+          onClose={() => setDocumentoRenombrar(null)}
+          onSuccess={() => setDocumentoRenombrar(null)}
+        />
       )}
     </div>
   )

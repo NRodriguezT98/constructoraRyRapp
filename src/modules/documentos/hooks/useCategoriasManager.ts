@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react'
 import type { CategoriaFormData } from '../schemas/documento.schema'
 import {
+    useActualizarCategoriaMutation,
     useCategoriasQuery,
     useCrearCategoriaMutation,
     useEliminarCategoriaMutation
@@ -28,6 +29,7 @@ export function useCategoriasManager({ userId, modulo = 'proyectos' }: UseCatego
 
   // ✅ REACT QUERY: Mutations
   const crearMutation = useCrearCategoriaMutation(userId)
+  const actualizarMutation = useActualizarCategoriaMutation(userId)
   const eliminarMutation = useEliminarCategoriaMutation(userId)
 
   // Handlers
@@ -48,12 +50,21 @@ export function useCategoriasManager({ userId, modulo = 'proyectos' }: UseCatego
   const handleActualizar = useCallback(
     async (data: CategoriaFormData) => {
       if (!categoriaEditando) return
-      // TODO: Implementar mutation de actualización
-      console.warn('Actualización de categoría no implementada aún')
+
+      await actualizarMutation.mutateAsync({
+        categoriaId: categoriaEditando.id,
+        updates: {
+          nombre: data.nombre,
+          descripcion: data.descripcion,
+          color: data.color,
+          icono: data.icono,
+        },
+      })
+
       setModo('lista')
       setCategoriaEditando(null)
     },
-    [categoriaEditando]
+    [categoriaEditando, actualizarMutation]
   )
 
   const handleEliminar = useCallback(

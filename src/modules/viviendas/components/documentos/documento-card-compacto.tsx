@@ -12,6 +12,7 @@
 import { motion } from 'framer-motion'
 import {
     Download,
+    Edit3,
     Eye,
     FileText,
     MoreVertical,
@@ -20,6 +21,7 @@ import {
     Trash2,
     Upload
 } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
 import { type DocumentoVivienda } from '../../services/documentos-vivienda.service'
 
 interface DocumentoCardCompactoProps {
@@ -28,6 +30,7 @@ interface DocumentoCardCompactoProps {
   onDescargar: (id: string, nombreOriginal: string) => void
   onHistorial: (id: string) => void
   onNuevaVersion?: (id: string, titulo: string) => void
+  onRenombrar?: (id: string, tituloActual: string) => void // ✅ NUEVO
   onEliminar?: (id: string, titulo: string) => void
   isViendoDocumento?: boolean | string | null
   isDescargando?: boolean | string | null
@@ -41,12 +44,33 @@ export function DocumentoCardCompacto({
   onDescargar,
   onHistorial,
   onNuevaVersion,
+  onRenombrar, // ✅ NUEVO
   onEliminar,
   isViendoDocumento,
   isDescargando,
   isEliminando,
-  mostrarCategoria = true
+  mostrarCategoria = false
 }: DocumentoCardCompactoProps) {
+  const [menuAbierto, setMenuAbierto] = useState(false)
+  const menuRef = useRef<HTMLDivElement>(null)
+
+  // Cerrar menú al hacer clic fuera
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setMenuAbierto(false)
+      }
+    }
+
+    if (menuAbierto) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [menuAbierto])
+
   const formatearFecha = (fecha: string) => {
     const date = new Date(fecha)
     const now = new Date()
@@ -64,6 +88,24 @@ export function DocumentoCardCompacto({
     if (bytes < 1024) return `${bytes} B`
     if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+  }
+
+  const formatearNombreUsuario = (email: string | null) => {
+    if (!email) return 'Sistema'
+
+    // Si es un email, extraer la parte antes del @
+    if (email.includes('@')) {
+      const nombreParte = email.split('@')[0]
+      // Convertir guiones bajos y puntos en espacios, capitalizar
+      const nombreFormateado = nombreParte
+        .replace(/[._]/g, ' ')
+        .split(' ')
+        .map(palabra => palabra.charAt(0).toUpperCase() + palabra.slice(1).toLowerCase())
+        .join(' ')
+      return nombreFormateado
+    }
+
+    return email
   }
 
   const cargandoVer = typeof isViendoDocumento === 'string'
@@ -93,7 +135,7 @@ export function DocumentoCardCompacto({
 
         {/* Información del documento */}
         <div className="flex-1 min-w-0">
-          {/* Título */}
+          {/* Título + Badges */}
           <div className="flex items-center gap-2">
             <button
               onClick={() => onVer(documento.id)}
@@ -104,39 +146,76 @@ export function DocumentoCardCompacto({
               {documento.titulo}
             </button>
 
+            {/* Badge: Importante */}
             {documento.es_importante && (
               <Star className="w-3.5 h-3.5 text-yellow-500 fill-yellow-500 flex-shrink-0" />
             )}
+
+            {/* Badge: Versión Original */}
+            {documento.version === 1 && !documento.documento_padre_id && (
+              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 flex-shrink-0">
+                ORIGINAL
+              </span>
+            )}
+
+            {/* Badge: Versión X (si tiene múltiples versiones) */}
+            {documento.version > 1 && (
+              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 flex-shrink-0">
+                v{documento.version}
+              </span>
+            )}
           </div>
 
-          {/* Metadata */}
-          <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+          {/* Metadata detallada: Usuario, Fecha/Hora, Tamaño, Categoría */}
+          <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 mt-1">
+            {/* Categoría */}
             {mostrarCategoria && documento.categoria && (
               <>
                 <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-purple-50 dark:bg-purple-900/20
                                text-purple-700 dark:text-purple-400 font-medium">
                   {documento.categoria.nombre}
                 </span>
-                <span>·</span>
+                <span>•</span>
               </>
             )}
-            <span>{formatearFecha(documento.fecha_creacion || new Date().toISOString())}</span>
-            <span>·</span>
+
+            {/* Usuario que subió */}
+            <span className="text-gray-500 dark:text-gray-400">
+              Subido por
+            </span>
+            <span className="font-medium text-gray-700 dark:text-gray-300">
+              {documento.usuario
+                ? `${documento.usuario.nombres} ${documento.usuario.apellidos}`
+                : formatearNombreUsuario(documento.subido_por)
+              }
+            </span>
+            <span>•</span>
+
+            {/* Fecha y Hora completa */}
+            <span className="text-gray-500 dark:text-gray-400">
+              Fecha de subida
+            </span>
+            <span className="font-medium text-gray-700 dark:text-gray-300">
+              {new Date(documento.fecha_creacion).toLocaleDateString('es-CO', {
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric',
+              })}{' '}
+              {new Date(documento.fecha_creacion).toLocaleTimeString('es-CO', {
+                hour: '2-digit',
+                minute: '2-digit',
+              })}
+            </span>
+            <span>•</span>
+
+            {/* Tamaño */}
             <span>{formatearTamano(documento.tamano_bytes)}</span>
-            {documento.version > 1 && (
-              <>
-                <span>·</span>
-                <span className="text-orange-600 dark:text-orange-500 font-medium">
-                  v{documento.version}
-                </span>
-              </>
-            )}
           </div>
         </div>
       </div>
 
-      {/* Acciones (30%) - siempre visibles en hover */}
-      <div className="flex items-center gap-1 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+      {/* Acciones (30%) - SIEMPRE VISIBLES para UX moderna */}
+      <div className="flex items-center gap-1 flex-shrink-0 transition-opacity">
         {/* Ver */}
         <button
           onClick={() => onVer(documento.id)}
@@ -181,8 +260,9 @@ export function DocumentoCardCompacto({
         </button>
 
         {/* Menú adicional */}
-        <div className="relative group/menu">
+        <div className="relative z-50" ref={menuRef}>
           <button
+            onClick={() => setMenuAbierto(!menuAbierto)}
             className="p-1.5 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700
                      text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100
                      transition-colors"
@@ -192,38 +272,60 @@ export function DocumentoCardCompacto({
           </button>
 
           {/* Dropdown menu */}
-          <div className="absolute right-0 top-full mt-1 w-48 rounded-lg border border-gray-200 dark:border-gray-700
-                        bg-white dark:bg-gray-800 shadow-lg opacity-0 invisible group-hover/menu:opacity-100
-                        group-hover/menu:visible transition-all z-50">
-            {onNuevaVersion && (
-              <button
-                onClick={() => onNuevaVersion(documento.id, documento.titulo)}
-                className="w-full px-3 py-2 text-left text-sm text-gray-700 dark:text-gray-300
-                         hover:bg-gray-100 dark:hover:bg-gray-700 first:rounded-t-lg transition-colors
-                         flex items-center gap-2"
-              >
-                <Upload className="w-4 h-4" />
-                Nueva versión
-              </button>
-            )}
+          {menuAbierto && (
+            <div className="absolute right-0 top-full mt-1 w-48 rounded-lg border border-gray-200 dark:border-gray-700
+                          bg-white dark:bg-gray-800 shadow-xl z-[100]">
+              {onNuevaVersion && (
+                <button
+                  onClick={() => {
+                    onNuevaVersion(documento.id, documento.titulo)
+                    setMenuAbierto(false)
+                  }}
+                  className="w-full px-3 py-2 text-left text-sm text-gray-700 dark:text-gray-300
+                           hover:bg-gray-100 dark:hover:bg-gray-700 first:rounded-t-lg transition-colors
+                           flex items-center gap-2"
+                >
+                  <Upload className="w-4 h-4" />
+                  Nueva versión
+                </button>
+              )}
 
-            {onEliminar && (
-              <button
-                onClick={() => onEliminar(documento.id, documento.titulo)}
-                disabled={cargandoEliminar}
-                className="w-full px-3 py-2 text-left text-sm text-red-600 dark:text-red-400
-                         hover:bg-red-50 dark:hover:bg-red-900/20 last:rounded-b-lg transition-colors
-                         flex items-center gap-2 disabled:opacity-50"
-              >
-                {cargandoEliminar ? (
-                  <div className="w-4 h-4 border-2 border-red-600 border-t-transparent rounded-full animate-spin" />
-                ) : (
-                  <Trash2 className="w-4 h-4" />
-                )}
-                Eliminar
-              </button>
-            )}
-          </div>
+              {onRenombrar && (
+                <button
+                  onClick={() => {
+                    onRenombrar(documento.id, documento.titulo)
+                    setMenuAbierto(false)
+                  }}
+                  className="w-full px-3 py-2 text-left text-sm text-gray-700 dark:text-gray-300
+                           hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors
+                           flex items-center gap-2"
+                >
+                  <Edit3 className="w-4 h-4" />
+                  Renombrar
+                </button>
+              )}
+
+              {onEliminar && (
+                <button
+                  onClick={() => {
+                    onEliminar(documento.id, documento.titulo)
+                    setMenuAbierto(false)
+                  }}
+                  disabled={cargandoEliminar}
+                  className="w-full px-3 py-2 text-left text-sm text-red-600 dark:text-red-400
+                           hover:bg-red-50 dark:hover:bg-red-900/20 last:rounded-b-lg transition-colors
+                           flex items-center gap-2 disabled:opacity-50"
+                >
+                  {cargandoEliminar ? (
+                    <div className="w-4 h-4 border-2 border-red-600 border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <Trash2 className="w-4 h-4" />
+                  )}
+                  Eliminar
+                </button>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </motion.div>

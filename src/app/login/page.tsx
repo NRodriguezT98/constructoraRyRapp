@@ -3,11 +3,11 @@
 import { motion } from 'framer-motion'
 import { Eye, EyeOff } from 'lucide-react'
 import Image from 'next/image'
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { ResetPasswordModal } from './reset-password-modal'
 import { useLogin } from './useLogin'
 
-export default function LoginPage() {
+function LoginForm() {
   const {
     email,
     password,
@@ -271,5 +271,17 @@ export default function LoginPage() {
         duration={2000}
       /> */}
     </div>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className='flex min-h-screen items-center justify-center'>
+        <div className='text-white'>Cargando...</div>
+      </div>
+    }>
+      <LoginForm />
+    </Suspense>
   )
 }

@@ -40,6 +40,11 @@ export interface DocumentoVivienda {
     icono: string
     es_sistema: boolean
   }
+  usuario?: {
+    nombres: string
+    apellidos: string
+    email: string
+  }
 }
 
 export interface SubirDocumentoParams {
@@ -94,7 +99,29 @@ export class DocumentosViviendaService {
       throw new Error(`Error al cargar documentos: ${error.message}`)
     }
 
-    return data || []
+    // Obtener información de usuarios
+    if (data && data.length > 0) {
+      const usuariosIds = [...new Set(data.map(doc => doc.subido_por).filter(Boolean))]
+
+      if (usuariosIds.length > 0) {
+        const { data: usuarios } = await this.supabase
+          .from('usuarios')
+          .select('id, email, nombres, apellidos')
+          .in('email', usuariosIds)
+
+        // Mapear usuarios a documentos
+        const usuariosMap = new Map(
+          usuarios?.map(u => [u.email, u]) || []
+        )
+
+        return data.map(doc => ({
+          ...doc,
+          usuario: usuariosMap.get(doc.subido_por) || undefined
+        })) as unknown as DocumentoVivienda[]
+      }
+    }
+
+    return data as unknown as DocumentoVivienda[]
   }
 
   /**
@@ -227,8 +254,23 @@ export class DocumentosViviendaService {
         throw new Error(`Error al guardar documento: ${dbError.message}`)
       }
 
+      // Obtener información del usuario
+      let usuarioData = undefined
+      if (documento.subido_por) {
+        const { data: usuario } = await this.supabase
+          .from('usuarios')
+          .select('id, email, nombres, apellidos')
+          .eq('email', documento.subido_por)
+          .single()
+
+        usuarioData = usuario || undefined
+      }
+
       console.log('✅ Documento subido exitosamente:', documento.id)
-      return documento
+      return {
+        ...documento,
+        usuario: usuarioData
+      } as unknown as DocumentoVivienda
     } catch (error) {
       console.error('❌ Error en subirDocumento:', error)
       throw error
@@ -260,8 +302,23 @@ export class DocumentosViviendaService {
       throw new Error(`Error al actualizar documento: ${error.message}`)
     }
 
+    // Obtener información del usuario
+    let usuarioData = undefined
+    if (data.subido_por) {
+      const { data: usuario } = await this.supabase
+        .from('usuarios')
+        .select('id, email, nombres, apellidos')
+        .eq('email', data.subido_por)
+        .single()
+
+      usuarioData = usuario || undefined
+    }
+
     console.log('✅ Documento actualizado:', id)
-    return data
+    return {
+      ...data,
+      usuario: usuarioData
+    } as unknown as DocumentoVivienda
   }
 
   /**
@@ -468,8 +525,36 @@ export class DocumentosViviendaService {
 
     if (error) throw error
 
-    console.log(`✅ ${data?.length || 0} versiones encontradas`)
-    return (data || []) as DocumentoVivienda[]
+    // 4. Obtener información de usuarios
+    if (data && data.length > 0) {
+      const usuariosIds = [...new Set(data.map(doc => doc.subido_por).filter(Boolean))]
+
+      let usuariosMap = new Map<string, any>()
+
+      if (usuariosIds.length > 0) {
+        const { data: usuarios } = await this.supabase
+          .from('usuarios')
+          .select('id, email, nombres, apellidos')
+          .in('email', usuariosIds)
+
+        // Mapear usuarios a documentos
+        usuariosMap = new Map(
+          usuarios?.map(u => [u.email, u]) || []
+        )
+      }
+
+      // ✅ SIEMPRE mapear usuario (aunque sea undefined si no se encontró)
+      const versionesConUsuario = data.map(doc => ({
+        ...doc,
+        usuario: doc.subido_por ? usuariosMap.get(doc.subido_por) : undefined
+      }))
+
+      console.log(`✅ ${versionesConUsuario.length} versiones encontradas`)
+      return versionesConUsuario as unknown as DocumentoVivienda[]
+    }
+
+    console.log(`✅ 0 versiones encontradas`)
+    return []
   }
 
   /**
@@ -567,8 +652,23 @@ export class DocumentosViviendaService {
 
     if (insertError) throw insertError
 
+    // Obtener información del usuario
+    let usuarioData = undefined
+    if (nuevaVersionDoc.subido_por) {
+      const { data: usuario } = await this.supabase
+        .from('usuarios')
+        .select('id, email, nombres, apellidos')
+        .eq('email', nuevaVersionDoc.subido_por)
+        .single()
+
+      usuarioData = usuario || undefined
+    }
+
     console.log(`✅ Nueva versión ${nuevaVersion} creada`)
-    return nuevaVersionDoc as DocumentoVivienda
+    return {
+      ...nuevaVersionDoc,
+      usuario: usuarioData
+    } as unknown as DocumentoVivienda
   }
 
   /**

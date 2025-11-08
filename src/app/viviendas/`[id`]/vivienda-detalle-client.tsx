@@ -2,15 +2,16 @@
 
 import { Button } from '@/components/ui/button'
 import {
-  AbonosTab,
-  DocumentosTab,
-  InfoTab,
-  ProgressBar,
   ViviendaHeader,
+  ProgressBar,
+  InfoTab,
+  LinderosTab,
+  DocumentosTab,
+  AbonosTab,
 } from '@/modules/viviendas/components/detalle'
 import type { Vivienda } from '@/modules/viviendas/types'
 import { motion } from 'framer-motion'
-import { ArrowLeft, FileText, Home, Info, Receipt } from 'lucide-react'
+import { ArrowLeft, Compass, FileText, Home, Info, Receipt } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import * as styles from './vivienda-detalle.styles'
@@ -19,7 +20,7 @@ interface ViviendaDetalleClientProps {
   viviendaId: string
 }
 
-type TabType = 'info' | 'documentos' | 'abonos'
+type TabType = 'info' | 'linderos' | 'documentos' | 'abonos'
 
 /**
  * Vista de detalle de vivienda - Componente principal refactorizado
@@ -62,6 +63,10 @@ export default function ViviendaDetalleClient({ viviendaId }: ViviendaDetalleCli
     }
   }, [viviendaId])
 
+  const handleAsignarCliente = () => {
+    console.log('Asignar cliente a vivienda:', viviendaId)
+  }
+
   const handleRegistrarAbono = () => {
     console.log('Registrar abono para vivienda:', viviendaId)
   }
@@ -75,11 +80,6 @@ export default function ViviendaDetalleClient({ viviendaId }: ViviendaDetalleCli
       console.log('Eliminar vivienda:', viviendaId)
       router.push('/viviendas')
     }
-  }
-
-  const handleAsignarCliente = () => {
-    console.log('Asignar cliente a vivienda:', viviendaId)
-    // TODO: Navegar a modal o página de asignación de cliente
   }
 
   // Estados de carga y error
@@ -117,6 +117,7 @@ export default function ViviendaDetalleClient({ viviendaId }: ViviendaDetalleCli
   // Configuración de tabs
   const tabs = [
     { id: 'info' as const, label: 'Información', icon: Info, count: null },
+    { id: 'linderos' as const, label: 'Linderos', icon: Compass, count: null },
     { id: 'documentos' as const, label: 'Documentos', icon: FileText, count: null },
     ...(vivienda.estado !== 'Disponible'
       ? [
@@ -182,7 +183,8 @@ export default function ViviendaDetalleClient({ viviendaId }: ViviendaDetalleCli
 
         {/* Contenido de los tabs - Componentes separados */}
         <motion.div layout>
-          {activeTab === 'info' && <InfoTab vivienda={vivienda} />}
+          {activeTab === 'info' && <InfoTab vivienda={vivienda} onAsignarCliente={handleAsignarCliente} />}
+          {activeTab === 'linderos' && <LinderosTab vivienda={vivienda} />}
           {activeTab === 'documentos' && <DocumentosTab viviendaId={viviendaId} />}
           {activeTab === 'abonos' && <AbonosTab vivienda={vivienda} onRegistrarAbono={handleRegistrarAbono} />}
         </motion.div>
