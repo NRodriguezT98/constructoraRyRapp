@@ -476,6 +476,8 @@ src/modules/[nombre-modulo]/
 - **Schema DB**: `docs/DATABASE-SCHEMA-REFERENCE-ACTUALIZADO.md` ⭐ **FUENTE ÚNICA DE VERDAD**
 - **Checklist desarrollo**: `docs/DESARROLLO-CHECKLIST.md` ⭐ **OBLIGATORIO**
 - **Sistema de estandarización**: `docs/SISTEMA-ESTANDARIZACION-MODULOS.md` ⭐ **DISEÑO CONSISTENTE**
+- **Política de eliminación (Admin Only)**: `docs/POLITICA-ELIMINACION-DOCUMENTOS-ADMIN-ONLY.md` ⭐ **SEGURIDAD Y ROL**
+- **Política de eliminación de versiones**: `docs/POLITICA-ELIMINACION-VERSIONES.md` ⭐ **INTEGRIDAD DE DATOS**
 
 ### 📘 Desarrollo:
 - **Guía de diseño**: `docs/GUIA-DISENO-MODULOS.md`

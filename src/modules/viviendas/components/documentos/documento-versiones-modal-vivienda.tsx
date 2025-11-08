@@ -37,6 +37,7 @@ export function DocumentoVersionesModalVivienda({
     cargando,
     restaurando,
     eliminando,
+    perfil, // ✅ Obtener perfil del hook
     mostrarModalMotivo,
     versionARestaurar,
     motivoRestauracion,
@@ -47,11 +48,14 @@ export function DocumentoVersionesModalVivienda({
     cancelarRestauracion,
     handleRestaurar,
     handleEliminar,
-    cargarVersiones, // ✅ Para refrescar después de renombrar
+    cargarVersiones,
   } = useDocumentoVersiones({ documentoId, isOpen, onVersionRestaurada })
 
   // Estado para modal de renombrar
   const [documentoRenombrar, setDocumentoRenombrar] = useState<{ id: string, titulo: string } | null>(null)
+
+  // ✅ Verificar si es administrador
+  const esAdministrador = perfil?.rol === 'Administrador'
 
   // Helper para formatear nombre de usuario desde email
   const formatearNombreUsuario = (email: string | null) => {
@@ -76,8 +80,9 @@ export function DocumentoVersionesModalVivienda({
 
   const modalContent = (
     <AnimatePresence>
-      <div className={styles.overlay}>
+      <div key="modal-overlay" className={styles.overlay}>
         <motion.div
+          key="modal-content"
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -120,6 +125,11 @@ export function DocumentoVersionesModalVivienda({
                   const cambios = version.metadata && typeof version.metadata === 'object'
                     ? (version.metadata as any).cambios
                     : null
+
+                  // Tooltip para botón de eliminar
+                  const tooltipEliminar = esActual
+                    ? '⚠️ No se puede eliminar la versión actual - Restaura otra primero'
+                    : 'Eliminar esta versión'
 
                   return (
                     <motion.div
@@ -179,11 +189,11 @@ export function DocumentoVersionesModalVivienda({
                           </span>
                         </div>
 
-                        {/* Nombre del archivo */}
+                        {/* Título del documento */}
                         <div className={styles.versionCard.metadataRow}>
                           <FileText className={styles.versionCard.metadataIcon} />
                           <span className={styles.versionCard.metadataText}>
-                            {version.nombre_original}
+                            {version.titulo}
                           </span>
                         </div>
                       </div>
@@ -228,24 +238,27 @@ export function DocumentoVersionesModalVivienda({
                               Renombrar
                             </button>
 
-                            {/* Eliminar - Rojo */}
-                            <button
-                              onClick={() => handleEliminar(version.id, version.version)}
-                              disabled={eliminando === version.id}
-                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-red-600 hover:bg-red-700 text-white transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                              {eliminando === version.id ? (
-                                <>
-                                  <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                                  Eliminando...
-                                </>
-                              ) : (
-                                <>
-                                  <Trash2 className="w-3.5 h-3.5" />
-                                  Eliminar
-                                </>
-                              )}
-                            </button>
+                            {/* Eliminar - Rojo (SOLO ADMINISTRADORES) */}
+                            {esAdministrador && (
+                              <button
+                                onClick={() => handleEliminar(version.id, version.version)}
+                                disabled={esActual || eliminando === version.id}
+                                title={tooltipEliminar}
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-red-600 hover:bg-red-700 text-white transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                              >
+                                {eliminando === version.id ? (
+                                  <>
+                                    <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                    Eliminando...
+                                  </>
+                                ) : (
+                                  <>
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                    Eliminar
+                                  </>
+                                )}
+                              </button>
+                            )}
                           </>
                         ) : (
                           <>
@@ -268,24 +281,27 @@ export function DocumentoVersionesModalVivienda({
                               )}
                             </button>
 
-                            {/* Eliminar - Rojo (versiones antiguas) */}
-                            <button
-                              onClick={() => handleEliminar(version.id, version.version)}
-                              disabled={eliminando === version.id}
-                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-red-600 hover:bg-red-700 text-white transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                              {eliminando === version.id ? (
-                                <>
-                                  <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                                  Eliminando...
-                                </>
-                              ) : (
-                                <>
-                                  <Trash2 className="w-3.5 h-3.5" />
-                                  Eliminar
-                                </>
-                              )}
-                            </button>
+                            {/* Eliminar - Rojo (versiones antiguas - SOLO ADMINISTRADORES) */}
+                            {esAdministrador && (
+                              <button
+                                onClick={() => handleEliminar(version.id, version.version)}
+                                disabled={eliminando === version.id}
+                                title={tooltipEliminar}
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-red-600 hover:bg-red-700 text-white transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                              >
+                                {eliminando === version.id ? (
+                                  <>
+                                    <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                    Eliminando...
+                                  </>
+                                ) : (
+                                  <>
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                    Eliminar
+                                  </>
+                                )}
+                              </button>
+                            )}
                           </>
                         )}
                       </div>
@@ -300,8 +316,9 @@ export function DocumentoVersionesModalVivienda({
 
       {/* Modal de confirmación con motivo */}
       {mostrarModalMotivo && versionARestaurar && (
-        <div className={styles.modalMotivo.overlay}>
+        <div key="modal-motivo" className={styles.modalMotivo.overlay}>
           <motion.div
+            key="modal-motivo-content"
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             className={styles.modalMotivo.container}
@@ -364,13 +381,15 @@ export function DocumentoVersionesModalVivienda({
       {/* Modal de renombrar */}
       {documentoRenombrar && (
         <DocumentoRenombrarModal
+          key="modal-renombrar"
           isOpen={!!documentoRenombrar}
           documentoId={documentoRenombrar.id}
           tituloActual={documentoRenombrar.titulo}
           onClose={() => setDocumentoRenombrar(null)}
           onSuccess={() => {
             setDocumentoRenombrar(null)
-            // Recargar versiones para ver el título actualizado
+            // ✅ Recargar versiones para ver el título actualizado
+            // El modal ya esperó a que termine la mutación antes de llamar onSuccess
             cargarVersiones()
           }}
         />

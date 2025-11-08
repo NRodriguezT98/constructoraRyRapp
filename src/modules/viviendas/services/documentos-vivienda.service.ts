@@ -322,20 +322,151 @@ export class DocumentosViviendaService {
   }
 
   /**
-   * Eliminar documento (soft delete)
+   * Eliminar documento completo (soft delete)
+   * ⚠️ SOLO ADMINISTRADORES
+   * ⚠️ Elimina el documento Y TODAS sus versiones
+   *
+   * @param id - ID del documento (puede ser cualquier versión)
+   * @param userId - ID del usuario que elimina
+   * @param userRole - Rol del usuario (debe ser 'Administrador')
+   * @param motivo - Motivo detallado de eliminación (obligatorio)
    */
-  async eliminarDocumento(id: string): Promise<void> {
+  async eliminarDocumento(
+    id: string,
+    userId: string,
+    userRole: string,
+    motivo: string
+  ): Promise<void> {
+    // 🔒 VALIDACIÓN 1: Solo Administradores
+    if (userRole !== 'Administrador') {
+      throw new Error('❌ Solo los Administradores pueden eliminar documentos. Por favor, reporta el error a un administrador.')
+    }
+
+    // 🔒 VALIDACIÓN 2: Motivo obligatorio y detallado
+    if (!motivo || motivo.trim().length < 20) {
+      throw new Error('❌ Debe proporcionar un motivo detallado (mínimo 20 caracteres)')
+    }
+
+    // 1. Obtener información del documento para auditoría
+    const { data: documento, error: fetchError } = await this.supabase
+      .from('documentos_vivienda')
+      .select('*')
+      .eq('id', id)
+      .single()
+
+    if (fetchError) throw fetchError
+    if (!documento) throw new Error('Documento no encontrado')
+
+    // 2. Determinar el ID raíz (documento original)
+    const raizId = documento.documento_padre_id || id
+
+    // 3. Obtener TODAS las versiones para contar
+    const { data: todasVersiones, error: countError } = await this.supabase
+      .from('documentos_vivienda')
+      .select('id, version, titulo')
+      .or(`id.eq.${raizId},documento_padre_id.eq.${raizId}`)
+      .eq('estado', 'activo')
+
+    if (countError) throw countError
+
+    const cantidadVersiones = todasVersiones?.length || 0
+
+    console.log(`🗑️ [ADMIN] Eliminando documento completo:`, {
+      documentoId: id,
+      titulo: documento.titulo,
+      raizId,
+      cantidadVersiones,
+      motivo
+    })
+
+    // 4. Metadata de auditoría
+    const metadataEliminacion = {
+      eliminado_por: userId,
+      fecha_eliminacion: new Date().toISOString(),
+      motivo_eliminacion: motivo.trim(),
+      rol_eliminador: userRole,
+      versiones_eliminadas: cantidadVersiones,
+      eliminacion_completa: true
+    }
+
+    // 5. Soft delete de TODAS las versiones (original + versiones)
+    const { error: deleteError } = await this.supabase
+      .from('documentos_vivienda')
+      .update({
+        estado: 'eliminado',
+        metadata: metadataEliminacion
+      })
+      .or(`id.eq.${raizId},documento_padre_id.eq.${raizId}`)
+
+    if (deleteError) {
+      console.error('❌ Error al eliminar documento completo:', deleteError)
+      throw new Error(`Error al eliminar documento: ${deleteError.message}`)
+    }
+
+    console.log(`✅ Documento completo eliminado por ${userRole}:`, {
+      titulo: documento.titulo,
+      versiones: cantidadVersiones,
+      motivo
+    })
+  }
+
+  /**
+   * Reportar documento erróneo (para usuarios no-admin)
+   * Crea una notificación/flag para que un Admin revise
+   *
+   * @param id - ID del documento
+   * @param userId - ID del usuario que reporta
+   * @param motivo - Descripción del error
+   */
+  async reportarDocumentoErroneo(
+    id: string,
+    userId: string,
+    motivo: string
+  ): Promise<void> {
+    if (!motivo || motivo.trim().length < 10) {
+      throw new Error('❌ Debe describir el error (mínimo 10 caracteres)')
+    }
+
+    // Actualizar metadata con flag de reporte
+    const { data: documento, error: fetchError } = await this.supabase
+      .from('documentos_vivienda')
+      .select('metadata')
+      .eq('id', id)
+      .single()
+
+    if (fetchError) throw fetchError
+
     const { error } = await this.supabase
       .from('documentos_vivienda')
-      .update({ estado: 'eliminado' })
+      .update({
+        metadata: {
+          ...(typeof documento.metadata === 'object' && documento.metadata !== null ? documento.metadata : {}),
+          reportado_como_erroneo: true,
+          fecha_reporte: new Date().toISOString(),
+          reportado_por: userId,
+          motivo_reporte: motivo.trim(),
+          estado_reporte: 'pendiente' // 'pendiente', 'revisado', 'corregido'
+        }
+      })
       .eq('id', id)
 
     if (error) {
-      console.error('❌ Error al eliminar documento:', error)
-      throw new Error(`Error al eliminar documento: ${error.message}`)
+      console.error('❌ Error al reportar documento:', error)
+      throw new Error(`Error al reportar documento: ${error.message}`)
     }
 
-    console.log('✅ Documento eliminado (soft):', id)
+    console.log('📢 Documento reportado como erróneo:', {
+      id,
+      reportado_por: userId,
+      motivo
+    })
+
+    // TODO: Crear notificación para administradores
+    // await this.crearNotificacionAdmin({
+    //   tipo: 'documento_reportado',
+    //   documento_id: id,
+    //   mensaje: `Usuario reportó documento como erróneo: ${motivo}`
+    // })
   }
 
   /**
@@ -697,17 +828,37 @@ export class DocumentosViviendaService {
       nombre_archivo: versionAnterior.nombre_archivo
     })
 
-    // 2. Descargar el archivo de esa versión usando url_storage (que contiene la ruta)
+    // 2. Extraer path relativo del Storage desde URL pública
+    // url_storage contiene: "https://...supabase.co/storage/v1/object/public/documentos-viviendas/vivienda_id/archivo.jpg"
+    // Necesitamos solo: "vivienda_id/archivo.jpg"
+    let pathRelativo: string
+
+    if (versionAnterior.url_storage.includes('/object/public/')) {
+      // URL pública: extraer todo después de "/public/bucket-name/"
+      const parts = versionAnterior.url_storage.split(`/public/${this.BUCKET_NAME}/`)
+      pathRelativo = parts[1] || versionAnterior.nombre_archivo
+    } else if (versionAnterior.url_storage.includes(this.BUCKET_NAME)) {
+      // URL con bucket: extraer después del nombre del bucket
+      const parts = versionAnterior.url_storage.split(`${this.BUCKET_NAME}/`)
+      pathRelativo = parts[1] || versionAnterior.nombre_archivo
+    } else {
+      // Fallback: asumir que es el path relativo directo
+      pathRelativo = versionAnterior.url_storage
+    }
+
+    console.log('📂 Path relativo extraído:', pathRelativo)
+
+    // 3. Descargar el archivo de esa versión usando el path relativo
     const { data: archivoBlob, error: downloadError } = await this.supabase.storage
       .from(this.BUCKET_NAME)
-      .download(versionAnterior.url_storage)
+      .download(pathRelativo)
 
     if (downloadError) {
       console.error('❌ Error al descargar archivo para restaurar:', downloadError)
       throw downloadError
     }
 
-    // 3. Convertir blob a File
+    // 4. Convertir blob a File
     const archivo = new File(
       [archivoBlob],
       versionAnterior.nombre_original,
@@ -736,13 +887,31 @@ export class DocumentosViviendaService {
   /**
    * Eliminar versión (soft delete)
    * NO elimina el archivo físico, solo marca como eliminado
+   * ⚠️ SOLO ADMINISTRADORES
+   *
+   * REGLAS DE NEGOCIO:
+   * 🔒 Solo Administradores pueden eliminar versiones
+   * ✅ Puede eliminar versión original SI hay múltiples versiones activas
+   * ❌ NO puede eliminar versión actual (debe restaurar otra primero)
+   * ❌ NO puede eliminar si solo queda 1 versión activa (eliminar documento completo en su lugar)
    */
   async eliminarVersion(
     versionId: string,
     userId: string,
+    userRole: string,
     motivo: string
   ): Promise<void> {
-    console.log('🗑️ Eliminando versión:', versionId)
+    console.log('🗑️ [ADMIN] Eliminando versión:', versionId)
+
+    // 🔒 VALIDACIÓN 1: Solo Administradores
+    if (userRole !== 'Administrador') {
+      throw new Error('❌ Solo los Administradores pueden eliminar versiones. Por favor, reporta el error a un administrador.')
+    }
+
+    // 🔒 VALIDACIÓN 2: Motivo obligatorio
+    if (!motivo || motivo.trim().length < 20) {
+      throw new Error('❌ Debe proporcionar un motivo detallado (mínimo 20 caracteres)')
+    }
 
     // 1. Obtener la versión a eliminar
     const { data: version, error: fetchError } = await this.supabase
@@ -754,26 +923,37 @@ export class DocumentosViviendaService {
     if (fetchError) throw fetchError
     if (!version) throw new Error('Versión no encontrada')
 
-    // 2. Validaciones de seguridad
+    console.log(`📋 Versión ${version.version} - "${version.titulo}"`)
+
+    // 2. VALIDACIÓN CRÍTICA: No eliminar versión ACTUAL
     if (version.es_version_actual) {
-      throw new Error('No se puede eliminar la versión actual')
+      throw new Error(
+        '❌ No se puede eliminar la versión actual.\n\n' +
+        '💡 Primero restaura otra versión como actual, luego podrás eliminar esta.'
+      )
     }
 
-    // 3. Contar versiones activas del documento
+    // 3. VALIDACIÓN: Debe haber al menos 2 versiones activas después de eliminar
     const raizId = version.documento_padre_id || version.id
     const { data: versionesActivas, error: countError } = await this.supabase
       .from('documentos_vivienda')
-      .select('id')
+      .select('id, version, es_version_actual')
       .or(`id.eq.${raizId},documento_padre_id.eq.${raizId}`)
       .eq('estado', 'activo')
 
     if (countError) throw countError
 
-    if (versionesActivas && versionesActivas.length <= 2) {
-      throw new Error('Debe mantener al menos 2 versiones activas')
+    if (versionesActivas && versionesActivas.length <= 1) {
+      throw new Error(
+        '❌ No se puede eliminar la única versión activa.\n\n' +
+        '💡 Si deseas eliminar este documento completamente, usa el botón "Eliminar Documento" en lugar de "Eliminar Versión".'
+      )
     }
 
-    // 4. Marcar como eliminado (soft delete)
+    console.log(`✅ Validaciones pasadas. Versiones activas restantes: ${(versionesActivas?.length || 0) - 1}`)
+    console.log(`📋 Motivo: ${motivo}`)
+
+    // 4. Marcar como eliminado (soft delete) con auditoría completa
     const metadataActual = typeof version.metadata === 'object' && version.metadata !== null
       ? version.metadata as Record<string, any>
       : {}
@@ -784,8 +964,9 @@ export class DocumentosViviendaService {
         estado: 'eliminado',
         metadata: {
           ...metadataActual,
-          motivo_eliminacion: motivo,
+          motivo_eliminacion: motivo.trim(),
           eliminado_por: userId,
+          rol_eliminador: userRole,
           fecha_eliminacion: new Date().toISOString(),
         } as Json,
       })
@@ -793,7 +974,293 @@ export class DocumentosViviendaService {
 
     if (updateError) throw updateError
 
-    console.log(`✅ Versión ${version.version} eliminada (soft delete)`)
+    console.log(`✅ Versión ${version.version} eliminada por ${userRole}:`, {
+      id: versionId,
+      titulo: version.titulo,
+      motivo
+    })
+  }
+
+  /**
+   * 🗑️ Obtener documentos eliminados (soft delete) con sus versiones
+   * ⚠️ SOLO ADMINISTRADORES
+   * ⚠️ Trae SOLO documentos raíz (para evitar duplicados)
+   * ⚠️ Las versiones se obtienen mediante una segunda consulta cuando se expande
+   *
+   * @param viviendaId - ID de la vivienda (opcional, si se omite trae todos)
+   */
+  async obtenerDocumentosEliminados(viviendaId?: string): Promise<DocumentoVivienda[]> {
+    let query = this.supabase
+      .from('documentos_vivienda')
+      .select('*')
+      .eq('estado', 'eliminado')
+      .is('documento_padre_id', null) // ✅ SOLO raíz (sin padre)
+
+    if (viviendaId) {
+      query = query.eq('vivienda_id', viviendaId)
+    }
+
+    query = query.order('fecha_creacion', { ascending: false })
+
+    const { data, error } = await query
+
+    if (error) {
+      console.error('❌ Error al obtener documentos eliminados:', error)
+      throw error
+    }
+
+    return (data || []) as DocumentoVivienda[]
+  }
+
+  /**
+   * 🔍 Obtener versiones eliminadas de un documento específico
+   * ⚠️ SOLO ADMINISTRADORES
+   *
+   * @param documentoPadreId - ID del documento raíz
+   */
+  async obtenerVersionesEliminadas(documentoPadreId: string): Promise<DocumentoVivienda[]> {
+    const { data, error } = await this.supabase
+      .from('documentos_vivienda')
+      .select('*')
+      .eq('estado', 'eliminado')
+      .or(`id.eq.${documentoPadreId},documento_padre_id.eq.${documentoPadreId}`)
+      .order('version', { ascending: true })
+
+    if (error) {
+      console.error('❌ Error al obtener versiones eliminadas:', error)
+      throw error
+    }
+
+    return (data || []) as DocumentoVivienda[]
+  }
+
+  /**
+   * ↩️ Restaurar documento completo (de papelera a activo)
+   * ⚠️ SOLO ADMINISTRADORES
+   * ⚠️ Restaura el documento Y TODAS sus versiones
+   *
+   * @param id - ID del documento (puede ser cualquier versión)
+   * @param userId - ID del usuario que restaura
+   * @param userRole - Rol del usuario (debe ser 'Administrador')
+   */
+  async restaurarDocumento(
+    id: string,
+    userId: string,
+    userRole: string
+  ): Promise<void> {
+    // 🔒 VALIDACIÓN: Solo Administradores
+    if (userRole !== 'Administrador') {
+      throw new Error('❌ Solo los Administradores pueden restaurar documentos.')
+    }
+
+    // 1. Obtener información del documento
+    const { data: documento, error: fetchError } = await this.supabase
+      .from('documentos_vivienda')
+      .select('*')
+      .eq('id', id)
+      .single()
+
+    if (fetchError) throw fetchError
+    if (!documento) throw new Error('Documento no encontrado')
+
+    // Validar que esté eliminado
+    if (documento.estado !== 'eliminado') {
+      throw new Error('❌ Este documento no está en la papelera')
+    }
+
+    // 2. Determinar el ID raíz
+    const raizId = documento.documento_padre_id || id
+
+    // 3. Obtener TODAS las versiones para contar
+    const { data: todasVersiones, error: countError } = await this.supabase
+      .from('documentos_vivienda')
+      .select('id, version, titulo')
+      .or(`id.eq.${raizId},documento_padre_id.eq.${raizId}`)
+      .eq('estado', 'eliminado')
+
+    if (countError) throw countError
+
+    const cantidadVersiones = todasVersiones?.length || 0
+
+    console.log(`↩️ [ADMIN] Restaurando documento completo:`, {
+      documentoId: id,
+      titulo: documento.titulo,
+      raizId,
+      cantidadVersiones
+    })
+
+    // 4. Metadata de auditoría
+    const metadataRestauracion = {
+      restaurado_por: userId,
+      fecha_restauracion: new Date().toISOString(),
+      rol_restaurador: userRole,
+      versiones_restauradas: cantidadVersiones
+    }
+
+    // 5. Restaurar TODAS las versiones (volver a estado 'activo')
+    const { error: restoreError } = await this.supabase
+      .from('documentos_vivienda')
+      .update({
+        estado: 'activo',
+        metadata: metadataRestauracion
+      })
+      .or(`id.eq.${raizId},documento_padre_id.eq.${raizId}`)
+
+    if (restoreError) {
+      console.error('❌ Error al restaurar documento:', restoreError)
+      throw new Error(`Error al restaurar documento: ${restoreError.message}`)
+    }
+
+    console.log(`✅ Documento restaurado por ${userRole}:`, {
+      titulo: documento.titulo,
+      versiones: cantidadVersiones
+    })
+  }
+
+  /**
+   * 🔥 Eliminar documento PERMANENTEMENTE (hard delete)
+   * ⚠️ SOLO ADMINISTRADORES
+   * ⚠️ IRREVERSIBLE - Elimina registros de BD y archivos de Storage
+   *
+   * @param id - ID del documento (puede ser cualquier versión)
+   * @param userId - ID del usuario que elimina
+   * @param userRole - Rol del usuario (debe ser 'Administrador')
+   * @param motivo - Motivo detallado de eliminación permanente
+   */
+  async eliminarPermanente(
+    id: string,
+    userId: string,
+    userRole: string,
+    motivo: string,
+    soloEstaVersion: boolean = false
+  ): Promise<void> {
+    // 🔒 VALIDACIÓN 1: Solo Administradores
+    if (userRole !== 'Administrador') {
+      throw new Error('❌ Solo los Administradores pueden eliminar permanentemente.')
+    }
+
+    // 🔒 VALIDACIÓN 2: Motivo obligatorio
+    if (!motivo || motivo.trim().length < 20) {
+      throw new Error('❌ Debe proporcionar un motivo detallado (mínimo 20 caracteres)')
+    }
+
+    // 1. Obtener información del documento
+    const { data: documento, error: fetchError } = await this.supabase
+      .from('documentos_vivienda')
+      .select('*')
+      .eq('id', id)
+      .single()
+
+    if (fetchError) throw fetchError
+    if (!documento) throw new Error('Documento no encontrado')
+
+    // Validar que esté eliminado (soft delete primero)
+    if (documento.estado !== 'eliminado') {
+      throw new Error('❌ Solo se pueden eliminar permanentemente documentos que estén en la papelera')
+    }
+
+    let todasVersiones: any[] = []
+    let cantidadVersiones = 0
+
+    if (soloEstaVersion) {
+      // Eliminar SOLO esta versión específica
+      todasVersiones = [documento]
+      cantidadVersiones = 1
+
+      console.log(`🔥 [ADMIN] Eliminando PERMANENTEMENTE versión individual:`, {
+        documentoId: id,
+        titulo: documento.titulo,
+        version: documento.version,
+        motivo
+      })
+    } else {
+      // Eliminar TODAS las versiones (raíz + hijas)
+      const raizId = documento.documento_padre_id || id
+
+      const { data: versionesData, error: versionesError } = await this.supabase
+        .from('documentos_vivienda')
+        .select('id, version, titulo, url_storage, vivienda_id')
+        .or(`id.eq.${raizId},documento_padre_id.eq.${raizId}`)
+
+      if (versionesError) throw versionesError
+
+      todasVersiones = versionesData || []
+      cantidadVersiones = todasVersiones.length
+
+      console.log(`🔥 [ADMIN] Eliminando PERMANENTEMENTE documento completo:`, {
+        documentoId: id,
+        titulo: documento.titulo,
+        raizId,
+        cantidadVersiones,
+        motivo
+      })
+    }
+
+    // 4. Eliminar archivos físicos de Storage
+    const archivosEliminados: string[] = []
+    const erroresStorage: string[] = []
+
+    for (const version of todasVersiones || []) {
+      if (version.url_storage) {
+        try {
+          // Extraer la ruta del archivo desde la URL completa
+          // url_storage formato: "https://...supabase.co/storage/v1/object/public/documentos-viviendas/{vivienda_id}/{archivo}"
+          const urlParts = version.url_storage.split('/documentos-viviendas/')
+          const rutaArchivo = urlParts[1] // "{vivienda_id}/{archivo}"
+
+          if (!rutaArchivo) {
+            console.warn(`⚠️ No se pudo extraer ruta de: ${version.url_storage}`)
+            continue
+          }
+
+          const { error: storageError } = await this.supabase.storage
+            .from('documentos-viviendas')
+            .remove([rutaArchivo])
+
+          if (storageError) {
+            console.error(`❌ Error eliminando archivo ${rutaArchivo}:`, storageError)
+            erroresStorage.push(rutaArchivo)
+          } else {
+            archivosEliminados.push(rutaArchivo)
+            console.log(`✅ Archivo eliminado de Storage: ${rutaArchivo}`)
+          }
+        } catch (error) {
+          console.error(`❌ Error eliminando archivo de ${version.url_storage}:`, error)
+          erroresStorage.push(version.url_storage)
+        }
+      }
+    }
+
+    // 5. Eliminar registros de base de datos (hard delete)
+    const idsAEliminar = todasVersiones.map(v => v.id)
+
+    const { error: deleteError } = await this.supabase
+      .from('documentos_vivienda')
+      .delete()
+      .in('id', idsAEliminar)
+
+    if (deleteError) {
+      console.error('❌ Error al eliminar registros de BD:', deleteError)
+      throw new Error(`Error al eliminar registros: ${deleteError.message}`)
+    }
+
+    console.log(`✅ Documento PERMANENTEMENTE eliminado por ${userRole}:`, {
+      titulo: documento.titulo,
+      versiones: cantidadVersiones,
+      archivosEliminados: archivosEliminados.length,
+      erroresStorage: erroresStorage.length,
+      motivo,
+      soloVersion: soloEstaVersion
+    })
+
+    // 6. Registrar en logs (opcional, si tienes tabla de auditoría)
+    // await this.registrarAuditoria({
+    //   tipo: 'eliminacion_permanente',
+    //   documento_id: id,
+    //   usuario_id: userId,
+    //   motivo,
+    //   metadata: { versiones: cantidadVersiones, archivos: archivosEliminados }
+    // })
   }
 }
 

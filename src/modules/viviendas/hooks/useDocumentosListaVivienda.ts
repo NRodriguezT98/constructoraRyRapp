@@ -19,7 +19,7 @@ interface UseDocumentosListaViviendaParams {
 export type OrdenDocumentos = 'fecha-desc' | 'fecha-asc' | 'nombre-asc' | 'nombre-desc' | 'categoria'
 
 export function useDocumentosListaVivienda({ viviendaId }: UseDocumentosListaViviendaParams) {
-  const { user } = useAuth()
+  const { user, perfil } = useAuth()
   const {
     documentos,
     isLoading,
@@ -39,7 +39,7 @@ export function useDocumentosListaVivienda({ viviendaId }: UseDocumentosListaViv
   const [ordenamiento, setOrdenamiento] = useState<OrdenDocumentos>('fecha-desc')
 
   // ✅ Permisos: Solo Administrador puede eliminar
-  const canDelete = user?.role === 'Administrador'
+  const canDelete = perfil?.rol === 'Administrador'
 
   // ✅ Detectar si existe Certificado de Tradición
   const tieneCertificadoTradicion = useMemo(() => {
@@ -213,14 +213,27 @@ export function useDocumentosListaVivienda({ viviendaId }: UseDocumentosListaViv
   // ✅ Handler: Eliminar documento
   const handleEliminar = useCallback(
     async (id: string, titulo: string) => {
+      // 1. Confirmación inicial
       const confirmado = window.confirm(
-        `¿Estás seguro de eliminar el documento "${titulo}"?\n\nEsta acción no se puede deshacer.`
+        `¿Estás seguro de eliminar el documento "${titulo}"?\n\nEsta acción marcará el documento como eliminado.`
       )
 
       if (!confirmado) return
 
+      // 2. Solicitar motivo detallado
+      const motivo = window.prompt(
+        `Por favor, proporciona el motivo de eliminación (mínimo 20 caracteres):`
+      )
+
+      if (!motivo) return
+
+      if (motivo.trim().length < 20) {
+        alert('❌ El motivo debe tener al menos 20 caracteres')
+        return
+      }
+
       try {
-        await eliminarDocumento(id)
+        await eliminarDocumento({ id, motivo: motivo.trim() })
       } catch (error) {
         console.error('❌ Error al eliminar documento:', error)
       }

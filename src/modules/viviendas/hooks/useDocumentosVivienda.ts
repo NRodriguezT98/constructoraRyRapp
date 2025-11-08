@@ -7,6 +7,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
+import { useAuth } from '@/contexts/auth-context'
+
 import {
     type ActualizarDocumentoParams,
     documentosViviendaService,
@@ -17,6 +19,7 @@ import {
  * Hook para gestionar documentos de una vivienda
  */
 export function useDocumentosVivienda(viviendaId: string) {
+  const { user, perfil } = useAuth()
   const queryClient = useQueryClient()
 
   // ✅ QUERY: Obtener documentos
@@ -85,8 +88,12 @@ export function useDocumentosVivienda(viviendaId: string) {
 
   // ✅ MUTATION: Eliminar documento
   const eliminarMutation = useMutation({
-    mutationFn: (id: string) =>
-      documentosViviendaService.eliminarDocumento(id),
+    mutationFn: async ({ id, motivo }: { id: string; motivo: string }) => {
+      if (!user || !perfil) {
+        throw new Error('Debe iniciar sesión')
+      }
+      return documentosViviendaService.eliminarDocumento(id, user.id, perfil.rol, motivo)
+    },
     onMutate: () => {
       toast.loading('Eliminando documento...', { id: 'delete-doc' })
     },
@@ -96,6 +103,10 @@ export function useDocumentosVivienda(viviendaId: string) {
       })
       queryClient.invalidateQueries({
         queryKey: ['estadisticas-documentos-vivienda', viviendaId],
+      })
+      // ✅ IMPORTANTE: Invalidar papelera para mostrar documentos eliminados
+      queryClient.invalidateQueries({
+        queryKey: ['documentos-eliminados', viviendaId],
       })
 
       toast.success('Documento eliminado correctamente', {

@@ -42,10 +42,10 @@ export function DocumentoRenombrarModal({
   const actualizarMutation = useMutation({
     mutationFn: (params: ActualizarDocumentoParams) =>
       documentosViviendaService.actualizarDocumento(params),
-    onSuccess: () => {
-      // Invalidar todas las queries de documentos para refrescar
-      queryClient.invalidateQueries({ queryKey: ['documentos-vivienda'] })
-      queryClient.invalidateQueries({ queryKey: ['documento-versiones'] })
+    onSuccess: async () => {
+      // ✅ Invalidar y ESPERAR a que se complete el refetch
+      await queryClient.invalidateQueries({ queryKey: ['documentos-vivienda'] })
+      await queryClient.invalidateQueries({ queryKey: ['documento-versiones'] })
     },
   })
 

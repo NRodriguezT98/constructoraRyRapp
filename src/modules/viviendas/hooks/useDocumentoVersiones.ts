@@ -28,8 +28,8 @@ export function useDocumentoVersiones({
   isOpen,
   onVersionRestaurada
 }: UseDocumentoVersionesProps) {
-  const { user } = useAuth()
-  const queryClient = useQueryClient() // ✅ NUEVO: Para invalidar caché
+  const { user, perfil } = useAuth() // ✅ Obtener perfil también
+  const queryClient = useQueryClient()
   const [versiones, setVersiones] = useState<DocumentoVivienda[]>([])
   const [cargando, setCargando] = useState(false)
   const [restaurando, setRestaurando] = useState<string | null>(null)
@@ -148,18 +148,36 @@ export function useDocumentoVersiones({
       return
     }
 
-    const motivo = window.prompt(
-      `¿Estás seguro de eliminar la versión ${versionNumero}?\n\nProporciona el motivo de eliminación:`
-    )
+    // ✅ Validar rol de Administrador
+    if (perfil?.rol !== 'Administrador') {
+      toast.error('❌ Solo Administradores pueden eliminar versiones')
+      return
+    }
+
+    // 🔍 Verificar si es versión actual (CRÍTICA - no se puede eliminar)
+    const version = versiones.find(v => v.id === versionId)
+
+    let mensaje = `¿Estás seguro de eliminar la versión ${versionNumero}?\n\nProporciona el motivo de eliminación (mínimo 20 caracteres):`
+
+    if (version?.es_version_actual) {
+      mensaje = `⚠️ ESTA ES LA VERSIÓN ACTUAL.\n\n¿Estás SEGURO de eliminar la versión ${versionNumero}?\n\nProporciona el motivo de eliminación (mínimo 20 caracteres):`
+    }
+
+    const motivo = window.prompt(mensaje)
 
     if (!motivo) return
 
+    if (motivo.length < 20) {
+      toast.error('El motivo debe tener mínimo 20 caracteres')
+      return
+    }
+
     setEliminando(versionId)
     try {
-      await service.eliminarVersion(versionId, user.id, motivo)
+      await service.eliminarVersion(versionId, user.id, perfil.rol, motivo)
       toast.success('Versión eliminada correctamente')
 
-      // ✅ NUEVO: Invalidar caché de React Query
+      // ✅ Invalidar caché de React Query
       const docActual = versiones.find(v => v.id === versionId)
       if (docActual) {
         queryClient.invalidateQueries({
@@ -182,6 +200,7 @@ export function useDocumentoVersiones({
     cargando,
     restaurando,
     eliminando,
+    perfil, // ✅ Exportar perfil para validación de rol en componente
 
     // Modal de motivo
     mostrarModalMotivo,
