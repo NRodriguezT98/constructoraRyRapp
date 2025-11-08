@@ -7,6 +7,7 @@
  */
 
 import { getServerPermissions } from '@/lib/auth/server'
+
 import AdminContent from './admin-content'
 
 export default async function AdminPage() {

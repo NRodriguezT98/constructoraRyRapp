@@ -1,10 +1,7 @@
 'use client'
 
-import { construirURLCliente } from '@/lib/utils/slug.utils'
-import { obtenerFuentesPagoConAbonos } from '@/modules/abonos/services/abonos.service'
-import { negociacionesService } from '@/modules/clientes/services/negociaciones.service'
-import type { Cliente } from '@/modules/clientes/types'
-import { Tooltip } from '@/shared/components/ui'
+import { useEffect, useState } from 'react'
+
 import { formatDistanceToNow } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { AnimatePresence, motion } from 'framer-motion'
@@ -22,8 +19,17 @@ import {
     Plus,
     XCircle
 } from 'lucide-react'
+
 import { useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
+
+import { construirURLCliente } from '@/lib/utils/slug.utils'
+import { obtenerFuentesPagoConAbonos } from '@/modules/abonos/services/abonos.service'
+import { negociacionesService } from '@/modules/clientes/services/negociaciones.service'
+import type { Cliente } from '@/modules/clientes/types'
+import { Tooltip } from '@/shared/components/ui'
+
+
+
 import {
     AccionesSection,
     FuentesPagoSection,

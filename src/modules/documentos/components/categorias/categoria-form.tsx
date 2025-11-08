@@ -1,9 +1,12 @@
 'use client'
 
-import { ModuloSelector } from '@/components/modulo-selector'
-import { motion } from 'framer-motion'
 import { useState } from 'react'
+
+import { motion } from 'framer-motion'
 import { useForm } from 'react-hook-form'
+
+import { ModuloSelector } from '@/components/modulo-selector'
+
 import {
     COLORES_CATEGORIA,
     type CategoriaFormData,

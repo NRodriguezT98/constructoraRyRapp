@@ -7,10 +7,14 @@
  * Integra el componente TimelineProceso del módulo admin/procesos.
  */
 
-import { TimelineProceso } from '@/modules/admin/procesos/components'
+import { useEffect, useState } from 'react'
+
 import { createBrowserClient } from '@supabase/ssr'
 import { Activity, AlertCircle } from 'lucide-react'
-import { useEffect, useState } from 'react'
+
+import { TimelineProceso } from '@/modules/admin/procesos/components'
+
+
 import * as styles from '../cliente-detalle.styles'
 
 interface ActividadTabProps {

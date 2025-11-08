@@ -8,6 +8,7 @@
 
 import { motion } from 'framer-motion'
 import { Shield, Users } from 'lucide-react'
+
 import { usuariosPremiumStyles as styles } from '../styles/usuarios-premium.styles'
 
 interface UsuariosHeaderProps {

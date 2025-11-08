@@ -7,9 +7,10 @@
 
 'use client'
 
+import type { SelectHTMLAttributes } from 'react'
+
 import { motion } from 'framer-motion'
 import { ChevronRight, type LucideIcon } from 'lucide-react'
-import type { SelectHTMLAttributes } from 'react'
 
 export interface ModernSelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
   icon: LucideIcon

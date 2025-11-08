@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion'
 import { ArrowRight, LucideIcon } from 'lucide-react'
+
 import { staggerItem } from '../../styles/animations'
 import { cn } from '../../utils/helpers'
 

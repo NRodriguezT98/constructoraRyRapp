@@ -1,6 +1,8 @@
-import { Label } from '@/components/ui/label'
 import { motion } from 'framer-motion'
 import { Banknote, CheckCircle2, CreditCard, FileText } from 'lucide-react'
+
+import { Label } from '@/components/ui/label'
+
 import { metodoPagoConfig, modalStyles } from './styles'
 
 const METODOS_PAGO = [

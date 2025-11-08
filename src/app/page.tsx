@@ -10,6 +10,7 @@
  */
 
 import { getServerPermissions } from '@/lib/auth/server'
+
 import DashboardContent from './dashboard-content'
 
 export default async function HomePage() {

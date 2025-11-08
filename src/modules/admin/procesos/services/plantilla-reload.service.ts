@@ -6,6 +6,7 @@
  */
 
 import { createBrowserClient } from '@supabase/ssr'
+
 import { EstadoPaso } from '../types'
 
 const supabase = createBrowserClient(

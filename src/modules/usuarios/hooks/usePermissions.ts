@@ -14,8 +14,10 @@
 
 'use client'
 
-import { useAuth } from '@/contexts/auth-context'
 import { useMemo } from 'react'
+
+import { useAuth } from '@/contexts/auth-context'
+
 import type { Accion, Modulo, Rol } from '../types'
 import {
   DESCRIPCION_PERMISOS,

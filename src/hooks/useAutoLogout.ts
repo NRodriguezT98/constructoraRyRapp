@@ -16,6 +16,8 @@
 
 'use client'
 
+import { useCallback, useEffect, useRef, useState } from 'react'
+
 import {
     showSessionClosedToast,
     showSessionExpiringToast,
@@ -23,7 +25,6 @@ import {
 } from '@/components/toasts/custom-toasts'
 import { useAuth } from '@/contexts/auth-context'
 import { useLogoutMutation } from '@/hooks/auth'
-import { useCallback, useEffect, useRef, useState } from 'react'
 
 interface UseAutoLogoutOptions {
   /** Minutos de inactividad antes de logout (default: 30) */

@@ -17,6 +17,8 @@
 
 'use client'
 
+import { useEffect, useState } from 'react'
+
 import { AnimatePresence, motion } from 'framer-motion'
 import {
   Activity,
@@ -30,10 +32,11 @@ import {
   User,
   X
 } from 'lucide-react'
-import { useEffect, useState } from 'react'
+
 import { useAuditorias } from '../hooks/useAuditorias'
 import { getAccionBadgeStyles, metricasIconColors, auditoriasStyles as styles } from '../styles/auditorias.styles'
 import type { AccionAuditoria, AuditoriaRegistro, ModuloAplicacion } from '../types'
+
 import { DetalleAuditoriaModal } from './DetalleAuditoriaModal'
 
 interface AuditoriasViewProps {

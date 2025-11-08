@@ -3,9 +3,11 @@
 // Gestión de categorías de documentos para clientes
 // ============================================
 
+import { useCallback, useEffect, useState } from 'react'
+
 import { CategoriasService } from '@/modules/documentos/services/categorias.service'
 import type { CategoriaDocumento, CategoriaFormData } from '@/modules/documentos/types/documento.types'
-import { useCallback, useEffect, useState } from 'react'
+
 import { useDocumentosClienteStore } from '../store/documentos-cliente.store'
 
 interface UseCategoriasClienteProps {

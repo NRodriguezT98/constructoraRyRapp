@@ -1,8 +1,10 @@
 'use client'
 
 import { useState, KeyboardEvent } from 'react'
+
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, Tag } from 'lucide-react'
+
 import { ETIQUETAS_SUGERIDAS } from '../../../../types/documento.types'
 
 interface EtiquetasInputProps {

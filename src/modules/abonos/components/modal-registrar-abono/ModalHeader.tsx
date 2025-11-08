@@ -1,7 +1,10 @@
-import { DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { motion } from 'framer-motion'
 import { Sparkles, Wallet } from 'lucide-react'
+
+import { DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+
 import type { FuentePagoConAbonos } from '../../types'
+
 import { colorSchemes, modalStyles } from './styles'
 
 interface ModalHeaderProps {

@@ -16,6 +16,10 @@
 
 'use client'
 
+import { createContext, useContext } from 'react'
+
+import type { User } from '@supabase/supabase-js'
+
 import {
     useAuthPerfilQuery,
     useAuthSessionQuery,
@@ -24,8 +28,6 @@ import {
     useLogoutMutation,
     type Perfil,
 } from '@/hooks/auth'
-import type { User } from '@supabase/supabase-js'
-import { createContext, useContext } from 'react'
 
 // ============================================
 // TYPES

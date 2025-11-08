@@ -1,14 +1,7 @@
 'use client'
 
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
+import { useEffect } from 'react'
+
 import { motion } from 'framer-motion'
 import {
   ArrowRight,
@@ -24,8 +17,21 @@ import {
   Users,
   Zap,
 } from 'lucide-react'
+
 import Link from 'next/link'
-import { useEffect } from 'react'
+
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
+
+
+
 import * as styles from './page.styles'
 
 interface DashboardContentProps {

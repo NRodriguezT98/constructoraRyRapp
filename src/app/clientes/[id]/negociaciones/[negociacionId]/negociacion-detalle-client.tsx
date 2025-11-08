@@ -1,7 +1,7 @@
 'use client'
 
-import { ConfigurarFuentesPago } from '@/modules/clientes/components/negociaciones'
-import { useNegociacion } from '@/modules/clientes/hooks'
+import { useState } from 'react'
+
 import { AnimatePresence, motion } from 'framer-motion'
 import {
     AlertCircle,
@@ -17,8 +17,13 @@ import {
     User,
     XCircle
 } from 'lucide-react'
+
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+
+import { ConfigurarFuentesPago } from '@/modules/clientes/components/negociaciones'
+import { useNegociacion } from '@/modules/clientes/hooks'
+
+
 
 interface NegociacionDetalleClientProps {
   clienteId: string

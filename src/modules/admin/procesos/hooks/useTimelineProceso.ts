@@ -10,13 +10,17 @@
  * - Presentación pura → TimelineProceso component
  */
 
+import { useCallback, useEffect, useState } from 'react'
+
+import { createBrowserClient } from '@supabase/ssr'
+
 import { useAuth } from '@/contexts/auth-context'
 import { useModal } from '@/shared/components/modals'
-import { createBrowserClient } from '@supabase/ssr'
-import { useCallback, useEffect, useState } from 'react'
+
 import { subirDocumento } from '../services/documentos-proceso.service'
 import { recargarPlantilla } from '../services/plantilla-reload.service'
 import type { ProcesoNegociacion } from '../types'
+
 import { useProcesoNegociacion } from './useProcesoNegociacion'
 
 interface UseTimelineProcesoProps {

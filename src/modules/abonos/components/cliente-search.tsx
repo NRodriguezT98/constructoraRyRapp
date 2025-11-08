@@ -1,6 +1,7 @@
 'use client'
 
 import { Filter, Search, X } from 'lucide-react'
+
 import { seleccionClienteStyles as styles } from '../styles/seleccion-cliente.styles'
 
 interface ClienteSearchProps {

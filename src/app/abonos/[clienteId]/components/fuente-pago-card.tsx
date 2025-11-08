@@ -1,9 +1,11 @@
 'use client'
 
-import { BotonRegistrarDesembolso } from '@/modules/abonos/components/BotonRegistrarDesembolso'
-import type { FuentePagoConAbonos } from '@/modules/abonos/types'
 import { motion } from 'framer-motion'
 import { Banknote, Building2, Clock, Gift, Home } from 'lucide-react'
+
+import { BotonRegistrarDesembolso } from '@/modules/abonos/components/BotonRegistrarDesembolso'
+import type { FuentePagoConAbonos } from '@/modules/abonos/types'
+
 import { animations, colorSchemes, fuentesStyles } from '../styles/abonos-detalle.styles'
 
 interface FuentePagoCardProps {

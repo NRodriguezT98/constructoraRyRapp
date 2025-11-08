@@ -10,6 +10,7 @@
 
 import { AnimatePresence, motion } from 'framer-motion'
 import { Filter, Search, X } from 'lucide-react'
+
 import { ESTADOS_PROYECTO } from '../constants'
 import { proyectosPageStyles as styles } from '../styles/proyectos-page.styles'
 import type { FiltroProyecto } from '../types'

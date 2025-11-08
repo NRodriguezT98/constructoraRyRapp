@@ -6,6 +6,7 @@
 'use client'
 
 import { Filter, Search, Tag, X } from 'lucide-react'
+
 import { clientesListaStyles as styles } from '../styles/clientes-lista.styles'
 import type { EstadoCliente, OrigenCliente } from '../types'
 

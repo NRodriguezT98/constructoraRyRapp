@@ -2,9 +2,11 @@
 // STORE: Documentos de Cliente (Zustand)
 // ============================================
 
+import { create } from 'zustand'
+
 import { CategoriasService } from '@/modules/documentos/services/categorias.service'
 import type { CategoriaDocumento } from '@/modules/documentos/types/documento.types'
-import { create } from 'zustand'
+
 import { DocumentosClienteService } from '../services/documentos-cliente.service'
 import type { DocumentoCliente } from '../types'
 

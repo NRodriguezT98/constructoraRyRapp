@@ -5,9 +5,10 @@
 
 'use client'
 
+import { useEffect } from 'react'
+
 import { AnimatePresence, motion } from 'framer-motion'
 import { AlertTriangle, CheckCircle, Info, X, XCircle } from 'lucide-react'
-import { useEffect } from 'react'
 
 type ConfirmType = 'danger' | 'warning' | 'info' | 'success'
 

@@ -16,6 +16,7 @@ import {
     User,
     X
 } from 'lucide-react'
+
 import { DocumentoProyecto, formatFileSize, getFileIcon } from '../../../../types/documento.types'
 import { CategoriaIcon } from '../shared/categoria-icon'
 

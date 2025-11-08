@@ -1,4 +1,5 @@
 import { resolverSlugVivienda } from '@/lib/utils/slug.utils'
+
 import ViviendaDetalleClient from './vivienda-detalle-client'
 
 interface PageProps {

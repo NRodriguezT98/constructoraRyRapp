@@ -1,9 +1,11 @@
 ﻿'use client'
 
-import { FuentePagoCard } from '@/modules/clientes/components'
-import type { TipoFuentePago } from '@/modules/clientes/types'
 import { motion } from 'framer-motion'
 import { AlertCircle, CheckCircle2, DollarSign, Info } from 'lucide-react'
+
+import { FuentePagoCard } from '@/modules/clientes/components'
+import type { TipoFuentePago } from '@/modules/clientes/types'
+
 import type { FuentePagoConfig, FuentePagoConfiguracion } from '../types'
 
 interface Paso2FuentesPagoProps {

@@ -5,6 +5,7 @@
  */
 
 import { useEffect, useState } from 'react'
+
 import { puedeCorregirDocumentos, puedeCorregirFecha, type PermisosCorreccion } from '../services/correcciones.service'
 
 interface UsePermisosCorreccionResult {
@@ -25,7 +26,7 @@ interface UsePermisosCorreccionResult {
  */
 export function usePermisosCorreccion(
   pasoId: string | null,
-  esAdmin: boolean = false
+  esAdmin = false
 ): UsePermisosCorreccionResult {
 
   const [puedeCorregirDocs, setPuedeCorregirDocs] = useState<PermisosCorreccion>({

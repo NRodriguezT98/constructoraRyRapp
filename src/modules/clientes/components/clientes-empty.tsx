@@ -7,6 +7,7 @@
 
 import { motion } from 'framer-motion'
 import { UserPlus, Users } from 'lucide-react'
+
 import { clientesStyles, scaleIn } from '../styles'
 
 interface ClientesEmptyProps {

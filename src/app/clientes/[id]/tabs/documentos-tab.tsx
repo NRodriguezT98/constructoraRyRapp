@@ -1,14 +1,18 @@
 'use client'
 
+import { useEffect, useState } from 'react'
+
+import { ArrowLeft, FileText, FolderCog, Upload } from 'lucide-react'
+
+import { useRouter } from 'next/navigation'
+
 import { useAuth } from '@/contexts/auth-context'
 import { DocumentoUploadCliente } from '@/modules/clientes/documentos/components/documento-upload-cliente'
 import { DocumentosListaCliente } from '@/modules/clientes/documentos/components/documentos-lista-cliente'
 import { useDocumentosClienteStore } from '@/modules/clientes/documentos/store/documentos-cliente.store'
 import type { Cliente } from '@/modules/clientes/types'
 import { CategoriasManager } from '@/modules/documentos/components/categorias/categorias-manager'
-import { ArrowLeft, FileText, FolderCog, Upload } from 'lucide-react'
-import { useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
+
 
 interface DocumentosTabProps {
   cliente: Cliente

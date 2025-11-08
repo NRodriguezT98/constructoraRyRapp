@@ -5,7 +5,6 @@
 
 'use client'
 
-import type { StepNumber } from '@/modules/clientes/components/modals/modal-crear-negociacion/types'
 import {
     ArrowLeft,
     ArrowRight,
@@ -13,6 +12,9 @@ import {
     Loader2,
     X
 } from 'lucide-react'
+
+import type { StepNumber } from '@/modules/clientes/components/modals/modal-crear-negociacion/types'
+
 import { pageStyles } from '../styles'
 
 interface FooterNegociacionProps {

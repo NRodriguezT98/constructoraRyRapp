@@ -1,8 +1,10 @@
 'use client'
 
 import { CheckCircle, Compass, DollarSign, FileText, MapPin } from 'lucide-react'
+
 import { sectionClasses } from '../styles/vivienda-form.styles'
 import type { ManzanaConDisponibilidad, Proyecto, ResumenFinanciero, ViviendaFormData } from '../types'
+
 import { ResumenFinancieroCard } from './resumen-financiero-card'
 
 interface PasoResumenProps {

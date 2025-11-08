@@ -16,6 +16,7 @@ import {
     Star,
     Trash2
 } from 'lucide-react'
+
 import { procesosStyles as styles } from '../styles/procesos.styles'
 import type { PlantillaProceso } from '../types'
 

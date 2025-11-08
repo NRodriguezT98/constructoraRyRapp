@@ -9,6 +9,7 @@ import { formatDistanceToNow } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { motion } from 'framer-motion'
 import { AlertCircle, Clock, Edit, Eye, Trash2, UserX } from 'lucide-react'
+
 import { clientesStyles, fadeInUp } from '../../styles'
 import type { ClienteResumen } from '../../types'
 

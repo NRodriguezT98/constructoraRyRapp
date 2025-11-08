@@ -1,8 +1,9 @@
 'use client'
 
+import { useEffect, useState } from 'react'
+
 import { AnimatePresence, motion } from 'framer-motion'
 import { Check, Edit3, Loader2, X } from 'lucide-react'
-import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 
 interface DocumentoRenombrarModalProps {

@@ -1,6 +1,7 @@
 'use client'
 
 import { Home, Plus } from 'lucide-react'
+
 import { viviendasListStyles as styles } from '../styles/viviendasList.styles'
 
 interface ViviendasEmptyProps {

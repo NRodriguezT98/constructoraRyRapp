@@ -7,13 +7,16 @@
  * ✅ Usa Portal para renderizar en document.body (z-index garantizado)
  */
 
-import { useAuth } from '@/contexts/auth-context'
+import { ChangeEvent, FormEvent, useState } from 'react'
+
 import { useQueryClient } from '@tanstack/react-query'
 import { AnimatePresence, motion } from 'framer-motion'
 import { FileText, Upload, X } from 'lucide-react'
-import { ChangeEvent, FormEvent, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { toast } from 'sonner'
+
+import { useAuth } from '@/contexts/auth-context'
+
 import { DocumentosViviendaService } from '../../services/documentos-vivienda.service'
 
 interface DocumentoNuevaVersionModalProps {

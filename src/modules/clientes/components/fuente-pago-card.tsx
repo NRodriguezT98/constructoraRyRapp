@@ -10,6 +10,8 @@
 
 'use client'
 
+import { useState } from 'react'
+
 import { AnimatePresence, motion } from 'framer-motion'
 import type { LucideIcon } from 'lucide-react'
 import {
@@ -22,7 +24,7 @@ import {
     Upload,
     X
 } from 'lucide-react'
-import { useState } from 'react'
+
 import type { TipoFuentePago } from '../types'
 
 // Bancos predefinidos para Crédito Hipotecario

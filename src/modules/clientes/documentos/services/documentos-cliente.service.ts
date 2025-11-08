@@ -3,6 +3,7 @@
 // ============================================
 
 import { supabase } from '@/lib/supabase/client'
+
 import type { DocumentoCliente, SubirDocumentoClienteParams } from '../types'
 
 const BUCKET_NAME = 'documentos-clientes'
@@ -51,7 +52,7 @@ export class DocumentosClienteService {
    */
   static async obtenerDocumentosProximosAVencer(
     clienteId: string,
-    diasAntes: number = 30
+    diasAntes = 30
   ): Promise<DocumentoCliente[]> {
     const fechaLimite = new Date()
     fechaLimite.setDate(fechaLimite.getDate() + diasAntes)

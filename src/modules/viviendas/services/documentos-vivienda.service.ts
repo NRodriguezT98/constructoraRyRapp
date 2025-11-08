@@ -389,7 +389,7 @@ export class DocumentosViviendaService {
    */
   async obtenerUrlFirmada(
     id: string,
-    expiresIn: number = 3600
+    expiresIn = 3600
   ): Promise<string> {
     // 1. Obtener info del documento
     const { data: documento, error: docError } = await this.supabase

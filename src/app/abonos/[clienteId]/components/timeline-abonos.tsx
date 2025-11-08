@@ -1,9 +1,11 @@
 'use client'
 
-import { formatDateForDisplay } from '@/lib/utils/date.utils'
-import type { AbonoHistorial } from '@/modules/abonos/types'
 import { motion } from 'framer-motion'
 import { Banknote, Building, Calendar, CheckCircle, CreditCard, FileText, Wallet } from 'lucide-react'
+
+import { formatDateForDisplay } from '@/lib/utils/date.utils'
+import type { AbonoHistorial } from '@/modules/abonos/types'
+
 import { animations, timelineStyles } from '../styles/abonos-detalle.styles'
 
 interface TimelineAbonosProps {

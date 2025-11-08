@@ -1,6 +1,3 @@
-import { Button } from '@/components/ui/button'
-import { formatDateForDisplay } from '@/lib/utils/date.utils'
-import { construirURLCliente } from '@/lib/utils/slug.utils'
 import { motion } from 'framer-motion'
 import {
   Ban,
@@ -12,7 +9,14 @@ import {
   Home,
   User
 } from 'lucide-react'
+
 import { useRouter } from 'next/navigation'
+
+import { Button } from '@/components/ui/button'
+import { formatDateForDisplay } from '@/lib/utils/date.utils'
+import { construirURLCliente } from '@/lib/utils/slug.utils'
+
+
 import { abonosListStyles, infoIconColors } from './abonos-list.styles'
 
 const s = abonosListStyles.card

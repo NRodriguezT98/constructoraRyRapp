@@ -1,12 +1,16 @@
 'use client'
 
-import { construirURLVivienda } from '@/lib/utils/slug.utils'
 import { motion } from 'framer-motion'
-import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
+
+import { useRouter } from 'next/navigation'
+
+import { construirURLVivienda } from '@/lib/utils/slug.utils'
+
 import { Modal } from '../../../shared/components/ui/Modal'
 import { useViviendasList } from '../hooks/useViviendasList'
 import { viviendasStyles as styles } from '../styles/viviendas.styles'
+
 import { FormularioVivienda } from './formulario-vivienda'
 import { ViviendasEmpty } from './viviendas-empty'
 import { ViviendasFilters } from './viviendas-filters'

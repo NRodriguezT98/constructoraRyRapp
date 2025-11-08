@@ -1,7 +1,5 @@
 'use client'
 
-import type { Cliente } from '@/modules/clientes/types'
-import { ORIGENES_CLIENTE, TIPOS_DOCUMENTO } from '@/modules/clientes/types'
 import {
     Building2,
     Calendar,
@@ -15,6 +13,10 @@ import {
     User,
     Users
 } from 'lucide-react'
+
+import type { Cliente } from '@/modules/clientes/types'
+import { ORIGENES_CLIENTE, TIPOS_DOCUMENTO } from '@/modules/clientes/types'
+
 import * as styles from '../cliente-detalle.styles'
 
 interface GeneralTabProps {

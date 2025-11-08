@@ -1,7 +1,8 @@
+import { useEffect, useMemo, useState } from 'react'
+
 import { useAbonos } from '@/modules/abonos/hooks'
 import { obtenerHistorialAbonos } from '@/modules/abonos/services/abonos.service'
 import type { AbonoHistorial, FuentePagoConAbonos } from '@/modules/abonos/types'
-import { useEffect, useMemo, useState } from 'react'
 
 /**
  * Hook personalizado para la lógica de negocio del detalle de abonos

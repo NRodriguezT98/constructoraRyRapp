@@ -3,6 +3,7 @@
 // ============================================
 
 import { supabase } from '@/lib/supabase/client'
+
 import type { DocumentoProyecto } from '../types/documento.types'
 
 const BUCKET_NAME = 'documentos-proyectos'
@@ -62,7 +63,7 @@ export class DocumentosService {
    * Obtener documentos próximos a vencer
    */
   static async obtenerDocumentosProximosAVencer(
-    diasAntes: number = 30
+    diasAntes = 30
   ): Promise<DocumentoProyecto[]> {
     const fechaLimite = new Date()
     fechaLimite.setDate(fechaLimite.getDate() + diasAntes)
@@ -229,7 +230,7 @@ export class DocumentosService {
    */
   static async obtenerUrlDescarga(
     storagePath: string,
-    expiresIn: number = 3600 // 1 hora por defecto
+    expiresIn = 3600 // 1 hora por defecto
   ): Promise<string> {
     const { data, error } = await supabase.storage
       .from(BUCKET_NAME)

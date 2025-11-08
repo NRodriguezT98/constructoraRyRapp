@@ -18,9 +18,10 @@
 
 'use client'
 
+import { ReactNode, useState } from 'react'
+
 import { AnimatePresence, motion } from 'framer-motion'
 import { AlertTriangle, CheckCircle, Info, Trash2, X } from 'lucide-react'
-import { ReactNode, useState } from 'react'
 
 export interface ModalConfirmacionProps {
   /** Control de apertura del modal */

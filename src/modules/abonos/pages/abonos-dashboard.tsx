@@ -8,7 +8,8 @@
  * ⭐ REFACTORIZADO: Usa componentes shared
  */
 
-import { StatCard } from '@/shared/components/display'
+import { useState } from 'react'
+
 import { AnimatePresence, motion } from 'framer-motion'
 import {
     AlertCircle,
@@ -21,7 +22,10 @@ import {
     TrendingUp,
     X,
 } from 'lucide-react'
-import { useState } from 'react'
+
+import { StatCard } from '@/shared/components/display'
+
+
 import { useAbonos } from '../hooks/useAbonos'
 import { useRegistrarAbono } from '../hooks/useRegistrarAbono'
 import { METODOS_PAGO_OPTIONS, TIPO_FUENTE_LABELS } from '../types'

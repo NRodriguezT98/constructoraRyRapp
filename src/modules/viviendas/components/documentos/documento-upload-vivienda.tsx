@@ -10,6 +10,7 @@
 
 import { motion } from 'framer-motion'
 import { ArrowLeft, FileText, FolderOpen, Upload, X } from 'lucide-react'
+
 import { useCategoriasSistemaViviendas } from '../../hooks'
 import { useDocumentoUploadVivienda } from '../../hooks/useDocumentoUploadVivienda'
 

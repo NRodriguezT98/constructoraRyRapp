@@ -1,8 +1,10 @@
 ﻿'use client'
 
-import type { TipoFuentePago } from '@/modules/clientes/types'
 import { motion } from 'framer-motion'
 import { Building2, DollarSign, Edit2, FileText, User } from 'lucide-react'
+
+import type { TipoFuentePago } from '@/modules/clientes/types'
+
 import type { FuentePagoConfig, ViviendaDetalle } from '../types'
 
 interface FuenteConfiguracion {

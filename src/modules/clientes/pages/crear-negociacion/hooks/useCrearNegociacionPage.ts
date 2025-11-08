@@ -5,6 +5,10 @@
  * ⚠️ Reutiliza hooks del modal refactorizado
  */
 
+import { useCallback, useEffect, useMemo, useState } from 'react'
+
+import { useRouter } from 'next/navigation'
+
 import {
     useFuentesPago,
     useProyectosViviendas
@@ -13,8 +17,6 @@ import type { StepNumber } from '@/modules/clientes/components/modals/modal-crea
 import { useCrearNegociacion } from '@/modules/clientes/hooks'
 import { validarSumaTotal } from '@/modules/clientes/utils/validar-edicion-fuentes'
 import { useModal } from '@/shared/components/modals'
-import { useRouter } from 'next/navigation'
-import { useCallback, useEffect, useMemo, useState } from 'react'
 
 interface UseCrearNegociacionPageProps {
   clienteId: string

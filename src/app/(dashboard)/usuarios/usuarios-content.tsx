@@ -12,6 +12,11 @@
  * - Modales de crear/editar
  */
 
+import { useState } from 'react'
+
+import { motion } from 'framer-motion'
+import { Plus, Search, UserPlus } from 'lucide-react'
+
 import {
   EstadisticasUsuariosPremium,
   ModalCrearUsuario,
@@ -21,9 +26,7 @@ import {
 } from '@/modules/usuarios/components'
 import { useUsuarios } from '@/modules/usuarios/hooks'
 import { ESTADOS_USUARIO, ROLES, type UsuarioCompleto } from '@/modules/usuarios/types'
-import { motion } from 'framer-motion'
-import { Plus, Search, UserPlus } from 'lucide-react'
-import { useState } from 'react'
+
 
 interface UsuariosContentProps {
   canView: boolean

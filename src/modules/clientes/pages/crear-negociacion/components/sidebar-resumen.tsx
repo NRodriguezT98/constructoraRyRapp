@@ -7,8 +7,6 @@
 
 'use client'
 
-import type { FuentePagoConfig } from '@/modules/clientes/components/modals/modal-crear-negociacion/types'
-import type { TipoFuentePago } from '@/modules/clientes/types'
 import { motion } from 'framer-motion'
 import {
     AlertCircle,
@@ -18,6 +16,10 @@ import {
     Percent,
     TrendingDown,
 } from 'lucide-react'
+
+import type { FuentePagoConfig } from '@/modules/clientes/components/modals/modal-crear-negociacion/types'
+import type { TipoFuentePago } from '@/modules/clientes/types'
+
 import { animations } from '../styles'
 
 // Mapeo de tipos de fuente a nombres legibles

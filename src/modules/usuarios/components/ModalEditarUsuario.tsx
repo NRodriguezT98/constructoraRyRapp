@@ -11,9 +11,12 @@
 
 'use client'
 
-import { AlertCircle } from 'lucide-react'
 import { useEffect, useState } from 'react'
+
+import { AlertCircle } from 'lucide-react'
+
 import { ESTADOS_USUARIO, ROLES, type ActualizarUsuarioData, type UsuarioCompleto } from '../types'
+
 import { Modal } from './Modal'
 import { usuariosStyles as styles } from './usuarios.styles'
 

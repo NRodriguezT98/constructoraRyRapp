@@ -1,6 +1,7 @@
 'use client'
 
-import { useAuth } from '@/contexts/auth-context'
+import { useEffect, useState } from 'react'
+
 import { AnimatePresence, motion } from 'framer-motion'
 import {
     Activity,
@@ -21,10 +22,14 @@ import {
     Users,
 } from 'lucide-react'
 import { useTheme } from 'next-themes'
+
 import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
+
+import { useAuth } from '@/contexts/auth-context'
+
+
 import { ThemeToggle } from './theme-toggle'
 import { Button } from './ui/button'
 import { useSidebar } from './useSidebar'

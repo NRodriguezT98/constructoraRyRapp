@@ -12,15 +12,20 @@
  * - Presentación → Este componente (SOLO JSX)
  */
 
+import { useCallback, useEffect } from 'react'
+
+import { AnimatePresence, motion } from 'framer-motion'
+import { AlertCircle, FileText, Loader2, X } from 'lucide-react'
+
 import { useUnsavedChanges } from '@/contexts/unsaved-changes-context'
 import { ModalCorregirDocumentos } from '@/modules/procesos/components/ModalCorregirDocumentos'
 import { ModalCorregirFecha } from '@/modules/procesos/components/ModalCorregirFecha'
-import { AnimatePresence, motion } from 'framer-motion'
-import { AlertCircle, FileText, Loader2, X } from 'lucide-react'
-import { useCallback, useEffect } from 'react'
+
+
 import { useTimelineProceso } from '../hooks'
 import { actualizarProceso } from '../services/procesos.service'
 import { EstadoPaso } from '../types'
+
 import { HeaderProceso } from './header-proceso'
 import { ModalFechaCompletado } from './modal-fecha-completado'
 import { ModalOmitirPaso } from './modal-omitir-paso'

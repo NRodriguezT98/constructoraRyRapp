@@ -5,12 +5,16 @@
 
 'use client'
 
-import { CanDelete, CanEdit } from '@/modules/usuarios/components'
+import { useEffect, useState } from 'react'
+
 import { formatDistanceToNow } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { motion } from 'framer-motion'
 import { Building2, Clock, Edit, Eye, Home, Mail, MapPin, Phone, Tag, Trash2, User } from 'lucide-react'
-import { useEffect, useState } from 'react'
+
+import { CanDelete, CanEdit } from '@/modules/usuarios/components'
+
+
 import { interesesService } from '../../services/intereses.service'
 import { clientesStyles, fadeInUp } from '../../styles'
 import type { ClienteInteres, ClienteResumen } from '../../types'

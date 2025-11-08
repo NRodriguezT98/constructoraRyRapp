@@ -1,6 +1,7 @@
 'use client'
 
 import { Info } from 'lucide-react'
+
 import { Proyecto } from '../../types'
 
 interface ProyectoInfoTabProps {

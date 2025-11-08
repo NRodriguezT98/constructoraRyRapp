@@ -11,6 +11,7 @@ import {
     Upload,
     X,
 } from 'lucide-react'
+
 import { formatFileSize, getFileExtension } from '../../../../types/documento.types'
 import { useDocumentoUpload } from '../../hooks'
 import { EtiquetasInput } from '../shared/etiquetas-input'

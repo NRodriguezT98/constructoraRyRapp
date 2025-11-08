@@ -2,11 +2,13 @@
 
 import { AnimatePresence, motion } from 'framer-motion'
 import { FileX } from 'lucide-react'
+
 import { EmptyState } from '../../../../shared/components/ui/EmptyState'
 import { LoadingSpinner } from '../../../../shared/components/ui/Loading'
 import { DocumentoProyecto } from '../../../../types/documento.types'
 import { useDocumentosLista } from '../../hooks'
 import { DocumentoViewer } from '../viewer/documento-viewer'
+
 import { DocumentoCard } from './documento-card'
 import { DocumentosFiltros } from './documentos-filtros'
 

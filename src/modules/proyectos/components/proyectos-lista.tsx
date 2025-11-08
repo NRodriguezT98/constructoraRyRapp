@@ -1,11 +1,13 @@
 ﻿'use client'
 
 import { motion } from 'framer-motion'
+
 import {
     staggerContainer,
     staggerItem,
 } from '../../../shared/styles/animations'
 import type { Proyecto } from '../types'
+
 import { ProyectoCardPremium } from './ProyectoCardPremium'
 
 interface ProyectosListaProps {

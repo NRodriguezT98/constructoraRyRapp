@@ -1,10 +1,7 @@
 'use client'
 
-import { Button } from '@/components/ui/button'
-import { useAuth } from '@/contexts/auth-context'
-// ✅ REACT QUERY: Hooks con cache inteligente (reemplazan Zustand)
-import { useProyectoQuery, useProyectosQuery } from '@/modules/proyectos/hooks'
-import { formatCurrency, formatDate } from '@/shared/utils/format'
+import { useState } from 'react'
+
 import { motion } from 'framer-motion'
 import {
     Activity,
@@ -20,8 +17,17 @@ import {
     MapPin,
     Trash2,
 } from 'lucide-react'
+
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+
+import { Button } from '@/components/ui/button'
+import { useAuth } from '@/contexts/auth-context'
+// ✅ REACT QUERY: Hooks con cache inteligente (reemplazan Zustand)
+import { useProyectoQuery, useProyectosQuery } from '@/modules/proyectos/hooks'
+import { formatCurrency, formatDate } from '@/shared/utils/format'
+
+
+
 import * as styles from './proyecto-detalle.styles'
 import { DocumentosTab, GeneralTab, ManzanasTab } from './tabs'
 

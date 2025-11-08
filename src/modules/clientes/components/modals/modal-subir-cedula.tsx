@@ -1,11 +1,15 @@
 'use client';
 
-import { useAuth } from '@/contexts/auth-context';
-import { supabase } from '@/lib/supabase/client';
+import { useState } from 'react';
+
 import { AnimatePresence, motion } from 'framer-motion';
 import { AlertCircle, FileText, Upload, X } from 'lucide-react';
-import { useState } from 'react';
 import { toast } from 'sonner';
+
+import { useAuth } from '@/contexts/auth-context';
+import { supabase } from '@/lib/supabase/client';
+
+
 
 interface ModalSubirCedulaProps {
   clienteId: string;

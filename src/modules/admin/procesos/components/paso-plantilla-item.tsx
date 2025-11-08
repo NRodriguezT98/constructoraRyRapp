@@ -7,6 +7,8 @@
 
 'use client'
 
+import { useEffect, useState } from 'react'
+
 import { createBrowserClient } from '@supabase/ssr'
 import { AnimatePresence, motion, Reorder } from 'framer-motion'
 import {
@@ -18,8 +20,9 @@ import {
     Plus,
     Trash2
 } from 'lucide-react'
-import { useEffect, useState } from 'react'
+
 import { TipoFuentePago, type PasoPlantilla } from '../types'
+
 import { formularioPlantillaStyles as styles } from './formulario-plantilla.styles'
 
 interface PasoPlantillaItemProps {

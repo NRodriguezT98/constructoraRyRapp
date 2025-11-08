@@ -1,5 +1,7 @@
 import { create } from 'zustand'
 import { devtools, persist } from 'zustand/middleware'
+
+import { proyectosService } from '../services/proyectos.service'
 import {
   ProyectosState,
   ProyectosActions,
@@ -8,7 +10,6 @@ import {
   FiltroProyecto,
   VistaProyecto,
 } from '../types'
-import { proyectosService } from '../services/proyectos.service'
 
 interface ProyectosStore extends ProyectosState, ProyectosActions {}
 

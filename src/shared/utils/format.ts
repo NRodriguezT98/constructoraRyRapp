@@ -3,7 +3,7 @@
  */
 
 // Formatear números
-export const formatNumber = (num: number, decimals: number = 0): string => {
+export const formatNumber = (num: number, decimals = 0): string => {
   return new Intl.NumberFormat('es-CO', {
     minimumFractionDigits: decimals,
     maximumFractionDigits: decimals,
@@ -13,7 +13,7 @@ export const formatNumber = (num: number, decimals: number = 0): string => {
 // Formatear moneda
 export const formatCurrency = (
   amount: number,
-  currency: string = 'COP'
+  currency = 'COP'
 ): string => {
   return new Intl.NumberFormat('es-CO', {
     style: 'currency',
@@ -26,7 +26,7 @@ export const formatCurrency = (
 // Formatear porcentaje
 export const formatPercentage = (
   value: number,
-  decimals: number = 1
+  decimals = 1
 ): string => {
   return `${formatNumber(value, decimals)}%`
 }
@@ -105,7 +105,7 @@ export const formatRelativeTime = (date: string | Date): string => {
 }
 
 // Truncar texto
-export const truncate = (text: string, length: number = 50): string => {
+export const truncate = (text: string, length = 50): string => {
   if (text.length <= length) return text
   return `${text.substring(0, length)}...`
 }

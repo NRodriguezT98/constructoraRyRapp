@@ -14,6 +14,7 @@
 
 import { AnimatePresence, motion } from 'framer-motion'
 import { CheckCircle2, Clock, Loader2 } from 'lucide-react'
+
 import { useProgresoCliente } from '../hooks'
 
 interface ProgresoProcesoBadgeProps {

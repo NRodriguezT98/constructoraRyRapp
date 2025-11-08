@@ -1,8 +1,9 @@
 'use client'
 
+import { useEffect } from 'react'
+
 import { AnimatePresence, motion } from 'framer-motion'
 import { CheckCircle2, X } from 'lucide-react'
-import { useEffect } from 'react'
 
 interface ToastProps {
   show: boolean

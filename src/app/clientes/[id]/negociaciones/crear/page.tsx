@@ -4,9 +4,10 @@
  * Página para crear una nueva negociación con cierre financiero completo
  */
 
+import { Metadata } from 'next'
+
 import { resolverSlugCliente } from '@/lib/utils/slug.utils'
 import { CrearNegociacionPage } from '@/modules/clientes/pages/crear-negociacion'
-import { Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: 'Crear Negociación | RyR Constructora',

@@ -17,7 +17,6 @@
 
 'use client'
 
-import { StepperNegociacion } from '@/modules/clientes/components'
 import { AnimatePresence, motion } from 'framer-motion'
 import {
     AlertCircle,
@@ -28,6 +27,9 @@ import {
     Sparkles,
     X,
 } from 'lucide-react'
+
+import { StepperNegociacion } from '@/modules/clientes/components'
+
 import { Paso1InfoBasica, Paso2FuentesPago, Paso3Revision } from './components'
 import { useModalNegociacion } from './hooks'
 import { animations, modalStyles } from './styles'

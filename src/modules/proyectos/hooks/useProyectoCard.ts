@@ -1,6 +1,9 @@
-import { construirURLProyecto } from '@/lib/utils/slug.utils'
-import { useRouter } from 'next/navigation'
 import { useCallback, useMemo, useState } from 'react'
+
+import { useRouter } from 'next/navigation'
+
+import { construirURLProyecto } from '@/lib/utils/slug.utils'
+
 import type { Proyecto } from '../types'
 
 interface UseProyectoCardProps {

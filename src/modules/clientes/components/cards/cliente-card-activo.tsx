@@ -7,7 +7,6 @@
 
 'use client'
 
-import { CanDelete, CanEdit } from '@/modules/usuarios/components'
 import { formatDistanceToNow } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { motion } from 'framer-motion'
@@ -22,6 +21,9 @@ import {
     TrendingUp,
     User
 } from 'lucide-react'
+
+import { CanDelete, CanEdit } from '@/modules/usuarios/components'
+
 import { getAvatarGradient } from '../../../abonos/styles/seleccion-cliente.styles'
 import { useClienteCardActivo } from '../../hooks'
 import { clientesListaStyles as styles } from '../../styles/clientes-lista.styles'

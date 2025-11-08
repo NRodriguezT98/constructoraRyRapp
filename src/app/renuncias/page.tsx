@@ -14,6 +14,7 @@
  */
 
 import { getServerPermissions } from '@/lib/auth/server'
+
 import RenunciasContent from './components/renuncias-content'
 
 export default async function RenunciasPage() {

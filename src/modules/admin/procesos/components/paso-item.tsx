@@ -10,9 +10,11 @@
 
 'use client'
 
-import { formatDateForDisplay } from '@/lib/utils/date.utils'
 import { AnimatePresence, motion } from 'framer-motion'
 import { AlertCircle, CheckCircle2, ChevronDown, ChevronUp } from 'lucide-react'
+
+import { formatDateForDisplay } from '@/lib/utils/date.utils'
+
 import type { ProcesoNegociacion } from '../types'
 import {
     getBadgePorEstado,
@@ -21,6 +23,7 @@ import {
     getEstadoPaso,
     getIconoPorEstado
 } from '../utils/paso-estado.utils'
+
 import { AccionesPaso } from './acciones-paso'
 import { DocumentoItem } from './documento-item'
 import { timelineProcesoStyles as styles } from './timeline-proceso.styles'

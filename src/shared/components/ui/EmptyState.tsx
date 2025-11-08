@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion'
 import { LucideIcon, Sparkles } from 'lucide-react'
+
 import { cn } from '../../utils/helpers'
 
 interface EmptyStateProps {

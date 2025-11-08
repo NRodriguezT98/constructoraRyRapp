@@ -7,12 +7,18 @@
 
 'use client'
 
-import { construirURLCliente } from '@/lib/utils/slug.utils'
-import { clientesService } from '@/modules/clientes/services/clientes.service'
+import { useEffect, useState } from 'react'
+
 import { motion } from 'framer-motion'
 import { AlertCircle, ArrowRight, CheckCircle2, Clock } from 'lucide-react'
+
 import { useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
+
+import { construirURLCliente } from '@/lib/utils/slug.utils'
+import { clientesService } from '@/modules/clientes/services/clientes.service'
+
+
+
 import type { ResultadoValidacion } from '../../services/validacion-desembolsos.service'
 
 interface AlertaValidacionDesembolsoProps {

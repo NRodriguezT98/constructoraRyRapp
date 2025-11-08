@@ -7,6 +7,7 @@
  */
 
 import { createBrowserClient } from '@supabase/ssr'
+
 import type {
     ActualizarPlantillaDTO,
     ActualizarProcesoDTO,

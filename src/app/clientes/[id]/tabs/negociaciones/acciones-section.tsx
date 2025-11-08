@@ -1,7 +1,8 @@
 'use client'
 
-import { Tooltip } from '@/shared/components/ui'
 import { AlertCircle, DollarSign, FileText, Pause, XCircle } from 'lucide-react'
+
+import { Tooltip } from '@/shared/components/ui'
 
 interface AccionesSectionProps {
   estado: string

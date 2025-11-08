@@ -1,5 +1,7 @@
 'use client'
 
+import { useState } from 'react'
+
 import { motion } from 'framer-motion'
 import {
     Grid3x3,
@@ -9,7 +11,7 @@ import {
     Star,
     X,
 } from 'lucide-react'
-import { useState } from 'react'
+
 import { useDocumentosClienteStore } from '../store/documentos-cliente.store'
 
 type VistaDocumentos = 'grid' | 'lista'

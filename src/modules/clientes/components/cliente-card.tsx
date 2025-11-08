@@ -6,6 +6,7 @@
 'use client'
 
 import type { ClienteResumen } from '../types'
+
 import { ClienteCardActivo, ClienteCardInactivo, ClienteCardInteresado } from './cards'
 
 interface ClienteCardProps {

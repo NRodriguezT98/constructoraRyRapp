@@ -1,5 +1,7 @@
 ﻿import { useCallback, useMemo, useState } from 'react'
+
 import type { FiltrosViviendas, Vivienda } from '../types'
+
 import { useEliminarViviendaMutation, useViviendasQuery } from './useViviendasQuery'
 
 /**

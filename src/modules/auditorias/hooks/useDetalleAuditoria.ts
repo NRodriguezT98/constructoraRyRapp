@@ -7,6 +7,7 @@
  */
 
 import { useMemo, useState } from 'react'
+
 import type { AuditLogRecord } from '../types'
 import { formatearFecha } from '../utils/formatters'
 

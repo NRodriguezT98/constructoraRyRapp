@@ -1,9 +1,10 @@
 'use client'
 
-import type { Proyecto } from '@/modules/proyectos/types'
-import { formatCurrency } from '@/shared/utils/format'
 import { motion } from 'framer-motion'
 import { Home } from 'lucide-react'
+
+import type { Proyecto } from '@/modules/proyectos/types'
+import { formatCurrency } from '@/shared/utils/format'
 
 interface ManzanasTabProps {
   proyecto: Proyecto

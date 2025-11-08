@@ -1,8 +1,10 @@
 'use client'
 
-import { CategoriaIcon } from '@/modules/documentos/components/shared/categoria-icon'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Check, FolderPlus, X } from 'lucide-react'
+
+import { CategoriaIcon } from '@/modules/documentos/components/shared/categoria-icon'
+
 import { useDocumentosClienteStore } from '../store/documentos-cliente.store'
 
 interface DocumentoCategoriasModalProps {

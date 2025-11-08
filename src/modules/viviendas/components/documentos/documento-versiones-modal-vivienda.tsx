@@ -8,11 +8,14 @@
  * ✅ Usa Portal para renderizar en document.body (z-index garantizado)
  */
 
+import { useState } from 'react'
+
 import { AnimatePresence, motion } from 'framer-motion'
 import { Calendar, Download, Edit3, Eye, FileText, RotateCcw, Trash2, User, X } from 'lucide-react'
-import { useState } from 'react'
 import { createPortal } from 'react-dom'
+
 import { useDocumentoVersiones } from '../../hooks/useDocumentoVersiones'
+
 import { DocumentoRenombrarModal } from './documento-renombrar-modal'
 import { documentoVersionesModalStyles as styles } from './documento-versiones-modal.styles'
 

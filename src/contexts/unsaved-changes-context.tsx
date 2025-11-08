@@ -7,9 +7,11 @@
 
 'use client'
 
-import { useModal } from '@/shared/components/modals'
-import { usePathname } from 'next/navigation'
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react'
+
+import { usePathname } from 'next/navigation'
+
+import { useModal } from '@/shared/components/modals'
 
 interface UnsavedChangesContextType {
   hasUnsavedChanges: boolean

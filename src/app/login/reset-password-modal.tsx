@@ -1,10 +1,13 @@
 'use client'
 
-import { supabase } from '@/lib/supabase/client'; // Cliente tradicional con PKCE
-import { traducirErrorSupabase } from '@/lib/utils/traducir-errores'
+import { useState } from 'react'
+
 import { AnimatePresence, motion } from 'framer-motion'
 import { X } from 'lucide-react'
-import { useState } from 'react'
+
+import { supabase } from '@/lib/supabase/client'; // Cliente tradicional con PKCE
+import { traducirErrorSupabase } from '@/lib/utils/traducir-errores'
+
 
 interface ResetPasswordModalProps {
   isOpen: boolean

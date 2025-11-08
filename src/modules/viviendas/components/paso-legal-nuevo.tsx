@@ -5,11 +5,14 @@
 
 'use client'
 
-import { cn } from '@/shared/utils/helpers'
+import { useRef, useState } from 'react'
+
 import { motion } from 'framer-motion'
 import { AlertCircle, CheckCircle, FileText, Hash, MapPin, Maximize, Upload, X } from 'lucide-react'
-import { useRef, useState } from 'react'
 import type { FieldErrors, UseFormRegister, UseFormSetValue } from 'react-hook-form'
+
+import { cn } from '@/shared/utils/helpers'
+
 import { nuevaViviendaStyles as styles } from '../styles/nueva-vivienda.styles'
 
 interface PasoLegalProps {

@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion'
 import { Grid3x3, List } from 'lucide-react'
+
 import { cn } from '../../utils/helpers'
 
 export type ViewMode = 'grid' | 'lista'

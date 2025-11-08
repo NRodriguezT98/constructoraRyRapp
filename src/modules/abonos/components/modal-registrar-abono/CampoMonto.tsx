@@ -1,7 +1,10 @@
-import { Label } from '@/components/ui/label'
 import { AnimatePresence, motion } from 'framer-motion'
 import { AlertCircle, DollarSign, TrendingUp } from 'lucide-react'
+
+import { Label } from '@/components/ui/label'
+
 import type { FuentePagoConAbonos } from '../../types'
+
 import { colorSchemes, modalStyles } from './styles'
 
 interface CampoMontoProps {

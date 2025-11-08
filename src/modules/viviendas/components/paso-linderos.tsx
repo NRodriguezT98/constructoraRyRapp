@@ -1,6 +1,7 @@
 'use client'
 
 import { Compass } from 'lucide-react'
+
 import { LABELS, PLACEHOLDERS } from '../constants'
 import { fieldClasses, linderosClasses, sectionClasses } from '../styles/vivienda-form.styles'
 

@@ -9,6 +9,7 @@
 
 // @ts-nocheck
 import { supabase } from '@/lib/supabase/client'
+
 import type {
     ActualizarInteresDTO,
     ClienteInteres,

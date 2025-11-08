@@ -8,7 +8,6 @@
 
 'use client'
 
-import { InfoField } from '@/shared/components/display'
 import { formatDistanceToNow } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { AnimatePresence, motion } from 'framer-motion'
@@ -33,8 +32,12 @@ import {
     Users,
     X
 } from 'lucide-react'
+
+import { InfoField } from '@/shared/components/display'
+
 import type { Cliente } from '../types'
 import { ESTADOS_INTERES, ORIGENES_CLIENTE, TIPOS_DOCUMENTO } from '../types'
+
 import { EstadoBadge } from './estado-badge'
 
 interface DetalleClienteProps {

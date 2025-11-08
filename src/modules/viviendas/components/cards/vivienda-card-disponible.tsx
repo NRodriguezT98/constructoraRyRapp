@@ -3,9 +3,11 @@
  * Altura idéntica a ViviendaCardAsignada
  */
 
-import { formatCurrency } from '@/shared/utils'
 import { motion } from 'framer-motion'
 import { Building2, Edit, Eye, Hash, Home, MapPin, MapPinned, Sparkles, TrendingUp, UserPlus } from 'lucide-react'
+
+import { formatCurrency } from '@/shared/utils'
+
 import type { Vivienda } from '../../types'
 
 interface ViviendaCardDisponibleProps {

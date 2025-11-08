@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
+
 import { auditoriasService } from '../services/auditorias.service'
 import type {
     AuditoriaRegistro,

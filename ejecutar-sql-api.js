@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+/* eslint-disable @typescript-eslint/no-require-imports, no-console, no-restricted-syntax, @typescript-eslint/no-unused-vars */
 /**
  * @file ejecutar-sql-api.js
  * @description Ejecuta SQL usando la API REST de Supabase (alternativa a pg)

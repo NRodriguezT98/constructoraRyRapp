@@ -8,6 +8,7 @@
 'use client'
 
 import { Settings } from 'lucide-react'
+
 import { procesosStyles as styles } from '../styles/procesos.styles'
 
 export function HeaderListaPlantillas() {

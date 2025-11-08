@@ -8,7 +8,6 @@
 
 'use client'
 
-import { EtiquetasInput } from '@/modules/documentos/components/shared/etiquetas-input'
 import { AnimatePresence, motion } from 'framer-motion'
 import {
   AlertCircle,
@@ -20,6 +19,9 @@ import {
   Upload,
   X,
 } from 'lucide-react'
+
+import { EtiquetasInput } from '@/modules/documentos/components/shared/etiquetas-input'
+
 import { useDocumentoUploadCliente } from '../hooks'
 
 interface DocumentoUploadClienteProps {

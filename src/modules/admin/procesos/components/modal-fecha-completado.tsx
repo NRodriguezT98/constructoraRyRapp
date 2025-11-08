@@ -7,11 +7,14 @@
  * Aparece al presionar "Completar Paso".
  */
 
-import { formatDateForDisplay, formatDateForInput, getTodayDateString } from '@/lib/utils/date.utils'
+import { useState } from 'react'
+
 import { AnimatePresence, motion } from 'framer-motion'
 import { Calendar, X } from 'lucide-react'
-import { useState } from 'react'
 import { createPortal } from 'react-dom'
+
+import { formatDateForDisplay, formatDateForInput, getTodayDateString } from '@/lib/utils/date.utils'
+
 import { modalFechaStyles as styles } from './modal-fecha-completado.styles'
 
 interface ModalFechaCompletadoProps {

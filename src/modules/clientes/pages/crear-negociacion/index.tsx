@@ -22,14 +22,16 @@
 
 'use client'
 
+import { AnimatePresence, motion } from 'framer-motion'
+import { AlertCircle } from 'lucide-react'
+
 import { StepperNegociacion } from '@/modules/clientes/components'
 import {
     Paso1InfoBasica,
     Paso2FuentesPago,
     Paso3Revision,
 } from '@/modules/clientes/components/modals/modal-crear-negociacion/components'
-import { AnimatePresence, motion } from 'framer-motion'
-import { AlertCircle } from 'lucide-react'
+
 import {
     BreadcrumbsNegociacion,
     FooterNegociacion,

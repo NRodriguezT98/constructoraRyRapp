@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react'
  * @param threshold - Píxeles de scroll para considerar "scrolled" (default: 50)
  * @returns boolean - true si se ha scrolleado más del threshold
  */
-export function useScrolled(threshold: number = 50): boolean {
+export function useScrolled(threshold = 50): boolean {
   const [scrolled, setScrolled] = useState(false)
 
   useEffect(() => {

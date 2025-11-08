@@ -3,9 +3,12 @@
  * Ahora guarda en cliente_intereses en vez de negociaciones
  */
 
-import { supabase } from '@/lib/supabase/client'
 import { useCallback, useEffect, useState } from 'react'
+
 import { useForm } from 'react-hook-form'
+
+import { supabase } from '@/lib/supabase/client'
+
 import { interesesService } from '../services/intereses.service'
 
 interface Proyecto {

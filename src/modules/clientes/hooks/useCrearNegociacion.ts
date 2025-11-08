@@ -16,9 +16,10 @@
  * - Modal viejo (modal-crear-negociacion.tsx) → NO envía fuentes_pago (aún funciona)
  */
 
+import { useCallback, useState } from 'react'
+
 import { negociacionesService } from '@/modules/clientes/services/negociaciones.service'
 import type { CrearFuentePagoDTO, Negociacion } from '@/modules/clientes/types'
-import { useCallback, useState } from 'react'
 
 interface FormDataNegociacion {
   cliente_id: string

@@ -7,6 +7,7 @@
 
 import { motion } from 'framer-motion'
 import { UserCheck, UserPlus, Users, UserX } from 'lucide-react'
+
 import { metricasClientesColors, clientesListaStyles as styles } from '../styles/clientes-lista.styles'
 
 interface EstadisticasClientesProps {

@@ -6,8 +6,10 @@
 'use client'
 
 import { motion } from 'framer-motion'
+
 import { clientesStyles, staggerContainer } from '../styles'
 import type { ClienteResumen } from '../types'
+
 import { ClienteCard } from './cliente-card'
 import { ClientesEmpty } from './clientes-empty'
 import { ClientesSkeleton } from './clientes-skeleton'

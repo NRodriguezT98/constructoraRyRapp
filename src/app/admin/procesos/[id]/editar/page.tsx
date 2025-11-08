@@ -7,8 +7,9 @@
 
 'use client'
 
-import { FormularioPlantilla } from '@/modules/admin/procesos/components/formulario-plantilla'
 import { use } from 'react'
+
+import { FormularioPlantilla } from '@/modules/admin/procesos/components/formulario-plantilla'
 
 interface EditarPlantillaPageProps {
   params: Promise<{ id: string }>

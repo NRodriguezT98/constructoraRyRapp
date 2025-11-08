@@ -5,6 +5,8 @@
 
 'use client'
 
+import { useMemo } from 'react'
+
 import { AnimatePresence, motion } from 'framer-motion'
 import {
     Building2,
@@ -18,7 +20,7 @@ import {
     MapPin,
     Maximize,
 } from 'lucide-react'
-import { useMemo } from 'react'
+
 import type { ResumenFinanciero } from '../types'
 
 interface PreviewData {

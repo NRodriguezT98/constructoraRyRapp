@@ -1,12 +1,14 @@
 'use client'
 
+import { useState } from 'react'
+
+import { ArrowLeft, FileText, FolderCog, Upload } from 'lucide-react'
+
 import { useAuth } from '@/contexts/auth-context'
 import { CategoriasManager } from '@/modules/documentos/components/categorias/categorias-manager'
 import { DocumentosLista } from '@/modules/documentos/components/lista/documentos-lista'
 import { DocumentoUpload } from '@/modules/documentos/components/upload/documento-upload'
 import type { Proyecto } from '@/modules/proyectos/types'
-import { ArrowLeft, FileText, FolderCog, Upload } from 'lucide-react'
-import { useState } from 'react'
 
 interface DocumentosTabProps {
   proyecto: Proyecto

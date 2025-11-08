@@ -3,7 +3,6 @@
  * Muestra: Cliente, Proyecto, Matrícula, Nomenclatura, Progreso de Pago completo
  */
 
-import { formatCurrency, formatDate } from '@/shared/utils'
 import { motion } from 'framer-motion'
 import {
     Building2,
@@ -17,6 +16,9 @@ import {
     TrendingUp,
     User
 } from 'lucide-react'
+
+import { formatCurrency, formatDate } from '@/shared/utils'
+
 import type { Vivienda } from '../../types'
 
 interface ViviendaCardAsignadaProps {

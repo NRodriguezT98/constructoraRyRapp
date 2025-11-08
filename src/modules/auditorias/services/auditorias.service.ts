@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase/client'
+
 import type {
   ActividadUsuario,
   AuditoriaRegistro,
@@ -78,7 +79,7 @@ class AuditoriasService {
   async obtenerHistorialRegistro(
     tabla: string,
     registroId: string,
-    limite: number = 100
+    limite = 100
   ): Promise<AuditoriaRegistro[]> {
     const { data, error } = await (supabase as any).rpc('obtener_historial_registro', {
       p_tabla: tabla,
@@ -115,8 +116,8 @@ class AuditoriasService {
    */
   async obtenerActividadUsuario(
     usuarioId: string,
-    dias: number = 30,
-    limite: number = 100
+    dias = 30,
+    limite = 100
   ): Promise<ActividadUsuario[]> {
     const { data, error } = await supabase.rpc('obtener_actividad_usuario', {
       p_usuario_id: usuarioId,
@@ -146,8 +147,8 @@ class AuditoriasService {
    * Detectar eliminaciones masivas usando RPC
    */
   async detectarEliminacionesMasivas(
-    dias: number = 7,
-    umbral: number = 5
+    dias = 7,
+    umbral = 5
   ): Promise<EliminacionMasiva[]> {
     const { data, error } = await supabase.rpc(
       'detectar_eliminaciones_masivas',
@@ -289,7 +290,7 @@ class AuditoriasService {
    */
   async buscarAuditorias(
     texto: string,
-    limite: number = 50
+    limite = 50
   ): Promise<AuditoriaRegistro[]> {
     const { data, error } = await supabase
       .from('audit_log')

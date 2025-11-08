@@ -7,11 +7,14 @@
  * ✅ Validación granular de manzanas editables
  */
 
-import { zodResolver } from '@hookform/resolvers/zod'
 import { useEffect, useMemo } from 'react'
+
+import { zodResolver } from '@hookform/resolvers/zod'
 import { useFieldArray, useForm } from 'react-hook-form'
 import { z } from 'zod'
+
 import type { ProyectoFormData } from '../types'
+
 import { useManzanasEditables } from './useManzanasEditables'
 
 // ==================== SCHEMAS ====================

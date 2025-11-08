@@ -8,12 +8,14 @@
  * ✅ Usa mutation de React Query para invalidar cache automáticamente
  */
 
+import { FormEvent, useState } from 'react'
+
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Edit3, X } from 'lucide-react'
-import { FormEvent, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { toast } from 'sonner'
+
 import { type ActualizarDocumentoParams, documentosViviendaService } from '../../services/documentos-vivienda.service'
 
 interface DocumentoRenombrarModalProps {
@@ -71,9 +73,9 @@ export function DocumentoRenombrarModal({
       toast.success('Documento renombrado exitosamente')
       onSuccess?.()
       onClose()
-    } catch (error: any) {
-      console.error('Error al renombrar documento:', error)
-      setError(error?.message || 'Error al renombrar el documento')
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Error desconocido'
+      setError(errorMessage)
       toast.error('Error al renombrar documento')
     }
   }

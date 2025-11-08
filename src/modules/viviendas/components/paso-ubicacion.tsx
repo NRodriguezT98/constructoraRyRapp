@@ -1,6 +1,7 @@
 'use client'
 
 import { Building2, Home, MapPin } from 'lucide-react'
+
 import { LABELS, MENSAJES, PLACEHOLDERS } from '../constants'
 import { fieldClasses, sectionClasses, seleccionClasses } from '../styles/vivienda-form.styles'
 import type { ManzanaConDisponibilidad, Proyecto } from '../types'

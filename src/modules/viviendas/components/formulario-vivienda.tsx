@@ -14,10 +14,12 @@ import {
     Save,
 } from 'lucide-react'
 import { toast } from 'sonner'
+
 import { PASOS_FORMULARIO } from '../constants'
 import { useViviendaForm } from '../hooks/useViviendaForm'
 import { navigationClasses, wizardClasses } from '../styles/vivienda-form.styles'
 import type { PasoFormulario } from '../types'
+
 import { PasoFinanciero } from './paso-financiero'
 import { PasoLegal } from './paso-legal'
 import { PasoLinderos } from './paso-linderos'

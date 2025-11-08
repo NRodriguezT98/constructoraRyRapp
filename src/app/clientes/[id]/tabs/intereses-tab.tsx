@@ -13,8 +13,8 @@
  * ⚠️ NOMBRES VERIFICADOS EN: docs/DATABASE-SCHEMA-REFERENCE.md
  */
 
-import { useListaIntereses } from '@/modules/clientes/hooks'
-import type { Cliente } from '@/modules/clientes/types'
+import { useState } from 'react'
+
 import { formatDistanceToNow } from 'date-fns'
 import { es } from 'date-fns/locale'
 import {
@@ -32,7 +32,11 @@ import {
     User,
     X,
 } from 'lucide-react'
-import { useState } from 'react'
+
+import { useListaIntereses } from '@/modules/clientes/hooks'
+import type { Cliente } from '@/modules/clientes/types'
+
+
 import * as styles from '../cliente-detalle.styles'
 
 interface InteresesTabProps {

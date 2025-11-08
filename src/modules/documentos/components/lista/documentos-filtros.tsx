@@ -1,5 +1,7 @@
 'use client'
 
+import { useMemo, useState } from 'react'
+
 import { AnimatePresence, motion } from 'framer-motion'
 import {
     Calendar,
@@ -12,7 +14,7 @@ import {
     Tag as TagIcon,
     X,
 } from 'lucide-react'
-import { useMemo, useState } from 'react'
+
 import { useDocumentosStore } from '../../store/documentos.store'
 import type { CategoriaDocumento, DocumentoProyecto } from '../../types'
 

@@ -1,10 +1,13 @@
 'use client';
 
-import { supabase } from '@/lib/supabase/client';
+import { useState } from 'react';
+
 import { motion } from 'framer-motion';
 import { AlertCircle, CheckCircle, Eye, FileText, RefreshCw, Trash2, Upload } from 'lucide-react';
-import { useState } from 'react';
 import { toast } from 'sonner';
+
+import { supabase } from '@/lib/supabase/client';
+
 import ModalSubirCedula from '../modals/modal-subir-cedula';
 
 interface SeccionDocumentosIdentidadProps {

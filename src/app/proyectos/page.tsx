@@ -15,6 +15,7 @@
  */
 
 import { getServerPermissions } from '@/lib/auth/server'
+
 import { ProyectosPage } from '../../modules/proyectos/components/proyectos-page-main'
 
 export default async function Proyectos() {

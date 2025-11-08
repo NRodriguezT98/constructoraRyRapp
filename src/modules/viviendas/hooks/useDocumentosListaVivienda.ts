@@ -6,8 +6,10 @@
  * SOLO LÓGICA - UI en DocumentosListaVivienda component
  */
 
-import { useAuth } from '@/contexts/auth-context'
 import { useCallback, useMemo, useState } from 'react'
+
+import { useAuth } from '@/contexts/auth-context'
+
 import { useDocumentosVivienda } from './useDocumentosVivienda'
 
 interface UseDocumentosListaViviendaParams {

@@ -1,5 +1,12 @@
 'use client'
 
+import { useEffect, useState } from 'react'
+
+import { motion } from 'framer-motion'
+import { ArrowLeft, Compass, FileText, Home, Info, Receipt } from 'lucide-react'
+
+import { useRouter } from 'next/navigation'
+
 import { Button } from '@/components/ui/button'
 import {
   ViviendaHeader,
@@ -10,10 +17,9 @@ import {
   AbonosTab,
 } from '@/modules/viviendas/components/detalle'
 import type { Vivienda } from '@/modules/viviendas/types'
-import { motion } from 'framer-motion'
-import { ArrowLeft, Compass, FileText, Home, Info, Receipt } from 'lucide-react'
-import { useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
+
+
+
 import * as styles from './vivienda-detalle.styles'
 
 interface ViviendaDetalleClientProps {

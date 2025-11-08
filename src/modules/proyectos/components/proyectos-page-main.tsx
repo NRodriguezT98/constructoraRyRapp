@@ -1,19 +1,22 @@
 ﻿'use client'
 
+import { useState } from 'react'
+
 import { motion } from 'framer-motion'
 import { Building2 } from 'lucide-react'
-import { useState } from 'react'
+
 import { Modal } from '../../../shared/components/ui/Modal'
-import { useDetectarCambios } from '../hooks/useDetectarCambios'
-// ✅ REACT QUERY: Nuevos hooks con cache inteligente
 import {
   useEstadisticasProyectosQuery,
   useProyectoConValidacion,
   useProyectosFiltradosQuery,
   useProyectosQuery,
 } from '../hooks'
+import { useDetectarCambios } from '../hooks/useDetectarCambios'
+// ✅ REACT QUERY: Nuevos hooks con cache inteligente
 import { proyectosPageStyles as styles } from '../styles/proyectos-page.styles'
 import type { Proyecto, ProyectoFormData } from '../types'
+
 import { ConfirmarCambiosModal } from './ConfirmarCambiosModal'
 import { ProyectosEmpty } from './proyectos-empty'
 import { ProyectosForm } from './proyectos-form'

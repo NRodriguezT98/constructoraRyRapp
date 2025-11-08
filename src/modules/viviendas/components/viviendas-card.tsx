@@ -6,6 +6,7 @@ import { Edit, Home, MapPin, Trash2 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import type { Tables } from '@/lib/supabase/database.types'
+
 import { cardHoverVariants, itemVariants } from '../styles/animations'
 import { viviendaCardStyles } from '../styles/classes'
 

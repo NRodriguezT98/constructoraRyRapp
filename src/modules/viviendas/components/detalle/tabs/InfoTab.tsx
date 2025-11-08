@@ -1,7 +1,5 @@
 'use client'
 
-import type { Vivienda } from '@/modules/viviendas/types'
-import { formatCurrency } from '@/shared/utils'
 import { motion } from 'framer-motion'
 import {
     Building2,
@@ -9,6 +7,9 @@ import {
     Phone,
     User,
 } from 'lucide-react'
+
+import type { Vivienda } from '@/modules/viviendas/types'
+import { formatCurrency } from '@/shared/utils'
 
 interface InfoTabProps {
   vivienda: Vivienda

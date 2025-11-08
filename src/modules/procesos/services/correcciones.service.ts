@@ -64,7 +64,7 @@ export interface PermisosCorreccion {
  */
 export async function puedeCorregirDocumentos(
   pasoId: string,
-  esAdmin: boolean = false
+  esAdmin = false
 ): Promise<PermisosCorreccion> {
 
   // Obtener paso y proceso completo
@@ -151,7 +151,7 @@ export async function puedeCorregirDocumentos(
  */
 export async function puedeCorregirFecha(
   pasoId: string,
-  esAdmin: boolean = false
+  esAdmin = false
 ): Promise<PermisosCorreccion> {
   // Mismas validaciones que documentos
   return puedeCorregirDocumentos(pasoId, esAdmin)

@@ -7,6 +7,7 @@
  */
 
 import { Building2, CreditCard, DollarSign, Home, User } from 'lucide-react'
+
 import { formatearDinero } from '../../utils/formatters'
 
 interface NegociacionDetalleRenderProps {

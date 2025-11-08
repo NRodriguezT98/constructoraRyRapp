@@ -6,6 +6,12 @@
 
 'use client'
 
+import { useCallback, useEffect, useState } from 'react'
+
+import { format } from 'date-fns'
+import { AlertCircle, FileEdit, FileText, Upload, X } from 'lucide-react'
+import { toast } from 'sonner'
+
 import { Button } from '@/components/ui/button'
 import {
     Dialog,
@@ -17,10 +23,9 @@ import {
 } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { format } from 'date-fns'
-import { AlertCircle, FileEdit, FileText, Upload, X } from 'lucide-react'
-import { useCallback, useEffect, useState } from 'react'
-import { toast } from 'sonner'
+
+
+
 import { corregirDocumento, puedeCorregirDocumentos, type PermisosCorreccion } from '../services/correcciones.service'
 
 interface DocumentoParaCorregir {

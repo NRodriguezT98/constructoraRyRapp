@@ -9,6 +9,7 @@
 
 import { motion } from 'framer-motion'
 import { Plus, Settings } from 'lucide-react'
+
 import { procesosStyles as styles } from '../styles/procesos.styles'
 
 interface EmptyStatePlantillasProps {

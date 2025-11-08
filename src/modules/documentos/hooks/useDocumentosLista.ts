@@ -14,11 +14,13 @@
  */
 
 import { useCallback, useMemo, useState } from 'react'
+
 import { useAuth } from '../../../contexts/auth-context'
 import { useModal } from '../../../shared/components/modals'
 import { DocumentosService } from '../services'
 import { useDocumentosStore } from '../store/documentos.store'
 import { DocumentoProyecto } from '../types'
+
 import {
   useCategoriasQuery,
   useDocumentosProyectoQuery,

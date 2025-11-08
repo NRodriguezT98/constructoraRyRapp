@@ -1,6 +1,7 @@
 'use client'
 
 import { FileText, Upload, FolderCog } from 'lucide-react'
+
 import { DocumentosLista } from '../../../../modules/documentos/components/lista/documentos-lista'
 import { useDocumentosStore } from '../../../../modules/documentos/store/documentos.store'
 

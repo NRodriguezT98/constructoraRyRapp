@@ -1,6 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
+
 import { Skeleton } from '../../../shared/components/ui/Loading'
 // ✅ REACT QUERY: Hooks con cache inteligente
 import { useVistaProyectosQuery } from '../hooks'

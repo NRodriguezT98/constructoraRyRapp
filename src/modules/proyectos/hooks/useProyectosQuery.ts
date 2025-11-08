@@ -17,9 +17,11 @@
 
 'use client'
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useMemo, useState } from 'react'
+
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
+
 import { proyectosService } from '../services/proyectos.service'
 import type { FiltroProyecto, ProyectoFormData } from '../types'
 

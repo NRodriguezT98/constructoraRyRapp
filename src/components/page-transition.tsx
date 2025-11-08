@@ -1,8 +1,10 @@
 'use client'
 
-import { motion, AnimatePresence } from 'framer-motion'
-import { usePathname } from 'next/navigation'
 import { ReactNode } from 'react'
+
+import { motion, AnimatePresence } from 'framer-motion'
+
+import { usePathname } from 'next/navigation'
 
 interface PageTransitionProps {
   children: ReactNode

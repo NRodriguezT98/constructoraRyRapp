@@ -5,6 +5,7 @@
  */
 
 import { getServerPermissions } from '@/lib/auth/server'
+
 import ProcesosContent from './procesos-content'
 
 export const metadata = {

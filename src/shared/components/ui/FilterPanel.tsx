@@ -1,6 +1,7 @@
 'use client'
 
 import { Sparkles } from 'lucide-react'
+
 import { cn } from '../../utils/helpers'
 
 export interface FilterOption<T = string> {

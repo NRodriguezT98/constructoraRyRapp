@@ -1,6 +1,7 @@
+import { NextRequest, NextResponse } from 'next/server'
+
 import { createRouteClient } from '@/lib/supabase/server-route'
 import { formatDateForDB } from '@/lib/utils/date.utils'
-import { NextRequest, NextResponse } from 'next/server'
 
 /**
  * API Route: POST /api/abonos/registrar

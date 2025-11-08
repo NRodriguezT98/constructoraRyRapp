@@ -7,9 +7,10 @@
  * Requiere motivo obligatorio antes de proceder
  */
 
+import { useState } from 'react'
+
 import { AnimatePresence, motion } from 'framer-motion'
 import { AlertTriangle, X } from 'lucide-react'
-import { useState } from 'react'
 
 interface DocumentoEliminarVersionModalProps {
   isOpen: boolean

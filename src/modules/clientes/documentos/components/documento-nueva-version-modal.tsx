@@ -7,11 +7,14 @@
  * con descripción de cambios
  */
 
-import { useAuth } from '@/contexts/auth-context'
+import { useRef, useState } from 'react'
+
 import { AnimatePresence, motion } from 'framer-motion'
 import { FileUp, Upload, X } from 'lucide-react'
-import { useRef, useState } from 'react'
 import { toast } from 'sonner'
+
+import { useAuth } from '@/contexts/auth-context'
+
 import { DocumentosClienteService } from '../services/documentos-cliente.service'
 import type { DocumentoCliente } from '../types'
 

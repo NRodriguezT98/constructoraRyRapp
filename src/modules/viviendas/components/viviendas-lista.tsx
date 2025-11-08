@@ -1,9 +1,11 @@
 'use client'
 
 import { motion } from 'framer-motion'
+
 import { staggerContainer, staggerItem } from '../../../shared/styles/animations'
 import { viviendasListStyles as styles } from '../styles/viviendasList.styles'
 import type { Vivienda } from '../types'
+
 import { ViviendaCard } from './vivienda-card'
 
 interface ViviendasListaProps {

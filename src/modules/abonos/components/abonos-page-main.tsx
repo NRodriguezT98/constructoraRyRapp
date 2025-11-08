@@ -1,10 +1,13 @@
 'use client'
 
+import { useMemo, useState } from 'react'
+
 import { AnimatePresence, motion } from 'framer-motion'
 import { AlertCircle, CreditCard, DollarSign, TrendingUp, UserCircle2, Users } from 'lucide-react'
-import { useMemo, useState } from 'react'
+
 import { useAbonos } from '../hooks'
 import { metricasIconColors, seleccionClienteStyles as styles } from '../styles/seleccion-cliente.styles'
+
 import { ClienteCard } from './cliente-card'
 import { ClienteSearch } from './cliente-search'
 

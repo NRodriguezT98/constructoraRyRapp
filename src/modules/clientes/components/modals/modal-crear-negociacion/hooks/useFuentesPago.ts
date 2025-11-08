@@ -2,8 +2,10 @@
  * Hook para manejar las fuentes de pago y sus validaciones
  */
 
-import type { CrearFuentePagoDTO, TipoFuentePago } from '@/modules/clientes/types'
 import { useCallback, useMemo, useState } from 'react'
+
+import type { CrearFuentePagoDTO, TipoFuentePago } from '@/modules/clientes/types'
+
 import type { FuentePagoConfig, FuentePagoConfiguracion } from '../types'
 
 interface UseFuentesPagoProps {

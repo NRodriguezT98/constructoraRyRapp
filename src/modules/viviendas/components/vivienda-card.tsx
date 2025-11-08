@@ -4,6 +4,7 @@
  */
 
 import type { Vivienda } from '../types'
+
 import { ViviendaCardAsignada } from './cards/vivienda-card-asignada'
 import { ViviendaCardDisponible } from './cards/vivienda-card-disponible'
 import { ViviendaCardEntregada } from './cards/vivienda-card-entregada'

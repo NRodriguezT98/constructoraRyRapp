@@ -8,7 +8,9 @@
 'use client'
 
 import { Download, FileText, Loader2, Trash2, Upload } from 'lucide-react'
+
 import type { DocumentoRequerido } from '../types'
+
 import { timelineProcesoStyles as styles } from './timeline-proceso.styles'
 
 interface DocumentoItemProps {

@@ -7,9 +7,10 @@
 
 'use client'
 
+import type { TextareaHTMLAttributes } from 'react'
+
 import { motion } from 'framer-motion'
 import type { LucideIcon } from 'lucide-react'
-import type { TextareaHTMLAttributes } from 'react'
 
 export interface ModernTextareaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
   icon: LucideIcon

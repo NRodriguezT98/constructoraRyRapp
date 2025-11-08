@@ -3,10 +3,13 @@
  * Orquesta el stepper, form data y navegación entre pasos
  */
 
+import { useCallback, useEffect, useMemo, useState } from 'react'
+
 import { useCrearNegociacion } from '@/modules/clientes/hooks'
 import { validarSumaTotal } from '@/modules/clientes/utils/validar-edicion-fuentes'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+
 import type { StepNumber } from '../types'
+
 import { useFuentesPago } from './useFuentesPago'
 import { useProyectosViviendas } from './useProyectosViviendas'
 
@@ -174,7 +177,7 @@ export function useModalNegociacion({
     errorHook,
     limpiarHook,
     onSuccess,
-  ]) // eslint-disable-line react-hooks/exhaustive-deps
+  ])  
 
   // ============================================
   // CERRAR Y RESETEAR

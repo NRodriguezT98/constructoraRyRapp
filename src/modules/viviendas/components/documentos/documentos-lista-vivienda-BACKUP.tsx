@@ -10,6 +10,8 @@
  * - Estadísticas
  */
 
+import { useState } from 'react'
+
 import { motion } from 'framer-motion'
 import {
   AlertTriangle,
@@ -29,8 +31,9 @@ import {
   Upload,
   X
 } from 'lucide-react'
-import { useState } from 'react'
+
 import { useDocumentosListaVivienda, type OrdenDocumentos } from '../../hooks/useDocumentosListaVivienda'
+
 import { DocumentoNuevaVersionModal } from './documento-nueva-version-modal'
 import { DocumentoVersionesModalVivienda } from './documento-versiones-modal-vivienda'
 import { documentosListaStyles as styles } from './documentos-lista.styles'

@@ -1,4 +1,5 @@
 import { resolverSlugProyecto } from '@/lib/utils/slug.utils'
+
 import ProyectoDetalleClient from './proyecto-detalle-client'
 
 interface PageProps {

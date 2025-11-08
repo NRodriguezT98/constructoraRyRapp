@@ -1,7 +1,10 @@
 import { DragEvent, useCallback, useRef, useState } from 'react'
+
 import { useForm } from 'react-hook-form'
+
 import { useAuth } from '../../../contexts/auth-context'
 import { documentoConArchivoSchema } from '../schemas/documento.schema'
+
 import { useCategoriasQuery, useSubirDocumentoMutation } from './useDocumentosQuery'
 
 type UploadFormData = {

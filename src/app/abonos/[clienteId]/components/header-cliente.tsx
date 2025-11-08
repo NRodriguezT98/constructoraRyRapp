@@ -1,5 +1,3 @@
-import { Button } from '@/components/ui/button'
-import type { NegociacionConAbonos } from '@/modules/abonos/types'
 import { motion } from 'framer-motion'
 import {
   ArrowLeft,
@@ -12,6 +10,10 @@ import {
   User,
   Wallet
 } from 'lucide-react'
+
+import { Button } from '@/components/ui/button'
+import type { NegociacionConAbonos } from '@/modules/abonos/types'
+
 import { animations, headerStyles } from '../styles/abonos-detalle.styles'
 
 interface HeaderClienteProps {

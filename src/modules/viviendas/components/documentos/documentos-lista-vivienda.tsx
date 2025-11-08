@@ -10,18 +10,21 @@
  * - Estadísticas
  */
 
+import { useState } from 'react'
+
 import { motion } from 'framer-motion'
 import {
-    AlertTriangle,
-    ChevronDown,
-    FileText,
-    Search,
-    Star,
-    Upload,
-    X
+  AlertTriangle,
+  ChevronDown,
+  FileText,
+  Search,
+  Star,
+  Upload,
+  X
 } from 'lucide-react'
-import { useState } from 'react'
+
 import { useDocumentosListaVivienda, type OrdenDocumentos } from '../../hooks/useDocumentosListaVivienda'
+
 import { DocumentoCardCompacto } from './documento-card-compacto'
 import { DocumentoNuevaVersionModal } from './documento-nueva-version-modal'
 import { DocumentoRenombrarModal } from './documento-renombrar-modal'
@@ -41,8 +44,8 @@ export function DocumentosListaVivienda({
     documentosFiltrados,
     documentosPorCategoria,
     documentosImportantes,
-    documentosRecientes,
-    estadisticas,
+    documentosRecientes: _documentosRecientes,
+    estadisticas: _estadisticas,
     categoriasDisponibles,
     isLoading,
     error,

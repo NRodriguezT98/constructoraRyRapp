@@ -13,8 +13,9 @@
  * ⚠️ NOMBRES DE CAMPOS VERIFICADOS EN: docs/DATABASE-SCHEMA-REFERENCE-ACTUALIZADO.md
  */
 
-import { fuentesPagoService } from '@/modules/clientes/services/fuentes-pago.service'
 import { useEffect, useState } from 'react'
+
+import { fuentesPagoService } from '@/modules/clientes/services/fuentes-pago.service'
 
 export interface FuentePago {
   id?: string

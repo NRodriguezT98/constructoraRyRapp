@@ -6,13 +6,18 @@
 
 'use client'
 
+import { useEffect, useState } from 'react'
+
+import { motion } from 'framer-motion'
+import { AlertCircle, Building2, Home, MapPin } from 'lucide-react'
+import type { FieldErrors, UseFormRegister, UseFormSetValue, UseFormWatch } from 'react-hook-form'
+
 import { proyectosService } from '@/modules/proyectos/services/proyectos.service'
 import type { Proyecto } from '@/modules/proyectos/types'
 import { cn } from '@/shared/utils/helpers'
-import { motion } from 'framer-motion'
-import { AlertCircle, Building2, Home, MapPin } from 'lucide-react'
-import { useEffect, useState } from 'react'
-import type { FieldErrors, UseFormRegister, UseFormSetValue, UseFormWatch } from 'react-hook-form'
+
+
+
 import { viviendasService } from '../services/viviendas.service'
 import { nuevaViviendaStyles as styles } from '../styles/nueva-vivienda.styles'
 import type { ManzanaConDisponibilidad } from '../types'

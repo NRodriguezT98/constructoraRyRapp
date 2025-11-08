@@ -19,6 +19,7 @@
  */
 
 import { getServerPermissions } from '@/lib/auth/server'
+
 import { AbonosListPage } from './components/abonos-list-page'
 
 export default async function AbonosPage() {

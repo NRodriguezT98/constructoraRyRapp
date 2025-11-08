@@ -12,9 +12,10 @@
 
 'use client'
 
+import { useCallback, useEffect, useState } from 'react'
+
 import { fuentesPagoService } from '@/modules/clientes/services/fuentes-pago.service'
 import { negociacionesService } from '@/modules/clientes/services/negociaciones.service'
-import { useCallback, useEffect, useState } from 'react'
 
 interface UseNegociacionReturn {
   // Estado

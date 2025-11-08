@@ -4,8 +4,9 @@
  * ✅ Retorna estado editable/bloqueado por manzana
  */
 
-import { supabase } from '@/lib/supabase/client'
 import { useCallback, useState } from 'react'
+
+import { supabase } from '@/lib/supabase/client'
 
 interface ManzanaEditableState {
   id: string

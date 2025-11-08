@@ -1,6 +1,5 @@
 'use client'
 
-import { useAuth } from '@/contexts/auth-context'
 import { AnimatePresence, motion } from 'framer-motion'
 import {
     Activity,
@@ -20,8 +19,12 @@ import {
     Sparkles,
     Users
 } from 'lucide-react'
+
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+
+import { useAuth } from '@/contexts/auth-context'
+
 import { ThemeToggle } from './theme-toggle'
 import { Button } from './ui/button'
 import { Input } from './ui/input'

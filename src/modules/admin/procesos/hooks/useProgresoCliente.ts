@@ -11,6 +11,7 @@
  */
 
 import { useEffect, useState } from 'react'
+
 import { obtenerProcesosNegociacion, obtenerProgresoNegociacion } from '../services/procesos.service'
 import type { ProcesoNegociacion, ProgresoNegociacion } from '../types'
 import { EstadoPaso } from '../types'

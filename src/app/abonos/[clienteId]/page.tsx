@@ -1,11 +1,17 @@
 'use client'
 
-import { resolverSlugCliente } from '@/lib/utils/slug.utils'
-import { ModalRegistrarAbono } from '@/modules/abonos/components/modal-registrar-abono'
+import React from 'react'
+
 import { motion } from 'framer-motion'
 import { Loader2, Wallet } from 'lucide-react'
+
 import { useRouter } from 'next/navigation'
-import React from 'react'
+
+import { resolverSlugCliente } from '@/lib/utils/slug.utils'
+import { ModalRegistrarAbono } from '@/modules/abonos/components/modal-registrar-abono'
+
+
+
 import { FuentePagoCard, HeaderCliente, MetricasCards, TimelineAbonos } from './components'
 import { useAbonosDetalle } from './hooks/useAbonosDetalle'
 import { animations, containerStyles, fuentesStyles } from './styles/abonos-detalle.styles'

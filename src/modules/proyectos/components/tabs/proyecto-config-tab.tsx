@@ -1,6 +1,7 @@
 'use client'
 
 import { Settings } from 'lucide-react'
+
 import { Proyecto } from '../../types'
 
 interface ProyectoConfigTabProps {

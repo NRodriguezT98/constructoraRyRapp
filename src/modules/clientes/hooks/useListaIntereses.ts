@@ -17,9 +17,10 @@
  * - manzana_nombre
  */
 
+import { useCallback, useEffect, useState } from 'react'
+
 import { interesesService } from '@/modules/clientes/services/intereses.service'
 import type { ClienteInteres } from '@/modules/clientes/types'
-import { useCallback, useEffect, useState } from 'react'
 
 interface UseListaInteresesReturn {
   intereses: ClienteInteres[]

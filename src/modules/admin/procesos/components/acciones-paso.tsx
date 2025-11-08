@@ -13,6 +13,7 @@
 'use client'
 
 import { AlertCircle, Calendar, CheckCircle2, FileEdit, Trash2, X } from 'lucide-react'
+
 import { timelineProcesoStyles as styles } from './timeline-proceso.styles'
 
 interface AccionesPasoProps {

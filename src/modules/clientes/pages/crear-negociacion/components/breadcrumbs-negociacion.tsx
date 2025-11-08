@@ -6,7 +6,9 @@
 'use client'
 
 import { ChevronRight, Home } from 'lucide-react'
+
 import Link from 'next/link'
+
 import { pageStyles } from '../styles'
 
 interface BreadcrumbsNegociacionProps {

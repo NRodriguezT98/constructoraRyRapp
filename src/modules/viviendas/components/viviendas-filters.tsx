@@ -1,9 +1,13 @@
 ﻿'use client'
 
-import { supabase } from '@/lib/supabase/client'
+import { useEffect, useState } from 'react'
+
 import { motion } from 'framer-motion'
 import { Search, X } from 'lucide-react'
-import { useEffect, useState } from 'react'
+
+import { supabase } from '@/lib/supabase/client'
+
+
 import { viviendasStyles as styles } from '../styles/viviendas.styles'
 
 export interface FiltrosViviendas {

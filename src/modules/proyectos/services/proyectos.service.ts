@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase/client'
 import { auditService } from '@/services/audit.service'
+
 import type {
     EstadoManzana,
     Manzana,

@@ -3,12 +3,14 @@
  * Muestra: Cliente, Proyecto, Información Legal, Estado 100% Pagada
  */
 
-import { formatCurrency, formatDate } from '@/shared/utils'
 import { motion } from 'framer-motion'
 import { 
   Home, MapPin, Building2, User, Phone, Calendar, Hash, MapPinned,
   Edit, Eye, FileCheck, CheckCircle2
 } from 'lucide-react'
+
+import { formatCurrency, formatDate } from '@/shared/utils'
+
 import type { Vivienda } from '../../types'
 
 interface ViviendaCardEntregadaProps {

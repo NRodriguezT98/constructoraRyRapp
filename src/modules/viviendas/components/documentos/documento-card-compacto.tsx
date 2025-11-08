@@ -9,6 +9,8 @@
  * - Hover states sutiles
  */
 
+import { useEffect, useRef, useState } from 'react'
+
 import { motion } from 'framer-motion'
 import {
     Download,
@@ -21,7 +23,7 @@ import {
     Trash2,
     Upload
 } from 'lucide-react'
-import { useEffect, useRef, useState } from 'react'
+
 import { type DocumentoVivienda } from '../../services/documentos-vivienda.service'
 
 interface DocumentoCardCompactoProps {

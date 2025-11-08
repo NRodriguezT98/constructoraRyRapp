@@ -5,6 +5,8 @@
 
 'use client'
 
+import { useEffect } from 'react'
+
 import { motion } from 'framer-motion'
 import {
     Building2,
@@ -16,7 +18,6 @@ import {
     MapPin,
     Maximize,
 } from 'lucide-react'
-import { useEffect } from 'react'
 
 interface PasoResumenProps {
   formData: any

@@ -9,13 +9,17 @@
  * - Opción de restaurar versión anterior
  */
 
-import { useAuth } from '@/contexts/auth-context'
+import { useEffect, useState } from 'react'
+
 import { AnimatePresence, motion } from 'framer-motion'
 import { Calendar, Download, Eye, RotateCcw, Trash2, User, X } from 'lucide-react'
-import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
+
+import { useAuth } from '@/contexts/auth-context'
+
 import { DocumentosClienteService } from '../services/documentos-cliente.service'
 import type { DocumentoCliente } from '../types'
+
 import { DocumentoEliminarVersionModal } from './documento-eliminar-version-modal'
 
 interface DocumentoVersionesModalProps {

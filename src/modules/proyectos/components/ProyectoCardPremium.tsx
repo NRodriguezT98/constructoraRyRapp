@@ -9,7 +9,6 @@
 
 'use client'
 
-import { formatDate } from '@/shared/utils'
 import { motion } from 'framer-motion'
 import {
     Building2,
@@ -22,6 +21,9 @@ import {
     Trash2,
     TrendingUp,
 } from 'lucide-react'
+
+import { formatDate } from '@/shared/utils'
+
 import { useProyectoCard } from '../hooks/useProyectoCard'
 import type { Proyecto } from '../types'
 

@@ -7,9 +7,10 @@
 
 'use client'
 
+import type { InputHTMLAttributes } from 'react'
+
 import { motion } from 'framer-motion'
 import type { LucideIcon } from 'lucide-react'
-import type { InputHTMLAttributes } from 'react'
 
 export interface ModernInputProps extends InputHTMLAttributes<HTMLInputElement> {
   icon: LucideIcon

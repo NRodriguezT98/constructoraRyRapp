@@ -5,9 +5,10 @@
 
 'use client'
 
-import type { ModuloDocumento } from '@/modules/documentos/types/documento.types'
 import { AnimatePresence, motion } from 'framer-motion'
 import { CheckCircle2, Circle, FolderTree, Globe, Home, Users } from 'lucide-react'
+
+import type { ModuloDocumento } from '@/modules/documentos/types/documento.types'
 
 interface ModuloSelectorProps {
   esGlobal: boolean

@@ -1,7 +1,9 @@
 'use client'
 
-import { CheckCircle, FileText, Upload, X } from 'lucide-react'
 import { useRef, useState } from 'react'
+
+import { CheckCircle, FileText, Upload, X } from 'lucide-react'
+
 import { LABELS, PLACEHOLDERS, TIPO_VIVIENDA_OPTIONS } from '../constants'
 import {
     fieldClasses,

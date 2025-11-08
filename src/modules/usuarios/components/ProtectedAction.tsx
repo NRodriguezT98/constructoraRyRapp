@@ -22,6 +22,7 @@
 'use client'
 
 import type { ReactNode } from 'react'
+
 import { usePermissions } from '../hooks/usePermissions'
 import type { Accion, Modulo } from '../types'
 

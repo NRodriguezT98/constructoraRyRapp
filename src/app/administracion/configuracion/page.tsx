@@ -7,8 +7,8 @@
 
 'use client'
 
-import { FormularioConfiguracion } from '@/modules/configuracion/components/formulario-configuracion'
-import { useConfiguracion } from '@/modules/configuracion/hooks/useConfiguracion'
+import { useState } from 'react'
+
 import { AnimatePresence, motion } from 'framer-motion'
 import {
     AlertCircle,
@@ -20,7 +20,10 @@ import {
     Trash2,
     XCircle,
 } from 'lucide-react'
-import { useState } from 'react'
+
+import { FormularioConfiguracion } from '@/modules/configuracion/components/formulario-configuracion'
+import { useConfiguracion } from '@/modules/configuracion/hooks/useConfiguracion'
+
 
 export default function ConfiguracionPage() {
   const {

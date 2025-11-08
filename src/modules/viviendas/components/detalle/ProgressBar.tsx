@@ -1,9 +1,10 @@
 'use client'
 
-import type { Vivienda } from '@/modules/viviendas/types'
-import { formatCurrency } from '@/shared/utils'
 import { motion } from 'framer-motion'
 import { Activity } from 'lucide-react'
+
+import type { Vivienda } from '@/modules/viviendas/types'
+import { formatCurrency } from '@/shared/utils'
 
 interface ProgressBarProps {
   vivienda: Vivienda

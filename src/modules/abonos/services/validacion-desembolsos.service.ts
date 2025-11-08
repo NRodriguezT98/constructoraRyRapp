@@ -11,6 +11,7 @@
  */
 
 import { createBrowserClient } from '@supabase/ssr'
+
 import type { TipoFuentePago } from '../types'
 
 // ===================================

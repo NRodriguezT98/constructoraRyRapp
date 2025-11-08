@@ -6,6 +6,7 @@
  */
 
 import { CheckCircle2, Circle, Lock, X } from 'lucide-react'
+
 import type { ProcesoNegociacion } from '../types'
 import { EstadoPaso } from '../types'
 

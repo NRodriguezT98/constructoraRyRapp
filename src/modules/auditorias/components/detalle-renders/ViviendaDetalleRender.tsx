@@ -7,6 +7,7 @@
  */
 
 import { Building2, DollarSign, Home } from 'lucide-react'
+
 import { formatearDinero } from '../../utils/formatters'
 
 interface ViviendaDetalleRenderProps {

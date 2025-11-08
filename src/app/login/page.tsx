@@ -1,9 +1,12 @@
 'use client'
 
+import { Suspense, useEffect, useState } from 'react'
+
 import { motion } from 'framer-motion'
 import { Eye, EyeOff } from 'lucide-react'
+
 import Image from 'next/image'
-import { Suspense, useEffect, useState } from 'react'
+
 import { ResetPasswordModal } from './reset-password-modal'
 import { useLogin } from './useLogin'
 
@@ -25,7 +28,6 @@ function LoginForm() {
 
   const [showResetPassword, setShowResetPassword] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
-  const [showToast, setShowToast] = useState(false)
 
   // Limpiar sesiones corruptas al montar
   useEffect(() => {

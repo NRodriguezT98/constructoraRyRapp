@@ -1,6 +1,8 @@
+import { useEffect } from 'react'
+
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, CheckCircle, AlertCircle, Info, AlertTriangle } from 'lucide-react'
-import { useEffect } from 'react'
+
 import { cn } from '../../utils/helpers'
 
 export type NotificationType = 'success' | 'error' | 'warning' | 'info'

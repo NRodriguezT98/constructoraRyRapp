@@ -12,7 +12,9 @@
  */
 
 import { useCallback, useMemo, useState } from 'react'
+
 import type { ClienteResumen, FiltrosClientes } from '../types'
+
 import {
     useClientesQuery,
     useEliminarClienteMutation,

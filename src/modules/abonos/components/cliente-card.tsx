@@ -2,7 +2,9 @@
 
 import { motion } from 'framer-motion'
 import { ArrowRight, Building2, Home, User } from 'lucide-react'
+
 import Link from 'next/link'
+
 import { getAvatarGradient, seleccionClienteStyles as styles } from '../styles/seleccion-cliente.styles'
 import { NegociacionConAbonos } from '../types'
 

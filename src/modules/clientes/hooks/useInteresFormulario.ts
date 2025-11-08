@@ -3,8 +3,9 @@
  * Carga proyectos y viviendas disponibles
  */
 
-import { supabase } from '@/lib/supabase/client'
 import { useCallback, useEffect, useState } from 'react'
+
+import { supabase } from '@/lib/supabase/client'
 
 interface Proyecto {
   id: string

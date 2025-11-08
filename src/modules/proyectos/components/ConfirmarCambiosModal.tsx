@@ -10,8 +10,10 @@
 
 import { motion } from 'framer-motion'
 import { AlertTriangle, Building2, CheckCircle2, Home, Loader2, Pencil, Plus, Trash2, X } from 'lucide-react'
+
 import { useConfirmarCambiosModal } from '../hooks/useConfirmarCambiosModal'
 import type { ResumenCambios } from '../hooks/useDetectarCambios'
+
 import { confirmarCambiosStyles as styles } from './ConfirmarCambiosModal.styles'
 
 interface ConfirmarCambiosModalProps {

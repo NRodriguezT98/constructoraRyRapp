@@ -10,6 +10,7 @@
 
 import { motion } from 'framer-motion'
 import { Building2, DollarSign, Home, MapPin, Phone, User } from 'lucide-react'
+
 import { formatearDinero } from '../../utils/formatters'
 import { InfoCard } from '../shared'
 

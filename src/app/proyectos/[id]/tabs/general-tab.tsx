@@ -1,7 +1,5 @@
 'use client'
 
-import type { Proyecto } from '@/modules/proyectos/types'
-import { formatCurrency, formatDate } from '@/shared/utils/format'
 import { motion } from 'framer-motion'
 import {
     Building2,
@@ -12,6 +10,10 @@ import {
     Phone,
     Users
 } from 'lucide-react'
+
+import type { Proyecto } from '@/modules/proyectos/types'
+import { formatCurrency, formatDate } from '@/shared/utils/format'
+
 import * as styles from '../proyecto-detalle.styles'
 
 interface GeneralTabProps {

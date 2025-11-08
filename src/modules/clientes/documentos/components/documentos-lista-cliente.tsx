@@ -1,10 +1,13 @@
 'use client'
 
-import { DocumentoCard } from '@/modules/documentos/components/lista/documento-card'
-import { DocumentoCardHorizontal } from '@/modules/documentos/components/lista/documento-card-horizontal'
 import { AnimatePresence, motion } from 'framer-motion'
 import { FileX, LayoutGrid, List } from 'lucide-react'
+
+import { DocumentoCard } from '@/modules/documentos/components/lista/documento-card'
+import { DocumentoCardHorizontal } from '@/modules/documentos/components/lista/documento-card-horizontal'
+
 import { useDocumentosListaCliente } from '../hooks'
+
 import { DocumentoCategoriasModal } from './documento-categorias-modal'
 import { DocumentoRenombrarModal } from './documento-renombrar-modal'
 import { DocumentosAgrupados } from './documentos-agrupados'

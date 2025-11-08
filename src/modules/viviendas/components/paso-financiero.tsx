@@ -1,10 +1,12 @@
 'use client'
 
 import { DollarSign } from 'lucide-react'
+
 import { LABELS, OPCIONES_RECARGO, PLACEHOLDERS } from '../constants'
 import { fieldClasses, financieroClasses, sectionClasses } from '../styles/vivienda-form.styles'
 import type { ConfiguracionRecargo, ResumenFinanciero } from '../types'
 import { formatCurrencyInput, parseCurrency } from '../utils'
+
 import { ResumenFinancieroCard } from './resumen-financiero-card'
 
 interface PasoFinancieroProps {

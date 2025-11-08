@@ -13,11 +13,14 @@
  * ⚠️ Integrado con Supabase Storage y sistema de documentos
  */
 
-import { useAuth } from '@/contexts/auth-context'
-import { supabase } from '@/lib/supabase/client'
 import { DragEvent, useCallback, useRef, useState } from 'react'
+
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
+
+import { useAuth } from '@/contexts/auth-context'
+import { supabase } from '@/lib/supabase/client'
+
 import { useDocumentosClienteStore } from '../store/documentos-cliente.store'
 
 export type UploadFormData = {

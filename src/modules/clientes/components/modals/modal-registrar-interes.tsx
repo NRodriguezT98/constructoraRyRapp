@@ -11,9 +11,11 @@
 
 'use client'
 
-import { ModernSelect, ModernTextarea } from '@/shared/components/forms'
 import { AnimatePresence, motion } from 'framer-motion'
 import { AlertCircle, Building2, Home, Loader2, MessageSquare, Sparkles, X } from 'lucide-react'
+
+import { ModernSelect, ModernTextarea } from '@/shared/components/forms'
+
 import { useRegistrarInteres } from '../../hooks/useRegistrarInteres'
 import { sharedAlertStyles, sharedButtonStyles, sharedModalStyles } from '../../styles'
 

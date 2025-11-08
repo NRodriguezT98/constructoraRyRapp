@@ -7,13 +7,19 @@
 
 'use client'
 
-import { useModal } from '@/shared/components/modals'
+import { useEffect, useState } from 'react'
+
 import { AnimatePresence, motion, Reorder } from 'framer-motion'
 import { AlertCircle, ArrowLeft, FileText, Plus, Save, Settings } from 'lucide-react'
+
 import { useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
+
+import { useModal } from '@/shared/components/modals'
+
+
 import { useGestionProcesos } from '../hooks'
 import { type PasoPlantilla } from '../types'
+
 import { FormularioInfoBasica } from './formulario-info-basica'
 import { formularioPlantillaStyles as styles } from './formulario-plantilla.styles'
 import { PasoPlantillaItem } from './paso-plantilla-item'

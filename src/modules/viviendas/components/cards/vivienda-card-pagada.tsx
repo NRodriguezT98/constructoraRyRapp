@@ -3,10 +3,12 @@
  * Componente presentacional puro
  */
 
-import { ProgressBar } from '@/shared/components/ui'
-import { formatCurrency, formatDate } from '@/shared/utils'
 import { motion } from 'framer-motion'
 import { Calendar, CheckCircle2, FileCheck, FileSignature, FileText, Home, MapPin, Phone, User } from 'lucide-react'
+
+import { ProgressBar } from '@/shared/components/ui'
+import { formatCurrency, formatDate } from '@/shared/utils'
+
 import { viviendaCardExtendedStyles as styles } from '../../styles'
 import type { Vivienda } from '../../types'
 

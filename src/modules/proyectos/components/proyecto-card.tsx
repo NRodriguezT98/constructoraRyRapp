@@ -1,6 +1,5 @@
 ﻿'use client'
 
-import { CanDelete, CanEdit } from '@/modules/usuarios/components'
 import { motion } from 'framer-motion'
 import {
     Building2,
@@ -11,6 +10,9 @@ import {
     MapPin,
     Trash2,
 } from 'lucide-react'
+
+import { CanDelete, CanEdit } from '@/modules/usuarios/components'
+
 import { formatDate } from '../../../shared/utils/format'
 import { cn } from '../../../shared/utils/helpers'
 import { useProyectoCard } from '../hooks/useProyectoCard'

@@ -2,8 +2,10 @@
  * Hook para manejar la carga de proyectos y viviendas
  */
 
-import { supabase } from '@/lib/supabase/client'
 import { useCallback, useEffect, useState } from 'react'
+
+import { supabase } from '@/lib/supabase/client'
+
 import type { ProyectoBasico, ViviendaDetalle } from '../types'
 
 interface UseProyectosViviendasProps {

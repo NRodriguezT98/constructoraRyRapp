@@ -1,11 +1,14 @@
 'use client'
 
+import { useEffect, useState } from 'react'
+
+import { motion } from 'framer-motion'
+import { FileText, Settings, Upload, X } from 'lucide-react'
+
 import { createClient } from '@/lib/supabase/client'
 import { CategoriasManager } from '@/modules/documentos/components/categorias/categorias-manager'
 import { DocumentoUploadVivienda, DocumentosListaVivienda } from '@/modules/viviendas/components/documentos'
-import { motion } from 'framer-motion'
-import { FileText, Settings, Upload, X } from 'lucide-react'
-import { useEffect, useState } from 'react'
+
 
 interface DocumentosTabProps {
   viviendaId: string

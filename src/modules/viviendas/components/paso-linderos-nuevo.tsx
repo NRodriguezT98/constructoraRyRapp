@@ -6,10 +6,12 @@
 
 'use client'
 
-import { cn } from '@/shared/utils/helpers'
 import { motion } from 'framer-motion'
 import { AlertCircle, Compass, Lightbulb } from 'lucide-react'
 import type { FieldErrors, UseFormRegister } from 'react-hook-form'
+
+import { cn } from '@/shared/utils/helpers'
+
 import { nuevaViviendaStyles as styles } from '../styles/nueva-vivienda.styles'
 
 interface PasoLinderosProps {

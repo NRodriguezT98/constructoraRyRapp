@@ -9,7 +9,8 @@
 
 'use client'
 
-import { ModernInput, ModernSelect, ModernTextarea } from '@/shared/components/forms'
+import { useEffect, useState } from 'react'
+
 import { AnimatePresence, motion } from 'framer-motion'
 import {
   Building2,
@@ -29,7 +30,10 @@ import {
   Users,
   X,
 } from 'lucide-react'
-import { useEffect, useState } from 'react'
+
+import { ModernInput, ModernSelect, ModernTextarea } from '@/shared/components/forms'
+
+
 import type { CrearClienteDTO, OrigenCliente, TipoDocumento } from '../types'
 import { ORIGENES_CLIENTE, TIPOS_DOCUMENTO } from '../types'
 

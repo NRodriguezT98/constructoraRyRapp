@@ -4,6 +4,7 @@
  */
 
 import { supabase } from '@/lib/supabase/client'
+
 import type {
   ActualizarClienteDTO,
   Cliente,

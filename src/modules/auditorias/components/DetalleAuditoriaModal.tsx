@@ -18,10 +18,12 @@
 
 import { motion } from 'framer-motion'
 import { Calendar, ChevronDown, ChevronUp, FileText, User, X } from 'lucide-react'
+
 import { useDetalleAuditoria } from '../hooks'
 import { detalleModalStyles as styles } from '../styles/detalle-modal.styles'
 import type { AuditLogRecord } from '../types'
 import { getAccionLabel } from '../utils/formatters'
+
 import {
   ClienteDetalleRender,
   GenericoDetalleRender,

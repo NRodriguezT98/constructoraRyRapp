@@ -1,13 +1,7 @@
 'use client'
 
-import { useAuth } from '@/contexts/auth-context'
-import { construirURLCliente, resolverSlugCliente } from '@/lib/utils/slug.utils'
-import { ProgresoProcesoBadge } from '@/modules/admin/procesos/components'
-import { ModalRegistrarInteres } from '@/modules/clientes/components/modals'
-import { useDocumentosClienteStore } from '@/modules/clientes/documentos/store/documentos-cliente.store'
-import { useClienteQuery } from '@/modules/clientes/hooks'
-import { TIPOS_DOCUMENTO } from '@/modules/clientes/types'
-import { Tooltip } from '@/shared/components/ui'
+import { useEffect, useState } from 'react'
+
 import { AnimatePresence, motion } from 'framer-motion'
 import {
     Activity,
@@ -22,8 +16,20 @@ import {
     User,
     Wallet,
 } from 'lucide-react'
+
 import { useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
+
+import { useAuth } from '@/contexts/auth-context'
+import { construirURLCliente, resolverSlugCliente } from '@/lib/utils/slug.utils'
+import { ProgresoProcesoBadge } from '@/modules/admin/procesos/components'
+import { ModalRegistrarInteres } from '@/modules/clientes/components/modals'
+import { useDocumentosClienteStore } from '@/modules/clientes/documentos/store/documentos-cliente.store'
+import { useClienteQuery } from '@/modules/clientes/hooks'
+import { TIPOS_DOCUMENTO } from '@/modules/clientes/types'
+import { Tooltip } from '@/shared/components/ui'
+
+
+
 import * as styles from './cliente-detalle.styles'
 import { ActividadTab, DocumentosTab, GeneralTab, InteresesTab, NegociacionesTab } from './tabs'
 

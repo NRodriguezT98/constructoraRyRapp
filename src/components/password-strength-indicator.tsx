@@ -1,11 +1,13 @@
+import { useEffect, useState } from 'react'
+
+import { motion } from 'framer-motion'
+
 import {
     getStrengthColor,
     getStrengthLabel,
     validatePasswordStrength,
     type PasswordValidationResult,
 } from '@/lib/validations/password'
-import { motion } from 'framer-motion'
-import { useEffect, useState } from 'react'
 
 interface PasswordStrengthIndicatorProps {
   password: string

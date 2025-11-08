@@ -7,10 +7,12 @@
 
 'use client'
 
-import { cn } from '@/shared/utils/helpers'
 import { motion } from 'framer-motion'
 import { AlertCircle, DollarSign, TrendingUp } from 'lucide-react'
 import type { FieldErrors, UseFormRegister, UseFormSetValue, UseFormWatch } from 'react-hook-form'
+
+import { cn } from '@/shared/utils/helpers'
+
 import { nuevaViviendaStyles as styles } from '../styles/nueva-vivienda.styles'
 import type { ConfiguracionRecargo, ResumenFinanciero } from '../types'
 import { formatCurrencyInput, parseCurrency } from '../utils'

@@ -8,7 +8,8 @@
 
 'use client'
 
-import { cn } from '@/shared/utils/helpers'
+import { useEffect, useState } from 'react'
+
 import { AnimatePresence, motion } from 'framer-motion'
 import {
     Check,
@@ -22,12 +23,17 @@ import {
     MapPin,
     X
 } from 'lucide-react'
+
 import Link from 'next/link'
-import { useEffect, useState } from 'react'
+
+import { cn } from '@/shared/utils/helpers'
+
+
 import { proyectosService } from '../../proyectos/services/proyectos.service'
 import { useNuevaVivienda } from '../hooks/useNuevaVivienda'
 import { viviendasService } from '../services/viviendas.service'
 import { nuevaViviendaStyles as styles } from '../styles/nueva-vivienda.styles'
+
 import { PasoFinancieroNuevo } from './paso-financiero-nuevo'
 import { PasoLegalNuevo } from './paso-legal-nuevo'
 import { PasoLinderosNuevo } from './paso-linderos-nuevo'

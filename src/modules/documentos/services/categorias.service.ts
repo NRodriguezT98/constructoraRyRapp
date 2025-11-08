@@ -3,6 +3,7 @@
 // ============================================
 
 import { supabase } from '@/lib/supabase/client'
+
 import type {
     CategoriaDocumento,
     ModuloDocumento,

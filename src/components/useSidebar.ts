@@ -1,6 +1,8 @@
-import { useMediaQuery } from '@/shared/hooks'
-import { usePathname } from 'next/navigation'
 import { useCallback, useEffect, useState } from 'react'
+
+import { usePathname } from 'next/navigation'
+
+import { useMediaQuery } from '@/shared/hooks'
 
 interface UseSidebarReturn {
   isExpanded: boolean

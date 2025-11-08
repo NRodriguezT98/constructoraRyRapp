@@ -11,6 +11,7 @@
 
 import { motion } from 'framer-motion'
 import { RefreshCw } from 'lucide-react'
+
 import { timelineProcesoStyles as styles } from './timeline-proceso.styles'
 
 interface Progreso {

@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion'
 import { CheckCircle, DoorOpen, Home, Key } from 'lucide-react'
+
 import { viviendasStyles as styles } from '../styles/viviendas.styles'
 
 export interface ViviendasStatsProps {

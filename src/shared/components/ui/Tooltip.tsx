@@ -13,8 +13,9 @@
 
 'use client'
 
-import * as TooltipPrimitive from '@radix-ui/react-tooltip'
 import { ReactNode } from 'react'
+
+import * as TooltipPrimitive from '@radix-ui/react-tooltip'
 
 interface TooltipProps {
   children: ReactNode

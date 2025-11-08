@@ -1,6 +1,7 @@
 'use client'
 
-import { useAuth } from '@/contexts/auth-context'
+import { useState } from 'react'
+
 import { AnimatePresence, motion } from 'framer-motion'
 import {
     Activity,
@@ -19,9 +20,13 @@ import {
     Users,
     Zap
 } from 'lucide-react'
+
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { useState } from 'react'
+
+import { useAuth } from '@/contexts/auth-context'
+
+
 import { ThemeToggle } from './theme-toggle'
 
 /**

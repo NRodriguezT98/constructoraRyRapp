@@ -1,8 +1,10 @@
 'use client'
 
-import { Button } from '@/components/ui/button'
 import { motion } from 'framer-motion'
 import { Building2, CreditCard, Home, MapPin, User } from 'lucide-react'
+
+import { Button } from '@/components/ui/button'
+
 import { negociacionCardStyles as styles } from '../styles'
 import { NegociacionConAbonos } from '../types'
 

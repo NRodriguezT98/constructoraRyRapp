@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion'
 import { Clock, DollarSign, TrendingUp } from 'lucide-react'
+
 import { animations, metricasStyles } from '../styles/abonos-detalle.styles'
 
 interface MetricasCardsProps {

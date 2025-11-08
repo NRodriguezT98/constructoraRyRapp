@@ -7,6 +7,7 @@
 
 import { motion } from 'framer-motion'
 import { Ban, Clock, Shield, Users } from 'lucide-react'
+
 import { metricasUsuariosColors, usuariosPremiumStyles as styles } from '../styles/usuarios-premium.styles'
 import type { EstadisticasUsuarios } from '../types'
 

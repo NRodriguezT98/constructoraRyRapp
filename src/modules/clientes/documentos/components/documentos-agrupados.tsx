@@ -1,10 +1,13 @@
 'use client'
 
-import { DocumentoCardHorizontal } from '@/modules/documentos/components/lista/documento-card-horizontal'
-import { CategoriaIcon } from '@/modules/documentos/components/shared/categoria-icon'
+import { useState } from 'react'
+
 import { AnimatePresence, motion } from 'framer-motion'
 import { ChevronDown, ChevronRight } from 'lucide-react'
-import { useState } from 'react'
+
+import { DocumentoCardHorizontal } from '@/modules/documentos/components/lista/documento-card-horizontal'
+import { CategoriaIcon } from '@/modules/documentos/components/shared/categoria-icon'
+
 
 interface DocumentosAgrupadosProps {
   documentos: any[]

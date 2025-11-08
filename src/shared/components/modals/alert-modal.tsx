@@ -7,9 +7,11 @@
 
 'use client'
 
+import { useEffect } from 'react'
+
 import { AnimatePresence, motion } from 'framer-motion'
 import { AlertCircle, AlertTriangle, CheckCircle, Info, X } from 'lucide-react'
-import { useEffect } from 'react'
+
 import { useModal } from './modal-context'
 
 // ==========================================

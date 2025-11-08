@@ -11,6 +11,7 @@ import {
     MessageSquare,
     User,
 } from 'lucide-react'
+
 import type { ProyectoBasico, ViviendaDetalle } from '../types'
 
 interface Paso1InfoBasicaProps {
