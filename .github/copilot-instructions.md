@@ -2,6 +2,192 @@ si por # RyR Constructora - Sistema de Gestión Administrativa
 
 ## 🎯 PRINCIPIOS FUNDAMENTALES (APLICAR SIEMPRE)
 
+### 🚨 REGLA CRÍTICA #-6: MANEJO PROFESIONAL DE FECHAS (OBLIGATORIO)
+
+**⚠️ AL trabajar con CUALQUIER fecha en la aplicación:**
+
+1. **IMPORTAR** → Funciones de `@/lib/utils/date.utils` (NUNCA usar `new Date()` directo)
+2. **MOSTRAR** → `formatDateCompact(fecha)` para formato dd-MMM-yyyy (ESTÁNDAR UNIFICADO)
+3. **INPUT** → `formatDateForInput(fecha)` para cargar en `<input type="date" />`
+4. **GUARDAR** → `formatDateForDB(inputValue)` antes de guardar en PostgreSQL
+5. **HOY** → `getTodayDateString()` en lugar de `new Date().toISOString().split('T')[0]`
+
+**Funciones disponibles:**
+```typescript
+import {
+  formatDateCompact,         // dd-MMM-yyyy (RECOMENDADO: "16-feb-2023")
+  formatDateShort,           // dd/MM/yyyy (legacy)
+  formatDateForDisplay,      // "23 de octubre de 2025"
+  formatDateForInput,        // YYYY-MM-DD para inputs
+  formatDateForDB,           // Guardar con T12:00:00
+  getTodayDateString,        // Fecha actual sin timezone shift
+  formatDateTimeForDisplay   // Fecha + hora
+} from '@/lib/utils/date.utils'
+```
+
+**Ejemplos correctos:**
+```typescript
+// ✅ Mostrar en card/tabla (ESTÁNDAR UNIFICADO)
+{formatDateCompact(documento.fecha_documento)}  // → "16-feb-2023"
+
+// ✅ Cargar en input
+<input value={formatDateForInput(documento.fecha_documento)} />
+
+// ✅ Guardar en DB
+const data = {
+  fecha_documento: formatDateForDB(inputValue)  // → "2025-10-26T12:00:00"
+}
+
+// ✅ Fecha actual
+const hoy = getTodayDateString()  // → "2025-10-26"
+```
+
+**Errores CRÍTICOS que NO repetir:**
+- ❌ `new Date("2025-10-26")` causa timezone shift (muestra día anterior)
+- ❌ `format(new Date(fecha), "dd/MM/yyyy")` cambia fecha en UTC-5
+- ❌ `fecha.toISOString().split('T')[0]` suma/resta días por timezone
+- ❌ Guardar input directo sin `formatDateForDB()` → hora 00:00:00 problemática
+
+**Documentación completa:** `docs/GUIA-MANEJO-FECHAS-PROFESIONAL.md` ⭐
+
+---
+
+### 🚨 REGLA CRÍTICA #-5: SINCRONIZACIÓN AUTOMÁTICA DE TIPOS DB (OBLIGATORIO)
+
+**⚠️ DESPUÉS de CUALQUIER cambio en la base de datos (migración, nueva tabla, nueva columna):**
+
+1. **EJECUTAR** → `npm run types:generate` (regenera tipos TypeScript desde schema real)
+2. **VERIFICAR** → `npm run type-check` (valida que no haya errores)
+3. **NUNCA** → Hardcodear nombres de tablas/campos sin verificar tipos
+4. **NUNCA** → Usar `any` para evitar errores de tipos
+5. **SIEMPRE** → Confiar en autocomplete de TypeScript para nombres exactos
+
+**Workflow correcto:**
+
+```bash
+# 1. Ejecutar migración SQL
+npm run db:exec supabase/migrations/nueva-tabla.sql
+
+# 2. Sincronizar tipos TypeScript (OBLIGATORIO)
+npm run types:generate
+
+# 3. Verificar que no haya errores
+npm run type-check
+```
+
+**Ventajas del sistema:**
+- ✅ Tipos generados automáticamente desde schema real de Supabase
+- ✅ Detecta nombres exactos de tablas y columnas (no asumir)
+- ✅ Autocomplete completo en VS Code
+- ✅ Previene errores de referencia (`documentos` vs `documentos_proyecto`)
+- ✅ Sincronización BD ↔ TypeScript ↔ Código
+
+**Errores CRÍTICOS que NO repetir:**
+- ❌ Usar nombres incorrectos: `documentos` → ✅ Verificar: `documentos_proyecto`
+- ❌ Asumir `fecha_emision` → ✅ Consultar schema: `fecha_documento`
+- ❌ Olvidar regenerar tipos después de migración → ✅ `npm run types:generate`
+- ❌ Editar manualmente `database.types.ts` → ✅ Siempre regenerar con script
+
+**Documentación completa:** `docs/SISTEMA-SINCRONIZACION-SCHEMA-DB.md` ⭐
+
+**Scripts disponibles:**
+```bash
+npm run types:generate     # Genera tipos desde Supabase
+npm run db:sync           # Genera tipos + valida TypeScript
+npm run type-check        # Verifica errores de compilación
+```
+
+---
+
+### 🚨 REGLA CRÍTICA #-4: PROYECTOS COMO PLANTILLA ESTÁNDAR (OBLIGATORIO)
+
+**⚠️ AL crear CUALQUIER módulo nuevo (Clientes, Viviendas, Contratos, etc.):**
+
+1. **USAR** → Módulo de Proyectos como plantilla base OBLIGATORIA
+2. **COPIAR** → Estructura, tamaños, fuentes, espaciado, animaciones EXACTAS
+3. **PERSONALIZAR** → SOLO colores (usando `moduleThemes`) y contenido de cards
+4. **NUNCA** → Inventar nuevos tamaños, padding o distribución
+5. **VALIDAR** → Con checklist de `docs/PLANTILLA-ESTANDAR-MODULOS.md`
+
+**Plantilla de referencia:**
+```
+src/modules/proyectos/
+├── proyectos-page-main.tsx      # ⭐ Orquestador (copiar estructura)
+├── ProyectosHeaderPremium.tsx   # ⭐ Header (p-6, rounded-2xl, text-2xl)
+├── ProyectosMetricasPremium.tsx # ⭐ 4 métricas (p-4, gap-3, hover scale)
+├── ProyectosFiltrosPremium.tsx  # ⭐ Filtros (sticky, flex horizontal, py-2)
+└── proyectos-card.tsx           # ⭐ Card (p-4, rounded-xl, hover y: -2)
+```
+
+**Lo que NO cambia:** Tamaños, padding, fuentes, distribución, animaciones
+**Lo que SÍ cambia:** Colores (con `moduleThemes[moduleName]`) y estructura interna de cards
+
+**Documentación completa:** `docs/PLANTILLA-ESTANDAR-MODULOS.md` ⭐
+
+**Errores comunes que NO repetir:**
+- ❌ Usar `p-8` en header → ✅ Usar `p-6` (estándar de Proyectos)
+- ❌ Título `text-3xl` → ✅ Título `text-2xl` (estándar compacto)
+- ❌ Grid layout en filtros → ✅ Flex horizontal (estándar sticky)
+- ❌ Crear componente desde cero → ✅ Copiar de Proyectos y adaptar
+
+---
+
+### 🚨 REGLA CRÍTICA #-3: SISTEMA DE THEMING MODULAR (OBLIGATORIO)
+
+**⚠️ AL crear CUALQUIER componente reutilizable en diferentes módulos:**
+
+1. **NUNCA** → Hardcodear colores (`border-green-200`, `bg-blue-500`)
+2. **SIEMPRE** → Usar sistema de theming con prop `moduleName`
+3. **IMPORTAR** → `moduleThemes` desde `@/shared/config/module-themes`
+
+**Patrón OBLIGATORIO:**
+
+```tsx
+import { moduleThemes, type ModuleName } from '@/shared/config/module-themes'
+
+interface MiComponenteProps {
+  moduleName?: ModuleName // 👈 OBLIGATORIO para componentes compartidos
+}
+
+export function MiComponente({ moduleName = 'proyectos' }: MiComponenteProps) {
+  const theme = moduleThemes[moduleName] // 👈 Tema dinámico
+
+  return (
+    <div className={theme.classes.bg.light}>
+      <button className={theme.classes.button.primary}>Acción</button>
+    </div>
+  )
+}
+```
+
+**Uso en diferentes módulos:**
+```tsx
+// En Proyectos (verde/esmeralda)
+<MiComponente moduleName="proyectos" />
+
+// En Clientes (cyan/azul)
+<MiComponente moduleName="clientes" />
+
+// En Viviendas (naranja/ámbar)
+<MiComponente moduleName="viviendas" />
+```
+
+**Ventajas:**
+- ✅ Un componente, múltiples temas
+- ✅ Type-safe con TypeScript
+- ✅ Cambios centralizados
+- ✅ No duplicar código
+- ✅ Fácil agregar módulos nuevos
+
+**Documentación completa:** `docs/SISTEMA-THEMING-MODULAR.md` ⭐
+
+**Errores comunes que NO repetir:**
+- ❌ `className="bg-green-500"` → ✅ `className={theme.classes.bg.light}`
+- ❌ Duplicar componente para cada módulo → ✅ Usar prop `moduleName`
+- ❌ Condicionales de color → ✅ Sistema de theming automático
+
+---
+
 ### 🚨 REGLA CRÍTICA #-2: EJECUCIÓN DE SQL EN SUPABASE (NUNCA COPIAR/PEGAR)
 
 **⚠️ CUANDO necesites ejecutar CUALQUIER script SQL en Supabase:**
@@ -214,22 +400,41 @@ export class MiComponenteService {
 
 ---
 
-### �🚨 REGLA CRÍTICA #1: VALIDACIÓN DE NOMBRES DE CAMPOS
+### 🚨 REGLA CRÍTICA #1: VALIDACIÓN DE NOMBRES DE CAMPOS
 
 **⚠️ ANTES de escribir CUALQUIER código que interactúe con la base de datos:**
 
-1. **CONSULTAR** → `docs/DATABASE-SCHEMA-REFERENCE-ACTUALIZADO.md` (fuente única de verdad) ⭐
-2. **VERIFICAR** → Nombres EXACTOS de tablas y columnas
-3. **CONFIRMAR** → Estados permitidos en sección de ENUMS
-4. **VALIDAR** → Constraints críticos antes de inserts/updates
-5. **NUNCA ASUMIR** → Siempre verificar, nunca inventar nombres
+1. **EJECUTAR** → `npm run types:generate` si hubo cambios recientes en BD ⭐
+2. **USAR AUTOCOMPLETE** → TypeScript sugerirá nombres exactos de tablas/columnas
+3. **CONSULTAR** → `docs/DATABASE-SCHEMA-REFERENCE-ACTUALIZADO.md` (fuente única de verdad)
+4. **VERIFICAR** → Nombres EXACTOS en tipos TypeScript generados
+5. **CONFIRMAR** → Estados permitidos en sección de ENUMS
+6. **NUNCA ASUMIR** → Siempre verificar, nunca inventar nombres
+
+**Workflow correcto:**
+```typescript
+// 1. Regenerar tipos si es necesario
+// npm run types:generate
+
+// 2. Usar autocomplete de TypeScript
+const { data } = await supabase
+  .from('documentos_proyecto')  // ← TypeScript autocompleta nombre correcto
+  .update({
+    fecha_documento: '2025-01-01',  // ← TypeScript sugiere campos reales
+    titulo: 'Nuevo título'
+  })
+
+// 3. TypeScript detectará errores inmediatamente
+// ❌ .from('documentos') → Error: tabla no existe
+// ❌ fecha_emision → Error: campo no existe
+```
 
 **Errores comunes que NO repetir:**
+- ❌ `from('documentos')` → ✅ `from('documentos_proyecto')` (verificar con autocomplete)
+- ❌ `fecha_emision` → ✅ `fecha_documento` (verificar en schema)
 - ❌ `estado = 'En Proceso'` → ✅ `estado = 'Activa'` (negociaciones)
 - ❌ `estado = 'reservada'` → ✅ `estado = 'Asignada'` (viviendas)
-- ❌ `estado_interes` → ✅ `estado`
 - ❌ `vivienda_precio` → ✅ `vivienda.valor_base`
-- ❌ `proyecto_ubicacion` → ✅ `proyecto.estado`
 - ❌ `cliente.nombre` → ✅ `cliente.nombres`
 
 **📋 Consultar checklist**: `docs/DESARROLLO-CHECKLIST.md`
@@ -402,8 +607,10 @@ src/modules/[nombre-modulo]/
 ## ✅ Checklist OBLIGATORIO por Componente
 
 ### ANTES de empezar:
+### ANTES de empezar:
+- [ ] **Ejecuté** `npm run types:generate` si hubo cambios en BD recientemente
 - [ ] **Consulté** `docs/DATABASE-SCHEMA-REFERENCE.md` para nombres de campos
-- [ ] **Verifiqué** nombres exactos de columnas y tablas
+- [ ] **Verifiqué** nombres exactos de columnas y tablas con autocomplete TypeScript
 - [ ] **Confirmé** formato de estados/enums
 - [ ] **Revisé** `docs/TEMPLATE-MODULO-ESTANDAR.md` para estructura
 - [ ] **Importé** componentes de `@/shared/components/layout`
@@ -426,21 +633,29 @@ src/modules/[nombre-modulo]/
 - [ ] Console.log para debugging de errores
 - [ ] **Modo oscuro verificado** en todos los elementos custom
 - [ ] **Responsive verificado** (móvil, tablet, desktop)
+- [ ] **Autocomplete TypeScript usado** para nombres de tablas/campos
 
 ---
 
 ## 🚫 PROHIBIDO
 
+❌ **USAR `new Date()` DIRECTO** para parsear/formatear fechas (usar funciones de `date.utils.ts`)
+❌ **`fecha.toISOString().split('T')[0]`** para fecha actual (usar `getTodayDateString()`)
+❌ **`format(new Date(fecha), "dd/MM/yyyy")`** con date-fns (usar `formatDateShort(fecha)`)
+❌ **Guardar input directo sin `formatDateForDB()`** → causa timezone shift
+❌ **HARDCODEAR COLORES en componentes compartidos** (usar `moduleThemes` con prop `moduleName`)
 ❌ **COPIAR/PEGAR SQL en Supabase SQL Editor** (usar `npm run db:exec <archivo.sql>`)
+❌ **OLVIDAR SINCRONIZAR TIPOS** después de migración (ejecutar `npm run types:generate`)
+❌ **EDITAR MANUALMENTE database.types.ts** (siempre regenerar con script oficial)
 ❌ **VIOLAR SEPARACIÓN DE RESPONSABILIDADES** (lógica/vista/estilos mezclados)
 ❌ **Componentes > 150 líneas** sin refactorizar
 ❌ **Lógica de negocio en componentes** (useState, useEffect con lógica compleja)
 ❌ **Llamadas a API/DB directas en componentes** (usar services)
 ❌ **Strings de Tailwind > 80 caracteres inline** (extraer a .styles.ts)
 ❌ **Código duplicado entre componentes** (extraer a shared/utils)
-❌ **ASUMIR nombres de campos sin verificar** en `DATABASE-SCHEMA-REFERENCE.md`
-❌ **Copiar nombres de otros archivos** sin validar en documentación
-❌ **Inventar nombres "lógicos"** sin confirmar en DB
+❌ **ASUMIR nombres de campos sin verificar** con autocomplete TypeScript
+❌ **Copiar nombres de otros archivos** sin validar en tipos generados
+❌ **Inventar nombres "lógicos"** sin confirmar en schema
 ❌ **Crear componentes de UI sin usar los estandarizados** (ModuleContainer, Card, Button, etc.)
 ❌ **Olvidar modo oscuro** (dark:* en elementos personalizados)
 ❌ **No usar estados de UI** (LoadingState, EmptyState, ErrorState)
@@ -450,6 +665,14 @@ src/modules/[nombre-modulo]/
 
 ## ✅ REQUERIDO
 
+✅ **FUNCIONES DE FECHAS** → Importar de `@/lib/utils/date.utils` (formatDateShort, formatDateForInput, formatDateForDB, getTodayDateString)
+✅ **MOSTRAR FECHAS** → `formatDateShort(fecha)` para dd/MM/yyyy
+✅ **CARGAR EN INPUTS** → `formatDateForInput(fecha)` para <input type="date" />
+✅ **GUARDAR EN BD** → `formatDateForDB(inputValue)` con hora del mediodía
+✅ **FECHA ACTUAL** → `getTodayDateString()` sin timezone shift
+✅ **SINCRONIZAR TIPOS DB** → `npm run types:generate` después de migraciones
+✅ **USAR AUTOCOMPLETE TypeScript** → Nombres exactos de tablas/campos
+✅ **SISTEMA DE THEMING** → `moduleThemes[moduleName]` en componentes reutilizables
 ✅ **EJECUTAR SQL con script automatizado** (`npm run db:exec <archivo.sql>`)
 ✅ **SEPARACIÓN ESTRICTA: Hooks (lógica) + Componentes (UI) + Estilos (centralizados)**
 ✅ **Hook personalizado por componente** con toda la lógica
@@ -471,6 +694,10 @@ src/modules/[nombre-modulo]/
 ## 📚 Documentación Completa
 
 ### 🔴 CRÍTICA (consultar SIEMPRE):
+- **Manejo profesional de fechas**: `docs/GUIA-MANEJO-FECHAS-PROFESIONAL.md` ⭐ **NO MÁS TIMEZONE ISSUES**
+- **Sincronización de tipos DB**: `docs/SISTEMA-SINCRONIZACION-SCHEMA-DB.md` ⭐ **TIPOS AUTOMÁTICOS**
+- **Plantilla estándar módulos**: `docs/PLANTILLA-ESTANDAR-MODULOS.md` ⭐ **PROYECTOS COMO REFERENCIA**
+- **Sistema de theming**: `docs/SISTEMA-THEMING-MODULAR.md` ⭐ **NO HARDCODEAR COLORES**
 - **Ejecutar SQL automático**: `docs/EJECUTAR-SQL-DIRECTAMENTE.md` ⭐ **NO MÁS COPY/PASTE**
 - **Separación de responsabilidades**: `docs/ARQUITECTURA-SEPARACION-RESPONSABILIDADES.md` ⭐ **PATRÓN INVIOLABLE**
 - **Schema DB**: `docs/DATABASE-SCHEMA-REFERENCE-ACTUALIZADO.md` ⭐ **FUENTE ÚNICA DE VERDAD**
@@ -480,6 +707,7 @@ src/modules/[nombre-modulo]/
 - **Política de eliminación de versiones**: `docs/POLITICA-ELIMINACION-VERSIONES.md` ⭐ **INTEGRIDAD DE DATOS**
 
 ### 📘 Desarrollo:
+- **Demo visual theming**: `docs/THEMING-DEMO-VISUAL.md`
 - **Guía de diseño**: `docs/GUIA-DISENO-MODULOS.md`
 - **Template de módulo**: `docs/TEMPLATE-MODULO-ESTANDAR.md`
 - **Componentes compartidos**: `src/shared/components/layout/`

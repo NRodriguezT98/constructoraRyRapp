@@ -1,22 +1,13 @@
 import { DragEvent, useCallback, useRef, useState } from 'react'
 
+import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 
 import { useAuth } from '../../../contexts/auth-context'
-import { documentoConArchivoSchema } from '../schemas/documento.schema'
+import type { DocumentoFormData } from '../schemas/documento.schema'
+import { documentoConArchivoSchema, documentoFormSchema } from '../schemas/documento.schema'
 
 import { useCategoriasQuery, useSubirDocumentoMutation } from './useDocumentosQuery'
-
-type UploadFormData = {
-  titulo: string
-  descripcion?: string
-  categoria_id?: string
-  etiquetas: string[]
-  fecha_documento?: string
-  fecha_vencimiento?: string
-  es_importante: boolean
-  metadata: Record<string, any>
-}
 
 interface UseDocumentoUploadProps {
   proyectoId: string
@@ -44,7 +35,7 @@ export function useDocumentoUpload({
   // Mutation para subir documento
   const { mutateAsync: subirDocumento, isPending: subiendoDocumento } = useSubirDocumentoMutation(proyectoId)
 
-  // Form
+  // Form con validaciones Zod (sin validación de archivo aquí - se valida en handleFileChange)
   const {
     register,
     handleSubmit,
@@ -52,7 +43,8 @@ export function useDocumentoUpload({
     watch,
     reset,
     formState: { errors },
-  } = useForm<UploadFormData>({
+  } = useForm<DocumentoFormData>({
+    resolver: zodResolver(documentoFormSchema),
     defaultValues: {
       titulo: '',
       descripcion: '',
@@ -63,6 +55,7 @@ export function useDocumentoUpload({
       es_importante: false,
       metadata: {},
     },
+    mode: 'onChange', // Validar mientras el usuario escribe
   })
 
   const etiquetas = watch('etiquetas') || []
@@ -149,7 +142,7 @@ export function useDocumentoUpload({
 
   // Submit
   const onSubmit = useCallback(
-    async (data: UploadFormData) => {
+    async (data: DocumentoFormData) => {
       if (!archivoSeleccionado) {
         setErrorArchivo('Debes seleccionar un archivo')
         return
@@ -167,6 +160,8 @@ export function useDocumentoUpload({
           descripcion: data.descripcion,
           categoriaId: data.categoria_id,
           etiquetas: data.etiquetas,
+          fechaDocumento: data.fecha_documento,
+          fechaVencimiento: data.fecha_vencimiento,
           esImportante: data.es_importante,
           userId: user.id,
         })

@@ -2,20 +2,17 @@
 
 import { useState } from 'react'
 
-import { motion } from 'framer-motion'
+import { AnimatePresence, motion } from 'framer-motion'
 import {
-    Activity,
     ArrowLeft,
     Building2,
-    Calendar,
     ChevronRight,
-    DollarSign,
     Edit2,
     FileText,
     Home,
     Info,
     MapPin,
-    Trash2,
+    Trash2
 } from 'lucide-react'
 
 import { useRouter } from 'next/navigation'
@@ -24,7 +21,6 @@ import { Button } from '@/components/ui/button'
 import { useAuth } from '@/contexts/auth-context'
 // ✅ REACT QUERY: Hooks con cache inteligente (reemplazan Zustand)
 import { useProyectoQuery, useProyectosQuery } from '@/modules/proyectos/hooks'
-import { formatCurrency, formatDate } from '@/shared/utils/format'
 
 
 
@@ -78,7 +74,7 @@ export default function ProyectoDetalleClient({
     console.log('Editar proyecto:', proyectoId)
   }
 
-  // Manejo de error antes del loading
+  // Manejo de error
   if (error) {
     return (
       <div className='flex min-h-screen items-center justify-center'>
@@ -99,78 +95,66 @@ export default function ProyectoDetalleClient({
     )
   }
 
-  if (loading) {
+  // Mostrar loader mientras carga
+  if (loading || !proyecto) {
     return (
-      <div className='flex min-h-screen items-center justify-center'>
-        <div className='text-center'>
-          <Building2 className='mx-auto mb-4 h-16 w-16 animate-pulse text-blue-500' />
-          <p className='text-gray-600 dark:text-gray-400'>
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-gray-50 via-white to-blue-50/30 dark:from-gray-900 dark:via-gray-900 dark:to-blue-950/20">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.3 }}
+          className="text-center"
+        >
+          <motion.div
+            animate={{
+              scale: [1, 1.1, 1],
+              rotate: [0, 5, -5, 0],
+            }}
+            transition={{
+              duration: 2,
+              repeat: Infinity,
+              ease: 'easeInOut',
+            }}
+          >
+            <Building2 className="mx-auto mb-4 h-16 w-16 text-green-500" strokeWidth={2} />
+          </motion.div>
+
+          <motion.p
+            className="text-lg font-medium text-gray-700 dark:text-gray-300"
+            animate={{
+              opacity: [0.5, 1, 0.5],
+            }}
+            transition={{
+              duration: 1.5,
+              repeat: Infinity,
+              ease: 'easeInOut',
+            }}
+          >
             Cargando proyecto...
-          </p>
-          <p className='text-xs text-gray-500 dark:text-gray-500 mt-2'>
-            ID: {proyectoId}
-          </p>
-        </div>
+          </motion.p>
+
+          <div className="mt-4 flex items-center justify-center gap-2">
+            {[0, 1, 2].map((i) => (
+              <motion.div
+                key={i}
+                className="h-2 w-2 rounded-full bg-green-500"
+                animate={{
+                  scale: [1, 1.5, 1],
+                  opacity: [0.3, 1, 0.3],
+                }}
+                transition={{
+                  duration: 1.5,
+                  repeat: Infinity,
+                  delay: i * 0.2,
+                  ease: 'easeInOut',
+                }}
+              />
+            ))}
+          </div>
+        </motion.div>
       </div>
     )
   }
-
-  if (!proyecto) {
-    return (
-      <div className='flex min-h-screen items-center justify-center'>
-        <div className='text-center'>
-          <Building2 className='mx-auto mb-4 h-16 w-16 text-gray-400' />
-          <h2 className='mb-2 text-2xl font-bold text-gray-900 dark:text-gray-100'>
-            Proyecto no encontrado
-          </h2>
-          <p className='mb-6 text-gray-600 dark:text-gray-400'>
-            El proyecto que buscas no existe o fue eliminado.
-          </p>
-          <Button onClick={() => router.push('/proyectos')}>
-            <ArrowLeft className='mr-2 h-4 w-4' />
-            Volver a proyectos
-          </Button>
-        </div>
-      </div>
-    )
-  }
-
-  const totalViviendas = proyecto.manzanas.reduce(
-    (sum, m) => sum + m.totalViviendas,
-    0
-  )
-
-  // Stats data con gradientes
-  const statsData = [
-    {
-      label: 'Presupuesto',
-      value: formatCurrency(proyecto.presupuesto),
-      icon: DollarSign,
-      gradient: styles.gradients.presupuesto,
-      progress: 0,
-    },
-    {
-      label: 'Manzanas',
-      value: proyecto.manzanas.length.toString(),
-      icon: Home,
-      gradient: styles.gradients.manzanas,
-      progress: 100,
-    },
-    {
-      label: 'Viviendas',
-      value: totalViviendas.toString(),
-      icon: Building2,
-      gradient: styles.gradients.viviendas,
-      progress: 0,
-    },
-    {
-      label: 'Creado',
-      value: formatDate(proyecto.fechaCreacion),
-      icon: Calendar,
-      gradient: styles.gradients.fecha,
-      progress: 100,
-    },
-  ]
 
   const tabs = [
     { id: 'info' as const, label: 'Información', icon: Info, count: null },
@@ -189,8 +173,16 @@ export default function ProyectoDetalleClient({
   ]
 
   return (
-    <div className='min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50/30 p-4 dark:from-gray-900 dark:via-gray-900 dark:to-blue-950/20'>
-      <div className='mx-auto max-w-7xl space-y-4'>
+    <AnimatePresence mode="wait">
+      <motion.div
+        key="content"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.3 }}
+        className='min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50/30 p-4 dark:from-gray-900 dark:via-gray-900 dark:to-blue-950/20'
+      >
+        <div className='mx-auto max-w-7xl space-y-4'>
         {/* Botón Volver */}
         <motion.div {...styles.animations.fadeInUp}>
           <Button
@@ -265,121 +257,10 @@ export default function ProyectoDetalleClient({
           </div>
         </motion.div>
 
-        {/* Barra de Progreso Mejorada */}
+        {/* Tabs Mejorados - MOVIDOS ARRIBA (antes de stats) */}
         <motion.div
           {...styles.animations.fadeInUp}
           transition={{ delay: 0.2 }}
-          className={styles.progressClasses.container}
-        >
-          <div className={styles.progressClasses.header}>
-            <div className={styles.progressClasses.leftSection}>
-              <div className={styles.progressClasses.iconContainer}>
-                <Activity className={styles.progressClasses.icon} />
-              </div>
-              <div className={styles.progressClasses.titleSection}>
-                <p className={styles.progressClasses.title}>
-                  Progreso de Ventas
-                </p>
-                <p className={styles.progressClasses.subtitle}>
-                  Calculado según viviendas vendidas
-                </p>
-              </div>
-            </div>
-            <div className={styles.progressClasses.rightSection}>
-              <p className={styles.progressClasses.percentage}>
-                0%
-              </p>
-              <p className={styles.progressClasses.percentageLabel}>
-                Vendidas
-              </p>
-            </div>
-          </div>
-
-          {/* Barra con gradiente animado */}
-          <div className={styles.progressClasses.bar}>
-            <motion.div
-              className={styles.progressClasses.barFill}
-              initial={{ width: 0 }}
-              animate={{ width: '0%' }}
-              transition={{ duration: 1.5, ease: 'easeOut', delay: 0.3 }}
-            >
-              <div className={`${styles.progressClasses.shimmer} animate-shimmer`}></div>
-            </motion.div>
-          </div>
-
-          {/* Milestones */}
-          <div className={styles.progressClasses.milestones}>
-            <div className={styles.progressClasses.milestone}>
-              <div className={styles.progressClasses.milestoneValue}>
-                {totalViviendas}
-              </div>
-              <div className={styles.progressClasses.milestoneLabel}>
-                Total
-              </div>
-            </div>
-            <div className={styles.progressClasses.milestone}>
-              <div className={styles.progressClasses.milestoneValue}>0</div>
-              <div className={styles.progressClasses.milestoneLabel}>
-                Vendidas
-              </div>
-            </div>
-            <div className={styles.progressClasses.milestone}>
-              <div className={styles.progressClasses.milestoneValue}>
-                {totalViviendas}
-              </div>
-              <div className={styles.progressClasses.milestoneLabel}>
-                Disponibles
-              </div>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* Stats Cards Mejorados */}
-        <div className={styles.statsCardClasses.container}>
-          {statsData.map((stat, index) => (
-            <motion.div
-              key={stat.label}
-              {...styles.animations.fadeInUp}
-              transition={{ delay: 0.3 + index * 0.1 }}
-              {...styles.animations.hoverLift}
-              className={styles.statsCardClasses.card}
-            >
-              {/* Gradiente de fondo en hover */}
-              <div
-                className={`${styles.statsCardClasses.gradientOverlay} bg-gradient-to-br ${stat.gradient}`}
-              ></div>
-
-              <div className={styles.statsCardClasses.header}>
-                <motion.div
-                  className={`${styles.statsCardClasses.iconWrapper} bg-gradient-to-br ${stat.gradient}`}
-                  {...styles.animations.hoverRotate}
-                >
-                  <stat.icon className={styles.statsCardClasses.icon} />
-                </motion.div>
-              </div>
-
-              <div className={styles.statsCardClasses.content}>
-                <p className={styles.statsCardClasses.label}>{stat.label}</p>
-                <p className={styles.statsCardClasses.value}>{stat.value}</p>
-              </div>
-
-              {/* Barra de progreso */}
-              <div className={styles.statsCardClasses.progressBar}>
-                <motion.div
-                  className={`${styles.statsCardClasses.progressFill} bg-gradient-to-r ${stat.gradient}`}
-                  initial={{ width: 0 }}
-                  animate={{ width: `${stat.progress}%` }}
-                  transition={{ duration: 1, delay: 0.5 + index * 0.1 }}
-                />
-              </div>
-            </motion.div>
-          ))}
-        </div>
-
-        {/* Tabs Mejorados */}
-        <motion.div
-          {...styles.animations.fadeInUp}
-          transition={{ delay: 0.7 }}
           className={styles.tabsClasses.container}
         >
           <nav className={styles.tabsClasses.nav}>
@@ -392,7 +273,8 @@ export default function ProyectoDetalleClient({
                     ? styles.tabsClasses.tabActive
                     : styles.tabsClasses.tabInactive
                 }`}
-                whileHover={{ y: -2 }}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
               >
                 <div className={styles.tabsClasses.tabContent}>
                   <tab.icon className={styles.tabsClasses.tabIcon} />
@@ -403,14 +285,6 @@ export default function ProyectoDetalleClient({
                     </span>
                   )}
                 </div>
-
-                {activeTab === tab.id && (
-                  <motion.div
-                    layoutId='activeTab'
-                    className={styles.tabsClasses.tabUnderline}
-                    transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-                  />
-                )}
               </motion.button>
             ))}
           </nav>
@@ -423,6 +297,7 @@ export default function ProyectoDetalleClient({
 
         {activeTab === 'manzanas' && <ManzanasTab proyecto={proyecto} />}
       </div>
-    </div>
+    </motion.div>
+    </AnimatePresence>
   )
 }

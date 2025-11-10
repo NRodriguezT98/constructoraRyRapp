@@ -1,7 +1,5 @@
 'use client'
 
-import { format } from 'date-fns'
-import { es } from 'date-fns/locale'
 import { AnimatePresence, motion } from 'framer-motion'
 import {
     Calendar,
@@ -17,6 +15,8 @@ import {
     X
 } from 'lucide-react'
 
+import { formatDateCompact } from '@/lib/utils/date.utils'
+import { moduleThemes, type ModuleName } from '@/shared/config/module-themes'
 import { DocumentoProyecto, formatFileSize, getFileIcon } from '../../../../types/documento.types'
 import { CategoriaIcon } from '../shared/categoria-icon'
 
@@ -28,6 +28,7 @@ interface DocumentoViewerProps {
   onDelete?: (documento: DocumentoProyecto) => void
   onEdit?: (documento: DocumentoProyecto) => void
   urlPreview?: string
+  moduleName?: ModuleName // 🎨 Tema del módulo
 }
 
 export function DocumentoViewer({
@@ -38,7 +39,10 @@ export function DocumentoViewer({
   onDelete,
   onEdit,
   urlPreview,
+  moduleName = 'proyectos', // 🎨 Default a proyectos
 }: DocumentoViewerProps) {
+  // 🎨 Obtener tema dinámico
+  const theme = moduleThemes[moduleName]
   if (!documento) return null
 
   const isPDF = documento.tipo_mime?.includes('pdf')
@@ -69,25 +73,25 @@ export function DocumentoViewer({
           >
             <div className='flex h-full w-full flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl dark:border-gray-700 dark:bg-gray-900'>
               {/* Header */}
-              <div className='flex items-center justify-between border-b border-gray-200 bg-gradient-to-r from-blue-50 to-purple-50 p-6 dark:border-gray-700 dark:from-blue-900/20 dark:to-purple-900/20'>
+              <div className={`flex items-center justify-between border-b border-gray-200 bg-gradient-to-r ${theme.classes.gradient.background} dark:${theme.classes.gradient.backgroundDark} p-6 dark:border-gray-700`}>
                 <div className='flex min-w-0 flex-1 items-center gap-4'>
-                  <div className='rounded-xl bg-white p-3 shadow-sm dark:bg-gray-800'>
+                  <div className='rounded-xl bg-white/90 p-3 shadow-sm backdrop-blur-sm dark:bg-gray-800/90'>
                     <FileIcon
                       size={28}
-                      className='text-blue-600 dark:text-blue-400'
+                      className='text-gray-700 dark:text-gray-300'
                     />
                   </div>
                   <div className='min-w-0 flex-1'>
-                    <h2 className='flex items-center gap-2 truncate text-2xl font-bold text-gray-900 dark:text-white'>
+                    <h2 className='flex items-center gap-2 truncate text-2xl font-bold text-white drop-shadow-sm'>
                       {documento.titulo}
                       {documento.es_importante && (
                         <Star
                           size={20}
-                          className='flex-shrink-0 fill-yellow-500 text-yellow-500'
+                          className='flex-shrink-0 fill-yellow-300 text-yellow-300'
                         />
                       )}
                     </h2>
-                    <p className='truncate text-sm text-gray-600 dark:text-gray-400'>
+                    <p className='truncate text-sm text-white/90 drop-shadow-sm'>
                       {documento.nombre_original} •{' '}
                       {formatFileSize(documento.tamano_bytes)}
                     </p>
@@ -99,7 +103,7 @@ export function DocumentoViewer({
                   {onDownload && (
                     <button
                       onClick={() => onDownload(documento)}
-                      className='rounded-xl bg-blue-500 p-2.5 text-white transition-colors hover:bg-blue-600'
+                      className='rounded-xl bg-white/20 backdrop-blur-sm border border-white/30 p-2.5 text-white transition-all hover:bg-white/30'
                       title='Descargar'
                     >
                       <Download size={20} />
@@ -109,7 +113,7 @@ export function DocumentoViewer({
                   {onEdit && (
                     <button
                       onClick={() => onEdit(documento)}
-                      className='rounded-xl bg-gray-200 p-2.5 text-gray-700 transition-colors hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
+                      className='rounded-xl bg-white/20 backdrop-blur-sm border border-white/30 p-2.5 text-white transition-all hover:bg-white/30'
                       title='Editar'
                     >
                       <Edit size={20} />
@@ -119,7 +123,7 @@ export function DocumentoViewer({
                   {onDelete && (
                     <button
                       onClick={() => onDelete(documento)}
-                      className='rounded-xl bg-red-100 p-2.5 text-red-600 transition-colors hover:bg-red-200 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/30'
+                      className='rounded-xl bg-red-500/80 backdrop-blur-sm border border-red-400/30 p-2.5 text-white transition-all hover:bg-red-600/80'
                       title='Eliminar'
                     >
                       <Trash2 size={20} />
@@ -128,7 +132,7 @@ export function DocumentoViewer({
 
                   <button
                     onClick={onClose}
-                    className='rounded-xl bg-gray-200 p-2.5 text-gray-700 transition-colors hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
+                    className='rounded-xl bg-white/20 backdrop-blur-sm border border-white/30 p-2.5 text-white transition-all hover:bg-white/30'
                   >
                     <X size={20} />
                   </button>
@@ -248,71 +252,88 @@ export function DocumentoViewer({
                       Fechas
                     </h3>
 
-                    {documento.fecha_documento &&
-                      !isNaN(new Date(documento.fecha_documento).getTime()) && (
-                        <div className='flex items-start gap-2 text-sm'>
-                          <Clock
-                            size={16}
-                            className='mt-0.5 flex-shrink-0 text-gray-400'
-                          />
-                          <div>
-                            <p className='text-gray-600 dark:text-gray-400'>
-                              Fecha del documento
-                            </p>
-                            <p className='font-medium text-gray-900 dark:text-white'>
-                              {format(
-                                new Date(documento.fecha_documento),
-                                'PPP',
-                                { locale: es }
-                              )}
-                            </p>
-                          </div>
-                        </div>
-                      )}
+                    {/* 1. Fecha de emisión/expedición del documento */}
+                    <div className='flex items-start gap-2 text-sm'>
+                      <Calendar
+                        size={16}
+                        className='mt-0.5 flex-shrink-0 text-blue-500 dark:text-blue-400'
+                      />
+                      <div className='flex-1'>
+                        <p className='text-gray-600 dark:text-gray-400'>
+                          Fecha de emisión del documento
+                        </p>
+                        {documento.fecha_documento &&
+                        !isNaN(new Date(documento.fecha_documento).getTime()) ? (
+                          <p className='font-medium text-gray-900 dark:text-white'>
+                            {formatDateCompact(documento.fecha_documento)}
+                          </p>
+                        ) : (
+                          <p className='font-medium text-gray-600 dark:text-gray-400'>
+                            Sin fecha de emisión
+                          </p>
+                        )}
+                      </div>
+                    </div>
 
-                    {documento.fecha_vencimiento &&
-                      !isNaN(
-                        new Date(documento.fecha_vencimiento).getTime()
-                      ) && (
-                        <div className='flex items-start gap-2 text-sm'>
-                          <Calendar
-                            size={16}
-                            className='mt-0.5 flex-shrink-0 text-orange-500'
-                          />
-                          <div>
-                            <p className='text-gray-600 dark:text-gray-400'>
-                              Vencimiento
-                            </p>
-                            <p className='font-medium text-gray-900 dark:text-white'>
-                              {format(
-                                new Date(documento.fecha_vencimiento),
-                                'PPP',
-                                { locale: es }
-                              )}
-                            </p>
-                          </div>
-                        </div>
-                      )}
+                    {/* 2. Fecha de expiración */}
+                    <div className='flex items-start gap-2 text-sm'>
+                      <Clock
+                        size={16}
+                        className='mt-0.5 flex-shrink-0 text-orange-500 dark:text-orange-400'
+                      />
+                      <div className='flex-1'>
+                        <p className='text-gray-600 dark:text-gray-400'>
+                          Fecha de expiración
+                        </p>
+                        {documento.fecha_vencimiento &&
+                        !isNaN(new Date(documento.fecha_vencimiento).getTime()) ? (
+                          <p className='font-medium text-gray-900 dark:text-white'>
+                            {formatDateCompact(documento.fecha_vencimiento)}
+                          </p>
+                        ) : (
+                          <p className='font-medium text-gray-600 dark:text-gray-400'>
+                            Este documento no expira
+                          </p>
+                        )}
+                      </div>
+                    </div>
 
+                    {/* 3. Fecha de carga al sistema */}
                     {documento.fecha_creacion &&
                       !isNaN(new Date(documento.fecha_creacion).getTime()) && (
                         <div className='flex items-start gap-2 text-sm'>
-                          <User
+                          <Calendar
                             size={16}
-                            className='mt-0.5 flex-shrink-0 text-gray-400'
+                            className='mt-0.5 flex-shrink-0 text-green-500 dark:text-green-400'
                           />
-                          <div>
+                          <div className='flex-1'>
                             <p className='text-gray-600 dark:text-gray-400'>
-                              Subido
+                              Fecha de carga al sistema
                             </p>
                             <p className='font-medium text-gray-900 dark:text-white'>
-                              {format(new Date(documento.fecha_creacion), 'PPP', {
-                                locale: es,
-                              })}
+                              {formatDateCompact(documento.fecha_creacion)}
                             </p>
                           </div>
                         </div>
                       )}
+
+                    {/* 4. Subido por */}
+                    <div className='flex items-start gap-2 text-sm'>
+                      <User
+                        size={16}
+                        className='mt-0.5 flex-shrink-0 text-purple-500 dark:text-purple-400'
+                      />
+                      <div className='flex-1'>
+                        <p className='text-gray-600 dark:text-gray-400'>
+                          Subido por
+                        </p>
+                        <p className='font-medium text-gray-900 dark:text-white'>
+                          {documento.usuario
+                            ? `${documento.usuario.nombres} ${documento.usuario.apellidos}`
+                            : 'Desconocido'}
+                        </p>
+                      </div>
+                    </div>
                   </div>
 
                   {/* Metadata personalizada */}

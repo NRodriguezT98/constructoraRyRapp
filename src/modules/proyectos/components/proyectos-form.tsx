@@ -9,8 +9,9 @@
 'use client'
 
 import { AnimatePresence, motion } from 'framer-motion'
-import { AlertCircle, Building2, FileText, Home, Loader2, Lock, LockOpen, MapPin, Plus, Trash2 } from 'lucide-react'
+import { AlertCircle, Building2, CheckCircle2, FileText, Home, Loader2, Lock, LockOpen, MapPin, Plus, Trash2 } from 'lucide-react'
 
+import { FormChangesBadge } from '@/shared/components/forms/FormChangesBadge'
 import { cn } from '../../../shared/utils/helpers'
 import { useProyectosForm } from '../hooks/useProyectosForm'
 import { proyectosFormPremiumStyles as styles } from '../styles/proyectos-form-premium.styles'
@@ -36,12 +37,19 @@ export function ProyectosForm({
     register,
     handleSubmit,
     errors,
+    touchedFields, // ← Para validación progresiva
     fields,
     handleAgregarManzana,
     handleEliminarManzana,
     totalManzanas,
     totalViviendas,
     manzanasWatch, // ✅ Valores reales de las manzanas
+    hasChanges, // ← Detección de cambios
+    changes,
+    changesCount,
+    isFieldChanged,
+    shouldShowChanges,
+    canSave,
     getButtonText,
     canRemoveManzana,
     esManzanaEditable,
@@ -57,9 +65,10 @@ export function ProyectosForm({
       onSubmit={handleSubmit}
       className={styles.form}
     >
-      {/* BADGE STICKY SUPERIOR - RESUMEN */}
+      {/* BADGE STICKY SUPERIOR - RESUMEN COMPACTO */}
       <div className={styles.badgeSticky.container}>
         <div className={styles.badgeSticky.content}>
+          {/* Badges de manzanas/viviendas */}
           <div className={styles.badgeSticky.badges}>
             <div className={styles.badgeSticky.manzanasBadge}>
               <Building2 className={styles.badgeSticky.manzanasIcon} />
@@ -84,11 +93,22 @@ export function ProyectosForm({
               </motion.div>
             )}
           </div>
+
+          {/* Badge de cambios detectados (sticky, siempre visible) */}
+          {shouldShowChanges && (
+            <FormChangesBadge
+              hasChanges={hasChanges}
+              changes={changes}
+              changesCount={changesCount}
+              variant="compact" // ← Versión compacta en sticky
+            />
+          )}
         </div>
       </div>
 
-      {/* LAYOUT DE 2 COLUMNAS */}
-      <div className={styles.grid}>
+      {/* LAYOUT DE 2 COLUMNAS CON ESPACIO PARA STICKY */}
+      <div className="pt-4">
+        <div className={styles.grid}>
         {/* COLUMNA IZQUIERDA: Información General */}
         <motion.div
           {...styles.animations.infoSection}
@@ -107,6 +127,12 @@ export function ProyectosForm({
             <div className={styles.field.container}>
               <label className={styles.field.label}>
                 Nombre del Proyecto <span className={styles.field.required}>*</span>
+                {/* Indicador de campo modificado */}
+                {isEditing && isFieldChanged('nombre') && (
+                  <span className="ml-2 text-xs text-orange-600 dark:text-orange-400 font-medium">
+                    ✏️ Modificado
+                  </span>
+                )}
               </label>
               <div className={styles.field.inputWrapper}>
                 <Building2 className={styles.field.inputIcon} />
@@ -114,11 +140,24 @@ export function ProyectosForm({
                   {...register('nombre')}
                   type='text'
                   placeholder='Ej: Urbanización Los Pinos'
+                  maxLength={100}
                   className={cn(
                     styles.field.input,
-                    errors.nombre && styles.field.inputError
+                    errors.nombre && styles.field.inputError,
+                    touchedFields.nombre && !errors.nombre && 'border-green-300 dark:border-green-700 bg-green-50/50 dark:bg-green-950/20',
+                    isEditing && isFieldChanged('nombre') && !errors.nombre && 'border-orange-300 dark:border-orange-700 bg-orange-50/50 dark:bg-orange-950/20'
                   )}
                 />
+                {/* Indicador de estado */}
+                {touchedFields.nombre && (
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                    {errors.nombre ? (
+                      <AlertCircle className="w-5 h-5 text-red-500" />
+                    ) : (
+                      <CheckCircle2 className="w-5 h-5 text-green-500 animate-in fade-in zoom-in duration-200" />
+                    )}
+                  </div>
+                )}
               </div>
               {errors.nombre && (
                 <motion.div {...styles.animations.errorMessage} className={styles.field.error}>
@@ -126,12 +165,23 @@ export function ProyectosForm({
                   {errors.nombre.message}
                 </motion.div>
               )}
+              {!errors.nombre && (
+                <p className={styles.field.helper}>
+                  Solo letras, números, espacios, guiones, paréntesis y puntos
+                </p>
+              )}
             </div>
 
             {/* Campo: Ubicación */}
             <div className={styles.field.container}>
               <label className={styles.field.label}>
                 Ubicación <span className={styles.field.required}>*</span>
+                {/* Indicador de campo modificado */}
+                {isEditing && isFieldChanged('ubicacion') && (
+                  <span className="ml-2 text-xs text-orange-600 dark:text-orange-400 font-medium">
+                    ✏️ Modificado
+                  </span>
+                )}
               </label>
               <div className={styles.field.inputWrapper}>
                 <MapPin className={styles.field.inputIcon} />
@@ -139,11 +189,24 @@ export function ProyectosForm({
                   {...register('ubicacion')}
                   type='text'
                   placeholder='Ej: Guacarí, Valle del Cauca'
+                  maxLength={200}
                   className={cn(
                     styles.field.input,
-                    errors.ubicacion && styles.field.inputError
+                    errors.ubicacion && styles.field.inputError,
+                    touchedFields.ubicacion && !errors.ubicacion && 'border-green-300 dark:border-green-700 bg-green-50/50 dark:bg-green-950/20',
+                    isEditing && isFieldChanged('ubicacion') && !errors.ubicacion && 'border-orange-300 dark:border-orange-700 bg-orange-50/50 dark:bg-orange-950/20'
                   )}
                 />
+                {/* Indicador de estado */}
+                {touchedFields.ubicacion && (
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                    {errors.ubicacion ? (
+                      <AlertCircle className="w-5 h-5 text-red-500" />
+                    ) : (
+                      <CheckCircle2 className="w-5 h-5 text-green-500 animate-in fade-in zoom-in duration-200" />
+                    )}
+                  </div>
+                )}
               </div>
               {errors.ubicacion && (
                 <motion.div {...styles.animations.errorMessage} className={styles.field.error}>
@@ -151,12 +214,23 @@ export function ProyectosForm({
                   {errors.ubicacion.message}
                 </motion.div>
               )}
+              {!errors.ubicacion && (
+                <p className={styles.field.helper}>
+                  Estado, ciudad o dirección completa
+                </p>
+              )}
             </div>
 
             {/* Campo: Descripción */}
             <div>
               <label className={styles.field.label}>
                 Descripción <span className={styles.field.required}>*</span>
+                {/* Indicador de campo modificado */}
+                {isEditing && isFieldChanged('descripcion') && (
+                  <span className="ml-2 text-xs text-orange-600 dark:text-orange-400 font-medium">
+                    ✏️ Modificado
+                  </span>
+                )}
               </label>
               <div className={styles.field.textareaWrapper}>
                 <FileText className={styles.field.textareaIcon} />
@@ -164,17 +238,35 @@ export function ProyectosForm({
                   {...register('descripcion')}
                   rows={4}
                   placeholder='Descripción breve del proyecto...'
+                  maxLength={1000}
                   className={cn(
                     styles.field.textarea,
-                    errors.descripcion && styles.field.textareaError
+                    errors.descripcion && styles.field.textareaError,
+                    touchedFields.descripcion && !errors.descripcion && 'border-green-300 dark:border-green-700 bg-green-50/50 dark:bg-green-950/20',
+                    isEditing && isFieldChanged('descripcion') && !errors.descripcion && 'border-orange-300 dark:border-orange-700 bg-orange-50/50 dark:bg-orange-950/20'
                   )}
                 />
+                {/* Indicador de estado */}
+                {touchedFields.descripcion && (
+                  <div className="absolute right-3 top-3">
+                    {errors.descripcion ? (
+                      <AlertCircle className="w-5 h-5 text-red-500" />
+                    ) : (
+                      <CheckCircle2 className="w-5 h-5 text-green-500 animate-in fade-in zoom-in duration-200" />
+                    )}
+                  </div>
+                )}
               </div>
               {errors.descripcion && (
                 <motion.div {...styles.animations.errorMessage} className={styles.field.error}>
                   <AlertCircle className={styles.field.errorIcon} />
                   {errors.descripcion.message}
                 </motion.div>
+              )}
+              {!errors.descripcion && (
+                <p className={styles.field.helper}>
+                  Mínimo 10 caracteres. Puedes usar letras, números y puntuación básica
+                </p>
               )}
             </div>
           </div>
@@ -192,19 +284,17 @@ export function ProyectosForm({
                 <Building2 className={styles.manzanasSection.headerIconSvg} />
               </div>
               <h3 className={styles.manzanasSection.headerTitle}>
-                Manzanas del Proyecto {isEditing && '(Solo lectura)'}
+                Manzanas del Proyecto
               </h3>
             </div>
-            {!isEditing && (
-              <button
-                type='button'
-                onClick={handleAgregarManzana}
-                className={styles.manzanasSection.addButton}
-              >
-                <Plus className={styles.manzanasSection.addButtonIcon} />
-                Agregar
-              </button>
-            )}
+            <button
+              type='button'
+              onClick={handleAgregarManzana}
+              className={styles.manzanasSection.addButton}
+            >
+              <Plus className={styles.manzanasSection.addButtonIcon} />
+              Agregar
+            </button>
           </div>
 
           {/* Error general de manzanas */}
@@ -223,19 +313,19 @@ export function ProyectosForm({
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="rounded-lg border-2 border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/30 p-4 mb-4"
+              className="rounded-lg border-2 border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/30 p-2.5 mb-4"
             >
               <div className="flex items-start gap-3">
                 <AlertCircle className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
-                <div className="space-y-2 flex-1">
+                <div className="space-y-1.5 flex-1">
                   <p className="text-sm font-semibold text-blue-900 dark:text-blue-100">
                     ℹ️ Edición inteligente de manzanas
                   </p>
                   <p className="text-xs text-blue-700 dark:text-blue-300 leading-relaxed">
-                    Solo puedes modificar las manzanas que <strong>NO tienen viviendas creadas</strong>.
+                    Puedes <strong>agregar nuevas manzanas</strong> o <strong>modificar/eliminar las existentes</strong> que NO tienen viviendas creadas.
                     Las manzanas con viviendas están protegidas para mantener la integridad de datos.
                   </p>
-                  <div className="flex items-center gap-4 text-xs text-blue-700 dark:text-blue-300 mt-2">
+                  <div className="flex items-center gap-4 text-xs text-blue-700 dark:text-blue-300 mt-1.5">
                     <div className="flex items-center gap-1.5">
                       <LockOpen className="w-4 h-4 text-green-600 dark:text-green-400" />
                       <span>Sin viviendas = Editable</span>
@@ -417,6 +507,7 @@ export function ProyectosForm({
           </div>
         </motion.div>
       </div>
+      </div>
 
       {/* BOTONES FOOTER */}
       <motion.div
@@ -433,8 +524,11 @@ export function ProyectosForm({
         </button>
         <button
           type='submit'
-          disabled={isLoading}
-          className={styles.footer.submitButton}
+          disabled={isLoading || !canSave} // ← Deshabilitar si no hay cambios (en edición)
+          className={cn(
+            styles.footer.submitButton,
+            !canSave && 'opacity-50 cursor-not-allowed' // ← Estilo deshabilitado
+          )}
         >
           {isLoading ? (
             <>

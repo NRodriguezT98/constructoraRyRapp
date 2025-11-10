@@ -73,6 +73,65 @@ export function formatDateForDisplay(
 }
 
 /**
+ * Formatea una fecha en formato compacto dd/MM/yyyy (SIN problemas de timezone)
+ *
+ * ⚠️ USAR ESTA FUNCIÓN para mostrar fechas en formato corto en toda la app
+ *
+ * @param dateString - Fecha en formato ISO o timestamp de la DB
+ * @returns Fecha en formato dd/MM/yyyy
+ *
+ * @example
+ * ```ts
+ * formatDateShort("2025-10-26")
+ * // → "26/10/2025"
+ *
+ * formatDateShort("2025-10-26T12:00:00")
+ * // → "26/10/2025"
+ * ```
+ */
+export function formatDateShort(dateString: string): string {
+  if (!dateString) return ''
+
+  // Extraer YYYY-MM-DD sin conversión de timezone
+  const dateInput = formatDateForInput(dateString)
+  const [year, month, day] = dateInput.split('-')
+
+  return `${day}/${month}/${year}` // dd/MM/yyyy
+}
+
+/**
+ * Formatea una fecha en formato compacto con mes abreviado dd-MMM-yyyy
+ *
+ * ⚠️ USAR ESTA FUNCIÓN para mostrar fechas compactas con mes en texto
+ * ⚠️ NO USA Date OBJECTS - Evita timezone shift completamente
+ *
+ * @param dateString - Fecha en formato ISO o timestamp de la DB
+ * @returns Fecha en formato dd-MMM-yyyy (ej: "16-feb-2023")
+ *
+ * @example
+ * ```ts
+ * formatDateCompact("2023-02-16")
+ * // → "16-feb-2023"
+ *
+ * formatDateCompact("2023-02-16T12:00:00")
+ * // → "16-feb-2023"
+ * ```
+ */
+export function formatDateCompact(dateString: string): string {
+  if (!dateString) return ''
+
+  // Extraer YYYY-MM-DD sin conversión de timezone (NO usa new Date)
+  const dateInput = formatDateForInput(dateString)
+  const [year, month, day] = dateInput.split('-')
+
+  // Mapeo directo de mes a abreviación en español
+  const monthNames = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic']
+  const monthAbbr = monthNames[parseInt(month) - 1]
+
+  return `${day}-${monthAbbr}-${year}` // dd-MMM-yyyy
+}
+
+/**
  * Formatea una fecha con hora completa para mostrar en la UI
  *
  * @param dateString - Fecha en formato ISO o timestamp de la DB

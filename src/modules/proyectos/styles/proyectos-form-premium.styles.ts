@@ -7,109 +7,112 @@
  */
 
 export const proyectosFormPremiumStyles = {
-  // ==================== CONTENEDOR ====================
-  form: 'space-y-6',
+  // ==================== CONTENEDOR OPTIMIZADO ====================
+  form: 'space-y-5', // ← Aumentado para mejor respiración entre secciones
 
-  // ==================== BADGE STICKY SUPERIOR ====================
+  // ==================== BADGE STICKY SUPERIOR OPTIMIZADO (CON SEPARACIÓN VISUAL) ====================
   badgeSticky: {
-    container: 'sticky -top-6 z-50 -mx-6 -mt-6 px-6 py-4 mb-4 bg-gradient-to-r from-orange-100 via-amber-100 to-yellow-100 dark:from-orange-900 dark:via-amber-900 dark:to-yellow-900 backdrop-blur-2xl border-b border-orange-200/50 dark:border-orange-800/50 shadow-2xl shadow-orange-500/20',
+    container: 'sticky top-0 z-50 -mx-6 -mt-6 px-6 py-1.5 mb-3 bg-white dark:bg-gray-900 backdrop-blur-xl border-b border-gray-200/30 dark:border-gray-700/30 shadow-xl', // ← Border sutil para separación
     content: 'flex items-center justify-between',
-    badges: 'flex items-center gap-3',
+    badges: 'flex items-center gap-2',
 
-    // Badge de manzanas (naranja)
-    manzanasBadge: 'inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-br from-orange-500 to-amber-500 text-white text-sm font-semibold shadow-lg shadow-orange-500/30',
-    manzanasIcon: 'w-4 h-4',
-    manzanasCount: '',
-    manzanasLabel: 'font-normal opacity-90',
+    // Badge de manzanas - NEUTRAL con ícono naranja
+    manzanasBadge: 'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gray-100 dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 text-xs font-semibold',
+    manzanasIcon: 'w-3.5 h-3.5 text-orange-600 dark:text-orange-400', // ← Ícono mantiene color
+    manzanasCount: 'text-gray-900 dark:text-white font-bold',
+    manzanasLabel: '',
 
-    // Badge de viviendas (verde)
-    viviendasBadge: 'inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-br from-green-500 to-emerald-500 text-white text-sm font-semibold shadow-lg shadow-green-500/30',
-    viviendasIcon: 'w-4 h-4',
-    viviendasCount: '',
-    viviendasLabel: 'font-normal opacity-90',
+    // Badge de viviendas - NEUTRAL con ícono verde
+    viviendasBadge: 'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gray-100 dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 text-xs font-semibold',
+    viviendasIcon: 'w-3.5 h-3.5 text-green-600 dark:text-green-400', // ← Ícono mantiene color
+    viviendasCount: 'text-gray-900 dark:text-white font-bold',
+    viviendasLabel: '',
 
-    // Badge "EDITANDO"
-    editingBadge: 'px-3 py-1.5 rounded-full bg-blue-500/20 border border-blue-500/30 text-blue-700 dark:text-blue-300 text-xs font-bold uppercase tracking-wider',
+    // Badge "EDITANDO" - AZUL informativo (no naranja)
+    editingBadge: 'px-2.5 py-1 rounded-full bg-blue-100 dark:bg-blue-900/30 border-2 border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-300 text-xs font-bold uppercase tracking-wider',
   },
 
-  // ==================== LAYOUT ====================
-  grid: 'grid grid-cols-1 gap-6 lg:grid-cols-2',
+  // ==================== LAYOUT OPTIMIZADO ====================
+  grid: 'grid grid-cols-1 gap-6 lg:grid-cols-2 lg:gap-6', // ← Gap aumentado + divisor visual en desktop
 
-  // ==================== SECCIÓN INFORMACIÓN GENERAL ====================
+  // ==================== SECCIÓN INFORMACIÓN GENERAL OPTIMIZADA ====================
   infoSection: {
-    container: 'group relative z-0 overflow-hidden rounded-2xl bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800/50 dark:to-gray-900/50 border border-gray-200/50 dark:border-gray-700/50 p-6 shadow-xl hover:shadow-2xl transition-all duration-300',
+    container: 'group relative z-0 overflow-hidden rounded-2xl bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800/50 dark:to-gray-900/50 border border-gray-200/50 dark:border-gray-700/50 p-4 shadow-xl hover:shadow-2xl transition-all duration-300 lg:after:absolute lg:after:right-0 lg:after:top-4 lg:after:bottom-4 lg:after:w-px lg:after:bg-gradient-to-b lg:after:from-transparent lg:after:via-gray-300 dark:lg:after:via-gray-600 lg:after:to-transparent', // ← Divisor vertical en desktop
 
     // Header
-    header: 'flex items-center gap-3 mb-6 pb-4 border-b border-gray-200 dark:border-gray-700',
-    headerIcon: 'w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center shadow-lg shadow-orange-500/40',
-    headerIconSvg: 'w-5 h-5 text-white',
-    headerTitle: 'text-lg font-bold bg-gradient-to-br from-gray-800 via-gray-700 to-gray-600 dark:from-gray-100 dark:via-gray-200 dark:to-gray-300 bg-clip-text text-transparent',
+    header: 'flex items-center gap-3 mb-4 pb-3 border-b border-gray-200 dark:border-gray-700', // ← mb-6 pb-4 a mb-4 pb-3
+    headerIcon: 'w-10 h-10 rounded-xl bg-gray-100 dark:bg-gray-700 flex items-center justify-center shadow-md', // ← NEUTRAL (era naranja)
+    headerIconSvg: 'w-5 h-5 text-gray-600 dark:text-gray-400', // ← NEUTRAL
+    headerTitle: 'text-base font-bold bg-gradient-to-br from-gray-800 via-gray-700 to-gray-600 dark:from-gray-100 dark:via-gray-200 dark:to-gray-300 bg-clip-text text-transparent', // ← text-lg a text-base
 
     // Contenido
-    content: 'space-y-5',
+    content: 'space-y-5', // ← Mejor separación entre campos
   },
 
-  // ==================== CAMPOS DE INPUT ====================
+  // ==================== CAMPOS DE INPUT OPTIMIZADOS ====================
   field: {
-    container: 'mb-5',
-    label: 'block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2',
+    container: 'mb-5', // ← Mejor espaciado entre campos
+    label: 'block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2', // ← Labels más legibles y separados
     required: 'text-red-500',
 
     // Input con ícono
     inputWrapper: 'relative',
     inputIcon: 'absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500 pointer-events-none',
-    input: 'w-full pl-11 pr-4 py-3 bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:border-orange-500 focus:ring-4 focus:ring-orange-500/20 transition-all outline-none text-sm font-medium',
+    input: 'w-full pl-11 pr-4 py-2 bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:border-orange-500 focus:ring-4 focus:ring-orange-500/20 transition-all outline-none text-sm font-medium', // ← py-3 a py-2
     inputError: 'border-red-500 focus:border-red-500 focus:ring-red-500/20',
 
     // Textarea con ícono
     textareaWrapper: 'relative',
     textareaIcon: 'absolute left-3 top-3 w-5 h-5 text-gray-400 dark:text-gray-500 pointer-events-none',
-    textarea: 'w-full pl-11 pr-4 py-3 bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:border-orange-500 focus:ring-4 focus:ring-orange-500/20 transition-all outline-none text-sm font-medium resize-none',
+    textarea: 'w-full pl-11 pr-4 py-2 bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:border-orange-500 focus:ring-4 focus:ring-orange-500/20 transition-all outline-none text-sm font-medium resize-none', // ← py-3 a py-2
     textareaError: 'border-red-500 focus:border-red-500 focus:ring-red-500/20',
 
     // Mensaje de error
-    error: 'flex items-center gap-2 mt-2 text-red-600 dark:text-red-400 text-xs font-medium',
+    error: 'flex items-center gap-2 mt-1.5 text-red-600 dark:text-red-400 text-xs font-medium',
     errorIcon: 'w-3.5 h-3.5',
+
+    // Helper text
+    helper: 'mt-1.5 text-xs text-gray-500 dark:text-gray-400',
   },
 
-  // ==================== SECCIÓN MANZANAS ====================
+  // ==================== SECCIÓN MANZANAS COMPACTA Y NEUTRAL ====================
   manzanasSection: {
-    container: 'group relative z-0 overflow-hidden rounded-2xl bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-950/30 dark:to-amber-950/30 border border-orange-200/50 dark:border-orange-800/50 p-6 shadow-xl hover:shadow-2xl transition-all duration-300',
+    container: 'group relative z-0 overflow-hidden rounded-2xl bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800/50 dark:to-gray-900/50 border border-gray-200/50 dark:border-gray-700/50 p-4 shadow-xl hover:shadow-2xl transition-all duration-300', // ← Fondo NEUTRAL (era naranja)
 
     // Header
-    header: 'flex items-center justify-between mb-6 pb-4 border-b border-orange-200 dark:border-orange-800',
+    header: 'flex items-center justify-between mb-4 pb-3 border-b border-gray-200 dark:border-gray-700', // ← Borde neutral
     headerLeft: 'flex items-center gap-3',
-    headerIcon: 'w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center shadow-lg shadow-orange-500/40',
+    headerIcon: 'w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center shadow-lg shadow-orange-500/40', // ← Ícono mantiene naranja (destaca)
     headerIconSvg: 'w-5 h-5 text-white',
-    headerTitle: 'text-lg font-bold bg-gradient-to-br from-orange-600 via-amber-600 to-yellow-600 dark:from-orange-400 dark:via-amber-400 dark:to-yellow-400 bg-clip-text text-transparent',
+    headerTitle: 'text-base font-bold bg-gradient-to-br from-gray-800 via-gray-700 to-gray-600 dark:from-gray-100 dark:via-gray-200 dark:to-gray-300 bg-clip-text text-transparent', // ← Título neutral
 
-    // Botón agregar
+    // Botón agregar - MANTIENE naranja (acción primaria)
     addButton: 'inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-br from-orange-500 to-amber-500 text-white text-sm font-semibold hover:from-orange-600 hover:to-amber-600 transition-all shadow-lg shadow-orange-500/30 hover:shadow-xl hover:shadow-orange-500/40 hover:scale-105',
     addButtonIcon: 'w-4 h-4',
 
     // Lista de manzanas
-    list: 'space-y-3 max-h-[500px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-orange-300 dark:scrollbar-thumb-orange-700 scrollbar-track-transparent',
+    list: 'space-y-4 max-h-[500px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-700 scrollbar-track-transparent', // ← Más espacio entre cards
 
-    // Estado vacío
-    emptyState: 'rounded-xl border-2 border-dashed border-orange-300 dark:border-orange-700 bg-orange-50/50 dark:bg-orange-950/20 py-8 text-center',
-    emptyIcon: 'mx-auto mb-2 h-8 w-8 text-orange-400 dark:text-orange-600',
-    emptyTitle: 'text-sm font-medium text-orange-700 dark:text-orange-400',
-    emptySubtitle: 'mt-0.5 text-xs text-orange-500 dark:text-orange-600',
+    // Estado vacío - NEUTRAL
+    emptyState: 'rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-950/20 py-8 text-center', // ← Era naranja
+    emptyIcon: 'mx-auto mb-2 h-8 w-8 text-gray-400 dark:text-gray-600',
+    emptyTitle: 'text-sm font-medium text-gray-700 dark:text-gray-400',
+    emptySubtitle: 'mt-0.5 text-xs text-gray-500 dark:text-gray-600',
 
     // Mensaje de error general
     errorMessage: 'flex items-center gap-2 mt-4 p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 text-sm font-medium',
     errorIcon: 'w-4 h-4',
   },
 
-  // ==================== CARD DE MANZANA ====================
+  // ==================== CARD DE MANZANA NEUTRAL ====================
   manzanaCard: {
-    container: 'group/manzana relative overflow-hidden rounded-xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-2 border-orange-200/50 dark:border-orange-800/50 p-4 shadow-md hover:shadow-xl hover:border-orange-400 dark:hover:border-orange-600 transition-all duration-300',
+    container: 'group/manzana relative overflow-hidden rounded-xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 p-4 shadow-md hover:shadow-xl transition-all duration-300', // ← Neutral (sin naranja)
 
     // Header
     header: 'flex items-center justify-between mb-3',
-    headerLeft: 'inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-gradient-to-br from-orange-100 to-amber-100 dark:from-orange-900/30 dark:to-amber-900/30 border border-orange-300 dark:border-orange-700',
-    headerIcon: 'w-3.5 h-3.5 text-orange-600 dark:text-orange-400',
-    headerTitle: 'text-xs font-bold text-orange-700 dark:text-orange-300',
+    headerLeft: 'inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-600', // ← NEUTRAL (era naranja)
+    headerIcon: 'w-3.5 h-3.5 text-gray-600 dark:text-gray-400', // ← NEUTRAL
+    headerTitle: 'text-xs font-bold text-gray-700 dark:text-gray-300', // ← NEUTRAL
 
     // Botón eliminar
     deleteButton: 'opacity-0 group-hover/manzana:opacity-100 w-8 h-8 rounded-lg bg-red-500/20 hover:bg-red-500 text-red-600 hover:text-white transition-all duration-200 flex items-center justify-center shadow-md hover:shadow-lg hover:scale-110',
@@ -135,9 +138,9 @@ export const proyectosFormPremiumStyles = {
     },
   },
 
-  // ==================== BOTONES FOOTER ====================
+  // ==================== BOTONES FOOTER CON MÁS ESPACIO SUPERIOR ====================
   footer: {
-    container: 'flex items-center justify-end gap-3 pt-6 border-t border-gray-200 dark:border-gray-700',
+    container: 'flex items-center justify-end gap-3 pt-4 mt-4 border-t border-gray-200 dark:border-gray-700', // ← pt-4 mt-4 (antes pt-6)
 
     cancelButton: 'px-6 py-2.5 rounded-xl border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-400 dark:hover:border-gray-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md hover:shadow-lg',
 

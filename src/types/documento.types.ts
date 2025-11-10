@@ -120,6 +120,11 @@ export interface DocumentoProyecto {
   fecha_actualizacion: string
   // Relación opcional (cuando se carga con join)
   categoria?: CategoriaDocumento
+  usuario?: {
+    nombres: string
+    apellidos: string
+    email: string
+  }
 }
 
 export interface DocumentoFormData {

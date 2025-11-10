@@ -8,5 +8,7 @@ export * from './useDocumentosQuery'
 // Hooks de UI/Lógica
 export { useCategoriasManager } from './useCategoriasManager'
 export { useDocumentoCard } from './useDocumentoCard'
+export { useDocumentoEditar } from './useDocumentoEditar'
+export { useDocumentoReemplazarArchivo } from './useDocumentoReemplazarArchivo'
 export { useDocumentosLista } from './useDocumentosLista'
 export { useDocumentoUpload } from './useDocumentoUpload'

@@ -15,12 +15,19 @@ import { z } from 'zod'
 
 import type { ProyectoFormData } from '../types'
 
+import { useFormChanges } from '@/shared/hooks/useFormChanges'
 import { useManzanasEditables } from './useManzanasEditables'
 
 // ==================== SCHEMAS ====================
 const manzanaSchema = z.object({
   id: z.string().optional(), // ID real de la DB (si existe)
-  nombre: z.string().min(1, 'El nombre de la manzana es obligatorio'),
+  nombre: z
+    .string()
+    .min(1, 'El nombre de la manzana es obligatorio')
+    .regex(
+      /^[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\s\-_().]+$/,
+      'Solo se permiten letras, números, espacios, guiones, paréntesis y puntos'
+    ),
   totalViviendas: z
     .number()
     .min(1, 'Mínimo 1 vivienda')
@@ -34,15 +41,28 @@ const manzanaSchema = z.object({
 const proyectoSchema = z.object({
   nombre: z
     .string()
-    .min(3, 'El nombre del proyecto es obligatorio (mínimo 3 caracteres)')
-    .max(255, 'Máximo 255 caracteres'),
+    .min(3, 'El nombre del proyecto debe tener al menos 3 caracteres')
+    .max(100, 'El nombre no puede exceder 100 caracteres')
+    .regex(
+      /^[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\s\-_().]+$/,
+      'Solo se permiten letras (con acentos), números, espacios, guiones, paréntesis y puntos'
+    ),
   descripcion: z
     .string()
-    .min(10, 'La descripción es obligatoria (mínimo 10 caracteres)'),
+    .min(10, 'La descripción debe tener al menos 10 caracteres')
+    .max(1000, 'La descripción no puede exceder 1000 caracteres')
+    .regex(
+      /^[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\s\-_.,;:()\n¿?¡!'"°%$]+$/,
+      'Caracteres no permitidos en la descripción. Use solo letras, números y puntuación básica'
+    ),
   ubicacion: z
     .string()
-    .min(5, 'La ubicación es obligatoria (mínimo 5 caracteres)')
-    .max(500, 'Máximo 500 caracteres'),
+    .min(5, 'La ubicación debe tener al menos 5 caracteres')
+    .max(200, 'La ubicación no puede exceder 200 caracteres')
+    .regex(
+      /^[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\s\-,#.°]+$/,
+      'Solo se permiten letras (con acentos), números, espacios, comas, guiones, # y puntos'
+    ),
   manzanas: z.array(manzanaSchema).min(1, 'Debe agregar al menos una manzana'),
 })
 
@@ -82,9 +102,11 @@ export function useProyectosForm({
     control,
     watch,
     reset,
-    formState: { errors },
+    formState: { errors, touchedFields },
   } = useForm<ProyectoFormSchema>({
     resolver: zodResolver(proyectoSchema),
+    mode: 'onBlur', // ← Validar al salir del campo (UX no intrusiva)
+    reValidateMode: 'onChange', // ← Si ya hay error, validar mientras corrige
     defaultValues: {
       nombre: initialData?.nombre || '',
       descripcion: initialData?.descripcion || '',
@@ -143,6 +165,39 @@ export function useProyectosForm({
     return manzanasWatch?.reduce((sum, m) => sum + (m.totalViviendas || 0), 0) || 0
   }, [manzanasWatch])
 
+  // ==================== DETECCIÓN DE CAMBIOS (solo en modo edición) ====================
+  const {
+    hasChanges,
+    changes,
+    changesCount,
+    isFieldChanged,
+  } = useFormChanges(
+    {
+      nombre: watch('nombre'),
+      ubicacion: watch('ubicacion'),
+      descripcion: watch('descripcion'),
+      manzanas: manzanasWatch,
+    },
+    {
+      nombre: initialData?.nombre || '',
+      ubicacion: initialData?.ubicacion || '',
+      descripcion: initialData?.descripcion || '',
+      manzanas: initialData?.manzanas || [],
+    },
+    {
+      fieldLabels: {
+        nombre: 'Nombre del Proyecto',
+        ubicacion: 'Ubicación',
+        descripcion: 'Descripción',
+        manzanas: 'Manzanas',
+      },
+    }
+  )
+
+  // Solo habilitar detección de cambios en modo edición
+  const shouldShowChanges = isEditing
+  const canSave = isEditing ? hasChanges : true // En creación siempre puede guardar
+
   // ==================== HANDLERS ====================
   const handleAgregarManzana = () => {
     append({
@@ -156,7 +211,8 @@ export function useProyectosForm({
     if (isEditing && manzanasWatch) {
       const manzana = manzanasWatch[index]
       if (manzana.id && !puedeEliminar(manzana.id)) {
-        alert(obtenerMotivoBloqueado(manzana.id))
+        const motivo = obtenerMotivoBloqueado(manzana.id)
+        alert(`❌ No se puede eliminar esta manzana\n\n${motivo}\n\nLas manzanas con viviendas creadas están protegidas para mantener la integridad de datos.`)
         return
       }
     }
@@ -272,6 +328,7 @@ export function useProyectosForm({
     handleSubmit: handleSubmit(onSubmitForm),
     control,
     errors,
+    touchedFields, // ← Exportar para validación progresiva
 
     // Field array
     fields,
@@ -282,6 +339,14 @@ export function useProyectosForm({
     totalManzanas,
     totalViviendas,
     manzanasWatch, // ✅ Exportar para acceder a valores reales
+
+    // Detección de cambios
+    hasChanges,
+    changes,
+    changesCount,
+    isFieldChanged,
+    shouldShowChanges,
+    canSave,
 
     // Helpers
     getButtonText,

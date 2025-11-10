@@ -1,10 +1,28 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
+import { useAuth } from '@/contexts/auth-context'
+import type { DocumentoProyecto } from '@/types/documento.types'
 import { useClickOutside } from '../../../shared/hooks'
 import { DocumentosClienteService } from '../../clientes/documentos/services/documentos-cliente.service'
 
-export function useDocumentoCard(documentoId?: string) {
+interface UseDocumentoCardProps {
+  documento: DocumentoProyecto
+  esDocumentoProyecto?: boolean
+}
+
+export function useDocumentoCard({ documento, esDocumentoProyecto = true }: UseDocumentoCardProps) {
+  // 🔐 Auth
+  const { perfil } = useAuth()
+  const esAdmin = useMemo(() => perfil?.rol === 'Administrador', [perfil?.rol])
+
+  // 📋 Estados de UI
   const [menuAbierto, setMenuAbierto] = useState(false)
+  const [modalEditarAbierto, setModalEditarAbierto] = useState(false)
+  const [modalReemplazarAbierto, setModalReemplazarAbierto] = useState(false)
+  const [modalVersionesAbierto, setModalVersionesAbierto] = useState(false)
+  const [modalNuevaVersionAbierto, setModalNuevaVersionAbierto] = useState(false)
+
+  // 🔒 Estados de protección (solo para documentos de clientes)
   const [estaProtegido, setEstaProtegido] = useState(false)
   const [procesoInfo, setProcesoInfo] = useState<{
     pasoNombre?: string
@@ -16,22 +34,60 @@ export function useDocumentoCard(documentoId?: string) {
     nombrePaso?: string
   }>({ esDeProceso: false })
   const [verificando, setVerificando] = useState(false)
-  const [modalVersionesAbierto, setModalVersionesAbierto] = useState(false)
-  const [modalNuevaVersionAbierto, setModalNuevaVersionAbierto] = useState(false)
+
+  // 📅 Cálculos de fechas (memoizados)
+  const estaProximoAVencer = useMemo(() => {
+    if (!documento.fecha_vencimiento) return false
+    const fechaVencimiento = new Date(documento.fecha_vencimiento)
+    const fechaLimite = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+    return fechaVencimiento <= fechaLimite
+  }, [documento.fecha_vencimiento])
+
+  const estaVencido = useMemo(() => {
+    if (!documento.fecha_vencimiento) return false
+    return new Date(documento.fecha_vencimiento) < new Date()
+  }, [documento.fecha_vencimiento])
+
+  const diasParaVencer = useMemo(() => {
+    if (!documento.fecha_vencimiento) return null
+    const diff = new Date(documento.fecha_vencimiento).getTime() - Date.now()
+    return Math.ceil(diff / (1000 * 60 * 60 * 24))
+  }, [documento.fecha_vencimiento])
+
+  // 📊 Propiedades del documento (memoizadas)
+  const esDocumentoDeProceso = useMemo(() => {
+    return documento.etiquetas?.some(
+      etiqueta => etiqueta.toLowerCase() === 'proceso' || etiqueta.toLowerCase() === 'negociación'
+    ) ?? false
+  }, [documento.etiquetas])
+
+  const tieneVersiones = useMemo(() => {
+    return documento.version > 1 || !!documento.documento_padre_id
+  }, [documento.version, documento.documento_padre_id])
 
   // Usar hook compartido para cerrar al hacer click fuera
   const menuRef = useClickOutside<HTMLDivElement>(() => {
     setMenuAbierto(false)
   })
 
-  // Verificar si el documento está protegido (es de proceso completado)
+  // Verificar si el documento está protegido (SOLO para documentos de clientes con procesos)
   useEffect(() => {
-    if (documentoId) {
+    // ✅ SKIP verificación para documentos de proyectos
+    if (esDocumentoProyecto) {
+      setEstaProtegido(false)
+      setProcesoInfo(null)
+      setEstadoProceso({ esDeProceso: false })
+      setVerificando(false)
+      return
+    }
+
+    if (documento.id) {
       verificarProteccion()
     }
-  }, [documentoId])
+  }, [documento.id, esDocumentoProyecto])
 
   const verificarProteccion = async () => {
+    const documentoId = documento.id
     if (!documentoId) return
 
     // Validar que documentoId sea un UUID válido
@@ -95,20 +151,61 @@ export function useDocumentoCard(documentoId?: string) {
     setModalNuevaVersionAbierto(false)
   }, [])
 
+  const abrirModalEditar = useCallback(() => {
+    setModalEditarAbierto(true)
+    cerrarMenu()
+  }, [])
+
+  const cerrarModalEditar = useCallback(() => {
+    setModalEditarAbierto(false)
+  }, [])
+
+  const abrirModalReemplazar = useCallback(() => {
+    setModalReemplazarAbierto(true)
+    cerrarMenu()
+  }, [])
+
+  const cerrarModalReemplazar = useCallback(() => {
+    setModalReemplazarAbierto(false)
+  }, [])
+
   return {
+    // 🔐 Auth
+    esAdmin,
+
+    // 📋 Estados de UI - Menú
     menuAbierto,
     menuRef,
     toggleMenu,
     cerrarMenu,
-    estaProtegido,
-    procesoInfo,
-    estadoProceso, // ✅ NUEVO: Estado del proceso
-    verificando,
+
+    // 📋 Estados de UI - Modales
+    modalEditarAbierto,
+    abrirModalEditar,
+    cerrarModalEditar,
+    modalReemplazarAbierto,
+    abrirModalReemplazar,
+    cerrarModalReemplazar,
     modalVersionesAbierto,
     abrirModalVersiones,
     cerrarModalVersiones,
     modalNuevaVersionAbierto,
     abrirModalNuevaVersion,
     cerrarModalNuevaVersion,
+
+    // 🔒 Protección de documentos
+    estaProtegido,
+    procesoInfo,
+    estadoProceso,
+    verificando,
+
+    // 📅 Cálculos de fechas
+    estaProximoAVencer,
+    estaVencido,
+    diasParaVencer,
+
+    // 📊 Propiedades del documento
+    esDocumentoDeProceso,
+    tieneVersiones,
   }
 }

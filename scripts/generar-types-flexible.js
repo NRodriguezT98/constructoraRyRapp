@@ -159,14 +159,18 @@ const KNOWN_TABLES = {
   'fuentes_pago': [],
   'renuncias': [],
   'categorias_documento': [],
-  'documentos': [],
+  'documentos_proyecto': [],
+  'documentos_cliente': [],
   'documentos_vivienda': [],
   'cliente_intereses': [],
   'audit_log': [],
   'audit_log_seguridad': [],
   'configuracion_sistema': [],
   'recargos_esquinera': [],
-  'configuracion_recargos': []
+  'configuracion_recargos': [],
+  'plantillas_proceso': [],
+  'procesos_negociacion': [],
+  'documento_reemplazos_admin': []
 };
 
 // ⚠️ IMPORTANTE: Actualizar esta lista cuando se agreguen nuevas vistas

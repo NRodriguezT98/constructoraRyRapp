@@ -15,6 +15,7 @@ import {
     X,
 } from 'lucide-react'
 
+import { moduleThemes, type ModuleName } from '@/shared/config/module-themes'
 import { useDocumentosStore } from '../../store/documentos.store'
 import type { CategoriaDocumento, DocumentoProyecto } from '../../types'
 
@@ -24,13 +25,17 @@ interface DocumentosFiltrosProps {
   documentos: DocumentoProyecto[]
   categorias: CategoriaDocumento[]
   onChangeVista?: (vista: VistaDocumentos) => void
+  moduleName?: ModuleName // 🎨 Tema del módulo
 }
 
 export function DocumentosFiltros({
   documentos = [],
   categorias = [],
-  onChangeVista
+  onChangeVista,
+  moduleName = 'proyectos', // 🎨 Default a proyectos
 }: DocumentosFiltrosProps) {
+  // 🎨 Obtener tema dinámico
+  const theme = moduleThemes[moduleName]
   const [mostrarFiltrosAvanzados, setMostrarFiltrosAvanzados] = useState(false)
   const [vista, setVista] = useState<VistaDocumentos>('grid')
 
@@ -101,28 +106,28 @@ export function DocumentosFiltros({
     categoriaFiltro || etiquetasFiltro.length > 0 || busqueda || soloImportantes
 
   return (
-    <div className='space-y-4'>
-      {/* Barra principal de búsqueda y controles */}
-      <div className='flex flex-col gap-3 sm:flex-row'>
+    <div className='space-y-3'>
+      {/* Barra principal de búsqueda y controles - COMPACTA */}
+      <div className='flex flex-col gap-2 sm:flex-row sm:items-center'>
         {/* Búsqueda */}
         <div className='relative flex-1'>
           <Search
-            size={18}
-            className='absolute left-4 top-1/2 -translate-y-1/2 text-gray-400'
+            size={16}
+            className='absolute left-3 top-1/2 -translate-y-1/2 text-gray-400'
           />
           <input
             type='text'
             value={busqueda}
             onChange={e => setBusqueda(e.target.value)}
             placeholder='Buscar documentos por título, nombre o descripción...'
-            className='w-full rounded-xl border border-gray-200 bg-white py-3 pl-11 pr-4 transition-all focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:focus:ring-blue-400'
+            className={`w-full rounded-lg border border-gray-200 bg-white py-2 pl-9 pr-4 text-sm transition-all ${theme.classes.focus.ring} dark:border-gray-700 dark:bg-gray-800`}
           />
           {busqueda && (
             <button
               onClick={() => setBusqueda('')}
-              className='absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
+              className='absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
             >
-              <X size={18} />
+              <X size={16} />
             </button>
           )}
         </div>
@@ -130,55 +135,55 @@ export function DocumentosFiltros({
         {/* Toggle de importantes */}
         <button
           onClick={toggleSoloImportantes}
-          className={`flex items-center gap-2 rounded-xl px-4 py-3 font-medium transition-all ${
+          className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-all whitespace-nowrap ${
             soloImportantes
               ? 'bg-yellow-500 text-white shadow-lg'
               : 'border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
           }`}
         >
-          <Star size={18} className={soloImportantes ? 'fill-white' : ''} />
+          <Star size={16} className={soloImportantes ? 'fill-white' : ''} />
           <span className='hidden sm:inline'>Importantes</span>
         </button>
 
         {/* Toggle filtros avanzados */}
         <button
           onClick={() => setMostrarFiltrosAvanzados(!mostrarFiltrosAvanzados)}
-          className={`flex items-center gap-2 rounded-xl px-4 py-3 font-medium transition-all ${
+          className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-all whitespace-nowrap ${
             mostrarFiltrosAvanzados
-              ? 'bg-blue-500 text-white shadow-lg'
+              ? `bg-gradient-to-r ${theme.classes.gradient.primary} text-white shadow-lg`
               : 'border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
           }`}
         >
-          <SlidersHorizontal size={18} />
+          <SlidersHorizontal size={16} />
           <span className='hidden sm:inline'>Filtros</span>
         </button>
 
         {/* Selector de vista */}
-        <div className='flex rounded-xl border border-gray-200 bg-white p-1 dark:border-gray-700 dark:bg-gray-800'>
+        <div className='flex rounded-lg border border-gray-200 bg-white p-0.5 dark:border-gray-700 dark:bg-gray-800'>
           <button
             onClick={() => handleChangeVista('grid')}
-            className={`rounded-lg p-2 transition-all ${
+            className={`rounded-md p-1.5 transition-all ${
               vista === 'grid'
-                ? 'bg-blue-500 text-white'
+                ? `bg-gradient-to-r ${theme.classes.gradient.primary} text-white shadow-sm`
                 : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
             }`}
           >
-            <Grid3x3 size={18} />
+            <Grid3x3 size={16} />
           </button>
           <button
             onClick={() => handleChangeVista('lista')}
-            className={`rounded-lg p-2 transition-all ${
+            className={`rounded-md p-1.5 transition-all ${
               vista === 'lista'
-                ? 'bg-blue-500 text-white'
+                ? `bg-gradient-to-r ${theme.classes.gradient.primary} text-white shadow-sm`
                 : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
             }`}
           >
-            <ListIcon size={18} />
+            <ListIcon size={16} />
           </button>
         </div>
       </div>
 
-      {/* Filtros avanzados */}
+      {/* Filtros avanzados - COMPACTOS */}
       <AnimatePresence>
         {mostrarFiltrosAvanzados && (
           <motion.div
@@ -187,18 +192,18 @@ export function DocumentosFiltros({
             exit={{ opacity: 0, height: 0 }}
             className='overflow-hidden'
           >
-            <div className='rounded-2xl border border-blue-200 bg-gradient-to-br from-blue-50 to-purple-50 p-6 dark:border-blue-800 dark:from-blue-900/20 dark:to-purple-900/20'>
-              <div className='grid grid-cols-1 gap-6 md:grid-cols-2'>
+            <div className={`rounded-lg border ${theme.classes.border.light} bg-gradient-to-br ${theme.classes.gradient.background} p-4`}>
+              <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
                 {/* Filtro por categoría */}
                 <div>
-                  <label className='mb-2 flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300'>
-                    <Filter size={16} />
+                  <label className='mb-1.5 flex items-center gap-2 text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide'>
+                    <Filter size={14} />
                     Categoría
                   </label>
                   <select
                     value={categoriaFiltro || ''}
                     onChange={e => setFiltroCategoria(e.target.value || null)}
-                    className='w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 transition-all focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:focus:ring-blue-400'
+                    className={`w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm transition-all ${theme.classes.focus.ring} dark:border-gray-700 dark:bg-gray-800`}
                   >
                     <option value=''>Todas las categorías</option>
                     {categorias.map(categoria => (
@@ -211,11 +216,11 @@ export function DocumentosFiltros({
 
                 {/* Filtro por etiquetas */}
                 <div>
-                  <label className='mb-2 flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300'>
-                    <TagIcon size={16} />
+                  <label className='mb-1.5 flex items-center gap-2 text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide'>
+                    <TagIcon size={14} />
                     Etiquetas
                   </label>
-                  <div className='flex flex-wrap gap-2'>
+                  <div className='flex flex-wrap gap-1.5'>
                     {etiquetasUnicas.length > 0 ? (
                       etiquetasUnicas.map(etiqueta => {
                         const estaSeleccionada =
@@ -235,9 +240,9 @@ export function DocumentosFiltros({
                                 ])
                               }
                             }}
-                            className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-all ${
+                            className={`rounded-md px-2.5 py-1 text-xs font-medium transition-all ${
                               estaSeleccionada
-                                ? 'bg-blue-500 text-white shadow-lg'
+                                ? `bg-gradient-to-r ${theme.classes.gradient.primary} text-white shadow-md`
                                 : 'border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
                             }`}
                           >
@@ -246,7 +251,7 @@ export function DocumentosFiltros({
                         )
                       })
                     ) : (
-                      <p className='text-sm text-gray-500 dark:text-gray-400'>
+                      <p className='text-xs text-gray-500 dark:text-gray-400'>
                         No hay etiquetas disponibles
                       </p>
                     )}

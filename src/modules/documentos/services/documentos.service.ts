@@ -30,14 +30,21 @@ export class DocumentosService {
   ): Promise<DocumentoProyecto[]> {
     const { data, error } = await supabase
       .from('documentos_proyecto')
-      .select('*')
+      .select(`
+        *,
+        usuario:usuarios!fk_documentos_proyecto_subido_por (
+          nombres,
+          apellidos,
+          email
+        )
+      `)
       .eq('proyecto_id', proyectoId)
       .eq('estado', 'activo')
       .order('es_importante', { ascending: false }) // Importantes primero
       .order('fecha_creacion', { ascending: false })
 
     if (error) throw error
-    return (data || []) as DocumentoProyecto[]
+    return (data || []) as unknown as DocumentoProyecto[]
   }
 
   /**
@@ -49,7 +56,14 @@ export class DocumentosService {
   ): Promise<DocumentoProyecto[]> {
     const { data, error } = await supabase
       .from('documentos_proyecto')
-      .select('*')
+      .select(`
+        *,
+        usuario:usuarios!fk_documentos_proyecto_subido_por (
+          nombres,
+          apellidos,
+          email
+        )
+      `)
       .eq('proyecto_id', proyectoId)
       .eq('categoria_id', categoriaId)
       .eq('estado', 'activo')
@@ -70,7 +84,14 @@ export class DocumentosService {
 
     const { data, error } = await supabase
       .from('documentos_proyecto')
-      .select('*')
+      .select(`
+        *,
+        usuario:usuarios!fk_documentos_proyecto_subido_por (
+          nombres,
+          apellidos,
+          email
+        )
+      `)
       .eq('estado', 'activo')
       .not('fecha_vencimiento', 'is', null)
       .lte('fecha_vencimiento', fechaLimite.toISOString())

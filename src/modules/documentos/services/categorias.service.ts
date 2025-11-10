@@ -31,19 +31,18 @@ export class CategoriasService {
 
   /**
    * Obtener categorías disponibles para un módulo específico
-   * Sistema flexible: considera es_global y modulos_permitidos
-   * Ahora las categorías son compartidas entre usuarios
+   * Sistema flexible: solo categorías globales (compartidas entre todos los usuarios)
    * @param modulo - 'proyectos' | 'clientes' | 'viviendas'
    */
   static async obtenerCategoriasPorModulo(
-    userId: string, // Mantenemos por compatibilidad pero ya no se usa para filtrar
+    userId: string, // Mantenido por compatibilidad, no se usa para filtrar
     modulo: 'proyectos' | 'clientes' | 'viviendas'
   ): Promise<CategoriaDocumento[]> {
-    // Traer TODAS las categorías globales (no filtrar por user_id)
+    // ✅ SOLO categorías globales (visibles para TODOS los usuarios: admin, contadora, ayudante)
     const { data, error } = await supabase
       .from('categorias_documento')
       .select('*')
-      .eq('es_global', true) // Solo categorías globales
+      .eq('es_global', true) // Solo categorías globales del sistema
       .order('orden', { ascending: true })
       .order('nombre', { ascending: true })
 
@@ -185,5 +184,20 @@ export class CategoriasService {
 
     if (error) throw error
     return (count || 0) > 0
+  }
+
+  /**
+   * ✅ Crear categorías por defecto para módulo proyectos
+   * Llama a la función SQL que crea las 5 categorías esenciales
+   */
+  static async crearCategoriasProyectosDefault(userId: string): Promise<void> {
+    const { error } = await supabase.rpc('crear_categorias_proyectos_default', {
+      p_user_id: userId
+    })
+
+    if (error) {
+      console.error('Error al crear categorías por defecto:', error)
+      throw error
+    }
   }
 }

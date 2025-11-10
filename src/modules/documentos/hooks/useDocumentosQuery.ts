@@ -63,13 +63,30 @@ export function useCategoriasQuery(
   userId?: string,
   modulo: 'proyectos' | 'clientes' | 'viviendas' = 'proyectos'
 ) {
+  const queryClient = useQueryClient()
+
   const {
     data: categorias = [],
     isLoading: cargando,
     error,
   } = useQuery({
     queryKey: [...documentosKeys.categorias(userId!), modulo],
-    queryFn: () => CategoriasService.obtenerCategoriasPorModulo(userId!, modulo),
+    queryFn: async () => {
+      const cats = await CategoriasService.obtenerCategoriasPorModulo(userId!, modulo)
+
+      // ✅ SEED AUTOMÁTICO: Si no hay categorías para proyectos, crear las por defecto
+      if (cats.length === 0 && modulo === 'proyectos') {
+        console.log('📋 No hay categorías para proyectos. Creando categorías por defecto...')
+        await CategoriasService.crearCategoriasProyectosDefault(userId!)
+
+        // Refrescar categorías después de crearlas
+        const categoriasNuevas = await CategoriasService.obtenerCategoriasPorModulo(userId!, modulo)
+        toast.success('✅ Categorías creadas automáticamente')
+        return categoriasNuevas
+      }
+
+      return cats
+    },
     enabled: !!userId,
     staleTime: 10 * 60 * 1000, // 10 minutos (categorías cambian poco)
     gcTime: 30 * 60 * 1000, // 30 minutos
@@ -95,6 +112,8 @@ export function useSubirDocumentoMutation(proyectoId: string) {
       descripcion?: string
       categoriaId?: string
       etiquetas?: string[]
+      fechaDocumento?: string
+      fechaVencimiento?: string
       esImportante?: boolean
       userId: string
     }) =>
@@ -106,13 +125,36 @@ export function useSubirDocumentoMutation(proyectoId: string) {
           descripcion: params.descripcion,
           archivo: params.archivo,
           etiquetas: params.etiquetas,
+          fecha_documento: params.fechaDocumento,
+          fecha_vencimiento: params.fechaVencimiento,
           es_importante: params.esImportante,
         },
         params.userId
       ),
-    onSuccess: (nuevoDocumento) => {
-      // ✅ Invalidación automática del cache
-      queryClient.invalidateQueries({ queryKey: documentosKeys.list(proyectoId) })
+    onSuccess: async (nuevoDocumento) => {
+      // ✅ PASO 1: Invalidar todas las queries relacionadas con documentos
+      await queryClient.invalidateQueries({
+        queryKey: documentosKeys.list(proyectoId),
+      })
+
+      // ✅ PASO 2: Refetch INMEDIATO y FORZADO
+      await queryClient.refetchQueries({
+        queryKey: documentosKeys.list(proyectoId),
+        type: 'active',
+      })
+
+      // ✅ PASO 3: Actualización optimista del cache (agregar documento manualmente)
+      queryClient.setQueryData<DocumentoProyecto[]>(
+        documentosKeys.list(proyectoId),
+        (oldDocumentos = []) => {
+          // Si el documento ya está en la lista (del refetch), no duplicar
+          const existe = oldDocumentos.some(doc => doc.id === nuevoDocumento.id)
+          if (existe) return oldDocumentos
+
+          // Agregar el nuevo documento al inicio de la lista
+          return [nuevoDocumento, ...oldDocumentos]
+        }
+      )
 
       toast.success('Documento subido correctamente', {
         description: nuevoDocumento.titulo,

@@ -4,50 +4,68 @@ import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { AnimatePresence, motion } from 'framer-motion'
 import {
-    AlertCircle,
-    Archive,
-    Calendar,
-    Download,
-    Edit3,
-    Eye,
-    FileText,
-    FileUp,
-    History,
-    Lock,
-    MoreVertical,
-    Star,
-    Tag,
-    Trash2,
+  AlertCircle,
+  Archive,
+  Calendar,
+  Clock,
+  Crown,
+  Download,
+  Edit,
+  Edit3,
+  Eye,
+  FileText,
+  FileUp,
+  History,
+  Lock,
+  MoreVertical,
+  RefreshCw,
+  Star,
+  Tag,
+  Trash2,
+  Upload,
+  User,
 } from 'lucide-react'
 
 import {
-    DocumentoProyecto,
-    formatFileSize,
-    getFileExtension,
+  formatDateCompact
+} from '@/lib/utils/date.utils'
+import { moduleThemes, type ModuleName } from '@/shared/config/module-themes'
+import {
+  DocumentoProyecto,
+  formatFileSize,
+  getFileExtension,
 } from '../../../../types/documento.types'
 import {
-    DocumentoNuevaVersionModal,
-    DocumentoVersionesModal
+  DocumentoNuevaVersionModal,
+  DocumentoVersionesModal
 } from '../../../clientes/documentos/components'
 import { useDocumentoCard } from '../../hooks'
+import type { CategoriaDocumento } from '../../types'
 import { BadgeEstadoProceso } from '../badge-estado-proceso'
+import {
+  DocumentoEditarMetadatosModal,
+  DocumentoReemplazarArchivoModal
+} from '../modals'
 import { CategoriaIcon } from '../shared/categoria-icon'
 
 interface DocumentoCardProps {
   documento: DocumentoProyecto
   categoria?: { nombre: string; color: string; icono: string }
+  categorias?: CategoriaDocumento[] // 🆕 Para el modal de editar
   onView: (documento: DocumentoProyecto) => void
   onDownload: (documento: DocumentoProyecto) => void
   onToggleImportante: (documento: DocumentoProyecto) => void
   onArchive: (documento: DocumentoProyecto) => void
   onDelete: (documento: DocumentoProyecto) => void
   onRename?: (documento: DocumentoProyecto) => void
-  onRefresh?: () => void | Promise<void> // 🆕 Callback para refrescar después de versión
+  onRefresh?: () => void | Promise<void> // 🆕 Callback para refrescar después de versión/edición
+  moduleName?: ModuleName // 🎨 Tema del módulo padre
 }
 
 export function DocumentoCard({
   documento,
   categoria,
+  categorias = [], // 🆕 Default a array vacío
   onView,
   onDownload,
   onToggleImportante,
@@ -55,15 +73,27 @@ export function DocumentoCard({
   onDelete,
   onRename,
   onRefresh, // 🆕 Prop de refresh
+  moduleName = 'proyectos', // 🎨 Default a proyectos
 }: DocumentoCardProps) {
+  // 🎨 Obtener tema dinámico
+  const theme = moduleThemes[moduleName]
+
+  // 🎯 TODA la lógica en el hook
   const {
+    esAdmin,
     menuAbierto,
     menuRef,
     toggleMenu,
     cerrarMenu,
+    modalEditarAbierto,
+    abrirModalEditar,
+    cerrarModalEditar,
+    modalReemplazarAbierto,
+    abrirModalReemplazar,
+    cerrarModalReemplazar,
     estaProtegido,
     procesoInfo,
-    estadoProceso, // ✅ NUEVO
+    estadoProceso,
     verificando,
     modalVersionesAbierto,
     abrirModalVersiones,
@@ -71,102 +101,84 @@ export function DocumentoCard({
     modalNuevaVersionAbierto,
     abrirModalNuevaVersion,
     cerrarModalNuevaVersion,
-  } = useDocumentoCard(documento.id)
-
-  const esDocumentoDeProceso = documento.etiquetas?.some(
-    etiqueta => etiqueta.toLowerCase() === 'proceso' || etiqueta.toLowerCase() === 'negociación'
-  )
-
-  const tieneVersiones = documento.version > 1 || documento.documento_padre_id
-
-  const estaProximoAVencer = documento.fecha_vencimiento
-    ? new Date(documento.fecha_vencimiento) <=
-      new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
-    : false
-
-  const estaVencido = documento.fecha_vencimiento
-    ? new Date(documento.fecha_vencimiento) < new Date()
-    : false
+    estaProximoAVencer,
+    estaVencido,
+    diasParaVencer,
+    esDocumentoDeProceso,
+    tieneVersiones,
+  } = useDocumentoCard({ documento, esDocumentoProyecto: true })
 
   return (
-    <motion.div
-      layout
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.95 }}
-      whileHover={{ y: -4 }}
-      className='group relative flex h-full min-h-[400px] flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:shadow-xl dark:border-gray-700 dark:bg-gray-800'
-    >
-      {/* Badge de importante */}
-      {documento.es_importante && (
-        <div className='absolute right-4 top-4 z-10'>
-          <div className='flex items-center gap-1 rounded-full bg-yellow-500 px-3 py-1 text-xs font-medium text-white shadow-lg'>
-            <Star size={12} className='fill-white' />
-            Importante
-          </div>
-        </div>
-      )}
-
-      {/* Badge de vencimiento */}
-      {estaVencido && (
-        <div className='absolute left-4 top-4 z-10'>
-          <div className='flex items-center gap-1 rounded-full bg-red-500 px-3 py-1 text-xs font-medium text-white shadow-lg'>
-            <AlertCircle size={12} />
-            Vencido
-          </div>
-        </div>
-      )}
-      {!estaVencido && estaProximoAVencer && (
-        <div className='absolute left-4 top-4 z-10'>
-          <div className='flex items-center gap-1 rounded-full bg-orange-500 px-3 py-1 text-xs font-medium text-white shadow-lg'>
-            <AlertCircle size={12} />
-            Por vencer
-          </div>
-        </div>
-      )}
-
-      {/* Badge de proceso completado */}
-      {estaProtegido && procesoInfo && (
-        <div className='absolute left-4 bottom-4 z-10'>
-          <div className='flex items-center gap-1.5 rounded-full bg-emerald-600 px-3 py-1.5 text-xs font-bold text-white shadow-lg'>
-            <Lock size={12} />
-            <span>Proceso Completado</span>
-            {procesoInfo.pasoNombre && (
-              <span className='ml-1 opacity-90'>• {procesoInfo.pasoNombre}</span>
-            )}
-          </div>
-        </div>
-      )}
-
-      <div className='flex flex-1 flex-col p-6'>
-        {/* Header con icono y menú */}
-        <div className='mb-4 flex items-start justify-between'>
-          <div className='flex items-center gap-3'>
+    <>
+      <motion.div
+        layout
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.95 }}
+        whileHover={{ y: -2 }}
+        className={`group relative flex h-full flex-col rounded-xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:shadow-lg dark:border-gray-700 dark:bg-gray-800 ${menuAbierto ? 'z-50' : 'z-0'}`}
+      >
+      <div className='flex flex-1 flex-col p-4'>
+        {/* Header: Icon + Categoría + Menú */}
+        <div className='mb-3 flex items-start justify-between gap-3'>
+          <div className='flex items-center gap-3 flex-1 min-w-0'>
+            {/* Icono de categoría */}
             {categoria ? (
-              <div className='flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900/30 dark:to-purple-900/30'>
+              <div className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-gradient-to-br ${theme.classes.gradient.background} dark:${theme.classes.gradient.backgroundDark}`}>
                 <CategoriaIcon
                   icono={categoria.icono}
                   color={categoria.color}
-                  size={24}
+                  size={20}
                 />
               </div>
             ) : (
-              <div className='flex h-12 w-12 items-center justify-center rounded-xl bg-gray-100 dark:bg-gray-700'>
-                <FileText size={24} className='text-gray-400' />
+              <div className='flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-700'>
+                <FileText size={20} className='text-gray-400' />
               </div>
             )}
 
+            {/* Título + Badges inline */}
             <div className='min-w-0 flex-1'>
-              {categoria && (
-                <span className='text-xs font-medium text-gray-500 dark:text-gray-400'>
-                  {categoria.nombre}
+              <div className='flex items-center gap-2 mb-1'>
+                {/* Título truncado con tooltip */}
+                <h3
+                  className='font-semibold text-gray-900 dark:text-white truncate text-sm'
+                  title={documento.titulo}
+                >
+                  {documento.titulo}
+                </h3>
+
+                {/* Badge importante */}
+                {documento.es_importante && (
+                  <Star size={14} className='flex-shrink-0 fill-yellow-500 text-yellow-500' />
+                )}
+              </div>
+
+              {/* Categoría + Tipo + Tamaño */}
+              <div className='flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400'>
+                {categoria && (
+                  <>
+                    <span className='font-medium'>{categoria.nombre}</span>
+                    <span>•</span>
+                  </>
+                )}
+                <span className='font-medium uppercase'>
+                  {getFileExtension(documento.nombre_archivo)}
                 </span>
-              )}
+                <span>•</span>
+                <span>{formatFileSize(documento.tamano_bytes)}</span>
+                {documento.version > 1 && (
+                  <>
+                    <span>•</span>
+                    <span className='font-medium text-purple-600 dark:text-purple-400'>v{documento.version}</span>
+                  </>
+                )}
+              </div>
             </div>
           </div>
 
           {/* Menú de acciones */}
-          <div className='relative' ref={menuRef}>
+          <div className='relative flex-shrink-0' ref={menuRef}>
             <button
               type="button"
               onClick={(e) => {
@@ -185,8 +197,9 @@ export function DocumentoCard({
                   initial={{ opacity: 0, scale: 0.95, y: -10 }}
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95, y: -10 }}
-                  className='absolute right-0 top-full z-20 mt-2 w-48 rounded-xl border border-gray-200 bg-white py-2 shadow-xl dark:border-gray-700 dark:bg-gray-800'
+                  className='absolute right-0 top-full z-50 mt-2 min-w-[220px] rounded-xl border border-gray-200 bg-white py-1 shadow-2xl dark:border-gray-700 dark:bg-gray-800'
                 >
+                {/* Marcar/Quitar importante */}
                 <button
                   type="button"
                   onClick={(e) => {
@@ -195,10 +208,10 @@ export function DocumentoCard({
                     onToggleImportante(documento)
                     cerrarMenu()
                   }}
-                  className='flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
+                  className='flex w-full items-center gap-2 px-3 py-1.5 text-left text-sm text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
                 >
                   <Star
-                    size={16}
+                    size={14}
                     className={
                       documento.es_importante
                         ? 'fill-yellow-500 text-yellow-500'
@@ -219,12 +232,29 @@ export function DocumentoCard({
                       onRename(documento)
                       cerrarMenu()
                     }}
-                    className='flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
+                    className='flex w-full items-center gap-2 px-3 py-1.5 text-left text-sm text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
                   >
-                    <Edit3 size={16} />
+                    <Edit3 size={14} />
                     Renombrar
                   </button>
                 )}
+
+                {/* Separador - Sección de edición */}
+                <div className='my-1.5 border-t border-gray-200 dark:border-gray-700' />
+
+                {/* 🆕 Botón Editar Metadatos - para todos los usuarios */}
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    abrirModalEditar()
+                  }}
+                  className='flex w-full items-center gap-2 px-3 py-1.5 text-left text-sm text-blue-600 transition-colors hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/20'
+                >
+                  <Edit size={14} />
+                  Editar Documento
+                </button>
 
                 {/* Botón Ver Historial - si tiene versiones */}
                 {tieneVersiones && (
@@ -235,9 +265,9 @@ export function DocumentoCard({
                       e.stopPropagation()
                       abrirModalVersiones()
                     }}
-                    className='flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-purple-600 transition-colors hover:bg-purple-50 dark:text-purple-400 dark:hover:bg-purple-900/20'
+                    className='flex w-full items-center gap-2 px-3 py-1.5 text-left text-sm text-purple-600 transition-colors hover:bg-purple-50 dark:text-purple-400 dark:hover:bg-purple-900/20'
                   >
-                    <History size={16} />
+                    <History size={14} />
                     Ver Historial (v{documento.version})
                   </button>
                 )}
@@ -251,12 +281,35 @@ export function DocumentoCard({
                       e.stopPropagation()
                       abrirModalNuevaVersion()
                     }}
-                    className='flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-blue-600 transition-colors hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/20'
+                    className='flex w-full items-center gap-2 px-3 py-1.5 text-left text-sm text-blue-600 transition-colors hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/20'
                   >
-                    <FileUp size={16} />
+                    <FileUp size={14} />
                     Nueva Versión
                   </button>
                 )}
+
+                {/* 🆕 Botón Reemplazar Archivo - SOLO ADMIN */}
+                {esAdmin && (
+                  <>
+                    <div className='my-1.5 border-t border-gray-200 dark:border-gray-700' />
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        abrirModalReemplazar()
+                      }}
+                      className='flex w-full items-center gap-2 px-3 py-1.5 text-left text-sm text-orange-600 transition-colors hover:bg-orange-50 dark:text-orange-400 dark:hover:bg-orange-900/20'
+                    >
+                      <RefreshCw size={14} />
+                      <span>Reemplazar Archivo</span>
+                      <Crown size={12} className='ml-auto text-yellow-500 dark:text-yellow-400' />
+                    </button>
+                  </>
+                )}
+
+                {/* Separador - Sección de archivo */}
+                <div className='my-1.5 border-t border-gray-200 dark:border-gray-700' />
 
                 <button
                   type="button"
@@ -266,13 +319,14 @@ export function DocumentoCard({
                     onArchive(documento)
                     cerrarMenu()
                   }}
-                  className='flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
+                  className='flex w-full items-center gap-2 px-3 py-1.5 text-left text-sm text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
                 >
-                  <Archive size={16} />
+                  <Archive size={14} />
                   Archivar
                 </button>
 
-                <div className='my-2 border-t border-gray-200 dark:border-gray-700' />
+                {/* Separador antes de eliminar */}
+                <div className='my-1.5 border-t border-gray-200 dark:border-gray-700' />
 
                 {/* Botón eliminar - oculto si el documento está protegido */}
                 {!estaProtegido && (
@@ -284,9 +338,9 @@ export function DocumentoCard({
                       onDelete(documento)
                       cerrarMenu()
                     }}
-                    className='flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-red-600 transition-colors hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20'
+                    className='flex w-full items-center gap-2 px-3 py-1.5 text-left text-sm text-red-600 transition-colors hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20'
                   >
-                    <Trash2 size={16} />
+                    <Trash2 size={14} />
                     Eliminar
                   </button>
                 )}
@@ -313,105 +367,159 @@ export function DocumentoCard({
           </div>
         </div>
 
-        {/* Título y descripción */}
-        <div className='mb-4'>
-          <h3 className='mb-1 line-clamp-2 font-semibold text-gray-900 dark:text-white'>
-            {documento.titulo}
-          </h3>
-          {documento.descripcion && (
-            <p className='line-clamp-2 text-sm text-gray-600 dark:text-gray-400'>
-              {documento.descripcion}
-            </p>
+        {/* Descripción (si existe) - Compacta */}
+        {documento.descripcion && (
+          <p className='mb-3 text-xs text-gray-600 dark:text-gray-400 line-clamp-2'>
+            {documento.descripcion}
+          </p>
+        )}
+
+        {/* Metadatos en grid 2x2 con títulos */}
+        <div className='mb-3 grid grid-cols-2 gap-2.5 text-xs'>
+          {/* FILA 1: Fecha del documento + Fecha de expiración */}
+
+          {/* Fecha de emisión del documento */}
+          {documento.fecha_documento ? (
+            <div className='flex flex-col gap-0.5'>
+              <span className='text-[10px] font-semibold text-gray-500 dark:text-gray-500 uppercase tracking-wide'>
+                Emisión
+              </span>
+              <div className='flex items-center gap-1.5 text-gray-600 dark:text-gray-400'>
+                <Calendar size={12} className='flex-shrink-0 text-blue-500 dark:text-blue-400' />
+                <span className='truncate' title={`Fecha del documento: ${formatDateCompact(documento.fecha_documento)}`}>
+                  {formatDateCompact(documento.fecha_documento)}
+                </span>
+              </div>
+            </div>
+          ) : (
+            <div className='flex flex-col gap-0.5'>
+              <span className='text-[10px] font-semibold text-gray-500 dark:text-gray-500 uppercase tracking-wide'>
+                Emisión
+              </span>
+              <div className='flex items-center gap-1.5 text-gray-400 dark:text-gray-500'>
+                <Calendar size={12} className='flex-shrink-0' />
+                <span className='text-xs'>Sin fecha</span>
+              </div>
+            </div>
           )}
+
+          {/* Fecha de expiración */}
+          <div className='flex flex-col gap-0.5'>
+            <span className='text-[10px] font-semibold text-gray-500 dark:text-gray-500 uppercase tracking-wide'>
+              Expiración
+            </span>
+            {documento.fecha_vencimiento ? (
+              <div className='flex items-center gap-1.5'>
+                {estaVencido ? (
+                  <span className='inline-flex items-center gap-1 rounded-md bg-red-100 px-1.5 py-0.5 text-xs font-medium text-red-700 dark:bg-red-900/30 dark:text-red-400'>
+                    <AlertCircle size={12} />
+                    Vencido hace {Math.abs(diasParaVencer!)}d
+                  </span>
+                ) : diasParaVencer !== null && diasParaVencer <= 30 ? (
+                  <span className='inline-flex items-center gap-1 rounded-md bg-orange-100 px-1.5 py-0.5 text-xs font-medium text-orange-700 dark:bg-orange-900/30 dark:text-orange-400'>
+                    <Clock size={12} />
+                    Vence en {diasParaVencer}d
+                  </span>
+                ) : (
+                  <div className='flex items-center gap-1.5 text-gray-600 dark:text-gray-400'>
+                    <Clock size={12} className='flex-shrink-0 text-orange-500 dark:text-orange-400' />
+                    <span className='truncate' title={`Vence: ${formatDateCompact(documento.fecha_vencimiento)}`}>
+                      {formatDateCompact(documento.fecha_vencimiento)}
+                    </span>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className='flex items-center gap-1.5 text-gray-400 dark:text-gray-500'>
+                <Clock size={12} className='flex-shrink-0' />
+                <span className='text-xs'>No expira</span>
+              </div>
+            )}
+          </div>
+
+          {/* FILA 2: Subido por + Fecha de subida */}
+
+          {/* Subido por (usuario) */}
+          <div className='flex flex-col gap-0.5'>
+            <span className='text-[10px] font-semibold text-gray-500 dark:text-gray-500 uppercase tracking-wide'>
+              Subido por
+            </span>
+            <div className='flex items-center gap-1.5 text-gray-600 dark:text-gray-400'>
+              <User size={12} className='flex-shrink-0 text-purple-500 dark:text-purple-400' />
+              <span className='truncate' title={`${documento.usuario ? `${documento.usuario.nombres} ${documento.usuario.apellidos}` : 'Desconocido'}`}>
+                {documento.usuario ? `${documento.usuario.nombres} ${documento.usuario.apellidos}` : 'Desconocido'}
+              </span>
+            </div>
+          </div>
+
+          {/* Fecha de subida al sistema */}
+          <div className='flex flex-col gap-0.5'>
+            <span className='text-[10px] font-semibold text-gray-500 dark:text-gray-500 uppercase tracking-wide'>
+              Fecha de carga
+            </span>
+            <div className='flex items-center gap-1.5 text-gray-600 dark:text-gray-400'>
+              <Upload size={12} className='flex-shrink-0 text-green-500 dark:text-green-400' />
+              <span className='truncate' title={`Subido: ${formatDateCompact(documento.fecha_creacion)} a las ${format(new Date(documento.fecha_creacion), "hh:mm:ss a", { locale: es })}`}>
+                {formatDateCompact(documento.fecha_creacion)} {format(new Date(documento.fecha_creacion), "hh:mm:ss a")}
+              </span>
+            </div>
+          </div>
         </div>
 
-        {/* Información del archivo */}
-        <div className='mb-4 flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400'>
-          <span className='font-medium uppercase'>
-            {getFileExtension(documento.nombre_archivo)}
-          </span>
-          <span>•</span>
-          <span>{formatFileSize(documento.tamano_bytes)}</span>
-          {documento.version > 1 && (
-            <>
-              <span>•</span>
-              <span>v{documento.version}</span>
-            </>
-          )}
-        </div>
-
-        {/* Etiquetas */}
+        {/* Etiquetas compactas */}
         {documento.etiquetas && documento.etiquetas.length > 0 && (
-          <div className='mb-4 flex flex-wrap gap-2'>
-            {documento.etiquetas.slice(0, 3).map((etiqueta, index) => (
+          <div className='mb-3 flex flex-wrap gap-1.5'>
+            {documento.etiquetas.slice(0, 2).map((etiqueta, index) => (
               <span
                 key={index}
-                className='inline-flex items-center gap-1 rounded-md bg-blue-100 px-2 py-1 text-xs text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
+                className='inline-flex items-center gap-1 rounded-md bg-blue-100 px-2 py-0.5 text-xs text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
               >
                 <Tag size={10} />
                 {etiqueta}
               </span>
             ))}
-            {documento.etiquetas.length > 3 && (
-              <span className='inline-flex items-center rounded-md bg-gray-100 px-2 py-1 text-xs text-gray-600 dark:bg-gray-700 dark:text-gray-400'>
-                +{documento.etiquetas.length - 3}
+            {documento.etiquetas.length > 2 && (
+              <span className='inline-flex items-center rounded-md bg-gray-100 px-2 py-0.5 text-xs text-gray-600 dark:bg-gray-700 dark:text-gray-400'>
+                +{documento.etiquetas.length - 2}
               </span>
             )}
           </div>
         )}
 
-        {/* ✅ NUEVO: Badge de estado del proceso */}
+        {/* Badge de estado del proceso */}
         {estadoProceso.esDeProceso && estadoProceso.estadoPaso && (
-          <div className='mb-4'>
+          <div className='mb-3'>
             <BadgeEstadoProceso estadoPaso={estadoProceso.estadoPaso} />
           </div>
         )}
 
-        {/* Fechas */}
-        <div className='mb-4 space-y-2 text-xs'>
-          {documento.fecha_documento && (
-            <div className='flex items-center gap-2 text-gray-600 dark:text-gray-400'>
-              <Calendar size={14} />
-              <span>
-                {format(
-                  new Date(documento.fecha_documento),
-                  "d 'de' MMMM, yyyy",
-                  { locale: es }
-                )}
-              </span>
+        {/* Badge de proceso completado */}
+        {estaProtegido && procesoInfo && (
+          <div className='mb-3'>
+            <div className='inline-flex items-center gap-1.5 rounded-lg bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'>
+              <Lock size={12} />
+              <span>Proceso Completado</span>
+              {procesoInfo.pasoNombre && (
+                <span className='opacity-75'>• {procesoInfo.pasoNombre}</span>
+              )}
             </div>
-          )}
-          {documento.fecha_vencimiento && (
-            <div
-              className={`flex items-center gap-2 ${estaVencido ? 'text-red-600 dark:text-red-400' : estaProximoAVencer ? 'text-orange-600 dark:text-orange-400' : 'text-gray-600 dark:text-gray-400'}`}
-            >
-              <AlertCircle size={14} />
-              <span>
-                Vence:{' '}
-                {format(
-                  new Date(documento.fecha_vencimiento),
-                  "d 'de' MMMM, yyyy",
-                  { locale: es }
-                )}
-              </span>
-            </div>
-          )}
-        </div>
+          </div>
+        )}
 
-        {/* Acciones principales */}
+        {/* Acciones principales - MÁS COMPACTAS */}
         <div className='mt-auto flex gap-2'>
           <button
             onClick={() => onView(documento)}
-            className='flex flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 px-4 py-2.5 font-medium text-white transition-all hover:from-blue-700 hover:to-purple-700'
+            className={`flex flex-1 items-center justify-center gap-1.5 rounded-lg ${theme.classes.button.primary} px-3 py-2 text-sm font-medium`}
           >
-            <Eye size={16} />
+            <Eye size={14} />
             Ver
           </button>
           <button
             onClick={() => onDownload(documento)}
-            className='rounded-xl bg-gray-100 px-4 py-2.5 text-gray-700 transition-all hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
+            className='rounded-lg bg-gray-100 px-3 py-2 text-gray-700 transition-all hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
           >
-            <Download size={16} />
+            <Download size={14} />
           </button>
         </div>
       </div>
@@ -425,8 +533,9 @@ export function DocumentoCard({
           }}
         />
       )}
+      </motion.div>
 
-      {/* Modales */}
+      {/* Modales - FUERA del contenedor de la card */}
       <DocumentoVersionesModal
         isOpen={modalVersionesAbierto}
         documentoId={documento.id}
@@ -448,6 +557,31 @@ export function DocumentoCard({
           await onRefresh?.()
         }}
       />
-    </motion.div>
+
+      {/* 🆕 Modal Editar Metadatos */}
+      <DocumentoEditarMetadatosModal
+        isOpen={modalEditarAbierto}
+        documento={documento}
+        categorias={categorias}
+        onClose={cerrarModalEditar}
+        onEditado={async () => {
+          cerrarModalEditar()
+          if (onRefresh) await onRefresh()
+        }}
+      />
+
+      {/* 🆕 Modal Reemplazar Archivo (Solo Admin) */}
+      {esAdmin && (
+        <DocumentoReemplazarArchivoModal
+          isOpen={modalReemplazarAbierto}
+          documento={documento}
+          onClose={cerrarModalReemplazar}
+          onReemplazado={async () => {
+            cerrarModalReemplazar()
+            await onRefresh?.()
+          }}
+        />
+      )}
+    </>
   )
 }

@@ -116,8 +116,7 @@ export const documentoFormSchema = z.object({
         .trim()
     )
     .max(10, 'Máximo 10 etiquetas')
-    .optional()
-    .default([]),
+    .optional(),
 
   fecha_documento: z
     .string()
@@ -136,13 +135,41 @@ export const documentoFormSchema = z.object({
     .refine(val => {
       if (!val) return true
       const fecha = new Date(val)
-      return !isNaN(fecha.getTime()) && fecha > new Date()
-    }, 'La fecha de vencimiento debe ser futura'),
+      return !isNaN(fecha.getTime())
+    }, 'Fecha inválida'),
 
-  es_importante: z.boolean().default(false),
+  es_importante: z.boolean().optional(),
 
-  metadata: z.record(z.string(), z.any()).optional().default({}),
-})
+  metadata: z.record(z.string(), z.any()).optional(),
+}).refine(
+  (data) => {
+    // Validación 1: No puede haber vencimiento sin fecha de emisión
+    if (data.fecha_vencimiento && !data.fecha_documento) {
+      return false
+    }
+    return true
+  },
+  {
+    message: 'Debes especificar la fecha de emisión del documento antes de establecer una fecha de vencimiento',
+    path: ['fecha_documento'], // El error se mostrará en el campo fecha_documento
+  }
+).refine(
+  (data) => {
+    // Validación 2: fecha_vencimiento debe ser posterior a fecha_documento
+    if (!data.fecha_documento || !data.fecha_vencimiento) {
+      return true // Si alguna no está definida, no validamos esta regla
+    }
+
+    const fechaDocumento = new Date(data.fecha_documento)
+    const fechaVencimiento = new Date(data.fecha_vencimiento)
+
+    return fechaVencimiento > fechaDocumento
+  },
+  {
+    message: 'La fecha de vencimiento debe ser posterior a la fecha de emisión del documento',
+    path: ['fecha_vencimiento'], // El error se mostrará en el campo fecha_vencimiento
+  }
+)
 
 export type DocumentoFormData = z.infer<typeof documentoFormSchema>
 

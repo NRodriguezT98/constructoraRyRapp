@@ -134,20 +134,14 @@ export function Modal({
                 className
               )}
             >
-              {/* Borde superior con gradiente */}
-              <div className={cn(
-                'absolute left-0 right-0 top-0 h-1 bg-gradient-to-r',
-                gradient.border
-              )} />
-
-              {/* Header mejorado */}
+              {/* Header mejorado y compacto */}
               {(title || showCloseButton) && (
-                <div className='relative px-6 py-5 border-b border-gray-200/50 dark:border-gray-700/50 bg-gradient-to-b from-gray-50/50 to-transparent dark:from-gray-800/30'>
+                <div className='relative px-6 py-4 border-b border-gray-200/50 dark:border-gray-700/50 bg-gradient-to-b from-gray-50/50 to-transparent dark:from-gray-800/30'>
                   <div className='flex items-start gap-4'>
                     {/* Ícono */}
                     {icon && (
                       <div className={cn(
-                        'w-12 h-12 rounded-xl flex items-center justify-center shadow-lg flex-shrink-0',
+                        'w-10 h-10 rounded-xl flex items-center justify-center shadow-lg flex-shrink-0',
                         'bg-gradient-to-br',
                         gradient.icon,
                         gradient.shadow
@@ -159,12 +153,12 @@ export function Modal({
                     {/* Títulos */}
                     <div className='flex-1 min-w-0'>
                       {title && (
-                        <h2 className='text-2xl font-bold text-gray-900 dark:text-white mb-1'>
+                        <h2 className='text-xl font-bold text-gray-900 dark:text-white mb-0.5'>
                           {title}
                         </h2>
                       )}
                       {description && (
-                        <p className='text-sm text-gray-600 dark:text-gray-400 leading-relaxed'>
+                        <p className='text-xs text-gray-600 dark:text-gray-400 leading-relaxed'>
                           {description}
                         </p>
                       )}
@@ -183,14 +177,14 @@ export function Modal({
                 </div>
               )}
 
-              {/* Content con scroll personalizado */}
-              <div className='custom-scrollbar max-h-[calc(90vh-240px)] overflow-y-auto p-6'>
+              {/* Content con scroll personalizado - OPTIMIZADO PARA MENOS SCROLL */}
+              <div className='custom-scrollbar min-h-[70vh] max-h-[85vh] overflow-y-auto px-6 py-3'>
                 {children}
               </div>
 
-              {/* Footer mejorado */}
+              {/* Footer mejorado y compacto */}
               {footer && (
-                <div className='px-6 py-4 border-t border-gray-200/50 dark:border-gray-700/50 bg-gray-50/50 dark:bg-gray-800/30 flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-3'>
+                <div className='px-6 py-3 border-t border-gray-200/50 dark:border-gray-700/50 bg-gray-50/50 dark:bg-gray-800/30 flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-3'>
                   {footer}
                 </div>
               )}

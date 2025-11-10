@@ -22,10 +22,10 @@ import { useDocumentosStore } from '../store/documentos.store'
 import { DocumentoProyecto } from '../types'
 
 import {
-  useCategoriasQuery,
-  useDocumentosProyectoQuery,
-  useEliminarDocumentoMutation,
-  useToggleImportanteMutation,
+    useCategoriasQuery,
+    useDocumentosProyectoQuery,
+    useEliminarDocumentoMutation,
+    useToggleImportanteMutation,
 } from './useDocumentosQuery'
 
 interface UseDocumentosListaProps {
@@ -42,6 +42,7 @@ export function useDocumentosLista({
   const [documentoSeleccionado, setDocumentoSeleccionado] =
     useState<DocumentoProyecto | null>(null)
   const [modalViewerAbierto, setModalViewerAbierto] = useState(false)
+  const [urlPreview, setUrlPreview] = useState<string | undefined>(undefined)
 
   const { user } = useAuth()
   const { confirm } = useModal()
@@ -90,14 +91,69 @@ export function useDocumentosLista({
       )
     }
 
-    return filtered
+    // ✅ ORDENAMIENTO INTELIGENTE
+    return filtered.sort((a, b) => {
+      // 1. Documentos VENCIDOS primero (CRÍTICO)
+      const aVencido = a.fecha_vencimiento && new Date(a.fecha_vencimiento) < new Date()
+      const bVencido = b.fecha_vencimiento && new Date(b.fecha_vencimiento) < new Date()
+
+      if (aVencido && !bVencido) return -1
+      if (!aVencido && bVencido) return 1
+
+      // 2. Documentos próximos a vencer (30 días)
+      const calcularDiasParaVencer = (fecha: string | undefined) => {
+        if (!fecha) return Infinity
+        return Math.ceil((new Date(fecha).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+      }
+
+      const diasA = calcularDiasParaVencer(a.fecha_vencimiento)
+      const diasB = calcularDiasParaVencer(b.fecha_vencimiento)
+
+      const aProximoVencer = diasA >= 0 && diasA <= 30
+      const bProximoVencer = diasB >= 0 && diasB <= 30
+
+      if (aProximoVencer && !bProximoVencer) return -1
+      if (!aProximoVencer && bProximoVencer) return 1
+
+      // Si ambos están próximos a vencer, ordenar por días restantes (menos días primero)
+      if (aProximoVencer && bProximoVencer) {
+        return diasA - diasB
+      }
+
+      // 3. Documentos importantes
+      if (a.es_importante && !b.es_importante) return -1
+      if (!a.es_importante && b.es_importante) return 1
+
+      // 4. Más recientes primero (por fecha de creación)
+      return new Date(b.fecha_creacion).getTime() - new Date(a.fecha_creacion).getTime()
+    })
   }, [documentos, categoriaFiltro, etiquetasFiltro, busqueda, soloImportantes])
 
   // Handlers
   const handleView = useCallback(
-    (documento: DocumentoProyecto) => {
+    async (documento: DocumentoProyecto) => {
       setDocumentoSeleccionado(documento)
       setModalViewerAbierto(true)
+
+      // Generar URL de preview para PDFs e imágenes
+      const isPDF = documento.tipo_mime?.includes('pdf')
+      const isImage = documento.tipo_mime?.startsWith('image/')
+
+      if (isPDF || isImage) {
+        try {
+          const url = await DocumentosService.obtenerUrlDescarga(
+            documento.url_storage,
+            3600 // 1 hora
+          )
+          setUrlPreview(url)
+        } catch (error) {
+          console.error('Error al obtener URL de preview:', error)
+          setUrlPreview(undefined)
+        }
+      } else {
+        setUrlPreview(undefined)
+      }
+
       onViewDocumento?.(documento)
     },
     [onViewDocumento]
@@ -106,6 +162,7 @@ export function useDocumentosLista({
   const handleCloseViewer = useCallback(() => {
     setModalViewerAbierto(false)
     setDocumentoSeleccionado(null)
+    setUrlPreview(undefined)
   }, [])
 
   const handleDownload = useCallback(async (documento: DocumentoProyecto) => {
@@ -188,6 +245,7 @@ export function useDocumentosLista({
     setVista,
     documentoSeleccionado,
     modalViewerAbierto,
+    urlPreview,
 
     // Datos
     documentosFiltrados,
@@ -203,5 +261,8 @@ export function useDocumentosLista({
     handleArchive,
     handleDelete,
     getCategoriaByDocumento,
+
+    // 🆕 Refrescar datos
+    refrescar,
   }
 }

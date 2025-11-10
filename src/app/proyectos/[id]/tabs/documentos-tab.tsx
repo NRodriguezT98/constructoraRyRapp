@@ -9,13 +9,19 @@ import { CategoriasManager } from '@/modules/documentos/components/categorias/ca
 import { DocumentosLista } from '@/modules/documentos/components/lista/documentos-lista'
 import { DocumentoUpload } from '@/modules/documentos/components/upload/documento-upload'
 import type { Proyecto } from '@/modules/proyectos/types'
+import { moduleThemes, type ModuleName } from '@/shared/config/module-themes'
 
 interface DocumentosTabProps {
   proyecto: Proyecto
+  /** Tema del módulo padre (proyectos, clientes, viviendas) */
+  moduleName?: ModuleName
 }
 
-export function DocumentosTab({ proyecto }: DocumentosTabProps) {
+export function DocumentosTab({ proyecto, moduleName = 'proyectos' }: DocumentosTabProps) {
   const { user } = useAuth()
+
+  // Obtener tema dinámico basado en el módulo
+  const theme = moduleThemes[moduleName]
 
   // Estados locales para vistas (PATRÓN IGUAL A CLIENTES)
   const [showUpload, setShowUpload] = useState(false)
@@ -26,11 +32,11 @@ export function DocumentosTab({ proyecto }: DocumentosTabProps) {
     return (
       <div className='space-y-4'>
         {/* Header con botón volver */}
-        <div className='rounded-lg border border-blue-200 bg-white p-4 shadow-sm dark:border-blue-800 dark:bg-gray-800'>
+        <div className={`rounded-lg border ${theme.classes.border.light} bg-white p-4 shadow-sm dark:bg-gray-800`}>
           <div className='mb-4 flex items-center gap-2.5'>
             <button
               onClick={() => setShowCategorias(false)}
-              className='flex items-center gap-1.5 rounded-lg border border-blue-300 bg-white px-3 py-1.5 text-xs font-medium text-blue-700 transition-colors hover:bg-blue-50 dark:border-blue-700 dark:bg-gray-700 dark:text-blue-300 dark:hover:bg-gray-600'
+              className={`flex items-center gap-1.5 rounded-lg ${theme.classes.button.secondary} px-3 py-1.5 text-xs font-medium transition-colors`}
             >
               <ArrowLeft className='h-3.5 w-3.5' />
               <span>Volver a Documentos</span>
@@ -61,7 +67,7 @@ export function DocumentosTab({ proyecto }: DocumentosTabProps) {
   if (showUpload && user) {
     return (
       <div className='space-y-4'>
-        <div className='rounded-lg border border-blue-200 bg-white p-4 shadow-sm dark:border-blue-800 dark:bg-gray-800'>
+        <div className={`rounded-lg border ${theme.classes.border.light} bg-white p-4 shadow-sm dark:bg-gray-800`}>
           <DocumentoUpload
             proyectoId={proyecto.id}
             onSuccess={() => setShowUpload(false)}
@@ -75,10 +81,10 @@ export function DocumentosTab({ proyecto }: DocumentosTabProps) {
   return (
     <div className='space-y-4'>
       {/* Header con acciones */}
-      <div className='rounded-lg border border-blue-200 bg-white p-4 shadow-sm dark:border-blue-800 dark:bg-gray-800'>
+      <div className={`rounded-lg border ${theme.classes.border.light} bg-white p-4 shadow-sm dark:bg-gray-800`}>
         <div className='flex items-center justify-between'>
           <div className='flex items-center gap-2.5'>
-            <div className='rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 p-2.5'>
+            <div className={`rounded-lg bg-gradient-to-br ${theme.classes.gradient.primary} p-2.5`}>
               <FileText className='h-5 w-5 text-white' />
             </div>
             <div>
@@ -94,14 +100,14 @@ export function DocumentosTab({ proyecto }: DocumentosTabProps) {
           <div className='flex gap-1.5'>
             <button
               onClick={() => setShowCategorias(true)}
-              className='flex items-center gap-1.5 rounded-lg border border-blue-300 bg-white px-3 py-1.5 text-xs font-medium text-blue-700 transition-colors hover:bg-blue-50 dark:border-blue-700 dark:bg-gray-700 dark:text-blue-300 dark:hover:bg-gray-600'
+              className={`flex items-center gap-1.5 rounded-lg ${theme.classes.button.secondary} px-3 py-1.5 text-xs font-medium transition-colors`}
             >
               <FolderCog className='h-3.5 w-3.5' />
               <span>Categorías</span>
             </button>
             <button
               onClick={() => setShowUpload(true)}
-              className='flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 px-3 py-1.5 text-xs font-medium text-white shadow-md transition-all hover:from-blue-700 hover:to-indigo-700 hover:shadow-lg'
+              className={`flex items-center gap-1.5 rounded-lg ${theme.classes.button.primary} px-3 py-1.5 text-xs font-medium`}
             >
               <Upload className='h-3.5 w-3.5' />
               <span>Subir Documento</span>
@@ -114,6 +120,7 @@ export function DocumentosTab({ proyecto }: DocumentosTabProps) {
       <DocumentosLista
         proyectoId={proyecto.id}
         onUploadClick={() => setShowUpload(true)}
+        moduleName={moduleName}
       />
     </div>
   )
