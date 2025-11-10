@@ -750,6 +750,11 @@ export class DocumentosViviendaService {
 
     if (uploadError) throw uploadError
 
+    // ✅ CORREGIDO: Obtener URL pública (consistente con primera subida)
+    const {
+      data: { publicUrl },
+    } = this.supabase.storage.from(this.BUCKET_NAME).getPublicUrl(storagePath)
+
     // 6. Crear nuevo registro de documento
     const { data: nuevaVersionDoc, error: insertError } = await this.supabase
       .from('documentos_vivienda')
@@ -762,7 +767,7 @@ export class DocumentosViviendaService {
         nombre_original: archivo.name,
         tamano_bytes: archivo.size,
         tipo_mime: archivo.type,
-        url_storage: storagePath,
+        url_storage: publicUrl,  // ✅ CORREGIDO: usar URL pública completa
         etiquetas: docOriginal.etiquetas,
         version: nuevaVersion,
         es_version_actual: true,
@@ -825,30 +830,46 @@ export class DocumentosViviendaService {
       id: versionAnterior.id,
       version: versionAnterior.version,
       url_storage: versionAnterior.url_storage,
-      nombre_archivo: versionAnterior.nombre_archivo
+      nombre_archivo: versionAnterior.nombre_archivo,
+      vivienda_id: versionAnterior.vivienda_id
     })
 
-    // 2. Extraer path relativo del Storage desde URL pública
-    // url_storage contiene: "https://...supabase.co/storage/v1/object/public/documentos-viviendas/vivienda_id/archivo.jpg"
-    // Necesitamos solo: "vivienda_id/archivo.jpg"
-    let pathRelativo: string
-
-    if (versionAnterior.url_storage.includes('/object/public/')) {
-      // URL pública: extraer todo después de "/public/bucket-name/"
-      const parts = versionAnterior.url_storage.split(`/public/${this.BUCKET_NAME}/`)
-      pathRelativo = parts[1] || versionAnterior.nombre_archivo
-    } else if (versionAnterior.url_storage.includes(this.BUCKET_NAME)) {
-      // URL con bucket: extraer después del nombre del bucket
-      const parts = versionAnterior.url_storage.split(`${this.BUCKET_NAME}/`)
-      pathRelativo = parts[1] || versionAnterior.nombre_archivo
-    } else {
-      // Fallback: asumir que es el path relativo directo
-      pathRelativo = versionAnterior.url_storage
+    // 2. ✅ VALIDACIÓN: El documento DEBE estar en bucket documentos-viviendas
+    if (!versionAnterior.url_storage.includes('/documentos-viviendas/')) {
+      console.error('❌ DOCUMENTO CON DATOS INCONSISTENTES:', {
+        id: versionAnterior.id,
+        version: versionAnterior.version,
+        url_actual: versionAnterior.url_storage,
+        problema: 'URL apunta a bucket incorrecto (debería ser documentos-viviendas)'
+      })
+      throw new Error(
+        `No se puede restaurar esta versión. El documento tiene datos inconsistentes en la base de datos. ` +
+        `Por favor, contacta al administrador para corregir el registro del documento.`
+      )
     }
 
-    console.log('📂 Path relativo extraído:', pathRelativo)
+    // 3. Extraer path relativo desde URL
+    let pathRelativo: string
 
-    // 3. Descargar el archivo de esa versión usando el path relativo
+    try {
+      const parts = versionAnterior.url_storage.split('/documentos-viviendas/')
+      if (parts.length > 1) {
+        pathRelativo = decodeURIComponent(parts[1])
+        console.log('📂 Path extraído:', pathRelativo)
+      } else {
+        throw new Error('No se pudo extraer path de la URL')
+      }
+    } catch (error) {
+      console.error('❌ Error al extraer path desde URL:', error)
+      throw new Error(
+        `No se puede restaurar esta versión. La URL del documento no tiene el formato esperado. ` +
+        `Por favor, contacta al administrador.`
+      )
+    }
+
+    console.log('✅ Path final a descargar:', pathRelativo)
+
+    // 4. Descargar el archivo de esa versión
     const { data: archivoBlob, error: downloadError } = await this.supabase.storage
       .from(this.BUCKET_NAME)
       .download(pathRelativo)
