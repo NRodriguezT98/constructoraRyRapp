@@ -84,11 +84,12 @@ export function DocumentosVivienda({ viviendaId }: DocumentosViviendaProps) {
 
   const handleEliminar = async (documentoId: string) => {
     // eslint-disable-next-line no-alert
+    const motivo = prompt('Motivo de eliminación (opcional):')
     const confirmado = confirm('¿Estás seguro de eliminar este documento?')
     if (!confirmado) return
 
     try {
-      await eliminarDocumento(documentoId)
+      await eliminarDocumento({ id: documentoId, motivo: motivo || 'Sin motivo especificado' })
     } catch {
       // Error manejado por el hook
     }

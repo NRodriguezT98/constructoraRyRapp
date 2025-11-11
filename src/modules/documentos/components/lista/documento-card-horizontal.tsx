@@ -74,7 +74,7 @@ export function DocumentoCardHorizontal({
     modalNuevaVersionAbierto,
     abrirModalNuevaVersion,
     cerrarModalNuevaVersion,
-  } = useDocumentoCard(documento.id)
+  } = useDocumentoCard({ documento })
 
   const esDocumentoDeProceso = documento.etiquetas?.some(
     etiqueta => etiqueta.toLowerCase() === 'proceso' || etiqueta.toLowerCase() === 'negociación'

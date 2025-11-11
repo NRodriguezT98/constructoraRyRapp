@@ -1,6 +1,7 @@
 'use client'
 
 import { supabase } from '@/lib/supabase/client'
+import { auditService } from '@/services/audit.service'
 import { useState } from 'react'
 import { toast } from 'sonner'
 
@@ -13,7 +14,7 @@ interface ReemplazarArchivoData {
 interface DocumentoInfo {
   id: string
   nombre_archivo: string
-  ruta_storage: string
+  url_storage: string
   tamano_bytes: number
   version: number
 }
@@ -115,10 +116,10 @@ export function useDocumentoReemplazarArchivo() {
         .insert({
           documento_id: documento.id,
           archivo_anterior: documento.nombre_archivo,
-          ruta_anterior: documento.ruta_storage,
+          ruta_anterior: documento.url_storage,
           tamano_anterior: documento.tamano_bytes,
           archivo_nuevo: data.nuevoArchivo.name,
-          ruta_nueva: `${documento.ruta_storage.split('/').slice(0, -1).join('/')}/${Date.now()}_${data.nuevoArchivo.name}`,
+          ruta_nueva: `${documento.url_storage.split('/').slice(0, -1).join('/')}/${Date.now()}_${data.nuevoArchivo.name}`,
           tamano_nuevo: data.nuevoArchivo.size,
           admin_id: user.id,
           justificacion: data.justificacion.trim(),
@@ -137,7 +138,7 @@ export function useDocumentoReemplazarArchivo() {
       // 6. Eliminar archivo viejo del storage
       const { error: deleteError } = await supabase.storage
         .from('documentos-proyectos')
-        .remove([documento.ruta_storage])
+        .remove([documento.url_storage])
 
       if (deleteError) {
         console.error('Error eliminando archivo viejo:', deleteError)
@@ -158,7 +159,7 @@ export function useDocumentoReemplazarArchivo() {
       const nombreFinal = `${timestamp}_${nombreLimpio}.${extension}`
 
       // Mantener la estructura de carpetas del archivo anterior
-      const carpetaPadre = documento.ruta_storage.split('/').slice(0, -1).join('/')
+      const carpetaPadre = documento.url_storage.split('/').slice(0, -1).join('/')
       const rutaNueva = `${carpetaPadre}/${nombreFinal}`
 
       const { error: uploadError } = await supabase.storage
@@ -175,14 +176,16 @@ export function useDocumentoReemplazarArchivo() {
 
       setProgreso(80)
 
-      // 8. Actualizar registro en base de datos
+      // 8. Actualizar registro en base de datos (incluyendo fecha de carga)
+      const ahora = new Date().toISOString()
       const { error: updateError } = await supabase
         .from('documentos_proyecto')
         .update({
           nombre_archivo: data.nuevoArchivo.name,
-          ruta_storage: rutaNueva,
+          url_storage: rutaNueva,
           tamano_bytes: data.nuevoArchivo.size,
-          updated_at: new Date().toISOString()
+          fecha_creacion: ahora,        // ← Nueva fecha de carga del archivo reemplazado
+          fecha_actualizacion: ahora,
           // ⚠️ version NO cambia - se mantiene igual
         })
         .eq('id', documento.id)
@@ -196,6 +199,53 @@ export function useDocumentoReemplazarArchivo() {
           .remove([rutaNueva])
 
         throw new Error('No se pudo actualizar el documento en la base de datos')
+      }
+
+      setProgreso(90)
+
+      // 9. 🔍 REGISTRAR EN AUDIT_LOG (Sistema de auditoría detallada)
+      try {
+        await auditService.registrarAccion({
+          tabla: 'documentos_proyecto',
+          accion: 'UPDATE',
+          registroId: documento.id,
+          datosAnteriores: {
+            nombre_archivo: documento.nombre_archivo,
+            url_storage: documento.url_storage,
+            tamano_bytes: documento.tamano_bytes
+          },
+          datosNuevos: {
+            nombre_archivo: data.nuevoArchivo.name,
+            url_storage: rutaNueva,
+            tamano_bytes: data.nuevoArchivo.size,
+            fecha_creacion: ahora
+          },
+          metadata: {
+            tipo_operacion: 'reemplazo_archivo_admin',
+            justificacion: data.justificacion.trim(),
+            version_afectada: documento.version,
+            admin_verificado: true,
+            cambio_critico: true,
+            archivo_anterior: {
+              nombre: documento.nombre_archivo,
+              ruta: documento.url_storage,
+              tamano: documento.tamano_bytes,
+              tamano_formateado: `${(documento.tamano_bytes / 1024).toFixed(2)} KB`
+            },
+            archivo_nuevo: {
+              nombre: data.nuevoArchivo.name,
+              ruta: rutaNueva,
+              tamano: data.nuevoArchivo.size,
+              tamano_formateado: `${(data.nuevoArchivo.size / 1024).toFixed(2)} KB`
+            },
+            ip_origen: ipOrigen,
+            user_agent: userAgent
+          },
+          modulo: 'documentos'
+        })
+      } catch (auditLogError) {
+        // No bloqueamos el proceso si falla la auditoría detallada
+        console.error('⚠️ Error registrando auditoría detallada:', auditLogError)
       }
 
       setProgreso(100)

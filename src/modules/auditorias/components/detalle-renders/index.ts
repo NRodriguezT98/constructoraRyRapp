@@ -3,6 +3,7 @@
  */
 
 export { ClienteDetalleRender } from './ClienteDetalleRender'
+export { DocumentoReemplazoDetalleRender } from './DocumentoReemplazoDetalleRender'
 export { GenericoDetalleRender } from './GenericoDetalleRender'
 export { NegociacionDetalleRender } from './NegociacionDetalleRender'
 export { ProyectoDetalleRender } from './ProyectoDetalleRender'

@@ -25,11 +25,12 @@ import type { AuditLogRecord } from '../types'
 import { getAccionLabel } from '../utils/formatters'
 
 import {
-  ClienteDetalleRender,
-  GenericoDetalleRender,
-  NegociacionDetalleRender,
-  ProyectoDetalleRender,
-  ViviendaDetalleRender
+    ClienteDetalleRender,
+    DocumentoReemplazoDetalleRender,
+    GenericoDetalleRender,
+    NegociacionDetalleRender,
+    ProyectoDetalleRender,
+    ViviendaDetalleRender
 } from './detalle-renders'
 import { AccionBadge } from './shared'
 
@@ -41,10 +42,16 @@ interface DetalleAuditoriaModalProps {
 export function DetalleAuditoriaModal({ registro, onClose }: DetalleAuditoriaModalProps) {
   const { seccionAbierta, toggleSeccion, datosFormateados, mostrarSeccionJson } = useDetalleAuditoria(registro)
 
-  // Seleccionar render según módulo
+  // Seleccionar render según módulo y tipo de operación
   const renderDetallesModulo = () => {
     const metadata = datosFormateados.metadata
 
+    // Detectar reemplazo de archivos (tipo_operacion específico)
+    if (metadata.tipo_operacion === 'reemplazo_archivo_admin') {
+      return <DocumentoReemplazoDetalleRender metadata={metadata} />
+    }
+
+    // Renders por módulo estándar
     switch (registro.modulo) {
       case 'proyectos':
         return <ProyectoDetalleRender metadata={metadata} />

@@ -21,8 +21,10 @@ function LoginForm() {
     intentosRestantes,
     loginExitoso,
     mensajeExito,
+    recordarUsuario,
     setEmail,
     setPassword,
+    setRecordarUsuario,
     handleSubmit,
   } = useLogin()
 
@@ -167,6 +169,23 @@ function LoginForm() {
                         )}
                       </button>
                     </div>
+                  </div>
+
+                  {/* Recordar usuario */}
+                  <div className='flex items-center gap-2'>
+                    <input
+                      type='checkbox'
+                      id='recordar-usuario'
+                      checked={recordarUsuario}
+                      onChange={e => setRecordarUsuario(e.target.checked)}
+                      className='h-4 w-4 cursor-pointer rounded border-white/30 bg-white/10 text-red-600 transition-all focus:ring-2 focus:ring-white/20 focus:ring-offset-0'
+                    />
+                    <label
+                      htmlFor='recordar-usuario'
+                      className='cursor-pointer select-none text-sm text-white/80 transition-colors hover:text-white'
+                    >
+                      Recordar mi correo electrónico
+                    </label>
                   </div>
 
                   {error && (

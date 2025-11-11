@@ -12,3 +12,8 @@ export { useDocumentoEditar } from './useDocumentoEditar'
 export { useDocumentoReemplazarArchivo } from './useDocumentoReemplazarArchivo'
 export { useDocumentosLista } from './useDocumentosLista'
 export { useDocumentoUpload } from './useDocumentoUpload'
+export { useReemplazarArchivoForm } from './useReemplazarArchivoForm'
+
+// Hook de detección de cambios
+export { useDetectarCambiosDocumento } from './useDetectarCambiosDocumento'
+export type { CambioDocumentoDetectado, ResumenCambiosDocumento } from './useDetectarCambiosDocumento'

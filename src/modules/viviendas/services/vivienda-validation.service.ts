@@ -22,8 +22,8 @@ export async function validarMatriculaDuplicada(
   try {
     const query = supabase
       .from('viviendas')
-      .select('id, numero_casa, proyecto:proyectos(nombre)')
-      .eq('numero_matricula', numeroMatricula)
+      .select('id, numero, proyecto:proyectos(nombre)')
+      .eq('matricula_inmobiliaria', numeroMatricula)
       .single()
 
     const { data, error } = await query
@@ -45,10 +45,14 @@ export async function validarMatriculaDuplicada(
 
     // Duplicado encontrado
     if (data) {
+      const proyectoNombre = Array.isArray(data.proyecto) && data.proyecto.length > 0
+        ? data.proyecto[0].nombre
+        : 'proyecto'
+
       return {
         exists: true,
         vivienda_id: data.id,
-        mensaje: `Matrícula ya existe en ${data.proyecto?.nombre || 'proyecto'} - Casa ${data.numero_casa}`,
+        mensaje: `Matrícula ya existe en ${proyectoNombre} - Casa ${data.numero}`,
       }
     }
 
@@ -71,9 +75,8 @@ export async function validarNumeroCasaDuplicado(
   try {
     const query = supabase
       .from('viviendas')
-      .select('id, numero_matricula')
-      .eq('numero_casa', numeroCasa)
-      .eq('proyecto_id', proyectoId)
+      .select('id, matricula_inmobiliaria')
+      .eq('numero', numeroCasa)
       .eq('manzana_id', manzanaId)
 
     if (viviendaIdActual) {

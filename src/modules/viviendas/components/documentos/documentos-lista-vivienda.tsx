@@ -14,17 +14,17 @@ import { useState } from 'react'
 
 import { AnimatePresence, motion } from 'framer-motion'
 import {
-  AlertTriangle,
-  ChevronDown,
-  ChevronRight,
-  Download,
-  Eye,
-  FileText,
-  Search,
-  Star,
-  Trash2,
-  Upload,
-  X
+    AlertTriangle,
+    ChevronDown,
+    ChevronRight,
+    Download,
+    Eye,
+    FileText,
+    Search,
+    Star,
+    Trash2,
+    Upload,
+    X
 } from 'lucide-react'
 
 import { useAuth } from '@/contexts/auth-context'
@@ -538,7 +538,8 @@ export function DocumentosListaVivienda({
                 const estaExpandido = documentosExpandidos.has(doc.id)
                 const versiones = versionesCargadas[doc.id] || []
                 const cargando = cargandoVersiones.has(doc.id)
-                const tieneVersiones = (doc.metadata?.versiones_eliminadas || 1) > 1
+                const metadata = doc.metadata as Record<string, any> | null
+                const tieneVersiones = (metadata?.versiones_eliminadas || 1) > 1
 
                 return (
                   <motion.div
@@ -572,22 +573,22 @@ export function DocumentosListaVivienda({
                           <div className="mt-2 space-y-1 text-sm text-gray-600 dark:text-gray-400">
                             <p>
                               <span className="font-medium">Eliminado por:</span>{' '}
-                              {doc.metadata?.eliminado_por || 'Desconocido'}
+                              {metadata?.eliminado_por || 'Desconocido'}
                             </p>
                             <p>
                               <span className="font-medium">Fecha:</span>{' '}
-                              {doc.metadata?.fecha_eliminacion
-                                ? new Date(doc.metadata.fecha_eliminacion).toLocaleString('es-CO')
+                              {metadata?.fecha_eliminacion
+                                ? new Date(metadata.fecha_eliminacion as string).toLocaleString('es-CO')
                                 : 'Desconocida'}
                             </p>
                             <p>
                               <span className="font-medium">Motivo:</span>{' '}
-                              {doc.metadata?.motivo_eliminacion || 'No especificado'}
+                              {metadata?.motivo_eliminacion || 'No especificado'}
                             </p>
                             <p>
                               <span className="font-medium">Versiones eliminadas:</span>{' '}
                               <span className="inline-flex items-center gap-1">
-                                {doc.metadata?.versiones_eliminadas || 1}
+                                {metadata?.versiones_eliminadas || 1}
                                 {tieneVersiones && (
                                   <span className="text-xs text-orange-600 dark:text-orange-400">
                                     ({estaExpandido ? 'expandido' : 'clic para ver'})

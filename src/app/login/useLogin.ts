@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import { useRouter, useSearchParams } from 'next/navigation'
 
@@ -10,6 +10,8 @@ import { useAuth } from '../../contexts/auth-context'
 
 import { useRateLimit } from './useRateLimit'
 
+const REMEMBER_EMAIL_KEY = 'ryr_remember_email'
+
 interface UseLoginReturn {
   email: string
   password: string
@@ -20,8 +22,10 @@ interface UseLoginReturn {
   intentosRestantes: number
   loginExitoso: boolean
   mensajeExito: string
+  recordarUsuario: boolean
   setEmail: (email: string) => void
   setPassword: (password: string) => void
+  setRecordarUsuario: (recordar: boolean) => void
   handleSubmit: (e: React.FormEvent) => Promise<void>
 }
 
@@ -38,6 +42,7 @@ export function useLogin(): UseLoginReturn {
   const [error, setError] = useState('')
   const [loginExitoso, setLoginExitoso] = useState(false)
   const [mensajeExito, setMensajeExito] = useState('')
+  const [recordarUsuario, setRecordarUsuario] = useState(false)
 
   // Hooks externos
   const { signIn, perfil } = useAuth()
@@ -46,6 +51,15 @@ export function useLogin(): UseLoginReturn {
 
   // Obtener ruta de redirección (puede ser null en SSR/build)
   const redirectedFrom = searchParams?.get('redirectedFrom') || null
+
+  // Cargar email guardado al montar el componente
+  useEffect(() => {
+    const emailGuardado = localStorage.getItem(REMEMBER_EMAIL_KEY)
+    if (emailGuardado) {
+      setEmail(emailGuardado)
+      setRecordarUsuario(true)
+    }
+  }, [])
 
   // Rate limiting POR EMAIL (5 intentos por email)
   const {
@@ -87,6 +101,13 @@ export function useLogin(): UseLoginReturn {
 
         // Login exitoso: resetear intentos fallidos
         resetearIntentos()
+
+        // Guardar email si "Recordar usuario" está marcado
+        if (recordarUsuario) {
+          localStorage.setItem(REMEMBER_EMAIL_KEY, email)
+        } else {
+          localStorage.removeItem(REMEMBER_EMAIL_KEY)
+        }
 
         // 📝 Registrar evento de auditoría
         auditLogService.logLoginExitoso(email)
@@ -148,7 +169,7 @@ export function useLogin(): UseLoginReturn {
         setLoading(false)
       }
     },
-    [email, password, signIn, router, redirectedFrom, verificarBloqueo, minutosRestantes, registrarIntentoFallido, resetearIntentos, intentosRestantes]
+    [email, password, signIn, router, redirectedFrom, verificarBloqueo, minutosRestantes, registrarIntentoFallido, resetearIntentos, intentosRestantes, recordarUsuario]
   )
 
   return {
@@ -161,8 +182,10 @@ export function useLogin(): UseLoginReturn {
     intentosRestantes,
     loginExitoso,
     mensajeExito,
+    recordarUsuario,
     setEmail,
     setPassword,
+    setRecordarUsuario,
     handleSubmit,
   }
 }
