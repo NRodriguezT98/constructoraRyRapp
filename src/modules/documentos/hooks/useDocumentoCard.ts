@@ -55,15 +55,15 @@ export function useDocumentoCard({ documento, esDocumentoProyecto = true }: UseD
   }, [documento.fecha_vencimiento])
 
   // 📊 Propiedades del documento (memoizadas)
+  // ✅ SIEMPRE mostrar "Nueva Versión" para documentos de proyectos (sin depender de etiquetas)
   const esDocumentoDeProceso = useMemo(() => {
-    return documento.etiquetas?.some(
-      etiqueta => etiqueta.toLowerCase() === 'proceso' || etiqueta.toLowerCase() === 'negociación'
-    ) ?? false
-  }, [documento.etiquetas])
+    return esDocumentoProyecto
+  }, [esDocumentoProyecto])
 
+  // ✅ Solo mostrar "Ver Historial" si hay MÁS de 1 versión
   const tieneVersiones = useMemo(() => {
-    return documento.version > 1 || !!documento.documento_padre_id
-  }, [documento.version, documento.documento_padre_id])
+    return documento.version > 1
+  }, [documento.version])
 
   // Usar hook compartido para cerrar al hacer click fuera
   const menuRef = useClickOutside<HTMLDivElement>(() => {

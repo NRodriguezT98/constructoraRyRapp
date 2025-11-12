@@ -10,6 +10,7 @@
 
 import { AlertTriangle, FileText, HardDrive, Shield } from 'lucide-react'
 
+import { getTipoOperacionLabel } from '../../utils/formatters'
 import { InfoCard } from '../shared'
 
 interface DocumentoReemplazoDetalleRenderProps {
@@ -18,6 +19,7 @@ interface DocumentoReemplazoDetalleRenderProps {
 
 export function DocumentoReemplazoDetalleRender({ metadata }: DocumentoReemplazoDetalleRenderProps) {
   const tipoOperacion = metadata.tipo_operacion || 'N/A'
+  const tipoOperacionLabel = getTipoOperacionLabel(tipoOperacion)
   const justificacion = metadata.justificacion || 'Sin justificación registrada'
   const versionAfectada = metadata.version_afectada || 'N/A'
   const archivoAnterior = metadata.archivo_anterior || {}
@@ -50,7 +52,7 @@ export function DocumentoReemplazoDetalleRender({ metadata }: DocumentoReemplazo
         <InfoCard
           icon={Shield}
           label="Tipo de Operación"
-          value={tipoOperacion}
+          value={tipoOperacionLabel}
         />
 
         {/* Versión afectada */}

@@ -40,3 +40,7 @@ export type { AlertOptions, ConfirmOptions, ModalVariant } from './modal-context
 // Componentes
 export { AlertModal } from './alert-modal'
 export { ConfirmModal } from './confirm-modal'
+
+// 🆕 Modales Refactorizados (modernos)
+export { ConfirmacionModal, type ConfirmacionVariant } from './ConfirmacionModal'
+export { PromptModal } from './PromptModal'

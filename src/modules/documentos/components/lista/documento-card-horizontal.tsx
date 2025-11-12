@@ -80,7 +80,8 @@ export function DocumentoCardHorizontal({
     etiqueta => etiqueta.toLowerCase() === 'proceso' || etiqueta.toLowerCase() === 'negociación'
   )
 
-  const tieneVersiones = documento.version > 1 || documento.documento_padre_id
+  // ✅ Solo mostrar "Ver Historial" si hay MÁS de 1 versión
+  const tieneVersiones = documento.version > 1
 
   const estaProximoAVencer = documento.fecha_vencimiento
     ? new Date(documento.fecha_vencimiento) <=
@@ -376,7 +377,12 @@ export function DocumentoCardHorizontal({
                 </button>
               )}
 
-              {/* Botón Nueva Versión - solo para documentos de proceso */}
+              {/* Separador - Sección de versionado */}
+              {esDocumentoDeProceso && (
+                <div className='my-2 border-t border-gray-200 dark:border-gray-700' />
+              )}
+
+              {/* Botón Nueva Versión - siempre visible para proyectos */}
               {esDocumentoDeProceso && (
                 <button
                   type="button"
@@ -385,12 +391,14 @@ export function DocumentoCardHorizontal({
                     e.stopPropagation()
                     abrirModalNuevaVersion()
                   }}
-                  className='flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-blue-600 transition-colors hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/20'
+                  className='flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-emerald-600 transition-colors hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-900/20'
                 >
                   <FileUp size={16} />
                   Nueva Versión
                 </button>
               )}
+
+              <div className='my-2 border-t border-gray-200 dark:border-gray-700' />
 
               <button
                 type="button"

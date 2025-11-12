@@ -17,12 +17,12 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { Calendar, ChevronDown, ChevronUp, FileText, User, X } from 'lucide-react'
+import { Calendar, ChevronDown, ChevronUp, Clock, FileText, User, X } from 'lucide-react'
 
 import { useDetalleAuditoria } from '../hooks'
 import { detalleModalStyles as styles } from '../styles/detalle-modal.styles'
 import type { AuditLogRecord } from '../types'
-import { getAccionLabel } from '../utils/formatters'
+import { getAccionLabel, tiempoTranscurrido } from '../utils/formatters'
 
 import {
     ClienteDetalleRender,
@@ -118,19 +118,34 @@ export function DetalleAuditoriaModal({ registro, onClose }: DetalleAuditoriaMod
                     <div className="min-w-0">
                       <p className={styles.accion.usuario.label}>Realizado por</p>
                       <p className={styles.accion.usuario.email}>
-                        {registro.usuarioEmail}
+                        {registro.usuarioNombres || registro.usuarioEmail}
                         {registro.usuarioRol && (
                           <span className={styles.accion.usuario.rolBadge}>{registro.usuarioRol}</span>
                         )}
                       </p>
+                      {registro.usuarioNombres && (
+                        <p className="text-[10px] text-gray-500 dark:text-gray-500 mt-0.5">
+                          {registro.usuarioEmail}
+                        </p>
+                      )}
                     </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-2 flex-shrink-0">
-                  <Calendar className="w-3.5 h-3.5 text-gray-400" />
-                  <div className="text-right">
-                    <p className={styles.accion.fecha.label}>Fecha y Hora</p>
-                    <p className={styles.accion.fecha.valor}>{datosFormateados.fechaFormateada}</p>
+                <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-3.5 h-3.5 text-gray-400" />
+                    <div className="text-right">
+                      <p className={styles.accion.fecha.label}>Fecha</p>
+                      <p className={styles.accion.fecha.valor}>{datosFormateados.fechaFormateada}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Clock className="w-3.5 h-3.5 text-gray-400" />
+                    <div className="text-right">
+                      <p className="text-[10px] text-gray-500 dark:text-gray-500 font-medium">
+                        {tiempoTranscurrido(registro.fechaEvento)}
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -143,6 +158,46 @@ export function DetalleAuditoriaModal({ registro, onClose }: DetalleAuditoriaMod
                 </h4>
                 {renderDetallesModulo()}
               </div>
+
+              {/* Información Técnica Adicional */}
+              {(registro.ipAddress || registro.userAgent) && (
+                <div className="rounded-lg bg-gray-50 dark:bg-gray-900/50 p-3 border border-gray-200 dark:border-gray-700">
+                  <h4 className="text-xs font-semibold text-gray-900 dark:text-white mb-2 flex items-center gap-2">
+                    <FileText className="w-3.5 h-3.5 text-gray-400" />
+                    Información Técnica de la Sesión
+                  </h4>
+                  <div className="space-y-1.5">
+                    {registro.ipAddress && (
+                      <div className="flex items-start gap-2">
+                        <span className="text-[10px] text-gray-500 dark:text-gray-500 font-medium min-w-[60px]">
+                          IP Origen:
+                        </span>
+                        <span className="text-[10px] text-gray-700 dark:text-gray-300 font-mono">
+                          {registro.ipAddress}
+                        </span>
+                      </div>
+                    )}
+                    {registro.userAgent && (
+                      <div className="flex items-start gap-2">
+                        <span className="text-[10px] text-gray-500 dark:text-gray-500 font-medium min-w-[60px]">
+                          Navegador:
+                        </span>
+                        <span className="text-[10px] text-gray-700 dark:text-gray-300 font-mono break-all">
+                          {registro.userAgent}
+                        </span>
+                      </div>
+                    )}
+                    <div className="flex items-start gap-2 pt-1 border-t border-gray-200 dark:border-gray-700">
+                      <span className="text-[10px] text-gray-500 dark:text-gray-500 font-medium min-w-[60px]">
+                        ID Registro:
+                      </span>
+                      <span className="text-[10px] text-gray-700 dark:text-gray-300 font-mono break-all">
+                        {registro.registroId}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* JSON Completo (colapsable) */}
               {mostrarSeccionJson && (

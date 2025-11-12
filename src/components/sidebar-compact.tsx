@@ -17,6 +17,7 @@ import {
     Menu,
     Settings,
     Shield,
+    Trash2,
     Users,
     Zap
 } from 'lucide-react'
@@ -73,6 +74,7 @@ const navigation = [
       { name: 'Plantillas Proceso', href: '/admin/procesos', icon: ClipboardList, color: 'rose' },
       { name: 'Usuarios', href: '/usuarios', icon: Users, color: 'violet' },
       { name: 'Auditorías', href: '/auditorias', icon: Activity, color: 'teal' },
+      { name: 'Papelera', href: '/documentos/eliminados', icon: Trash2, color: 'red', adminOnly: true },
       { name: 'Admin', href: '/admin', icon: Shield, color: 'indigo' },
     ],
   },
@@ -232,7 +234,9 @@ export function SidebarCompact() {
                       exit={{ opacity: 0, height: 0 }}
                       className="space-y-1"
                     >
-                      {section.items.map((item) => {
+                      {section.items
+                        .filter((item: any) => !item.adminOnly || perfil?.rol === 'Administrador')
+                        .map((item) => {
                         const isActive = pathname === item.href
                         return (
                           <Link key={item.href} href={item.href}>

@@ -210,23 +210,56 @@ export function useDocumentosLista({
 
   const handleDelete = useCallback(
     async (documento: DocumentoProyecto) => {
-      const confirmed = await confirm({
-        title: '¿Eliminar documento?',
-        message: `Se eliminará permanentemente "${documento.titulo}".\n\nEsta acción no se puede deshacer.`,
-        confirmText: 'Eliminar',
-        cancelText: 'Cancelar',
-        variant: 'danger'
-      })
+      try {
+        // 1. Verificar si el usuario es Administrador
+        const esAdmin = user?.role === 'Administrador'
 
-      if (confirmed) {
-        try {
-          await eliminarMutation.mutateAsync(documento.id)
-        } catch (error) {
-          console.error('Error al eliminar documento:', error)
+        // 2. Contar versiones activas del documento
+        const { total, versiones } = await DocumentosService.contarVersionesActivas(documento.id)
+
+        // 3. Construir mensaje según cantidad de versiones y rol
+        let title = '¿Eliminar documento?'
+        let message = ''
+
+        if (total > 1) {
+          // Documento con múltiples versiones
+          title = `⚠️ Eliminar documento con ${total} versiones`
+          message = `Se eliminarán TODAS las versiones de "${documento.titulo}":\n\n`
+
+          versiones.forEach((v) => {
+            message += `• v${v.version}: ${v.titulo}\n`
+          })
+
+          if (esAdmin) {
+            message += `\n📋 Si deseas eliminar solo UNA versión específica, usa el botón "Ver Historial" en la card del documento.\n\n✅ Podrás recuperar este documento desde la Papelera.\n\n¿Continuar con la eliminación completa?`
+          } else {
+            message += `\n⚠️ IMPORTANTE:\n• Los documentos eliminados solo pueden ser recuperados por un Administrador desde la Papelera.\n• Si deseas eliminar solo 1 versión específica, solicítalo a un Administrador (acción restringida).\n\n¿Continuar con la eliminación?`
+          }
+        } else {
+          // Documento sin versiones adicionales
+          if (esAdmin) {
+            message = `Se eliminará "${documento.titulo}".\n\n✅ Podrás recuperarlo desde la Papelera.`
+          } else {
+            message = `Se eliminará "${documento.titulo}".\n\n⚠️ Solo un Administrador podrá recuperarlo desde la Papelera.\n\n¿Continuar?`
+          }
         }
+
+        const confirmed = await confirm({
+          title,
+          message,
+          confirmText: total > 1 ? `Eliminar ${total} versiones` : 'Eliminar',
+          cancelText: 'Cancelar',
+          variant: 'danger'
+        })
+
+        if (confirmed) {
+          await eliminarMutation.mutateAsync(documento.id)
+        }
+      } catch (error) {
+        console.error('Error al eliminar documento:', error)
       }
     },
-    [eliminarMutation, confirm]
+    [eliminarMutation, confirm, user?.role]
   )
 
   // Helpers

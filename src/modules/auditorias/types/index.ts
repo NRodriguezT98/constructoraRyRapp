@@ -12,6 +12,7 @@ export interface AuditoriaRegistro {
   registroId: string
   usuarioId: string | null
   usuarioEmail: string
+  usuarioNombres: string | null
   usuarioRol: string | null
   fechaEvento: string
   ipAddress: string | null

@@ -17,6 +17,7 @@ import {
     Settings,
     Shield,
     Sparkles,
+    Trash2,
     Users
 } from 'lucide-react'
 
@@ -100,6 +101,14 @@ const navigationGroups = [
         icon: Activity,
         color: 'from-teal-500 to-teal-600',
         description: 'Registro de auditorías',
+      },
+      {
+        name: 'Papelera',
+        href: '/documentos/eliminados',
+        icon: Trash2,
+        color: 'from-red-500 to-rose-600',
+        description: 'Documentos eliminados',
+        adminOnly: true, // 🔒 Solo visible para Admin
       },
       {
         name: 'Administración',
@@ -371,13 +380,16 @@ export function Sidebar() {
                 {group.items
                   .filter(
                     item =>
-                      !searchQuery ||
-                      item.name
-                        .toLowerCase()
-                        .includes(searchQuery.toLowerCase()) ||
-                      item.description
-                        .toLowerCase()
-                        .includes(searchQuery.toLowerCase())
+                      // Filtro de búsqueda
+                      (!searchQuery ||
+                        item.name
+                          .toLowerCase()
+                          .includes(searchQuery.toLowerCase()) ||
+                        item.description
+                          .toLowerCase()
+                          .includes(searchQuery.toLowerCase())) &&
+                      // 🔒 Filtro adminOnly
+                      (!(item as any).adminOnly || perfil?.rol === 'Administrador')
                   )
                   .map((item, index) => {
                     const active = isActive(item.href)

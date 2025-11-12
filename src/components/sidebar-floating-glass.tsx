@@ -19,6 +19,7 @@ import {
     Search,
     Settings,
     Shield,
+    Trash2,
     Users,
 } from 'lucide-react'
 import { useTheme } from 'next-themes'
@@ -104,6 +105,14 @@ const navigationGroups = [
         icon: Activity,
         color: 'from-teal-500 to-cyan-500',
         description: 'Registro de actividad',
+      },
+      {
+        name: 'Papelera',
+        href: '/documentos/eliminados',
+        icon: Trash2,
+        color: 'from-red-500 to-rose-500',
+        description: 'Documentos eliminados',
+        adminOnly: true,
       },
       {
         name: 'Plantillas Proceso',
@@ -408,13 +417,16 @@ export function SidebarFloatingGlass() {
                   {group.items
                     .filter(
                       (item) =>
-                        !searchQuery ||
-                        item.name
-                          .toLowerCase()
-                          .includes(searchQuery.toLowerCase()) ||
-                        item.description
-                          .toLowerCase()
-                          .includes(searchQuery.toLowerCase())
+                        // Filtro de búsqueda
+                        (!searchQuery ||
+                          item.name
+                            .toLowerCase()
+                            .includes(searchQuery.toLowerCase()) ||
+                          item.description
+                            .toLowerCase()
+                            .includes(searchQuery.toLowerCase())) &&
+                        // 🔒 Filtro adminOnly
+                        (!(item as any).adminOnly || perfil?.rol === 'Administrador')
                     )
                     .map((item) => {
                       const active = isActive(item.href)

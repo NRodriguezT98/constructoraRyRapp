@@ -79,6 +79,7 @@ export interface AuditLogRecord {
   registro_id: string
   usuario_id: string | null
   usuario_email: string
+  usuario_nombres: string | null
   usuario_rol: string | null
   fecha_evento: string
   ip_address: string | null
@@ -157,10 +158,10 @@ class AuditService {
         return
       }
 
-      // Obtener perfil del usuario para el rol
+      // Obtener perfil del usuario para el rol y nombres
       const { data: perfil } = await supabase
         .from('usuarios')
-        .select('rol')
+        .select('rol, nombres')
         .eq('id', user.id)
         .single()
 
@@ -177,6 +178,7 @@ class AuditService {
         registro_id: registroId,
         usuario_id: user.id,
         usuario_email: user.email!,
+        usuario_nombres: perfil?.nombres || null,
         usuario_rol: perfil?.rol || null,
         datos_anteriores: datosAnteriores,
         datos_nuevos: datosNuevos,

@@ -3,7 +3,9 @@
 // ============================================
 
 // React Query hooks (nuevos)
+export { useDocumentosEliminados } from './useDocumentosEliminados'
 export * from './useDocumentosQuery'
+export { useVersionesEliminadasCard } from './useVersionesEliminadasCard'
 
 // Hooks de UI/Lógica
 export { useCategoriasManager } from './useCategoriasManager'

@@ -21,16 +21,16 @@ import { useEffect, useState } from 'react'
 
 import { AnimatePresence, motion } from 'framer-motion'
 import {
-  Activity,
-  AlertTriangle,
-  Calendar,
-  CheckCircle2,
-  Edit3,
-  Eye,
-  FileText,
-  Trash2,
-  User,
-  X
+    Activity,
+    AlertTriangle,
+    Calendar,
+    CheckCircle2,
+    Edit3,
+    Eye,
+    FileText,
+    Trash2,
+    User,
+    X
 } from 'lucide-react'
 
 import { useAuditorias } from '../hooks/useAuditorias'
@@ -458,7 +458,16 @@ export function AuditoriasView({
                         <td className={`${styles.tabla.td} ${styles.tabla.tdSubtexto}`}>
                           <div className="flex items-center gap-1.5 text-xs">
                             <User className="w-3.5 h-3.5" />
-                            {registro.usuarioEmail}
+                            <div className="flex flex-col">
+                              <span className="font-medium">
+                                {registro.usuarioNombres || registro.usuarioEmail}
+                              </span>
+                              {registro.usuarioNombres && (
+                                <span className="text-[10px] text-gray-500 dark:text-gray-500">
+                                  {registro.usuarioEmail}
+                                </span>
+                              )}
+                            </div>
                           </div>
                         </td>
                         <td className={styles.tabla.td}>

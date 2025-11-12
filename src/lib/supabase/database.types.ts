@@ -97,6 +97,7 @@ export type Database = {
           user_agent: string | null
           usuario_email: string
           usuario_id: string | null
+          usuario_nombres: string | null
           usuario_rol: string | null
         }
         Insert: {
@@ -114,6 +115,7 @@ export type Database = {
           user_agent?: string | null
           usuario_email: string
           usuario_id?: string | null
+          usuario_nombres?: string | null
           usuario_rol?: string | null
         }
         Update: {
@@ -131,6 +133,7 @@ export type Database = {
           user_agent?: string | null
           usuario_email?: string
           usuario_id?: string | null
+          usuario_nombres?: string | null
           usuario_rol?: string | null
         }
         Relationships: []

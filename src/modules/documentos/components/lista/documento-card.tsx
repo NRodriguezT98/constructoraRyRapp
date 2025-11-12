@@ -4,47 +4,45 @@ import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { AnimatePresence, motion } from 'framer-motion'
 import {
-  AlertCircle,
-  Archive,
-  Calendar,
-  Clock,
-  Crown,
-  Download,
-  Edit,
-  Edit3,
-  Eye,
-  FileText,
-  FileUp,
-  History,
-  Lock,
-  MoreVertical,
-  RefreshCw,
-  Star,
-  Tag,
-  Trash2,
-  Upload,
-  User,
+    AlertCircle,
+    Archive,
+    Calendar,
+    Clock,
+    Crown,
+    Download,
+    Edit,
+    Edit3,
+    Eye,
+    FileText,
+    FileUp,
+    History,
+    Lock,
+    MoreVertical,
+    RefreshCw,
+    Star,
+    Tag,
+    Trash2,
+    Upload,
+    User,
 } from 'lucide-react'
 
 import {
-  formatDateCompact
+    formatDateCompact
 } from '@/lib/utils/date.utils'
 import { moduleThemes, type ModuleName } from '@/shared/config/module-themes'
 import {
-  DocumentoProyecto,
-  formatFileSize,
-  getFileExtension,
+    DocumentoProyecto,
+    formatFileSize,
+    getFileExtension,
 } from '../../../../types/documento.types'
-import {
-  DocumentoNuevaVersionModal,
-  DocumentoVersionesModal
-} from '../../../clientes/documentos/components'
 import { useDocumentoCard } from '../../hooks'
 import type { CategoriaDocumento } from '../../types'
 import { BadgeEstadoProceso } from '../badge-estado-proceso'
 import {
-  DocumentoEditarMetadatosModal,
-  DocumentoReemplazarArchivoModal
+    DocumentoEditarMetadatosModal,
+    DocumentoNuevaVersionModal,
+    DocumentoReemplazarArchivoModal,
+    DocumentoVersionesModal
 } from '../modals'
 import { CategoriaIcon } from '../shared/categoria-icon'
 
@@ -208,10 +206,10 @@ export function DocumentoCard({
                     onToggleImportante(documento)
                     cerrarMenu()
                   }}
-                  className='flex w-full items-center gap-2 px-3 py-1.5 text-left text-sm text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
+                  className='flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
                 >
                   <Star
-                    size={14}
+                    size={16}
                     className={
                       documento.es_importante
                         ? 'fill-yellow-500 text-yellow-500'
@@ -232,15 +230,15 @@ export function DocumentoCard({
                       onRename(documento)
                       cerrarMenu()
                     }}
-                    className='flex w-full items-center gap-2 px-3 py-1.5 text-left text-sm text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
+                    className='flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
                   >
-                    <Edit3 size={14} />
+                    <Edit3 size={16} />
                     Renombrar
                   </button>
                 )}
 
                 {/* Separador - Sección de edición */}
-                <div className='my-1.5 border-t border-gray-200 dark:border-gray-700' />
+                <div className='my-1 border-t border-gray-200 dark:border-gray-700' />
 
                 {/* 🆕 Botón Editar Metadatos - para todos los usuarios */}
                 <button
@@ -250,9 +248,9 @@ export function DocumentoCard({
                     e.stopPropagation()
                     abrirModalEditar()
                   }}
-                  className='flex w-full items-center gap-2 px-3 py-1.5 text-left text-sm text-blue-600 transition-colors hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/20'
+                  className='flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-blue-600 transition-colors hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/20'
                 >
-                  <Edit size={14} />
+                  <Edit size={16} />
                   Editar Documento
                 </button>
 
@@ -265,14 +263,19 @@ export function DocumentoCard({
                       e.stopPropagation()
                       abrirModalVersiones()
                     }}
-                    className='flex w-full items-center gap-2 px-3 py-1.5 text-left text-sm text-purple-600 transition-colors hover:bg-purple-50 dark:text-purple-400 dark:hover:bg-purple-900/20'
+                    className='flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-purple-600 transition-colors hover:bg-purple-50 dark:text-purple-400 dark:hover:bg-purple-900/20'
                   >
-                    <History size={14} />
+                    <History size={16} />
                     Ver Historial (v{documento.version})
                   </button>
                 )}
 
-                {/* Botón Nueva Versión - solo para documentos de proceso */}
+                {/* Separador - Sección de versionado */}
+                {esDocumentoDeProceso && (
+                  <div className='my-1 border-t border-gray-200 dark:border-gray-700' />
+                )}
+
+                {/* Botón Nueva Versión - siempre visible para proyectos */}
                 {esDocumentoDeProceso && (
                   <button
                     type="button"
@@ -281,9 +284,9 @@ export function DocumentoCard({
                       e.stopPropagation()
                       abrirModalNuevaVersion()
                     }}
-                    className='flex w-full items-center gap-2 px-3 py-1.5 text-left text-sm text-blue-600 transition-colors hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/20'
+                    className='flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-emerald-600 transition-colors hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-900/20'
                   >
-                    <FileUp size={14} />
+                    <FileUp size={16} />
                     Nueva Versión
                   </button>
                 )}
@@ -291,7 +294,7 @@ export function DocumentoCard({
                 {/* 🆕 Botón Reemplazar Archivo - SOLO ADMIN */}
                 {esAdmin && (
                   <>
-                    <div className='my-1.5 border-t border-gray-200 dark:border-gray-700' />
+                    <div className='my-1 border-t border-gray-200 dark:border-gray-700' />
                     <button
                       type="button"
                       onClick={(e) => {
@@ -299,17 +302,17 @@ export function DocumentoCard({
                         e.stopPropagation()
                         abrirModalReemplazar()
                       }}
-                      className='flex w-full items-center gap-2 px-3 py-1.5 text-left text-sm text-orange-600 transition-colors hover:bg-orange-50 dark:text-orange-400 dark:hover:bg-orange-900/20'
+                      className='relative flex w-full items-center gap-2 px-3 py-2 text-left text-sm bg-gradient-to-r from-amber-50/50 to-orange-50/50 dark:from-amber-950/20 dark:to-orange-950/20 text-orange-600 dark:text-orange-400 hover:bg-gradient-to-r hover:from-amber-50 hover:to-orange-50 dark:hover:from-amber-950/30 dark:hover:to-orange-950/30 transition-all'
                     >
-                      <RefreshCw size={14} />
+                      <RefreshCw size={16} />
                       <span>Reemplazar Archivo</span>
-                      <Crown size={12} className='ml-auto text-yellow-500 dark:text-yellow-400' />
+                      <Crown size={13} className='ml-auto text-amber-500 dark:text-amber-400' />
                     </button>
                   </>
                 )}
 
                 {/* Separador - Sección de archivo */}
-                <div className='my-1.5 border-t border-gray-200 dark:border-gray-700' />
+                <div className='my-1 border-t border-gray-200 dark:border-gray-700' />
 
                 <button
                   type="button"
@@ -319,14 +322,14 @@ export function DocumentoCard({
                     onArchive(documento)
                     cerrarMenu()
                   }}
-                  className='flex w-full items-center gap-2 px-3 py-1.5 text-left text-sm text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
+                  className='flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
                 >
-                  <Archive size={14} />
+                  <Archive size={16} />
                   Archivar
                 </button>
 
                 {/* Separador antes de eliminar */}
-                <div className='my-1.5 border-t border-gray-200 dark:border-gray-700' />
+                <div className='my-1 border-t border-gray-200 dark:border-gray-700' />
 
                 {/* Botón eliminar - oculto si el documento está protegido */}
                 {!estaProtegido && (
@@ -338,9 +341,9 @@ export function DocumentoCard({
                       onDelete(documento)
                       cerrarMenu()
                     }}
-                    className='flex w-full items-center gap-2 px-3 py-1.5 text-left text-sm text-red-600 transition-colors hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20'
+                    className='flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-red-600 transition-colors hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20'
                   >
-                    <Trash2 size={14} />
+                    <Trash2 size={16} />
                     Eliminar
                   </button>
                 )}
@@ -551,9 +554,9 @@ export function DocumentoCard({
         isOpen={modalNuevaVersionAbierto}
         documento={documento as any}
         onClose={cerrarModalNuevaVersion}
-        onVersionCreada={async () => {
+        onSuccess={async () => {
           cerrarModalNuevaVersion()
-          // 🆕 Refrescar lista de documentos
+          // Refrescar lista de documentos
           await onRefresh?.()
         }}
       />
