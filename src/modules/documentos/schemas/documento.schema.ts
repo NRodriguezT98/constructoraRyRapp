@@ -126,7 +126,14 @@ export const documentoFormSchema = z.object({
       if (!val) return true
       const fecha = new Date(val)
       return !isNaN(fecha.getTime())
-    }, 'Fecha inválida'),
+    }, 'Fecha inválida')
+    .refine(val => {
+      if (!val) return true
+      const fechaDocumento = new Date(val + 'T12:00:00') // Hora mediodía para evitar timezone issues
+      const hoy = new Date()
+      hoy.setHours(23, 59, 59, 999) // Final del día actual
+      return fechaDocumento <= hoy
+    }, 'La fecha del documento no puede ser futura'),
 
   fecha_vencimiento: z
     .string()

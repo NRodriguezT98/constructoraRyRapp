@@ -1,11 +1,7 @@
 ﻿'use client'
 
-import { motion } from 'framer-motion'
+import { AnimatePresence, motion } from 'framer-motion'
 
-import {
-    staggerContainer,
-    staggerItem,
-} from '../../../shared/styles/animations'
 import type { Proyecto } from '../types'
 
 import { ProyectoCardPremium } from './ProyectoCardPremium'
@@ -26,23 +22,27 @@ export function ProyectosLista({
   canDelete = false,
 }: ProyectosListaProps) {
   return (
-    <motion.div
-      variants={staggerContainer}
-      initial='hidden'
-      animate='visible'
-      className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
-    >
-      {proyectos.map(proyecto => (
-        <motion.div key={proyecto.id} variants={staggerItem}>
-          <ProyectoCardPremium
-            proyecto={proyecto}
-            onEdit={onEdit}
-            onDelete={onDelete}
-            canEdit={canEdit}
-            canDelete={canDelete}
-          />
-        </motion.div>
-      ))}
-    </motion.div>
+    <div className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'>
+      <AnimatePresence mode="popLayout">
+        {proyectos.map(proyecto => (
+          <motion.div
+            key={proyecto.id}
+            layout
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.8 }}
+            transition={{ duration: 0.2 }}
+          >
+            <ProyectoCardPremium
+              proyecto={proyecto}
+              onEdit={onEdit}
+              onDelete={onDelete}
+              canEdit={canEdit}
+              canDelete={canDelete}
+            />
+          </motion.div>
+        ))}
+      </AnimatePresence>
+    </div>
   )
 }

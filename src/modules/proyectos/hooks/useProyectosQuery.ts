@@ -58,8 +58,13 @@ export function useProyectosQuery() {
   // ✅ MUTATION: Crear proyecto
   const crearProyectoMutation = useMutation({
     mutationFn: (data: ProyectoFormData) => proyectosService.crearProyecto(data),
-    onSuccess: (nuevoProyecto) => {
-      queryClient.invalidateQueries({ queryKey: proyectosKeys.lists() })
+    onSuccess: async (nuevoProyecto) => {
+      // ✅ INVALIDAR + REFETCH inmediato
+      await queryClient.invalidateQueries({
+        queryKey: proyectosKeys.lists(),
+        refetchType: 'all' // Refetch todas (activas e inactivas)
+      })
+
       toast.success('Proyecto creado correctamente', {
         description: `${nuevoProyecto.nombre} ha sido creado exitosamente`,
       })
@@ -76,10 +81,16 @@ export function useProyectosQuery() {
     mutationFn: ({ id, data }: { id: string; data: Partial<ProyectoFormData> }) => {
       return proyectosService.actualizarProyecto(id, data)
     },
-    onSuccess: (proyectoActualizado) => {
-      // Invalidar cache de lista Y detalle
-      queryClient.invalidateQueries({ queryKey: proyectosKeys.lists() })
-      queryClient.invalidateQueries({ queryKey: proyectosKeys.detail(proyectoActualizado.id) })
+    onSuccess: async (proyectoActualizado) => {
+      // ✅ INVALIDAR + REFETCH inmediato
+      await queryClient.invalidateQueries({
+        queryKey: proyectosKeys.lists(),
+        refetchType: 'all'
+      })
+      await queryClient.invalidateQueries({
+        queryKey: proyectosKeys.detail(proyectoActualizado.id),
+        refetchType: 'all'
+      })
 
       toast.success('Proyecto actualizado', {
         description: `${proyectoActualizado.nombre} ha sido actualizado`,

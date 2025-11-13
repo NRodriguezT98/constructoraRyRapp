@@ -68,21 +68,35 @@ export const getServerUserProfile = cache(async (): Promise<Usuario | null> => {
   // Los claims custom están en el root del JWT payload, no en user.app_metadata
   if (session.access_token) {
     try {
-      // Decodificar JWT (formato: header.payload.signature)
-      const payload = JSON.parse(
-        Buffer.from(session.access_token.split('.')[1], 'base64').toString()
-      )
+      // Decodificar JWT (Edge Runtime compatible - sin Buffer)
+      const parts = session.access_token.split('.')
+      if (parts.length === 3) {
+        // Decodificar base64 sin Buffer (compatible con Edge Runtime y Node.js)
+        let base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/')
+        // Agregar padding si es necesario
+        while (base64.length % 4) {
+          base64 += '='
+        }
 
-      // Leer claims custom del payload
-      rol = payload.user_rol || 'Vendedor'
-      nombres = payload.user_nombres || ''
-      email = payload.user_email || user.email || ''
+        const jsonPayload = decodeURIComponent(
+          atob(base64)
+            .split('')
+            .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+            .join('')
+        )
+        const payload = JSON.parse(jsonPayload)
 
-      console.log('✅ [AUTH SERVICE] Claims leídos del JWT:', {
-        rol,
-        nombres,
-        email,
-      })
+        // Leer claims custom del payload
+        rol = payload.user_rol || 'Vendedor'
+        nombres = payload.user_nombres || ''
+        email = payload.user_email || user.email || ''
+
+        console.log('✅ [AUTH SERVICE] Claims leídos del JWT:', {
+          rol,
+          nombres,
+          email,
+        })
+      }
     } catch (error) {
       console.error('❌ [AUTH SERVICE] Error decodificando JWT:', error)
       // Fallback a valores por defecto

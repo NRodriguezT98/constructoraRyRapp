@@ -55,7 +55,7 @@ function LoginForm() {
   // }, [loginExitoso])
 
   return (
-    <div className='relative flex min-h-screen w-full items-center justify-center overflow-hidden'>
+    <div className='relative flex min-h-screen w-full items-center justify-center overflow-y-auto overflow-x-hidden py-8'>
       {/* Fondo personalizado - FULL WIDTH */}
       <div className='fixed inset-0 z-0 h-screen w-screen'>
         <Image
@@ -72,7 +72,7 @@ function LoginForm() {
       </div>
 
       {/* Contenido del login - ABSOLUTAMENTE CENTRADO */}
-      <div className='relative z-10 mx-auto flex max-w-2xl flex-col items-center justify-center px-4'>
+      <div className='relative z-10 mx-auto flex w-full max-w-2xl flex-col items-center justify-center px-4'>
         {/* Branding - Logo principal centrado */}
         <motion.div
           initial={{ opacity: 0, y: -30 }}

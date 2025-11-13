@@ -1,13 +1,13 @@
 import { supabase } from '@/lib/supabase/client'
 
 import type {
-  ActividadUsuario,
-  AuditoriaRegistro,
-  ConsultaAuditoriaParams,
-  EliminacionMasiva,
-  EstadisticasAuditoria,
-  ResultadoPaginado,
-  ResumenModulo,
+    ActividadUsuario,
+    AuditoriaRegistro,
+    ConsultaAuditoriaParams,
+    EliminacionMasiva,
+    EstadisticasAuditoria,
+    ResultadoPaginado,
+    ResumenModulo,
 } from '../types'
 
 /**
@@ -320,6 +320,7 @@ class AuditoriasService {
       registroId: data.registro_id,
       usuarioId: data.usuario_id,
       usuarioEmail: data.usuario_email,
+      usuarioNombres: data.usuario_nombres || '',
       usuarioRol: data.usuario_rol,
       fechaEvento: data.fecha_evento,
       ipAddress: data.ip_address,

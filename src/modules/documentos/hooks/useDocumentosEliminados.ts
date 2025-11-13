@@ -63,11 +63,17 @@ export function useDocumentosEliminados() {
   const restaurarMutation = useMutation({
     mutationFn: (documentoId: string) =>
       DocumentosService.restaurarDocumentoEliminado(documentoId),
-    onSuccess: () => {
+    onSuccess: async () => {
       toast.success('✅ Documento restaurado correctamente')
-      queryClient.invalidateQueries({ queryKey: ['documentos-eliminados'] })
-      // Invalidar también listas de documentos activos
-      queryClient.invalidateQueries({ queryKey: ['documentos'] })
+
+      // 🔧 FIX: Usar refetchQueries para forzar recarga INMEDIATA
+      await Promise.all([
+        queryClient.refetchQueries({ queryKey: ['documentos-eliminados'] }),
+        queryClient.refetchQueries({ queryKey: ['documentos'] }), // ← Documentos activos (proyectos)
+        queryClient.refetchQueries({ queryKey: ['documentos-vivienda'] }), // ← Documentos de viviendas
+        queryClient.refetchQueries({ queryKey: ['versiones-documento'] }), // ← Historial de versiones
+        queryClient.refetchQueries({ queryKey: ['versiones-eliminadas'] }), // ← Versiones en papelera
+      ])
     },
     onError: (error: any) => {
       console.error('Error al restaurar documento:', error)

@@ -9,12 +9,11 @@ import { useRouter } from 'next/navigation'
 
 import { Button } from '@/components/ui/button'
 import {
-  ViviendaHeader,
-  ProgressBar,
-  InfoTab,
-  LinderosTab,
-  DocumentosTab,
-  AbonosTab,
+    AbonosTab,
+    DocumentosTab,
+    InfoTab,
+    ProgressBar,
+    ViviendaHeader,
 } from '@/modules/viviendas/components/detalle'
 import type { Vivienda } from '@/modules/viviendas/types'
 
@@ -26,12 +25,12 @@ interface ViviendaDetalleClientProps {
   viviendaId: string
 }
 
-type TabType = 'info' | 'linderos' | 'documentos' | 'abonos'
+type TabType = 'info' | 'documentos' | 'abonos'
 
 /**
  * Vista de detalle de vivienda - Componente principal refactorizado
  * Aplica separación de responsabilidades: Solo orquestación y navegación
- * Componentes separados: ViviendaHeader, ProgressBar, InfoTab, LinderosTab, DocumentosTab, AbonosTab
+ * Componentes separados: ViviendaHeader, ProgressBar, InfoTab, DocumentosTab, AbonosTab
  */
 export default function ViviendaDetalleClient({ viviendaId }: ViviendaDetalleClientProps) {
   const router = useRouter()
@@ -190,7 +189,6 @@ export default function ViviendaDetalleClient({ viviendaId }: ViviendaDetalleCli
         {/* Contenido de los tabs - Componentes separados */}
         <motion.div layout>
           {activeTab === 'info' && <InfoTab vivienda={vivienda} onAsignarCliente={handleAsignarCliente} />}
-          {activeTab === 'linderos' && <LinderosTab vivienda={vivienda} />}
           {activeTab === 'documentos' && <DocumentosTab viviendaId={viviendaId} />}
           {activeTab === 'abonos' && <AbonosTab vivienda={vivienda} onRegistrarAbono={handleRegistrarAbono} />}
         </motion.div>

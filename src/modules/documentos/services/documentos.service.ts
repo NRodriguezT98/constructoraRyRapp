@@ -308,7 +308,7 @@ export class DocumentosService {
 
     const padreId = doc?.documento_padre_id || documentoId
 
-    // Obtener todas las versiones (padre + hijas)
+    // Obtener todas las versiones (padre + hijas) SOLO ACTIVAS
     const { data, error } = await supabase
       .from('documentos_proyecto')
       .select(`
@@ -320,6 +320,7 @@ export class DocumentosService {
         )
       `)
       .or(`id.eq.${padreId},documento_padre_id.eq.${padreId}`)
+      .eq('estado', 'activo') // ← 🔧 FIX: Solo versiones activas (no eliminadas)
       .order('version', { ascending: false })
 
     if (error) throw error

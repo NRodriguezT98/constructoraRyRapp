@@ -9,6 +9,16 @@
 import { useMemo } from 'react'
 
 import type { Proyecto, ProyectoFormData } from '../types'
+import { formatearEstadoProyecto } from '../utils/estado.utils'
+
+/**
+ * Normaliza una fecha a formato YYYY-MM-DD para comparación
+ */
+function normalizarFecha(fecha: string | null | undefined): string {
+  if (!fecha) return ''
+  // Extraer solo la parte de la fecha (YYYY-MM-DD)
+  return fecha.split('T')[0]
+}
 
 export interface CambioDetectado {
   campo: string
@@ -79,6 +89,56 @@ export function useDetectarCambios(
         label: 'Ubicación',
         valorAnterior: proyectoOriginal.ubicacion,
         valorNuevo: nuevosDatos.ubicacion,
+        tipo: 'texto',
+      })
+    }
+
+    // 🆕 Comparar estado
+    if (proyectoOriginal.estado !== nuevosDatos.estado) {
+      cambiosProyecto.push({
+        campo: 'estado',
+        label: 'Estado',
+        valorAnterior: formatearEstadoProyecto(proyectoOriginal.estado),
+        valorNuevo: formatearEstadoProyecto(nuevosDatos.estado),
+        tipo: 'texto',
+      })
+    }
+
+    // 🆕 Comparar fecha de inicio (normalizar para evitar falsos positivos)
+    const fechaInicioOriginal = normalizarFecha(proyectoOriginal.fechaInicio)
+    const fechaInicioNueva = normalizarFecha(nuevosDatos.fechaInicio)
+
+    if (fechaInicioOriginal !== fechaInicioNueva) {
+      cambiosProyecto.push({
+        campo: 'fechaInicio',
+        label: 'Fecha de Inicio',
+        valorAnterior: fechaInicioOriginal || 'No especificado',
+        valorNuevo: fechaInicioNueva || 'No especificado',
+        tipo: 'texto',
+      })
+    }
+
+    // 🆕 Comparar fecha estimada de finalización (normalizar para evitar falsos positivos)
+    const fechaFinOriginal = normalizarFecha(proyectoOriginal.fechaFinEstimada)
+    const fechaFinNueva = normalizarFecha(nuevosDatos.fechaFinEstimada)
+
+    if (fechaFinOriginal !== fechaFinNueva) {
+      cambiosProyecto.push({
+        campo: 'fechaFinEstimada',
+        label: 'Fecha Estimada de Finalización',
+        valorAnterior: fechaFinOriginal || 'No especificado',
+        valorNuevo: fechaFinNueva || 'No especificado',
+        tipo: 'texto',
+      })
+    }
+
+    // 🆕 Comparar responsable del proyecto
+    if (proyectoOriginal.responsable !== nuevosDatos.responsable) {
+      cambiosProyecto.push({
+        campo: 'responsable',
+        label: 'Responsable del Proyecto',
+        valorAnterior: proyectoOriginal.responsable || 'No asignado',
+        valorNuevo: nuevosDatos.responsable || 'No asignado',
         tipo: 'texto',
       })
     }

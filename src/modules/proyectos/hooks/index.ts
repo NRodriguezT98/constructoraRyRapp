@@ -6,12 +6,13 @@ export { useDocumentoVersiones } from './useDocumentoVersiones'
 export { useProyectoCard } from './useProyectoCard'
 // ❌ useProyectoDetalle eliminado - nunca se implementó
 
-// ✅ Hooks con Zustand (DEPRECADO - usar React Query)
+// ✅ Hooks con Zustand (DEPRECADO - NO USAR)
 export {
-    useProyecto, useProyectos, useProyectosFiltrados
+    useProyecto, useProyectos
+    // ❌ useProyectosFiltrados removido - usar useProyectosFiltradosQuery
 } from './useProyectos'
 
-// ✅ Hooks con React Query (NUEVO - usar estos)
+// ✅ Hooks con React Query (USAR ESTOS)
 export {
     proyectosKeys,
     useEstadisticasProyectos as useEstadisticasProyectosQuery,

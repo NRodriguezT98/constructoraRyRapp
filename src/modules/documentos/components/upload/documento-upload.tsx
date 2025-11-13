@@ -461,6 +461,7 @@ export function DocumentoUpload({
                   <input
                     {...register('fecha_documento')}
                     type="date"
+                    max={new Date().toISOString().split('T')[0]} // ← Bloquear fechas futuras en el calendario
                     className={cn(
                       'w-full px-3 py-2 text-sm bg-white dark:bg-gray-900/50 border rounded-lg transition-all',
                       'focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 focus:border-transparent',

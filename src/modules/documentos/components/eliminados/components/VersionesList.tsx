@@ -2,8 +2,10 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { formatDateCompact } from '@/lib/utils/date.utils'
 import { formatFileSize } from '@/lib/utils/format.utils'
+import { DocumentosService } from '@/modules/documentos/services/documentos.service'
 import type { DocumentoProyecto } from '@/modules/documentos/types/documento.types'
-import { Calendar, HardDrive, Loader2, Upload, User } from 'lucide-react'
+import { Calendar, Eye, HardDrive, Loader2, Upload, User } from 'lucide-react'
+import { toast } from 'sonner'
 
 // Tipo extendido con relación usuario (FK join)
 type DocumentoConUsuario = DocumentoProyecto & {
@@ -80,7 +82,7 @@ export function VersionesList({
                 variant="outline"
                 onClick={onRestoreSelected}
                 disabled={isRestoring}
-                className="h-7 px-2 text-xs hover:bg-green-50 dark:hover:bg-green-950/20 hover:border-green-600 hover:text-green-600"
+                className="h-7 px-2 text-xs bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white border-0 shadow-sm"
               >
                 {isRestoring ? 'Restaurando...' : 'Restaurar seleccionadas'}
               </Button>
@@ -88,7 +90,7 @@ export function VersionesList({
           )}
           <button
             onClick={seleccionadas.size === totalVersiones ? onDeselectAll : onSelectAll}
-            className="text-xs text-blue-600 dark:text-blue-400 hover:underline"
+            className="text-xs text-rose-600 dark:text-rose-400 hover:underline font-medium"
           >
             {seleccionadas.size === totalVersiones ? 'Deseleccionar todas' : 'Seleccionar todas'}
           </button>
@@ -98,9 +100,9 @@ export function VersionesList({
       {/* Lista de versiones */}
       <div className="space-y-2">
         {versiones.map((version) => (
-          <label
+          <div
             key={version.id}
-            className="block p-3 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer transition-all"
+            className="block p-3 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-all"
           >
             <div className="flex items-start gap-3">
               {/* Checkbox */}
@@ -108,21 +110,43 @@ export function VersionesList({
                 <input
                   type="checkbox"
                   checked={seleccionadas.has(version.id)}
-                  onChange={() => onVersionToggle(version.id)}
-                  className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500 cursor-pointer"
+                  onChange={(e) => {
+                    e.stopPropagation()
+                    onVersionToggle(version.id)
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                  className="w-4 h-4 rounded border-gray-300 text-rose-600 focus:ring-2 focus:ring-rose-500 cursor-pointer"
                 />
               </div>
 
               {/* Info de versión */}
               <div className="flex-1 min-w-0 space-y-2">
                 {/* Header versión */}
-                <div className="flex items-center gap-2">
-                  <Badge variant="outline" className="text-xs">
-                    v{version.version}
-                  </Badge>
-                  <h5 className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                    {version.titulo}
-                  </h5>
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline" className="text-xs">
+                      v{version.version}
+                    </Badge>
+                    <h5 className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                      {version.titulo}
+                    </h5>
+                  </div>
+                  {/* Botón Ver */}
+                  <button
+                    onClick={async () => {
+                      try {
+                        const url = await DocumentosService.obtenerUrlDescarga(version.url_storage)
+                        window.open(url, '_blank')
+                      } catch (error) {
+                        console.error('Error al abrir documento:', error)
+                        toast.error('❌ Error al abrir el documento')
+                      }
+                    }}
+                    className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white transition-all shadow-sm"
+                  >
+                    <Eye className="w-3 h-3" />
+                    Ver
+                  </button>
                 </div>
 
                 {/* Metadata grid */}
@@ -163,7 +187,7 @@ export function VersionesList({
                 </div>
               </div>
             </div>
-          </label>
+          </div>
         ))}
       </div>
     </div>

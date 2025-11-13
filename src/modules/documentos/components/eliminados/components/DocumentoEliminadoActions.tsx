@@ -25,7 +25,7 @@ export function DocumentoEliminadoActions({
         variant="outline"
         onClick={onRestore}
         disabled={isRestoring || isDeleting}
-        className="flex-1 hover:bg-green-50 dark:hover:bg-green-950/20 hover:border-green-600 hover:text-green-600 transition-all"
+        className="flex-1 bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white border-0 shadow-sm transition-all"
       >
         <RotateCcw className="w-4 h-4 mr-2" />
         {isRestoring ? 'Restaurando...' : 'Restaurar todo'}
@@ -36,7 +36,7 @@ export function DocumentoEliminadoActions({
         variant="outline"
         onClick={onDelete}
         disabled={isRestoring || isDeleting}
-        className="flex-1 hover:bg-red-50 dark:hover:bg-red-950/20 hover:border-red-600 hover:text-red-600 transition-all"
+        className="flex-1 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white border-0 shadow-sm transition-all"
       >
         <Trash2 className="w-4 h-4 mr-2" />
         {isDeleting ? 'Eliminando...' : 'Eliminar definitivo'}

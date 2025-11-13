@@ -20,6 +20,7 @@ interface ModalProps {
   className?: string
   icon?: React.ReactNode
   gradientColor?: 'orange' | 'green' | 'cyan' | 'pink' | 'blue' | 'purple'
+  compact?: boolean // ✅ Para modales de confirmación (sin min-height)
 }
 
 const sizeClasses = {
@@ -77,6 +78,7 @@ export function Modal({
   className,
   icon,
   gradientColor = 'purple',
+  compact = false, // ✅ Por defecto false para mantener compatibilidad
 }: ModalProps) {
   const modalRef = useClickOutside<HTMLDivElement>(() => {
     if (closeOnBackdrop) onClose()
@@ -178,7 +180,10 @@ export function Modal({
               )}
 
               {/* Content con scroll personalizado - OPTIMIZADO PARA MENOS SCROLL */}
-              <div className='custom-scrollbar min-h-[70vh] max-h-[85vh] overflow-y-auto px-6 py-3'>
+              <div className={cn(
+                'custom-scrollbar overflow-y-auto px-6',
+                compact ? 'py-4' : 'min-h-[70vh] max-h-[85vh] py-3'
+              )}>
                 {children}
               </div>
 

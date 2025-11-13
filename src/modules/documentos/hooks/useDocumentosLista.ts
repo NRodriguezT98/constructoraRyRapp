@@ -15,6 +15,7 @@
 
 import { useCallback, useMemo, useState } from 'react'
 
+import { supabase } from '@/lib/supabase/client'
 import { useAuth } from '../../../contexts/auth-context'
 import { useModal } from '../../../shared/components/modals'
 import { DocumentosService } from '../services'
@@ -141,11 +142,13 @@ export function useDocumentosLista({
 
       if (isPDF || isImage) {
         try {
-          const url = await DocumentosService.obtenerUrlDescarga(
-            documento.url_storage,
-            3600 // 1 hora
-          )
-          setUrlPreview(url)
+          // Para preview, usar URL pública del bucket en lugar de signed URL
+          // Esto evita que se fuerce la descarga
+          const { data } = supabase.storage
+            .from('documentos-proyectos')
+            .getPublicUrl(documento.url_storage)
+
+          setUrlPreview(data.publicUrl)
         } catch (error) {
           console.error('Error al obtener URL de preview:', error)
           setUrlPreview(undefined)

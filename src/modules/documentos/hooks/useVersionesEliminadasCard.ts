@@ -53,13 +53,21 @@ export function useVersionesEliminadasCard({
   const restaurarMutation = useMutation({
     mutationFn: (versionIds: string[]) =>
       DocumentosService.restaurarVersionesSeleccionadas(versionIds),
-    onSuccess: () => {
+    onSuccess: async () => {
       toast.success('Versiones restauradas exitosamente')
-      queryClient.invalidateQueries({ queryKey: ['documentos-eliminados'] })
-      queryClient.invalidateQueries({ queryKey: ['versiones-eliminadas'] })
-      // Resetear selección
+
+      // 🔧 FIX: Usar refetchQueries para forzar recarga INMEDIATA (sin recargar página)
+      await Promise.all([
+        queryClient.refetchQueries({ queryKey: ['documentos-eliminados'] }),
+        queryClient.refetchQueries({ queryKey: ['versiones-eliminadas', documentoId] }),
+        queryClient.refetchQueries({ queryKey: ['documentos'] }), // ← Proyectos activos
+        queryClient.refetchQueries({ queryKey: ['documentos-vivienda'] }), // ← Viviendas activas
+        queryClient.refetchQueries({ queryKey: ['versiones-documento'] }), // ← Historial
+      ])
+
+      // Resetear selección pero MANTENER card expandido para ver versiones restantes
       setVersionesSeleccionadas(new Set())
-      setIsExpanded(false)
+      // ❌ NO cerrar el card: setIsExpanded(false) - Mantener abierto para ver qué quedó
     },
     onError: (error: Error) => {
       console.error('Error al restaurar versiones:', error)

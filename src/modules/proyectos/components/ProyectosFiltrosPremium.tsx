@@ -9,8 +9,11 @@
 'use client'
 
 import { AnimatePresence, motion } from 'framer-motion'
-import { Filter, Search, X } from 'lucide-react'
+import { Filter, LayoutGrid, Search, Table, X } from 'lucide-react'
+import { useEffect, useState } from 'react'
 
+import type { TipoVista } from '@/shared/hooks/useVistaPreference'
+import { cn } from '@/shared/utils/helpers'
 import { ESTADOS_PROYECTO } from '../constants'
 import { proyectosPageStyles as styles } from '../styles/proyectos-page.styles'
 import type { FiltroProyecto } from '../types'
@@ -21,14 +24,26 @@ interface ProyectosFiltrosPremiumProps {
   filtros?: FiltroProyecto
   onActualizarFiltros?: (filtros: Partial<FiltroProyecto>) => void
   onLimpiarFiltros?: () => void
+  // ✅ Props para toggle de vista
+  vista?: TipoVista
+  onCambiarVista?: (vista: TipoVista) => void
 }
 
 export function ProyectosFiltrosPremium({
   totalResultados = 0,
   filtros = { busqueda: '', estado: undefined },
   onActualizarFiltros = () => {},
-  onLimpiarFiltros = () => {}
+  onLimpiarFiltros = () => {},
+  vista = 'cards',
+  onCambiarVista = () => {},
 }: ProyectosFiltrosPremiumProps) {
+  // ✅ FIX HYDRATION: Evitar mismatch entre servidor y cliente
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
   const hasFilters = Boolean(filtros.busqueda || filtros.estado)
 
   const handleLimpiarFiltros = () => {
@@ -121,8 +136,40 @@ export function ProyectosFiltrosPremium({
         </div>
       </div>
 
-      {/* Footer con contador y limpiar */}
+      {/* Footer con toggle de vista, contador y limpiar */}
       <div className={styles.filtros.footer}>
+        {/* Toggle Cards/Tabla - Solo renderizar después de montar para evitar hydration mismatch */}
+        {mounted && (
+          <div className="flex items-center gap-1 p-1 bg-gray-100 dark:bg-gray-800 rounded-lg">
+            <button
+              onClick={() => onCambiarVista('cards')}
+              className={cn(
+                'px-2.5 py-1.5 rounded-md text-xs font-medium transition-all flex items-center gap-1.5',
+                vista === 'cards'
+                  ? 'bg-white dark:bg-gray-700 text-orange-600 dark:text-orange-400 shadow-sm'
+                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+              )}
+              title="Vista de cards"
+            >
+              <LayoutGrid className="w-3.5 h-3.5" />
+              <span>Cards</span>
+            </button>
+            <button
+              onClick={() => onCambiarVista('tabla')}
+              className={cn(
+                'px-2.5 py-1.5 rounded-md text-xs font-medium transition-all flex items-center gap-1.5',
+                vista === 'tabla'
+                  ? 'bg-white dark:bg-gray-700 text-orange-600 dark:text-orange-400 shadow-sm'
+                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+              )}
+              title="Vista de tabla"
+            >
+              <Table className="w-3.5 h-3.5" />
+              <span>Tabla</span>
+            </button>
+          </div>
+        )}
+
         <p className={styles.filtros.resultCount}>
           {totalResultados} {totalResultados === 1 ? 'resultado' : 'resultados'}
         </p>

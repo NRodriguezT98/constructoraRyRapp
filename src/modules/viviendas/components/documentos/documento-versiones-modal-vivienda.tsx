@@ -119,12 +119,17 @@ export function DocumentoVersionesModalVivienda({
               </div>
             ) : (
               <div className="space-y-4">
-                {versiones.map((version) => {
+                {versiones.map((version, index) => {
                   const esActual = version.es_version_actual
                   const esOriginal = version.version === 1
                   const cambios = version.metadata && typeof version.metadata === 'object'
                     ? (version.metadata as any).cambios
                     : null
+
+                  // 🅲 OPCIÓN C: Numeración secuencial visual (v1, v2, v3) + original para auditoría
+                  const versionSecuencial = versiones.length - index // De mayor a menor (actual = 1)
+                  const versionOriginal = version.version
+                  const tieneDiferencia = versionSecuencial !== versionOriginal
 
                   // Tooltip para botón de eliminar
                   const tooltipEliminar = esActual
@@ -142,7 +147,12 @@ export function DocumentoVersionesModalVivienda({
                       <div className={styles.versionCard.header}>
                         <div className={styles.versionCard.badges}>
                           <span className={styles.versionCard.versionBadge}>
-                            Versión {version.version}
+                            Versión {versionSecuencial}
+                            {tieneDiferencia && (
+                              <span className="text-[10px] opacity-70 ml-0.5">
+                                (orig. v{versionOriginal})
+                              </span>
+                            )}
                           </span>
                           {esActual && (
                             <span className={styles.versionCard.actualBadge}>✓ Actual</span>

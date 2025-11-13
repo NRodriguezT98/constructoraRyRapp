@@ -10,14 +10,14 @@
 
 import { AnimatePresence, motion } from 'framer-motion'
 import {
-  AlertCircle,
-  Calendar,
-  FileCheck,
-  FileText,
-  Loader2,
-  Star,
-  Upload,
-  X,
+    AlertCircle,
+    Calendar,
+    FileCheck,
+    FileText,
+    Loader2,
+    Star,
+    Upload,
+    X,
 } from 'lucide-react'
 
 import { EtiquetasInput } from '@/modules/documentos/components/shared/etiquetas-input'
@@ -271,6 +271,7 @@ export function DocumentoUploadCliente({
                 <input
                   {...register('fecha_documento')}
                   type="date"
+                  max={new Date().toISOString().split('T')[0]} // ← Bloquear fechas futuras
                   className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
                 />
               </div>

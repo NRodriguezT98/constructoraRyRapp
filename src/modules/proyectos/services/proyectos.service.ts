@@ -363,6 +363,34 @@ class ProyectosService {
       fechaActualizacion: data.fecha_actualizacion,
     }
   }
+
+  /**
+   * Verifica si ya existe un proyecto con el mismo nombre (case-insensitive)
+   * @param nombre - Nombre del proyecto a verificar
+   * @param excludeId - ID del proyecto a excluir (para edición)
+   * @returns true si el nombre ya existe, false si está disponible
+   */
+  async verificarNombreDuplicado(
+    nombre: string,
+    excludeId?: string
+  ): Promise<boolean> {
+    const { data, error } = await supabase
+      .from('proyectos')
+      .select('id, nombre')
+      .ilike('nombre', nombre) // Case-insensitive comparison
+
+    if (error) {
+      console.error('Error al verificar nombre duplicado:', error)
+      throw new Error(`Error al verificar nombre: ${error.message}`)
+    }
+
+    // Si estamos editando, excluir el proyecto actual
+    const duplicados = excludeId
+      ? data?.filter(p => p.id !== excludeId) || []
+      : data || []
+
+    return duplicados.length > 0
+  }
 }
 
 export const proyectosService = new ProyectosService()

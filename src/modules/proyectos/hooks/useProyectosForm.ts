@@ -16,6 +16,7 @@ import { z } from 'zod'
 import type { ProyectoFormData } from '../types'
 
 import { useFormChanges } from '@/shared/hooks/useFormChanges'
+import { proyectosService } from '../services/proyectos.service'
 import { useManzanasEditables } from './useManzanasEditables'
 
 // ==================== SCHEMAS ====================
@@ -29,9 +30,13 @@ const manzanaSchema = z.object({
       'Solo se permiten letras, números, espacios, guiones, paréntesis y puntos'
     ),
   totalViviendas: z
-    .number()
+    .number({
+      errorMap: () => ({ message: 'La cantidad de viviendas es obligatoria' }),
+      invalid_type_error: 'Ingresa un número válido',
+    })
     .min(1, 'Mínimo 1 vivienda')
-    .max(100, 'Máximo 100 viviendas'),
+    .max(100, 'Máximo 100 viviendas')
+    .int('Debe ser un número entero'),
   // ✅ Campos opcionales para validación precargada
   cantidadViviendasCreadas: z.number().optional(),
   esEditable: z.boolean().optional(),
@@ -63,8 +68,100 @@ const proyectoSchema = z.object({
       /^[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\s\-,#.°]+$/,
       'Solo se permiten letras (con acentos), números, espacios, comas, guiones, # y puntos'
     ),
+  estado: z.enum(['en_planificacion', 'en_proceso', 'en_construccion', 'completado', 'pausado'], {
+    errorMap: () => ({ message: 'Selecciona un estado para el proyecto' }),
+  }),
+  fechaInicio: z.string().optional(),
+  fechaFinEstimada: z.string().optional(),
+  responsable: z
+    .string()
+    .min(3, 'El nombre del responsable debe tener al menos 3 caracteres')
+    .max(255, 'El nombre no puede exceder 255 caracteres')
+    .regex(
+      /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/,
+      'Solo se permiten letras y espacios'
+    ),
   manzanas: z.array(manzanaSchema).min(1, 'Debe agregar al menos una manzana'),
-})
+}).refine(
+  (data) => {
+    // Solo validar si ambas fechas están presentes y no son strings vacías
+    if (data.fechaInicio && data.fechaFinEstimada &&
+        data.fechaInicio.trim() !== '' && data.fechaFinEstimada.trim() !== '') {
+      return new Date(data.fechaFinEstimada) > new Date(data.fechaInicio)
+    }
+    return true
+  },
+  {
+    message: 'La fecha de fin debe ser posterior a la fecha de inicio',
+    path: ['fechaFinEstimada'],
+  }
+)
+
+// ✅ Schema factory: permite acceso a initialData e isEditing para validaciones async
+const createProyectoSchema = (params: { initialData?: Partial<ProyectoFormData>, isEditing: boolean }) => {
+  return proyectoSchema.superRefine(async (data, ctx) => {
+    // ✅ Validación async: Verificar nombres duplicados de PROYECTOS
+    if (data.nombre && data.nombre.length >= 3) {
+      // No validar si es el mismo nombre en modo edición
+      if (params.isEditing && data.nombre === params.initialData?.nombre) {
+        return
+      }
+
+      try {
+        const existe = await proyectosService.verificarNombreDuplicado(
+          data.nombre,
+          params.isEditing ? params.initialData?.id : undefined
+        )
+
+        if (existe) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: `Ya existe un proyecto con el nombre "${data.nombre}"`,
+            path: ['nombre'],
+          })
+        }
+      } catch (error) {
+        console.error('Error al validar nombre duplicado:', error)
+        // No bloqueamos el submit si falla la validación async
+      }
+    }
+
+    // ✅ Validación síncrona: Verificar nombres únicos de MANZANAS dentro del proyecto
+    if (data.manzanas && data.manzanas.length > 1) {
+      const nombresNormalizados = data.manzanas.map(m => m.nombre.trim().toLowerCase())
+      const duplicados = nombresNormalizados.filter((nombre, index) =>
+        nombresNormalizados.indexOf(nombre) !== index
+      )
+
+      if (duplicados.length > 0) {
+        // Encontrar índice de la primera manzana duplicada
+        const indiceDuplicado = nombresNormalizados.findIndex((nombre, index) =>
+          nombresNormalizados.indexOf(nombre) !== index
+        )
+
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `Ya existe una manzana con este nombre en el proyecto`,
+          path: ['manzanas', indiceDuplicado, 'nombre'],
+        })
+      }
+    }
+
+    // ✅ Validación síncrona: Verificar formato de ubicación (evitar genéricas)
+    if (data.ubicacion) {
+      const ubicacionNormalizada = data.ubicacion.trim().toLowerCase()
+      const ubicacionesGenericas = ['sin ubicación', 'n/a', 'na', 'sin definir', 'por definir', 'tbd']
+
+      if (ubicacionesGenericas.includes(ubicacionNormalizada)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'La ubicación debe ser específica (ej: Calle 123 #45-67, Bogotá)',
+          path: ['ubicacion'],
+        })
+      }
+    }
+  })
+}
 
 type ProyectoFormSchema = z.infer<typeof proyectoSchema>
 
@@ -73,12 +170,14 @@ interface UseProyectosFormParams {
   initialData?: Partial<ProyectoFormData>
   onSubmit: (data: ProyectoFormData) => void | Promise<void>
   isEditing?: boolean
+  onHasChanges?: (hasChanges: boolean) => void // ✅ Callback para notificar cambios al padre
 }
 
 export function useProyectosForm({
   initialData,
   onSubmit,
   isEditing = false,
+  onHasChanges,
 }: UseProyectosFormParams) {
   // ✅ OPTIMIZACIÓN: Si initialData ya tiene validación (de useProyectoConValidacion),
   // construir Map desde initialData en vez de consultar DB
@@ -95,22 +194,33 @@ export function useProyectosForm({
     obtenerMotivoBloqueado,
   } = useManzanasEditables()
 
-  // React Hook Form
+  // React Hook Form con schema que incluye validación async
+  const schemaConValidacionAsync = useMemo(
+    () => createProyectoSchema({ initialData, isEditing }),
+    [initialData?.id, initialData?.nombre, isEditing]
+  )
+
   const {
     register,
     handleSubmit,
     control,
     watch,
     reset,
-    formState: { errors, touchedFields },
+    setError,
+    clearErrors,
+    formState: { errors, touchedFields, isValidating },
   } = useForm<ProyectoFormSchema>({
-    resolver: zodResolver(proyectoSchema),
+    resolver: zodResolver(schemaConValidacionAsync),
     mode: 'onBlur', // ← Validar al salir del campo (UX no intrusiva)
     reValidateMode: 'onChange', // ← Si ya hay error, validar mientras corrige
     defaultValues: {
       nombre: initialData?.nombre || '',
       descripcion: initialData?.descripcion || '',
       ubicacion: initialData?.ubicacion || '',
+      estado: initialData?.estado || 'en_planificacion',
+      fechaInicio: initialData?.fechaInicio?.split('T')[0] || '',
+      fechaFinEstimada: initialData?.fechaFinEstimada?.split('T')[0] || '',
+      responsable: initialData?.responsable || '',
       manzanas: initialData?.manzanas || [],
     },
   })
@@ -126,14 +236,21 @@ export function useProyectosForm({
 
   // ==================== EFECTOS ====================
   // 🔄 CRÍTICO: Reset del formulario cuando initialData cambia (ej: después de actualización exitosa)
+  // ⚠️ SOLO resetear cuando el ID del proyecto cambia, NO en cada render
   useEffect(() => {
+    if (!initialData) return
+
     reset({
       nombre: initialData?.nombre || '',
       descripcion: initialData?.descripcion || '',
       ubicacion: initialData?.ubicacion || '',
+      estado: initialData?.estado || 'en_planificacion',
+      fechaInicio: initialData?.fechaInicio?.split('T')[0] || '',
+      fechaFinEstimada: initialData?.fechaFinEstimada?.split('T')[0] || '',
+      responsable: initialData?.responsable || '',
       manzanas: initialData?.manzanas || [],
     })
-  }, [initialData, reset])
+  }, [initialData?.id, reset]) // ✅ Solo cuando cambia el ID (proyecto diferente)
 
   // ✅ OPTIMIZACIÓN: Validar manzanas SOLO si NO hay validación precargada
   useEffect(() => {
@@ -176,12 +293,20 @@ export function useProyectosForm({
       nombre: watch('nombre'),
       ubicacion: watch('ubicacion'),
       descripcion: watch('descripcion'),
+      estado: watch('estado'),
+      fechaInicio: watch('fechaInicio'),
+      fechaFinEstimada: watch('fechaFinEstimada'),
+      responsable: watch('responsable'),
       manzanas: manzanasWatch,
     },
     {
       nombre: initialData?.nombre || '',
       ubicacion: initialData?.ubicacion || '',
       descripcion: initialData?.descripcion || '',
+      estado: initialData?.estado || 'en_planificacion',
+      fechaInicio: initialData?.fechaInicio?.split('T')[0] || '',
+      fechaFinEstimada: initialData?.fechaFinEstimada?.split('T')[0] || '',
+      responsable: initialData?.responsable || '',
       manzanas: initialData?.manzanas || [],
     },
     {
@@ -189,6 +314,10 @@ export function useProyectosForm({
         nombre: 'Nombre del Proyecto',
         ubicacion: 'Ubicación',
         descripcion: 'Descripción',
+        estado: 'Estado',
+        fechaInicio: 'Fecha de Inicio',
+        fechaFinEstimada: 'Fecha de Fin Estimada',
+        responsable: 'Responsable',
         manzanas: 'Manzanas',
       },
     }
@@ -197,6 +326,11 @@ export function useProyectosForm({
   // Solo habilitar detección de cambios en modo edición
   const shouldShowChanges = isEditing
   const canSave = isEditing ? hasChanges : true // En creación siempre puede guardar
+
+  // ✅ Notificar al padre cuando cambie hasChanges
+  useEffect(() => {
+    onHasChanges?.(hasChanges)
+  }, [hasChanges, onHasChanges])
 
   // ==================== HANDLERS ====================
   const handleAgregarManzana = () => {
@@ -220,9 +354,9 @@ export function useProyectosForm({
   }
 
   const onSubmitForm = (data: ProyectoFormSchema) => {
-    // ✅ FIX: En modo edición, SOLO enviar campos modificados del formulario
+    // ✅ FIX: En modo edición, enviar TODOS los campos del formulario
     if (isEditing) {
-      // Modo edición: SOLO enviar nombre, descripción, ubicación y manzanas
+      // Modo edición: Enviar todos los campos editables
       const formDataEdicion: ProyectoFormData = {
         ...data,
         // Agregar campos faltantes a las manzanas (preservando IDs)
@@ -232,10 +366,16 @@ export function useProyectosForm({
           superficieTotal: 0,
           ubicacion: '',
         })),
-        // ✅ CRÍTICO: NO sobrescribir fechas/estado en edición
-        // El backend/service debe manejar estos campos
+        // Convertir fechas opcionales de input (YYYY-MM-DD) a ISO con hora mediodía
+        fechaInicio: data.fechaInicio && data.fechaInicio.trim() !== ''
+          ? `${data.fechaInicio}T12:00:00`
+          : null,
+        fechaFinEstimada: data.fechaFinEstimada && data.fechaFinEstimada.trim() !== ''
+          ? `${data.fechaFinEstimada}T12:00:00`
+          : null,
       } as ProyectoFormData
 
+      console.log('📝 [FORM] Datos de edición preparados:', formDataEdicion)
       onSubmit(formDataEdicion)
     } else {
       // Modo creación: Completar con valores por defecto
@@ -247,13 +387,15 @@ export function useProyectosForm({
           superficieTotal: 0,
           ubicacion: '',
         })),
-        fechaInicio: new Date().toISOString(),
-        fechaFinEstimada: new Date(
-          Date.now() + 365 * 24 * 60 * 60 * 1000
-        ).toISOString(),
+        // Convertir fechas de input (YYYY-MM-DD) a ISO con hora mediodía
+        // Si están vacías, enviar null
+        fechaInicio: data.fechaInicio && data.fechaInicio.trim() !== ''
+          ? `${data.fechaInicio}T12:00:00`
+          : null,
+        fechaFinEstimada: data.fechaFinEstimada && data.fechaFinEstimada.trim() !== ''
+          ? `${data.fechaFinEstimada}T12:00:00`
+          : null,
         presupuesto: 0,
-        estado: 'en_planificacion',
-        responsable: 'RyR Constructora',
         telefono: '+57 300 000 0000',
         email: 'info@ryrconstrucora.com',
       }
@@ -357,6 +499,7 @@ export function useProyectosForm({
 
     // Validación state
     validandoManzanas,
+    validandoNombre: isValidating, // ✅ True cuando está validando async (duplicados)
     manzanasState,
   }
 }

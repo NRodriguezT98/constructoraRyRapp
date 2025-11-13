@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS public.proyectos (
     fecha_inicio TIMESTAMP WITH TIME ZONE NOT NULL,
     fecha_fin_estimada TIMESTAMP WITH TIME ZONE NOT NULL,
     presupuesto NUMERIC(15, 2) NOT NULL DEFAULT 0,
-    estado VARCHAR(50) NOT NULL DEFAULT 'en_planificacion' CHECK (estado IN ('en_planificacion', 'en_construccion', 'completado', 'pausado')),
+    estado VARCHAR(50) NOT NULL DEFAULT 'en_planificacion' CHECK (estado IN ('en_planificacion', 'en_proceso', 'en_construccion', 'completado', 'pausado')),
     progreso INTEGER NOT NULL DEFAULT 0 CHECK (progreso >= 0 AND progreso <= 100),
     responsable VARCHAR(255) NOT NULL,
     telefono VARCHAR(50) NOT NULL,
@@ -287,8 +287,8 @@ CREATE INDEX idx_documentos_etiquetas ON public.documentos_proyecto USING gin(et
 CREATE INDEX idx_documentos_importante ON public.documentos_proyecto(es_importante);
 
 -- Trigger para actualización de fecha
-CREATE TRIGGER update_documentos_fecha_actualizacion 
-    BEFORE UPDATE ON public.documentos_proyecto 
+CREATE TRIGGER update_documentos_fecha_actualizacion
+    BEFORE UPDATE ON public.documentos_proyecto
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- Políticas RLS para categorías

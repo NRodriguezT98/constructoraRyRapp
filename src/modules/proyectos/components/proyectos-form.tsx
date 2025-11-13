@@ -9,7 +9,7 @@
 'use client'
 
 import { AnimatePresence, motion } from 'framer-motion'
-import { AlertCircle, Building2, CheckCircle2, FileText, Home, Loader2, Lock, LockOpen, MapPin, Plus, Trash2 } from 'lucide-react'
+import { AlertCircle, Building2, Calendar, CheckCircle2, FileText, Home, Loader2, Lock, LockOpen, MapPin, Plus, Trash2, User } from 'lucide-react'
 
 import { FormChangesBadge } from '@/shared/components/forms/FormChangesBadge'
 import { cn } from '../../../shared/utils/helpers'
@@ -23,6 +23,7 @@ interface ProyectosFormProps {
   isLoading?: boolean
   initialData?: Partial<ProyectoFormData>
   isEditing?: boolean
+  onHasChanges?: (hasChanges: boolean) => void // ✅ Callback para notificar cambios
 }
 
 export function ProyectosForm({
@@ -31,6 +32,7 @@ export function ProyectosForm({
   isLoading,
   initialData,
   isEditing = false,
+  onHasChanges,
 }: ProyectosFormProps) {
   // Hook con toda la lógica
   const {
@@ -56,8 +58,9 @@ export function ProyectosForm({
     esManzanaEliminable,
     obtenerMotivoBloqueado,
     validandoManzanas,
+    validandoNombre,
     manzanasState,
-  } = useProyectosForm({ initialData, onSubmit, isEditing })
+  } = useProyectosForm({ initialData, onSubmit, isEditing, onHasChanges })
 
   return (
     <motion.form
@@ -148,10 +151,12 @@ export function ProyectosForm({
                     isEditing && isFieldChanged('nombre') && !errors.nombre && 'border-orange-300 dark:border-orange-700 bg-orange-50/50 dark:bg-orange-950/20'
                   )}
                 />
-                {/* Indicador de estado */}
+                {/* Indicador de estado (validando/error/success) */}
                 {touchedFields.nombre && (
                   <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                    {errors.nombre ? (
+                    {validandoNombre ? (
+                      <Loader2 className="w-5 h-5 text-blue-500 animate-spin" />
+                    ) : errors.nombre ? (
                       <AlertCircle className="w-5 h-5 text-red-500" />
                     ) : (
                       <CheckCircle2 className="w-5 h-5 text-green-500 animate-in fade-in zoom-in duration-200" />
@@ -236,7 +241,7 @@ export function ProyectosForm({
                 <FileText className={styles.field.textareaIcon} />
                 <textarea
                   {...register('descripcion')}
-                  rows={4}
+                  rows={3}
                   placeholder='Descripción breve del proyecto...'
                   maxLength={1000}
                   className={cn(
@@ -266,6 +271,186 @@ export function ProyectosForm({
               {!errors.descripcion && (
                 <p className={styles.field.helper}>
                   Mínimo 10 caracteres. Puedes usar letras, números y puntuación básica
+                </p>
+              )}
+            </div>
+
+            {/* Campo: Estado */}
+            <div className={styles.field.container}>
+              <label className={styles.field.label}>
+                Estado del Proyecto <span className={styles.field.required}>*</span>
+                {isEditing && isFieldChanged('estado') && (
+                  <span className="ml-2 text-xs text-orange-600 dark:text-orange-400 font-medium">
+                    ✏️ Modificado
+                  </span>
+                )}
+              </label>
+              <div className={styles.field.inputWrapper}>
+                <Building2 className={styles.field.inputIcon} />
+                <select
+                  {...register('estado')}
+                  className={cn(
+                    styles.field.select,
+                    errors.estado && styles.field.selectError,
+                    touchedFields.estado && !errors.estado && 'border-green-300 dark:border-green-700 bg-green-50/50 dark:bg-green-950/20',
+                    isEditing && isFieldChanged('estado') && !errors.estado && 'border-orange-300 dark:border-orange-700 bg-orange-50/50 dark:bg-orange-950/20'
+                  )}
+                >
+                  <option value="en_planificacion">En Planificación</option>
+                  <option value="en_proceso">En Proceso</option>
+                  <option value="en_construccion">En Construcción</option>
+                  <option value="completado">Completado</option>
+                  <option value="pausado">Pausado</option>
+                </select>
+                {touchedFields.estado && (
+                  <div className="absolute right-10 top-1/2 -translate-y-1/2 pointer-events-none">
+                    {errors.estado ? (
+                      <AlertCircle className="w-5 h-5 text-red-500" />
+                    ) : (
+                      <CheckCircle2 className="w-5 h-5 text-green-500 animate-in fade-in zoom-in duration-200" />
+                    )}
+                  </div>
+                )}
+              </div>
+              {errors.estado && (
+                <motion.div {...styles.animations.errorMessage} className={styles.field.error}>
+                  <AlertCircle className={styles.field.errorIcon} />
+                  {errors.estado.message}
+                </motion.div>
+              )}
+              {!errors.estado && (
+                <p className={styles.field.helper}>
+                  Marca el estado actual del proyecto
+                </p>
+              )}
+            </div>
+
+            {/* Fechas en Grid 2 columnas */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Campo: Fecha de Inicio */}
+              <div className={styles.field.container}>
+                <label className={styles.field.label}>
+                  Fecha de Inicio
+                  {isEditing && isFieldChanged('fechaInicio') && (
+                    <span className="ml-2 text-xs text-orange-600 dark:text-orange-400 font-medium">
+                      ✏️ Modificado
+                    </span>
+                  )}
+                </label>
+                <div className={styles.field.inputWrapper}>
+                  <Calendar className={styles.field.inputIcon} />
+                  <input
+                    {...register('fechaInicio')}
+                    type='date'
+                    className={cn(
+                      styles.field.input,
+                      errors.fechaInicio && styles.field.inputError,
+                      touchedFields.fechaInicio && !errors.fechaInicio && 'border-green-300 dark:border-green-700 bg-green-50/50 dark:bg-green-950/20',
+                      isEditing && isFieldChanged('fechaInicio') && !errors.fechaInicio && 'border-orange-300 dark:border-orange-700 bg-orange-50/50 dark:bg-orange-950/20'
+                    )}
+                  />
+                  {touchedFields.fechaInicio && (
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                      {errors.fechaInicio ? (
+                        <AlertCircle className="w-5 h-5 text-red-500" />
+                      ) : (
+                        <CheckCircle2 className="w-5 h-5 text-green-500 animate-in fade-in zoom-in duration-200" />
+                      )}
+                    </div>
+                  )}
+                </div>
+                {errors.fechaInicio && (
+                  <motion.div {...styles.animations.errorMessage} className={styles.field.error}>
+                    <AlertCircle className={styles.field.errorIcon} />
+                    {errors.fechaInicio.message}
+                  </motion.div>
+                )}
+              </div>
+
+              {/* Campo: Fecha de Fin Estimada */}
+              <div className={styles.field.container}>
+                <label className={styles.field.label}>
+                  Fecha de Fin Estimada
+                  {isEditing && isFieldChanged('fechaFinEstimada') && (
+                    <span className="ml-2 text-xs text-orange-600 dark:text-orange-400 font-medium">
+                      ✏️ Modificado
+                    </span>
+                  )}
+                </label>
+                <div className={styles.field.inputWrapper}>
+                  <Calendar className={styles.field.inputIcon} />
+                  <input
+                    {...register('fechaFinEstimada')}
+                    type='date'
+                    className={cn(
+                      styles.field.input,
+                      errors.fechaFinEstimada && styles.field.inputError,
+                      touchedFields.fechaFinEstimada && !errors.fechaFinEstimada && 'border-green-300 dark:border-green-700 bg-green-50/50 dark:bg-green-950/20',
+                      isEditing && isFieldChanged('fechaFinEstimada') && !errors.fechaFinEstimada && 'border-orange-300 dark:border-orange-700 bg-orange-50/50 dark:bg-orange-950/20'
+                    )}
+                  />
+                  {touchedFields.fechaFinEstimada && (
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                      {errors.fechaFinEstimada ? (
+                        <AlertCircle className="w-5 h-5 text-red-500" />
+                      ) : (
+                        <CheckCircle2 className="w-5 h-5 text-green-500 animate-in fade-in zoom-in duration-200" />
+                      )}
+                    </div>
+                  )}
+                </div>
+                {errors.fechaFinEstimada && (
+                  <motion.div {...styles.animations.errorMessage} className={styles.field.error}>
+                    <AlertCircle className={styles.field.errorIcon} />
+                    {errors.fechaFinEstimada.message}
+                  </motion.div>
+                )}
+              </div>
+            </div>
+
+            {/* Campo: Responsable */}
+            <div className={styles.field.container}>
+              <label className={styles.field.label}>
+                Responsable del Proyecto <span className={styles.field.required}>*</span>
+                {isEditing && isFieldChanged('responsable') && (
+                  <span className="ml-2 text-xs text-orange-600 dark:text-orange-400 font-medium">
+                    ✏️ Modificado
+                  </span>
+                )}
+              </label>
+              <div className={styles.field.inputWrapper}>
+                <User className={styles.field.inputIcon} />
+                <input
+                  {...register('responsable')}
+                  type='text'
+                  placeholder='Ej: Juan Pérez'
+                  maxLength={255}
+                  className={cn(
+                    styles.field.input,
+                    errors.responsable && styles.field.inputError,
+                    touchedFields.responsable && !errors.responsable && 'border-green-300 dark:border-green-700 bg-green-50/50 dark:bg-green-950/20',
+                    isEditing && isFieldChanged('responsable') && !errors.responsable && 'border-orange-300 dark:border-orange-700 bg-orange-50/50 dark:bg-orange-950/20'
+                  )}
+                />
+                {touchedFields.responsable && (
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                    {errors.responsable ? (
+                      <AlertCircle className="w-5 h-5 text-red-500" />
+                    ) : (
+                      <CheckCircle2 className="w-5 h-5 text-green-500 animate-in fade-in zoom-in duration-200" />
+                    )}
+                  </div>
+                )}
+              </div>
+              {errors.responsable && (
+                <motion.div {...styles.animations.errorMessage} className={styles.field.error}>
+                  <AlertCircle className={styles.field.errorIcon} />
+                  {errors.responsable.message}
+                </motion.div>
+              )}
+              {!errors.responsable && (
+                <p className={styles.field.helper}>
+                  Nombre completo del responsable del proyecto
                 </p>
               )}
             </div>
@@ -532,7 +717,7 @@ export function ProyectosForm({
         >
           {isLoading ? (
             <>
-              <Loader2 className={styles.footer.submitButtonIcon} />
+              <Loader2 className={cn(styles.footer.submitButtonIcon, 'animate-spin')} />
               Guardando...
             </>
           ) : (

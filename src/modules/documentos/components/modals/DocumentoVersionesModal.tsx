@@ -128,6 +128,11 @@ export function DocumentoVersionesModal({
                     ? (version.metadata as any).cambios
                     : null
 
+                  // 🆒 OPCIÓN C: Numeración secuencial visual (v1, v2, v3) + original para auditoría
+                  const versionSecuencial = versiones.length - index // De mayor a menor (actual = 1)
+                  const versionOriginal = version.version
+                  const tieneDiferencia = versionSecuencial !== versionOriginal
+
                   return (
                     <motion.div
                       key={version.id}
@@ -158,7 +163,12 @@ export function DocumentoVersionesModal({
                             }
                           `}>
                             <FileText className="w-3.5 h-3.5" />
-                            Versión {version.version}
+                            Versión {versionSecuencial}
+                            {tieneDiferencia && (
+                              <span className="text-[10px] opacity-70 ml-0.5">
+                                (orig. v{versionOriginal})
+                              </span>
+                            )}
                           </span>
                           {esActual && (
                             <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-600 text-white shadow-sm">
@@ -309,7 +319,7 @@ export function DocumentoVersionesModal({
               {/* Content */}
               <div className="p-6 space-y-4">
                 <p className="text-sm text-gray-700 dark:text-gray-300">
-                  Estás a punto de restaurar la <strong>versión {versionARestaurar.numero}</strong>.
+                  Estás a punto de restaurar una versión anterior.
                   Esto creará una nueva versión con el contenido de la versión seleccionada.
                 </p>
 
