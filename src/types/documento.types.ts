@@ -140,22 +140,6 @@ export interface DocumentoFormData {
   metadata?: Record<string, any>
 }
 
-// ============================================
-// Etiquetas Sugeridas
-// ============================================
-export const ETIQUETAS_SUGERIDAS = [
-  'Urgente',
-  'Revisar',
-  'Aprobado',
-  'Pendiente',
-  'Original',
-  'Copia',
-  'Firmado',
-  'Borrador',
-  'Vencido',
-  'Renovado',
-] as const
-
 // Tipos MIME permitidos
 export const MIME_TYPES_PERMITIDOS = [
   'application/pdf',

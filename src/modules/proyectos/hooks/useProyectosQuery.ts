@@ -92,6 +92,12 @@ export function useProyectosQuery() {
         refetchType: 'all'
       })
 
+      // ✅ Invalidar también query de validación (para modal de edición)
+      await queryClient.invalidateQueries({
+        queryKey: ['proyecto-validacion', proyectoActualizado.id],
+        refetchType: 'all'
+      })
+
       toast.success('Proyecto actualizado', {
         description: `${proyectoActualizado.nombre} ha sido actualizado`,
       })

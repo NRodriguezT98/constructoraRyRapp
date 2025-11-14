@@ -3,6 +3,7 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import { Edit2, GripVertical, Plus, Trash2, X } from 'lucide-react'
 
+import { useAuth } from '@/contexts/auth-context'
 import { ModalConfirmacion } from '@/shared'
 
 import { EmptyState } from '../../../../shared/components/ui/EmptyState'
@@ -19,6 +20,9 @@ interface CategoriasManagerProps {
 }
 
 export function CategoriasManager({ userId, onClose, modulo = 'proyectos' }: CategoriasManagerProps) {
+  const { perfil } = useAuth()
+  const esAdministrador = perfil?.rol === 'Administrador'
+
   const {
     modo,
     categoriaEditando,
@@ -166,18 +170,21 @@ export function CategoriasManager({ userId, onClose, modulo = 'proyectos' }: Cat
                     >
                       <Edit2 size={18} />
                     </button>
-                    <button
-                      onClick={() => handleEliminar(categoria.id, categoria.nombre)}
-                      disabled={eliminando === categoria.id}
-                      className='rounded-lg p-2 text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50 dark:text-red-400 dark:hover:bg-red-900/20'
-                      title='Eliminar'
-                    >
-                      {eliminando === categoria.id ? (
-                        <LoadingSpinner size='sm' />
-                      ) : (
-                        <Trash2 size={18} />
-                      )}
-                    </button>
+                    {/* 🔒 Solo Administradores pueden eliminar */}
+                    {esAdministrador && (
+                      <button
+                        onClick={() => handleEliminar(categoria.id, categoria.nombre)}
+                        disabled={eliminando === categoria.id}
+                        className='rounded-lg p-2 text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50 dark:text-red-400 dark:hover:bg-red-900/20'
+                        title='Eliminar (Solo Administradores)'
+                      >
+                        {eliminando === categoria.id ? (
+                          <LoadingSpinner size='sm' />
+                        ) : (
+                          <Trash2 size={18} />
+                        )}
+                      </button>
+                    )}
                   </div>
                 </div>
               </motion.div>

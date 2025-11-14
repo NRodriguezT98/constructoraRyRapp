@@ -9,7 +9,6 @@ import {
     FileText,
     FolderOpen,
     Star,
-    Tag as TagIcon,
     Trash2,
     User,
     X
@@ -221,26 +220,6 @@ export function DocumentoViewer({
                           size={16}
                         />
                         {documento.categoria.nombre}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Etiquetas */}
-                  {documento.etiquetas && documento.etiquetas.length > 0 && (
-                    <div>
-                      <h3 className='mb-2 flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300'>
-                        <TagIcon size={16} />
-                        Etiquetas
-                      </h3>
-                      <div className='flex flex-wrap gap-2'>
-                        {documento.etiquetas.map(etiqueta => (
-                          <span
-                            key={etiqueta}
-                            className='rounded-lg bg-purple-100 px-3 py-1 text-sm text-purple-700 dark:bg-purple-900/20 dark:text-purple-300'
-                          >
-                            {etiqueta}
-                          </span>
-                        ))}
                       </div>
                     </div>
                   )}

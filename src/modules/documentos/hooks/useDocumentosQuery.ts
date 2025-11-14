@@ -111,7 +111,6 @@ export function useSubirDocumentoMutation(proyectoId: string) {
       titulo: string
       descripcion?: string
       categoriaId?: string
-      etiquetas?: string[]
       fechaDocumento?: string
       fechaVencimiento?: string
       esImportante?: boolean
@@ -124,7 +123,6 @@ export function useSubirDocumentoMutation(proyectoId: string) {
           titulo: params.titulo,
           descripcion: params.descripcion,
           archivo: params.archivo,
-          etiquetas: params.etiquetas,
           fecha_documento: params.fechaDocumento,
           fecha_vencimiento: params.fechaVencimiento,
           es_importante: params.esImportante,
@@ -230,54 +228,60 @@ export function useToggleImportanteMutation(proyectoId: string) {
 
   return useMutation({
     mutationFn: async (documentoId: string) => {
+      console.log('🔄 [Toggle Importante] Iniciando para documento:', documentoId)
+
       // Obtener documento actual del cache
       const documentos = queryClient.getQueryData<DocumentoProyecto[]>(
         documentosKeys.list(proyectoId)
       )
       const documento = documentos?.find((d) => d.id === documentoId)
 
-      if (!documento) throw new Error('Documento no encontrado')
+      if (!documento) {
+        console.error('❌ [Toggle Importante] Documento no encontrado en cache')
+        throw new Error('Documento no encontrado')
+      }
+
+      console.log('📄 [Toggle Importante] Documento actual:', {
+        id: documento.id,
+        titulo: documento.titulo,
+        es_importante: documento.es_importante,
+        nuevo_valor: !documento.es_importante
+      })
 
       // Toggle importante
       return DocumentosService.actualizarDocumento(documentoId, {
         es_importante: !documento.es_importante,
       })
     },
-    onMutate: async (documentoId) => {
-      // ✅ Optimistic update
-      await queryClient.cancelQueries({ queryKey: documentosKeys.list(proyectoId) })
+    onSuccess: async (result) => {
+      console.log('✅ [Toggle Importante] Actualización exitosa:', {
+        id: result.id,
+        titulo: result.titulo,
+        es_importante: result.es_importante
+      })
 
-      const previousDocumentos = queryClient.getQueryData<DocumentoProyecto[]>(
-        documentosKeys.list(proyectoId)
+      // ✅ Invalidar y refetch inmediato (sin optimistic update)
+      await queryClient.invalidateQueries({
+        queryKey: documentosKeys.list(proyectoId),
+      })
+
+      await queryClient.refetchQueries({
+        queryKey: documentosKeys.list(proyectoId),
+        type: 'active',
+      })
+
+      toast.success(
+        result.es_importante
+          ? '⭐ Marcado como importante'
+          : 'Desmarcado como importante'
       )
-
-      // Actualizar cache optimísticamente
-      queryClient.setQueryData<DocumentoProyecto[]>(
-        documentosKeys.list(proyectoId),
-        (old) =>
-          old?.map((doc) =>
-            doc.id === documentoId
-              ? { ...doc, es_importante: !doc.es_importante }
-              : doc
-          ) || []
-      )
-
-      return { previousDocumentos }
     },
-    onError: (err, documentoId, context) => {
-      // Revertir si falla
-      if (context?.previousDocumentos) {
-        queryClient.setQueryData(documentosKeys.list(proyectoId), context.previousDocumentos)
-      }
+    onError: (err) => {
+      console.error('❌ [Toggle Importante] Error:', err)
       toast.error('Error al actualizar documento')
     },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: documentosKeys.list(proyectoId) })
-    },
   })
-}
-
-// ============================================
+}// ============================================
 // 7. HOOK: useCrearCategoriaMutation
 // ============================================
 export function useCrearCategoriaMutation(userId: string) {
@@ -297,11 +301,21 @@ export function useCrearCategoriaMutation(userId: string) {
         color: categoria.color,
         icono: categoria.icono,
         orden: 0,
-        es_global: false,
+        es_global: true, // ✅ FIX: Crear como global para que sea visible
         modulos_permitidos: [categoria.modulo],
       }),
-    onSuccess: (nuevaCategoria) => {
-      queryClient.invalidateQueries({ queryKey: documentosKeys.categorias(userId) })
+    onSuccess: async (nuevaCategoria, variables) => {
+      // ✅ FIX: Invalidar queries con el módulo específico
+      await queryClient.invalidateQueries({
+        queryKey: [...documentosKeys.categorias(userId), variables.modulo],
+      })
+
+      // ✅ Forzar refetch inmediato
+      await queryClient.refetchQueries({
+        queryKey: [...documentosKeys.categorias(userId), variables.modulo],
+        type: 'active',
+      })
+
       toast.success('Categoría creada', {
         description: nuevaCategoria.nombre,
       })
@@ -334,8 +348,12 @@ export function useActualizarCategoriaMutation(userId: string) {
         orden?: number
       }
     }) => CategoriasService.actualizarCategoria(categoriaId, updates),
-    onSuccess: (categoriaActualizada) => {
-      queryClient.invalidateQueries({ queryKey: documentosKeys.categorias(userId) })
+    onSuccess: async (categoriaActualizada) => {
+      // ✅ FIX: Invalidar todas las queries de categorías (todos los módulos)
+      await queryClient.invalidateQueries({
+        queryKey: documentosKeys.categorias(userId),
+      })
+
       toast.success('Categoría actualizada', {
         description: categoriaActualizada.nombre,
       })
@@ -356,8 +374,12 @@ export function useEliminarCategoriaMutation(userId: string) {
 
   return useMutation({
     mutationFn: (categoriaId: string) => CategoriasService.eliminarCategoria(categoriaId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: documentosKeys.categorias(userId) })
+    onSuccess: async () => {
+      // ✅ FIX: Invalidar todas las queries de categorías (todos los módulos)
+      await queryClient.invalidateQueries({
+        queryKey: documentosKeys.categorias(userId),
+      })
+
       toast.success('Categoría eliminada')
     },
     onError: (error: Error) => {

@@ -4,8 +4,10 @@ import { useState } from 'react'
 
 import { useQueryClient } from '@tanstack/react-query'
 import { motion } from 'framer-motion'
-import { AlertCircle, Building2 } from 'lucide-react'
+import { AlertCircle, Edit3, Plus } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 
+import { construirURLProyecto } from '@/lib/utils/slug.utils'
 import { useVistaPreference } from '@/shared/hooks/useVistaPreference'
 import { Modal } from '../../../shared/components/ui/Modal'
 import {
@@ -25,6 +27,7 @@ import { ProyectosForm } from './proyectos-form'
 import { ProyectosLista } from './proyectos-lista'
 import { ProyectosNoResults } from './proyectos-no-results'
 import { ProyectosSkeleton } from './proyectos-skeleton'
+import { ProyectosBadgesResumen } from './ProyectosBadgesResumen'
 import { ProyectosFiltrosPremium } from './ProyectosFiltrosPremium'
 import { ProyectosHeaderPremium } from './ProyectosHeaderPremium'
 import { ProyectosMetricasPremium } from './ProyectosMetricasPremium'
@@ -77,9 +80,11 @@ export function ProyectosPage({
     proyectoId: string
     data: ProyectoFormData
   } | null>(null)
+  const [totalesProyecto, setTotalesProyecto] = useState({ totalManzanas: 0, totalViviendas: 0 }) // ✅ Estado para totales
 
   // ✅ Query client para invalidar queries manualmente
   const queryClient = useQueryClient()
+  const router = useRouter()
 
   // ✅ REACT QUERY: Hooks con cache inteligente (reemplazan Zustand)
   const { crearProyecto, actualizarProyecto, eliminarProyecto, cargando, creando, actualizando, eliminando } =
@@ -264,7 +269,7 @@ export function ProyectosPage({
         ) : (
           <ProyectosTabla
             proyectos={proyectos}
-            onView={handleEditarProyecto}
+            onView={(proyecto) => router.push(construirURLProyecto({ id: proyecto.id, nombre: proyecto.nombre }))}
             onEdit={canEdit ? handleEditarProyecto : undefined}
             onDelete={canDelete ? handleEliminarProyecto : undefined}
             canEdit={canEdit}
@@ -280,16 +285,18 @@ export function ProyectosPage({
         title='Nuevo Proyecto'
         description='Completa la información del nuevo proyecto de construcción'
         size='xl'
-        gradientColor='orange'
-        icon={<Building2 className="w-6 h-6 text-white" />}
+        gradientColor='green'
+        icon={<Plus className="w-6 h-6 text-white" />}
         closeOnBackdrop={!hayFormularioConCambios}
         closeOnEscape={!hayFormularioConCambios}
+        headerExtra={<ProyectosBadgesResumen totalManzanas={totalesProyecto.totalManzanas} totalViviendas={totalesProyecto.totalViviendas} />}
       >
         <ProyectosForm
           onSubmit={handleCrearProyecto}
           onCancel={handleIntentarCerrarModal}
           isLoading={creando}
           onHasChanges={setHayFormularioConCambios}
+          onTotalsChange={setTotalesProyecto}
         />
       </Modal>
 
@@ -300,10 +307,11 @@ export function ProyectosPage({
         title='Editar Proyecto'
         description='Actualiza la información del proyecto'
         size='xl'
-        gradientColor='orange'
-        icon={<Building2 className="w-6 h-6 text-white" />}
+        gradientColor='green'
+        icon={<Edit3 className="w-6 h-6 text-white" />}
         closeOnEscape={!hayFormularioConCambios}
         closeOnBackdrop={!hayFormularioConCambios}
+        headerExtra={<ProyectosBadgesResumen totalManzanas={totalesProyecto.totalManzanas} totalViviendas={totalesProyecto.totalViviendas} />}
       >
         {cargandoValidacion ? (
           <div className="flex items-center justify-center p-12">
@@ -347,6 +355,7 @@ export function ProyectosPage({
             }}
             isEditing={true}
             onHasChanges={setHayFormularioConCambios}
+            onTotalsChange={setTotalesProyecto}
           />
         ) : null}
       </Modal>

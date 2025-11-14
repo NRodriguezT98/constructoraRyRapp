@@ -19,13 +19,20 @@ import { useRouter } from 'next/navigation'
 
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/contexts/auth-context'
+import { ConfirmarCambiosModal } from '@/modules/proyectos/components/ConfirmarCambiosModal'
+import { ProyectosForm } from '@/modules/proyectos/components/proyectos-form'
+import { ProyectosBadgesResumen } from '@/modules/proyectos/components/ProyectosBadgesResumen'
+import { useProyectoConValidacion, useProyectosQuery } from '@/modules/proyectos/hooks'
+import { useDetectarCambios } from '@/modules/proyectos/hooks/useDetectarCambios'
+import { Modal } from '@/shared/components/ui/Modal'
 // ✅ REACT QUERY: Hooks con cache inteligente (reemplazan Zustand)
-import { useProyectoQuery, useProyectosQuery } from '@/modules/proyectos/hooks'
+import { useProyectoQuery } from '@/modules/proyectos/hooks'
+import type { Proyecto, ProyectoFormData } from '@/modules/proyectos/types'
 
 
 
 import * as styles from './proyecto-detalle.styles'
-import { DocumentosTab, GeneralTab, ManzanasTab } from './tabs'
+import { DocumentosTab, GeneralTab } from './tabs'
 
 interface ProyectoDetalleClientProps {
   proyectoId: string
@@ -35,12 +42,12 @@ type TabType = 'info' | 'documentos' | 'manzanas'
 
 const estadoColors = {
   en_planificacion:
-    'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400',
+    'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-700',
   en_construccion:
-    'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400',
+    'bg-teal-100 text-teal-800 dark:bg-teal-900/30 dark:text-teal-300 border border-teal-200 dark:border-teal-700',
   completado:
-    'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400',
-  pausado: 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400',
+    'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 border border-green-200 dark:border-green-700',
+  pausado: 'bg-gray-100 text-gray-700 dark:bg-gray-800/50 dark:text-gray-300 border border-gray-300 dark:border-gray-600',
 }
 
 const estadoLabels = {
@@ -58,20 +65,72 @@ export default function ProyectoDetalleClient({
 
   // ✅ REACT QUERY: Hook de detalle con cache (reemplaza useEffect + service)
   const { proyecto, cargando: loading, error } = useProyectoQuery(proyectoId)
-  const { eliminarProyecto } = useProyectosQuery()
+  const { actualizarProyecto, eliminarProyecto, actualizando } = useProyectosQuery()
 
+  // Estados para modales
   const [activeTab, setActiveTab] = useState<TabType>('info')
+  const [modalEditar, setModalEditar] = useState(false)
+  const [modalEliminar, setModalEliminar] = useState(false)
+  const [modalConfirmarCambios, setModalConfirmarCambios] = useState(false)
+  const [totalesProyecto, setTotalesProyecto] = useState({ totalManzanas: 0, totalViviendas: 0 })
+  const [datosEdicion, setDatosEdicion] = useState<ProyectoFormData | null>(null)
+  const [datosConfirmacion, setDatosConfirmacion] = useState<{
+    proyectoId: string
+    data: ProyectoFormData
+  } | null>(null)
 
-  const handleDelete = async () => {
-    if (window.confirm('¿Estás seguro de eliminar este proyecto?')) {
-      await eliminarProyecto(proyectoId)
-      router.push('/proyectos')
+  // ✅ Hook optimizado: Carga proyecto con validación de manzanas
+  const { data: proyectoConValidacion, isLoading: cargandoValidacion } = useProyectoConValidacion(
+    modalEditar ? proyectoId : undefined
+  )
+
+  // Hook para detectar cambios
+  const proyectoEditar: Proyecto | null = proyecto || null
+  const cambiosDetectados = useDetectarCambios(proyectoEditar, datosEdicion)
+
+  const handleEdit = () => {
+    setModalEditar(true)
+  }
+
+  const handleActualizarProyecto = async (data: ProyectoFormData) => {
+    // Guardar datos para confirmación
+    setDatosEdicion(data)
+    setDatosConfirmacion({
+      proyectoId: proyectoId,
+      data: data,
+    })
+
+    // Abrir modal de confirmación de cambios
+    setModalConfirmarCambios(true)
+  }
+
+  const confirmarActualizacion = async () => {
+    if (!datosConfirmacion) return
+
+    try {
+      await actualizarProyecto(datosConfirmacion.proyectoId, datosConfirmacion.data)
+      setModalConfirmarCambios(false)
+      setModalEditar(false)
+      setDatosEdicion(null)
+      setDatosConfirmacion(null)
+    } catch (error) {
+      // Error ya manejado por React Query con toast
     }
   }
 
-  const handleEdit = () => {
-    // TODO: Implementar edición
-    console.log('Editar proyecto:', proyectoId)
+  const handleEliminar = () => {
+    setModalEliminar(true)
+  }
+
+  const confirmarEliminar = async () => {
+    try {
+      await eliminarProyecto(proyectoId)
+      setModalEliminar(false)
+      router.push('/proyectos')
+    } catch (error) {
+      // Error ya manejado por React Query con toast
+      setModalEliminar(false)
+    }
   }
 
   // Manejo de error
@@ -164,12 +223,6 @@ export default function ProyectoDetalleClient({
       icon: FileText,
       count: null,
     },
-    {
-      id: 'manzanas' as const,
-      label: 'Manzanas',
-      icon: Home,
-      count: proyecto.manzanas.length,
-    },
   ]
 
   return (
@@ -229,9 +282,16 @@ export default function ProyectoDetalleClient({
               </motion.div>
 
               <div className={styles.headerClasses.titleSection}>
-                <h1 className={styles.headerClasses.title}>
-                  {proyecto.nombre}
-                </h1>
+                <div className="flex items-center gap-3">
+                  <h1 className={styles.headerClasses.title}>
+                    {proyecto.nombre}
+                  </h1>
+                  <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
+                    estadoColors[proyecto.estado as keyof typeof estadoColors] || estadoColors.pausado
+                  }`}>
+                    {estadoLabels[proyecto.estado as keyof typeof estadoLabels] || proyecto.estado}
+                  </span>
+                </div>
                 <div className={styles.headerClasses.location}>
                   <MapPin className={styles.headerClasses.locationIcon} />
                   <span>{proyecto.ubicacion}</span>
@@ -249,7 +309,7 @@ export default function ProyectoDetalleClient({
               </Button>
               <Button
                 className={styles.headerClasses.deleteButton}
-                onClick={handleDelete}
+                onClick={handleEliminar}
               >
                 <Trash2 className='h-4 w-4' />
               </Button>
@@ -294,9 +354,112 @@ export default function ProyectoDetalleClient({
         {activeTab === 'info' && <GeneralTab proyecto={proyecto} />}
 
         {activeTab === 'documentos' && <DocumentosTab proyecto={proyecto} />}
-
-        {activeTab === 'manzanas' && <ManzanasTab proyecto={proyecto} />}
       </div>
+
+      {/* Modal de Edición */}
+      <Modal
+        isOpen={modalEditar}
+        onClose={() => setModalEditar(false)}
+        title="Editar Proyecto"
+        description="Actualiza la información del proyecto"
+        size="xl"
+        gradientColor="green"
+        icon={<Edit2 className="w-6 h-6 text-white" />}
+        headerExtra={<ProyectosBadgesResumen totalManzanas={totalesProyecto.totalManzanas} totalViviendas={totalesProyecto.totalViviendas} />}
+      >
+        {cargandoValidacion ? (
+          <div className="flex items-center justify-center p-12">
+            <div className="text-center space-y-3">
+              <div className="w-12 h-12 border-4 border-green-500 border-t-transparent rounded-full animate-spin mx-auto" />
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                Cargando datos del proyecto...
+              </p>
+            </div>
+          </div>
+        ) : proyectoConValidacion ? (
+          <ProyectosForm
+            onSubmit={handleActualizarProyecto}
+            onCancel={() => setModalEditar(false)}
+            isLoading={false}
+            initialData={{
+              id: proyectoConValidacion.id,
+              nombre: proyectoConValidacion.nombre,
+              descripcion: proyectoConValidacion.descripcion,
+              ubicacion: proyectoConValidacion.ubicacion,
+              fechaInicio: proyectoConValidacion.fechaInicio,
+              fechaFinEstimada: proyectoConValidacion.fechaFinEstimada,
+              presupuesto: proyectoConValidacion.presupuesto,
+              estado: proyectoConValidacion.estado,
+              // ✅ Manzanas CON validación pre-cargada (sin queries adicionales)
+              manzanas: proyectoConValidacion.manzanas.map(m => ({
+                id: m.id,
+                nombre: m.nombre,
+                totalViviendas: m.totalViviendas,
+                precioBase: 0,
+                superficieTotal: 0,
+                ubicacion: '',
+                // ✅ Datos de validación (para el formulario)
+                cantidadViviendasCreadas: m.cantidadViviendasCreadas,
+                esEditable: m.esEditable,
+                motivoBloqueado: m.motivoBloqueado,
+              })),
+            }}
+            isEditing={true}
+            onTotalsChange={setTotalesProyecto}
+          />
+        ) : null}
+      </Modal>
+
+      {/* Modal Confirmar Cambios */}
+      <ConfirmarCambiosModal
+        isOpen={modalConfirmarCambios}
+        onClose={() => setModalConfirmarCambios(false)}
+        onConfirm={confirmarActualizacion}
+        cambios={cambiosDetectados}
+        isLoading={actualizando}
+      />
+
+      {/* Modal de Confirmación de Eliminación */}
+      <Modal
+        isOpen={modalEliminar}
+        onClose={() => setModalEliminar(false)}
+        title="Eliminar Proyecto"
+        icon={<Trash2 className="w-6 h-6" />}
+        gradientColor="red"
+      >
+        <div className="space-y-4">
+          <div className="rounded-lg border-2 border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-950/30 p-4">
+            <div className="flex items-start gap-3">
+              <Trash2 className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
+              <div className="space-y-1">
+                <p className="text-sm font-semibold text-red-900 dark:text-red-100">
+                  ⚠️ Esta acción no se puede deshacer
+                </p>
+                <p className="text-xs text-red-700 dark:text-red-300">
+                  Se eliminará el proyecto <strong>"{proyecto.nombre}"</strong> y toda su información asociada (manzanas, documentos, etc.).
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-end gap-3 pt-2">
+            <Button
+              variant="outline"
+              onClick={() => setModalEliminar(false)}
+              className="border-gray-300 dark:border-gray-600"
+            >
+              Cancelar
+            </Button>
+            <Button
+              onClick={confirmarEliminar}
+              className="bg-gradient-to-r from-red-500 to-red-600 text-white hover:from-red-600 hover:to-red-700"
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              Eliminar Proyecto
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </motion.div>
     </AnimatePresence>
   )

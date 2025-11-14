@@ -5,12 +5,9 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { useForm } from 'react-hook-form'
 
-import { ModuloSelector } from '@/components/modulo-selector'
-
 import {
     COLORES_CATEGORIA,
     type CategoriaFormData,
-    type ModuloDocumento,
 } from '../../../../types/documento.types'
 import { CategoriaIcon } from '../shared/categoria-icon'
 
@@ -47,12 +44,6 @@ export function CategoriaForm({
     categoria?.icono || 'Folder'
   )
 
-  // Estados para sistema flexible de módulos
-  const [esGlobal, setEsGlobal] = useState(categoria?.es_global ?? false)
-  const [modulosPermitidos, setModulosPermitidos] = useState<ModuloDocumento[]>(
-    categoria?.modulos_permitidos || ['proyectos']
-  )
-
   const {
     register,
     handleSubmit,
@@ -78,8 +69,6 @@ export function CategoriaForm({
         ...data,
         color: colorSeleccionado,
         icono: iconoSeleccionado,
-        esGlobal,
-        modulosPermitidos,
       })
     } finally {
       setGuardando(false)
@@ -212,19 +201,6 @@ export function CategoriaForm({
             </motion.button>
           ))}
         </div>
-      </div>
-
-      {/* Selector de Módulos */}
-      <div>
-        <label className='mb-3 block text-sm font-medium text-gray-700 dark:text-gray-300'>
-          Disponibilidad en módulos
-        </label>
-        <ModuloSelector
-          esGlobal={esGlobal}
-          modulosPermitidos={modulosPermitidos}
-          onEsGlobalChange={setEsGlobal}
-          onModulosChange={setModulosPermitidos}
-        />
       </div>
 
       {/* Botones */}

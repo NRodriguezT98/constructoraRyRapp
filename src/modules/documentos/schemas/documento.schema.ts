@@ -103,21 +103,6 @@ export const documentoFormSchema = z.object({
     .or(z.literal(''))
     .or(z.null()),
 
-  etiquetas: z
-    .array(
-      z
-        .string()
-        .min(2, 'Cada etiqueta debe tener al menos 2 caracteres')
-        .max(30, 'Cada etiqueta es demasiado larga (máx. 30 caracteres)')
-        .regex(
-          /^[a-zA-Z0-9\-_áéíóúñÁÉÍÓÚÑ\s]+$/,
-          'Etiqueta con caracteres inválidos'
-        )
-        .trim()
-    )
-    .max(10, 'Máximo 10 etiquetas')
-    .optional(),
-
   fecha_documento: z
     .string()
     .optional()

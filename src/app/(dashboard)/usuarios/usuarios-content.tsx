@@ -5,11 +5,15 @@
  * COMPONENTE: Contenido de Gestión de Usuarios (Premium Design)
  * ============================================
  *
+ * ✨ VERSIÓN 2.0.0 - Integrado con UsuariosTabs + Sistema de Permisos v2
+ *
  * Contenido del módulo de usuarios con:
+ * - Sistema de tabs (Usuarios, Permisos, Configuración)
  * - Header hero con glassmorphism
  * - Stats cards premium
  * - Tabla moderna con badges gradientes
  * - Modales de crear/editar
+ * - Gestión de permisos (Admin Only)
  */
 
 import { useState } from 'react'
@@ -18,13 +22,14 @@ import { motion } from 'framer-motion'
 import { Plus, Search, UserPlus } from 'lucide-react'
 
 import {
-  EstadisticasUsuariosPremium,
-  ModalCrearUsuario,
-  ModalEditarUsuario,
-  usuariosPremiumStyles as styles,
-  UsuariosHeader
+    EstadisticasUsuariosPremium,
+    ModalCrearUsuario,
+    ModalEditarUsuario,
+    usuariosPremiumStyles as styles,
+    UsuariosHeader,
+    UsuariosTabs,
 } from '@/modules/usuarios/components'
-import { useUsuarios } from '@/modules/usuarios/hooks'
+import { usePermisosQuery, useUsuarios } from '@/modules/usuarios/hooks'; // Usar hook antiguo (tiene filtros)
 import { ESTADOS_USUARIO, ROLES, type UsuarioCompleto } from '@/modules/usuarios/types'
 
 
@@ -51,6 +56,7 @@ export default function UsuariosContent({
     isAdmin,
   })
 
+  // ✨ Hook antiguo (todavía tiene filtros y funcionalidades que necesitamos)
   const {
     usuarios,
     estadisticas,
@@ -63,12 +69,15 @@ export default function UsuariosContent({
     actualizarUsuario,
   } = useUsuarios()
 
+  // ✨ NUEVO: Hook de permisos dinámicos
+  const { esAdmin: esAdminDinamico } = usePermisosQuery()
+
   // Estado de modales
   const [modalCrear, setModalCrear] = useState(false)
   const [usuarioEditar, setUsuarioEditar] = useState<UsuarioCompleto | null>(null)
 
-  // Solo admins pueden ver esta página
-  if (!canView || !isAdmin) {
+  // Solo admins pueden ver esta página (validar con ambos sistemas)
+  if (!canView || (!isAdmin && !esAdminDinamico)) {
     return (
       <div className="flex h-full items-center justify-center">
         <div className="text-center">
@@ -100,6 +109,10 @@ export default function UsuariosContent({
       {estadisticas && (
         <EstadisticasUsuariosPremium estadisticas={estadisticas} />
       )}
+
+      {/* Tabs con contenido */}
+      <UsuariosTabs>
+        <div className="space-y-4">
 
       {/* 🎈 FAB SUPERIOR DERECHO (Solo si tiene permiso de crear) */}
       {canCreate && (
@@ -323,6 +336,9 @@ export default function UsuariosContent({
           </div>
         )}
       </div>
+
+        </div>
+      </UsuariosTabs>
 
       {/* Modales */}
       {canCreate && (

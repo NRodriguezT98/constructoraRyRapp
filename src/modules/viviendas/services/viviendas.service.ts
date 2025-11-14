@@ -651,8 +651,19 @@ class ViviendasService {
     console.log('📤 [SUBIR CERTIFICADO] File:', file.name, file.type, file.size)
     console.log('📤 [SUBIR CERTIFICADO] Bucket destino: documentos-proyectos')
 
+    // Obtener proyecto_id de la manzana
+    const { data: manzana } = await supabase
+      .from('manzanas')
+      .select('proyecto_id')
+      .eq('id', manzanaId)
+      .single()
+
+    if (!manzana?.proyecto_id) {
+      throw new Error('No se pudo obtener el proyecto de la manzana')
+    }
+
     const fileName = `certificado_${manzanaId}_${numeroVivienda}_${Date.now()}.pdf`
-    const filePath = `certificados/${fileName}`
+    const filePath = `${manzana.proyecto_id}/certificados/${fileName}`
 
     console.log('📤 [SUBIR CERTIFICADO] Path completo:', filePath)
 

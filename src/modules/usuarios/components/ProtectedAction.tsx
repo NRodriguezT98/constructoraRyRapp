@@ -6,6 +6,8 @@
  * Componentes wrapper para condicionar renderizado basado en permisos.
  * Simplifican el uso del sistema de permisos en la UI.
  *
+ * @version 2.0.0 - Migrado a React Query + Base de Datos
+ *
  * @example
  * // Mostrar botón solo si puede crear
  * <CanCreate modulo="proyectos">
@@ -23,7 +25,7 @@
 
 import type { ReactNode } from 'react'
 
-import { usePermissions } from '../hooks/usePermissions'
+import { usePermisosQuery } from '../hooks/usePermisosQuery'
 import type { Accion, Modulo } from '../types'
 
 interface ProtectedActionProps {
@@ -48,6 +50,8 @@ interface ProtectedActionProps {
 
 /**
  * Componente base para proteger acciones basadas en permisos
+ *
+ * ✨ NUEVO: Usa React Query + Base de Datos para permisos dinámicos
  */
 export function ProtectedAction({
   modulo,
@@ -57,11 +61,16 @@ export function ProtectedAction({
   children,
   fallback = null,
 }: ProtectedActionProps) {
-  const { puede, puedeAlguno, puedeTodos } = usePermissions()
+  const { puede, puedeAlguno, puedeTodos, isLoading } = usePermisosQuery()
 
   // Validación: no puede usar accion y acciones juntos
   if (accion && acciones) {
     console.error('ProtectedAction: No uses "accion" y "acciones" al mismo tiempo')
+    return <>{fallback}</>
+  }
+
+  // Mientras carga, mostrar fallback
+  if (isLoading) {
     return <>{fallback}</>
   }
 
@@ -178,14 +187,20 @@ interface AdminOnlyProps {
 }
 
 export function AdminOnly({ children, fallback = null }: AdminOnlyProps) {
-  const { esAdmin } = usePermissions()
+  const { esAdmin, isLoading } = usePermisosQuery()
+
+  if (isLoading) return <>{fallback}</>
+
   return esAdmin ? <>{children}</> : <>{fallback}</>
 }
 
 /**
- * Componente para verificar si el usuario es Gerente o superior
+ * Componente para verificar si el usuario es Gerencia o superior
  */
 export function ManagerOrAbove({ children, fallback = null }: AdminOnlyProps) {
-  const { esAdmin, esGerente } = usePermissions()
+  const { esAdmin, esGerente, isLoading } = usePermisosQuery()
+
+  if (isLoading) return <>{fallback}</>
+
   return esAdmin || esGerente ? <>{children}</> : <>{fallback}</>
 }

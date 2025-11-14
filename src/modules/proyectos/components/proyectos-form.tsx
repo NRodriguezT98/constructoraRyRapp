@@ -9,9 +9,9 @@
 'use client'
 
 import { AnimatePresence, motion } from 'framer-motion'
-import { AlertCircle, Building2, Calendar, CheckCircle2, FileText, Home, Loader2, Lock, LockOpen, MapPin, Plus, Trash2, User } from 'lucide-react'
+import { AlertCircle, Building2, Calendar, CheckCircle2, FileCheck, FileText, Home, Loader2, Lock, LockOpen, MapPin, Plus, Trash2 } from 'lucide-react'
+import { useEffect } from 'react'
 
-import { FormChangesBadge } from '@/shared/components/forms/FormChangesBadge'
 import { cn } from '../../../shared/utils/helpers'
 import { useProyectosForm } from '../hooks/useProyectosForm'
 import { proyectosFormPremiumStyles as styles } from '../styles/proyectos-form-premium.styles'
@@ -24,6 +24,7 @@ interface ProyectosFormProps {
   initialData?: Partial<ProyectoFormData>
   isEditing?: boolean
   onHasChanges?: (hasChanges: boolean) => void // ✅ Callback para notificar cambios
+  onTotalsChange?: (totals: { totalManzanas: number; totalViviendas: number }) => void // ✅ Callback para notificar totales
 }
 
 export function ProyectosForm({
@@ -33,6 +34,7 @@ export function ProyectosForm({
   initialData,
   isEditing = false,
   onHasChanges,
+  onTotalsChange,
 }: ProyectosFormProps) {
   // Hook con toda la lógica
   const {
@@ -62,56 +64,21 @@ export function ProyectosForm({
     manzanasState,
   } = useProyectosForm({ initialData, onSubmit, isEditing, onHasChanges })
 
+  // ✅ Notificar cambios en totales al padre
+  useEffect(() => {
+    if (onTotalsChange) {
+      onTotalsChange({ totalManzanas, totalViviendas })
+    }
+  }, [totalManzanas, totalViviendas, onTotalsChange])
+
   return (
     <motion.form
       {...styles.animations.container}
       onSubmit={handleSubmit}
       className={styles.form}
     >
-      {/* BADGE STICKY SUPERIOR - RESUMEN COMPACTO */}
-      <div className={styles.badgeSticky.container}>
-        <div className={styles.badgeSticky.content}>
-          {/* Badges de manzanas/viviendas */}
-          <div className={styles.badgeSticky.badges}>
-            <div className={styles.badgeSticky.manzanasBadge}>
-              <Building2 className={styles.badgeSticky.manzanasIcon} />
-              <span className={styles.badgeSticky.manzanasCount}>{totalManzanas}</span>
-              <span className={styles.badgeSticky.manzanasLabel}>
-                {totalManzanas === 1 ? 'Manzana' : 'Manzanas'}
-              </span>
-            </div>
-            <div className={styles.badgeSticky.viviendasBadge}>
-              <Home className={styles.badgeSticky.viviendasIcon} />
-              <span className={styles.badgeSticky.viviendasCount}>{totalViviendas}</span>
-              <span className={styles.badgeSticky.viviendasLabel}>
-                {totalViviendas === 1 ? 'Vivienda' : 'Viviendas'}
-              </span>
-            </div>
-            {isEditing && (
-              <motion.div
-                {...styles.animations.editingBadge}
-                className={styles.badgeSticky.editingBadge}
-              >
-                Editando
-              </motion.div>
-            )}
-          </div>
-
-          {/* Badge de cambios detectados (sticky, siempre visible) */}
-          {shouldShowChanges && (
-            <FormChangesBadge
-              hasChanges={hasChanges}
-              changes={changes}
-              changesCount={changesCount}
-              variant="compact" // ← Versión compacta en sticky
-            />
-          )}
-        </div>
-      </div>
-
-      {/* LAYOUT DE 2 COLUMNAS CON ESPACIO PARA STICKY */}
-      <div className="pt-4">
-        <div className={styles.grid}>
+      {/* LAYOUT DE 2 COLUMNAS */}
+      <div className={styles.grid}>
         {/* COLUMNA IZQUIERDA: Información General */}
         <motion.div
           {...styles.animations.infoSection}
@@ -120,7 +87,7 @@ export function ProyectosForm({
           {/* Header */}
           <div className={styles.infoSection.header}>
             <div className={styles.infoSection.headerIcon}>
-              <Building2 className={styles.infoSection.headerIconSvg} />
+              <FileCheck className={styles.infoSection.headerIconSvg} />
             </div>
             <h3 className={styles.infoSection.headerTitle}>Información General</h3>
           </div>
@@ -292,8 +259,8 @@ export function ProyectosForm({
                   className={cn(
                     styles.field.select,
                     errors.estado && styles.field.selectError,
-                    touchedFields.estado && !errors.estado && 'border-green-300 dark:border-green-700 bg-green-50/50 dark:bg-green-950/20',
-                    isEditing && isFieldChanged('estado') && !errors.estado && 'border-orange-300 dark:border-orange-700 bg-orange-50/50 dark:bg-orange-950/20'
+                    touchedFields.estado && !errors.estado && 'border-green-300 dark:border-green-700',
+                    isEditing && isFieldChanged('estado') && !errors.estado && 'border-orange-300 dark:border-orange-700'
                   )}
                 >
                   <option value="en_planificacion">En Planificación</option>
@@ -406,53 +373,6 @@ export function ProyectosForm({
                   </motion.div>
                 )}
               </div>
-            </div>
-
-            {/* Campo: Responsable */}
-            <div className={styles.field.container}>
-              <label className={styles.field.label}>
-                Responsable del Proyecto <span className={styles.field.required}>*</span>
-                {isEditing && isFieldChanged('responsable') && (
-                  <span className="ml-2 text-xs text-orange-600 dark:text-orange-400 font-medium">
-                    ✏️ Modificado
-                  </span>
-                )}
-              </label>
-              <div className={styles.field.inputWrapper}>
-                <User className={styles.field.inputIcon} />
-                <input
-                  {...register('responsable')}
-                  type='text'
-                  placeholder='Ej: Juan Pérez'
-                  maxLength={255}
-                  className={cn(
-                    styles.field.input,
-                    errors.responsable && styles.field.inputError,
-                    touchedFields.responsable && !errors.responsable && 'border-green-300 dark:border-green-700 bg-green-50/50 dark:bg-green-950/20',
-                    isEditing && isFieldChanged('responsable') && !errors.responsable && 'border-orange-300 dark:border-orange-700 bg-orange-50/50 dark:bg-orange-950/20'
-                  )}
-                />
-                {touchedFields.responsable && (
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                    {errors.responsable ? (
-                      <AlertCircle className="w-5 h-5 text-red-500" />
-                    ) : (
-                      <CheckCircle2 className="w-5 h-5 text-green-500 animate-in fade-in zoom-in duration-200" />
-                    )}
-                  </div>
-                )}
-              </div>
-              {errors.responsable && (
-                <motion.div {...styles.animations.errorMessage} className={styles.field.error}>
-                  <AlertCircle className={styles.field.errorIcon} />
-                  {errors.responsable.message}
-                </motion.div>
-              )}
-              {!errors.responsable && (
-                <p className={styles.field.helper}>
-                  Nombre completo del responsable del proyecto
-                </p>
-              )}
             </div>
           </div>
         </motion.div>
@@ -691,7 +611,6 @@ export function ProyectosForm({
             )}
           </div>
         </motion.div>
-      </div>
       </div>
 
       {/* BOTONES FOOTER */}

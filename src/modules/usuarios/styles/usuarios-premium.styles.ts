@@ -40,7 +40,7 @@ export const metricasUsuariosColors = {
 export const usuariosPremiumStyles = {
   // 🎨 HEADER HERO
   header: {
-    container: 'relative overflow-hidden rounded-3xl bg-gradient-to-br from-violet-600 via-purple-600 to-indigo-600 dark:from-violet-700 dark:via-purple-700 dark:to-indigo-800 p-8 shadow-2xl shadow-violet-500/20 mb-6',
+    container: 'relative overflow-visible rounded-3xl bg-gradient-to-br from-violet-600 via-purple-600 to-indigo-600 dark:from-violet-700 dark:via-purple-700 dark:to-indigo-800 p-8 shadow-2xl shadow-violet-500/20 mb-6 z-10',
     pattern: 'absolute inset-0 bg-grid-white/10 [mask-image:linear-gradient(0deg,transparent,black,transparent)]',
     content: 'relative z-10',
     topRow: 'flex items-center justify-between',

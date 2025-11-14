@@ -31,47 +31,68 @@ VALUES (
 ON CONFLICT (id) DO NOTHING;
 
 -- ============================================
--- POLÍTICAS DE STORAGE
+-- ELIMINAR POLÍTICAS ANTIGUAS
+-- ============================================
+DROP POLICY IF EXISTS "Los usuarios pueden ver documentos de sus proyectos" ON storage.objects;
+DROP POLICY IF EXISTS "Los usuarios pueden subir documentos" ON storage.objects;
+DROP POLICY IF EXISTS "Los usuarios pueden actualizar sus documentos" ON storage.objects;
+DROP POLICY IF EXISTS "Los usuarios pueden eliminar sus documentos" ON storage.objects;
+
+-- ============================================
+-- POLÍTICAS DE STORAGE (ACCESO COMPARTIDO)
 -- ============================================
 
--- Política: Los usuarios pueden ver sus propios documentos
-CREATE POLICY "Los usuarios pueden ver documentos de sus proyectos"
+-- Política: Todos los usuarios autenticados pueden VER documentos
+CREATE POLICY "Usuarios autenticados pueden ver documentos de proyectos"
 ON storage.objects FOR SELECT
 USING (
-    bucket_id = 'documentos-proyectos' 
-    AND auth.uid()::text = (storage.foldername(name))[1]
+    bucket_id = 'documentos-proyectos'
+    AND auth.uid() IS NOT NULL
 );
 
--- Política: Los usuarios pueden subir documentos a sus carpetas
-CREATE POLICY "Los usuarios pueden subir documentos"
+-- Política: Todos los usuarios autenticados pueden SUBIR documentos
+CREATE POLICY "Usuarios autenticados pueden subir documentos de proyectos"
 ON storage.objects FOR INSERT
 WITH CHECK (
     bucket_id = 'documentos-proyectos'
-    AND auth.uid()::text = (storage.foldername(name))[1]
+    AND auth.uid() IS NOT NULL
 );
 
--- Política: Los usuarios pueden actualizar sus documentos
-CREATE POLICY "Los usuarios pueden actualizar sus documentos"
+-- Política: Todos los usuarios autenticados pueden ACTUALIZAR documentos
+CREATE POLICY "Usuarios autenticados pueden actualizar documentos de proyectos"
 ON storage.objects FOR UPDATE
 USING (
     bucket_id = 'documentos-proyectos'
-    AND auth.uid()::text = (storage.foldername(name))[1]
+    AND auth.uid() IS NOT NULL
 );
 
--- Política: Los usuarios pueden eliminar sus documentos
-CREATE POLICY "Los usuarios pueden eliminar sus documentos"
+-- Política: Solo ADMINISTRADORES pueden ELIMINAR documentos físicamente
+CREATE POLICY "Solo administradores pueden eliminar documentos de proyectos"
 ON storage.objects FOR DELETE
 USING (
     bucket_id = 'documentos-proyectos'
-    AND auth.uid()::text = (storage.foldername(name))[1]
+    AND EXISTS (
+        SELECT 1 FROM usuarios
+        WHERE id = auth.uid() AND rol = 'Administrador'
+    )
 );
 
 -- ============================================
 -- ESTRUCTURA DE CARPETAS
 -- ============================================
 -- Los archivos se organizarán así:
--- {user_id}/{proyecto_id}/{categoria}/{filename}
--- 
+-- {proyecto_id}/{categoria}/{filename}
+--
 -- Ejemplo:
--- abc123-user/xyz789-proyecto/licencias/licencia-construccion-2024.pdf
--- abc123-user/xyz789-proyecto/planos/plano-arquitectonico-v2.dwg
+-- 9de0afee-05f6-4a5c-9951-2411e7eed9e4/licencias/1731600000_licencia_construccion.pdf
+-- 9de0afee-05f6-4a5c-9951-2411e7eed9e4/planos/1731600100_plano_arquitectonico.dwg
+-- 9de0afee-05f6-4a5c-9951-2411e7eed9e4/certificados/1731600200_certificado_tradicion.pdf
+--
+-- PERMISOS:
+-- - SELECT: Todos los usuarios autenticados
+-- - INSERT: Todos los usuarios autenticados
+-- - UPDATE: Todos los usuarios autenticados
+-- - DELETE: Solo Administradores (eliminación física)
+--
+-- AUDITORÍA:
+-- El campo 'subido_por' en la tabla documentos_proyecto registra quién subió cada archivo

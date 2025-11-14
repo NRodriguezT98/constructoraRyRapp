@@ -7,7 +7,7 @@
 /**
  * Roles disponibles en el sistema
  */
-export type Rol = 'Administrador' | 'Gerente' | 'Vendedor'
+export type Rol = 'Administrador' | 'Contador' | 'Supervisor' | 'Gerente'
 
 /**
  * Estados de usuario
@@ -109,20 +109,26 @@ export const ROLES: { value: Rol; label: string; descripcion: string; color: str
   {
     value: 'Administrador',
     label: 'Administrador',
-    descripcion: 'Acceso total al sistema, gestión de usuarios',
+    descripcion: 'Control total del sistema (Usuario en Cali)',
     color: 'red',
+  },
+  {
+    value: 'Contador',
+    label: 'Contador',
+    descripcion: 'Crear/Editar datos, aprobar abonos (sin eliminar)',
+    color: 'blue',
+  },
+  {
+    value: 'Supervisor',
+    label: 'Supervisor',
+    descripcion: 'Solo lectura (Administrador de obra Guacarí)',
+    color: 'gray',
   },
   {
     value: 'Gerente',
     label: 'Gerente',
-    descripcion: 'Supervisión de proyectos y negociaciones',
-    color: 'orange',
-  },
-  {
-    value: 'Vendedor',
-    label: 'Vendedor',
-    descripcion: 'Gestión de clientes y ventas',
-    color: 'blue',
+    descripcion: 'Lectura + Reportes avanzados (Ejecutivos)',
+    color: 'purple',
   },
 ]
 
@@ -174,11 +180,11 @@ export type Modulo =
   | 'proyectos'
   | 'viviendas'
   | 'clientes'
+  | 'documentos'
+  | 'negociaciones'
   | 'abonos'
-  | 'renuncias'
   | 'usuarios'
   | 'auditorias'
-  | 'procesos'
   | 'reportes'
   | 'administracion'
 
@@ -214,37 +220,49 @@ export const PERMISOS_POR_ROL: Record<Rol, Record<Modulo, Accion[]>> = {
     proyectos: ['ver', 'crear', 'editar', 'eliminar', 'exportar'],
     viviendas: ['ver', 'crear', 'editar', 'eliminar', 'exportar'],
     clientes: ['ver', 'crear', 'editar', 'eliminar', 'exportar'],
-    abonos: ['ver', 'crear', 'editar', 'eliminar', 'aprobar', 'rechazar', 'exportar'],
-    renuncias: ['ver', 'crear', 'editar', 'eliminar', 'aprobar', 'rechazar'],
+    documentos: ['ver', 'crear', 'editar', 'eliminar', 'exportar'],
+    negociaciones: ['ver', 'crear', 'editar', 'eliminar', 'aprobar'],
+    abonos: ['ver', 'crear', 'editar', 'eliminar', 'aprobar', 'exportar'],
     usuarios: ['ver', 'crear', 'editar', 'eliminar', 'gestionar'],
     auditorias: ['ver', 'exportar'],
-    procesos: ['ver', 'crear', 'editar', 'eliminar', 'gestionar'],
     reportes: ['ver', 'exportar'],
     administracion: ['ver', 'gestionar'],
   },
-  Gerente: {
+  Contador: {
     proyectos: ['ver', 'crear', 'editar', 'exportar'],
     viviendas: ['ver', 'crear', 'editar', 'exportar'],
     clientes: ['ver', 'crear', 'editar', 'exportar'],
-    abonos: ['ver', 'crear', 'editar', 'aprobar', 'rechazar', 'exportar'],
-    renuncias: ['ver', 'aprobar', 'rechazar'],
+    documentos: ['ver', 'crear', 'editar', 'exportar'],
+    negociaciones: ['ver', 'crear', 'editar'],
+    abonos: ['ver', 'crear', 'editar', 'aprobar', 'exportar'],
     usuarios: ['ver'],
-    auditorias: [],
-    procesos: ['ver', 'crear', 'editar'],
+    auditorias: ['ver', 'exportar'],
     reportes: ['ver', 'exportar'],
-    administracion: ['ver'],
+    administracion: [],
   },
-  Vendedor: {
-    proyectos: ['ver'],
-    viviendas: ['ver'],
-    clientes: ['ver', 'crear', 'editar'],
-    abonos: ['ver', 'crear'],
-    renuncias: ['ver', 'crear'],
+  Supervisor: {
+    proyectos: ['ver', 'exportar'],
+    viviendas: ['ver', 'exportar'],
+    clientes: ['ver', 'exportar'],
+    documentos: ['ver', 'exportar'],
+    negociaciones: ['ver'],
+    abonos: ['ver', 'exportar'],
     usuarios: [],
     auditorias: [],
-    procesos: ['ver'],
-    reportes: [],
+    reportes: ['ver', 'exportar'],
     administracion: [],
+  },
+  Gerente: {
+    proyectos: ['ver', 'exportar'],
+    viviendas: ['ver', 'exportar'],
+    clientes: ['ver', 'exportar'],
+    documentos: ['ver', 'exportar'],
+    negociaciones: ['ver', 'aprobar'],
+    abonos: ['ver', 'aprobar', 'exportar'],
+    usuarios: ['ver'],
+    auditorias: ['ver', 'exportar'],
+    reportes: ['ver', 'exportar'],
+    administracion: ['ver'],
   },
 }
 
@@ -285,6 +303,28 @@ export const DESCRIPCION_PERMISOS: Record<Modulo, Record<Accion, string>> = {
     importar: 'Importar clientes masivamente',
     gestionar: 'N/A',
   },
+  documentos: {
+    ver: 'Ver documentos del sistema',
+    crear: 'Subir nuevos documentos',
+    editar: 'Modificar metadatos de documentos',
+    eliminar: 'Eliminar documentos',
+    exportar: 'Descargar documentos',
+    aprobar: 'N/A',
+    rechazar: 'N/A',
+    importar: 'Importar documentos masivamente',
+    gestionar: 'N/A',
+  },
+  negociaciones: {
+    ver: 'Ver negociaciones activas',
+    crear: 'Crear nuevas negociaciones',
+    editar: 'Modificar negociaciones',
+    eliminar: 'Eliminar negociaciones',
+    aprobar: 'Aprobar negociaciones pendientes',
+    rechazar: 'Rechazar negociaciones',
+    exportar: 'Exportar reporte de negociaciones',
+    importar: 'N/A',
+    gestionar: 'N/A',
+  },
   abonos: {
     ver: 'Ver lista y detalles de abonos',
     crear: 'Registrar nuevos abonos',
@@ -293,17 +333,6 @@ export const DESCRIPCION_PERMISOS: Record<Modulo, Record<Accion, string>> = {
     aprobar: 'Aprobar abonos pendientes',
     rechazar: 'Rechazar abonos',
     exportar: 'Exportar reporte de abonos',
-    importar: 'N/A',
-    gestionar: 'N/A',
-  },
-  renuncias: {
-    ver: 'Ver lista y detalles de renuncias',
-    crear: 'Registrar nuevas renuncias',
-    editar: 'Modificar renuncias',
-    eliminar: 'Eliminar renuncias',
-    aprobar: 'Aprobar renuncias pendientes',
-    rechazar: 'Rechazar renuncias',
-    exportar: 'Exportar reporte de renuncias',
     importar: 'N/A',
     gestionar: 'N/A',
   },
@@ -328,17 +357,6 @@ export const DESCRIPCION_PERMISOS: Record<Modulo, Record<Accion, string>> = {
     rechazar: 'N/A',
     importar: 'N/A',
     gestionar: 'N/A',
-  },
-  procesos: {
-    ver: 'Ver procesos de negociación',
-    crear: 'Crear plantillas de procesos',
-    editar: 'Modificar procesos existentes',
-    eliminar: 'Eliminar procesos',
-    gestionar: 'Gestión completa de procesos',
-    exportar: 'N/A',
-    aprobar: 'N/A',
-    rechazar: 'N/A',
-    importar: 'N/A',
   },
   reportes: {
     ver: 'Ver reportes y estadísticas',
@@ -439,8 +457,15 @@ export function obtenerPermisos(rol: Rol, modulo: Modulo): Accion[] {
  * obtenerModulosConAcceso('Vendedor') // ['proyectos', 'viviendas', 'clientes', ...]
  */
 export function obtenerModulosConAcceso(rol: Rol): Modulo[] {
-  return (Object.keys(PERMISOS_POR_ROL[rol]) as Modulo[]).filter(
-    modulo => PERMISOS_POR_ROL[rol][modulo].length > 0
+  // ⚠️ Validación: si el rol no existe en PERMISOS_POR_ROL, retornar array vacío
+  const permisos = PERMISOS_POR_ROL[rol]
+  if (!permisos) {
+    console.warn(`⚠️ [PERMISOS] Rol "${rol}" no tiene permisos definidos. Retornando array vacío.`)
+    return []
+  }
+
+  return (Object.keys(permisos) as Modulo[]).filter(
+    modulo => permisos[modulo].length > 0
   )
 }
 

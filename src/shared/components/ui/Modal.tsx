@@ -21,6 +21,7 @@ interface ModalProps {
   icon?: React.ReactNode
   gradientColor?: 'orange' | 'green' | 'cyan' | 'pink' | 'blue' | 'purple'
   compact?: boolean // ✅ Para modales de confirmación (sin min-height)
+  headerExtra?: React.ReactNode // ✅ Contenido extra en el header (ej: badges)
 }
 
 const sizeClasses = {
@@ -79,6 +80,7 @@ export function Modal({
   icon,
   gradientColor = 'purple',
   compact = false, // ✅ Por defecto false para mantener compatibilidad
+  headerExtra,
 }: ModalProps) {
   const modalRef = useClickOutside<HTMLDivElement>(() => {
     if (closeOnBackdrop) onClose()
@@ -139,42 +141,54 @@ export function Modal({
               {/* Header mejorado y compacto */}
               {(title || showCloseButton) && (
                 <div className='relative px-6 py-4 border-b border-gray-200/50 dark:border-gray-700/50 bg-gradient-to-b from-gray-50/50 to-transparent dark:from-gray-800/30'>
-                  <div className='flex items-start gap-4'>
-                    {/* Ícono */}
-                    {icon && (
-                      <div className={cn(
-                        'w-10 h-10 rounded-xl flex items-center justify-center shadow-lg flex-shrink-0',
-                        'bg-gradient-to-br',
-                        gradient.icon,
-                        gradient.shadow
-                      )}>
-                        {icon}
-                      </div>
-                    )}
+                  <div className='flex items-center justify-between gap-4'>
+                    {/* Lado izquierdo: Ícono + Títulos */}
+                    <div className='flex items-start gap-4 flex-1 min-w-0'>
+                      {/* Ícono */}
+                      {icon && (
+                        <div className={cn(
+                          'w-10 h-10 rounded-xl flex items-center justify-center shadow-lg flex-shrink-0',
+                          'bg-gradient-to-br',
+                          gradient.icon,
+                          gradient.shadow
+                        )}>
+                          {icon}
+                        </div>
+                      )}
 
-                    {/* Títulos */}
-                    <div className='flex-1 min-w-0'>
-                      {title && (
-                        <h2 className='text-xl font-bold text-gray-900 dark:text-white mb-0.5'>
-                          {title}
-                        </h2>
-                      )}
-                      {description && (
-                        <p className='text-xs text-gray-600 dark:text-gray-400 leading-relaxed'>
-                          {description}
-                        </p>
-                      )}
+                      {/* Títulos */}
+                      <div className='flex-1 min-w-0'>
+                        {title && (
+                          <h2 className='text-xl font-bold text-gray-900 dark:text-white mb-0.5'>
+                            {title}
+                          </h2>
+                        )}
+                        {description && (
+                          <p className='text-xs text-gray-600 dark:text-gray-400 leading-relaxed'>
+                            {description}
+                          </p>
+                        )}
+                      </div>
                     </div>
 
-                    {/* Botón de cerrar mejorado */}
-                    {showCloseButton && (
-                      <button
-                        onClick={onClose}
-                        className='flex-shrink-0 w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 flex items-center justify-center transition-colors'
-                      >
-                        <X className='h-5 w-5 text-gray-600 dark:text-gray-400' />
-                      </button>
-                    )}
+                    {/* Lado derecho: HeaderExtra + Botón cerrar */}
+                    <div className='flex items-center gap-3'>
+                      {headerExtra && (
+                        <div className='flex-shrink-0'>
+                          {headerExtra}
+                        </div>
+                      )}
+
+                      {/* Botón de cerrar mejorado */}
+                      {showCloseButton && (
+                        <button
+                          onClick={onClose}
+                          className='flex-shrink-0 w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 flex items-center justify-center transition-colors'
+                        >
+                          <X className='h-5 w-5 text-gray-600 dark:text-gray-400' />
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
               )}

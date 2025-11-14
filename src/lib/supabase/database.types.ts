@@ -712,7 +712,6 @@ export type Database = {
           es_importante: boolean | null
           es_version_actual: boolean
           estado: string
-          etiquetas: string[] | null
           fecha_actualizacion: string | null
           fecha_creacion: string | null
           fecha_documento: string | null
@@ -736,7 +735,6 @@ export type Database = {
           es_importante?: boolean | null
           es_version_actual?: boolean
           estado?: string
-          etiquetas?: string[] | null
           fecha_actualizacion?: string | null
           fecha_creacion?: string | null
           fecha_documento?: string | null
@@ -760,7 +758,6 @@ export type Database = {
           es_importante?: boolean | null
           es_version_actual?: boolean
           estado?: string
-          etiquetas?: string[] | null
           fecha_actualizacion?: string | null
           fecha_creacion?: string | null
           fecha_documento?: string | null
@@ -1221,6 +1218,42 @@ export type Database = {
           },
         ]
       }
+      permisos_rol: {
+        Row: {
+          accion: string
+          actualizado_en: string | null
+          actualizado_por: string | null
+          creado_en: string | null
+          descripcion: string | null
+          id: string
+          modulo: string
+          permitido: boolean
+          rol: string
+        }
+        Insert: {
+          accion: string
+          actualizado_en?: string | null
+          actualizado_por?: string | null
+          creado_en?: string | null
+          descripcion?: string | null
+          id?: string
+          modulo: string
+          permitido?: boolean
+          rol: string
+        }
+        Update: {
+          accion?: string
+          actualizado_en?: string | null
+          actualizado_por?: string | null
+          creado_en?: string | null
+          descripcion?: string | null
+          id?: string
+          modulo?: string
+          permitido?: boolean
+          rol?: string
+        }
+        Relationships: []
+      }
       plantillas_proceso: {
         Row: {
           activo: boolean
@@ -1341,52 +1374,43 @@ export type Database = {
       proyectos: {
         Row: {
           descripcion: string
-          email: string
           estado: string
           fecha_actualizacion: string | null
           fecha_creacion: string | null
-          fecha_fin_estimada: string
-          fecha_inicio: string
+          fecha_fin_estimada: string | null
+          fecha_inicio: string | null
           id: string
           nombre: string
           presupuesto: number
           progreso: number
-          responsable: string
-          telefono: string
           ubicacion: string
           user_id: string | null
         }
         Insert: {
           descripcion: string
-          email: string
           estado?: string
           fecha_actualizacion?: string | null
           fecha_creacion?: string | null
-          fecha_fin_estimada: string
-          fecha_inicio: string
+          fecha_fin_estimada?: string | null
+          fecha_inicio?: string | null
           id?: string
           nombre: string
           presupuesto?: number
           progreso?: number
-          responsable: string
-          telefono: string
           ubicacion: string
           user_id?: string | null
         }
         Update: {
           descripcion?: string
-          email?: string
           estado?: string
           fecha_actualizacion?: string | null
           fecha_creacion?: string | null
-          fecha_fin_estimada?: string
-          fecha_inicio?: string
+          fecha_fin_estimada?: string | null
+          fecha_inicio?: string | null
           id?: string
           nombre?: string
           presupuesto?: number
           progreso?: number
-          responsable?: string
-          telefono?: string
           ubicacion?: string
           user_id?: string | null
         }
@@ -2359,6 +2383,10 @@ export type Database = {
         }
         Returns: string
       }
+      tiene_permiso: {
+        Args: { p_accion: string; p_modulo: string; p_usuario_id: string }
+        Returns: boolean
+      }
       tiene_rol: {
         Args: {
           p_roles: Database["public"]["Enums"]["rol_usuario"][]
@@ -2382,7 +2410,12 @@ export type Database = {
     }
     Enums: {
       estado_usuario: "Activo" | "Inactivo" | "Bloqueado"
-      rol_usuario: "Administrador" | "Gerente" | "Vendedor"
+      rol_usuario:
+        | "Administrador"
+        | "Gerente"
+        | "Vendedor"
+        | "Contador"
+        | "Supervisor"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -2511,7 +2544,13 @@ export const Constants = {
   public: {
     Enums: {
       estado_usuario: ["Activo", "Inactivo", "Bloqueado"],
-      rol_usuario: ["Administrador", "Gerente", "Vendedor"],
+      rol_usuario: [
+        "Administrador",
+        "Gerente",
+        "Vendedor",
+        "Contador",
+        "Supervisor",
+      ],
     },
   },
 } as const

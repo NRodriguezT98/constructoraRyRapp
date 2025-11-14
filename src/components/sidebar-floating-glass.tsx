@@ -29,7 +29,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
 import { useAuth } from '@/contexts/auth-context'
-
+import { usePermisosQuery } from '@/modules/usuarios/hooks/usePermisosQuery'
 
 import { ThemeToggle } from './theme-toggle'
 import { Button } from './ui/button'
@@ -46,6 +46,7 @@ const navigationGroups = [
         icon: BarChart3,
         color: 'from-blue-500 to-indigo-500',
         description: 'Panel principal',
+        // Dashboard no requiere permiso (accesible para todos)
       },
       {
         name: 'Proyectos',
@@ -53,6 +54,7 @@ const navigationGroups = [
         icon: Building2,
         color: 'from-green-500 to-emerald-500',
         description: 'Gestión de proyectos',
+        requiredPermission: { modulo: 'proyectos', accion: 'ver' },
       },
       {
         name: 'Viviendas',
@@ -60,6 +62,7 @@ const navigationGroups = [
         icon: Home,
         color: 'from-orange-500 to-amber-500',
         description: 'Administrar viviendas',
+        requiredPermission: { modulo: 'viviendas', accion: 'ver' },
       },
     ],
   },
@@ -72,6 +75,7 @@ const navigationGroups = [
         icon: Users,
         color: 'from-cyan-500 to-blue-500',
         description: 'Base de clientes',
+        requiredPermission: { modulo: 'clientes', accion: 'ver' },
       },
       {
         name: 'Abonos',
@@ -79,6 +83,7 @@ const navigationGroups = [
         icon: CreditCard,
         color: 'from-purple-500 to-pink-500',
         description: 'Gestión de pagos',
+        requiredPermission: { modulo: 'abonos', accion: 'ver' },
       },
       {
         name: 'Renuncias',
@@ -86,6 +91,7 @@ const navigationGroups = [
         icon: FileX,
         color: 'from-red-500 to-rose-500',
         description: 'Cancelaciones',
+        // Renuncias no tiene permiso en BD, accesible para todos con sesión
       },
     ],
   },
@@ -98,6 +104,7 @@ const navigationGroups = [
         icon: Users,
         color: 'from-violet-500 to-purple-500',
         description: 'Gestión de usuarios',
+        requiredPermission: { modulo: 'usuarios', accion: 'ver' },
       },
       {
         name: 'Auditorías',
@@ -105,6 +112,7 @@ const navigationGroups = [
         icon: Activity,
         color: 'from-teal-500 to-cyan-500',
         description: 'Registro de actividad',
+        requiredPermission: { modulo: 'auditorias', accion: 'ver' },
       },
       {
         name: 'Papelera',
@@ -120,6 +128,7 @@ const navigationGroups = [
         icon: ClipboardList,
         color: 'from-rose-500 to-pink-500',
         description: 'Plantillas de negociación',
+        // No tiene permiso en BD, accesible para todos
       },
       {
         name: 'Recargos',
@@ -127,6 +136,7 @@ const navigationGroups = [
         icon: Settings,
         color: 'from-blue-500 to-indigo-500',
         description: 'Gastos y valores',
+        requiredPermission: { modulo: 'administracion', accion: 'gestionar' },
       },
       {
         name: 'Administración',
@@ -134,6 +144,7 @@ const navigationGroups = [
         icon: Shield,
         color: 'from-indigo-500 to-blue-500',
         description: 'Panel admin',
+        requiredPermission: { modulo: 'administracion', accion: 'ver' },
       },
       {
         name: 'Reportes',
@@ -141,6 +152,7 @@ const navigationGroups = [
         icon: FileText,
         color: 'from-gray-500 to-slate-500',
         description: 'Informes y análisis',
+        requiredPermission: { modulo: 'reportes', accion: 'ver' },
       },
     ],
   },
@@ -148,6 +160,7 @@ const navigationGroups = [
 
 export function SidebarFloatingGlass() {
   const { user, perfil, signOut } = useAuth()
+  const { puede, esAdmin } = usePermisosQuery() // ← Sistema NUEVO desde BD
   const { theme, systemTheme } = useTheme()
   const router = useRouter()
   const {
@@ -426,7 +439,14 @@ export function SidebarFloatingGlass() {
                             .toLowerCase()
                             .includes(searchQuery.toLowerCase())) &&
                         // 🔒 Filtro adminOnly
-                        (!(item as any).adminOnly || perfil?.rol === 'Administrador')
+                        (!(item as any).adminOnly || esAdmin) &&
+                        // 🔐 Filtro de permisos
+                        ((item as any).requiredPermission
+                          ? puede(
+                              (item as any).requiredPermission.modulo,
+                              (item as any).requiredPermission.accion
+                            )
+                          : true) // Si no tiene requiredPermission, mostrar por defecto
                     )
                     .map((item) => {
                       const active = isActive(item.href)

@@ -15,7 +15,7 @@ import { useEffect, useState } from 'react'
 
 import { AlertCircle } from 'lucide-react'
 
-import { ESTADOS_USUARIO, ROLES, type ActualizarUsuarioData, type UsuarioCompleto } from '../types'
+import { ESTADOS_USUARIO, ROLES, type ActualizarUsuarioData, type EstadoUsuario, type Rol, type UsuarioCompleto } from '../types'
 
 import { Modal } from './Modal'
 import { usuariosStyles as styles } from './usuarios.styles'
@@ -27,12 +27,20 @@ interface ModalEditarUsuarioProps {
   onActualizar: (id: string, datos: ActualizarUsuarioData) => Promise<void>
 }
 
+interface FormularioEdicion {
+  nombres: string
+  apellidos: string
+  telefono: string
+  rol: Rol
+  estado: EstadoUsuario
+}
+
 export function ModalEditarUsuario({ isOpen, onClose, usuario, onActualizar }: ModalEditarUsuarioProps) {
-  const [formulario, setFormulario] = useState<ActualizarUsuarioData>({
+  const [formulario, setFormulario] = useState<FormularioEdicion>({
     nombres: '',
     apellidos: '',
     telefono: '',
-    rol: 'Vendedor',
+    rol: 'Contador',
     estado: 'Activo',
   })
 
@@ -102,7 +110,7 @@ export function ModalEditarUsuario({ isOpen, onClose, usuario, onActualizar }: M
       nombres: '',
       apellidos: '',
       telefono: '',
-      rol: 'Vendedor',
+      rol: 'Contador',
       estado: 'Activo',
     })
     setErrores({})

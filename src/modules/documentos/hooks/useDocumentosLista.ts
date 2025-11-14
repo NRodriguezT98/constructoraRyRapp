@@ -59,7 +59,6 @@ export function useDocumentosLista({
   // ✅ ZUSTAND: Solo estado UI (filtros, búsqueda)
   const {
     categoriaFiltro,
-    etiquetasFiltro,
     busqueda,
     soloImportantes,
   } = useDocumentosStore()
@@ -70,12 +69,6 @@ export function useDocumentosLista({
 
     if (categoriaFiltro) {
       filtered = filtered.filter(doc => doc.categoria_id === categoriaFiltro)
-    }
-
-    if (etiquetasFiltro.length > 0) {
-      filtered = filtered.filter(doc =>
-        etiquetasFiltro.some(etiqueta => doc.etiquetas?.includes(etiqueta))
-      )
     }
 
     if (soloImportantes) {
@@ -128,7 +121,7 @@ export function useDocumentosLista({
       // 4. Más recientes primero (por fecha de creación)
       return new Date(b.fecha_creacion).getTime() - new Date(a.fecha_creacion).getTime()
     })
-  }, [documentos, categoriaFiltro, etiquetasFiltro, busqueda, soloImportantes])
+  }, [documentos, categoriaFiltro, busqueda, soloImportantes])
 
   // Handlers
   const handleView = useCallback(

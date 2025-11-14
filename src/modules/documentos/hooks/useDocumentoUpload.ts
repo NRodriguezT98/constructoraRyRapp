@@ -49,7 +49,6 @@ export function useDocumentoUpload({
       titulo: '',
       descripcion: '',
       categoria_id: '',
-      etiquetas: [],
       fecha_documento: undefined,
       fecha_vencimiento: undefined,
       es_importante: false,
@@ -58,7 +57,6 @@ export function useDocumentoUpload({
     mode: 'onChange', // Validar mientras el usuario escribe
   })
 
-  const etiquetas = watch('etiquetas') || []
   const esImportante = watch('es_importante')
 
   // Validación de archivo
@@ -159,7 +157,6 @@ export function useDocumentoUpload({
           titulo: data.titulo,
           descripcion: data.descripcion,
           categoriaId: data.categoria_id,
-          etiquetas: data.etiquetas,
           fechaDocumento: data.fecha_documento,
           fechaVencimiento: data.fecha_vencimiento,
           esImportante: data.es_importante,
@@ -177,13 +174,7 @@ export function useDocumentoUpload({
     [archivoSeleccionado, user, subirDocumento, reset, limpiarArchivo, onSuccess]
   )
 
-  // Helpers
-  const handleSetEtiquetas = useCallback(
-    (nuevasEtiquetas: string[]) => {
-      setValue('etiquetas', nuevasEtiquetas)
-    },
-    [setValue]
-  )
+  // Helpers - ninguno por ahora
 
   return {
     // Estado
@@ -192,7 +183,6 @@ export function useDocumentoUpload({
     errorArchivo,
     subiendoDocumento,
     categorias,
-    etiquetas,
     esImportante,
 
     // Refs
@@ -212,6 +202,5 @@ export function useDocumentoUpload({
     handleFileInputChange,
     handleClickSelectFile,
     limpiarArchivo,
-    handleSetEtiquetas,
   }
 }

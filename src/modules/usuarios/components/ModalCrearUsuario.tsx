@@ -32,7 +32,7 @@ export function ModalCrearUsuario({ isOpen, onClose, onCrear }: ModalCrearUsuari
     nombres: '',
     apellidos: '',
     telefono: '',
-    rol: 'Vendedor',
+    rol: 'Contador',
     password: '',
     enviar_invitacion: false,
   })
@@ -129,7 +129,7 @@ export function ModalCrearUsuario({ isOpen, onClose, onCrear }: ModalCrearUsuari
       nombres: '',
       apellidos: '',
       telefono: '',
-      rol: 'Vendedor',
+      rol: 'Contador',
       password: '',
       enviar_invitacion: false,
     })

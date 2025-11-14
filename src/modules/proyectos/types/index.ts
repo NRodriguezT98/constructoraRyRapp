@@ -4,14 +4,11 @@ export interface Proyecto {
   nombre: string
   descripcion: string
   ubicacion: string
-  fechaInicio: string
-  fechaFinEstimada: string
+  fechaInicio: string | null
+  fechaFinEstimada: string | null
   presupuesto: number
   estado: EstadoProyecto
   manzanas: Manzana[]
-  responsable: string
-  telefono: string
-  email: string
   documentos?: Documento[]
   progreso?: number
   fechaCreacion: string
@@ -73,13 +70,10 @@ export interface ProyectoFormData {
   nombre: string
   descripcion: string
   ubicacion: string
-  fechaInicio: string
-  fechaFinEstimada: string
+  fechaInicio: string | null
+  fechaFinEstimada: string | null
   presupuesto: number
   estado: EstadoProyecto
-  responsable: string
-  telefono: string
-  email: string
   manzanas: ManzanaFormData[]
 }
 

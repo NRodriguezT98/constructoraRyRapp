@@ -61,7 +61,7 @@ export const progressClasses = {
   bar: 'relative h-2 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700',
   barFill: 'h-full bg-gradient-to-r from-green-500 via-emerald-500 to-teal-500 transition-all duration-1500',
   shimmer: 'absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent',
-  milestones: 'mt-2.5 grid grid-cols-3 gap-3',
+  milestones: 'mt-2.5 grid grid-cols-4 gap-3',
   milestone: 'text-center',
   milestoneValue: 'mb-0.5 text-lg font-bold text-gray-900 dark:text-white',
   milestoneLabel: 'text-xs text-gray-600 dark:text-gray-400',
@@ -82,12 +82,12 @@ export const tabsClasses = {
 
 // Info Cards
 export const infoCardClasses = {
-  card: 'group rounded-xl border border-gray-200 bg-gradient-to-br from-white to-gray-50 p-3 shadow-md transition-all hover:shadow-lg hover:-translate-y-1 dark:border-gray-700 dark:from-gray-800 dark:to-gray-900',
-  header: 'mb-2.5 flex items-center gap-2.5',
+  card: 'group rounded-xl border border-gray-200 bg-gradient-to-br from-white to-gray-50 p-2.5 shadow-md transition-all hover:shadow-lg hover:-translate-y-1 dark:border-gray-700 dark:from-gray-800 dark:to-gray-900',
+  header: 'mb-2 flex items-center gap-2',
   iconContainer: 'rounded-lg bg-gradient-to-br p-1.5',
   icon: 'h-4 w-4 text-white',
   title: 'text-sm font-semibold text-gray-900 dark:text-white',
-  content: 'space-y-2 text-sm text-gray-700 dark:text-gray-300',
+  content: 'space-y-1.5 text-sm text-gray-700 dark:text-gray-300',
   row: 'flex items-center gap-1.5 text-xs',
   rowIcon: 'h-3.5 w-3.5 text-gray-400',
   label: 'text-xs text-gray-600 dark:text-gray-400',

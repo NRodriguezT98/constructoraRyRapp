@@ -6,6 +6,7 @@ import { Inter } from 'next/font/google'
 import { AutoLogoutProvider } from '@/components/auto-logout-provider'
 import { ConditionalLayout } from '@/components/conditional-layout'
 import { ConditionalSidebar } from '@/components/conditional-sidebar'
+import { ProtectedApp } from '@/components/protected-app'
 // import { PageTransition } from '@/components/page-transition' // ← DESHABILITADO para navegación instantánea
 import { ThemeProvider } from '@/components/theme-provider'
 import { AuthProvider } from '@/contexts/auth-context'
@@ -59,13 +60,17 @@ export default function RootLayout({
             <ThemeProvider>
               <ModalProvider>
                 <UnsavedChangesProvider>
-                  <div className='flex h-screen overflow-hidden bg-gray-50 dark:bg-gray-900'>
-                    <ConditionalSidebar />
-                    <ConditionalLayout>
-                      {/* PageTransition deshabilitado para navegación instantánea (-400ms) */}
-                      {children}
-                    </ConditionalLayout>
-                  </div>
+                  {/* 🔐 VALIDACIÓN DE ROL: Bloquea TODO si el rol es inválido */}
+                  <ProtectedApp>
+                    <div className='flex h-screen overflow-hidden bg-gray-50 dark:bg-gray-900'>
+                      <ConditionalSidebar />
+                      <ConditionalLayout>
+                        {/* PageTransition deshabilitado para navegación instantánea (-400ms) */}
+                        {children}
+                      </ConditionalLayout>
+                    </div>
+                  </ProtectedApp>
+
                   <Toaster position='top-right' richColors />
 
                   {/* Modales globales */}

@@ -20,13 +20,13 @@ import { useAuth } from '@/contexts/auth-context'
 
 import type { Accion, Modulo, Rol } from '../types'
 import {
-  DESCRIPCION_PERMISOS,
-  obtenerModulosConAcceso,
-  obtenerPermisos,
-  PERMISOS_POR_ROL,
-  tieneAlgunPermiso as verificarAlgunPermiso,
-  tienePermiso as verificarPermiso,
-  tieneTodosLosPermisos as verificarTodosPermisos,
+    DESCRIPCION_PERMISOS,
+    obtenerModulosConAcceso,
+    obtenerPermisos,
+    PERMISOS_POR_ROL,
+    tieneAlgunPermiso as verificarAlgunPermiso,
+    tienePermiso as verificarPermiso,
+    tieneTodosLosPermisos as verificarTodosPermisos,
 } from '../types'
 
 export function usePermissions() {
@@ -105,6 +105,13 @@ export function usePermissions() {
    */
   const modulosConAcceso = useMemo(() => {
     if (!rol) return []
+
+    // ⚠️ Validación adicional: verificar que el rol existe en PERMISOS_POR_ROL
+    if (!PERMISOS_POR_ROL[rol]) {
+      console.error(`❌ [PERMISOS] Rol "${rol}" no reconocido en sistema de permisos`)
+      return []
+    }
+
     return obtenerModulosConAcceso(rol)
   }, [rol])
 
@@ -116,17 +123,24 @@ export function usePermissions() {
   }, [rol])
 
   /**
+   * Verifica si el usuario es contador
+   */
+  const esContador = useMemo(() => {
+    return rol === 'Contador'
+  }, [rol])
+
+  /**
+   * Verifica si el usuario es supervisor
+   */
+  const esSupervisor = useMemo(() => {
+    return rol === 'Supervisor'
+  }, [rol])
+
+  /**
    * Verifica si el usuario es gerente
    */
   const esGerente = useMemo(() => {
     return rol === 'Gerente'
-  }, [rol])
-
-  /**
-   * Verifica si el usuario es vendedor
-   */
-  const esVendedor = useMemo(() => {
-    return rol === 'Vendedor'
   }, [rol])
 
   /**
@@ -144,6 +158,12 @@ export function usePermissions() {
    */
   const todosLosPermisos = useMemo(() => {
     if (!rol) return []
+
+    // ⚠️ Validación: verificar que el rol existe en PERMISOS_POR_ROL
+    if (!PERMISOS_POR_ROL[rol]) {
+      console.error(`❌ [PERMISOS] Rol "${rol}" no tiene permisos definidos`)
+      return []
+    }
 
     const permisos: { modulo: Modulo; accion: Accion; descripcion: string }[] = []
 
@@ -174,8 +194,9 @@ export function usePermissions() {
 
     // Helpers de rol
     esAdmin,
+    esContador,
+    esSupervisor,
     esGerente,
-    esVendedor,
     rol,
 
     // Estado

@@ -23,7 +23,6 @@ interface DocumentosState {
 
   // Filtros y búsqueda
   categoriaFiltro: string | null
-  etiquetasFiltro: string[]
   busqueda: string
   soloImportantes: boolean
 
@@ -43,7 +42,6 @@ interface DocumentosState {
   // ============================================
 
   setFiltroCategoria: (categoriaId: string | null) => void
-  setFiltroEtiquetas: (etiquetas: string[]) => void
   setBusqueda: (busqueda: string) => void
   toggleSoloImportantes: () => void
   limpiarFiltros: () => void
@@ -65,7 +63,6 @@ interface DocumentosState {
 export const useDocumentosStore = create<DocumentosState>((set) => ({
   // Estado inicial
   categoriaFiltro: null,
-  etiquetasFiltro: [],
   busqueda: '',
   soloImportantes: false,
 
@@ -84,10 +81,6 @@ export const useDocumentosStore = create<DocumentosState>((set) => ({
     set({ categoriaFiltro: categoriaId })
   },
 
-  setFiltroEtiquetas: (etiquetas: string[]) => {
-    set({ etiquetasFiltro: etiquetas })
-  },
-
   setBusqueda: (busqueda: string) => {
     set({ busqueda })
   },
@@ -99,7 +92,6 @@ export const useDocumentosStore = create<DocumentosState>((set) => ({
   limpiarFiltros: () => {
     set({
       categoriaFiltro: null,
-      etiquetasFiltro: [],
       busqueda: '',
       soloImportantes: false,
     })
@@ -157,7 +149,6 @@ export function filtrarDocumentos(
   documentos: DocumentoProyecto[],
   filtros: {
     categoriaFiltro: string | null
-    etiquetasFiltro: string[]
     busqueda: string
     soloImportantes: boolean
   }
@@ -168,15 +159,6 @@ export function filtrarDocumentos(
   if (filtros.categoriaFiltro) {
     resultado = resultado.filter(
       (doc) => doc.categoria_id === filtros.categoriaFiltro
-    )
-  }
-
-  // Filtro por etiquetas
-  if (filtros.etiquetasFiltro.length > 0) {
-    resultado = resultado.filter((doc) =>
-      filtros.etiquetasFiltro.some((etiqueta) =>
-        doc.etiquetas?.includes(etiqueta)
-      )
     )
   }
 

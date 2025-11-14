@@ -1,7 +1,7 @@
 'use client'
 
 import { AnimatePresence, motion } from 'framer-motion'
-import { AlertCircle, Calendar, FileText, Folder, Loader2, Save, Tag, X } from 'lucide-react'
+import { AlertCircle, Calendar, FileText, Folder, Loader2, Save, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 import { formatDateForInput } from '@/lib/utils/date.utils'
@@ -9,7 +9,8 @@ import { cn } from '@/shared/utils/helpers'
 import { useDocumentoEditar } from '../../hooks'
 import { useDetectarCambiosDocumento } from '../../hooks/useDetectarCambiosDocumento'
 import type { CategoriaDocumento, DocumentoProyecto } from '../../types'
-import { EtiquetasInput } from '../shared/etiquetas-input'
+// COMENTADO: Funcionalidad de etiquetas eliminada
+// import { EtiquetasInput } from '../shared/etiquetas-input'
 import { ConfirmarCambiosDocumentoModal } from './ConfirmarCambiosDocumentoModal'
 
 interface DocumentoEditarMetadatosModalProps {
@@ -39,7 +40,8 @@ export function DocumentoEditarMetadatosModal({
   const [fechaVencimiento, setFechaVencimiento] = useState(
     documento.fecha_vencimiento ? formatDateForInput(documento.fecha_vencimiento) : ''
   )
-  const [etiquetas, setEtiquetas] = useState<string[]>(documento.etiquetas || [])
+  // COMENTADO: Funcionalidad de etiquetas eliminada
+  // const [etiquetas, setEtiquetas] = useState<string[]>(documento.etiquetas || [])
   const [mostrarConfirmacion, setMostrarConfirmacion] = useState(false)
   const [mostrarConfirmacionCambios, setMostrarConfirmacionCambios] = useState(false)
 
@@ -50,7 +52,7 @@ export function DocumentoEditarMetadatosModal({
     categoria_id: categoriaId || undefined,
     fecha_documento: fechaDocumento || null,
     fecha_vencimiento: fechaVencimiento || null,
-    etiquetas: etiquetas.length > 0 ? etiquetas : undefined
+    // etiquetas: etiquetas.length > 0 ? etiquetas : undefined // COMENTADO
   })
 
   // Detectar si hay cambios sin guardar (para modal de cierre)
@@ -68,7 +70,7 @@ export function DocumentoEditarMetadatosModal({
       setFechaVencimiento(
         documento.fecha_vencimiento ? formatDateForInput(documento.fecha_vencimiento) : ''
       )
-      setEtiquetas(documento.etiquetas || [])
+      // setEtiquetas(documento.etiquetas || []) // COMENTADO: Funcionalidad eliminada
     }
   }, [isOpen, documento])
 
@@ -92,7 +94,7 @@ export function DocumentoEditarMetadatosModal({
       categoria_id: categoriaId || undefined,
       fecha_documento: fechaDocumento || null,
       fecha_vencimiento: fechaVencimiento || null,
-      etiquetas: etiquetas.length > 0 ? etiquetas : undefined
+      // etiquetas: etiquetas.length > 0 ? etiquetas : undefined // COMENTADO
     })
 
     if (success) {
@@ -337,8 +339,8 @@ export function DocumentoEditarMetadatosModal({
                   )}
                 </div>
 
-                {/* Etiquetas */}
-                <div>
+                {/* COMENTADO: Funcionalidad de etiquetas eliminada */}
+                {/* <div>
                   <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5 flex items-center gap-1.5">
                     <Tag size={14} />
                     Etiquetas
@@ -347,7 +349,7 @@ export function DocumentoEditarMetadatosModal({
                     value={etiquetas}
                     onChange={setEtiquetas}
                   />
-                </div>
+                </div> */}
               </div>
             </div>
 

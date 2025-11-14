@@ -4,6 +4,7 @@
 export { useDetectarCambios } from './useDetectarCambios'
 export { useDocumentoVersiones } from './useDocumentoVersiones'
 export { useProyectoCard } from './useProyectoCard'
+export { useProyectoTabla } from './useProyectoTabla'
 // ❌ useProyectoDetalle eliminado - nunca se implementó
 
 // ✅ Hooks con Zustand (DEPRECADO - NO USAR)

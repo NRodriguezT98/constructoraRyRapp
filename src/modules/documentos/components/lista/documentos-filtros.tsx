@@ -11,8 +11,7 @@ import {
     Search,
     SlidersHorizontal,
     Star,
-    Tag as TagIcon,
-    X,
+    X
 } from 'lucide-react'
 
 import { moduleThemes, type ModuleName } from '@/shared/config/module-themes'
@@ -41,11 +40,9 @@ export function DocumentosFiltros({
 
   const {
     categoriaFiltro,
-    etiquetasFiltro,
     busqueda,
     soloImportantes,
     setFiltroCategoria,
-    setFiltroEtiquetas,
     setBusqueda,
     toggleSoloImportantes,
     limpiarFiltros,
@@ -56,11 +53,6 @@ export function DocumentosFiltros({
     return documentos.filter(doc => {
       if (doc.estado === 'archivado') return false
       if (categoriaFiltro && doc.categoria_id !== categoriaFiltro) return false
-      if (etiquetasFiltro.length > 0) {
-        const docEtiquetas = doc.etiquetas || []
-        if (!etiquetasFiltro.some(tag => docEtiquetas.includes(tag)))
-          return false
-      }
       if (busqueda) {
         const searchLower = busqueda.toLowerCase()
         const tituloMatch = doc.titulo.toLowerCase().includes(searchLower)
@@ -72,7 +64,7 @@ export function DocumentosFiltros({
       if (soloImportantes && !doc.es_importante) return false
       return true
     })
-  }, [documentos, categoriaFiltro, etiquetasFiltro, busqueda, soloImportantes])
+  }, [documentos, categoriaFiltro, busqueda, soloImportantes])
 
   // Calcular estadísticas localmente
   const estadisticas = useMemo(() => {
@@ -93,17 +85,13 @@ export function DocumentosFiltros({
     }
   }, [documentos])
 
-  const etiquetasUnicas = useMemo(() => {
-    return Array.from(new Set(documentos.flatMap(doc => doc.etiquetas || [])))
-  }, [documentos])
-
   const handleChangeVista = (nuevaVista: VistaDocumentos) => {
     setVista(nuevaVista)
     onChangeVista?.(nuevaVista)
   }
 
   const hayFiltrosActivos =
-    categoriaFiltro || etiquetasFiltro.length > 0 || busqueda || soloImportantes
+    categoriaFiltro || busqueda || soloImportantes
 
   return (
     <div className='space-y-3'>
@@ -192,7 +180,7 @@ export function DocumentosFiltros({
             exit={{ opacity: 0, height: 0 }}
             className='overflow-hidden'
           >
-            <div className={`rounded-lg border ${theme.classes.border.light} bg-gradient-to-br ${theme.classes.gradient.background} p-4`}>
+            <div className={`rounded-lg border ${theme.classes.border.light} bg-gradient-to-br ${theme.classes.gradient.background} dark:${theme.classes.gradient.backgroundDark} p-4`}>
               <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
                 {/* Filtro por categoría */}
                 <div>
@@ -214,49 +202,6 @@ export function DocumentosFiltros({
                   </select>
                 </div>
 
-                {/* Filtro por etiquetas */}
-                <div>
-                  <label className='mb-1.5 flex items-center gap-2 text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide'>
-                    <TagIcon size={14} />
-                    Etiquetas
-                  </label>
-                  <div className='flex flex-wrap gap-1.5'>
-                    {etiquetasUnicas.length > 0 ? (
-                      etiquetasUnicas.map(etiqueta => {
-                        const estaSeleccionada =
-                          etiquetasFiltro.includes(etiqueta)
-                        return (
-                          <button
-                            key={etiqueta}
-                            onClick={() => {
-                              if (estaSeleccionada) {
-                                setFiltroEtiquetas(
-                                  etiquetasFiltro.filter(e => e !== etiqueta)
-                                )
-                              } else {
-                                setFiltroEtiquetas([
-                                  ...etiquetasFiltro,
-                                  etiqueta,
-                                ])
-                              }
-                            }}
-                            className={`rounded-md px-2.5 py-1 text-xs font-medium transition-all ${
-                              estaSeleccionada
-                                ? `bg-gradient-to-r ${theme.classes.gradient.primary} text-white shadow-md`
-                                : 'border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
-                            }`}
-                          >
-                            {etiqueta}
-                          </button>
-                        )
-                      })
-                    ) : (
-                      <p className='text-xs text-gray-500 dark:text-gray-400'>
-                        No hay etiquetas disponibles
-                      </p>
-                    )}
-                  </div>
-                </div>
               </div>
             </div>
           </motion.div>
@@ -273,35 +218,16 @@ export function DocumentosFiltros({
             </span>
 
             {categoriaFiltro && (
-              <span className='inline-flex items-center gap-1.5 rounded-lg bg-blue-100 px-3 py-1 text-sm text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'>
+              <span className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1 text-sm bg-gradient-to-br ${theme.classes.gradient.background} ${theme.classes.text.primary} border ${theme.classes.border.light}`}>
                 {categorias.find(c => c.id === categoriaFiltro)?.nombre}
                 <button
                   onClick={() => setFiltroCategoria(null)}
-                  className='rounded p-0.5 hover:bg-blue-200 dark:hover:bg-blue-800'
+                  className={`rounded p-0.5 transition-colors hover:bg-white/20 dark:hover:bg-black/20`}
                 >
                   <X size={12} />
                 </button>
               </span>
             )}
-
-            {etiquetasFiltro.map(etiqueta => (
-              <span
-                key={etiqueta}
-                className='inline-flex items-center gap-1.5 rounded-lg bg-purple-100 px-3 py-1 text-sm text-purple-700 dark:bg-purple-900/30 dark:text-purple-300'
-              >
-                {etiqueta}
-                <button
-                  onClick={() =>
-                    setFiltroEtiquetas(
-                      etiquetasFiltro.filter(e => e !== etiqueta)
-                    )
-                  }
-                  className='rounded p-0.5 hover:bg-purple-200 dark:hover:bg-purple-800'
-                >
-                  <X size={12} />
-                </button>
-              </span>
-            ))}
 
             {soloImportantes && (
               <span className='inline-flex items-center gap-1.5 rounded-lg bg-yellow-100 px-3 py-1 text-sm text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300'>

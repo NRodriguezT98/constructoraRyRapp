@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion'
-import { LucideIcon, Sparkles } from 'lucide-react'
+import { LucideIcon, Upload } from 'lucide-react'
 
+import { moduleThemes, type ModuleName } from '../../config/module-themes'
 import { cn } from '../../utils/helpers'
 
 interface EmptyStateProps {
@@ -13,6 +14,7 @@ interface EmptyStateProps {
     icon?: LucideIcon
   }
   className?: string
+  moduleName?: ModuleName // 🎨 Tema del módulo
 }
 
 export function EmptyState({
@@ -21,8 +23,10 @@ export function EmptyState({
   description,
   action,
   className,
+  moduleName = 'proyectos', // 🎨 Default a proyectos
 }: EmptyStateProps) {
   const ActionIcon = action?.icon
+  const theme = moduleThemes[moduleName] // 🎨 Obtener tema dinámico
 
   // Posiciones fijas para las partículas (evita hydration mismatch)
   const particlePositions = [
@@ -145,26 +149,36 @@ export function EmptyState({
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
-          className='group relative overflow-hidden rounded-lg px-4 py-2 text-sm font-bold text-white shadow-md'
+          className={cn(
+            'group relative overflow-hidden rounded-lg px-4 py-2 text-sm font-bold text-white shadow-md',
+            theme.classes.button.primary
+          )}
           whileHover={{ scale: 1.03 }}
           whileTap={{ scale: 0.98 }}
         >
-          {/* Gradiente de fondo */}
-          <div className='absolute inset-0 bg-gradient-to-r from-blue-600 via-purple-600 to-blue-600 transition-transform group-hover:scale-110' />
+          {/* Gradiente de fondo con colores del módulo */}
+          <div className={cn(
+            'absolute inset-0 bg-gradient-to-r transition-transform group-hover:scale-110',
+            theme.classes.gradient.triple
+          )} />
 
-          {/* Resplandor en hover */}
+          {/* Resplandor en hover con colores del módulo */}
           <motion.div
-            className='absolute inset-0 bg-gradient-to-r from-blue-400 via-purple-400 to-blue-400 opacity-0 blur-lg transition-opacity duration-500 group-hover:opacity-100'
+            className='absolute inset-0 opacity-0 blur-lg transition-opacity duration-500 group-hover:opacity-100'
+            style={{
+              background: `linear-gradient(to right, ${theme.classes.gradient.primary})`,
+            }}
             initial={false}
           />
 
           {/* Contenido del botón */}
           <span className='relative flex items-center gap-2'>
-            {ActionIcon && (
+            {ActionIcon ? (
               <ActionIcon className='h-4 w-4' strokeWidth={2.5} />
+            ) : (
+              <Upload className='h-4 w-4' strokeWidth={2.5} />
             )}
             {action.label}
-            <Sparkles className='h-3.5 w-3.5' />
           </span>
         </motion.button>
       )}

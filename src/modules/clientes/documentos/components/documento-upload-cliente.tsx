@@ -20,7 +20,8 @@ import {
     X,
 } from 'lucide-react'
 
-import { EtiquetasInput } from '@/modules/documentos/components/shared/etiquetas-input'
+// COMENTADO: Funcionalidad de etiquetas eliminada del sistema
+// import { EtiquetasInput } from '@/modules/documentos/components/shared/etiquetas-input'
 
 import { useDocumentoUploadCliente } from '../hooks'
 
@@ -49,7 +50,7 @@ export function DocumentoUploadCliente({
     archivoSeleccionado,
     errorArchivo,
     isDragging,
-    etiquetas,
+    // etiquetas, // COMENTADO: Funcionalidad eliminada
     esImportante,
     subiendoDocumento,
     categorias,
@@ -69,7 +70,7 @@ export function DocumentoUploadCliente({
     handleFileInputChange,
     handleClickSelectFile,
     handleSubmit,
-    setEtiquetas,
+    // setEtiquetas, // COMENTADO: Funcionalidad eliminada
     setEsImportante,
     formatFileSize,
     getFileExtension,
@@ -253,13 +254,13 @@ export function DocumentoUploadCliente({
               />
             </div>
 
-            {/* Etiquetas */}
-            <div>
+            {/* COMENTADO: Funcionalidad de etiquetas eliminada */}
+            {/* <div>
               <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                 Etiquetas
               </label>
               <EtiquetasInput value={etiquetas} onChange={setEtiquetas} />
-            </div>
+            </div> */}
 
             {/* Fechas */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

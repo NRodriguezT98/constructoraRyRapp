@@ -7,7 +7,7 @@
  * ✅ Validación granular de manzanas editables
  */
 
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useFieldArray, useForm } from 'react-hook-form'
@@ -73,14 +73,6 @@ const proyectoSchema = z.object({
   }),
   fechaInicio: z.string().optional(),
   fechaFinEstimada: z.string().optional(),
-  responsable: z
-    .string()
-    .min(3, 'El nombre del responsable debe tener al menos 3 caracteres')
-    .max(255, 'El nombre no puede exceder 255 caracteres')
-    .regex(
-      /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/,
-      'Solo se permiten letras y espacios'
-    ),
   manzanas: z.array(manzanaSchema).min(1, 'Debe agregar al menos una manzana'),
 }).refine(
   (data) => {
@@ -179,6 +171,9 @@ export function useProyectosForm({
   isEditing = false,
   onHasChanges,
 }: UseProyectosFormParams) {
+  // Estado para spinner de validación de nombre
+  const [validandoNombre, setValidandoNombre] = useState(false)
+
   // ✅ OPTIMIZACIÓN: Si initialData ya tiene validación (de useProyectoConValidacion),
   // construir Map desde initialData en vez de consultar DB
   const manzanasConValidacionInicial = initialData?.manzanas?.filter(m => m.id && m.esEditable !== undefined)
@@ -200,6 +195,7 @@ export function useProyectosForm({
     [initialData?.id, initialData?.nombre, isEditing]
   )
 
+  // React Hook Form con schema SIN validación async (para evitar validación constante)
   const {
     register,
     handleSubmit,
@@ -208,11 +204,12 @@ export function useProyectosForm({
     reset,
     setError,
     clearErrors,
+    trigger,
     formState: { errors, touchedFields, isValidating },
   } = useForm<ProyectoFormSchema>({
-    resolver: zodResolver(schemaConValidacionAsync),
-    mode: 'onBlur', // ← Validar al salir del campo (UX no intrusiva)
-    reValidateMode: 'onChange', // ← Si ya hay error, validar mientras corrige
+    resolver: zodResolver(proyectoSchema), // ← Schema básico SIN validación async
+    mode: 'onBlur', // ← Validar al salir del campo
+    reValidateMode: 'onSubmit', // ← CRÍTICO: No re-validar en cada cambio, solo al enviar
     defaultValues: {
       nombre: initialData?.nombre || '',
       descripcion: initialData?.descripcion || '',
@@ -220,7 +217,6 @@ export function useProyectosForm({
       estado: initialData?.estado || 'en_planificacion',
       fechaInicio: initialData?.fechaInicio?.split('T')[0] || '',
       fechaFinEstimada: initialData?.fechaFinEstimada?.split('T')[0] || '',
-      responsable: initialData?.responsable || '',
       manzanas: initialData?.manzanas || [],
     },
   })
@@ -247,7 +243,6 @@ export function useProyectosForm({
       estado: initialData?.estado || 'en_planificacion',
       fechaInicio: initialData?.fechaInicio?.split('T')[0] || '',
       fechaFinEstimada: initialData?.fechaFinEstimada?.split('T')[0] || '',
-      responsable: initialData?.responsable || '',
       manzanas: initialData?.manzanas || [],
     })
   }, [initialData?.id, reset]) // ✅ Solo cuando cambia el ID (proyecto diferente)
@@ -353,7 +348,32 @@ export function useProyectosForm({
     remove(index)
   }
 
-  const onSubmitForm = (data: ProyectoFormSchema) => {
+  const onSubmitForm = async (data: ProyectoFormSchema) => {
+    // ✅ VALIDACIÓN DE DUPLICADOS: Solo al enviar el formulario
+    if (data.nombre && data.nombre !== initialData?.nombre) {
+      try {
+        const esDuplicado = await proyectosService.verificarNombreDuplicado(
+          data.nombre,
+          isEditing ? initialData?.id : undefined
+        )
+
+        if (esDuplicado) {
+          setError('nombre', {
+            type: 'manual',
+            message: 'Ya existe un proyecto con este nombre'
+          })
+          return // Detener envío
+        }
+      } catch (error) {
+        console.error('Error validando nombre:', error)
+        setError('nombre', {
+          type: 'manual',
+          message: 'Error al validar el nombre. Intenta de nuevo.'
+        })
+        return
+      }
+    }
+
     // ✅ FIX: En modo edición, enviar TODOS los campos del formulario
     if (isEditing) {
       // Modo edición: Enviar todos los campos editables
@@ -388,7 +408,7 @@ export function useProyectosForm({
           ubicacion: '',
         })),
         // Convertir fechas de input (YYYY-MM-DD) a ISO con hora mediodía
-        // Si están vacías, enviar null
+        // Si están vacías, enviar null (las fechas son opcionales)
         fechaInicio: data.fechaInicio && data.fechaInicio.trim() !== ''
           ? `${data.fechaInicio}T12:00:00`
           : null,
@@ -396,8 +416,6 @@ export function useProyectosForm({
           ? `${data.fechaFinEstimada}T12:00:00`
           : null,
         presupuesto: 0,
-        telefono: '+57 300 000 0000',
-        email: 'info@ryrconstrucora.com',
       }
 
       console.log('📋 [FORM] Datos de creación preparados:', formDataCompleto)
@@ -499,7 +517,7 @@ export function useProyectosForm({
 
     // Validación state
     validandoManzanas,
-    validandoNombre: isValidating, // ✅ True cuando está validando async (duplicados)
+    validandoNombre: false, // ✅ Validación solo al enviar, no mostrar spinner en campo
     manzanasState,
   }
 }

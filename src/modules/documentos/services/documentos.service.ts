@@ -14,7 +14,6 @@ interface SubirDocumentoParams {
   titulo: string
   descripcion?: string
   archivo: File
-  etiquetas?: string[]
   fecha_documento?: string
   fecha_vencimiento?: string
   es_importante?: boolean
@@ -117,20 +116,33 @@ export class DocumentosService {
       categoria_id,
       titulo,
       descripcion,
-      etiquetas,
       fecha_documento,
       fecha_vencimiento,
       es_importante,
       metadata,
     } = params
 
-    // 1. Generar nombre único para el archivo
+    // 1. Obtener nombre de categoría para organizar archivos
+    let categoriaNombre = 'general'
+    if (categoria_id) {
+      const { data: categoria } = await supabase
+        .from('categorias_documento')
+        .select('nombre')
+        .eq('id', categoria_id)
+        .single()
+
+      if (categoria?.nombre) {
+        categoriaNombre = categoria.nombre.toLowerCase().replace(/\s+/g, '-')
+      }
+    }
+
+    // 2. Generar nombre único para el archivo
     const timestamp = Date.now()
     const extension = archivo.name.split('.').pop()
     const nombreArchivo = `${timestamp}-${crypto.randomUUID()}.${extension}`
 
-    // 2. Construir path en storage: {user_id}/{proyecto_id}/{filename}
-    const storagePath = `${userId}/${proyecto_id}/${nombreArchivo}`
+    // 3. Construir path en storage: {proyecto_id}/{categoria}/{filename}
+    const storagePath = `${proyecto_id}/${categoriaNombre}/${nombreArchivo}`
 
     // 3. Subir archivo a Supabase Storage
     const { data: uploadData, error: uploadError } = await supabase.storage
@@ -155,7 +167,6 @@ export class DocumentosService {
         tamano_bytes: archivo.size,
         tipo_mime: archivo.type,
         url_storage: storagePath,
-        etiquetas: etiquetas || [],
         subido_por: userId,
         fecha_documento: fecha_documento || null,
         fecha_vencimiento: fecha_vencimiento || null,
@@ -165,7 +176,14 @@ export class DocumentosService {
         es_version_actual: true,
         estado: 'activo',
       })
-      .select()
+      .select(`
+        *,
+        usuario:usuarios!fk_documentos_proyecto_subido_por (
+          nombres,
+          apellidos,
+          email
+        )
+      `)
       .single()
 
     if (dbError) {
@@ -233,11 +251,25 @@ export class DocumentosService {
       .update({ es_version_actual: false })
       .or(`id.eq.${documentoPadreId},documento_padre_id.eq.${documentoPadreId}`)
 
-    // 5. Subir nuevo archivo a Storage
+    // 5. Obtener nombre de categoría para organizar archivos
+    let categoriaNombre = 'general'
+    if (docOriginal.categoria_id) {
+      const { data: categoria } = await supabase
+        .from('categorias_documento')
+        .select('nombre')
+        .eq('id', docOriginal.categoria_id)
+        .single()
+
+      if (categoria?.nombre) {
+        categoriaNombre = categoria.nombre.toLowerCase().replace(/\s+/g, '-')
+      }
+    }
+
+    // 6. Subir nuevo archivo a Storage
     const timestamp = Date.now()
     const extension = archivo.name.split('.').pop()
     const nombreArchivo = `${timestamp}-${crypto.randomUUID()}.${extension}`
-    const storagePath = `${userId}/${docOriginal.proyecto_id}/${nombreArchivo}`
+    const storagePath = `${docOriginal.proyecto_id}/${categoriaNombre}/${nombreArchivo}`
 
     const { error: uploadError } = await supabase.storage
       .from(BUCKET_NAME)
@@ -258,7 +290,6 @@ export class DocumentosService {
         tamano_bytes: archivo.size,
         tipo_mime: archivo.type,
         url_storage: storagePath,
-        etiquetas: docOriginal.etiquetas,
         version: nuevaVersion,
         es_version_actual: true,
         documento_padre_id: documentoPadreId,
@@ -660,7 +691,6 @@ export class DocumentosService {
         | 'titulo'
         | 'descripcion'
         | 'categoria_id'
-        | 'etiquetas'
         | 'fecha_documento'
         | 'fecha_vencimiento'
         | 'es_importante'
@@ -696,25 +726,6 @@ export class DocumentosService {
       .or(
         `titulo.ilike.%${busqueda}%,nombre_original.ilike.%${busqueda}%,descripcion.ilike.%${busqueda}%`
       )
-      .order('fecha_creacion', { ascending: false })
-
-    if (error) throw error
-    return (data || []) as unknown as DocumentoProyecto[]
-  }
-
-  /**
-   * Obtener documentos por etiquetas
-   */
-  static async obtenerDocumentosPorEtiquetas(
-    proyectoId: string,
-    etiquetas: string[]
-  ): Promise<DocumentoProyecto[]> {
-    const { data, error } = await supabase
-      .from('documentos_proyecto')
-      .select('*')
-      .eq('proyecto_id', proyectoId)
-      .eq('estado', 'activo')
-      .contains('etiquetas', etiquetas)
       .order('fecha_creacion', { ascending: false })
 
     if (error) throw error

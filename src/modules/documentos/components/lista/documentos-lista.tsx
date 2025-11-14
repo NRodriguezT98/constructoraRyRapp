@@ -87,6 +87,7 @@ export function DocumentosLista({
                 }
               : undefined
           }
+          moduleName={moduleName}
         />
       ) : (
         <AnimatePresence mode='popLayout'>

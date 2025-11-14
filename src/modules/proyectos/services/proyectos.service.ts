@@ -78,9 +78,6 @@ class ProyectosService {
         presupuesto: formData.presupuesto,
         estado: formData.estado,
         progreso: 0,
-        responsable: formData.responsable,
-        telefono: formData.telefono,
-        email: formData.email,
       })
       .select()
       .single()
@@ -137,9 +134,6 @@ class ProyectosService {
       presupuesto: proyecto.presupuesto,
       estado: proyecto.estado as any, // Type assertion para evitar error de tipos con Supabase
       progreso: proyecto.progreso,
-      responsable: proyecto.responsable,
-      telefono: proyecto.telefono,
-      email: proyecto.email,
       manzanas,
       fechaCreacion: proyecto.fecha_creacion,
       fechaActualizacion: proyecto.fecha_actualizacion,
@@ -181,9 +175,6 @@ class ProyectosService {
     if (data.presupuesto !== undefined)
       updateData.presupuesto = data.presupuesto
     if (data.estado !== undefined) updateData.estado = data.estado
-    if (data.responsable !== undefined) updateData.responsable = data.responsable
-    if (data.telefono !== undefined) updateData.telefono = data.telefono
-    if (data.email !== undefined) updateData.email = data.email
 
     // 3. Actualizar proyecto en DB
     const { data: proyecto, error } = await supabase
@@ -345,9 +336,6 @@ class ProyectosService {
       presupuesto: data.presupuesto,
       estado: data.estado as any, // Type assertion para evitar error de tipos con Supabase
       progreso: data.progreso,
-      responsable: data.responsable,
-      telefono: data.telefono,
-      email: data.email,
       manzanas: (data.manzanas || []).map((m: any) => ({
         id: m.id,
         nombre: m.nombre,

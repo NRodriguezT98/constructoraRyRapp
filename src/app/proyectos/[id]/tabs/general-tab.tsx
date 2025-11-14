@@ -2,17 +2,16 @@
 
 import { motion } from 'framer-motion'
 import {
-    Building2,
     Calendar,
+    FileText,
     Home,
-    Mail,
     MapPin,
-    Phone,
-    Users
+    TrendingUp
 } from 'lucide-react'
 
 import type { Proyecto } from '@/modules/proyectos/types'
-import { formatCurrency, formatDate } from '@/shared/utils/format'
+import { formatDate } from '@/shared/utils/format'
+import { cn } from '@/shared/utils/helpers'
 
 import * as styles from '../proyecto-detalle.styles'
 
@@ -27,39 +26,11 @@ export function GeneralTab({ proyecto }: GeneralTabProps) {
     0
   )
 
-  // Stats data
-  const statsData = [
-    {
-      icon: Building2,
-      label: 'Presupuesto Total',
-      value: formatCurrency(proyecto.presupuesto),
-      gradient: styles.gradients.presupuesto,
-    },
-    {
-      icon: Home,
-      label: 'Manzanas',
-      value: proyecto.manzanas.length,
-      gradient: styles.gradients.manzanas,
-    },
-    {
-      icon: Home,
-      label: 'Viviendas',
-      value: totalViviendas,
-      gradient: styles.gradients.viviendas,
-    },
-    {
-      icon: Calendar,
-      label: 'Creado',
-      value: formatDate(proyecto.fechaCreacion),
-      gradient: styles.gradients.fecha,
-    },
-  ]
-
   return (
     <motion.div
       key='info'
       {...styles.animations.fadeInUp}
-      className='space-y-4'
+      className='space-y-3'
     >
       {/* Barra de Progreso Mejorada */}
       <motion.div
@@ -70,7 +41,7 @@ export function GeneralTab({ proyecto }: GeneralTabProps) {
         <div className={styles.progressClasses.header}>
           <div className={styles.progressClasses.leftSection}>
             <div className={styles.progressClasses.iconContainer}>
-              <Building2 className={styles.progressClasses.icon} />
+              <TrendingUp className={styles.progressClasses.icon} />
             </div>
             <div className={styles.progressClasses.titleSection}>
               <p className={styles.progressClasses.title}>
@@ -114,12 +85,6 @@ export function GeneralTab({ proyecto }: GeneralTabProps) {
             </div>
           </div>
           <div className={styles.progressClasses.milestone}>
-            <div className={styles.progressClasses.milestoneValue}>0</div>
-            <div className={styles.progressClasses.milestoneLabel}>
-              Vendidas
-            </div>
-          </div>
-          <div className={styles.progressClasses.milestone}>
             <div className={styles.progressClasses.milestoneValue}>
               {totalViviendas}
             </div>
@@ -127,164 +92,196 @@ export function GeneralTab({ proyecto }: GeneralTabProps) {
               Disponibles
             </div>
           </div>
+          <div className={styles.progressClasses.milestone}>
+            <div className={styles.progressClasses.milestoneValue}>0</div>
+            <div className={styles.progressClasses.milestoneLabel}>
+              Asignadas
+            </div>
+          </div>
+          <div className={styles.progressClasses.milestone}>
+            <div className={styles.progressClasses.milestoneValue}>0</div>
+            <div className={styles.progressClasses.milestoneLabel}>
+              Vendidas
+            </div>
+          </div>
         </div>
       </motion.div>
-
-      {/* Stats Cards Mejorados */}
-      <div className={styles.statsCardClasses.container}>
-        {statsData.map((stat, index) => (
-          <motion.div
-            key={stat.label}
-            {...styles.animations.fadeInUp}
-            transition={{ delay: 0.2 + index * 0.1 }}
-            {...styles.animations.hoverLift}
-            className={styles.statsCardClasses.card}
-          >
-            {/* Gradiente de fondo en hover */}
-            <div
-              className={`${styles.statsCardClasses.gradientOverlay} bg-gradient-to-br ${stat.gradient}`}
-            ></div>
-
-            <div className={styles.statsCardClasses.header}>
-              <motion.div
-                className={`${styles.statsCardClasses.iconWrapper} bg-gradient-to-br ${stat.gradient}`}
-                {...styles.animations.hoverRotate}
-              >
-                <stat.icon className={styles.statsCardClasses.icon} />
-              </motion.div>
-              <div className={styles.statsCardClasses.content}>
-                <p className={styles.statsCardClasses.value}>
-                  {stat.value}
-                </p>
-                <p className={styles.statsCardClasses.label}>
-                  {stat.label}
-                </p>
-              </div>
-            </div>
-          </motion.div>
-        ))}
-      </div>
 
       {/* Cards de Información */}
       <div className='grid gap-3 lg:grid-cols-3'>
-      {/* Descripción */}
-      <motion.div
-        {...styles.animations.fadeInLeft}
-        className={styles.infoCardClasses.card}
-      >
-        <div className={styles.infoCardClasses.header}>
-          <div
-            className={`${styles.infoCardClasses.iconContainer} bg-gradient-to-br ${styles.gradients.descripcion}`}
-          >
-            <Building2 className={styles.infoCardClasses.icon} />
+        {/* Descripción */}
+        <motion.div
+          {...styles.animations.fadeInLeft}
+          className={styles.infoCardClasses.card}
+        >
+          <div className={styles.infoCardClasses.header}>
+            <div
+              className={`${styles.infoCardClasses.iconContainer} bg-gradient-to-br ${styles.gradients.descripcion}`}
+            >
+              <FileText className={styles.infoCardClasses.icon} />
+            </div>
+            <h3 className={styles.infoCardClasses.title}>
+              Descripción del Proyecto
+            </h3>
           </div>
-          <h3 className={styles.infoCardClasses.title}>
-            Descripción del Proyecto
-          </h3>
-        </div>
-        <div className={styles.infoCardClasses.content}>
-          <p>{proyecto.descripcion}</p>
-        </div>
-      </motion.div>
+          <div className={styles.infoCardClasses.content}>
+            <p>{proyecto.descripcion}</p>
+          </div>
+        </motion.div>
 
-      {/* Información de Contacto */}
-      <motion.div
-        {...styles.animations.fadeInLeft}
-        transition={{ delay: 0.1 }}
-        className={styles.infoCardClasses.card}
-      >
-        <div className={styles.infoCardClasses.header}>
-          <div
-            className={`${styles.infoCardClasses.iconContainer} bg-gradient-to-br ${styles.gradients.contacto}`}
-          >
-            <Users className={styles.infoCardClasses.icon} />
+        {/* Ubicación */}
+        <motion.div
+          {...styles.animations.fadeInLeft}
+          transition={{ delay: 0.1 }}
+          className={styles.infoCardClasses.card}
+        >
+          <div className={styles.infoCardClasses.header}>
+            <div
+              className={`${styles.infoCardClasses.iconContainer} bg-gradient-to-br ${styles.gradients.ubicacion}`}
+            >
+              <MapPin className={styles.infoCardClasses.icon} />
+            </div>
+            <h3 className={styles.infoCardClasses.title}>Ubicación</h3>
           </div>
-          <h3 className={styles.infoCardClasses.title}>
-            Información de Contacto
-          </h3>
-        </div>
-        <div className={styles.infoCardClasses.content}>
-          <div>
-            <p className={styles.infoCardClasses.label}>Responsable</p>
-            <p className={styles.infoCardClasses.value}>
-              {proyecto.responsable}
-            </p>
-          </div>
-          <div className={styles.infoCardClasses.row}>
-            <Phone className={styles.infoCardClasses.rowIcon} />
-            <span>{proyecto.telefono}</span>
-          </div>
-          <div className={styles.infoCardClasses.row}>
-            <Mail className={styles.infoCardClasses.rowIcon} />
-            <span>{proyecto.email}</span>
-          </div>
-        </div>
-      </motion.div>
-
-      {/* Ubicación */}
-      <motion.div
-        {...styles.animations.fadeInLeft}
-        transition={{ delay: 0.2 }}
-        className={styles.infoCardClasses.card}
-      >
-        <div className={styles.infoCardClasses.header}>
-          <div
-            className={`${styles.infoCardClasses.iconContainer} bg-gradient-to-br ${styles.gradients.ubicacion}`}
-          >
-            <MapPin className={styles.infoCardClasses.icon} />
-          </div>
-          <h3 className={styles.infoCardClasses.title}>Ubicación</h3>
-        </div>
-        <div className={styles.infoCardClasses.content}>
-          <div className={styles.infoCardClasses.row}>
-            <MapPin className={styles.infoCardClasses.rowIcon} />
-            <span>{proyecto.ubicacion}</span>
-          </div>
-          {proyecto.estado && (
+          <div className={styles.infoCardClasses.content}>
             <div className={styles.infoCardClasses.row}>
               <MapPin className={styles.infoCardClasses.rowIcon} />
-              <span>{proyecto.estado}</span>
+              <span>{proyecto.ubicacion}</span>
             </div>
-          )}
-        </div>
-      </motion.div>
-
-      {/* Cronograma */}
-      <motion.div
-        {...styles.animations.fadeInLeft}
-        transition={{ delay: 0.3 }}
-        className={`${styles.infoCardClasses.card} lg:col-span-3`}
-      >
-        <div className={styles.infoCardClasses.header}>
-          <div
-            className={`${styles.infoCardClasses.iconContainer} bg-gradient-to-br ${styles.gradients.cronograma}`}
-          >
-            <Calendar className={styles.infoCardClasses.icon} />
           </div>
-          <h3 className={styles.infoCardClasses.title}>Cronograma</h3>
-        </div>
-        <div className={styles.infoCardClasses.content}>
-          <div className='grid gap-4 sm:grid-cols-2'>
+        </motion.div>
+
+        {/* Cronograma */}
+        <motion.div
+          {...styles.animations.fadeInLeft}
+          transition={{ delay: 0.2 }}
+          className={styles.infoCardClasses.card}
+        >
+          <div className={styles.infoCardClasses.header}>
+            <div
+              className={`${styles.infoCardClasses.iconContainer} bg-gradient-to-br ${styles.gradients.cronograma}`}
+            >
+              <Calendar className={styles.infoCardClasses.icon} />
+            </div>
+            <h3 className={styles.infoCardClasses.title}>Cronograma</h3>
+          </div>
+          <div className={styles.infoCardClasses.content}>
             <div>
               <p className={styles.infoCardClasses.label}>Fecha de Inicio</p>
               <p className={styles.infoCardClasses.value}>
-                {formatDate(proyecto.fechaInicio)}
+                {proyecto.fechaInicio ? formatDate(proyecto.fechaInicio) : 'No especificado'}
               </p>
             </div>
-            {proyecto.fechaFinEstimada && (
-              <div>
-                <p className={styles.infoCardClasses.label}>
-                  Fecha de Finalización Estimada
-                </p>
-                <p className={styles.infoCardClasses.value}>
-                  {formatDate(proyecto.fechaFinEstimada)}
-                </p>
-              </div>
-            )}
+            <div className='mt-2'>
+              <p className={styles.infoCardClasses.label}>
+                Fecha de Finalización Estimada
+              </p>
+              <p className={styles.infoCardClasses.value}>
+                {proyecto.fechaFinEstimada ? formatDate(proyecto.fechaFinEstimada) : 'No especificado'}
+              </p>
+            </div>
           </div>
-        </div>
-      </motion.div>
-    </div>
+        </motion.div>
+      </div>
+
+      {/* Grid de Manzanas - Adaptativo según cantidad */}
+      <div className={cn(
+        'grid gap-3',
+        // 1 manzana: Centrada, max-width
+        proyecto.manzanas.length === 1 && 'grid-cols-1 max-w-md mx-auto',
+        // 2 manzanas: 2 columnas
+        proyecto.manzanas.length === 2 && 'grid-cols-1 sm:grid-cols-2',
+        // 3 manzanas: 3 columnas
+        proyecto.manzanas.length === 3 && 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3',
+        // 4 manzanas: 4 columnas en línea
+        proyecto.manzanas.length === 4 && 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4',
+        // 5 manzanas: 5 columnas en línea
+        proyecto.manzanas.length === 5 && 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5',
+        // 6 manzanas: 2 filas de 3 (3+3)
+        proyecto.manzanas.length === 6 && 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3',
+        // 7-8 manzanas: 2 filas de 4 (4+3 o 4+4)
+        (proyecto.manzanas.length === 7 || proyecto.manzanas.length === 8) && 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4',
+        // 9+ manzanas: Grid flexible de 3-5 columnas
+        proyecto.manzanas.length >= 9 && 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5'
+      )}>
+        {proyecto.manzanas.map((manzana, index) => {
+          // Calcular estadísticas de viviendas
+          const vendidas = manzana.viviendasVendidas || 0
+          const asignadas = 0 // TODO: Obtener de BD cuando esté disponible
+          const disponibles = manzana.totalViviendas - vendidas - asignadas
+          const porcentajeVendido = manzana.totalViviendas > 0
+            ? Math.round((vendidas / manzana.totalViviendas) * 100)
+            : 0
+
+          return (
+            <motion.div
+              key={manzana.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.1 }}
+              className='group relative overflow-hidden rounded-xl backdrop-blur-xl bg-white/80 dark:bg-gray-800/80 border border-gray-200/50 dark:border-gray-700/50 p-3 shadow-lg hover:shadow-2xl transition-all duration-300'
+            >
+              <div className='absolute inset-0 bg-gradient-to-br from-green-500/10 to-emerald-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300' />
+
+              <div className='relative z-10'>
+                {/* Header compacto */}
+                <div className='mb-2 flex items-center gap-2'>
+                  <div className='rounded-lg bg-gradient-to-br from-green-500 to-emerald-600 p-1.5 shadow-lg shadow-green-500/50'>
+                    <Home className='h-3.5 w-3.5 text-white' />
+                  </div>
+                  <h3 className='text-sm font-semibold text-gray-900 dark:text-white flex-1 truncate'>
+                    Manzana {manzana.nombre}
+                  </h3>
+                </div>
+
+                {/* Estadísticas de Viviendas - Compactas */}
+                <div className='space-y-1.5 text-xs'>
+                  <div className='flex justify-between items-center'>
+                    <span className='text-gray-600 dark:text-gray-400'>Total</span>
+                    <span className='font-bold text-gray-900 dark:text-white'>
+                      {manzana.totalViviendas}
+                    </span>
+                  </div>
+                  <div className='flex justify-between items-center'>
+                    <span className='text-gray-600 dark:text-gray-400'>Disponibles</span>
+                    <span className='font-medium text-blue-600 dark:text-blue-400'>
+                      {disponibles}
+                    </span>
+                  </div>
+                  <div className='flex justify-between items-center'>
+                    <span className='text-gray-600 dark:text-gray-400'>Asignadas</span>
+                    <span className='font-medium text-orange-600 dark:text-orange-400'>
+                      {asignadas}
+                    </span>
+                  </div>
+                  <div className='flex justify-between items-center'>
+                    <span className='text-gray-600 dark:text-gray-400'>Vendidas</span>
+                    <span className='font-medium text-green-600 dark:text-green-400'>
+                      {vendidas}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Barra de progreso de ventas - Compacta */}
+                <div className='mt-2'>
+                  <div className='mb-1 flex justify-between text-[10px] text-gray-600 dark:text-gray-400'>
+                    <span>Progreso</span>
+                    <span className='font-semibold'>{porcentajeVendido}%</span>
+                  </div>
+                  <div className='h-1.5 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700'>
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${porcentajeVendido}%` }}
+                      transition={{ duration: 1, ease: 'easeOut', delay: index * 0.1 + 0.3 }}
+                      className='h-full bg-gradient-to-r from-green-500 to-emerald-600 transition-all duration-300'
+                    />
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          )
+        })}
+      </div>
     </motion.div>
   )
 }

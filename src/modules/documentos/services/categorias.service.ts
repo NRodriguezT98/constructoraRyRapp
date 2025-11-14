@@ -82,14 +82,19 @@ export class CategoriasService {
         icono: categoria.icono,
         orden: categoria.orden,
         es_global: categoria.es_global ?? false,
-        modulos_permitidos: categoria.es_global
-          ? []
-          : categoria.modulos_permitidos ?? ['proyectos'],
+        // ✅ FIX: es_global NO vacía modulos_permitidos
+        // es_global = true → visible para todos los usuarios (admin, contadora, ayudante)
+        // modulos_permitidos → define en qué módulos aparece (proyectos, clientes, viviendas)
+        modulos_permitidos: categoria.modulos_permitidos ?? ['proyectos'],
       })
       .select()
       .single()
 
-    if (error) throw error
+    if (error) {
+      console.error('❌ Error al crear categoría:', error)
+      throw error
+    }
+
     return data as CategoriaDocumento
   }
 
@@ -113,10 +118,10 @@ export class CategoriasService {
     const esGlobal = updates.esGlobal ?? updates.es_global
     if (esGlobal !== undefined) {
       updateData.es_global = esGlobal
-      // Si es global, limpiar módulos
-      updateData.modulos_permitidos = esGlobal ? [] : (updates.modulosPermitidos ?? updates.modulos_permitidos ?? ['proyectos'])
-    } else if (updates.modulosPermitidos !== undefined || updates.modulos_permitidos !== undefined) {
-      // Solo actualizar módulos si no es global
+    }
+
+    // Manejar modulos_permitidos independientemente de es_global
+    if (updates.modulosPermitidos !== undefined || updates.modulos_permitidos !== undefined) {
       updateData.modulos_permitidos = updates.modulosPermitidos ?? updates.modulos_permitidos
     }
 
@@ -135,9 +140,63 @@ export class CategoriasService {
   }
 
   /**
-   * Eliminar una categoría
+   * Eliminar una categoría con validaciones
+   * REQUIERE: Usuario con rol 'Administrador'
    */
   static async eliminarCategoria(categoriaId: string): Promise<void> {
+    // ✅ VALIDACIÓN 0: Verificar que el usuario es Administrador
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) {
+      throw new Error('Usuario no autenticado')
+    }
+
+    const { data: usuario, error: errorUsuario } = await supabase
+      .from('usuarios')
+      .select('rol')
+      .eq('id', user.id)
+      .single()
+
+    if (errorUsuario || !usuario) {
+      throw new Error('No se pudo verificar el rol del usuario')
+    }
+
+    if (usuario.rol !== 'Administrador') {
+      throw new Error('Solo los administradores pueden eliminar categorías')
+    }
+
+    // ✅ VALIDACIÓN 1: Verificar si tiene documentos asociados en PROYECTOS
+    const { count: countProyectos } = await supabase
+      .from('documentos_proyecto')
+      .select('id', { count: 'exact', head: true })
+      .eq('categoria_id', categoriaId)
+
+    // ✅ VALIDACIÓN 2: Verificar si tiene documentos asociados en CLIENTES
+    const { count: countClientes } = await supabase
+      .from('documentos_cliente')
+      .select('id', { count: 'exact', head: true })
+      .eq('categoria_id', categoriaId)
+
+    // ✅ VALIDACIÓN 3: Verificar si tiene documentos asociados en VIVIENDAS
+    const { count: countViviendas } = await supabase
+      .from('documentos_vivienda')
+      .select('id', { count: 'exact', head: true })
+      .eq('categoria_id', categoriaId)
+
+    const totalDocumentos = (countProyectos || 0) + (countClientes || 0) + (countViviendas || 0)
+
+    if (totalDocumentos > 0) {
+      const detalles = []
+      if (countProyectos) detalles.push(`${countProyectos} en Proyectos`)
+      if (countClientes) detalles.push(`${countClientes} en Clientes`)
+      if (countViviendas) detalles.push(`${countViviendas} en Viviendas`)
+
+      throw new Error(
+        `No se puede eliminar esta categoría porque tiene ${totalDocumentos} documento(s) asociado(s): ${detalles.join(', ')}`
+      )
+    }
+
+    // ✅ Si pasa todas las validaciones, eliminar
     const { error } = await supabase
       .from('categorias_documento')
       .delete()
