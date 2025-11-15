@@ -19,8 +19,6 @@ type PermisoRolUpdate = Database['public']['Tables']['permisos_rol']['Update']
  * Obtener todos los permisos de un rol específico
  */
 export async function obtenerPermisosPorRol(rol: string): Promise<PermisoRol[]> {
-  console.log('🔐 [SERVICE] Obteniendo permisos para rol:', rol)
-
   const { data, error } = await supabase
     .from('permisos_rol')
     .select('*')
@@ -34,7 +32,6 @@ export async function obtenerPermisosPorRol(rol: string): Promise<PermisoRol[]> 
     throw new Error(`Error al obtener permisos: ${error.message}`)
   }
 
-  console.log(`✅ [SERVICE] ${data?.length || 0} permisos obtenidos`)
   return data || []
 }
 

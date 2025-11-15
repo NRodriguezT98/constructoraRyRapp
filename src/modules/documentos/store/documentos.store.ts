@@ -26,6 +26,9 @@ interface DocumentosState {
   busqueda: string
   soloImportantes: boolean
 
+  // Vista actual (Activos/Archivados)
+  vistaActual: 'activos' | 'archivados'
+
   // UI Modales
   modalSubirAbierto: boolean
   modalViewerAbierto: boolean
@@ -45,6 +48,7 @@ interface DocumentosState {
   setBusqueda: (busqueda: string) => void
   toggleSoloImportantes: () => void
   limpiarFiltros: () => void
+  setVistaActual: (vista: 'activos' | 'archivados') => void
 
   // ============================================
   // ACCIONES - UI
@@ -65,6 +69,7 @@ export const useDocumentosStore = create<DocumentosState>((set) => ({
   categoriaFiltro: null,
   busqueda: '',
   soloImportantes: false,
+  vistaActual: 'activos',
 
   modalSubirAbierto: false,
   modalViewerAbierto: false,
@@ -95,6 +100,10 @@ export const useDocumentosStore = create<DocumentosState>((set) => ({
       busqueda: '',
       soloImportantes: false,
     })
+  },
+
+  setVistaActual: (vista: 'activos' | 'archivados') => {
+    set({ vistaActual: vista })
   },
 
   // ============================================

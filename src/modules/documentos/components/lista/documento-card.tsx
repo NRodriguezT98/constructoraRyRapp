@@ -79,6 +79,7 @@ export function DocumentoCard({
   // 🎯 TODA la lógica en el hook
   const {
     esAdmin,
+    puedeEliminar,
     menuAbierto,
     menuRef,
     toggleMenu,
@@ -256,18 +257,23 @@ export function DocumentoCard({
 
                 {/* Botón Ver Historial - si tiene versiones */}
                 {tieneVersiones && (
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.preventDefault()
-                      e.stopPropagation()
-                      abrirModalVersiones()
-                    }}
-                    className='flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-purple-600 transition-colors hover:bg-purple-50 dark:text-purple-400 dark:hover:bg-purple-900/20'
-                  >
-                    <History size={16} />
-                    Ver Historial (v{documento.version})
-                  </button>
+                  <>
+                    {/* Separador entre Editar y Ver Historial */}
+                    <div className='my-1 border-t border-gray-200 dark:border-gray-700' />
+
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        abrirModalVersiones()
+                      }}
+                      className='flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-purple-600 transition-colors hover:bg-purple-50 dark:text-purple-400 dark:hover:bg-purple-900/20'
+                    >
+                      <History size={16} />
+                      Ver Historial (v{documento.version})
+                    </button>
+                  </>
                 )}
 
                 {/* Separador - Sección de versionado */}
@@ -329,10 +335,12 @@ export function DocumentoCard({
                 </button>
 
                 {/* Separador antes de eliminar */}
-                <div className='my-1 border-t border-gray-200 dark:border-gray-700' />
+                {!estaProtegido && puedeEliminar && (
+                  <div className='my-1 border-t border-gray-200 dark:border-gray-700' />
+                )}
 
-                {/* Botón eliminar - oculto si el documento está protegido */}
-                {!estaProtegido && (
+                {/* Botón eliminar - oculto si no tiene permiso o está protegido */}
+                {!estaProtegido && puedeEliminar && (
                   <button
                     type="button"
                     onClick={(e) => {

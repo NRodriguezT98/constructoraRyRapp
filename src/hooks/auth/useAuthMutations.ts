@@ -55,6 +55,23 @@ export function useLoginMutation() {
 
       if (perfilError) throw perfilError
 
+      // ✅ 3. Sincronizar permisos al JWT (async, no bloquea login)
+      // Llamar a API route que tiene acceso a SERVICE_ROLE_KEY
+      try {
+        await fetch('/api/auth/sync-permisos', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId: authData.user.id,
+            rol: perfilData.rol,
+          }),
+        })
+        console.log('✅ Permisos sincronizados al JWT')
+      } catch (error) {
+        // No bloquear login si falla la sincronización
+        console.warn('⚠️ Error sincronizando permisos (no crítico):', error)
+      }
+
       return {
         session: authData.session,
         user: authData.user,

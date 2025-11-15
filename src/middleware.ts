@@ -27,22 +27,27 @@ import { createMiddlewareClient } from '@/lib/supabase/middleware'
 const PUBLIC_ROUTES = ['/login', '/reset-password', '/update-password']
 
 /**
- * Mapeo de rutas a roles permitidos
+ * Mapeo de rutas a módulo+acción de permisos
+ * El middleware consultará permisos_rol en tiempo real
  * Si una ruta no está aquí, es accesible por todos los autenticados
  */
-const ROUTE_PERMISSIONS: Record<string, string[]> = {
+const ROUTE_TO_PERMISSION: Record<string, { modulo: string; accion: string }> = {
   // Módulos principales
-  '/viviendas': ['Administrador', 'Gerente', 'Vendedor'],
-  '/clientes': ['Administrador', 'Gerente', 'Vendedor'],
-  '/proyectos': ['Administrador', 'Gerente', 'Vendedor'],
+  '/viviendas': { modulo: 'viviendas', accion: 'ver' },
+  '/clientes': { modulo: 'clientes', accion: 'ver' },
+  '/proyectos': { modulo: 'proyectos', accion: 'ver' },
+  '/negociaciones': { modulo: 'negociaciones', accion: 'ver' },
+  '/documentos': { modulo: 'documentos', accion: 'ver' },
 
   // Módulos restringidos
-  '/abonos': ['Administrador', 'Gerente'],
-  '/renuncias': ['Administrador', 'Gerente'],
-  '/auditorias': ['Administrador'],
+  '/abonos': { modulo: 'abonos', accion: 'ver' },
+  '/renuncias': { modulo: 'renuncias', accion: 'ver' },
+  '/auditorias': { modulo: 'auditorias', accion: 'ver' },
 
   // Administración
-  '/admin': ['Administrador'],
+  '/admin': { modulo: 'administracion', accion: 'ver' },
+  '/usuarios': { modulo: 'usuarios', accion: 'ver' },
+  '/reportes': { modulo: 'reportes', accion: 'ver' },
 }
 
 // ============================================
@@ -65,12 +70,39 @@ function isStaticAsset(pathname: string): boolean {
   )
 }
 
-/** Verificar si el usuario tiene acceso a una ruta */
-function canAccessRoute(pathname: string, userRole: string): boolean {
+/** Verificar si el usuario tiene acceso a una ruta basado en cache de permisos en JWT */
+function canAccessRoute(
+  pathname: string,
+  userRole: string,
+  permisosCache: string[]
+): boolean {
+  // Administrador siempre tiene acceso (bypass)
+  if (userRole === 'Administrador') {
+    return true
+  }
+
   // Buscar permiso por coincidencia de prefijo
-  for (const [route, allowedRoles] of Object.entries(ROUTE_PERMISSIONS)) {
+  for (const [route, permission] of Object.entries(ROUTE_TO_PERMISSION)) {
     if (pathname === route || pathname.startsWith(`${route}/`)) {
-      return allowedRoles.includes(userRole)
+      // ✅ OPTIMIZACIÓN: Leer del cache del JWT (0ms, sin query)
+      const permisoRequerido = `${permission.modulo}.${permission.accion}`
+
+      // Wildcard para admin
+      if (permisosCache.includes('*.*')) {
+        return true
+      }
+
+      // Verificar permiso específico en cache
+      const tienePermiso = permisosCache.includes(permisoRequerido)
+
+      if (!tienePermiso) {
+        console.log(`❌ [MIDDLEWARE] Permiso denegado: ${permisoRequerido}`, {
+          rol: userRole,
+          cache: permisosCache.slice(0, 5), // Primeros 5 para debug
+        })
+      }
+
+      return tienePermiso
     }
   }
 
@@ -145,12 +177,13 @@ export async function middleware(req: NextRequest) {
     }
 
     // ============================================
-    // 6. OBTENER ROL DEL USUARIO (EDGE RUNTIME COMPATIBLE)
+    // 6. OBTENER ROL Y PERMISOS DEL JWT (EDGE RUNTIME COMPATIBLE)
     // ============================================
 
     let rol = 'Vendedor'
     let nombres = ''
     let email = user.email || ''
+    let permisosCache: string[] = [] // ✅ Cache de permisos desde JWT
 
     // Obtener sesión para acceder al JWT
     const {
@@ -181,17 +214,21 @@ export async function middleware(req: NextRequest) {
           rol = payload.user_rol || 'Vendedor'
           nombres = payload.user_nombres || ''
           email = payload.user_email || user.email || ''
+
+          // ✅ OPTIMIZACIÓN: Leer permisos del cache en user_metadata
+          permisosCache = payload.user_metadata?.permisos_cache || []
         }
       } catch (error) {
         // Fallback a valores por defecto si falla decodificación
+        console.error('❌ [MIDDLEWARE] Error decodificando JWT:', error)
       }
     }
 
     // ============================================
-    // 7. VERIFICAR PERMISOS PARA LA RUTA
+    // 7. VERIFICAR PERMISOS PARA LA RUTA (DESDE JWT CACHE - 0ms)
     // ============================================
 
-    const hasAccess = canAccessRoute(pathname, rol)
+    const hasAccess = canAccessRoute(pathname, rol, permisosCache)
 
     if (!hasAccess) {
       // Sin permiso → Redirigir a dashboard

@@ -32,8 +32,6 @@ import type { Accion, Modulo, Rol } from '../types'
  * Hook principal para gestión de permisos con React Query
  */
 export function usePermisosQuery() {
-  console.log('🔐 [HOOK NUEVO] usePermisosQuery ejecutado')
-
   const { perfil, loading: authLoading } = useAuth()
   const queryClient = useQueryClient()
   const rol = perfil?.rol as Rol | undefined
@@ -199,13 +197,31 @@ export function useTodosLosPermisosQuery() {
 
 /**
  * Mutation: Actualizar un permiso específico
+ * ✅ Invalida sesiones de usuarios afectados
  */
 export function useActualizarPermisoMutation() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ id, permitido }: { id: string; permitido: boolean }) =>
-      actualizarPermiso(id, permitido),
+    mutationFn: async ({ id, permitido, rol }: { id: string; permitido: boolean; rol?: string }) => {
+      const resultado = await actualizarPermiso(id, permitido)
+
+      // ✅ Invalidar sesiones si se proporcionó el rol
+      if (rol) {
+        try {
+          await fetch('/api/auth/invalidar-sesiones', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ rol }),
+          })
+          console.log(`✅ [MUTATION] Sesiones invalidadas para rol: ${rol}`)
+        } catch (error) {
+          console.warn('⚠️ [MUTATION] Error invalidando sesiones (no crítico):', error)
+        }
+      }
+
+      return resultado
+    },
 
     onSuccess: () => {
       // Invalidar TODOS los queries de permisos
@@ -222,14 +238,37 @@ export function useActualizarPermisoMutation() {
 
 /**
  * Mutation: Actualizar múltiples permisos en lote
+ * ✅ Invalida sesiones de usuarios afectados
  */
 export function useActualizarPermisosEnLoteMutation() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (
+    mutationFn: async ({
+      actualizaciones,
+      rol,
+    }: {
       actualizaciones: Array<{ id: string; permitido: boolean }>
-    ) => actualizarPermisosEnLote(actualizaciones),
+      rol?: string
+    }) => {
+      const resultado = await actualizarPermisosEnLote(actualizaciones)
+
+      // ✅ Invalidar sesiones si se proporcionó el rol
+      if (rol) {
+        try {
+          await fetch('/api/auth/invalidar-sesiones', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ rol }),
+          })
+          console.log(`✅ [MUTATION] Sesiones invalidadas para rol: ${rol}`)
+        } catch (error) {
+          console.warn('⚠️ [MUTATION] Error invalidando sesiones (no crítico):', error)
+        }
+      }
+
+      return resultado
+    },
 
     onSuccess: () => {
       // Invalidar TODOS los queries de permisos

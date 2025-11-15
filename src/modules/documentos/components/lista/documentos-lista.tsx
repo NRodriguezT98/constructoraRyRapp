@@ -1,13 +1,15 @@
 'use client'
 
 import { AnimatePresence, motion } from 'framer-motion'
-import { FileX } from 'lucide-react'
+import { Archive, FileText, FileX } from 'lucide-react'
 
 import { type ModuleName } from '@/shared/config/module-themes'
 import { EmptyState } from '../../../../shared/components/ui/EmptyState'
 import { LoadingSpinner } from '../../../../shared/components/ui/Loading'
 import { DocumentoProyecto } from '../../../../types/documento.types'
 import { useDocumentosLista } from '../../hooks'
+import { useDocumentosStore } from '../../store/documentos.store'
+import { DocumentosArchivadosLista } from '../archivados'
 import { DocumentoViewer } from '../viewer/documento-viewer'
 
 import { DocumentoCard } from './documento-card'
@@ -26,6 +28,9 @@ export function DocumentosLista({
   onUploadClick,
   moduleName = 'proyectos', // 🎨 Default a proyectos
 }: DocumentosListaProps) {
+  const vistaActual = useDocumentosStore((state) => state.vistaActual)
+  const setVistaActual = useDocumentosStore((state) => state.setVistaActual)
+
   const {
     vista,
     setVista,
@@ -61,13 +66,61 @@ export function DocumentosLista({
 
   return (
     <div className='space-y-6'>
-      {/* Filtros */}
-      <DocumentosFiltros
-        documentos={documentosFiltrados}
-        categorias={categorias}
-        onChangeVista={setVista}
-        moduleName={moduleName}
-      />
+      {/* 📑 TABS: Activos / Archivados */}
+      <div className="flex items-center gap-2 border-b border-gray-200 dark:border-gray-700">
+        <button
+          onClick={() => setVistaActual('activos')}
+          className={`relative px-4 py-3 font-medium text-sm transition-all duration-200 ${
+            vistaActual === 'activos'
+              ? 'text-gray-900 dark:text-white'
+              : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+          }`}
+        >
+          <div className="flex items-center gap-2">
+            <FileText className="w-4 h-4" />
+            <span>Activos</span>
+          </div>
+          {vistaActual === 'activos' && (
+            <motion.div
+              layoutId="activeTab"
+              className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-green-500 to-emerald-500"
+            />
+          )}
+        </button>
+
+        <button
+          onClick={() => setVistaActual('archivados')}
+          className={`relative px-4 py-3 font-medium text-sm transition-all duration-200 ${
+            vistaActual === 'archivados'
+              ? 'text-gray-900 dark:text-white'
+              : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+          }`}
+        >
+          <div className="flex items-center gap-2">
+            <Archive className="w-4 h-4" />
+            <span>Archivados</span>
+          </div>
+          {vistaActual === 'archivados' && (
+            <motion.div
+              layoutId="activeTab"
+              className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-amber-500 to-orange-500"
+            />
+          )}
+        </button>
+      </div>
+
+      {/* Contenido según tab activa */}
+      {vistaActual === 'archivados' ? (
+        <DocumentosArchivadosLista proyectoId={proyectoId} moduleName={moduleName} />
+      ) : (
+        <>
+          {/* Filtros (solo en vista activos) */}
+          <DocumentosFiltros
+            documentos={documentosFiltrados}
+            categorias={categorias}
+            onChangeVista={setVista}
+            moduleName={moduleName}
+          />
 
       {/* Lista de documentos */}
       {documentosFiltrados.length === 0 ? (
@@ -173,6 +226,8 @@ export function DocumentosLista({
         urlPreview={urlPreview}
         moduleName={moduleName}
       />
+        </>
+      )}
     </div>
   )
 }

@@ -709,6 +709,86 @@ export class DocumentosService {
     return data as unknown as DocumentoProyecto
   }
 
+  /**
+   * ✅ ARCHIVAR documento COMPLETO (todas las versiones)
+   * Archiva el documento padre y TODAS sus versiones
+   * Para auditoría: mantener integridad del historial completo
+   */
+  static async archivarDocumento(documentoId: string): Promise<void> {
+    // 1. Obtener información del documento
+    const { data: documento, error: getError } = await supabase
+      .from('documentos_proyecto')
+      .select('id, documento_padre_id')
+      .eq('id', documentoId)
+      .single()
+
+    if (getError) throw getError
+    if (!documento) throw new Error('Documento no encontrado')
+
+    // 2. Determinar el ID raíz (documento padre)
+    const documentoPadreId = documento.documento_padre_id || documentoId
+
+    // 3. Archivar TODAS las versiones (padre + versiones)
+    const { error } = await supabase
+      .from('documentos_proyecto')
+      .update({ estado: 'archivado' })
+      .or(`id.eq.${documentoPadreId},documento_padre_id.eq.${documentoPadreId}`)
+
+    if (error) throw error
+  }
+
+  /**
+   * ✅ RESTAURAR documento COMPLETO (todas las versiones)
+   * Restaura el documento padre y TODAS sus versiones
+   */
+  static async restaurarDocumento(documentoId: string): Promise<void> {
+    // 1. Obtener información del documento
+    const { data: documento, error: getError } = await supabase
+      .from('documentos_proyecto')
+      .select('id, documento_padre_id')
+      .eq('id', documentoId)
+      .single()
+
+    if (getError) throw getError
+    if (!documento) throw new Error('Documento no encontrado')
+
+    // 2. Determinar el ID raíz (documento padre)
+    const documentoPadreId = documento.documento_padre_id || documentoId
+
+    // 3. Restaurar TODAS las versiones (padre + versiones)
+    const { error } = await supabase
+      .from('documentos_proyecto')
+      .update({ estado: 'activo' })
+      .or(`id.eq.${documentoPadreId},documento_padre_id.eq.${documentoPadreId}`)
+
+    if (error) throw error
+  }
+
+  /**
+   * ✅ OBTENER documentos archivados de un proyecto
+   */
+  static async obtenerDocumentosArchivados(
+    proyectoId: string
+  ): Promise<DocumentoProyecto[]> {
+    const { data, error } = await supabase
+      .from('documentos_proyecto')
+      .select(`
+        *,
+        usuario:usuarios!fk_documentos_proyecto_subido_por (
+          nombres,
+          apellidos,
+          email
+        )
+      `)
+      .eq('proyecto_id', proyectoId)
+      .eq('estado', 'archivado')
+      .eq('es_version_actual', true)  // ✅ SOLO mostrar versión actual
+      .order('fecha_creacion', { ascending: false })
+
+    if (error) throw error
+    return (data || []) as unknown as DocumentoProyecto[]
+  }
+
 
 
   /**
@@ -767,31 +847,6 @@ export class DocumentosService {
     if (error) throw error
     return data as unknown as DocumentoProyecto
   }
-
-  /**
-   * Archivar documento (soft delete)
-   */
-  static async archivarDocumento(documentoId: string): Promise<void> {
-    const { error } = await supabase
-      .from('documentos_proyecto')
-      .update({ estado: 'archivado' })
-      .eq('id', documentoId)
-
-    if (error) throw error
-  }
-
-  /**
-   * Restaurar documento archivado
-   */
-  static async restaurarDocumento(documentoId: string): Promise<void> {
-    const { error } = await supabase
-      .from('documentos_proyecto')
-      .update({ estado: 'activo' })
-      .eq('id', documentoId)
-
-    if (error) throw error
-  }
-
   // ============================================
   // 🗑️ PAPELERA DE DOCUMENTOS
   // ============================================

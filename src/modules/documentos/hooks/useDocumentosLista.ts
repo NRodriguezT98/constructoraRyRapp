@@ -23,6 +23,7 @@ import { useDocumentosStore } from '../store/documentos.store'
 import { DocumentoProyecto } from '../types'
 
 import {
+    useArchivarDocumentoMutation,
     useCategoriasQuery,
     useDocumentosProyectoQuery,
     useEliminarDocumentoMutation,
@@ -55,6 +56,7 @@ export function useDocumentosLista({
   // ✅ REACT QUERY: Mutations
   const eliminarMutation = useEliminarDocumentoMutation(proyectoId)
   const toggleImportanteMutation = useToggleImportanteMutation(proyectoId)
+  const archivarMutation = useArchivarDocumentoMutation(proyectoId)
 
   // ✅ ZUSTAND: Solo estado UI (filtros, búsqueda)
   const {
@@ -185,23 +187,25 @@ export function useDocumentosLista({
 
   const handleArchive = useCallback(
     async (documento: DocumentoProyecto) => {
+      // Contar versiones para mensaje informativo
+      const { total } = await DocumentosService.contarVersionesActivas(documento.id)
+
+      const mensaje = total > 1
+        ? `¿Estás seguro de que deseas archivar "${documento.titulo}"?\n\n⚠️ Se archivarán TODAS las ${total} versiones de este documento.\n\n✅ Podrás restaurarlo completo desde la pestaña "Archivados".`
+        : `¿Estás seguro de que deseas archivar "${documento.titulo}"?\n\n✅ Podrás restaurarlo desde la pestaña "Archivados".`
+
       const confirmed = await confirm({
-        title: 'Archivar documento',
-        message: `¿Estás seguro de que deseas archivar "${documento.titulo}"?`,
+        title: 'Archivar documento completo',
+        message: mensaje,
         confirmText: 'Archivar',
         variant: 'warning'
       })
 
       if (confirmed) {
-        try {
-          await DocumentosService.archivarDocumento(documento.id)
-          await refrescar()
-        } catch (error) {
-          console.error('Error al archivar documento:', error)
-        }
+        await archivarMutation.mutateAsync(documento.id)
       }
     },
-    [refrescar, confirm]
+    [archivarMutation, confirm]
   )
 
   const handleDelete = useCallback(

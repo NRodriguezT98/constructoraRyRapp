@@ -389,3 +389,78 @@ export function useEliminarCategoriaMutation(userId: string) {
     },
   })
 }
+
+// ============================================
+// 10. HOOK: useDocumentosArchivadosQuery
+// ============================================
+export function useDocumentosArchivadosQuery(proyectoId: string) {
+  const {
+    data: documentos = [],
+    isLoading: cargando,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: [...documentosKeys.list(proyectoId), 'archivados'],
+    queryFn: () => DocumentosService.obtenerDocumentosArchivados(proyectoId),
+    enabled: !!proyectoId,
+    staleTime: 5 * 60 * 1000, // 5 minutos
+    gcTime: 10 * 60 * 1000, // 10 minutos
+  })
+
+  return {
+    documentos,
+    cargando,
+    error: error as Error | null,
+    refrescar: refetch,
+  }
+}
+
+// ============================================
+// 11. HOOK: useArchivarDocumentoMutation
+// ============================================
+export function useArchivarDocumentoMutation(proyectoId: string) {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (documentoId: string) => DocumentosService.archivarDocumento(documentoId),
+    onSuccess: async () => {
+      // Invalidar ambas queries: activos y archivados
+      await Promise.all([
+        queryClient.refetchQueries({ queryKey: documentosKeys.list(proyectoId) }),
+        queryClient.refetchQueries({ queryKey: [...documentosKeys.list(proyectoId), 'archivados'] }),
+      ])
+
+      toast.success('📦 Documento archivado correctamente')
+    },
+    onError: (error: Error) => {
+      toast.error('Error al archivar documento', {
+        description: error.message,
+      })
+    },
+  })
+}
+
+// ============================================
+// 12. HOOK: useRestaurarDocumentoMutation
+// ============================================
+export function useRestaurarDocumentoMutation(proyectoId: string) {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (documentoId: string) => DocumentosService.restaurarDocumento(documentoId),
+    onSuccess: async () => {
+      // Invalidar ambas queries: activos y archivados
+      await Promise.all([
+        queryClient.refetchQueries({ queryKey: documentosKeys.list(proyectoId) }),
+        queryClient.refetchQueries({ queryKey: [...documentosKeys.list(proyectoId), 'archivados'] }),
+      ])
+
+      toast.success('✅ Documento restaurado correctamente')
+    },
+    onError: (error: Error) => {
+      toast.error('Error al restaurar documento', {
+        description: error.message,
+      })
+    },
+  })
+}

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { useAuth } from '@/contexts/auth-context'
+import { usePermisosQuery } from '@/modules/usuarios/hooks/usePermisosQuery'
 import type { DocumentoProyecto } from '@/types/documento.types'
 import { useClickOutside } from '../../../shared/hooks'
 import { DocumentosClienteService } from '../../clientes/documentos/services/documentos-cliente.service'
@@ -11,9 +12,11 @@ interface UseDocumentoCardProps {
 }
 
 export function useDocumentoCard({ documento, esDocumentoProyecto = true }: UseDocumentoCardProps) {
-  // 🔐 Auth
+  // 🔐 Auth y Permisos
   const { perfil } = useAuth()
+  const { puede } = usePermisosQuery()
   const esAdmin = useMemo(() => perfil?.rol === 'Administrador', [perfil?.rol])
+  const puedeEliminar = useMemo(() => puede('documentos', 'eliminar'), [puede])
 
   // 📋 Estados de UI
   const [menuAbierto, setMenuAbierto] = useState(false)
@@ -172,6 +175,7 @@ export function useDocumentoCard({ documento, esDocumentoProyecto = true }: UseD
   return {
     // 🔐 Auth
     esAdmin,
+    puedeEliminar,
 
     // 📋 Estados de UI - Menú
     menuAbierto,
