@@ -52,6 +52,236 @@ const hoy = getTodayDateString()  // → "2025-10-26"
 
 ---
 
+### 🚨 REGLA CRÍTICA #-5.5: SISTEMA MODULAR DE AUDITORÍAS (OBLIGATORIO)
+
+**⚠️ AL implementar auditoría para CUALQUIER módulo o acción:**
+
+#### 📐 Arquitectura del Sistema (Factory Pattern + Componentes Reutilizables)
+
+```
+src/modules/auditorias/components/
+├── sections/                    # ✅ Componentes reutilizables
+│   ├── AuditoriaHeader.tsx
+│   ├── AuditoriaEstado.tsx
+│   └── AuditoriaMetadata.tsx
+├── renderers/                   # ✅ Renderers específicos
+│   ├── proyectos/
+│   │   ├── CreacionProyectoRenderer.tsx
+│   │   ├── ActualizacionProyectoRenderer.tsx
+│   │   └── index.ts
+│   ├── [modulo]/               # ← CREAR AQUÍ nuevos renderers
+│   ├── shared/
+│   │   └── RendererGenerico.tsx
+│   └── index.ts                # ← REGISTRAR en factory
+└── DetalleAuditoriaModal.tsx
+```
+
+---
+
+#### ✅ PROCESO PARA AGREGAR AUDITORÍA (15 min - 3 pasos)
+
+**Paso 1: Crear Renderer**
+```bash
+# Ubicación
+src/modules/auditorias/components/renderers/[modulo]/[Accion][Modulo]Renderer.tsx
+```
+
+**Plantilla OBLIGATORIA**:
+```typescript
+'use client'
+
+import { Building2, MapPin, FileText, TrendingUp } from 'lucide-react'
+
+interface [Accion][Modulo]RendererProps {
+  metadata: any
+  datosNuevos?: any
+  datosAnteriores?: any
+}
+
+export function [Accion][Modulo]Renderer({ metadata, datosNuevos }: [Accion][Modulo]RendererProps) {
+  const datos = {
+    campo1: metadata.campo1 || datosNuevos?.campo1,
+    campo2: metadata.campo2 || datosNuevos?.campo2,
+  }
+
+  return (
+    <div className="space-y-3 px-4 py-3">
+      <div className="space-y-2">
+        {/* Campo 1 - SIEMPRE con label claro */}
+        <div className="flex items-start gap-2 py-1.5 border-b border-gray-200 dark:border-gray-700">
+          <Building2 className="w-4 h-4 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-semibold text-gray-500 dark:text-gray-400">Nombre del Campo:</p>
+            <p className="text-sm font-bold text-gray-900 dark:text-white">{datos.campo1}</p>
+          </div>
+        </div>
+
+        {/* Campo condicional - Usar ternario con null */}
+        {datos.campo2 ? (
+          <div className="flex items-start gap-2 py-1.5 border-b border-gray-200 dark:border-gray-700">
+            <MapPin className="w-4 h-4 text-red-600 dark:text-red-400 mt-0.5 flex-shrink-0" />
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-semibold text-gray-500 dark:text-gray-400">Ubicación:</p>
+              <p className="text-sm font-medium text-gray-900 dark:text-white">{datos.campo2}</p>
+            </div>
+          </div>
+        ) : null}
+      </div>
+    </div>
+  )
+}
+```
+
+**Paso 2: Exportar**
+```typescript
+// renderers/[modulo]/index.ts
+export { Creacion[Modulo]Renderer } from './Creacion[Modulo]Renderer'
+```
+
+**Paso 3: Registrar en Factory**
+```typescript
+// renderers/index.ts
+import { Creacion[Modulo]Renderer } from './[modulo]'
+
+const RENDERERS_MAP = {
+  [modulo]: {
+    CREATE: Creacion[Modulo]Renderer,
+  },
+}
+```
+
+---
+
+#### 🎨 REGLAS DE DISEÑO UX (OBLIGATORIAS)
+
+**Labels Claros (como formulario)**:
+```typescript
+// ✅ CORRECTO
+<p className="text-xs font-semibold text-gray-500 dark:text-gray-400">Nombre del Proyecto:</p>
+<p className="text-sm font-bold text-gray-900 dark:text-white">{proyecto.nombre}</p>
+
+// ❌ INCORRECTO - Sin label
+<p>{proyecto.nombre}</p>
+```
+
+**Diseño Compacto Vertical**:
+- ✅ Padding: `px-4 py-3`
+- ✅ Spacing: `space-y-2`
+- ✅ Iconos: `w-4 h-4` a la izquierda
+- ✅ Sin scroll innecesario
+
+**Renderizado Condicional**:
+```typescript
+// ✅ CORRECTO - Ternario con null
+{campo ? <div>...</div> : null}
+
+// ❌ INCORRECTO - && puede mostrar 0 o false
+{campo && <div>...</div>}
+```
+
+**Iconos por Tipo**:
+```typescript
+Building2  // Nombre principal
+MapPin     // Ubicación
+FileText   // Descripción
+TrendingUp // Estado
+DollarSign // Dinero
+User       // Persona
+Phone      // Teléfono
+Mail       // Email
+Home       // Viviendas
+```
+
+---
+
+#### 📊 UPDATE Renderer (Diff Visual)
+
+Para actualizaciones, mostrar anterior → nuevo:
+
+```typescript
+export function Actualizacion[Modulo]Renderer({ datosNuevos, datosAnteriores }) {
+  const camposModificados = []
+
+  if (datosNuevos.campo !== datosAnteriores.campo) {
+    camposModificados.push({
+      campo: 'Nombre del Campo',
+      anterior: datosAnteriores.campo,
+      nuevo: datosNuevos.campo,
+    })
+  }
+
+  return (
+    <div className="space-y-3 px-4 py-3">
+      {/* Resumen */}
+      <div className="px-4 py-2 rounded-lg bg-blue-50 dark:bg-blue-950/30">
+        <p className="text-sm text-blue-900 dark:text-blue-100">
+          {camposModificados.length} campo(s) modificado(s)
+        </p>
+      </div>
+
+      {/* Diff por campo */}
+      {camposModificados.map((cambio, i) => (
+        <div key={i} className="space-y-2">
+          <p className="text-xs font-semibold text-gray-500">{cambio.campo}:</p>
+
+          {/* Anterior (rojo) */}
+          <div className="px-2 py-1 rounded bg-red-100 dark:bg-red-950/50 border border-red-300 dark:border-red-800">
+            <p className="text-xs text-red-600 dark:text-red-400">Anterior:</p>
+            <p className="text-sm text-red-900 dark:text-red-100 line-through">{cambio.anterior}</p>
+          </div>
+
+          {/* Nuevo (verde) */}
+          <div className="px-2 py-1 rounded bg-green-100 dark:bg-green-950/50 border border-green-300 dark:border-green-800">
+            <p className="text-xs text-green-600 dark:text-green-400">Nuevo:</p>
+            <p className="text-sm text-green-900 dark:text-green-100 font-semibold">{cambio.nuevo}</p>
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+```
+
+---
+
+#### 🚫 PROHIBIDO / ✅ REQUERIDO
+
+**PROHIBIDO:**
+- ❌ Omitir labels en campos
+- ❌ Usar && para renderizado condicional
+- ❌ Componentes pesados que generen scroll
+- ❌ Grids complejos
+- ❌ Hardcodear colores sin dark mode
+- ❌ Animaciones en renderers
+
+**REQUERIDO:**
+- ✅ Labels claros tipo formulario
+- ✅ Diseño compacto vertical (lista)
+- ✅ Dark mode en TODOS los elementos
+- ✅ Iconos pequeños (w-4 h-4)
+- ✅ Ternario con null para condicionales
+- ✅ Truncate en textos largos
+
+---
+
+#### ✅ CHECKLIST
+
+- [ ] Renderer en `renderers/[modulo]/[Accion]Renderer.tsx`
+- [ ] Labels claros en todos los campos
+- [ ] Diseño compacto (px-4 py-3, space-y-2)
+- [ ] Iconos apropiados (w-4 h-4)
+- [ ] Dark mode completo
+- [ ] Ternario para condicionales
+- [ ] Exportado en barrel file
+- [ ] Registrado en factory
+- [ ] Probado con datos reales
+- [ ] Validado dark mode y responsive
+
+**Documentación**: `docs/SISTEMA-MODULAR-AUDITORIAS.md` ⭐
+**Ejemplo**: `src/modules/auditorias/components/renderers/proyectos/CreacionProyectoRenderer.tsx`
+
+---
+
 ### 🚨 REGLA CRÍTICA #-5: SINCRONIZACIÓN AUTOMÁTICA DE TIPOS DB (OBLIGATORIO)
 
 **⚠️ DESPUÉS de CUALQUIER cambio en la base de datos (migración, nueva tabla, nueva columna):**

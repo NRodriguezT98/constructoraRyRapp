@@ -26,12 +26,13 @@ import { getAccionLabel, tiempoTranscurrido } from '../utils/formatters'
 
 import {
     ClienteDetalleRender,
+    DocumentoDetalleRender,
     DocumentoReemplazoDetalleRender,
     GenericoDetalleRender,
     NegociacionDetalleRender,
-    ProyectoDetalleRender,
     ViviendaDetalleRender
 } from './detalle-renders'
+import { getAuditoriaRenderer } from './renderers'
 import { AccionBadge } from './shared'
 
 interface DetalleAuditoriaModalProps {
@@ -42,7 +43,7 @@ interface DetalleAuditoriaModalProps {
 export function DetalleAuditoriaModal({ registro, onClose }: DetalleAuditoriaModalProps) {
   const { seccionAbierta, toggleSeccion, datosFormateados, mostrarSeccionJson } = useDetalleAuditoria(registro)
 
-  // Seleccionar render según módulo y tipo de operación
+  // Sistema inteligente de renderers modulares
   const renderDetallesModulo = () => {
     const metadata = datosFormateados.metadata
 
@@ -51,16 +52,28 @@ export function DetalleAuditoriaModal({ registro, onClose }: DetalleAuditoriaMod
       return <DocumentoReemplazoDetalleRender metadata={metadata} />
     }
 
-    // Renders por módulo estándar
+    // Usar sistema modular para proyectos (con factory pattern)
+    if (registro.modulo === 'proyectos') {
+      const RendererComponent = getAuditoriaRenderer(registro.modulo, registro.accion)
+      return (
+        <RendererComponent
+          metadata={metadata}
+          datosNuevos={registro.datosNuevos}
+          datosAnteriores={registro.datosAnteriores}
+        />
+      )
+    }
+
+    // Renders legacy para otros módulos (mantener compatibilidad)
     switch (registro.modulo) {
-      case 'proyectos':
-        return <ProyectoDetalleRender metadata={metadata} />
       case 'viviendas':
         return <ViviendaDetalleRender metadata={metadata} />
       case 'clientes':
         return <ClienteDetalleRender metadata={metadata} />
       case 'negociaciones':
         return <NegociacionDetalleRender metadata={metadata} />
+      case 'documentos':
+        return <DocumentoDetalleRender registro={registro} />
       default:
         return <GenericoDetalleRender registro={registro} />
     }

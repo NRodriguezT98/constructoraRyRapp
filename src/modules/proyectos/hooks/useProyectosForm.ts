@@ -87,6 +87,33 @@ const proyectoSchema = z.object({
     message: 'La fecha de fin debe ser posterior a la fecha de inicio',
     path: ['fechaFinEstimada'],
   }
+).refine(
+  (data) => {
+    // ✅ VALIDACIÓN: Fechas coherentes con estado del proyecto
+    const ahora = new Date()
+    const fechaInicio = data.fechaInicio ? new Date(data.fechaInicio) : null
+    const fechaFin = data.fechaFinEstimada ? new Date(data.fechaFinEstimada) : null
+
+    // Si está "completado", la fecha de fin no puede ser futura
+    if (data.estado === 'completado' && fechaFin && fechaFin > ahora) {
+      return false
+    }
+
+    // Si está "en_proceso" o "en_construccion", la fecha de inicio no puede ser futura
+    if (
+      (data.estado === 'en_proceso' || data.estado === 'en_construccion') &&
+      fechaInicio &&
+      fechaInicio > ahora
+    ) {
+      return false
+    }
+
+    return true
+  },
+  {
+    message: 'Las fechas no son coherentes con el estado del proyecto',
+    path: ['estado'],
+  }
 )
 
 // ✅ Schema factory: permite acceso a initialData e isEditing para validaciones async

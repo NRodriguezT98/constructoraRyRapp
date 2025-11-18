@@ -93,13 +93,20 @@ async function executeSQL(sqlFile) {
 
   // 3. Cargar variables de entorno
   log('→ Cargando configuración...', 'yellow')
-  const env = await loadEnv()
 
-  if (!env.DATABASE_URL) {
-    throw new Error('DATABASE_URL no encontrado en .env.local')
+  // Prioridad: 1) Variable de entorno del sistema, 2) .env.local
+  let databaseUrl = process.env.DATABASE_URL
+
+  if (!databaseUrl) {
+    const env = await loadEnv()
+    databaseUrl = env.DATABASE_URL
   }
 
-  const dbConfig = parseConnectionString(env.DATABASE_URL)
+  if (!databaseUrl) {
+    throw new Error('DATABASE_URL no encontrado en .env.local ni en variables de entorno')
+  }
+
+  const dbConfig = parseConnectionString(databaseUrl)
   log(`✓ Conectando a: ${dbConfig.host}:${dbConfig.port}/${dbConfig.database}`, 'green')
   console.log('')
 

@@ -33,6 +33,12 @@ export interface DocumentoVivienda {
   es_importante: boolean
   fecha_creacion: string
   fecha_actualizacion: string
+
+  // Sistema de Estados de Versión - PROFESIONAL
+  estado_version?: string // 'valida' | 'erronea' | 'obsoleta' | 'supersedida'
+  motivo_estado?: string | null
+  version_corrige_a?: string | null
+
   categoria?: {
     id: string
     nombre: string
@@ -1282,6 +1288,313 @@ export class DocumentosViviendaService {
     //   motivo,
     //   metadata: { versiones: cantidadVersiones, archivos: archivosEliminados }
     // })
+  }
+
+  // ============================================================================
+  // SISTEMA DE ESTADOS DE VERSIÓN - PROFESIONAL
+  // ============================================================================
+
+  /**
+   * Marcar una versión como errónea
+   * @param documentoId - ID de la versión a marcar como errónea
+   * @param motivo - Motivo por el cual es errónea
+   * @param versionCorrectaId - (Opcional) ID de la versión que corrige este error
+   */
+  async marcarVersionComoErronea(
+    documentoId: string,
+    motivo: string,
+    versionCorrectaId?: string
+  ): Promise<void> {
+    console.log('🚨 Marcando versión como errónea:', {
+      documentoId,
+      motivo,
+      versionCorrectaId,
+    })
+
+    // 1. Validar que el documento existe
+    const { data: documento, error: fetchError } = await this.supabase
+      .from('documentos_vivienda')
+      .select('id, titulo, version, estado_version')
+      .eq('id', documentoId)
+      .single()
+
+    if (fetchError || !documento) {
+      throw new Error('Documento no encontrado')
+    }
+
+    // 2. Validar que la versión correcta existe (si se proporciona)
+    if (versionCorrectaId) {
+      const { data: versionCorrecta, error: correctaError } = await this.supabase
+        .from('documentos_vivienda')
+        .select('id, titulo, version')
+        .eq('id', versionCorrectaId)
+        .single()
+
+      if (correctaError || !versionCorrecta) {
+        throw new Error('La versión correcta especificada no existe')
+      }
+
+      console.log('✓ Versión correcta validada:', {
+        id: versionCorrecta.id,
+        titulo: versionCorrecta.titulo,
+        version: versionCorrecta.version,
+      })
+    }
+
+    // 3. Actualizar estado de la versión
+    const { error: updateError } = await this.supabase
+      .from('documentos_vivienda')
+      .update({
+        estado_version: 'erronea',
+        motivo_estado: motivo,
+        version_corrige_a: versionCorrectaId || null,
+        fecha_actualizacion: new Date().toISOString(),
+      })
+      .eq('id', documentoId)
+
+    if (updateError) {
+      console.error('❌ Error al marcar versión como errónea:', updateError)
+      throw new Error(`Error al actualizar estado: ${updateError.message}`)
+    }
+
+    // 4. Si hay versión correcta, vincularla
+    if (versionCorrectaId) {
+      const { error: linkError } = await this.supabase
+        .from('documentos_vivienda')
+        .update({
+          metadata: {
+            corrige_version_erronea: documentoId,
+            fecha_correccion: new Date().toISOString(),
+          },
+        })
+        .eq('id', versionCorrectaId)
+
+      if (linkError) {
+        console.warn('⚠️ No se pudo vincular versión correcta:', linkError)
+      }
+    }
+
+    console.log('✅ Versión marcada como errónea:', {
+      documentoId,
+      titulo: documento.titulo,
+      version: documento.version,
+      motivo,
+    })
+  }
+
+  /**
+   * Marcar una versión como obsoleta
+   * @param documentoId - ID de la versión a marcar como obsoleta
+   * @param motivo - Motivo por el cual quedó obsoleta
+   */
+  async marcarVersionComoObsoleta(
+    documentoId: string,
+    motivo: string
+  ): Promise<void> {
+    console.log('📦 Marcando versión como obsoleta:', { documentoId, motivo })
+
+    // 1. Validar que el documento existe
+    const { data: documento, error: fetchError } = await this.supabase
+      .from('documentos_vivienda')
+      .select('id, titulo, version, estado_version')
+      .eq('id', documentoId)
+      .single()
+
+    if (fetchError || !documento) {
+      throw new Error('Documento no encontrado')
+    }
+
+    // 2. Actualizar estado
+    const { error: updateError } = await this.supabase
+      .from('documentos_vivienda')
+      .update({
+        estado_version: 'obsoleta',
+        motivo_estado: motivo,
+        fecha_actualizacion: new Date().toISOString(),
+      })
+      .eq('id', documentoId)
+
+    if (updateError) {
+      console.error('❌ Error al marcar versión como obsoleta:', updateError)
+      throw new Error(`Error al actualizar estado: ${updateError.message}`)
+    }
+
+    console.log('✅ Versión marcada como obsoleta:', {
+      documentoId,
+      titulo: documento.titulo,
+      version: documento.version,
+      motivo,
+    })
+  }
+
+  /**
+   * Restaurar estado de una versión a "valida"
+   * @param documentoId - ID de la versión a restaurar
+   */
+  async restaurarEstadoVersion(documentoId: string): Promise<void> {
+    console.log('♻️ Restaurando estado de versión:', { documentoId })
+
+    // 1. Validar que el documento existe
+    const { data: documento, error: fetchError } = await this.supabase
+      .from('documentos_vivienda')
+      .select('id, titulo, version, estado_version, motivo_estado')
+      .eq('id', documentoId)
+      .single()
+
+    if (fetchError || !documento) {
+      throw new Error('Documento no encontrado')
+    }
+
+    // 2. Restaurar a estado válido
+    const { error: updateError } = await this.supabase
+      .from('documentos_vivienda')
+      .update({
+        estado_version: 'valida',
+        motivo_estado: null,
+        version_corrige_a: null,
+        fecha_actualizacion: new Date().toISOString(),
+      })
+      .eq('id', documentoId)
+
+    if (updateError) {
+      console.error('❌ Error al restaurar estado:', updateError)
+      throw new Error(`Error al restaurar estado: ${updateError.message}`)
+    }
+
+    console.log('✅ Estado restaurado a "valida":', {
+      documentoId,
+      titulo: documento.titulo,
+      version: documento.version,
+      estadoAnterior: documento.estado_version,
+    })
+  }
+
+  /**
+   * Reemplazar archivo de documento existente (Admin Only, 48h máximo)
+   * Crea backup automático y valida tiempo desde creación
+   * @param documentoId - ID del documento a reemplazar
+   * @param nuevoArchivo - Nuevo archivo
+   * @param motivo - Justificación del reemplazo
+   */
+  async reemplazarArchivoSeguro(
+    documentoId: string,
+    nuevoArchivo: File,
+    motivo: string
+  ): Promise<void> {
+    console.log('🔄 Iniciando reemplazo seguro de archivo:', {
+      documentoId,
+      nuevoArchivo: nuevoArchivo.name,
+      tamano: nuevoArchivo.size,
+      motivo,
+    })
+
+    // 1. Validar que el documento existe
+    const { data: documento, error: fetchError } = await this.supabase
+      .from('documentos_vivienda')
+      .select('*')
+      .eq('id', documentoId)
+      .single()
+
+    if (fetchError || !documento) {
+      throw new Error('Documento no encontrado')
+    }
+
+    // 2. Validar ventana de 48 horas
+    const fechaCreacion = new Date(documento.fecha_creacion)
+    const ahora = new Date()
+    const horasTranscurridas =
+      (ahora.getTime() - fechaCreacion.getTime()) / (1000 * 60 * 60)
+
+    if (horasTranscurridas > 48) {
+      throw new Error(
+        `No se puede reemplazar archivo después de 48 horas. Han transcurrido ${Math.floor(horasTranscurridas)} horas.`
+      )
+    }
+
+    console.log('✓ Validación de 48 horas OK:', {
+      fechaCreacion: fechaCreacion.toISOString(),
+      horasTranscurridas: Math.floor(horasTranscurridas),
+    })
+
+    // 3. Crear backup del archivo original
+    const backupPath = `${documento.vivienda_id}/backups/${documentoId}_backup_${Date.now()}_${documento.nombre_archivo}`
+
+    // Copiar archivo original a backup (usando la URL de storage)
+    const archivoOriginalPath = documento.url_storage.split(
+      '/documentos-viviendas/'
+    )[1]
+
+    const { data: downloadData, error: downloadError } = await this.supabase.storage
+      .from('documentos-viviendas')
+      .download(archivoOriginalPath)
+
+    if (downloadError) {
+      throw new Error(`Error al descargar archivo original: ${downloadError.message}`)
+    }
+
+    const { error: backupError } = await this.supabase.storage
+      .from('documentos-viviendas')
+      .upload(backupPath, downloadData, {
+        contentType: documento.tipo_mime,
+        upsert: false,
+      })
+
+    if (backupError) {
+      throw new Error(`Error al crear backup: ${backupError.message}`)
+    }
+
+    console.log('✅ Backup creado:', backupPath)
+
+    // 4. Reemplazar archivo original
+    const { error: replaceError } = await this.supabase.storage
+      .from('documentos-viviendas')
+      .update(archivoOriginalPath, nuevoArchivo, {
+        contentType: nuevoArchivo.type,
+        upsert: true,
+      })
+
+    if (replaceError) {
+      throw new Error(`Error al reemplazar archivo: ${replaceError.message}`)
+    }
+
+    // 5. Actualizar metadata con información del reemplazo
+    const metadataReemplazo = {
+      ...(documento.metadata || {}),
+      reemplazo: {
+        fecha: new Date().toISOString(),
+        motivo,
+        archivo_original: documento.nombre_archivo,
+        archivo_nuevo: nuevoArchivo.name,
+        tamano_original: documento.tamano_bytes,
+        tamano_nuevo: nuevoArchivo.size,
+        backup_path: backupPath,
+      },
+    }
+
+    const { error: updateError } = await this.supabase
+      .from('documentos_vivienda')
+      .update({
+        nombre_archivo: nuevoArchivo.name,
+        nombre_original: nuevoArchivo.name,
+        tamano_bytes: nuevoArchivo.size,
+        tipo_mime: nuevoArchivo.type,
+        metadata: metadataReemplazo,
+        fecha_actualizacion: new Date().toISOString(),
+      })
+      .eq('id', documentoId)
+
+    if (updateError) {
+      console.error('❌ Error al actualizar metadata:', updateError)
+      throw new Error(`Error al actualizar metadata: ${updateError.message}`)
+    }
+
+    console.log('✅ Archivo reemplazado exitosamente:', {
+      documentoId,
+      archivoAnterior: documento.nombre_archivo,
+      archivoNuevo: nuevoArchivo.name,
+      backupCreado: backupPath,
+      motivo,
+    })
   }
 }
 

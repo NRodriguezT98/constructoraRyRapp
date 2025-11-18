@@ -22,6 +22,8 @@ import { proyectosPageStyles as styles } from '../styles/proyectos-page.styles'
 import type { Proyecto, ProyectoFormData } from '../types'
 
 import { ConfirmarCambiosModal } from './ConfirmarCambiosModal'
+import { ArchivarProyectoModal } from './modals/ArchivarProyectoModal'
+import { RestaurarProyectoModal } from './modals/RestaurarProyectoModal'
 import { ProyectosEmpty } from './proyectos-empty'
 import { ProyectosForm } from './proyectos-form'
 import { ProyectosLista } from './proyectos-lista'
@@ -74,6 +76,10 @@ export function ProyectosPage({
   const [proyectoEditar, setProyectoEditar] = useState<Proyecto | null>(null)
   const [modalEliminar, setModalEliminar] = useState(false)
   const [proyectoEliminar, setProyectoEliminar] = useState<string | null>(null)
+  const [modalArchivar, setModalArchivar] = useState(false)
+  const [proyectoArchivar, setProyectoArchivar] = useState<Proyecto | null>(null)
+  const [modalRestaurar, setModalRestaurar] = useState(false)
+  const [proyectoRestaurar, setProyectoRestaurar] = useState<Proyecto | null>(null)
   const [modalConfirmarCambios, setModalConfirmarCambios] = useState(false)
   const [datosEdicion, setDatosEdicion] = useState<ProyectoFormData | null>(null)
   const [datosConfirmacion, setDatosConfirmacion] = useState<{
@@ -87,8 +93,19 @@ export function ProyectosPage({
   const router = useRouter()
 
   // ✅ REACT QUERY: Hooks con cache inteligente (reemplazan Zustand)
-  const { crearProyecto, actualizarProyecto, eliminarProyecto, cargando, creando, actualizando, eliminando } =
-    useProyectosQuery()
+  const {
+    crearProyecto,
+    actualizarProyecto,
+    eliminarProyecto,
+    archivarProyecto,
+    restaurarProyecto,
+    cargando,
+    creando,
+    actualizando,
+    eliminando,
+    archivando,
+    restaurando
+  } = useProyectosQuery()
   const { proyectos, filtros, actualizarFiltros, limpiarFiltros, totalProyectos } = useProyectosFiltradosQuery()
   const estadisticas = useEstadisticasProyectosQuery()
 
@@ -216,6 +233,46 @@ export function ProyectosPage({
     }
   }
 
+  const handleArchivarProyecto = async (id: string) => {
+    const proyecto = proyectos.find(p => p.id === id)
+    if (proyecto) {
+      setProyectoArchivar(proyecto)
+      setModalArchivar(true)
+    }
+  }
+
+  const confirmarArchivar = async (motivo?: string) => {
+    if (!proyectoArchivar) return
+
+    try {
+      await archivarProyecto(proyectoArchivar.id, motivo)
+      setModalArchivar(false)
+      setProyectoArchivar(null)
+    } catch (error) {
+      // Error ya manejado por React Query con toast
+    }
+  }
+
+  const handleRestaurarProyecto = async (id: string) => {
+    const proyecto = proyectos.find(p => p.id === id)
+    if (proyecto) {
+      setProyectoRestaurar(proyecto)
+      setModalRestaurar(true)
+    }
+  }
+
+  const confirmarRestaurar = async () => {
+    if (!proyectoRestaurar) return
+
+    try {
+      await restaurarProyecto(proyectoRestaurar.id)
+      setModalRestaurar(false)
+      setProyectoRestaurar(null)
+    } catch (error) {
+      // Error ya manejado por React Query con toast
+    }
+  }
+
   return (
     <div className={styles.container.page}>
       {/* Animación simplificada para navegación instantánea */}
@@ -263,6 +320,8 @@ export function ProyectosPage({
             proyectos={proyectos}
             onEdit={canEdit ? handleEditarProyecto : undefined}
             onDelete={canDelete ? handleEliminarProyecto : undefined}
+            onArchive={canEdit ? handleArchivarProyecto : undefined}
+            onRestore={canEdit ? handleRestaurarProyecto : undefined}
             canEdit={canEdit}
             canDelete={canDelete}
           />
@@ -272,6 +331,8 @@ export function ProyectosPage({
             onView={(proyecto) => router.push(construirURLProyecto({ id: proyecto.id, nombre: proyecto.nombre }))}
             onEdit={canEdit ? handleEditarProyecto : undefined}
             onDelete={canDelete ? handleEliminarProyecto : undefined}
+            onArchive={canEdit ? handleArchivarProyecto : undefined}
+            onRestore={canEdit ? handleRestaurarProyecto : undefined}
             canEdit={canEdit}
             canDelete={canDelete}
           />
@@ -478,6 +539,32 @@ export function ProyectosPage({
           </div>
         </div>
       </Modal>
+
+      {/* Modal Archivar Proyecto */}
+      <ArchivarProyectoModal
+        isOpen={modalArchivar}
+        nombreProyecto={proyectoArchivar?.nombre || ''}
+        onConfirm={confirmarArchivar}
+        onCancel={() => {
+          setModalArchivar(false)
+          setProyectoArchivar(null)
+        }}
+        archivando={archivando}
+      />
+
+      {/* Modal Restaurar Proyecto */}
+      <RestaurarProyectoModal
+        isOpen={modalRestaurar}
+        nombreProyecto={proyectoRestaurar?.nombre || ''}
+        fechaArchivado={proyectoRestaurar?.fechaArchivado}
+        motivoArchivo={proyectoRestaurar?.motivoArchivo}
+        onConfirm={confirmarRestaurar}
+        onCancel={() => {
+          setModalRestaurar(false)
+          setProyectoRestaurar(null)
+        }}
+        restaurando={restaurando}
+      />
     </div>
   )
 }

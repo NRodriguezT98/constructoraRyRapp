@@ -5,6 +5,45 @@
 export type EstadoDocumento = 'activo' | 'archivado' | 'eliminado'
 
 // ============================================
+// Sistema de Estados de Versión - PROFESIONAL
+// ============================================
+
+/**
+ * Estados posibles de una versión de documento
+ * - valida: Versión correcta y confiable (por defecto)
+ * - erronea: Versión incorrecta que debe corregirse
+ * - obsoleta: Versión antigua ya no aplicable
+ * - supersedida: Reemplazada por nueva versión
+ */
+export type EstadoVersion = 'valida' | 'erronea' | 'obsoleta' | 'supersedida'
+
+/**
+ * Motivos predefinidos para marcar versión como errónea
+ */
+export const MOTIVOS_VERSION_ERRONEA = {
+  DOCUMENTO_INCORRECTO: 'Se subió el documento equivocado',
+  DATOS_ERRONEOS: 'El documento contiene datos incorrectos',
+  VERSION_DESACTUALIZADA: 'Información desactualizada o desfasada',
+  ARCHIVO_CORRUPTO: 'Archivo dañado o ilegible',
+  FORMATO_INVALIDO: 'Formato de archivo incorrecto',
+  DUPLICADO_ACCIDENTAL: 'Versión duplicada por error',
+  OTRO: 'Otro motivo (especificar en descripción)',
+} as const
+
+/**
+ * Motivos predefinidos para marcar versión como obsoleta
+ */
+export const MOTIVOS_VERSION_OBSOLETA = {
+  CAMBIO_NORMATIVA: 'Cambio en normativa o regulación',
+  ACTUALIZACION_PROCESO: 'Actualización de proceso interno',
+  REVISION_TECNICA: 'Revisión técnica obligatoria',
+  VENCIMIENTO: 'Documento vencido',
+  SUSTITUIDO: 'Sustituido por versión más reciente',
+  YA_NO_APLICA: 'Ya no es aplicable al proyecto',
+  OTRO: 'Otro motivo (especificar en descripción)',
+} as const
+
+// ============================================
 // Categorías Personalizadas - Sistema Flexible Multi-Módulo
 // ============================================
 
@@ -118,6 +157,12 @@ export interface DocumentoProyecto {
   es_importante: boolean
   fecha_creacion: string
   fecha_actualizacion: string
+
+  // Sistema de Estados de Versión - PROFESIONAL
+  estado_version?: EstadoVersion // Estado de la versión (valida por defecto)
+  motivo_estado?: string // Justificación del estado
+  version_corrige_a?: string // UUID de versión errónea que esta corrige
+
   // Relación opcional (cuando se carga con join)
   categoria?: CategoriaDocumento
   usuario?: {

@@ -2,6 +2,8 @@
 
 import { motion } from 'framer-motion'
 import {
+    Archive,
+    ArchiveRestore,
     Building2,
     Calendar,
     Edit2,
@@ -24,6 +26,8 @@ interface ProyectoCardProps {
   vista: VistaProyecto
   onEdit?: (proyecto: Proyecto) => void
   onDelete?: (id: string) => void
+  onArchive?: (id: string) => void
+  onRestore?: (id: string) => void
 }
 
 /**
@@ -36,15 +40,25 @@ export function ProyectoCard({
   vista,
   onEdit,
   onDelete,
+  onArchive,
+  onRestore,
 }: ProyectoCardProps) {
   // Hook personalizado - Toda la lógica de negocio
   const {
     confirmDelete,
+    confirmArchive,
     totalViviendas,
     handleDelete,
+    handleArchive,
     handleEdit,
     handleViewDetails,
-  } = useProyectoCard({ proyecto, onEdit, onDelete })
+  } = useProyectoCard({ proyecto, onEdit, onDelete, onArchive })
+
+  const handleRestore = () => {
+    if (onRestore) {
+      onRestore(proyecto.id)
+    }
+  }
 
   // Vista Lista
   if (vista === 'lista') {
@@ -62,7 +76,15 @@ export function ProyectoCard({
                   <Building2 className={styles.header.icon} />
                 </div>
                 <div className={styles.header.titleWrapper}>
-                  <h3 className={styles.text.title}>{proyecto.nombre}</h3>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h3 className={styles.text.title}>{proyecto.nombre}</h3>
+                    {proyecto.archivado && (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-100 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800 text-xs font-medium text-amber-700 dark:text-amber-400">
+                        <Archive className="w-3 h-3" />
+                        Archivado
+                      </span>
+                    )}
+                  </div>
                   <p className={styles.text.ubicacion}>
                     <MapPin className={styles.text.ubicacionIcon} />
                     <span className={styles.text.ubicacionText}>
@@ -117,6 +139,39 @@ export function ProyectoCard({
                   <Edit2 className={styles.button.icon} />
                 </button>
               </CanEdit>
+              {proyecto.archivado ? (
+                <CanEdit modulo="proyectos">
+                  <button
+                    onClick={handleRestore}
+                    className={cn(
+                      styles.button.base,
+                      'text-green-600 hover:bg-green-50 dark:text-green-400 dark:hover:bg-green-900/20'
+                    )}
+                    title='Restaurar proyecto'
+                  >
+                    <ArchiveRestore className={styles.button.icon} />
+                  </button>
+                </CanEdit>
+              ) : (
+                <CanEdit modulo="proyectos">
+                  <button
+                    onClick={handleArchive}
+                    className={cn(
+                      styles.button.base,
+                      confirmArchive
+                        ? 'bg-amber-500 text-white hover:bg-amber-600'
+                        : 'text-amber-600 hover:bg-amber-50 dark:text-amber-400 dark:hover:bg-amber-900/20'
+                    )}
+                    title={
+                      confirmArchive
+                        ? '¿Confirmar archivado?'
+                        : 'Archivar proyecto'
+                    }
+                  >
+                    <Archive className={styles.button.icon} />
+                  </button>
+                </CanEdit>
+              )}
               <CanDelete modulo="proyectos">
                 <button
                   onClick={handleDelete}
@@ -174,6 +229,36 @@ export function ProyectoCard({
               <Edit2 className={styles.button.icon} />
             </button>
           </CanEdit>
+          {proyecto.archivado ? (
+            <CanEdit modulo="proyectos">
+              <button
+                onClick={handleRestore}
+                className={cn(
+                  styles.button.base,
+                  'text-white backdrop-blur-sm hover:bg-green-400/30'
+                )}
+                title='Restaurar'
+              >
+                <ArchiveRestore className={styles.button.icon} />
+              </button>
+            </CanEdit>
+          ) : (
+            <CanEdit modulo="proyectos">
+              <button
+                onClick={handleArchive}
+                className={cn(
+                  styles.button.base,
+                  'backdrop-blur-sm',
+                  confirmArchive
+                    ? 'bg-amber-500 text-white'
+                    : 'text-white hover:bg-white/20'
+                )}
+                title={confirmArchive ? '¿Confirmar?' : 'Archivar'}
+              >
+                <Archive className={styles.button.icon} />
+              </button>
+            </CanEdit>
+          )}
           <CanDelete modulo="proyectos">
             <button
               onClick={handleDelete}
@@ -208,9 +293,17 @@ export function ProyectoCard({
         )}
       >
         <div>
-          <h3 className={cn(styles.text.titleGrid, 'line-clamp-1')}>
-            {proyecto.nombre}
-          </h3>
+          <div className="flex items-center gap-2 flex-wrap mb-1">
+            <h3 className={cn(styles.text.titleGrid, 'line-clamp-1')}>
+              {proyecto.nombre}
+            </h3>
+            {proyecto.archivado && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-100 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800 text-xs font-medium text-amber-700 dark:text-amber-400">
+                <Archive className="w-3 h-3" />
+                Archivado
+              </span>
+            )}
+          </div>
           <p className={cn(styles.text.ubicacion, 'mb-3')}>
             <MapPin className={styles.text.ubicacionIcon} />
             <span className={styles.text.ubicacionText}>

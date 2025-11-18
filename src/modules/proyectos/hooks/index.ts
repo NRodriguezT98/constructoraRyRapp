@@ -3,8 +3,10 @@
 
 export { useDetectarCambios } from './useDetectarCambios'
 export { useDocumentoVersiones } from './useDocumentoVersiones'
+export { useEstadosVersionProyecto } from './useEstadosVersionProyecto'
 export { useProyectoCard } from './useProyectoCard'
 export { useProyectoTabla } from './useProyectoTabla'
+export { horasRestantesParaReemplazo, puedeReemplazarArchivo, useReemplazarArchivoProyecto } from './useReemplazarArchivoProyecto'
 // ❌ useProyectoDetalle eliminado - nunca se implementó
 
 // ✅ Hooks con Zustand (DEPRECADO - NO USAR)

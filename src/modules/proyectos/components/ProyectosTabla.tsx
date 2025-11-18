@@ -8,7 +8,7 @@
 'use client'
 
 import { type ColumnDef } from '@tanstack/react-table'
-import { Building2, CheckCircle2, Clock, Edit2, Eye, MapPin, Trash2 } from 'lucide-react'
+import { Archive, ArchiveRestore, Building2, CheckCircle2, Clock, Edit2, Eye, MapPin, Trash2 } from 'lucide-react'
 
 import { DataTable } from '@/shared/components/table/DataTable'
 import { cn } from '@/shared/utils/helpers'
@@ -22,6 +22,8 @@ interface ProyectosTablaProps {
   onEdit?: (proyecto: Proyecto) => void
   onDelete?: (id: string) => void
   onView?: (proyecto: Proyecto) => void
+  onArchive?: (id: string) => void
+  onRestore?: (id: string) => void
   canEdit?: boolean
   canDelete?: boolean
 }
@@ -31,6 +33,8 @@ export function ProyectosTabla({
   onEdit,
   onDelete,
   onView,
+  onArchive,
+  onRestore,
   canEdit,
   canDelete,
 }: ProyectosTablaProps) {
@@ -95,9 +99,17 @@ export function ProyectosTabla({
           <div className={styles.iconContainer}>
             <Building2 className={styles.iconSvg} />
           </div>
-          <span className={styles.nombre.text}>
-            {row.original.nombre}
-          </span>
+          <div className="flex flex-col gap-1">
+            <span className={styles.nombre.text}>
+              {row.original.nombre}
+            </span>
+            {row.original.archivado && (
+              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-amber-100 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800 text-xs font-medium text-amber-700 dark:text-amber-400 w-fit">
+                <Archive className="w-3 h-3" />
+                Archivado
+              </span>
+            )}
+          </div>
         </div>
       ),
     },
@@ -184,6 +196,27 @@ export function ProyectosTabla({
             >
               <Edit2 className={styles.actions.icon} />
             </button>
+          )}
+          {row.original.archivado ? (
+            canEdit && onRestore && (
+              <button
+                onClick={() => onRestore(row.original.id)}
+                className={cn(styles.actions.button.base, 'text-green-600 hover:bg-green-50 dark:text-green-400 dark:hover:bg-green-900/20')}
+                title="Restaurar proyecto"
+              >
+                <ArchiveRestore className={styles.actions.icon} />
+              </button>
+            )
+          ) : (
+            canEdit && onArchive && (
+              <button
+                onClick={() => onArchive(row.original.id)}
+                className={cn(styles.actions.button.base, 'text-amber-600 hover:bg-amber-50 dark:text-amber-400 dark:hover:bg-amber-900/20')}
+                title="Archivar proyecto"
+              >
+                <Archive className={styles.actions.icon} />
+              </button>
+            )
           )}
           {canDelete && onDelete && (
             <button

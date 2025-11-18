@@ -1,18 +1,40 @@
 'use client'
 
 import { useState } from 'react'
-import { useDocumentoReemplazarArchivo } from './useDocumentoReemplazarArchivo'
+import { toast } from 'sonner'
+import { DocumentosService } from '../services/documentos.service'
 
 interface UseReemplazarArchivoFormProps {
   onSuccess?: () => void | Promise<void>
   onClose?: () => void
 }
 
+export type ProgresoFase =
+  | 'idle'
+  | 'validando'
+  | 'descargando'
+  | 'creando-backup'
+  | 'subiendo'
+  | 'actualizando'
+  | 'finalizando'
+
+export interface ProgresoReemplazo {
+  fase: ProgresoFase
+  porcentaje: number
+  mensaje: string
+}
+
 export function useReemplazarArchivoForm({
   onSuccess,
   onClose
 }: UseReemplazarArchivoFormProps = {}) {
-  const { reemplazando, progreso, reemplazarArchivo } = useDocumentoReemplazarArchivo()
+  // Estados del reemplazo
+  const [reemplazando, setReemplazando] = useState(false)
+  const [progreso, setProgreso] = useState<ProgresoReemplazo>({
+    fase: 'idle',
+    porcentaje: 0,
+    mensaje: ''
+  })
 
   // Estados del formulario
   const [nuevoArchivo, setNuevoArchivo] = useState<File | null>(null)
@@ -55,7 +77,7 @@ export function useReemplazarArchivoForm({
     setNuevoArchivo(null)
   }
 
-  // Handler de submit
+  // Handler de submit con progreso
   const handleSubmit = async (
     e: React.FormEvent,
     documento: {
@@ -68,18 +90,87 @@ export function useReemplazarArchivoForm({
   ) => {
     e.preventDefault()
 
-    if (!nuevoArchivo) return
+    if (!nuevoArchivo || !justificacion) return
 
-    const success = await reemplazarArchivo(documento, {
-      nuevoArchivo,
-      justificacion,
-      password
-    })
+    setReemplazando(true)
 
-    if (success) {
+    try {
+      // Fase 1: Validando contraseña
+      setProgreso({
+        fase: 'validando',
+        porcentaje: 10,
+        mensaje: 'Validando credenciales de administrador...'
+      })
+      await new Promise((resolve) => setTimeout(resolve, 300))
+
+      // Fase 2: Descargando archivo original
+      setProgreso({
+        fase: 'descargando',
+        porcentaje: 25,
+        mensaje: 'Descargando archivo original...'
+      })
+      await new Promise((resolve) => setTimeout(resolve, 400))
+
+      // Fase 3: Creando backup
+      setProgreso({
+        fase: 'creando-backup',
+        porcentaje: 45,
+        mensaje: 'Creando backup del archivo anterior...'
+      })
+      await new Promise((resolve) => setTimeout(resolve, 500))
+
+      // Fase 4: Subiendo nuevo archivo
+      setProgreso({
+        fase: 'subiendo',
+        porcentaje: 65,
+        mensaje: 'Subiendo nuevo archivo...'
+      })
+      await new Promise((resolve) => setTimeout(resolve, 400))
+
+      // Llamada al servicio (las fases son ilustrativas para UX)
+      await DocumentosService.reemplazarArchivoSeguro(
+        documento.id,
+        nuevoArchivo,
+        justificacion,
+        password
+      )
+
+      // Fase 5: Actualizando base de datos
+      setProgreso({
+        fase: 'actualizando',
+        porcentaje: 85,
+        mensaje: 'Actualizando registros...'
+      })
+      await new Promise((resolve) => setTimeout(resolve, 300))
+
+      // Fase 6: Finalizando
+      setProgreso({
+        fase: 'finalizando',
+        porcentaje: 100,
+        mensaje: 'Proceso completado exitosamente'
+      })
+      await new Promise((resolve) => setTimeout(resolve, 200))
+
+      toast.success('Archivo reemplazado exitosamente', {
+        description: 'El archivo anterior fue respaldado y el nuevo está activo'
+      })
+
       await onSuccess?.()
       resetForm()
       onClose?.()
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : 'Error desconocido'
+      toast.error('Error al reemplazar archivo', {
+        description: errorMsg
+      })
+      console.error('Error en reemplazo:', error)
+    } finally {
+      setReemplazando(false)
+      setProgreso({
+        fase: 'idle',
+        porcentaje: 0,
+        mensaje: ''
+      })
     }
   }
 

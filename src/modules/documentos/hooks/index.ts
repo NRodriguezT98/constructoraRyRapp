@@ -14,6 +14,7 @@ export { useDocumentoEditar } from './useDocumentoEditar'
 export { useDocumentoReemplazarArchivo } from './useDocumentoReemplazarArchivo'
 export { useDocumentosLista } from './useDocumentosLista'
 export { useDocumentoUpload } from './useDocumentoUpload'
+export { useMarcarEstadoVersion } from './useMarcarEstadoVersion'; // ✅ Hook de estados de versión
 export { useReemplazarArchivoForm } from './useReemplazarArchivoForm'
 
 // Hook de detección de cambios

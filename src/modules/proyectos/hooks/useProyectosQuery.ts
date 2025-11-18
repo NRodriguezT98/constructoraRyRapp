@@ -42,7 +42,7 @@ export const proyectosKeys = {
 export function useProyectosQuery() {
   const queryClient = useQueryClient()
 
-  // ✅ QUERY: Obtener todos los proyectos
+  // ✅ QUERY: Obtener todos los proyectos (incluye archivados para filtrado local)
   const {
     data: proyectos = [],
     isLoading: cargando,
@@ -50,7 +50,7 @@ export function useProyectosQuery() {
     refetch: refrescar,
   } = useQuery({
     queryKey: proyectosKeys.lists(),
-    queryFn: () => proyectosService.obtenerProyectos(),
+    queryFn: () => proyectosService.obtenerProyectos(true), // ✅ Siempre traer todos (incluidos archivados) para filtrado local
     staleTime: 5 * 60 * 1000, // 5 minutos - datos frescos
     gcTime: 10 * 60 * 1000, // 10 minutos - retención en cache
   })
@@ -124,6 +124,55 @@ export function useProyectosQuery() {
     },
   })
 
+  // ✅ MUTATION: Archivar proyecto
+  const archivarProyectoMutation = useMutation({
+    mutationFn: ({ id, motivo }: { id: string; motivo?: string }) =>
+      proyectosService.archivarProyecto(id, motivo),
+    onSuccess: async (_, { id }) => {
+      await queryClient.invalidateQueries({ queryKey: proyectosKeys.lists() })
+      queryClient.removeQueries({ queryKey: proyectosKeys.detail(id) })
+      toast.success('Proyecto archivado correctamente', {
+        description: 'El proyecto ya no aparecerá en la lista activa',
+      })
+    },
+    onError: (error: Error) => {
+      toast.error('Error al archivar proyecto', {
+        description: error.message,
+      })
+    },
+  })
+
+  // ✅ MUTATION: Restaurar proyecto archivado
+  const restaurarProyectoMutation = useMutation({
+    mutationFn: (id: string) => proyectosService.restaurarProyecto(id),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: proyectosKeys.lists() })
+      toast.success('Proyecto restaurado correctamente', {
+        description: 'El proyecto vuelve a estar activo',
+      })
+    },
+    onError: (error: Error) => {
+      toast.error('Error al restaurar proyecto', {
+        description: error.message,
+      })
+    },
+  })
+
+  // ✅ MUTATION: Eliminar proyecto definitivo
+  const eliminarDefinitivoMutation = useMutation({
+    mutationFn: (id: string) => proyectosService.eliminarProyectoDefinitivo(id),
+    onSuccess: (_, id) => {
+      queryClient.invalidateQueries({ queryKey: proyectosKeys.lists() })
+      queryClient.removeQueries({ queryKey: proyectosKeys.detail(id) })
+      toast.success('Proyecto eliminado definitivamente')
+    },
+    onError: (error: Error) => {
+      toast.error('Error al eliminar proyecto definitivamente', {
+        description: error.message,
+      })
+    },
+  })
+
   return {
     proyectos,
     cargando,
@@ -133,11 +182,18 @@ export function useProyectosQuery() {
       return actualizarProyectoMutation.mutateAsync({ id, data })
     },
     eliminarProyecto: eliminarProyectoMutation.mutateAsync,
+    archivarProyecto: (id: string, motivo?: string) => {
+      return archivarProyectoMutation.mutateAsync({ id, motivo })
+    },
+    restaurarProyecto: restaurarProyectoMutation.mutateAsync,
+    eliminarProyectoDefinitivo: eliminarDefinitivoMutation.mutateAsync,
     refrescar,
     // Estados de mutations
     creando: crearProyectoMutation.isPending,
     actualizando: actualizarProyectoMutation.isPending,
     eliminando: eliminarProyectoMutation.isPending,
+    archivando: archivarProyectoMutation.isPending,
+    restaurando: restaurarProyectoMutation.isPending,
   }
 }
 
@@ -174,6 +230,7 @@ export function useProyectosFiltrados() {
     estado: undefined,
     fechaDesde: undefined,
     fechaHasta: undefined,
+    verArchivados: false,
   })
 
   const { proyectos, cargando } = useProyectosQuery()
@@ -181,6 +238,13 @@ export function useProyectosFiltrados() {
   // Filtrado local (muy rápido, no requiere query nueva)
   const proyectosFiltrados = useMemo(() => {
     let resultado = [...proyectos]
+
+    // ✅ Filtro por archivados (primero, para optimizar)
+    if (!filtros.verArchivados) {
+      // Por defecto, NO mostrar archivados
+      resultado = resultado.filter(proyecto => !proyecto.archivado)
+    }
+    // Si verArchivados = true, mostrar todos (incluidos archivados)
 
     // Filtro por búsqueda
     if (filtros.busqueda) {
@@ -237,6 +301,7 @@ export function useProyectosFiltrados() {
       estado: undefined,
       fechaDesde: undefined,
       fechaHasta: undefined,
+      verArchivados: false,
     })
   }
 
@@ -277,9 +342,12 @@ export function useEstadisticasProyectos() {
   const { proyectos } = useProyectosQuery()
 
   const estadisticas = useMemo(() => {
-    const total = proyectos.length
+    // ✅ Filtrar solo proyectos NO archivados para estadísticas
+    const proyectosActivos = proyectos.filter(p => !p.archivado)
 
-    const enProceso = proyectos.filter(
+    const total = proyectosActivos.length
+
+    const enProceso = proyectosActivos.filter(
       p =>
         p.estado === 'en_proceso' ||
         p.estado === 'en_planificacion' ||
@@ -287,13 +355,13 @@ export function useEstadisticasProyectos() {
         p.estado === 'pausado'
     ).length
 
-    const completados = proyectos.filter(p => p.estado === 'completado').length
+    const completados = proyectosActivos.filter(p => p.estado === 'completado').length
 
-    const presupuestoTotal = proyectos.reduce((sum, p) => sum + p.presupuesto, 0)
+    const presupuestoTotal = proyectosActivos.reduce((sum, p) => sum + p.presupuesto, 0)
 
     const progresoPromedio =
-      proyectos.length > 0
-        ? proyectos.reduce((sum, p) => sum + (p.progreso || 0), 0) / proyectos.length
+      proyectosActivos.length > 0
+        ? proyectosActivos.reduce((sum, p) => sum + (p.progreso || 0), 0) / proyectosActivos.length
         : 0
 
     return {

@@ -11,13 +11,28 @@
 import { useState } from 'react'
 
 import { AnimatePresence, motion } from 'framer-motion'
-import { Calendar, Download, Edit3, Eye, FileText, RotateCcw, Trash2, User, X } from 'lucide-react'
+import {
+    AlertCircle,
+    Calendar,
+    Download,
+    Edit3,
+    Eye,
+    FileText,
+    RotateCcw,
+    Shield,
+    Trash2,
+    User,
+    X
+} from 'lucide-react'
 import { createPortal } from 'react-dom'
 
 import { useDocumentoVersiones } from '../../hooks/useDocumentoVersiones'
 
 import { DocumentoRenombrarModal } from './documento-renombrar-modal'
 import { documentoVersionesModalStyles as styles } from './documento-versiones-modal.styles'
+import { EstadoVersionAlert, EstadoVersionBadge } from './estado-version-badge'
+import { MarcarEstadoVersionModal } from './marcar-estado-version-modal'
+import { ReemplazarArchivoModal } from './reemplazar-archivo-modal'
 
 interface DocumentoVersionesModalViviendaProps {
   isOpen: boolean
@@ -53,6 +68,10 @@ export function DocumentoVersionesModalVivienda({
 
   // Estado para modal de renombrar
   const [documentoRenombrar, setDocumentoRenombrar] = useState<{ id: string, titulo: string } | null>(null)
+
+  // Estados para modales de sistema de estados de versión
+  const [versionParaEstado, setVersionParaEstado] = useState<any>(null)
+  const [versionParaReemplazar, setVersionParaReemplazar] = useState<any>(null)
 
   // ✅ Verificar si es administrador
   const esAdministrador = perfil?.rol === 'Administrador'
@@ -160,8 +179,13 @@ export function DocumentoVersionesModalVivienda({
                           {esOriginal && (
                             <span className={styles.versionCard.originalBadge}>⭐ Original</span>
                           )}
+                          {/* Badge de estado de versión */}
+                          <EstadoVersionBadge documento={version} />
                         </div>
                       </div>
+
+                      {/* Alerta de estado de versión (si aplica) */}
+                      <EstadoVersionAlert documento={version} />
 
                       {/* Metadata */}
                       <div className={styles.versionCard.metadata}>
@@ -237,6 +261,15 @@ export function DocumentoVersionesModalVivienda({
                           Descargar
                         </button>
 
+                        {/* Cambiar Estado - Naranja/Gris */}
+                        <button
+                          onClick={() => setVersionParaEstado(version)}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-amber-600 hover:bg-amber-700 text-white transition-colors shadow-sm"
+                        >
+                          <AlertCircle className="w-3.5 h-3.5" />
+                          Estado
+                        </button>
+
                         {esActual ? (
                           <>
                             {/* Renombrar - Naranja (solo versión actual) */}
@@ -247,6 +280,17 @@ export function DocumentoVersionesModalVivienda({
                               <Edit3 className="w-3.5 h-3.5" />
                               Renombrar
                             </button>
+
+                            {/* Reemplazar Archivo - Índigo (SOLO ADMINISTRADORES + 48h) */}
+                            {esAdministrador && (
+                              <button
+                                onClick={() => setVersionParaReemplazar(version)}
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-indigo-600 hover:bg-indigo-700 text-white transition-colors shadow-sm"
+                              >
+                                <Shield className="w-3.5 h-3.5" />
+                                Reemplazar
+                              </button>
+                            )}
 
                             {/* Eliminar - Rojo (SOLO ADMINISTRADORES) */}
                             {esAdministrador && (
@@ -400,6 +444,36 @@ export function DocumentoVersionesModalVivienda({
             setDocumentoRenombrar(null)
             // ✅ Recargar versiones para ver el título actualizado
             // El modal ya esperó a que termine la mutación antes de llamar onSuccess
+            cargarVersiones()
+          }}
+        />
+      )}
+
+      {/* Modal de Cambiar Estado de Versión */}
+      {versionParaEstado && (
+        <MarcarEstadoVersionModal
+          key="modal-estado"
+          documento={versionParaEstado}
+          viviendaId={versionParaEstado.vivienda_id}
+          isOpen={!!versionParaEstado}
+          onClose={() => setVersionParaEstado(null)}
+          onSuccess={() => {
+            setVersionParaEstado(null)
+            cargarVersiones()
+          }}
+        />
+      )}
+
+      {/* Modal de Reemplazo Seguro de Archivo */}
+      {versionParaReemplazar && (
+        <ReemplazarArchivoModal
+          key="modal-reemplazar"
+          documento={versionParaReemplazar}
+          viviendaId={versionParaReemplazar.vivienda_id}
+          isOpen={!!versionParaReemplazar}
+          onClose={() => setVersionParaReemplazar(null)}
+          onSuccess={() => {
+            setVersionParaReemplazar(null)
             cargarVersiones()
           }}
         />

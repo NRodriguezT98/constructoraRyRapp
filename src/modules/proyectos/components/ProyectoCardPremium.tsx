@@ -11,6 +11,8 @@
 
 import { motion } from 'framer-motion'
 import {
+    Archive,
+    ArchiveRestore,
     Building2,
     Calendar,
     CheckCircle2,
@@ -31,6 +33,8 @@ interface ProyectoCardPremiumProps {
   proyecto: Proyecto
   onEdit?: (proyecto: Proyecto) => void
   onDelete?: (id: string) => void
+  onArchive?: (id: string) => void
+  onRestore?: (id: string) => void
   canEdit?: boolean
   canDelete?: boolean
 }
@@ -39,18 +43,28 @@ export function ProyectoCardPremium({
   proyecto,
   onEdit,
   onDelete,
+  onArchive,
+  onRestore,
   canEdit = false,
   canDelete = false,
 }: ProyectoCardPremiumProps) {
   const {
     confirmDelete,
+    confirmArchive,
     totalViviendas,
     viviendasVendidas,
     progresoVentas,
     handleDelete,
+    handleArchive,
     handleEdit,
     handleViewDetails,
-  } = useProyectoCard({ proyecto, onEdit, onDelete })
+  } = useProyectoCard({ proyecto, onEdit, onDelete, onArchive })
+
+  const handleRestore = () => {
+    if (onRestore) {
+      onRestore(proyecto.id)
+    }
+  }
 
   // Determinar estado del proyecto
   const isCompleted = proyecto.estado === 'completado'
@@ -98,6 +112,31 @@ export function ProyectoCardPremium({
               <Edit className="w-3.5 h-3.5" />
             </button>
           )}
+          {proyecto.archivado ? (
+            canEdit && onRestore && (
+              <button
+                onClick={handleRestore}
+                className="p-1 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-green-100 dark:hover:bg-green-900/30 hover:text-green-600 dark:hover:text-green-400 transition-all"
+                title="Restaurar proyecto"
+              >
+                <ArchiveRestore className="w-3.5 h-3.5" />
+              </button>
+            )
+          ) : (
+            canEdit && onArchive && (
+              <button
+                onClick={handleArchive}
+                className={`p-1 rounded-lg transition-all ${
+                  confirmArchive
+                    ? 'bg-amber-500 text-white hover:bg-amber-600'
+                    : 'text-gray-600 dark:text-gray-400 hover:bg-amber-100 dark:hover:bg-amber-900/30 hover:text-amber-600 dark:hover:text-amber-400'
+                }`}
+                title={confirmArchive ? '¿Confirmar archivado?' : 'Archivar'}
+              >
+                <Archive className="w-3.5 h-3.5" />
+              </button>
+            )
+          )}
           {canDelete && onDelete && (
             <button
               onClick={handleDelete}
@@ -122,6 +161,12 @@ export function ProyectoCardPremium({
             <h3 className="text-sm font-bold text-gray-900 dark:text-white">
               {proyecto.nombre}
             </h3>
+            {proyecto.archivado && (
+              <span className="inline-flex items-center gap-1 mt-1 px-1.5 py-0.5 rounded-md bg-amber-100 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800 text-xs font-medium text-amber-700 dark:text-amber-400">
+                <Archive className="w-3 h-3" />
+                Archivado
+              </span>
+            )}
           </div>
           <span
             className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg ${estadoColor.bg} text-white text-xs font-bold shadow-md ${

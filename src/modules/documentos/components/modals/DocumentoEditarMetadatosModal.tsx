@@ -140,13 +140,13 @@ export function DocumentoEditarMetadatosModal({
               className='absolute inset-0 bg-black/50 backdrop-blur-sm'
             />
 
-        {/* Modal - Tamaño más grande y consistente con formulario de subir */}
+        {/* Modal - Tamaño consistente con formulario de subir (columna única) */}
         <motion.div
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
           onClick={(e) => e.stopPropagation()}
-          className='relative w-full max-w-5xl max-h-[90vh] overflow-y-auto rounded-2xl bg-white dark:bg-gray-800 shadow-2xl'
+          className='relative w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-2xl bg-white dark:bg-gray-800 shadow-2xl'
         >
           {/* Header verde del módulo de proyectos */}
           <div className='sticky top-0 z-10 flex items-center justify-between bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 px-6 py-4 rounded-t-2xl'>
@@ -172,12 +172,11 @@ export function DocumentoEditarMetadatosModal({
             </button>
           </div>
 
-          {/* Formulario con diseño de 2 columnas */}
+          {/* Formulario con diseño de columna única (igual a subir documento) */}
           <form onSubmit={handleSubmit} className='p-6'>
-            {/* Grid de 2 columnas */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-              {/* COLUMNA IZQUIERDA: Información Principal */}
-              <div className="backdrop-blur-xl bg-white/80 dark:bg-gray-800/80 border border-gray-200/50 dark:border-gray-700/50 rounded-xl p-4 shadow-lg space-y-4">
+            {/* Card única con todo el formulario */}
+            <div className="space-y-0 mb-4">
+              <div className="backdrop-blur-xl bg-white/80 dark:bg-gray-800/80 border border-gray-200/50 dark:border-gray-700/50 rounded-xl p-4 shadow-lg space-y-3">
                 {/* Header */}
                 <div className="flex items-center gap-2 pb-3 border-b border-gray-200 dark:border-gray-700">
                   <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center">
@@ -223,7 +222,7 @@ export function DocumentoEditarMetadatosModal({
                     value={descripcion}
                     onChange={(e) => setDescripcion(e.target.value)}
                     disabled={editando}
-                    rows={3}
+                    rows={2}
                     maxLength={1000}
                     className={cn(
                       'w-full px-3 py-2 text-sm bg-white dark:bg-gray-900/50 border rounded-lg transition-all resize-none',
@@ -240,7 +239,7 @@ export function DocumentoEditarMetadatosModal({
 
                 {/* Categoría */}
                 <div>
-                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5 flex items-center gap-1.5">
+                  <label className="flex items-center gap-1.5 text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5">
                     <Folder size={14} />
                     Categoría
                   </label>
@@ -266,82 +265,54 @@ export function DocumentoEditarMetadatosModal({
                     Categoriza el documento para mejor organización
                   </p>
                 </div>
-              </div>
-
-              {/* COLUMNA DERECHA: Fechas y Etiquetas */}
-              <div className="backdrop-blur-xl bg-white/80 dark:bg-gray-800/80 border border-gray-200/50 dark:border-gray-700/50 rounded-xl p-4 shadow-lg space-y-4">
-                {/* Header */}
-                <div className="flex items-center gap-2 pb-3 border-b border-gray-200 dark:border-gray-700">
-                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
-                    <Calendar className="w-4 h-4 text-white" />
-                  </div>
-                  <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
-                    Fechas y Opciones
-                  </h3>
-                </div>
 
                 {/* Fechas en grid de 2 columnas */}
-                <div className="space-y-3">
-                  <div className="grid grid-cols-2 gap-3">
-                    {/* Fecha del documento */}
-                    <div>
-                      <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5 flex items-center gap-1.5">
-                        <Calendar size={12} />
-                        Fecha del documento
-                      </label>
-                      <input
-                        type='date'
-                        value={fechaDocumento}
-                        onChange={(e) => setFechaDocumento(e.target.value)}
-                        disabled={editando}
-                        className={cn(
-                          'w-full px-3 py-2 text-sm bg-white dark:bg-gray-900/50 border rounded-lg transition-all',
-                          'focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 focus:border-transparent',
-                          'disabled:opacity-50 disabled:bg-gray-50 dark:disabled:bg-gray-800',
-                          'border-gray-200 dark:border-gray-700'
-                        )}
-                      />
-                    </div>
-
-                    {/* Fecha de vencimiento */}
-                    <div>
-                      <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5 flex items-center gap-1.5">
-                        <AlertCircle size={12} />
-                        Vencimiento
-                      </label>
-                      <input
-                        type='date'
-                        value={fechaVencimiento}
-                        onChange={(e) => setFechaVencimiento(e.target.value)}
-                        disabled={editando}
-                        min={fechaDocumento || undefined}
-                        className={cn(
-                          'w-full px-3 py-2 text-sm bg-white dark:bg-gray-900/50 border rounded-lg transition-all',
-                          'focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 focus:border-transparent',
-                          'disabled:opacity-50 disabled:bg-gray-50 dark:disabled:bg-gray-800',
-                          'border-gray-200 dark:border-gray-700'
-                        )}
-                      />
-                    </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {/* Fecha del documento */}
+                  <div>
+                    <label className="flex items-center gap-1.5 text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                      <Calendar size={12} />
+                      Fecha del documento
+                    </label>
+                    <input
+                      type='date'
+                      value={fechaDocumento}
+                      onChange={(e) => setFechaDocumento(e.target.value)}
+                      disabled={editando}
+                      className={cn(
+                        'w-full px-3 py-2 text-sm bg-white dark:bg-gray-900/50 border rounded-lg transition-all',
+                        'focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 focus:border-transparent',
+                        'disabled:opacity-50 disabled:bg-gray-50 dark:disabled:bg-gray-800',
+                        'border-gray-200 dark:border-gray-700'
+                      )}
+                    />
                   </div>
 
-                  {/* Checkbox solo si expira */}
-                  {fechaVencimiento && (
-                    <div className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400 pl-1">
-                      <input
-                        type="checkbox"
-                        checked
-                        disabled
-                        className="w-3 h-3 rounded"
-                      />
-                      <span>Solo si expira</span>
-                    </div>
-                  )}
+                  {/* Fecha de vencimiento */}
+                  <div>
+                    <label className="flex items-center gap-1.5 text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                      <AlertCircle size={12} />
+                      Vencimiento
+                    </label>
+                    <input
+                      type='date'
+                      value={fechaVencimiento}
+                      onChange={(e) => setFechaVencimiento(e.target.value)}
+                      disabled={editando}
+                      min={fechaDocumento || undefined}
+                      className={cn(
+                        'w-full px-3 py-2 text-sm bg-white dark:bg-gray-900/50 border rounded-lg transition-all',
+                        'focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 focus:border-transparent',
+                        'disabled:opacity-50 disabled:bg-gray-50 dark:disabled:bg-gray-800',
+                        'border-gray-200 dark:border-gray-700'
+                      )}
+                    />
+                  </div>
                 </div>
 
                 {/* COMENTADO: Funcionalidad de etiquetas eliminada */}
                 {/* <div>
-                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5 flex items-center gap-1.5">
+                  <label className="flex items-center gap-1.5 text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5">
                     <Tag size={14} />
                     Etiquetas
                   </label>

@@ -10,6 +10,8 @@ interface ProyectosListaProps {
   proyectos: Proyecto[]
   onEdit?: (proyecto: Proyecto) => void
   onDelete?: (id: string) => void
+  onArchive?: (id: string) => void
+  onRestore?: (id: string) => void
   canEdit?: boolean
   canDelete?: boolean
 }
@@ -18,6 +20,8 @@ export function ProyectosLista({
   proyectos,
   onEdit,
   onDelete,
+  onArchive,
+  onRestore,
   canEdit = false,
   canDelete = false,
 }: ProyectosListaProps) {
@@ -37,6 +41,8 @@ export function ProyectosLista({
               proyecto={proyecto}
               onEdit={onEdit}
               onDelete={onDelete}
+              onArchive={onArchive}
+              onRestore={onRestore}
               canEdit={canEdit}
               canDelete={canDelete}
             />

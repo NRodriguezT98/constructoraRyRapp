@@ -44,7 +44,7 @@ export function ProyectosFiltrosPremium({
     setMounted(true)
   }, [])
 
-  const hasFilters = Boolean(filtros.busqueda || filtros.estado)
+  const hasFilters = Boolean(filtros.busqueda || filtros.estado || filtros.verArchivados)
 
   const handleLimpiarFiltros = () => {
     onLimpiarFiltros()
@@ -97,7 +97,8 @@ export function ProyectosFiltrosPremium({
             Estado:
           </span>
         </div>
-        <div className={styles.filtros.pillsContainer}>
+        <div className="flex items-center gap-3">
+          <div className={styles.filtros.pillsContainer}>
           {ESTADOS_PROYECTO.map(estado => {
             const isActive = filtros.estado === estado.value
             const getIcon = () => {
@@ -133,6 +134,19 @@ export function ProyectosFiltrosPremium({
               </motion.button>
             )
           })}
+          </div>
+          {/* Toggle Ver Archivados */}
+          <label className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer">
+            <input
+              type="checkbox"
+              checked={filtros.verArchivados || false}
+              onChange={(e) => onActualizarFiltros({ verArchivados: e.target.checked })}
+              className="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-amber-600 focus:ring-2 focus:ring-amber-500/20 focus:ring-offset-0 bg-white dark:bg-gray-900 cursor-pointer"
+            />
+            <span className="text-xs font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
+              📦 Ver archivados
+            </span>
+          </label>
         </div>
       </div>
 

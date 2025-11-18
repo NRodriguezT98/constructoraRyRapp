@@ -712,12 +712,14 @@ export type Database = {
           es_importante: boolean | null
           es_version_actual: boolean
           estado: string
+          estado_version: string | null
           fecha_actualizacion: string | null
           fecha_creacion: string | null
           fecha_documento: string | null
           fecha_vencimiento: string | null
           id: string
           metadata: Json | null
+          motivo_estado: string | null
           nombre_archivo: string
           nombre_original: string
           proyecto_id: string
@@ -727,6 +729,7 @@ export type Database = {
           titulo: string
           url_storage: string
           version: number
+          version_corrige_a: string | null
         }
         Insert: {
           categoria_id?: string | null
@@ -735,12 +738,14 @@ export type Database = {
           es_importante?: boolean | null
           es_version_actual?: boolean
           estado?: string
+          estado_version?: string | null
           fecha_actualizacion?: string | null
           fecha_creacion?: string | null
           fecha_documento?: string | null
           fecha_vencimiento?: string | null
           id?: string
           metadata?: Json | null
+          motivo_estado?: string | null
           nombre_archivo: string
           nombre_original: string
           proyecto_id: string
@@ -750,6 +755,7 @@ export type Database = {
           titulo: string
           url_storage: string
           version?: number
+          version_corrige_a?: string | null
         }
         Update: {
           categoria_id?: string | null
@@ -758,12 +764,14 @@ export type Database = {
           es_importante?: boolean | null
           es_version_actual?: boolean
           estado?: string
+          estado_version?: string | null
           fecha_actualizacion?: string | null
           fecha_creacion?: string | null
           fecha_documento?: string | null
           fecha_vencimiento?: string | null
           id?: string
           metadata?: Json | null
+          motivo_estado?: string | null
           nombre_archivo?: string
           nombre_original?: string
           proyecto_id?: string
@@ -773,6 +781,7 @@ export type Database = {
           titulo?: string
           url_storage?: string
           version?: number
+          version_corrige_a?: string | null
         }
         Relationships: [
           {
@@ -809,6 +818,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "vista_abonos_completos"
             referencedColumns: ["proyecto_id"]
+          },
+          {
+            foreignKeyName: "documentos_proyecto_version_corrige_a_fkey"
+            columns: ["version_corrige_a"]
+            isOneToOne: false
+            referencedRelation: "documentos_proyecto"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "fk_documentos_proyecto_subido_por"
@@ -1373,13 +1389,16 @@ export type Database = {
       }
       proyectos: {
         Row: {
+          archivado: boolean
           descripcion: string
           estado: string
           fecha_actualizacion: string | null
+          fecha_archivado: string | null
           fecha_creacion: string | null
           fecha_fin_estimada: string | null
           fecha_inicio: string | null
           id: string
+          motivo_archivo: string | null
           nombre: string
           presupuesto: number
           progreso: number
@@ -1387,13 +1406,16 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          archivado?: boolean
           descripcion: string
           estado?: string
           fecha_actualizacion?: string | null
+          fecha_archivado?: string | null
           fecha_creacion?: string | null
           fecha_fin_estimada?: string | null
           fecha_inicio?: string | null
           id?: string
+          motivo_archivo?: string | null
           nombre: string
           presupuesto?: number
           progreso?: number
@@ -1401,13 +1423,16 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          archivado?: boolean
           descripcion?: string
           estado?: string
           fecha_actualizacion?: string | null
+          fecha_archivado?: string | null
           fecha_creacion?: string | null
           fecha_fin_estimada?: string | null
           fecha_inicio?: string | null
           id?: string
+          motivo_archivo?: string | null
           nombre?: string
           presupuesto?: number
           progreso?: number

@@ -10,11 +10,15 @@
  */
 
 import { AnimatePresence, motion } from 'framer-motion'
-import { AlertTriangle, Calendar, Download, Eye, FileText, History, Loader2, RotateCcw, Trash2, User, X } from 'lucide-react'
+import { AlertCircle, AlertTriangle, Calendar, Download, Eye, FileText, History, Loader2, RotateCcw, Trash2, User, X } from 'lucide-react'
+import { useState } from 'react'
 import { createPortal } from 'react-dom'
 
 import { formatDateCompact } from '@/lib/utils/date.utils'
 import { useDocumentoVersiones } from '@/modules/proyectos/hooks/useDocumentoVersiones'
+import type { EstadoVersion } from '@/types/documento.types'
+import { EstadoVersionAlert, EstadoVersionBadge } from '../shared/EstadoVersionBadge'
+import { MarcarEstadoVersionModal, type AccionEstado } from './MarcarEstadoVersionModal'
 
 interface DocumentoVersionesModalProps {
   isOpen: boolean
@@ -29,6 +33,14 @@ export function DocumentoVersionesModal({
   onClose,
   onVersionRestaurada
 }: DocumentoVersionesModalProps) {
+  // Estado local para modal de estados de versión
+  const [modalEstadoOpen, setModalEstadoOpen] = useState(false)
+  const [accionEstado, setAccionEstado] = useState<AccionEstado>('erronea')
+  const [versionSeleccionada, setVersionSeleccionada] = useState<{
+    id: string
+    numero: number
+  } | null>(null)
+
   const {
     versiones,
     cargando,
@@ -58,6 +70,18 @@ export function DocumentoVersionesModal({
   })
 
   const esAdministrador = perfil?.rol === 'Administrador'
+
+  // Handlers para modal de estados
+  const abrirModalEstado = (versionId: string, versionNumero: number, accion: AccionEstado) => {
+    setVersionSeleccionada({ id: versionId, numero: versionNumero })
+    setAccionEstado(accion)
+    setModalEstadoOpen(true)
+  }
+
+  const cerrarModalEstado = () => {
+    setModalEstadoOpen(false)
+    setVersionSeleccionada(null)
+  }
 
   // Formatear nombre de usuario
   const formatearNombreUsuario = (email: string | null, usuario?: any) => {
@@ -127,6 +151,7 @@ export function DocumentoVersionesModal({
                   const cambios = version.metadata && typeof version.metadata === 'object'
                     ? (version.metadata as any).cambios
                     : null
+                  const estadoVersion = (version.estado_version as EstadoVersion) || 'valida'
 
                   // 🆒 OPCIÓN C: Numeración secuencial visual (v1, v2, v3) + original para auditoría
                   const versionSecuencial = versiones.length - index // De mayor a menor (actual = 1)
@@ -180,6 +205,7 @@ export function DocumentoVersionesModal({
                               ⭐ Original
                             </span>
                           )}
+                          <EstadoVersionBadge estado={estadoVersion} size="md" />
                         </div>
                       </div>
 
@@ -218,6 +244,17 @@ export function DocumentoVersionesModal({
                           <p className="text-xs text-gray-700 dark:text-gray-300 italic">
                             {cambios || version.descripcion}
                           </p>
+                        </div>
+                      )}
+
+                      {/* Alerta de estado de versión */}
+                      {estadoVersion !== 'valida' && (
+                        <div className="mb-3">
+                          <EstadoVersionAlert
+                            estado={estadoVersion}
+                            motivo={version.motivo_estado}
+                            versionCorrectaId={version.version_corrige_a}
+                          />
                         </div>
                       )}
 
@@ -260,6 +297,44 @@ export function DocumentoVersionesModal({
                               </>
                             )}
                           </button>
+                        )}
+
+                        {/* Estado de versión (Admin) */}
+                        {esAdministrador && (
+                          <div className="relative group">
+                            <button
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-purple-600 hover:bg-purple-700 text-white transition-colors shadow-sm"
+                            >
+                              <AlertCircle className="w-3.5 h-3.5" />
+                              Estado
+                            </button>
+
+                            {/* Dropdown de opciones de estado */}
+                            <div className="absolute left-0 mt-1 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-xl border-2 border-gray-200 dark:border-gray-700 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-10">
+                              <div className="p-1">
+                                <button
+                                  onClick={() => abrirModalEstado(version.id, versionSecuencial, 'erronea')}
+                                  className="w-full text-left px-3 py-2 rounded-md text-xs font-medium text-gray-700 dark:text-gray-300 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                                >
+                                  ⚠️ Marcar como Errónea
+                                </button>
+                                <button
+                                  onClick={() => abrirModalEstado(version.id, versionSecuencial, 'obsoleta')}
+                                  className="w-full text-left px-3 py-2 rounded-md text-xs font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-900/20 transition-colors"
+                                >
+                                  📦 Marcar como Obsoleta
+                                </button>
+                                {estadoVersion !== 'valida' && (
+                                  <button
+                                    onClick={() => abrirModalEstado(version.id, versionSecuencial, 'restaurar')}
+                                    className="w-full text-left px-3 py-2 rounded-md text-xs font-medium text-gray-700 dark:text-gray-300 hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors"
+                                  >
+                                    ♻️ Restaurar a Válida
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          </div>
                         )}
 
                         {/* Eliminar (solo Admin) */}
@@ -476,6 +551,30 @@ export function DocumentoVersionesModal({
               </div>
             </motion.div>
           </motion.div>
+        )}
+
+        {/* 🎨 MODAL DE ESTADOS DE VERSIÓN (Admin Only) */}
+        {modalEstadoOpen && versionSeleccionada && (
+          <MarcarEstadoVersionModal
+            isOpen={modalEstadoOpen}
+            documentoId={versionSeleccionada.id}
+            proyectoId={documentoId} // El documentoId del padre es el proyectoId
+            documentoPadreId={documentoId} // ✅ ID del documento padre para invalidar query correcta
+            accion={accionEstado}
+            versionActual={versionSeleccionada.numero}
+            versionesDisponibles={
+              versiones?.map(v => ({
+                id: v.id,
+                version: v.version,
+                titulo: v.titulo || 'Sin título'
+              })) || []
+            }
+            onClose={cerrarModalEstado}
+            onSuccess={() => {
+              // Refrescar datos (el hook del modal ya invalida queries)
+              cerrarModalEstado()
+            }}
+          />
         )}
       </div>
     </AnimatePresence>

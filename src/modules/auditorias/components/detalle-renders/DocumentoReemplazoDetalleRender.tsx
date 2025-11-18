@@ -8,7 +8,7 @@
 
 'use client'
 
-import { AlertTriangle, FileText, HardDrive, Shield } from 'lucide-react'
+import { AlertTriangle, Eye, FileText, HardDrive, Shield } from 'lucide-react'
 
 import { getTipoOperacionLabel } from '../../utils/formatters'
 import { InfoCard } from '../shared'
@@ -99,44 +99,96 @@ export function DocumentoReemplazoDetalleRender({ metadata }: DocumentoReemplazo
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Archivo anterior */}
-          <div className="rounded-lg border-2 border-red-200 bg-red-50 p-3 dark:border-red-900/50 dark:bg-red-900/20">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-2 h-2 rounded-full bg-red-500"></div>
-              <h5 className="text-xs font-semibold text-red-900 dark:text-red-300">
-                Archivo Eliminado
+          <div className="rounded-xl border-2 border-red-200 bg-red-50 p-4 dark:border-red-900/50 dark:bg-red-900/20">
+            <div className="flex items-center gap-2 mb-3 pb-3 border-b border-red-200 dark:border-red-800">
+              <div className="w-8 h-8 rounded-lg bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+                <FileText className="w-4 h-4 text-red-600 dark:text-red-500" />
+              </div>
+              <h5 className="text-sm font-semibold text-red-900 dark:text-red-300">
+                Archivo Eliminado (Backup)
               </h5>
             </div>
-            <div className="space-y-1">
-              <p className="text-xs text-red-800 dark:text-red-400">
-                <strong>Nombre:</strong> {archivoAnterior.nombre || 'N/A'}
-              </p>
-              <p className="text-xs text-red-800 dark:text-red-400">
-                <strong>Tamaño:</strong> {archivoAnterior.tamano_formateado || 'N/A'}
-              </p>
-              <p className="text-xs text-red-700 dark:text-red-500 font-mono break-all">
-                {archivoAnterior.ruta || 'N/A'}
-              </p>
+            <div className="space-y-3">
+              <div>
+                <p className="text-xs text-red-600 dark:text-red-400 mb-1 font-medium">Nombre</p>
+                <p className="text-sm font-semibold text-red-900 dark:text-red-100 break-all">
+                  {archivoAnterior.nombre || 'N/A'}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-red-600 dark:text-red-400 mb-1 font-medium">Tamaño</p>
+                <p className="text-sm font-medium text-red-900 dark:text-red-100">
+                  {archivoAnterior.tamano_formateado || 'N/A'}
+                </p>
+              </div>
+              {archivoAnterior.url_backup && (
+                <a
+                  href={archivoAnterior.url_backup}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-red-600 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-600 text-white font-medium text-sm transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
+                >
+                  <Eye className="w-4 h-4" />
+                  Ver Archivo Original
+                </a>
+              )}
+              {!archivoAnterior.url_backup && archivoAnterior.ruta && (
+                <div className="p-2 bg-red-100 dark:bg-red-900/30 rounded border border-red-300 dark:border-red-700">
+                  <p className="text-xs text-red-700 dark:text-red-400 font-mono break-all">
+                    {archivoAnterior.ruta}
+                  </p>
+                  <p className="text-xs text-red-600 dark:text-red-500 mt-1 italic">
+                    ⚠️ URL de descarga no disponible
+                  </p>
+                </div>
+              )}
             </div>
           </div>
 
           {/* Archivo nuevo */}
-          <div className="rounded-lg border-2 border-green-200 bg-green-50 p-3 dark:border-green-900/50 dark:bg-green-900/20">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-2 h-2 rounded-full bg-green-500"></div>
-              <h5 className="text-xs font-semibold text-green-900 dark:text-green-300">
-                Archivo Nuevo
+          <div className="rounded-xl border-2 border-green-200 bg-green-50 p-4 dark:border-green-900/50 dark:bg-green-900/20">
+            <div className="flex items-center gap-2 mb-3 pb-3 border-b border-green-200 dark:border-green-800">
+              <div className="w-8 h-8 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                <FileText className="w-4 h-4 text-green-600 dark:text-green-500" />
+              </div>
+              <h5 className="text-sm font-semibold text-green-900 dark:text-green-300">
+                Archivo Nuevo (Actual)
               </h5>
             </div>
-            <div className="space-y-1">
-              <p className="text-xs text-green-800 dark:text-green-400">
-                <strong>Nombre:</strong> {archivoNuevo.nombre || 'N/A'}
-              </p>
-              <p className="text-xs text-green-800 dark:text-green-400">
-                <strong>Tamaño:</strong> {archivoNuevo.tamano_formateado || 'N/A'}
-              </p>
-              <p className="text-xs text-green-700 dark:text-green-500 font-mono break-all">
-                {archivoNuevo.ruta || 'N/A'}
-              </p>
+            <div className="space-y-3">
+              <div>
+                <p className="text-xs text-green-600 dark:text-green-400 mb-1 font-medium">Nombre</p>
+                <p className="text-sm font-semibold text-green-900 dark:text-green-100 break-all">
+                  {archivoNuevo.nombre || 'N/A'}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-green-600 dark:text-green-400 mb-1 font-medium">Tamaño</p>
+                <p className="text-sm font-medium text-green-900 dark:text-green-100">
+                  {archivoNuevo.tamano_formateado || 'N/A'}
+                </p>
+              </div>
+              {archivoNuevo.url_actual && (
+                <a
+                  href={archivoNuevo.url_actual}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-600 text-white font-medium text-sm transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
+                >
+                  <Eye className="w-4 h-4" />
+                  Ver Archivo Actual
+                </a>
+              )}
+              {!archivoNuevo.url_actual && archivoNuevo.ruta && (
+                <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded border border-green-300 dark:border-green-700">
+                  <p className="text-xs text-green-700 dark:text-green-400 font-mono break-all">
+                    {archivoNuevo.ruta}
+                  </p>
+                  <p className="text-xs text-green-600 dark:text-green-500 mt-1 italic">
+                    ⚠️ URL de descarga no disponible
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         </div>

@@ -76,25 +76,65 @@ async function main() {
       }
     })
 
-    // Ejecutar SQL
+    // Ejecutar SQL usando fetch directamente
     log('\n→ Ejecutando SQL...', 'yellow')
 
-    const { data, error } = await supabase.rpc('exec_sql', {
-      sql_query: sqlContent
+    // Usar la API REST de Supabase con service_role para ejecutar SQL
+    const response = await fetch(`${supabaseUrl}/rest/v1/rpc/exec`, {
+      method: 'POST',
+      headers: {
+        'apikey': serviceKey,
+        'Authorization': `Bearer ${serviceKey}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=representation'
+      },
+      body: JSON.stringify({ query: sqlContent })
     })
 
-    if (error) {
-      throw new Error(`Error de Supabase: ${error.message}`)
+    // Si la función exec no existe, intentar ejecutar con pg_stat_statements
+    if (!response.ok && response.status === 404) {
+      log('⚠️  Función exec() no disponible, usando método alternativo...', 'yellow')
+
+      // Dividir SQL en statements individuales (simple split por ;)
+      const statements = sqlContent
+        .split(';')
+        .map(s => s.trim())
+        .filter(s => s.length > 0 && !s.startsWith('--'))
+
+      log(`→ Ejecutando ${statements.length} statements...`, 'yellow')
+
+      for (let i = 0; i < statements.length; i++) {
+        const stmt = statements[i]
+        log(`  [${i + 1}/${statements.length}] Ejecutando...`, 'yellow')
+
+        // Ejecutar cada statement directamente
+        const stmtResponse = await fetch(`${supabaseUrl}/rest/v1/rpc/exec`, {
+          method: 'POST',
+          headers: {
+            'apikey': serviceKey,
+            'Authorization': `Bearer ${serviceKey}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ query: stmt })
+        })
+
+        if (!stmtResponse.ok) {
+          const errorText = await stmtResponse.text()
+          log(`  ❌ Error en statement ${i + 1}`, 'red')
+          log(`  SQL: ${stmt.substring(0, 100)}...`, 'red')
+          throw new Error(`Statement ${i + 1} falló: ${errorText}`)
+        }
+      }
+
+      log(`✓ ${statements.length} statements ejecutados`, 'green')
+    } else if (!response.ok) {
+      const errorText = await response.text()
+      throw new Error(`HTTP ${response.status}: ${errorText}`)
     }
 
     header('✅ SQL EJECUTADO EXITOSAMENTE')
     log(`✓ Archivo: ${sqlFile}`, 'green')
     log(`✓ Ejecutado correctamente`, 'green')
-
-    if (data) {
-      log(`\n📊 Resultado:`, 'cyan')
-      console.log(data)
-    }
 
     process.exit(0)
 

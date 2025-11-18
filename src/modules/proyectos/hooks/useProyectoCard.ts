@@ -10,6 +10,7 @@ interface UseProyectoCardProps {
   proyecto: Proyecto
   onEdit?: (proyecto: Proyecto) => void
   onDelete?: (id: string) => void
+  onArchive?: (id: string) => void
 }
 
 /**
@@ -20,10 +21,12 @@ export function useProyectoCard({
   proyecto,
   onEdit,
   onDelete,
+  onArchive,
 }: UseProyectoCardProps) {
   const router = useRouter()
   const [showMenu, setShowMenu] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
+  const [confirmArchive, setConfirmArchive] = useState(false)
 
   // Computed: Total de viviendas
   const totalViviendas = useMemo(() => {
@@ -57,6 +60,24 @@ export function useProyectoCard({
       setConfirmDelete(false)
     },
     [confirmDelete, onDelete, proyecto.id]
+  )
+
+  // Handler: Archivar con confirmación
+  const handleArchive = useCallback(
+    (e?: React.MouseEvent) => {
+      e?.stopPropagation()
+
+      if (!confirmArchive) {
+        setConfirmArchive(true)
+        // Reset confirmación después de 3 segundos
+        setTimeout(() => setConfirmArchive(false), 3000)
+        return
+      }
+
+      onArchive?.(proyecto.id)
+      setConfirmArchive(false)
+    },
+    [confirmArchive, onArchive, proyecto.id]
   )
 
   // Handler: Editar proyecto
@@ -97,12 +118,14 @@ export function useProyectoCard({
     // Estados
     showMenu,
     confirmDelete,
+    confirmArchive,
     totalViviendas,
     viviendasVendidas,
     progresoVentas,
 
     // Handlers
     handleDelete,
+    handleArchive,
     handleEdit,
     handleViewDetails,
     toggleMenu,

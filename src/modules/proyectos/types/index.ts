@@ -13,6 +13,10 @@ export interface Proyecto {
   progreso?: number
   fechaCreacion: string
   fechaActualizacion: string
+  // ✅ Sistema de archivado (soft delete)
+  archivado?: boolean
+  fechaArchivado?: string | null
+  motivoArchivo?: string | null
 }
 
 export interface Manzana {
@@ -63,6 +67,7 @@ export type FiltroProyecto = {
   estado?: EstadoProyecto
   fechaDesde?: string
   fechaHasta?: string
+  verArchivados?: boolean
 }
 
 // Formulario de proyecto
@@ -110,7 +115,12 @@ export interface ProyectosActions {
   ) => Promise<Proyecto>
   eliminarProyecto: (id: string) => Promise<void>
   obtenerProyecto: (id: string) => Promise<Proyecto | null>
-  obtenerProyectos: () => Promise<Proyecto[]>
+  obtenerProyectos: (incluirArchivados?: boolean) => Promise<Proyecto[]>
+
+  // ✅ Sistema de archivado
+  archivarProyecto: (id: string, motivo?: string) => Promise<void>
+  restaurarProyecto: (id: string) => Promise<void>
+  eliminarProyectoDefinitivo: (id: string) => Promise<void>
 
   // UI
   setFiltros: (filtros: Partial<FiltroProyecto>) => void

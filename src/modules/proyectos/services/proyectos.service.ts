@@ -14,8 +14,8 @@ import type {
  */
 class ProyectosService {
   // CRUD Operations
-  async obtenerProyectos(): Promise<Proyecto[]> {
-    const { data, error } = await supabase
+  async obtenerProyectos(incluirArchivados: boolean = false): Promise<Proyecto[]> {
+    let query = supabase
       .from('proyectos')
       .select(
         `
@@ -27,7 +27,13 @@ class ProyectosService {
                 )
             `
       )
-      .order('fecha_creacion', { ascending: false })
+
+    // Por defecto, solo mostrar proyectos activos (NO archivados)
+    if (!incluirArchivados) {
+      query = query.eq('archivado', false)
+    }
+
+    const { data, error } = await query.order('fecha_creacion', { ascending: false })
 
     if (error) {
       console.error('Error al obtener proyectos:', error)
@@ -137,6 +143,10 @@ class ProyectosService {
       manzanas,
       fechaCreacion: proyecto.fecha_creacion,
       fechaActualizacion: proyecto.fecha_actualizacion,
+      // ✅ Campos de archivado
+      archivado: proyecto.archivado || false,
+      fechaArchivado: proyecto.fecha_archivado || null,
+      motivoArchivo: proyecto.motivo_archivo || null,
     }
 
     // 4. 🔍 AUDITORÍA DETALLADA: Registrar creación del proyecto con todos los detalles
@@ -162,7 +172,68 @@ class ProyectosService {
       console.error('Error al obtener proyecto para auditoría:', error)
     }
 
-    // 2. Preparar datos para actualización
+    // 2. ✅ VALIDACIÓN: Advertencia al cambiar nombre con viviendas vendidas
+    if (data.nombre && proyectoAnterior && proyectoAnterior.nombre !== data.nombre) {
+      const { data: manzanas } = await supabase
+        .from('manzanas')
+        .select('id')
+        .eq('proyecto_id', id)
+
+      const manzanasIds = manzanas?.map(m => m.id) || []
+
+      if (manzanasIds.length > 0) {
+        const { count: viviendasVendidas } = await supabase
+          .from('viviendas')
+          .select('*', { count: 'exact', head: true })
+          .eq('estado', 'vendida')
+          .in('manzana_id', manzanasIds)
+
+        if (viviendasVendidas && viviendasVendidas > 0) {
+          console.warn(
+            `⚠️ ADVERTENCIA: Cambiando nombre de proyecto de "${proyectoAnterior.nombre}" a "${data.nombre}". ` +
+            `El proyecto tiene ${viviendasVendidas} vivienda(s) vendida(s). ` +
+            `Verificar que no afecte documentos legales o contratos.`
+          )
+        }
+      }
+    }
+
+    // 3. ✅ VALIDACIÓN: Transiciones de estado coherentes
+    if (data.estado && proyectoAnterior && proyectoAnterior.estado !== data.estado) {
+      const { data: manzanas } = await supabase
+        .from('manzanas')
+        .select('id')
+        .eq('proyecto_id', id)
+
+      const manzanasIds = manzanas?.map(m => m.id) || []
+
+      // No permitir marcar como "completado" si hay viviendas disponibles
+      if (data.estado === 'completado' && manzanasIds.length > 0) {
+        const { count: viviendasDisponibles } = await supabase
+          .from('viviendas')
+          .select('*', { count: 'exact', head: true })
+          .eq('estado', 'disponible')
+          .in('manzana_id', manzanasIds)
+
+        if (viviendasDisponibles && viviendasDisponibles > 0) {
+          throw new Error(
+            `No se puede marcar el proyecto como completado porque tiene ` +
+            `${viviendasDisponibles} vivienda(s) aún disponibles. ` +
+            `Todas las viviendas deben estar vendidas o reservadas.`
+          )
+        }
+      }
+
+      // Advertencia al pausar proyecto con negociaciones activas
+      if (data.estado === 'pausado') {
+        console.warn(
+          `⚠️ ADVERTENCIA: Pausando proyecto "${proyectoAnterior.nombre}". ` +
+          `Verificar que no haya negociaciones activas o compromisos pendientes.`
+        )
+      }
+    }
+
+    // 4. Preparar datos para actualización
     const updateData: any = {}
 
     // Mapear campos de la aplicación a campos de DB
@@ -176,7 +247,7 @@ class ProyectosService {
       updateData.presupuesto = data.presupuesto
     if (data.estado !== undefined) updateData.estado = data.estado
 
-    // 3. Actualizar proyecto en DB
+    // 5. Actualizar proyecto en DB
     const { data: proyecto, error } = await supabase
       .from('proyectos')
       .update(updateData)
@@ -198,7 +269,7 @@ class ProyectosService {
       throw new Error(`Error al actualizar proyecto: ${error.message}`)
     }
 
-    // 4. ✅ Actualizar manzanas si se proporcionaron
+    // 6. ✅ Actualizar manzanas si se proporcionaron
     if (data.manzanas && data.manzanas.length > 0) {
       // Obtener IDs de manzanas existentes
       const manzanasExistentesIds = (proyecto.manzanas || []).map((m: any) => m.id)
@@ -266,7 +337,7 @@ class ProyectosService {
 
     const proyectoActualizado = this.transformarProyectoDeDB(proyecto)
 
-    // 4. 🔍 AUDITORÍA: Registrar actualización
+    // 7. 🔍 AUDITORÍA: Registrar actualización
     if (proyectoAnterior) {
       try {
         await auditService.auditarActualizacion(
@@ -296,7 +367,43 @@ class ProyectosService {
       console.error('Error al obtener proyecto para auditoría:', error)
     }
 
-    // 2. Eliminar de DB
+    // 2. ✅ VALIDACIÓN CRÍTICA: Verificar que NO tenga viviendas
+    const { data: manzanas } = await supabase
+      .from('manzanas')
+      .select('id')
+      .eq('proyecto_id', id)
+
+    const manzanasIds = manzanas?.map(m => m.id) || []
+
+    if (manzanasIds.length > 0) {
+      // Verificar viviendas en las manzanas
+      const { count: totalViviendas } = await supabase
+        .from('viviendas')
+        .select('*', { count: 'exact', head: true })
+        .in('manzana_id', manzanasIds)
+
+      if (totalViviendas && totalViviendas > 0) {
+        throw new Error(
+          `No se puede eliminar el proyecto porque tiene ${totalViviendas} vivienda(s) registrada(s). ` +
+          `Por seguridad de datos, archive el proyecto en lugar de eliminarlo.`
+        )
+      }
+    }
+
+    // 3. ✅ VALIDACIÓN CRÍTICA: Verificar que NO tenga documentos
+    const { count: totalDocumentos } = await supabase
+      .from('documentos_proyecto')
+      .select('*', { count: 'exact', head: true })
+      .eq('proyecto_id', id)
+
+    if (totalDocumentos && totalDocumentos > 0) {
+      throw new Error(
+        `No se puede eliminar el proyecto porque tiene ${totalDocumentos} documento(s) asociado(s). ` +
+        `Elimine primero los documentos o archive el proyecto.`
+      )
+    }
+
+    // 4. Eliminar de DB (solo si pasó todas las validaciones)
     const { error } = await supabase.from('proyectos').delete().eq('id', id)
 
     if (error) {
@@ -304,7 +411,7 @@ class ProyectosService {
       throw new Error(`Error al eliminar proyecto: ${error.message}`)
     }
 
-    // 3. 🔍 AUDITORÍA: Registrar eliminación
+    // 5. 🔍 AUDITORÍA: Registrar eliminación
     if (proyectoEliminado) {
       try {
         await auditService.auditarEliminacion(
@@ -322,6 +429,128 @@ class ProyectosService {
         console.error('Error al auditar eliminación de proyecto:', auditError)
       }
     }
+  }
+
+  /**
+   * 📦 Archivar proyecto (soft delete)
+   * Permite ocultar proyectos sin perder datos históricos
+   */
+  async archivarProyecto(id: string, motivo?: string): Promise<void> {
+    // 1. 🔍 AUDITORÍA: Obtener datos ANTES de archivar
+    let proyectoArchivado: Proyecto | null = null
+    try {
+      proyectoArchivado = await this.obtenerProyecto(id)
+    } catch (error) {
+      console.error('Error al obtener proyecto para auditoría:', error)
+    }
+
+    // 2. Archivar proyecto
+    const { error } = await supabase
+      .from('proyectos')
+      .update({
+        archivado: true,
+        fecha_archivado: new Date().toISOString(),
+        motivo_archivo: motivo || null,
+      })
+      .eq('id', id)
+
+    if (error) {
+      console.error('Error al archivar proyecto:', error)
+      throw new Error(`Error al archivar proyecto: ${error.message}`)
+    }
+
+    // 3. 🔍 AUDITORÍA: Registrar archivado
+    if (proyectoArchivado) {
+      try {
+        await auditService.auditarActualizacion(
+          'proyectos',
+          id,
+          proyectoArchivado,
+          { ...proyectoArchivado, archivado: true },
+          {
+            accion: 'archivado',
+            motivo_archivo: motivo,
+            nombre_proyecto: proyectoArchivado.nombre,
+            estado_al_archivar: proyectoArchivado.estado,
+          },
+          'proyectos'
+        )
+      } catch (auditError) {
+        console.error('Error al auditar archivado de proyecto:', auditError)
+      }
+    }
+  }
+
+  /**
+   * 📂 Restaurar proyecto archivado
+   * Vuelve a mostrar el proyecto en la lista activa
+   */
+  async restaurarProyecto(id: string): Promise<void> {
+    // 1. 🔍 AUDITORÍA: Obtener datos ANTES de restaurar
+    let proyectoRestaurado: Proyecto | null = null
+    try {
+      proyectoRestaurado = await this.obtenerProyecto(id)
+    } catch (error) {
+      console.error('Error al obtener proyecto para auditoría:', error)
+    }
+
+    // 2. Restaurar proyecto
+    const { error } = await supabase
+      .from('proyectos')
+      .update({
+        archivado: false,
+        fecha_archivado: null,
+        motivo_archivo: null,
+      })
+      .eq('id', id)
+
+    if (error) {
+      console.error('Error al restaurar proyecto:', error)
+      throw new Error(`Error al restaurar proyecto: ${error.message}`)
+    }
+
+    // 3. 🔍 AUDITORÍA: Registrar restauración
+    if (proyectoRestaurado) {
+      try {
+        await auditService.auditarActualizacion(
+          'proyectos',
+          id,
+          proyectoRestaurado,
+          { ...proyectoRestaurado, archivado: false },
+          {
+            accion: 'restaurado',
+            nombre_proyecto: proyectoRestaurado.nombre,
+          },
+          'proyectos'
+        )
+      } catch (auditError) {
+        console.error('Error al auditar restauración de proyecto:', auditError)
+      }
+    }
+  }
+
+  /**
+   * 🗑️ Eliminación definitiva de proyecto (solo para casos extremos)
+   * Requiere que el proyecto esté archivado primero
+   * Solo admins deberían tener acceso a este método
+   */
+  async eliminarProyectoDefinitivo(id: string): Promise<void> {
+    // 1. Verificar que el proyecto esté archivado
+    const { data: proyecto } = await supabase
+      .from('proyectos')
+      .select('archivado, nombre')
+      .eq('id', id)
+      .single()
+
+    if (!proyecto?.archivado) {
+      throw new Error(
+        'El proyecto debe estar archivado antes de eliminarlo definitivamente. ' +
+        'Archive primero el proyecto y luego proceda con la eliminación.'
+      )
+    }
+
+    // 2. Ejecutar eliminación normal (con todas las validaciones)
+    await this.eliminarProyecto(id)
   }
 
   // Métodos de transformación
@@ -349,6 +578,10 @@ class ProyectosService {
       })),
       fechaCreacion: data.fecha_creacion,
       fechaActualizacion: data.fecha_actualizacion,
+      // ✅ Campos de archivado
+      archivado: data.archivado || false,
+      fechaArchivado: data.fecha_archivado || null,
+      motivoArchivo: data.motivo_archivo || null,
     }
   }
 

@@ -2,19 +2,55 @@
 
 import { AnimatePresence, motion } from 'framer-motion'
 import {
-  AlertTriangle,
-  FileText,
-  Loader2,
-  Lock,
-  RefreshCw,
-  Shield,
-  Upload,
-  X
+    AlertTriangle,
+    CheckCircle2,
+    Database,
+    Download,
+    FileText,
+    Loader2,
+    Lock,
+    RefreshCw,
+    Shield,
+    Upload,
+    X
 } from 'lucide-react'
 
 import { useReemplazarArchivoForm } from '../../hooks'
 import type { DocumentoProyecto } from '../../types'
 import { reemplazarArchivoModalStyles as styles } from './DocumentoReemplazarArchivoModal.styles'
+
+// Helper para iconos de fase
+const getFaseIcon = (fase: string) => {
+  switch (fase) {
+    case 'validando':
+      return <Shield size={16} className="text-blue-500" />
+    case 'descargando':
+      return <Download size={16} className="text-indigo-500" />
+    case 'creando-backup':
+      return <FileText size={16} className="text-purple-500" />
+    case 'subiendo':
+      return <Upload size={16} className="text-pink-500" />
+    case 'actualizando':
+      return <Database size={16} className="text-violet-500" />
+    case 'finalizando':
+      return <CheckCircle2 size={16} className="text-green-500" />
+    default:
+      return <Loader2 size={16} className="text-gray-500 animate-spin" />
+  }
+}
+
+// Helper para porcentaje por fase
+const getFasePorcentaje = (faseId: string): number => {
+  const porcentajes: Record<string, number> = {
+    validando: 10,
+    descargando: 25,
+    'creando-backup': 45,
+    subiendo: 65,
+    actualizando: 85,
+    finalizando: 100
+  }
+  return porcentajes[faseId] || 0
+}
 
 interface DocumentoReemplazarArchivoModalProps {
   isOpen: boolean
@@ -243,22 +279,97 @@ export function DocumentoReemplazarArchivoModal({
                 </p>
               </div>
 
-              {/* Barra de progreso */}
-              {reemplazando && progreso > 0 && (
-                <div className={styles.progress.container}>
-                  <div className={styles.progress.header}>
-                    <span className={styles.progress.label}>Progreso</span>
-                    <span className={styles.progress.percentage}>{progreso}%</span>
+              {/* Barra de progreso profesional con fases */}
+              {reemplazando && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="space-y-4 p-6 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 rounded-xl border border-blue-200 dark:border-blue-800"
+                >
+                  {/* Header del progreso */}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="relative">
+                        <div className="animate-spin rounded-full h-8 w-8 border-3 border-blue-200 dark:border-blue-800 border-t-blue-600 dark:border-t-blue-400"></div>
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          {getFaseIcon(progreso.fase)}
+                        </div>
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                          {progreso.mensaje}
+                        </p>
+                        <p className="text-xs text-gray-600 dark:text-gray-400 mt-0.5">
+                          Fase: {progreso.fase}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                        {progreso.porcentaje}%
+                      </p>
+                    </div>
                   </div>
-                  <div className={styles.progress.bar}>
+
+                  {/* Barra de progreso animada */}
+                  <div className="relative h-3 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden shadow-inner">
                     <motion.div
                       initial={{ width: 0 }}
-                      animate={{ width: `${progreso}%` }}
-                      transition={{ duration: 0.3 }}
-                      className={styles.progress.fill}
-                    />
+                      animate={{ width: `${progreso.porcentaje}%` }}
+                      transition={{ duration: 0.5, ease: 'easeOut' }}
+                      className="absolute inset-y-0 left-0 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 rounded-full shadow-lg"
+                    >
+                      {/* Efecto de brillo */}
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-pulse"></div>
+                    </motion.div>
                   </div>
-                </div>
+
+                  {/* Lista de fases con checkmarks */}
+                  <div className="grid grid-cols-3 gap-2 pt-2">
+                    {[
+                      { id: 'validando', label: 'Validar' },
+                      { id: 'descargando', label: 'Descargar' },
+                      { id: 'creando-backup', label: 'Backup' },
+                      { id: 'subiendo', label: 'Subir' },
+                      { id: 'actualizando', label: 'Actualizar' },
+                      { id: 'finalizando', label: 'Finalizar' }
+                    ].map((step) => {
+                      const isCurrent = progreso.fase === step.id
+                      const isCompleted =
+                        progreso.porcentaje > getFasePorcentaje(step.id)
+
+                      return (
+                        <div
+                          key={step.id}
+                          className={`flex items-center gap-1.5 px-2 py-1 rounded-lg text-xs transition-all ${
+                            isCurrent
+                              ? 'bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 font-semibold'
+                              : isCompleted
+                                ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
+                                : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-500'
+                          }`}
+                        >
+                          {isCompleted ? (
+                            <CheckCircle2 size={12} />
+                          ) : isCurrent ? (
+                            <Loader2 size={12} className="animate-spin" />
+                          ) : (
+                            <div className="w-3 h-3 rounded-full border-2 border-current opacity-30"></div>
+                          )}
+                          <span>{step.label}</span>
+                        </div>
+                      )
+                    })}
+                  </div>
+
+                  {/* Mensaje de advertencia */}
+                  <div className="flex items-start gap-2 pt-2 border-t border-blue-200 dark:border-blue-800">
+                    <AlertTriangle size={14} className="text-amber-500 mt-0.5 flex-shrink-0" />
+                    <p className="text-xs text-gray-600 dark:text-gray-400">
+                      No cierres esta ventana hasta que el proceso finalice completamente
+                    </p>
+                  </div>
+                </motion.div>
               )}
 
               {/* Botones */}

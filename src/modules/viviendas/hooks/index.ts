@@ -18,6 +18,10 @@ export { useDocumentosVivienda, useEstadisticasDocumentosVivienda } from './useD
 export { useDocumentoUploadVivienda } from './useDocumentoUploadVivienda'
 export { useDocumentoVersiones } from './useDocumentoVersiones'
 
+// Sistema de Estados de Versión - PROFESIONAL
+export { useEstadosVersion } from './useEstadosVersion'
+export { useReemplazarArchivo } from './useReemplazarArchivo'
+
 // ============================================
 // HOOKS DE LÓGICA UI (Por refactorizar)
 // ============================================

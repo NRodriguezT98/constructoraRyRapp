@@ -8,9 +8,9 @@
  * - Eliminar versión (soft delete, solo Admin)
  */
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
-import { useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
 import { useAuth } from '@/contexts/auth-context'
@@ -33,8 +33,6 @@ export function useDocumentoVersiones({
 }: UseDocumentoVersionesProps) {
   const { user, perfil } = useAuth()
   const queryClient = useQueryClient()
-  const [versiones, setVersiones] = useState<DocumentoProyecto[]>([])
-  const [cargando, setCargando] = useState(false)
   const [restaurando, setRestaurando] = useState<string | null>(null)
   const [eliminando, setEliminando] = useState<string | null>(null)
 
@@ -51,24 +49,20 @@ export function useDocumentoVersiones({
   } | null>(null)
   const [motivoEliminacion, setMotivoEliminacion] = useState('')
 
-  useEffect(() => {
-    if (isOpen && documentoId) {
-      cargarVersiones()
-    }
-  }, [isOpen, documentoId])
-
-  const cargarVersiones = async () => {
-    setCargando(true)
-    try {
-      const data = await DocumentosService.obtenerVersiones(documentoId)
-      setVersiones(data)
-    } catch (error) {
-      console.error('Error al cargar versiones:', error)
-      toast.error('Error al cargar historial de versiones')
-    } finally {
-      setCargando(false)
-    }
-  }
+  // ✅ USAR REACT QUERY para cargar versiones (auto-refetch cuando se invalida)
+  const {
+    data: versiones = [],
+    isLoading: cargando,
+    refetch: cargarVersiones,
+  } = useQuery({
+    queryKey: ['documento-versiones', documentoId],
+    queryFn: async () => {
+      if (!documentoId) return []
+      return await DocumentosService.obtenerVersiones(documentoId)
+    },
+    enabled: isOpen && !!documentoId, // Solo cargar cuando modal está abierto
+    staleTime: 0, // Siempre refetch al invalidar
+  })
 
   const handleVerDocumento = async (documento: DocumentoProyecto) => {
     try {
@@ -136,7 +130,11 @@ export function useDocumentoVersiones({
         })
       }
 
-      await cargarVersiones()
+      // ✅ Invalidar query de versiones para refetch automático
+      queryClient.invalidateQueries({
+        queryKey: ['documento-versiones', documentoId],
+      })
+
       onVersionRestaurada?.()
       // Limpiar estado
       setMostrarModalMotivo(false)

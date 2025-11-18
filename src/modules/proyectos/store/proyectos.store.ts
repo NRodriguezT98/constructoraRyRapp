@@ -3,12 +3,12 @@ import { devtools, persist } from 'zustand/middleware'
 
 import { proyectosService } from '../services/proyectos.service'
 import {
-  ProyectosState,
-  ProyectosActions,
-  Proyecto,
-  ProyectoFormData,
-  FiltroProyecto,
-  VistaProyecto,
+    FiltroProyecto,
+    Proyecto,
+    ProyectoFormData,
+    ProyectosActions,
+    ProyectosState,
+    VistaProyecto,
 } from '../types'
 
 interface ProyectosStore extends ProyectosState, ProyectosActions {}
@@ -115,10 +115,10 @@ export const useProyectosStore = create<ProyectosStore>()(
           }
         },
 
-        obtenerProyectos: async () => {
+        obtenerProyectos: async (incluirArchivados: boolean = false) => {
           set({ cargando: true, error: undefined })
           try {
-            const proyectos = await proyectosService.obtenerProyectos()
+            const proyectos = await proyectosService.obtenerProyectos(incluirArchivados)
             set({ proyectos, cargando: false })
             return proyectos
           } catch (error) {
@@ -126,6 +126,69 @@ export const useProyectosStore = create<ProyectosStore>()(
               error instanceof Error
                 ? error.message
                 : 'Error al obtener proyectos'
+            set({ error: mensaje, cargando: false })
+            throw error
+          }
+        },
+
+        // ✅ Sistema de archivado
+        archivarProyecto: async (id: string, motivo?: string) => {
+          set({ cargando: true, error: undefined })
+          try {
+            await proyectosService.archivarProyecto(id, motivo)
+            // Remover de la lista de proyectos activos
+            set(state => ({
+              proyectos: state.proyectos.filter(p => p.id !== id),
+              proyectoActual:
+                state.proyectoActual?.id === id
+                  ? undefined
+                  : state.proyectoActual,
+              cargando: false,
+            }))
+          } catch (error) {
+            const mensaje =
+              error instanceof Error
+                ? error.message
+                : 'Error al archivar proyecto'
+            set({ error: mensaje, cargando: false })
+            throw error
+          }
+        },
+
+        restaurarProyecto: async (id: string) => {
+          set({ cargando: true, error: undefined })
+          try {
+            await proyectosService.restaurarProyecto(id)
+            // Recargar lista de proyectos
+            const proyectos = await proyectosService.obtenerProyectos()
+            set({ proyectos, cargando: false })
+          } catch (error) {
+            const mensaje =
+              error instanceof Error
+                ? error.message
+                : 'Error al restaurar proyecto'
+            set({ error: mensaje, cargando: false })
+            throw error
+          }
+        },
+
+        eliminarProyectoDefinitivo: async (id: string) => {
+          set({ cargando: true, error: undefined })
+          try {
+            await proyectosService.eliminarProyectoDefinitivo(id)
+            set(state => ({
+              proyectos: state.proyectos.filter(p => p.id !== id),
+              proyectoActual:
+                state.proyectoActual?.id === id
+                  ? undefined
+                  : state.proyectoActual,
+              cargando: false,
+            }))
+          } catch (error) {
+            const mensaje =
+              error instanceof Error
+                ? error.message
+                : 'Error al eliminar proyecto definitivamente'
             set({ error: mensaje, cargando: false })
             throw error
           }

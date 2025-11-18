@@ -203,6 +203,23 @@ export function useDocumentoReemplazarArchivo() {
 
       setProgreso(90)
 
+      // 8.5 🔗 GENERAR URL FIRMADA DEL ARCHIVO ACTUAL (válida por 1 año)
+      let urlActual: string | null = null
+
+      try {
+        // URL del archivo actual (nuevo)
+        const { data: actualUrlData } = await supabase.storage
+          .from('documentos-proyectos')
+          .createSignedUrl(rutaNueva, 31536000) // 1 año de validez
+
+        if (actualUrlData?.signedUrl) {
+          urlActual = actualUrlData.signedUrl
+        }
+      } catch (urlError) {
+        console.warn('⚠️ No se pudo generar URL firmada:', urlError)
+        // No bloqueamos el proceso, solo no tendremos URL
+      }
+
       // 9. 🔍 REGISTRAR EN AUDIT_LOG (Sistema de auditoría detallada)
       try {
         await auditService.registrarAccion({
@@ -230,13 +247,15 @@ export function useDocumentoReemplazarArchivo() {
               nombre: documento.nombre_archivo,
               ruta: documento.url_storage,
               tamano: documento.tamano_bytes,
-              tamano_formateado: `${(documento.tamano_bytes / 1024).toFixed(2)} KB`
+              tamano_formateado: `${(documento.tamano_bytes / 1024).toFixed(2)} KB`,
+              url_backup: null // ⚠️ Este sistema NO crea backup, elimina directamente
             },
             archivo_nuevo: {
               nombre: data.nuevoArchivo.name,
               ruta: rutaNueva,
               tamano: data.nuevoArchivo.size,
-              tamano_formateado: `${(data.nuevoArchivo.size / 1024).toFixed(2)} KB`
+              tamano_formateado: `${(data.nuevoArchivo.size / 1024).toFixed(2)} KB`,
+              url_actual: urlActual // ✅ URL firmada del archivo nuevo
             },
             ip_origen: ipOrigen,
             user_agent: userAgent
