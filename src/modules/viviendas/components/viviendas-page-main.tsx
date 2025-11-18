@@ -6,18 +6,20 @@ import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 
 import { construirURLVivienda } from '@/lib/utils/slug.utils'
+import { Modal } from '@/shared/components/ui/Modal'
 
-import { Modal } from '../../../shared/components/ui/Modal'
+import { useVistaPreference } from '@/shared/hooks/useVistaPreference'
+
 import { useViviendasList } from '../hooks/useViviendasList'
 import { viviendasStyles as styles } from '../styles/viviendas.styles'
 
-import { FormularioVivienda } from './formulario-vivienda'
 import { ViviendasEmpty } from './viviendas-empty'
-import { ViviendasFilters } from './viviendas-filters'
 import { ViviendasHeader } from './viviendas-header'
 import { ViviendasLista } from './viviendas-lista'
 import { ViviendasSkeleton } from './viviendas-skeleton'
 import { ViviendasStats } from './viviendas-stats'
+import { ViviendasFiltrosPremium } from './ViviendasFiltrosPremium'
+import { ViviendasTabla } from './ViviendasTabla'
 
 /**
  * Permisos del usuario (pasados desde Server Component)
@@ -55,26 +57,12 @@ export function ViviendasPageMain({
   canView = true,
   isAdmin = false,
 }: ViviendasPageMainProps = {}) {
-  console.log('🏠 [VIVIENDAS MAIN] Client Component montado con permisos:', {
-    canCreate,
-    canEdit,
-    canDelete,
-    canView,
-    isAdmin,
-  })
-
   const router = useRouter()
   const {
     viviendas,
     cargando,
-    modalAbierto,
-    modalEditar,
-    viviendaEditar,
     modalEliminar,
     viviendaEliminar,
-    abrirModalCrear,
-    abrirModalEditar,
-    cerrarModal,
     abrirModalEliminar,
     confirmarEliminar,
     cancelarEliminar,
@@ -84,9 +72,15 @@ export function ViviendasPageMain({
     refrescar,
     estadisticas,
     totalFiltradas,
+    proyectos,
   } = useViviendasList()
 
+  // Hook para preferencia de vista (cards vs tabla)
+  const [vista, setVista] = useVistaPreference({ moduleName: 'viviendas' })
+
   const handleVerDetalle = (vivienda: any) => {
+    console.log('🔍 handleVerDetalle called with:', vivienda)
+
     // Validar que tenemos id y numero
     if (!vivienda?.id || !vivienda?.numero) {
       console.error('handleVerDetalle - Datos inválidos:', { vivienda })
@@ -131,20 +125,23 @@ export function ViviendasPageMain({
           valorTotal={estadisticas.valorTotal}
         />
 
-        {/* Filtros */}
-        <ViviendasFilters
+        {/* Filtros Premium */}
+        <ViviendasFiltrosPremium
           filtros={filtros}
-          onFiltrosChange={actualizarFiltros}
+          onActualizarFiltros={actualizarFiltros}
           onLimpiarFiltros={limpiarFiltros}
-          resultadosCount={viviendas.length}
+          totalResultados={viviendas.length}
+          proyectos={proyectos}
+          vista={vista}
+          onCambiarVista={setVista}
         />
 
         {/* Contenido Principal */}
         {cargando ? (
           <ViviendasSkeleton />
         ) : viviendas.length === 0 ? (
-          <ViviendasEmpty onCrear={abrirModalCrear} />
-        ) : (
+          <ViviendasEmpty onCrear={() => router.push('/viviendas/nueva')} />
+        ) : vista === 'cards' ? (
           <ViviendasLista
             viviendas={viviendas}
             onVerDetalle={handleVerDetalle}
@@ -164,48 +161,22 @@ export function ViviendasPageMain({
               console.log('Generar escritura para:', vivienda)
               // TODO: Implementar generación de escritura
             }}
-            onEditar={abrirModalEditar}
             onEliminar={abrirModalEliminar}
+          />
+        ) : (
+          <ViviendasTabla
+            viviendas={viviendas}
+            onView={handleVerDetalle}
+            onEdit={(vivienda) => {
+              console.log('Editar vivienda:', vivienda)
+              // TODO: Implementar edición
+            }}
+            onDelete={abrirModalEliminar}
+            canEdit={canEdit}
+            canDelete={canDelete}
           />
         )}
       </motion.div>
-
-      {/* Modal Crear Vivienda */}
-      <Modal
-        isOpen={modalAbierto}
-        onClose={cerrarModal}
-        title="Nueva Vivienda"
-        description="Completa la información de la nueva vivienda en 5 pasos"
-        size="xl"
-      >
-        <FormularioVivienda
-          onSuccess={() => {
-            cerrarModal()
-            refrescar()
-          }}
-          onCancel={cerrarModal}
-        />
-      </Modal>
-
-      {/* Modal Editar Vivienda */}
-      <Modal
-        isOpen={modalEditar}
-        onClose={cerrarModal}
-        title="Editar Vivienda"
-        description="Actualiza la información de la vivienda"
-        size="xl"
-      >
-        {viviendaEditar && (
-          <FormularioVivienda
-            viviendaId={viviendaEditar.id}
-            onSuccess={() => {
-              cerrarModal()
-              refrescar()
-            }}
-            onCancel={cerrarModal}
-          />
-        )}
-      </Modal>
 
       {/* Modal Confirmar Eliminación */}
       <Modal

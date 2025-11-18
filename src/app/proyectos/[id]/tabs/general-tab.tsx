@@ -187,8 +187,8 @@ export function GeneralTab({ proyecto }: GeneralTabProps) {
       {/* Grid de Manzanas - Adaptativo según cantidad */}
       <div className={cn(
         'grid gap-3',
-        // 1 manzana: Centrada, max-width
-        proyecto.manzanas.length === 1 && 'grid-cols-1 max-w-md mx-auto',
+        // 1 manzana: Ocupa todo el ancho disponible
+        proyecto.manzanas.length === 1 && 'grid-cols-1',
         // 2 manzanas: 2 columnas
         proyecto.manzanas.length === 2 && 'grid-cols-1 sm:grid-cols-2',
         // 3 manzanas: 3 columnas

@@ -51,7 +51,7 @@ export function PasoFinancieroNuevo({ register, errors, watch, setValue, resumen
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -20 }}
       transition={{ duration: 0.2 }}
-      className="space-y-6"
+      className="space-y-3"
     >
       {/* Título del paso */}
       <div>
@@ -101,8 +101,8 @@ export function PasoFinancieroNuevo({ register, errors, watch, setValue, resumen
       </div>
 
       {/* Es Esquinera */}
-      <div className="space-y-3">
-        <div className="flex items-center gap-3">
+      <div className="space-y-2">
+        <div className="flex items-center gap-2">
           <input
             {...register('es_esquinera')}
             id="es_esquinera"
@@ -161,25 +161,25 @@ export function PasoFinancieroNuevo({ register, errors, watch, setValue, resumen
       </div>
 
       {/* Resumen Financiero */}
-      <div className="rounded-xl bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-950/30 dark:to-amber-950/30 border border-orange-200 dark:border-orange-800 p-5">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center shadow-lg shadow-orange-500/30">
-            <DollarSign className="w-5 h-5 text-white" />
+      <div className="rounded-xl bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-950/30 dark:to-amber-950/30 border border-orange-200 dark:border-orange-800 p-3">
+        <div className="flex items-center gap-2 mb-3">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center shadow-lg shadow-orange-500/30">
+            <DollarSign className="w-4 h-4 text-white" />
           </div>
-          <h3 className="text-lg font-bold text-orange-900 dark:text-orange-100">
+          <h3 className="text-base font-bold text-orange-900 dark:text-orange-100">
             Resumen Financiero
           </h3>
         </div>
 
-        <div className="space-y-3">
-          <div className="flex items-center justify-between py-2 border-b border-orange-200 dark:border-orange-800">
+        <div className="space-y-2">
+          <div className="flex items-center justify-between py-1.5 border-b border-orange-200 dark:border-orange-800">
             <span className="text-sm text-gray-600 dark:text-gray-400">Valor Base:</span>
             <span className="text-sm font-semibold text-gray-900 dark:text-white">
               {formatCurrency(resumenFinanciero.valor_base)}
             </span>
           </div>
 
-          <div className="flex items-center justify-between py-2 border-b border-orange-200 dark:border-orange-800">
+          <div className="flex items-center justify-between py-1.5 border-b border-orange-200 dark:border-orange-800">
             <span className="text-sm text-gray-600 dark:text-gray-400">Gastos Notariales (Automático):</span>
             <span className="text-sm font-semibold text-blue-600 dark:text-blue-400">
               + {formatCurrency(resumenFinanciero.gastos_notariales)}
@@ -187,7 +187,7 @@ export function PasoFinancieroNuevo({ register, errors, watch, setValue, resumen
           </div>
 
           {esEsquinera && (
-            <div className="flex items-center justify-between py-2 border-b border-orange-200 dark:border-orange-800">
+            <div className="flex items-center justify-between py-1.5 border-b border-orange-200 dark:border-orange-800">
               <span className="text-sm text-gray-600 dark:text-gray-400">Recargo Esquinera:</span>
               <span className="text-sm font-semibold text-orange-600 dark:text-orange-400">
                 + {formatCurrency(resumenFinanciero.recargo_esquinera)}
@@ -195,7 +195,7 @@ export function PasoFinancieroNuevo({ register, errors, watch, setValue, resumen
             </div>
           )}
 
-          <div className="flex items-center justify-between pt-3">
+          <div className="flex items-center justify-between pt-2">
             <span className="text-base font-bold text-gray-900 dark:text-white">Valor Total:</span>
             <span className="text-xl font-bold bg-gradient-to-br from-orange-600 to-amber-600 bg-clip-text text-transparent">
               {formatCurrency(resumenFinanciero.valor_total)}
@@ -204,7 +204,7 @@ export function PasoFinancieroNuevo({ register, errors, watch, setValue, resumen
         </div>
 
         {/* Nota informativa */}
-        <div className="mt-4 rounded-lg border border-blue-200 bg-blue-50 dark:border-blue-700 dark:bg-blue-900/20 p-3">
+        <div className="mt-3 rounded-lg border border-blue-200 bg-blue-50 dark:border-blue-700 dark:bg-blue-900/20 p-2">
           <p className="text-xs text-blue-900 dark:text-blue-100">
             ℹ️ <strong>Nota:</strong> Los gastos notariales son un recargo <strong>obligatorio</strong> que se suma automáticamente al valor base de todas las viviendas.
           </p>

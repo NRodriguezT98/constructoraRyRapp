@@ -1,26 +1,20 @@
 /**
  * PasoUbicacionNuevo - Paso 1: Selección de ubicación
- * ✅ Diseño compacto estándar
- * ✅ Carga dinámica de proyectos y manzanas
+ * ✅ Componente presentacional puro
+ * ✅ Lógica en usePasoUbicacion hook
+ * ✅ React Query para carga de datos
  */
 
 'use client'
-
-import { useEffect, useState } from 'react'
 
 import { motion } from 'framer-motion'
 import { AlertCircle, Building2, Home, MapPin } from 'lucide-react'
 import type { FieldErrors, UseFormRegister, UseFormSetValue, UseFormWatch } from 'react-hook-form'
 
-import { proyectosService } from '@/modules/proyectos/services/proyectos.service'
-import type { Proyecto } from '@/modules/proyectos/types'
 import { cn } from '@/shared/utils/helpers'
 
-
-
-import { viviendasService } from '../services/viviendas.service'
+import { usePasoUbicacion } from '../hooks/usePasoUbicacion'
 import { nuevaViviendaStyles as styles } from '../styles/nueva-vivienda.styles'
-import type { ManzanaConDisponibilidad } from '../types'
 
 interface PasoUbicacionProps {
   register: UseFormRegister<any>
@@ -30,146 +24,20 @@ interface PasoUbicacionProps {
 }
 
 export function PasoUbicacionNuevo({ register, errors, setValue, watch }: PasoUbicacionProps) {
-  const [proyectos, setProyectos] = useState<Proyecto[]>([])
-  const [manzanas, setManzanas] = useState<ManzanaConDisponibilidad[]>([])
-  const [numerosDisponibles, setNumerosDisponibles] = useState<number[]>([])
-  const [cargandoProyectos, setCargandoProyectos] = useState(true)
-  const [cargandoManzanas, setCargandoManzanas] = useState(false)
+  // ✅ Hook con toda la lógica
+  const {
+    proyectos,
+    manzanas,
+    numerosDisponibles,
+    manzanaInfo,
+    cargandoProyectos,
+    cargandoManzanas,
+    cargandoNumeros,
+  } = usePasoUbicacion({ setValue, watch })
 
+  // Variables observadas del formulario
   const proyectoSeleccionado = watch('proyecto_id')
   const manzanaSeleccionada = watch('manzana_id')
-
-  // Cargar proyectos al montar
-  useEffect(() => {
-    let mounted = true
-
-    async function cargarProyectos() {
-      try {
-        console.log('🏗️ [PASO 1] Cargando proyectos...')
-        if (mounted) setCargandoProyectos(true)
-        const data = await proyectosService.obtenerProyectos()
-        console.log('✅ [PASO 1] Proyectos cargados:', data.length)
-        if (mounted) setProyectos(data)
-      } catch (error) {
-        console.error('❌ [PASO 1] Error cargando proyectos:', error)
-      } finally {
-        if (mounted) setCargandoProyectos(false)
-      }
-    }
-
-    cargarProyectos()
-
-    return () => {
-      mounted = false
-    }
-  }, [])
-
-  // Cargar manzanas cuando se selecciona un proyecto
-  useEffect(() => {
-    let mounted = true
-
-    async function cargarManzanas() {
-      if (!proyectoSeleccionado) {
-        console.log('⚠️ [PASO 1] No hay proyecto seleccionado')
-        if (mounted) {
-          setManzanas([])
-          setNumerosDisponibles([])
-        }
-        return
-      }
-
-      console.log('🏗️ [PASO 1] Proyecto seleccionado:', proyectoSeleccionado)
-
-      try {
-        if (mounted) setCargandoManzanas(true)
-        const data = await viviendasService.obtenerManzanasDisponibles(proyectoSeleccionado)
-        console.log('✅ [PASO 1] Manzanas cargadas:', data.length)
-        if (mounted) setManzanas(data)
-      } catch (error) {
-        console.error('❌ [PASO 1] Error cargando manzanas:', error)
-        if (mounted) setManzanas([])
-      } finally {
-        if (mounted) setCargandoManzanas(false)
-      }
-    }
-
-    cargarManzanas()
-
-    return () => {
-      mounted = false
-    }
-  }, [proyectoSeleccionado])
-
-  // Cargar números disponibles cuando se selecciona una manzana
-  useEffect(() => {
-    let mounted = true
-
-    async function cargarNumerosDisponibles() {
-      if (!manzanaSeleccionada) {
-        setNumerosDisponibles([])
-        return
-      }
-
-      try {
-        const manzana = manzanas.find(m => m.id === manzanaSeleccionada)
-        if (!manzana) return
-
-        // Obtener viviendas ya creadas en la manzana
-        const viviendas = await viviendasService.obtenerPorManzana(manzanaSeleccionada)
-        const numerosUsados = viviendas.map(v => parseInt(v.numero))
-
-        // Generar números disponibles (1 a total_viviendas, excluyendo usados)
-        const todosNumeros = Array.from({ length: manzana.total_viviendas }, (_, i) => i + 1)
-        const disponibles = todosNumeros.filter(num => !numerosUsados.includes(num))
-
-        if (mounted) {
-          setNumerosDisponibles(disponibles)
-        }
-      } catch (error) {
-        console.error('Error cargando números disponibles:', error)
-        if (mounted) {
-          setNumerosDisponibles([])
-        }
-      }
-    }
-
-    cargarNumerosDisponibles()
-
-    return () => {
-      mounted = false
-    }
-  }, [manzanaSeleccionada, manzanas.length]) // ← CAMBIO: manzanas.length en lugar de manzanas completo
-
-  // Limpiar manzana y número cuando cambia el proyecto
-  useEffect(() => {
-    setValue('manzana_id', '')
-    setValue('numero', '')
-  }, [proyectoSeleccionado]) // ← CAMBIO: Removido setValue de dependencias
-
-  // Limpiar número cuando cambia la manzana
-  useEffect(() => {
-    setValue('numero', '')
-  }, [manzanaSeleccionada]) // ← CAMBIO: Removido setValue de dependencias
-
-  const manzanaInfo = manzanas.find(m => m.id === manzanaSeleccionada)
-
-  const handleProyectoChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const value = e.target.value
-    console.log('📌 [PASO 1] Usuario seleccionó proyecto:', value)
-    setValue('proyecto_id', value)
-  }
-
-  const handleManzanaChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const value = e.target.value
-    console.log('📌 [PASO 1] Usuario seleccionó manzana:', value)
-    setValue('manzana_id', value)
-  }
-
-  const handleNumeroChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const value = e.target.value
-    console.log('📌 [PASO 1] Usuario seleccionó número:', value)
-    setValue('numero', value)
-  }
 
   return (
     <motion.div
@@ -177,14 +45,14 @@ export function PasoUbicacionNuevo({ register, errors, setValue, watch }: PasoUb
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -20 }}
       transition={{ duration: 0.2 }}
-      className="space-y-6"
+      className="space-y-3"
     >
       {/* Título del paso */}
-      <div>
+      <div className="mb-3">
         <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-1">
           Ubicación de la Vivienda
         </h2>
-        <p className="text-sm text-gray-600 dark:text-gray-400">
+        <p className="text-xs text-gray-600 dark:text-gray-400">
           Selecciona el proyecto, manzana y número de vivienda disponible
         </p>
       </div>
@@ -200,7 +68,6 @@ export function PasoUbicacionNuevo({ register, errors, setValue, watch }: PasoUb
             {...register('proyecto_id')}
             id="proyecto_id"
             disabled={cargandoProyectos}
-            onChange={handleProyectoChange}
             className={cn(
               styles.field.select,
               errors.proyecto_id && styles.field.inputError
@@ -237,7 +104,6 @@ export function PasoUbicacionNuevo({ register, errors, setValue, watch }: PasoUb
             {...register('manzana_id')}
             id="manzana_id"
             disabled={!proyectoSeleccionado || cargandoManzanas}
-            onChange={handleManzanaChange}
             className={cn(
               styles.field.select,
               errors.manzana_id && styles.field.inputError
@@ -294,7 +160,6 @@ export function PasoUbicacionNuevo({ register, errors, setValue, watch }: PasoUb
             {...register('numero')}
             id="numero"
             disabled={!manzanaSeleccionada || numerosDisponibles.length === 0}
-            onChange={handleNumeroChange}
             className={cn(
               styles.field.select,
               errors.numero && styles.field.inputError

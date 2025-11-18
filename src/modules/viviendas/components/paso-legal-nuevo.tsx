@@ -1,11 +1,10 @@
 /**
  * PasoLegalNuevo - Paso 3: Información legal
- * ✅ Diseño compacto estándar
+ * ✅ Componente presentacional puro
+ * ✅ Lógica en usePasoLegal hook
  */
 
 'use client'
-
-import { useRef, useState } from 'react'
 
 import { motion } from 'framer-motion'
 import { AlertCircle, CheckCircle, FileText, Hash, MapPin, Maximize, Upload, X } from 'lucide-react'
@@ -13,6 +12,7 @@ import type { FieldErrors, UseFormRegister, UseFormSetValue } from 'react-hook-f
 
 import { cn } from '@/shared/utils/helpers'
 
+import { usePasoLegal } from '../hooks/usePasoLegal'
 import { nuevaViviendaStyles as styles } from '../styles/nueva-vivienda.styles'
 
 interface PasoLegalProps {
@@ -22,42 +22,14 @@ interface PasoLegalProps {
 }
 
 export function PasoLegalNuevo({ register, errors, setValue }: PasoLegalProps) {
-  const fileInputRef = useRef<HTMLInputElement>(null)
-  const [certificadoFile, setCertificadoFile] = useState<File | null>(null)
-  const [fileError, setFileError] = useState<string>('')
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-
-    console.log('📄 [PASO LEGAL] Archivo seleccionado:', file.name, file.type, file.size)
-
-    // Validar tipo
-    if (file.type !== 'application/pdf') {
-      setFileError('Solo se permiten archivos PDF')
-      return
-    }
-
-    // Validar tamaño (10MB)
-    if (file.size > 10 * 1024 * 1024) {
-      setFileError('El archivo no debe superar los 10MB')
-      return
-    }
-
-    setFileError('')
-    setCertificadoFile(file)
-    setValue('certificado_tradicion_file', file)
-    console.log('✅ [PASO LEGAL] Archivo guardado en formulario')
-  }
-
-  const removeFile = () => {
-    console.log('🗑️ [PASO LEGAL] Archivo eliminado')
-    setCertificadoFile(null)
-    setValue('certificado_tradicion_file', undefined)
-    if (fileInputRef.current) {
-      fileInputRef.current.value = ''
-    }
-  }
+  // ✅ Hook con toda la lógica
+  const {
+    certificadoFile,
+    fileError,
+    fileInputRef,
+    handleFileChange,
+    removeFile,
+  } = usePasoLegal({ setValue })
 
   return (
     <motion.div
@@ -147,7 +119,7 @@ export function PasoLegalNuevo({ register, errors, setValue }: PasoLegalProps) {
           <div className={styles.field.inputWrapper}>
             <Maximize className={styles.field.inputIcon} />
             <input
-              {...register('area_lote', { valueAsNumber: true })}
+              {...register('area_lote')}
               id="area_lote"
               type="number"
               step="0.01"
@@ -179,7 +151,7 @@ export function PasoLegalNuevo({ register, errors, setValue }: PasoLegalProps) {
           <div className={styles.field.inputWrapper}>
             <Maximize className={styles.field.inputIcon} />
             <input
-              {...register('area_construida', { valueAsNumber: true })}
+              {...register('area_construida')}
               id="area_construida"
               type="number"
               step="0.01"

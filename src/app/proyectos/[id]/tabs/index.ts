@@ -4,4 +4,3 @@
 
 export { DocumentosTab } from './documentos-tab'
 export { GeneralTab } from './general-tab'
-export { ManzanasTab } from './manzanas-tab'

@@ -1,5 +1,4 @@
 // Barrel exports para componentes de viviendas
-export { FormularioVivienda } from './formulario-vivienda'
 export { NuevaViviendaView } from './nueva-vivienda-view'
 export { PasoFinanciero } from './paso-financiero'
 export { PasoLegal } from './paso-legal'
@@ -24,8 +23,10 @@ export { ViviendasLista } from './viviendas-lista'
 export { ViviendasPageMain } from './viviendas-page-main'
 export { ViviendasSkeleton } from './viviendas-skeleton'
 export { ViviendasStats } from './viviendas-stats'
+export { ViviendasFiltrosPremium } from './ViviendasFiltrosPremium'
+export { ViviendasTabla } from './ViviendasTabla'
 
-// Cards din�micas por estado
+// Cards dinámicas por estado
 export * from './cards'
 
-// Nota: ViviendaDetalle ahora es una p�gina en /viviendas/[id]
+// Nota: ViviendaDetalle ahora es una página en /viviendas/[id]

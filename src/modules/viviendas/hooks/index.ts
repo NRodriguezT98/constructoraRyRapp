@@ -23,9 +23,13 @@ export { useEstadosVersion } from './useEstadosVersion'
 export { useReemplazarArchivo } from './useReemplazarArchivo'
 
 // ============================================
-// HOOKS DE LÓGICA UI (Por refactorizar)
+// HOOKS DE LÓGICA UI
 // ============================================
 export { useNuevaVivienda } from './useNuevaVivienda'
+export { usePasoLegal } from './usePasoLegal'
+export { usePasoUbicacion } from './usePasoUbicacion'
 export { useViviendaForm } from './useViviendaForm'
 export { useViviendas } from './useViviendas'
+export { useViviendasFiltros } from './useViviendasFiltros'
 export { useViviendasList } from './useViviendasList'
+export { useViviendaTabla } from './useViviendaTabla'

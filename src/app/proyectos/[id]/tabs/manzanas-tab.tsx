@@ -11,6 +11,16 @@ interface ManzanasTabProps {
 }
 
 export function ManzanasTab({ proyecto }: ManzanasTabProps) {
+  // Calcular el número óptimo de columnas según la cantidad de manzanas
+  const numManzanas = proyecto.manzanas.length
+  const gridCols = numManzanas === 1
+    ? 'grid-cols-1' // 1 manzana: ocupa todo el ancho
+    : numManzanas === 2
+    ? 'grid-cols-1 sm:grid-cols-2' // 2 manzanas: 2 columnas
+    : numManzanas === 3
+    ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' // 3 manzanas: 3 columnas en desktop
+    : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' // 4+ manzanas: hasta 4 columnas
+
   return (
     <motion.div
       key='manzanas'
@@ -18,7 +28,7 @@ export function ManzanasTab({ proyecto }: ManzanasTabProps) {
       animate={{ opacity: 1, y: 0 }}
       className='space-y-4'
     >
-      <div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-3'>
+      <div className={`grid gap-4 ${gridCols}`}>
         {proyecto.manzanas.map((manzana, index) => (
           <motion.div
             key={manzana.id}

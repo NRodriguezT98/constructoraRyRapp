@@ -83,37 +83,24 @@ class ViviendasService {
    * Verifica si una matrícula inmobiliaria ya existe
    */
   async verificarMatriculaUnica(matricula: string, viviendaId?: string): Promise<boolean> {
-    console.log('🔍 [VERIFICAR MATRICULA] Buscando:', matricula, 'excluyendo ID:', viviendaId || 'ninguno')
-
     try {
-      let query = supabase
+      const { data, error } = await supabase
         .from('viviendas')
         .select('id, matricula_inmobiliaria')
         .eq('matricula_inmobiliaria', matricula)
 
+      if (error) throw error
+
       // Si estamos editando, excluir la vivienda actual
-      if (viviendaId) {
-        query = query.neq('id', viviendaId)
-      }
+      const duplicados = viviendaId
+        ? data?.filter(v => v.id !== viviendaId) || []
+        : data || []
 
-      console.log('🔍 [VERIFICAR MATRICULA] Ejecutando query...')
-      const { data, error } = await query
-      console.log('🔍 [VERIFICAR MATRICULA] Query completada')
-
-      if (error) {
-        console.error('❌ [VERIFICAR MATRICULA] Error en query:', error)
-        throw error
-      }
-
-      console.log('📊 [VERIFICAR MATRICULA] Resultados encontrados:', data?.length || 0, data)
-
-      // Retorna true si NO existe (es única)
-      const esUnica = !data || data.length === 0
-      console.log('✅ [VERIFICAR MATRICULA] Es única?:', esUnica)
+      const esUnica = duplicados.length === 0
 
       return esUnica
     } catch (error) {
-      console.error('❌ [VERIFICAR MATRICULA] Error capturado:', error)
+      console.error('❌ Error al verificar matrícula:', error)
       throw error
     }
   }
@@ -281,31 +268,21 @@ class ViviendasService {
    * Crea una nueva vivienda
    */
   async crear(formData: ViviendaFormData): Promise<Vivienda> {
-    console.log('🏗️ [CREAR VIVIENDA] Iniciando creación...')
-    console.log('📄 [CREAR VIVIENDA] formData.certificado_tradicion_file:', formData.certificado_tradicion_file)
-
     // ✅ VALIDAR MATRÍCULA ÚNICA
-    console.log('🔍 [CREAR VIVIENDA] Validando unicidad de matrícula:', formData.matricula_inmobiliaria)
     const esUnica = await this.verificarMatriculaUnica(formData.matricula_inmobiliaria)
     if (!esUnica) {
-      console.error('❌ [CREAR VIVIENDA] Matrícula duplicada:', formData.matricula_inmobiliaria)
       throw new Error(`La matrícula inmobiliaria "${formData.matricula_inmobiliaria}" ya está registrada en otra vivienda.`)
     }
-    console.log('✅ [CREAR VIVIENDA] Matrícula única validada')
 
     // Subir certificado si existe
     let certificadoUrl: string | undefined
 
     if (formData.certificado_tradicion_file) {
-      console.log('📤 [CREAR VIVIENDA] Subiendo certificado a Storage...')
       certificadoUrl = await this.subirCertificado(
         formData.certificado_tradicion_file,
         formData.manzana_id,
         formData.numero
       )
-      console.log('✅ [CREAR VIVIENDA] Certificado subido, URL:', certificadoUrl)
-    } else {
-      console.log('⚠️ [CREAR VIVIENDA] No hay certificado para subir')
     }
 
     // Calcular valor total
@@ -342,29 +319,41 @@ class ViviendasService {
       // valor_total se calcula automáticamente en la BD
     }
 
-    console.log('💾 [CREAR VIVIENDA] Datos a insertar:', {
-      ...viviendaData,
-      certificado_tradicion_url: certificadoUrl // Destacar este campo
-    })
-
     const { data, error } = await supabase
       .from('viviendas')
       .insert(viviendaData as any) // Cast temporal hasta regenerar types
-      .select()
+      .select(`
+        *,
+        manzanas (
+          id,
+          nombre,
+          proyectos (
+            id,
+            nombre
+          )
+        )
+      `)
       .single()
 
     if (error) {
-      console.error('❌ [CREAR VIVIENDA] Error al insertar:', error)
+      console.error('❌ Error al crear vivienda:', error)
       throw error
     }
 
-    console.log('✅ [CREAR VIVIENDA] Vivienda creada exitosamente:', data)
-    console.log('🔍 [CREAR VIVIENDA] certificado_tradicion_url en DB:', (data as any).certificado_tradicion_url)
+    // ✅ Transformar a estructura esperada por Vivienda interface
+    const viviendaCreada: Vivienda = {
+      ...data,
+      // Campos calculados (valores iniciales para vivienda nueva)
+      total_abonado: 0,
+      cantidad_abonos: 0,
+      porcentaje_pagado: 0,
+      saldo_pendiente: data.valor_total,
+      fecha_creacion: new Date(data.fecha_creacion),
+      fecha_actualizacion: new Date(data.fecha_actualizacion),
+    }
 
     // 📄 CREAR REGISTRO EN DOCUMENTOS_VIVIENDA si hay certificado
     if (certificadoUrl && formData.certificado_tradicion_file) {
-      console.log('📝 [CREAR VIVIENDA] Creando registro de documento para certificado...')
-
       try {
         // 1. Obtener categoría "Certificado de Tradición"
         const { data: categoria } = await supabase
@@ -405,18 +394,14 @@ class ViviendasService {
           })
 
         if (docError) {
-          console.error('❌ [CREAR VIVIENDA] Error al crear documento:', docError)
-          console.warn('⚠️ [CREAR VIVIENDA] El certificado se subió pero no se creó el registro. Puedes subirlo manualmente.')
-        } else {
-          console.log('✅ [CREAR VIVIENDA] Documento de certificado creado exitosamente')
+          console.error('❌ Error al crear registro de documento:', docError)
         }
       } catch (error) {
-        console.error('❌ [CREAR VIVIENDA] Error inesperado al crear documento:', error)
-        console.warn('⚠️ [CREAR VIVIENDA] El certificado se subió pero no se creó el registro. Puedes subirlo manualmente.')
+        console.error('❌ Error inesperado al crear documento:', error)
       }
     }
 
-    return data as unknown as Vivienda
+    return viviendaCreada
   }
 
   /**

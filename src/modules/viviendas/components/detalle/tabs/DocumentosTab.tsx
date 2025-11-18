@@ -1,14 +1,13 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
-import { motion } from 'framer-motion'
-import { FileText, Settings, Upload, X } from 'lucide-react'
+import { ArrowLeft, FileText, FolderCog, Upload } from 'lucide-react'
 
-import { createClient } from '@/lib/supabase/client'
+import { useAuth } from '@/contexts/auth-context'
 import { CategoriasManager } from '@/modules/documentos/components/categorias/categorias-manager'
-import { DocumentoUploadVivienda, DocumentosListaVivienda } from '@/modules/viviendas/components/documentos'
-
+import { DocumentosListaVivienda, DocumentoUploadVivienda } from '@/modules/viviendas/components/documentos'
+import { moduleThemes } from '@/shared/config/module-themes'
 
 interface DocumentosTabProps {
   viviendaId: string
@@ -16,150 +15,112 @@ interface DocumentosTabProps {
 
 /**
  * Tab de documentos de la vivienda
- * Permite subir, ver y descargar documentos
+ * Sigue el patrón de DocumentosTab de proyectos
  */
 export function DocumentosTab({ viviendaId }: DocumentosTabProps) {
+  const { user } = useAuth()
+
+  // Tema naranja/ámbar para viviendas
+  const theme = moduleThemes.viviendas
+
+  // Estados locales para vistas (PATRÓN IGUAL A PROYECTOS)
   const [showUpload, setShowUpload] = useState(false)
-  const [uploadCertificadoTradicion, setUploadCertificadoTradicion] = useState(false)
   const [showCategorias, setShowCategorias] = useState(false)
-  const [user, setUser] = useState<{ id: string } | null>(null)
 
-  // Obtener usuario autenticado
-  useEffect(() => {
-    const supabase = createClient()
-    supabase.auth.getUser().then(({ data }) => {
-      if (data.user) {
-        setUser({ id: data.user.id })
-      }
-    })
-  }, [])
-
-  // Si está mostrando formulario de upload
-  if (showUpload || uploadCertificadoTradicion) {
-    return (
-      <DocumentoUploadVivienda
-        viviendaId={viviendaId}
-        onSuccess={() => {
-          setShowUpload(false)
-          setUploadCertificadoTradicion(false)
-        }}
-        onCancel={() => {
-          setShowUpload(false)
-          setUploadCertificadoTradicion(false)
-        }}
-        categoriaPreseleccionada={
-          uploadCertificadoTradicion ? 'Certificado de Tradición' : undefined
-        }
-        bloquearCategoria={uploadCertificadoTradicion}
-      />
-    )
-  }
-
-  // Si está mostrando gestión de categorías
+  // Si está mostrando categorías (PATRÓN IGUAL A PROYECTOS)
   if (showCategorias && user) {
     return (
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="space-y-4"
-      >
-        {/* Header */}
-        <div className="border-l-4 border-orange-600 bg-white dark:bg-slate-800 rounded-lg p-4 shadow-sm">
-          <div className="flex items-start justify-between">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-orange-100 dark:bg-orange-900/30">
-                <Settings className="h-5 w-5 text-orange-600 dark:text-orange-400" />
-              </div>
-              <div>
-                <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-                  Gestión de Categorías
-                </h2>
-                <p className="text-sm text-slate-600 dark:text-slate-400">
-                  Personaliza las categorías de documentos
-                </p>
-              </div>
-            </div>
+      <div className='space-y-4'>
+        {/* Header con botón volver */}
+        <div className={`rounded-lg border ${theme.classes.border.light} bg-white p-4 shadow-sm dark:bg-gray-800`}>
+          <div className='mb-4 flex items-center gap-2.5'>
             <button
               onClick={() => setShowCategorias(false)}
-              className="inline-flex items-center px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+              className={`flex items-center gap-1.5 rounded-lg ${theme.classes.button.secondary} px-3 py-1.5 text-xs font-medium transition-colors`}
             >
-              <X className="h-4 w-4 mr-2" />
-              Volver
+              <ArrowLeft className='h-3.5 w-3.5' />
+              <span>Volver a Documentos</span>
             </button>
           </div>
+
+          <h2 className='text-xl font-bold text-gray-900 dark:text-white'>
+            Gestionar Categorías
+          </h2>
+          <p className='mt-1.5 text-xs text-gray-500 dark:text-gray-400'>
+            Organiza los documentos de la vivienda con categorías personalizadas
+          </p>
         </div>
 
-        {/* Categorías Manager */}
-        <div className="bg-white dark:bg-slate-800 rounded-lg p-6 shadow-sm">
+        {/* Gestor de categorías */}
+        <div className='rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-gray-800'>
           <CategoriasManager
             userId={user.id}
             onClose={() => setShowCategorias(false)}
             modulo="viviendas"
           />
         </div>
-      </motion.div>
+      </div>
     )
   }
 
-  // Vista principal: Lista de documentos
+  // Si está mostrando formulario de upload (PATRÓN IGUAL A PROYECTOS)
+  if (showUpload && user) {
+    return (
+      <div className='space-y-4'>
+        <div className={`rounded-lg border ${theme.classes.border.light} bg-white p-4 shadow-sm dark:bg-gray-800`}>
+          <DocumentoUploadVivienda
+            viviendaId={viviendaId}
+            onSuccess={() => setShowUpload(false)}
+            onCancel={() => setShowUpload(false)}
+          />
+        </div>
+      </div>
+    )
+  }
+
   return (
-    <motion.div
-      key="documentos"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
-      className="space-y-4"
-    >
+    <div className='space-y-4'>
       {/* Header con acciones */}
-      <div className="border-l-4 border-orange-600 bg-white dark:bg-slate-800 rounded-lg p-4 shadow-sm">
-        <div className="flex items-start justify-between">
-          {/* Información del tab */}
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-orange-100 dark:bg-orange-900/30">
-              <FileText className="h-5 w-5 text-orange-600 dark:text-orange-400" />
+      <div className={`rounded-lg border ${theme.classes.border.light} bg-white p-4 shadow-sm dark:bg-gray-800`}>
+        <div className='flex items-center justify-between'>
+          <div className='flex items-center gap-2.5'>
+            <div className={`rounded-lg bg-gradient-to-br ${theme.classes.gradient.primary} p-2.5`}>
+              <FileText className='h-5 w-5 text-white' />
             </div>
             <div>
-              <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+              <h2 className='text-base font-bold text-gray-900 dark:text-white'>
                 Documentos de la Vivienda
               </h2>
-              <p className="text-sm text-slate-600 dark:text-slate-400">
-                Certificados, planos y más
+              <p className='text-xs text-gray-500 dark:text-gray-400'>
+                Gestiona certificados, planos y documentación técnica
               </p>
             </div>
           </div>
 
-          {/* Acciones */}
-          <div className="flex gap-2">
-            {/* Gestionar Categorías - Botón Secundario */}
-            <motion.button
+          <div className='flex gap-1.5'>
+            <button
               onClick={() => setShowCategorias(true)}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 text-sm font-medium transition-all"
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
+              className={`flex items-center gap-1.5 rounded-lg ${theme.classes.button.secondary} px-3 py-1.5 text-xs font-medium transition-colors`}
             >
-              <Settings className="h-4 w-4" />
-              <span>Gestionar Categorías</span>
-            </motion.button>
-
-            {/* CTA Principal */}
-            <motion.button
+              <FolderCog className='h-3.5 w-3.5' />
+              <span>Categorías</span>
+            </button>
+            <button
               onClick={() => setShowUpload(true)}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-orange-600 text-white hover:bg-orange-700 text-sm font-medium shadow-sm hover:shadow-md transition-all"
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
+              className={`flex items-center gap-1.5 rounded-lg ${theme.classes.button.primary} px-3 py-1.5 text-xs font-medium`}
             >
-              <Upload className="h-4 w-4" />
+              <Upload className='h-3.5 w-3.5' />
               <span>Subir Documento</span>
-            </motion.button>
+            </button>
           </div>
         </div>
       </div>
 
-      {/* Lista de documentos */}
+      {/* Lista de documentos - USA REACT QUERY */}
       <DocumentosListaVivienda
         viviendaId={viviendaId}
-        onSubirDocumento={() => setUploadCertificadoTradicion(true)}
+        onSubirDocumento={() => setShowUpload(true)}
       />
-    </motion.div>
+    </div>
   )
 }

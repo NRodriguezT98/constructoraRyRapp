@@ -1,11 +1,10 @@
 /**
  * PasoResumenNuevo - Paso 5: Resumen final
- * ✅ Diseño compacto estándar
+ * ✅ Componente presentacional puro
+ * ✅ Sin lógica innecesaria
  */
 
 'use client'
-
-import { useEffect } from 'react'
 
 import { motion } from 'framer-motion'
 import {
@@ -27,26 +26,6 @@ interface PasoResumenProps {
 }
 
 export function PasoResumenNuevo({ formData, proyectoNombre, manzanaNombre, gastosNotariales = 5_000_000 }: PasoResumenProps) {
-  // 🔍 LOGGER: Detectar cuando se monta el componente
-  useEffect(() => {
-    console.log('\n\n')
-    console.log('╔═══════════════════════════════════════════════════════════════╗')
-    console.log('║  🎯 PASO RESUMEN NUEVO - COMPONENTE MONTADO                  ║')
-    console.log('╚═══════════════════════════════════════════════════════════════╝')
-    console.log('📍 [PASO RESUMEN] Timestamp:', new Date().toISOString())
-    console.log('📍 [PASO RESUMEN] Proyecto:', proyectoNombre)
-    console.log('📍 [PASO RESUMEN] Manzana:', manzanaNombre)
-    console.log('📍 [PASO RESUMEN] Datos del formulario:', formData)
-    console.log('╔═══════════════════════════════════════════════════════════════╗')
-    console.log('║  ⚠️ SI LEES ESTO, ESTÁS EN EL PASO 5 (RESUMEN)              ║')
-    console.log('║  👉 Deberías poder leer la información antes de confirmar    ║')
-    console.log('╚═══════════════════════════════════════════════════════════════╝')
-    console.log('\n\n')
-
-    return () => {
-      console.log('\n⚠️ [PASO RESUMEN] COMPONENTE DESMONTADO\n')
-    }
-  }, [])
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('es-CO', {
       style: 'currency',
@@ -114,7 +93,7 @@ export function PasoResumenNuevo({ formData, proyectoNombre, manzanaNombre, gast
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -20 }}
       transition={{ duration: 0.2 }}
-      className="space-y-6"
+      className="space-y-3"
     >
       {/* Título del paso */}
       <div>
@@ -127,7 +106,7 @@ export function PasoResumenNuevo({ formData, proyectoNombre, manzanaNombre, gast
       </div>
 
       {/* Secciones de resumen */}
-      <div className="space-y-4">
+      <div className="space-y-3">
         {sections.map((section, sectionIndex) => {
           const SectionIcon = section.icon
 
@@ -137,34 +116,34 @@ export function PasoResumenNuevo({ formData, proyectoNombre, manzanaNombre, gast
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: sectionIndex * 0.1 }}
-              className="rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-5 shadow-lg"
+              className="rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-3 shadow-lg"
             >
               {/* Header de sección */}
-              <div className="flex items-center gap-3 mb-4 pb-3 border-b border-gray-200 dark:border-gray-700">
-                <div className={`w-10 h-10 rounded-lg bg-gradient-to-br from-${section.color}-500 to-${section.color}-600 flex items-center justify-center shadow-lg`}>
-                  <SectionIcon className="w-5 h-5 text-white" />
+              <div className="flex items-center gap-2 mb-2 pb-2 border-b border-gray-200 dark:border-gray-700">
+                <div className={`w-8 h-8 rounded-lg bg-gradient-to-br from-${section.color}-500 to-${section.color}-600 flex items-center justify-center shadow-lg`}>
+                  <SectionIcon className="w-4 h-4 text-white" />
                 </div>
-                <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+                <h3 className="text-base font-bold text-gray-900 dark:text-white">
                   {section.title}
                 </h3>
               </div>
 
               {/* Items de la sección */}
-              <div className="space-y-3">
+              <div className="space-y-2">
                 {section.items.map((item, itemIndex) => {
                   const ItemIcon = item.icon
 
                   return (
                     <div
                       key={itemIndex}
-                      className={`flex items-start gap-3 py-2 ${
+                      className={`flex items-start gap-2 py-1 ${
                         item.highlight
-                          ? 'p-3 rounded-lg bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950/30 dark:to-amber-950/30 border border-orange-200 dark:border-orange-800'
+                          ? 'p-2 rounded-lg bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950/30 dark:to-amber-950/30 border border-orange-200 dark:border-orange-800'
                           : ''
                       }`}
                     >
                       {ItemIcon && (
-                        <ItemIcon className={`w-5 h-5 flex-shrink-0 mt-0.5 ${
+                        <ItemIcon className={`w-4 h-4 flex-shrink-0 mt-0.5 ${
                           item.highlight
                             ? 'text-orange-600 dark:text-orange-400'
                             : 'text-gray-400 dark:text-gray-500'
@@ -180,7 +159,7 @@ export function PasoResumenNuevo({ formData, proyectoNombre, manzanaNombre, gast
                         </p>
                         <p className={`text-sm mt-0.5 ${
                           item.highlight
-                            ? 'font-bold text-xl bg-gradient-to-br from-orange-600 to-amber-600 bg-clip-text text-transparent'
+                            ? 'font-bold text-lg bg-gradient-to-br from-orange-600 to-amber-600 bg-clip-text text-transparent'
                             : 'font-semibold text-gray-900 dark:text-white'
                         }`}>
                           {item.value}
@@ -196,8 +175,8 @@ export function PasoResumenNuevo({ formData, proyectoNombre, manzanaNombre, gast
       </div>
 
       {/* Nota final */}
-      <div className="flex items-start gap-3 p-4 rounded-xl bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
-        <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
+      <div className="flex items-start gap-2 p-3 rounded-xl bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
+        <CheckCircle className="w-4 h-4 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
         <div>
           <p className="text-sm font-medium text-green-900 dark:text-green-100 mb-1">
             ¡Todo listo!

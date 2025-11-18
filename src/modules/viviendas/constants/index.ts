@@ -73,14 +73,14 @@ export const VIVIENDA_LIMITES = {
 // ============================================
 
 export const REGEX_PATTERNS = {
-  // Linderos: letras, números, espacios, comas, puntos, paréntesis, punto y coma, acentos
-  LINDERO: /^[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\s,.()\-;]+$/,
+  // Linderos: letras, números, espacios, puntos, comas y guiones
+  LINDERO: /^[a-zA-Z0-9\sáéíóúÁÉÍÓÚñÑ.,\-]+$/,
 
-  // Matrícula: formato "373-123456" (números y guiones)
+  // Matrícula: formato "050-123456" (solo números y guiones)
   MATRICULA: /^[0-9\-]+$/,
 
-  // Nomenclatura: formato "Calle 4A Sur # 4 - 05" (letras, números, #, -, espacios, puntos)
-  NOMENCLATURA: /^[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\s#.\-]+$/,
+  // Nomenclatura: formato "Calle 4A Sur # 4 - 05" (letras, números, #, -, espacios, puntos, comas, paréntesis, grado)
+  NOMENCLATURA: /^[a-zA-Z0-9\sáéíóúÁÉÍÓÚñÑ#.,\-()°]+$/,
 
   // Área: números con hasta 2 decimales (punto como separador)
   AREA: /^\d+(\.\d{1,2})?$/,

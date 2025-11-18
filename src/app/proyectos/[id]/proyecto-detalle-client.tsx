@@ -19,15 +19,16 @@ import { useRouter } from 'next/navigation'
 
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/contexts/auth-context'
-import { ConfirmarCambiosModal } from '@/modules/proyectos/components/ConfirmarCambiosModal'
+import { ConfirmarCambiosModal } from '@/modules/proyectos/components/confirmar-cambios-modal'
+import { ProyectosBadgesResumen } from '@/modules/proyectos/components/proyectos-badges-resumen'
 import { ProyectosForm } from '@/modules/proyectos/components/proyectos-form'
-import { ProyectosBadgesResumen } from '@/modules/proyectos/components/ProyectosBadgesResumen'
 import { useProyectoConValidacion, useProyectosQuery } from '@/modules/proyectos/hooks'
 import { useDetectarCambios } from '@/modules/proyectos/hooks/useDetectarCambios'
 import { Modal } from '@/shared/components/ui/Modal'
 // ✅ REACT QUERY: Hooks con cache inteligente (reemplazan Zustand)
 import { useProyectoQuery } from '@/modules/proyectos/hooks'
 import type { Proyecto, ProyectoFormData } from '@/modules/proyectos/types'
+import { formatearEstadoProyecto } from '@/modules/proyectos/utils/estado.utils'
 
 
 
@@ -48,13 +49,6 @@ const estadoColors = {
   completado:
     'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 border border-green-200 dark:border-green-700',
   pausado: 'bg-gray-100 text-gray-700 dark:bg-gray-800/50 dark:text-gray-300 border border-gray-300 dark:border-gray-600',
-}
-
-const estadoLabels = {
-  en_planificacion: 'En Planificación',
-  en_construccion: 'En Construcción',
-  completado: 'Completado',
-  pausado: 'Pausado',
 }
 
 export default function ProyectoDetalleClient({
@@ -289,7 +283,7 @@ export default function ProyectoDetalleClient({
                   <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
                     estadoColors[proyecto.estado as keyof typeof estadoColors] || estadoColors.pausado
                   }`}>
-                    {estadoLabels[proyecto.estado as keyof typeof estadoLabels] || proyecto.estado}
+                    {formatearEstadoProyecto(proyecto.estado)}
                   </span>
                 </div>
                 <div className={styles.headerClasses.location}>

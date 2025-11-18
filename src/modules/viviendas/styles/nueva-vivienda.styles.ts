@@ -40,8 +40,8 @@ export const nuevaViviendaStyles = {
 
   // ==================== STEPPER HORIZONTAL (STICKY) ====================
   stepper: {
-    container: 'sticky top-0 z-40 backdrop-blur-xl bg-white/90 dark:bg-gray-800/90 rounded-xl border border-gray-200/50 dark:border-gray-700/50 p-4 shadow-2xl shadow-orange-500/10 mb-4',
-    list: 'flex items-center justify-between gap-2 sm:gap-4',
+    container: 'sticky top-4 z-40 backdrop-blur-xl bg-white/90 dark:bg-gray-800/90 rounded-xl border border-gray-200/50 dark:border-gray-700/50 p-3 shadow-2xl shadow-orange-500/10', // ← p-3 (más compacto)
+    list: 'flex items-center justify-between gap-2',
 
     step: {
       container: 'flex flex-col items-center flex-1 relative',
@@ -67,28 +67,26 @@ export const nuevaViviendaStyles = {
 
   // ==================== CONTENEDOR DE CONTENIDO ====================
   content: {
-    container: 'backdrop-blur-xl bg-white/80 dark:bg-gray-800/80 rounded-2xl border border-gray-200/50 dark:border-gray-700/50 p-6 shadow-xl min-h-[500px]',
+    container: 'backdrop-blur-xl bg-white/80 dark:bg-gray-800/80 rounded-2xl border border-gray-200/50 dark:border-gray-700/50 p-3 shadow-xl min-h-[300px]', // ← p-3, min-h-[300px] (ultra compacto)
 
-    // Layout de 2 columnas (formulario + preview)
-    grid: 'grid grid-cols-1 lg:grid-cols-3 gap-6',
-    formColumn: 'lg:col-span-2 space-y-6',
-    previewColumn: 'lg:col-span-1',
+    // Layout de 1 columna (sidebar eliminado para evitar scroll)
+    formColumn: 'space-y-3', // ← space-y-3 (más compacto)
   },
 
   // ==================== CAMPOS DE FORMULARIO ====================
   field: {
-    container: 'space-y-2',
-    label: 'block text-sm font-semibold text-gray-700 dark:text-gray-300',
+    container: 'space-y-1.5', // ← space-y-1.5 (más compacto)
+    label: 'block text-xs font-semibold text-gray-700 dark:text-gray-300', // ← text-xs (más compacto)
     required: 'text-red-500',
 
     inputWrapper: 'relative',
     inputIcon: 'absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500 pointer-events-none',
-    input: 'w-full pl-11 pr-4 py-2.5 bg-white dark:bg-gray-900 border-2 border-gray-300 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:border-orange-500 focus:ring-4 focus:ring-orange-500/20 transition-all outline-none text-sm font-medium',
+    input: 'w-full pl-10 pr-3 py-2 bg-white dark:bg-gray-900 border-2 border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all outline-none text-sm', // ← py-2, rounded-lg, focus:ring-2 (más compacto)
     inputError: 'border-red-500 focus:border-red-500 focus:ring-red-500/20',
 
-    select: 'w-full pl-11 pr-10 py-2.5 bg-white dark:bg-gray-900 border-2 border-gray-300 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white focus:border-orange-500 focus:ring-4 focus:ring-orange-500/20 transition-all outline-none text-sm font-medium appearance-none cursor-pointer',
+    select: 'w-full pl-10 pr-10 py-2 bg-white dark:bg-gray-900 border-2 border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all outline-none text-sm appearance-none cursor-pointer', // ← py-2, rounded-lg (más compacto)
 
-    textarea: 'w-full pl-11 pr-4 py-2.5 bg-white dark:bg-gray-900 border-2 border-gray-300 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:border-orange-500 focus:ring-4 focus:ring-orange-500/20 transition-all outline-none text-sm font-medium resize-none',
+    textarea: 'w-full pl-10 pr-3 py-2 bg-white dark:bg-gray-900 border-2 border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all outline-none text-sm resize-none min-h-[60px]', // ← py-2, min-h-[60px] (ultra compacto para rows=2)
 
     error: 'flex items-center gap-2 mt-1 text-red-600 dark:text-red-400 text-xs font-medium',
     errorIcon: 'w-3.5 h-3.5',
@@ -99,9 +97,9 @@ export const nuevaViviendaStyles = {
 
   // ==================== PREVIEW SIDEBAR ====================
   preview: {
-    container: 'sticky top-24 space-y-4',
+    container: 'sticky top-20 space-y-3', // ← top-20, space-y-3 (más compacto)
 
-    card: 'backdrop-blur-xl bg-gradient-to-br from-orange-50/80 to-amber-50/80 dark:from-orange-950/30 dark:to-amber-950/30 rounded-xl border border-orange-200/50 dark:border-orange-800/50 p-4 shadow-lg',
+    card: 'backdrop-blur-xl bg-gradient-to-br from-orange-50/80 to-amber-50/80 dark:from-orange-950/30 dark:to-amber-950/30 rounded-xl border border-orange-200/50 dark:border-orange-800/50 p-3 shadow-lg', // ← p-3 (más compacto)
 
     header: 'flex items-center gap-2 mb-3 pb-3 border-b border-orange-200 dark:border-orange-800',
     headerIcon: 'w-8 h-8 rounded-lg bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center shadow-lg shadow-orange-500/30',
@@ -119,7 +117,7 @@ export const nuevaViviendaStyles = {
 
   // ==================== BOTONES DE NAVEGACIÓN (STICKY BOTTOM) ====================
   navigation: {
-    container: 'sticky bottom-0 z-40 backdrop-blur-xl bg-white/90 dark:bg-gray-800/90 rounded-xl border border-gray-200/50 dark:border-gray-700/50 p-4 shadow-2xl shadow-orange-500/10 mt-4',
+    container: 'sticky bottom-0 z-40 backdrop-blur-xl bg-white/90 dark:bg-gray-800/90 rounded-xl border border-gray-200/50 dark:border-gray-700/50 p-3 shadow-2xl shadow-orange-500/10', // ← p-3 (más compacto)
     content: 'flex items-center justify-between',
 
     backButton: 'inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 text-sm font-semibold hover:bg-gray-200 dark:hover:bg-gray-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed',
@@ -136,7 +134,7 @@ export const nuevaViviendaStyles = {
 
   // ==================== GRID DE LINDEROS ====================
   linderos: {
-    grid: 'grid grid-cols-1 sm:grid-cols-2 gap-4',
+    grid: 'grid grid-cols-1 sm:grid-cols-2 gap-2', // ← gap-2 (ultra compacto)
   },
 
   // ==================== ANIMACIONES ====================

@@ -1,6 +1,7 @@
-﻿import { useCallback, useMemo, useState } from 'react'
+﻿import { useCallback, useEffect, useMemo, useState } from 'react'
 
-import type { FiltrosViviendas, Vivienda } from '../types'
+import { supabase } from '@/lib/supabase/client'
+import type { FiltrosViviendas } from '../types'
 
 import { useEliminarViviendaMutation, useViviendasQuery } from './useViviendasQuery'
 
@@ -9,15 +10,13 @@ import { useEliminarViviendaMutation, useViviendasQuery } from './useViviendasQu
  * Refactorizado con React Query
  * Responsabilidades:
  * - Gestionar filtros y búsqueda
- * - Control del modal crear/editar
  * - Selección y eliminación
+ * - Cargar proyectos para filtros
  */
 export function useViviendasList() {
-  const [modalAbierto, setModalAbierto] = useState(false)
-  const [modalEditar, setModalEditar] = useState(false)
-  const [viviendaEditar, setViviendaEditar] = useState<Vivienda | null>(null)
   const [modalEliminar, setModalEliminar] = useState(false)
   const [viviendaEliminar, setViviendaEliminar] = useState<string | null>(null)
+  const [proyectos, setProyectos] = useState<Array<{ id: string; nombre: string }>>([])
 
   const [filtros, setFiltros] = useState<FiltrosViviendas>({
     search: '',
@@ -26,8 +25,18 @@ export function useViviendasList() {
     estado: '',
   })
 
+  // ✅ React Query hooks
   const { data: viviendas = [], isLoading: cargando, error, refetch } = useViviendasQuery(filtros)
   const eliminarMutation = useEliminarViviendaMutation()
+
+  // ✅ Cargar proyectos al montar (useEffect, NO useMemo)
+  useEffect(() => {
+    const cargarProyectos = async () => {
+      const { data } = await supabase.from('proyectos').select('id, nombre').order('nombre')
+      if (data) setProyectos(data)
+    }
+    cargarProyectos()
+  }, [])
 
   const viviendasFiltradas = useMemo(() => {
     let resultado = [...viviendas]
@@ -62,24 +71,6 @@ export function useViviendasList() {
 
     return resultado
   }, [viviendas, filtros])
-
-  const abrirModalCrear = useCallback(() => {
-    setModalAbierto(true)
-    setModalEditar(false)
-    setViviendaEditar(null)
-  }, [])
-
-  const abrirModalEditar = useCallback((vivienda: Vivienda) => {
-    setViviendaEditar(vivienda)
-    setModalEditar(true)
-    setModalAbierto(false)
-  }, [])
-
-  const cerrarModal = useCallback(() => {
-    setModalAbierto(false)
-    setModalEditar(false)
-    setViviendaEditar(null)
-  }, [])
 
   const abrirModalEliminar = useCallback((id: string) => {
     setViviendaEliminar(id)
@@ -135,14 +126,8 @@ export function useViviendasList() {
     cargando,
     error: error?.message || null,
 
-    modalAbierto,
-    modalEditar,
-    viviendaEditar,
     modalEliminar,
     viviendaEliminar,
-    abrirModalCrear,
-    abrirModalEditar,
-    cerrarModal,
     abrirModalEliminar,
     confirmarEliminar,
     cancelarEliminar,
@@ -155,5 +140,6 @@ export function useViviendasList() {
 
     estadisticas,
     totalFiltradas: viviendasFiltradas.length,
+    proyectos, // ✅ Exportar proyectos para filtros
   }
 }

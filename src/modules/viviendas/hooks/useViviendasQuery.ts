@@ -41,6 +41,7 @@ export function useViviendasQuery(filtros?: FiltrosViviendas) {
     queryFn: () => viviendasService.listar(filtros),
     staleTime: 0, // ✅ SIEMPRE re-fetch al montar para evitar "0 resultados" al navegar
     gcTime: 1000 * 60 * 5, // 5 minutos en cache después de desmontar
+    refetchOnMount: 'always', // ← CRÍTICO: Refetch siempre al montar (incluso con datos en cache)
   })
 }
 
@@ -129,30 +130,54 @@ export function useGastosNotarialesQuery() {
 // ============================================
 // 9. MUTATION: Crear vivienda
 // ============================================
-export function useCrearViviendaMutation() {
+export function useCrearViviendaMutation(options?: { showToast?: boolean }) {
   const queryClient = useQueryClient()
+  const showToast = options?.showToast ?? true // Por defecto muestra toast
 
   return useMutation({
     mutationFn: (formData: ViviendaFormData) => viviendasService.crear(formData),
-    onSuccess: (nuevaVivienda) => {
-      // Invalidar todas las listas de viviendas
-      queryClient.invalidateQueries({ queryKey: viviendasKeys.lists() })
+    onSuccess: async (nuevaVivienda) => {
+      // ✅ SOLUCIÓN DE PROYECTOS: invalidateQueries con refetchType: 'all'
+      // Esto refetchea TODAS las queries (activas e inactivas)
+      await queryClient.invalidateQueries({
+        queryKey: viviendasKeys.lists(),
+        exact: false,
+        refetchType: 'all', // ← CRÍTICO: Refetch incluso queries no montadas
+      })
 
       // Invalidar manzanas (cambió disponibilidad)
       if (nuevaVivienda.manzana_id) {
-        queryClient.invalidateQueries({
-          queryKey: viviendasKeys.manzanaViviendas(nuevaVivienda.manzana_id)
+        await queryClient.invalidateQueries({
+          queryKey: viviendasKeys.manzanaViviendas(nuevaVivienda.manzana_id),
+          refetchType: 'all',
+        })
+        // Invalidar números ocupados de la manzana
+        await queryClient.invalidateQueries({
+          queryKey: viviendasKeys.numerosOcupados(nuevaVivienda.manzana_id),
+          refetchType: 'all',
         })
       }
 
-      toast.success('Vivienda creada correctamente', {
-        description: `Vivienda ${nuevaVivienda.numero} registrada exitosamente`,
+      // Invalidar proyectos (por si se usa en selects/estadísticas)
+      await queryClient.invalidateQueries({
+        queryKey: viviendasKeys.proyectos,
+        refetchType: 'all',
       })
+
+      // Toast opcional (puede desactivarse desde el componente)
+      if (showToast) {
+        toast.success('Vivienda creada correctamente', {
+          description: `Vivienda ${nuevaVivienda.numero} registrada exitosamente`,
+        })
+      }
     },
     onError: (error: Error) => {
-      toast.error('Error al crear vivienda', {
-        description: error.message,
-      })
+      // Toast de error siempre se muestra (crítico)
+      if (showToast) {
+        toast.error('Error al crear vivienda', {
+          description: error.message,
+        })
+      }
     },
   })
 }
@@ -172,8 +197,12 @@ export function useActualizarViviendaMutation() {
         queryKey: viviendasKeys.detail(variables.id)
       })
 
-      // Invalidar listas
-      queryClient.invalidateQueries({ queryKey: viviendasKeys.lists() })
+      // Invalidar listas (con filtros)
+      queryClient.invalidateQueries({
+        queryKey: viviendasKeys.lists(),
+        exact: false,
+        refetchType: 'active',
+      })
 
       toast.success('Vivienda actualizada correctamente', {
         description: `Los cambios se guardaron exitosamente`,
@@ -196,8 +225,12 @@ export function useEliminarViviendaMutation() {
   return useMutation({
     mutationFn: (id: string) => viviendasService.eliminar(id),
     onSuccess: (_, viviendaId) => {
-      // Invalidar listas
-      queryClient.invalidateQueries({ queryKey: viviendasKeys.lists() })
+      // Invalidar listas (con filtros)
+      queryClient.invalidateQueries({
+        queryKey: viviendasKeys.lists(),
+        exact: false,
+        refetchType: 'active',
+      })
 
       // Remover del cache el detalle eliminado
       queryClient.removeQueries({ queryKey: viviendasKeys.detail(viviendaId) })
@@ -227,8 +260,12 @@ export function useActualizarCertificadoMutation() {
         queryKey: viviendasKeys.detail(variables.viviendaId)
       })
 
-      // Invalidar listas
-      queryClient.invalidateQueries({ queryKey: viviendasKeys.lists() })
+      // Invalidar listas (con filtros)
+      queryClient.invalidateQueries({
+        queryKey: viviendasKeys.lists(),
+        exact: false,
+        refetchType: 'active',
+      })
 
       toast.success('Certificado actualizado correctamente')
     },

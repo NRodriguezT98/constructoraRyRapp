@@ -1,263 +1,323 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import {
-    Building2,
-    DollarSign,
-    Phone,
-    User,
-} from 'lucide-react'
+import { DollarSign, Info, MapPin } from 'lucide-react'
 
 import type { Vivienda } from '@/modules/viviendas/types'
 import { formatCurrency } from '@/shared/utils'
 
+import * as styles from '@/app/viviendas/[slug]/vivienda-detalle.styles'
+
 interface InfoTabProps {
   vivienda: Vivienda
+  onAsignarCliente?: () => void
 }
 
 /**
- * Tab de información general de la vivienda
- * Layout optimizado en 3 columnas: Técnica, Financiera, Linderos
- * Diseño moderno con glassmorphism y gradientes sutiles
+ * Tab de información de la vivienda
+ * Componente de presentación puro (sigue patrón de GeneralTab de proyectos)
  */
 export function InfoTab({ vivienda }: InfoTabProps) {
+  // Calcular progreso de pagos si aplica
+  const porcentajePagado = vivienda.porcentaje_pagado || 0
+
   return (
     <motion.div
-      key="info"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4 }}
-      className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+      key='info'
+      {...styles.animations.fadeInUp}
+      className='space-y-3'
     >
-      {/* COLUMNA 1: Información Técnica */}
-      <motion.div
-        whileHover={{ y: -4 }}
-        transition={{ type: 'spring', stiffness: 300 }}
-        className="group relative overflow-hidden rounded-2xl backdrop-blur-xl bg-gradient-to-br from-blue-50/80 to-indigo-50/80 dark:from-blue-950/30 dark:to-indigo-950/30 border border-blue-200/50 dark:border-blue-800/50 p-6 shadow-lg hover:shadow-2xl transition-all duration-300"
-      >
-        {/* Glow effect */}
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-indigo-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-
-        {/* Content */}
-        <div className="relative z-10">
-          {/* Header */}
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/30">
-              <Building2 className="h-6 w-6 text-white" />
+      {/* Barra de Progreso de Pagos (solo si está asignada o vendida) */}
+      {vivienda.estado !== 'Disponible' && (
+        <motion.div
+          {...styles.animations.fadeInUp}
+          transition={{ delay: 0.1 }}
+          className={styles.progressClasses.container}
+        >
+          <div className={styles.progressClasses.header}>
+            <div className={styles.progressClasses.leftSection}>
+              <div className={styles.progressClasses.iconContainer}>
+                <DollarSign className={styles.progressClasses.icon} />
+              </div>
+              <div className={styles.progressClasses.titleSection}>
+                <p className={styles.progressClasses.title}>
+                  Progreso de Pagos
+                </p>
+                <p className={styles.progressClasses.subtitle}>
+                  Calculado según abonos realizados
+                </p>
+              </div>
             </div>
-            <div>
-              <h3 className="text-base font-bold text-slate-900 dark:text-white">
-                Información Técnica
-              </h3>
-              <p className="text-xs text-blue-600 dark:text-blue-400">Datos registrales</p>
-            </div>
-          </div>
-
-          {/* Data */}
-          <div className="space-y-4">
-            {vivienda.matricula_inmobiliaria && (
-              <div className="p-3 rounded-xl bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm border border-blue-200/30 dark:border-blue-800/30">
-                <p className="text-xs font-medium text-blue-600 dark:text-blue-400 mb-1">Matrícula Inmobiliaria</p>
-                <p className="text-sm font-bold text-slate-900 dark:text-white font-mono tracking-wide">
-                  {vivienda.matricula_inmobiliaria}
-                </p>
-              </div>
-            )}
-            {vivienda.nomenclatura && (
-              <div className="p-3 rounded-xl bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm border border-blue-200/30 dark:border-blue-800/30">
-                <p className="text-xs font-medium text-blue-600 dark:text-blue-400 mb-1">Nomenclatura Catastral</p>
-                <p className="text-sm font-semibold text-slate-900 dark:text-white">
-                  {vivienda.nomenclatura}
-                </p>
-              </div>
-            )}
-            <div className="grid grid-cols-2 gap-3">
-              <div className="p-3 rounded-xl bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm border border-blue-200/30 dark:border-blue-800/30">
-                <p className="text-xs font-medium text-blue-600 dark:text-blue-400 mb-1">Área Construida</p>
-                <p className="text-sm font-bold text-slate-900 dark:text-white font-mono">
-                  {vivienda.area_construida || 'N/A'} m²
-                </p>
-              </div>
-              <div className="p-3 rounded-xl bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm border border-blue-200/30 dark:border-blue-800/30">
-                <p className="text-xs font-medium text-blue-600 dark:text-blue-400 mb-1">Área de Lote</p>
-                <p className="text-sm font-bold text-slate-900 dark:text-white font-mono">
-                  {vivienda.area_lote || 'N/A'} m²
-                </p>
-              </div>
+            <div className={styles.progressClasses.rightSection}>
+              <p className={styles.progressClasses.percentage}>
+                {porcentajePagado}%
+              </p>
+              <p className={styles.progressClasses.percentageLabel}>
+                Pagado
+              </p>
             </div>
           </div>
 
-          {/* Cliente Asignado (si aplica) */}
-          {vivienda.estado !== 'Disponible' && vivienda.clientes && (
-            <div className="mt-6 pt-6 border-t border-blue-200/50 dark:border-blue-800/50">
-              <div className="flex items-center gap-2 mb-3">
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center shadow-lg shadow-purple-500/30">
-                  <User className="h-4 w-4 text-white" />
-                </div>
-                <h4 className="text-sm font-bold text-slate-900 dark:text-white">Cliente Asignado</h4>
+          {/* Barra con gradiente animado */}
+          <div className={styles.progressClasses.bar}>
+            <motion.div
+              className={styles.progressClasses.barFill}
+              initial={{ width: 0 }}
+              animate={{ width: `${porcentajePagado}%` }}
+              transition={{ duration: 1.5, ease: 'easeOut', delay: 0.1 }}
+            >
+              <div className={`${styles.progressClasses.shimmer} animate-shimmer`}></div>
+            </motion.div>
+          </div>
+
+          {/* Milestones */}
+          <div className={styles.progressClasses.milestones}>
+            <div className={styles.progressClasses.milestone}>
+              <div className={styles.progressClasses.milestoneValue}>
+                {formatCurrency(vivienda.valor_total || 0)}
               </div>
-              <div className="p-3 rounded-xl bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm border border-purple-200/30 dark:border-purple-800/30">
-                <p className="text-sm font-semibold text-slate-900 dark:text-white mb-2">
-                  {vivienda.clientes.nombre_completo || 'No disponible'}
+              <div className={styles.progressClasses.milestoneLabel}>
+                Total
+              </div>
+            </div>
+            <div className={styles.progressClasses.milestone}>
+              <div className={styles.progressClasses.milestoneValue}>
+                {formatCurrency(vivienda.total_abonado || 0)}
+              </div>
+              <div className={styles.progressClasses.milestoneLabel}>
+                Abonado
+              </div>
+            </div>
+            <div className={styles.progressClasses.milestone}>
+              <div className={styles.progressClasses.milestoneValue}>
+                {formatCurrency((vivienda.valor_total || 0) - (vivienda.total_abonado || 0))}
+              </div>
+              <div className={styles.progressClasses.milestoneLabel}>
+                Saldo
+              </div>
+            </div>
+            <div className={styles.progressClasses.milestone}>
+              <div className={styles.progressClasses.milestoneValue}>
+                {vivienda.cantidad_abonos || 0}
+              </div>
+              <div className={styles.progressClasses.milestoneLabel}>
+                Abonos
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      )}
+
+      {/* Cards de Información - Layout 2 columnas optimizado */}
+      <div className='grid gap-4 lg:grid-cols-2'>
+        {/* COLUMNA 1: Datos Generales (Técnicos + Ubicación fusionados) */}
+        <motion.div
+          {...styles.animations.fadeInLeft}
+          className={styles.infoCardClasses.card}
+        >
+          <div className={styles.infoCardClasses.header}>
+            <div
+              className={`${styles.infoCardClasses.iconContainer} bg-gradient-to-br ${styles.gradients.detalles}`}
+            >
+              <Info className={styles.infoCardClasses.icon} />
+            </div>
+            <h3 className={styles.infoCardClasses.title}>
+              Información General
+            </h3>
+          </div>
+          <div className={styles.infoCardClasses.content}>
+            {/* Identificación */}
+            <div className='p-3 rounded-lg bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-950/30 dark:to-amber-950/30 border border-orange-200/50 dark:border-orange-800/50'>
+              <p className='text-xs font-medium text-orange-600 dark:text-orange-400 mb-1'>Identificación</p>
+              <p className='text-lg font-bold text-gray-900 dark:text-white'>
+                Mz. {vivienda.manzanas?.nombre || 'N/A'} Casa {vivienda.numero}
+              </p>
+            </div>
+
+            {/* Grid 2x2: Proyecto, Tipo, Áreas */}
+            <div className='mt-4 grid grid-cols-2 gap-3'>
+              <div>
+                <p className={styles.infoCardClasses.label}>Proyecto</p>
+                <p className={styles.infoCardClasses.value}>
+                  {vivienda.manzanas?.proyectos?.nombre || 'Sin proyecto'}
                 </p>
-                {vivienda.clientes.telefono && (
-                  <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-300">
-                    <Phone className="h-3.5 w-3.5 text-purple-600 dark:text-purple-400" />
-                    <span className="font-medium">{vivienda.clientes.telefono}</span>
+              </div>
+              <div>
+                <p className={styles.infoCardClasses.label}>Tipo Vivienda</p>
+                <p className={styles.infoCardClasses.value}>
+                  {vivienda.tipo_vivienda || 'No especificado'}
+                </p>
+              </div>
+              <div>
+                <p className={styles.infoCardClasses.label}>Área Construida</p>
+                <p className='text-base font-bold text-gray-900 dark:text-white font-mono'>
+                  {vivienda.area_construida?.toString() || 'N/A'} m²
+                </p>
+              </div>
+              <div>
+                <p className={styles.infoCardClasses.label}>Área de Lote</p>
+                <p className='text-base font-bold text-gray-900 dark:text-white font-mono'>
+                  {vivienda.area_lote?.toString() || 'N/A'} m²
+                </p>
+              </div>
+            </div>
+
+            {/* Matrícula y Nomenclatura (si existen) */}
+            {(vivienda.matricula_inmobiliaria || vivienda.nomenclatura) && (
+              <div className='mt-4 space-y-2'>
+                {vivienda.matricula_inmobiliaria && (
+                  <div className='p-2 rounded-lg bg-gray-50 dark:bg-gray-900/30 border border-gray-200 dark:border-gray-700'>
+                    <p className='text-xs font-medium text-gray-600 dark:text-gray-400 mb-0.5'>Matrícula Inmobiliaria</p>
+                    <p className='text-sm font-mono font-semibold text-gray-900 dark:text-white'>
+                      {vivienda.matricula_inmobiliaria}
+                    </p>
+                  </div>
+                )}
+                {vivienda.nomenclatura && (
+                  <div className='p-2 rounded-lg bg-gray-50 dark:bg-gray-900/30 border border-gray-200 dark:border-gray-700'>
+                    <p className='text-xs font-medium text-gray-600 dark:text-gray-400 mb-0.5'>Nomenclatura Catastral</p>
+                    <p className='text-sm font-semibold text-gray-900 dark:text-white'>
+                      {vivienda.nomenclatura}
+                    </p>
                   </div>
                 )}
               </div>
-            </div>
-          )}
-        </div>
-      </motion.div>
-
-      {/* COLUMNA 2: Información Financiera */}
-      <motion.div
-        whileHover={{ y: -4 }}
-        transition={{ type: 'spring', stiffness: 300 }}
-        className="group relative overflow-hidden rounded-2xl backdrop-blur-xl bg-gradient-to-br from-emerald-50/80 to-teal-50/80 dark:from-emerald-950/30 dark:to-teal-950/30 border border-emerald-200/50 dark:border-emerald-800/50 p-6 shadow-lg hover:shadow-2xl transition-all duration-300"
-      >
-        {/* Glow effect */}
-        <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-teal-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-
-        {/* Content */}
-        <div className="relative z-10">
-          {/* Header */}
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-500/30">
-              <DollarSign className="h-6 w-6 text-white" />
-            </div>
-            <div>
-              <h3 className="text-base font-bold text-slate-900 dark:text-white">
-                Información Financiera
-              </h3>
-              <p className="text-xs text-emerald-600 dark:text-emerald-400">Valores y costos</p>
-            </div>
-          </div>
-
-          {/* Data */}
-          <div className="space-y-3">
-            <div className="p-4 rounded-xl bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm border border-emerald-200/30 dark:border-emerald-800/30">
-              <p className="text-xs font-medium text-emerald-600 dark:text-emerald-400 mb-1">Valor Base</p>
-              <p className="text-lg font-bold text-slate-900 dark:text-white">
-                {formatCurrency(vivienda.valor_base || vivienda.valor_total)}
-              </p>
-            </div>
-
-            {vivienda.es_esquinera && vivienda.recargo_esquinera > 0 && (
-              <div className="p-4 rounded-xl bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm border border-amber-200/30 dark:border-amber-800/30">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="text-base">🏘️</span>
-                  <p className="text-xs font-medium text-amber-600 dark:text-amber-400">Recargo Esquinera</p>
-                </div>
-                <p className="text-base font-bold text-amber-700 dark:text-amber-300">
-                  + {formatCurrency(vivienda.recargo_esquinera)}
-                </p>
-              </div>
             )}
 
-            <div className="p-4 rounded-xl bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm border border-emerald-200/30 dark:border-emerald-800/30">
-              <p className="text-xs font-medium text-emerald-600 dark:text-emerald-400 mb-1">Gastos Notariales</p>
-              <p className="text-base font-bold text-slate-900 dark:text-white">
-                {formatCurrency(vivienda.gastos_notariales || 0)}
+            {/* Linderos en grid 2x2 compacto */}
+            {(vivienda.lindero_norte || vivienda.lindero_sur || vivienda.lindero_oriente || vivienda.lindero_occidente) && (
+              <div className='mt-4 pt-4 border-t border-gray-200 dark:border-gray-700'>
+                <p className='text-xs font-semibold text-gray-600 dark:text-gray-400 mb-3 flex items-center gap-2'>
+                  <MapPin className='w-3.5 h-3.5' />
+                  Linderos
+                </p>
+                <div className='grid grid-cols-2 gap-2'>
+                  {vivienda.lindero_norte && (
+                    <div className='p-2 rounded-lg bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800'>
+                      <p className='text-xs font-medium text-blue-600 dark:text-blue-400 mb-0.5'>⬆️ Norte</p>
+                      <p className='text-xs text-gray-900 dark:text-white line-clamp-2'>{vivienda.lindero_norte}</p>
+                    </div>
+                  )}
+                  {vivienda.lindero_sur && (
+                    <div className='p-2 rounded-lg bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-800'>
+                      <p className='text-xs font-medium text-orange-600 dark:text-orange-400 mb-0.5'>⬇️ Sur</p>
+                      <p className='text-xs text-gray-900 dark:text-white line-clamp-2'>{vivienda.lindero_sur}</p>
+                    </div>
+                  )}
+                  {vivienda.lindero_oriente && (
+                    <div className='p-2 rounded-lg bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-800'>
+                      <p className='text-xs font-medium text-rose-600 dark:text-rose-400 mb-0.5'>➡️ Oriente</p>
+                      <p className='text-xs text-gray-900 dark:text-white line-clamp-2'>{vivienda.lindero_oriente}</p>
+                    </div>
+                  )}
+                  {vivienda.lindero_occidente && (
+                    <div className='p-2 rounded-lg bg-purple-50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-800'>
+                      <p className='text-xs font-medium text-purple-600 dark:text-purple-400 mb-0.5'>⬅️ Occidente</p>
+                      <p className='text-xs text-gray-900 dark:text-white line-clamp-2'>{vivienda.lindero_occidente}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        </motion.div>
+
+        {/* COLUMNA 2: Información Financiera + Cliente */}
+        <motion.div
+          {...styles.animations.fadeInLeft}
+          transition={{ delay: 0.1 }}
+          className={styles.infoCardClasses.card}
+        >
+          <div className={styles.infoCardClasses.header}>
+            <div
+              className={`${styles.infoCardClasses.iconContainer} bg-gradient-to-br ${styles.gradients.valor}`}
+            >
+              <DollarSign className={styles.infoCardClasses.icon} />
+            </div>
+            <h3 className={styles.infoCardClasses.title}>Información Financiera</h3>
+          </div>
+          <div className={styles.infoCardClasses.content}>
+            {/* Valor Base */}
+            <div className='p-4 rounded-xl bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-950/30 dark:to-amber-950/30 border border-orange-200/50 dark:border-orange-800/50'>
+              <p className='text-xs font-medium text-orange-600 dark:text-orange-400 mb-1'>Valor Base</p>
+              <p className='text-2xl font-bold text-gray-900 dark:text-white'>
+                {formatCurrency(vivienda.valor_base || 0)}
               </p>
             </div>
 
-            {/* Valor Total Destacado */}
-            <div className="relative mt-4 p-5 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 shadow-xl shadow-emerald-500/30">
-              <div className="absolute inset-0 bg-grid-white/10 [mask-image:linear-gradient(0deg,transparent,black,transparent)] rounded-xl" />
-              <div className="relative z-10">
-                <p className="text-xs font-medium text-emerald-100 mb-1">💰 Valor Total</p>
-                <p className="text-2xl font-bold text-white">
-                  {formatCurrency(vivienda.valor_total)}
+            {/* Grid de detalles financieros */}
+            <div className='mt-4 space-y-3'>
+              {vivienda.es_esquinera && vivienda.recargo_esquinera && vivienda.recargo_esquinera > 0 && (
+                <div className='p-3 rounded-lg bg-yellow-50 dark:bg-yellow-950/20 border border-yellow-200 dark:border-yellow-800'>
+                  <div className='flex items-center gap-2 mb-1'>
+                    <span className='text-lg'>🏘️</span>
+                    <p className='text-xs font-medium text-yellow-600 dark:text-yellow-400'>Recargo Esquinera</p>
+                  </div>
+                  <p className='text-lg font-bold text-yellow-700 dark:text-yellow-300'>
+                    + {formatCurrency(vivienda.recargo_esquinera)}
+                  </p>
+                </div>
+              )}
+
+              <div className='p-3 rounded-lg bg-gray-50 dark:bg-gray-900/30 border border-gray-200 dark:border-gray-700'>
+                <p className='text-xs font-medium text-gray-600 dark:text-gray-400 mb-1'>Gastos Notariales</p>
+                <p className='text-lg font-bold text-gray-900 dark:text-white'>
+                  {formatCurrency(vivienda.gastos_notariales || 0)}
                 </p>
               </div>
             </div>
+
+            {/* Valor Total - Destacado con gradiente */}
+            <div className='mt-4 relative overflow-hidden p-5 rounded-xl bg-gradient-to-br from-orange-500 to-amber-600 shadow-xl shadow-orange-500/30'>
+              <div className='absolute inset-0 bg-grid-white/10 [mask-image:linear-gradient(0deg,transparent,black,transparent)]' />
+              <div className='relative z-10'>
+                <p className='text-xs font-medium text-orange-100 mb-1 flex items-center gap-1'>
+                  💰 Valor Total
+                </p>
+                <p className='text-3xl font-bold text-white'>
+                  {formatCurrency(vivienda.valor_total || 0)}
+                </p>
+              </div>
+            </div>
+
+            {/* Cliente Asignado - Expandido con más info */}
+            {vivienda.estado !== 'Disponible' && vivienda.clientes && (
+              <div className='mt-4 pt-4 border-t border-gray-200 dark:border-gray-700'>
+                <div className='flex items-center gap-2 mb-3'>
+                  <div className='w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center shadow-lg shadow-purple-500/30'>
+                    <span className='text-base'>👤</span>
+                  </div>
+                  <p className='text-sm font-bold text-gray-900 dark:text-white'>Cliente Asignado</p>
+                </div>
+                <div className='p-4 rounded-xl bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 border border-purple-200/50 dark:border-purple-800/50 space-y-2'>
+                  <div>
+                    <p className='text-xs font-medium text-purple-600 dark:text-purple-400 mb-0.5'>Nombre Completo</p>
+                    <p className='text-base font-bold text-gray-900 dark:text-white'>
+                      {vivienda.clientes.nombres} {vivienda.clientes.apellidos}
+                    </p>
+                  </div>
+                  {vivienda.clientes.telefono && (
+                    <div className='flex items-center gap-2 pt-2 border-t border-purple-200 dark:border-purple-800'>
+                      <span className='text-purple-600 dark:text-purple-400'>📞</span>
+                      <p className='text-sm font-semibold text-gray-900 dark:text-white'>
+                        {vivienda.clientes.telefono}
+                      </p>
+                    </div>
+                  )}
+                  {vivienda.clientes.email && (
+                    <div className='flex items-center gap-2 pt-1 border-t border-purple-200 dark:border-purple-800'>
+                      <span className='text-purple-600 dark:text-purple-400'>📧</span>
+                      <p className='text-xs text-gray-700 dark:text-gray-300'>
+                        {vivienda.clientes.email}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
-        </div>
-      </motion.div>
-
-      {/* COLUMNA 3: Linderos */}
-      <motion.div
-        whileHover={{ y: -4 }}
-        transition={{ type: 'spring', stiffness: 300 }}
-        className="group relative overflow-hidden rounded-2xl backdrop-blur-xl bg-gradient-to-br from-cyan-50/80 to-sky-50/80 dark:from-cyan-950/30 dark:to-sky-950/30 border border-cyan-200/50 dark:border-cyan-800/50 p-6 shadow-lg hover:shadow-2xl transition-all duration-300"
-      >
-        {/* Glow effect */}
-        <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-sky-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-
-        {/* Content */}
-        <div className="relative z-10">
-          {/* Header */}
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-500 to-sky-600 flex items-center justify-center shadow-lg shadow-cyan-500/30">
-              <span className="text-2xl">🧭</span>
-            </div>
-            <div>
-              <h3 className="text-base font-bold text-slate-900 dark:text-white">
-                Linderos
-              </h3>
-              <p className="text-xs text-cyan-600 dark:text-cyan-400">Colindancias</p>
-            </div>
-          </div>
-
-          {/* Data - Grid de linderos */}
-          <div className="space-y-3">
-            {/* Norte */}
-            <div className="p-4 rounded-xl bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm border border-cyan-200/30 dark:border-cyan-800/30 hover:border-cyan-400/50 dark:hover:border-cyan-600/50 transition-colors">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-md">
-                  <span className="text-sm">⬆️</span>
-                </div>
-                <p className="text-xs font-bold text-cyan-600 dark:text-cyan-400 uppercase tracking-wider">Norte</p>
-              </div>
-              <p className="text-sm font-medium text-slate-900 dark:text-white pl-10">
-                {vivienda.lindero_norte || 'No especificado'}
-              </p>
-            </div>
-
-            {/* Sur */}
-            <div className="p-4 rounded-xl bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm border border-cyan-200/30 dark:border-cyan-800/30 hover:border-cyan-400/50 dark:hover:border-cyan-600/50 transition-colors">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center shadow-md">
-                  <span className="text-sm">⬇️</span>
-                </div>
-                <p className="text-xs font-bold text-cyan-600 dark:text-cyan-400 uppercase tracking-wider">Sur</p>
-              </div>
-              <p className="text-sm font-medium text-slate-900 dark:text-white pl-10">
-                {vivienda.lindero_sur || 'No especificado'}
-              </p>
-            </div>
-
-            {/* Oriente */}
-            <div className="p-4 rounded-xl bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm border border-cyan-200/30 dark:border-cyan-800/30 hover:border-cyan-400/50 dark:hover:border-cyan-600/50 transition-colors">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-rose-500 to-rose-600 flex items-center justify-center shadow-md">
-                  <span className="text-sm">➡️</span>
-                </div>
-                <p className="text-xs font-bold text-cyan-600 dark:text-cyan-400 uppercase tracking-wider">Oriente</p>
-              </div>
-              <p className="text-sm font-medium text-slate-900 dark:text-white pl-10">
-                {vivienda.lindero_oriente || 'No especificado'}
-              </p>
-            </div>
-
-            {/* Occidente */}
-            <div className="p-4 rounded-xl bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm border border-cyan-200/30 dark:border-cyan-800/30 hover:border-cyan-400/50 dark:hover:border-cyan-600/50 transition-colors">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center shadow-md">
-                  <span className="text-sm">⬅️</span>
-                </div>
-                <p className="text-xs font-bold text-cyan-600 dark:text-cyan-400 uppercase tracking-wider">Occidente</p>
-              </div>
-              <p className="text-sm font-medium text-slate-900 dark:text-white pl-10">
-                {vivienda.lindero_occidente || 'No especificado'}
-              </p>
-            </div>
-          </div>
-        </div>
-      </motion.div>
+        </motion.div>
+      </div>
     </motion.div>
   )
 }

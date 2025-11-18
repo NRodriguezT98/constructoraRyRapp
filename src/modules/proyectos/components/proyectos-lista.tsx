@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 
 import type { Proyecto } from '../types'
 
-import { ProyectoCardPremium } from './ProyectoCardPremium'
+import { ProyectoCardPremium } from './proyecto-card-premium'
 
 interface ProyectosListaProps {
   proyectos: Proyecto[]

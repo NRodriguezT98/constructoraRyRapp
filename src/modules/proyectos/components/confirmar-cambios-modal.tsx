@@ -14,7 +14,7 @@ import { AlertTriangle, Building2, CheckCircle2, Home, Loader2, Pencil, Plus, Tr
 import { useConfirmarCambiosModal } from '../hooks/useConfirmarCambiosModal'
 import type { ResumenCambios } from '../hooks/useDetectarCambios'
 
-import { confirmarCambiosStyles as styles } from './ConfirmarCambiosModal.styles'
+import { confirmarCambiosStyles as styles } from './confirmar-cambios-modal.styles'
 
 interface ConfirmarCambiosModalProps {
   isOpen: boolean
