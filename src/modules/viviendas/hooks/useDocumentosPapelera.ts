@@ -14,7 +14,6 @@ import { toast } from 'sonner'
 
 import { useAuth } from '@/contexts/auth-context'
 
-import { documentosViviendaService } from '../services/documentos-vivienda.service'
 
 interface UseDocumentosPapeleraParams {
   viviendaId: string

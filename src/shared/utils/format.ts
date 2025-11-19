@@ -31,6 +31,21 @@ export const formatPercentage = (
   return `${formatNumber(value, decimals)}%`
 }
 
+/**
+ * Formatear área (m²) con precisión decimal exacta
+ * ✅ Preserva decimales sin aproximación (66.125 → "66.125")
+ * ✅ Elimina trailing zeros innecesarios (66.000 → "66")
+ * @param area - Área en metros cuadrados
+ * @returns String con el valor exacto + " m²"
+ */
+export const formatArea = (area: number | null | undefined): string => {
+  if (area == null) return 'N/A'
+
+  // Convertir a string y eliminar trailing zeros innecesarios
+  const areaStr = area.toString().replace(/\.?0+$/, '')
+  return `${areaStr} m²`
+}
+
 // Formatear fechas
 export const formatDate = (
   date: string | Date,

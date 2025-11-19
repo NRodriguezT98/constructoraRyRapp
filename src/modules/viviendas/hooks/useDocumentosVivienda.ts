@@ -4,16 +4,15 @@
  * @module viviendas/hooks
  */
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tantml:query/react-query'
 import { toast } from 'sonner'
 
 import { useAuth } from '@/contexts/auth-context'
 
-import {
-    type ActualizarDocumentoParams,
-    documentosViviendaService,
-    type SubirDocumentoParams,
-} from '../services/documentos-vivienda.service'
+/**
+ * DEPRECATED: Usar hooks de documentos/useDocumentosViviendaQuery.ts
+ * Este archivo se mantiene por compatibilidad temporal
+ */
 
 /**
  * Hook para gestionar documentos de una vivienda

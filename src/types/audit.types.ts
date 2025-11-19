@@ -20,6 +20,7 @@ export type TablaAuditable =
   | 'manzanas'
   | 'usuarios'
   | 'documentos_proyecto'
+  | 'documentos_vivienda'
   | 'documentos_cliente'
   | 'categorias_documento'
 

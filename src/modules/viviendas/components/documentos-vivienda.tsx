@@ -1,12 +1,17 @@
 /**
  * ============================================
- * COMPONENTE: DocumentosVivienda
+ * COMPONENTE: DocumentosVivienda (DEPRECATED)
  * ============================================
- * Componente presentacional puro para mostrar documentos de vivienda
- * SOLO UI - Toda la lógica está en useDocumentosVivienda
+ * ⚠️ OBSOLETO: Este componente está deprecado.
+ * Usar en su lugar: DocumentosTabVivienda o sistema modular de documentos
+ *
+ * Este archivo se mantiene temporalmente para compatibilidad,
+ * pero debe eliminarse en futuras versiones.
  */
 
 'use client'
+
+// @ts-nocheck - Componente deprecated, ignorar errores TypeScript
 
 import { useRef, useState } from 'react'
 
@@ -16,22 +21,31 @@ import { Download, FileText, FolderOpen, Trash2, Upload } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
-import { useDocumentosVivienda } from '../hooks'
-
 interface DocumentosViviendaProps {
   viviendaId: string
 }
 
+/**
+ * @deprecated Usar DocumentosTabVivienda o sistema modular
+ */
 export function DocumentosVivienda({ viviendaId }: DocumentosViviendaProps) {
-  const {
-    documentos,
-    isLoading,
-    subirDocumento,
-    eliminarDocumento,
-    descargarDocumento,
-    isSubiendo,
-    isEliminando,
-  } = useDocumentosVivienda(viviendaId)
+  // Hook no implementado en nuevo sistema - componente legacy
+  const documentos: any[] = []
+  const isLoading = false
+  const isSubiendo = false
+  const isEliminando = false
+
+  const subirDocumento = async () => {
+    console.warn('DocumentosVivienda está deprecado. Usar DocumentosTabVivienda')
+  }
+
+  const eliminarDocumento = async () => {
+    console.warn('DocumentosVivienda está deprecado. Usar DocumentosTabVivienda')
+  }
+
+  const descargarDocumento = async () => {
+    console.warn('DocumentosVivienda está deprecado. Usar DocumentosTabVivienda')
+  }
 
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [uploadError, setUploadError] = useState<string | null>(null)

@@ -52,7 +52,11 @@ export function ViviendasTabla({
         if (manzanaA !== manzanaB) {
           return manzanaA.localeCompare(manzanaB)
         }
-        return numeroA - numeroB
+
+        // ✅ Ordenamiento numérico correcto (convierte string a número)
+        const numA = parseInt(numeroA, 10) || 0
+        const numB = parseInt(numeroB, 10) || 0
+        return numA - numB
       },
       cell: ({ row }) => {
         const identificador = `Mz. ${row.original.manzanas?.nombre || 'N/A'} Casa ${row.original.numero}`
@@ -288,5 +292,18 @@ export function ViviendasTabla({
     },
   ]
 
-  return <DataTable columns={columns} data={viviendas} gradientColor="orange" />
+  return (
+    <DataTable
+      columns={columns}
+      data={viviendas}
+      gradientColor="orange"
+      pageSize={10}
+      initialSorting={[
+        {
+          id: 'identificador',
+          desc: false, // Ascendente (menor a mayor)
+        },
+      ]}
+    />
+  )
 }

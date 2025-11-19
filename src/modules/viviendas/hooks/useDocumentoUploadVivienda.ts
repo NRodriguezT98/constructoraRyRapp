@@ -8,8 +8,9 @@
 
 import { ChangeEvent, FormEvent, useCallback, useState } from 'react'
 
+import { useAuth } from '@/contexts/auth-context'
+import { useSubirDocumentoViviendaMutation } from './documentos/useDocumentosViviendaQuery'
 import { useCategoriasSistemaViviendas } from './useCategoriasSistemaViviendas'
-import { useDocumentosVivienda } from './useDocumentosVivienda'
 
 interface UseDocumentoUploadViviendaParams {
   viviendaId: string
@@ -22,8 +23,10 @@ export function useDocumentoUploadVivienda({
   onSuccess,
   categoriaPreseleccionada,
 }: UseDocumentoUploadViviendaParams) {
+  const { user } = useAuth()
+
   // ✅ React Query hooks
-  const { subirDocumento, isSubiendo } = useDocumentosVivienda(viviendaId)
+  const subirMutation = useSubirDocumentoViviendaMutation(viviendaId)
   const { obtenerCategoriaPorNombre } = useCategoriasSistemaViviendas()
 
   // ✅ Estados locales
@@ -113,10 +116,9 @@ export function useDocumentoUploadVivienda({
 
       try {
         setError(null)
-        await subirDocumento({
-          viviendaId,
+        await subirMutation.mutateAsync({
           archivo: selectedFile,
-          categoriaNombre: selectedCategoriaNombre,
+          categoriaId: selectedCategoriaNombre,
           titulo,
           descripcion: descripcion || undefined,
         })
@@ -133,7 +135,7 @@ export function useDocumentoUploadVivienda({
         setError(err instanceof Error ? err.message : 'Error al subir documento')
       }
     },
-    [selectedFile, selectedCategoriaNombre, titulo, descripcion, viviendaId, subirDocumento, onSuccess]
+    [selectedFile, selectedCategoriaNombre, titulo, descripcion, subirMutation, onSuccess, user]
   )
 
   return {
@@ -142,7 +144,7 @@ export function useDocumentoUploadVivienda({
     selectedCategoria: selectedCategoriaNombre,
     titulo,
     descripcion,
-    uploading: isSubiendo,
+    uploading: subirMutation.isPending,
     error,
 
     // Handlers

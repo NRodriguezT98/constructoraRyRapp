@@ -13,7 +13,15 @@ import { FORMATO_MONEDA, REGEX_PATTERNS, VIVIENDA_LIMITES } from '../constants'
  * @example formatCurrency(150000000) // "$150.000.000"
  */
 export function formatCurrency(value: number): string {
-  return new Intl.NumberFormat(FORMATO_MONEDA.locale, FORMATO_MONEDA.options).format(value)
+  // Validar entrada para evitar crash con Intl.NumberFormat
+  if (value == null || isNaN(value) || !isFinite(value)) {
+    return '$0'
+  }
+
+  // Asegurar que sea positivo (evitar valores negativos problemáticos)
+  const safeValue = Math.max(0, value)
+
+  return new Intl.NumberFormat(FORMATO_MONEDA.locale, FORMATO_MONEDA.options).format(safeValue)
 }
 
 /**

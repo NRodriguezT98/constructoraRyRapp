@@ -850,6 +850,7 @@ export type Database = {
           es_importante: boolean | null
           es_version_actual: boolean
           estado: string
+          estado_version: string | null
           etiquetas: string[] | null
           fecha_actualizacion: string | null
           fecha_creacion: string | null
@@ -857,6 +858,7 @@ export type Database = {
           fecha_vencimiento: string | null
           id: string
           metadata: Json | null
+          motivo_estado: string | null
           nombre_archivo: string
           nombre_original: string
           subido_por: string
@@ -865,6 +867,7 @@ export type Database = {
           titulo: string
           url_storage: string
           version: number
+          version_corrige_a: string | null
           vivienda_id: string
         }
         Insert: {
@@ -874,6 +877,7 @@ export type Database = {
           es_importante?: boolean | null
           es_version_actual?: boolean
           estado?: string
+          estado_version?: string | null
           etiquetas?: string[] | null
           fecha_actualizacion?: string | null
           fecha_creacion?: string | null
@@ -881,6 +885,7 @@ export type Database = {
           fecha_vencimiento?: string | null
           id?: string
           metadata?: Json | null
+          motivo_estado?: string | null
           nombre_archivo: string
           nombre_original: string
           subido_por: string
@@ -889,6 +894,7 @@ export type Database = {
           titulo: string
           url_storage: string
           version?: number
+          version_corrige_a?: string | null
           vivienda_id: string
         }
         Update: {
@@ -898,6 +904,7 @@ export type Database = {
           es_importante?: boolean | null
           es_version_actual?: boolean
           estado?: string
+          estado_version?: string | null
           etiquetas?: string[] | null
           fecha_actualizacion?: string | null
           fecha_creacion?: string | null
@@ -905,6 +912,7 @@ export type Database = {
           fecha_vencimiento?: string | null
           id?: string
           metadata?: Json | null
+          motivo_estado?: string | null
           nombre_archivo?: string
           nombre_original?: string
           subido_por?: string
@@ -913,6 +921,7 @@ export type Database = {
           titulo?: string
           url_storage?: string
           version?: number
+          version_corrige_a?: string | null
           vivienda_id?: string
         }
         Relationships: [
@@ -933,6 +942,20 @@ export type Database = {
           {
             foreignKeyName: "documentos_vivienda_documento_padre_id_fkey"
             columns: ["documento_padre_id"]
+            isOneToOne: false
+            referencedRelation: "vista_documentos_vivienda"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documentos_vivienda_version_corrige_a_fkey"
+            columns: ["version_corrige_a"]
+            isOneToOne: false
+            referencedRelation: "documentos_vivienda"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documentos_vivienda_version_corrige_a_fkey"
+            columns: ["version_corrige_a"]
             isOneToOne: false
             referencedRelation: "vista_documentos_vivienda"
             referencedColumns: ["id"]
@@ -963,6 +986,20 @@ export type Database = {
             columns: ["vivienda_id"]
             isOneToOne: false
             referencedRelation: "viviendas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_documentos_vivienda_subido_por"
+            columns: ["subido_por"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_documentos_vivienda_subido_por"
+            columns: ["subido_por"]
+            isOneToOne: false
+            referencedRelation: "vista_usuarios_completos"
             referencedColumns: ["id"]
           },
         ]
@@ -2106,6 +2143,20 @@ export type Database = {
             columns: ["vivienda_id"]
             isOneToOne: false
             referencedRelation: "viviendas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_documentos_vivienda_subido_por"
+            columns: ["subido_por"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_documentos_vivienda_subido_por"
+            columns: ["subido_por"]
+            isOneToOne: false
+            referencedRelation: "vista_usuarios_completos"
             referencedColumns: ["id"]
           },
           {

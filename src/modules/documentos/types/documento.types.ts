@@ -160,11 +160,14 @@ export const MAX_FILE_SIZE = 50 * 1024 * 1024
 
 // Helper para formatear tamaño de archivo
 export function formatFileSize(bytes: number): string {
-  if (bytes === 0) return '0 Bytes'
+  // Validación robusta para evitar crash con String.repeat(-1)
+  if (bytes == null || bytes <= 0 || isNaN(bytes) || !isFinite(bytes)) return '0 Bytes'
+
   const k = 1024
-  const sizes = ['Bytes', 'KB', 'MB', 'GB']
+  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB']
   const i = Math.floor(Math.log(bytes) / Math.log(k))
-  return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i]
+  const sizeIndex = Math.max(0, Math.min(i, sizes.length - 1))
+  return Math.round((bytes / Math.pow(k, sizeIndex)) * 100) / 100 + ' ' + sizes[sizeIndex]
 }
 
 // Helper para obtener extensión de archivo

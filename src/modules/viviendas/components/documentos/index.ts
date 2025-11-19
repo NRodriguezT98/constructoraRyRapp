@@ -1,13 +1,26 @@
 /**
- * Barrel exports para componentes de documentos de viviendas
+ * 📦 Barrel Export - Componentes de Documentos de Viviendas
  */
 
-export { DocumentoNuevaVersionModal } from './documento-nueva-version-modal'
-export { DocumentoUploadVivienda } from './documento-upload-vivienda'
-export { DocumentoVersionesModalVivienda } from './documento-versiones-modal-vivienda'
-export { DocumentosListaVivienda } from './documentos-lista-vivienda'
+// Lista y Grid
+export { DocumentosLista } from './lista/documentos-lista'
+export { DocumentosFiltros } from './lista/documentos-filtros'
+export { DocumentoCard } from './lista/documento-card'
 
-// Sistema de Estados de Versión - PROFESIONAL
-export { EstadoVersionAlert, EstadoVersionBadge } from './estado-version-badge'
-export { MarcarEstadoVersionModal } from './marcar-estado-version-modal'
-export { ReemplazarArchivoModal } from './reemplazar-archivo-modal'
+// Viewer
+export { DocumentoViewer } from './viewer/documento-viewer'
+
+// Upload
+export { DocumentoUpload } from './upload/documento-upload'
+
+// Modals
+export { DocumentoEditarMetadatosModal } from './modals/DocumentoEditarMetadatosModal'
+export { DocumentoNuevaVersionModal } from './modals/DocumentoNuevaVersionModal'
+export { DocumentoReemplazarArchivoModal } from './modals/DocumentoReemplazarArchivoModal'
+export { MarcarEstadoVersionModal } from './modals/MarcarEstadoVersionModal'
+export type { AccionEstado, MarcarEstadoVersionModalProps } from './modals/MarcarEstadoVersionModal'
+export { ConfirmarCambiosDocumentoModal } from './modals/ConfirmarCambiosDocumentoModal'
+
+// Shared Components
+export { CategoriaIcon } from './shared/categoria-icon'
+export { EstadoVersionBadge } from './shared/EstadoVersionBadge'

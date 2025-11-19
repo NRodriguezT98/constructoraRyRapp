@@ -499,6 +499,7 @@ class ViviendasService {
    * Lista viviendas con filtros opcionales
    * OPTIMIZADO: Usa vista_viviendas_completas (1 query vs 3-4 queries)
    * Incluye relaciones con manzanas, proyectos, clientes y cálculos de abonos
+   * ✅ ORDENAMIENTO POR DEFECTO: Número de vivienda ascendente (1, 2, 3... → 101, 102...)
    */
   async listar(filtros?: FiltrosViviendas): Promise<Vivienda[]> {
     // Query a la vista optimizada
@@ -592,6 +593,23 @@ class ViviendasService {
       porcentaje_pagado: Number(row.porcentaje_pagado) || 0,
       saldo_pendiente: Number(row.saldo_pendiente) || row.valor_total,
     }))
+
+    // ✅ ORDENAMIENTO POR DEFECTO: Manzana (alfabético) + Número (numérico ascendente)
+    // Esto garantiza orden correcto: Mz.A Casa 1, 2, 3... 10, 11 (no 1, 10, 11, 2, 3)
+    viviendas.sort((a, b) => {
+      const manzanaA = a.manzanas?.nombre || ''
+      const manzanaB = b.manzanas?.nombre || ''
+
+      // Primero ordenar por manzana
+      if (manzanaA !== manzanaB) {
+        return manzanaA.localeCompare(manzanaB)
+      }
+
+      // Luego ordenar por número (convertir a entero para orden numérico)
+      const numA = parseInt(a.numero, 10) || 0
+      const numB = parseInt(b.numero, 10) || 0
+      return numA - numB
+    })
 
     return viviendas
   }  // ============================================

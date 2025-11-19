@@ -1,10 +1,9 @@
 'use client'
 
-import { motion } from 'framer-motion'
 import { DollarSign, Info, MapPin } from 'lucide-react'
 
 import type { Vivienda } from '@/modules/viviendas/types'
-import { formatCurrency } from '@/shared/utils'
+import { formatArea, formatCurrency } from '@/shared/utils'
 
 import * as styles from '@/app/viviendas/[slug]/vivienda-detalle.styles'
 
@@ -22,17 +21,15 @@ export function InfoTab({ vivienda }: InfoTabProps) {
   const porcentajePagado = vivienda.porcentaje_pagado || 0
 
   return (
-    <motion.div
+    <div
       key='info'
-      {...styles.animations.fadeInUp}
-      className='space-y-3'
+      className='space-y-3 animate-fade-in'
     >
       {/* Barra de Progreso de Pagos (solo si está asignada o vendida) */}
       {vivienda.estado !== 'Disponible' && (
-        <motion.div
-          {...styles.animations.fadeInUp}
-          transition={{ delay: 0.1 }}
-          className={styles.progressClasses.container}
+        <div
+          className={`${styles.progressClasses.container} animate-slide-down`}
+          style={{ animationDelay: '100ms' }}
         >
           <div className={styles.progressClasses.header}>
             <div className={styles.progressClasses.leftSection}>
@@ -60,14 +57,12 @@ export function InfoTab({ vivienda }: InfoTabProps) {
 
           {/* Barra con gradiente animado */}
           <div className={styles.progressClasses.bar}>
-            <motion.div
+            <div
               className={styles.progressClasses.barFill}
-              initial={{ width: 0 }}
-              animate={{ width: `${porcentajePagado}%` }}
-              transition={{ duration: 1.5, ease: 'easeOut', delay: 0.1 }}
+              style={{ width: `${porcentajePagado}%`, transition: 'width 1.5s ease-out 0.1s' }}
             >
               <div className={`${styles.progressClasses.shimmer} animate-shimmer`}></div>
-            </motion.div>
+            </div>
           </div>
 
           {/* Milestones */}
@@ -105,15 +100,15 @@ export function InfoTab({ vivienda }: InfoTabProps) {
               </div>
             </div>
           </div>
-        </motion.div>
+        </div>
       )}
 
       {/* Cards de Información - Layout 2 columnas optimizado */}
       <div className='grid gap-4 lg:grid-cols-2'>
         {/* COLUMNA 1: Datos Generales (Técnicos + Ubicación fusionados) */}
-        <motion.div
-          {...styles.animations.fadeInLeft}
-          className={styles.infoCardClasses.card}
+        <div
+          className={`${styles.infoCardClasses.card} animate-slide-down`}
+          style={{ animationDelay: '150ms' }}
         >
           <div className={styles.infoCardClasses.header}>
             <div
@@ -151,13 +146,13 @@ export function InfoTab({ vivienda }: InfoTabProps) {
               <div>
                 <p className={styles.infoCardClasses.label}>Área Construida</p>
                 <p className='text-base font-bold text-gray-900 dark:text-white font-mono'>
-                  {vivienda.area_construida?.toString() || 'N/A'} m²
+                  {formatArea(vivienda.area_construida)}
                 </p>
               </div>
               <div>
                 <p className={styles.infoCardClasses.label}>Área de Lote</p>
                 <p className='text-base font-bold text-gray-900 dark:text-white font-mono'>
-                  {vivienda.area_lote?.toString() || 'N/A'} m²
+                  {formatArea(vivienda.area_lote)}
                 </p>
               </div>
             </div>
@@ -220,13 +215,12 @@ export function InfoTab({ vivienda }: InfoTabProps) {
               </div>
             )}
           </div>
-        </motion.div>
+        </div>
 
         {/* COLUMNA 2: Información Financiera + Cliente */}
-        <motion.div
-          {...styles.animations.fadeInLeft}
-          transition={{ delay: 0.1 }}
-          className={styles.infoCardClasses.card}
+        <div
+          className={`${styles.infoCardClasses.card} animate-slide-down`}
+          style={{ animationDelay: '200ms' }}
         >
           <div className={styles.infoCardClasses.header}>
             <div
@@ -316,8 +310,8 @@ export function InfoTab({ vivienda }: InfoTabProps) {
               </div>
             )}
           </div>
-        </motion.div>
+        </div>
       </div>
-    </motion.div>
+    </div>
   )
 }

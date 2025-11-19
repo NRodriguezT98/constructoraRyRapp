@@ -6,8 +6,8 @@
  */
 
 export const viviendasFiltrosStyles = {
-  // Contenedor principal (sticky)
-  container: 'sticky top-4 z-40 backdrop-blur-xl bg-white/90 dark:bg-gray-800/90 rounded-xl border border-gray-200/50 dark:border-gray-700/50 p-3 shadow-2xl shadow-orange-500/10',
+  // Contenedor principal (SIN sticky - scroll normal)
+  container: 'backdrop-blur-xl bg-white/90 dark:bg-gray-800/90 rounded-xl border border-gray-200/50 dark:border-gray-700/50 p-3 shadow-2xl shadow-orange-500/10',
 
   // Barra de búsqueda y filtros (horizontal)
   searchBar: 'flex items-center gap-2',

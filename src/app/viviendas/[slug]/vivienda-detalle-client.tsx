@@ -16,6 +16,9 @@ import {
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 
+// Debug logger
+import { DebugLogger } from '@/lib/utils/debug-logger'
+
 // Hooks
 import { useViviendaQuery } from '@/modules/viviendas/hooks/useViviendaQuery'
 
@@ -62,13 +65,47 @@ function formatearEstadoVivienda(estado: string): string {
  * - Modales de edición/eliminación
  */
 export default function ViviendaDetalleClient({ viviendaId }: ViviendaDetalleClientProps) {
+  DebugLogger.log('VIVIENDA-CLIENT', '========== INICIO COMPONENT ==========')
+  DebugLogger.log('VIVIENDA-CLIENT', 'viviendaId recibido', { viviendaId })
+
   const router = useRouter()
   const [activeTab, setActiveTab] = useState<TabType>('info')
   const [modalEditar, setModalEditar] = useState(false)
   const [modalEliminar, setModalEliminar] = useState(false)
 
-  // React Query hook
+  // React Query hook con logging
+  console.log('🏠 [VIVIENDA DETALLE] Iniciando carga para ID:', viviendaId)
+
   const { vivienda, loading, error } = useViviendaQuery(viviendaId)
+
+  // Log de estados
+  DebugLogger.log('VIVIENDA-CLIENT', 'Estado query', { loading, hasVivienda: !!vivienda, hasError: !!error })
+  console.log('🏠 [VIVIENDA DETALLE] Estado:', { loading, hasVivienda: !!vivienda, hasError: !!error })
+
+  // Si hay error
+  if (error) {
+    DebugLogger.error('VIVIENDA-CLIENT', 'Error en useViviendaQuery', error)
+  }
+
+  // Si hay vivienda, log de sus datos
+  if (vivienda) {
+    DebugLogger.log('VIVIENDA-CLIENT', 'Datos vivienda cargados', {
+      id: vivienda.id,
+      nomenclatura: vivienda.nomenclatura,
+      estado: vivienda.estado,
+      numero: vivienda.numero,
+    })
+    console.log('🏠 [VIVIENDA DETALLE] Datos cargados:', {
+      id: vivienda.id,
+      nomenclatura: vivienda.nomenclatura,
+      estado: vivienda.estado,
+      hasDocumentos: true, // Se cargarán en el tab
+    })
+  }
+
+  if (error) {
+    console.error('🏠 [VIVIENDA DETALLE] ❌ Error en query:', error)
+  }
 
   // Handlers
   const handleEdit = () => {
@@ -91,6 +128,8 @@ export default function ViviendaDetalleClient({ viviendaId }: ViviendaDetalleCli
 
   // Loading state premium
   if (loading || !vivienda) {
+    DebugLogger.log('VIVIENDA-CLIENT', 'Renderizando estado LOADING', { loading, hasVivienda: !!vivienda })
+    console.log('🏠 [VIVIENDA DETALLE] ⏳ Estado LOADING/NO-DATA', { loading, hasVivienda: !!vivienda })
     return (
       <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-gray-50 via-white to-orange-50/30 dark:from-gray-900 dark:via-gray-900 dark:to-orange-950/20">
         <motion.div
@@ -165,6 +204,13 @@ export default function ViviendaDetalleClient({ viviendaId }: ViviendaDetalleCli
       count: vivienda.cantidad_abonos || 0,
     },
   ]
+
+  console.log('🏠 [VIVIENDA DETALLE] 🎉 Iniciando renderizado principal...')
+  console.log('🏠 [VIVIENDA DETALLE] Active tab:', activeTab)
+  console.log('🏠 [VIVIENDA DETALLE] Vivienda completa:', JSON.stringify(vivienda, null, 2))
+
+  try {
+    console.log('🏠 [VIVIENDA DETALLE] 📦 Entrando en bloque de renderizado...')
 
   return (
     <AnimatePresence mode="wait">

@@ -59,7 +59,8 @@ export function ViviendasPageMain({
 }: ViviendasPageMainProps = {}) {
   const router = useRouter()
   const {
-    viviendas,
+    viviendas, // Para cards (paginadas)
+    viviendasFiltradas, // Para tabla (todas filtradas)
     cargando,
     modalEliminar,
     viviendaEliminar,
@@ -73,6 +74,12 @@ export function ViviendasPageMain({
     estadisticas,
     totalFiltradas,
     proyectos,
+    // Paginación (solo para cards)
+    paginaActual,
+    totalPaginas,
+    itemsPorPagina,
+    cambiarPagina,
+    cambiarItemsPorPagina,
   } = useViviendasList()
 
   // Hook para preferencia de vista (cards vs tabla)
@@ -100,7 +107,8 @@ export function ViviendasPageMain({
     router.push(url as any)
   }
 
-  const viviendaEliminando = viviendas.find(v => v.id === viviendaEliminar)
+  // Buscar en viviendasFiltradas para que funcione en ambas vistas
+  const viviendaEliminando = viviendasFiltradas?.find(v => v.id === viviendaEliminar)
 
   return (
     <div className={styles.container.page}>
@@ -130,7 +138,7 @@ export function ViviendasPageMain({
           filtros={filtros}
           onActualizarFiltros={actualizarFiltros}
           onLimpiarFiltros={limpiarFiltros}
-          totalResultados={viviendas.length}
+          totalResultados={totalFiltradas}
           proyectos={proyectos}
           vista={vista}
           onCambiarVista={setVista}
@@ -143,7 +151,7 @@ export function ViviendasPageMain({
           <ViviendasEmpty onCrear={() => router.push('/viviendas/nueva')} />
         ) : vista === 'cards' ? (
           <ViviendasLista
-            viviendas={viviendas}
+            viviendas={viviendas} // ← Viviendas paginadas (hook maneja paginación)
             onVerDetalle={handleVerDetalle}
             onAsignarCliente={(vivienda) => {
               console.log('Asignar cliente a:', vivienda)
@@ -162,10 +170,17 @@ export function ViviendasPageMain({
               // TODO: Implementar generación de escritura
             }}
             onEliminar={abrirModalEliminar}
+            // Paginación
+            paginaActual={paginaActual}
+            totalPaginas={totalPaginas}
+            totalItems={totalFiltradas}
+            itemsPorPagina={itemsPorPagina}
+            onCambiarPagina={cambiarPagina}
+            onCambiarItemsPorPagina={cambiarItemsPorPagina}
           />
         ) : (
           <ViviendasTabla
-            viviendas={viviendas}
+            viviendas={viviendasFiltradas} // ← Todas las viviendas filtradas (TanStack Table maneja paginación)
             onView={handleVerDetalle}
             onEdit={(vivienda) => {
               console.log('Editar vivienda:', vivienda)

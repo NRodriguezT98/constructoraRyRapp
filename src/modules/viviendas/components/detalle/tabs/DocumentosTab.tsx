@@ -5,8 +5,9 @@ import { useState } from 'react'
 import { ArrowLeft, FileText, FolderCog, Upload } from 'lucide-react'
 
 import { useAuth } from '@/contexts/auth-context'
+import { DebugLogger } from '@/lib/utils/debug-logger'
 import { CategoriasManager } from '@/modules/documentos/components/categorias/categorias-manager'
-import { DocumentosListaVivienda, DocumentoUploadVivienda } from '@/modules/viviendas/components/documentos'
+import { DocumentoUpload, DocumentosLista } from '@/modules/viviendas/components/documentos'
 import { moduleThemes } from '@/shared/config/module-themes'
 
 interface DocumentosTabProps {
@@ -15,20 +16,28 @@ interface DocumentosTabProps {
 
 /**
  * Tab de documentos de la vivienda
- * Sigue el patrón de DocumentosTab de proyectos
+ * Sistema completo migrado desde Proyectos
  */
 export function DocumentosTab({ viviendaId }: DocumentosTabProps) {
-  const { user } = useAuth()
+  console.log('📄 [DOCUMENTOS TAB] ========== INICIO ==========')
+  console.log('📄 [DOCUMENTOS TAB] viviendaId recibido:', viviendaId)
 
-  // Tema naranja/ámbar para viviendas
-  const theme = moduleThemes.viviendas
+  try {
+    const { user } = useAuth()
+    console.log('📄 [DOCUMENTOS TAB] Auth cargado, user:', user?.email || 'No autenticado')
 
-  // Estados locales para vistas (PATRÓN IGUAL A PROYECTOS)
-  const [showUpload, setShowUpload] = useState(false)
-  const [showCategorias, setShowCategorias] = useState(false)
+    // Tema naranja/ámbar para viviendas
+    const theme = moduleThemes.viviendas
+    console.log('📄 [DOCUMENTOS TAB] Tema cargado ✓')
+
+    // Estados locales para vistas (PATRÓN IGUAL A PROYECTOS)
+    const [showUpload, setShowUpload] = useState(false)
+    const [showCategorias, setShowCategorias] = useState(false)
+    console.log('📄 [DOCUMENTOS TAB] Estados inicializados ✓')
 
   // Si está mostrando categorías (PATRÓN IGUAL A PROYECTOS)
   if (showCategorias && user) {
+    console.log('📄 [DOCUMENTOS TAB] Renderizando vista CATEGORÍAS')
     return (
       <div className='space-y-4'>
         {/* Header con botón volver */}
@@ -65,10 +74,11 @@ export function DocumentosTab({ viviendaId }: DocumentosTabProps) {
 
   // Si está mostrando formulario de upload (PATRÓN IGUAL A PROYECTOS)
   if (showUpload && user) {
+    console.log('📄 [DOCUMENTOS TAB] Renderizando vista UPLOAD')
     return (
       <div className='space-y-4'>
         <div className={`rounded-lg border ${theme.classes.border.light} bg-white p-4 shadow-sm dark:bg-gray-800`}>
-          <DocumentoUploadVivienda
+          <DocumentoUpload
             viviendaId={viviendaId}
             onSuccess={() => setShowUpload(false)}
             onCancel={() => setShowUpload(false)}
@@ -78,6 +88,7 @@ export function DocumentosTab({ viviendaId }: DocumentosTabProps) {
     )
   }
 
+  console.log('📄 [DOCUMENTOS TAB] Renderizando vista PRINCIPAL (lista documentos)')
   return (
     <div className='space-y-4'>
       {/* Header con acciones */}
@@ -92,7 +103,7 @@ export function DocumentosTab({ viviendaId }: DocumentosTabProps) {
                 Documentos de la Vivienda
               </h2>
               <p className='text-xs text-gray-500 dark:text-gray-400'>
-                Gestiona certificados, planos y documentación técnica
+                Gestiona certificados, planos, escrituras y documentación técnica
               </p>
             </div>
           </div>
@@ -116,10 +127,11 @@ export function DocumentosTab({ viviendaId }: DocumentosTabProps) {
         </div>
       </div>
 
-      {/* Lista de documentos - USA REACT QUERY */}
-      <DocumentosListaVivienda
+      {/* Lista de documentos - Sistema completo */}
+      <DocumentosLista
         viviendaId={viviendaId}
-        onSubirDocumento={() => setShowUpload(true)}
+        onUploadClick={() => setShowUpload(true)}
+        moduleName="viviendas"
       />
     </div>
   )

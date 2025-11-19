@@ -1,6 +1,7 @@
 ﻿import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { supabase } from '@/lib/supabase/client'
+import { usePagination } from '@/shared/hooks/usePagination'
 import type { FiltrosViviendas } from '../types'
 
 import { useEliminarViviendaMutation, useViviendasQuery } from './useViviendasQuery'
@@ -72,6 +73,13 @@ export function useViviendasList() {
     return resultado
   }, [viviendas, filtros])
 
+  // ✅ Hook de paginación genérico (reutilizable)
+  const paginacion = usePagination(viviendasFiltradas, {
+    initialPage: 1,
+    initialPageSize: 9, // Default: 9 cards (3×3 grid)
+    autoScrollOnChange: true,
+  })
+
   const abrirModalEliminar = useCallback((id: string) => {
     setViviendaEliminar(id)
     setModalEliminar(true)
@@ -90,9 +98,13 @@ export function useViviendasList() {
     setViviendaEliminar(null)
   }, [])
 
-  const actualizarFiltros = useCallback((nuevosFiltros: Partial<FiltrosViviendas>) => {
-    setFiltros(prev => ({ ...prev, ...nuevosFiltros }))
-  }, [])
+  const actualizarFiltros = useCallback(
+    (nuevosFiltros: Partial<FiltrosViviendas>) => {
+      setFiltros(prev => ({ ...prev, ...nuevosFiltros }))
+      paginacion.goToFirstPage() // Reset a página 1 al cambiar filtros
+    },
+    [paginacion]
+  )
 
   const limpiarFiltros = useCallback(() => {
     setFiltros({
@@ -101,7 +113,8 @@ export function useViviendasList() {
       manzana_id: undefined,
       estado: '',
     })
-  }, [])
+    paginacion.goToFirstPage() // Reset a página 1 al limpiar filtros
+  }, [paginacion])
 
   const estadisticas = useMemo(() => {
     const total = viviendas.length
@@ -121,7 +134,10 @@ export function useViviendasList() {
   }, [viviendas])
 
   return {
-    viviendas: viviendasFiltradas,
+    // ✅ Para CARDS: viviendas paginadas (hook maneja paginación)
+    viviendas: paginacion.items,
+    // ✅ Para TABLA: todas las viviendas filtradas (TanStack Table maneja paginación)
+    viviendasFiltradas,
     todasLasViviendas: viviendas,
     cargando,
     error: error?.message || null,
@@ -140,6 +156,13 @@ export function useViviendasList() {
 
     estadisticas,
     totalFiltradas: viviendasFiltradas.length,
-    proyectos, // ✅ Exportar proyectos para filtros
+    proyectos,
+
+    // ✅ PAGINACIÓN (solo para cards) - Usando hook genérico
+    paginaActual: paginacion.currentPage,
+    totalPaginas: paginacion.totalPages,
+    itemsPorPagina: paginacion.pageSize,
+    cambiarPagina: paginacion.setPage,
+    cambiarItemsPorPagina: paginacion.setPageSize,
   }
 }

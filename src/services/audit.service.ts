@@ -33,6 +33,7 @@ export type TablaAuditable =
   | 'manzanas'
   | 'usuarios'
   | 'documentos_proyecto'
+  | 'documentos_vivienda'
   | 'documentos_cliente'
   | 'categorias_documento'
 
@@ -713,6 +714,7 @@ class AuditService {
       manzanas: 'proyectos',
       usuarios: 'usuarios',
       documentos_proyecto: 'documentos',
+      documentos_vivienda: 'documentos',
       documentos_cliente: 'documentos',
       categorias_documento: 'documentos'
     }

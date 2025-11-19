@@ -14,8 +14,8 @@ import { useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
 import { useAuth } from '@/contexts/auth-context'
-
-import { DocumentosViviendaService, type DocumentoVivienda } from '../services/documentos-vivienda.service'
+import { DocumentosViviendaService } from '../services/documentos'
+import type { DocumentoVivienda } from '../types/documento-vivienda.types'
 
 interface UseDocumentoVersionesProps {
   documentoId: string

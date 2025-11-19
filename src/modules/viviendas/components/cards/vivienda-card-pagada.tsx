@@ -7,7 +7,7 @@ import { motion } from 'framer-motion'
 import { Calendar, CheckCircle2, FileCheck, FileSignature, FileText, Home, MapPin, Phone, User } from 'lucide-react'
 
 import { ProgressBar } from '@/shared/components/ui'
-import { formatCurrency, formatDate } from '@/shared/utils'
+import { formatArea, formatCurrency, formatDate } from '@/shared/utils'
 
 import { viviendaCardExtendedStyles as styles } from '../../styles'
 import type { Vivienda } from '../../types'
@@ -136,9 +136,9 @@ export function ViviendaCardPagada({
               <div className={styles.infoRow}>
                 <span className={styles.infoLabel}>Áreas:</span>
                 <span className={styles.infoValue}>
-                  {vivienda.area_construida ? `${vivienda.area_construida}m²` : 'N/A'}
+                  {formatArea(vivienda.area_construida)}
                   {' / '}
-                  {vivienda.area_lote ? `${vivienda.area_lote}m²` : 'N/A'}
+                  {formatArea(vivienda.area_lote)}
                 </span>
               </div>
             </div>

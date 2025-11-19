@@ -1,6 +1,5 @@
 'use client'
 
-import { motion } from 'framer-motion'
 import { CircleDollarSign, Hash, Plus, Receipt } from 'lucide-react'
 
 import type { Vivienda } from '@/modules/viviendas/types'
@@ -17,11 +16,9 @@ interface AbonosTabProps {
  */
 export function AbonosTab({ vivienda, onRegistrarAbono }: AbonosTabProps) {
   return (
-    <motion.div
+    <div
       key="abonos"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4 }}
+      className="animate-fade-in"
     >
       <div className="bg-white dark:bg-slate-800 rounded-lg p-6 shadow-sm border border-slate-200 dark:border-slate-700">
         {/* Header del Tab */}
@@ -41,15 +38,13 @@ export function AbonosTab({ vivienda, onRegistrarAbono }: AbonosTabProps) {
           </div>
 
           {/* CTA Principal */}
-          <motion.button
+          <button
             onClick={onRegistrarAbono}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 text-sm font-medium shadow-sm hover:shadow-md transition-all"
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 text-sm font-medium shadow-sm hover:shadow-md transition-all hover:scale-105 active:scale-95"
           >
             <Plus className="h-4 w-4" />
             <span>Registrar Abono</span>
-          </motion.button>
+          </button>
         </div>
 
         {/* Resumen de Pagos */}
@@ -111,6 +106,6 @@ export function AbonosTab({ vivienda, onRegistrarAbono }: AbonosTabProps) {
           </p>
         </div>
       </div>
-    </motion.div>
+    </div>
   )
 }

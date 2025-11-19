@@ -9,4 +9,5 @@ export {
 } from './useMediaQuery'
 export { useModalConfirmacion } from './useModalConfirmacion'
 export { useMounted } from './useMounted'
+export { usePagination, type PaginationResult, type UsePaginationOptions } from './usePagination'
 export { useScrollPosition, useScrolled } from './useScroll'

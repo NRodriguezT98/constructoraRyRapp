@@ -9,18 +9,11 @@ export {
 } from './useViviendasQuery'
 
 // ============================================
-// DOCUMENTOS (React Query)
+// DOCUMENTOS (Sistema nuevo modular)
 // ============================================
+export * from './documentos'
 export { useCategoriasSistemaViviendas } from './useCategoriasSistemaViviendas'
-export { useDocumentosListaVivienda } from './useDocumentosListaVivienda'
-export { useDocumentosPapelera } from './useDocumentosPapelera'
-export { useDocumentosVivienda, useEstadisticasDocumentosVivienda } from './useDocumentosVivienda'
 export { useDocumentoUploadVivienda } from './useDocumentoUploadVivienda'
-export { useDocumentoVersiones } from './useDocumentoVersiones'
-
-// Sistema de Estados de Versión - PROFESIONAL
-export { useEstadosVersion } from './useEstadosVersion'
-export { useReemplazarArchivo } from './useReemplazarArchivo'
 
 // ============================================
 // HOOKS DE LÓGICA UI
