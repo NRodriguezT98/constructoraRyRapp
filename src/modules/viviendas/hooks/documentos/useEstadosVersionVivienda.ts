@@ -1,30 +1,34 @@
 /**
  * Hook para gestión de estados de versión de documentos de vivienda
- * Implementa sistema de aprobación, rechazo y marcado de estados de versiones
+ * Implementa sistema de marcado de versiones erróneas, obsoletas y restauración
+ *
+ * ✅ ALINEADO CON MÓDULO DE PROYECTOS
  */
 
+import { documentosViviendaService } from '@/modules/viviendas/services/documentos-vivienda.service'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { DocumentosViviendaService } from '../../services/documentos'
 
 // ============================================================================
 // TYPES
 // ============================================================================
 
-export interface AprobarVersionParams {
+export interface MarcarVersionErroneaParams {
   documentoId: string
+  documentoPadreId?: string // ✅ ID del documento padre (para invalidar query correcta)
+  motivo: string
+  versionCorrectaId?: string
+}
+
+export interface MarcarVersionObsoletaParams {
+  documentoId: string
+  documentoPadreId?: string // ✅ ID del documento padre
   motivo: string
 }
 
-export interface RechazarVersionParams {
+export interface RestaurarEstadoParams {
   documentoId: string
-  motivo: string
-}
-
-export interface MarcarEstadoVersionParams {
-  documentoId: string
-  nuevoEstado: 'valida' | 'rechazada' | 'aprobada' | 'corregida'
-  motivo: string
+  documentoPadreId?: string // ✅ ID del documento padre
 }
 
 // ============================================================================
@@ -35,14 +39,22 @@ export function useEstadosVersionVivienda(viviendaId?: string) {
   const queryClient = useQueryClient()
 
   // ============================================================================
-  // APROBAR VERSIÓN
+  // MARCAR VERSIÓN COMO ERRÓNEA
   // ============================================================================
 
-  const aprobarVersion = useMutation({
-    mutationFn: async ({ documentoId, motivo }: AprobarVersionParams) => {
-      await DocumentosViviendaService.aprobarVersion(documentoId, motivo)
+  const marcarComoErronea = useMutation({
+    mutationFn: async ({
+      documentoId,
+      motivo,
+      versionCorrectaId,
+    }: MarcarVersionErroneaParams) => {
+      await documentosViviendaService.marcarVersionComoErronea(
+        documentoId,
+        motivo,
+        versionCorrectaId
+      )
     },
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       // Invalidar queries relacionadas
       if (viviendaId) {
         queryClient.invalidateQueries({
@@ -50,31 +62,39 @@ export function useEstadosVersionVivienda(viviendaId?: string) {
         })
       }
 
+      // ✅ Invalidar query específica del documento padre
+      if (variables.documentoPadreId) {
+        queryClient.invalidateQueries({
+          queryKey: ['documento-versiones-vivienda', variables.documentoPadreId],
+        })
+      }
+
+      // Invalidar TODAS las queries de versiones como fallback
       queryClient.invalidateQueries({
         queryKey: ['documento-versiones-vivienda'],
       })
 
-      toast.success('Versión aprobada', {
-        description: 'El documento ha sido aprobado correctamente',
+      toast.success('Versión marcada como errónea', {
+        description: 'El documento ha sido marcado correctamente',
       })
     },
     onError: (error: Error) => {
-      console.error('❌ Error al aprobar versión:', error)
-      toast.error('Error al aprobar versión', {
+      console.error('❌ Error al marcar versión como errónea:', error)
+      toast.error('Error al marcar versión', {
         description: error.message,
       })
     },
   })
 
   // ============================================================================
-  // RECHAZAR VERSIÓN
+  // MARCAR VERSIÓN COMO OBSOLETA
   // ============================================================================
 
-  const rechazarVersion = useMutation({
-    mutationFn: async ({ documentoId, motivo }: RechazarVersionParams) => {
-      await DocumentosViviendaService.rechazarVersion(documentoId, motivo)
+  const marcarComoObsoleta = useMutation({
+    mutationFn: async ({ documentoId, motivo }: MarcarVersionObsoletaParams) => {
+      await documentosViviendaService.marcarVersionComoObsoleta(documentoId, motivo)
     },
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       // Invalidar queries relacionadas
       if (viviendaId) {
         queryClient.invalidateQueries({
@@ -82,31 +102,39 @@ export function useEstadosVersionVivienda(viviendaId?: string) {
         })
       }
 
+      // ✅ Invalidar query específica del documento padre
+      if (variables.documentoPadreId) {
+        queryClient.invalidateQueries({
+          queryKey: ['documento-versiones-vivienda', variables.documentoPadreId],
+        })
+      }
+
+      // Invalidar TODAS las queries de versiones como fallback
       queryClient.invalidateQueries({
         queryKey: ['documento-versiones-vivienda'],
       })
 
-      toast.success('Versión rechazada', {
-        description: 'El documento ha sido rechazado',
+      toast.success('Versión marcada como obsoleta', {
+        description: 'El documento ha sido marcado correctamente',
       })
     },
     onError: (error: Error) => {
-      console.error('❌ Error al rechazar versión:', error)
-      toast.error('Error al rechazar versión', {
+      console.error('❌ Error al marcar versión como obsoleta:', error)
+      toast.error('Error al marcar versión', {
         description: error.message,
       })
     },
   })
 
   // ============================================================================
-  // MARCAR ESTADO DE VERSIÓN
+  // RESTAURAR ESTADO DE VERSIÓN
   // ============================================================================
 
-  const marcarEstadoVersion = useMutation({
-    mutationFn: async ({ documentoId, nuevoEstado, motivo }: MarcarEstadoVersionParams) => {
-      await DocumentosViviendaService.marcarEstadoVersion(documentoId, nuevoEstado, motivo)
+  const restaurarEstado = useMutation({
+    mutationFn: async ({ documentoId }: RestaurarEstadoParams) => {
+      await documentosViviendaService.restaurarEstadoVersion(documentoId)
     },
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       // Invalidar queries relacionadas
       if (viviendaId) {
         queryClient.invalidateQueries({
@@ -114,25 +142,33 @@ export function useEstadosVersionVivienda(viviendaId?: string) {
         })
       }
 
+      // ✅ Invalidar query específica del documento padre
+      if (variables.documentoPadreId) {
+        queryClient.invalidateQueries({
+          queryKey: ['documento-versiones-vivienda', variables.documentoPadreId],
+        })
+      }
+
+      // Invalidar TODAS las queries de versiones como fallback
       queryClient.invalidateQueries({
         queryKey: ['documento-versiones-vivienda'],
       })
 
-      toast.success('Estado actualizado', {
-        description: 'El estado de la versión ha sido actualizado',
+      toast.success('Estado restaurado', {
+        description: 'La versión ha sido restaurada a estado válido',
       })
     },
     onError: (error: Error) => {
-      console.error('❌ Error al marcar estado:', error)
-      toast.error('Error al actualizar estado', {
+      console.error('❌ Error al restaurar estado:', error)
+      toast.error('Error al restaurar estado', {
         description: error.message,
       })
     },
   })
 
   return {
-    aprobarVersion,
-    rechazarVersion,
-    marcarEstadoVersion,
+    marcarComoErronea,
+    marcarComoObsoleta,
+    restaurarEstado,
   }
 }

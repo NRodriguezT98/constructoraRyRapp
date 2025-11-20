@@ -1,13 +1,15 @@
 ﻿'use client'
 
 /**
- * ðŸŽ¨ MODAL DE MARCAR ESTADO DE VERSIÃ“N - PRESENTACIONAL
+ * 🎨 MODAL DE MARCAR ESTADO DE VERSIÓN - PRESENTACIONAL
  *
- * Componente PURO sin lÃ³gica de negocio
- * Toda la lÃ³gica está en: useMarcarEstadoVersion hook
+ * Componente PURO sin lógica de negocio
+ * Toda la lógica está en: useMarcarEstadoVersion hook
+ *
+ * ✅ ALINEADO CON MÓDULO DE PROYECTOS
  */
 
-import { useMarcarEstadoVersion } from '@/modules/viviendas/hooks/documentos'
+import { useMarcarEstadoVersion, type AccionEstado } from '@/modules/viviendas/hooks/documentos'
 import { AnimatePresence, motion } from 'framer-motion'
 import { CheckCircle, Loader2 } from 'lucide-react'
 import { createPortal } from 'react-dom'
@@ -16,7 +18,7 @@ import { createPortal } from 'react-dom'
 // TYPES
 // ============================================================================
 
-export type AccionEstado = 'erronea' | 'obsoleta' | 'restaurar'
+export type { AccionEstado }
 
 export interface MarcarEstadoVersionModalProps {
   isOpen: boolean

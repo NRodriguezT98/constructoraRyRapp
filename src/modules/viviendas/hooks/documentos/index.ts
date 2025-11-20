@@ -16,7 +16,8 @@ export { useDocumentoEditar } from './useDocumentoEditar'
 export { useDocumentoReemplazarArchivo } from './useDocumentoReemplazarArchivo'
 export { useDocumentosLista } from './useDocumentosLista'
 export { useDocumentoUpload } from './useDocumentoUpload'
-export { useEstadosVersionVivienda } from './useEstadosVersionVivienda'; // ✅ Hook de estados (mutations)
+export { useEstadosVersionVivienda } from './useEstadosVersionVivienda'
+export { useMarcarEstadoVersion } from './useMarcarEstadoVersion'; // ✅ Hook de estados (mutations)
 export { useReemplazarArchivoForm } from './useReemplazarArchivoForm'
 
 // Hook de detección de cambios
