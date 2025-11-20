@@ -208,10 +208,10 @@ export function MarcarEstadoVersionModal({
                   <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-500 flex-shrink-0 mt-0.5" />
                   <div className="flex-1">
                     <h4 className="font-semibold text-green-900 dark:text-green-100 text-sm">
-                      ¿Confirmar restauraciÃ³n?
+                      ¿Confirmar restauración?
                     </h4>
                     <p className="text-xs text-green-700 dark:text-green-300 mt-1">
-                      La versión volverá a estado "Válida" y se eliminarán las
+                      La versión volverá a estado &quot;Válida&quot; y se eliminarán las
                       marcas de error u obsolescencia
                     </p>
                   </div>

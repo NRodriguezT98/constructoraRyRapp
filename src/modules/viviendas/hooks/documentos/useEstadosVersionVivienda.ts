@@ -79,6 +79,7 @@ export function useEstadosVersionVivienda(viviendaId?: string) {
       })
     },
     onError: (error: Error) => {
+      // eslint-disable-next-line no-console
       console.error('❌ Error al marcar versión como errónea:', error)
       toast.error('Error al marcar versión', {
         description: error.message,
@@ -119,6 +120,7 @@ export function useEstadosVersionVivienda(viviendaId?: string) {
       })
     },
     onError: (error: Error) => {
+      // eslint-disable-next-line no-console
       console.error('❌ Error al marcar versión como obsoleta:', error)
       toast.error('Error al marcar versión', {
         description: error.message,
@@ -159,6 +161,7 @@ export function useEstadosVersionVivienda(viviendaId?: string) {
       })
     },
     onError: (error: Error) => {
+      // eslint-disable-next-line no-console
       console.error('❌ Error al restaurar estado:', error)
       toast.error('Error al restaurar estado', {
         description: error.message,

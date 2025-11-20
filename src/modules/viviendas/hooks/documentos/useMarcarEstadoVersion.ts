@@ -28,6 +28,7 @@ interface UseMarcarEstadoVersionParams {
 interface ConfigEstado {
   titulo: string
   descripcion: string
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   icon: any
   color: string
   motivosPredef: string[]
@@ -149,6 +150,7 @@ export function useMarcarEstadoVersion({
       onSuccess?.()
       handleClose()
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Error al marcar estado:', error)
     }
   }
