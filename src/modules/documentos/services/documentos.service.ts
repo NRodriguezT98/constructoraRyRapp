@@ -5,13 +5,12 @@
 // compatibilidad con el código existente. Delega a servicios especializados.
 // ============================================
 
-import type { DocumentoProyecto } from '../types/documento.types'
 import { DocumentosBaseService } from './documentos-base.service'
-import { DocumentosVersionesService } from './documentos-versiones.service'
-import { DocumentosStorageService } from './documentos-storage.service'
+import { DocumentosEliminacionService } from './documentos-eliminacion.service'
 import { DocumentosEstadosService } from './documentos-estados.service'
 import { DocumentosReemplazoService } from './documentos-reemplazo.service'
-import { DocumentosEliminacionService } from './documentos-eliminacion.service'
+import { DocumentosStorageService } from './documentos-storage.service'
+import { DocumentosVersionesService } from './documentos-versiones.service'
 
 interface SubirDocumentoParams {
   proyecto_id: string
@@ -34,6 +33,10 @@ export class DocumentosService {
   // CRUD BÁSICO → documentos-base.service.ts
   // ============================================
 
+  // ✅ GENÉRICOS (nuevos)
+  static obtenerDocumentosPorEntidad = DocumentosBaseService.obtenerDocumentosPorEntidad
+
+  // ⚠️ LEGACY (mantener compatibilidad)
   static obtenerDocumentosPorProyecto = DocumentosBaseService.obtenerDocumentosPorProyecto
   static obtenerDocumentosPorCategoria = DocumentosBaseService.obtenerDocumentosPorCategoria
   static obtenerDocumentosProximosAVencer =
@@ -73,32 +76,107 @@ export class DocumentosService {
   static restaurarEstadoVersion = DocumentosEstadosService.restaurarEstadoVersion
 
   // ============================================
-  // REEMPLAZO → documentos-reemplazo.service.ts
+  // REEMPLAZO → documentos-reemplazo.service.ts (GENÉRICO)
   // ============================================
 
-  static reemplazarArchivoSeguro = DocumentosReemplazoService.reemplazarArchivoSeguro
+  /**
+   * Wrapper para mantener compatibilidad - usa servicio genérico
+   * Por defecto asume 'proyecto' para mantener compatibilidad con código existente
+   */
+  static async reemplazarArchivoSeguro(
+    documentoId: string,
+    nuevoArchivo: File,
+    motivo: string,
+    password: string,
+    tipoEntidad: 'proyecto' | 'vivienda' | 'cliente' = 'proyecto'
+  ) {
+    return DocumentosReemplazoService.reemplazarArchivoSeguro(
+      documentoId,
+      nuevoArchivo,
+      motivo,
+      password,
+      tipoEntidad
+    )
+  }
 
   // ============================================
-  // ELIMINACIÓN → documentos-eliminacion.service.ts
+  // ELIMINACIÓN → documentos-eliminacion.service.ts (GENÉRICO)
   // ============================================
 
-  static archivarDocumento = DocumentosEliminacionService.archivarDocumento
-  static restaurarDocumento = DocumentosEliminacionService.restaurarDocumentoArchivado
-  static obtenerDocumentosArchivados = DocumentosEliminacionService.obtenerDocumentosArchivados
-  static eliminarDocumento = DocumentosEliminacionService.eliminarDocumento
-  static obtenerDocumentosEliminados = DocumentosEliminacionService.obtenerDocumentosEliminados
-  static restaurarDocumentoEliminado = DocumentosEliminacionService.restaurarDocumentoEliminado
-  static eliminarDefinitivo = DocumentosEliminacionService.eliminarDefinitivo
+  /**
+   * ✅ GENÉRICO: Archivar documento (con default para compatibilidad)
+   */
+  static async archivarDocumento(
+    documentoId: string,
+    tipoEntidad: 'proyecto' | 'vivienda' | 'cliente' = 'proyecto'
+  ) {
+    return DocumentosEliminacionService.archivarDocumento(documentoId, tipoEntidad)
+  }
+
+  /**
+   * ✅ GENÉRICO: Restaurar documento archivado
+   */
+  static async restaurarDocumento(
+    documentoId: string,
+    tipoEntidad: 'proyecto' | 'vivienda' | 'cliente' = 'proyecto'
+  ) {
+    return DocumentosEliminacionService.restaurarDocumentoArchivado(documentoId, tipoEntidad)
+  }
+
+  /**
+   * ✅ GENÉRICO: Obtener documentos archivados
+   */
+  static async obtenerDocumentosArchivados(
+    entidadId: string,
+    tipoEntidad: 'proyecto' | 'vivienda' | 'cliente' = 'proyecto'
+  ) {
+    return DocumentosEliminacionService.obtenerDocumentosArchivados(entidadId, tipoEntidad)
+  }
+
+  /**
+   * ✅ GENÉRICO: Eliminar documento (soft delete)
+   */
+  static async eliminarDocumento(
+    documentoId: string,
+    tipoEntidad: 'proyecto' | 'vivienda' | 'cliente' = 'proyecto'
+  ) {
+    return DocumentosEliminacionService.eliminarDocumento(documentoId, tipoEntidad)
+  }
+
+  /**
+   * ✅ GENÉRICO: Obtener documentos eliminados (papelera)
+   */
+  static async obtenerDocumentosEliminados(
+    tipoEntidad?: 'proyecto' | 'vivienda' | 'cliente'
+  ) {
+    return DocumentosEliminacionService.obtenerDocumentosEliminados(tipoEntidad)
+  }
+
+  /**
+   * ✅ GENÉRICO: Restaurar documento eliminado
+   */
+  static async restaurarDocumentoEliminado(
+    documentoId: string,
+    tipoEntidad: 'proyecto' | 'vivienda' | 'cliente' = 'proyecto'
+  ) {
+    return DocumentosEliminacionService.restaurarDocumentoEliminado(documentoId, tipoEntidad)
+  }
+
+  /**
+   * ✅ GENÉRICO: Eliminar definitivo (hard delete)
+   */
+  static async eliminarDefinitivo(
+    documentoId: string,
+    tipoEntidad: 'proyecto' | 'vivienda' | 'cliente' = 'proyecto'
+  ) {
+    return DocumentosEliminacionService.eliminarDefinitivo(documentoId, tipoEntidad)
+  }
 }
 
 // Re-exportar servicios especializados para uso directo (opcional)
 export {
-  DocumentosBaseService,
-  DocumentosVersionesService,
-  DocumentosStorageService,
-  DocumentosEstadosService,
-  DocumentosReemplazoService,
-  DocumentosEliminacionService
+    DocumentosBaseService, DocumentosEliminacionService, DocumentosEstadosService,
+    DocumentosReemplazoService, DocumentosStorageService, DocumentosVersionesService
 }
 
 // Mantener compatibilidad con singleton (si se usaba)

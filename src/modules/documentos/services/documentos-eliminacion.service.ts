@@ -4,20 +4,26 @@
 
 import { supabase } from '@/lib/supabase/client'
 import type { DocumentoProyecto } from '../types/documento.types'
-
-const BUCKET_NAME = 'documentos-proyectos'
+import { type TipoEntidad, obtenerConfiguracionEntidad } from '../types/entidad.types'
 
 /**
- * Servicio de eliminación de documentos (soft/hard delete)
+ * ✅ SERVICIO GENÉRICO: Eliminación de documentos (soft/hard delete)
+ * Soporta: proyectos, viviendas, clientes, contratos, proveedores
  * Responsabilidades: archivar, eliminar (soft), restaurar, eliminar definitivo (hard)
  */
 export class DocumentosEliminacionService {
   /**
-   * ARCHIVAR DOCUMENTO COMPLETO (todas las versiones)
+   * ✅ GENÉRICO: Archivar documento completo (todas las versiones)
    */
-  static async archivarDocumento(documentoId: string): Promise<void> {
+  static async archivarDocumento(
+    documentoId: string,
+    tipoEntidad: TipoEntidad
+  ): Promise<void> {
+    const config = obtenerConfiguracionEntidad(tipoEntidad)
+    const tabla = config.tabla
+
     const { data: documento, error: getError } = await supabase
-      .from('documentos_proyecto')
+      .from(tabla)
       .select('id, documento_padre_id')
       .eq('id', documentoId)
       .single()
@@ -28,7 +34,7 @@ export class DocumentosEliminacionService {
     const documentoPadreId = documento.documento_padre_id || documentoId
 
     const { error } = await supabase
-      .from('documentos_proyecto')
+      .from(tabla)
       .update({ estado: 'archivado' })
       .or(`id.eq.${documentoPadreId},documento_padre_id.eq.${documentoPadreId}`)
 
@@ -36,11 +42,17 @@ export class DocumentosEliminacionService {
   }
 
   /**
-   * RESTAURAR DOCUMENTO ARCHIVADO (todas las versiones)
+   * ✅ GENÉRICO: Restaurar documento archivado (todas las versiones)
    */
-  static async restaurarDocumentoArchivado(documentoId: string): Promise<void> {
+  static async restaurarDocumentoArchivado(
+    documentoId: string,
+    tipoEntidad: TipoEntidad
+  ): Promise<void> {
+    const config = obtenerConfiguracionEntidad(tipoEntidad)
+    const tabla = config.tabla
+
     const { data: documento, error: getError } = await supabase
-      .from('documentos_proyecto')
+      .from(tabla)
       .select('id, documento_padre_id')
       .eq('id', documentoId)
       .single()
@@ -51,7 +63,7 @@ export class DocumentosEliminacionService {
     const documentoPadreId = documento.documento_padre_id || documentoId
 
     const { error } = await supabase
-      .from('documentos_proyecto')
+      .from(tabla)
       .update({ estado: 'activo' })
       .or(`id.eq.${documentoPadreId},documento_padre_id.eq.${documentoPadreId}`)
 
@@ -59,22 +71,26 @@ export class DocumentosEliminacionService {
   }
 
   /**
-   * OBTENER DOCUMENTOS ARCHIVADOS
+   * ✅ GENÉRICO: Obtener documentos archivados de una entidad
    */
   static async obtenerDocumentosArchivados(
-    proyectoId: string
+    entidadId: string,
+    tipoEntidad: TipoEntidad
   ): Promise<DocumentoProyecto[]> {
+    const config = obtenerConfiguracionEntidad(tipoEntidad)
+    const tabla = config.tabla
+
     const { data, error } = await supabase
-      .from('documentos_proyecto')
+      .from(tabla)
       .select(`
         *,
-        usuario:usuarios!fk_documentos_proyecto_subido_por (
+        usuario:usuarios (
           nombres,
           apellidos,
           email
         )
       `)
-      .eq('proyecto_id', proyectoId)
+      .eq(config.campoEntidad, entidadId)
       .eq('estado', 'archivado')
       .eq('es_version_actual', true)
       .order('fecha_creacion', { ascending: false })
@@ -84,14 +100,20 @@ export class DocumentosEliminacionService {
   }
 
   /**
-   * ELIMINAR DOCUMENTO (soft delete)
+   * ✅ GENÉRICO: Eliminar documento (soft delete)
    * Elimina el documento y TODAS sus versiones
    */
-  static async eliminarDocumento(documentoId: string): Promise<void> {
+  static async eliminarDocumento(
+    documentoId: string,
+    tipoEntidad: TipoEntidad
+  ): Promise<void> {
     console.log('🗑️ Eliminando documento (soft delete):', documentoId)
 
+    const config = obtenerConfiguracionEntidad(tipoEntidad)
+    const tabla = config.tabla
+
     const { data: documento, error: getError } = await supabase
-      .from('documentos_proyecto')
+      .from(tabla)
       .select('id, documento_padre_id, version, es_version_actual')
       .eq('id', documentoId)
       .single()
@@ -102,7 +124,7 @@ export class DocumentosEliminacionService {
     const documentoPadreId = documento.documento_padre_id || documentoId
 
     const { data: versiones, error: versionesError } = await supabase
-      .from('documentos_proyecto')
+      .from(tabla)
       .select('id, version, es_version_actual')
       .or(`id.eq.${documentoPadreId},documento_padre_id.eq.${documentoPadreId}`)
       .eq('estado', 'activo')
@@ -117,7 +139,7 @@ export class DocumentosEliminacionService {
       const idsAEliminar = versiones.map((v) => v.id)
 
       const { error: updateError } = await supabase
-        .from('documentos_proyecto')
+        .from(tabla)
         .update({ estado: 'eliminado' })
         .in('id', idsAEliminar)
 
@@ -125,7 +147,7 @@ export class DocumentosEliminacionService {
 
       // Asegurar que la versión más alta tenga es_version_actual=true
       const { error: flagError } = await supabase
-        .from('documentos_proyecto')
+        .from(tabla)
         .update({ es_version_actual: true })
         .eq('id', versionMasAlta.id)
 
@@ -136,14 +158,23 @@ export class DocumentosEliminacionService {
   }
 
   /**
-   * OBTENER DOCUMENTOS ELIMINADOS (Papelera)
+   * ✅ GENÉRICO: Obtener documentos eliminados (Papelera)
+   * @param tipoEntidad - Opcional: filtra por tipo de entidad. Si no se provee, muestra todos
    */
-  static async obtenerDocumentosEliminados(): Promise<DocumentoProyecto[]> {
+  static async obtenerDocumentosEliminados(
+    tipoEntidad?: TipoEntidad
+  ): Promise<DocumentoProyecto[]> {
+    // Si se especifica tipo, usar tabla específica
+    const config = tipoEntidad
+      ? obtenerConfiguracionEntidad(tipoEntidad)
+      : null
+
+    const tabla = config?.tabla || 'documentos_proyecto' // Fallback para compatibilidad
+
     const { data, error } = await supabase
-      .from('documentos_proyecto')
+      .from(tabla)
       .select(`
         *,
-        proyectos(nombre),
         usuarios(nombres, apellidos, email)
       `)
       .eq('estado', 'eliminado')
@@ -155,13 +186,17 @@ export class DocumentosEliminacionService {
   }
 
   /**
-   * OBTENER VERSIONES ELIMINADAS de un documento
+   * ✅ GENÉRICO: Obtener versiones eliminadas de un documento
    */
   static async obtenerVersionesEliminadas(
-    documentoId: string
+    documentoId: string,
+    tipoEntidad: TipoEntidad
   ): Promise<DocumentoProyecto[]> {
+    const config = obtenerConfiguracionEntidad(tipoEntidad)
+    const tabla = config.tabla
+
     const { data: documento, error: getError } = await supabase
-      .from('documentos_proyecto')
+      .from(tabla)
       .select('id, documento_padre_id')
       .eq('id', documentoId)
       .single()
@@ -172,10 +207,10 @@ export class DocumentosEliminacionService {
     const documentoPadreId = documento.documento_padre_id || documentoId
 
     const { data, error } = await supabase
-      .from('documentos_proyecto')
+      .from(tabla)
       .select(`
         *,
-        usuario:usuarios!fk_documentos_proyecto_subido_por (
+        usuario:usuarios (
           nombres,
           apellidos,
           email
@@ -190,15 +225,21 @@ export class DocumentosEliminacionService {
   }
 
   /**
-   * RESTAURAR VERSIONES SELECCIONADAS
+   * ✅ GENÉRICO: Restaurar versiones seleccionadas
    */
-  static async restaurarVersionesSeleccionadas(versionIds: string[]): Promise<void> {
+  static async restaurarVersionesSeleccionadas(
+    versionIds: string[],
+    tipoEntidad: TipoEntidad
+  ): Promise<void> {
     if (versionIds.length === 0) {
       throw new Error('Debe seleccionar al menos una versión para restaurar')
     }
 
+    const config = obtenerConfiguracionEntidad(tipoEntidad)
+    const tabla = config.tabla
+
     const { error } = await supabase
-      .from('documentos_proyecto')
+      .from(tabla)
       .update({ estado: 'activo' })
       .in('id', versionIds)
 
@@ -206,11 +247,17 @@ export class DocumentosEliminacionService {
   }
 
   /**
-   * RESTAURAR DOCUMENTO ELIMINADO (con todas sus versiones)
+   * ✅ GENÉRICO: Restaurar documento eliminado (con todas sus versiones)
    */
-  static async restaurarDocumentoEliminado(documentoId: string): Promise<void> {
+  static async restaurarDocumentoEliminado(
+    documentoId: string,
+    tipoEntidad: TipoEntidad
+  ): Promise<void> {
+    const config = obtenerConfiguracionEntidad(tipoEntidad)
+    const tabla = config.tabla
+
     const { data: documento, error: getError } = await supabase
-      .from('documentos_proyecto')
+      .from(tabla)
       .select('id, documento_padre_id, es_version_actual')
       .eq('id', documentoId)
       .single()
@@ -223,14 +270,14 @@ export class DocumentosEliminacionService {
     if (documento.documento_padre_id) {
       // Es una versión → Restaurar toda la cadena
       const { data: padre } = await supabase
-        .from('documentos_proyecto')
+        .from(tabla)
         .select('id')
         .eq('id', documento.documento_padre_id)
         .single()
 
       if (padre) {
         const { data: versiones } = await supabase
-          .from('documentos_proyecto')
+          .from(tabla)
           .select('id')
           .or(`id.eq.${padre.id},documento_padre_id.eq.${padre.id}`)
           .eq('estado', 'eliminado')
@@ -242,7 +289,7 @@ export class DocumentosEliminacionService {
     } else {
       // Es documento independiente o versión 1
       const { data: versiones } = await supabase
-        .from('documentos_proyecto')
+        .from(tabla)
         .select('id')
         .or(`id.eq.${documentoId},documento_padre_id.eq.${documentoId}`)
         .eq('estado', 'eliminado')
@@ -254,7 +301,7 @@ export class DocumentosEliminacionService {
 
     if (documentosARestaurar.length > 0) {
       const { error: updateError } = await supabase
-        .from('documentos_proyecto')
+        .from(tabla)
         .update({ estado: 'activo' })
         .in('id', documentosARestaurar)
 
@@ -262,7 +309,7 @@ export class DocumentosEliminacionService {
     } else {
       // Fallback
       const { error } = await supabase
-        .from('documentos_proyecto')
+        .from(tabla)
         .update({ estado: 'activo' })
         .eq('id', documentoId)
 
@@ -271,11 +318,18 @@ export class DocumentosEliminacionService {
   }
 
   /**
-   * ELIMINAR DEFINITIVAMENTE (hard delete - NO reversible)
+   * ✅ GENÉRICO: Eliminar definitivamente (hard delete - NO reversible)
    */
-  static async eliminarDefinitivo(documentoId: string): Promise<void> {
+  static async eliminarDefinitivo(
+    documentoId: string,
+    tipoEntidad: TipoEntidad
+  ): Promise<void> {
+    const config = obtenerConfiguracionEntidad(tipoEntidad)
+    const tabla = config.tabla
+    const bucket = config.bucket
+
     const { data: documento, error: getError } = await supabase
-      .from('documentos_proyecto')
+      .from(tabla)
       .select('id, documento_padre_id, es_version_actual')
       .eq('id', documentoId)
       .single()
@@ -287,23 +341,23 @@ export class DocumentosEliminacionService {
 
     if (documento.documento_padre_id) {
       const { data: padre } = await supabase
-        .from('documentos_proyecto')
+        .from(tabla)
         .select('id')
         .eq('id', documento.documento_padre_id)
         .single()
 
       if (padre) {
         const { data: versiones } = await supabase
-          .from('documentos_proyecto')
+          .from(tabla)
           .select('id, url_storage')
           .or(`id.eq.${padre.id},documento_padre_id.eq.${padre.id}`)
           .eq('estado', 'eliminado')
 
         if (versiones) {
-          // Eliminar archivos de Storage
+          // ✅ STORAGE GENÉRICO
           for (const version of versiones) {
             try {
-              await supabase.storage.from(BUCKET_NAME).remove([version.url_storage])
+              await supabase.storage.from(bucket).remove([version.url_storage])
             } catch (err) {
               console.warn('⚠️ Error al eliminar archivo de Storage:', err)
             }
@@ -314,16 +368,16 @@ export class DocumentosEliminacionService {
       }
     } else {
       const { data: versiones } = await supabase
-        .from('documentos_proyecto')
+        .from(tabla)
         .select('id, url_storage')
         .or(`id.eq.${documentoId},documento_padre_id.eq.${documentoId}`)
         .eq('estado', 'eliminado')
 
       if (versiones) {
-        // Eliminar archivos de Storage
+        // ✅ STORAGE GENÉRICO
         for (const version of versiones) {
           try {
-            await supabase.storage.from(BUCKET_NAME).remove([version.url_storage])
+            await supabase.storage.from(bucket).remove([version.url_storage])
           } catch (err) {
             console.warn('⚠️ Error al eliminar archivo de Storage:', err)
           }
@@ -336,7 +390,7 @@ export class DocumentosEliminacionService {
     // Eliminar registros de BD (DELETE físico)
     if (documentosAEliminar.length > 0) {
       const { error: deleteError } = await supabase
-        .from('documentos_proyecto')
+        .from(tabla)
         .delete()
         .in('id', documentosAEliminar)
 

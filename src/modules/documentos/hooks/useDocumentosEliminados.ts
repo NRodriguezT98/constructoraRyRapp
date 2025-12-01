@@ -13,22 +13,45 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
 import { useAuth } from '@/contexts/auth-context'
+import { ClientesDocumentosEliminacionService } from '@/modules/clientes/services/documentos-eliminacion.service'
+import { DocumentosEliminacionService as ViviendaEliminacionService } from '@/modules/viviendas/services/documentos/documentos-eliminacion.service'
 import { DocumentosService } from '../services/documentos.service'
+
+// Tipo unificado para documentos eliminados de cualquier módulo
+type DocumentoEliminadoUnificado = {
+  id: string
+  titulo: string
+  version: number
+  fecha_actualizacion: string
+  metadata?: any
+  modulo: 'proyectos' | 'viviendas' | 'clientes'
+  entidad_nombre?: string // Nombre del proyecto/vivienda/cliente
+  usuario?: {
+    nombres: string
+    apellidos: string
+    email: string
+  }
+  [key: string]: any
+}
 
 // Tipos para estado de modales
 interface ModalState {
   isOpen: boolean
   documentoId: string
   titulo: string
+  modulo?: string
 }
 
 export function useDocumentosEliminados() {
-  const { perfil } = useAuth()
+  const { perfil, user } = useAuth()
   const queryClient = useQueryClient()
 
   // Estados locales UI
   const [busqueda, setBusqueda] = useState('')
-  const [proyectoFiltro, setProyectoFiltro] = useState<string>('todos')
+  const [moduloFiltro, setModuloFiltro] = useState<'todos' | 'proyectos' | 'viviendas' | 'clientes'>('todos')
+  const [fechaDesde, setFechaDesde] = useState<string>('')
+  const [fechaHasta, setFechaHasta] = useState<string>('')
+  const [ordenamiento, setOrdenamiento] = useState<'recientes' | 'antiguos' | 'alfabetico'>('recientes')
 
   // 🆕 Estados para modales custom
   const [modalRestaurar, setModalRestaurar] = useState<ModalState>({
@@ -45,34 +68,119 @@ export function useDocumentosEliminados() {
 
   const [confirmacionTexto, setConfirmacionTexto] = useState('')
 
-  // ✅ REACT QUERY: Cargar documentos eliminados
+  // ✅ REACT QUERY: Cargar documentos eliminados de PROYECTOS
   const {
-    data: documentos = [],
-    isLoading: cargando,
-    error,
-    refetch,
+    data: documentosProyectos = [],
+    isLoading: cargandoProyectos,
+    error: errorProyectos,
   } = useQuery({
-    queryKey: ['documentos-eliminados'],
+    queryKey: ['documentos-eliminados-proyectos'],
     queryFn: () => DocumentosService.obtenerDocumentosEliminados(),
-    enabled: perfil?.rol === 'Administrador', // Solo admins
-    staleTime: 30 * 1000, // 30 segundos (datos menos críticos)
-    gcTime: 5 * 60 * 1000, // 5 minutos
+    enabled: !!user && perfil?.rol === 'Administrador',
+    staleTime: 30 * 1000,
+    gcTime: 5 * 60 * 1000,
   })
 
-  // ✅ MUTATION: Restaurar documento
+  // ✅ REACT QUERY: Cargar documentos eliminados de VIVIENDAS
+  const {
+    data: documentosViviendas = [],
+    isLoading: cargandoViviendas,
+    error: errorViviendas,
+  } = useQuery({
+    queryKey: ['documentos-eliminados-viviendas'],
+    queryFn: () => ViviendaEliminacionService.obtenerDocumentosEliminados(),
+    enabled: !!user && perfil?.rol === 'Administrador',
+    staleTime: 30 * 1000,
+    gcTime: 5 * 60 * 1000,
+  })
+
+  // ✅ REACT QUERY: Cargar documentos eliminados de CLIENTES
+  const {
+    data: documentosClientes = [],
+    isLoading: cargandoClientes,
+    error: errorClientes,
+  } = useQuery({
+    queryKey: ['documentos-eliminados-clientes'],
+    queryFn: () => ClientesDocumentosEliminacionService.obtenerDocumentosEliminados(),
+    enabled: !!user && perfil?.rol === 'Administrador',
+    staleTime: 30 * 1000,
+    gcTime: 5 * 60 * 1000,
+  })
+
+  // ✅ Unificar documentos de todos los módulos con metadata
+  const documentosUnificados: DocumentoEliminadoUnificado[] = useMemo(() => {
+    const docProyectos = documentosProyectos.map((doc: any) => ({
+      ...doc,
+      modulo: 'proyectos' as const,
+      entidad_nombre: doc.proyectos?.nombre || 'Proyecto sin nombre',
+    }))
+
+    const docViviendas = documentosViviendas.map((doc: any) => {
+      // Determinar nombre de vivienda con formato Mz. X Casa Y
+      let nombreVivienda = 'Sin identificar'
+
+      // Obtener número (puede estar en diferentes ubicaciones)
+      const numeroReal = doc.vivienda?.numero_vivienda || doc.vivienda?.numero || doc.numero_vivienda || doc.numero
+
+      // Obtener manzana (puede estar en vivienda.manzana o en doc.manzana directamente)
+      const manzana = doc.vivienda?.manzana || doc.manzana
+
+      // Caso 1: Tiene manzana con nombre y número
+      if (manzana?.nombre && numeroReal) {
+        nombreVivienda = `Mz. ${manzana.nombre} Casa ${numeroReal}`
+      }
+      // Caso 2: Solo tiene número
+      else if (numeroReal) {
+        nombreVivienda = `Casa ${numeroReal}`
+      }
+      // Caso 3: Sin datos suficientes
+      else {
+        nombreVivienda = 'Vivienda sin identificar'
+      }
+
+      return {
+        ...doc,
+        modulo: 'viviendas' as const,
+        entidad_nombre: nombreVivienda,
+      }
+    })
+
+    const docClientes = documentosClientes.map((doc: any) => ({
+      ...doc,
+      modulo: 'clientes' as const,
+      entidad_nombre: doc.cliente
+        ? `${doc.cliente.nombres} ${doc.cliente.apellidos}`.trim()
+        : 'Cliente sin identificar',
+    }))
+
+    return [...docProyectos, ...docViviendas, ...docClientes]
+  }, [documentosProyectos, documentosViviendas, documentosClientes])
+
+  const cargando = cargandoProyectos || cargandoViviendas || cargandoClientes
+  const error = errorProyectos || errorViviendas || errorClientes
+
+  // ✅ MUTATION: Restaurar documento (detecta módulo automáticamente)
   const restaurarMutation = useMutation({
-    mutationFn: (documentoId: string) =>
-      DocumentosService.restaurarDocumentoEliminado(documentoId),
+    mutationFn: async ({ documentoId, modulo }: { documentoId: string; modulo: string }) => {
+      const tipoEntidad = modulo === 'proyectos' ? 'proyecto' : modulo === 'viviendas' ? 'vivienda' : 'cliente'
+      return DocumentosService.restaurarDocumentoEliminado(documentoId, tipoEntidad)
+    },
     onSuccess: async () => {
       toast.success('✅ Documento restaurado correctamente')
 
-      // 🔧 FIX: Usar refetchQueries para forzar recarga INMEDIATA
       await Promise.all([
-        queryClient.refetchQueries({ queryKey: ['documentos-eliminados'] }),
-        queryClient.refetchQueries({ queryKey: ['documentos'] }), // ← Documentos activos (proyectos)
-        queryClient.refetchQueries({ queryKey: ['documentos-vivienda'] }), // ← Documentos de viviendas
-        queryClient.refetchQueries({ queryKey: ['versiones-documento'] }), // ← Historial de versiones
-        queryClient.refetchQueries({ queryKey: ['versiones-eliminadas'] }), // ← Versiones en papelera
+        queryClient.refetchQueries({ queryKey: ['documentos-eliminados-proyectos'] }),
+        queryClient.refetchQueries({ queryKey: ['documentos-eliminados-viviendas'] }),
+        queryClient.refetchQueries({ queryKey: ['documentos-eliminados-clientes'] }),
+        queryClient.refetchQueries({ queryKey: ['documentos'] }),
+        queryClient.refetchQueries({ queryKey: ['documentos-vivienda'] }),
+        queryClient.refetchQueries({ queryKey: ['documentos-cliente'] }),
+        queryClient.refetchQueries({ queryKey: ['versiones-documento'] }),
+        queryClient.refetchQueries({ queryKey: ['versiones-eliminadas'] }),
+        // 🗑️ Actualizar contador del sidebar
+        queryClient.refetchQueries({ queryKey: ['papelera-count-proyectos'] }),
+        queryClient.refetchQueries({ queryKey: ['papelera-count-viviendas'] }),
+        queryClient.refetchQueries({ queryKey: ['papelera-count-clientes'] }),
       ])
     },
     onError: (error: any) => {
@@ -81,13 +189,21 @@ export function useDocumentosEliminados() {
     },
   })
 
-  // ✅ MUTATION: Eliminar definitivo
+  // ✅ MUTATION: Eliminar definitivo (detecta módulo automáticamente)
   const eliminarDefinitivoMutation = useMutation({
-    mutationFn: (documentoId: string) =>
-      DocumentosService.eliminarDefinitivo(documentoId),
+    mutationFn: async ({ documentoId, modulo }: { documentoId: string; modulo: string }) => {
+      const tipoEntidad = modulo === 'proyectos' ? 'proyecto' : modulo === 'viviendas' ? 'vivienda' : 'cliente'
+      return DocumentosService.eliminarDefinitivo(documentoId, tipoEntidad)
+    },
     onSuccess: () => {
       toast.success('🗑️ Documento eliminado permanentemente')
-      queryClient.invalidateQueries({ queryKey: ['documentos-eliminados'] })
+      queryClient.invalidateQueries({ queryKey: ['documentos-eliminados-proyectos'] })
+      queryClient.invalidateQueries({ queryKey: ['documentos-eliminados-viviendas'] })
+      queryClient.invalidateQueries({ queryKey: ['documentos-eliminados-clientes'] })
+      // 🗑️ Actualizar contador del sidebar
+      queryClient.invalidateQueries({ queryKey: ['papelera-count-proyectos'] })
+      queryClient.invalidateQueries({ queryKey: ['papelera-count-viviendas'] })
+      queryClient.invalidateQueries({ queryKey: ['papelera-count-clientes'] })
     },
     onError: (error: any) => {
       console.error('Error al eliminar definitivamente:', error)
@@ -95,56 +211,89 @@ export function useDocumentosEliminados() {
     },
   })
 
-  // ✅ FILTROS: Búsqueda y proyecto
+  // ✅ FILTROS AVANZADOS: Módulo, búsqueda, fechas, ordenamiento
   const documentosFiltrados = useMemo(() => {
-    let resultado = [...documentos]
+    let resultado = [...documentosUnificados]
 
-    // Filtro por búsqueda (título, categoría, proyecto)
+    // Filtro por módulo
+    if (moduloFiltro !== 'todos') {
+      resultado = resultado.filter((doc) => doc.modulo === moduloFiltro)
+    }
+
+    // Filtro por búsqueda global (título, entidad)
     if (busqueda.trim()) {
       const termino = busqueda.toLowerCase()
       resultado = resultado.filter(
         (doc) =>
           doc.titulo?.toLowerCase().includes(termino) ||
-          doc.categoria?.nombre?.toLowerCase().includes(termino) ||
-          (doc as any).proyectos?.nombre?.toLowerCase().includes(termino)
+          doc.entidad_nombre?.toLowerCase().includes(termino) ||
+          doc.usuario?.nombres?.toLowerCase().includes(termino) ||
+          doc.usuario?.apellidos?.toLowerCase().includes(termino)
       )
     }
 
-    // Filtro por proyecto
-    if (proyectoFiltro && proyectoFiltro !== 'todos') {
-      resultado = resultado.filter((doc) => doc.proyecto_id === proyectoFiltro)
+    // Filtro por rango de fechas
+    if (fechaDesde) {
+      resultado = resultado.filter(
+        (doc) => new Date(doc.fecha_actualizacion) >= new Date(fechaDesde)
+      )
+    }
+    if (fechaHasta) {
+      resultado = resultado.filter(
+        (doc) => new Date(doc.fecha_actualizacion) <= new Date(fechaHasta + 'T23:59:59')
+      )
+    }
+
+    // Ordenamiento
+    if (ordenamiento === 'recientes') {
+      resultado.sort((a, b) =>
+        new Date(b.fecha_actualizacion).getTime() - new Date(a.fecha_actualizacion).getTime()
+      )
+    } else if (ordenamiento === 'antiguos') {
+      resultado.sort((a, b) =>
+        new Date(a.fecha_actualizacion).getTime() - new Date(b.fecha_actualizacion).getTime()
+      )
+    } else if (ordenamiento === 'alfabetico') {
+      resultado.sort((a, b) => a.titulo.localeCompare(b.titulo))
     }
 
     return resultado
-  }, [documentos, busqueda, proyectoFiltro])
+  }, [documentosUnificados, moduloFiltro, busqueda, fechaDesde, fechaHasta, ordenamiento])
 
   // ✅ ESTADÍSTICAS
   const estadisticas = useMemo(() => {
     return {
-      total: documentos.length,
+      total: documentosUnificados.length,
       filtrados: documentosFiltrados.length,
-      // Proyectos únicos
-      proyectos: Array.from(
-        new Set(documentos.map((d) => d.proyecto_id).filter(Boolean))
-      ),
+      porModulo: {
+        proyectos: documentosUnificados.filter(d => d.modulo === 'proyectos').length,
+        viviendas: documentosUnificados.filter(d => d.modulo === 'viviendas').length,
+        clientes: documentosUnificados.filter(d => d.modulo === 'clientes').length,
+      },
     }
-  }, [documentos, documentosFiltrados])
+  }, [documentosUnificados, documentosFiltrados])
 
-  // ✅ ACCIONES
-  const handleRestaurar = async (documentoId: string, titulo: string) => {
-    // Abrir modal de confirmación
-    setModalRestaurar({ isOpen: true, documentoId, titulo })
+  // ✅ ACCIONES (con módulo)
+  const handleRestaurar = async (documentoId: string, titulo: string, modulo: string) => {
+    setModalRestaurar({ isOpen: true, documentoId, titulo, modulo })
   }
 
   const confirmarRestaurar = async () => {
-    await restaurarMutation.mutateAsync(modalRestaurar.documentoId)
+    if (!modalRestaurar.modulo) {
+      toast.error('❌ Error: Módulo no especificado')
+      return
+    }
+
+    await restaurarMutation.mutateAsync({
+      documentoId: modalRestaurar.documentoId,
+      modulo: modalRestaurar.modulo
+    })
     setModalRestaurar({ isOpen: false, documentoId: '', titulo: '' })
   }
 
-  const handleEliminarDefinitivo = async (documentoId: string, titulo: string) => {
-    // Abrir modal de confirmación con prompt
-    setModalEliminar({ isOpen: true, documentoId, titulo })
-    setConfirmacionTexto('') // Limpiar input
+  const handleEliminarDefinitivo = async (documentoId: string, titulo: string, modulo: string) => {
+    setModalEliminar({ isOpen: true, documentoId, titulo, modulo })
+    setConfirmacionTexto('')
   }
 
   const confirmarEliminarDefinitivo = async () => {
@@ -153,7 +302,15 @@ export function useDocumentosEliminados() {
       return
     }
 
-    await eliminarDefinitivoMutation.mutateAsync(modalEliminar.documentoId)
+    if (!modalEliminar.modulo) {
+      toast.error('❌ Error: Módulo no especificado')
+      return
+    }
+
+    await eliminarDefinitivoMutation.mutateAsync({
+      documentoId: modalEliminar.documentoId,
+      modulo: modalEliminar.modulo
+    })
     setModalEliminar({ isOpen: false, documentoId: '', titulo: '' })
     setConfirmacionTexto('')
   }
@@ -161,21 +318,31 @@ export function useDocumentosEliminados() {
   return {
     // Data
     documentos: documentosFiltrados,
-    documentosOriginales: documentos,
+    documentosOriginales: documentosUnificados,
     cargando,
     error: error as Error | null,
     estadisticas,
 
-    // Filtros
+    // Filtros avanzados
     busqueda,
     setBusqueda,
-    proyectoFiltro,
-    setProyectoFiltro,
+    moduloFiltro,
+    setModuloFiltro,
+    fechaDesde,
+    setFechaDesde,
+    fechaHasta,
+    setFechaHasta,
+    ordenamiento,
+    setOrdenamiento,
 
     // Acciones
     handleRestaurar,
     handleEliminarDefinitivo,
-    refrescar: refetch,
+    refrescar: () => {
+      queryClient.refetchQueries({ queryKey: ['documentos-eliminados-proyectos'] })
+      queryClient.refetchQueries({ queryKey: ['documentos-eliminados-viviendas'] })
+      queryClient.refetchQueries({ queryKey: ['documentos-eliminados-clientes'] })
+    },
 
     // Estados de mutations
     restaurando: restaurarMutation.isPending ? modalRestaurar.documentoId : null,
