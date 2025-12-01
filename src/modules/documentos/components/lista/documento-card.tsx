@@ -2,7 +2,7 @@
 
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
-import { AnimatePresence, motion } from 'framer-motion'
+import { motion } from 'framer-motion'
 import {
     AlertCircle,
     Archive,
@@ -20,11 +20,12 @@ import {
     MoreVertical,
     RefreshCw,
     Star,
-    Tag,
     Trash2,
     Upload,
     User,
 } from 'lucide-react'
+import { useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 
 import {
     formatDateCompact
@@ -36,7 +37,7 @@ import {
     getFileExtension,
 } from '../../../../types/documento.types'
 import { useDocumentoCard } from '../../hooks'
-import type { CategoriaDocumento } from '../../types'
+import type { CategoriaDocumento, TipoEntidad } from '../../types'
 import { BadgeEstadoProceso } from '../badge-estado-proceso'
 import {
     DocumentoEditarMetadatosModal,
@@ -50,6 +51,7 @@ interface DocumentoCardProps {
   documento: DocumentoProyecto
   categoria?: { nombre: string; color: string; icono: string }
   categorias?: CategoriaDocumento[] // 🆕 Para el modal de editar
+  tipoEntidad?: TipoEntidad // ✅ Tipo de entidad para edición
   onView: (documento: DocumentoProyecto) => void
   onDownload: (documento: DocumentoProyecto) => void
   onToggleImportante: (documento: DocumentoProyecto) => void
@@ -64,6 +66,7 @@ export function DocumentoCard({
   documento,
   categoria,
   categorias = [], // 🆕 Default a array vacío
+  tipoEntidad = 'proyecto', // ✅ Default a proyecto
   onView,
   onDownload,
   onToggleImportante,
@@ -75,6 +78,10 @@ export function DocumentoCard({
 }: DocumentoCardProps) {
   // 🎨 Obtener tema dinámico
   const theme = moduleThemes[moduleName]
+
+  // 🎯 Estado para posicionamiento del menú con portal
+  const [posicionMenu, setPosicionMenu] = useState({ top: 0, left: 0 })
+  const botonMenuRef = useRef<HTMLButtonElement>(null)
 
   // 🎯 TODA la lógica en el hook
   const {
@@ -115,8 +122,22 @@ export function DocumentoCard({
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.95 }}
         whileHover={{ y: -2 }}
-        className={`group relative flex h-full flex-col rounded-xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:shadow-lg dark:border-gray-700 dark:bg-gray-800 ${menuAbierto ? 'z-50' : 'z-0'}`}
+        className="group relative flex h-full flex-col rounded-xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:shadow-lg dark:border-gray-700 dark:bg-gray-800"
       >
+        {/* Badge de Documento de Identidad */}
+        {(documento as any).es_documento_identidad && (
+          <div className='absolute -top-2 -right-2 z-10'>
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              className='flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-full shadow-lg border-2 border-white dark:border-gray-800'
+            >
+              <Lock className='w-3.5 h-3.5' />
+              <span className='text-xs font-bold'>IDENTIDAD</span>
+            </motion.div>
+          </div>
+        )}
+
       <div className='flex flex-1 flex-col p-4'>
         {/* Header: Icon + Categoría + Menú */}
         <div className='mb-3 flex items-start justify-between gap-3'>
@@ -177,27 +198,37 @@ export function DocumentoCard({
           </div>
 
           {/* Menú de acciones */}
-          <div className='relative flex-shrink-0' ref={menuRef}>
+          <div className='relative flex-shrink-0'>
             <button
-              type="button"
+              ref={botonMenuRef}
               onClick={(e) => {
                 e.preventDefault()
                 e.stopPropagation()
+                const rect = e.currentTarget.getBoundingClientRect()
+                setPosicionMenu({
+                  top: rect.bottom + window.scrollY + 8,
+                  left: rect.right + window.scrollX - 220 // Alineado a la derecha del botón
+                })
                 toggleMenu()
               }}
               className='rounded-lg p-2 opacity-0 transition-colors hover:bg-gray-100 group-hover:opacity-100 dark:hover:bg-gray-700'
             >
               <MoreVertical size={18} className='text-gray-500' />
             </button>
+          </div>
 
-            <AnimatePresence>
-              {menuAbierto && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.95, y: -10 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.95, y: -10 }}
-                  className='absolute right-0 top-full z-50 mt-2 min-w-[220px] rounded-xl border border-gray-200 bg-white py-1 shadow-2xl dark:border-gray-700 dark:bg-gray-800'
-                >
+          {/* Menú renderizado con portal fuera del contenedor para evitar z-index de sidebar */}
+          {menuAbierto && createPortal(
+            <div
+              ref={menuRef}
+              style={{
+                position: 'absolute',
+                top: `${posicionMenu.top}px`,
+                left: `${posicionMenu.left}px`,
+                zIndex: 9999
+              }}
+              className='min-w-[220px] rounded-xl border border-gray-200 bg-white py-1 shadow-2xl dark:border-gray-700 dark:bg-gray-800'
+            >
                 {/* Marcar/Quitar importante */}
                 <button
                   type="button"
@@ -371,11 +402,10 @@ export function DocumentoCard({
                       </div>
                     </div>
                   </div>
-                )}
-              </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
+                  )}
+              </div>,
+              document.body
+            )}
         </div>
 
         {/* Descripción (si existe) - Compacta */}
@@ -477,26 +507,6 @@ export function DocumentoCard({
           </div>
         </div>
 
-        {/* Etiquetas compactas */}
-        {documento.etiquetas && documento.etiquetas.length > 0 && (
-          <div className='mb-3 flex flex-wrap gap-1.5'>
-            {documento.etiquetas.slice(0, 2).map((etiqueta, index) => (
-              <span
-                key={index}
-                className='inline-flex items-center gap-1 rounded-md bg-blue-100 px-2 py-0.5 text-xs text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
-              >
-                <Tag size={10} />
-                {etiqueta}
-              </span>
-            ))}
-            {documento.etiquetas.length > 2 && (
-              <span className='inline-flex items-center rounded-md bg-gray-100 px-2 py-0.5 text-xs text-gray-600 dark:bg-gray-700 dark:text-gray-400'>
-                +{documento.etiquetas.length - 2}
-              </span>
-            )}
-          </div>
-        )}
-
         {/* Badge de estado del proceso */}
         {estadoProceso.esDeProceso && estadoProceso.estadoPaso && (
           <div className='mb-3'>
@@ -556,11 +566,14 @@ export function DocumentoCard({
           // 🆕 Refrescar lista de documentos
           await onRefresh?.()
         }}
+        tipoEntidad={tipoEntidad} // 🆕 Pasar tipo de entidad para queries correctas
+        moduleName={moduleName} // 🎨 Pasar tema del módulo para colores dinámicos
       />
 
       <DocumentoNuevaVersionModal
         isOpen={modalNuevaVersionAbierto}
         documento={documento as any}
+        tipoEntidad={tipoEntidad} // ✅ Pasar tipoEntidad
         onClose={cerrarModalNuevaVersion}
         onSuccess={async () => {
           cerrarModalNuevaVersion()
@@ -574,6 +587,7 @@ export function DocumentoCard({
         isOpen={modalEditarAbierto}
         documento={documento}
         categorias={categorias}
+        tipoEntidad={tipoEntidad} // ✅ Pasar tipoEntidad al modal
         onClose={cerrarModalEditar}
         onEditado={async () => {
           cerrarModalEditar()
@@ -586,6 +600,8 @@ export function DocumentoCard({
         <DocumentoReemplazarArchivoModal
           isOpen={modalReemplazarAbierto}
           documento={documento}
+          tipoEntidad={tipoEntidad}
+          moduleName={moduleName}
           onClose={cerrarModalReemplazar}
           onReemplazado={async () => {
             cerrarModalReemplazar()

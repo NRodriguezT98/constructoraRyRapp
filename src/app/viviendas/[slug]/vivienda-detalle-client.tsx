@@ -209,8 +209,7 @@ export default function ViviendaDetalleClient({ viviendaId }: ViviendaDetalleCli
   console.log('🏠 [VIVIENDA DETALLE] Active tab:', activeTab)
   console.log('🏠 [VIVIENDA DETALLE] Vivienda completa:', JSON.stringify(vivienda, null, 2))
 
-  try {
-    console.log('🏠 [VIVIENDA DETALLE] 📦 Entrando en bloque de renderizado...')
+  console.log('🏠 [VIVIENDA DETALLE] 📦 Entrando en bloque de renderizado...')
 
   return (
     <AnimatePresence mode="wait">

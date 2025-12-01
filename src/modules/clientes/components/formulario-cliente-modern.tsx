@@ -13,29 +13,29 @@ import { useEffect, useState } from 'react'
 
 import { AnimatePresence, motion } from 'framer-motion'
 import {
-  Building2,
-  Calendar,
-  Check,
-  ChevronLeft,
-  ChevronRight,
-  FileText,
-  Heart,
-  Home,
-  Mail,
-  MapPin,
-  MessageSquare,
-  Phone,
-  Sparkles,
-  User,
-  Users,
-  X,
+    Building2,
+    Calendar,
+    Check,
+    ChevronLeft,
+    ChevronRight,
+    FileText,
+    Heart,
+    Home,
+    Mail,
+    MapPin,
+    MessageSquare,
+    Phone,
+    Sparkles,
+    User,
+    Users,
+    X,
 } from 'lucide-react'
 
 import { ModernInput, ModernSelect, ModernTextarea } from '@/shared/components/forms'
 
 
-import type { CrearClienteDTO, OrigenCliente, TipoDocumento } from '../types'
-import { ORIGENES_CLIENTE, TIPOS_DOCUMENTO } from '../types'
+import type { CrearClienteDTO, EstadoCivil, TipoDocumento } from '../types'
+import { ESTADOS_CIVILES, TIPOS_DOCUMENTO } from '../types'
 
 interface FormularioClienteProps {
   isOpen: boolean
@@ -364,6 +364,23 @@ export function FormularioCliente({
                             onChange={(e: any) => onChange('fecha_nacimiento', e.target.value)}
                             disabled={isSubmitting}
                           />
+
+                          <ModernSelect
+                            icon={Users}
+                            label='Estado Civil'
+                            value={formData.estado_civil || ''}
+                            onChange={(e: any) =>
+                              onChange('estado_civil', e.target.value as EstadoCivil || undefined)
+                            }
+                            disabled={isSubmitting}
+                          >
+                            <option value=''>Seleccione...</option>
+                            {Object.entries(ESTADOS_CIVILES).map(([key, value]) => (
+                              <option key={key} value={key}>
+                                {value}
+                              </option>
+                            ))}
+                          </ModernSelect>
                         </div>
                       </div>
                     )}
@@ -518,7 +535,7 @@ export function FormularioCliente({
                                       style: 'currency',
                                       currency: 'COP',
                                       minimumFractionDigits: 0,
-                                    }).format(vivienda.precio)}
+                                    }).format(vivienda.valor_total)}
                                     )
                                   </option>
                                 ))}
@@ -569,41 +586,6 @@ export function FormularioCliente({
                         </div>
 
                         <div className='grid grid-cols-1 gap-4'>
-                          <ModernSelect
-                            icon={Users}
-                            label='¿Cómo nos conoció?'
-                            value={formData.origen || ''}
-                            onChange={(e: any) =>
-                              onChange('origen', e.target.value as OrigenCliente)
-                            }
-                            disabled={isSubmitting}
-                          >
-                            <option value=''>Seleccione una opción...</option>
-                            {Object.entries(ORIGENES_CLIENTE).map(([key, value]) => (
-                              <option key={key} value={key}>
-                                {value}
-                              </option>
-                            ))}
-                          </ModernSelect>
-
-                          {formData.origen === 'Referido' && (
-                            <motion.div
-                              initial={{ opacity: 0, height: 0 }}
-                              animate={{ opacity: 1, height: 'auto' }}
-                              exit={{ opacity: 0, height: 0 }}
-                            >
-                              <ModernInput
-                                icon={Users}
-                                label='Referido por'
-                                type='text'
-                                value={formData.referido_por}
-                                onChange={(e: any) => onChange('referido_por', e.target.value)}
-                                placeholder='Nombre de quien lo refirió'
-                                disabled={isSubmitting}
-                              />
-                            </motion.div>
-                          )}
-
                           <ModernTextarea
                             icon={MessageSquare}
                             label='Notas y Observaciones'

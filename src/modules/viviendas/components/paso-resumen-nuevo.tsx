@@ -23,9 +23,10 @@ interface PasoResumenProps {
   proyectoNombre?: string | null
   manzanaNombre?: string | null
   gastosNotariales?: number
+  numeroVivienda?: number | null
 }
 
-export function PasoResumenNuevo({ formData, proyectoNombre, manzanaNombre, gastosNotariales = 5_000_000 }: PasoResumenProps) {
+export function PasoResumenNuevo({ formData, proyectoNombre, manzanaNombre, gastosNotariales = 5_000_000, numeroVivienda }: PasoResumenProps) {
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('es-CO', {
       style: 'currency',
@@ -40,9 +41,9 @@ export function PasoResumenNuevo({ formData, proyectoNombre, manzanaNombre, gast
       icon: MapPin,
       color: 'blue',
       items: [
-        { label: 'Proyecto', value: proyectoNombre || 'No seleccionado', icon: Building2 },
-        { label: 'Manzana', value: manzanaNombre || 'No seleccionada', icon: MapPin },
-        { label: 'Número', value: formData.numero || 'No ingresado', icon: Home },
+        { label: 'Proyecto', value: proyectoNombre || 'No disponible', icon: Building2 },
+        { label: 'Manzana', value: manzanaNombre || 'No disponible', icon: MapPin },
+        { label: 'Número de Casa', value: (formData.numero || numeroVivienda) ? `#${formData.numero || numeroVivienda}` : 'No disponible', icon: Home },
       ],
     },
     {

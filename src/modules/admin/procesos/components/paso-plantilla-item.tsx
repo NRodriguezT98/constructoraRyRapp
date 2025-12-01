@@ -9,7 +9,7 @@
 
 import { useEffect, useState } from 'react'
 
-import { createBrowserClient } from '@supabase/ssr'
+import { createClient } from '@/lib/supabase/client'
 import { AnimatePresence, motion, Reorder } from 'framer-motion'
 import {
     AlertCircle,
@@ -61,10 +61,7 @@ export function PasoPlantillaItem({
 
   // ✅ NUEVO: Cargar categorías disponibles
   useEffect(() => {
-    const supabase = createBrowserClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    )
+    const supabase = createClient()
 
     supabase
       .from('categorias_documento')  // ✅ CORREGIDO: nombre correcto de la tabla (singular)

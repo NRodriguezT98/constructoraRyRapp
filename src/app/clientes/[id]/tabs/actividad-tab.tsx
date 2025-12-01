@@ -9,7 +9,7 @@
 
 import { useEffect, useState } from 'react'
 
-import { createBrowserClient } from '@supabase/ssr'
+import { createClient } from '@/lib/supabase/client'
 import { Activity, AlertCircle } from 'lucide-react'
 
 import { TimelineProceso } from '@/modules/admin/procesos/components'
@@ -29,10 +29,7 @@ export function ActividadTab({ clienteId }: ActividadTabProps) {
   useEffect(() => {
     async function cargarNegociacion() {
       try {
-        const supabase = createBrowserClient(
-          process.env.NEXT_PUBLIC_SUPABASE_URL!,
-          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-        )
+        const supabase = createClient()
 
         // Buscar negociación activa del cliente
         const { data, error } = await supabase

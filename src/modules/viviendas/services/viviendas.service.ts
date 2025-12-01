@@ -82,11 +82,19 @@ class ViviendasService {
   /**
    * Verifica si una matrícula inmobiliaria ya existe
    */
-  async verificarMatriculaUnica(matricula: string, viviendaId?: string): Promise<boolean> {
+  async verificarMatriculaUnica(matricula: string, viviendaId?: string): Promise<{
+    esUnica: boolean
+    viviendaDuplicada?: { numero: string; manzana: string }
+  }> {
     try {
       const { data, error } = await supabase
         .from('viviendas')
-        .select('id, matricula_inmobiliaria')
+        .select(`
+          id,
+          numero,
+          matricula_inmobiliaria,
+          manzanas!inner(nombre)
+        `)
         .eq('matricula_inmobiliaria', matricula)
 
       if (error) throw error
@@ -98,9 +106,23 @@ class ViviendasService {
 
       const esUnica = duplicados.length === 0
 
-      return esUnica
+      if (!esUnica && duplicados[0]) {
+        return {
+          esUnica: false,
+          viviendaDuplicada: {
+            numero: duplicados[0].numero,
+            manzana: duplicados[0].manzanas.nombre
+          }
+        }
+      }
+
+      return { esUnica: true }
     } catch (error) {
-      console.error('❌ Error al verificar matrícula:', error)
+      if (error instanceof Error) {
+        console.error('[VIVIENDAS] Error al verificar matrícula:', error.message)
+      } else {
+        console.error('[VIVIENDAS] Error desconocido al verificar matrícula:', String(error))
+      }
       throw error
     }
   }
@@ -269,9 +291,9 @@ class ViviendasService {
    */
   async crear(formData: ViviendaFormData): Promise<Vivienda> {
     // ✅ VALIDAR MATRÍCULA ÚNICA
-    const esUnica = await this.verificarMatriculaUnica(formData.matricula_inmobiliaria)
-    if (!esUnica) {
-      throw new Error(`La matrícula inmobiliaria "${formData.matricula_inmobiliaria}" ya está registrada en otra vivienda.`)
+    const resultado = await this.verificarMatriculaUnica(formData.matricula_inmobiliaria)
+    if (!resultado.esUnica && resultado.viviendaDuplicada) {
+      throw new Error(`La matrícula inmobiliaria "${formData.matricula_inmobiliaria}" ya está registrada en la Mz. ${resultado.viviendaDuplicada.manzana} Casa #${resultado.viviendaDuplicada.numero}`)
     }
 
     // Subir certificado si existe
@@ -394,10 +416,14 @@ class ViviendasService {
           })
 
         if (docError) {
-          console.error('❌ Error al crear registro de documento:', docError)
+          console.error('[VIVIENDAS] Error al crear registro de documento:', docError)
         }
       } catch (error) {
-        console.error('❌ Error inesperado al crear documento:', error)
+        if (error instanceof Error) {
+          console.error('[VIVIENDAS] Error inesperado al crear documento:', error.message)
+        } else {
+          console.error('[VIVIENDAS] Error desconocido al crear documento:', String(error))
+        }
       }
     }
 
@@ -414,10 +440,10 @@ class ViviendasService {
     // ✅ VALIDAR MATRÍCULA ÚNICA (si se está cambiando)
     if (formData.matricula_inmobiliaria !== undefined) {
       console.log('🔍 [ACTUALIZAR VIVIENDA] Validando unicidad de matrícula:', formData.matricula_inmobiliaria)
-      const esUnica = await this.verificarMatriculaUnica(formData.matricula_inmobiliaria, id)
-      if (!esUnica) {
+      const resultado = await this.verificarMatriculaUnica(formData.matricula_inmobiliaria, id)
+      if (!resultado.esUnica && resultado.viviendaDuplicada) {
         console.error('❌ [ACTUALIZAR VIVIENDA] Matrícula duplicada:', formData.matricula_inmobiliaria)
-        throw new Error(`La matrícula inmobiliaria "${formData.matricula_inmobiliaria}" ya está registrada en otra vivienda.`)
+        throw new Error(`La matrícula inmobiliaria "${formData.matricula_inmobiliaria}" ya está registrada en la Mz. ${resultado.viviendaDuplicada.manzana} Casa #${resultado.viviendaDuplicada.numero}`)
       }
       console.log('✅ [ACTUALIZAR VIVIENDA] Matrícula única validada')
     }

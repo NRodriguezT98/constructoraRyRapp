@@ -52,6 +52,269 @@ const hoy = getTodayDateString()  // → "2025-10-26"
 
 ---
 
+### 🚨 REGLA CRÍTICA #-5.8: SISTEMA DE DOCUMENTOS PENDIENTES (OBLIGATORIO)
+
+**⚠️ AL implementar funcionalidades que requieren documentación posterior:**
+
+1. **NUNCA BLOQUEAR** → Permitir guardar datos sin documentos obligatorios
+2. **CREAR PENDIENTE** → Sistema automático de documentos_pendientes
+3. **NOTIFICAR** → Banner visible en pestaña Documentos
+4. **VINCULAR AUTO** → Detección inteligente por metadata al subir
+5. **AUDITAR** → Registrar vinculación automática en audit_log
+
+**Casos de uso:**
+- ✅ Agregar fuente de pago sin carta de aprobación
+- ✅ Crear negociación sin documentos del cliente
+- ✅ Asignar vivienda pendiente de escrituras
+- ✅ Registrar abono sin comprobante escaneado
+
+**Componentes disponibles:**
+```typescript
+import { BannerDocumentosPendientes } from '@/modules/clientes/components/documentos-pendientes'
+
+<BannerDocumentosPendientes
+  clienteId={cliente.id}
+  onSubirDocumento={(pendienteId, tipoDocumento) => {
+    // Abrir modal de upload
+  }}
+/>
+```
+
+**Sistema automático:**
+1. Trigger crea `documentos_pendientes` al guardar sin documento
+2. Banner alerta en UI con prioridad visual
+3. Usuario sube documento normal
+4. Trigger detecta coincidencia por metadata
+5. Vincula automáticamente y elimina pendiente
+6. Auditoría registra vinculación
+
+**Ventajas:**
+- ✅ Flujo sin fricción (no bloquear)
+- ✅ Rastreabilidad completa
+- ✅ Vinculación inteligente
+- ✅ Tiempo real con Supabase
+- ✅ Extensible a notificaciones/recordatorios
+
+**Documentación completa:** `docs/SISTEMA-DOCUMENTOS-PENDIENTES.md` ⭐
+
+---
+
+### 🚨 REGLA CRÍTICA #-5.7: MODALES GENÉRICOS CON THEMING DINÁMICO (OBLIGATORIO)
+
+**⚠️ AL crear CUALQUIER modal reutilizable en múltiples módulos:**
+
+#### 📐 Patrón OBLIGATORIO: Función de Estilos + Prop ModuleName
+
+**Arquitectura correcta:**
+
+```typescript
+// 1. ARCHIVO DE ESTILOS (*.styles.ts)
+import { type ModuleName } from '@/shared/config/module-themes'
+
+const THEME_COLORS = {
+  proyectos: {
+    gradient: 'from-green-600 via-emerald-600 to-teal-600',
+    text: 'text-green-600 dark:text-green-400',
+    border: 'border-green-200 dark:border-green-900/50',
+    // ... más variantes
+  },
+  viviendas: {
+    gradient: 'from-orange-600 via-amber-600 to-yellow-600',
+    text: 'text-orange-600 dark:text-orange-400',
+    // ...
+  },
+  // ... resto de módulos
+}
+
+// ✅ FUNCIÓN que acepta moduleName
+export const getMiModalStyles = (moduleName: ModuleName = 'proyectos') => {
+  const colors = THEME_COLORS[moduleName] || THEME_COLORS.proyectos
+
+  return {
+    header: {
+      container: `bg-gradient-to-r ${colors.gradient} px-4 py-3`,
+      title: 'text-white font-bold',
+    },
+    content: {
+      border: colors.border,
+      text: colors.text,
+    },
+    // ... resto de estilos dinámicos
+  } as const
+}
+```
+
+```typescript
+// 2. COMPONENTE MODAL (*.tsx)
+import { type ModuleName } from '@/shared/config/module-themes'
+import { getMiModalStyles } from './MiModal.styles'
+
+interface MiModalProps {
+  isOpen: boolean
+  moduleName?: ModuleName  // ← OBLIGATORIO para modales genéricos
+  onClose: () => void
+}
+
+export function MiModal({ isOpen, moduleName = 'proyectos', onClose }: MiModalProps) {
+  // ✅ Generar estilos dinámicos
+  const styles = getMiModalStyles(moduleName)
+
+  return (
+    <div className={styles.header.container}>
+      {/* ... */}
+    </div>
+  )
+}
+```
+
+```typescript
+// 3. USO EN MÓDULOS
+// Proyectos (verde)
+<MiModal moduleName="proyectos" {...props} />
+
+// Viviendas (naranja)
+<MiModal moduleName="viviendas" {...props} />
+
+// Clientes (cyan)
+<MiModal moduleName="clientes" {...props} />
+```
+
+---
+
+#### ✅ ELEMENTOS QUE DEBEN SER DINÁMICOS
+
+**OBLIGATORIO cambiar por tema:**
+- ✅ Gradientes de header/footer
+- ✅ Colores de bordes
+- ✅ Fondos de advertencias/alertas
+- ✅ Colores de íconos
+- ✅ Focus states (border, ring)
+- ✅ Barras de progreso
+- ✅ Botones primarios
+- ✅ Links/hover states
+
+**NO cambiar (mantener neutral):**
+- ⚪ Textos en negro/gris (contenido)
+- ⚪ Fondos blancos/grises (contenedores)
+- ⚪ Botones secundarios (cancelar, cerrar)
+- ⚪ Overlays/backdrops
+
+---
+
+#### 🚫 ERRORES COMUNES QUE NO REPETIR
+
+**❌ INCORRECTO: Objeto estático con colores hardcoded**
+```typescript
+// ❌ NO HACER ESTO
+export const miModalStyles = {
+  header: 'bg-gradient-to-r from-orange-600 to-red-600',  // ← Hardcoded
+  icon: 'text-orange-600',  // ← No es reutilizable
+}
+```
+
+**✅ CORRECTO: Función con theming dinámico**
+```typescript
+// ✅ HACER ESTO
+export const getMiModalStyles = (moduleName: ModuleName) => {
+  const colors = THEME_COLORS[moduleName]
+  return {
+    header: `bg-gradient-to-r ${colors.gradient}`,  // ← Dinámico
+    icon: colors.text,  // ← Reutilizable
+  }
+}
+```
+
+---
+
+#### 🎨 CONFIGURACIÓN DE COLORES ESTÁNDAR
+
+```typescript
+const THEME_COLORS = {
+  proyectos: {
+    gradient: 'from-green-600 via-emerald-600 to-teal-600',
+    bg: 'bg-green-500',
+    text: 'text-green-600 dark:text-green-400',
+    border: 'border-green-200 dark:border-green-900/50',
+    bgLight: 'bg-green-50 dark:bg-green-900/20',
+    textDark: 'text-green-900 dark:text-green-300',
+    focusBorder: 'focus:border-green-500',
+    focusRing: 'focus:ring-green-500/20',
+    hover: 'hover:from-green-700 hover:via-emerald-700 hover:to-teal-700',
+  },
+  viviendas: {
+    gradient: 'from-orange-600 via-amber-600 to-yellow-600',
+    // ... mismo patrón
+  },
+  clientes: {
+    gradient: 'from-cyan-600 via-blue-600 to-indigo-600',
+    // ... mismo patrón
+  },
+  negociaciones: {
+    gradient: 'from-pink-600 via-purple-600 to-indigo-600',
+    // ... mismo patrón
+  },
+  abonos: {
+    gradient: 'from-blue-600 via-indigo-600 to-purple-600',
+    // ... mismo patrón
+  },
+  documentos: {
+    gradient: 'from-red-600 via-rose-600 to-pink-600',
+    // ... mismo patrón
+  },
+  auditorias: {
+    gradient: 'from-blue-600 via-indigo-600 to-purple-600',
+    // ... mismo patrón
+  },
+}
+```
+
+**Propiedades OBLIGATORIAS por módulo:**
+- `gradient`: Gradiente de 3 colores para headers/botones
+- `bg`: Color sólido de fondo
+- `text`: Color de texto (con dark mode)
+- `border`: Color de bordes (con dark mode)
+- `bgLight`: Fondo claro para alertas/warnings
+- `textDark`: Texto oscuro para títulos
+- `focusBorder`: Border en focus de inputs
+- `focusRing`: Ring en focus de inputs
+- `hover`: Gradiente hover para botones
+
+---
+
+#### ✅ CHECKLIST DE VALIDACIÓN
+
+Antes de aprobar un modal genérico:
+
+- [ ] **Archivo de estilos usa función** `getXXXStyles(moduleName: ModuleName)`
+- [ ] **Componente acepta prop** `moduleName?: ModuleName`
+- [ ] **Todos los colores vienen de** `THEME_COLORS[moduleName]`
+- [ ] **Dark mode incluido** en todos los colores dinámicos
+- [ ] **Fallback a 'proyectos'** si moduleName no existe
+- [ ] **Type-safe** con TypeScript (autocomplete funciona)
+- [ ] **Probado visualmente** en al menos 3 módulos diferentes
+- [ ] **Documentación creada** con ejemplos de uso
+
+---
+
+#### 📚 EJEMPLO COMPLETO DE REFERENCIA
+
+**Modal de Reemplazo de Archivos:**
+- Ubicación: `src/modules/documentos/components/modals/DocumentoReemplazarArchivoModal.tsx`
+- Estilos: `src/modules/documentos/components/modals/DocumentoReemplazarArchivoModal.styles.ts`
+- Guía: `docs/MODAL-REEMPLAZO-GENERICO-GUIA.md`
+- Refactor: `docs/REFACTOR-MODAL-REEMPLAZO-THEMING.md`
+
+**Beneficios logrados:**
+- ✅ Un componente → 7 módulos soportados
+- ✅ Reducción de código: 56% (800 → 350 líneas)
+- ✅ Theming automático por módulo
+- ✅ Type-safe con autocomplete
+- ✅ Dark mode completo
+
+**Documentación completa:** `docs/MODAL-REEMPLAZO-GENERICO-GUIA.md` ⭐
+
+---
+
 ### 🚨 REGLA CRÍTICA #-5.5: SISTEMA MODULAR DE AUDITORÍAS (OBLIGATORIO)
 
 **⚠️ AL implementar auditoría para CUALQUIER módulo o acción:**
@@ -925,6 +1188,7 @@ src/modules/[nombre-modulo]/
 
 ### 🔴 CRÍTICA (consultar SIEMPRE):
 - **Manejo profesional de fechas**: `docs/GUIA-MANEJO-FECHAS-PROFESIONAL.md` ⭐ **NO MÁS TIMEZONE ISSUES**
+- **Sistema de documentos pendientes**: `docs/SISTEMA-DOCUMENTOS-PENDIENTES.md` ⭐ **VINCULACIÓN AUTOMÁTICA**
 - **Sincronización de tipos DB**: `docs/SISTEMA-SINCRONIZACION-SCHEMA-DB.md` ⭐ **TIPOS AUTOMÁTICOS**
 - **Plantilla estándar módulos**: `docs/PLANTILLA-ESTANDAR-MODULOS.md` ⭐ **PROYECTOS COMO REFERENCIA**
 - **Sistema de theming**: `docs/SISTEMA-THEMING-MODULAR.md` ⭐ **NO HARDCODEAR COLORES**

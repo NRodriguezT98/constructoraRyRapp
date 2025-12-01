@@ -10,7 +10,7 @@
  * - Mi Casa Ya → Requiere paso "Solicitud desembolso de subsidio de vivienda Mi Casa Ya"
  */
 
-import { createBrowserClient } from '@supabase/ssr'
+import { createClient } from '@/lib/supabase/client'
 
 import type { TipoFuentePago } from '../types'
 
@@ -82,10 +82,7 @@ export async function validarDesembolso(
   }
 
   // Verificar si el paso existe y está completado
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  )
+  const supabase = createClient()
 
   const { data: paso, error } = await supabase
     .from('procesos_negociacion')
@@ -156,10 +153,7 @@ export async function obtenerInfoPasoRequerido(
     return null
   }
 
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  )
+  const supabase = createClient()
 
   const { data, error } = await supabase
     .from('procesos_negociacion')

@@ -3,8 +3,7 @@
 // ============================================
 
 import { supabase } from '@/lib/supabase/client'
-
-const BUCKET_NAME = 'documentos-proyectos'
+import { type TipoEntidad, obtenerConfiguracionEntidad } from '../types/entidad.types'
 
 /**
  * Servicio de operaciones de Supabase Storage
@@ -13,13 +12,19 @@ const BUCKET_NAME = 'documentos-proyectos'
 export class DocumentosStorageService {
   /**
    * Obtener URL de descarga con firma temporal
+   * @param storagePath - Path del archivo en storage
+   * @param tipoEntidad - Tipo de entidad para determinar el bucket correcto
+   * @param expiresIn - Tiempo de expiración en segundos (default: 1 hora)
    */
   static async obtenerUrlDescarga(
     storagePath: string,
-    expiresIn = 3600 // 1 hora por defecto
+    tipoEntidad: TipoEntidad = 'proyecto',
+    expiresIn = 3600
   ): Promise<string> {
+    const config = obtenerConfiguracionEntidad(tipoEntidad)
+
     const { data, error } = await supabase.storage
-      .from(BUCKET_NAME)
+      .from(config.bucket)
       .createSignedUrl(storagePath, expiresIn)
 
     if (error) throw error
@@ -28,10 +33,17 @@ export class DocumentosStorageService {
 
   /**
    * Descargar archivo como Blob
+   * @param storagePath - Path del archivo en storage
+   * @param tipoEntidad - Tipo de entidad para determinar el bucket correcto
    */
-  static async descargarArchivo(storagePath: string): Promise<Blob> {
+  static async descargarArchivo(
+    storagePath: string,
+    tipoEntidad: TipoEntidad = 'proyecto'
+  ): Promise<Blob> {
+    const config = obtenerConfiguracionEntidad(tipoEntidad)
+
     const { data, error } = await supabase.storage
-      .from(BUCKET_NAME)
+      .from(config.bucket)
       .download(storagePath)
 
     if (error) throw error

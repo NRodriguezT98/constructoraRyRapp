@@ -1,33 +1,35 @@
 /**
- * 💳 ClienteCardActivo - Card premium con glassmorphism
- * Muestra vivienda, proyecto, progreso de pago con gradientes purple→violet
+ * ClienteCardActivo - Card para clientes en estado "Activo"
  *
- * ⭐ REFACTORIZADO: Usa hook useClienteCardActivo para lógica
+ * ✅ Muestra: Vivienda asignada, manzana, valor, abonos, saldo, progreso
+ * ✅ Tema: Verde/Esmeralda
+ * ✅ Panel financiero completo con métricas
  */
 
 'use client'
 
-import { formatDistanceToNow } from 'date-fns'
-import { es } from 'date-fns/locale'
 import { motion } from 'framer-motion'
 import {
-    Building2,
-    Calendar,
-    Clock,
-    Edit,
-    Eye,
-    Home,
-    Trash2,
-    TrendingUp,
-    User
+  Building2,
+  Calendar,
+  DollarSign,
+  Edit,
+  Eye,
+  Home,
+  Trash2,
+  TrendingUp,
+  UserCheck,
+  Wallet
 } from 'lucide-react'
 
-import { CanDelete, CanEdit } from '@/modules/usuarios/components'
+import { formatDateShort } from '@/lib/utils/date.utils'
 
-import { getAvatarGradient } from '../../../abonos/styles/seleccion-cliente.styles'
-import { useClienteCardActivo } from '../../hooks'
-import { clientesListaStyles as styles } from '../../styles/clientes-lista.styles'
+import { useClienteCardActivo } from '../../hooks/useClienteCardActivo'
 import type { ClienteResumen } from '../../types'
+import {
+  clienteCardThemes,
+  clienteCardBaseStyles as styles,
+} from './cliente-card-base.styles'
 
 interface ClienteCardActivoProps {
   cliente: ClienteResumen
@@ -42,296 +44,223 @@ export function ClienteCardActivo({
   onVer,
   onEditar,
   onEliminar,
-  onRegistrarAbono
+  onRegistrarAbono,
 }: ClienteCardActivoProps) {
-  // =====================================================
-  // HOOK: Toda la lógica está en useClienteCardActivo
-  // =====================================================
-  const { datosVivienda, cargando, valorRestante } = useClienteCardActivo({
-    clienteId: cliente.id,
-  })
+  const theme = clienteCardThemes.Activo
 
-  // =====================================================
-  // UTILIDADES DE FORMATO
-  // =====================================================
+  // Cargar datos reales de la negociación
+  const { datosVivienda, cargando } = useClienteCardActivo({ clienteId: cliente.id })
 
+  // Formatear moneda COP
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('es-CO', {
       style: 'currency',
       currency: 'COP',
       minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
     }).format(value)
   }
-
-  const tiempoUltimaCuota = datosVivienda?.ultimaCuota
-    ? formatDistanceToNow(datosVivienda.ultimaCuota, {
-        addSuffix: true,
-        locale: es,
-      })
-    : null
-
-  const avatarGradient = getAvatarGradient(cliente.nombre_completo)
-
-  // =====================================================
-  // RENDER
-  // =====================================================
 
   // Si está cargando, mostrar skeleton
   if (cargando) {
     return (
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className={styles.clienteCard.container}
-      >
-        <div className={styles.clienteCard.glow} />
-        <div className="p-5 space-y-4">
-          <div className={`h-6 w-48 ${styles.clienteCard.skeleton}`} />
-          <div className={`h-4 w-32 ${styles.clienteCard.skeleton}`} />
-          <div className={`h-24 ${styles.clienteCard.skeleton}`} />
-          <div className={`h-32 ${styles.clienteCard.skeleton}`} />
+      <div className={`${styles.container} ${theme.hoverShadow} animate-pulse`}>
+        <div className={styles.content}>
+          <div className="h-32 bg-gray-200 dark:bg-gray-700 rounded-lg" />
         </div>
-      </motion.div>
+      </div>
     )
   }
 
-  // Si no hay datos de negociación, mostrar mensaje
+  // Si no hay datos, mostrar mensaje
   if (!datosVivienda) {
     return (
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className={styles.clienteCard.container}
-      >
-        <div className={styles.clienteCard.glow} />
-
-        <div className="relative z-10 p-5">
-          {/* Botones de acción */}
-          <div className={styles.clienteCard.headerActions}>
-            {onVer && (
-              <button
-                type="button"
-                onClick={() => onVer(cliente)}
-                className={styles.clienteCard.actionButton}
-                title="Ver detalles"
-              >
-                <Eye className={styles.clienteCard.actionIcon} />
-              </button>
-            )}
-            <CanEdit modulo="clientes">
-              {onEditar && (
-                <button
-                  type="button"
-                  onClick={() => onEditar(cliente)}
-                  className={styles.clienteCard.actionButton}
-                  title="Editar cliente"
-                >
-                  <Edit className={styles.clienteCard.actionIcon} />
-                </button>
-              )}
-            </CanEdit>
-            <CanDelete modulo="clientes">
-              {onEliminar && (
-                <button
-                  type="button"
-                  onClick={() => onEliminar(cliente)}
-                  className={styles.clienteCard.actionButton}
-                  title="Eliminar cliente"
-                >
-                  <Trash2 className={styles.clienteCard.actionIcon} />
-                </button>
-              )}
-            </CanDelete>
-          </div>
-
-          {/* Avatar + título */}
-          <div className={styles.clienteCard.avatarSection}>
-            <div className={`${styles.clienteCard.avatar} bg-gradient-to-br ${avatarGradient}`}>
-              <User className={styles.clienteCard.avatarIcon} />
-            </div>
-            <div className={styles.clienteCard.titleGroup}>
-              <h3 className={styles.clienteCard.nombre} title={cliente.nombre_completo}>
-                {cliente.nombre_completo}
-              </h3>
-              <p className={styles.clienteCard.documento}>
-                {cliente.tipo_documento} {cliente.numero_documento}
-              </p>
-            </div>
-            <span className={styles.clienteCard.badgeActivo}>Activo</span>
-          </div>
-
-          {/* Mensaje sin negociación */}
-          <div className="rounded-xl border-2 border-yellow-200 bg-gradient-to-br from-yellow-50 to-amber-50 dark:border-yellow-700/50 dark:from-yellow-900/20 dark:to-amber-900/20 p-4 text-center">
-            <p className="text-sm font-medium text-yellow-700 dark:text-yellow-300">
-              ⚠️ Cliente activo sin negociación registrada
-            </p>
-            <p className="mt-1 text-xs text-yellow-600 dark:text-yellow-400">
-              Crea una negociación desde el detalle del cliente
+      <div className={`${styles.container} ${theme.hoverShadow}`}>
+        <div className={styles.content}>
+          <div className="text-center py-4">
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              No se encontró negociación activa
             </p>
           </div>
         </div>
-      </motion.div>
+      </div>
     )
   }
 
   return (
     <motion.div
+      className={`${styles.container} ${theme.hoverShadow}`}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      whileHover={{ y: -4 }}
-      transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-      className={styles.clienteCard.container}
+      transition={{ duration: 0.3 }}
     >
-      {/* Glow effect on hover */}
-      <div className={styles.clienteCard.glow} />
+      {/* Efecto de brillo */}
+      <div className={`${styles.glow} ${theme.glow}`} />
 
-      {/* Content wrapper */}
-      <div className="relative z-10 p-5">
-        {/* HEADER: Botones de acción */}
-        <div className={styles.clienteCard.headerActions}>
+      <div className={`${styles.content} grid grid-rows-[85px_45px_95px_42px_auto] gap-3`}>
+        {/* HEADER COMPLETO */}
+        <div className={styles.header.container}>
+          {/* HEADER: Botones de acción */}
+          <div className={styles.header.actions}>
           {onVer && (
-            <button
-              type="button"
-              onClick={() => onVer(cliente)}
-              className={styles.clienteCard.actionButton}
-              title="Ver detalles"
-            >
-              <Eye className={styles.clienteCard.actionIcon} />
+            <button onClick={() => onVer(cliente)} className={styles.header.actionButton} title="Ver detalle">
+              <Eye className={styles.header.iconSize} />
             </button>
           )}
-          <CanEdit modulo="clientes">
-            {onEditar && (
-              <button
-                type="button"
-                onClick={() => onEditar(cliente)}
-                className={styles.clienteCard.actionButton}
-                title="Editar cliente"
-              >
-                <Edit className={styles.clienteCard.actionIcon} />
-              </button>
-            )}
-          </CanEdit>
-          <CanDelete modulo="clientes">
-            {onEliminar && (
-              <button
-                type="button"
-                onClick={() => onEliminar(cliente)}
-                className={styles.clienteCard.actionButton}
-                title="Eliminar cliente"
-              >
-                <Trash2 className={styles.clienteCard.actionIcon} />
-              </button>
-            )}
-          </CanDelete>
+          {onEditar && (
+            <button onClick={() => onEditar(cliente)} className={styles.header.actionButton} title="Editar">
+              <Edit className={styles.header.iconSize} />
+            </button>
+          )}
+          {onEliminar && (
+            <button onClick={() => onEliminar(cliente)} className={styles.header.actionButtonDelete} title="Eliminar">
+              <Trash2 className={styles.header.iconSize} />
+            </button>
+          )}
         </div>
 
-        {/* AVATAR + TÍTULO + BADGE */}
-        <div className={styles.clienteCard.avatarSection}>
-          {/* Avatar con gradient único */}
-          <div className={`${styles.clienteCard.avatar} bg-gradient-to-br ${avatarGradient}`}>
-            <User className={styles.clienteCard.avatarIcon} />
+        {/* HEADER: Icono + Título + Badge */}
+        <div className={styles.header.titleSection}>
+          <div className={`${styles.header.icon} ${theme.bg}`}>
+            <UserCheck className={styles.header.iconSize} />
           </div>
 
-          {/* Título y documento */}
-          <div className={styles.clienteCard.titleGroup}>
-            <h3 className={styles.clienteCard.nombre} title={cliente.nombre_completo}>
-              {cliente.nombre_completo}
-            </h3>
-            <p className={styles.clienteCard.documento}>
-              {cliente.tipo_documento} {cliente.numero_documento}
-            </p>
-          </div>
-
-          {/* Badge estado */}
-          <span className={styles.clienteCard.badgeActivo}>
-            Activo
-          </span>
-        </div>
-
-        {/* SECCIÓN: VIVIENDA ASIGNADA */}
-        <div className={styles.clienteCard.viviendaSection}>
-          <div className={styles.clienteCard.viviendaHeader}>
-            <Home className={styles.clienteCard.viviendaIcon} />
-            <span>VIVIENDA ASIGNADA</span>
-          </div>
-
-          <div className={styles.clienteCard.viviendaInfo}>
-            {/* Proyecto */}
-            <div className={styles.clienteCard.viviendaRow}>
-              <Building2 className={styles.clienteCard.viviendaRowIcon} />
-              <span className="font-medium">{datosVivienda.proyecto}</span>
-            </div>
-
-            {/* Manzana + Casa + Valor */}
-            <div className={styles.clienteCard.viviendaRowBetween}>
-              <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400 text-xs">
-                <Home className="w-3.5 h-3.5" />
-                <span>
-                  Manzana {datosVivienda.manzana} • Casa {datosVivienda.numero}
-                </span>
-              </div>
-              <span className={styles.clienteCard.viviendaValor}>
-                {formatCurrency(datosVivienda.valorTotal)}
+          <div className={styles.header.info}>
+            <h3 className={styles.header.title}>{cliente.nombre_completo}</h3>
+            <p className={styles.header.documento}>
+              <span className={`${styles.header.documentoLabel} ${theme.text}`}>
+                {cliente.tipo_documento}
               </span>
-            </div>
+              {cliente.numero_documento}
+            </p>
+            {cliente.estado_civil && (
+              <p className={styles.header.estadoCivil}>{cliente.estado_civil}</p>
+            )}
           </div>
-        </div>
 
-        {/* SECCIÓN: PROGRESO DE PAGO */}
-        <div className={styles.clienteCard.progresoSection}>
-          {/* Header con porcentaje */}
-          <div className={styles.clienteCard.progresoHeader}>
-            <div className={styles.clienteCard.progresoTitle}>
-              <TrendingUp className={styles.clienteCard.progresoIcon} />
-              <span>PROGRESO DE PAGO</span>
-            </div>
-            <span className={styles.clienteCard.progresoPorcentaje}>
-              {datosVivienda.porcentaje}%
+          <div className={styles.header.badges}>
+            {/* Badge principal de estado */}
+            <span className={`${styles.header.badge} ${theme.badge} ${theme.shadow}`}>
+              <div className={styles.header.badgeDot} />
+              ACTIVO
             </span>
           </div>
+        </div>
+        </div>
 
-          {/* Barra de progreso con gradient purple */}
-          <div className={styles.clienteCard.progresoBar}>
-            <motion.div
-              initial={{ width: 0 }}
-              animate={{ width: `${datosVivienda.porcentaje}%` }}
-              transition={{ duration: 0.8, ease: 'easeOut', delay: 0.2 }}
-              className={styles.clienteCard.progresoFill}
-            />
+        {/* SECCIÓN: Vivienda Asignada - HORIZONTAL */}
+        <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-gradient-to-r from-emerald-500/10 via-teal-500/10 to-emerald-500/10 border-l-4 border-emerald-500 dark:border-emerald-400">
+          <div className="flex items-center gap-2 flex-1 min-w-0">
+            <div className="p-1.5 rounded-lg bg-emerald-500 shadow-lg shadow-emerald-500/30">
+              <Building2 className="w-4 h-4 text-white" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-bold text-gray-900 dark:text-white truncate">{datosVivienda.proyecto}</p>
+              <p className="text-[10px] text-gray-600 dark:text-gray-400 truncate">
+                Mzna. {datosVivienda.manzana} • Casa {datosVivienda.numero}
+              </p>
+            </div>
+          </div>
+          <div className="px-2.5 py-1 rounded-lg bg-emerald-500 dark:bg-emerald-600">
+            <Home className="w-4 h-4 text-white" />
+          </div>
+        </div>
+
+        {/* SECCIÓN: Panel Financiero Compacto (Grid 2x2) */}
+        <div className={`${styles.section.container} bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-2 border-blue-200/50 dark:border-blue-700/50 p-2.5 overflow-hidden transition-all duration-200 hover:shadow-md`}>
+          <div className={`${styles.section.title} text-blue-700 dark:text-blue-300 mb-1.5 text-sm font-extrabold tracking-wide`}>
+            <DollarSign className="w-3.5 h-3.5" />
+            INFORMACIÓN FINANCIERA
           </div>
 
-          {/* Detalle: Pagado + Restante */}
-          <div className={styles.clienteCard.progresoDetalle}>
-            <div className={styles.clienteCard.progresoDetalleRow}>
-              <span className={styles.clienteCard.progresoDetalleLabel}>Pagado:</span>
-              <span className={styles.clienteCard.progresoDetalleValue}>
-                {formatCurrency(datosVivienda.valorPagado)}
-              </span>
+          {/* Grid 2x2 */}
+          <div className="grid grid-cols-2 gap-1.5">
+            {/* Valor Total */}
+            <div className="flex items-center gap-1">
+              <div className="p-0.5 rounded-md bg-purple-100 dark:bg-purple-900/30">
+                <Wallet className="w-2.5 h-2.5 text-purple-600 dark:text-purple-400" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[8px] font-semibold text-gray-500 dark:text-gray-400 uppercase">Total</p>
+                <p className="text-[10px] font-bold text-purple-600 dark:text-purple-400 truncate">
+                  {formatCurrency(datosVivienda.valorTotal)}
+                </p>
+              </div>
             </div>
-            <div className={styles.clienteCard.progresoDetalleRow}>
-              <span className={styles.clienteCard.progresoDetalleLabel}>Restante:</span>
-              <span className={styles.clienteCard.progresoDetalleRestante}>
-                {formatCurrency(valorRestante)}
-              </span>
+
+            {/* Total Abonado */}
+            <div className="flex items-center gap-1">
+              <div className={`p-0.5 rounded-md ${theme.bgLight}`}>
+                <TrendingUp className={`w-2.5 h-2.5 ${theme.text}`} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[8px] font-semibold text-gray-500 dark:text-gray-400 uppercase">Abonado</p>
+                <p className={`text-[10px] font-bold ${theme.text} truncate`}>
+                  {formatCurrency(datosVivienda.valorPagado)}
+                </p>
+              </div>
+            </div>
+
+            {/* Saldo Pendiente */}
+            <div className="flex items-center gap-1">
+              <div className="p-0.5 rounded-md bg-red-100 dark:bg-red-900/30">
+                <DollarSign className="w-2.5 h-2.5 text-red-600 dark:text-red-400" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[8px] font-semibold text-gray-500 dark:text-gray-400 uppercase">Saldo</p>
+                <p className="text-[10px] font-bold text-red-600 dark:text-red-400 truncate">
+                  {formatCurrency(datosVivienda.saldoPendiente)}
+                </p>
+              </div>
+            </div>
+
+            {/* Progreso */}
+            <div className="flex items-center gap-1">
+              <div className={`p-0.5 rounded-md ${theme.bgLight}`}>
+                <TrendingUp className={`w-2.5 h-2.5 ${theme.text}`} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[8px] font-semibold text-gray-500 dark:text-gray-400 uppercase">Progreso</p>
+                <p className={`text-[10px] font-bold ${theme.text}`}>
+                  {datosVivienda.porcentaje}%
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Barra de progreso compacta */}
+          <div className="mt-1.5">
+            <div className="relative w-full h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+              <motion.div
+                className={`absolute inset-y-0 left-0 ${theme.bg} rounded-full`}
+                initial={{ width: 0 }}
+                animate={{ width: `${datosVivienda.porcentaje}%` }}
+                transition={{ duration: 1, ease: 'easeOut' }}
+              />
             </div>
           </div>
         </div>
 
-        {/* FOOTER: Última cuota + Total abonos */}
-        <div className={styles.clienteCard.footer}>
-          <div className={styles.clienteCard.footerRow}>
-            <div className={styles.clienteCard.footerItem}>
-              <Clock className={styles.clienteCard.footerIcon} />
-              <span>
-                {tiempoUltimaCuota
-                  ? `Última cuota: ${tiempoUltimaCuota}`
-                  : 'Sin abonos registrados'}
-              </span>
+        {/* Botón: Registrar Abono - Diseño Premium */}
+        {onRegistrarAbono && (
+          <motion.button
+            onClick={() => onRegistrarAbono(cliente)}
+            className="w-full px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white text-sm font-bold shadow-lg shadow-emerald-500/30 hover:shadow-xl hover:shadow-emerald-500/40 transition-all"
+            whileHover={{ scale: 1.02, y: -1 }}
+            whileTap={{ scale: 0.98 }}
+          >
+            <div className="flex items-center justify-center gap-2">
+              <Wallet className="w-4 h-4" />
+              <span>Registrar Abono</span>
             </div>
-            <div className={styles.clienteCard.footerItem}>
-              <Calendar className={styles.clienteCard.footerIcon} />
-              <span>{datosVivienda.totalAbonos} abonos</span>
-            </div>
+          </motion.button>
+        )}
+
+        {/* FOOTER: Fecha de registro */}
+        <div className={styles.footer.container}>
+          <div className={styles.footer.text}>
+            <Calendar className={styles.footer.icon} />
+            <span>Registrado {formatDateShort(cliente.fecha_creacion)}</span>
           </div>
         </div>
       </div>

@@ -10,7 +10,7 @@ import { motion } from 'framer-motion'
 import { clientesStyles, staggerContainer } from '../styles'
 import type { ClienteResumen } from '../types'
 
-import { ClienteCard } from './cliente-card'
+import { ClienteCardCompacta } from './cards/cliente-card-compacta'
 import { ClientesEmpty } from './clientes-empty'
 import { ClientesSkeleton } from './clientes-skeleton'
 
@@ -50,9 +50,11 @@ export function ListaClientes({
       animate='animate'
     >
       {clientes.map((cliente) => (
-        <ClienteCard
+        <ClienteCardCompacta
           key={cliente.id}
           cliente={cliente}
+          vista="grid"
+          tieneCedula={cliente.tiene_cedula}
           onVer={onVerCliente}
           onEditar={onEditarCliente}
           onEliminar={onEliminarCliente}

@@ -9,7 +9,7 @@
  * - URL: /clientes/maria-garcia-lopez-3af5d98c
  */
 
-import { createBrowserClient } from '@supabase/ssr'
+import { createClient } from '@/lib/supabase/client'
 
 // ===================================
 // GENERACIÓN DE SLUGS
@@ -153,10 +153,7 @@ export async function resolverSlugAUUID(
     const shortId = extraerShortIDDeSlug(slugOUUID)
 
     // Buscar en la base de datos por coincidencia del inicio del UUID
-    const supabase = createBrowserClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    )
+    const supabase = createClient()
 
     // Obtener todos los registros y filtrar en cliente
     // Esto es más eficiente que una query LIKE que puede no estar soportada por RLS

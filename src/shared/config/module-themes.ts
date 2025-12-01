@@ -96,6 +96,17 @@ export interface ModuleTheme {
       /** dark:text-{primary}-400 */
       dark: string
     }
+
+    /** Badges */
+    badge: {
+      /** Badge primario bg-{primary}-600 */
+      primary: string
+      /** Badge secundario bg-{secondary}-600 */
+      secondary: string
+    }
+
+    /** Shadows */
+    shadow: string
   }
 }
 
@@ -142,6 +153,11 @@ export const moduleThemes: Record<ModuleName, ModuleTheme> = {
         secondary: 'text-green-700 dark:text-green-300',
         dark: 'dark:text-green-400',
       },
+      badge: {
+        primary: 'bg-green-600',
+        secondary: 'bg-emerald-600',
+      },
+      shadow: 'shadow-green-500/10',
     },
   },
 
@@ -186,6 +202,11 @@ export const moduleThemes: Record<ModuleName, ModuleTheme> = {
         secondary: 'text-cyan-700 dark:text-cyan-300',
         dark: 'dark:text-cyan-400',
       },
+      badge: {
+        primary: 'bg-cyan-600',
+        secondary: 'bg-blue-600',
+      },
+      shadow: 'shadow-cyan-500/10',
     },
   },
 
@@ -230,6 +251,11 @@ export const moduleThemes: Record<ModuleName, ModuleTheme> = {
         secondary: 'text-orange-700 dark:text-orange-300',
         dark: 'dark:text-orange-400',
       },
+      badge: {
+        primary: 'bg-orange-600',
+        secondary: 'bg-amber-600',
+      },
+      shadow: 'shadow-orange-500/10',
     },
   },
 
@@ -274,6 +300,11 @@ export const moduleThemes: Record<ModuleName, ModuleTheme> = {
         secondary: 'text-blue-700 dark:text-blue-300',
         dark: 'dark:text-blue-400',
       },
+      badge: {
+        primary: 'bg-blue-600',
+        secondary: 'bg-indigo-600',
+      },
+      shadow: 'shadow-blue-500/10',
     },
   },
 
@@ -318,6 +349,11 @@ export const moduleThemes: Record<ModuleName, ModuleTheme> = {
         secondary: 'text-pink-700 dark:text-pink-300',
         dark: 'dark:text-pink-400',
       },
+      badge: {
+        primary: 'bg-pink-600',
+        secondary: 'bg-purple-600',
+      },
+      shadow: 'shadow-pink-500/10',
     },
   },
 
@@ -362,6 +398,11 @@ export const moduleThemes: Record<ModuleName, ModuleTheme> = {
         secondary: 'text-blue-700 dark:text-blue-300',
         dark: 'dark:text-blue-400',
       },
+      badge: {
+        primary: 'bg-blue-600',
+        secondary: 'bg-indigo-600',
+      },
+      shadow: 'shadow-blue-500/10',
     },
   },
 
@@ -406,6 +447,11 @@ export const moduleThemes: Record<ModuleName, ModuleTheme> = {
         secondary: 'text-red-700 dark:text-red-300',
         dark: 'dark:text-red-400',
       },
+      badge: {
+        primary: 'bg-red-600',
+        secondary: 'bg-rose-600',
+      },
+      shadow: 'shadow-red-500/10',
     },
   },
 }

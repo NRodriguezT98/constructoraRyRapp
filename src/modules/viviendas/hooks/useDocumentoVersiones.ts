@@ -40,7 +40,18 @@ export function useDocumentoVersiones({
   const [versionARestaurar, setVersionARestaurar] = useState<{ id: string; numero: number } | null>(null)
   const [motivoRestauracion, setMotivoRestauracion] = useState('')
 
-  const service = new DocumentosViviendaService()
+  const cargarVersiones = async () => {
+    setCargando(true)
+    try {
+      const data = await DocumentosViviendaService.obtenerVersiones(documentoId)
+      setVersiones(data)
+    } catch (error) {
+      console.error('❌ Error al cargar versiones:', error)
+      toast.error('Error al cargar historial de versiones')
+    } finally {
+      setCargando(false)
+    }
+  }
 
   useEffect(() => {
     if (isOpen && documentoId) {
@@ -48,22 +59,9 @@ export function useDocumentoVersiones({
     }
   }, [isOpen, documentoId])
 
-  const cargarVersiones = async () => {
-    setCargando(true)
-    try {
-      const data = await service.obtenerVersiones(documentoId)
-      setVersiones(data)
-    } catch (error) {
-      console.error('Error al cargar versiones:', error)
-      toast.error('Error al cargar historial de versiones')
-    } finally {
-      setCargando(false)
-    }
-  }
-
   const handleVerDocumento = async (documento: DocumentoVivienda) => {
     try {
-      const url = await service.obtenerUrlFirmada(documento.id)
+      const url = await DocumentosViviendaService.obtenerUrlDescarga(documento.url_storage)
       window.open(url, '_blank')
     } catch (error) {
       console.error('Error al ver documento:', error)
@@ -73,7 +71,7 @@ export function useDocumentoVersiones({
 
   const handleDescargar = async (documento: DocumentoVivienda) => {
     try {
-      const url = await service.obtenerUrlFirmada(documento.id)
+      const url = await DocumentosViviendaService.obtenerUrlDescarga(documento.url_storage)
       const response = await fetch(url)
       const blob = await response.blob()
       const downloadUrl = window.URL.createObjectURL(blob)
@@ -116,7 +114,7 @@ export function useDocumentoVersiones({
 
     setRestaurando(versionId)
     try {
-      await service.restaurarVersion(versionId, user.id, motivoRestauracion.trim())
+      await DocumentosViviendaService.restaurarVersion(versionId, user.id, motivoRestauracion.trim())
       toast.success('Versión restaurada correctamente')
 
       // ✅ NUEVO: Invalidar caché de React Query para actualizar la lista
@@ -174,7 +172,7 @@ export function useDocumentoVersiones({
 
     setEliminando(versionId)
     try {
-      await service.eliminarVersion(versionId, user.id, perfil.rol, motivo)
+      await DocumentosViviendaService.eliminarVersion(versionId, user.id, perfil.rol, motivo)
       toast.success('Versión eliminada correctamente')
 
       // ✅ Invalidar caché de React Query

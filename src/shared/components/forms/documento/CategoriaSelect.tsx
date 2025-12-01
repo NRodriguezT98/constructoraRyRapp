@@ -20,6 +20,8 @@ interface CategoriaSelectProps {
   value: string
   onChange: (value: string) => void
   errors: FieldErrors
+  disabled?: boolean // ✅ Para deshabilitar select
+  helperText?: string // ✅ Texto custom de ayuda
 }
 
 export function CategoriaSelect({
@@ -28,6 +30,8 @@ export function CategoriaSelect({
   value,
   onChange,
   errors,
+  disabled = false,
+  helperText,
 }: CategoriaSelectProps) {
   const theme = moduleThemes[moduleName]
   const [isOpen, setIsOpen] = useState(false)
@@ -49,7 +53,7 @@ export function CategoriaSelect({
 
   return (
     <div>
-      <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5 flex items-center gap-1.5">
+      <label className="flex items-center gap-1.5 text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5">
         <Folder size={14} />
         Categoría
       </label>
@@ -58,10 +62,12 @@ export function CategoriaSelect({
         {/* Botón del select */}
         <button
           type="button"
-          onClick={() => setIsOpen(!isOpen)}
+          onClick={() => !disabled && setIsOpen(!isOpen)}
+          disabled={disabled}
           className={cn(
             'w-full px-3 py-2 text-sm bg-white dark:bg-gray-900/50 border rounded-lg transition-all text-left flex items-center justify-between',
             'focus:ring-2 focus:border-transparent',
+            disabled && 'opacity-50 cursor-not-allowed',
             errors.categoria_id
               ? 'border-red-500 dark:border-red-500'
               : 'border-gray-200 dark:border-gray-700'
@@ -167,7 +173,7 @@ export function CategoriaSelect({
       )}
       {!errors.categoria_id && (
         <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-          Clasifica el documento
+          {helperText || 'Clasifica el documento'}
         </p>
       )}
     </div>

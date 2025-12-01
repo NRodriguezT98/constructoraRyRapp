@@ -11,6 +11,7 @@
  */
 
 import { supabase } from '@/lib/supabase/client'
+import { formatDateForDB, getTodayDateString } from '@/lib/utils/date.utils'
 
 // Tipos de fuente de pago
 export type TipoFuentePago =
@@ -95,7 +96,8 @@ class FuentesPagoService {
       console.log('✅ Fuente de pago creada:', data.id)
       return data as FuentePago
     } catch (error) {
-      console.error('❌ Error creando fuente de pago:', error)
+      const mensaje = error instanceof Error ? error.message : 'Error desconocido'
+      console.error('❌ [CLIENTES] Error creando fuente de pago:', mensaje, error)
       throw error
     }
   }
@@ -114,7 +116,8 @@ class FuentesPagoService {
       if (error) throw error
       return (data as FuentePago[]) || []
     } catch (error) {
-      console.error('❌ Error obteniendo fuentes de pago:', error)
+      const mensaje = error instanceof Error ? error.message : 'Error desconocido'
+      console.error('❌ [CLIENTES] Error obteniendo fuentes de pago:', mensaje, error)
       return []
     }
   }
@@ -133,7 +136,8 @@ class FuentesPagoService {
       if (error) throw error
       return data as FuentePago
     } catch (error) {
-      console.error('❌ Error obteniendo fuente de pago:', error)
+      const mensaje = error instanceof Error ? error.message : 'Error desconocido'
+      console.error('❌ [CLIENTES] Error obteniendo fuente de pago:', mensaje, error)
       return null
     }
   }
@@ -157,7 +161,8 @@ class FuentesPagoService {
       console.log('✅ Fuente de pago actualizada')
       return data as FuentePago
     } catch (error) {
-      console.error('❌ Error actualizando fuente de pago:', error)
+      const mensaje = error instanceof Error ? error.message : 'Error desconocido'
+      console.error('❌ [CLIENTES] Error actualizando fuente de pago:', mensaje, error)
       throw error
     }
   }
@@ -190,14 +195,15 @@ class FuentesPagoService {
 
       if (estaCompleta) {
         updates.estado = 'Completada'
-        updates.fecha_completado = new Date().toISOString()
+        updates.fecha_completado = formatDateForDB(getTodayDateString())
       } else {
         updates.estado = 'En Proceso'
       }
 
       return await this.actualizarFuentePago(id, updates)
     } catch (error) {
-      console.error('❌ Error registrando monto recibido:', error)
+      const mensaje = error instanceof Error ? error.message : 'Error desconocido'
+      console.error('❌ [CLIENTES] Error registrando monto recibido:', mensaje, error)
       throw error
     }
   }

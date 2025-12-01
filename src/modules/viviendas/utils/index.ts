@@ -304,3 +304,9 @@ export function ordenarManzanasPorNombre<T extends { nombre: string }>(
     return a.nombre.localeCompare(b.nombre)
   })
 }
+
+// ============================================
+// DETECCIÓN DE CAMBIOS
+// ============================================
+
+export { detectarCambiosVivienda } from './detectar-cambios'

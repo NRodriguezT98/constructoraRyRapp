@@ -1,18 +1,12 @@
 /**
  * Ruta: /clientes/[id]/negociaciones/crear
  *
- * Página para crear una nueva negociación con cierre financiero completo
+ * ⚠️ REDIRIGE A: /clientes/[id]/asignar-vivienda
+ * Esta ruta se mantiene por backward compatibility
  */
 
-import { Metadata } from 'next'
+import { redirect } from 'next/navigation'
 
-import { resolverSlugCliente } from '@/lib/utils/slug.utils'
-import { CrearNegociacionPage } from '@/modules/clientes/pages/crear-negociacion'
-
-export const metadata: Metadata = {
-  title: 'Crear Negociación | RyR Constructora',
-  description: 'Crear nueva negociación con cierre financiero completo',
-}
 
 interface PageProps {
   params: Promise<{
@@ -29,16 +23,15 @@ export default async function Page({ params, searchParams }: PageProps) {
   const { id } = await params
   const search = await searchParams
 
-  // Resolver slug a UUID
-  const clienteUUID = await resolverSlugCliente(id) || id
+  // Construir query params
+  const queryParams = new URLSearchParams()
+  if (search.nombre) queryParams.set('nombre', search.nombre)
+  if (search.viviendaId) queryParams.set('viviendaId', search.viviendaId)
+  if (search.valor) queryParams.set('valor', search.valor)
 
-  return (
-    <CrearNegociacionPage
-      clienteId={clienteUUID}
-      clienteSlug={id} // Pasar el slug original para links
-      clienteNombre={search.nombre}
-      viviendaId={search.viviendaId}
-      valorVivienda={search.valor ? parseFloat(search.valor) : undefined}
-    />
-  )
+  const queryString = queryParams.toString()
+  const newUrl = `/clientes/${id}/asignar-vivienda${queryString ? `?${queryString}` : ''}`
+
+  // Redirigir a la nueva ruta
+  redirect(newUrl)
 }

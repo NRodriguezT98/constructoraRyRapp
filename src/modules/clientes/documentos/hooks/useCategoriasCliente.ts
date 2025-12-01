@@ -63,7 +63,8 @@ export function useCategoriasCliente({ userId }: UseCategoriasClienteProps) {
         await cargarCategorias(userId)
         handleVolverALista()
       } catch (error) {
-        console.error('Error al crear categoría:', error)
+        const mensaje = error instanceof Error ? error.message : 'Error desconocido'
+        console.error('[CLIENTES] Error al crear categoría:', mensaje, error)
         throw error
       }
     },
@@ -79,7 +80,8 @@ export function useCategoriasCliente({ userId }: UseCategoriasClienteProps) {
         await cargarCategorias(userId)
         handleVolverALista()
       } catch (error) {
-        console.error('Error al actualizar categoría:', error)
+        const mensaje = error instanceof Error ? error.message : 'Error desconocido'
+        console.error('[CLIENTES] Error al actualizar categoría:', mensaje, error)
         throw error
       }
     },
@@ -95,7 +97,8 @@ export function useCategoriasCliente({ userId }: UseCategoriasClienteProps) {
         await CategoriasService.eliminarCategoria(categoriaId)
         await cargarCategorias(userId)
       } catch (error) {
-        console.error('Error al eliminar categoría:', error)
+        const mensaje = error instanceof Error ? error.message : 'Error desconocido'
+        console.error('[CLIENTES] Error al eliminar categoría:', mensaje, error)
       } finally {
         setEliminando(null)
       }
@@ -108,7 +111,8 @@ export function useCategoriasCliente({ userId }: UseCategoriasClienteProps) {
       await CategoriasService.crearCategoriasDefault(userId)
       await cargarCategorias(userId)
     } catch (error) {
-      console.error('Error al inicializar categorías:', error)
+      const mensaje = error instanceof Error ? error.message : 'Error desconocido'
+      console.error('[CLIENTES] Error al inicializar categorías:', mensaje, error)
     }
   }, [userId, cargarCategorias])
 

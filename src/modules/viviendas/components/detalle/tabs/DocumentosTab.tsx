@@ -5,9 +5,9 @@ import { useState } from 'react'
 import { ArrowLeft, FileText, FolderCog, Upload } from 'lucide-react'
 
 import { useAuth } from '@/contexts/auth-context'
-import { DebugLogger } from '@/lib/utils/debug-logger'
 import { CategoriasManager } from '@/modules/documentos/components/categorias/categorias-manager'
-import { DocumentoUpload, DocumentosLista } from '@/modules/viviendas/components/documentos'
+import { DocumentosLista } from '@/modules/documentos/components/lista/documentos-lista'
+import { DocumentoUpload } from '@/modules/documentos/components/upload/documento-upload'
 import { moduleThemes } from '@/shared/config/module-themes'
 
 interface DocumentosTabProps {
@@ -19,25 +19,17 @@ interface DocumentosTabProps {
  * Sistema completo migrado desde Proyectos
  */
 export function DocumentosTab({ viviendaId }: DocumentosTabProps) {
-  console.log('📄 [DOCUMENTOS TAB] ========== INICIO ==========')
-  console.log('📄 [DOCUMENTOS TAB] viviendaId recibido:', viviendaId)
+  const { user } = useAuth()
 
-  try {
-    const { user } = useAuth()
-    console.log('📄 [DOCUMENTOS TAB] Auth cargado, user:', user?.email || 'No autenticado')
+  // Tema naranja/ámbar para viviendas
+  const theme = moduleThemes.viviendas
 
-    // Tema naranja/ámbar para viviendas
-    const theme = moduleThemes.viviendas
-    console.log('📄 [DOCUMENTOS TAB] Tema cargado ✓')
-
-    // Estados locales para vistas (PATRÓN IGUAL A PROYECTOS)
-    const [showUpload, setShowUpload] = useState(false)
-    const [showCategorias, setShowCategorias] = useState(false)
-    console.log('📄 [DOCUMENTOS TAB] Estados inicializados ✓')
+  // Estados locales para vistas (PATRÓN IGUAL A PROYECTOS)
+  const [showUpload, setShowUpload] = useState(false)
+  const [showCategorias, setShowCategorias] = useState(false)
 
   // Si está mostrando categorías (PATRÓN IGUAL A PROYECTOS)
   if (showCategorias && user) {
-    console.log('📄 [DOCUMENTOS TAB] Renderizando vista CATEGORÍAS')
     return (
       <div className='space-y-4'>
         {/* Header con botón volver */}
@@ -74,21 +66,21 @@ export function DocumentosTab({ viviendaId }: DocumentosTabProps) {
 
   // Si está mostrando formulario de upload (PATRÓN IGUAL A PROYECTOS)
   if (showUpload && user) {
-    console.log('📄 [DOCUMENTOS TAB] Renderizando vista UPLOAD')
     return (
       <div className='space-y-4'>
         <div className={`rounded-lg border ${theme.classes.border.light} bg-white p-4 shadow-sm dark:bg-gray-800`}>
           <DocumentoUpload
-            viviendaId={viviendaId}
+            entidadId={viviendaId}
+            tipoEntidad="vivienda"
             onSuccess={() => setShowUpload(false)}
             onCancel={() => setShowUpload(false)}
+            moduleName="viviendas"
           />
         </div>
       </div>
     )
   }
 
-  console.log('📄 [DOCUMENTOS TAB] Renderizando vista PRINCIPAL (lista documentos)')
   return (
     <div className='space-y-4'>
       {/* Header con acciones */}
@@ -127,9 +119,10 @@ export function DocumentosTab({ viviendaId }: DocumentosTabProps) {
         </div>
       </div>
 
-      {/* Lista de documentos - Sistema completo */}
+      {/* Lista de documentos - GENÉRICO */}
       <DocumentosLista
-        viviendaId={viviendaId}
+        entidadId={viviendaId}
+        tipoEntidad="vivienda"
         onUploadClick={() => setShowUpload(true)}
         moduleName="viviendas"
       />

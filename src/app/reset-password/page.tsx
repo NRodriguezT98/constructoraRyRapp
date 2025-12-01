@@ -285,16 +285,17 @@ export default function ResetPasswordPage() {
         console.log('====================================================')
       }, 2000)
 
-    } catch (err: any) {
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error(String(err))
       console.error('====================================================')
       console.error('❌❌❌ EXCEPCIÓN GENERAL ❌❌❌')
       console.error('====================================================')
-      console.error('Error:', err)
-      console.error('Message:', err.message)
-      console.error('Stack:', err.stack)
+      console.error('Error:', error)
+      console.error('Message:', error.message)
+      console.error('Stack:', error.stack)
       console.error('====================================================')
 
-      const mensajeTraducido = traducirErrorSupabase(err.message || 'Error al actualizar contraseña')
+      const mensajeTraducido = traducirErrorSupabase(error.message || 'Error al actualizar contraseña')
       setError(mensajeTraducido)
       setLoading(false)
     }

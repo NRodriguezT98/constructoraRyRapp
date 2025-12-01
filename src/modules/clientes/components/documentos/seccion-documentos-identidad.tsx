@@ -1,93 +1,77 @@
-'use client';
+'use client'
 
-import { useState } from 'react';
+/**
+ * ============================================
+ * SECCIÓN DOCUMENTOS DE IDENTIDAD
+ * ============================================
+ *
+ * Sección especializada para gestión de documento de identidad del cliente.
+ * Usa el sistema modular de documentos (documentos_cliente).
+ *
+ * REFACTORIZADO: Eliminado sistema legacy (documento_identidad_url)
+ * Ahora usa documentos_cliente con es_documento_identidad=true
+ */
 
-import { motion } from 'framer-motion';
-import { AlertCircle, CheckCircle, Eye, FileText, RefreshCw, Trash2, Upload } from 'lucide-react';
-import { toast } from 'sonner';
+import { motion } from 'framer-motion'
+import { AlertCircle, CheckCircle, Eye, FileText, RefreshCw, Trash2, Upload } from 'lucide-react'
+import { toast } from 'sonner'
 
-import { supabase } from '@/lib/supabase/client';
-
-import ModalSubirCedula from '../modals/modal-subir-cedula';
+import { useDocumentoIdentidad } from '@/modules/clientes/documentos/hooks/useDocumentoIdentidad'
+import { useEliminarDocumento } from '@/modules/documentos/hooks/useEliminarDocumento'
 
 interface SeccionDocumentosIdentidadProps {
-  clienteId: string;
-  clienteNombre: string;
-  numeroDocumento: string;
-  documentoIdentidadUrl: string | null;
-  onActualizar: (url: string | null) => void;
+  clienteId: string
+  onOpenUploadModal: () => void // Callback para abrir modal de upload genérico
 }
 
 export default function SeccionDocumentosIdentidad({
   clienteId,
-  clienteNombre,
-  numeroDocumento,
-  documentoIdentidadUrl,
-  onActualizar
+  onOpenUploadModal,
 }: SeccionDocumentosIdentidadProps) {
-  const [mostrarModal, setMostrarModal] = useState(false);
-  const [eliminando, setEliminando] = useState(false);
+  // ✅ Hook con lógica de documento de identidad
+  const { tieneCedula, documentoIdentidad, cargando } = useDocumentoIdentidad({ clienteId })
 
-  const tieneCedula = !!documentoIdentidadUrl;
+  // ✅ Hook para eliminar documento
+  const { eliminarDocumento, eliminando } = useEliminarDocumento()
 
   const handleEliminar = async () => {
+    if (!documentoIdentidad) return
+
     if (!confirm('¿Estás seguro de eliminar la cédula? Esto bloqueará la creación de negociaciones hasta que subas una nueva.')) {
-      return;
+      return
     }
 
-    setEliminando(true);
     try {
-      console.log('Eliminando cédula del cliente...', clienteId);
-
-      // Eliminar de Storage (opcional - el archivo queda pero no es accesible)
-      if (documentoIdentidadUrl) {
-        const filePath = documentoIdentidadUrl.split('/').slice(-2).join('/'); // Extrae la ruta relativa
-        console.log('Intentando eliminar archivo de Storage:', filePath);
-
-        const { error: deleteError } = await supabase.storage
-          .from('documentos-clientes')
-          .remove([filePath]);
-
-        if (deleteError) {
-          console.warn('No se pudo eliminar archivo de Storage:', deleteError);
-          // No lanzamos error, continuamos con limpiar el campo
-        }
-      }
-
-      // Limpiar campo en cliente
-      const { error } = await supabase
-        .from('clientes')
-        .update({ documento_identidad_url: null })
-        .eq('id', clienteId);
-
-      if (error) {
-        console.error('Error actualizando cliente:', error);
-        throw error;
-      }
-
-      console.log('Cédula eliminada exitosamente');
-      onActualizar(null);
-      toast.success('Cédula eliminada');
-
-    } catch (error: any) {
-      console.error('Error eliminando cédula:', error);
-      toast.error(error.message || 'Error al eliminar cédula');
-    } finally {
-      setEliminando(false);
+      await eliminarDocumento(documentoIdentidad.id)
+      toast.success('Cédula eliminada correctamente')
+    } catch (error) {
+      const mensaje = error instanceof Error ? error.message : 'Error al eliminar cédula'
+      console.error('[CLIENTES] Error eliminando cédula:', error)
+      toast.error(mensaje)
     }
-  };
+  }
 
   const handleVerDocumento = () => {
-    if (documentoIdentidadUrl) {
-      window.open(documentoIdentidadUrl, '_blank', 'noopener,noreferrer');
+    if (documentoIdentidad?.url_storage) {
+      window.open(documentoIdentidad.url_storage, '_blank', 'noopener,noreferrer')
     }
-  };
+  }
 
-  const getNombreArchivo = () => {
-    if (!documentoIdentidadUrl) return '';
-    const parts = documentoIdentidadUrl.split('/');
-    return parts[parts.length - 1];
-  };
+  if (cargando) {
+    return (
+      <div className="mb-8">
+        <div className="flex items-center gap-2 mb-4">
+          <FileText className="w-5 h-5 text-red-600 dark:text-red-400" />
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+            Documentos de Identidad (Requeridos)
+          </h3>
+        </div>
+        <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 text-center">
+          <p className="text-sm text-gray-500 dark:text-gray-400">Cargando...</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <>
@@ -147,7 +131,7 @@ export default function SeccionDocumentosIdentidad({
                   </div>
                   <div className="flex items-start gap-2 text-xs text-gray-600 dark:text-gray-400">
                     <FileText className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
-                    <span className="break-all">{getNombreArchivo()}</span>
+                    <span className="break-all">{documentoIdentidad?.nombre_archivo || 'documento.pdf'}</span>
                   </div>
                   <p className="text-xs text-gray-500 dark:text-gray-500">
                     El cliente puede iniciar negociaciones
@@ -181,7 +165,7 @@ export default function SeccionDocumentosIdentidad({
                     Ver
                   </button>
                   <button
-                    onClick={() => setMostrarModal(true)}
+                    onClick={onOpenUploadModal}
                     className="flex items-center gap-1.5 px-3 py-2 text-sm text-orange-600 dark:text-orange-400 hover:bg-orange-100 dark:hover:bg-orange-900/30 rounded-lg transition-colors"
                     title="Reemplazar documento"
                   >
@@ -200,7 +184,7 @@ export default function SeccionDocumentosIdentidad({
                 </>
               ) : (
                 <button
-                  onClick={() => setMostrarModal(true)}
+                  onClick={onOpenUploadModal}
                   className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm hover:shadow-md font-medium"
                 >
                   <Upload className="w-4 h-4" />
@@ -211,21 +195,6 @@ export default function SeccionDocumentosIdentidad({
           </div>
         </motion.div>
       </div>
-
-      {/* Modal de Subida */}
-      {mostrarModal && (
-        <ModalSubirCedula
-          clienteId={clienteId}
-          clienteNombre={clienteNombre}
-          numeroDocumento={numeroDocumento}
-          onSuccess={(url) => {
-            console.log('Cédula subida exitosamente, actualizando UI...', url);
-            onActualizar(url);
-            setMostrarModal(false);
-          }}
-          onCancel={() => setMostrarModal(false)}
-        />
-      )}
     </>
-  );
+  )
 }

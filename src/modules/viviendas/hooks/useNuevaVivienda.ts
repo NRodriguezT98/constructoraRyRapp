@@ -126,15 +126,15 @@ const createPaso3Schema = (viviendaId?: string) => {
       // ✅ Validación async: Verificar matrícula duplicada
       if (data.matricula_inmobiliaria && data.matricula_inmobiliaria.length >= 7) {
         try {
-          const esUnica = await viviendasService.verificarMatriculaUnica(
+          const resultado = await viviendasService.verificarMatriculaUnica(
             data.matricula_inmobiliaria,
             viviendaId
           )
 
-          if (!esUnica) {
+          if (!resultado.esUnica && resultado.viviendaDuplicada) {
             ctx.addIssue({
               code: z.ZodIssueCode.custom,
-              message: 'Esta matrícula ya existe en otra vivienda',
+              message: `Esta matrícula ya está registrada en la Mz. ${resultado.viviendaDuplicada.manzana} Casa #${resultado.viviendaDuplicada.numero}`,
               path: ['matricula_inmobiliaria'],
             })
           }
@@ -283,8 +283,8 @@ export function useNuevaVivienda({ onSubmit, viviendaId }: UseNuevaViviendaParam
       lindero_occidente: '',
       matricula_inmobiliaria: '',
       nomenclatura: '',
-      area_lote: 0,
-      area_construida: 0,
+      area_lote: '',
+      area_construida: '',
       tipo_vivienda: 'Regular' as const,
       valor_base: 0,
       es_esquinera: false,
@@ -371,15 +371,15 @@ export function useNuevaVivienda({ onSubmit, viviendaId }: UseNuevaViviendaParam
 
         if (matricula && matricula.length >= 7) {
           try {
-            const esUnica = await viviendasService.verificarMatriculaUnica(
+            const resultado = await viviendasService.verificarMatriculaUnica(
               matricula,
               viviendaId
             )
 
-            if (!esUnica) {
+            if (!resultado.esUnica && resultado.viviendaDuplicada) {
               erroresEncontrados.push({
                 campo: 'matricula_inmobiliaria',
-                mensaje: 'Esta matrícula ya existe en otra vivienda',
+                mensaje: `Esta matrícula ya está registrada en la Mz. ${resultado.viviendaDuplicada.manzana} Casa #${resultado.viviendaDuplicada.numero}`,
               })
             }
           } catch (error) {

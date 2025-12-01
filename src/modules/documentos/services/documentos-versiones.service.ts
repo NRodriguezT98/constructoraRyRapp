@@ -1,11 +1,35 @@
 // ============================================
-// SERVICE: Documentos - Gestión de Versiones
+// SERVICE: Documentos - Gestión de Versiones (GENÉRICO)
 // ============================================
 
 import { supabase } from '@/lib/supabase/client'
 import type { DocumentoProyecto } from '../types/documento.types'
+import { type TipoEntidad, obtenerConfiguracionEntidad } from '../types/entidad.types'
 
+// ⚠️ DEPRECADO: usar obtenerConfiguracionEntidad(tipoEntidad).bucket
 const BUCKET_NAME = 'documentos-proyectos'
+
+/**
+ * ✅ SANITIZACIÓN: Convierte tildes/acentos a ASCII para paths de storage
+ */
+function sanitizeForStorage(text: string): string {
+  const accentMap: Record<string, string> = {
+    'á': 'a', 'é': 'e', 'í': 'i', 'ó': 'o', 'ú': 'u',
+    'Á': 'A', 'É': 'E', 'Í': 'I', 'Ó': 'O', 'Ú': 'U',
+    'ñ': 'n', 'Ñ': 'N',
+    'ü': 'u', 'Ü': 'U'
+  }
+
+  let sanitized = text
+  for (const [accent, plain] of Object.entries(accentMap)) {
+    sanitized = sanitized.replace(new RegExp(accent, 'g'), plain)
+  }
+
+  return sanitized
+    .toLowerCase()
+    .replace(/\s+/g, '-')
+    .replace(/[^a-z0-9-_]/g, '')
+}
 
 /**
  * Servicio de gestión de versiones de documentos
@@ -13,12 +37,13 @@ const BUCKET_NAME = 'documentos-proyectos'
  */
 export class DocumentosVersionesService {
   /**
-   * CREAR NUEVA VERSIÓN de un documento existente
+   * ✅ GENÉRICO: CREAR NUEVA VERSIÓN de un documento existente
    */
   static async crearNuevaVersion(
     documentoIdOriginal: string,
     archivo: File,
     userId: string,
+    tipoEntidad: TipoEntidad, // ✅ NUEVO parámetro
     cambios?: string,
     tituloOverride?: string,
     fechaDocumento?: string,
@@ -26,9 +51,11 @@ export class DocumentosVersionesService {
   ): Promise<DocumentoProyecto> {
     console.log('📤 Creando nueva versión del documento:', documentoIdOriginal)
 
+    const config = obtenerConfiguracionEntidad(tipoEntidad)
+
     // 1. Obtener documento original
     const { data: docOriginal, error: fetchError } = await supabase
-      .from('documentos_proyecto')
+      .from(config.tabla as any)
       .select('*')
       .eq('id', documentoIdOriginal)
       .single()
@@ -46,7 +73,7 @@ export class DocumentosVersionesService {
 
     // 3. Obtener la versión más alta actual
     const { data: versiones } = await supabase
-      .from('documentos_proyecto')
+      .from(config.tabla as any)
       .select('version')
       .or(`id.eq.${documentoPadreId},documento_padre_id.eq.${documentoPadreId}`)
       .order('version', { ascending: false })
@@ -56,7 +83,7 @@ export class DocumentosVersionesService {
 
     // 4. Marcar versiones anteriores como NO actuales
     await supabase
-      .from('documentos_proyecto')
+      .from(config.tabla as any)
       .update({ es_version_actual: false })
       .or(`id.eq.${documentoPadreId},documento_padre_id.eq.${documentoPadreId}`)
 
@@ -70,7 +97,7 @@ export class DocumentosVersionesService {
         .single()
 
       if (categoria?.nombre) {
-        categoriaNombre = categoria.nombre.toLowerCase().replace(/\s+/g, '-')
+        categoriaNombre = sanitizeForStorage(categoria.nombre)
       }
     }
 
@@ -78,46 +105,59 @@ export class DocumentosVersionesService {
     const timestamp = Date.now()
     const extension = archivo.name.split('.').pop()
     const nombreArchivo = `${timestamp}-${crypto.randomUUID()}.${extension}`
-    const storagePath = `${docOriginal.proyecto_id}/${categoriaNombre}/${nombreArchivo}`
+    const entidadId = (docOriginal as any)[config.campoEntidad]
+    const storagePath = `${entidadId}/${categoriaNombre}/${nombreArchivo}`
 
     const { error: uploadError } = await supabase.storage
-      .from(BUCKET_NAME)
+      .from(config.bucket)
       .upload(storagePath, archivo)
 
     if (uploadError) throw uploadError
 
     // 7. Crear nuevo registro de documento
-    const { data: nuevaVersionDoc, error: insertError } = await supabase
-      .from('documentos_proyecto')
-      .insert({
-        proyecto_id: docOriginal.proyecto_id,
-        categoria_id: docOriginal.categoria_id,
-        titulo: tituloFinal,
-        descripcion: cambios || docOriginal.descripcion,
-        nombre_archivo: nombreArchivo,
-        nombre_original: archivo.name,
-        tamano_bytes: archivo.size,
-        tipo_mime: archivo.type,
-        url_storage: storagePath,
-        version: nuevaVersion,
-        es_version_actual: true,
-        documento_padre_id: documentoPadreId,
-        estado: 'activo',
-        metadata: {
-          ...(typeof docOriginal.metadata === 'object' && docOriginal.metadata !== null
-            ? docOriginal.metadata
-            : {}),
-          cambios,
-          version_anterior_id: documentoIdOriginal
-        },
-        subido_por: userId,
-        fecha_documento: fechaDocumento || docOriginal.fecha_documento,
-        fecha_vencimiento: fechaVencimiento || docOriginal.fecha_vencimiento,
-        es_importante: docOriginal.es_importante
+    const insertData: any = {
+      [config.campoEntidad]: entidadId,
+      categoria_id: docOriginal.categoria_id,
+      titulo: tituloFinal,
+      descripcion: cambios || docOriginal.descripcion,
+      nombre_archivo: nombreArchivo,
+      nombre_original: archivo.name,
+      tamano_bytes: archivo.size,
+      tipo_mime: archivo.type,
+      url_storage: storagePath,
+      version: nuevaVersion,
+      es_version_actual: true,
+      documento_padre_id: documentoPadreId,
+      estado: 'activo', // ✅ Minúscula para consistencia con documentos_proyecto/vivienda
+      metadata: {
+        ...(typeof docOriginal.metadata === 'object' && docOriginal.metadata !== null
+          ? docOriginal.metadata
+          : {}),
+        cambios,
+        version_anterior_id: documentoIdOriginal
+      },
+      subido_por: userId,
+      fecha_documento: fechaDocumento || docOriginal.fecha_documento,
+      fecha_vencimiento: fechaVencimiento || docOriginal.fecha_vencimiento,
+      es_importante: docOriginal.es_importante,
+      // ✅ FIX: Propagar campos críticos del documento original a la nueva versión
+      ...(docOriginal.es_documento_identidad !== undefined && {
+        es_documento_identidad: docOriginal.es_documento_identidad
+      }),
+      ...(docOriginal.es_escritura_vivienda !== undefined && {
+        es_escritura_vivienda: docOriginal.es_escritura_vivienda
+      }),
+      ...(docOriginal.es_contrato_promesa !== undefined && {
+        es_contrato_promesa: docOriginal.es_contrato_promesa
       })
+    }
+
+    const { data: nuevaVersionDoc, error: insertError } = await supabase
+      .from(config.tabla as any)
+      .insert(insertData)
       .select(`
         *,
-        usuario:usuarios!fk_documentos_proyecto_subido_por (
+        usuario:usuarios (
           nombres,
           apellidos,
           email
@@ -127,7 +167,7 @@ export class DocumentosVersionesService {
 
     if (insertError) {
       // Limpiar archivo si falla la BD
-      await supabase.storage.from(BUCKET_NAME).remove([storagePath])
+      await supabase.storage.from(config.bucket).remove([storagePath])
       throw insertError
     }
 
@@ -136,12 +176,17 @@ export class DocumentosVersionesService {
   }
 
   /**
-   * OBTENER VERSIONES de un documento
+   * ✅ GENÉRICO: OBTENER VERSIONES de un documento
    */
-  static async obtenerVersiones(documentoId: string): Promise<DocumentoProyecto[]> {
+  static async obtenerVersiones(
+    documentoId: string,
+    tipoEntidad: TipoEntidad
+  ): Promise<DocumentoProyecto[]> {
+    const config = obtenerConfiguracionEntidad(tipoEntidad)
+
     // Obtener documento para saber si es padre o hijo
     const { data: doc } = await supabase
-      .from('documentos_proyecto')
+      .from(config.tabla as any)
       .select('documento_padre_id')
       .eq('id', documentoId)
       .single()
@@ -150,10 +195,10 @@ export class DocumentosVersionesService {
 
     // Obtener todas las versiones (padre + hijas) SOLO ACTIVAS
     const { data, error } = await supabase
-      .from('documentos_proyecto')
+      .from(config.tabla as any)
       .select(`
         *,
-        usuario:usuarios!fk_documentos_proyecto_subido_por (
+        usuario:usuarios (
           nombres,
           apellidos,
           email
@@ -168,19 +213,22 @@ export class DocumentosVersionesService {
   }
 
   /**
-   * RESTAURAR VERSIÓN anterior
+   * ✅ GENÉRICO: RESTAURAR VERSIÓN anterior
    * Descarga el archivo de la versión antigua y crea una nueva versión con ese contenido
    */
   static async restaurarVersion(
     versionId: string,
     userId: string,
+    tipoEntidad: TipoEntidad,
     motivo: string
   ): Promise<DocumentoProyecto> {
     console.log('🔄 Restaurando versión:', versionId)
 
+    const config = obtenerConfiguracionEntidad(tipoEntidad)
+
     // 1. Obtener la versión a restaurar
     const { data: versionAnterior, error: fetchError } = await supabase
-      .from('documentos_proyecto')
+      .from(config.tabla as any)
       .select('*')
       .eq('id', versionId)
       .single()
@@ -195,7 +243,7 @@ export class DocumentosVersionesService {
 
     // 2. Descargar el archivo de esa versión
     const { data: archivoBlob, error: downloadError } = await supabase.storage
-      .from(BUCKET_NAME)
+      .from(config.bucket)
       .download(versionAnterior.url_storage)
 
     if (downloadError) {
@@ -216,6 +264,7 @@ export class DocumentosVersionesService {
       documentoPadreId,
       archivo,
       userId,
+      tipoEntidad,
       `[RESTAURACIÓN] ${motivo} - Restaurado desde versión ${versionAnterior.version}`,
       tituloRestaurado,
       versionAnterior.fecha_documento,
@@ -227,12 +276,13 @@ export class DocumentosVersionesService {
   }
 
   /**
-   * ELIMINAR VERSIÓN (soft delete, solo Admin)
+   * ✅ GENÉRICO: ELIMINAR VERSIÓN (soft delete, solo Admin)
    */
   static async eliminarVersion(
     versionId: string,
     userId: string,
     userRole: string,
+    tipoEntidad: TipoEntidad,
     motivo: string
   ): Promise<void> {
     console.log('🗑️ [ADMIN] Eliminando versión:', versionId)
@@ -247,9 +297,11 @@ export class DocumentosVersionesService {
       throw new Error('❌ Debe proporcionar un motivo detallado (mínimo 20 caracteres)')
     }
 
+    const config = obtenerConfiguracionEntidad(tipoEntidad)
+
     // Obtener la versión a eliminar
     const { data: version, error: fetchError } = await supabase
-      .from('documentos_proyecto')
+      .from(config.tabla as any)
       .select('*')
       .eq('id', versionId)
       .single()
@@ -262,7 +314,7 @@ export class DocumentosVersionesService {
       // Contar versiones activas
       const padreId = version.documento_padre_id || versionId
       const { data: versionesActivas, error: countError } = await supabase
-        .from('documentos_proyecto')
+        .from(config.tabla as any)
         .select('id')
         .or(`id.eq.${padreId},documento_padre_id.eq.${padreId}`)
         .eq('estado', 'activo')
@@ -278,7 +330,7 @@ export class DocumentosVersionesService {
 
       // Promover versión anterior a actual
       const { data: versionAnterior } = await supabase
-        .from('documentos_proyecto')
+        .from(config.tabla as any)
         .select('id')
         .or(`id.eq.${padreId},documento_padre_id.eq.${padreId}`)
         .eq('estado', 'activo')
@@ -289,7 +341,7 @@ export class DocumentosVersionesService {
 
       if (versionAnterior) {
         await supabase
-          .from('documentos_proyecto')
+          .from(config.tabla as any)
           .update({ es_version_actual: true })
           .eq('id', versionAnterior.id)
       }
@@ -297,7 +349,7 @@ export class DocumentosVersionesService {
 
     // Marcar como eliminado (soft delete)
     const { error: updateError } = await supabase
-      .from('documentos_proyecto')
+      .from(config.tabla as any)
       .update({
         estado: 'eliminado',
         metadata: {
@@ -317,13 +369,16 @@ export class DocumentosVersionesService {
   }
 
   /**
-   * CONTAR VERSIONES ACTIVAS de un documento
+   * ✅ GENÉRICO: CONTAR VERSIONES ACTIVAS de un documento
    */
   static async contarVersionesActivas(
-    documentoId: string
+    documentoId: string,
+    tipoEntidad: TipoEntidad
   ): Promise<{ total: number; actual: number }> {
+    const config = obtenerConfiguracionEntidad(tipoEntidad)
+
     const { data: doc } = await supabase
-      .from('documentos_proyecto')
+      .from(config.tabla as any)
       .select('documento_padre_id, version')
       .eq('id', documentoId)
       .single()
@@ -331,7 +386,7 @@ export class DocumentosVersionesService {
     const padreId = doc?.documento_padre_id || documentoId
 
     const { data: versiones, error } = await supabase
-      .from('documentos_proyecto')
+      .from(config.tabla as any)
       .select('id, version')
       .or(`id.eq.${padreId},documento_padre_id.eq.${padreId}`)
       .eq('estado', 'activo')
@@ -345,13 +400,16 @@ export class DocumentosVersionesService {
   }
 
   /**
-   * OBTENER VERSIONES ELIMINADAS de un documento
+   * ✅ GENÉRICO: OBTENER VERSIONES ELIMINADAS de un documento
    */
   static async obtenerVersionesEliminadas(
-    documentoId: string
+    documentoId: string,
+    tipoEntidad: TipoEntidad
   ): Promise<DocumentoProyecto[]> {
+    const config = obtenerConfiguracionEntidad(tipoEntidad)
+
     const { data: doc } = await supabase
-      .from('documentos_proyecto')
+      .from(config.tabla as any)
       .select('documento_padre_id')
       .eq('id', documentoId)
       .single()
@@ -359,10 +417,10 @@ export class DocumentosVersionesService {
     const padreId = doc?.documento_padre_id || documentoId
 
     const { data, error } = await supabase
-      .from('documentos_proyecto')
+      .from(config.tabla as any)
       .select(`
         *,
-        usuario:usuarios!fk_documentos_proyecto_subido_por (
+        usuario:usuarios (
           nombres,
           apellidos,
           email
@@ -377,11 +435,16 @@ export class DocumentosVersionesService {
   }
 
   /**
-   * RESTAURAR VERSIONES SELECCIONADAS (múltiples)
+   * ✅ GENÉRICO: RESTAURAR VERSIONES SELECCIONADAS (múltiples)
    */
-  static async restaurarVersionesSeleccionadas(versionIds: string[]): Promise<void> {
+  static async restaurarVersionesSeleccionadas(
+    versionIds: string[],
+    tipoEntidad: TipoEntidad
+  ): Promise<void> {
+    const config = obtenerConfiguracionEntidad(tipoEntidad)
+
     const { error } = await supabase
-      .from('documentos_proyecto')
+      .from(config.tabla as any)
       .update({ estado: 'activo' })
       .in('id', versionIds)
 

@@ -17,7 +17,7 @@ interface Vivienda {
   id: string
   numero: string
   manzana_nombre: string
-  precio: number
+  valor_total: number
   estado: string
 }
 
@@ -76,7 +76,7 @@ export function useInteresFormulario() {
           `
           id,
           numero,
-          precio,
+          valor_total,
           estado,
           manzanas!inner(
             nombre,
@@ -96,7 +96,7 @@ export function useInteresFormulario() {
           id: v.id,
           numero: v.numero,
           manzana_nombre: v.manzanas?.nombre || '',
-          precio: v.precio,
+          valor_total: v.valor_total,
           estado: v.estado,
         })) || []
 

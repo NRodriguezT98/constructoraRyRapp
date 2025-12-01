@@ -1,8 +1,8 @@
 -- ============================================
 -- EJECUTAR CREACIÓN DE CATEGORÍAS POR DEFECTO
 -- ============================================
--- Descripción: Llama a la función para crear categorías para todos los usuarios
--- Fecha: 2025-11-10
+-- Descripción: Llama a las funciones para crear categorías para todos los módulos
+-- Fecha: 2025-11-24 (Actualizado)
 
 -- Obtener el ID del usuario actual (primer usuario en la tabla)
 DO $$
@@ -15,23 +15,47 @@ BEGIN
   LIMIT 1;
 
   IF v_user_id IS NOT NULL THEN
-    -- Llamar a la función para crear categorías
+    -- Llamar a las funciones para crear categorías de todos los módulos
     PERFORM crear_categorias_proyectos_default(v_user_id);
-    RAISE NOTICE 'Categorías creadas para usuario: %', v_user_id;
+    PERFORM crear_categorias_viviendas_default(v_user_id);
+    PERFORM crear_categorias_clientes_default(v_user_id);
+
+    RAISE NOTICE '✅ Categorías creadas para todos los módulos - usuario: %', v_user_id;
   ELSE
-    RAISE NOTICE 'No se encontró ningún usuario en la base de datos';
+    RAISE NOTICE '⚠️ No se encontró ningún usuario en la base de datos';
   END IF;
 END $$;
 
--- Verificar categorías creadas
+-- Verificar categorías creadas por módulo
+-- PROYECTOS
 SELECT
-  id,
+  'PROYECTOS' as modulo,
   nombre,
-  descripcion,
   color,
   icono,
-  modulos_permitidos,
   orden
 FROM categorias_documento
 WHERE 'proyectos' = ANY(modulos_permitidos)
+ORDER BY orden;
+
+-- VIVIENDAS
+SELECT
+  'VIVIENDAS' as modulo,
+  nombre,
+  color,
+  icono,
+  orden
+FROM categorias_documento
+WHERE 'viviendas' = ANY(modulos_permitidos)
+ORDER BY orden;
+
+-- CLIENTES
+SELECT
+  'CLIENTES' as modulo,
+  nombre,
+  color,
+  icono,
+  orden
+FROM categorias_documento
+WHERE 'clientes' = ANY(modulos_permitidos)
 ORDER BY orden;

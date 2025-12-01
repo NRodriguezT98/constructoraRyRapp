@@ -14,6 +14,7 @@
  */
 
 import { supabase } from '@/lib/supabase/client'
+import { formatDateForDB, getTodayDateString } from '@/lib/utils/date.utils'
 import {
     crearProcesoDesdePlantilla,
     obtenerPlantillaPredeterminada
@@ -92,7 +93,7 @@ class NegociacionesService {
           notas: datos.notas,
           estado: 'Activa', // ⭐ SIEMPRE 'Activa' (simplificado)
         })
-        .select()
+        .select('id, cliente_id, vivienda_id, valor_negociado, descuento_aplicado, notas, estado, fecha_negociacion, fecha_completada, fecha_creacion, fecha_actualizacion')
         .single()
 
       if (errorNegociacion) {
@@ -144,7 +145,7 @@ class NegociacionesService {
           estado: 'Asignada',
           cliente_id: datos.cliente_id,
           negociacion_id: negociacion.id, // ⭐ NUEVO campo
-          fecha_asignacion: new Date().toISOString(),
+          fecha_asignacion: formatDateForDB(getTodayDateString()),
         })
         .eq('id', datos.vivienda_id)
 
@@ -247,7 +248,8 @@ class NegociacionesService {
       return negociacion as Negociacion
 
     } catch (error) {
-      console.error('❌ Error en crearNegociacion:', error)
+      const mensaje = error instanceof Error ? error.message : 'Error desconocido'
+      console.error('❌ [CLIENTES] Error en crearNegociacion:', mensaje, error)
       throw error
     }
   }
@@ -266,7 +268,8 @@ class NegociacionesService {
       if (error) throw error
       return data as Negociacion
     } catch (error) {
-      console.error('❌ Error obteniendo negociación:', error)
+      const mensaje = error instanceof Error ? error.message : 'Error desconocido'
+      console.error('❌ [CLIENTES] Error obteniendo negociación:', mensaje, error)
       return null
     }
   }
@@ -299,6 +302,7 @@ class NegociacionesService {
         `)
         .eq('cliente_id', clienteId)
         .order('fecha_creacion', { ascending: false })
+        .limit(100) // ✅ Limitar a 100 negociaciones más recientes (performance)
 
       if (error) throw error
 
@@ -310,7 +314,8 @@ class NegociacionesService {
 
       return negociacionesConProyecto as Negociacion[]
     } catch (error) {
-      console.error('❌ Error obteniendo negociaciones del cliente:', error)
+      const mensaje = error instanceof Error ? error.message : 'Error desconocido'
+      console.error('❌ [CLIENTES] Error obteniendo negociaciones del cliente:', mensaje, error)
       return []
     }
   }
@@ -332,7 +337,8 @@ class NegociacionesService {
       if (error && error.code !== 'PGRST116') throw error // Ignore "not found"
       return data as Negociacion | null
     } catch (error) {
-      console.error('❌ Error obteniendo negociación de vivienda:', error)
+      const mensaje = error instanceof Error ? error.message : 'Error desconocido'
+      console.error('❌ [CLIENTES] Error obteniendo negociación de vivienda:', mensaje, error)
       return null
     }
   }
@@ -359,7 +365,8 @@ class NegociacionesService {
       console.log('✅ Negociación actualizada')
       return data as Negociacion
     } catch (error) {
-      console.error('❌ Error actualizando negociación:', error)
+      const mensaje = error instanceof Error ? error.message : 'Error desconocido'
+      console.error('❌ [CLIENTES] Error actualizando negociación:', mensaje, error)
       throw error
     }
   }
@@ -390,7 +397,7 @@ class NegociacionesService {
   async completarNegociacion(id: string): Promise<Negociacion> {
     return this.actualizarNegociacion(id, {
       estado: 'Completada',
-      fecha_completada: new Date().toISOString(), // ⭐ REQUERIDO por constraint
+      fecha_completada: formatDateForDB(getTodayDateString()), // ⭐ REQUERIDO por constraint
     })
   }
 
@@ -422,7 +429,8 @@ class NegociacionesService {
       if (error) throw error
       return (count ?? 0) > 0
     } catch (error) {
-      console.error('❌ Error verificando negociación activa:', error)
+      const mensaje = error instanceof Error ? error.message : 'Error desconocido'
+      console.error('❌ [CLIENTES] Error verificando negociación activa:', mensaje, error)
       return false
     }
   }
@@ -463,7 +471,101 @@ class NegociacionesService {
       if (error) throw error
       console.log('✅ Negociación eliminada')
     } catch (error) {
-      console.error('❌ Error eliminando negociación:', error)
+      const mensaje = error instanceof Error ? error.message : 'Error desconocido'
+      console.error('❌ [CLIENTES] Error eliminando negociación:', mensaje, error)
+      throw error
+    }
+  }
+
+  /**
+   * Actualizar fuentes de pago de una negociación
+   * ⚠️ Operación transaccional: elimina viejas e inserta nuevas
+   *
+   * Validaciones:
+   * - Suma total = valor_final de negociación
+   * - No eliminar fuentes con monto_recibido > 0
+   * - Monto >= monto_recibido (si tiene abonos)
+   */
+  async actualizarFuentesPago(
+    negociacionId: string,
+    fuentes: Array<{
+      id?: string
+      tipo: string
+      monto_aprobado: number
+      entidad?: string | null
+      numero_referencia?: string | null
+      detalles?: string | null
+    }>
+  ): Promise<void> {
+    try {
+      // 1. Obtener fuentes actuales para validar
+      const { data: fuentesActuales, error: errorFetch } = await supabase
+        .from('fuentes_pago')
+        .select('id, monto_recibido')
+        .eq('negociacion_id', negociacionId)
+
+      if (errorFetch) throw errorFetch
+
+      // 2. Validar que no se eliminen fuentes con abonos
+      const idsNuevas = fuentes.map(f => f.id).filter(Boolean)
+      const fuentesAEliminar = fuentesActuales?.filter(
+        fa => !idsNuevas.includes(fa.id)
+      ) || []
+
+      const fuentesConAbonos = fuentesAEliminar.filter(f => f.monto_recibido > 0)
+      if (fuentesConAbonos.length > 0) {
+        throw new Error('No puedes eliminar fuentes de pago que tienen abonos registrados')
+      }
+
+      // 3. Eliminar fuentes viejas que no están en la nueva lista
+      if (fuentesAEliminar.length > 0) {
+        const { error: errorDelete } = await supabase
+          .from('fuentes_pago')
+          .delete()
+          .in('id', fuentesAEliminar.map(f => f.id))
+
+        if (errorDelete) throw errorDelete
+      }
+
+      // 4. Actualizar fuentes existentes y crear nuevas
+      for (const fuente of fuentes) {
+        if (fuente.id) {
+          // Actualizar existente
+          const { error: errorUpdate } = await supabase
+            .from('fuentes_pago')
+            .update({
+              tipo: fuente.tipo,
+              monto_aprobado: fuente.monto_aprobado,
+              entidad: fuente.entidad,
+              numero_referencia: fuente.numero_referencia,
+            })
+            .eq('id', fuente.id)
+
+          if (errorUpdate) throw errorUpdate
+        } else {
+          // Crear nueva
+          const { error: errorInsert } = await supabase
+            .from('fuentes_pago')
+            .insert({
+              negociacion_id: negociacionId,
+              tipo: fuente.tipo as TipoFuentePago,
+              monto_aprobado: fuente.monto_aprobado,
+              monto_recibido: 0,
+              // ❌ NO incluir columnas generadas: saldo_pendiente, porcentaje_completado
+              entidad: fuente.entidad,
+              numero_referencia: fuente.numero_referencia,
+              permite_multiples_abonos: true,
+              estado: 'Pendiente',
+            })
+
+          if (errorInsert) throw errorInsert
+        }
+      }
+
+      console.log('✅ Fuentes de pago actualizadas correctamente')
+    } catch (error) {
+      const mensaje = error instanceof Error ? error.message : 'Error desconocido'
+      console.error('❌ [CLIENTES] Error actualizando fuentes de pago:', mensaje, error)
       throw error
     }
   }

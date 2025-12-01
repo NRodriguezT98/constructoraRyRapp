@@ -18,6 +18,8 @@
 
 import { useCallback, useState } from 'react'
 
+import { useQueryClient } from '@tanstack/react-query'
+
 import { negociacionesService } from '@/modules/clientes/services/negociaciones.service'
 import type { CrearFuentePagoDTO, Negociacion } from '@/modules/clientes/types'
 
@@ -48,6 +50,7 @@ interface UseCrearNegociacionReturn {
 }
 
 export function useCrearNegociacion(): UseCrearNegociacionReturn {
+  const queryClient = useQueryClient() // ⭐ Para invalidar caché
   const [creando, setCreando] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [negociacionCreada, setNegociacionCreada] = useState<Negociacion | null>(null)
@@ -125,27 +128,6 @@ export function useCrearNegociacion(): UseCrearNegociacionReturn {
   }, [calcularValorTotal])
 
   /**
-   * Validar que el cliente tenga documento de identidad
-   */
-  const validarDocumentoIdentidad = useCallback(async (clienteId: string): Promise<boolean> => {
-    try {
-      const { clientesService } = await import('@/modules/clientes/services/clientes.service')
-      const cliente = await clientesService.obtenerCliente(clienteId)
-
-      if (!cliente.documento_identidad_url) {
-        setError('El cliente debe tener cargada su cédula de ciudadanía antes de crear una negociación')
-        return false
-      }
-
-      return true
-    } catch (err) {
-      console.error('Error validando documento:', err)
-      setError('Error al validar el documento del cliente')
-      return false
-    }
-  }, [])
-
-  /**
    * Crear negociación
    */
   const crearNegociacion = useCallback(async (datos: FormDataNegociacion): Promise<Negociacion | null> => {
@@ -164,12 +146,8 @@ export function useCrearNegociacion(): UseCrearNegociacionReturn {
         return null
       }
 
-      // ⚠️ VALIDACIÓN CRÍTICA: Verificar que el cliente tenga cédula cargada
-      console.log('🔍 Validando documento de identidad del cliente...')
-      const tieneDocumento = await validarDocumentoIdentidad(datos.cliente_id)
-      if (!tieneDocumento) {
-        return null // Error ya fue seteado en validarDocumentoIdentidad
-      }
+      // ℹ️ NOTA: La validación de cédula se hace ANTES de permitir acceso al formulario
+      // No es necesario volver a validar aquí (evita query redundante)
 
       // Verificar si ya existe negociación activa
       console.log('🔍 Verificando negociación existente...')
@@ -197,6 +175,10 @@ export function useCrearNegociacion(): UseCrearNegociacionReturn {
       })
 
       console.log('✅ Negociación creada exitosamente:', negociacion.id)
+
+      // ⭐ Invalidar caché de viviendas para que se actualice el select
+      await queryClient.invalidateQueries({ queryKey: ['viviendas', 'disponibles'] })
+      console.log('🔄 Caché de viviendas invalidado')
 
       // Disparar evento para refrescar tab de negociaciones
       window.dispatchEvent(new Event('negociacion-creada'))
@@ -234,7 +216,7 @@ export function useCrearNegociacion(): UseCrearNegociacionReturn {
     } finally {
       setCreando(false)
     }
-  }, [validarDatos, validarDocumentoIdentidad])
+  }, [validarDatos])
 
   /**
    * Limpiar estado

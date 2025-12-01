@@ -54,6 +54,7 @@ export function useClientesQuery(filtros?: FiltrosClientes) {
     queryFn: () => clientesService.obtenerClientes(filtros),
     staleTime: 0, // Siempre refetch para datos actualizados
     gcTime: 1000 * 60 * 5, // Cache 5 minutos
+    placeholderData: (previousData) => previousData, // ⭐ Mantener datos anteriores mientras carga
   })
 }
 

@@ -30,7 +30,6 @@ interface DatosNuevosDocumento {
   categoria_id?: string
   fecha_documento: string | null
   fecha_vencimiento: string | null
-  etiquetas?: string[]
 }
 
 export function useDetectarCambiosDocumento(
@@ -99,18 +98,6 @@ export function useDetectarCambiosDocumento(
         label: 'Vencimiento',
         valorAnterior: documentoOriginal.fecha_vencimiento || 'Sin vencimiento',
         valorNuevo: nuevosDatos.fecha_vencimiento || 'Sin vencimiento',
-      })
-    }
-
-    // Comparar etiquetas
-    const etiquetasOriginales = JSON.stringify(documentoOriginal.etiquetas || [])
-    const etiquetasNuevas = JSON.stringify(nuevosDatos.etiquetas || [])
-    if (etiquetasOriginales !== etiquetasNuevas) {
-      cambios.push({
-        campo: 'etiquetas',
-        label: 'Etiquetas',
-        valorAnterior: (documentoOriginal.etiquetas || []).join(', ') || 'Sin etiquetas',
-        valorNuevo: (nuevosDatos.etiquetas || []).join(', ') || 'Sin etiquetas',
       })
     }
 

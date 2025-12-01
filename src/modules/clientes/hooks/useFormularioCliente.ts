@@ -9,9 +9,9 @@ import { clientesService } from '../services/clientes.service'
 import type {
     ActualizarClienteDTO,
     CrearClienteDTO,
-    OrigenCliente,
     TipoDocumento,
 } from '../types'
+import { validarDocumentoIdentidad } from '../utils/validacion-documentos-colombia'
 
 interface FormularioClienteHookProps {
   clienteInicial?: ActualizarClienteDTO & { id?: string }
@@ -30,14 +30,13 @@ export function useFormularioCliente({
     tipo_documento: clienteInicial?.tipo_documento || 'CC',
     numero_documento: clienteInicial?.numero_documento || '',
     fecha_nacimiento: clienteInicial?.fecha_nacimiento || '',
+    estado_civil: clienteInicial?.estado_civil || undefined,
     telefono: clienteInicial?.telefono || '',
     telefono_alternativo: clienteInicial?.telefono_alternativo || '',
     email: clienteInicial?.email || '',
     direccion: clienteInicial?.direccion || '',
     ciudad: clienteInicial?.ciudad || '',
     departamento: clienteInicial?.departamento || '',
-    origen: clienteInicial?.origen,
-    referido_por: clienteInicial?.referido_por || '',
     notas: clienteInicial?.notas || '',
     interes_inicial: undefined, // Solo para nuevos clientes
   })
@@ -74,14 +73,13 @@ export function useFormularioCliente({
         tipo_documento: clienteInicial.tipo_documento || 'CC',
         numero_documento: clienteInicial.numero_documento || '',
         fecha_nacimiento: clienteInicial.fecha_nacimiento || '',
+        estado_civil: clienteInicial.estado_civil || undefined,
         telefono: clienteInicial.telefono || '',
         telefono_alternativo: clienteInicial.telefono_alternativo || '',
         email: clienteInicial.email || '',
         direccion: clienteInicial.direccion || '',
         ciudad: clienteInicial.ciudad || '',
         departamento: clienteInicial.departamento || '',
-        origen: clienteInicial.origen,
-        referido_por: clienteInicial.referido_por || '',
         notas: clienteInicial.notas || '',
         interes_inicial: undefined,
       })
@@ -93,14 +91,13 @@ export function useFormularioCliente({
         tipo_documento: 'CC',
         numero_documento: '',
         fecha_nacimiento: '',
+        estado_civil: undefined,
         telefono: '',
         telefono_alternativo: '',
         email: '',
         direccion: '',
         ciudad: '',
         departamento: '',
-        origen: undefined,
-        referido_por: '',
         notas: '',
         interes_inicial: undefined,
       })
@@ -118,6 +115,7 @@ export function useFormularioCliente({
    * Validar Step 0: Información Personal
    * Campos obligatorios: nombres, apellidos, tipo_documento, numero_documento
    * ⚠️ VALIDACIÓN ASYNC: Verifica duplicados en la base de datos
+   * ✅ VALIDACIÓN ALGORITMO: Dígito verificador para NIT y formato para CC/CE
    */
   const validarStep0 = useCallback(async (): Promise<boolean> => {
     const nuevosErrores: Record<string, string> = {}
@@ -137,29 +135,41 @@ export function useFormularioCliente({
       nuevosErrores.tipo_documento = 'El tipo de documento es requerido'
     }
 
-    // Número documento (requerido)
+    // Número documento (requerido + validación de formato/algoritmo)
     if (!formData.numero_documento.trim()) {
       nuevosErrores.numero_documento = 'El número de documento es requerido'
-    } else if (!/^[0-9]+$/.test(formData.numero_documento)) {
-      nuevosErrores.numero_documento = 'Solo se permiten números'
-    } else if (!clienteInicial?.id) {
-      // ⚠️ VALIDACIÓN CRÍTICA: Verificar duplicados (solo para clientes nuevos)
-      try {
-        console.log('🔍 Validando duplicados en Step 0...')
-        const clienteExistente = await clientesService.buscarPorDocumento(
-          formData.tipo_documento,
-          formData.numero_documento
-        )
+    } else {
+      // ✅ VALIDACIÓN DE ALGORITMO (CC, CE, NIT, Pasaporte)
+      const resultadoValidacion = validarDocumentoIdentidad(
+        formData.tipo_documento as any,
+        formData.numero_documento
+      )
 
-        if (clienteExistente) {
-          nuevosErrores.numero_documento = `Ya existe un cliente con este documento: ${clienteExistente.nombres} ${clienteExistente.apellidos}`
-          console.error('❌ Cliente duplicado encontrado en Step 0')
-        } else {
-          console.log('✅ No hay duplicados - Step 0 OK')
+      if (!resultadoValidacion.valido) {
+        nuevosErrores.numero_documento = resultadoValidacion.mensaje || 'Documento inválido'
+        if (resultadoValidacion.detalles) {
+          nuevosErrores.numero_documento += ` (${resultadoValidacion.detalles})`
         }
-      } catch (error) {
-        console.error('❌ Error verificando duplicados:', error)
-        nuevosErrores.numero_documento = 'Error al verificar duplicados. Intenta de nuevo.'
+      } else if (!clienteInicial?.id) {
+        // ⚠️ VALIDACIÓN CRÍTICA: Verificar duplicados (solo si formato es válido y es cliente nuevo)
+        try {
+          console.log('🔍 Validando duplicados en Step 0...')
+          const clienteExistente = await clientesService.buscarPorDocumento(
+            formData.tipo_documento,
+            formData.numero_documento
+          )
+
+          if (clienteExistente) {
+            nuevosErrores.numero_documento = `Ya existe un cliente con este documento: ${clienteExistente.nombres} ${clienteExistente.apellidos}`
+            console.error('❌ Cliente duplicado encontrado en Step 0')
+          } else {
+            console.log('✅ No hay duplicados - Step 0 OK')
+          }
+        } catch (error) {
+          const mensaje = error instanceof Error ? error.message : 'Error desconocido'
+          console.error('[CLIENTES] Error verificando duplicados:', mensaje, error)
+          nuevosErrores.numero_documento = 'Error al verificar duplicados. Intenta de nuevo.'
+        }
       }
     }
 
@@ -334,8 +344,6 @@ export function useFormularioCliente({
       direccion: '',
       ciudad: '',
       departamento: '',
-      origen: undefined,
-      referido_por: '',
       notas: '',
       interes_inicial: undefined,
     })

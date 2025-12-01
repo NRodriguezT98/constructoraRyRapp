@@ -4,29 +4,29 @@
  */
 
 import { supabase } from '@/lib/supabase/client'
+import { formatDateForDB, getTodayDateString } from '@/lib/utils/date.utils'
+import { auditService } from '@/services/audit.service'
 
 import type {
-  ActualizarClienteDTO,
-  Cliente,
-  ClienteResumen,
-  CrearClienteDTO,
-  FiltrosClientes,
+    ActualizarClienteDTO,
+    Cliente,
+    ClienteResumen,
+    CrearClienteDTO,
+    FiltrosClientes,
 } from '../types'
 
 class ClientesService {
   /**
-   * Obtener todos los clientes con estadísticas
+   * Obtener todos los clientes con estadísticas, negociaciones e intereses
+   * ✅ Incluye datos de viviendas, proyectos y manzanas para la tabla
    */
   async obtenerClientes(filtros?: FiltrosClientes): Promise<ClienteResumen[]> {
+    // 1. Obtener datos básicos de clientes desde la vista
     let query = supabase.from('vista_clientes_resumen').select('*')
 
     // Aplicar filtros
     if (filtros?.estado && filtros.estado.length > 0) {
       query = query.in('estado', filtros.estado)
-    }
-
-    if (filtros?.origen && filtros.origen.length > 0) {
-      query = query.in('origen', filtros.origen)
     }
 
     if (filtros?.busqueda) {
@@ -43,33 +43,128 @@ class ClientesService {
       query = query.lte('fecha_creacion', filtros.fecha_hasta)
     }
 
-    const { data, error } = await query.order('fecha_creacion', {
-      ascending: false,
-    })
+    // ⚡ EJECUTAR TODAS LAS CONSULTAS EN PARALELO (Promise.all)
+    const [
+      { data, error },
+      { data: negociaciones },
+      { data: intereses }
+    ] = await Promise.all([
+      // 1. Datos básicos de clientes
+      query.order('fecha_creacion', { ascending: false }),
+
+      // 2. Negociaciones activas (en paralelo)
+      supabase
+        .from('negociaciones')
+        .select(`
+          id,
+          cliente_id,
+          estado,
+          valor_total,
+          total_abonado,
+          saldo_pendiente,
+          viviendas!negociaciones_vivienda_id_fkey (
+            id,
+            numero,
+            manzanas!viviendas_manzana_id_fkey (
+              nombre,
+              proyectos!manzanas_proyecto_id_fkey (
+                nombre,
+                ubicacion
+              )
+            )
+          )
+        `)
+        .eq('estado', 'Activa'),
+
+      // 3. Intereses activos (en paralelo)
+      supabase
+        .from('cliente_intereses')
+        .select(`
+          id,
+          cliente_id,
+          estado,
+          vivienda_id,
+          proyectos!cliente_intereses_proyecto_id_fkey (
+            nombre
+          ),
+          viviendas!cliente_intereses_vivienda_id_fkey (
+            numero,
+            manzanas!viviendas_manzana_id_fkey (
+              nombre
+            )
+          )
+        `)
+        .eq('estado', 'Activo')
+    ])
 
     if (error) throw error
 
-    // Transformar datos de la vista al formato ClienteResumen
-    return (data || []).map((item) => ({
-      id: item.id || '',
-      tipo_documento: item.tipo_documento as any || 'CC',
-      numero_documento: item.numero_documento || '',
-      nombres: item.nombre_completo?.split(' ')[0] || '',
-      apellidos: item.nombre_completo?.split(' ').slice(1).join(' ') || '',
-      nombre_completo: item.nombre_completo || '',
-      telefono: item.telefono || '',
-      email: item.email || '',
-      estado: item.estado as any || 'Interesado',
-      origen: item.origen as any || 'Otro',
-      fecha_creacion: item.fecha_creacion || new Date().toISOString(),
-      fecha_actualizacion: item.fecha_creacion || new Date().toISOString(),
-      estadisticas: {
-        total_negociaciones: item.total_negociaciones || 0,
-        negociaciones_activas: item.negociaciones_activas || 0,
-        negociaciones_completadas: item.negociaciones_completadas || 0,
-        ultima_negociacion: item.ultima_negociacion || undefined,
-      },
-    }))
+    // ⚡ CREAR MAPAS DE BÚSQUEDA RÁPIDA (O(1) lookup)
+    const negociacionesMap = new Map(
+      negociaciones?.map((neg: any) => [
+        neg.cliente_id,
+        {
+          nombre_proyecto: neg.viviendas?.manzanas?.proyectos?.nombre,
+          ubicacion_proyecto: neg.viviendas?.manzanas?.proyectos?.ubicacion,
+          nombre_manzana: neg.viviendas?.manzanas?.nombre,
+          numero_vivienda: neg.viviendas?.numero,
+          valor_total: neg.valor_total,
+          total_abonado: neg.total_abonado,
+          saldo_pendiente: neg.saldo_pendiente,
+        }
+      ]) || []
+    )
+
+    const interesesMap = new Map(
+      intereses
+        ?.filter((int: any) => !negociacionesMap.has(int.cliente_id)) // Solo si no tiene negociación
+        .map((int: any) => [
+          int.cliente_id,
+          {
+            nombre_proyecto: int.proyectos?.nombre,
+            nombre_manzana: int.viviendas?.manzanas?.nombre,
+            numero_vivienda: int.viviendas?.numero,
+          }
+        ]) || []
+    )
+
+    // ⚡ TRANSFORMAR Y ENRIQUECER DATOS (O(n) single pass)
+    return (data || []).map((item) => {
+      const negociacion = negociacionesMap.get(item.id)
+      const interes = interesesMap.get(item.id)
+
+      // Parsear nombre una sola vez
+      const nombreParts = item.nombre_completo?.split(' ') || ['']
+      const nombres = nombreParts[0] || ''
+      const apellidos = nombreParts.slice(1).join(' ') || ''
+
+      return {
+        id: item.id || '',
+        tipo_documento: (item.tipo_documento as any) || 'CC',
+        numero_documento: item.numero_documento || '',
+        nombres,
+        apellidos,
+        nombre_completo: item.nombre_completo || '',
+        telefono: item.telefono || '',
+        email: item.email || '',
+        estado_civil: item.estado_civil || undefined,
+        fecha_nacimiento: item.fecha_nacimiento || undefined,
+        estado: (item.estado as any) || 'Interesado',
+        fecha_creacion: item.fecha_creacion || formatDateForDB(getTodayDateString()),
+        fecha_actualizacion: item.fecha_creacion || formatDateForDB(getTodayDateString()),
+        tiene_documento_identidad: item.tiene_documento_identidad || false,
+        estadisticas: {
+          total_negociaciones: item.total_negociaciones || 0,
+          negociaciones_activas: item.negociaciones_activas || 0,
+          negociaciones_completadas: item.negociaciones_completadas || 0,
+          ultima_negociacion: item.ultima_negociacion || undefined,
+        },
+        // ⭐ Datos de vivienda para clientes Activos (pre-calculados)
+        vivienda: negociacion || undefined,
+        // ⭐ Datos de interés para clientes Interesados (pre-calculados)
+        interes: interes || undefined,
+      } as ClienteResumen
+    })
   }
 
   /**
@@ -97,7 +192,8 @@ class ClientesService {
             manzanas!viviendas_manzana_id_fkey (
               nombre,
               proyectos!manzanas_proyecto_id_fkey (
-                nombre
+                nombre,
+                ubicacion
               )
             )
           )
@@ -246,6 +342,15 @@ class ClientesService {
     }
 
     console.log('✅ Cliente creado exitosamente:', data.id)
+
+    // 🔍 Auditar creación de cliente
+    try {
+      await auditService.auditarCreacionCliente(data)
+    } catch (auditError) {
+      console.error('⚠️ Error auditando creación de cliente:', auditError)
+      // No bloqueamos la operación si falla la auditoría
+    }
+
     return data as Cliente
   }
 
@@ -256,6 +361,14 @@ class ClientesService {
     id: string,
     datos: ActualizarClienteDTO
   ): Promise<Cliente> {
+    // 1. Obtener datos anteriores para auditoría
+    const { data: datosAnteriores } = await supabase
+      .from('clientes')
+      .select('*')
+      .eq('id', id)
+      .single()
+
+    // 2. Actualizar cliente
     // 🔧 Sanitizar campos de fecha: convertir strings vacíos a null
     const datosLimpios = {
       ...datos,
@@ -270,6 +383,26 @@ class ClientesService {
       .single()
 
     if (error) throw error
+
+    // 3. 🔍 Auditar actualización
+    if (datosAnteriores) {
+      try {
+        await auditService.auditarActualizacion(
+          'clientes',
+          id,
+          datosAnteriores,
+          data,
+          {
+            campos_modificados: Object.keys(datosLimpios),
+            cliente_nombre: `${data.nombres} ${data.apellidos}`
+          },
+          'clientes'
+        )
+      } catch (auditError) {
+        console.error('⚠️ Error auditando actualización:', auditError)
+      }
+    }
+
     return data as Cliente
   }
 
@@ -326,10 +459,36 @@ class ClientesService {
       )
     }
 
-    // 4. Si pasa todas las validaciones, eliminar
+    // 4. Obtener datos del cliente para auditoría
+    const { data: clienteData } = await supabase
+      .from('clientes')
+      .select('*')
+      .eq('id', id)
+      .single()
+
+    // 5. Si pasa todas las validaciones, eliminar
     const { error } = await supabase.from('clientes').delete().eq('id', id)
 
     if (error) throw error
+
+    // 6. 🔍 Auditar eliminación
+    if (clienteData) {
+      try {
+        await auditService.auditarEliminacion(
+          'clientes',
+          id,
+          clienteData,
+          {
+            motivo: 'Cliente sin historial de negociaciones',
+            cliente_nombre: `${clienteData.nombres} ${clienteData.apellidos}`,
+            cliente_documento: `${clienteData.tipo_documento} ${clienteData.numero_documento}`
+          },
+          'clientes'
+        )
+      } catch (auditError) {
+        console.error('⚠️ Error auditando eliminación:', auditError)
+      }
+    }
   }
 
   /**

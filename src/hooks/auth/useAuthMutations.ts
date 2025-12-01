@@ -11,9 +11,8 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
-import { useRouter } from 'next/navigation'
-
 import { createClient } from '@/lib/supabase/client'
+import { debugLog, errorLog, successLog, warnLog } from '@/lib/utils/logger'
 
 import { authKeys } from './useAuthQuery'
 
@@ -37,14 +36,30 @@ export function useLoginMutation() {
 
   return useMutation({
     mutationFn: async ({ email, password }: LoginCredentials) => {
+      debugLog('🔐 Login mutation iniciado', { email })
+
       // 1. Iniciar sesión con Supabase Auth
       const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
         email,
         password,
       })
 
-      if (authError) throw authError
-      if (!authData.user) throw new Error('No se pudo obtener el usuario')
+      debugLog('📥 Respuesta de Supabase Auth', {
+        hasUser: !!authData?.user,
+        hasSession: !!authData?.session,
+      })
+
+      if (authError) {
+        errorLog('login-mutation-auth', authError, { email })
+        throw authError
+      }
+      if (!authData.user) {
+        const error = new Error('No se pudo obtener el usuario')
+        errorLog('login-mutation-no-user', error, { email })
+        throw error
+      }
+
+      successLog('Usuario autenticado con Supabase')
 
       // 2. Obtener perfil del usuario
       const { data: perfilData, error: perfilError } = await supabase
@@ -53,12 +68,19 @@ export function useLoginMutation() {
         .eq('id', authData.user.id)
         .single()
 
-      if (perfilError) throw perfilError
+      debugLog('📥 Perfil obtenido', {
+        hasPerfil: !!perfilData,
+        rol: perfilData?.rol,
+      })
+
+      if (perfilError) {
+        errorLog('login-mutation-perfil', perfilError, { userId: authData.user.id })
+        throw perfilError
+      }
 
       // ✅ 3. Sincronizar permisos al JWT (async, no bloquea login)
-      // Llamar a API route que tiene acceso a SERVICE_ROLE_KEY
       try {
-        await fetch('/api/auth/sync-permisos', {
+        const syncResponse = await fetch('/api/auth/sync-permisos', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -66,11 +88,17 @@ export function useLoginMutation() {
             rol: perfilData.rol,
           }),
         })
-        console.log('✅ Permisos sincronizados al JWT')
+
+        if (syncResponse.ok) {
+          successLog('Permisos sincronizados al JWT')
+        } else {
+          warnLog('Error sincronizando permisos (no crítico)', { status: syncResponse.status })
+        }
       } catch (error) {
-        // No bloquear login si falla la sincronización
-        console.warn('⚠️ Error sincronizando permisos (no crítico):', error)
+        warnLog('Error sincronizando permisos (no crítico)', error)
       }
+
+      debugLog('🎉 Login mutation completado exitosamente')
 
       return {
         session: authData.session,
@@ -79,6 +107,8 @@ export function useLoginMutation() {
       }
     },
     onSuccess: (data) => {
+      debugLog('✅ Login mutation onSuccess ejecutado')
+
       // Invalidar todas las queries de autenticación
       queryClient.invalidateQueries({ queryKey: authKeys.all })
 
@@ -87,10 +117,10 @@ export function useLoginMutation() {
       queryClient.setQueryData(authKeys.user(), data.user)
       queryClient.setQueryData(authKeys.perfil(data.user.id), data.perfil)
 
-      console.log('✅ Login exitoso:', data.user.email)
+      successLog(`Login exitoso: ${data.user.email}`)
     },
     onError: (error: Error) => {
-      console.error('❌ Error en login:', error.message)
+      errorLog('login-mutation-general', error)
     },
   })
 }
@@ -102,30 +132,34 @@ export function useLoginMutation() {
 /**
  * Mutación para cerrar sesión
  * Limpia todo el cache de autenticación
+ * NOTA: No maneja navegación ni toasts (responsabilidad del hook useLogout)
  */
 export function useLogoutMutation() {
   const queryClient = useQueryClient()
-  const router = useRouter()
 
   return useMutation({
     mutationFn: async () => {
+      debugLog('🔐 Ejecutando supabase.auth.signOut()...')
       const { error } = await supabase.auth.signOut()
-      if (error) throw error
+      if (error) {
+        errorLog('logout-mutation', error)
+        throw error
+      }
+      successLog('SignOut ejecutado correctamente')
     },
     onSuccess: () => {
+      debugLog('🧹 Limpiando cache de autenticación...')
+
       // Limpiar TODAS las queries de autenticación
       queryClient.removeQueries({ queryKey: authKeys.all })
 
       // Resetear cache completo (opcional, pero recomendado)
       queryClient.clear()
 
-      console.log('✅ Logout exitoso')
-
-      // Redirigir al login
-      router.push('/login')
+      successLog('Cache de autenticación limpiado')
     },
     onError: (error: Error) => {
-      console.error('❌ Error en logout:', error.message)
+      errorLog('logout-mutation-error', error)
     },
   })
 }

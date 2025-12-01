@@ -1,514 +1,521 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+/**
+ * ✅ COMPONENTE PRESENTACIONAL PURO V2 (REDISEÑADO 2025-01-26)
+ * Tab de Negociaciones - React Query + Diseño Compacto
+ *
+ * CAMBIOS PRINCIPALES:
+ * - ✅ MIGRADO A REACT QUERY: useNegociacionesQuery, useNegociacionDetalle
+ * - ✅ DISEÑO TABLA HORIZONTAL: NegociacionCardCompact (barra estado + info + valores + acciones)
+ * - ✅ PALETA CYAN/AZUL: módulo clientes (consistencia visual)
+ * - ✅ SEPARACIÓN ESTRICTA: Zero lógica en componente, todo en hooks
+ * - ✅ CACHE AUTOMÁTICO: React Query maneja invalidación y refetch
+ * - ✅ LOADING/ERROR STATES: Optimizados con React Query
+ */
 
-import { formatDistanceToNow } from 'date-fns'
-import { es } from 'date-fns/locale'
 import { AnimatePresence, motion } from 'framer-motion'
-import {
-    AlertCircle,
-    ArrowRight,
-    Building2,
-    Calendar,
-    CheckCircle2,
-    ChevronLeft,
-    Clock,
-    DollarSign,
-    Home,
-    Lock,
-    Plus,
-    XCircle
-} from 'lucide-react'
-
+import { AlertCircle, Building2, ChevronLeft, Home, Plus } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import { useState } from 'react'
 
 import { construirURLCliente } from '@/lib/utils/slug.utils'
-import { obtenerFuentesPagoConAbonos } from '@/modules/abonos/services/abonos.service'
-import { negociacionesService } from '@/modules/clientes/services/negociaciones.service'
+import { HistorialVersionesModal } from '@/modules/clientes/components'
+import { FuentesPagoSection, SubirCartaModal } from '@/modules/clientes/components/fuentes-pago'
+import { useGenerarReportePDF } from '@/modules/clientes/hooks'
+import {
+    useNegociacionDetalle,
+    useNegociacionesQuery,
+    type NegociacionConValores,
+} from '@/modules/clientes/hooks/useNegociacionesQuery'
 import type { Cliente } from '@/modules/clientes/types'
 import { Tooltip } from '@/shared/components/ui'
 
-
-
 import {
     AccionesSection,
-    FuentesPagoSection,
-    ProgressSection,
-    UltimosAbonosSection,
+    MetricasDashboard,
+    NegociacionCardCompact,
+    ProgressBarProminente,
+    UltimosAbonosSection
 } from './negociaciones'
+import { negociacionesAnimations, negociacionesTabStyles as styles } from './negociaciones-tab.styles'
+import { EditarFuentesPagoModal } from './negociaciones/EditarFuentesPagoModal'
+import { useEditarFuentesPago } from './negociaciones/hooks/useEditarFuentesPago'
+
+// ============================================
+// TYPES
+// ============================================
 
 interface NegociacionesTabProps {
   cliente: Cliente
 }
 
-// Colores por estado
-// ✅ ACTUALIZADO (2025-10-22): Estados según migración 003
-// Consultar: docs/DATABASE-SCHEMA-REFERENCE-ACTUALIZADO.md
-const ESTADOS_CONFIG = {
-  'Activa': {
-    color: 'green',
-    icon: CheckCircle2,
-    bg: 'bg-green-100 dark:bg-green-900/30',
-    text: 'text-green-700 dark:text-green-300',
-    border: 'border-green-200 dark:border-green-800'
-  },
-  'Suspendida': {
-    color: 'yellow',
-    icon: Clock,
-    bg: 'bg-yellow-100 dark:bg-yellow-900/30',
-    text: 'text-yellow-700 dark:text-yellow-300',
-    border: 'border-yellow-200 dark:border-yellow-800'
-  },
-  'Cerrada por Renuncia': {
-    color: 'gray',
-    icon: XCircle,
-    bg: 'bg-gray-100 dark:bg-gray-900/30',
-    text: 'text-gray-700 dark:text-gray-300',
-    border: 'border-gray-200 dark:border-gray-800'
-  },
-  'Completada': {
-    color: 'blue',
-    icon: Building2,
-    bg: 'bg-blue-100 dark:bg-blue-900/30',
-    text: 'text-blue-700 dark:text-blue-300',
-    border: 'border-blue-200 dark:border-blue-800'
-  },
-}
+// ============================================
+// COMPONENTE PRINCIPAL
+// ============================================
 
 export function NegociacionesTab({ cliente }: NegociacionesTabProps) {
   const router = useRouter()
-  const [negociaciones, setNegociaciones] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
-  const [negociacionActiva, setNegociacionActiva] = useState<any | null>(null)
-  const [fuentesPago, setFuentesPago] = useState<any[]>([])
-  const [abonos, setAbonos] = useState<any[]>([])
-  const [loadingDatos, setLoadingDatos] = useState(false)
 
-  const tieneCedula = !!cliente.documento_identidad_url
+  // =====================================================
+  // REACT QUERY HOOKS (Separación de Responsabilidades)
+  // =====================================================
 
-  // Función para cargar fuentes de pago y abonos de la negociación seleccionada
-  const cargarDatosNegociacion = async (negociacionId: string) => {
-    setLoadingDatos(true)
-    try {
-      // Cargar fuentes de pago con abonos
-      const fuentesData = await obtenerFuentesPagoConAbonos(negociacionId)
-      console.log('💰 Fuentes de pago cargadas:', fuentesData)
-      setFuentesPago(fuentesData)
+  const { negociaciones, isLoading, stats, invalidarNegociaciones } = useNegociacionesQuery({
+    clienteId: cliente.id,
+  })
 
-      // Extraer todos los abonos de todas las fuentes
-      const todosAbonos = fuentesData.flatMap((fuente: any) => fuente.abonos || [])
-      // Ordenar por fecha descendente
-      todosAbonos.sort((a: any, b: any) =>
-        new Date(b.fecha_abono).getTime() - new Date(a.fecha_abono).getTime()
-      )
-      console.log('📝 Total abonos:', todosAbonos.length)
-      setAbonos(todosAbonos)
-    } catch (err) {
-      console.error('Error cargando datos de negociación:', err)
-      setFuentesPago([])
-      setAbonos([])
-    } finally {
-      setLoadingDatos(false)
-    }
-  }
+  // =====================================================
+  // ESTADO LOCAL (Solo UI - Modal y vista activa)
+  // =====================================================
 
-  // Función para cargar negociaciones
-  const cargarNegociaciones = async () => {
-    setLoading(true)
-    try {
-      const data = await negociacionesService.obtenerNegociacionesCliente(cliente.id)
-      console.log('📊 Negociaciones cargadas:', data)
-      setNegociaciones(data)
-    } catch (err) {
-      console.error('Error cargando negociaciones:', err)
-      setNegociaciones([])
-    } finally {
-      setLoading(false)
-    }
-  }
+  const [negociacionActiva, setNegociacionActiva] = useState<NegociacionConValores | null>(null)
+  const [showHistorial, setShowHistorial] = useState(false)
+  const [negociacionSeleccionada, setNegociacionSeleccionada] = useState<string | null>(null)
 
-  // Función para ver detalle de una negociación
-  const verDetalleNegociacion = async (negociacion: any) => {
+  // Modal de subir carta
+  const [modalSubirCartaOpen, setModalSubirCartaOpen] = useState(false)
+  const [fuenteParaCarta, setFuenteParaCarta] = useState<{
+    id: string
+    tipo: string
+    entidad?: string
+    monto_aprobado: number
+    vivienda?: { numero: string; manzana: string }
+    cliente?: { nombre_completo: string }
+  } | null>(null)
+
+  // =====================================================
+  // REACT QUERY: Detalle de negociación activa
+  // =====================================================
+
+  const {
+    fuentesPago,
+    abonos,
+    totales,
+    diasDesdeUltimoAbono,
+    isLoading: isLoadingDetalle,
+  } = useNegociacionDetalle({
+    negociacionId: negociacionActiva?.id || null,
+    enabled: !!negociacionActiva,
+  })
+
+  // =====================================================
+  // HOOK: Generar reporte PDF
+  // =====================================================
+
+  const { generarReporte, isGenerating } = useGenerarReportePDF()
+
+  // =====================================================
+  // HOOK: Editar fuentes de pago
+  // =====================================================
+
+  const {
+    isModalOpen: isEditarFuentesOpen,
+    abrirModal: abrirEditarFuentes,
+    cerrarModal: cerrarEditarFuentes,
+    guardarFuentes,
+  } = useEditarFuentesPago({
+    negociacionId: negociacionActiva?.id || '',
+  })
+
+  // =====================================================
+  // HANDLERS (Solo navegación y cambios de vista)
+  // =====================================================
+
+  const verDetalleNegociacion = (negociacion: NegociacionConValores) => {
     setNegociacionActiva(negociacion)
-    await cargarDatosNegociacion(negociacion.id)
   }
 
-  // Función para volver a la lista
   const volverALista = () => {
     setNegociacionActiva(null)
-    setFuentesPago([])
-    setAbonos([])
   }
 
-  // Cargar al montar
-  useEffect(() => {
-    if (cliente.id) cargarNegociaciones()
-  }, [cliente.id])
-
-  // 🔥 ESCUCHAR EVENTO DE RECARGA (cuando se crea nueva negociación)
-  useEffect(() => {
-    const handleRecargar = () => {
-      console.log('🔄 Evento recibido: recargar negociaciones')
-      cargarNegociaciones()
-    }
-
-    window.addEventListener('negociacion-creada', handleRecargar)
-    return () => window.removeEventListener('negociacion-creada', handleRecargar)
-  }, [cliente.id])
-
-  const cambiarATabDocumentos = () => {
-    // Disparar evento para cambiar de tab
-    if (typeof window !== 'undefined') {
-      window.dispatchEvent(new CustomEvent('cambiar-tab', { detail: 'documentos' }));
-    }
+  const abrirHistorial = (negociacionId: string) => {
+    setNegociacionSeleccionada(negociacionId)
+    setShowHistorial(true)
   }
 
-  if (loading) return <p className="text-sm text-gray-500">Cargando negociaciones...</p>
+  const cerrarHistorial = () => {
+    setShowHistorial(false)
+    setNegociacionSeleccionada(null)
+  }
 
-  // 🔥 VISTA DETALLADA: Si hay una negociación activa/suspendida
-  if (negociacionActiva) {
-    const valorFinal = (negociacionActiva.valor_negociado || 0) - (negociacionActiva.descuento_aplicado || 0)
+  const handleGenerarPDF = async () => {
+    if (!negociacionActiva) return
 
-    // Calcular totales desde los datos reales
-    const totalAbonado = abonos.reduce((sum: number, abono: any) => sum + (abono.monto || 0), 0)
-    const totalFuentesPago = fuentesPago.reduce((sum: number, fuente: any) => sum + (fuente.monto_aprobado || 0), 0)
+    await generarReporte({
+      cliente,
+      negociacion: negociacionActiva as any, // Cast temporal (tipos compatibles)
+      fuentesPago: fuentesPago as any,
+      abonos: abonos as any,
+      totales,
+      diasDesdeUltimoAbono,
+      generadoPor: 'Nicolás Rodríguez', // TODO: obtener del contexto de auth
+    })
+  }
 
-    // Transformar fuentes de pago al formato esperado por el componente
-    const fuentesTransformadas = fuentesPago.map((fuente: any) => ({
+  const handleSubirCarta = (fuenteId: string) => {
+    // Buscar la fuente en la lista actual
+    const fuente = fuentesPago.find((f) => f.id === fuenteId)
+    if (!fuente || !negociacionActiva) {
+      console.error('❌ Fuente o negociación no encontrada:', { fuenteId, negociacionActiva })
+      return
+    }
+
+    // Preparar datos completos para el modal (título inteligente)
+    const datosParaModal = {
+      id: fuente.id,
       tipo: fuente.tipo,
-      monto: fuente.monto_aprobado || 0,
-      entidad: fuente.entidad || undefined, // Banco o entidad financiera
-      numero_referencia: fuente.numero_referencia || undefined, // Número de crédito
-      detalles: fuente.observaciones || undefined,
-      monto_recibido: fuente.monto_recibido || 0, // Para validar si se puede editar
-    }))
+      entidad: fuente.entidad || undefined,
+      monto_aprobado: fuente.monto, // ✅ El campo es 'monto', no 'monto_aprobado'
+      // Datos de vivienda para título
+      vivienda: negociacionActiva.vivienda
+        ? {
+            numero: negociacionActiva.vivienda.numero,
+            manzana: negociacionActiva.vivienda.manzanas?.nombre || '',
+          }
+        : undefined,
+      // Datos de cliente para título
+      cliente: {
+        nombre_completo: cliente.nombre_completo,
+      },
+    }
+
+    console.log('📤 Datos para modal de carta:', {
+      fuenteId,
+      negociacionActiva: {
+        vivienda: negociacionActiva.vivienda,
+        viviendaManzana: negociacionActiva.vivienda?.manzanas,
+      },
+      cliente: {
+        nombre_completo: cliente.nombre_completo,
+      },
+      datosParaModal,
+    })
+
+    setFuenteParaCarta(datosParaModal)
+
+    // Abrir modal
+    setModalSubirCartaOpen(true)
+  }
+
+  const cerrarModalSubirCarta = () => {
+    setModalSubirCartaOpen(false)
+    setFuenteParaCarta(null)
+  }
+
+  const handleSuccessSubirCarta = () => {
+    // Invalidar queries para actualizar UI
+    invalidarNegociaciones()
+  }
+
+  // Navegación
+  const navegarACrearNegociacion = () => {
+    const clienteSlug = construirURLCliente({
+      id: cliente.id,
+      nombre_completo: cliente.nombre_completo,
+      nombres: cliente.nombres,
+      apellidos: cliente.apellidos,
+    })
+      .split('/')
+      .pop()
+
+    const nombreCliente = cliente.nombre_completo || cliente.nombres || ''
+    router.push(
+      `/clientes/${clienteSlug}/negociaciones/crear?nombre=${encodeURIComponent(nombreCliente)}` as any
+    )
+  }
+
+  const navegarAAsignarVivienda = () => {
+    const clienteSlug = construirURLCliente({
+      id: cliente.id,
+      nombre_completo: cliente.nombre_completo,
+      nombres: cliente.nombres,
+      apellidos: cliente.apellidos,
+    })
+      .split('/')
+      .pop()
+
+    const nombreCliente = cliente.nombre_completo || cliente.nombres || ''
+    router.push(
+      `/clientes/${clienteSlug}/asignar-vivienda?nombre=${encodeURIComponent(nombreCliente)}` as any
+    )
+  }
+
+  const navegarARegistrarAbono = (negociacionId: string) => {
+    const nombreCliente = cliente.nombre_completo || cliente.nombres || ''
+    router.push(
+      `/abonos?cliente_id=${cliente.id}&negociacion_id=${negociacionId}&cliente_nombre=${encodeURIComponent(nombreCliente)}` as any
+    )
+  }
+
+  // =====================================================
+  // RENDER: Loading State
+  // =====================================================
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="text-center space-y-3">
+          <div className="w-12 h-12 border-4 border-cyan-600 border-t-transparent rounded-full animate-spin mx-auto" />
+          <p className="text-sm text-gray-600 dark:text-gray-400">Cargando negociaciones...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // =====================================================
+  // RENDER: Vista Detallada
+  // =====================================================
+
+  if (negociacionActiva) {
+    const valorFinal = negociacionActiva.valorFinal
 
     return (
-      <div className="space-y-5">
+      <div className={styles.container.detalle}>
         {/* Header con botón volver */}
-        <div className="flex items-center justify-between">
+        <div className={styles.header.container}>
           <div>
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-              <Building2 className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+            <h3 className={styles.header.detalleTitle}>
+              <Building2 className={styles.header.detalleIcon} />
               {negociacionActiva.proyecto?.nombre || 'Proyecto'}
             </h3>
-            <div className="flex items-center gap-2 mt-1">
-              <Home className="w-4 h-4 text-gray-500" />
-              <span className="text-sm text-gray-600 dark:text-gray-400">
-                {negociacionActiva.vivienda?.manzanas?.nombre ? `${negociacionActiva.vivienda.manzanas.nombre} - ` : ''}
+            <div className={styles.detalle.info}>
+              <Home className={styles.detalle.infoIcon} />
+              <span className={styles.detalle.infoText}>
+                {negociacionActiva.vivienda?.manzanas?.nombre
+                  ? `${negociacionActiva.vivienda.manzanas.nombre} - `
+                  : ''}
                 Casa {negociacionActiva.vivienda?.numero || '—'}
               </span>
-              <span className="mx-2 text-gray-400">•</span>
-              <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
-                negociacionActiva.estado === 'Activa'
-                  ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
-                  : 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300'
-              }`}>
+              <span className={styles.detalle.separator}>•</span>
+              <span
+                className={`${styles.detalle.estadoBadge} ${
+                  negociacionActiva.estado === 'Activa'
+                    ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300'
+                    : 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300'
+                }`}
+              >
                 {negociacionActiva.estado}
               </span>
             </div>
           </div>
 
-          <button
-            onClick={volverALista}
-            className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-          >
+          <button onClick={volverALista} className={styles.buttons.outline}>
             <ChevronLeft className="w-4 h-4" />
             Volver a la lista
           </button>
         </div>
 
-        {/* Secciones */}
-        <ProgressSection
-          valorNegociado={negociacionActiva.valor_negociado || 0}
-          descuento={negociacionActiva.descuento_aplicado || 0}
-          totalAbonado={totalAbonado}
-          totalFuentesPago={totalFuentesPago}
-        />
+        {/* Loading detalle */}
+        {isLoadingDetalle ? (
+          <div className="flex items-center justify-center py-8">
+            <div className="text-center space-y-2">
+              <div className="w-8 h-8 border-4 border-cyan-600 border-t-transparent rounded-full animate-spin mx-auto" />
+              <p className="text-xs text-gray-500">Cargando detalles...</p>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-2.5">
+            {/* Acciones STICKY - Siempre visibles arriba */}
+            <div className="sticky top-0 z-50 -mx-1 px-1 pt-2 pb-3">
+              <AccionesSection
+                estado={negociacionActiva.estado}
+                onRegistrarAbono={() => navegarARegistrarAbono(negociacionActiva.id)}
+                onRenunciar={() => alert('❌ Modal de Renuncia en desarrollo')}
+                onGenerarPDF={handleGenerarPDF}
+                disabled={isGenerating}
+              />
+            </div>
 
-        <FuentesPagoSection
-          fuentesPago={fuentesTransformadas}
-          valorTotal={valorFinal}
-          negociacionEstado={negociacionActiva.estado}
-          onEditar={() => {
-            // TODO: abrir modal de configurar fuentes de pago
-            alert('⚠️ Modal de edición de fuentes de pago en desarrollo.\n\n📋 REGLAS DE EDICIÓN:\n\n1. CUOTA INICIAL: Siempre editable (nuevo monto debe ser >= lo ya abonado)\n\n2. CRÉDITO HIPOTECARIO Y SUBSIDIOS: Solo editables si NO han sido desembolsados\n\n3. SUMA TOTAL: Debe coincidir con el valor de la vivienda')
-          }}
-        />
+            {/* Dashboard de Métricas */}
+            <MetricasDashboard
+              valorBase={negociacionActiva.valor_negociado || 0}
+              descuento={negociacionActiva.descuento_aplicado || 0}
+              totalPagado={totales.totalAbonado}
+              saldoPendiente={totales.saldoPendiente}
+            />
 
-        <UltimosAbonosSection
-          abonos={abonos.map((abono: any) => ({
-            id: abono.id,
-            monto: abono.monto,
-            fecha_abono: abono.fecha_abono,
-            metodo_pago: abono.metodo_pago,
-            numero_recibo: abono.numero_recibo,
-            observaciones: abono.observaciones,
-          }))}
-          onVerTodos={() => {
-            alert(`📊 Vista completa de abonos en desarrollo.\n\n📋 Total de abonos: ${abonos.length}\n💰 Total abonado: $${totalAbonado.toLocaleString('es-CO')}\n\n💡 La vista completa mostrará:\n- Todos los abonos históricos\n- Filtros por fecha y fuente\n- Exportar a Excel\n- Detalles de cada transacción`)
-          }}
-        />
+            {/* Alert: Sin pagos recientes */}
+            {diasDesdeUltimoAbono !== null && diasDesdeUltimoAbono > 30 ? (
+              <div className="p-3 rounded-lg bg-rose-50 dark:bg-rose-900/20 border-2 border-rose-300 dark:border-rose-700">
+                <div className="flex items-start gap-2">
+                  <AlertCircle className="w-5 h-5 text-rose-600 dark:text-rose-400 flex-shrink-0 mt-0.5" />
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold text-rose-900 dark:text-rose-100">
+                      ⚠️ Sin pagos recientes
+                    </p>
+                    <p className="text-xs text-rose-700 dark:text-rose-300 mt-1">
+                      Hace <strong>{diasDesdeUltimoAbono} días</strong> que no se registra un abono.
+                      Considera hacer seguimiento con el cliente.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ) : null}
 
-        <AccionesSection
-          estado={negociacionActiva.estado}
-          onRegistrarAbono={() => {
-            // Redirigir al módulo de abonos con cliente y negociación preseleccionados
-            router.push(
-              `/abonos?cliente_id=${cliente.id}&negociacion_id=${negociacionActiva.id}&cliente_nombre=${encodeURIComponent(cliente.nombre_completo || cliente.nombres || '')}` as any
-            )
-          }}
-          onSuspender={() => {
-            alert('⏸️ Modal de Suspender Negociación en desarrollo.\n\n❓ ¿Por qué suspender?\n- Cliente viajó temporalmente\n- Problemas financieros temporales\n- Pausa en el proyecto\n\n⚠️ La negociación puede reactivarse después.')
-          }}
-          onRenunciar={() => {
-            alert('❌ Modal de Renuncia en desarrollo.\n\n⚠️ ACCIÓN IRREVERSIBLE\n\n- Cliente renuncia a la compra\n- Se liberará la vivienda\n- No se puede revertir\n- Se debe indicar motivo de renuncia')
-          }}
-          onGenerarPDF={() => {
-            alert('📄 Generación de PDF en desarrollo.\n\n📋 El PDF incluirá:\n- Información de la negociación\n- Fuentes de pago\n- Historial de abonos\n- Estado actual\n- Firma digital')
-          }}
-        />
+            {/* Barra de Progreso Prominente */}
+            <ProgressBarProminente
+              valorTotal={valorFinal}
+              totalAbonado={totales.totalAbonado}
+              totalFuentesPago={totales.totalFuentesPago}
+              diasDesdeUltimoAbono={diasDesdeUltimoAbono}
+            />
 
+            {/* Fuentes de Pago con Estado de Documentación */}
+            <FuentesPagoSection
+              fuentesPago={fuentesPago.map(f => ({
+                id: f.id,
+                tipo: f.tipo,
+                monto_aprobado: f.monto,
+                monto_recibido: f.monto_recibido,
+                entidad: f.entidad,
+                numero_referencia: f.numero_referencia,
+                // Campos de documentación (calcular dinámicamente si es necesario)
+                estado_documentacion: 'Pendiente', // TODO: implementar lógica
+                carta_aprobacion_url: undefined,
+                saldo_pendiente: f.monto - f.monto_recibido,
+                porcentaje_completado: (f.monto_recibido / f.monto) * 100,
+              }))}
+              loading={isLoadingDetalle}
+              onEditarFuentes={abrirEditarFuentes}
+              onSubirCarta={handleSubirCarta}
+            />
 
+            {/* Últimos Abonos */}
+            <UltimosAbonosSection
+              abonos={abonos.map((abono: any) => ({
+                id: abono.id,
+                monto: abono.monto,
+                fecha_abono: abono.fecha_abono,
+                metodo_pago: abono.metodo_pago,
+                numero_recibo: abono.numero_recibo,
+                observaciones: abono.observaciones,
+              }))}
+              onVerTodos={() => {
+                alert(
+                  `📊 Vista completa: ${abonos.length} abonos - Total: $${totales.totalAbonado.toLocaleString('es-CO')}`
+                )
+              }}
+            />
+          </div>
+        )}
       </div>
     )
   }
 
-  // 🔥 VISTA DE LISTA: Cuando no hay negociación activa o usuario quiere ver todas
+  // =====================================================
+  // RENDER: Vista de Lista (Tabla Horizontal Compacta)
+  // =====================================================
+
   return (
-    <div className="space-y-4">
-      {/* Banner de advertencia si NO tiene cédula */}
-      {!tieneCedula && (
-        <div className="bg-orange-50 dark:bg-orange-900/20 border-2 border-orange-200 dark:border-orange-800 rounded-lg p-4">
-          <div className="flex items-start gap-2.5">
-            <AlertCircle className="w-5 h-5 text-orange-600 dark:text-orange-400 flex-shrink-0 mt-0.5" />
-            <div className="flex-1">
-              <h3 className="text-sm font-semibold text-orange-900 dark:text-orange-200 mb-1.5">
-                Cédula de ciudadanía requerida
-              </h3>
-              <p className="text-xs text-orange-700 dark:text-orange-300 mb-2.5">
-                Para crear negociaciones, primero debes subir la cédula del cliente en la pestaña <strong>"Documentos"</strong>.
-              </p>
-              <button
-                onClick={cambiarATabDocumentos}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors text-xs font-medium"
-              >
-                <ArrowRight className="w-3.5 h-3.5" />
-                Ir a Documentos
-              </button>
-            </div>
+    <div className={styles.container.base}>
+      {/* Header con estadísticas y botón crear */}
+      <div className={styles.header.container}>
+        <div>
+          <h3 className={styles.header.title}>Negociaciones ({stats.total})</h3>
+          <div className="flex items-center gap-3 mt-1">
+            <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">
+              {stats.activas} Activas
+            </span>
+            <span className="text-gray-400">•</span>
+            <span className="text-xs text-cyan-600 dark:text-cyan-400 font-medium">
+              {stats.completadas} Completadas
+            </span>
+            {stats.suspendidas > 0 ? (
+              <>
+                <span className="text-gray-400">•</span>
+                <span className="text-xs text-amber-600 dark:text-amber-400 font-medium">
+                  {stats.suspendidas} Suspendidas
+                </span>
+              </>
+            ) : null}
           </div>
         </div>
-      )}
 
-      {/* Header con botón de crear */}
-      <div className="flex items-center justify-between">
-        <h3 className="text-base font-semibold text-gray-900 dark:text-white">
-          Negociaciones ({negociaciones.length})
-        </h3>
-
-        <Tooltip
-          content={
-            !tieneCedula ? (
-              <div className="flex flex-col gap-1">
-                <span className="font-semibold">⚠️ Cédula requerida</span>
-                <span className="text-xs opacity-90">
-                  Primero debes subir la cédula del cliente
-                </span>
-              </div>
-            ) : (
-              'Crear nueva negociación para este cliente'
-            )
-          }
-          side="left"
-        >
-          <button
-            disabled={!tieneCedula}
-            onClick={() => {
-              if (tieneCedula) {
-                const clienteSlug = construirURLCliente({
-                  id: cliente.id,
-                  nombre_completo: cliente.nombre_completo,
-                  nombres: cliente.nombres,
-                  apellidos: cliente.apellidos
-                }).split('/').pop()
-                router.push(`/clientes/${clienteSlug}/negociaciones/crear?nombre=${encodeURIComponent(cliente.nombre_completo || cliente.nombres || '')}` as any)
-              }
-            }}
-            className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-lg font-medium transition-all ${
-              tieneCedula
-                ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700 shadow-md hover:shadow-lg'
-                : 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'
-            }`}
-          >
-            {tieneCedula ? (
-              <>
-                <Plus className="w-3.5 h-3.5" />
-                Crear Negociación
-              </>
-            ) : (
-              <>
-                <Lock className="w-3.5 h-3.5" />
-                Crear Negociación
-              </>
-            )}
+        <Tooltip content="Crear nueva negociación para este cliente" side="left">
+          <button onClick={navegarACrearNegociacion} className={styles.buttons.primary}>
+            <Plus className="w-3.5 h-3.5" />
+            Crear Negociación
           </button>
         </Tooltip>
       </div>
 
-      {negociaciones.length === 0 && (
-        <div className="rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 p-6 text-center dark:border-gray-700 dark:bg-gray-800/50">
-          <Building2 className="mx-auto mb-3 h-12 w-12 text-gray-400" />
-          <h3 className="mb-1.5 text-base font-semibold text-gray-900 dark:text-white">
-            Sin negociaciones activas
-          </h3>
-          <p className="text-xs text-gray-600 dark:text-gray-400">
+      {/* Empty State */}
+      {negociaciones.length === 0 ? (
+        <div className={styles.empty.container}>
+          <Building2 className={styles.empty.icon} />
+          <h3 className={styles.empty.title}>Sin negociaciones activas</h3>
+          <p className={styles.empty.description}>
             Este cliente no tiene negociaciones registradas todavía.
           </p>
         </div>
-      )}
-
-      {/* Lista de Negociaciones con diseño mejorado */}
-      <div className="space-y-3">
-        {negociaciones.map((negociacion) => {
-          const estadoConfig = ESTADOS_CONFIG[negociacion.estado as keyof typeof ESTADOS_CONFIG] || ESTADOS_CONFIG['Activa']
-          const IconoEstado = estadoConfig.icon
-
-          // Calcular valor con descuento
-          const valorBase = negociacion.valor_negociado || 0
-          const descuento = negociacion.descuento_aplicado || 0
-          const valorFinal = valorBase - descuento
-
-          return (
-            <div
+      ) : (
+        <div className="space-y-2">
+          {/* Lista de Negociaciones (Cards Horizontales) */}
+          {negociaciones.map((negociacion) => (
+            <NegociacionCardCompact
               key={negociacion.id}
-              className={`group relative overflow-hidden rounded-xl border-2 ${estadoConfig.border} bg-white p-4 shadow-sm transition-all hover:shadow-xl dark:bg-gray-800`}
-            >
-              {/* Barra de color lateral */}
-              <div
-                className={`absolute left-0 top-0 h-full w-1.5 ${estadoConfig.bg.replace('bg-', 'bg-')}`}
-              />
-
-              {/* Header */}
-              <div className="mb-3 flex items-start justify-between">
-                <div className="flex items-center gap-2.5">
-                  <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${estadoConfig.bg}`}>
-                    <Building2 className={`h-5 w-5 ${estadoConfig.text}`} />
-                  </div>
-                  <div>
-                    <h4 className="text-base font-bold text-gray-900 dark:text-white">
-                      {negociacion.proyecto?.nombre || 'Proyecto sin nombre'}
-                    </h4>
-                    <div className="flex items-center gap-1.5 mt-0.5">
-                      <Home className="h-3.5 w-3.5 text-gray-500" />
-                      <span className="text-xs font-medium text-gray-600 dark:text-gray-400">
-                        {negociacion.vivienda?.manzanas?.nombre ? `${negociacion.vivienda.manzanas.nombre} - ` : ''}
-                        Casa {negociacion.vivienda?.numero || '—'}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Badge de Estado */}
-                <span className={`inline-flex items-center gap-1 rounded-full ${estadoConfig.bg} ${estadoConfig.text} px-2.5 py-1 text-[10px] font-semibold`}>
-                  <IconoEstado className="h-3 w-3" />
-                  {negociacion.estado}
-                </span>
-              </div>
-
-              {/* Información del Valor */}
-              <div className="mb-3 grid grid-cols-1 gap-2.5 md:grid-cols-3">
-                {/* Valor Base */}
-                <div className="rounded-lg bg-gray-50 p-2.5 dark:bg-gray-700/50">
-                  <div className="flex items-center gap-1.5 text-[10px] text-gray-600 dark:text-gray-400 mb-0.5">
-                    <DollarSign className="h-3 w-3" />
-                    <span>Valor Base</span>
-                  </div>
-                  <p className="text-base font-bold text-gray-900 dark:text-white">
-                    ${valorBase.toLocaleString('es-CO')}
-                  </p>
-                </div>
-
-                {/* Descuento */}
-                {descuento > 0 && (
-                  <div className="rounded-lg bg-orange-50 p-2.5 dark:bg-orange-900/20">
-                    <div className="flex items-center gap-1.5 text-[10px] text-orange-600 dark:text-orange-400 mb-0.5">
-                      <DollarSign className="h-3 w-3" />
-                      <span>Descuento</span>
-                    </div>
-                    <p className="text-base font-bold text-orange-700 dark:text-orange-300">
-                      -${descuento.toLocaleString('es-CO')}
-                    </p>
-                  </div>
-                )}
-
-                {/* Valor Final */}
-                <div className="rounded-lg bg-green-50 p-2.5 dark:bg-green-900/20">
-                  <div className="flex items-center gap-1.5 text-[10px] text-green-600 dark:text-green-400 mb-0.5">
-                    <DollarSign className="h-3 w-3" />
-                    <span>Valor Final</span>
-                  </div>
-                  <p className="text-base font-bold text-green-700 dark:text-green-300">
-                    ${valorFinal.toLocaleString('es-CO')}
-                  </p>
-                </div>
-              </div>
-
-              {/* Footer: Fecha y Acciones */}
-              <div className="flex items-center justify-between border-t border-gray-200 pt-3 dark:border-gray-700">
-                <div className="flex items-center gap-1.5 text-[10px] text-gray-500 dark:text-gray-400">
-                  <Calendar className="h-3 w-3" />
-                  <span>
-                    Creada{' '}
-                    {negociacion.fecha_creacion
-                      ? formatDistanceToNow(new Date(negociacion.fecha_creacion), {
-                          addSuffix: true,
-                          locale: es,
-                        })
-                      : 'recientemente'}
-                  </span>
-                </div>
-
-                <button
-                  onClick={() => verDetalleNegociacion(negociacion)}
-                  className="inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 px-3 py-1.5 text-xs font-medium text-white shadow-md transition-all hover:from-purple-700 hover:to-pink-700 hover:shadow-lg"
-                >
-                  <span>Ver Detalle</span>
-                  <ArrowRight className="h-3.5 w-3.5" />
-                </button>
-              </div>
-            </div>
-          )
-        })}
-      </div>
+              negociacion={negociacion}
+              onVerDetalle={verDetalleNegociacion}
+              onVerHistorial={abrirHistorial}
+            />
+          ))}
+        </div>
+      )}
 
       {/* FAB: Botón flotante cuando hay muchas negociaciones */}
       <AnimatePresence>
-        {negociaciones.length > 5 && tieneCedula && (
+        {negociaciones.length > 5 ? (
           <Tooltip content="Crear nueva negociación" side="left">
             <motion.button
-              initial={{ scale: 0, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0, opacity: 0 }}
-              transition={{ type: 'spring', stiffness: 260, damping: 20 }}
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              onClick={() => {
-                const clienteSlug = construirURLCliente({
-                  id: cliente.id,
-                  nombre_completo: cliente.nombre_completo,
-                  nombres: cliente.nombres,
-                  apellidos: cliente.apellidos
-                }).split('/').pop()
-                router.push(`/clientes/${clienteSlug}/negociaciones/crear?nombre=${encodeURIComponent(cliente.nombre_completo || cliente.nombres || '')}` as any)
-              }}
-              className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-2xl hover:shadow-purple-500/50 transition-shadow"
+              {...negociacionesAnimations.fab}
+              onClick={navegarAAsignarVivienda}
+              className={styles.buttons.fab}
             >
               <Plus className="h-6 w-6" />
             </motion.button>
           </Tooltip>
-        )}
+        ) : null}
       </AnimatePresence>
+
+      {/* Modal de Historial */}
+      {negociacionSeleccionada ? (
+        <HistorialVersionesModal
+          negociacionId={negociacionSeleccionada}
+          isOpen={showHistorial}
+          onClose={cerrarHistorial}
+        />
+      ) : null}
+
+      {/* Modal de Editar Fuentes */}
+      {negociacionActiva && (
+        <EditarFuentesPagoModal
+          isOpen={isEditarFuentesOpen}
+          onClose={cerrarEditarFuentes}
+          fuentesActuales={fuentesPago.map(f => ({
+            id: f.id,
+            tipo: f.tipo,
+            monto: f.monto,
+            monto_recibido: f.monto_recibido,
+            entidad: f.entidad,
+            numero_referencia: f.numero_referencia,
+            detalles: f.detalles,
+          }))}
+          valorFinal={negociacionActiva.valorFinal}
+          onGuardar={guardarFuentes}
+        />
+      )}
+
+      {/* Modal de Subir Carta de Aprobación */}
+      {fuenteParaCarta && (
+        <SubirCartaModal
+          isOpen={modalSubirCartaOpen}
+          onClose={cerrarModalSubirCarta}
+          fuente={fuenteParaCarta}
+          clienteId={cliente.id}
+          onSuccess={handleSuccessSubirCarta}
+        />
+      )}
     </div>
   )
 }

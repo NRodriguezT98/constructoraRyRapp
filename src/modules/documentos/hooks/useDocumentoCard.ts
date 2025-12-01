@@ -4,7 +4,8 @@ import { useAuth } from '@/contexts/auth-context'
 import { usePermisosQuery } from '@/modules/usuarios/hooks/usePermisosQuery'
 import type { DocumentoProyecto } from '@/types/documento.types'
 import { useClickOutside } from '../../../shared/hooks'
-import { DocumentosClienteService } from '../../clientes/documentos/services/documentos-cliente.service'
+// ❌ ELIMINADO: DocumentosClienteService (servicio legacy eliminado)
+// TODO: Migrar métodos obtenerEstadoProceso y esDocumentoDeProceso a servicio genérico
 
 interface UseDocumentoCardProps {
   documento: DocumentoProyecto
@@ -107,17 +108,22 @@ export function useDocumentoCard({ documento, esDocumentoProyecto = true }: UseD
 
     setVerificando(true)
     try {
-      // Obtener estado del proceso (NUEVO)
-      const estadoProc = await DocumentosClienteService.obtenerEstadoProceso(documentoId)
-      setEstadoProceso(estadoProc)
+      // ⚠️ DESHABILITADO: Servicio legacy eliminado
+      // TODO: Migrar estos métodos al servicio genérico
+      // const estadoProc = await DocumentosClienteService.obtenerEstadoProceso(documentoId)
+      // setEstadoProceso(estadoProc)
 
-      // Mantener la verificación de protección existente
-      const resultado = await DocumentosClienteService.esDocumentoDeProceso(documentoId)
-      setEstaProtegido(resultado.esDeProceso && resultado.procesoCompletado)
-      setProcesoInfo({
-        pasoNombre: resultado.pasoNombre,
-        procesoCompletado: resultado.procesoCompletado
-      })
+      // const resultado = await DocumentosClienteService.esDocumentoDeProceso(documentoId)
+      // setEstaProtegido(resultado.esDeProceso && resultado.procesoCompletado)
+      // setProcesoInfo({
+      //   pasoNombre: resultado.pasoNombre,
+      //   procesoCompletado: resultado.procesoCompletado
+      // })
+
+      // Por ahora: asumir que no está protegido
+      setEstaProtegido(false)
+      setProcesoInfo(null)
+      setEstadoProceso({ esDeProceso: false })
     } catch (error) {
       console.error('Error al verificar protección:', error)
       setEstaProtegido(false)

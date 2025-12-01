@@ -2,6 +2,7 @@ import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
 
 import { createMiddlewareClient } from '@/lib/supabase/middleware'
+import { debugLog, errorLog } from '@/lib/utils/logger'
 
 /**
  * ============================================
@@ -96,9 +97,9 @@ function canAccessRoute(
       const tienePermiso = permisosCache.includes(permisoRequerido)
 
       if (!tienePermiso) {
-        console.log(`❌ [MIDDLEWARE] Permiso denegado: ${permisoRequerido}`, {
+        debugLog('❌ Permiso denegado', {
+          permiso: permisoRequerido,
           rol: userRole,
-          cache: permisosCache.slice(0, 5), // Primeros 5 para debug
         })
       }
 
@@ -116,6 +117,8 @@ function canAccessRoute(
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl
+
+  debugLog('🔍 Middleware request', { pathname, cookies: req.cookies.getAll().length })
 
   // ============================================
   // 1. ASSETS ESTÁTICOS → Permitir sin validación
@@ -151,29 +154,38 @@ export async function middleware(req: NextRequest) {
       error: authError,
     } = await supabase.auth.getUser()
 
+    debugLog('🔑 Auth check', {
+      hasUser: !!user,
+      email: user?.email,
+    })
+
     if (!user || authError) {
+      debugLog('❌ Sin sesión válida, redirigiendo a login', { pathname })
+
       // Sin sesión válida → Redirigir a login con URL de retorno
       const redirectUrl = req.nextUrl.clone()
       redirectUrl.pathname = '/login'
 
       // Guardar ruta original para redirect después del login
-      if (pathname !== '/') {
+      // Solo si no es la raíz
+      if (pathname !== '/' && pathname !== '/login') {
         redirectUrl.searchParams.set('redirect', pathname)
       }
 
       return NextResponse.redirect(redirectUrl)
     }
 
+    debugLog('✅ Usuario autenticado', { email: user.email, pathname })
+
     // ============================================
-    // 5. SI ESTÁ EN /login CON SESIÓN → Redirigir a dashboard
+    // 5. SI ESTÁ EN /login CON SESIÓN → Permitir (el componente manejará la redirección)
     // ============================================
 
+    // ✅ CORRECCIÓN: No redirigir desde middleware, dejar que useLogin maneje la navegación
+    // Esto evita race conditions entre middleware y router.push()
     if (pathname === '/login') {
-      const redirectUrl = req.nextUrl.clone()
-      const from = req.nextUrl.searchParams.get('redirect')
-      redirectUrl.pathname = from && from !== '/' ? from : '/'
-      redirectUrl.searchParams.delete('redirect')
-      return NextResponse.redirect(redirectUrl)
+      debugLog('🔀 Usuario autenticado en /login, permitiendo (componente redirigirá)')
+      return res // Permitir acceso, el componente de login manejará la navegación
     }
 
     // ============================================
@@ -220,7 +232,7 @@ export async function middleware(req: NextRequest) {
         }
       } catch (error) {
         // Fallback a valores por defecto si falla decodificación
-        console.error('❌ [MIDDLEWARE] Error decodificando JWT:', error)
+        errorLog('middleware-jwt-decode', error as Error, { pathname })
       }
     }
 

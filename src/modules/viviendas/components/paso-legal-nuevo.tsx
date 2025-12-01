@@ -7,29 +7,19 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { AlertCircle, CheckCircle, FileText, Hash, MapPin, Maximize, Upload, X } from 'lucide-react'
-import type { FieldErrors, UseFormRegister, UseFormSetValue } from 'react-hook-form'
+import { AlertCircle, FileText, Hash, MapPin, Maximize } from 'lucide-react'
+import type { FieldErrors, UseFormRegister } from 'react-hook-form'
 
 import { cn } from '@/shared/utils/helpers'
 
-import { usePasoLegal } from '../hooks/usePasoLegal'
 import { nuevaViviendaStyles as styles } from '../styles/nueva-vivienda.styles'
 
 interface PasoLegalProps {
   register: UseFormRegister<any>
   errors: FieldErrors<any>
-  setValue: UseFormSetValue<any>
 }
 
-export function PasoLegalNuevo({ register, errors, setValue }: PasoLegalProps) {
-  // ✅ Hook con toda la lógica
-  const {
-    certificadoFile,
-    fileError,
-    fileInputRef,
-    handleFileChange,
-    removeFile,
-  } = usePasoLegal({ setValue })
+export function PasoLegalNuevo({ register, errors }: PasoLegalProps) {
 
   return (
     <motion.div
@@ -37,7 +27,7 @@ export function PasoLegalNuevo({ register, errors, setValue }: PasoLegalProps) {
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -20 }}
       transition={{ duration: 0.2 }}
-      className="space-y-6"
+      className="space-y-3"
     >
       {/* Título del paso */}
       <div>
@@ -121,9 +111,8 @@ export function PasoLegalNuevo({ register, errors, setValue }: PasoLegalProps) {
             <input
               {...register('area_lote')}
               id="area_lote"
-              type="number"
-              step="0.01"
-              min="0"
+              type="text"
+              inputMode="decimal"
               placeholder="120.50"
               className={cn(
                 styles.field.input,
@@ -153,9 +142,8 @@ export function PasoLegalNuevo({ register, errors, setValue }: PasoLegalProps) {
             <input
               {...register('area_construida')}
               id="area_construida"
-              type="number"
-              step="0.01"
-              min="0"
+              type="text"
+              inputMode="decimal"
               placeholder="80.00"
               className={cn(
                 styles.field.input,
@@ -211,66 +199,11 @@ export function PasoLegalNuevo({ register, errors, setValue }: PasoLegalProps) {
         </p>
       </div>
 
-      {/* Certificado de Tradición (Opcional) */}
-      <div className={styles.field.container}>
-        <label htmlFor="certificado" className={styles.field.label}>
-          Certificado de Tradición (Opcional)
-        </label>
-
-        <div className="space-y-3">
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="application/pdf"
-            onChange={handleFileChange}
-            className="hidden"
-          />
-
-          {!certificadoFile ? (
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900/50 text-gray-600 dark:text-gray-400 hover:border-orange-500 hover:text-orange-600 dark:hover:border-orange-500 dark:hover:text-orange-400 transition-all"
-            >
-              <Upload className="w-5 h-5" />
-              <span className="text-sm font-medium">Seleccionar archivo PDF</span>
-            </button>
-          ) : (
-            <div className="flex items-center gap-3 rounded-lg border border-green-200 bg-green-50 p-3 dark:border-green-700 dark:bg-green-900/20">
-              <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0" />
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-green-900 dark:text-green-100 truncate">
-                  {certificadoFile.name}
-                </p>
-                <p className="text-xs text-green-700 dark:text-green-300">
-                  {(certificadoFile.size / 1024 / 1024).toFixed(2)} MB
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={removeFile}
-                className="rounded-lg p-1.5 text-green-600 hover:bg-green-100 dark:text-green-400 dark:hover:bg-green-800 transition-colors"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-          )}
-
-          {fileError && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className={styles.field.error}
-            >
-              <AlertCircle className={styles.field.errorIcon} />
-              {fileError}
-            </motion.div>
-          )}
-
-          <p className="text-xs text-gray-500 dark:text-gray-400">
-            Formato: PDF • Tamaño máximo: 10MB • Opcional
-          </p>
-        </div>
+      {/* Info: Certificado de Tradición */}
+      <div className="rounded-lg border border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/30 p-3">
+        <p className="text-sm text-blue-900 dark:text-blue-100">
+          📄 <strong>Nota:</strong> El Certificado de Tradición se gestiona desde el módulo de <strong>Documentos</strong> después de crear la vivienda.
+        </p>
       </div>
     </motion.div>
   )

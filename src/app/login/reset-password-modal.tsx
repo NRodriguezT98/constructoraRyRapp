@@ -1,12 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useState } from 'react';
 
-import { AnimatePresence, motion } from 'framer-motion'
-import { X } from 'lucide-react'
+import { AnimatePresence, motion } from 'framer-motion';
+import { X } from 'lucide-react';
 
 import { supabase } from '@/lib/supabase/client'; // Cliente tradicional con PKCE
-import { traducirErrorSupabase } from '@/lib/utils/traducir-errores'
+import { traducirErrorSupabase } from '@/lib/utils/traducir-errores';
 
 
 interface ResetPasswordModalProps {
@@ -38,8 +38,9 @@ export function ResetPasswordModal({ isOpen, onClose }: ResetPasswordModalProps)
         setSuccess(false)
         setEmail('')
       }, 3000)
-    } catch (err: any) {
-      const mensajeError = traducirErrorSupabase(err.message || 'Error al enviar email de recuperación')
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error(String(err))
+      const mensajeError = traducirErrorSupabase(error.message || 'Error al enviar email de recuperación')
       setError(mensajeError)
     } finally {
       setLoading(false)

@@ -1,19 +1,15 @@
 'use client'
 
 /**
- * Tab de Intereses - Historial Simple
+ * ✅ COMPONENTE PRESENTACIONAL PURO
+ * Tab de Intereses - Refactorizado
  *
- * Muestra todos los intereses del cliente con:
- * - Estado (Activo/Descartado)
- * - Proyecto y vivienda (si aplica)
- * - Origen (cómo se enteró)
- * - Notas y fechas
- * - Acciones: Descartar, Convertir a Negociación
+ * SEPARACIÓN DE RESPONSABILIDADES:
+ * - TODA la lógica está en useInteresesTab hook
+ * - Este componente SOLO renderiza UI
  *
  * ⚠️ NOMBRES VERIFICADOS EN: docs/DATABASE-SCHEMA-REFERENCE.md
  */
-
-import { useState } from 'react'
 
 import { formatDistanceToNow } from 'date-fns'
 import { es } from 'date-fns/locale'
@@ -33,9 +29,8 @@ import {
     X,
 } from 'lucide-react'
 
-import { useListaIntereses } from '@/modules/clientes/hooks'
+import { useInteresesTab } from '@/modules/clientes/hooks'
 import type { Cliente } from '@/modules/clientes/types'
-
 
 import * as styles from '../cliente-detalle.styles'
 
@@ -57,26 +52,11 @@ const ICONOS_ORIGEN: Record<string, typeof Phone> = {
 }
 
 export function InteresesTab({ cliente, onRegistrarInteres }: InteresesTabProps) {
-  const { intereses, loading, stats, descartarInteres, filtrarPorEstado, estadoFiltro, recargar } = useListaIntereses(cliente.id)
-  const [descartando, setDescartando] = useState<string | null>(null)
+  // ✅ Hook con TODA la lógica
+  const { intereses, loading, stats, estadoFiltro, descartando, handleDescartar, filtrarPorEstado } =
+    useInteresesTab({ clienteId: cliente.id })
 
   const estadisticas = cliente.estadisticas
-
-  // Descartar interés
-  const handleDescartar = async (interesId: string) => {
-    if (!confirm('¿Estás seguro de descartar este interés?')) return
-
-    setDescartando(interesId)
-    try {
-      await descartarInteres(interesId, 'Cliente ya no está interesado')
-      await recargar()
-    } catch (error) {
-      console.error('Error al descartar:', error)
-      alert('Error al descartar el interés')
-    } finally {
-      setDescartando(null)
-    }
-  }
 
   if (loading) {
     return (

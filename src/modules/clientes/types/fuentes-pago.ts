@@ -40,6 +40,10 @@ export interface CrearFuentePagoDTO {
   numero_referencia?: string
   carta_aprobacion_url?: string
   carta_asignacion_url?: string
+
+  // Campos específicos para subsidios
+  fecha_resolucion?: string // Para Subsidio Mi Casa Ya
+  fecha_acta?: string // Para Subsidio Caja Compensación
 }
 
 /**
@@ -53,6 +57,10 @@ export interface ActualizarFuentePagoDTO {
   carta_asignacion_url?: string
   estado?: EstadoFuentePago
   fecha_completado?: string
+
+  // Campos específicos para subsidios
+  fecha_resolucion?: string // Para Subsidio Mi Casa Ya
+  fecha_acta?: string // Para Subsidio Caja Compensación
 }
 
 /**
@@ -78,6 +86,10 @@ export interface FuentePago {
   carta_aprobacion_url: string | null
   carta_asignacion_url: string | null
 
+  // Campos específicos para subsidios
+  fecha_resolucion: string | null // Para Subsidio Mi Casa Ya
+  fecha_acta: string | null // Para Subsidio Caja Compensación
+
   // Estado
   estado: EstadoFuentePago
   fecha_completado: string | null
@@ -96,6 +108,8 @@ export interface FuentePagoConfiguracion {
     entidad: string
     numero_referencia: string
     carta_aprobacion_file?: File
+    fecha_resolucion?: string // Para Subsidio Mi Casa Ya
+    fecha_acta?: string // Para Subsidio Caja Compensación
   }
 }
 

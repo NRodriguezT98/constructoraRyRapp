@@ -1,5 +1,4 @@
 // Barrel export para componentes del módulo de clientes
-export * from './cliente-card'
 export * from './clientes-empty'
 export * from './clientes-header'
 export * from './clientes-page-main'
@@ -12,6 +11,14 @@ export * from './formulario-cliente-container'
 export { FormularioCliente } from './formulario-cliente-modern'
 export * from './lista-clientes'
 
-// Componentes de negociaciones
+// Nuevos componentes compactos
+export { ClienteCardCompacta } from './cards/cliente-card-compacta'
+export { ClientesTabla } from './ClientesTabla'
+
+// Componentes de asignar vivienda
 export * from './fuente-pago-card'
+export * from './stepper-asignar-vivienda'
 export * from './stepper-negociacion'
+
+// Modales
+export { HistorialVersionesModal } from './modals/HistorialVersionesModal'

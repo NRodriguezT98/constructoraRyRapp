@@ -8,7 +8,7 @@ import { formatDateForInput } from '@/lib/utils/date.utils'
 import { cn } from '@/shared/utils/helpers'
 import { useDocumentoEditar } from '../../hooks'
 import { useDetectarCambiosDocumento } from '../../hooks/useDetectarCambiosDocumento'
-import type { CategoriaDocumento, DocumentoProyecto } from '../../types'
+import type { CategoriaDocumento, DocumentoProyecto, TipoEntidad } from '../../types'
 // COMENTADO: Funcionalidad de etiquetas eliminada
 // import { EtiquetasInput } from '../shared/etiquetas-input'
 import { ConfirmarCambiosDocumentoModal } from './ConfirmarCambiosDocumentoModal'
@@ -17,6 +17,7 @@ interface DocumentoEditarMetadatosModalProps {
   isOpen: boolean
   documento: DocumentoProyecto
   categorias: CategoriaDocumento[]
+  tipoEntidad?: TipoEntidad
   onClose: () => void
   onEditado?: () => void | Promise<void>
 }
@@ -25,6 +26,7 @@ export function DocumentoEditarMetadatosModal({
   isOpen,
   documento,
   categorias,
+  tipoEntidad = 'proyecto',
   onClose,
   onEditado
 }: DocumentoEditarMetadatosModalProps) {
@@ -95,7 +97,7 @@ export function DocumentoEditarMetadatosModal({
       fecha_documento: fechaDocumento || null,
       fecha_vencimiento: fechaVencimiento || null,
       // etiquetas: etiquetas.length > 0 ? etiquetas : undefined // COMENTADO
-    })
+    }, tipoEntidad)
 
     if (success) {
       setMostrarConfirmacionCambios(false)
@@ -251,7 +253,10 @@ export function DocumentoEditarMetadatosModal({
                       'w-full px-3 py-2 text-sm bg-white dark:bg-gray-900/50 border rounded-lg transition-all',
                       'focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 focus:border-transparent',
                       'disabled:opacity-50 disabled:bg-gray-50 dark:disabled:bg-gray-800',
-                      'border-gray-200 dark:border-gray-700'
+                      'border-gray-200 dark:border-gray-700',
+                      'text-gray-900 dark:text-gray-100',
+                      '[&>option]:bg-white [&>option]:text-gray-900',
+                      'dark:[&>option]:bg-gray-800 dark:[&>option]:text-gray-100'
                     )}
                   >
                     <option value=''>Sin categoría</option>

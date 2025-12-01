@@ -20,23 +20,25 @@ import { useAuth } from '../../../contexts/auth-context'
 import { useModal } from '../../../shared/components/modals'
 import { DocumentosService } from '../services'
 import { useDocumentosStore } from '../store/documentos.store'
-import { DocumentoProyecto } from '../types'
+import { DocumentoProyecto, obtenerConfiguracionEntidad, type TipoEntidad } from '../types'
 
 import {
     useArchivarDocumentoMutation,
     useCategoriasQuery,
-    useDocumentosProyectoQuery,
+    useDocumentosQuery,
     useEliminarDocumentoMutation,
     useToggleImportanteMutation,
 } from './useDocumentosQuery'
 
 interface UseDocumentosListaProps {
-  proyectoId: string
+  entidadId: string
+  tipoEntidad: TipoEntidad
   onViewDocumento?: (documento: DocumentoProyecto) => void
 }
 
 export function useDocumentosLista({
-  proyectoId,
+  entidadId,
+  tipoEntidad,
   onViewDocumento,
 }: UseDocumentosListaProps) {
   // Estado local UI
@@ -49,14 +51,23 @@ export function useDocumentosLista({
   const { user } = useAuth()
   const { confirm } = useModal()
 
-  // ✅ REACT QUERY: Datos del servidor (cache automático)
-  const { documentos, cargando: cargandoDocumentos, refrescar } = useDocumentosProyectoQuery(proyectoId)
-  const { categorias } = useCategoriasQuery(user?.id, 'proyectos')
+  // ✅ Convertir tipoEntidad a moduleName para categorías
+  const modulosCategorias: Record<TipoEntidad, 'proyectos' | 'clientes' | 'viviendas'> = {
+    proyecto: 'proyectos',
+    vivienda: 'viviendas',
+    cliente: 'clientes',
+  }
 
-  // ✅ REACT QUERY: Mutations
-  const eliminarMutation = useEliminarDocumentoMutation(proyectoId)
-  const toggleImportanteMutation = useToggleImportanteMutation(proyectoId)
-  const archivarMutation = useArchivarDocumentoMutation(proyectoId)
+  const moduloCategoria = modulosCategorias[tipoEntidad]
+
+  // ✅ REACT QUERY: Datos del servidor (cache automático) - GENÉRICO
+  const { documentos, cargando: cargandoDocumentos, refrescar } = useDocumentosQuery(entidadId, tipoEntidad)
+  const { categorias } = useCategoriasQuery(user?.id, moduloCategoria)
+
+  // ✅ REACT QUERY: Mutations - GENÉRICO
+  const eliminarMutation = useEliminarDocumentoMutation(entidadId, tipoEntidad)
+  const toggleImportanteMutation = useToggleImportanteMutation(entidadId, tipoEntidad)
+  const archivarMutation = useArchivarDocumentoMutation(entidadId, tipoEntidad)
 
   // ✅ ZUSTAND: Solo estado UI (filtros, búsqueda)
   const {
@@ -137,13 +148,22 @@ export function useDocumentosLista({
 
       if (isPDF || isImage) {
         try {
-          // Para preview, usar URL pública del bucket en lugar de signed URL
-          // Esto evita que se fuerce la descarga
-          const { data } = supabase.storage
-            .from('documentos-proyectos')
-            .getPublicUrl(documento.url_storage)
+          // Obtener configuración de bucket según tipo de entidad
+          const { bucket } = obtenerConfiguracionEntidad(tipoEntidad)
+          const storagePath = documento.url_storage
 
-          setUrlPreview(data.publicUrl)
+          // Para buckets privados, usar signed URL temporal (1 hora de validez)
+          const { data, error } = await supabase.storage
+            .from(bucket)
+            .createSignedUrl(storagePath, 3600) // 3600 segundos = 1 hora
+
+          if (error) {
+            console.error('❌ Error al crear URL firmada:', error)
+            setUrlPreview(undefined)
+          } else if (data?.signedUrl) {
+            console.log('✅ Signed URL generada correctamente')
+            setUrlPreview(data.signedUrl)
+          }
         } catch (error) {
           console.error('Error al obtener URL de preview:', error)
           setUrlPreview(undefined)
@@ -154,7 +174,7 @@ export function useDocumentosLista({
 
       onViewDocumento?.(documento)
     },
-    [onViewDocumento]
+    [onViewDocumento, tipoEntidad]
   )
 
   const handleCloseViewer = useCallback(() => {
@@ -188,7 +208,7 @@ export function useDocumentosLista({
   const handleArchive = useCallback(
     async (documento: DocumentoProyecto) => {
       // Contar versiones para mensaje informativo
-      const { total } = await DocumentosService.contarVersionesActivas(documento.id)
+      const { total } = await DocumentosService.contarVersionesActivas(documento.id, tipoEntidad)
 
       const mensaje = total > 1
         ? `¿Estás seguro de que deseas archivar "${documento.titulo}"?\n\n⚠️ Se archivarán TODAS las ${total} versiones de este documento.\n\n✅ Podrás restaurarlo completo desde la pestaña "Archivados".`
@@ -215,7 +235,7 @@ export function useDocumentosLista({
         const esAdmin = user?.role === 'Administrador'
 
         // 2. Contar versiones activas del documento
-        const { total, versiones } = await DocumentosService.contarVersionesActivas(documento.id)
+        const { total, versiones } = await DocumentosService.contarVersionesActivas(documento.id, tipoEntidad)
 
         // 3. Construir mensaje según cantidad de versiones y rol
         let title = '¿Eliminar documento?'
@@ -285,6 +305,7 @@ export function useDocumentosLista({
     categorias,
     cargandoDocumentos,
     hasDocumentos,
+    tipoEntidad, // ✅ Exponer tipoEntidad para componentes hijos
 
     // Handlers
     handleView,

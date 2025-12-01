@@ -69,9 +69,11 @@ export function DocumentosTab({ proyecto, moduleName = 'proyectos' }: Documentos
       <div className='space-y-4'>
         <div className={`rounded-lg border ${theme.classes.border.light} bg-white p-4 shadow-sm dark:bg-gray-800`}>
           <DocumentoUpload
-            proyectoId={proyecto.id}
+            entidadId={proyecto.id}
+            tipoEntidad="proyecto"
             onSuccess={() => setShowUpload(false)}
             onCancel={() => setShowUpload(false)}
+            moduleName={moduleName}
           />
         </div>
       </div>
@@ -116,9 +118,10 @@ export function DocumentosTab({ proyecto, moduleName = 'proyectos' }: Documentos
         </div>
       </div>
 
-      {/* Lista de documentos - USA REACT QUERY */}
+      {/* Lista de documentos - USA REACT QUERY (GENÉRICO) */}
       <DocumentosLista
-        proyectoId={proyecto.id}
+        entidadId={proyecto.id}
+        tipoEntidad="proyecto"
         onUploadClick={() => setShowUpload(true)}
         moduleName={moduleName}
       />

@@ -4,18 +4,18 @@ import { useEffect } from 'react'
 
 import { motion } from 'framer-motion'
 import {
-  ArrowRight,
-  Award,
-  Building2,
-  Calendar,
-  CreditCard,
-  FileX,
-  Home,
-  Shield,
-  Sparkles,
-  TrendingUp,
-  Users,
-  Zap,
+    ArrowRight,
+    Award,
+    Building2,
+    Calendar,
+    CreditCard,
+    FileX,
+    Home,
+    Shield,
+    Sparkles,
+    TrendingUp,
+    Users,
+    Zap,
 } from 'lucide-react'
 
 import Link from 'next/link'
@@ -23,12 +23,13 @@ import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
 } from '@/components/ui/card'
+import { DebugLogger } from '@/lib/utils/debug-logger'
 
 
 
@@ -132,7 +133,15 @@ const stats = [
 
 export default function DashboardContent(props: DashboardContentProps) {
   useEffect(() => {
+    DebugLogger.log('DASHBOARD', '🏠 Dashboard montado - Usuario autenticado')
     console.log('🏠 [DASHBOARD CONTENT] Props recibidos:', props)
+
+    // Imprimir logs persistidos del login
+    const logs = DebugLogger.getLogs()
+    if (logs.length > 0) {
+      console.log('📋 [DASHBOARD] Logs del proceso de login:', logs.length)
+      DebugLogger.printLogs()
+    }
   }, [props])
 
   return (

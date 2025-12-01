@@ -22,7 +22,7 @@ export const metadata: Metadata = {
   title: 'RyR Constructora - Sistema de Gestión',
   description: 'Sistema de gestión administrativa para constructora RyR',
   icons: {
-    icon: '/icon.svg',
+    icon: '/images/favicon.png',
   },
 }
 
@@ -46,57 +46,6 @@ export default function RootLayout({
                   }
                   originalWarn.apply(console, args);
                 };
-
-                // 🛠️ CAPTURAR ERRORES GLOBALES ANTES DE QUE CRASHEE
-                window.addEventListener('error', function(e) {
-                  console.error('🔴 [GLOBAL ERROR HANDLER]', {
-                    message: e.message,
-                    filename: e.filename,
-                    lineno: e.lineno,
-                    colno: e.colno,
-                    error: e.error,
-                    stack: e.error?.stack
-                  });
-
-                  // Guardar en sessionStorage
-                  try {
-                    const errors = JSON.parse(sessionStorage.getItem('global-errors') || '[]');
-                    errors.push({
-                      timestamp: new Date().toISOString(),
-                      message: e.message,
-                      filename: e.filename,
-                      lineno: e.lineno,
-                      colno: e.colno,
-                      stack: e.error?.stack
-                    });
-                    sessionStorage.setItem('global-errors', JSON.stringify(errors, null, 2));
-                  } catch (err) {
-                    console.error('Error guardando en sessionStorage:', err);
-                  }
-                });
-
-                window.addEventListener('unhandledrejection', function(e) {
-                  console.error('🔴 [UNHANDLED PROMISE REJECTION]', {
-                    reason: e.reason,
-                    promise: e.promise
-                  });
-
-                  // Guardar en sessionStorage
-                  try {
-                    const errors = JSON.parse(sessionStorage.getItem('global-errors') || '[]');
-                    errors.push({
-                      timestamp: new Date().toISOString(),
-                      type: 'unhandledrejection',
-                      reason: e.reason?.toString(),
-                      stack: e.reason?.stack
-                    });
-                    sessionStorage.setItem('global-errors', JSON.stringify(errors, null, 2));
-                  } catch (err) {
-                    console.error('Error guardando en sessionStorage:', err);
-                  }
-                });
-
-                console.log('%c🛡️ Global Error Handler Activo', 'color: #4CAF50; font-weight: bold; font-size: 14px;');
               `,
             }}
           />

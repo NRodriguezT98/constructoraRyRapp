@@ -26,7 +26,7 @@ interface DocumentosState {
   busqueda: string
   soloImportantes: boolean
 
-  // Vista actual (Activos/Archivados)
+  // Vista actual (Activos/Archivados - Papelera es módulo independiente)
   vistaActual: 'activos' | 'archivados'
 
   // UI Modales
@@ -102,7 +102,7 @@ export const useDocumentosStore = create<DocumentosState>((set) => ({
     })
   },
 
-  setVistaActual: (vista: 'activos' | 'archivados') => {
+  setVistaActual: (vista: 'activos' | 'archivados' | 'papelera') => {
     set({ vistaActual: vista })
   },
 

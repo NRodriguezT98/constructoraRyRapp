@@ -20,17 +20,21 @@ import { FormularioCliente } from './formulario-cliente-modern'
 
 interface FormularioClienteContainerProps {
   clienteSeleccionado?: Cliente | null
+  isOpen?: boolean
+  onClose?: () => void
 }
 
 export function FormularioClienteContainer({
   clienteSeleccionado,
+  isOpen = false,
+  onClose,
 }: FormularioClienteContainerProps) {
   // ✅ REACT QUERY MUTATIONS
   const crearMutation = useCrearClienteMutation()
   const actualizarMutation = useActualizarClienteMutation()
 
   // Estado del modal (se controla desde useClientesList)
-  const modalAbierto = !!clienteSeleccionado || crearMutation.isPending || actualizarMutation.isPending
+  const modalAbierto = isOpen || crearMutation.isPending || actualizarMutation.isPending
 
   // Hook de interés (solo para nuevos clientes)
   const {
@@ -74,7 +78,8 @@ export function FormularioClienteContainer({
         }
         resetInteres()
       }
-      // El modal se cerrará automáticamente cuando clienteSeleccionado sea null
+      // Cerrar modal después de completar exitosamente
+      onClose?.()
     },
     [
       clienteSeleccionado,
@@ -82,14 +87,16 @@ export function FormularioClienteContainer({
       actualizarMutation,
       getInteresData,
       resetInteres,
+      onClose,
     ]
   )
 
   // Función de cancelación
   const handleFormCancel = useCallback(() => {
     resetInteres()
-    // El componente padre (useClientesList) debe manejar el cierre
-  }, [resetInteres])
+    // Llamar al onClose del padre para cerrar el modal
+    onClose?.()
+  }, [resetInteres, onClose])
 
   const {
     formData,

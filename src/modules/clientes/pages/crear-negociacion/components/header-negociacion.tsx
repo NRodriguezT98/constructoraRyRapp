@@ -1,28 +1,27 @@
 /**
- * Componente: Header de la página de crear negociación - REDISEÑADO
+ * Componente: Header de la página de Crear Negociación
  * UI presentacional pura con diseño minimalista
  */
 
 'use client'
-
-import { pageStyles } from '../styles'
 
 interface HeaderNegociacionProps {
   clienteId: string
   clienteNombre?: string
 }
 
-export function HeaderNegociacion({
-  clienteId,
-  clienteNombre,
-}: HeaderNegociacionProps) {
-  return (
-    <div className={pageStyles.header.container}>
-      <h1 className={pageStyles.header.title}>
-        Crear Negociación
-      </h1>
+const headerStyles = {
+  container: 'space-y-1',
+  title: 'text-2xl font-bold text-gray-900 dark:text-white',
+  subtitle: 'text-sm text-gray-600 dark:text-gray-400',
+}
 
-      <p className={pageStyles.header.subtitle}>
+export function HeaderNegociacion({ clienteNombre }: HeaderNegociacionProps) {
+  return (
+    <div className={headerStyles.container}>
+      <h1 className={headerStyles.title}>Nueva Negociación</h1>
+
+      <p className={headerStyles.subtitle}>
         Configura el cierre financiero para {clienteNombre || 'el cliente'}
       </p>
     </div>

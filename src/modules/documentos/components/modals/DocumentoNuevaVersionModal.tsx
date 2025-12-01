@@ -19,7 +19,9 @@ import { toast } from 'sonner'
 
 import { useAuth } from '@/contexts/auth-context'
 import { formatDateForDB, formatDateForInput, getTodayDateString } from '@/lib/utils/date.utils'
+import { documentosKeys } from '@/modules/documentos/hooks/useDocumentosQuery'
 import { DocumentosService } from '@/modules/documentos/services/documentos.service'
+import type { TipoEntidad } from '@/modules/documentos/types/entidad.types'
 import type { DocumentoProyecto } from '@/types/documento.types'
 
 interface DocumentoNuevaVersionModalProps {
@@ -27,13 +29,15 @@ interface DocumentoNuevaVersionModalProps {
   documento: DocumentoProyecto
   onClose: () => void
   onSuccess?: () => void
+  tipoEntidad?: TipoEntidad
 }
 
 export function DocumentoNuevaVersionModal({
   isOpen,
   documento,
   onClose,
-  onSuccess
+  onSuccess,
+  tipoEntidad = 'proyecto',
 }: DocumentoNuevaVersionModalProps) {
   const { user } = useAuth()
   const queryClient = useQueryClient()
@@ -126,15 +130,22 @@ export function DocumentoNuevaVersionModal({
         documento.id,
         archivo,
         user.id,
+        tipoEntidad,
         cambios.trim() || undefined,
         titulo.trim(),
         fechaDocumento ? formatDateForDB(fechaDocumento) : undefined,
         fechaVencimiento ? formatDateForDB(fechaVencimiento) : undefined
       )
 
-      // Invalidar caché de React Query
+      // ✅ Invalidar caché de React Query - GENÉRICO según tipoEntidad
+      const entidadId = tipoEntidad === 'proyecto'
+        ? documento.proyecto_id
+        : tipoEntidad === 'vivienda'
+        ? documento.vivienda_id
+        : documento.cliente_id
+
       queryClient.invalidateQueries({
-        queryKey: ['documentos-proyecto', documento.proyecto_id],
+        queryKey: documentosKeys.list(entidadId!, tipoEntidad),
       })
 
       toast.success('Nueva versión creada exitosamente')

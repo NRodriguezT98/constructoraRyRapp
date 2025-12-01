@@ -4,7 +4,7 @@
  * @module viviendas/hooks
  */
 
-import { useMutation, useQuery, useQueryClient } from '@tantml:query/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
 import { useAuth } from '@/contexts/auth-context'

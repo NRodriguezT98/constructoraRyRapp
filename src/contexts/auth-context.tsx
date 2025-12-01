@@ -20,6 +20,8 @@ import { createContext, useContext } from 'react'
 
 import type { User } from '@supabase/supabase-js'
 
+import { debugLog, errorLog, successLog } from '@/lib/utils/logger'
+
 import {
     useAuthPerfilQuery,
     useAuthSessionQuery,
@@ -66,7 +68,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // ============================================
 
   const signIn = async (email: string, password: string) => {
-    await loginMutation.mutateAsync({ email, password })
+    debugLog('🔑 AuthContext.signIn() invocado', { email })
+
+    try {
+      const result = await loginMutation.mutateAsync({ email, password })
+      successLog('Login mutation completado')
+      return result
+    } catch (error) {
+      errorLog('auth-context-signin', error, { email })
+      throw error
+    }
   }
 
   // ============================================
@@ -74,7 +85,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // ============================================
 
   const signOut = async () => {
-    await logoutMutation.mutateAsync()
+    debugLog('🚪 AuthContext.signOut() invocado')
+    try {
+      await logoutMutation.mutateAsync()
+      successLog('Logout completado desde AuthContext')
+    } catch (error) {
+      errorLog('auth-context-signout', error)
+      throw error
+    }
   }
 
   // ============================================

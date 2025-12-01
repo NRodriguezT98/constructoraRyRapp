@@ -1,11 +1,12 @@
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
 import { formatDateCompact } from '@/lib/utils/date.utils'
 import { formatFileSize } from '@/lib/utils/format.utils'
 import { DocumentosService } from '@/modules/documentos/services/documentos.service'
 import type { DocumentoProyecto } from '@/modules/documentos/types/documento.types'
 import { Calendar, Eye, HardDrive, Loader2, Upload, User } from 'lucide-react'
+import { useState } from 'react'
 import { toast } from 'sonner'
+import { DocumentoViewer } from '../../viewer/documento-viewer'
 
 // Tipo extendido con relación usuario (FK join)
 type DocumentoConUsuario = DocumentoProyecto & {
@@ -18,6 +19,7 @@ type DocumentoConUsuario = DocumentoProyecto & {
 
 interface VersionesListProps {
   versiones: DocumentoConUsuario[]
+  modulo: 'proyectos' | 'viviendas' | 'clientes'
   isLoading: boolean
   seleccionadas: Set<string>
   onVersionToggle: (id: string) => void
@@ -29,11 +31,12 @@ interface VersionesListProps {
 }
 
 /**
- * Lista expandible de versiones eliminadas con selección
- * Permite restauración selectiva de versiones específicas
+ * Lista expandible de versiones eliminadas (solo lectura)
+ * Muestra información de todas las versiones sin selección individual
  */
 export function VersionesList({
   versiones,
+  modulo,
   isLoading,
   seleccionadas,
   onVersionToggle,
@@ -43,6 +46,10 @@ export function VersionesList({
   totalVersiones,
   isRestoring,
 }: VersionesListProps) {
+  // Estado del modal de visualización
+  const [documentoSeleccionado, setDocumentoSeleccionado] = useState<DocumentoConUsuario | null>(null)
+  const [urlPreview, setUrlPreview] = useState<string>('')
+
   if (isLoading) {
     return (
       <div className="p-8 flex flex-col items-center justify-center gap-3">
@@ -66,59 +73,24 @@ export function VersionesList({
 
   return (
     <div className="border-t border-gray-200 dark:border-gray-700 p-4 bg-gray-50/50 dark:bg-gray-900/20">
-      {/* Header con controles de selección */}
+      {/* Header simplificado */}
       <div className="flex items-center justify-between mb-3">
         <h4 className="text-sm font-medium text-gray-900 dark:text-white">
           Versiones eliminadas ({versiones.length})
         </h4>
-        <div className="flex items-center gap-2">
-          {seleccionadas.size > 0 && (
-            <>
-              <span className="text-xs text-gray-500 dark:text-gray-400">
-                {seleccionadas.size} seleccionadas
-              </span>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={onRestoreSelected}
-                disabled={isRestoring}
-                className="h-7 px-2 text-xs bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white border-0 shadow-sm"
-              >
-                {isRestoring ? 'Restaurando...' : 'Restaurar seleccionadas'}
-              </Button>
-            </>
-          )}
-          <button
-            onClick={seleccionadas.size === totalVersiones ? onDeselectAll : onSelectAll}
-            className="text-xs text-rose-600 dark:text-rose-400 hover:underline font-medium"
-          >
-            {seleccionadas.size === totalVersiones ? 'Deseleccionar todas' : 'Seleccionar todas'}
-          </button>
-        </div>
+        <p className="text-xs text-gray-500 dark:text-gray-400">
+          Solo lectura • Use "Restaurar todo" para recuperar todas las versiones
+        </p>
       </div>
 
-      {/* Lista de versiones */}
+      {/* Lista de versiones (sin checkboxes) */}
       <div className="space-y-2">
         {versiones.map((version) => (
           <div
             key={version.id}
-            className="block p-3 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-all"
+            className="block p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 transition-all"
           >
             <div className="flex items-start gap-3">
-              {/* Checkbox */}
-              <div className="relative flex items-center justify-center w-4 h-4 mt-0.5 flex-shrink-0">
-                <input
-                  type="checkbox"
-                  checked={seleccionadas.has(version.id)}
-                  onChange={(e) => {
-                    e.stopPropagation()
-                    onVersionToggle(version.id)
-                  }}
-                  onClick={(e) => e.stopPropagation()}
-                  className="w-4 h-4 rounded border-gray-300 text-rose-600 focus:ring-2 focus:ring-rose-500 cursor-pointer"
-                />
-              </div>
-
               {/* Info de versión */}
               <div className="flex-1 min-w-0 space-y-2">
                 {/* Header versión */}
@@ -131,15 +103,27 @@ export function VersionesList({
                       {version.titulo}
                     </h5>
                   </div>
-                  {/* Botón Ver */}
+                  {/* Botón Ver - Abre modal de visualización */}
                   <button
                     onClick={async () => {
                       try {
-                        const url = await DocumentosService.obtenerUrlDescarga(version.url_storage)
-                        window.open(url, '_blank')
+                        let url: string
+
+                        if (modulo === 'viviendas') {
+                          // Importar servicio de viviendas dinámicamente
+                          const { DocumentosStorageService } = await import('@/modules/viviendas/services/documentos/documentos-storage.service')
+                          url = await DocumentosStorageService.obtenerUrlDescarga(version.url_storage)
+                        } else {
+                          // Servicio de proyectos
+                          url = await DocumentosService.obtenerUrlDescarga(version.url_storage)
+                        }
+
+                        // Abrir en modal con URL precargada
+                        setUrlPreview(url)
+                        setDocumentoSeleccionado(version)
                       } catch (error) {
-                        console.error('Error al abrir documento:', error)
-                        toast.error('❌ Error al abrir el documento')
+                        console.error('Error al obtener URL del documento:', error)
+                        toast.error('❌ Error al cargar el documento')
                       }
                     }}
                     className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white transition-all shadow-sm"
@@ -155,7 +139,11 @@ export function VersionesList({
                   <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
                     <Calendar className="w-3.5 h-3.5 flex-shrink-0" />
                     <span className="font-medium min-w-[120px]">Fecha documento:</span>
-                    <span>{formatDateCompact(version.fecha_documento)}</span>
+                    {version.fecha_documento ? (
+                      <span>{formatDateCompact(version.fecha_documento)}</span>
+                    ) : (
+                      <span className="italic text-gray-400">No especificada</span>
+                    )}
                   </div>
 
                   {/* Fecha subida */}
@@ -190,6 +178,20 @@ export function VersionesList({
           </div>
         ))}
       </div>
+
+      {/* Modal de visualización de documento */}
+      {documentoSeleccionado && (
+        <DocumentoViewer
+          documento={documentoSeleccionado}
+          isOpen={!!documentoSeleccionado}
+          onClose={() => {
+            setDocumentoSeleccionado(null)
+            setUrlPreview('')
+          }}
+          urlPreview={urlPreview}
+          moduleName={modulo}
+        />
+      )}
     </div>
   )
 }

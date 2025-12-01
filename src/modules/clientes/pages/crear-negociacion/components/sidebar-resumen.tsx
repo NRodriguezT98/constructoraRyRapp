@@ -17,7 +17,7 @@ import {
     TrendingDown,
 } from 'lucide-react'
 
-import type { FuentePagoConfig } from '@/modules/clientes/components/modals/modal-crear-negociacion/types'
+import type { FuentePagoConfig } from '@/modules/clientes/components/asignar-vivienda/types'
 import type { TipoFuentePago } from '@/modules/clientes/types'
 
 import { animations } from '../styles'

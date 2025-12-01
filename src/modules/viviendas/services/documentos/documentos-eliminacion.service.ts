@@ -137,20 +137,117 @@ export class DocumentosEliminacionService {
 
   /**
    * OBTENER DOCUMENTOS ELIMINADOS (Papelera)
+   * Con datos enriquecidos de vivienda y usuario
+   * BEST PRACTICE: Manejo robusto de errores + nombres de columnas correctos
    */
   static async obtenerDocumentosEliminados(): Promise<DocumentoVivienda[]> {
+    try {
+      // 1. Obtener documentos eliminados
+      const { data: documentos, error: errorDocs } = await supabase
+        .from('documentos_vivienda')
+        .select('*')
+        .eq('estado', 'eliminado')
+        .eq('es_version_actual', true)
+        .order('fecha_actualizacion', { ascending: false })
+
+      if (errorDocs) {
+        console.error('❌ Error obteniendo documentos eliminados:', errorDocs)
+        throw errorDocs
+      }
+
+      if (!documentos || documentos.length === 0) {
+        return []
+      }
+
+      // 2. Obtener IDs únicos de viviendas y usuarios
+      const viviendaIds = [...new Set(documentos.map(d => d.vivienda_id).filter(Boolean))]
+      const usuarioIds = [...new Set(documentos.map(d => d.subido_por).filter(Boolean))]
+
+      // 3. Fetch viviendas (SOLO columnas que existen: id, numero, manzana_id)
+      const { data: viviendas, error: errorViviendas } = await supabase
+        .from('viviendas')
+        .select('id, numero, manzana_id')
+        .in('id', viviendaIds)
+
+      if (errorViviendas) {
+        console.warn('⚠️ Error obteniendo viviendas:', errorViviendas)
+        // Continuar sin datos de viviendas
+      }
+
+      // 4. Fetch manzanas en paralelo
+      const manzanaIds = [...new Set(viviendas?.map(v => v.manzana_id).filter(Boolean) || [])]
+      let manzanas: any[] = []
+
+      if (manzanaIds.length > 0) {
+        const { data: dataManzanas, error: errorManzanas } = await supabase
+          .from('manzanas')
+          .select('id, nombre')
+          .in('id', manzanaIds)
+
+        if (errorManzanas) {
+          console.warn('⚠️ Error obteniendo manzanas:', errorManzanas)
+        } else {
+          manzanas = dataManzanas || []
+        }
+      }
+
+      // 5. Fetch usuarios en paralelo
+      const { data: usuarios, error: errorUsuarios } = await supabase
+        .from('usuarios')
+        .select('id, nombres, apellidos, email')
+        .in('id', usuarioIds)
+
+      if (errorUsuarios) {
+        console.warn('⚠️ Error obteniendo usuarios:', errorUsuarios)
+      }
+
+      // 6. Crear mapas para lookup rápido
+      const manzanaMap = new Map(manzanas.map(m => [m.id, m]))
+      const usuarioMap = new Map(usuarios?.map(u => [u.id, u]) || [])
+
+      // 7. Enriquecer viviendas con datos de manzana
+      const viviendasEnriquecidas = viviendas?.map(v => ({
+        ...v,
+        numero_vivienda: v.numero, // Normalizar nombre para compatibilidad
+        manzana: v.manzana_id ? manzanaMap.get(v.manzana_id) : undefined,
+      })) || []
+
+      const viviendaMap = new Map(viviendasEnriquecidas.map(v => [v.id, v]))
+
+      // 8. Enriquecer documentos con datos relacionados
+      const documentosEnriquecidos = documentos.map(doc => ({
+        ...doc,
+        vivienda: doc.vivienda_id ? viviendaMap.get(doc.vivienda_id) : undefined,
+        usuario: doc.subido_por ? usuarioMap.get(doc.subido_por) : undefined,
+      }))
+
+      return documentosEnriquecidos as unknown as DocumentoVivienda[]
+    } catch (error) {
+      console.error('❌ Error crítico en obtenerDocumentosEliminados:', error)
+      // Retornar array vacío en lugar de throw para evitar crashes
+      return []
+    }
+  }
+
+  /**
+   * OBTENER DOCUMENTOS ELIMINADOS (Papelera) - FALLBACK LEGACY
+   * @deprecated Usar obtenerDocumentosEliminados() que incluye datos enriquecidos
+   */
+  static async obtenerDocumentosEliminadosSimple(): Promise<DocumentoVivienda[]> {
+    // Fallback: Sin JOINs (solo documentos básicos)
+    console.warn('⚠️ JOINs fallaron, usando query simple:', errorJoins?.message)
     const { data, error } = await supabase
       .from('documentos_vivienda')
-      .select(`
-        *,
-        viviendas(numero_vivienda, proyecto_id),
-        usuarios(nombres, apellidos, email)
-      `)
+      .select('*')
       .eq('estado', 'eliminado')
       .eq('es_version_actual', true)
       .order('fecha_actualizacion', { ascending: false })
 
-    if (error) throw error
+    if (error) {
+      console.error('❌ Error al obtener documentos eliminados de viviendas:', error)
+      throw error
+    }
+
     return (data || []) as unknown as DocumentoVivienda[]
   }
 

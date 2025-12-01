@@ -1,11 +1,8 @@
 // Exportar tipos
 export * from './types'
 
-// Exportar hooks
-export * from './hooks/useProyectos'
-
-// Exportar store
-export { useProyectosStore } from './store/proyectos.store'
+// Exportar hooks (React Query)
+export * from './hooks/useProyectosQuery'
 
 // Exportar servicios
 export { proyectosService } from './services/proyectos.service'

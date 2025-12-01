@@ -1,3 +1,3 @@
 export { AbonosTab } from './AbonosTab'
-// export { DocumentosTab } from './DocumentosTab' // ⚠️ DESHABILITADO: usa componentes con framer-motion
+export { DocumentosTab } from './DocumentosTab'; // ✅ HABILITADO: ahora usa componentes genéricos de @/modules/documentos
 export { InfoTab } from './InfoTab'

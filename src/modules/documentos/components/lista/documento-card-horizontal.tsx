@@ -17,7 +17,6 @@ import {
     Lock,
     MoreVertical,
     Star,
-    Tag,
     Trash2,
 } from 'lucide-react'
 
@@ -31,6 +30,7 @@ import {
     DocumentoVersionesModal
 } from '../../../clientes/documentos/components'
 import { useDocumentoCard } from '../../hooks'
+import type { TipoEntidad } from '../../types/entidad.types'
 import { BadgeEstadoProceso } from '../badge-estado-proceso'
 import { CategoriaIcon } from '../shared/categoria-icon'
 
@@ -45,6 +45,7 @@ interface DocumentoCardHorizontalProps {
   onRename?: (documento: DocumentoProyecto) => void
   onAsignarCategoria?: (documento: DocumentoProyecto) => void
   onRefresh?: () => void | Promise<void> // 🆕 Callback para refrescar después de versión
+  tipoEntidad?: TipoEntidad
 }
 
 export function DocumentoCardHorizontal({
@@ -58,6 +59,7 @@ export function DocumentoCardHorizontal({
   onRename,
   onAsignarCategoria,
   onRefresh, // 🆕 Prop de refresh
+  tipoEntidad = 'proyecto',
 }: DocumentoCardHorizontalProps) {
   const {
     menuAbierto,
@@ -75,10 +77,6 @@ export function DocumentoCardHorizontal({
     abrirModalNuevaVersion,
     cerrarModalNuevaVersion,
   } = useDocumentoCard({ documento })
-
-  const esDocumentoDeProceso = documento.etiquetas?.some(
-    etiqueta => etiqueta.toLowerCase() === 'proceso' || etiqueta.toLowerCase() === 'negociación'
-  )
 
   // ✅ Solo mostrar "Ver Historial" si hay MÁS de 1 versión
   const tieneVersiones = documento.version > 1
@@ -240,26 +238,6 @@ export function DocumentoCardHorizontal({
           )}
         </div>
 
-        {/* Etiquetas */}
-        {documento.etiquetas && documento.etiquetas.length > 0 && (
-          <div className='flex flex-wrap gap-1.5'>
-            {documento.etiquetas.slice(0, 4).map((etiqueta, index) => (
-              <span
-                key={index}
-                className='inline-flex items-center gap-1 rounded-md bg-blue-50 px-2 py-0.5 text-xs text-blue-700 dark:bg-blue-900/20 dark:text-blue-300'
-              >
-                <Tag size={10} />
-                {etiqueta}
-              </span>
-            ))}
-            {documento.etiquetas.length > 4 && (
-              <span className='inline-flex items-center rounded-md bg-gray-50 px-2 py-0.5 text-xs text-gray-600 dark:bg-gray-700 dark:text-gray-400'>
-                +{documento.etiquetas.length - 4} más
-              </span>
-            )}
-          </div>
-        )}
-
         {/* ✅ NUEVO: Badge de estado del proceso */}
         {estadoProceso.esDeProceso && estadoProceso.estadoPaso && (
           <div className='mt-2'>
@@ -320,7 +298,7 @@ export function DocumentoCardHorizontal({
                 initial={{ opacity: 0, scale: 0.95, y: -10 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: -10 }}
-                className='absolute right-0 top-full z-50 mt-2 w-48 rounded-xl border border-gray-200 bg-white py-2 shadow-xl dark:border-gray-700 dark:bg-gray-800'
+                className='absolute right-0 top-full z-[100] mt-2 w-48 rounded-xl border border-gray-200 bg-white py-2 shadow-xl dark:border-gray-700 dark:bg-gray-800'
               >
               <button
                 type="button"
@@ -478,8 +456,9 @@ export function DocumentoCardHorizontal({
       <DocumentoNuevaVersionModal
         isOpen={modalNuevaVersionAbierto}
         documento={documento as any}
+        tipoEntidad={tipoEntidad} // ✅ Pasar tipoEntidad
         onClose={cerrarModalNuevaVersion}
-        onVersionCreada={async () => {
+        onSuccess={async () => {
           cerrarModalNuevaVersion()
           // 🆕 Refrescar lista de documentos
           await onRefresh?.()

@@ -34,6 +34,8 @@ interface DocumentoFormBaseProps {
   // Datos del formulario
   categorias: CategoriaDocumento[]
   isSubmitting: boolean
+  esDocumentoIdentidad?: boolean // ✅ Para deshabilitar categoría
+  categoriaIdentidad?: CategoriaDocumento | undefined // ✅ Categoría auto-seleccionada
 
   // React Hook Form
   register: UseFormRegister<any>
@@ -69,6 +71,8 @@ export function DocumentoFormBase({
   fileInputRef,
   categorias,
   isSubmitting,
+  esDocumentoIdentidad = false,
+  categoriaIdentidad,
   register,
   handleSubmit,
   errors,
@@ -172,6 +176,8 @@ export function DocumentoFormBase({
                   value={categoriaId}
                   onChange={(value) => setValue('categoria_id', value)}
                   errors={errors}
+                  disabled={esDocumentoIdentidad} // ✅ Deshabilitar si es documento de identidad
+                  helperText={esDocumentoIdentidad && categoriaIdentidad ? `Categoría: ${categoriaIdentidad.nombre}` : undefined}
                 />
 
                 <ImportanteToggle

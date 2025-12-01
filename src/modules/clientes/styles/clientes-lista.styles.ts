@@ -2,37 +2,38 @@
  * 🎨 ESTILOS CENTRALIZADOS - LISTA DE CLIENTES
  *
  * Sistema de diseño premium con glassmorphism para la vista de lista de clientes.
- * Identidad visual: Purple→Violet (diferenciación del módulo de abonos)
+ * Identidad visual: Cyan→Blue (consistente con sidebar y detalle)
  *
  * Características:
  * - Glassmorphism con backdrop-blur-xl
- * - Gradientes purple→violet (identidad del módulo)
+ * - Gradientes cyan→blue→indigo (identidad del módulo)
  * - Animaciones fluidas con Framer Motion
  * - Responsive design (mobile, tablet, desktop)
  * - Dark mode compatible
- * - Shadows premium con purple tints
+ * - Shadows premium con cyan tints
  */
 
 export const clientesListaStyles = {
   // 🎯 CONTENEDOR PRINCIPAL
   container: {
-    page: 'min-h-screen bg-gradient-to-br from-slate-50 via-purple-50 to-violet-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950',
-    content: 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6'
+    page: 'min-h-screen bg-gradient-to-br from-slate-50 via-cyan-50 to-blue-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950',
+    content: 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-4'
   },
 
-  // 🎨 HEADER HERO
+  // 🎨 HEADER HERO (COMPACTO - CYAN/BLUE)
   header: {
-    container: 'relative overflow-hidden rounded-3xl bg-gradient-to-br from-purple-600 via-violet-600 to-indigo-600 dark:from-purple-700 dark:via-violet-700 dark:to-indigo-800 p-8 shadow-2xl shadow-purple-500/20',
+    container: 'relative overflow-hidden rounded-2xl bg-gradient-to-br from-cyan-600 via-blue-600 to-indigo-600 dark:from-cyan-700 dark:via-blue-700 dark:to-indigo-800 p-6 shadow-2xl shadow-cyan-500/20',
     pattern: 'absolute inset-0 bg-grid-white/10 [mask-image:linear-gradient(0deg,transparent,black,transparent)]',
     content: 'relative z-10',
     topRow: 'flex items-center justify-between',
-    titleGroup: 'flex items-center gap-4',
-    iconCircle: 'w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-lg shadow-purple-500/30',
-    icon: 'w-7 h-7 text-white',
-    titleWrapper: 'space-y-1',
-    title: 'text-3xl font-bold text-white',
-    subtitle: 'text-purple-100 dark:text-purple-200 text-sm',
-    badge: 'inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-white text-sm font-medium shadow-lg'
+    titleGroup: 'flex items-center gap-3',
+    iconCircle: 'w-10 h-10 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center',
+    icon: 'w-6 h-6 text-white',
+    titleWrapper: 'space-y-0.5',
+    title: 'text-2xl font-bold text-white',
+    subtitle: 'text-cyan-100 dark:text-cyan-200 text-xs',
+    badge: 'inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-white text-xs font-medium',
+    button: 'inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white/20 backdrop-blur-md border border-white/30 text-white text-sm font-medium hover:bg-white/30 transition-all shadow-lg'
   },
 
   // 🎈 FAB (Floating Action Button - Superior derecho)
@@ -45,60 +46,60 @@ export const clientesListaStyles = {
     text: 'text-sm font-bold'
   },
 
-  // 📊 MÉTRICAS (4 cards)
+  // 📊 MÉTRICAS (4 cards - COMPACTAS)
   metricas: {
-    grid: 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4',
-    card: 'group relative overflow-hidden rounded-2xl backdrop-blur-xl bg-white/80 dark:bg-gray-800/80 border border-gray-200/50 dark:border-gray-700/50 p-6 shadow-lg hover:shadow-2xl transition-all duration-300',
+    grid: 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3',
+    card: 'group relative overflow-hidden rounded-xl backdrop-blur-xl bg-white/80 dark:bg-gray-800/80 border border-gray-200/50 dark:border-gray-700/50 p-4 shadow-lg hover:shadow-2xl transition-all duration-300',
     cardGlow: 'absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-10 transition-opacity duration-300',
-    content: 'relative z-10 flex items-center gap-4',
-    iconCircle: 'w-12 h-12 rounded-xl flex items-center justify-center shadow-lg',
-    icon: 'w-6 h-6 text-white',
+    content: 'relative z-10 flex items-center gap-3',
+    iconCircle: 'w-10 h-10 rounded-lg flex items-center justify-center shadow-lg',
+    icon: 'w-5 h-5 text-white',
     textGroup: 'flex-1',
-    value: 'text-2xl font-bold bg-gradient-to-br bg-clip-text text-transparent',
-    label: 'text-xs text-gray-600 dark:text-gray-400 mt-1 font-medium'
+    value: 'text-xl font-bold bg-gradient-to-br bg-clip-text text-transparent',
+    label: 'text-xs text-gray-600 dark:text-gray-400 mt-0.5 font-medium'
   },
 
-  // 🔍 FILTROS
+  // 🔍 FILTROS (COMPACTOS)
   filtros: {
-    container: 'sticky top-4 z-40 backdrop-blur-xl bg-white/90 dark:bg-gray-800/90 rounded-2xl border border-gray-200/50 dark:border-gray-700/50 p-5 shadow-2xl shadow-purple-500/10',
-    grid: 'grid grid-cols-1 md:grid-cols-3 gap-4 mb-4',
+    container: 'sticky top-4 z-40 backdrop-blur-xl bg-white/90 dark:bg-gray-800/90 rounded-xl border border-gray-200/50 dark:border-gray-700/50 p-3 shadow-2xl shadow-cyan-500/10',
+    grid: 'grid grid-cols-1 md:grid-cols-3 gap-3 mb-3',
 
-    // Input de búsqueda
+    // Input de búsqueda (compacto)
     searchWrapper: 'relative',
-    searchIconLeft: 'absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500 pointer-events-none',
-    searchInput: 'w-full pl-12 pr-12 py-3 bg-gray-50 dark:bg-gray-900/50 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:border-purple-500 focus:ring-4 focus:ring-purple-500/20 transition-all text-sm placeholder:text-gray-400 dark:placeholder:text-gray-500',
-    clearButton: 'absolute right-4 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors cursor-pointer',
-    clearIcon: 'w-3.5 h-3.5 text-gray-600 dark:text-gray-400',
+    searchIconLeft: 'absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500 pointer-events-none',
+    searchInput: 'w-full pl-10 pr-10 py-2 bg-gray-50 dark:bg-gray-900/50 border-2 border-gray-200 dark:border-gray-700 rounded-lg focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 transition-all text-sm placeholder:text-gray-400 dark:placeholder:text-gray-500',
+    clearButton: 'absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors cursor-pointer',
+    clearIcon: 'w-3 h-3 text-gray-600 dark:text-gray-400',
 
     // Filtros de estado (radio buttons)
     estadoGroup: 'flex flex-wrap gap-2',
     estadoButton: 'px-4 py-2 rounded-xl border-2 transition-all text-sm font-medium cursor-pointer hover:scale-105',
-    estadoButtonInactive: 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:border-purple-400 dark:hover:border-purple-600',
-    estadoButtonActive: 'border-purple-500 dark:border-purple-600 bg-gradient-to-r from-purple-500 to-violet-500 text-white shadow-lg shadow-purple-500/30',
+    estadoButtonInactive: 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:border-cyan-400 dark:hover:border-cyan-600',
+    estadoButtonActive: 'border-cyan-500 dark:border-cyan-600 bg-gradient-to-r from-cyan-500 to-blue-500 text-white shadow-lg shadow-cyan-500/30',
 
-    // Select de origen
+    // Select de origen (compacto)
     selectWrapper: 'relative',
-    selectIconLeft: 'absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500 pointer-events-none',
-    select: 'w-full pl-12 pr-10 py-3 bg-gray-50 dark:bg-gray-900/50 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:border-purple-500 focus:ring-4 focus:ring-purple-500/20 transition-all text-sm appearance-none cursor-pointer',
-    selectIconRight: 'absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500 pointer-events-none',
+    selectIconLeft: 'absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500 pointer-events-none',
+    select: 'w-full pl-10 pr-10 py-2 bg-gray-50 dark:bg-gray-900/50 border-2 border-gray-200 dark:border-gray-700 rounded-lg focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 transition-all text-sm appearance-none cursor-pointer',
+    selectIconRight: 'absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500 pointer-events-none',
 
-    // Footer
-    footer: 'flex items-center justify-between pt-3 border-t border-gray-200 dark:border-gray-700',
-    resultCount: 'flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400 font-medium',
+    // Footer (compacto)
+    footer: 'flex items-center justify-between pt-2 mt-2 border-t border-gray-200 dark:border-gray-700',
+    resultCount: 'flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-400 font-medium',
     resultCountIcon: 'w-3.5 h-3.5',
-    clearFiltersButton: 'text-xs font-semibold text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 transition-colors cursor-pointer'
+    clearFiltersButton: 'text-xs font-semibold text-cyan-600 dark:text-cyan-400 hover:text-cyan-700 dark:hover:text-cyan-300 transition-colors cursor-pointer'
   },
 
   // 💳 CLIENTE CARD (Modernizada)
   clienteCard: {
     // Container principal
-    container: 'group relative overflow-hidden rounded-2xl backdrop-blur-xl bg-white/80 dark:bg-gray-800/80 border border-gray-200/50 dark:border-gray-700/50 shadow-lg hover:shadow-2xl hover:shadow-purple-500/20 transition-all duration-300',
-    glow: 'absolute inset-0 bg-gradient-to-br from-purple-500/5 via-violet-500/5 to-indigo-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300',
+    container: 'group relative overflow-hidden rounded-2xl backdrop-blur-xl bg-white/80 dark:bg-gray-800/80 border border-gray-200/50 dark:border-gray-700/50 shadow-lg hover:shadow-2xl hover:shadow-cyan-500/20 transition-all duration-300',
+    glow: 'absolute inset-0 bg-gradient-to-br from-cyan-500/5 via-blue-500/5 to-indigo-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300',
 
     // Header
     header: 'relative p-5 pb-4',
     headerActions: 'flex items-start justify-end gap-1.5 mb-3',
-    actionButton: 'p-2 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-purple-100 dark:hover:bg-purple-900/30 hover:text-purple-600 dark:hover:text-purple-400 transition-all',
+    actionButton: 'p-2 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-cyan-100 dark:hover:bg-cyan-900/30 hover:text-cyan-600 dark:hover:text-cyan-400 transition-all',
     actionIcon: 'w-4 h-4',
 
     // Avatar y título
@@ -154,9 +155,9 @@ export const clientesListaStyles = {
  */
 export const metricasClientesColors = {
   total: {
-    gradient: 'from-purple-500 to-violet-600',
-    textGradient: 'from-purple-600 via-violet-600 to-indigo-600',
-    glowColor: 'from-purple-500/20 to-violet-500/20'
+    gradient: 'from-cyan-500 to-blue-600',
+    textGradient: 'from-cyan-600 via-blue-600 to-indigo-600',
+    glowColor: 'from-cyan-500/20 to-blue-500/20'
   },
   interesados: {
     gradient: 'from-blue-500 to-cyan-600',

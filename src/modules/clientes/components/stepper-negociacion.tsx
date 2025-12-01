@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { motion } from 'framer-motion'
 import { CheckCircle2, DollarSign, FileCheck, Home } from 'lucide-react'

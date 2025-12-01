@@ -1,18 +1,30 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+/**
+ * ✅ COMPONENTE PRESENTACIONAL PURO
+ * Tab de Documentos - Refactorizado
+ *
+ * SEPARACIÓN DE RESPONSABILIDADES:
+ * - TODA la lógica está en useDocumentosTab hook
+ * - Este componente SOLO renderiza UI
+ */
 
-import { ArrowLeft, FileText, FolderCog, Upload } from 'lucide-react'
+import { AnimatePresence } from 'framer-motion'
+import { AlertCircle, ArrowLeft, FileText, FolderCog, Upload } from 'lucide-react'
+import { useState } from 'react'
 
 import { useRouter } from 'next/navigation'
 
 import { useAuth } from '@/contexts/auth-context'
-import { DocumentoUploadCliente } from '@/modules/clientes/documentos/components/documento-upload-cliente'
-import { DocumentosListaCliente } from '@/modules/clientes/documentos/components/documentos-lista-cliente'
-import { useDocumentosClienteStore } from '@/modules/clientes/documentos/store/documentos-cliente.store'
+import { BannerDocumentosPendientes } from '@/modules/clientes/components/documentos-pendientes'
+import { SubirCartaModal } from '@/modules/clientes/components/fuentes-pago'
+import { BannerDocumentoRequerido } from '@/modules/clientes/documentos/components/BannerDocumentoRequerido'
+import { useDocumentosTab } from '@/modules/clientes/hooks'
 import type { Cliente } from '@/modules/clientes/types'
 import { CategoriasManager } from '@/modules/documentos/components/categorias/categorias-manager'
-
+import { DocumentosLista } from '@/modules/documentos/components/lista/documentos-lista'
+import { DocumentoUpload } from '@/modules/documentos/components/upload/documento-upload'
+import { moduleThemes } from '@/shared/config/module-themes'
 
 interface DocumentosTabProps {
   cliente: Cliente
@@ -21,43 +33,48 @@ interface DocumentosTabProps {
 export function DocumentosTab({ cliente }: DocumentosTabProps) {
   const router = useRouter()
   const { user } = useAuth()
+
+  // Tema cyan/azul para clientes
+  const theme = moduleThemes.clientes
+
+  // Estado para modal de carta de aprobación
+  const [modalCartaOpen, setModalCartaOpen] = useState(false)
+  const [fuenteParaCarta, setFuenteParaCarta] = useState<{
+    id: string
+    tipo: string
+    entidad?: string
+    monto_aprobado: number
+    vivienda?: { numero: string; manzana: string }
+    cliente?: { nombre_completo: string }
+  } | null>(null)
+
+  // ✅ Hook con TODA la lógica
   const {
-    documentos,
-    categorias,
-    cargandoDocumentos,
-    vistaCategoriasActual,
+    vistaActual,
+    tieneCedula,
+    cargandoValidacion,
+    uploadTipoCedula,
+    metadataPendiente,
+    mostrandoUpload,
+    mostrandoCategorias,
+    mostrandoDocumentos,
+    mostrarUpload,
     mostrarCategorias,
-    ocultarCategorias,
-    cargarDocumentos,
-    cargarCategorias,
-  } = useDocumentosClienteStore()
-
-  // Estados locales para vistas (PATRÓN IGUAL A PROYECTOS)
-  const [showUpload, setShowUpload] = useState(false)
-  const [showCategorias, setShowCategorias] = useState(false)
-  const [uploadTipoCedula, setUploadTipoCedula] = useState(false) // Flag para indicar si se está subiendo cédula
-
-  // Cargar documentos y categorías al montar
-  useEffect(() => {
-    cargarDocumentos(cliente.id)
-    if (user) {
-      cargarCategorias(user.id)
-    }
-  }, [cliente.id, user, cargarDocumentos, cargarCategorias])
-
-  const tieneCedula = !!cliente.documento_identidad_url
-  const totalDocumentos = documentos.length + (tieneCedula ? 1 : 0)
+    volverADocumentos,
+    onSuccessUpload,
+    onCancelUpload,
+  } = useDocumentosTab({ clienteId: cliente.id })
 
   // Si está mostrando categorías (PATRÓN IGUAL A PROYECTOS)
-  if (showCategorias && user) {
+  if (mostrandoCategorias && user) {
     return (
       <div className='space-y-4'>
         {/* Header con botón volver */}
-        <div className='rounded-lg border border-purple-200 bg-white p-4 shadow-sm dark:border-purple-800 dark:bg-gray-800'>
+        <div className={`rounded-lg border ${theme.classes.border.light} bg-white p-4 shadow-sm dark:bg-gray-800`}>
           <div className='mb-4 flex items-center gap-2.5'>
             <button
-              onClick={() => setShowCategorias(false)}
-              className='flex items-center gap-1.5 rounded-lg border border-purple-300 bg-white px-3 py-1.5 text-xs font-medium text-purple-700 transition-colors hover:bg-purple-50 dark:border-purple-700 dark:bg-gray-700 dark:text-purple-300 dark:hover:bg-gray-600'
+              onClick={volverADocumentos}
+              className={`flex items-center gap-1.5 rounded-lg ${theme.classes.button.secondary} px-3 py-1.5 text-xs font-medium transition-colors`}
             >
               <ArrowLeft className='h-3.5 w-3.5' />
               <span>Volver a Documentos</span>
@@ -76,7 +93,7 @@ export function DocumentosTab({ cliente }: DocumentosTabProps) {
         <div className='rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-gray-800'>
           <CategoriasManager
             userId={user.id}
-            onClose={() => setShowCategorias(false)}
+            onClose={volverADocumentos}
             modulo="clientes"
           />
         </div>
@@ -85,29 +102,17 @@ export function DocumentosTab({ cliente }: DocumentosTabProps) {
   }
 
   // Si está mostrando formulario de upload (PATRÓN IGUAL A PROYECTOS)
-  if (showUpload && user) {
+  if (mostrandoUpload && user) {
     return (
       <div className='space-y-4'>
-        <div className='rounded-lg border border-purple-200 bg-white p-4 shadow-sm dark:border-purple-800 dark:bg-gray-800'>
-          <DocumentoUploadCliente
-            clienteId={cliente.id}
-            esCedula={uploadTipoCedula}
-            numeroDocumento={cliente.numero_documento}
-            nombreCliente={`${cliente.nombres} ${cliente.apellidos}`}
-            onSuccess={() => {
-              setShowUpload(false)
-              setUploadTipoCedula(false)
-              // Si era cédula, refrescar ruta para obtener datos actualizados
-              if (uploadTipoCedula) {
-                router.refresh() // ✅ Revalida datos del servidor SIN recargar página
-              } else {
-                cargarDocumentos(cliente.id)
-              }
-            }}
-            onCancel={() => {
-              setShowUpload(false)
-              setUploadTipoCedula(false)
-            }}
+        <div className={`rounded-lg border ${theme.classes.border.light} bg-white p-4 shadow-sm dark:bg-gray-800`}>
+          <DocumentoUpload
+            entidadId={cliente.id}
+            tipoEntidad="cliente"
+            moduleName="clientes"
+            metadata={metadataPendiente}
+            onSuccess={onSuccessUpload}
+            onCancel={onCancelUpload}
           />
         </div>
       </div>
@@ -116,11 +121,11 @@ export function DocumentosTab({ cliente }: DocumentosTabProps) {
 
   return (
     <div className='space-y-4'>
-      {/* Header con acciones */}
-      <div className='rounded-lg border border-purple-200 bg-white p-4 shadow-sm dark:border-purple-800 dark:bg-gray-800'>
+      {/* Header con acciones - IGUAL A VIVIENDAS Y PROYECTOS */}
+      <div className={`rounded-lg border ${theme.classes.border.light} bg-white p-4 shadow-sm dark:bg-gray-800`}>
         <div className='flex items-center justify-between'>
           <div className='flex items-center gap-2.5'>
-            <div className='rounded-lg bg-gradient-to-br from-purple-500 to-pink-600 p-2.5'>
+            <div className={`rounded-lg bg-gradient-to-br ${theme.classes.gradient.primary} p-2.5`}>
               <FileText className='h-5 w-5 text-white' />
             </div>
             <div>
@@ -128,36 +133,33 @@ export function DocumentosTab({ cliente }: DocumentosTabProps) {
                 Documentos del Cliente
               </h2>
               <p className='text-xs text-gray-500 dark:text-gray-400'>
-                {totalDocumentos} {totalDocumentos === 1 ? 'documento' : 'documentos'} almacenados
+                Gestiona cédula, contratos y documentación legal
               </p>
             </div>
           </div>
 
           <div className='flex gap-1.5'>
-            {/* Botón especial para subir cédula si no existe */}
+            {/* Botón especial para subir cédula si no existe - DESTACADO */}
             {!tieneCedula && (
               <button
-                onClick={() => {
-                  setUploadTipoCedula(true)
-                  setShowUpload(true)
-                }}
-                className='flex items-center gap-1.5 rounded-lg border-2 border-amber-400 bg-amber-50 px-3 py-1.5 text-xs font-medium text-amber-700 transition-all hover:bg-amber-100 dark:border-amber-600 dark:bg-amber-900/20 dark:text-amber-400 dark:hover:bg-amber-900/30'
+                onClick={() => mostrarUpload(true)}
+                className='flex items-center gap-2 rounded-lg bg-gradient-to-r from-orange-500 to-amber-500 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-orange-500/40 ring-2 ring-orange-300 dark:ring-orange-700 ring-offset-2 dark:ring-offset-gray-800 transition-all hover:from-orange-600 hover:to-amber-600 hover:shadow-xl hover:shadow-orange-500/50'
               >
-                <FileText className='h-3.5 w-3.5' />
-                <span>Subir Cédula</span>
+                <AlertCircle className='h-4 w-4' />
+                <span>⚠️ Subir Cédula (Requerido)</span>
               </button>
             )}
 
             <button
-              onClick={() => setShowCategorias(true)}
-              className='flex items-center gap-1.5 rounded-lg border border-purple-300 bg-white px-3 py-1.5 text-xs font-medium text-purple-700 transition-colors hover:bg-purple-50 dark:border-purple-700 dark:bg-gray-700 dark:text-purple-300 dark:hover:bg-gray-600'
+              onClick={mostrarCategorias}
+              className={`flex items-center gap-1.5 rounded-lg ${theme.classes.button.secondary} px-3 py-1.5 text-xs font-medium transition-colors`}
             >
               <FolderCog className='h-3.5 w-3.5' />
               <span>Categorías</span>
             </button>
             <button
-              onClick={() => setShowUpload(true)}
-              className='flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 px-3 py-1.5 text-xs font-medium text-white shadow-md transition-all hover:from-purple-700 hover:to-pink-700 hover:shadow-lg'
+              onClick={() => mostrarUpload(false)}
+              className={`flex items-center gap-1.5 rounded-lg ${theme.classes.button.primary} px-3 py-1.5 text-xs font-medium`}
             >
               <Upload className='h-3.5 w-3.5' />
               <span>Subir Documento</span>
@@ -166,13 +168,64 @@ export function DocumentosTab({ cliente }: DocumentosTabProps) {
         </div>
       </div>
 
-      {/* Lista de documentos - USANDO COMPONENTE DE PROYECTOS (CONSISTENTE) */}
-      <DocumentosListaCliente
+      {/* 🚨 Banner de advertencia cuando no hay documento de identidad */}
+      <AnimatePresence>
+        {!tieneCedula && !cargandoValidacion && (
+          <BannerDocumentoRequerido
+            onSubirDocumento={() => mostrarUpload(false)}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* 📄 Banner de documentos pendientes (fuentes de pago sin carta) */}
+      <BannerDocumentosPendientes
         clienteId={cliente.id}
-        cedulaUrl={cliente.documento_identidad_url}
-        numeroDocumento={cliente.numero_documento}
-        cedulaTituloPersonalizado={cliente.documento_identidad_titulo}
+        onSubirDocumento={(pendienteId, tipoDocumento, metadata) => {
+          console.log('📤 Subir documento pendiente:', { pendienteId, tipoDocumento, metadata })
+
+          // Si es carta de aprobación, abrir modal específico
+          if (metadata.fuente_pago_id) {
+            // ✅ Pasar datos completos incluyendo vivienda y cliente
+            setFuenteParaCarta({
+              id: metadata.fuente_pago_id, // ✅ ID viene ahora en metadata
+              tipo: metadata.tipo_fuente,
+              entidad: metadata.entidad,
+              monto_aprobado: metadata.monto_aprobado || 0,
+              vivienda: metadata.vivienda, // ✅ Datos de vivienda desde JOIN
+              cliente: metadata.cliente,   // ✅ Datos de cliente desde JOIN
+            })
+            setModalCartaOpen(true)
+          } else {
+            // Para otros tipos de documento, usar modal genérico
+            mostrarUpload(false, metadata)
+          }
+        }}
       />
+
+      {/* ✅ Lista de documentos - Componente genérico estándar */}
+      <DocumentosLista
+        entidadId={cliente.id}
+        tipoEntidad="cliente"
+        moduleName="clientes"
+        onUploadClick={() => mostrarUpload(false)}
+      />
+
+      {/* Modal de subir carta de aprobación */}
+      {fuenteParaCarta && (
+        <SubirCartaModal
+          isOpen={modalCartaOpen}
+          onClose={() => {
+            setModalCartaOpen(false)
+            setFuenteParaCarta(null)
+          }}
+          fuente={fuenteParaCarta}
+          clienteId={cliente.id}
+          onSuccess={() => {
+            // Refrescar documentos
+            onSuccessUpload()
+          }}
+        />
+      )}
     </div>
   )
 }

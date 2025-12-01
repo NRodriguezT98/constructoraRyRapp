@@ -26,13 +26,17 @@
     "analyze": "cross-env ANALYZE=true next build",
     "check-all": "npm run type-check && npm run lint && npm run format:check",
     "setup:supabase": "node scripts/setup-supabase.js",
-    "types:generate": "npx supabase gen types typescript --project-id swyjhwgvkfcfdtemkyad --schema public > src/lib/supabase/database.types.ts",
+    "types:generate": "node scripts/generate-types.js",
+    "types:generate:direct": "supabase gen types typescript --project-id swyjhwgvkfcfdtemkyad --schema public > src/lib/supabase/database.types.ts",
     "db:types": "npm run types:generate",
     "db:types:original": "npx supabase gen types typescript --project-id $SUPABASE_PROJECT_ID --schema public > src/lib/supabase/database.types.ts",
     "db:sync": "npm run types:generate && npm run type-check",
     "db:setup": "npx supabase db reset && npm run db:types",
     "db:exec": "node ejecutar-sql.js",
     "db:exec:storage-viviendas": "node ejecutar-sql.js supabase/storage/storage-documentos-viviendas.sql",
+    "errors:analyze": "node scripts/analyze-typescript-errors.js",
+    "errors:fix": "node scripts/fix-typescript-errors.js",
+    "errors:fix:apply": "node scripts/fix-typescript-errors.js --apply",
     "prepare": "husky",
     "pre-commit": "lint-staged",
     "postinstall": "echo 'RyR Constructora - Dependencias instaladas correctamente'"
@@ -65,6 +69,8 @@
     "eslint": "^9.37.0",
     "eslint-config-next": "^15.5.5",
     "framer-motion": "^12.23.24",
+    "jspdf": "^3.0.4",
+    "jspdf-autotable": "^5.0.2",
     "lucide-react": "^0.545.0",
     "next": "^15.5.5",
     "next-themes": "^0.4.6",
@@ -91,7 +97,8 @@
     "lint-staged": "^16.2.4",
     "pg": "^8.16.3",
     "prettier": "^3.6.2",
-    "prettier-plugin-tailwindcss": "^0.7.0"
+    "prettier-plugin-tailwindcss": "^0.7.0",
+    "supabase": "^2.62.10"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [

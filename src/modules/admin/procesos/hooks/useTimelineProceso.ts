@@ -12,7 +12,7 @@
 
 import { useCallback, useEffect, useState } from 'react'
 
-import { createBrowserClient } from '@supabase/ssr'
+import { createClient } from '@/lib/supabase/client'
 
 import { useAuth } from '@/contexts/auth-context'
 import { useModal } from '@/shared/components/modals'
@@ -63,10 +63,7 @@ export function useTimelineProceso({ negociacionId }: UseTimelineProcesoProps) {
   useEffect(() => {
     async function obtenerFechaNegociacion() {
       try {
-        const supabase = createBrowserClient(
-          process.env.NEXT_PUBLIC_SUPABASE_URL!,
-          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-        )
+        const supabase = createClient()
 
         const { data, error } = await supabase
           .from('negociaciones')

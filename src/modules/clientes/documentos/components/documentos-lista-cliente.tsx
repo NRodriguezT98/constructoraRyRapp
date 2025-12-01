@@ -1,38 +1,33 @@
 'use client'
 
+import { useState } from 'react'
+
 import { AnimatePresence, motion } from 'framer-motion'
-import { FileX, LayoutGrid, List } from 'lucide-react'
+import { Archive, FileText, FileX } from 'lucide-react'
 
 import { DocumentoCard } from '@/modules/documentos/components/lista/documento-card'
 import { DocumentoCardHorizontal } from '@/modules/documentos/components/lista/documento-card-horizontal'
+import { DocumentosFiltros } from '@/modules/documentos/components/lista/documentos-filtros'
 
 import { useDocumentosListaCliente } from '../hooks'
 
 import { DocumentoCategoriasModal } from './documento-categorias-modal'
 import { DocumentoRenombrarModal } from './documento-renombrar-modal'
-import { DocumentosAgrupados } from './documentos-agrupados'
-import { DocumentosFiltrosCliente } from './documentos-filtros-cliente'
 
 interface DocumentosListaClienteProps {
   clienteId: string
-  cedulaUrl?: string | null
-  numeroDocumento?: string
-  cedulaTituloPersonalizado?: string | null
 }
 
 export function DocumentosListaCliente({
-  clienteId,
-  cedulaUrl,
-  numeroDocumento,
-  cedulaTituloPersonalizado
+  clienteId
 }: DocumentosListaClienteProps) {
   // ⭐ REFACTORIZADO: Usa hook useDocumentosListaCliente para toda la lógica
+  const [vistaActual, setVistaActual] = useState<'activos' | 'archivados'>('activos')
+
   const {
     // Estado
     vista,
     setVista,
-    vistaAgrupada,
-    setVistaAgrupada,
     cargandoDocumentos,
     documentosFiltrados,
     categorias,
@@ -69,10 +64,7 @@ export function DocumentosListaCliente({
     categoriaFiltro,
     soloImportantes,
   } = useDocumentosListaCliente({
-    clienteId,
-    cedulaUrl,
-    numeroDocumento,
-    cedulaTituloPersonalizado
+    clienteId
   })
 
   if (cargandoDocumentos) {
@@ -85,30 +77,71 @@ export function DocumentosListaCliente({
 
   return (
     <div className='space-y-6'>
-      {/* Filtros y controles */}
-      <div className='space-y-4'>
-        <DocumentosFiltrosCliente onChangeVista={setVista} />
+      {/* 📑 TABS: Activos / Archivados (consistente con proyectos) */}
+      <div className="flex items-center gap-2 border-b border-gray-200 dark:border-gray-700">
+        <button
+          onClick={() => setVistaActual('activos')}
+          className={`relative px-4 py-3 font-medium text-sm transition-all duration-200 ${
+            vistaActual === 'activos'
+              ? 'text-gray-900 dark:text-white'
+              : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+          }`}
+        >
+          <div className="flex items-center gap-2">
+            <FileText className="w-4 h-4" />
+            <span>Activos</span>
+          </div>
+          {vistaActual === 'activos' && (
+            <motion.div
+              layoutId="activeTabCliente"
+              className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-cyan-500 to-blue-500"
+            />
+          )}
+        </button>
 
-        {/* Toggle Vista Agrupada */}
-        <div className='flex justify-end'>
-          <button
-            onClick={() => setVistaAgrupada(!vistaAgrupada)}
-            className={`flex items-center gap-2 rounded-lg px-4 py-2 font-medium transition-all ${
-              vistaAgrupada
-                ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md'
-                : 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
-            }`}
-          >
-            {vistaAgrupada ? <LayoutGrid size={18} /> : <List size={18} />}
-            <span className='text-sm'>
-              {vistaAgrupada ? 'Vista Agrupada' : 'Vista Normal'}
-            </span>
-          </button>
-        </div>
+        <button
+          onClick={() => setVistaActual('archivados')}
+          className={`relative px-4 py-3 font-medium text-sm transition-all duration-200 ${
+            vistaActual === 'archivados'
+              ? 'text-gray-900 dark:text-white'
+              : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+          }`}
+        >
+          <div className="flex items-center gap-2">
+            <Archive className="w-4 h-4" />
+            <span>Archivados</span>
+          </div>
+          {vistaActual === 'archivados' && (
+            <motion.div
+              layoutId="activeTabCliente"
+              className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-amber-500 to-orange-500"
+            />
+          )}
+        </button>
       </div>
 
-      {/* Lista de documentos */}
-      {documentosFiltrados.length === 0 ? (
+      {/* Filtros compactos con estadísticas (SOLO en vista activos) */}
+      {vistaActual === 'activos' && (
+        <DocumentosFiltros
+          documentos={documentosFiltrados as any}
+          categorias={categorias}
+          onChangeVista={setVista}
+          moduleName="clientes"
+        />
+      )}
+
+      {/* Contenido según tab activa */}
+      {vistaActual === 'archivados' ? (
+        <div className='flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 py-16 dark:border-gray-700 dark:bg-gray-800/50'>
+          <Archive className='mb-4 h-16 w-16 text-gray-400' />
+          <h3 className='mb-2 text-lg font-semibold text-gray-900 dark:text-white'>
+            Documentos archivados
+          </h3>
+          <p className='text-sm text-gray-500 dark:text-gray-400'>
+            Los documentos archivados aparecerán aquí
+          </p>
+        </div>
+      ) : documentosFiltrados.length === 0 ? (
         <div className='flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 py-16 dark:border-gray-700 dark:bg-gray-800/50'>
           <FileX className='mb-4 h-16 w-16 text-gray-400' />
           <h3 className='mb-2 text-lg font-semibold text-gray-900 dark:text-white'>
@@ -120,20 +153,6 @@ export function DocumentosListaCliente({
               : 'Sube documentos para comenzar'}
           </p>
         </div>
-      ) : vistaAgrupada ? (
-        // Vista agrupada por categorías
-        <DocumentosAgrupados
-          documentos={documentosFiltrados}
-          categorias={categorias}
-          onView={handleView}
-          onDownload={handleDownload}
-          onToggleImportante={handleToggleImportante}
-          onArchive={handleArchive}
-          onDelete={handleDelete}
-          onRename={handleRename}
-          onAsignarCategoria={handleAsignarCategoria}
-          onRefresh={refrescarDocumentos} // 🆕 Callback para refrescar
-        />
       ) : (
         <AnimatePresence mode='popLayout'>
           {vista === 'grid' ? (
@@ -157,13 +176,15 @@ export function DocumentosListaCliente({
                     <DocumentoCard
                       documento={documento as any}
                       categoria={categoria}
+                      tipoEntidad="cliente"
                       onView={handleView}
                       onDownload={handleDownload}
                       onToggleImportante={handleToggleImportante}
                       onArchive={handleArchive}
                       onDelete={handleDelete}
                       onRename={handleRename}
-                      onRefresh={refrescarDocumentos} // 🆕 Callback para refrescar después de versión
+                      onRefresh={refrescarDocumentos}
+                      moduleName="clientes"
                     />
                   </motion.div>
                 )
@@ -184,13 +205,15 @@ export function DocumentosListaCliente({
                     key={documento.id}
                     documento={documento as any}
                     categoria={categoria}
+                    tipoEntidad="cliente"
                     onView={handleView}
                     onDownload={handleDownload}
                     onToggleImportante={handleToggleImportante}
                     onArchive={handleArchive}
                     onDelete={handleDelete}
                     onRename={handleRename}
-                    onRefresh={refrescarDocumentos} // 🆕 Callback para refrescar después de versión
+                    onRefresh={refrescarDocumentos}
+                    moduleName="clientes"
                     // No permitir categorizar la cédula (ya tiene categoría fija)
                     onAsignarCategoria={documento.id === 'cedula-ciudadania' ? undefined : handleAsignarCategoria}
                   />

@@ -11,6 +11,12 @@ export type TipoDocumento = 'CC' | 'CE' | 'TI' | 'NIT' | 'PP' | 'PEP'
 
 /**
  * ✅ VERIFICADO en: docs/DATABASE-SCHEMA-REFERENCE.md
+ * Estado civil del cliente
+ */
+export type EstadoCivil = 'Soltero(a)' | 'Casado(a)' | 'Unión libre' | 'Viudo(a)'
+
+/**
+ * ✅ VERIFICADO en: docs/DATABASE-SCHEMA-REFERENCE.md
  * CHECK constraint: clientes_estado_check (5 estados)
  */
 export type EstadoCliente =
@@ -20,17 +26,21 @@ export type EstadoCliente =
   | 'Inactivo'
   | 'Propietario' // ⭐ NUEVO (2025-10-22)
 
-export type OrigenCliente =
-  | 'Referido'
-  | 'Página Web'
-  | 'Redes Sociales'
-  | 'Llamada Directa'
-  | 'Visita Oficina'
-  | 'Feria/Evento'
-  | 'Publicidad'
-  | 'Otro'
-
 export type EstadoInteres = 'Activo' | 'Descartado' | 'Convertido'
+
+/**
+ * Origen del cliente/interés
+ * Cómo llegó el cliente a la constructora
+ */
+export type OrigenCliente =
+  | 'WhatsApp'
+  | 'Email'
+  | 'Teléfono'
+  | 'Visita Presencial'
+  | 'Referido'
+  | 'Redes Sociales'
+  | 'Página Web'
+  | 'Otro'
 
 /**
  * ✅ VERIFICADO en: docs/DATABASE-SCHEMA-REFERENCE.md
@@ -70,6 +80,7 @@ export interface Cliente {
   tipo_documento: TipoDocumento
   numero_documento: string
   fecha_nacimiento?: string // ISO date string
+  estado_civil?: EstadoCivil
 
   // Contacto
   telefono?: string
@@ -81,8 +92,6 @@ export interface Cliente {
 
   // Estado
   estado: EstadoCliente
-  origen?: OrigenCliente
-  referido_por?: string
 
   // Documentos
   documento_identidad_url?: string
@@ -309,7 +318,24 @@ export interface ClienteEstadisticas {
 }
 
 export interface ClienteResumen extends Cliente {
+  tiene_documento_identidad?: boolean // ⭐ Indica si tiene cédula/documento subido
   estadisticas: ClienteEstadisticas
+  // ⭐ Datos de vivienda para clientes Activos (desde negociación activa)
+  vivienda?: {
+    nombre_proyecto?: string
+    ubicacion_proyecto?: string
+    nombre_manzana?: string
+    numero_vivienda?: string
+    valor_total?: number
+    total_abonado?: number
+    saldo_pendiente?: number
+  }
+  // ⭐ Datos de interés para clientes Interesados
+  interes?: {
+    nombre_proyecto?: string
+    nombre_manzana?: string
+    numero_vivienda?: string
+  }
 }
 
 export interface NegociacionCompleta extends Negociacion {
@@ -420,6 +446,7 @@ export interface CrearClienteDTO {
   tipo_documento: TipoDocumento
   numero_documento: string
   fecha_nacimiento?: string
+  estado_civil?: EstadoCivil
 
   // Contacto
   telefono?: string
@@ -428,10 +455,6 @@ export interface CrearClienteDTO {
   direccion?: string
   ciudad?: string
   departamento?: string
-
-  // Estado
-  origen?: OrigenCliente
-  referido_por?: string
 
   // Documentos
   documento_identidad_url?: string
@@ -539,7 +562,6 @@ export interface CerrarRenunciaDTO {
 
 export interface FiltrosClientes {
   estado?: EstadoCliente[]
-  origen?: OrigenCliente[]
   busqueda?: string // Búsqueda por nombre, documento, teléfono, email
   fecha_desde?: string
   fecha_hasta?: string
@@ -569,6 +591,13 @@ export const TIPOS_DOCUMENTO: Record<TipoDocumento, string> = {
   PEP: 'Permiso Especial de Permanencia',
 }
 
+export const ESTADOS_CIVILES: Record<EstadoCivil, string> = {
+  'Soltero(a)': 'Soltero(a)',
+  'Casado(a)': 'Casado(a)',
+  'Unión libre': 'Unión libre',
+  'Viudo(a)': 'Viudo(a)',
+}
+
 export const ESTADOS_CLIENTE: Record<EstadoCliente, string> = {
   Interesado: 'Interesado',
   Activo: 'Activo',
@@ -581,17 +610,6 @@ export const ESTADOS_INTERES: Record<EstadoInteres, string> = {
   Activo: 'Interés Vigente',
   Descartado: 'Ya no interesa',
   Convertido: 'Venta Concretada',
-}
-
-export const ORIGENES_CLIENTE: Record<OrigenCliente, string> = {
-  Referido: 'Referido',
-  'Página Web': 'Página Web',
-  'Redes Sociales': 'Redes Sociales',
-  'Llamada Directa': 'Llamada Directa',
-  'Visita Oficina': 'Visita Oficina',
-  'Feria/Evento': 'Feria/Evento',
-  Publicidad: 'Publicidad',
-  Otro: 'Otro',
 }
 
 export const ESTADOS_NEGOCIACION: Record<EstadoNegociacion, string> = {

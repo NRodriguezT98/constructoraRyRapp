@@ -1,8 +1,8 @@
 // Barrel exports para componentes de proyectos
-// Permite importar m�ltiples componentes en una sola l�nea
+// Permite importar múltiples componentes en una sola línea
 
-// Componentes principales
-export { ProyectoCard } from './proyecto-card'
+// Componentes principales (ProyectoCard legacy eliminado, usar ProyectoCardPremium)
+export { ProyectoCardPremium } from './proyecto-card-premium'
 export { ProyectosForm } from './proyectos-form'
 export { ProyectosPage } from './proyectos-page-main'
 

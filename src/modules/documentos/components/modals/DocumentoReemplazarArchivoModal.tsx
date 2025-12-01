@@ -15,9 +15,10 @@ import {
     X
 } from 'lucide-react'
 
+import { type ModuleName } from '@/shared/config/module-themes'
 import { useReemplazarArchivoForm } from '../../hooks'
-import type { DocumentoProyecto } from '../../types'
-import { reemplazarArchivoModalStyles as styles } from './DocumentoReemplazarArchivoModal.styles'
+import type { DocumentoProyecto, TipoEntidad } from '../../types'
+import { getReemplazarArchivoModalStyles } from './DocumentoReemplazarArchivoModal.styles'
 
 // Helper para iconos de fase
 const getFaseIcon = (fase: string) => {
@@ -55,6 +56,8 @@ const getFasePorcentaje = (faseId: string): number => {
 interface DocumentoReemplazarArchivoModalProps {
   isOpen: boolean
   documento: DocumentoProyecto
+  tipoEntidad?: TipoEntidad
+  moduleName?: ModuleName
   onClose: () => void
   onReemplazado?: () => void | Promise<void>
 }
@@ -62,9 +65,14 @@ interface DocumentoReemplazarArchivoModalProps {
 export function DocumentoReemplazarArchivoModal({
   isOpen,
   documento,
+  tipoEntidad = 'proyecto',
+  moduleName = 'proyectos',
   onClose,
   onReemplazado
 }: DocumentoReemplazarArchivoModalProps) {
+  // Generar estilos dinámicos según módulo
+  const styles = getReemplazarArchivoModalStyles(moduleName)
+
   const {
     nuevoArchivo,
     justificacion,
@@ -82,6 +90,7 @@ export function DocumentoReemplazarArchivoModal({
     handleSubmit,
     handleClose
   } = useReemplazarArchivoForm({
+    tipoEntidad,
     onSuccess: onReemplazado,
     onClose
   })

@@ -17,23 +17,26 @@ import { LoadingSpinner } from '@/shared/components/ui/Loading'
 import { type ModuleName } from '@/shared/config/module-themes'
 import type { DocumentoProyecto } from '@/types/documento.types'
 import {
-  useDocumentosArchivadosQuery,
-  useRestaurarDocumentoMutation,
+    useDocumentosArchivadosQuery,
+    useRestaurarDocumentoMutation,
 } from '../../hooks/useDocumentosQuery'
+import { type TipoEntidad } from '../../types/entidad.types'
 
 import { DocumentoCardArchivado } from './DocumentoCardArchivado'
 
 interface DocumentosArchivadosListaProps {
-  proyectoId: string
+  entidadId: string
+  tipoEntidad: TipoEntidad
   moduleName?: ModuleName
 }
 
 export function DocumentosArchivadosLista({
-  proyectoId,
+  entidadId,
+  tipoEntidad,
   moduleName = 'proyectos',
 }: DocumentosArchivadosListaProps) {
-  const { documentos, cargando, refrescar } = useDocumentosArchivadosQuery(proyectoId)
-  const restaurarMutation = useRestaurarDocumentoMutation(proyectoId)
+  const { documentos, cargando, refrescar } = useDocumentosArchivadosQuery(entidadId, tipoEntidad)
+  const restaurarMutation = useRestaurarDocumentoMutation(entidadId, tipoEntidad)
 
   const handleRestaurar = async (documento: DocumentoProyecto) => {
     await restaurarMutation.mutateAsync(documento.id)

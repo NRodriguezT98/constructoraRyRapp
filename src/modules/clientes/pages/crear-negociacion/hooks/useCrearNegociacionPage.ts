@@ -11,9 +11,9 @@ import { useRouter } from 'next/navigation'
 
 import {
     useFuentesPago,
-    useProyectosViviendas
-} from '@/modules/clientes/components/modals/modal-crear-negociacion/hooks'
-import type { StepNumber } from '@/modules/clientes/components/modals/modal-crear-negociacion/types'
+    useProyectosViviendas,
+} from '@/modules/clientes/components/asignar-vivienda/hooks'
+import type { StepNumber } from '@/modules/clientes/components/asignar-vivienda/types'
 import { useCrearNegociacion } from '@/modules/clientes/hooks'
 import { validarSumaTotal } from '@/modules/clientes/utils/validar-edicion-fuentes'
 import { useModal } from '@/shared/components/modals'

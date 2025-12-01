@@ -30,7 +30,7 @@ import {
     Paso1InfoBasica,
     Paso2FuentesPago,
     Paso3Revision,
-} from '@/modules/clientes/components/modals/modal-crear-negociacion/components'
+} from '@/modules/clientes/components/asignar-vivienda/components'
 
 import {
     BreadcrumbsNegociacion,

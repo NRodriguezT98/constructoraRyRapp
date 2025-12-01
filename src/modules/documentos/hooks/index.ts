@@ -5,6 +5,7 @@
 // React Query hooks (nuevos)
 export { useDocumentosEliminados } from './useDocumentosEliminados'
 export * from './useDocumentosQuery'
+export { usePapeleraCount } from './usePapeleraCount'
 export { useVersionesEliminadasCard } from './useVersionesEliminadasCard'
 
 // Hooks de UI/Lógica

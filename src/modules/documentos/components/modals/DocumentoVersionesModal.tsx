@@ -11,11 +11,12 @@
 
 import { AnimatePresence, motion } from 'framer-motion'
 import { AlertCircle, AlertTriangle, Calendar, Download, Eye, FileText, History, Loader2, RotateCcw, Trash2, User, X } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 
 import { formatDateCompact } from '@/lib/utils/date.utils'
 import { useDocumentoVersiones } from '@/modules/proyectos/hooks/useDocumentoVersiones'
+import { moduleThemes, type ModuleName } from '@/shared/config/module-themes'
 import type { EstadoVersion } from '@/types/documento.types'
 import { EstadoVersionAlert, EstadoVersionBadge } from '../shared/EstadoVersionBadge'
 import { MarcarEstadoVersionModal, type AccionEstado } from './MarcarEstadoVersionModal'
@@ -25,14 +26,21 @@ interface DocumentoVersionesModalProps {
   documentoId: string
   onClose: () => void
   onVersionRestaurada?: () => void
+  tipoEntidad?: 'proyecto' | 'vivienda' | 'cliente' // 🆕 Determina qué tabla usar
+  moduleName?: ModuleName // 🎨 Tema del módulo (determina colores)
 }
 
 export function DocumentoVersionesModal({
   isOpen,
   documentoId,
   onClose,
-  onVersionRestaurada
+  onVersionRestaurada,
+  tipoEntidad = 'proyecto', // 🆕 Default a proyecto para mantener compatibilidad
+  moduleName = 'proyectos' // 🎨 Default a proyectos (verde/esmeralda)
 }: DocumentoVersionesModalProps) {
+  // 🎨 Obtener tema dinámico según módulo
+  const theme = moduleThemes[moduleName]
+
   // Estado local para modal de estados de versión
   const [modalEstadoOpen, setModalEstadoOpen] = useState(false)
   const [accionEstado, setAccionEstado] = useState<AccionEstado>('erronea')
@@ -40,6 +48,22 @@ export function DocumentoVersionesModal({
     id: string
     numero: number
   } | null>(null)
+
+  // 🎯 Estado para dropdown de Estado (con portal)
+  const [dropdownAbierto, setDropdownAbierto] = useState<string | null>(null)
+  const [posicionDropdown, setPosicionDropdown] = useState({ top: 0, left: 0 })
+  const botonEstadoRef = useRef<HTMLButtonElement>(null)
+
+  // Cerrar dropdown al hacer click fuera
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (dropdownAbierto && !botonEstadoRef.current?.contains(e.target as Node)) {
+        setDropdownAbierto(null)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [dropdownAbierto])
 
   const {
     versiones,
@@ -67,6 +91,7 @@ export function DocumentoVersionesModal({
     isOpen,
     onVersionRestaurada,
     onClose, // ✅ Pasar callback de cierre
+    tipoEntidad, // 🆕 Pasar tipo de entidad al hook
   })
 
   const esAdministrador = perfil?.rol === 'Administrador'
@@ -106,8 +131,8 @@ export function DocumentoVersionesModal({
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
           className="relative w-full max-w-4xl max-h-[90vh] overflow-hidden bg-white dark:bg-gray-800 rounded-2xl shadow-2xl"
         >
-          {/* Header - Verde/Esmeralda */}
-          <div className="sticky top-0 z-10 bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 px-6 py-4 rounded-t-2xl">
+          {/* Header - Gradiente dinámico según módulo */}
+          <div className={`sticky top-0 z-10 bg-gradient-to-r ${theme.classes.gradient.triple} px-6 py-4 rounded-t-2xl`}>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
@@ -167,7 +192,7 @@ export function DocumentoVersionesModal({
                       className={`
                         relative rounded-xl border-2 p-4 transition-all
                         ${esActual
-                          ? 'bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 border-green-300 dark:border-green-700 shadow-lg shadow-green-500/10'
+                          ? `bg-gradient-to-br ${theme.classes.gradient.background} dark:${theme.classes.gradient.backgroundDark} ${theme.classes.border.light} shadow-lg ${theme.classes.shadow}`
                           : 'bg-white dark:bg-gray-900/50 border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
                         }
                       `}
@@ -183,7 +208,7 @@ export function DocumentoVersionesModal({
                           <span className={`
                             inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold
                             ${esActual
-                              ? 'bg-green-600 text-white shadow-sm'
+                              ? `${theme.classes.badge.primary} text-white shadow-sm`
                               : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
                             }
                           `}>
@@ -196,7 +221,7 @@ export function DocumentoVersionesModal({
                             )}
                           </span>
                           {esActual && (
-                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-600 text-white shadow-sm">
+                            <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold ${theme.classes.badge.secondary} text-white shadow-sm`}>
                               ✓ Actual
                             </span>
                           )}
@@ -263,7 +288,7 @@ export function DocumentoVersionesModal({
                         {/* Ver */}
                         <button
                           onClick={() => handleVerDocumento(version)}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-green-600 hover:bg-green-700 text-white transition-colors shadow-sm"
+                          className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium ${theme.classes.button.primary} text-white transition-colors shadow-sm`}
                         >
                           <Eye className="w-3.5 h-3.5" />
                           Ver
@@ -283,7 +308,7 @@ export function DocumentoVersionesModal({
                           <button
                             onClick={() => solicitarRestauracion(version.id, version.version)}
                             disabled={restaurando === version.id}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-orange-600 hover:bg-orange-700 text-white transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium ${theme.classes.button.secondary} text-white transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed`}
                           >
                             {restaurando === version.id ? (
                               <>
@@ -301,40 +326,69 @@ export function DocumentoVersionesModal({
 
                         {/* Estado de versión (Admin) */}
                         {esAdministrador && (
-                          <div className="relative group">
+                          <>
                             <button
+                              ref={version.id === dropdownAbierto ? botonEstadoRef : null}
+                              onClick={(e) => {
+                                const rect = e.currentTarget.getBoundingClientRect()
+                                setPosicionDropdown({
+                                  top: rect.bottom + window.scrollY + 4,
+                                  left: rect.left + window.scrollX
+                                })
+                                setDropdownAbierto(dropdownAbierto === version.id ? null : version.id)
+                              }}
                               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-purple-600 hover:bg-purple-700 text-white transition-colors shadow-sm"
                             >
                               <AlertCircle className="w-3.5 h-3.5" />
                               Estado
                             </button>
 
-                            {/* Dropdown de opciones de estado */}
-                            <div className="absolute left-0 mt-1 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-xl border-2 border-gray-200 dark:border-gray-700 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-10">
-                              <div className="p-1">
-                                <button
-                                  onClick={() => abrirModalEstado(version.id, versionSecuencial, 'erronea')}
-                                  className="w-full text-left px-3 py-2 rounded-md text-xs font-medium text-gray-700 dark:text-gray-300 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-                                >
-                                  ⚠️ Marcar como Errónea
-                                </button>
-                                <button
-                                  onClick={() => abrirModalEstado(version.id, versionSecuencial, 'obsoleta')}
-                                  className="w-full text-left px-3 py-2 rounded-md text-xs font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-900/20 transition-colors"
-                                >
-                                  📦 Marcar como Obsoleta
-                                </button>
-                                {estadoVersion !== 'valida' && (
+                            {/* Dropdown renderizado en portal */}
+                            {dropdownAbierto === version.id && createPortal(
+                              <div
+                                style={{
+                                  position: 'absolute',
+                                  top: `${posicionDropdown.top}px`,
+                                  left: `${posicionDropdown.left}px`,
+                                  zIndex: 9999
+                                }}
+                                className="w-48 bg-white dark:bg-gray-800 rounded-lg shadow-xl border-2 border-gray-200 dark:border-gray-700"
+                              >
+                                <div className="p-1">
                                   <button
-                                    onClick={() => abrirModalEstado(version.id, versionSecuencial, 'restaurar')}
-                                    className="w-full text-left px-3 py-2 rounded-md text-xs font-medium text-gray-700 dark:text-gray-300 hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors"
+                                    onClick={() => {
+                                      abrirModalEstado(version.id, versionSecuencial, 'erronea')
+                                      setDropdownAbierto(null)
+                                    }}
+                                    className="w-full text-left px-3 py-2 rounded-md text-xs font-medium text-gray-700 dark:text-gray-300 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                                   >
-                                    ♻️ Restaurar a Válida
+                                    ⚠️ Marcar como Errónea
                                   </button>
-                                )}
-                              </div>
-                            </div>
-                          </div>
+                                  <button
+                                    onClick={() => {
+                                      abrirModalEstado(version.id, versionSecuencial, 'obsoleta')
+                                      setDropdownAbierto(null)
+                                    }}
+                                    className="w-full text-left px-3 py-2 rounded-md text-xs font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-900/20 transition-colors"
+                                  >
+                                    📦 Marcar como Obsoleta
+                                  </button>
+                                  {estadoVersion !== 'valida' && (
+                                    <button
+                                      onClick={() => {
+                                        abrirModalEstado(version.id, versionSecuencial, 'restaurar')
+                                        setDropdownAbierto(null)
+                                      }}
+                                      className="w-full text-left px-3 py-2 rounded-md text-xs font-medium text-gray-700 dark:text-gray-300 hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors"
+                                    >
+                                      ♻️ Restaurar a Válida
+                                    </button>
+                                  )}
+                                </div>
+                              </div>,
+                              document.body
+                            )}
+                          </>
                         )}
 
                         {/* Eliminar (solo Admin) */}

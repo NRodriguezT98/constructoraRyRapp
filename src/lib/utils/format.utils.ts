@@ -22,3 +22,23 @@ export function formatFileSize(bytes: number | null | undefined): string {
 
   return `${size.toFixed(sizeIndex === 0 ? 0 : 2)} ${sizes[sizeIndex]}`
 }
+
+/**
+ * Formatea número como moneda en pesos colombianos
+ * @param value - Valor numérico a formatear
+ * @returns String formateado (ej: "$150.000.000", "$0")
+ */
+export function formatCurrency(value: number | null | undefined): string {
+  // Manejo robusto de valores inválidos
+  if (value == null || isNaN(value) || !isFinite(value)) {
+    return '$0'
+  }
+
+  // Formatear con separadores de miles
+  return new Intl.NumberFormat('es-CO', {
+    style: 'currency',
+    currency: 'COP',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(value)
+}

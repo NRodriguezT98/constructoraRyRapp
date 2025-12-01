@@ -13,11 +13,93 @@ import {
     User,
     X
 } from 'lucide-react'
+import { createPortal } from 'react-dom'
 
 import { formatDateCompact } from '@/lib/utils/date.utils'
 import { moduleThemes, type ModuleName } from '@/shared/config/module-themes'
 import { DocumentoProyecto, formatFileSize, getFileIcon } from '../../../../types/documento.types'
 import { CategoriaIcon } from '../shared/categoria-icon'
+
+// ============================================
+// HELPER FUNCTIONS
+// ============================================
+
+/**
+ * Humanizar nombres de campos del metadata
+ */
+function humanizarCampoMetadata(key: string): string {
+  const mapeo: Record<string, string> = {
+    tipo_fuente: 'Tipo de Fuente',
+    entidad: 'Entidad Financiera',
+    monto_aprobado: 'Monto Aprobado',
+    vivienda: 'Vivienda',
+    subido_desde: 'Origen',
+    numero_resolucion: 'Número de Resolución',
+    fecha_resolucion: 'Fecha de Resolución',
+    reemplazo: 'Archivo Reemplazado',
+    version_anterior: 'Versión Anterior',
+    archivo_anterior: 'Archivo Anterior',
+    justificacion_reemplazo: 'Justificación',
+  }
+  return mapeo[key] || key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+}
+
+/**
+ * Formatear valor del metadata
+ */
+function formatearValorMetadata(key: string, value: any): string {
+  if (value === null || value === undefined || value === '') {
+    return 'No especifica'
+  }
+
+  // Si es un objeto, intentar extraer información útil
+  if (typeof value === 'object' && !Array.isArray(value)) {
+    // Para el campo reemplazo, mostrar info resumida
+    if (key === 'reemplazo') {
+      const archivo = value.archivo_anterior || value.nombreArchivo || 'archivo anterior'
+      const version = value.version_anterior || value.version || '?'
+      return `${archivo} (v${version})`
+    }
+
+    // Para otros objetos, intentar JSON.stringify
+    try {
+      return JSON.stringify(value, null, 2)
+    } catch {
+      return '[Objeto complejo]'
+    }
+  }
+
+  // Formatear monto en pesos colombianos
+  if (key === 'monto_aprobado' && typeof value === 'number') {
+    return `$${value.toLocaleString('es-CO')}`
+  }
+
+  // Formatear origen
+  if (key === 'subido_desde') {
+    const origenes: Record<string, string> = {
+      asignacion_vivienda: 'Asignación de Vivienda',
+      negociacion: 'Negociación',
+      documentos: 'Módulo de Documentos',
+    }
+    return origenes[String(value)] || String(value)
+  }
+
+  // Formatear fecha
+  if (key === 'fecha_resolucion' && value) {
+    try {
+      const fecha = new Date(value)
+      return fecha.toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric' })
+    } catch {
+      return String(value)
+    }
+  }
+
+  return String(value)
+}
+
+// ============================================
+// COMPONENT
+// ============================================
 
 interface DocumentoViewerProps {
   documento: DocumentoProyecto | null
@@ -50,7 +132,9 @@ export function DocumentoViewer({
 
   const FileIcon = getFileIcon(documento.tipo_mime || '')
 
-  return (
+  if (!isOpen) return null
+
+  return createPortal(
     <AnimatePresence>
       {isOpen && (
         <>
@@ -60,17 +144,17 @@ export function DocumentoViewer({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className='fixed inset-0 z-50 bg-black/60 backdrop-blur-sm'
+            className='fixed inset-0 z-[9999] bg-black/60 backdrop-blur-sm'
           />
 
           {/* Modal */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            className='fixed inset-4 z-50 flex items-center justify-center md:inset-8 lg:inset-16'
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className='fixed inset-0 z-[10000]'
           >
-            <div className='flex h-full w-full flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl dark:border-gray-700 dark:bg-gray-900'>
+            <div className='absolute inset-0 flex flex-col overflow-hidden bg-white shadow-2xl dark:bg-gray-900'>
               {/* Header */}
               <div className={`flex items-center justify-between border-b border-gray-200 bg-gradient-to-r ${theme.classes.gradient.background} dark:${theme.classes.gradient.backgroundDark} p-6 dark:border-gray-700`}>
                 <div className='flex min-w-0 flex-1 items-center gap-4'>
@@ -91,7 +175,6 @@ export function DocumentoViewer({
                       )}
                     </h2>
                     <p className='truncate text-sm text-white/90 drop-shadow-sm'>
-                      {documento.nombre_original} •{' '}
                       {formatFileSize(documento.tamano_bytes)}
                     </p>
                   </div>
@@ -142,23 +225,40 @@ export function DocumentoViewer({
               <div className='flex flex-1 overflow-hidden'>
                 {/* Preview Area */}
                 <div className='flex-1 overflow-auto bg-gray-50 p-6 dark:bg-gray-800'>
-                  {canPreview && urlPreview ? (
-                    <div className='flex h-full items-center justify-center'>
-                      {isPDF && (
-                        <iframe
-                          src={urlPreview}
-                          className='h-full w-full rounded-xl border-2 border-gray-300 shadow-lg dark:border-gray-600'
-                          title={documento.titulo}
-                        />
-                      )}
-                      {isImage && (
-                        <img
-                          src={urlPreview}
-                          alt={documento.titulo}
-                          className='max-h-full max-w-full rounded-xl object-contain shadow-lg'
-                        />
-                      )}
-                    </div>
+                  {canPreview ? (
+                    urlPreview ? (
+                      <div className='flex h-full items-center justify-center'>
+                        {isPDF && (
+                          <iframe
+                            src={urlPreview}
+                            className='h-full w-full rounded-xl border-2 border-gray-300 shadow-lg dark:border-gray-600'
+                            title={documento.titulo}
+                          />
+                        )}
+                        {isImage && (
+                          <img
+                            src={urlPreview}
+                            alt={documento.titulo}
+                            className='max-h-full max-w-full rounded-xl object-contain shadow-lg'
+                          />
+                        )}
+                      </div>
+                    ) : (
+                      // Estado de carga mientras se genera la signed URL
+                      <div className='flex h-full items-center justify-center'>
+                        <div className='text-center'>
+                          <div className='mb-4 inline-flex rounded-2xl bg-white p-6 shadow-lg dark:bg-gray-700'>
+                            <div className='h-16 w-16 animate-spin rounded-full border-4 border-gray-200 border-t-blue-500 dark:border-gray-600 dark:border-t-blue-400' />
+                          </div>
+                          <h3 className='mb-2 text-xl font-semibold text-gray-900 dark:text-white'>
+                            Cargando vista previa...
+                          </h3>
+                          <p className='text-gray-600 dark:text-gray-400'>
+                            Generando URL segura del documento
+                          </p>
+                        </div>
+                      </div>
+                    )
                   ) : (
                     <div className='flex h-full items-center justify-center'>
                       <div className='text-center'>
@@ -290,7 +390,13 @@ export function DocumentoViewer({
                               Fecha de carga al sistema
                             </p>
                             <p className='font-medium text-gray-900 dark:text-white'>
-                              {formatDateCompact(documento.fecha_creacion)}
+                              {new Date(documento.fecha_creacion).toLocaleString('es-CO', {
+                                year: 'numeric',
+                                month: 'short',
+                                day: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit',
+                              })}
                             </p>
                           </div>
                         </div>
@@ -324,18 +430,29 @@ export function DocumentoViewer({
                           Información adicional
                         </h3>
                         <div className='space-y-2'>
-                          {Object.entries(documento.metadata).map(
-                            ([key, value]) => (
+                          {Object.entries(documento.metadata)
+                            .filter(([key, value]) => {
+                              // Filtrar campos que no queremos mostrar (técnicos/internos)
+                              const camposOcultos = [
+                                'fuente_pago_id',
+                                'reemplazo', // Info técnica de auditoría
+                                'version_anterior', // Ya se muestra en "Versión"
+                                'archivo_anterior', // Info técnica
+                                'justificacion_reemplazo', // Info de auditoría
+                              ]
+                              if (camposOcultos.includes(key)) return false
+                              return value !== null && value !== undefined
+                            })
+                            .map(([key, value]) => (
                               <div key={key} className='text-sm'>
-                                <p className='capitalize text-gray-600 dark:text-gray-400'>
-                                  {key.replace(/_/g, ' ')}
+                                <p className='text-gray-600 dark:text-gray-400'>
+                                  {humanizarCampoMetadata(key)}
                                 </p>
                                 <p className='font-medium text-gray-900 dark:text-white'>
-                                  {String(value)}
+                                  {formatearValorMetadata(key, value)}
                                 </p>
                               </div>
-                            )
-                          )}
+                            ))}
                         </div>
                       </div>
                     )}
@@ -378,6 +495,7 @@ export function DocumentoViewer({
           </motion.div>
         </>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   )
 }

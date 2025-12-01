@@ -581,17 +581,53 @@ create trigger update_viviendas_fecha_actualizacion BEFORE update on viviendas f
 - `trigger_actualizar_estado_vivienda` → Lógica de estado automática
 - `update_viviendas_fecha_actualizacion` → Actualiza `fecha_actualizacion`
 
-**⚠️ CAMPO CRÍTICO:**
+**⚠️ CAMPOS CRÍTICOS (VERIFICADO 2025-01-26):**
 - ❌ `vivienda_precio` → NO EXISTE
 - ❌ `vivienda_valor` → NO EXISTE
+- ❌ `numero_vivienda` → **NO EXISTE** (es `numero` sin prefijo)
+- ❌ `proyecto_id` → **NO EXISTE EN VIVIENDAS** (proyecto viene por manzanas.proyecto_id)
+- ✅ `numero` → varchar(10) (SIN prefijo "vivienda_")
+- ✅ `manzana_id` → uuid → manzanas(id) (para llegar a proyecto)
 - ✅ `valor_base` → Valor base correcto
 - ✅ `valor_total` → GENERATED (suma automática)
 
 **Errores comunes:**
+- ❌ `vivienda.numero_vivienda` → ✅ `vivienda.numero` (SIN prefijo)
+- ❌ `vivienda.proyecto_id` → ✅ **NO EXISTE** - Usar `vivienda.manzana_id` → `manzana.proyecto_id`
 - ❌ `vivienda.vivienda_valor` → ✅ `vivienda.valor_total` (GENERATED)
 - ❌ `vivienda.vivienda_precio` → ✅ `vivienda.precio` o `vivienda.valor_base`
 - ❌ Insertar `valor_total` → ✅ Es GENERATED, se calcula automáticamente
 - ❌ `estado: 'Disponible'` → ✅ `'disponible'` (snake_case lowercase)
+
+**Relación con Proyecto:**
+```typescript
+// ❌ INCORRECTO - viviendas NO tiene proyecto_id
+const { data } = await supabase
+  .from('viviendas')
+  .select('id, numero, proyecto_id')  // ← ERROR: column doesn't exist
+
+// ✅ CORRECTO - Llegar a proyecto vía manzanas
+const { data } = await supabase
+  .from('viviendas')
+  .select('id, numero, manzana_id, manzanas(id, nombre, proyecto_id)')
+  .eq('id', viviendaId)
+
+// ✅ CORRECTO - Fetch separado + manual mapping
+const { data: viviendas } = await supabase
+  .from('viviendas')
+  .select('id, numero, manzana_id')
+
+const { data: manzanas } = await supabase
+  .from('manzanas')
+  .select('id, nombre, proyecto_id')
+  .in('id', viviendas.map(v => v.manzana_id))
+
+const manzanasMap = new Map(manzanas.map(m => [m.id, m]))
+const viviendasEnriquecidas = viviendas.map(v => ({
+  ...v,
+  manzana: manzanasMap.get(v.manzana_id)
+}))
+```
 
 ---
 

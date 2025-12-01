@@ -1,26 +1,39 @@
 /**
  * ClienteCardInteresado - Card para clientes en estado "Interesado"
- * Muestra información básica de contacto, origen, fecha de registro e intereses activos
+ *
+ * ✅ Muestra: Interés manifestado, proyecto/vivienda de interés, contacto
+ * ✅ Tema: Cyan/Azul
+ * ✅ Diseño consistente con sistema base
  */
 
 'use client'
 
-import { useEffect, useState } from 'react'
-
-import { formatDistanceToNow } from 'date-fns'
-import { es } from 'date-fns/locale'
 import { motion } from 'framer-motion'
-import { Building2, Clock, Edit, Eye, Home, Mail, MapPin, Phone, Tag, Trash2, User } from 'lucide-react'
+import {
+  Building2,
+  Calendar,
+  Edit,
+  Eye,
+  Home,
+  Mail,
+  MapPin,
+  Phone,
+  Trash2,
+  User
+} from 'lucide-react'
 
-import { CanDelete, CanEdit } from '@/modules/usuarios/components'
+import { formatDateShort } from '@/lib/utils/date.utils'
 
-
-import { interesesService } from '../../services/intereses.service'
-import { clientesStyles, fadeInUp } from '../../styles'
-import type { ClienteInteres, ClienteResumen } from '../../types'
+import { useClienteIntereses } from '../../hooks/useClienteIntereses'
+import type { ClienteResumen } from '../../types'
+import {
+  clienteCardThemes,
+  clienteCardBaseStyles as styles
+} from './cliente-card-base.styles'
 
 interface ClienteCardInteresadoProps {
   cliente: ClienteResumen
+  tieneCedula?: boolean
   onVer?: (cliente: ClienteResumen) => void
   onEditar?: (cliente: ClienteResumen) => void
   onEliminar?: (cliente: ClienteResumen) => void
@@ -28,249 +41,181 @@ interface ClienteCardInteresadoProps {
 
 export function ClienteCardInteresado({
   cliente,
+  tieneCedula = false,
   onVer,
   onEditar,
-  onEliminar
+  onEliminar,
 }: ClienteCardInteresadoProps) {
-  const [interesesActivos, setInteresesActivos] = useState<ClienteInteres[]>([])
-  const [cargandoIntereses, setCargandoIntereses] = useState(false)
+  const theme = clienteCardThemes.Interesado
 
-  // Cargar intereses activos del cliente
-  useEffect(() => {
-    const cargarIntereses = async () => {
-      setCargandoIntereses(true)
-      try {
-        const intereses = await interesesService.obtenerInteresesCliente(cliente.id, true)
-        setInteresesActivos(intereses)
-      } catch (error) {
-        console.error('Error cargando intereses:', error)
-      } finally {
-        setCargandoIntereses(false)
-      }
-    }
+  // Cargar intereses del cliente
+  const { intereses, isLoading } = useClienteIntereses(cliente.id)
 
-    cargarIntereses()
-  }, [cliente.id])
-
-  // Función para obtener la clase del badge según el estado
-  const getBadgeClass = () => {
-    return clientesStyles.badgeInteresado
-  }
-
-  // Calcular tiempo relativo
-  const tiempoRelativo = cliente.fecha_creacion
-    ? formatDistanceToNow(new Date(cliente.fecha_creacion), {
-        addSuffix: true,
-        locale: es
-      })
-    : 'Recientemente'
+  // Obtener el interés más reciente
+  const interesActual = intereses && intereses.length > 0 ? intereses[0] : null
+  const tieneNegociacion = cliente.estadisticas.negociaciones_activas > 0 || cliente.estadisticas.negociaciones_completadas > 0
 
   return (
     <motion.div
-      className='overflow-hidden rounded-2xl border border-purple-200 bg-white shadow-lg transition-all hover:shadow-2xl dark:border-purple-800 dark:bg-gray-800'
-      variants={fadeInUp}
-      layout
-      whileHover={{ y: -8, scale: 1.02 }}
+      className={`${styles.container} ${theme.hoverShadow}`}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
     >
-      {/* Header con gradiente - BOTONES EN ESQUINA */}
-      <div className='relative h-24 bg-gradient-to-br from-purple-500 via-violet-500 to-purple-600 p-6'>
-        <div className='bg-grid-white/[0.05] absolute inset-0 bg-[length:20px_20px]' />
+      {/* Efecto de brillo */}
+      <div className={`${styles.glow} ${theme.glow}`} />
 
-        {/* Botones de acción en esquina superior derecha */}
-        <div className='relative flex items-start justify-end gap-1'>
+      <div className={`${styles.content} grid grid-rows-[85px_45px_95px_42px_auto] gap-3`}>
+        {/* HEADER COMPLETO */}
+        <div className={styles.header.container}>
+          {/* HEADER: Botones de acción */}
+          <div className={styles.header.actions}>
           {onVer && (
-            <button
-              type='button'
-              onClick={() => onVer(cliente)}
-              className='rounded-lg p-2 text-white backdrop-blur-sm transition-all hover:bg-white/20'
-              title='Ver detalles'
-            >
-              <Eye className='h-4 w-4' />
+            <button onClick={() => onVer(cliente)} className={styles.header.actionButton} title="Ver detalle">
+              <Eye className={styles.header.iconSize} />
             </button>
           )}
-          <CanEdit modulo="clientes">
-            {onEditar && (
-              <button
-                type='button'
-                onClick={() => onEditar(cliente)}
-                className='rounded-lg p-2 text-white backdrop-blur-sm transition-all hover:bg-white/20'
-                title='Editar cliente'
-              >
-                <Edit className='h-4 w-4' />
-              </button>
-            )}
-          </CanEdit>
-          <CanDelete modulo="clientes">
-            {onEliminar && (
-              <button
-                type='button'
-                onClick={() => onEliminar(cliente)}
-                className='rounded-lg p-2 text-white backdrop-blur-sm transition-all hover:bg-white/20'
-                title='Eliminar cliente'
-              >
-                <Trash2 className='h-4 w-4' />
-              </button>
-            )}
-          </CanDelete>
+          {onEditar && (
+            <button onClick={() => onEditar(cliente)} className={styles.header.actionButton} title="Editar">
+              <Edit className={styles.header.iconSize} />
+            </button>
+          )}
+          {onEliminar && (
+            <button onClick={() => onEliminar(cliente)} className={styles.header.actionButtonDelete} title="Eliminar">
+              <Trash2 className={styles.header.iconSize} />
+            </button>
+          )}
         </div>
 
-        {/* Icono flotante del cliente */}
-        <div className='absolute -bottom-6 left-6'>
-          <div className='flex h-12 w-12 items-center justify-center rounded-xl border-4 border-white bg-white shadow-xl dark:border-gray-800 dark:bg-gray-800'>
-            <User className='h-6 w-6 text-purple-600' />
+        {/* HEADER: Icono + Título + Badges */}
+        <div className={styles.header.titleSection}>
+          <div className={`${styles.header.icon} ${theme.bg}`}>
+            <User className={styles.header.iconSize} />
           </div>
-        </div>
-      </div>
 
-      {/* Contenido - PT-10 para espacio del icono */}
-      <div className='px-6 pb-5 pt-10'>
-        {/* Título y badge */}
-        <div className='mb-4'>
-          <div className='mb-2 flex items-start justify-between gap-3'>
-            <h3
-              className='line-clamp-1 text-xl font-bold text-gray-900 dark:text-white'
-              title={cliente.nombre_completo}
-            >
-              {cliente.nombre_completo}
-            </h3>
-            <span className={`flex-shrink-0 ${clientesStyles.badge} ${getBadgeClass()}`}>
-              {cliente.estado}
+          <div className={styles.header.info}>
+            <h3 className={styles.header.title}>{cliente.nombre_completo}</h3>
+            <p className={styles.header.documento}>
+              <span className={`${styles.header.documentoLabel} ${theme.text}`}>
+                {cliente.tipo_documento}
+              </span>
+              {cliente.numero_documento}
+            </p>
+            {cliente.estado_civil && (
+              <p className={styles.header.estadoCivil}>{cliente.estado_civil}</p>
+            )}
+          </div>
+
+          <div className={styles.header.badges}>
+            {/* Badge principal de estado */}
+            <span className={`${styles.header.badge} ${theme.badge} ${theme.shadow}`}>
+              <div className={styles.header.badgeDot} />
+              INTERESADO
             </span>
           </div>
-          <p className='text-sm text-gray-600 dark:text-gray-400'>
-            {cliente.tipo_documento} {cliente.numero_documento}
-          </p>
+        </div>
         </div>
 
-        {/* Información de contacto */}
-        <div className='space-y-2 text-sm text-gray-600 dark:text-gray-400'>
-          {cliente.telefono && (
-            <div className='flex items-center gap-2'>
-              <Phone className='h-4 w-4 flex-shrink-0' />
-              <span>{cliente.telefono}</span>
+        {/* SECCIÓN: Información de Contacto - HORIZONTAL */}
+        <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-gradient-to-r from-cyan-500/10 via-blue-500/10 to-cyan-500/10 border-l-4 border-cyan-500 dark:border-cyan-400">
+          <div className="flex items-center gap-2 flex-1 min-w-0">
+            <div className="p-1.5 rounded-lg bg-cyan-500 shadow-lg shadow-cyan-500/30">
+              <Phone className="w-4 h-4 text-white" />
             </div>
-          )}
-          {cliente.email && (
-            <div className='flex items-center gap-2'>
-              <Mail className='h-4 w-4 flex-shrink-0' />
-              <span className='min-w-0 truncate' title={cliente.email}>
-                {cliente.email}
-              </span>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-bold text-gray-900 dark:text-white truncate">{cliente.telefono || 'Sin teléfono'}</p>
+              <p className="text-[10px] text-gray-600 dark:text-gray-400 truncate">
+                {cliente.email || 'Sin email'}
+              </p>
             </div>
-          )}
-          {cliente.ciudad && (
-            <div className='flex items-center gap-2'>
-              <MapPin className='h-4 w-4 flex-shrink-0' />
-              <span
-                className='min-w-0 truncate'
-                title={`${cliente.ciudad}${cliente.departamento ? `, ${cliente.departamento}` : ''}`}
-              >
-                {cliente.ciudad}
-                {cliente.departamento && `, ${cliente.departamento}`}
-              </span>
-            </div>
-          )}
+          </div>
+          <div className="px-2.5 py-1 rounded-lg bg-cyan-500 dark:bg-cyan-600">
+            <Mail className="w-4 h-4 text-white" />
+          </div>
         </div>
 
-        {/* Intereses Activos */}
-        {!cargandoIntereses && interesesActivos.length > 0 && (
-          <div className='mt-4 space-y-2 border-t border-gray-100 pt-4 dark:border-gray-700'>
-            <p className='text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400'>
-              Interesado en:
-            </p>
-            {interesesActivos.map((interes) => (
-              <motion.div
-                key={interes.id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className='group rounded-lg bg-gradient-to-br from-purple-50 to-violet-50 p-3 transition-all hover:shadow-md dark:from-purple-900/20 dark:to-violet-900/20'
-              >
-                {/* Proyecto */}
-                <div className='flex items-start gap-2'>
-                  <Building2 className='mt-0.5 h-4 w-4 flex-shrink-0 text-purple-600 dark:text-purple-400' />
-                  <div className='min-w-0 flex-1'>
-                    <p className='font-medium text-purple-900 dark:text-purple-100'>
-                      {interes.proyecto_nombre}
+        {/* SECCIÓN: Interés Manifestado - HORIZONTAL */}
+        <div className="space-y-2">
+          {isLoading ? (
+            <div className="px-3 py-4 rounded-lg bg-gray-100 dark:bg-gray-800 animate-pulse">
+              <div className="h-12 bg-gray-200 dark:bg-gray-700 rounded" />
+            </div>
+          ) : interesActual ? (
+            <>
+              {/* Proyecto destacado */}
+              <div className="px-3 py-2.5 rounded-lg bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-950/30 dark:to-purple-950/30 border border-indigo-200 dark:border-indigo-800">
+                <div className="flex items-center gap-2">
+                  <div className="p-1.5 rounded-lg bg-indigo-500 shadow-lg shadow-indigo-500/30">
+                    <Building2 className="w-4 h-4 text-white" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[9px] font-semibold text-indigo-600 dark:text-indigo-400 uppercase mb-0.5">Proyecto de Interés</p>
+                    <p className="text-xs font-extrabold text-gray-900 dark:text-white truncate">
+                      {interesActual.proyecto_nombre || 'No especificado'}
                     </p>
-                    {interes.proyecto_estado && (
-                      <p className='text-xs text-purple-600 dark:text-purple-400'>
-                        {interes.proyecto_estado}
-                      </p>
-                    )}
                   </div>
                 </div>
+              </div>
 
-                {/* Vivienda específica (si existe) */}
-                {interes.vivienda_numero && (
-                  <div className='mt-2 flex items-center gap-2 rounded-md bg-white/50 px-2 py-1 dark:bg-gray-800/50'>
-                    <Home className='h-3.5 w-3.5 text-purple-500' />
-                    <span className='text-xs font-medium text-purple-700 dark:text-purple-300'>
-                      Manzana {interes.manzana_nombre} - Casa {interes.vivienda_numero}
-                    </span>
-                    {interes.vivienda_valor && (
-                      <span className='ml-auto text-xs text-gray-600 dark:text-gray-400'>
-                        {new Intl.NumberFormat('es-CO', {
-                          style: 'currency',
-                          currency: 'COP',
-                          minimumFractionDigits: 0,
-                          maximumFractionDigits: 0,
-                        }).format(interes.vivienda_valor)}
-                      </span>
-                    )}
+              {/* Manzana y Vivienda */}
+              <div className="grid grid-cols-2 gap-2">
+                <div className="px-2.5 py-2 rounded-lg bg-purple-50 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-800">
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <MapPin className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
+                    <p className="text-[9px] font-semibold text-purple-600 dark:text-purple-400 uppercase">Manzana</p>
                   </div>
-                )}
-
-                {/* Notas del interés (si existen) */}
-                {interes.notas && (
-                  <p className='mt-2 line-clamp-2 text-xs italic text-gray-600 dark:text-gray-400'>
-                    "{interes.notas}"
+                  <p className="text-xs font-extrabold text-gray-900 dark:text-white truncate">
+                    {interesActual.manzana_nombre || 'N/A'}
                   </p>
-                )}
-              </motion.div>
-            ))}
-          </div>
-        )}
+                </div>
 
-        {/* Origen y Fecha */}
-        <div className='mt-4 flex items-center justify-between border-t border-gray-100 pt-3 text-xs text-gray-500 dark:border-gray-700 dark:text-gray-400'>
-          {/* Origen */}
-          {cliente.origen && (
-            <div className='flex items-center gap-1.5'>
-              <Tag className='h-3.5 w-3.5' />
-              <span>{cliente.origen}</span>
+                <div className="px-2.5 py-2 rounded-lg bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800">
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <Home className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+                    <p className="text-[9px] font-semibold text-blue-600 dark:text-blue-400 uppercase">Vivienda</p>
+                  </div>
+                  <p className="text-xs font-extrabold text-gray-900 dark:text-white truncate">
+                    Casa {interesActual.vivienda_numero || 'N/A'}
+                  </p>
+                </div>
+              </div>
+            </>
+          ) : (
+            <div className="flex items-center gap-2 py-3 px-3 rounded-lg bg-gray-100 dark:bg-gray-800/50 opacity-60">
+              <div className="p-1.5 rounded-lg bg-gray-200 dark:bg-gray-700">
+                <Home className="w-4 h-4 text-gray-400 dark:text-gray-600" />
+              </div>
+              <p className="text-xs text-gray-500 dark:text-gray-500 italic">
+                Sin interés registrado
+              </p>
             </div>
           )}
-
-          {/* Fecha relativa */}
-          <div className='flex items-center gap-1.5'>
-            <Clock className='h-3.5 w-3.5' />
-            <span>{tiempoRelativo}</span>
-          </div>
         </div>
 
-        {/* Estadísticas */}
-        {cliente.estadisticas && (
-          <div className='mt-4 grid grid-cols-3 gap-3 border-t border-gray-100 pt-4 dark:border-gray-700'>
-            <div className='text-center'>
-              <p className='text-xs font-medium text-gray-600 dark:text-gray-400'>Total</p>
-              <p className='mt-1 text-2xl font-bold text-purple-600 dark:text-purple-400'>
-                {cliente.estadisticas.total_negociaciones}
-              </p>
+        {/* Botón: Ver Interés - Diseño Premium */}
+        {interesActual && (
+          <motion.button
+            onClick={() => {
+              console.log('Ver interés del cliente:', cliente.id)
+            }}
+            className="w-full px-4 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-white text-sm font-bold shadow-lg shadow-cyan-500/30 hover:shadow-xl hover:shadow-cyan-500/40 transition-all"
+            whileHover={{ scale: 1.02, y: -1 }}
+            whileTap={{ scale: 0.98 }}
+          >
+            <div className="flex items-center justify-center gap-2">
+              <Eye className="w-4 h-4" />
+              <span>Ver Interés</span>
             </div>
-            <div className='text-center'>
-              <p className='text-xs font-medium text-gray-600 dark:text-gray-400'>Activas</p>
-              <p className='mt-1 text-2xl font-bold text-green-600 dark:text-green-400'>
-                {cliente.estadisticas.negociaciones_activas}
-              </p>
-            </div>
-            <div className='text-center'>
-              <p className='text-xs font-medium text-gray-600 dark:text-gray-400'>Completas</p>
-              <p className='mt-1 text-2xl font-bold text-blue-600 dark:text-blue-400'>
-                {cliente.estadisticas.negociaciones_completadas}
-              </p>
-            </div>
-          </div>
+          </motion.button>
         )}
+
+        {/* FOOTER: Fecha de registro */}
+        <div className={styles.footer.container}>
+          <div className={styles.footer.text}>
+            <Calendar className={styles.footer.icon} />
+            <span>Registrado {formatDateShort(cliente.fecha_creacion)}</span>
+          </div>
+        </div>
       </div>
     </motion.div>
   )

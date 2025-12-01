@@ -1,4 +1,6 @@
 import { supabase } from '@/lib/supabase/client'
+import type { Database } from '@/lib/supabase/database.types'
+import { formatDateForDB, getTodayDateString } from '@/lib/utils/date.utils'
 import { auditService } from '@/services/audit.service'
 
 import type {
@@ -13,7 +15,19 @@ import type {
  * Incluye auditoría completa de todas las operaciones CRUD
  */
 class ProyectosService {
-  // CRUD Operations
+  // ==================== CRUD OPERATIONS ====================
+
+  /**
+   * Obtiene todos los proyectos de la base de datos
+   * @param incluirArchivados - Si es true, incluye proyectos archivados. Por defecto false.
+   * @returns Array de proyectos con sus manzanas
+   * @throws Error si falla la consulta a Supabase
+   * @example
+   * ```ts
+   * const proyectos = await proyectosService.obtenerProyectos()
+   * const todosIncluidos = await proyectosService.obtenerProyectos(true)
+   * ```
+   */
   async obtenerProyectos(incluirArchivados: boolean = false): Promise<Proyecto[]> {
     let query = supabase
       .from('proyectos')
@@ -44,6 +58,17 @@ class ProyectosService {
     return (data || []).map(this.transformarProyectoDeDB)
   }
 
+  /**
+   * Obtiene un proyecto específico por su ID
+   * @param id - UUID del proyecto a buscar
+   * @returns Proyecto encontrado o null si no existe
+   * @throws Error si falla la consulta a Supabase
+   * @example
+   * ```ts
+   * const proyecto = await proyectosService.obtenerProyecto('uuid-123')
+   * if (proyecto) console.log(proyecto.nombre)
+   * ```
+   */
   async obtenerProyecto(id: string): Promise<Proyecto | null> {
     const { data, error } = await supabase
       .from('proyectos')
@@ -71,7 +96,22 @@ class ProyectosService {
     return this.transformarProyectoDeDB(data)
   }
 
-  async crearProyecto(formData: ProyectoFormData): Promise<Proyecto> {
+  /**
+   * Crea un nuevo proyecto en la base de datos
+   * @param proyectoData - Datos del formulario de proyecto
+   * @returns Proyecto creado con ID asignado
+   * @throws Error si falla la creación o auditoría
+   * @example
+   * ```ts
+   * const nuevoProyecto = await proyectosService.crearProyecto({
+   *   nombre: 'Proyecto Norte',
+   *   ubicacion: 'Calle 123 #45-67',
+   *   estado: 'planificacion',
+   *   manzanas: [{ nombre: 'A', numero_viviendas: 10 }]
+   * })
+   * ```
+   */
+  async crearProyecto(proyectoData: ProyectoFormData): Promise<Proyecto> {
     // 1. Crear el proyecto principal
     const { data: proyecto, error: errorProyecto } = await supabase
       .from('proyectos')
@@ -160,6 +200,26 @@ class ProyectosService {
     return proyectoCompleto
   }
 
+  /**
+   * Actualiza un proyecto existente y sus manzanas
+   * @param id - UUID del proyecto a actualizar
+   * @param data - Datos parciales del proyecto a actualizar
+   * @returns Proyecto actualizado con cambios aplicados
+   * @throws Error si no existe el proyecto o falla la actualización
+   * @remarks
+   * - Valida transiciones de estado coherentes
+   * - Advierte al cambiar nombre con viviendas vendidas
+   * - No permite marcar como completado si hay viviendas disponibles
+   * - Actualiza/crea/elimina manzanas según cambios en formulario
+   * @example
+   * ```ts
+   * const actualizado = await proyectosService.actualizarProyecto('uuid-123', {
+   *   estado: 'en_construccion',
+   *   fecha_inicio: '2025-01-15',
+   *   manzanas: [{ nombre: 'A', totalViviendas: 15 }]
+   * })
+   * ```
+   */
   async actualizarProyecto(
     id: string,
     data: Partial<ProyectoFormData>
@@ -169,7 +229,11 @@ class ProyectosService {
     try {
       proyectoAnterior = await this.obtenerProyecto(id)
     } catch (error) {
-      console.error('Error al obtener proyecto para auditoría:', error)
+      if (error instanceof Error) {
+        console.error('[PROYECTOS] Error al obtener proyecto para auditoría:', error.message)
+      } else {
+        console.error('[PROYECTOS] Error desconocido al obtener proyecto:', String(error))
+      }
     }
 
     // 2. ✅ VALIDACIÓN: Advertencia al cambiar nombre con viviendas vendidas
@@ -212,7 +276,7 @@ class ProyectosService {
         const { count: viviendasDisponibles } = await supabase
           .from('viviendas')
           .select('*', { count: 'exact', head: true })
-          .eq('estado', 'disponible')
+          .eq('estado', 'Disponible')
           .in('manzana_id', manzanasIds)
 
         if (viviendasDisponibles && viviendasDisponibles > 0) {
@@ -234,7 +298,7 @@ class ProyectosService {
     }
 
     // 4. Preparar datos para actualización
-    const updateData: any = {}
+    const updateData: Partial<Database['public']['Tables']['proyectos']['Update']> = {}
 
     // Mapear campos de la aplicación a campos de DB
     if (data.nombre !== undefined) updateData.nombre = data.nombre
@@ -272,7 +336,7 @@ class ProyectosService {
     // 6. ✅ Actualizar manzanas si se proporcionaron
     if (data.manzanas && data.manzanas.length > 0) {
       // Obtener IDs de manzanas existentes
-      const manzanasExistentesIds = (proyecto.manzanas || []).map((m: any) => m.id)
+      const manzanasExistentesIds = (proyecto.manzanas || []).map((m) => m.id)
 
       // Procesar cada manzana
       for (const manzana of data.manzanas) {
@@ -283,11 +347,11 @@ class ProyectosService {
         }
 
         // Si la manzana tiene ID y existe en DB → Actualizar
-        if ((manzana as any).id && manzanasExistentesIds.includes((manzana as any).id)) {
+        if ('id' in manzana && manzana.id && manzanasExistentesIds.includes(manzana.id)) {
           const { error: updateError } = await supabase
             .from('manzanas')
             .update(manzanaData)
-            .eq('id', (manzana as any).id)
+            .eq('id', manzana.id)
 
           if (updateError) {
             console.error('Error al actualizar manzana:', updateError)
@@ -308,8 +372,8 @@ class ProyectosService {
       // Eliminar manzanas que ya no están en el formulario
       // (Solo las que NO tienen viviendas - validación granular)
       const manzanasFormularioIds = data.manzanas
-        .map((m: any) => m.id)
-        .filter(Boolean)
+        .map((m) => 'id' in m ? m.id : null)
+        .filter(Boolean) as string[]
 
       const manzanasAEliminar = manzanasExistentesIds.filter(
         id => !manzanasFormularioIds.includes(id)
@@ -358,13 +422,26 @@ class ProyectosService {
     return proyectoActualizado
   }
 
+  /**
+   * Elimina un proyecto (soft delete - marca como archivado)
+   * @param id - UUID del proyecto a eliminar
+   * @throws Error si no existe el proyecto o falla la eliminación
+   * @example
+   * ```ts
+   * await proyectosService.eliminarProyecto('uuid-123')
+   * ```
+   */
   async eliminarProyecto(id: string): Promise<void> {
     // 1. 🔍 AUDITORÍA: Obtener datos ANTES de eliminar
     let proyectoEliminado: Proyecto | null = null
     try {
       proyectoEliminado = await this.obtenerProyecto(id)
     } catch (error) {
-      console.error('Error al obtener proyecto para auditoría:', error)
+      if (error instanceof Error) {
+        console.error('[PROYECTOS] Error al obtener proyecto para auditoría:', error.message)
+      } else {
+        console.error('[PROYECTOS] Error desconocido al obtener proyecto:', String(error))
+      }
     }
 
     // 2. ✅ VALIDACIÓN CRÍTICA: Verificar que NO tenga viviendas
@@ -432,8 +509,18 @@ class ProyectosService {
   }
 
   /**
-   * 📦 Archivar proyecto (soft delete)
-   * Permite ocultar proyectos sin perder datos históricos
+   * Archiva un proyecto (soft delete sin eliminar datos)
+   * @param id - UUID del proyecto a archivar
+   * @param motivo - Razón del archivado (opcional)
+   * @throws Error si no existe el proyecto o falla el archivado
+   * @remarks
+   * - Permite ocultar proyectos manteniendo historial completo
+   * - No afecta viviendas, manzanas ni documentos asociados
+   * - Registra fecha y motivo del archivado
+   * @example
+   * ```ts
+   * await proyectosService.archivarProyecto('uuid-123', 'Proyecto cancelado por cliente')
+   * ```
    */
   async archivarProyecto(id: string, motivo?: string): Promise<void> {
     // 1. 🔍 AUDITORÍA: Obtener datos ANTES de archivar
@@ -441,7 +528,11 @@ class ProyectosService {
     try {
       proyectoArchivado = await this.obtenerProyecto(id)
     } catch (error) {
-      console.error('Error al obtener proyecto para auditoría:', error)
+      if (error instanceof Error) {
+        console.error('[PROYECTOS] Error al obtener proyecto para auditoría:', error.message)
+      } else {
+        console.error('[PROYECTOS] Error desconocido al obtener proyecto:', String(error))
+      }
     }
 
     // 2. Archivar proyecto
@@ -449,7 +540,7 @@ class ProyectosService {
       .from('proyectos')
       .update({
         archivado: true,
-        fecha_archivado: new Date().toISOString(),
+        fecha_archivado: formatDateForDB(getTodayDateString()),
         motivo_archivo: motivo || null,
       })
       .eq('id', id)
@@ -482,8 +573,16 @@ class ProyectosService {
   }
 
   /**
-   * 📂 Restaurar proyecto archivado
-   * Vuelve a mostrar el proyecto en la lista activa
+   * Restaura un proyecto archivado
+   * @param id - UUID del proyecto a restaurar
+   * @throws Error si no existe el proyecto o falla la restauración
+   * @remarks
+   * - Quita marca de archivado y limpia metadatos
+   * - Restaura acceso completo al proyecto
+   * @example
+   * ```ts
+   * await proyectosService.restaurarProyecto('uuid-123')
+   * ```
    */
   async restaurarProyecto(id: string): Promise<void> {
     // 1. 🔍 AUDITORÍA: Obtener datos ANTES de restaurar
@@ -491,7 +590,11 @@ class ProyectosService {
     try {
       proyectoRestaurado = await this.obtenerProyecto(id)
     } catch (error) {
-      console.error('Error al obtener proyecto para auditoría:', error)
+      if (error instanceof Error) {
+        console.error('[PROYECTOS] Error al obtener proyecto para auditoría:', error.message)
+      } else {
+        console.error('[PROYECTOS] Error desconocido al obtener proyecto:', String(error))
+      }
     }
 
     // 2. Restaurar proyecto
@@ -529,10 +632,20 @@ class ProyectosService {
     }
   }
 
+  // ==================== ELIMINACIÓN DEFINITIVA (ADMIN ONLY) ====================
+
   /**
-   * 🗑️ Eliminación definitiva de proyecto (solo para casos extremos)
-   * Requiere que el proyecto esté archivado primero
-   * Solo admins deberían tener acceso a este método
+   * Elimina definitivamente un proyecto de la base de datos
+   * @param id - UUID del proyecto a eliminar
+   * @throws Error si el proyecto no está archivado o falla la eliminación
+   * @remarks
+   * - ⚠️ SOLO ADMINS - Acción irreversible
+   * - Requiere que el proyecto esté archivado primero
+   * - Elimina también manzanas sin viviendas asociadas
+   * @example
+   * ```ts
+   * await proyectosService.eliminarProyectoDefinitivo('uuid-123')
+   * ```
    */
   async eliminarProyectoDefinitivo(id: string): Promise<void> {
     // 1. Verificar que el proyecto esté archivado
@@ -554,7 +667,9 @@ class ProyectosService {
   }
 
   // Métodos de transformación
-  private transformarProyectoDeDB(data: any): Proyecto {
+  private transformarProyectoDeDB(data: Database['public']['Tables']['proyectos']['Row'] & {
+    manzanas?: Array<Database['public']['Tables']['manzanas']['Row']>
+  }): Proyecto {
     return {
       id: data.id,
       nombre: data.nombre,
@@ -563,9 +678,9 @@ class ProyectosService {
       fechaInicio: data.fecha_inicio,
       fechaFinEstimada: data.fecha_fin_estimada,
       presupuesto: data.presupuesto,
-      estado: data.estado as any, // Type assertion para evitar error de tipos con Supabase
+      estado: data.estado,
       progreso: data.progreso,
-      manzanas: (data.manzanas || []).map((m: any) => ({
+      manzanas: (data.manzanas || []).map((m) => ({
         id: m.id,
         nombre: m.nombre,
         totalViviendas: m.numero_viviendas || 0,
@@ -574,7 +689,7 @@ class ProyectosService {
         superficieTotal: 0,
         proyectoId: data.id,
         estado: 'planificada' as EstadoManzana,
-        fechaCreacion: m.fecha_creacion || new Date().toISOString(),
+        fechaCreacion: m.fecha_creacion || formatDateForDB(getTodayDateString()),
       })),
       fechaCreacion: data.fecha_creacion,
       fechaActualizacion: data.fecha_actualizacion,

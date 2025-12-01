@@ -9,6 +9,7 @@ import { LoadingSpinner } from '../../../../shared/components/ui/Loading'
 import { DocumentoProyecto } from '../../../../types/documento.types'
 import { useDocumentosLista } from '../../hooks'
 import { useDocumentosStore } from '../../store/documentos.store'
+import { type TipoEntidad, obtenerConfiguracionEntidad } from '../../types'
 import { DocumentosArchivadosLista } from '../archivados'
 import { DocumentoViewer } from '../viewer/documento-viewer'
 
@@ -16,18 +17,23 @@ import { DocumentoCard } from './documento-card'
 import { DocumentosFiltros } from './documentos-filtros'
 
 interface DocumentosListaProps {
-  proyectoId: string
+  entidadId: string // ✅ GENÉRICO (antes proyectoId)
+  tipoEntidad: TipoEntidad // ✅ NUEVO: 'proyecto', 'vivienda', etc.
   onViewDocumento?: (documento: DocumentoProyecto) => void
   onUploadClick?: () => void
   moduleName?: ModuleName // 🎨 Tema del módulo
 }
 
 export function DocumentosLista({
-  proyectoId,
+  entidadId,
+  tipoEntidad,
   onViewDocumento,
   onUploadClick,
-  moduleName = 'proyectos', // 🎨 Default a proyectos
+  moduleName, // 🎨 Inferir desde tipoEntidad si no se pasa
 }: DocumentosListaProps) {
+  // 🎨 Auto-inferir moduleName desde tipoEntidad si no se especifica
+  const config = obtenerConfiguracionEntidad(tipoEntidad)
+  const themeModuleName = moduleName || config.moduleName
   const vistaActual = useDocumentosStore((state) => state.vistaActual)
   const setVistaActual = useDocumentosStore((state) => state.setVistaActual)
 
@@ -41,6 +47,7 @@ export function DocumentosLista({
     categorias,
     cargandoDocumentos,
     hasDocumentos,
+    tipoEntidad: tipoEntidadFromHook, // ✅ Extraer tipoEntidad del hook
     handleView,
     handleCloseViewer,
     handleDownload,
@@ -49,7 +56,7 @@ export function DocumentosLista({
     handleDelete,
     getCategoriaByDocumento,
     refrescar, // 🆕 Para refrescar después de editar/reemplazar
-  } = useDocumentosLista({ proyectoId, onViewDocumento })
+  } = useDocumentosLista({ entidadId, tipoEntidad, onViewDocumento })
 
   // 🆕 Wrapper para refrescar (compatible con tipo void)
   const handleRefresh = async () => {
@@ -66,7 +73,7 @@ export function DocumentosLista({
 
   return (
     <div className='space-y-6'>
-      {/* 📑 TABS: Activos / Archivados */}
+      {/* 📑 TABS: Activos / Archivados (Papelera ahora es módulo independiente admin-only) */}
       <div className="flex items-center gap-2 border-b border-gray-200 dark:border-gray-700">
         <button
           onClick={() => setVistaActual('activos')}
@@ -111,7 +118,7 @@ export function DocumentosLista({
 
       {/* Contenido según tab activa */}
       {vistaActual === 'archivados' ? (
-        <DocumentosArchivadosLista proyectoId={proyectoId} moduleName={moduleName} />
+        <DocumentosArchivadosLista entidadId={entidadId} tipoEntidad={tipoEntidad} moduleName={themeModuleName} />
       ) : (
         <>
           {/* Filtros (solo en vista activos) */}
@@ -119,7 +126,7 @@ export function DocumentosLista({
             documentos={documentosFiltrados}
             categorias={categorias}
             onChangeVista={setVista}
-            moduleName={moduleName}
+            moduleName={themeModuleName}
           />
 
       {/* Lista de documentos */}
@@ -129,7 +136,7 @@ export function DocumentosLista({
           title='No se encontraron documentos'
           description={
             !hasDocumentos
-              ? 'Aún no has subido ningún documento a este proyecto'
+              ? `Aún no has subido ningún documento a este ${config.nombreSingular}`
               : 'No hay documentos que coincidan con los filtros aplicados'
           }
           action={
@@ -140,7 +147,7 @@ export function DocumentosLista({
                 }
               : undefined
           }
-          moduleName={moduleName}
+          moduleName={themeModuleName}
         />
       ) : (
         <AnimatePresence mode='popLayout'>
@@ -166,13 +173,14 @@ export function DocumentosLista({
                       documento={documento}
                       categoria={categoria}
                       categorias={categorias} // 🆕 Para modal de editar
+                      tipoEntidad={tipoEntidadFromHook} // ✅ Pasar tipoEntidad
                       onView={handleView}
                       onDownload={handleDownload}
                       onToggleImportante={handleToggleImportante}
                       onArchive={handleArchive}
                       onDelete={handleDelete}
                       onRefresh={handleRefresh} // 🆕 Pasar callback de refresh
-                      moduleName={moduleName}
+                      moduleName={themeModuleName}
                     />
                   </motion.div>
                 )
@@ -200,13 +208,14 @@ export function DocumentosLista({
                       documento={documento}
                       categoria={categoria}
                       categorias={categorias} // 🆕 Para modal de editar
+                      tipoEntidad={tipoEntidadFromHook} // ✅ Pasar tipoEntidad
                       onView={handleView}
                       onDownload={handleDownload}
                       onToggleImportante={handleToggleImportante}
                       onArchive={handleArchive}
                       onDelete={handleDelete}
                       onRefresh={handleRefresh} // 🆕 Pasar callback de refresh
-                      moduleName={moduleName}
+                      moduleName={themeModuleName}
                     />
                   </motion.div>
                 )
@@ -224,7 +233,7 @@ export function DocumentosLista({
         onDownload={handleDownload}
         onDelete={handleDelete}
         urlPreview={urlPreview}
-        moduleName={moduleName}
+        moduleName={themeModuleName}
       />
         </>
       )}

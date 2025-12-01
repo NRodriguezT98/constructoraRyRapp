@@ -345,3 +345,41 @@ export function formatRelativeDate(dateString: string): string {
 
   return 'hace un momento'
 }
+
+/**
+ * Calcula la edad actual a partir de una fecha de nacimiento
+ *
+ * @param birthDateString - Fecha de nacimiento en formato ISO o YYYY-MM-DD
+ * @returns Edad en años completos
+ *
+ * @example
+ * ```ts
+ * calculateAge("1995-03-18") // Hoy es 26 nov 2025
+ * // → 30
+ *
+ * calculateAge("2000-12-31T12:00:00")
+ * // → 24
+ * ```
+ */
+export function calculateAge(birthDateString: string): number {
+  if (!birthDateString) return 0
+
+  // Extraer fecha en formato YYYY-MM-DD sin timezone issues
+  const dateInput = formatDateForInput(birthDateString)
+  const [year, month, day] = dateInput.split('-').map(Number)
+
+  const today = new Date()
+  const currentYear = today.getFullYear()
+  const currentMonth = today.getMonth() + 1 // getMonth() es 0-indexado
+  const currentDay = today.getDate()
+
+  // Calcular edad base
+  let age = currentYear - year
+
+  // Ajustar si aún no cumplió años este año
+  if (currentMonth < month || (currentMonth === month && currentDay < day)) {
+    age--
+  }
+
+  return age
+}

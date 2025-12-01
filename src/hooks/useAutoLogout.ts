@@ -69,11 +69,8 @@ export function useAutoLogout(options: UseAutoLogoutOptions = {}) {
   const executeLogout = useCallback(async () => {
     // Evitar múltiples ejecuciones
     if (logoutExecutedRef.current) {
-      console.log('🔒 [AUTO-LOGOUT] Ya se ejecutó el logout, ignorando duplicado')
       return
     }
-
-    console.warn('🔒 [AUTO-LOGOUT] Sesión cerrada por inactividad')
     logoutExecutedRef.current = true
 
     // Limpiar todos los temporizadores
@@ -84,9 +81,6 @@ export function useAutoLogout(options: UseAutoLogoutOptions = {}) {
     // ✅ SOLO mostrar toast si la página está visible
     if (pageIsVisibleRef.current) {
       showSessionClosedToast()
-    } else {
-      console.log('📄 [AUTO-LOGOUT] Página oculta - Toast se mostrará al volver')
-      // El toast se mostrará cuando la página vuelva a ser visible (ver useEffect de visibilidad)
     }
 
     // ✅ Usar mutación de React Query (siempre actualizada)
@@ -110,21 +104,17 @@ export function useAutoLogout(options: UseAutoLogoutOptions = {}) {
     // Ocultar advertencia si estaba visible
     if (showWarning) {
       setShowWarning(false)
-      console.log('✅ [AUTO-LOGOUT] Sesión mantenida activa por actividad del usuario')
     }
 
     // Configurar advertencia (TIMEOUT_MS - WARNING_MS)
     warningTimeoutRef.current = setTimeout(() => {
       // ✅ SOLO mostrar advertencia si la página está visible
       if (!pageIsVisibleRef.current) {
-        console.log('📄 [AUTO-LOGOUT] Página oculta - NO mostrar advertencia')
         return
       }
 
       // ✅ Solo mostrar advertencia si NO se ha mostrado antes
       if (warningShownRef.current) return
-
-      console.warn(`⚠️ [AUTO-LOGOUT] Advertencia: ${warningMinutes} minutos para logout`)
       warningShownRef.current = true
       setShowWarning(true)
       setRemainingSeconds(WARNING_MS / 1000)
@@ -200,11 +190,6 @@ export function useAutoLogout(options: UseAutoLogoutOptions = {}) {
       return
     }
 
-    console.log('🕐 [AUTO-LOGOUT] Sistema activado:', {
-      timeoutMinutes,
-      warningMinutes,
-    })
-
     // Iniciar temporizadores SOLO UNA VEZ
     resetTimers()
 
@@ -228,15 +213,10 @@ export function useAutoLogout(options: UseAutoLogoutOptions = {}) {
       pageIsVisibleRef.current = isVisible
 
       if (isVisible) {
-        console.log('👁️ [AUTO-LOGOUT] Página visible de nuevo')
-
         // Si ya se ejecutó el logout mientras estaba oculta, mostrar el toast ahora
         if (logoutExecutedRef.current) {
-          console.log('🔒 [AUTO-LOGOUT] Mostrando toast de sesión cerrada al volver')
           showSessionClosedToast()
         }
-      } else {
-        console.log('📄 [AUTO-LOGOUT] Página oculta - Toasts se cancelarán')
       }
     }
 

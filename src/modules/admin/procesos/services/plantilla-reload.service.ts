@@ -5,14 +5,11 @@
  * ⚠️ Solo debe usarse en modo desarrollo para testing.
  */
 
-import { createBrowserClient } from '@supabase/ssr'
+import { createClient } from '@/lib/supabase/client'
 
 import { EstadoPaso } from '../types'
 
-const supabase = createBrowserClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
+const supabase = createClient()
 
 interface ResultadoRecarga {
   exito: boolean

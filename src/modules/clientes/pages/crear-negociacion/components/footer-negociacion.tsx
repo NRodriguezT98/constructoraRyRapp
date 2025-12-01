@@ -13,7 +13,7 @@ import {
     X
 } from 'lucide-react'
 
-import type { StepNumber } from '@/modules/clientes/components/modals/modal-crear-negociacion/types'
+import type { StepNumber } from '@/modules/clientes/components/asignar-vivienda/types'
 
 import { pageStyles } from '../styles'
 

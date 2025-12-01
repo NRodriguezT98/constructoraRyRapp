@@ -1,95 +1,93 @@
-// Estilos centralizados para cliente-detalle-client.tsx
-// Siguiendo la arquitectura del proyecto
-// Color principal: purple (consistente con módulo clientes)
+/**
+ * Estilos centralizados para Cliente Detalle
+ * Sistema de diseño moderno con glassmorphism y animaciones
+ * Color principal: Cyan/Blue (consistente con módulo clientes)
+ */
 
-// ==============================================
-// HEADER STYLES
-// ==============================================
+// Header con gradiente y glassmorphism
 export const headerClasses = {
-  container:
-    'relative overflow-hidden rounded-xl p-5 text-white shadow-xl backdrop-blur-sm',
-  backgroundPattern: 'absolute inset-0 opacity-20',
-  breadcrumb: 'relative z-10 flex items-center gap-1.5 text-xs text-white/80',
+  container: 'relative overflow-hidden rounded-xl bg-gradient-to-br from-cyan-600 via-blue-600 to-indigo-600 dark:from-cyan-700 dark:via-blue-700 dark:to-indigo-800 p-4 shadow-2xl shadow-cyan-500/20',
+  backgroundPattern: 'absolute inset-0 opacity-10',
+  breadcrumb: 'relative z-10 mb-2 flex items-center gap-1.5 text-xs text-white/80',
   breadcrumbIcon: 'h-3 w-3',
-  breadcrumbCurrent: 'font-medium text-white',
-  contentWrapper: 'relative z-10 mt-4 flex items-start justify-between',
-  leftSection: 'flex items-start gap-3',
-  iconContainer:
-    'flex h-12 w-12 items-center justify-center rounded-lg bg-white/20 backdrop-blur-sm',
-  icon: 'h-6 w-6',
-  titleSection: 'flex flex-col',
-  title: 'text-2xl font-bold',
-  subtitle: 'mt-1 flex items-center gap-1.5 text-sm text-white/90',
-  subtitleIcon: 'h-3.5 w-3.5',
-  actionsContainer: 'flex gap-1.5',
-  actionButton:
-    'bg-white/20 text-white hover:bg-white/30 backdrop-blur-sm border-white/30',
-  deleteButton:
-    'bg-red-500/80 text-white hover:bg-red-600 backdrop-blur-sm border-red-400/30',
-  statusBadge:
-    'inline-flex items-center gap-1.5 rounded-lg bg-white/20 px-3 py-1.5 text-xs font-medium backdrop-blur-sm',
-  statusDot: 'h-1.5 w-1.5 rounded-full animate-pulse',
-  statusText: 'text-white/95',
+  breadcrumbCurrent: 'font-semibold text-white',
+  contentWrapper: 'relative z-10 flex items-start justify-between',
+  leftSection: 'flex items-center gap-3',
+  iconContainer: 'rounded-xl bg-white/20 p-2.5 backdrop-blur-xl transition-transform hover:scale-105',
+  icon: 'h-6 w-6 text-white',
+  titleSection: 'space-y-0.5',
+  title: 'text-xl font-bold text-white',
+  location: 'flex items-center gap-1.5 text-sm text-white/90',
+  locationIcon: 'h-3.5 w-3.5',
+  actionsContainer: 'flex items-center gap-2',
+  actionButton: 'inline-flex items-center justify-center w-10 h-10 rounded-lg bg-white/20 backdrop-blur-md border border-white/30 text-white transition-all hover:bg-white/30 hover:scale-105',
+  deleteButton: 'inline-flex items-center justify-center w-10 h-10 rounded-lg bg-white/20 backdrop-blur-md border border-white/30 text-white transition-all hover:bg-red-500 hover:border-red-600',
+  statusBadge: 'mt-2 inline-flex items-center gap-1.5 rounded-full bg-white/20 px-3 py-1.5 backdrop-blur-xl',
+  statusDot: 'h-1.5 w-1.5 rounded-full',
+  statusText: 'text-xs font-medium text-white',
 }
 
-// ==============================================
-// TABS STYLES
-// ==============================================
+// Barra de progreso mejorada
+export const progressClasses = {
+  container: 'rounded-xl border border-gray-200 bg-white/80 p-3 shadow-md backdrop-blur-sm dark:border-gray-700 dark:bg-gray-800/80',
+  header: 'mb-2.5 flex items-center justify-between',
+  leftSection: 'flex items-center gap-2.5',
+  iconContainer: 'rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600 p-1.5',
+  icon: 'h-4 w-4 text-white',
+  titleSection: 'space-y-0.5',
+  title: 'text-sm font-semibold text-gray-900 dark:text-white',
+  subtitle: 'text-xs text-gray-600 dark:text-gray-400',
+  rightSection: 'text-right',
+  percentage: 'text-xl font-bold text-cyan-600 dark:text-cyan-400',
+  percentageLabel: 'text-xs text-gray-600 dark:text-gray-400',
+  bar: 'relative h-2 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700',
+  barFill: 'h-full bg-gradient-to-r from-cyan-500 via-blue-500 to-indigo-500 transition-all duration-1500',
+  shimmer: 'absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent',
+  milestones: 'mt-2.5 grid grid-cols-4 gap-3',
+  milestone: 'text-center',
+  milestoneValue: 'mb-0.5 text-lg font-bold text-gray-900 dark:text-white',
+  milestoneLabel: 'text-xs text-gray-600 dark:text-gray-400',
+}
+
+// Tabs mejorados (PILLS MODERNAS - MÁS VISIBLES)
 export const tabsClasses = {
-  container:
-    'rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-800/50',
-  nav: 'flex overflow-x-auto',
-  tab: 'relative flex-1 min-w-max cursor-pointer border-b-2 px-4 py-3 text-center transition-colors',
-  tabActive: 'border-purple-500 text-purple-600 dark:text-purple-400',
-  tabInactive:
-    'border-transparent text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200',
-  tabContent: 'flex items-center justify-center gap-1.5 text-xs font-medium',
-  tabIcon: 'h-3.5 w-3.5',
-  tabBadge:
-    'rounded-full bg-purple-100 px-1.5 py-0.5 text-[10px] font-bold text-purple-700 dark:bg-purple-900/30 dark:text-purple-300',
-  tabUnderline: 'absolute bottom-0 left-0 right-0 h-0.5 bg-purple-500',
+  container: 'mb-4',
+  nav: 'flex gap-3',
+  tab: 'relative px-4 py-2.5 text-sm font-semibold transition-all rounded-lg cursor-pointer',
+  tabActive: 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white shadow-lg shadow-cyan-500/30',
+  tabInactive: 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white',
+  tabContent: 'flex items-center gap-2',
+  tabIcon: 'h-4 w-4',
+  tabBadge: 'ml-1.5 rounded-full bg-white/20 px-2 py-0.5 text-xs font-bold',
+  tabUnderline: '',
 }
 
-// ==============================================
-// INFO CARDS STYLES
-// ==============================================
+// Info Cards
 export const infoCardClasses = {
-  card: 'rounded-xl border border-gray-200 bg-white p-4 shadow-sm hover:shadow-md transition-shadow dark:border-gray-800 dark:bg-gray-800/50',
-  header: 'mb-4 flex items-center gap-2.5',
-  iconContainer:
-    'flex h-8 w-8 items-center justify-center rounded-lg text-white shadow-md',
-  icon: 'h-4 w-4',
-  title: 'text-base font-bold text-gray-900 dark:text-gray-100',
-  content: 'space-y-3',
-  grid: 'grid grid-cols-1 gap-3 md:grid-cols-2',
-  fieldContainer: 'flex items-start gap-2.5',
-  fieldIconContainer:
-    'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-purple-100 dark:bg-purple-900/30',
-  fieldIcon: 'h-4 w-4 text-purple-600 dark:text-purple-400',
-  fieldContent: 'flex-1',
-  fieldLabel: 'text-xs font-medium text-gray-500 dark:text-gray-400',
-  fieldValue: 'mt-0.5 text-sm font-semibold text-gray-900 dark:text-white',
-  fieldValueEmpty: 'mt-0.5 text-sm font-semibold text-gray-400 dark:text-gray-600 italic',
+  card: 'group rounded-xl border border-gray-200 bg-gradient-to-br from-white to-gray-50 p-2.5 shadow-md transition-all hover:shadow-lg hover:-translate-y-1 dark:border-gray-700 dark:from-gray-800 dark:to-gray-900',
+  header: 'mb-2 flex items-center gap-2',
+  iconContainer: 'rounded-lg bg-gradient-to-br p-1.5',
+  icon: 'h-4 w-4 text-white',
+  title: 'text-sm font-semibold text-gray-900 dark:text-white',
+  content: 'space-y-1.5 text-sm text-gray-700 dark:text-gray-300',
+  row: 'flex items-center gap-1.5 text-xs',
+  rowIcon: 'h-3.5 w-3.5 text-gray-400',
+  label: 'text-xs text-gray-600 dark:text-gray-400',
+  value: 'text-sm font-semibold text-gray-900 dark:text-white',
 }
 
-// ==============================================
-// EMPTY STATE STYLES
-// ==============================================
+// Empty State
 export const emptyStateClasses = {
   container: 'flex flex-col items-center justify-center py-10 text-center',
   icon: 'mb-3 h-12 w-12 text-gray-400 dark:text-gray-600',
   title: 'mb-1.5 text-base font-semibold text-gray-900 dark:text-gray-100',
   description: 'mb-4 text-xs text-gray-600 dark:text-gray-400',
-  button:
-    'inline-flex items-center gap-1.5 rounded-lg bg-purple-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-purple-700',
+  button: 'inline-flex items-center gap-1.5 rounded-lg bg-cyan-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-cyan-700',
 }
 
-// ==============================================
-// WARNING STATE STYLES
-// ==============================================
+// Warning State
 export const warningStateClasses = {
-  container:
-    'rounded-xl border-2 border-amber-200 bg-amber-50 p-4 dark:border-amber-800/30 dark:bg-amber-900/10',
+  container: 'rounded-xl border-2 border-amber-200 bg-amber-50 p-4 dark:border-amber-800/30 dark:bg-amber-900/10',
   header: 'mb-3 flex items-center gap-2.5',
   icon: 'h-5 w-5 text-amber-600 dark:text-amber-400',
   title: 'text-base font-bold text-amber-900 dark:text-amber-100',
@@ -97,45 +95,47 @@ export const warningStateClasses = {
   list: 'mb-3 space-y-1.5',
   listItem: 'flex items-start gap-1.5 text-xs text-amber-800 dark:text-amber-200',
   listIcon: 'mt-0.5 text-amber-600 dark:text-amber-400',
-  button:
-    'inline-flex items-center gap-1.5 rounded-lg bg-amber-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-amber-700',
+  button: 'inline-flex items-center gap-1.5 rounded-lg bg-amber-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-amber-700',
 }
 
-// ==============================================
-// GRADIENTS
-// ==============================================
+// Gradientes por tipo (CYAN/BLUE/INDIGO - consistente con módulo)
 export const gradients = {
-  personal: 'from-purple-500 to-pink-600',
+  cliente: 'from-cyan-500 to-blue-600',
   contacto: 'from-blue-500 to-indigo-600',
+  ubicacion: 'from-indigo-500 to-purple-600',
+  adicional: 'from-cyan-600 to-blue-700',
   intereses: 'from-rose-500 to-red-600',
   documentos: 'from-emerald-500 to-teal-600',
   negociaciones: 'from-amber-500 to-orange-600',
   actividad: 'from-cyan-500 to-blue-600',
 }
 
-// ==============================================
-// ANIMATIONS
-// ==============================================
+// Animaciones Framer Motion
 export const animations = {
   fadeInUp: {
     initial: { opacity: 0, y: 20 },
     animate: { opacity: 1, y: 0 },
-    transition: { duration: 0.4 },
   },
-  fadeIn: {
-    initial: { opacity: 0 },
-    animate: { opacity: 1 },
-    exit: { opacity: 0 },
-    transition: { duration: 0.2 },
-  },
-  slideIn: {
-    initial: { opacity: 0, x: 20 },
+  fadeInLeft: {
+    initial: { opacity: 0, x: -20 },
     animate: { opacity: 1, x: 0 },
-    exit: { opacity: 0, x: -20 },
-    transition: { duration: 0.2 },
+  },
+  scaleIn: {
+    initial: { opacity: 0, scale: 0.9 },
+    animate: { opacity: 1, scale: 1 },
+  },
+  hoverLift: {
+    whileHover: { y: -8, scale: 1.02 },
   },
   hoverScale: {
-    whileHover: { scale: 1.02 },
-    transition: { type: 'spring' as const, stiffness: 300 },
+    whileHover: { scale: 1.05 },
+  },
+  hoverRotate: {
+    whileHover: { rotate: 360 },
+    transition: { duration: 0.6 },
+  },
+  statusPulse: {
+    animate: { scale: [1, 1.05, 1] },
+    transition: { repeat: Infinity, duration: 2 },
   },
 }

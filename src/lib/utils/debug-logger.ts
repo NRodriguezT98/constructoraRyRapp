@@ -5,8 +5,30 @@
 
 export class DebugLogger {
   private static logs: Array<{ timestamp: string; level: string; component: string; message: string; data?: any }> = []
+  private static initialized = false
+
+  private static init() {
+    if (this.initialized) return
+
+    // Cargar logs previos de sessionStorage
+    if (typeof window !== 'undefined') {
+      try {
+        const savedLogs = sessionStorage.getItem('debug-logs')
+        if (savedLogs) {
+          this.logs = JSON.parse(savedLogs)
+          console.log('🔄 [DEBUG LOGGER] Logs restaurados desde sessionStorage:', this.logs.length)
+        }
+      } catch (e) {
+        console.error('❌ [DEBUG LOGGER] Error al cargar logs:', e)
+      }
+    }
+
+    this.initialized = true
+  }
 
   static log(component: string, message: string, data?: any) {
+    this.init()
+
     const logEntry = {
       timestamp: new Date().toISOString(),
       level: 'LOG',
@@ -21,6 +43,8 @@ export class DebugLogger {
   }
 
   static error(component: string, message: string, error?: any) {
+    this.init()
+
     const logEntry = {
       timestamp: new Date().toISOString(),
       level: 'ERROR',
@@ -41,6 +65,8 @@ export class DebugLogger {
   }
 
   static warn(component: string, message: string, data?: any) {
+    this.init()
+
     const logEntry = {
       timestamp: new Date().toISOString(),
       level: 'WARN',
@@ -58,13 +84,15 @@ export class DebugLogger {
     try {
       if (typeof window !== 'undefined') {
         sessionStorage.setItem('debug-logs', JSON.stringify(this.logs, null, 2))
+        console.log('💾 [DEBUG LOGGER] Guardado en sessionStorage:', this.logs.length, 'logs')
       }
     } catch (e) {
-      // Ignorar errores de sessionStorage
+      console.error('❌ [DEBUG LOGGER] Error al guardar:', e)
     }
   }
 
   static getLogs() {
+    this.init()
     return this.logs
   }
 
@@ -73,13 +101,15 @@ export class DebugLogger {
     if (typeof window !== 'undefined') {
       sessionStorage.removeItem('debug-logs')
     }
+    console.log('🧹 [DEBUG LOGGER] Logs limpiados')
   }
 
   static printLogs() {
-    console.log('========== DEBUG LOGS ==========')
-    this.logs.forEach(log => {
+    this.init()
+    console.log('========== DEBUG LOGS (' + this.logs.length + ') ==========')
+    this.logs.forEach((log, index) => {
       const icon = log.level === 'ERROR' ? '❌' : log.level === 'WARN' ? '⚠️' : '📝'
-      console.log(`${icon} [${log.timestamp}] [${log.component}] ${log.message}`)
+      console.log(`${index + 1}. ${icon} [${log.timestamp}] [${log.component}] ${log.message}`)
       if (log.data) {
         console.log('   Data:', log.data)
       }

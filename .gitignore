@@ -36,6 +36,14 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# cache
+/.cache
+.cache/
+
+# reports y backups (scripts de análisis)
+.reports/
+.backups/
+
 # IDE
 .vscode/
 .idea/

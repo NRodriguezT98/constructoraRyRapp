@@ -132,6 +132,8 @@ export const documentoFormSchema = z.object({
 
   es_importante: z.boolean().optional(),
 
+  es_documento_identidad: z.boolean().optional(),
+
   metadata: z.record(z.string(), z.any()).optional(),
 }).refine(
   (data) => {

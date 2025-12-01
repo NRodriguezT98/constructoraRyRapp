@@ -23,13 +23,15 @@ interface UseDocumentoVersionesProps {
   isOpen: boolean
   onVersionRestaurada?: () => void
   onClose?: () => void // ✅ Callback para cerrar modal después de eliminar
+  tipoEntidad?: 'proyecto' | 'vivienda' | 'cliente' // 🆕 Tipo de entidad para queries genéricas
 }
 
 export function useDocumentoVersiones({
   documentoId,
   isOpen,
   onVersionRestaurada,
-  onClose
+  onClose,
+  tipoEntidad = 'proyecto' // 🆕 Default a proyecto para mantener compatibilidad
 }: UseDocumentoVersionesProps) {
   const { user, perfil } = useAuth()
   const queryClient = useQueryClient()
@@ -57,8 +59,11 @@ export function useDocumentoVersiones({
   } = useQuery({
     queryKey: ['documento-versiones', documentoId],
     queryFn: async () => {
-      if (!documentoId) return []
-      return await DocumentosService.obtenerVersiones(documentoId)
+      if (!documentoId) {
+        return []
+      }
+      const data = await DocumentosService.obtenerVersiones(documentoId, tipoEntidad)
+      return data
     },
     enabled: isOpen && !!documentoId, // Solo cargar cuando modal está abierto
     staleTime: 0, // Siempre refetch al invalidar
@@ -66,7 +71,7 @@ export function useDocumentoVersiones({
 
   const handleVerDocumento = async (documento: DocumentoProyecto) => {
     try {
-      const url = await DocumentosService.obtenerUrlDescarga(documento.url_storage)
+      const url = await DocumentosService.obtenerUrlDescarga(documento.url_storage, tipoEntidad)
       window.open(url, '_blank')
     } catch (error) {
       console.error('Error al ver documento:', error)
@@ -76,7 +81,7 @@ export function useDocumentoVersiones({
 
   const handleDescargar = async (documento: DocumentoProyecto) => {
     try {
-      const url = await DocumentosService.obtenerUrlDescarga(documento.url_storage)
+      const url = await DocumentosService.obtenerUrlDescarga(documento.url_storage, tipoEntidad)
       const response = await fetch(url)
       const blob = await response.blob()
       const downloadUrl = window.URL.createObjectURL(blob)
@@ -119,7 +124,7 @@ export function useDocumentoVersiones({
 
     setRestaurando(versionId)
     try {
-      await DocumentosService.restaurarVersion(versionId, user.id, motivoRestauracion.trim())
+      await DocumentosService.restaurarVersion(versionId, user.id, tipoEntidad, motivoRestauracion.trim())
       toast.success('Versión restaurada correctamente')
 
       // ✅ Invalidar caché de React Query para actualizar la lista
@@ -183,6 +188,7 @@ export function useDocumentoVersiones({
         versionAEliminar.id,
         user.id,
         perfil.rol,
+        tipoEntidad,
         motivoEliminacion
       )
       toast.success('Versión eliminada correctamente')
@@ -204,7 +210,7 @@ export function useDocumentoVersiones({
       await cargarVersiones()
 
       // ✅ Si solo queda 1 versión después de eliminar, cerrar el modal automáticamente
-      const versionesActualizadas = await DocumentosService.obtenerVersiones(documentoId)
+      const versionesActualizadas = await DocumentosService.obtenerVersiones(documentoId, tipoEntidad)
       if (versionesActualizadas.length <= 1 && onClose) {
         setTimeout(() => {
           onClose()

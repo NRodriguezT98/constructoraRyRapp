@@ -159,7 +159,13 @@ export async function obtenerFuentesPagoConAbonos(
 
   // Ordenar abonos por fecha descendente
   return (data as any[]).map((fuente) => ({
-    ...fuente,
+    id: fuente.id, // ✅ Explícitamente incluir id
+    tipo: fuente.tipo,
+    monto: fuente.monto_aprobado, // ✅ Mapear a "monto" para consistencia
+    monto_recibido: fuente.monto_recibido,
+    entidad: fuente.entidad,
+    numero_referencia: fuente.numero_referencia,
+    detalles: fuente.detalles,
     abonos: (fuente.abonos || []).sort(
       (a: AbonoHistorial, b: AbonoHistorial) =>
         new Date(b.fecha_abono).getTime() - new Date(a.fecha_abono).getTime()

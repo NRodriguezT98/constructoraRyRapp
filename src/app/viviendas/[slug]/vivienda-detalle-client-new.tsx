@@ -12,14 +12,13 @@ import {
     FileText,
     Home,
     Info,
-    MapPin,
-    Trash2,
+    Trash2
 } from 'lucide-react'
 
 import { useRouter } from 'next/navigation'
 
 import { Button } from '@/components/ui/button'
-import { AbonosTab, InfoTab } from '@/modules/viviendas/components/detalle'
+import { AbonosTab, DocumentosTab, InfoTab } from '@/modules/viviendas/components/detalle'
 import { useViviendaQuery } from '@/modules/viviendas/hooks/useViviendaQuery'
 
 import * as styles from './vivienda-detalle.styles'
@@ -161,66 +160,79 @@ export default function ViviendaDetalleClient({ viviendaId }: ViviendaDetalleCli
             </Button>
           </motion.div>
 
-          {/* Header Mejorado con Glassmorphism */}
+          {/* Header Compacto */}
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className={styles.headerClasses.container}
+            className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-orange-600 via-orange-600 to-amber-600 dark:from-orange-700 dark:via-orange-700 dark:to-amber-800 shadow-2xl"
           >
-            {/* Patrón de fondo */}
-            <div className={styles.headerClasses.backgroundPattern}>
-              <div className="absolute left-10 top-10 h-32 w-32 animate-pulse rounded-full bg-white/10"></div>
-              <div className="absolute bottom-10 right-10 h-24 w-24 animate-pulse rounded-full bg-white/10"></div>
-            </div>
+            {/* Patrón de fondo sutil */}
+            <div className="absolute inset-0 bg-grid-white/10 [mask-image:linear-gradient(0deg,transparent,black,transparent)]" />
 
-            {/* Breadcrumb */}
-            <div className={styles.headerClasses.breadcrumb}>
-              <Home className={styles.headerClasses.breadcrumbIcon} />
-              <ChevronRight className={styles.headerClasses.breadcrumbIcon} />
-              <span>Viviendas</span>
-              <ChevronRight className={styles.headerClasses.breadcrumbIcon} />
-              <span className={styles.headerClasses.breadcrumbCurrent}>{vivienda.numero}</span>
-            </div>
-
-            {/* Contenido Principal */}
-            <div className={styles.headerClasses.contentWrapper}>
-              <div className={styles.headerClasses.leftSection}>
-                <motion.div
-                  className={styles.headerClasses.iconContainer}
-                  whileHover={{ scale: 1.05, rotate: 5 }}
-                  transition={{ type: 'spring', stiffness: 300 }}
-                >
-                  <Building2 className={styles.headerClasses.icon} />
-                </motion.div>
-
-                <div className={styles.headerClasses.titleSection}>
-                  <div className="flex items-center gap-3">
-                    <h1 className={styles.headerClasses.title}>{vivienda.numero}</h1>
-                    <span
-                      className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ${
-                        estadoColors[vivienda.estado as keyof typeof estadoColors] ||
-                        estadoColors.Disponible
-                      }`}
-                    >
-                      {vivienda.estado}
-                    </span>
-                  </div>
-                  <div className={styles.headerClasses.location}>
-                    <MapPin className={styles.headerClasses.locationIcon} />
-                    <span>{vivienda.manzanas?.nombre || 'Sin manzana'}</span>
-                  </div>
-                </div>
+            {/* Contenido */}
+            <div className="relative z-10 p-6">
+              {/* Breadcrumb superior */}
+              <div className="mb-3 flex items-center gap-2 text-sm text-orange-100">
+                <Home className="h-4 w-4" />
+                <ChevronRight className="h-4 w-4" />
+                <span>Viviendas</span>
+                <ChevronRight className="h-4 w-4" />
+                <span className="font-medium text-white">
+                  Mz. {vivienda.manzanas?.nombre || '?'} Casa {vivienda.numero}
+                </span>
               </div>
 
-              {/* Acciones */}
-              <div className={styles.headerClasses.actionsContainer}>
-                <Button className={styles.headerClasses.actionButton}>
-                  <Edit2 className="h-4 w-4" />
-                </Button>
-                <Button className={styles.headerClasses.deleteButton}>
-                  <Trash2 className="h-4 w-4" />
-                </Button>
+              {/* Contenido principal */}
+              <div className="flex items-center justify-between">
+                {/* Lado izquierdo: Icono + Info */}
+                <div className="flex items-center gap-4">
+                  <motion.div
+                    className="flex h-14 w-14 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm"
+                    whileHover={{ scale: 1.05, rotate: 5 }}
+                    transition={{ type: 'spring', stiffness: 300 }}
+                  >
+                    <Home className="h-7 w-7 text-white" />
+                  </motion.div>
+
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-3">
+                      <h1 className="text-3xl font-bold text-white">
+                        Mz. {vivienda.manzanas?.nombre || '?'} Casa {vivienda.numero}
+                      </h1>
+                      <span
+                        className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${
+                          estadoColors[vivienda.estado as keyof typeof estadoColors] ||
+                          estadoColors.Disponible
+                        }`}
+                      >
+                        {vivienda.estado}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-orange-100">
+                      <Building2 className="h-3.5 w-3.5" />
+                      <span>{vivienda.manzanas?.proyectos?.nombre || 'Sin proyecto'}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Lado derecho: Acciones */}
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-10 w-10 rounded-lg bg-white/20 p-0 hover:bg-white/30 text-white border border-white/30"
+                  >
+                    <Edit2 className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-10 w-10 rounded-lg bg-white/20 p-0 hover:bg-white/30 text-white border border-white/30"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
             </div>
           </motion.div>
@@ -260,12 +272,7 @@ export default function ViviendaDetalleClient({ viviendaId }: ViviendaDetalleCli
           {/* Contenido de Tabs */}
           <div className="animate-fade-in">
             {activeTab === 'info' && <InfoTab vivienda={vivienda} onAsignarCliente={() => {}} />}
-            {activeTab === 'documentos' && (
-              <div className="rounded-xl bg-white p-6 shadow-lg dark:bg-gray-800">
-                <h2 className="mb-4 text-2xl font-bold">Documentos</h2>
-                <p>Próximamente...</p>
-              </div>
-            )}
+            {activeTab === 'documentos' && <DocumentosTab viviendaId={vivienda.id} />}
             {activeTab === 'abonos' && <AbonosTab vivienda={vivienda} onRegistrarAbono={() => {}} />}
           </div>
         </div>

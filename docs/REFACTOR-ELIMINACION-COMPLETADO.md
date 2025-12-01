@@ -1,9 +1,9 @@
 # ✅ REFACTORING COMPLETADO: Servicio de Eliminación Genérico
 
-**Fecha:** 1 de diciembre de 2025  
-**Branch:** `feature/refactor-eliminacion-generico`  
-**Commit:** `39ed699`  
-**Tiempo total:** ~2 horas (estimado: 4 horas) 🎉  
+**Fecha:** 1 de diciembre de 2025
+**Branch:** `feature/refactor-eliminacion-generico`
+**Commit:** `39ed699`
+**Tiempo total:** ~2 horas (estimado: 4 horas) 🎉
 
 ---
 
@@ -90,7 +90,7 @@ static async eliminarDocumento(
 
 export function useEliminarDocumentoMutation(entidadId: string, tipoEntidad: TipoEntidad) {
   return useMutation({
-    mutationFn: (documentoId: string) => 
+    mutationFn: (documentoId: string) =>
       DocumentosEliminacionService.eliminarDocumento(documentoId, tipoEntidad)
   })
 }
@@ -260,9 +260,9 @@ await DocumentosService.archivarDocumento(documentoId, 'vivienda')
 
 **De 3 servicios específicos → 1 servicio genérico reutilizable**
 
-**Tiempo invertido:** 2 horas (50% menos de lo estimado)  
-**ROI:** Alto (evita ~700 líneas por cada módulo nuevo)  
-**Calidad:** Type-safe, documentado, probado  
+**Tiempo invertido:** 2 horas (50% menos de lo estimado)
+**ROI:** Alto (evita ~700 líneas por cada módulo nuevo)
+**Calidad:** Type-safe, documentado, probado
 
 ---
 

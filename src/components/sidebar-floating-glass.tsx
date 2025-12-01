@@ -1,26 +1,15 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import { AnimatePresence, motion } from 'framer-motion'
 import {
-    Activity,
-    BarChart3,
-    Building2,
     ChevronLeft,
     ChevronRight,
-    ClipboardList,
-    CreditCard,
     Crown,
-    FileText,
-    FileX,
-    Home,
     LogOut,
     Search,
     Settings,
-    Shield,
-    Trash2,
-    Users,
 } from 'lucide-react'
 import { useTheme } from 'next-themes'
 
@@ -29,137 +18,21 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
 import { useAuth } from '@/contexts/auth-context'
+import { useLogout } from '@/hooks/auth'
+import { usePapeleraCount } from '@/modules/documentos/hooks'
 import { usePermisosQuery } from '@/modules/usuarios/hooks/usePermisosQuery'
+import { navigationGroups } from '@/shared/config/navigation.config'
 
 import { ThemeToggle } from './theme-toggle'
 import { Button } from './ui/button'
 import { useSidebar } from './useSidebar'
 
-// Agrupación de módulos por categorías
-const navigationGroups = [
-  {
-    title: 'Principal',
-    items: [
-      {
-        name: 'Dashboard',
-        href: '/',
-        icon: BarChart3,
-        color: 'from-blue-500 to-indigo-500',
-        description: 'Panel principal',
-        // Dashboard no requiere permiso (accesible para todos)
-      },
-      {
-        name: 'Proyectos',
-        href: '/proyectos',
-        icon: Building2,
-        color: 'from-green-500 to-emerald-500',
-        description: 'Gestión de proyectos',
-        requiredPermission: { modulo: 'proyectos', accion: 'ver' },
-      },
-      {
-        name: 'Viviendas',
-        href: '/viviendas',
-        icon: Home,
-        color: 'from-orange-500 to-amber-500',
-        description: 'Administrar viviendas',
-        requiredPermission: { modulo: 'viviendas', accion: 'ver' },
-      },
-    ],
-  },
-  {
-    title: 'Clientes',
-    items: [
-      {
-        name: 'Clientes',
-        href: '/clientes',
-        icon: Users,
-        color: 'from-cyan-500 to-blue-500',
-        description: 'Base de clientes',
-        requiredPermission: { modulo: 'clientes', accion: 'ver' },
-      },
-      {
-        name: 'Abonos',
-        href: '/abonos',
-        icon: CreditCard,
-        color: 'from-purple-500 to-pink-500',
-        description: 'Gestión de pagos',
-        requiredPermission: { modulo: 'abonos', accion: 'ver' },
-      },
-      {
-        name: 'Renuncias',
-        href: '/renuncias',
-        icon: FileX,
-        color: 'from-red-500 to-rose-500',
-        description: 'Cancelaciones',
-        // Renuncias no tiene permiso en BD, accesible para todos con sesión
-      },
-    ],
-  },
-  {
-    title: 'Sistema',
-    items: [
-      {
-        name: 'Usuarios',
-        href: '/usuarios',
-        icon: Users,
-        color: 'from-violet-500 to-purple-500',
-        description: 'Gestión de usuarios',
-        requiredPermission: { modulo: 'usuarios', accion: 'ver' },
-      },
-      {
-        name: 'Auditorías',
-        href: '/auditorias',
-        icon: Activity,
-        color: 'from-teal-500 to-cyan-500',
-        description: 'Registro de actividad',
-        requiredPermission: { modulo: 'auditorias', accion: 'ver' },
-      },
-      {
-        name: 'Papelera',
-        href: '/documentos/eliminados',
-        icon: Trash2,
-        color: 'from-red-500 to-rose-500',
-        description: 'Documentos eliminados',
-        adminOnly: true,
-      },
-      {
-        name: 'Plantillas Proceso',
-        href: '/admin/procesos',
-        icon: ClipboardList,
-        color: 'from-rose-500 to-pink-500',
-        description: 'Plantillas de negociación',
-        // No tiene permiso en BD, accesible para todos
-      },
-      {
-        name: 'Recargos',
-        href: '/administracion/configuracion',
-        icon: Settings,
-        color: 'from-blue-500 to-indigo-500',
-        description: 'Gastos y valores',
-        requiredPermission: { modulo: 'administracion', accion: 'gestionar' },
-      },
-      {
-        name: 'Administración',
-        href: '/admin',
-        icon: Shield,
-        color: 'from-indigo-500 to-blue-500',
-        description: 'Panel admin',
-        requiredPermission: { modulo: 'administracion', accion: 'ver' },
-      },
-      {
-        name: 'Reportes',
-        href: '/reportes',
-        icon: FileText,
-        color: 'from-gray-500 to-slate-500',
-        description: 'Informes y análisis',
-        requiredPermission: { modulo: 'reportes', accion: 'ver' },
-      },
-    ],
-  },
-]
-
 export function SidebarFloatingGlass() {
-  const { user, perfil, signOut } = useAuth()
+  const { user, perfil } = useAuth()
+  const { logout, isLoggingOut } = useLogout({
+    showToast: true,
+    redirectTo: '/login',
+  })
   const { puede, esAdmin } = usePermisosQuery() // ← Sistema NUEVO desde BD
   const { theme, systemTheme } = useTheme()
   const router = useRouter()
@@ -173,6 +46,9 @@ export function SidebarFloatingGlass() {
     isActive,
   } = useSidebar()
 
+  // 🗑️ Contador de documentos en papelera (solo para admins)
+  const papeleraCount = usePapeleraCount()
+
   // State para evitar hydration mismatch con el tema
   const [mounted, setMounted] = useState(false)
 
@@ -180,17 +56,8 @@ export function SidebarFloatingGlass() {
     setMounted(true)
   }, [])
 
-  const handleSignOut = async () => {
-    try {
-      await signOut()
-      router.push('/login')
-    } catch (error) {
-      console.error('Error al cerrar sesión:', error)
-    }
-  }
-
-  // Obtener iniciales del usuario
-  const getUserInitials = () => {
+  // Obtener iniciales del usuario (optimizado con useMemo)
+  const getUserInitials = useMemo(() => {
     if (perfil?.nombres && perfil?.apellidos) {
       return `${perfil.nombres.charAt(0)}${perfil.apellidos.charAt(0)}`.toUpperCase()
     }
@@ -201,10 +68,10 @@ export function SidebarFloatingGlass() {
       return user.email.charAt(0).toUpperCase()
     }
     return 'U'
-  }
+  }, [perfil?.nombres, perfil?.apellidos, user?.email])
 
-  // Obtener nombre completo
-  const getDisplayName = () => {
+  // Obtener nombre completo (optimizado con useMemo)
+  const getDisplayName = useMemo(() => {
     if (perfil?.nombres && perfil?.apellidos) {
       return `${perfil.nombres} ${perfil.apellidos}`
     }
@@ -215,13 +82,13 @@ export function SidebarFloatingGlass() {
       return user.email.split('@')[0].replace(/[._-]/g, ' ')
     }
     return 'Usuario'
-  }
+  }, [perfil?.nombres, perfil?.apellidos, user?.email])
 
   // Verificar si es administrador (para mostrar la corona 👑)
   const isAdmin = perfil?.rol === 'Administrador'
 
-  // Obtener color según rol
-  const getRolColor = () => {
+  // Obtener color según rol (optimizado con useMemo)
+  const getRolColor = useMemo(() => {
     switch (perfil?.rol) {
       case 'Administrador':
         return 'from-amber-500 via-yellow-500 to-orange-500' // Dorado para el rey 👑
@@ -232,10 +99,10 @@ export function SidebarFloatingGlass() {
       default:
         return 'from-gray-500 to-slate-500'
     }
-  }
+  }, [perfil?.rol])
 
-  // Obtener badge color según rol
-  const getRolBadgeColor = () => {
+  // Obtener badge color según rol (optimizado con useMemo)
+  const getRolBadgeColor = useMemo(() => {
     switch (perfil?.rol) {
       case 'Administrador':
         return 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-lg shadow-amber-500/50'
@@ -246,7 +113,7 @@ export function SidebarFloatingGlass() {
       default:
         return 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400'
     }
-  }
+  }, [perfil?.rol])
 
   const sidebarVariants = {
     expanded: { width: 260 },
@@ -259,7 +126,7 @@ export function SidebarFloatingGlass() {
   }
 
   // Determinar qué logo usar según el tema (con protección hydration)
-  const getLogo = (expanded: boolean) => {
+  const getLogo = (expanded: boolean): string => {
     // Si no está montado, usar logo claro por defecto (match con SSR)
     if (!mounted) {
       return expanded ? '/images/logo1.png' : '/images/logo2.png'
@@ -284,7 +151,7 @@ export function SidebarFloatingGlass() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm lg:hidden"
+            className="fixed inset-0 z-30 bg-black/50 backdrop-blur-sm lg:hidden"
             onClick={closeSidebar}
           />
         )}
@@ -489,34 +356,69 @@ export function SidebarFloatingGlass() {
                                   animate="expanded"
                                   exit="collapsed"
                                   transition={{ duration: 0.2 }}
-                                  className="flex flex-1 flex-col"
+                                  className="flex flex-1 items-center justify-between"
                                 >
-                                  <div
-                                    className={`text-xs font-semibold ${
-                                      active
-                                        ? 'text-white'
-                                        : 'text-gray-900 dark:text-gray-100'
-                                    }`}
-                                  >
-                                    {item.name}
+                                  <div className="flex flex-col">
+                                    <div
+                                      className={`text-xs font-semibold ${
+                                        active
+                                          ? 'text-white'
+                                          : 'text-gray-900 dark:text-gray-100'
+                                      }`}
+                                    >
+                                      {item.name}
+                                    </div>
+                                    <div
+                                      className={`text-[10px] ${
+                                        active
+                                          ? 'text-white/80'
+                                          : 'text-gray-500 dark:text-gray-400'
+                                      }`}
+                                    >
+                                      {item.description}
+                                    </div>
                                   </div>
-                                  <div
-                                    className={`text-[10px] ${
-                                      active
-                                        ? 'text-white/80'
-                                        : 'text-gray-500 dark:text-gray-400'
-                                    }`}
-                                  >
-                                    {item.description}
-                                  </div>
+
+                                  {/* 🗑️ Badge contador para Papelera */}
+                                  {item.name === 'Papelera' && papeleraCount.total > 0 && (
+                                    <motion.div
+                                      initial={{ scale: 0 }}
+                                      animate={{ scale: 1 }}
+                                      transition={{ type: 'spring', stiffness: 500, damping: 15 }}
+                                      className={`flex items-center justify-center min-w-[18px] h-[18px] rounded-full text-[10px] font-bold px-1.5 ${
+                                        active
+                                          ? 'bg-white text-red-600'
+                                          : 'bg-red-500 text-white'
+                                      }`}
+                                    >
+                                      {papeleraCount.total > 99 ? '99+' : papeleraCount.total}
+                                    </motion.div>
+                                  )}
                                 </motion.div>
                               )}
                             </AnimatePresence>
+
+                            {/* Badge contador para Papelera (modo colapsado) */}
+                            {!isExpanded && item.name === 'Papelera' && papeleraCount.total > 0 && (
+                              <motion.div
+                                initial={{ scale: 0 }}
+                                animate={{ scale: 1 }}
+                                transition={{ type: 'spring', stiffness: 500, damping: 15 }}
+                                className="absolute -top-1 -right-1 flex items-center justify-center min-w-[16px] h-[16px] rounded-full bg-red-500 text-white text-[9px] font-bold px-1 shadow-lg border-2 border-white dark:border-gray-900"
+                              >
+                                {papeleraCount.total > 99 ? '99+' : papeleraCount.total}
+                              </motion.div>
+                            )}
 
                             {/* Tooltip para modo colapsado */}
                             {!isExpanded && (
                               <div className="pointer-events-none absolute left-full z-50 ml-2 whitespace-nowrap rounded-lg bg-gray-900 px-2.5 py-1.5 text-xs font-medium text-white opacity-0 shadow-xl transition-opacity duration-200 group-hover:opacity-100 dark:bg-gray-700">
                                 {item.name}
+                                {item.name === 'Papelera' && papeleraCount.total > 0 && (
+                                  <span className="ml-1.5 inline-flex items-center justify-center min-w-[18px] h-[18px] rounded-full bg-red-500 text-white text-[9px] font-bold px-1">
+                                    {papeleraCount.total}
+                                  </span>
+                                )}
                                 <div className="absolute -left-1 top-1/2 h-2 w-2 -translate-y-1/2 rotate-45 bg-gray-900 dark:bg-gray-700" />
                               </div>
                             )}
@@ -592,12 +494,12 @@ export function SidebarFloatingGlass() {
                       )}
 
                       <div
-                        className={`flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br ${getRolColor()} shadow-md ${
+                        className={`flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br ${getRolColor} shadow-md ${
                           isAdmin ? 'shadow-amber-500/40 ring-2 ring-amber-400/20' : ''
                         }`}
                       >
                         <span className="text-sm font-bold text-white drop-shadow-md">
-                          {getUserInitials()}
+                          {getUserInitials}
                         </span>
                       </div>
                     </div>
@@ -606,7 +508,7 @@ export function SidebarFloatingGlass() {
                     <div className="min-w-0 flex-1 space-y-0.5">
                       {/* Nombre */}
                       <div className="text-xs font-bold text-gray-900 dark:text-white line-clamp-1">
-                        {getDisplayName()}
+                        {getDisplayName}
                       </div>
 
                       {/* Email */}
@@ -617,7 +519,7 @@ export function SidebarFloatingGlass() {
                       {/* Badge de Rol */}
                       <div className="flex items-center">
                         <span
-                          className={`inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[9px] font-bold ${getRolBadgeColor()}`}
+                          className={`inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[9px] font-bold ${getRolBadgeColor}`}
                         >
                           {isAdmin && <Crown className="h-2.5 w-2.5" />}
                           {perfil?.rol || 'Sin rol'}
@@ -629,11 +531,16 @@ export function SidebarFloatingGlass() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="flex-shrink-0 rounded-lg p-1.5 hover:bg-red-100 dark:hover:bg-red-900/20"
-                      onClick={handleSignOut}
-                      title="Cerrar sesión"
+                      disabled={isLoggingOut}
+                      className="flex-shrink-0 rounded-lg p-1.5 hover:bg-red-100 dark:hover:bg-red-900/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                      onClick={logout}
+                      title={isLoggingOut ? 'Cerrando sesión...' : 'Cerrar sesión'}
                     >
-                      <LogOut className="h-3.5 w-3.5 text-gray-600 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400" />
+                      <LogOut
+                        className={`h-3.5 w-3.5 text-gray-600 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400 ${
+                          isLoggingOut ? 'animate-pulse' : ''
+                        }`}
+                      />
                     </Button>
                   </div>
                 </motion.div>
@@ -672,12 +579,12 @@ export function SidebarFloatingGlass() {
                 )}
 
                 <div
-                  className={`flex h-11 w-11 items-center justify-center rounded-lg bg-gradient-to-br ${getRolColor()} shadow-md ${
+                  className={`flex h-11 w-11 items-center justify-center rounded-lg bg-gradient-to-br ${getRolColor} shadow-md ${
                     isAdmin ? 'shadow-amber-500/40 ring-2 ring-amber-400/20' : ''
                   }`}
                 >
                   <span className="text-base font-bold text-white drop-shadow-md">
-                    {getUserInitials()}
+                    {getUserInitials}
                   </span>
                 </div>
               </div>
@@ -712,11 +619,16 @@ export function SidebarFloatingGlass() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="rounded-lg p-2 hover:bg-red-100 dark:hover:bg-red-900/20"
-                    onClick={handleSignOut}
-                    title="Cerrar sesión"
+                    disabled={isLoggingOut}
+                    className="rounded-lg p-2 hover:bg-red-100 dark:hover:bg-red-900/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                    onClick={logout}
+                    title={isLoggingOut ? 'Cerrando sesión...' : 'Cerrar sesión'}
                   >
-                    <LogOut className="h-4 w-4 text-gray-600 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400" />
+                    <LogOut
+                      className={`h-4 w-4 text-gray-600 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400 ${
+                        isLoggingOut ? 'animate-pulse' : ''
+                      }`}
+                    />
                   </Button>
                 </>
               )}

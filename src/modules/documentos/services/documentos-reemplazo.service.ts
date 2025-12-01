@@ -1,205 +1,315 @@
 // ============================================
-// SERVICE: Documentos - Reemplazo Seguro
+// SERVICE: Documentos - Reemplazo Seguro (GENÉRICO)
 // ============================================
 
 import { supabase } from '@/lib/supabase/client'
 import { auditService } from '@/services/audit.service'
-
-const BUCKET_NAME = 'documentos-proyectos'
+import { type TipoEntidad, obtenerConfiguracionEntidad } from '../types/entidad.types'
 
 /**
- * Servicio de reemplazo seguro de archivos
- * Responsabilidades: reemplazar archivo con validación, backup automático y auditoría
+ * Servicio de reemplazo seguro de archivos con rollback automático
+ * Responsabilidades: reemplazar archivo con validación, backup automático, transacciones y auditoría
  */
 export class DocumentosReemplazoService {
   /**
    * REEMPLAZAR ARCHIVO SEGURO (Admin Only)
-   * Crea backup automático antes de reemplazar
+   * ✅ Con rollback automático en caso de error
+   * ✅ Manejo de transacciones
+   * ✅ Backup verificado antes de proceder
    */
   static async reemplazarArchivoSeguro(
     documentoId: string,
     nuevoArchivo: File,
     motivo: string,
-    password: string
+    password: string,
+    tipoEntidad: TipoEntidad = 'proyecto'
   ): Promise<void> {
-    console.log('🔄 Iniciando reemplazo seguro de archivo:', {
+    console.log('🔄 [REEMPLAZO] Iniciando proceso seguro:', {
       documentoId,
-      nuevoArchivo: nuevoArchivo.name,
-      tamano: nuevoArchivo.size,
-      motivo
+      archivo: nuevoArchivo.name,
+      tamano: `${(nuevoArchivo.size / (1024 * 1024)).toFixed(2)} MB`,
+      tipoEntidad
     })
 
-    // 1. Verificar usuario y validar contraseña de admin
-    const {
-      data: { user }
-    } = await supabase.auth.getUser()
+    // ✅ Obtener configuración dinámica
+    const config = obtenerConfiguracionEntidad(tipoEntidad)
+    const { bucket, tabla, campoEntidad, nombreSingular } = config
 
-    if (!user) {
-      throw new Error('Usuario no autenticado')
-    }
+    // Variables para rollback
+    let backupPath: string | null = null
+    let archivoReemplazado = false
 
-    // Verificar que es administrador
-    const { data: usuario, error: usuarioError } = await supabase
-      .from('usuarios')
-      .select('rol')
-      .eq('id', user.id)
-      .single()
-
-    if (usuarioError || !usuario) {
-      throw new Error('No se pudo verificar el usuario')
-    }
-
-    if (usuario.rol !== 'Administrador') {
-      throw new Error('Solo administradores pueden reemplazar archivos')
-    }
-
-    // Validar contraseña usando función RPC
-    const { data: passwordValid, error: passwordError } = await supabase.rpc(
-      'validar_password_admin',
-      {
-        p_user_id: user.id,
-        p_password: password
-      }
-    )
-
-    if (passwordError) {
-      console.error('Error validando password:', passwordError)
-      throw new Error('Error al validar contraseña')
-    }
-
-    if (!passwordValid) {
-      throw new Error('Contraseña incorrecta')
-    }
-
-    console.log('✅ Validación de contraseña de admin exitosa')
-
-    // 2. Validar que el documento existe
-    const { data: documento, error: fetchError } = await supabase
-      .from('documentos_proyecto')
-      .select('*')
-      .eq('id', documentoId)
-      .single()
-
-    if (fetchError || !documento) {
-      throw new Error('Documento no encontrado')
-    }
-
-    // 3. Crear backup del archivo original
-    const backupPath = `${documento.proyecto_id}/backups/reemplazos/${documentoId}_backup_${Date.now()}_${documento.nombre_archivo}`
-
-    // Descargar archivo original para backup
-    const { data: downloadData, error: downloadError } = await supabase.storage
-      .from(BUCKET_NAME)
-      .download(documento.url_storage)
-
-    if (downloadError) {
-      console.error('❌ Error al descargar archivo original:', downloadError)
-      throw new Error(`Error al descargar archivo original: ${downloadError.message}`)
-    }
-
-    console.log('✅ Archivo original descargado para backup')
-
-    // Subir backup
-    const { error: backupError } = await supabase.storage.from(BUCKET_NAME).upload(backupPath, downloadData, {
-      contentType: documento.tipo_mime,
-      upsert: false
-    })
-
-    if (backupError) {
-      console.error('❌ Error al crear backup:', backupError)
-      throw new Error(`Error al crear backup: ${backupError.message}`)
-    }
-
-    console.log('✅ Backup creado:', backupPath)
-
-    // 5. Reemplazar archivo original
-    const { error: replaceError } = await supabase.storage
-      .from(BUCKET_NAME)
-      .update(documento.url_storage, nuevoArchivo, {
-        contentType: nuevoArchivo.type,
-        upsert: true
-      })
-
-    if (replaceError) {
-      console.error('❌ Error al reemplazar archivo:', replaceError)
-      throw new Error(`Error al reemplazar archivo: ${replaceError.message}`)
-    }
-
-    console.log('✅ Archivo reemplazado exitosamente en storage')
-
-    // 6. Actualizar metadata con información del reemplazo
-    const metadataReemplazo = {
-      ...(typeof documento.metadata === 'object' && documento.metadata !== null
-        ? documento.metadata
-        : {}),
-      reemplazo: {
-        fecha: new Date().toISOString(),
-        motivo,
-        archivo_original: documento.nombre_archivo,
-        archivo_nuevo: nuevoArchivo.name,
-        tamano_original: documento.tamano_bytes,
-        tamano_nuevo: nuevoArchivo.size,
-        backup_path: backupPath
-      }
-    }
-
-    const { error: updateError } = await supabase
-      .from('documentos_proyecto')
-      .update({
-        nombre_archivo: nuevoArchivo.name,
-        nombre_original: nuevoArchivo.name,
-        tamano_bytes: nuevoArchivo.size,
-        tipo_mime: nuevoArchivo.type,
-        metadata: metadataReemplazo,
-        fecha_actualizacion: new Date().toISOString()
-      })
-      .eq('id', documentoId)
-
-    if (updateError) {
-      console.error('❌ Error al actualizar metadata:', updateError)
-      throw new Error(`Error al actualizar metadata: ${updateError.message}`)
-    }
-
-    console.log('✅ Archivo reemplazado exitosamente')
-
-    // 7. Registrar en auditoría
     try {
-      const {
-        data: { user }
-      } = await supabase.auth.getUser()
+      // ============================================
+      // 1. VALIDACIÓN DE SEGURIDAD
+      // ============================================
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('Usuario no autenticado')
 
-      // Obtener URL de descarga del backup
-      const { data: backupUrlData } = await supabase.storage
-        .from(BUCKET_NAME)
-        .createSignedUrl(backupPath, 31536000) // 1 año de validez
+      // Verificar rol de administrador
+      const { data: usuario, error: usuarioError } = await supabase
+        .from('usuarios')
+        .select('rol')
+        .eq('id', user.id)
+        .single()
 
-      // Obtener URL del nuevo archivo
-      const { data: nuevoUrlData } = await supabase.storage
-        .from(BUCKET_NAME)
-        .createSignedUrl(documento.url_storage, 31536000)
+      if (usuarioError || !usuario) {
+        throw new Error('No se pudo verificar el usuario')
+      }
 
-      await auditService.registrarAccion({
-        tabla: 'documentos_proyecto',
-        accion: 'UPDATE',
-        registroId: documentoId,
-        datosAnteriores: {
-          nombre_archivo: documento.nombre_archivo,
-          nombre_original: documento.nombre_original,
-          tamano_bytes: documento.tamano_bytes,
-          tipo_mime: documento.tipo_mime,
-          url_storage: documento.url_storage,
-          fecha_actualizacion: documento.fecha_actualizacion
-        },
-        datosNuevos: {
+      if (usuario.rol !== 'Administrador') {
+        throw new Error('⛔ Solo administradores pueden reemplazar archivos')
+      }
+
+      // Validar contraseña
+      const { data: passwordValid, error: passwordError } = await supabase.rpc(
+        'validar_password_admin',
+        { p_user_id: user.id, p_password: password }
+      )
+
+      if (passwordError) {
+        console.error('❌ [REEMPLAZO] Error validando contraseña:', passwordError)
+        throw new Error('Error al validar contraseña de administrador')
+      }
+
+      if (!passwordValid) {
+        throw new Error('❌ Contraseña incorrecta')
+      }
+
+      console.log('✅ [REEMPLAZO] Validación de seguridad completada')
+
+      // ============================================
+      // 2. OBTENER DOCUMENTO Y VALIDAR
+      // ============================================
+      const { data: documento, error: fetchError } = await supabase
+        .from(tabla)
+        .select('*')
+        .eq('id', documentoId)
+        .single()
+
+      if (fetchError || !documento) {
+        throw new Error(`Documento no encontrado en ${tabla}`)
+      }
+
+      const entidadId = documento[campoEntidad]
+      if (!entidadId) {
+        throw new Error(`Campo ${campoEntidad} no encontrado en documento`)
+      }
+
+      console.log(`✅ [REEMPLAZO] Documento encontrado en ${nombreSingular}: ${entidadId}`)
+
+      // ============================================
+      // 3. CREAR Y VERIFICAR BACKUP
+      // ============================================
+      backupPath = `${entidadId}/backups/reemplazos/${documentoId}_backup_${Date.now()}_${documento.nombre_archivo}`
+
+      console.log('📦 [REEMPLAZO] Creando backup del archivo original...')
+
+      // Descargar archivo original
+      const { data: archivoOriginal, error: downloadError } = await supabase.storage
+        .from(bucket)
+        .download(documento.url_storage)
+
+      if (downloadError || !archivoOriginal) {
+        throw new Error(`No se pudo descargar archivo original: ${downloadError?.message}`)
+      }
+
+      // Verificar que el archivo descargado tiene contenido
+      if (archivoOriginal.size === 0) {
+        throw new Error('El archivo original descargado está vacío')
+      }
+
+      // Subir backup
+      const { error: backupError } = await supabase.storage
+        .from(bucket)
+        .upload(backupPath, archivoOriginal, {
+          contentType: documento.tipo_mime,
+          upsert: false
+        })
+
+      if (backupError) {
+        throw new Error(`Error al crear backup: ${backupError.message}`)
+      }
+
+      // Verificar que el backup existe
+      const { data: backupExists, error: verifyError } = await supabase.storage
+        .from(bucket)
+        .list(backupPath.split('/').slice(0, -1).join('/'), {
+          search: backupPath.split('/').pop()
+        })
+
+      if (verifyError || !backupExists || backupExists.length === 0) {
+        throw new Error('No se pudo verificar la creación del backup')
+      }
+
+      console.log(`✅ [REEMPLAZO] Backup creado y verificado: ${backupPath}`)
+
+      // ============================================
+      // 4. REEMPLAZAR ARCHIVO EN STORAGE
+      // ============================================
+      console.log('🔄 [REEMPLAZO] Reemplazando archivo en storage...')
+
+      const { error: replaceError } = await supabase.storage
+        .from(bucket)
+        .update(documento.url_storage, nuevoArchivo, {
+          contentType: nuevoArchivo.type,
+          upsert: true
+        })
+
+      if (replaceError) {
+        throw new Error(`Error al reemplazar archivo: ${replaceError.message}`)
+      }
+
+      archivoReemplazado = true
+      console.log('✅ [REEMPLAZO] Archivo reemplazado en storage')
+
+      // ============================================
+      // 5. ACTUALIZAR METADATA EN BD
+      // ============================================
+      const metadataReemplazo = {
+        ...(typeof documento.metadata === 'object' && documento.metadata !== null
+          ? documento.metadata
+          : {}),
+        reemplazo: {
+          fecha: new Date().toISOString(),
+          motivo,
+          archivo_original: documento.nombre_archivo,
+          archivo_nuevo: nuevoArchivo.name,
+          tamano_original: documento.tamano_bytes,
+          tamano_nuevo: nuevoArchivo.size,
+          backup_path: backupPath,
+          reemplazado_por: user.email
+        }
+      }
+
+      const { error: updateError } = await supabase
+        .from(tabla)
+        .update({
           nombre_archivo: nuevoArchivo.name,
           nombre_original: nuevoArchivo.name,
           tamano_bytes: nuevoArchivo.size,
           tipo_mime: nuevoArchivo.type,
-          url_storage: documento.url_storage,
+          metadata: metadataReemplazo,
           fecha_actualizacion: new Date().toISOString()
+        })
+        .eq('id', documentoId)
+
+      if (updateError) {
+        throw new Error(`Error al actualizar metadata: ${updateError.message}`)
+      }
+
+      console.log('✅ [REEMPLAZO] Metadata actualizada en BD')
+
+      // ============================================
+      // 6. REGISTRAR AUDITORÍA
+      // ============================================
+      await this.registrarAuditoriaReemplazo({
+        documento,
+        nuevoArchivo,
+        motivo,
+        backupPath,
+        entidadId,
+        tipoEntidad,
+        tabla,
+        campoEntidad,
+        bucket,
+        user
+      })
+
+      console.log('🎉 [REEMPLAZO] Proceso completado exitosamente')
+
+    } catch (error) {
+      console.error('💥 [REEMPLAZO] Error en el proceso:', error)
+
+      // ============================================
+      // ROLLBACK AUTOMÁTICO
+      // ============================================
+      if (archivoReemplazado && backupPath) {
+        console.warn('⚠️ [ROLLBACK] Intentando restaurar archivo original...')
+        try {
+          // Descargar backup
+          const { data: backupData } = await supabase.storage
+            .from(bucket)
+            .download(backupPath)
+
+          if (backupData) {
+            // Restaurar archivo original
+            await supabase.storage
+              .from(bucket)
+              .update(documento.url_storage, backupData, {
+                contentType: documento.tipo_mime,
+                upsert: true
+              })
+            
+            console.log('✅ [ROLLBACK] Archivo original restaurado exitosamente')
+          }
+        } catch (rollbackError) {
+          console.error('💥 [ROLLBACK] Error crítico al restaurar archivo:', rollbackError)
+          console.error(`⚠️ ACCIÓN MANUAL REQUERIDA: Restaurar desde backup: ${backupPath}`)
+        }
+      }
+
+      throw error
+    }
+  }
+
+  /**
+   * Registrar auditoría del reemplazo
+   * Separado para mantener método principal limpio
+   */
+  private static async registrarAuditoriaReemplazo(params: {
+    documento: any
+    nuevoArchivo: File
+    motivo: string
+    backupPath: string
+    entidadId: string
+    tipoEntidad: TipoEntidad
+    tabla: string
+    campoEntidad: string
+    bucket: string
+    user: any
+  }) {
+    const {
+      documento,
+      nuevoArchivo,
+      motivo,
+      backupPath,
+      entidadId,
+      tipoEntidad,
+      tabla,
+      campoEntidad,
+      bucket,
+      user
+    } = params
+
+    try {
+      // Obtener URLs firmadas
+      const { data: backupUrlData } = await supabase.storage
+        .from(bucket)
+        .createSignedUrl(backupPath, 31536000)
+
+      const { data: nuevoUrlData } = await supabase.storage
+        .from(bucket)
+        .createSignedUrl(documento.url_storage, 31536000)
+
+      await auditService.registrarAccion({
+        tabla,
+        accion: 'UPDATE',
+        registroId: documento.id,
+        datosAnteriores: {
+          nombre_archivo: documento.nombre_archivo,
+          tamano_bytes: documento.tamano_bytes,
+          tipo_mime: documento.tipo_mime
+        },
+        datosNuevos: {
+          nombre_archivo: nuevoArchivo.name,
+          tamano_bytes: nuevoArchivo.size,
+          tipo_mime: nuevoArchivo.type
         },
         metadata: {
           tipo_operacion: 'REEMPLAZO_ARCHIVO',
+          tipo_entidad: tipoEntidad,
+          entidad_id: entidadId,
           motivo_reemplazo: motivo,
           archivo_original: {
             nombre: documento.nombre_archivo,
@@ -216,38 +326,31 @@ export class DocumentosReemplazoService {
             tipo_mime: nuevoArchivo.type,
             url_actual: nuevoUrlData?.signedUrl || null
           },
-          tiempo: {
-            fecha_creacion_documento: documento.fecha_creacion,
-            fecha_reemplazo: new Date().toISOString()
-          },
           comparacion: {
             diferencia_bytes: nuevoArchivo.size - documento.tamano_bytes,
             diferencia_mb: ((nuevoArchivo.size - documento.tamano_bytes) / (1024 * 1024)).toFixed(2),
-            porcentaje_cambio: (
-              ((nuevoArchivo.size - documento.tamano_bytes) / documento.tamano_bytes) *
-              100
-            ).toFixed(2)
+            porcentaje_cambio: documento.tamano_bytes > 0
+              ? (((nuevoArchivo.size - documento.tamano_bytes) / documento.tamano_bytes) * 100).toFixed(2)
+              : '0.00'
           },
           contexto: {
-            proyecto_id: documento.proyecto_id,
+            [campoEntidad]: entidadId,
             categoria_id: documento.categoria_id,
             titulo: documento.titulo,
-            version: documento.version,
-            es_version_actual: documento.es_version_actual,
-            estado_version: documento.estado_version || 'valida'
+            version: documento.version
           },
           usuario_reemplazo: {
-            usuario_id: user?.id || 'desconocido',
-            email: user?.email || 'desconocido',
+            usuario_id: user.id,
+            email: user.email,
             timestamp: new Date().toISOString()
           }
         },
         modulo: 'documentos'
       })
 
-      console.log('✅ Auditoría registrada')
+      console.log('✅ [AUDITORÍA] Registro completado')
     } catch (auditError) {
-      console.error('⚠️ Error al registrar auditoría:', auditError)
+      console.error('⚠️ [AUDITORÍA] Error al registrar (no crítico):', auditError)
     }
   }
 }

@@ -67,12 +67,6 @@ export const documentoCardStyles = {
     proximo: 'inline-flex items-center gap-1 rounded-md bg-orange-100 px-1.5 py-0.5 text-xs font-medium text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
   },
 
-  // 🏷️ Etiquetas
-  etiquetas: {
-    wrapper: 'flex flex-wrap gap-1.5',
-    tag: 'inline-flex items-center gap-1 rounded-md bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-700 dark:bg-gray-700 dark:text-gray-300',
-  },
-
   // 📊 Footer
   footer: {
     wrapper: 'mt-auto pt-3 border-t border-gray-100 dark:border-gray-700',

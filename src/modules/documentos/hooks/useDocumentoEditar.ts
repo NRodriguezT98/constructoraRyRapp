@@ -4,6 +4,7 @@ import { supabase } from '@/lib/supabase/client'
 import { formatDateForDB } from '@/lib/utils/date.utils'
 import { useState } from 'react'
 import { toast } from 'sonner'
+import { type TipoEntidad, obtenerConfiguracionEntidad } from '../types/entidad.types'
 
 interface EditarMetadatosData {
   titulo?: string
@@ -11,7 +12,6 @@ interface EditarMetadatosData {
   categoria_id?: string
   fecha_documento?: string | null
   fecha_vencimiento?: string | null
-  etiquetas?: string[]
 }
 
 export function useDocumentoEditar() {
@@ -20,7 +20,8 @@ export function useDocumentoEditar() {
 
   const editarMetadatos = async (
     documentoId: string,
-    data: EditarMetadatosData
+    data: EditarMetadatosData,
+    tipoEntidad: TipoEntidad = 'proyecto'
   ): Promise<boolean> => {
     setEditando(true)
     setError(null)
@@ -54,11 +55,13 @@ export function useDocumentoEditar() {
       if (data.fecha_vencimiento !== undefined) {
         updateData.fecha_vencimiento = data.fecha_vencimiento ? formatDateForDB(data.fecha_vencimiento) : null
       }
-      if (data.etiquetas !== undefined) updateData.etiquetas = data.etiquetas
+
+      // Obtener tabla correcta según tipo de entidad
+      const { tabla } = obtenerConfiguracionEntidad(tipoEntidad)
 
       // Actualizar en base de datos
       const { error: updateError } = await supabase
-        .from('documentos_proyecto')
+        .from(tabla as any)
         .update(updateData)
         .eq('id', documentoId)
 

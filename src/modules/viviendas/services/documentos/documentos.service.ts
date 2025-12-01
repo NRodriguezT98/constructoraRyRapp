@@ -8,7 +8,7 @@
 import { DocumentosBaseService } from './documentos-base.service'
 import { DocumentosEliminacionService } from './documentos-eliminacion.service'
 import { DocumentosEstadosService } from './documentos-estados.service'
-import { DocumentosReemplazoService } from './documentos-reemplazo.service'
+import { DocumentosReemplazoService as DocumentosReemplazoServiceGenerico } from '@/modules/documentos/services/documentos-reemplazo.service'
 import { DocumentosStorageService } from './documentos-storage.service'
 import { DocumentosVersionesService } from './documentos-versiones.service'
 
@@ -72,10 +72,26 @@ export class DocumentosViviendaService {
   static marcarEstadoVersion = DocumentosEstadosService.marcarEstadoVersion
 
   // ============================================
-  // REEMPLAZO → documentos-reemplazo.service.ts
+  // REEMPLAZO → documentos-reemplazo.service.ts (GENÉRICO)
   // ============================================
 
-  static reemplazarArchivoSeguro = DocumentosReemplazoService.reemplazarArchivoSeguro
+  /**
+   * Wrapper para mantener compatibilidad - usa servicio genérico
+   */
+  static async reemplazarArchivoSeguro(
+    documentoId: string,
+    nuevoArchivo: File,
+    motivo: string,
+    password: string
+  ) {
+    return DocumentosReemplazoServiceGenerico.reemplazarArchivoSeguro(
+      documentoId,
+      nuevoArchivo,
+      motivo,
+      password,
+      'vivienda' // ✅ Tipo de entidad
+    )
+  }
 
   // ============================================
   // ELIMINACIÓN → documentos-eliminacion.service.ts
@@ -93,7 +109,7 @@ export class DocumentosViviendaService {
 // Re-exportar servicios especializados para uso directo (opcional)
 export {
     DocumentosBaseService, DocumentosEliminacionService, DocumentosEstadosService,
-    DocumentosReemplazoService, DocumentosStorageService, DocumentosVersionesService
+    DocumentosStorageService, DocumentosVersionesService
 }
 
 // Mantener compatibilidad con singleton (si se usaba)

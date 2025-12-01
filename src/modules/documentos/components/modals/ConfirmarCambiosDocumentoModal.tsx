@@ -9,7 +9,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { AlertTriangle, ArrowRight, Calendar, CheckCircle2, FileText, Folder, Loader2, Pencil, Tag, X } from 'lucide-react'
+import { AlertTriangle, ArrowRight, Calendar, CheckCircle2, FileText, Folder, Loader2, Pencil, X } from 'lucide-react'
 
 import { formatDateCompact } from '@/lib/utils/date.utils'
 import type { ResumenCambiosDocumento } from '../../hooks/useDetectarCambiosDocumento'
@@ -46,15 +46,13 @@ export function ConfirmarCambiosDocumentoModal({
       case 'fecha_documento':
       case 'fecha_vencimiento':
         return <Calendar className="w-5 h-5" />
-      case 'etiquetas':
-        return <Tag className="w-5 h-5" />
       default:
         return <Pencil className="w-5 h-5" />
     }
   }
 
   const formatValue = (campo: string, valor: string | null) => {
-    if (!valor || valor === 'Sin fecha' || valor === 'Sin categoría' || valor === 'Sin descripción' || valor === 'Sin etiquetas' || valor === 'Sin vencimiento') {
+    if (!valor || valor === 'Sin fecha' || valor === 'Sin categoría' || valor === 'Sin descripción' || valor === 'Sin vencimiento') {
       return valor
     }
 

@@ -19,16 +19,46 @@ interface CategoriaFormProps {
 
 // Íconos disponibles para categorías
 const ICONOS_DISPONIBLES = [
+  // Generales
   { nombre: 'Folder', icono: 'Folder', label: 'Carpeta' },
-  { nombre: 'FileCheck', icono: 'FileCheck', label: 'Licencia' },
   { nombre: 'FileText', icono: 'FileText', label: 'Documento' },
+  { nombre: 'FileCheck', icono: 'FileCheck', label: 'Licencia' },
   { nombre: 'FileSignature', icono: 'FileSignature', label: 'Contrato' },
+
+  // Identidad
+  { nombre: 'IdCard', icono: 'IdCard', label: 'Identificación' },
+  { nombre: 'CreditCard', icono: 'CreditCard', label: 'Tarjeta' },
+  { nombre: 'UserCheck', icono: 'UserCheck', label: 'Verificación' },
+  { nombre: 'Shield', icono: 'Shield', label: 'Seguridad' },
+  { nombre: 'User', icono: 'User', label: 'Usuario' },
+
+  // Legales
+  { nombre: 'Scale', icono: 'Scale', label: 'Legal' },
+  { nombre: 'Gavel', icono: 'Gavel', label: 'Notarial' },
+  { nombre: 'Award', icono: 'Award', label: 'Certificado' },
+  { nombre: 'FileWarning', icono: 'FileWarning', label: 'Importante' },
+  { nombre: 'ScrollText', icono: 'ScrollText', label: 'Escritura' },
+
+  // Financieros
   { nombre: 'Receipt', icono: 'Receipt', label: 'Factura' },
+  { nombre: 'Banknote', icono: 'Banknote', label: 'Dinero' },
+  { nombre: 'Calculator', icono: 'Calculator', label: 'Avalúo' },
+  { nombre: 'Wallet', icono: 'Wallet', label: 'Pago' },
+  { nombre: 'DollarSign', icono: 'DollarSign', label: 'Financiero' },
+
+  // Propiedad/Construcción
+  { nombre: 'Home', icono: 'Home', label: 'Vivienda' },
+  { nombre: 'Building2', icono: 'Building2', label: 'Edificio' },
+  { nombre: 'Key', icono: 'Key', label: 'Llave' },
+  { nombre: 'MapPin', icono: 'MapPin', label: 'Ubicación' },
+  { nombre: 'Map', icono: 'Map', label: 'Plano' },
+  { nombre: 'Hammer', icono: 'Hammer', label: 'Construcción' },
+  { nombre: 'Ruler', icono: 'Ruler', label: 'Medidas' },
+
+  // Media
   { nombre: 'Camera', icono: 'Camera', label: 'Fotografía' },
   { nombre: 'Image', icono: 'Image', label: 'Imagen' },
-  { nombre: 'Building2', icono: 'Building2', label: 'Edificio' },
-  { nombre: 'Hammer', icono: 'Hammer', label: 'Construcción' },
-  { nombre: 'Ruler', icono: 'Ruler', label: 'Plano' },
+  { nombre: 'Video', icono: 'Video', label: 'Video' },
 ]
 
 export function CategoriaForm({
@@ -175,7 +205,7 @@ export function CategoriaForm({
         <label className='mb-3 block text-sm font-medium text-gray-700 dark:text-gray-300'>
           Ícono
         </label>
-        <div className='grid grid-cols-5 gap-3'>
+        <div className='grid grid-cols-5 sm:grid-cols-6 lg:grid-cols-8 gap-3 max-h-80 overflow-y-auto p-2 rounded-xl bg-gray-50 dark:bg-gray-800/50'>
           {ICONOS_DISPONIBLES.map(({ nombre, icono, label }) => (
             <motion.button
               key={nombre}

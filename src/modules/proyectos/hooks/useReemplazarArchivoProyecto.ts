@@ -15,6 +15,7 @@ export interface ReemplazarArchivoParams {
   documentoId: string
   nuevoArchivo: File
   motivo: string
+  password: string
 }
 
 // ============================================================================
@@ -33,11 +34,14 @@ export function useReemplazarArchivoProyecto(proyectoId?: string) {
       documentoId,
       nuevoArchivo,
       motivo,
+      password,
     }: ReemplazarArchivoParams) => {
       await DocumentosService.reemplazarArchivoSeguro(
         documentoId,
         nuevoArchivo,
-        motivo
+        motivo,
+        password,
+        'proyecto' // ✅ Tipo de entidad
       )
     },
     onSuccess: (_, variables) => {

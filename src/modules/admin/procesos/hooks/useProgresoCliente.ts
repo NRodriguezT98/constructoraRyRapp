@@ -56,11 +56,8 @@ export function useProgresoCliente({
 
       try {
         // 1. Obtener negociación activa del cliente
-        const { createBrowserClient } = await import('@supabase/ssr')
-        const supabase = createBrowserClient(
-          process.env.NEXT_PUBLIC_SUPABASE_URL!,
-          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-        )
+        const { createClient } = await import('@/lib/supabase/client')
+        const supabase = createClient()
 
         const { data: negociaciones, error: negError } = await supabase
           .from('negociaciones')

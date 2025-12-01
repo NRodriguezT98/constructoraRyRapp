@@ -24,17 +24,20 @@ BEGIN
       -- 1. Permisos y Licencias
       (p_user_id, 'Permisos y Licencias', 'Licencias de construcción, urbanismo y certificados oficiales', '#3B82F6', 'shield-check', ARRAY['proyectos'], true, 1),
 
-      -- 2. Documentos Legales
-      (p_user_id, 'Documentos Legales', 'Boletas fiscales, matrículas, paz y salvos', '#8B5CF6', 'scale', ARRAY['proyectos'], true, 2),
+      -- 2. Planos
+      (p_user_id, 'Planos', 'Planos arquitectónicos, estructurales y de diseño', '#10B981', 'drafting-compass', ARRAY['proyectos'], true, 2),
 
-      -- 3. Documentos Técnicos
-      (p_user_id, 'Documentos Técnicos', 'Planos, diseños, memorias de cálculo', '#10B981', 'drafting-compass', ARRAY['proyectos'], true, 3),
+      -- 3. Documentos Legales
+      (p_user_id, 'Documentos Legales', 'Boletas fiscales, matrículas, paz y salvos', '#8B5CF6', 'scale', ARRAY['proyectos'], true, 3),
 
-      -- 4. Facturas y Pagos
-      (p_user_id, 'Facturas y Pagos', 'Facturas prediales, comprobantes de pago, recibos', '#F59E0B', 'receipt', ARRAY['proyectos'], true, 4),
+      -- 4. Documentos Técnicos
+      (p_user_id, 'Documentos Técnicos', 'Diseños, memorias de cálculo, estudios técnicos', '#06B6D4', 'clipboard-list', ARRAY['proyectos'], true, 4),
 
-      -- 5. Otros Documentos
-      (p_user_id, 'Otros Documentos', 'Documentos generales y varios', '#6B7280', 'folder', ARRAY['proyectos'], true, 5);
+      -- 5. Facturas y Pagos
+      (p_user_id, 'Facturas y Pagos', 'Facturas prediales, comprobantes de pago, recibos', '#F59E0B', 'receipt', ARRAY['proyectos'], true, 5),
+
+      -- 6. Otros Documentos
+      (p_user_id, 'Otros Documentos', 'Documentos generales y varios', '#6B7280', 'folder', ARRAY['proyectos'], true, 6);
 
     RAISE NOTICE 'Categorías por defecto creadas para usuario %', p_user_id;
   ELSE
@@ -45,4 +48,4 @@ $$ LANGUAGE plpgsql;
 
 -- Comentario de la función
 COMMENT ON FUNCTION crear_categorias_proyectos_default(UUID) IS
-'Crea categorías predeterminadas para módulo proyectos si el usuario no tiene ninguna';
+'Crea 6 categorías predeterminadas para módulo proyectos si el usuario no tiene ninguna';

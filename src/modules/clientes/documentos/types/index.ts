@@ -23,9 +23,6 @@ export interface DocumentoCliente {
   tipo_mime: string
   url_storage: string
 
-  // Organización
-  etiquetas: string[] | null
-
   // Versionado
   version: number
   es_version_actual: boolean
@@ -55,10 +52,10 @@ export interface SubirDocumentoClienteParams {
   categoria_id?: string
   titulo: string
   descripcion?: string
-  etiquetas?: string[]
   fecha_documento?: string
   fecha_vencimiento?: string
   es_importante?: boolean
+  es_documento_identidad?: boolean // ⭐ NUEVO: Marca si es documento de identidad
   metadata?: Record<string, any>
 }
 
@@ -67,7 +64,6 @@ export interface SubirDocumentoClienteParams {
  */
 export interface FiltrosDocumentosCliente {
   categoria_id?: string | null
-  etiquetas?: string[]
   busqueda?: string
   solo_importantes?: boolean
   estado?: string

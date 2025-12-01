@@ -53,7 +53,7 @@ export function PasoLinderosNuevo({ register, errors }: PasoLinderosProps) {
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -20 }}
       transition={{ duration: 0.2 }}
-      className="space-y-6"
+      className="space-y-3"
     >
       {/* Título del paso */}
       <div>
@@ -66,7 +66,7 @@ export function PasoLinderosNuevo({ register, errors }: PasoLinderosProps) {
       </div>
 
       {/* Consejo */}
-      <div className="flex items-start gap-3 p-4 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
+      <div className="flex items-start gap-3 p-3 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
         <Lightbulb className="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
         <div>
           <p className="text-sm font-medium text-amber-900 dark:text-amber-100 mb-1">
@@ -91,7 +91,7 @@ export function PasoLinderosNuevo({ register, errors }: PasoLinderosProps) {
               <textarea
                 {...register(lindero.id)}
                 id={lindero.id}
-                rows={3}
+                rows={2}
                 placeholder={lindero.placeholder}
                 className={cn(
                   styles.field.textarea,

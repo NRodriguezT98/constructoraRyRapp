@@ -64,7 +64,8 @@ class InteresesService {
         })) || []
       )
     } catch (error) {
-      console.error('Error obteniendo intereses del cliente:', error)
+      const mensaje = error instanceof Error ? error.message : 'Error desconocido'
+      console.error('[CLIENTES] Error obteniendo intereses del cliente:', mensaje, error)
       throw error
     }
   }
@@ -113,7 +114,8 @@ class InteresesService {
         })) || []
       )
     } catch (error) {
-      console.error('Error obteniendo intereses del proyecto:', error)
+      const mensaje = error instanceof Error ? error.message : 'Error desconocido'
+      console.error('[CLIENTES] Error obteniendo intereses del proyecto:', mensaje, error)
       throw error
     }
   }
@@ -138,7 +140,8 @@ class InteresesService {
       if (error) throw error
       return data as ClienteInteres
     } catch (error) {
-      console.error('Error creando interés:', error)
+      const mensaje = error instanceof Error ? error.message : 'Error desconocido'
+      console.error('[CLIENTES] Error creando interés:', mensaje, error)
       throw error
     }
   }
@@ -161,7 +164,8 @@ class InteresesService {
       if (error) throw error
       return data as ClienteInteres
     } catch (error) {
-      console.error('Error actualizando interés:', error)
+      const mensaje = error instanceof Error ? error.message : 'Error desconocido'
+      console.error('[CLIENTES] Error actualizando interés:', mensaje, error)
       throw error
     }
   }
@@ -179,7 +183,8 @@ class InteresesService {
         motivo_descarte: motivo,
       })
     } catch (error) {
-      console.error('Error descartando interés:', error)
+      const mensaje = error instanceof Error ? error.message : 'Error desconocido'
+      console.error('[CLIENTES] Error descartando interés:', mensaje, error)
       throw error
     }
   }
@@ -200,7 +205,8 @@ class InteresesService {
 
       if (error) throw error
     } catch (error) {
-      console.error('Error marcando interés como convertido:', error)
+      const mensaje = error instanceof Error ? error.message : 'Error desconocido'
+      console.error('[CLIENTES] Error marcando interés como convertido:', mensaje, error)
       throw error
     }
   }
@@ -217,7 +223,8 @@ class InteresesService {
 
       if (error) throw error
     } catch (error) {
-      console.error('Error eliminando interés:', error)
+      const mensaje = error instanceof Error ? error.message : 'Error desconocido'
+      console.error('[CLIENTES] Error eliminando interés:', mensaje, error)
       throw error
     }
   }
@@ -247,7 +254,8 @@ class InteresesService {
       if (error) throw error
       return (count ?? 0) > 0
     } catch (error) {
-      console.error('Error verificando interés activo:', error)
+      const mensaje = error instanceof Error ? error.message : 'Error desconocido'
+      console.error('[CLIENTES] Error verificando interés activo:', mensaje, error)
       return false
     }
   }
@@ -278,7 +286,8 @@ class InteresesService {
 
       return resumen
     } catch (error) {
-      console.error('Error obteniendo resumen de intereses:', error)
+      const mensaje = error instanceof Error ? error.message : 'Error desconocido'
+      console.error('[CLIENTES] Error obteniendo resumen de intereses:', mensaje, error)
       return { activos: 0, descartados: 0, convertidos: 0 }
     }
   }

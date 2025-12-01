@@ -76,6 +76,13 @@ export type Database = {
             foreignKeyName: "abonos_historial_negociacion_id_fkey"
             columns: ["negociacion_id"]
             isOneToOne: false
+            referencedRelation: "negociaciones_con_version_actual"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "abonos_historial_negociacion_id_fkey"
+            columns: ["negociacion_id"]
+            isOneToOne: false
             referencedRelation: "v_negociaciones_completas"
             referencedColumns: ["id"]
           },
@@ -331,6 +338,13 @@ export type Database = {
             foreignKeyName: "cliente_intereses_negociacion_id_fkey"
             columns: ["negociacion_id"]
             isOneToOne: false
+            referencedRelation: "negociaciones_con_version_actual"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cliente_intereses_negociacion_id_fkey"
+            columns: ["negociacion_id"]
+            isOneToOne: false
             referencedRelation: "v_negociaciones_completas"
             referencedColumns: ["id"]
           },
@@ -395,6 +409,7 @@ export type Database = {
           documento_identidad_url: string | null
           email: string | null
           estado: string
+          estado_civil: Database["public"]["Enums"]["estado_civil_enum"] | null
           fecha_actualizacion: string
           fecha_creacion: string
           fecha_nacimiento: string | null
@@ -403,8 +418,6 @@ export type Database = {
           nombres: string
           notas: string | null
           numero_documento: string
-          origen: string | null
-          referido_por: string | null
           telefono: string | null
           telefono_alternativo: string | null
           tipo_documento: string
@@ -419,6 +432,7 @@ export type Database = {
           documento_identidad_url?: string | null
           email?: string | null
           estado?: string
+          estado_civil?: Database["public"]["Enums"]["estado_civil_enum"] | null
           fecha_actualizacion?: string
           fecha_creacion?: string
           fecha_nacimiento?: string | null
@@ -427,8 +441,6 @@ export type Database = {
           nombres: string
           notas?: string | null
           numero_documento: string
-          origen?: string | null
-          referido_por?: string | null
           telefono?: string | null
           telefono_alternativo?: string | null
           tipo_documento?: string
@@ -443,6 +455,7 @@ export type Database = {
           documento_identidad_url?: string | null
           email?: string | null
           estado?: string
+          estado_civil?: Database["public"]["Enums"]["estado_civil_enum"] | null
           fecha_actualizacion?: string
           fecha_creacion?: string
           fecha_nacimiento?: string | null
@@ -451,8 +464,6 @@ export type Database = {
           nombres?: string
           notas?: string | null
           numero_documento?: string
-          origen?: string | null
-          referido_por?: string | null
           telefono?: string | null
           telefono_alternativo?: string | null
           tipo_documento?: string
@@ -492,6 +503,47 @@ export type Database = {
           valor?: number
         }
         Relationships: []
+      }
+      descuentos_negociacion: {
+        Row: {
+          aplicado_en: string | null
+          aplicado_por: string | null
+          id: string
+          monto: number
+          motivo: string
+          negociacion_version_id: string
+          porcentaje: number | null
+          tipo_descuento: string
+        }
+        Insert: {
+          aplicado_en?: string | null
+          aplicado_por?: string | null
+          id?: string
+          monto: number
+          motivo: string
+          negociacion_version_id: string
+          porcentaje?: number | null
+          tipo_descuento: string
+        }
+        Update: {
+          aplicado_en?: string | null
+          aplicado_por?: string | null
+          id?: string
+          monto?: number
+          motivo?: string
+          negociacion_version_id?: string
+          porcentaje?: number | null
+          tipo_descuento?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "descuentos_negociacion_negociacion_version_id_fkey"
+            columns: ["negociacion_version_id"]
+            isOneToOne: false
+            referencedRelation: "negociaciones_versiones"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       documento_reemplazos_admin: {
         Row: {
@@ -578,6 +630,7 @@ export type Database = {
           cliente_id: string
           descripcion: string | null
           documento_padre_id: string | null
+          es_documento_identidad: boolean
           es_importante: boolean | null
           es_version_actual: boolean
           estado: string
@@ -602,6 +655,7 @@ export type Database = {
           cliente_id: string
           descripcion?: string | null
           documento_padre_id?: string | null
+          es_documento_identidad?: boolean
           es_importante?: boolean | null
           es_version_actual?: boolean
           estado?: string
@@ -626,6 +680,7 @@ export type Database = {
           cliente_id?: string
           descripcion?: string | null
           documento_padre_id?: string | null
+          es_documento_identidad?: boolean
           es_importante?: boolean | null
           es_version_actual?: boolean
           estado?: string
@@ -700,6 +755,135 @@ export type Database = {
             columns: ["documento_padre_id"]
             isOneToOne: false
             referencedRelation: "documentos_cliente"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_documentos_cliente_subido_por"
+            columns: ["subido_por"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_documentos_cliente_subido_por"
+            columns: ["subido_por"]
+            isOneToOne: false
+            referencedRelation: "vista_usuarios_completos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      documentos_pendientes: {
+        Row: {
+          categoria_id: string
+          cliente_id: string
+          completado_por: string | null
+          estado: string | null
+          fecha_completado: string | null
+          fecha_creacion: string | null
+          fecha_limite: string | null
+          fuente_pago_id: string
+          id: string
+          metadata: Json | null
+          prioridad: string | null
+          recordatorios_enviados: number | null
+          tipo_documento: string
+          ultima_notificacion: string | null
+        }
+        Insert: {
+          categoria_id: string
+          cliente_id: string
+          completado_por?: string | null
+          estado?: string | null
+          fecha_completado?: string | null
+          fecha_creacion?: string | null
+          fecha_limite?: string | null
+          fuente_pago_id: string
+          id?: string
+          metadata?: Json | null
+          prioridad?: string | null
+          recordatorios_enviados?: number | null
+          tipo_documento: string
+          ultima_notificacion?: string | null
+        }
+        Update: {
+          categoria_id?: string
+          cliente_id?: string
+          completado_por?: string | null
+          estado?: string | null
+          fecha_completado?: string | null
+          fecha_creacion?: string | null
+          fecha_limite?: string | null
+          fuente_pago_id?: string
+          id?: string
+          metadata?: Json | null
+          prioridad?: string | null
+          recordatorios_enviados?: number | null
+          tipo_documento?: string
+          ultima_notificacion?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "documentos_pendientes_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documentos_pendientes_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "v_negociaciones_completas"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "documentos_pendientes_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "v_renuncias_pendientes"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "documentos_pendientes_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "vista_abonos_completos"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "documentos_pendientes_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "vista_clientes_resumen"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documentos_pendientes_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "vista_viviendas_completas"
+            referencedColumns: ["cliente_id_data"]
+          },
+          {
+            foreignKeyName: "documentos_pendientes_completado_por_fkey"
+            columns: ["completado_por"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documentos_pendientes_completado_por_fkey"
+            columns: ["completado_por"]
+            isOneToOne: false
+            referencedRelation: "vista_usuarios_completos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documentos_pendientes_fuente_pago_id_fkey"
+            columns: ["fuente_pago_id"]
+            isOneToOne: false
+            referencedRelation: "fuentes_pago"
             referencedColumns: ["id"]
           },
         ]
@@ -1010,9 +1194,12 @@ export type Database = {
           carta_asignacion_url: string | null
           entidad: string | null
           estado: string
+          estado_documentacion: string | null
+          fecha_acta: string | null
           fecha_actualizacion: string
           fecha_completado: string | null
           fecha_creacion: string
+          fecha_resolucion: string | null
           id: string
           monto_aprobado: number
           monto_recibido: number | null
@@ -1028,9 +1215,12 @@ export type Database = {
           carta_asignacion_url?: string | null
           entidad?: string | null
           estado?: string
+          estado_documentacion?: string | null
+          fecha_acta?: string | null
           fecha_actualizacion?: string
           fecha_completado?: string | null
           fecha_creacion?: string
+          fecha_resolucion?: string | null
           id?: string
           monto_aprobado: number
           monto_recibido?: number | null
@@ -1046,9 +1236,12 @@ export type Database = {
           carta_asignacion_url?: string | null
           entidad?: string | null
           estado?: string
+          estado_documentacion?: string | null
+          fecha_acta?: string | null
           fecha_actualizacion?: string
           fecha_completado?: string | null
           fecha_creacion?: string
+          fecha_resolucion?: string | null
           id?: string
           monto_aprobado?: number
           monto_recibido?: number | null
@@ -1065,6 +1258,13 @@ export type Database = {
             columns: ["negociacion_id"]
             isOneToOne: false
             referencedRelation: "negociaciones"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fuentes_pago_negociacion_id_fkey"
+            columns: ["negociacion_id"]
+            isOneToOne: false
+            referencedRelation: "negociaciones_con_version_actual"
             referencedColumns: ["id"]
           },
           {
@@ -1271,6 +1471,73 @@ export type Database = {
           },
         ]
       }
+      negociaciones_versiones: {
+        Row: {
+          creado_en: string | null
+          creado_por: string | null
+          descuento_aplicado: number | null
+          es_version_activa: boolean | null
+          fuentes_pago: Json
+          id: string
+          motivo_cambio: string
+          negociacion_id: string
+          tipo_cambio: string
+          valor_total: number
+          valor_vivienda: number
+          version: number
+        }
+        Insert: {
+          creado_en?: string | null
+          creado_por?: string | null
+          descuento_aplicado?: number | null
+          es_version_activa?: boolean | null
+          fuentes_pago?: Json
+          id?: string
+          motivo_cambio: string
+          negociacion_id: string
+          tipo_cambio: string
+          valor_total: number
+          valor_vivienda: number
+          version: number
+        }
+        Update: {
+          creado_en?: string | null
+          creado_por?: string | null
+          descuento_aplicado?: number | null
+          es_version_activa?: boolean | null
+          fuentes_pago?: Json
+          id?: string
+          motivo_cambio?: string
+          negociacion_id?: string
+          tipo_cambio?: string
+          valor_total?: number
+          valor_vivienda?: number
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "negociaciones_versiones_negociacion_id_fkey"
+            columns: ["negociacion_id"]
+            isOneToOne: false
+            referencedRelation: "negociaciones"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "negociaciones_versiones_negociacion_id_fkey"
+            columns: ["negociacion_id"]
+            isOneToOne: false
+            referencedRelation: "negociaciones_con_version_actual"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "negociaciones_versiones_negociacion_id_fkey"
+            columns: ["negociacion_id"]
+            isOneToOne: false
+            referencedRelation: "v_negociaciones_completas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       permisos_rol: {
         Row: {
           accion: string
@@ -1413,6 +1680,13 @@ export type Database = {
             columns: ["negociacion_id"]
             isOneToOne: false
             referencedRelation: "negociaciones"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "procesos_negociacion_negociacion_id_fkey"
+            columns: ["negociacion_id"]
+            isOneToOne: false
+            referencedRelation: "negociaciones_con_version_actual"
             referencedColumns: ["id"]
           },
           {
@@ -1566,6 +1840,13 @@ export type Database = {
             foreignKeyName: "renuncias_negociacion_id_fkey"
             columns: ["negociacion_id"]
             isOneToOne: false
+            referencedRelation: "negociaciones_con_version_actual"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "renuncias_negociacion_id_fkey"
+            columns: ["negociacion_id"]
+            isOneToOne: false
             referencedRelation: "v_negociaciones_completas"
             referencedColumns: ["id"]
           },
@@ -1663,23 +1944,30 @@ export type Database = {
           area_lote: number | null
           certificado_tradicion_url: string | null
           cliente_id: string | null
+          contador_desactivaciones: number | null
           es_esquinera: boolean | null
           estado: string
           fecha_actualizacion: string | null
           fecha_asignacion: string | null
           fecha_creacion: string | null
           fecha_entrega: string | null
+          fecha_inactivacion: string | null
+          fecha_reactivacion: string | null
           gastos_notariales: number | null
           id: string
+          inactivada_por: string | null
           lindero_norte: string | null
           lindero_occidente: string | null
           lindero_oriente: string | null
           lindero_sur: string | null
           manzana_id: string
           matricula_inmobiliaria: string | null
+          motivo_inactivacion: string | null
+          motivo_reactivacion: string | null
           negociacion_id: string | null
           nomenclatura: string | null
           numero: string
+          reactivada_por: string | null
           recargo_esquinera: number | null
           tipo_vivienda: string | null
           valor_base: number
@@ -1691,23 +1979,30 @@ export type Database = {
           area_lote?: number | null
           certificado_tradicion_url?: string | null
           cliente_id?: string | null
+          contador_desactivaciones?: number | null
           es_esquinera?: boolean | null
           estado?: string
           fecha_actualizacion?: string | null
           fecha_asignacion?: string | null
           fecha_creacion?: string | null
           fecha_entrega?: string | null
+          fecha_inactivacion?: string | null
+          fecha_reactivacion?: string | null
           gastos_notariales?: number | null
           id?: string
+          inactivada_por?: string | null
           lindero_norte?: string | null
           lindero_occidente?: string | null
           lindero_oriente?: string | null
           lindero_sur?: string | null
           manzana_id: string
           matricula_inmobiliaria?: string | null
+          motivo_inactivacion?: string | null
+          motivo_reactivacion?: string | null
           negociacion_id?: string | null
           nomenclatura?: string | null
           numero: string
+          reactivada_por?: string | null
           recargo_esquinera?: number | null
           tipo_vivienda?: string | null
           valor_base?: number
@@ -1719,29 +2014,50 @@ export type Database = {
           area_lote?: number | null
           certificado_tradicion_url?: string | null
           cliente_id?: string | null
+          contador_desactivaciones?: number | null
           es_esquinera?: boolean | null
           estado?: string
           fecha_actualizacion?: string | null
           fecha_asignacion?: string | null
           fecha_creacion?: string | null
           fecha_entrega?: string | null
+          fecha_inactivacion?: string | null
+          fecha_reactivacion?: string | null
           gastos_notariales?: number | null
           id?: string
+          inactivada_por?: string | null
           lindero_norte?: string | null
           lindero_occidente?: string | null
           lindero_oriente?: string | null
           lindero_sur?: string | null
           manzana_id?: string
           matricula_inmobiliaria?: string | null
+          motivo_inactivacion?: string | null
+          motivo_reactivacion?: string | null
           negociacion_id?: string | null
           nomenclatura?: string | null
           numero?: string
+          reactivada_por?: string | null
           recargo_esquinera?: number | null
           tipo_vivienda?: string | null
           valor_base?: number
           valor_total?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "viviendas_inactivada_por_fkey"
+            columns: ["inactivada_por"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "viviendas_inactivada_por_fkey"
+            columns: ["inactivada_por"]
+            isOneToOne: false
+            referencedRelation: "vista_usuarios_completos"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "viviendas_manzana_id_fkey"
             columns: ["manzana_id"]
@@ -1774,7 +2090,195 @@ export type Database = {
             foreignKeyName: "viviendas_negociacion_id_fkey"
             columns: ["negociacion_id"]
             isOneToOne: false
+            referencedRelation: "negociaciones_con_version_actual"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "viviendas_negociacion_id_fkey"
+            columns: ["negociacion_id"]
+            isOneToOne: false
             referencedRelation: "v_negociaciones_completas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "viviendas_reactivada_por_fkey"
+            columns: ["reactivada_por"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "viviendas_reactivada_por_fkey"
+            columns: ["reactivada_por"]
+            isOneToOne: false
+            referencedRelation: "vista_usuarios_completos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      viviendas_historial_estados: {
+        Row: {
+          created_at: string | null
+          estado_anterior: string
+          estado_nuevo: string
+          fecha_cambio: string | null
+          id: string
+          metadata: Json | null
+          motivo: string
+          usuario_id: string | null
+          vivienda_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          estado_anterior: string
+          estado_nuevo: string
+          fecha_cambio?: string | null
+          id?: string
+          metadata?: Json | null
+          motivo: string
+          usuario_id?: string | null
+          vivienda_id: string
+        }
+        Update: {
+          created_at?: string | null
+          estado_anterior?: string
+          estado_nuevo?: string
+          fecha_cambio?: string | null
+          id?: string
+          metadata?: Json | null
+          motivo?: string
+          usuario_id?: string | null
+          vivienda_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "viviendas_historial_estados_usuario_id_fkey"
+            columns: ["usuario_id"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "viviendas_historial_estados_usuario_id_fkey"
+            columns: ["usuario_id"]
+            isOneToOne: false
+            referencedRelation: "vista_usuarios_completos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "viviendas_historial_estados_vivienda_id_fkey"
+            columns: ["vivienda_id"]
+            isOneToOne: false
+            referencedRelation: "v_negociaciones_completas"
+            referencedColumns: ["vivienda_id"]
+          },
+          {
+            foreignKeyName: "viviendas_historial_estados_vivienda_id_fkey"
+            columns: ["vivienda_id"]
+            isOneToOne: false
+            referencedRelation: "vista_abonos_completos"
+            referencedColumns: ["vivienda_id"]
+          },
+          {
+            foreignKeyName: "viviendas_historial_estados_vivienda_id_fkey"
+            columns: ["vivienda_id"]
+            isOneToOne: false
+            referencedRelation: "vista_viviendas_completas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "viviendas_historial_estados_vivienda_id_fkey"
+            columns: ["vivienda_id"]
+            isOneToOne: false
+            referencedRelation: "viviendas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      viviendas_historial_matriculas: {
+        Row: {
+          abonos_snapshot: Json | null
+          created_at: string | null
+          documentos_snapshot: Json | null
+          fecha_cambio: string | null
+          id: string
+          matricula_anterior: string
+          matricula_nueva: string
+          motivo: string
+          negociaciones_snapshot: Json | null
+          nivel_riesgo: string | null
+          usuario_id: string | null
+          vivienda_id: string
+        }
+        Insert: {
+          abonos_snapshot?: Json | null
+          created_at?: string | null
+          documentos_snapshot?: Json | null
+          fecha_cambio?: string | null
+          id?: string
+          matricula_anterior: string
+          matricula_nueva: string
+          motivo: string
+          negociaciones_snapshot?: Json | null
+          nivel_riesgo?: string | null
+          usuario_id?: string | null
+          vivienda_id: string
+        }
+        Update: {
+          abonos_snapshot?: Json | null
+          created_at?: string | null
+          documentos_snapshot?: Json | null
+          fecha_cambio?: string | null
+          id?: string
+          matricula_anterior?: string
+          matricula_nueva?: string
+          motivo?: string
+          negociaciones_snapshot?: Json | null
+          nivel_riesgo?: string | null
+          usuario_id?: string | null
+          vivienda_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "viviendas_historial_matriculas_usuario_id_fkey"
+            columns: ["usuario_id"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "viviendas_historial_matriculas_usuario_id_fkey"
+            columns: ["usuario_id"]
+            isOneToOne: false
+            referencedRelation: "vista_usuarios_completos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "viviendas_historial_matriculas_vivienda_id_fkey"
+            columns: ["vivienda_id"]
+            isOneToOne: false
+            referencedRelation: "v_negociaciones_completas"
+            referencedColumns: ["vivienda_id"]
+          },
+          {
+            foreignKeyName: "viviendas_historial_matriculas_vivienda_id_fkey"
+            columns: ["vivienda_id"]
+            isOneToOne: false
+            referencedRelation: "vista_abonos_completos"
+            referencedColumns: ["vivienda_id"]
+          },
+          {
+            foreignKeyName: "viviendas_historial_matriculas_vivienda_id_fkey"
+            columns: ["vivienda_id"]
+            isOneToOne: false
+            referencedRelation: "vista_viviendas_completas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "viviendas_historial_matriculas_vivienda_id_fkey"
+            columns: ["vivienda_id"]
+            isOneToOne: false
+            referencedRelation: "viviendas"
             referencedColumns: ["id"]
           },
         ]
@@ -1869,6 +2373,13 @@ export type Database = {
             foreignKeyName: "cliente_intereses_negociacion_id_fkey"
             columns: ["negociacion_id"]
             isOneToOne: false
+            referencedRelation: "negociaciones_con_version_actual"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cliente_intereses_negociacion_id_fkey"
+            columns: ["negociacion_id"]
+            isOneToOne: false
             referencedRelation: "v_negociaciones_completas"
             referencedColumns: ["id"]
           },
@@ -1916,6 +2427,111 @@ export type Database = {
           },
           {
             foreignKeyName: "cliente_intereses_vivienda_id_fkey"
+            columns: ["vivienda_id"]
+            isOneToOne: false
+            referencedRelation: "viviendas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      negociaciones_con_version_actual: {
+        Row: {
+          cliente_id: string | null
+          descuento_aplicado: number | null
+          escritura_url: string | null
+          estado: string | null
+          evidencia_envio_correo_url: string | null
+          fecha_actualizacion: string | null
+          fecha_completada: string | null
+          fecha_creacion: string | null
+          fecha_negociacion: string | null
+          fecha_renuncia_efectiva: string | null
+          fecha_ultima_version: string | null
+          fuentes_pago_actual: Json | null
+          id: string | null
+          modificado_por_nombre: string | null
+          notas: string | null
+          otros_documentos: Json | null
+          porcentaje_pagado: number | null
+          promesa_compraventa_url: string | null
+          promesa_firmada_url: string | null
+          saldo_pendiente: number | null
+          total_abonado: number | null
+          total_fuentes_pago: number | null
+          ultimo_motivo_cambio: string | null
+          ultimo_tipo_cambio: string | null
+          usuario_creacion: string | null
+          valor_negociado: number | null
+          valor_total: number | null
+          version_actual: number | null
+          vivienda_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "negociaciones_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "negociaciones_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "v_negociaciones_completas"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "negociaciones_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "v_renuncias_pendientes"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "negociaciones_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "vista_abonos_completos"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "negociaciones_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "vista_clientes_resumen"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "negociaciones_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "vista_viviendas_completas"
+            referencedColumns: ["cliente_id_data"]
+          },
+          {
+            foreignKeyName: "negociaciones_vivienda_id_fkey"
+            columns: ["vivienda_id"]
+            isOneToOne: false
+            referencedRelation: "v_negociaciones_completas"
+            referencedColumns: ["vivienda_id"]
+          },
+          {
+            foreignKeyName: "negociaciones_vivienda_id_fkey"
+            columns: ["vivienda_id"]
+            isOneToOne: false
+            referencedRelation: "vista_abonos_completos"
+            referencedColumns: ["vivienda_id"]
+          },
+          {
+            foreignKeyName: "negociaciones_vivienda_id_fkey"
+            columns: ["vivienda_id"]
+            isOneToOne: false
+            referencedRelation: "vista_viviendas_completas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "negociaciones_vivienda_id_fkey"
             columns: ["vivienda_id"]
             isOneToOne: false
             referencedRelation: "viviendas"
@@ -2054,6 +2670,13 @@ export type Database = {
             foreignKeyName: "abonos_historial_negociacion_id_fkey"
             columns: ["negociacion_id"]
             isOneToOne: false
+            referencedRelation: "negociaciones_con_version_actual"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "abonos_historial_negociacion_id_fkey"
+            columns: ["negociacion_id"]
+            isOneToOne: false
             referencedRelation: "v_negociaciones_completas"
             referencedColumns: ["id"]
           },
@@ -2061,19 +2684,82 @@ export type Database = {
       }
       vista_clientes_resumen: {
         Row: {
+          apellidos: string | null
+          ciudad: string | null
+          departamento: string | null
+          direccion: string | null
+          documento_identidad_titulo: string | null
+          documento_identidad_url: string | null
           email: string | null
           estado: string | null
+          estado_civil: Database["public"]["Enums"]["estado_civil_enum"] | null
+          fecha_actualizacion: string | null
           fecha_creacion: string | null
+          fecha_nacimiento: string | null
           id: string | null
           negociaciones_activas: number | null
           negociaciones_completadas: number | null
           nombre_completo: string | null
+          nombres: string | null
+          notas: string | null
           numero_documento: string | null
-          origen: string | null
           telefono: string | null
+          tiene_documento_identidad: boolean | null
           tipo_documento: string | null
+          total_intereses: number | null
           total_negociaciones: number | null
-          ultima_negociacion: string | null
+        }
+        Insert: {
+          apellidos?: string | null
+          ciudad?: string | null
+          departamento?: string | null
+          direccion?: string | null
+          documento_identidad_titulo?: string | null
+          documento_identidad_url?: string | null
+          email?: string | null
+          estado?: string | null
+          estado_civil?: Database["public"]["Enums"]["estado_civil_enum"] | null
+          fecha_actualizacion?: string | null
+          fecha_creacion?: string | null
+          fecha_nacimiento?: string | null
+          id?: string | null
+          negociaciones_activas?: never
+          negociaciones_completadas?: never
+          nombre_completo?: never
+          nombres?: string | null
+          notas?: string | null
+          numero_documento?: string | null
+          telefono?: string | null
+          tiene_documento_identidad?: never
+          tipo_documento?: string | null
+          total_intereses?: never
+          total_negociaciones?: never
+        }
+        Update: {
+          apellidos?: string | null
+          ciudad?: string | null
+          departamento?: string | null
+          direccion?: string | null
+          documento_identidad_titulo?: string | null
+          documento_identidad_url?: string | null
+          email?: string | null
+          estado?: string | null
+          estado_civil?: Database["public"]["Enums"]["estado_civil_enum"] | null
+          fecha_actualizacion?: string | null
+          fecha_creacion?: string | null
+          fecha_nacimiento?: string | null
+          id?: string | null
+          negociaciones_activas?: never
+          negociaciones_completadas?: never
+          nombre_completo?: never
+          nombres?: string | null
+          notas?: string | null
+          numero_documento?: string | null
+          telefono?: string | null
+          tiene_documento_identidad?: never
+          tipo_documento?: string | null
+          total_intereses?: never
+          total_negociaciones?: never
         }
         Relationships: []
       }
@@ -2354,6 +3040,13 @@ export type Database = {
             foreignKeyName: "viviendas_negociacion_id_fkey"
             columns: ["negociacion_id"]
             isOneToOne: false
+            referencedRelation: "negociaciones_con_version_actual"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "viviendas_negociacion_id_fkey"
+            columns: ["negociacion_id"]
+            isOneToOne: false
             referencedRelation: "v_negociaciones_completas"
             referencedColumns: ["id"]
           },
@@ -2364,6 +3057,15 @@ export type Database = {
       calcular_cambios_json: {
         Args: { datos_antes: Json; datos_despues: Json }
         Returns: Json
+      }
+      calcular_nivel_riesgo_matricula: {
+        Args: {
+          p_negociacion_firmada: boolean
+          p_tiene_abonos: boolean
+          p_tiene_negociaciones: boolean
+          p_vivienda_id: string
+        }
+        Returns: string
       }
       categoria_aplica_a_modulo: {
         Args: { p_categoria_id: string; p_modulo: string }
@@ -2377,9 +3079,29 @@ export type Database = {
         }
         Returns: string
       }
+      crear_categorias_clientes_default: {
+        Args: { p_user_id: string }
+        Returns: undefined
+      }
       crear_categorias_proyectos_default: {
         Args: { p_user_id: string }
         Returns: undefined
+      }
+      crear_categorias_viviendas_default: {
+        Args: { p_user_id: string }
+        Returns: undefined
+      }
+      crear_nueva_version_negociacion: {
+        Args: {
+          p_descuento_aplicado: number
+          p_fuentes_pago: Json
+          p_motivo_cambio: string
+          p_negociacion_id: string
+          p_tipo_cambio: string
+          p_valor_total: number
+          p_valor_vivienda: number
+        }
+        Returns: string
       }
       custom_access_token_hook: { Args: { event: Json }; Returns: Json }
       detectar_eliminaciones_masivas: {
@@ -2392,6 +3114,8 @@ export type Database = {
         }[]
       }
       es_admin: { Args: { p_user_id: string }; Returns: boolean }
+      exec_sql: { Args: { sql_query: string }; Returns: undefined }
+      is_admin: { Args: never; Returns: boolean }
       limpiar_logs_antiguos: {
         Args: { dias_retencion?: number }
         Returns: number
@@ -2485,6 +3209,7 @@ export type Database = {
       }
     }
     Enums: {
+      estado_civil_enum: "Soltero(a)" | "Casado(a)" | "Unión libre" | "Viudo(a)"
       estado_usuario: "Activo" | "Inactivo" | "Bloqueado"
       rol_usuario:
         | "Administrador"
@@ -2619,6 +3344,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      estado_civil_enum: ["Soltero(a)", "Casado(a)", "Unión libre", "Viudo(a)"],
       estado_usuario: ["Activo", "Inactivo", "Bloqueado"],
       rol_usuario: [
         "Administrador",

@@ -15,13 +15,14 @@ import { viviendasService } from '../services/viviendas.service'
 interface UsePasoUbicacionProps {
   setValue: UseFormSetValue<any>
   watch: UseFormWatch<any>
+  enabled?: boolean // ← Nuevo: permitir desactivar queries
 }
 
-export function usePasoUbicacion({ setValue, watch }: UsePasoUbicacionProps) {
+export function usePasoUbicacion({ setValue, watch, enabled = true }: UsePasoUbicacionProps) {
   const proyectoSeleccionado = watch('proyecto_id')
   const manzanaSeleccionada = watch('manzana_id')
 
-  // ✅ React Query: Cargar proyectos (no depende de nada, siempre activo)
+  // ✅ React Query: Cargar proyectos (no depende de nada, pero respeta enabled)
   const {
     data: proyectos = [],
     isLoading: cargandoProyectos,
@@ -29,10 +30,11 @@ export function usePasoUbicacion({ setValue, watch }: UsePasoUbicacionProps) {
   } = useQuery({
     queryKey: ['proyectos'],
     queryFn: () => proyectosService.obtenerProyectos(),
+    enabled, // ← Respetar flag enabled
     staleTime: 5 * 60 * 1000, // 5 minutos
   })
 
-  // ✅ React Query: Cargar manzanas (solo si hay proyecto seleccionado)
+  // ✅ React Query: Cargar manzanas (solo si hay proyecto seleccionado Y enabled)
   const {
     data: manzanas = [],
     isLoading: cargandoManzanas,
@@ -40,7 +42,7 @@ export function usePasoUbicacion({ setValue, watch }: UsePasoUbicacionProps) {
   } = useQuery({
     queryKey: ['manzanas', proyectoSeleccionado],
     queryFn: () => viviendasService.obtenerManzanasDisponibles(proyectoSeleccionado!),
-    enabled: !!proyectoSeleccionado, // ← Solo ejecuta si hay proyecto
+    enabled: enabled && !!proyectoSeleccionado, // ← Solo ejecuta si enabled Y hay proyecto
     staleTime: 2 * 60 * 1000, // 2 minutos
   })
 
@@ -51,7 +53,7 @@ export function usePasoUbicacion({ setValue, watch }: UsePasoUbicacionProps) {
   } = useQuery({
     queryKey: ['viviendas-manzana', manzanaSeleccionada],
     queryFn: () => viviendasService.obtenerPorManzana(manzanaSeleccionada!),
-    enabled: !!manzanaSeleccionada, // ← Solo ejecuta si hay manzana
+    enabled: enabled && !!manzanaSeleccionada, // ← Solo ejecuta si enabled Y hay manzana
     staleTime: 1 * 60 * 1000, // 1 minuto
   })
 

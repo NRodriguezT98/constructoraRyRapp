@@ -1,6 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
+import { useState } from 'react'
 import { toast } from 'sonner'
 
 import { useRouter } from 'next/navigation'
@@ -12,7 +13,9 @@ import { useVistaPreference } from '@/shared/hooks/useVistaPreference'
 
 import { useViviendasList } from '../hooks/useViviendasList'
 import { viviendasStyles as styles } from '../styles/viviendas.styles'
+import type { Vivienda } from '../types'
 
+import { EditarViviendaModal } from './editar-vivienda-modal'
 import { ViviendasEmpty } from './viviendas-empty'
 import { ViviendasHeader } from './viviendas-header'
 import { ViviendasLista } from './viviendas-lista'
@@ -85,6 +88,12 @@ export function ViviendasPageMain({
   // Hook para preferencia de vista (cards vs tabla)
   const [vista, setVista] = useVistaPreference({ moduleName: 'viviendas' })
 
+  // ============================================
+  // ESTADO MODAL EDITAR
+  // ============================================
+  const [modalEditar, setModalEditar] = useState(false)
+  const [viviendaEditar, setViviendaEditar] = useState<Vivienda | null>(null)
+
   const handleVerDetalle = (vivienda: any) => {
     console.log('🔍 handleVerDetalle called with:', vivienda)
 
@@ -105,6 +114,23 @@ export function ViviendasPageMain({
       vivienda.manzanas?.proyectos?.nombre || undefined
     )
     router.push(url as any)
+  }
+
+  // ============================================
+  // HANDLER: EDITAR VIVIENDA
+  // ============================================
+  const handleEditarVivienda = (vivienda: Vivienda) => {
+    console.log('✏️ Editar vivienda:', vivienda)
+    setViviendaEditar(vivienda)
+    setModalEditar(true)
+  }
+
+  const handleEditarSuccess = (viviendaActualizada: Vivienda) => {
+    console.log('✅ Vivienda actualizada:', viviendaActualizada)
+    // Refrescar lista para mostrar cambios
+    refrescar()
+    setModalEditar(false)
+    setViviendaEditar(null)
   }
 
   // Buscar en viviendasFiltradas para que funcione en ambas vistas
@@ -169,6 +195,7 @@ export function ViviendasPageMain({
               console.log('Generar escritura para:', vivienda)
               // TODO: Implementar generación de escritura
             }}
+            onEditar={canEdit ? handleEditarVivienda : undefined}
             onEliminar={abrirModalEliminar}
             // Paginación
             paginaActual={paginaActual}
@@ -182,16 +209,24 @@ export function ViviendasPageMain({
           <ViviendasTabla
             viviendas={viviendasFiltradas} // ← Todas las viviendas filtradas (TanStack Table maneja paginación)
             onView={handleVerDetalle}
-            onEdit={(vivienda) => {
-              console.log('Editar vivienda:', vivienda)
-              // TODO: Implementar edición
-            }}
+            onEdit={canEdit ? handleEditarVivienda : undefined}
             onDelete={abrirModalEliminar}
             canEdit={canEdit}
             canDelete={canDelete}
           />
         )}
       </motion.div>
+
+      {/* Modal Editar Vivienda */}
+      <EditarViviendaModal
+        isOpen={modalEditar}
+        vivienda={viviendaEditar}
+        onClose={() => {
+          setModalEditar(false)
+          setViviendaEditar(null)
+        }}
+        onSuccess={handleEditarSuccess}
+      />
 
       {/* Modal Confirmar Eliminación */}
       <Modal

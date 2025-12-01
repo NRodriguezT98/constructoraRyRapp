@@ -1,19 +1,14 @@
 // Barrel export para hooks de proyectos
-// Facilita imports: import { useProyectos, useProyectoCard } from '@/modules/proyectos/hooks'
+// Facilita imports: import { useProyectosQuery, useProyectoCard } from '@/modules/proyectos/hooks'
 
 export { useDetectarCambios } from './useDetectarCambios'
 export { useDocumentoVersiones } from './useDocumentoVersiones'
 export { useEstadosVersionProyecto } from './useEstadosVersionProyecto'
 export { useProyectoCard } from './useProyectoCard'
+export { useProyectosActions } from './useProyectosActions'
+export { useProyectosModals } from './useProyectosModals'
 export { useProyectoTabla } from './useProyectoTabla'
 export { horasRestantesParaReemplazo, puedeReemplazarArchivo, useReemplazarArchivoProyecto } from './useReemplazarArchivoProyecto'
-// ❌ useProyectoDetalle eliminado - nunca se implementó
-
-// ✅ Hooks con Zustand (DEPRECADO - NO USAR)
-export {
-    useProyecto, useProyectos
-    // ❌ useProyectosFiltrados removido - usar useProyectosFiltradosQuery
-} from './useProyectos'
 
 // ✅ Hooks con React Query (USAR ESTOS)
 export {

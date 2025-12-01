@@ -29,14 +29,15 @@ import {
     Trash2,
     TrendingUp,
     User,
-    Users,
     X
 } from 'lucide-react'
 
+import { calculateAge, formatDateCompact } from '@/lib/utils/date.utils'
 import { InfoField } from '@/shared/components/display'
 
+import { useDocumentoIdentidad } from '../documentos/hooks/useDocumentoIdentidad'
 import type { Cliente } from '../types'
-import { ESTADOS_INTERES, ORIGENES_CLIENTE, TIPOS_DOCUMENTO } from '../types'
+import { ESTADOS_INTERES, TIPOS_DOCUMENTO } from '../types'
 
 import { EstadoBadge } from './estado-badge'
 
@@ -55,6 +56,11 @@ export function DetalleCliente({
   onEditar,
   onEliminar,
 }: DetalleClienteProps) {
+  // ✅ Hook para obtener documento de identidad desde documentos_cliente
+  const { documentoIdentidad } = useDocumentoIdentidad({
+    clienteId: cliente?.id || ''
+  })
+
   if (!cliente) return null
 
   return (
@@ -142,22 +148,18 @@ export function DetalleCliente({
                       label='Fecha de Nacimiento'
                       value={
                         cliente.fecha_nacimiento
-                          ? new Date(cliente.fecha_nacimiento).toLocaleDateString('es-CO', {
-                              year: 'numeric',
-                              month: 'long',
-                              day: 'numeric',
-                            })
+                          ? `${formatDateCompact(cliente.fecha_nacimiento)} (${calculateAge(cliente.fecha_nacimiento)} años)`
                           : undefined
                       }
                       showEmpty
                     />
                   </div>
 
-                  {/* Documento de Identidad (si existe URL) */}
-                  {cliente.documento_identidad_url && (
+                  {/* Documento de Identidad (desde documentos_cliente) */}
+                  {documentoIdentidad && (
                     <div className='mt-4'>
                       <a
-                        href={cliente.documento_identidad_url}
+                        href={documentoIdentidad.url_storage}
                         target='_blank'
                         rel='noopener noreferrer'
                         className='flex items-center gap-3 rounded-xl border-2 border-blue-200 bg-blue-50 px-4 py-3 transition-all hover:border-blue-300 hover:bg-blue-100 dark:border-blue-800 dark:bg-blue-950/30 dark:hover:border-blue-700 dark:hover:bg-blue-900/40'
@@ -351,21 +353,9 @@ export function DetalleCliente({
                 <div>
                   <h3 className='mb-4 flex items-center gap-2 text-lg font-semibold text-gray-900 dark:text-white'>
                     <MessageSquare className='h-5 w-5 text-purple-500' />
-                    Información Adicional
+                    Notas y Observaciones
                   </h3>
                   <div className='space-y-4'>
-                    <InfoField
-                      icon={Users}
-                      label='¿Cómo nos conoció?'
-                      value={cliente.origen ? ORIGENES_CLIENTE[cliente.origen] : undefined}
-                      showEmpty
-                    />
-                    <InfoField
-                      icon={Users}
-                      label='Referido por'
-                      value={cliente.referido_por}
-                      showEmpty
-                    />
                     {/* Notas (siempre mostrar, aunque sea vacío) */}
                     <div className='rounded-xl bg-gray-50 p-4 dark:bg-gray-800/50'>
                       <p className='mb-2 flex items-center gap-2 text-sm font-medium text-gray-500 dark:text-gray-400'>

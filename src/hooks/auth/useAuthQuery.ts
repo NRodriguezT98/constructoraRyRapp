@@ -63,7 +63,8 @@ export function useAuthSessionQuery() {
     staleTime: 1000 * 60 * 5, // 5 minutos
     gcTime: 1000 * 60 * 30, // 30 minutos en cache
     refetchOnWindowFocus: true, // Revalidar al volver a la pestaña
-    refetchOnMount: true,
+    refetchOnMount: 'always', // ✅ CRÍTICO: Siempre refetch para detectar logout
+    retry: false, // ✅ No reintentar si falla (usuario no autenticado)
   })
 }
 
@@ -88,6 +89,7 @@ export function useAuthUserQuery() {
     enabled: !!session, // Solo ejecutar si hay sesión
     staleTime: 1000 * 60 * 5, // 5 minutos
     gcTime: 1000 * 60 * 30, // 30 minutos en cache
+    retry: false, // ✅ No reintentar si falla
   })
 }
 
@@ -121,6 +123,7 @@ export function useAuthPerfilQuery(userId?: string) {
     enabled: !!userId, // Solo ejecutar si hay userId
     staleTime: 1000 * 60 * 5, // 5 minutos
     gcTime: 1000 * 60 * 30, // 30 minutos en cache
+    retry: false, // ✅ No reintentar si falla
   })
 }
 

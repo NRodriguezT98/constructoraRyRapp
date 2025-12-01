@@ -1,0 +1,52 @@
+{
+  "total": 9,
+  "exitosos": 9,
+  "fallidos": 0,
+  "detalles": [
+    {
+      "archivo": "src/modules/admin/procesos/services/plantilla-reload.service.ts",
+      "estado": "exitoso",
+      "cambios": 2
+    },
+    {
+      "archivo": "src/modules/admin/procesos/services/documentos-proceso.service.ts",
+      "estado": "exitoso",
+      "cambios": 2
+    },
+    {
+      "archivo": "src/modules/admin/procesos/hooks/useProgresoCliente.ts",
+      "estado": "exitoso",
+      "cambios": 2
+    },
+    {
+      "archivo": "src/modules/admin/procesos/hooks/useTimelineProceso.ts",
+      "estado": "exitoso",
+      "cambios": 2
+    },
+    {
+      "archivo": "src/modules/admin/procesos/services/procesos.service.ts",
+      "estado": "exitoso",
+      "cambios": 2
+    },
+    {
+      "archivo": "src/modules/admin/procesos/components/paso-plantilla-item.tsx",
+      "estado": "exitoso",
+      "cambios": 2
+    },
+    {
+      "archivo": "src/modules/abonos/services/validacion-desembolsos.service.ts",
+      "estado": "exitoso",
+      "cambios": 2
+    },
+    {
+      "archivo": "src/lib/utils/slug.utils.ts",
+      "estado": "exitoso",
+      "cambios": 2
+    },
+    {
+      "archivo": "src/app/clientes/[id]/tabs/actividad-tab.tsx",
+      "estado": "exitoso",
+      "cambios": 2
+    }
+  ]
+}

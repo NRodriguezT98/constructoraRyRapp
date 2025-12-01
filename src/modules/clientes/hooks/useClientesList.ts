@@ -34,9 +34,15 @@ export function useClientesList() {
 
   const [filtros, setFiltros] = useState<FiltrosClientes>({
     estado: [],
-    origen: [],
     busqueda: '',
   })
+
+  // =====================================================
+  // PAGINACIÓN (para vista cards)
+  // =====================================================
+
+  const [paginaActual, setPaginaActual] = useState(1)
+  const [itemsPorPagina, setItemsPorPagina] = useState(12)
 
   // =====================================================
   // REACT QUERY
@@ -45,6 +51,7 @@ export function useClientesList() {
   const {
     data: clientes = [],
     isLoading,
+    isFetching,
     error,
     refetch,
   } = useClientesQuery(filtros)
@@ -62,18 +69,62 @@ export function useClientesList() {
 
     // Búsqueda local adicional (por si no está en filtros del servidor)
     if (filtros.busqueda) {
-      const terminoBusqueda = filtros.busqueda.toLowerCase()
+      const terminoBusqueda = filtros.busqueda.toLowerCase().trim()
       resultado = resultado.filter(
-        (cliente) =>
-          cliente.nombre_completo.toLowerCase().includes(terminoBusqueda) ||
-          cliente.numero_documento.toLowerCase().includes(terminoBusqueda) ||
-          cliente.telefono?.toLowerCase().includes(terminoBusqueda) ||
-          cliente.email?.toLowerCase().includes(terminoBusqueda)
+        (cliente) => {
+          // Búsqueda en campos básicos
+          const matchBasico =
+            cliente.nombre_completo.toLowerCase().includes(terminoBusqueda) ||
+            cliente.numero_documento.toLowerCase().includes(terminoBusqueda) ||
+            cliente.telefono?.toLowerCase().includes(terminoBusqueda) ||
+            cliente.email?.toLowerCase().includes(terminoBusqueda)
+
+          // Búsqueda en vivienda (A-1, A-2, etc.)
+          const matchVivienda = cliente.vivienda
+            ? `${cliente.vivienda.nombre_manzana}-${cliente.vivienda.numero_vivienda}`.toLowerCase().includes(terminoBusqueda)
+            : false
+
+          // Búsqueda en interés (A-1, A-2, etc.)
+          const matchInteres = cliente.interes
+            ? `${cliente.interes.nombre_manzana}-${cliente.interes.numero_vivienda}`.toLowerCase().includes(terminoBusqueda)
+            : false
+
+          // Búsqueda en proyecto
+          const matchProyecto =
+            cliente.vivienda?.nombre_proyecto?.toLowerCase().includes(terminoBusqueda) ||
+            cliente.interes?.nombre_proyecto?.toLowerCase().includes(terminoBusqueda)
+
+          return matchBasico || matchVivienda || matchInteres || matchProyecto
+        }
       )
     }
 
     return resultado
   }, [clientes, filtros.busqueda])
+
+  // =====================================================
+  // PAGINACIÓN DE CLIENTES (solo para vista cards)
+  // =====================================================
+
+  const clientesPaginados = useMemo(() => {
+    const inicio = (paginaActual - 1) * itemsPorPagina
+    const fin = inicio + itemsPorPagina
+    return clientesFiltrados.slice(inicio, fin)
+  }, [clientesFiltrados, paginaActual, itemsPorPagina])
+
+  const totalPaginas = useMemo(() => {
+    return Math.ceil(clientesFiltrados.length / itemsPorPagina)
+  }, [clientesFiltrados.length, itemsPorPagina])
+
+  const cambiarPagina = useCallback((nuevaPagina: number) => {
+    setPaginaActual(nuevaPagina)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }, [])
+
+  const cambiarItemsPorPagina = useCallback((nuevoItems: number) => {
+    setItemsPorPagina(nuevoItems)
+    setPaginaActual(1) // Reset a primera página
+  }, [])
 
   // =====================================================
   // ESTADÍSTICAS COMPUTADAS
@@ -147,7 +198,6 @@ export function useClientesList() {
   const limpiarFiltros = useCallback(() => {
     setFiltros({
       estado: [],
-      origen: [],
       busqueda: '',
     })
   }, [])
@@ -162,9 +212,11 @@ export function useClientesList() {
 
   return {
     // Datos
-    clientes: clientesFiltrados,
+    clientes: clientesPaginados, // Para vista cards (paginados)
+    clientesFiltrados, // Para vista tabla (todos filtrados)
     todosLosClientes: clientes,
     isLoading,
+    isFetching, // ⭐ NUEVO: indica si está recargando datos
     error: error?.message || null,
     estadisticas: estadisticasComputadas,
 
@@ -186,6 +238,13 @@ export function useClientesList() {
     actualizarFiltros,
     limpiarFiltros,
     aplicarBusqueda,
+
+    // Paginación (para vista cards)
+    paginaActual,
+    totalPaginas,
+    itemsPorPagina,
+    cambiarPagina,
+    cambiarItemsPorPagina,
 
     // Acciones
     refrescar: refetch,

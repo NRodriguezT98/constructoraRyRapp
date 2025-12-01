@@ -1,21 +1,25 @@
-import { DragEvent, useCallback, useRef, useState } from 'react'
+import React, { DragEvent, useCallback, useEffect, useRef, useState } from 'react'
 
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 
 import { useAuth } from '../../../contexts/auth-context'
+import { useDocumentoIdentidad } from '../../clientes/documentos/hooks/useDocumentoIdentidad'
 import type { DocumentoFormData } from '../schemas/documento.schema'
 import { documentoConArchivoSchema, documentoFormSchema } from '../schemas/documento.schema'
+import type { TipoEntidad } from '../types'
 
 import { useCategoriasQuery, useSubirDocumentoMutation } from './useDocumentosQuery'
 
 interface UseDocumentoUploadProps {
-  proyectoId: string
+  entidadId: string
+  tipoEntidad: TipoEntidad
   onSuccess?: () => void
 }
 
 export function useDocumentoUpload({
-  proyectoId,
+  entidadId,
+  tipoEntidad,
   onSuccess,
 }: UseDocumentoUploadProps) {
   // Estado local
@@ -29,11 +33,26 @@ export function useDocumentoUpload({
   // Auth
   const { user } = useAuth()
 
-  // Categorías desde React Query
-  const { categorias = [] } = useCategoriasQuery(user?.id, 'proyectos')
+  // ✅ Convertir tipoEntidad a moduleName para categorías
+  const modulosCategorias: Record<TipoEntidad, 'proyectos' | 'clientes' | 'viviendas'> = {
+    proyecto: 'proyectos',
+    vivienda: 'viviendas',
+    cliente: 'clientes',
+  }
 
-  // Mutation para subir documento
-  const { mutateAsync: subirDocumento, isPending: subiendoDocumento } = useSubirDocumentoMutation(proyectoId)
+  const moduloCategoria = modulosCategorias[tipoEntidad]
+
+  // Categorías desde React Query
+  const { categorias = [] } = useCategoriasQuery(user?.id, moduloCategoria)
+
+  // ✅ Validar si ya existe documento de identidad (solo para clientes)
+  // Siempre llamar al hook, pero pasar clienteId vacío si no es cliente
+  const { tieneCedula: yaExisteDocumentoIdentidad } = useDocumentoIdentidad({
+    clienteId: tipoEntidad === 'cliente' ? entidadId : '', // Vacío si no es cliente
+  })
+
+  // Mutation para subir documento (GENÉRICO)
+  const { mutateAsync: subirDocumento, isPending: subiendoDocumento } = useSubirDocumentoMutation(entidadId, tipoEntidad)
 
   // Form con validaciones Zod (sin validación de archivo aquí - se valida en handleFileChange)
   const {
@@ -41,6 +60,7 @@ export function useDocumentoUpload({
     handleSubmit,
     setValue,
     watch,
+    getValues,
     reset,
     formState: { errors },
   } = useForm<DocumentoFormData>({
@@ -52,12 +72,34 @@ export function useDocumentoUpload({
       fecha_documento: undefined,
       fecha_vencimiento: undefined,
       es_importante: false,
+      es_documento_identidad: false,
       metadata: {},
     },
     mode: 'onChange', // Validar mientras el usuario escribe
   })
 
   const esImportante = watch('es_importante')
+  const esDocumentoIdentidad = watch('es_documento_identidad')
+  const categoriaSeleccionada = watch('categoria_id')
+
+  // ✅ Buscar categoría "Documentos de Identidad" automáticamente
+  const categoriaIdentidad = categorias.find(c =>
+    c.nombre === 'Documentos de Identidad' ||
+    c.nombre.toLowerCase().includes('identidad') ||
+    c.nombre.toLowerCase().includes('cédula') ||
+    c.nombre.toLowerCase().includes('cedula')
+  )
+
+  // ✅ Auto-seleccionar categoría cuando marca como documento de identidad
+  // useEffect para observar cambios en esDocumentoIdentidad
+  useEffect(() => {
+    if (esDocumentoIdentidad && categoriaIdentidad && !categoriaSeleccionada) {
+      setValue('categoria_id', categoriaIdentidad.id)
+    }
+  }, [esDocumentoIdentidad, categoriaIdentidad, categoriaSeleccionada, setValue])
+
+  // ✅ Deshabilitar checkbox si ya existe documento de identidad (solo clientes)
+  const checkboxDeshabilitado = tipoEntidad === 'cliente' && yaExisteDocumentoIdentidad
 
   // Validación de archivo
   const validarArchivo = useCallback((file: File): boolean => {
@@ -151,6 +193,12 @@ export function useDocumentoUpload({
         return
       }
 
+      // ✅ VALIDACIÓN CRÍTICA: Bloquear si intenta subir documento de identidad cuando ya existe uno
+      if (tipoEntidad === 'cliente' && data.es_documento_identidad && yaExisteDocumentoIdentidad) {
+        setErrorArchivo('Ya existe un documento de identidad para este cliente. Elimina el anterior antes de subir uno nuevo.')
+        return
+      }
+
       try {
         await subirDocumento({
           archivo: archivoSeleccionado,
@@ -160,6 +208,7 @@ export function useDocumentoUpload({
           fechaDocumento: data.fecha_documento,
           fechaVencimiento: data.fecha_vencimiento,
           esImportante: data.es_importante,
+          esDocumentoIdentidad: data.es_documento_identidad,
           userId: user.id,
         })
 
@@ -171,7 +220,7 @@ export function useDocumentoUpload({
         console.error('Error al subir documento:', error)
       }
     },
-    [archivoSeleccionado, user, subirDocumento, reset, limpiarArchivo, onSuccess]
+    [archivoSeleccionado, user, subirDocumento, reset, limpiarArchivo, onSuccess, getValues, tipoEntidad, yaExisteDocumentoIdentidad]
   )
 
   // Helpers - ninguno por ahora
@@ -184,6 +233,11 @@ export function useDocumentoUpload({
     subiendoDocumento,
     categorias,
     esImportante,
+    esDocumentoIdentidad,
+    categoriaIdentidad, // ✅ Para deshabilitar select
+    categoriaSeleccionada, // ✅ Para saber si hay categoría seleccionada
+    checkboxDeshabilitado, // ✅ Para deshabilitar checkbox si ya existe documento de identidad
+    yaExisteDocumentoIdentidad, // ✅ Para mensajes informativos
 
     // Refs
     fileInputRef,

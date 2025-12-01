@@ -11,6 +11,7 @@
 
 import { getServerPermissions } from '@/lib/auth/server'
 
+import { DebugLogsButton } from '@/components/debug/DebugLogsButton'
 import DashboardContent from './dashboard-content'
 
 export default async function HomePage() {
@@ -25,5 +26,10 @@ export default async function HomePage() {
   })
 
   // Pasar permisos al componente cliente
-  return <DashboardContent {...permisos} />
+  return (
+    <>
+      <DashboardContent {...permisos} />
+      <DebugLogsButton />
+    </>
+  )
 }

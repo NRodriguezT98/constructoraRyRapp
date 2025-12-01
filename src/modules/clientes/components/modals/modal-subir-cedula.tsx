@@ -1,22 +1,46 @@
-'use client';
+/**
+ * Modal de Subida de Cédula de Ciudadanía
+ *
+ * Componente especializado para subir documentos de identidad de clientes.
+ * Actualiza directamente el campo `documento_identidad_url` en la tabla `clientes`.
+ *
+ * Features:
+ * - Drag & drop de archivos
+ * - Validación de formato (PDF, JPG, PNG)
+ * - Límite de tamaño (5MB)
+ * - Progreso visual de carga
+ * - Almacenamiento en bucket `documentos-clientes`
+ *
+ * Path de Storage: `{userId}/{clienteId}/cedula-{timestamp}.{ext}`
+ *
+ * @version 2.0.0 - 2025-12-01 (Validación mejorada + JSDoc)
+ */
 
-import { useState } from 'react';
+'use client'
 
-import { AnimatePresence, motion } from 'framer-motion';
-import { AlertCircle, FileText, Upload, X } from 'lucide-react';
-import { toast } from 'sonner';
+import { useState } from 'react'
 
-import { useAuth } from '@/contexts/auth-context';
-import { supabase } from '@/lib/supabase/client';
+import { AnimatePresence, motion } from 'framer-motion'
+import { AlertCircle, FileText, Upload, X } from 'lucide-react'
+import { toast } from 'sonner'
 
+import { useAuth } from '@/contexts/auth-context'
+import { supabase } from '@/lib/supabase/client'
 
-
+/**
+ * Props del modal de subida de cédula
+ */
 interface ModalSubirCedulaProps {
-  clienteId: string;
-  clienteNombre: string;
-  numeroDocumento: string;
-  onSuccess: (url: string) => void;
-  onCancel: () => void;
+  /** ID del cliente al que pertenece el documento */
+  clienteId: string
+  /** Nombre completo del cliente (para mostrar en UI) */
+  clienteNombre: string
+  /** Número de documento del cliente (para mostrar en UI) */
+  numeroDocumento: string
+  /** Callback ejecutado cuando la subida es exitosa. Recibe la URL pública del archivo. */
+  onSuccess: (url: string) => void
+  /** Callback para cerrar el modal sin guardar */
+  onCancel: () => void
 }
 
 export default function ModalSubirCedula({
@@ -26,81 +50,109 @@ export default function ModalSubirCedula({
   onSuccess,
   onCancel
 }: ModalSubirCedulaProps) {
-  const { user } = useAuth();
-  const [archivo, setArchivo] = useState<File | null>(null);
-  const [subiendo, setSubiendo] = useState(false);
-  const [progreso, setProgreso] = useState(0);
-  const [dragActive, setDragActive] = useState(false);
+  const { user } = useAuth()
+  const [archivo, setArchivo] = useState<File | null>(null)
+  const [subiendo, setSubiendo] = useState(false)
+  const [progreso, setProgreso] = useState(0)
+  const [dragActive, setDragActive] = useState(false)
 
-  const extensionesPermitidas = ['pdf', 'jpg', 'jpeg', 'png'];
-  const maxSize = 5 * 1024 * 1024; // 5MB
+  // Configuración de validación
+  const extensionesPermitidas = ['pdf', 'jpg', 'jpeg', 'png']
+  const maxSize = 5 * 1024 * 1024 // 5MB
 
+  /**
+   * Valida que el archivo cumpla con los requisitos
+   * - Extensión: PDF, JPG, PNG
+   * - Tamaño máximo: 5MB
+   */
   const validarArchivo = (file: File): boolean => {
-    const extension = file.name.split('.').pop()?.toLowerCase();
+    const extension = file.name.split('.').pop()?.toLowerCase()
 
     if (!extension || !extensionesPermitidas.includes(extension)) {
-      toast.error('Solo se permiten archivos PDF, JPG o PNG');
-      return false;
+      toast.error('Solo se permiten archivos PDF, JPG o PNG')
+      return false
     }
 
     if (file.size > maxSize) {
-      toast.error('El archivo no puede superar los 5MB');
-      return false;
+      toast.error('El archivo no puede superar los 5MB')
+      return false
     }
 
-    return true;
-  };
+    return true
+  }
 
+  /**
+   * Maneja la selección de archivo mediante input file
+   */
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const file = e.target.files?.[0]
+    if (!file) return
 
     if (validarArchivo(file)) {
-      setArchivo(file);
+      setArchivo(file)
     }
-  };
+  }
 
+  /**
+   * Maneja eventos de drag & drop
+   */
   const handleDrag = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
+    e.preventDefault()
+    e.stopPropagation()
     if (e.type === 'dragenter' || e.type === 'dragover') {
-      setDragActive(true);
+      setDragActive(true)
     } else if (e.type === 'dragleave') {
-      setDragActive(false);
+      setDragActive(false)
     }
-  };
+  }
 
+  /**
+   * Maneja el drop de archivos
+   */
   const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragActive(false);
+    e.preventDefault()
+    e.stopPropagation()
+    setDragActive(false)
 
-    const file = e.dataTransfer.files?.[0];
-    if (!file) return;
+    const file = e.dataTransfer.files?.[0]
+    if (!file) return
 
     if (validarArchivo(file)) {
-      setArchivo(file);
+      setArchivo(file)
     }
-  };
+  }
 
+  /**
+   * Sube la cédula a Storage y actualiza el registro del cliente
+   *
+   * Proceso:
+   * 1. Sube archivo a bucket `documentos-clientes`
+   * 2. Genera URL pública del archivo
+   * 3. Actualiza campo `documento_identidad_url` en tabla `clientes`
+   * 4. Notifica éxito mediante callback onSuccess
+   */
   const subirCedula = async () => {
-    if (!archivo) return;
+    if (!archivo) return
 
     if (!user) {
-      toast.error('No hay usuario autenticado');
-      return;
+      toast.error('No hay usuario autenticado')
+      return
     }
 
-    setSubiendo(true);
-    setProgreso(0);
+    setSubiendo(true)
+    setProgreso(0)
 
     try {
       // 1. Upload a Storage - PATH CONSISTENTE CON POLÍTICAS RLS
-      const extension = archivo.name.split('.').pop();
-      const timestamp = Date.now();
-      const filePath = `${user.id}/${clienteId}/cedula-${timestamp}.${extension}`;
+      const extension = archivo.name.split('.').pop()
+      const timestamp = Date.now()
+      const filePath = `${user.id}/${clienteId}/cedula-${timestamp}.${extension}`
 
-      console.log('Subiendo cédula a Storage...', { filePath, size: archivo.size, userId: user.id });
+      console.log('[CLIENTES] Subiendo cédula a Storage...', {
+        filePath,
+        size: archivo.size,
+        userId: user.id
+      })
 
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('documentos-clientes')

@@ -255,7 +255,22 @@ export class CategoriasService {
     })
 
     if (error) {
-      console.error('Error al crear categorías por defecto:', error)
+      console.error('Error al crear categorías por defecto para proyectos:', error)
+      throw error
+    }
+  }
+
+  /**
+   * ✅ Crear categorías por defecto para módulo viviendas
+   * Llama a la función SQL que crea las 6 categorías esenciales
+   */
+  static async crearCategoriasViviendasDefault(userId: string): Promise<void> {
+    const { error } = await supabase.rpc('crear_categorias_viviendas_default', {
+      p_user_id: userId
+    })
+
+    if (error) {
+      console.error('Error al crear categorías por defecto para viviendas:', error)
       throw error
     }
   }

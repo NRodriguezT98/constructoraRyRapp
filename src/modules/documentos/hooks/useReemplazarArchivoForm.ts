@@ -3,8 +3,10 @@
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { DocumentosService } from '../services/documentos.service'
+import { type TipoEntidad } from '../types'
 
 interface UseReemplazarArchivoFormProps {
+  tipoEntidad?: TipoEntidad
   onSuccess?: () => void | Promise<void>
   onClose?: () => void
 }
@@ -25,6 +27,7 @@ export interface ProgresoReemplazo {
 }
 
 export function useReemplazarArchivoForm({
+  tipoEntidad = 'proyecto',
   onSuccess,
   onClose
 }: UseReemplazarArchivoFormProps = {}) {
@@ -127,12 +130,13 @@ export function useReemplazarArchivoForm({
       })
       await new Promise((resolve) => setTimeout(resolve, 400))
 
-      // Llamada al servicio (las fases son ilustrativas para UX)
+      // Llamada al servicio genérico ✅
       await DocumentosService.reemplazarArchivoSeguro(
         documento.id,
         nuevoArchivo,
         justificacion,
-        password
+        password,
+        tipoEntidad // ← Parámetro genérico
       )
 
       // Fase 5: Actualizando base de datos

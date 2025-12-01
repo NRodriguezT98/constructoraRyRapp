@@ -8,34 +8,28 @@
  * - Restaurar versiones seleccionadas
  */
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useMemo, useState } from 'react'
-import { toast } from 'sonner'
 import { DocumentosService } from '../services/documentos.service'
+import type { TipoEntidad } from '../types/entidad.types'
 
 interface UseVersionesEliminadasCardProps {
   documentoId: string
   documentoTitulo: string
+  modulo: 'proyectos' | 'viviendas' | 'clientes'
+  tipoEntidad?: TipoEntidad
 }
 
 export function useVersionesEliminadasCard({
   documentoId,
   documentoTitulo,
+  modulo,
+  tipoEntidad = 'proyecto',
 }: UseVersionesEliminadasCardProps) {
   const queryClient = useQueryClient()
 
   // Estado de expansión del card
   const [isExpanded, setIsExpanded] = useState(false)
-
-  // Estado de versiones seleccionadas
-  const [versionesSeleccionadas, setVersionesSeleccionadas] = useState<Set<string>>(new Set())
-
-  // 🆕 Estado de modal para restaurar seleccionadas
-  const [modalRestaurar, setModalRestaurar] = useState({
-    isOpen: false,
-    cantidad: 0,
-    mensaje: '',
-  })
 
   // Query para obtener versiones eliminadas (solo cuando está expandido)
   const {
@@ -43,98 +37,27 @@ export function useVersionesEliminadasCard({
     isLoading,
     error,
   } = useQuery({
-    queryKey: ['versiones-eliminadas', documentoId],
-    queryFn: () => DocumentosService.obtenerVersionesEliminadas(documentoId),
+    queryKey: ['versiones-eliminadas', documentoId, modulo, tipoEntidad],
+    queryFn: async () => {
+      console.log('🔍 Cargando versiones eliminadas:', { documentoId, modulo, tipoEntidad })
+
+      // Usar servicio correcto según módulo
+      if (modulo === 'viviendas') {
+        // Importar dinámicamente para viviendas (path directo al archivo)
+        const { DocumentosEliminacionService: ViviendaEliminacionService } = await import('@/modules/viviendas/services/documentos/documentos-eliminacion.service')
+        return ViviendaEliminacionService.obtenerVersionesEliminadas(documentoId)
+      }
+
+      // Por defecto, proyectos
+      return DocumentosService.obtenerVersionesEliminadas(documentoId, tipoEntidad)
+    },
     enabled: isExpanded, // Solo cargar cuando se expande
     staleTime: 30000, // 30 segundos
-  })
-
-  // Mutation para restaurar versiones seleccionadas
-  const restaurarMutation = useMutation({
-    mutationFn: (versionIds: string[]) =>
-      DocumentosService.restaurarVersionesSeleccionadas(versionIds),
-    onSuccess: async () => {
-      toast.success('Versiones restauradas exitosamente')
-
-      // 🔧 FIX: Usar refetchQueries para forzar recarga INMEDIATA (sin recargar página)
-      await Promise.all([
-        queryClient.refetchQueries({ queryKey: ['documentos-eliminados'] }),
-        queryClient.refetchQueries({ queryKey: ['versiones-eliminadas', documentoId] }),
-        queryClient.refetchQueries({ queryKey: ['documentos'] }), // ← Proyectos activos
-        queryClient.refetchQueries({ queryKey: ['documentos-vivienda'] }), // ← Viviendas activas
-        queryClient.refetchQueries({ queryKey: ['versiones-documento'] }), // ← Historial
-      ])
-
-      // Resetear selección pero MANTENER card expandido para ver versiones restantes
-      setVersionesSeleccionadas(new Set())
-      // ❌ NO cerrar el card: setIsExpanded(false) - Mantener abierto para ver qué quedó
-    },
-    onError: (error: Error) => {
-      console.error('Error al restaurar versiones:', error)
-      toast.error(`Error al restaurar: ${error.message}`)
-    },
   })
 
   // Toggle expansión
   const toggleExpansion = () => {
     setIsExpanded(!isExpanded)
-    if (isExpanded) {
-      // Al colapsar, limpiar selección
-      setVersionesSeleccionadas(new Set())
-    }
-  }
-
-  // Toggle selección de versión individual
-  const toggleVersion = (versionId: string) => {
-    setVersionesSeleccionadas((prev) => {
-      const newSet = new Set(prev)
-      if (newSet.has(versionId)) {
-        newSet.delete(versionId)
-      } else {
-        newSet.add(versionId)
-      }
-      return newSet
-    })
-  }
-
-  // Seleccionar todas las versiones (ya vienen filtradas como eliminadas del servicio)
-  const seleccionarTodas = () => {
-    setVersionesSeleccionadas(new Set(versiones.map((v) => v.id)))
-  }
-
-  // Limpiar selección
-  const limpiarSeleccion = () => {
-    setVersionesSeleccionadas(new Set())
-  }
-
-  // Restaurar versiones seleccionadas
-  const restaurarSeleccionadas = async () => {
-    const idsArray = Array.from(versionesSeleccionadas)
-
-    if (idsArray.length === 0) {
-      toast.error('Debe seleccionar al menos una versión eliminada')
-      return
-    }
-
-    const mensaje =
-      idsArray.length === versiones.length
-        ? `¿Restaurar todas las ${versiones.length} versiones de "${documentoTitulo}"?`
-        : `¿Restaurar ${idsArray.length} versión(es) seleccionada(s) de "${documentoTitulo}"?`
-
-    // Abrir modal de confirmación
-    setModalRestaurar({
-      isOpen: true,
-      cantidad: idsArray.length,
-      mensaje,
-    })
-  }
-
-  // Confirmar restauración de modal
-  const confirmarRestaurar = async () => {
-    const idsArray = Array.from(versionesSeleccionadas)
-    await restaurarMutation.mutateAsync(idsArray)
-    setModalRestaurar({ isOpen: false, cantidad: 0, mensaje: '' })
-    limpiarSeleccion()
   }
 
   // Estadísticas (todas las versiones son eliminadas)
@@ -143,35 +66,20 @@ export function useVersionesEliminadasCard({
       return {
         totalVersiones: versiones.length,
         eliminadas: versiones.length, // Todas son eliminadas
-        seleccionadas: versionesSeleccionadas.size,
-        todasSeleccionadas: versionesSeleccionadas.size === versiones.length && versiones.length > 0,
       }
     },
-    [versiones.length, versionesSeleccionadas.size]
+    [versiones.length]
   )
 
   return {
     // Estado
     isExpanded,
     versiones,
-    versionesSeleccionadas,
     isLoading,
     error,
     stats,
 
     // Acciones
     toggleExpansion,
-    toggleVersion,
-    seleccionarTodas,
-    limpiarSeleccion,
-    restaurarSeleccionadas,
-    confirmarRestaurar,
-
-    // Mutations state
-    isRestaurando: restaurarMutation.isPending,
-
-    // 🆕 Modal
-    modalRestaurar,
-    setModalRestaurar,
   }
 }
