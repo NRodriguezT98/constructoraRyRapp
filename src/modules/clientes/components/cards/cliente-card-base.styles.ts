@@ -3,10 +3,10 @@
  *
  * ✅ CONSISTENCIA VISUAL garantizada
  * ✅ Un solo lugar para modificar dimensiones/espaciado
- * ✅ Temas por estado (Interesado=Cyan, Activo=Verde, Inactivo=Gris)
+ * ✅ Temas por estado (Interesado=Cyan, Activo=Verde, Renunció=Rojo, Inactivo=Gris)
  */
 
-export type EstadoCliente = 'Interesado' | 'Activo' | 'Inactivo'
+export type EstadoCliente = 'Interesado' | 'Activo' | 'Renunció' | 'Inactivo'
 
 /**
  * Configuración de temas por estado
@@ -47,6 +47,17 @@ export const clienteCardThemes = {
     shadow: 'shadow-gray-500/50',
     hoverShadow: 'hover:shadow-gray-500/20',
     badge: 'bg-gradient-to-br from-gray-500 to-slate-600',
+  },
+  Renunció: { // ⭐ NUEVO (2025-12-11) - Rojo para indicar renuncia
+    bg: 'bg-gradient-to-br from-red-500 to-rose-600',
+    bgLight: 'bg-red-100 dark:bg-red-900/30',
+    text: 'text-red-600 dark:text-red-400',
+    textDark: 'text-red-700 dark:text-red-300',
+    border: 'border-red-200 dark:border-red-700',
+    glow: 'from-red-500/20 to-rose-500/20',
+    shadow: 'shadow-red-500/50',
+    hoverShadow: 'hover:shadow-red-500/20',
+    badge: 'bg-gradient-to-br from-red-500 to-rose-600',
   },
 }
 

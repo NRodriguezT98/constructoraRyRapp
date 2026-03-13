@@ -5,7 +5,7 @@
  * ✅ Cards específicas por estado disponibles para uso directo si es necesario
  */
 
-export { ClienteCardActivo } from './cliente-card-activo'
+export { ClienteCardActivo } from './cliente-card-activo-v2'
 export { ClienteCardCompacta } from './cliente-card-compacta'
 export { ClienteCardInactivo } from './cliente-card-inactivo'
-export { ClienteCardInteresado } from './cliente-card-interesado'
+export { ClienteCardInteresado } from './cliente-card-interesado-v2'

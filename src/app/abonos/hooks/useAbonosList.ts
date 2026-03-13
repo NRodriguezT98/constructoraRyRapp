@@ -10,6 +10,7 @@ import { supabase } from '@/lib/supabase/client'
 interface AbonoCompletoRow {
   // Datos del abono
   id: string
+  numero_recibo: number
   negociacion_id: string
   fuente_pago_id: string
   monto: number
@@ -40,6 +41,7 @@ interface AbonoCompletoRow {
 // Tipo transformado para el componente (estructura anidada)
 interface AbonoConInfo {
   id: string
+  numero_recibo: number
   negociacion_id: string
   fuente_pago_id: string
   monto: number
@@ -81,9 +83,8 @@ interface AbonoConInfo {
 
 interface Filtros {
   busqueda: string
-  estado: 'todos' | 'activos' | 'anulados'
-  vivienda?: string
-  proyecto?: string
+  fuente: string   // nombre de fuente o 'todas'
+  mes: string      // 'YYYY-MM' o 'todos'
 }
 
 interface Estadisticas {
@@ -111,8 +112,8 @@ export function useAbonosList() {
 
   const [filtros, setFiltros] = useState<Filtros>({
     busqueda: '',
-    estado: 'activos',
-    vivienda: undefined
+    fuente: 'todas',
+    mes: 'todos',
   })
 
   /**
@@ -150,6 +151,7 @@ export function useAbonosList() {
         const abonosTransformados: AbonoConInfo[] = abonosData.map((row: any) => ({
           // Campos del abono
           id: row.id,
+          numero_recibo: row.numero_recibo,
           negociacion_id: row.negociacion_id,
           fuente_pago_id: row.fuente_pago_id,
           monto: row.monto,
@@ -208,43 +210,32 @@ export function useAbonosList() {
   const abonosFiltrados = useMemo(() => {
     let resultado = [...abonos]
 
-    // Filtro por búsqueda (cliente, documento, proyecto)
+    // Filtro por búsqueda (cliente, CC o RYR-XXXX)
     if (filtros.busqueda.trim()) {
       const termino = filtros.busqueda.toLowerCase().trim()
       resultado = resultado.filter((abono) => {
         const nombreCompleto = `${abono.cliente.nombres} ${abono.cliente.apellidos}`.toLowerCase()
         const documento = abono.cliente.numero_documento.toLowerCase()
-        const proyecto = abono.proyecto.nombre.toLowerCase()
-        const referencia = (abono.numero_referencia || '').toLowerCase()
-        const vivienda = `manzana ${abono.vivienda.manzana.identificador} casa ${abono.vivienda.numero}`.toLowerCase()
-
+        const recibo = `ryr-${String(abono.numero_recibo).padStart(4, '0')}`.toLowerCase()
         return (
           nombreCompleto.includes(termino) ||
           documento.includes(termino) ||
-          proyecto.includes(termino) ||
-          referencia.includes(termino) ||
-          vivienda.includes(termino)
+          recibo.includes(termino)
         )
       })
     }
 
-    // Filtro por estado de negociación
-    if (filtros.estado === 'activos') {
-      resultado = resultado.filter((abono) => abono.negociacion.estado === 'Activa')
-    } else if (filtros.estado === 'anulados') {
-      // TODO: Cuando implementemos anulación de abonos
-      // resultado = resultado.filter((abono) => abono.anulado === true)
-      resultado = [] // Por ahora vacío
+    // Filtro por fuente de pago
+    if (filtros.fuente && filtros.fuente !== 'todas') {
+      resultado = resultado.filter((abono) => abono.fuente_pago.tipo === filtros.fuente)
     }
 
-    // Filtro por vivienda específica
-    if (filtros.vivienda) {
-      resultado = resultado.filter((abono) => abono.vivienda.id === filtros.vivienda)
-    }
-
-    // Filtro por proyecto
-    if (filtros.proyecto && filtros.proyecto !== 'todos') {
-      resultado = resultado.filter((abono) => abono.proyecto.id === filtros.proyecto)
+    // Filtro por mes (YYYY-MM)
+    if (filtros.mes && filtros.mes !== 'todos') {
+      resultado = resultado.filter((abono) => {
+        const fechaMes = abono.fecha_abono.substring(0, 7) // 'YYYY-MM'
+        return fechaMes === filtros.mes
+      })
     }
 
     return resultado
@@ -278,41 +269,37 @@ export function useAbonosList() {
   }
 
   const limpiarFiltros = () => {
-    setFiltros({
-      busqueda: '',
-      estado: 'activos',
-      vivienda: undefined,
-      proyecto: undefined
-    })
+    setFiltros({ busqueda: '', fuente: 'todas', mes: 'todos' })
   }
 
-  /**
-   * 🏗️ Obtener lista única de proyectos
-   */
-  const proyectosUnicos = useMemo(() => {
-    const proyectosMap = new Map()
-    abonos.forEach((abono) => {
-      if (!proyectosMap.has(abono.proyecto.id)) {
-        proyectosMap.set(abono.proyecto.id, abono.proyecto.nombre)
-      }
-    })
-    return Array.from(proyectosMap.entries()).map(([id, nombre]) => ({ id, nombre }))
+  const fuentesUnicas = useMemo(() => {
+    const set = new Set<string>()
+    abonos.forEach((a) => { if (a.fuente_pago.tipo) set.add(a.fuente_pago.tipo) })
+    return Array.from(set).sort()
   }, [abonos])
 
-  return {
-    // Datos
-    abonos: abonosFiltrados,
-    abonosCompletos: abonos, // Sin filtrar
-    estadisticas,
-    proyectosUnicos, // Lista de proyectos disponibles
+  const mesesDisponibles = useMemo(() => {
+    const meses: { value: string; label: string }[] = []
+    const ahora = new Date()
+    for (let i = 0; i < 12; i++) {
+      const d = new Date(ahora.getFullYear(), ahora.getMonth() - i, 1)
+      const value = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+      const label = d.toLocaleDateString('es-CO', { month: 'long', year: 'numeric' })
+      meses.push({ value, label: label.charAt(0).toUpperCase() + label.slice(1) })
+    }
+    return meses
+  }, [])
 
-    // Filtros
+  return {
+    abonos: abonosFiltrados,
+    abonosCompletos: abonos,
+    estadisticas,
+    fuentesUnicas,
+    mesesDisponibles,
     filtros,
     actualizarFiltros,
     limpiarFiltros,
-
-    // Estado
     isLoading,
-    error
+    error,
   }
 }

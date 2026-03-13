@@ -27,77 +27,45 @@ import { toast } from 'sonner'
 // ============================================
 
 /**
- * Toast de Login Exitoso - Versión Simplificada
- * No requiere datos del usuario para evitar dependencias
+ * Toast de Login Exitoso - Diseño Limpio con Presencia Visual
+ * Sin bordes dobles ni efectos que causen capas visuales
  */
 export function showLoginSuccessToast() {
   toast.custom(
     (t) => (
       <motion.div
-        initial={{ opacity: 0, y: -20, scale: 0.95 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        exit={{ opacity: 0, y: -20, scale: 0.95 }}
-        transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
-        className='relative overflow-hidden rounded-2xl bg-gradient-to-br from-green-500 via-emerald-500 to-teal-600 p-[2px] shadow-2xl shadow-green-500/50'
+        initial={{ opacity: 0, x: 100 }}
+        animate={{ opacity: 1, x: 0 }}
+        exit={{ opacity: 0, x: 100 }}
+        transition={{ duration: 0.2, ease: 'easeOut' }}
+        className='flex items-center gap-3 rounded-lg bg-gradient-to-r from-[#0d1f17] to-[#1a1d24] border-l-4 border-green-500 pl-3 pr-4 py-3.5 min-w-[340px]'
       >
-        {/* Gradiente de fondo animado */}
-        <div className='absolute inset-0 bg-gradient-to-r from-green-400/20 via-emerald-400/20 to-teal-400/20 animate-pulse' />
-
-        {/* Patrón de grid */}
-        <div className='absolute inset-0 bg-grid-white/5 [mask-image:radial-gradient(white,transparent_70%)]' />
-
-        {/* Contenido */}
-        <div className='relative backdrop-blur-xl bg-white/95 dark:bg-gray-900/95 rounded-2xl p-4 min-w-[380px]'>
-          <div className='flex items-start gap-4'>
-            {/* Icono animado */}
-            <motion.div
-              initial={{ rotate: -90, scale: 0 }}
-              animate={{ rotate: 0, scale: 1 }}
-              transition={{ delay: 0.1, type: 'spring', stiffness: 200 }}
-              className='flex-shrink-0'
-            >
-              <div className='relative'>
-                <div className='absolute inset-0 bg-green-500 rounded-full blur-xl opacity-50 animate-pulse' />
-                <div className='relative w-12 h-12 rounded-full bg-gradient-to-br from-green-400 to-emerald-600 flex items-center justify-center shadow-lg'>
-                  <LogIn className='w-6 h-6 text-white' strokeWidth={2.5} />
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Texto */}
-            <div className='flex-1 min-w-0'>
-              <motion.div
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.15 }}
-              >
-                <div className='flex items-center gap-2 mb-1'>
-                  <h3 className='text-lg font-bold bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 bg-clip-text text-transparent'>
-                    ¡Bienvenido de nuevo!
-                  </h3>
-                  <Sparkles className='w-4 h-4 text-yellow-500 animate-pulse' />
-                </div>
-                <p className='text-sm text-gray-700 dark:text-gray-300 font-medium'>
-                  Estás siendo redirigido al dashboard de RyR
-                </p>
-              </motion.div>
-            </div>
-
-            {/* Check animado */}
-            <motion.div
-              initial={{ scale: 0, rotate: -180 }}
-              animate={{ scale: 1, rotate: 0 }}
-              transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
-            >
-              <CheckCircle2 className='w-6 h-6 text-green-600 dark:text-green-400' strokeWidth={2.5} />
-            </motion.div>
-          </div>
+        {/* Icono con más presencia */}
+        <div className='flex-shrink-0 w-9 h-9 rounded-lg bg-green-500/30 flex items-center justify-center ring-1 ring-green-500/40'>
+          <LogIn className='w-5 h-5 text-green-400' strokeWidth={2.5} />
         </div>
+
+        {/* Texto */}
+        <div className='flex-1 min-w-0'>
+          <div className='flex items-center gap-1.5'>
+            <h3 className='text-sm font-bold text-green-50'>
+              ¡Bienvenido de nuevo!
+            </h3>
+            <Sparkles className='w-4 h-4 text-yellow-400 flex-shrink-0' />
+          </div>
+          <p className='text-xs text-green-200/70 mt-0.5'>
+            Redirigiendo al dashboard...
+          </p>
+        </div>
+
+        {/* Check con mejor contraste */}
+        <CheckCircle2 className='w-5 h-5 text-green-400 flex-shrink-0' strokeWidth={2.5} />
       </motion.div>
     ),
     {
-      duration: 4000,
+      duration: 3000,
       position: 'top-right',
+      unstyled: true,
     }
   )
 }
@@ -210,6 +178,12 @@ export function showSessionExpiringToast({
 // ============================================
 
 export function showSessionClosedToast() {
+  // ✅ ID único para evitar duplicados
+  const toastId = 'session-closed-toast'
+
+  // ✅ Dismiss toast previo si existe
+  toast.dismiss(toastId)
+
   toast.custom(
     (t) => (
       <motion.div
@@ -269,6 +243,7 @@ export function showSessionClosedToast() {
       </motion.div>
     ),
     {
+      id: toastId, // ✅ ID único para evitar duplicados
       duration: 5000,
       position: 'top-right',
     }
@@ -557,6 +532,60 @@ export function showLogoutErrorToast() {
     {
       duration: 4000,
       position: 'top-center',
+    }
+  )
+}
+
+// ============================================
+// TOAST: ENTIDAD ACTUALIZADA CON ÉXITO
+// ============================================
+
+interface ShowEntitySuccessToastProps {
+  entityName: string
+  action: 'created' | 'updated'
+}
+
+export function showEntitySuccessToast({ entityName, action }: ShowEntitySuccessToastProps) {
+  const isCreated = action === 'created'
+
+  toast.custom(
+    (t) => (
+      <motion.div
+        initial={{ opacity: 0, x: 100 }}
+        animate={{ opacity: 1, x: 0 }}
+        exit={{ opacity: 0, x: 100 }}
+        transition={{ duration: 0.2, ease: 'easeOut' }}
+        className='flex items-center gap-3 rounded-lg bg-gradient-to-r from-[#0d1f17] to-[#1a1d24] border-l-4 border-green-500 pl-3 pr-4 py-3.5 min-w-[340px]'
+      >
+        {/* Icono con más presencia */}
+        <div className='flex-shrink-0 w-9 h-9 rounded-lg bg-green-500/30 flex items-center justify-center ring-1 ring-green-500/40'>
+          <CheckCircle2 className='w-5 h-5 text-green-400' strokeWidth={2.5} />
+        </div>
+
+        {/* Texto */}
+        <div className='flex-1 min-w-0'>
+          <div className='flex items-center gap-1.5'>
+            <h3 className='text-sm font-bold text-green-50'>
+              {isCreated ? '✓ Entidad creada exitosamente' : '✓ Cambios guardados correctamente'}
+            </h3>
+            {isCreated && <Sparkles className='w-4 h-4 text-yellow-400 flex-shrink-0' />}
+          </div>
+          <p className='text-xs text-green-200/70 mt-0.5'>
+            {isCreated
+              ? `${entityName} ya está disponible para configurar fuentes de pago`
+              : `${entityName} se actualizó con la nueva información`
+            }
+          </p>
+        </div>
+
+        {/* Check con mejor contraste */}
+        <CheckCircle2 className='w-5 h-5 text-green-400 flex-shrink-0' strokeWidth={2.5} />
+      </motion.div>
+    ),
+    {
+      duration: 3000,
+      position: 'top-right',
+      unstyled: true,
     }
   )
 }

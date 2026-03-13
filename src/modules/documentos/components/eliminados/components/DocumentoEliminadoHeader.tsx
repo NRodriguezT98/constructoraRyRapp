@@ -47,7 +47,7 @@ export function DocumentoEliminadoHeader({
               </Badge>
               <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
                 <Calendar className="w-3 h-3" />
-                {formatDateCompact(documento.fecha_documento)}
+                {formatDateCompact(documento.fecha_documento || '')}
               </div>
               {documento.usuario && (
                 <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">

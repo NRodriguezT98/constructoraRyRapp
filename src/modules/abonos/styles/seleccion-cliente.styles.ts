@@ -16,89 +16,83 @@
 export const seleccionClienteStyles = {
   // 🎯 CONTENEDOR PRINCIPAL
   container: {
-    page: 'min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950',
+    page: 'min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50/30 to-teal-50/20 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950',
     content: 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6'
   },
 
   // 🎨 HEADER HERO
   header: {
-    container: 'relative overflow-hidden rounded-3xl bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 dark:from-blue-700 dark:via-indigo-700 dark:to-purple-800 p-8 shadow-2xl shadow-blue-500/20',
+    container: 'relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-600 via-emerald-600 to-teal-700 dark:from-emerald-800 dark:via-emerald-900 dark:to-teal-900 p-6 shadow-2xl shadow-emerald-500/20',
     pattern: 'absolute inset-0 bg-grid-white/10 [mask-image:linear-gradient(0deg,transparent,black,transparent)]',
     content: 'relative z-10',
-    topRow: 'flex items-center justify-between mb-4',
-    titleGroup: 'flex items-center gap-4',
-    iconCircle: 'w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center',
-    icon: 'w-7 h-7 text-white',
-    titleWrapper: 'space-y-1',
-    title: 'text-3xl font-bold text-white',
-    subtitle: 'text-blue-100 dark:text-blue-200 text-sm',
-    badge: 'inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-white text-sm font-medium'
+    topRow: 'flex items-center justify-between',
+    titleGroup: 'flex items-center gap-3',
+    iconCircle: 'w-10 h-10 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center',
+    icon: 'w-6 h-6 text-white',
+    titleWrapper: 'space-y-0.5',
+    title: 'text-2xl font-bold text-white',
+    subtitle: 'text-emerald-100 dark:text-emerald-200 text-xs',
+    badge: 'inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-white text-xs font-medium'
   },
 
   // 📊 MÉTRICAS (4 cards)
   metricas: {
-    grid: 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4',
-    card: 'group relative overflow-hidden rounded-2xl backdrop-blur-xl bg-white/80 dark:bg-gray-800/80 border border-gray-200/50 dark:border-gray-700/50 p-6 shadow-lg hover:shadow-2xl transition-all duration-300',
+    grid: 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3',
+    card: 'group relative overflow-hidden rounded-xl backdrop-blur-xl bg-white/80 dark:bg-gray-800/80 border border-gray-200/50 dark:border-gray-700/50 p-4 shadow-lg hover:shadow-2xl transition-all duration-300',
     cardGlow: 'absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-10 transition-opacity duration-300',
-    content: 'relative z-10 flex items-center gap-4',
-    iconCircle: 'w-12 h-12 rounded-xl flex items-center justify-center shadow-lg',
-    icon: 'w-6 h-6 text-white',
-    textGroup: 'flex-1',
-    value: 'text-2xl font-bold bg-gradient-to-br bg-clip-text text-transparent',
-    label: 'text-xs text-gray-600 dark:text-gray-400 mt-1 font-medium'
+    content: 'relative z-10 flex items-center gap-3',
+    iconCircle: 'w-10 h-10 rounded-lg flex items-center justify-center shadow-lg flex-shrink-0',
+    icon: 'w-5 h-5 text-white',
+    textGroup: 'flex-1 min-w-0',
+    value: 'text-base font-bold text-gray-900 dark:text-gray-100 leading-tight',
+    label: 'text-xs text-gray-500 dark:text-gray-400 mt-0.5 font-medium'
   },
 
-  // 🔍 BÚSQUEDA
+  // 🔍 BÚSQUEDA + FILTROS
   search: {
-    container: 'sticky top-4 z-40 backdrop-blur-xl bg-white/90 dark:bg-gray-800/90 rounded-2xl border border-gray-200/50 dark:border-gray-700/50 p-4 shadow-2xl shadow-blue-500/10',
+    container: 'sticky top-4 z-40 backdrop-blur-xl bg-white/90 dark:bg-gray-800/90 rounded-2xl border border-gray-200/50 dark:border-gray-700/50 p-4 shadow-2xl shadow-emerald-500/10 space-y-3',
+    // Fila 1: input principal
     inputWrapper: 'relative',
-    iconLeft: 'absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500 pointer-events-none',
-    input: 'w-full pl-12 pr-12 py-3 bg-gray-50 dark:bg-gray-900/50 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all text-sm placeholder:text-gray-400 dark:placeholder:text-gray-500',
-    clearButton: 'absolute right-4 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors cursor-pointer',
-    clearIcon: 'w-3.5 h-3.5 text-gray-600 dark:text-gray-400',
-    footer: 'flex items-center justify-between mt-3 pt-3 border-t border-gray-200 dark:border-gray-700',
-    resultCount: 'text-xs text-gray-600 dark:text-gray-400 font-medium'
+    iconLeft: 'absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500 pointer-events-none',
+    input: 'w-full pl-10 pr-10 py-2.5 bg-gray-50 dark:bg-gray-900/50 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all text-sm placeholder:text-gray-400 dark:placeholder:text-gray-500',
+    clearButton: 'absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors cursor-pointer',
+    clearIcon: 'w-3 h-3 text-gray-600 dark:text-gray-400',
+    // Fila 2: controles (proyecto + ordenar)
+    controlsRow: 'flex flex-wrap items-center gap-2',
+    controlGroup: 'flex items-center gap-1.5 flex-1 min-w-0',
+    controlIcon: 'w-3.5 h-3.5 text-gray-400 dark:text-gray-500 flex-shrink-0',
+    selectWrapper: 'relative flex-1 min-w-0',
+    select: 'w-full appearance-none pl-3 pr-6 py-1.5 bg-white dark:bg-gray-900/60 border-2 border-gray-200 dark:border-gray-700 rounded-lg text-xs font-medium text-gray-700 dark:text-gray-300 cursor-pointer focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all',
+    selectActive: 'border-emerald-400 dark:border-emerald-600 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300',
+    selectIcon: 'absolute right-1.5 top-1/2 -translate-y-1/2 w-3 h-3 text-gray-400 pointer-events-none',
+    divider: 'w-px h-5 bg-gray-200 dark:bg-gray-700 flex-shrink-0',
+    // Footer
+    footer: 'flex items-center justify-between pt-3 border-t border-gray-100 dark:border-gray-700/70',
+    resultCount: 'text-xs text-gray-500 dark:text-gray-400 font-medium',
+    resumenLine: 'hidden lg:flex items-center gap-1.5 text-xs',
+    resumenSep: 'text-gray-300 dark:text-gray-600 mx-0.5',
   },
 
-  // 💳 CLIENTE CARD
+  // 💳 CLIENTE ROW (lista compacta)
   card: {
-    container: 'group relative overflow-hidden rounded-2xl bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 hover:border-blue-400 dark:hover:border-blue-600 p-5 shadow-md hover:shadow-2xl hover:shadow-blue-500/20 transition-all duration-300 cursor-pointer',
-    glow: 'absolute inset-0 bg-gradient-to-br from-blue-500/5 via-indigo-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300',
-    content: 'relative z-10',
-
-    // Top section: Cliente + Financiero
-    topRow: 'flex items-start justify-between gap-6 mb-4',
-
-    // Cliente (left)
-    clienteSection: 'flex items-start gap-3 flex-1 min-w-0',
-    avatarCircle: 'w-12 h-12 rounded-xl bg-gradient-to-br flex items-center justify-center shadow-lg flex-shrink-0',
-    avatarIcon: 'w-6 h-6 text-white',
+    container: 'group flex items-center gap-3 px-4 py-2.5 hover:bg-emerald-50 dark:hover:bg-emerald-950/20 transition-colors duration-150 cursor-pointer',
+    avatarCircle: 'w-9 h-9 rounded-lg bg-gradient-to-br flex-shrink-0 flex items-center justify-center shadow-sm self-center',
+    avatarInitials: 'text-white text-xs font-bold leading-none',
     clienteInfo: 'flex-1 min-w-0',
-    clienteNombre: 'text-lg font-bold text-gray-900 dark:text-white mb-1 truncate',
-    clienteDocumento: 'text-xs text-gray-500 dark:text-gray-400 mb-2',
-
-    // Vivienda info (badges)
-    viviendaBadges: 'flex items-center gap-2 flex-wrap',
-    proyectoBadge: 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-600 text-xs font-semibold text-gray-700 dark:text-gray-200 shadow-sm',
-    viviendaBadge: 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-gradient-to-r from-orange-500 to-amber-500 text-xs font-bold text-white shadow-md shadow-orange-500/30',
-    badgeIcon: 'w-3.5 h-3.5',
-
-    // Financiero (right)
-    financieroGrid: 'grid grid-cols-3 gap-2',
-    metricBox: 'backdrop-blur-sm rounded-xl px-3 py-2 text-center border border-white/50 dark:border-gray-700/50 shadow-sm',
-    metricLabel: 'text-xs text-gray-500 dark:text-gray-400 mb-0.5 font-medium',
-    metricValue: 'text-sm font-bold',
-
-    // Progress bar (bottom)
-    progressSection: 'pt-3 border-t border-gray-200 dark:border-gray-700',
-    progressHeader: 'flex justify-between items-center mb-2',
-    progressLabel: 'text-xs font-semibold text-gray-600 dark:text-gray-400',
-    progressPercent: 'text-xs font-bold bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent',
-    progressBar: 'h-2.5 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden shadow-inner',
-    progressFill: 'h-full bg-gradient-to-r from-orange-500 via-amber-500 to-yellow-500 shadow-lg shadow-orange-500/50 transition-all duration-700',
-
-    // Arrow icon
-    arrowIcon: 'w-6 h-6 text-gray-400 group-hover:text-blue-500 group-hover:translate-x-1 transition-all flex-shrink-0'
+    clienteNombre: 'text-sm font-semibold text-gray-900 dark:text-white truncate leading-tight',
+    clienteCC: 'text-xs text-gray-400 dark:text-gray-500 leading-tight mt-0.5',
+    clienteUbicacion: 'flex items-center gap-1 mt-0.5 text-xs text-gray-500 dark:text-gray-400 min-w-0',
+    ubicacionSep: 'text-gray-300 dark:text-gray-600 text-xs mx-0.5',
+    badgeIcon: 'w-3 h-3 flex-shrink-0',
+    progressWrapper: 'hidden sm:flex items-center gap-2 flex-shrink-0 w-40',
+    progressBar: 'flex-1 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden',
+    progressFill: 'h-full bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full',
+    progressPercent: 'text-xs font-bold text-emerald-600 dark:text-emerald-400 w-7 text-right tabular-nums',
+    financieroSection: 'hidden lg:flex items-center gap-4 flex-shrink-0',
+    metricGroup: 'text-right w-32',
+    metricLabel: 'text-xs text-gray-400 dark:text-gray-500',
+    metricValue: 'text-xs font-bold tabular-nums',
+    arrowIcon: 'w-4 h-4 text-gray-400 group-hover:text-emerald-500 group-hover:translate-x-0.5 transition-all flex-shrink-0',
   },
 
   // 🎭 EMPTY STATE

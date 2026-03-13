@@ -10,7 +10,7 @@
  */
 
 import { supabase } from '@/lib/supabase/client'
-import type { Vivienda } from '@/lib/supabase/database.types'
+import type { Vivienda } from '@/modules/viviendas/types'
 
 // ============================================================
 // TIPOS
@@ -37,16 +37,12 @@ export interface ValidacionCampo {
   razon?: string
 }
 
-export type CampoVivienda = keyof Pick<
-  Vivienda,
+export type CampoVivienda =
   | 'matricula_inmobiliaria'
-  | 'direccion'
   | 'area_lote'
   | 'area_construida'
   | 'valor_base'
-  | 'descripcion'
   | 'numero'
->
 
 // Estados que bloquean completamente la edición
 const ESTADOS_BLOQUEANTES = ['Escriturada', 'Entregada', 'Finalizada']
@@ -67,7 +63,7 @@ export class ViviendaValidacionService {
   static async verificarEstadoBloqueo(viviendaId: string): Promise<EstadoBloqueoVivienda> {
     try {
       // Buscar negociaciones activas
-      const { data: negociaciones, error } = await supabase
+      const { data: negociacionesRaw, error } = await supabase
         .from('negociaciones')
         .select(
           `
@@ -83,6 +79,7 @@ export class ViviendaValidacionService {
         .eq('vivienda_id', viviendaId)
         .in('estado', ['Activa', 'Escriturada', 'Entregada', 'Finalizada'])
         .order('created_at', { ascending: false })
+      const negociaciones = negociacionesRaw as any[]
 
       if (error) throw error
 

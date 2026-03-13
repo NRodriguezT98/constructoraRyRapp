@@ -10,11 +10,8 @@ import { useRouter } from 'next/navigation'
 import { resolverSlugCliente } from '@/lib/utils/slug.utils'
 import { ModalRegistrarAbono } from '@/modules/abonos/components/modal-registrar-abono'
 
-
-
 import { FuentePagoCard, HeaderCliente, MetricasCards, TimelineAbonos } from './components'
 import { useAbonosDetalle } from './hooks/useAbonosDetalle'
-import { animations, containerStyles, fuentesStyles } from './styles/abonos-detalle.styles'
 
 interface PageProps {
   params: Promise<{ clienteId: string }>
@@ -48,80 +45,98 @@ export default function AbonosDetallePage({ params }: PageProps) {
     handleRegistrarAbono,
     handleCerrarModal,
     handleAbonoRegistrado,
-  } = useAbonosDetalle(clienteId)
+  } = useAbonosDetalle(clienteId!)
 
-  // Volver a la lista de clientes
-  const handleVolver = () => {
-    router.push('/abonos')
-  }
+  const handleVolver = () => router.push('/abonos')
 
-  // Loading states
   if (isResolving || !clienteId || isLoading || !negociacion) {
     return (
-      <div className={containerStyles.page}>
-        <div className="flex items-center justify-center min-h-screen">
-          <Loader2 className="w-12 h-12 animate-spin text-orange-500" />
-        </div>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950">
+        <Loader2 className="w-10 h-10 animate-spin text-emerald-500" />
       </div>
     )
   }
 
   return (
     <motion.div
-      className={containerStyles.page}
-      initial="hidden"
-      animate="visible"
-      variants={animations.container}
+      className="min-h-screen relative overflow-hidden bg-gray-50 dark:bg-gray-950"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
     >
-      <div className={containerStyles.wrapper}>
-        {/* Header con info del cliente */}
-        <HeaderCliente negociacion={negociacion} onVolver={handleVolver} />
+      {/* Gradiente atmosférico solo en dark mode */}
+      <div
+        className="hidden dark:block pointer-events-none absolute inset-0"
+        style={{ background: 'radial-gradient(ellipse 80% 50% at 50% -20%, rgba(16,185,129,0.15), transparent), radial-gradient(ellipse 60% 40% at 80% 80%, rgba(20,184,166,0.08), transparent)' }}
+      />
+      {/* Orbs de ambiente - solo en dark */}
+      <div className="hidden dark:block pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="absolute -top-40 -right-40 w-96 h-96 rounded-full bg-emerald-500/10 blur-3xl" />
+        <div className="absolute top-1/2 -left-32 w-80 h-80 rounded-full bg-teal-600/8 blur-3xl" />
+        <div className="absolute bottom-0 right-1/4 w-64 h-64 rounded-full bg-emerald-400/5 blur-3xl" />
+      </div>
 
-        {/* Métricas de la negociación */}
-        <MetricasCards metricas={metricas} />
+      <div className="relative z-10 max-w-5xl mx-auto px-4 py-6 space-y-5">
+        {/* Header */}
+        <HeaderCliente
+          negociacion={negociacion}
+          onVolver={handleVolver}
+          onRegistrarAbono={() => negociacion.fuentes_pago?.[0] && handleRegistrarAbono(negociacion.fuentes_pago[0])}
+          canCreate={true}
+        />
+
+        {/* Métricas */}
+        {metricas && <MetricasCards metricas={metricas} />}
 
         {/* Fuentes de pago */}
-        <section className={fuentesStyles.section}>
-          <div className={fuentesStyles.header}>
-            <h2 className={fuentesStyles.title}>
-              <Wallet className={fuentesStyles.titleIcon} />
-              Fuentes de Pago
-            </h2>
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+        >
+          <div className="flex items-center gap-2 mb-3 px-1">
+            <Wallet className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
+            <h2 className="text-sm font-bold text-gray-600 dark:text-white/90 uppercase tracking-widest">Fuentes de Pago</h2>
+            {negociacion.fuentes_pago && negociacion.fuentes_pago.length > 0 && (
+              <span className="ml-auto text-xs text-emerald-600 dark:text-emerald-400/70 font-medium">
+                {negociacion.fuentes_pago.length} fuente{negociacion.fuentes_pago.length !== 1 ? 's' : ''} activa{negociacion.fuentes_pago.length !== 1 ? 's' : ''}
+              </span>
+            )}
           </div>
 
           {negociacion.fuentes_pago && negociacion.fuentes_pago.length > 0 ? (
-            <div className={fuentesStyles.grid}>
+            <div className="grid gap-3">
               {negociacion.fuentes_pago.map((fuente, index) => (
                 <FuentePagoCard
                   key={fuente.id}
                   fuente={fuente}
                   negociacionId={negociacion.id}
+                  clienteSlug={clienteIdOrSlug}
                   onRegistrarAbono={handleRegistrarAbono}
                   index={index}
+                  canCreate={true}
                   validacion={validarFuentePago[fuente.id]}
                 />
               ))}
             </div>
           ) : (
-            <div className={fuentesStyles.emptyState}>
-              <Wallet className={fuentesStyles.emptyIcon} />
-              <p className={fuentesStyles.emptyText}>
-                No hay fuentes de pago configuradas
-              </p>
+            <div className="rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 shadow-sm dark:shadow-none px-6 py-12 text-center">
+              <Wallet className="w-8 h-8 text-gray-300 dark:text-white/20 mx-auto mb-3" />
+              <p className="text-sm text-gray-400 dark:text-white/40">No hay fuentes de pago configuradas</p>
             </div>
           )}
-        </section>
+        </motion.div>
 
-        {/* Timeline de abonos */}
+        {/* Historial */}
         <TimelineAbonos abonos={abonos} loading={loadingAbonos} />
 
-        {/* Modal de registro de abono */}
+        {/* Modal */}
         {modalAbonoOpen && fuenteSeleccionada && negociacion.fuentes_pago && (
           <ModalRegistrarAbono
             open={modalAbonoOpen}
             onClose={handleCerrarModal}
             negociacionId={negociacion.id}
             clienteId={clienteId}
+            fechaMinima={negociacion.fecha_negociacion ?? undefined}
             fuentesPago={negociacion.fuentes_pago}
             fuenteInicial={fuenteSeleccionada}
             onSuccess={handleAbonoRegistrado}

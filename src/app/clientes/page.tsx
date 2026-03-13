@@ -18,13 +18,9 @@ import { getServerPermissions } from '@/lib/auth/server'
 import { ClientesPageMain } from '@/modules/clientes/components'
 
 export default async function ClientesPage() {
-  console.log('👥 [CLIENTES PAGE] Server Component renderizando')
-
   // ✅ Obtener permisos desde el servidor
   // No hay query a DB aquí - usa React cache del servicio auth
   const permisos = await getServerPermissions()
-
-  console.log('👥 [CLIENTES PAGE] Permisos recibidos:', permisos)
 
   // ✅ Pasar permisos como props
   // El Client Component solo maneja UI

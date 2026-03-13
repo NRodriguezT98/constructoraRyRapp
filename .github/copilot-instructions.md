@@ -2,6 +2,223 @@ si por # RyR Constructora - Sistema de Gestión Administrativa
 
 ## 🎯 PRINCIPIOS FUNDAMENTALES (APLICAR SIEMPRE)
 
+### 🚨 REGLA CRÍTICA #-10: FUENTES DE PAGO DINÁMICAS (OBLIGATORIO)
+
+**⚠️ AL trabajar con fuentes de pago en CUALQUIER módulo:**
+
+1. **NUNCA HARDCODEAR** → Array de fuentes en código
+2. **SIEMPRE CARGAR** → Desde `tipos_fuentes_pago` con `activo = true`
+3. **USAR SERVICE** → `cargarTiposFuentesPagoActivas()` de `tipos-fuentes-pago.service.ts`
+4. **EXPONER CARGA** → Estado `cargandoTipos` en UI con spinner
+5. **RENDERIZAR DINÁMICO** → `fuentes.map()` sin array hardcodeado
+
+**Service correcto:**
+```typescript
+import { cargarTiposFuentesPagoActivas } from '@/modules/clientes/services/tipos-fuentes-pago.service'
+
+// ✅ CORRECTO: Carga dinámica
+const { data, error } = await cargarTiposFuentesPagoActivas()
+// Retorna: [{ id, nombre, descripcion, activo, orden, ... }]
+
+// ❌ INCORRECTO: Hardcodeado
+const fuentes = ['Cuota Inicial', 'Crédito Hipotecario', ...]
+```
+
+**Hook con carga dinámica:**
+```typescript
+const [cargandoTipos, setCargandoTipos] = useState(true)
+const [tiposFuentesDisponibles, setTiposFuentesDisponibles] = useState<string[]>([])
+const [fuentes, setFuentes] = useState<FuentePagoConfiguracion[]>([])
+
+useEffect(() => {
+  const cargarTipos = async () => {
+    const { data, error } = await cargarTiposFuentesPagoActivas()
+    if (data) {
+      setTiposFuentesDisponibles(data.map(f => f.nombre))
+    }
+    setCargandoTipos(false)
+  }
+  cargarTipos()
+}, [])
+
+useEffect(() => {
+  if (!cargandoTipos && tiposFuentesDisponibles.length > 0) {
+    const fuentesIniciales = tiposFuentesDisponibles.map(nombre => ({
+      tipo: nombre as TipoFuentePago,
+      enabled: false,
+      config: null,
+    }))
+    setFuentes(fuentesIniciales)
+  }
+}, [cargandoTipos, tiposFuentesDisponibles])
+```
+
+**UI con estado de carga:**
+```tsx
+{cargandoTipos && (
+  <div className="...">
+    <div className="w-5 h-5 border-3 border-cyan-500 border-t-transparent rounded-full animate-spin" />
+    <p>Cargando fuentes de pago activas desde el sistema...</p>
+  </div>
+)}
+
+{!cargandoTipos && fuentes.length === 0 && (
+  <div className="...">
+    ⚠️ No hay fuentes de pago activas configuradas.
+  </div>
+)}
+
+{!cargandoTipos && fuentes.length > 0 && (
+  <div className="space-y-3">
+    {fuentes.map((fuente) => (
+      <FuentePagoCard key={fuente.tipo} {...props} />
+    ))}
+  </div>
+)}
+```
+
+**Ventajas del sistema:**
+- ✅ Configuración sin deploy (admin puede agregar/quitar fuentes)
+- ✅ Activar/desactivar fuentes en tiempo real
+- ✅ Escalable (ej: agregar "Crédito Constructor" sin código)
+- ✅ Orden personalizable desde BD
+
+**Documentación completa:** `docs/SISTEMA-FUENTES-PAGO-DINAMICAS.md` ⭐
+
+---
+
+### 🚨 REGLA CRÍTICA #-9: SISTEMA DE DOCUMENTOS PENDIENTES POR FUENTE (OBLIGATORIO)
+
+**⚠️ AL trabajar con documentos pendientes de fuentes de pago:**
+
+1. **USAR VISTA SQL** → `vista_documentos_pendientes_fuentes` (NO tabla `documentos_pendientes`)
+2. **ESTADOS DE FUENTES** → Solo `'Activa'` | `'Inactiva'` (NO más 'Pendiente', 'En Proceso', 'Completada')
+3. **ALCANCE DE DOCUMENTOS** → `'ESPECIFICO_FUENTE'` (uno por fuente) vs `'COMPARTIDO_CLIENTE'` (uno por cliente)
+4. **NO HARDCODEAR** → Fuentes de pago siempre consultar desde `tipos_fuentes_pago`
+
+**Vista en tiempo real:**
+```typescript
+// ✅ CORRECTO: Query a vista (calcula pendientes automáticamente)
+const { data: pendientes } = await supabase
+  .from('vista_documentos_pendientes_fuentes')
+  .select('*')
+  .eq('cliente_id', clienteId)
+
+// ❌ INCORRECTO: Tabla obsoleta
+const { data } = await supabase.from('documentos_pendientes')  // ← NO USAR
+```
+
+**Estados válidos de fuentes:**
+```typescript
+// ✅ CORRECTO (después de migración)
+type EstadoFuente = 'Activa' | 'Inactiva'
+
+// ❌ OBSOLETO (ya no existe)
+type EstadoFuenteViejo = 'Pendiente' | 'En Proceso' | 'Completada'
+```
+
+**Alcance de documentos:**
+```typescript
+// ✅ Documento específico: uno por cada fuente
+alcance: 'ESPECIFICO_FUENTE'
+// Ejemplo: Carta de Aprobación (cada entidad emite la suya)
+
+// ✅ Documento compartido: uno para el cliente
+alcance: 'COMPARTIDO_CLIENTE'
+// Ejemplo: Boleta de Registro (válida para todas las fuentes)
+```
+
+**Componente UI:**
+```typescript
+import { SeccionDocumentosPendientes } from '@/modules/clientes/components/documentos-pendientes'
+
+<SeccionDocumentosPendientes
+  clienteId={cliente.id}
+  onSubirDocumento={(metadata) => {
+    // Abrir modal con metadata pre-llenado
+  }}
+/>
+```
+
+**Ventajas del sistema:**
+- ✅ Datos siempre actualizados (vista calcula en tiempo real)
+- ✅ No hay "stale data" ni sincronización manual
+- ✅ Documentos compartidos aparecen solo UNA VEZ
+- ✅ Escalable: agregar fuente → solo configurar requisitos
+
+**Documentación completa:** `docs/SISTEMA-DOCUMENTOS-PENDIENTES-FUENTES-UNIFICADO.md` ⭐
+
+---
+
+### 🚨 REGLA CRÍTICA #-8: SISTEMA DE SANITIZACIÓN DE DATOS (OBLIGATORIO)
+
+**⚠️ AL guardar CUALQUIER dato en la base de datos:**
+
+1. **USAR** → Funciones de sanitización antes de insert/update
+2. **IMPORTAR** → `sanitize*.utils.ts` del módulo correspondiente
+3. **VALIDAR** → Enums, strings vacíos, fechas inválidas
+4. **NO** → Enviar strings vacíos `''` a campos opcionales (usar `null`)
+
+**Funciones disponibles:**
+```typescript
+// Genéricas (src/lib/utils/sanitize.utils.ts)
+import { sanitizeString, sanitizeDate, sanitizeEnum } from '@/lib/utils/sanitize.utils'
+
+// Específicas por Módulo
+import { sanitizeCrearClienteDTO, sanitizeActualizarClienteDTO } from '@/modules/clientes/utils/sanitize-cliente.utils'
+import { sanitizeProyectoFormData, sanitizeProyectoUpdate } from '@/modules/proyectos/utils/sanitize-proyecto.utils'
+import { sanitizeViviendaFormData, sanitizeViviendaUpdate } from '@/modules/viviendas/utils/sanitize-vivienda.utils'
+```
+
+**Ejemplo correcto:**
+```typescript
+// ✅ ANTES de insertar/actualizar
+const datosSanitizados = sanitizeCrearClienteDTO(datos)
+await supabase.from('clientes').insert(datosSanitizados)
+
+// ✅ Proyectos
+const proyectoSanitizado = sanitizeProyectoFormData(datos)
+await supabase.from('proyectos').insert(proyectoSanitizado)
+
+// ✅ Viviendas
+const viviendaSanitizada = sanitizeViviendaFormData(datos)
+await supabase.from('viviendas').insert(viviendaSanitizada)
+```
+
+**Errores CRÍTICOS que NO repetir:**
+- ❌ Enviar `estado_civil: ''` → ✅ Sanitizar: `estado_civil: null`
+- ❌ Enviar `fecha_nacimiento: ''` → ✅ Sanitizar: `fecha_nacimiento: null`
+- ❌ No validar enums → ✅ `sanitizeEnum(value, validValues)`
+- ❌ Lógica de sanitización duplicada → ✅ Función centralizada
+
+**Documentación completa:** `docs/SISTEMA-SANITIZACION-DATOS-CLIENTES.md` ⭐
+
+---
+
+### 🚨 REGLA CRÍTICA #-7: VERIFICAR NOMBRES DE COLUMNAS/TABLAS (OBLIGATORIO)
+
+**⚠️ ANTES de escribir CUALQUIER consulta SQL o usar nombres de tablas/columnas:**
+
+1. **ABRIR** → `docs/DATABASE-SCHEMA-REFERENCE-ACTUALIZADO.md` ⭐
+2. **BUSCAR** → Ctrl+F con el nombre de la tabla que necesitas
+3. **COPIAR** → Nombre EXACTO de la columna (NO asumir)
+4. **VERIFICAR** → Tipo de dato y si acepta NULL
+
+**Errores CRÍTICOS que NO repetir:**
+- ❌ Asumir que existe `url` → ✅ Verificar: es `url_storage`
+- ❌ Usar `ruta_archivo` → ✅ Correcto: `url_storage`
+- ❌ Asumir `entidad_id` → ✅ Verificar: es `cliente_id`
+- ❌ Inventar nombres "lógicos" → ✅ Consultar schema SIEMPRE
+
+**Regenerar schema actualizado:**
+```bash
+node generar-schema-simple.js
+```
+
+**Documentación completa:** `docs/DATABASE-SCHEMA-REFERENCE-ACTUALIZADO.md` ⭐
+
+---
+
 ### 🚨 REGLA CRÍTICA #-6: MANEJO PROFESIONAL DE FECHAS (OBLIGATORIO)
 
 **⚠️ AL trabajar con CUALQUIER fecha en la aplicación:**
@@ -1158,6 +1375,7 @@ src/modules/[nombre-modulo]/
 
 ## ✅ REQUERIDO
 
+✅ **SANITIZACIÓN DE DATOS** → `sanitize*.utils.ts` antes de insert/update (strings vacíos → null)
 ✅ **FUNCIONES DE FECHAS** → Importar de `@/lib/utils/date.utils` (formatDateShort, formatDateForInput, formatDateForDB, getTodayDateString)
 ✅ **MOSTRAR FECHAS** → `formatDateShort(fecha)` para dd/MM/yyyy
 ✅ **CARGAR EN INPUTS** → `formatDateForInput(fecha)` para <input type="date" />
@@ -1187,6 +1405,7 @@ src/modules/[nombre-modulo]/
 ## 📚 Documentación Completa
 
 ### 🔴 CRÍTICA (consultar SIEMPRE):
+- **Sistema de sanitización**: `docs/SISTEMA-SANITIZACION-DATOS-CLIENTES.md` ⭐ **NO MÁS STRINGS VACÍOS**
 - **Manejo profesional de fechas**: `docs/GUIA-MANEJO-FECHAS-PROFESIONAL.md` ⭐ **NO MÁS TIMEZONE ISSUES**
 - **Sistema de documentos pendientes**: `docs/SISTEMA-DOCUMENTOS-PENDIENTES.md` ⭐ **VINCULACIÓN AUTOMÁTICA**
 - **Sincronización de tipos DB**: `docs/SISTEMA-SINCRONIZACION-SCHEMA-DB.md` ⭐ **TIPOS AUTOMÁTICOS**

@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { motion } from 'framer-motion'
 import { CheckCircle2, DollarSign, FileCheck, Home } from 'lucide-react'
@@ -125,7 +125,7 @@ export function StepperAsignarVivienda({ currentStep, completedSteps }: StepperA
                           scaleX:
                             step.number < currentStep || isCompleted ? 1 : 0,
                         }}
-                        transition={{ duration: 0.5, ease: 'easeInOut' }}
+                        transition={{ duration: 0.15, ease: 'easeInOut' }}
                       />
                     </div>
                   </div>

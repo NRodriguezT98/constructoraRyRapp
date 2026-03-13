@@ -6,12 +6,12 @@
  * Detecta inactividad del usuario y cierra sesión automáticamente.
  * Refactorizado para usar React Query mutations (sin closures obsoletos).
  *
- * CARACTERÍSTICAS:
- * - ⏱️ 30 minutos de inactividad → Logout automático
- * - 🖱️ Detecta: mouse, teclado, scroll, clicks
- * - ⚠️ Advertencia 5 minutos antes de logout
- * - ❌ NO cierra sesión al cambiar de pestaña/ventana (no agresivo)
- * - ✅ Usa React Query mutations (sin problemas de closures)
+ * CARACTERÃSTICAS:
+ * - â±ï¸ 30 minutos de inactividad â†’ Logout automático
+ * - ðŸ–±ï¸ Detecta: mouse, teclado, scroll, clicks
+ * - âš ï¸ Advertencia 5 minutos antes de logout
+ * - âŒ NO cierra sesión al cambiar de pestaña/ventana (no agresivo)
+ * - âœ… Usa React Query mutations (sin problemas de closures)
  */
 
 'use client'
@@ -43,7 +43,7 @@ export function useAutoLogout(options: UseAutoLogoutOptions = {}) {
   } = options
 
   const { user } = useAuth()
-  const logoutMutation = useLogoutMutation() // ✅ Mutación estable de React Query
+  const logoutMutation = useLogoutMutation() // âœ… Mutación estable de React Query
 
   const timeoutRef = useRef<NodeJS.Timeout | null>(null)
   const warningTimeoutRef = useRef<NodeJS.Timeout | null>(null)
@@ -51,7 +51,7 @@ export function useAutoLogout(options: UseAutoLogoutOptions = {}) {
   const [showWarning, setShowWarning] = useState(false)
   const [remainingSeconds, setRemainingSeconds] = useState(0)
 
-  // ✅ Control de visibilidad de página (evitar acumulación de toasts)
+  // âœ… Control de visibilidad de página (evitar acumulación de toasts)
   const lastActivityRef = useRef<number>(Date.now())
   const warningShownRef = useRef(false)
   const logoutExecutedRef = useRef(false)
@@ -63,14 +63,15 @@ export function useAutoLogout(options: UseAutoLogoutOptions = {}) {
 
   /**
    * Ejecutar logout usando mutación de React Query
-   * ✅ Sin problemas de closures - mutación es estable
-   * ✅ Solo muestra toast si la página está visible
+   * âœ… Sin problemas de closures - mutación es estable
+   * âœ… Solo muestra toast si la página está visible Y no se ha mostrado ya
    */
-  const executeLogout = useCallback(async () => {
+  const executeLogout = useCallback(() => {
     // Evitar múltiples ejecuciones
     if (logoutExecutedRef.current) {
       return
     }
+
     logoutExecutedRef.current = true
 
     // Limpiar todos los temporizadores
@@ -78,13 +79,13 @@ export function useAutoLogout(options: UseAutoLogoutOptions = {}) {
     if (warningTimeoutRef.current) clearTimeout(warningTimeoutRef.current)
     if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current)
 
-    // ✅ SOLO mostrar toast si la página está visible
+    // âœ… SOLO mostrar toast UNA VEZ cuando la página está visible
     if (pageIsVisibleRef.current) {
       showSessionClosedToast()
     }
 
-    // ✅ Usar mutación de React Query (siempre actualizada)
-    await logoutMutation.mutateAsync()
+    // âœ… Usar mutación de React Query (siempre actualizada)
+    logoutMutation.mutate()
   }, [logoutMutation])
 
   /**
@@ -108,12 +109,12 @@ export function useAutoLogout(options: UseAutoLogoutOptions = {}) {
 
     // Configurar advertencia (TIMEOUT_MS - WARNING_MS)
     warningTimeoutRef.current = setTimeout(() => {
-      // ✅ SOLO mostrar advertencia si la página está visible
+      // âœ… SOLO mostrar advertencia si la página está visible
       if (!pageIsVisibleRef.current) {
         return
       }
 
-      // ✅ Solo mostrar advertencia si NO se ha mostrado antes
+      // âœ… Solo mostrar advertencia si NO se ha mostrado antes
       if (warningShownRef.current) return
       warningShownRef.current = true
       setShowWarning(true)
@@ -132,7 +133,7 @@ export function useAutoLogout(options: UseAutoLogoutOptions = {}) {
         })
       }, 1000)
 
-      // ✅ Toast con acción para mantener sesión activa (solo UNA VEZ y si página visible)
+      // âœ… Toast con acción para mantener sesión activa (solo UNA VEZ y si página visible)
       showSessionExpiringToast({
         minutes: warningMinutes,
         onKeepAlive: () => {
@@ -187,8 +188,15 @@ export function useAutoLogout(options: UseAutoLogoutOptions = {}) {
   useEffect(() => {
     // Solo activar si hay usuario autenticado y está habilitado
     if (!user || !enabled) {
+      // âœ… RESETEAR flags cuando no hay usuario (después de logout)
+      logoutExecutedRef.current = false
+      warningShownRef.current = false
       return
     }
+
+    // âœ… RESETEAR flags al iniciar sesión (nuevo usuario)
+    logoutExecutedRef.current = false
+    warningShownRef.current = false
 
     // Iniciar temporizadores SOLO UNA VEZ
     resetTimers()
@@ -207,17 +215,13 @@ export function useAutoLogout(options: UseAutoLogoutOptions = {}) {
       document.addEventListener(event, handleUserActivity, { passive: true })
     })
 
-    // ✅ Page Visibility API - Detectar cuando la página vuelve a ser visible
+    // âœ… Page Visibility API - Detectar cuando la página vuelve a ser visible
     const handleVisibilityChange = () => {
       const isVisible = !document.hidden
       pageIsVisibleRef.current = isVisible
 
-      if (isVisible) {
-        // Si ya se ejecutó el logout mientras estaba oculta, mostrar el toast ahora
-        if (logoutExecutedRef.current) {
-          showSessionClosedToast()
-        }
-      }
+      // âŒ NO mostrar toast aquí - ya se mostró en executeLogout()
+      // El toast solo debe mostrarse UNA VEZ cuando se ejecuta el logout
     }
 
     document.addEventListener('visibilitychange', handleVisibilityChange)
@@ -236,7 +240,7 @@ export function useAutoLogout(options: UseAutoLogoutOptions = {}) {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, enabled, timeoutMinutes, warningMinutes])
-  // ⚠️ NO incluir resetTimers ni handleUserActivity para evitar loops infinitos
+  // âš ï¸ NO incluir resetTimers ni handleUserActivity para evitar loops infinitos
 
   return {
     showWarning,

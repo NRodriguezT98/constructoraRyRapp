@@ -41,7 +41,11 @@ export function useAsignarViviendaForm({
       proyecto_id: initialData?.proyecto_id || '',
       vivienda_id: initialData?.vivienda_id || '',
       valor_negociado: initialData?.valor_negociado || 0,
+      aplicar_descuento: initialData?.aplicar_descuento || false,
       descuento_aplicado: initialData?.descuento_aplicado || 0,
+      tipo_descuento: initialData?.tipo_descuento || '',
+      motivo_descuento: initialData?.motivo_descuento || '',
+      valor_escritura_publica: initialData?.valor_escritura_publica || 128000000,
       notas: initialData?.notas || '',
       fuentes: initialData?.fuentes || [],
       valor_total: initialData?.valor_total || 0,
@@ -57,7 +61,11 @@ export function useAsignarViviendaForm({
   const proyecto_id = watch('proyecto_id')
   const vivienda_id = watch('vivienda_id')
   const valor_negociado = watch('valor_negociado')
+  const aplicar_descuento = watch('aplicar_descuento')
   const descuento_aplicado = watch('descuento_aplicado')
+  const tipo_descuento = watch('tipo_descuento')
+  const motivo_descuento = watch('motivo_descuento')
+  const valor_escritura_publica = watch('valor_escritura_publica')
   const notas = watch('notas')
   const fuentes = watch('fuentes')
   const valor_total = watch('valor_total')
@@ -72,8 +80,17 @@ export function useAsignarViviendaForm({
 
     switch (step) {
       case 1:
-        // Validar paso 1
-        isValid = await trigger(['proyecto_id', 'vivienda_id', 'valor_negociado', 'descuento_aplicado'])
+        // Validar paso 1 (incluir todos los campos de descuento)
+        isValid = await trigger([
+          'proyecto_id',
+          'vivienda_id',
+          'valor_negociado',
+          'aplicar_descuento',
+          'descuento_aplicado',
+          'tipo_descuento',
+          'motivo_descuento',
+          'valor_escritura_publica',
+        ])
         break
 
       case 2:
@@ -124,7 +141,7 @@ export function useAsignarViviendaForm({
   // PASO 2: HELPERS
   // ============================================
 
-  const totalFuentes = fuentes.reduce((acc, f) => acc + (f.monto_aprobado || 0), 0)
+  const totalFuentes = fuentes.reduce((acc: number, f: { monto_aprobado?: number | null }) => acc + (f.monto_aprobado ?? 0), 0)
   const diferencia = valor_total - totalFuentes
   const sumaCierra = Math.abs(diferencia) < 0.01
 
@@ -132,9 +149,9 @@ export function useAsignarViviendaForm({
     return (
       fuentes.length > 0 &&
       sumaCierra &&
-      fuentes.every((f) => {
+      fuentes.every((f: { tipo?: string; monto_aprobado?: number | null; entidad?: string | null; numero_referencia?: string | null; fecha_acta?: string | null }) => {
         // Validar monto obligatorio para todas las fuentes
-        const montoValido = f.monto_aprobado > 0
+        const montoValido = (f.monto_aprobado ?? 0) > 0
 
         // Cuota Inicial: solo requiere monto
         if (f.tipo === 'Cuota Inicial') {
@@ -201,7 +218,11 @@ export function useAsignarViviendaForm({
     proyecto_id,
     vivienda_id,
     valor_negociado,
+    aplicar_descuento,
     descuento_aplicado,
+    tipo_descuento,
+    motivo_descuento,
+    valor_escritura_publica,
     notas,
     fuentes,
     valor_total,

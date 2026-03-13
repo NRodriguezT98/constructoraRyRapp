@@ -2,6 +2,7 @@
 // BARREL EXPORT: Modales de Documentos
 // ============================================
 
+export { ArchivarDocumentoModal } from './ArchivarDocumentoModal'
 export { ConfirmarCambiosDocumentoModal } from './ConfirmarCambiosDocumentoModal'
 export { DocumentoEditarMetadatosModal } from './DocumentoEditarMetadatosModal'
 export { DocumentoNuevaVersionModal } from './DocumentoNuevaVersionModal'
@@ -9,3 +10,4 @@ export { DocumentoReemplazarArchivoModal } from './DocumentoReemplazarArchivoMod
 export { DocumentoVersionesModal } from './DocumentoVersionesModal'
 export { MarcarEstadoVersionModal } from './MarcarEstadoVersionModal'
 export type { AccionEstado } from './MarcarEstadoVersionModal'
+export { RestaurarDocumentoModal } from './RestaurarDocumentoModal'

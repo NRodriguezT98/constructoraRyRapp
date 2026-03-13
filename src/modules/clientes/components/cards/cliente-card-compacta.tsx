@@ -4,6 +4,7 @@
  * ✅ RENDERIZADO CONDICIONAL:
  *    - Estado "Interesado" → ClienteCardInteresado (Cyan)
  *    - Estado "Activo" → ClienteCardActivo (Verde con panel financiero)
+ *    - Estado "Renunció" → ClienteCardInactivo (Rojo) ⭐ NUEVO
  *    - Estado "Inactivo" → ClienteCardInactivo (Gris)
  *
  * ✅ Mantiene consistencia visual entre todas las variantes
@@ -46,6 +47,16 @@ export function ClienteCardCompacta({
           onEditar={onEditar}
           onEliminar={onEliminar}
           onRegistrarAbono={onIniciarAsignacion}
+        />
+      )
+
+    case 'Renunció': // ⭐ NUEVO (2025-12-11) - Usa card inactivo con colores rojos
+      return (
+        <ClienteCardInactivo
+          cliente={cliente}
+          onVer={onVer}
+          onEditar={onEditar}
+          onEliminar={onEliminar}
         />
       )
 

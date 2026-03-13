@@ -4,6 +4,7 @@
  * Componentes reutilizables para toda la aplicación
  */
 
+export * from './AppToast'
 export * from './EmptyState'
 export * from './FilterButton'
 export * from './FilterPanel'

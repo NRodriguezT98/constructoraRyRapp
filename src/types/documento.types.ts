@@ -2,6 +2,17 @@
 // TYPES: Documentos de Proyecto - Sistema Flexible
 // ============================================
 
+import {
+    File,
+    FileArchive,
+    FileCode,
+    FileImage,
+    FileSpreadsheet,
+    FileText,
+    FileVideo,
+    type LucideIcon,
+} from 'lucide-react'
+
 export type EstadoDocumento = 'activo' | 'archivado' | 'eliminado'
 
 // ============================================
@@ -158,6 +169,10 @@ export interface DocumentoProyecto {
   fecha_creacion: string
   fecha_actualizacion: string
 
+  // 🆕 Motivo de archivado
+  motivo_categoria?: string // Motivo predefinido (Documento Obsoleto, etc.)
+  motivo_detalle?: string // Observaciones adicionales del usuario
+
   // Sistema de Estados de Versión - PROFESIONAL
   estado_version?: EstadoVersion // Estado de la versión (valida por defecto)
   motivo_estado?: string // Justificación del estado
@@ -227,31 +242,21 @@ export function getFileExtension(filename: string): string {
 
 // Helper para validar tipo de archivo
 export function isValidFileType(type: string): boolean {
-  return MIME_TYPES_PERMITIDOS.includes(type as any)
+  return MIME_TYPES_PERMITIDOS.includes(type as (typeof MIME_TYPES_PERMITIDOS)[number])
 }
 
-// Helper para obtener ícono según tipo MIME
-export function getFileIcon(mimeType: string): any {
-  // Importamos desde lucide-react
-  const {
-    FileText,
-    File,
-    FileImage,
-    FileVideo,
-    FileArchive,
-    FileSpreadsheet,
-    FileCode,
-  } = require('lucide-react')
+// Mapa estático de tipos MIME → ícono de Lucide
+const FILE_ICON_MAP: Array<{ test: (mime: string) => boolean; icon: LucideIcon }> = [
+  { test: (m) => m.includes('pdf') || m.includes('word') || m.includes('document'), icon: FileText },
+  { test: (m) => m.startsWith('image/'), icon: FileImage },
+  { test: (m) => m.startsWith('video/'), icon: FileVideo },
+  { test: (m) => m.includes('zip') || m.includes('rar'), icon: FileArchive },
+  { test: (m) => m.includes('spreadsheet') || m.includes('excel'), icon: FileSpreadsheet },
+  { test: (m) => m.includes('text/'), icon: FileCode },
+]
 
-  if (mimeType.includes('pdf')) return FileText
-  if (mimeType.startsWith('image/')) return FileImage
-  if (mimeType.startsWith('video/')) return FileVideo
-  if (mimeType.includes('zip') || mimeType.includes('rar')) return FileArchive
-  if (mimeType.includes('spreadsheet') || mimeType.includes('excel'))
-    return FileSpreadsheet
-  if (mimeType.includes('word') || mimeType.includes('document'))
-    return FileText
-  if (mimeType.includes('text/')) return FileCode
-
-  return File // Default
+// Helper para obtener ícono según tipo MIME o extensión de archivo
+export function getFileIcon(mimeTypeOrExtension: string): LucideIcon {
+  const normalized = mimeTypeOrExtension.toLowerCase()
+  return FILE_ICON_MAP.find((entry) => entry.test(normalized))?.icon ?? File
 }

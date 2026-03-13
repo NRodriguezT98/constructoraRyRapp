@@ -13,26 +13,31 @@
 
 import { formatDistanceToNow } from 'date-fns'
 import { es } from 'date-fns/locale'
+import { motion } from 'framer-motion'
 import {
-    AlertCircle,
-    Building2,
-    CheckCircle2,
-    Clock,
-    Heart,
-    Home,
-    Mail,
-    MessageSquare,
-    Phone,
-    Plus,
-    TrendingUp,
-    User,
-    X,
+  AlertCircle,
+  Building2,
+  CheckCircle2,
+  Clock,
+  Heart,
+  Home,
+  Info,
+  Lightbulb,
+  ListChecks,
+  Mail,
+  MessageSquare,
+  Phone,
+  Plus,
+  TrendingUp,
+  User,
+  X,
 } from 'lucide-react'
 
+import { ModalDescartarInteres } from '@/modules/clientes/components/modals/modal-descartar-interes'
 import { useInteresesTab } from '@/modules/clientes/hooks'
 import type { Cliente } from '@/modules/clientes/types'
 
-import * as styles from '../cliente-detalle.styles'
+import { interesesTabStyles } from './intereses-tab.styles'
 
 interface InteresesTabProps {
   cliente: Cliente
@@ -53,16 +58,14 @@ const ICONOS_ORIGEN: Record<string, typeof Phone> = {
 
 export function InteresesTab({ cliente, onRegistrarInteres }: InteresesTabProps) {
   // ✅ Hook con TODA la lógica
-  const { intereses, loading, stats, estadoFiltro, descartando, handleDescartar, filtrarPorEstado } =
+  const { intereses, loading, stats, estadoFiltro, descartando, abrirModalDescartar, cancelarDescartar, confirmarDescartar, interesADescartar, filtrarPorEstado } =
     useInteresesTab({ clienteId: cliente.id })
-
-  const estadisticas = cliente.estadisticas
 
   if (loading) {
     return (
       <div className='flex items-center justify-center py-10'>
         <div className='text-center'>
-          <div className='mx-auto h-10 w-10 animate-spin rounded-full border-4 border-purple-200 border-t-purple-600'></div>
+          <div className='mx-auto h-10 w-10 animate-spin rounded-full border-4 border-cyan-200 border-t-cyan-600'></div>
           <p className='mt-3 text-xs text-gray-600 dark:text-gray-400'>Cargando intereses...</p>
         </div>
       </div>
@@ -71,134 +74,227 @@ export function InteresesTab({ cliente, onRegistrarInteres }: InteresesTabProps)
 
   if (intereses.length === 0 && !estadoFiltro) {
     return (
-      <div className={styles.emptyStateClasses.container}>
-        <Heart className={styles.emptyStateClasses.icon} />
-        <h3 className={styles.emptyStateClasses.title}>Sin intereses registrados</h3>
-        <p className={styles.emptyStateClasses.description}>
-          Este cliente aún no ha registrado interés en ningún proyecto o vivienda.
+      <motion.div
+        className={interesesTabStyles.emptyState.container}
+        {...interesesTabStyles.animations.fadeInUp}
+      >
+        {/* Icono con gradiente */}
+        <div className="flex justify-center">
+          <motion.div
+            className={interesesTabStyles.emptyState.iconWrapper}
+            {...interesesTabStyles.animations.scaleIn}
+          >
+            <Heart className={interesesTabStyles.emptyState.icon} />
+          </motion.div>
+        </div>
+
+        {/* Título y descripción */}
+        <h3 className={interesesTabStyles.emptyState.title}>
+          Sin Intereses Registrados
+        </h3>
+        <p className={interesesTabStyles.emptyState.description}>
+          Este cliente aún no ha manifestado interés en ningún proyecto o vivienda específica.
+          Registra su primer interés para iniciar el proceso comercial.
         </p>
-        <button
-          onClick={onRegistrarInteres}
-          className={styles.emptyStateClasses.button}
-        >
-          <Plus className='h-4 w-4' />
-          Registrar Nuevo Interés
-        </button>
-      </div>
+
+        {/* Checklist de beneficios */}
+        <div className={interesesTabStyles.emptyState.checklistContainer}>
+          <div className={interesesTabStyles.emptyState.checklistHeader}>
+            <ListChecks className="w-4 h-4" />
+            ¿Qué puedes hacer?
+          </div>
+
+          <div className={interesesTabStyles.emptyState.checklistItems}>
+            <div className={interesesTabStyles.emptyState.checklistItem}>
+              <div className="w-5 h-5 rounded-full bg-pink-100 dark:bg-pink-900/30 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <Home className="w-3 h-3 text-pink-600 dark:text-pink-400" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className={interesesTabStyles.emptyState.checklistTextPending}>
+                  Registrar interés en proyectos o viviendas específicas
+                </p>
+                <p className={interesesTabStyles.emptyState.checklistSubtext}>
+                  Vincula al cliente con las viviendas que le interesan
+                </p>
+              </div>
+            </div>
+
+            <div className={interesesTabStyles.emptyState.checklistItem}>
+              <div className="w-5 h-5 rounded-full bg-pink-100 dark:bg-pink-900/30 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <Building2 className="w-3 h-3 text-pink-600 dark:text-pink-400" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className={interesesTabStyles.emptyState.checklistTextPending}>
+                  Hacer seguimiento del proceso comercial
+                </p>
+                <p className={interesesTabStyles.emptyState.checklistSubtext}>
+                  Rastrea el origen y estado de cada interés
+                </p>
+              </div>
+            </div>
+
+            <div className={interesesTabStyles.emptyState.checklistItem}>
+              <div className="w-5 h-5 rounded-full bg-pink-100 dark:bg-pink-900/30 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <TrendingUp className="w-3 h-3 text-pink-600 dark:text-pink-400" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className={interesesTabStyles.emptyState.checklistTextPending}>
+                  Ver estadísticas y métricas comerciales
+                </p>
+                <p className={interesesTabStyles.emptyState.checklistSubtext}>
+                  Analiza el desempeño y conversión del cliente
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Call to Action */}
+        <div className={interesesTabStyles.emptyState.ctaContainer}>
+          <div className={interesesTabStyles.emptyState.ctaInfo}>
+            <Lightbulb className={interesesTabStyles.emptyState.ctaIcon} />
+            <div className="flex-1">
+              <h4 className={interesesTabStyles.emptyState.ctaTitle}>
+                Comienza ahora
+              </h4>
+              <p className={interesesTabStyles.emptyState.ctaDescription}>
+                Presiona el botón para registrar el primer interés de este cliente.
+                Podrás seleccionar proyectos o viviendas específicas, indicar el origen
+                del contacto y agregar observaciones relevantes.
+              </p>
+            </div>
+          </div>
+
+          <button
+            onClick={onRegistrarInteres}
+            className={interesesTabStyles.emptyState.ctaButton}
+          >
+            <Plus className="w-4 h-4" />
+            Registrar Nuevo Interés
+          </button>
+        </div>
+
+        {/* Footer informativo */}
+        <div className={interesesTabStyles.emptyState.footerInfo}>
+          <Info className={interesesTabStyles.emptyState.footerIcon} />
+          <p className={interesesTabStyles.emptyState.footerText}>
+            Los intereses te permiten hacer seguimiento comercial desde el primer contacto
+            hasta la asignación de vivienda. Son fundamentales para medir la conversión
+            y el desempeño del equipo de ventas.
+          </p>
+        </div>
+      </motion.div>
     )
   }
 
   return (
+    <>
     <div className='space-y-4'>
-      {/* Estadísticas Comerciales */}
-      {estadisticas && (
-        <div className={styles.infoCardClasses.card}>
-          <div className={styles.infoCardClasses.header}>
-            <div
-              className={styles.infoCardClasses.iconContainer}
-              style={{ background: 'linear-gradient(135deg, #f43f5e 0%, #dc2626 100%)' }}
-            >
-              <TrendingUp className={styles.infoCardClasses.icon} />
-            </div>
-            <h3 className={styles.infoCardClasses.title}>Estadísticas Comerciales</h3>
-          </div>
-          <div className='grid grid-cols-1 gap-3 md:grid-cols-3'>
-            {/* Total Negociaciones */}
-            <div className='rounded-lg border-2 border-blue-200 bg-blue-50 p-3 text-center dark:border-blue-700 dark:bg-blue-900/20'>
-              <TrendingUp className='mx-auto mb-1.5 h-6 w-6 text-blue-600 dark:text-blue-400' />
-              <p className='text-2xl font-bold text-blue-600 dark:text-blue-400'>
-                {estadisticas.total_negociaciones}
-              </p>
-              <p className='text-xs font-medium text-gray-600 dark:text-gray-400'>
-                Total Negociaciones
-              </p>
-            </div>
-
-            {/* Activas */}
-            <div className='rounded-lg border-2 border-green-200 bg-green-50 p-3 text-center dark:border-green-700 dark:bg-green-900/20'>
-              <CheckCircle2 className='mx-auto mb-1.5 h-6 w-6 text-green-600 dark:text-green-400' />
-              <p className='text-2xl font-bold text-green-600 dark:text-green-400'>
-                {estadisticas.negociaciones_activas}
-              </p>
-              <p className='text-xs font-medium text-gray-600 dark:text-gray-400'>Activas</p>
-            </div>
-
-            {/* Completadas */}
-            <div className='rounded-lg border-2 border-purple-200 bg-purple-50 p-3 text-center dark:border-purple-700 dark:bg-purple-900/20'>
-              <CheckCircle2 className='mx-auto mb-1.5 h-6 w-6 text-purple-600 dark:text-purple-400' />
-              <p className='text-2xl font-bold text-purple-600 dark:text-purple-400'>
-                {estadisticas.negociaciones_completadas}
-              </p>
-              <p className='text-xs font-medium text-gray-600 dark:text-gray-400'>Completadas</p>
-            </div>
-          </div>
-
-          {/* Última negociación */}
-          {estadisticas.ultima_negociacion && (
-            <div className='mt-3 rounded-lg bg-blue-100 px-3 py-2.5 text-center dark:bg-blue-900/40'>
-              <div className='flex items-center justify-center gap-1.5 text-xs text-blue-900 dark:text-blue-100'>
-                <Clock className='h-3.5 w-3.5' />
-                <span className='font-medium'>Última negociación:</span>
-                <span>
-                  {formatDistanceToNow(new Date(estadisticas.ultima_negociacion), {
-                    addSuffix: true,
-                    locale: es,
-                  })}
-                </span>
-              </div>
-            </div>
-          )}
+      {/* STATS - Intereses del Cliente */}
+      <div className='rounded-xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 p-4 shadow-lg'>
+        <div className='flex items-center gap-2 mb-3'>
+          <TrendingUp className='w-4 h-4 text-cyan-600 dark:text-cyan-400' />
+          <h3 className='text-sm font-semibold text-gray-700 dark:text-gray-300'>Intereses del Cliente</h3>
         </div>
-      )}
-
-      {/* Filtros y Estadísticas de Intereses */}
-      <div className='flex flex-wrap items-center justify-between gap-3'>
-        <div className='flex flex-wrap gap-1.5'>
-          <button
-            onClick={() => filtrarPorEstado(null)}
-            className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
-              estadoFiltro === null
-                ? 'bg-purple-600 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
-            }`}
-          >
-            Todos ({stats.total})
-          </button>
-          <button
-            onClick={() => filtrarPorEstado('Activo')}
-            className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
-              estadoFiltro === 'Activo'
-                ? 'bg-green-600 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
-            }`}
-          >
-            🟢 Activos ({stats.activos})
-          </button>
-          <button
-            onClick={() => filtrarPorEstado('Descartado')}
-            className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
-              estadoFiltro === 'Descartado'
-                ? 'bg-gray-600 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
-            }`}
-          >
-            ⚪ Descartados ({stats.descartados})
-          </button>
+        <div className='flex flex-wrap gap-2'>
+          {/* Total */}
+          <div className='flex items-center gap-1.5 rounded-full px-3 py-1 bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600'>
+            <span className='text-xs font-bold text-gray-900 dark:text-gray-100'>{stats.total}</span>
+            <span className='text-xs text-gray-500 dark:text-gray-400'>Total</span>
+          </div>
+          {/* Activos */}
+          <div className='flex items-center gap-1.5 rounded-full px-3 py-1 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800'>
+            <span className='w-1.5 h-1.5 rounded-full bg-green-500 flex-shrink-0' />
+            <span className='text-xs font-bold text-green-700 dark:text-green-400'>{stats.activos}</span>
+            <span className='text-xs text-green-600 dark:text-green-500'>Activos</span>
+          </div>
+          {/* Descartados */}
+          <div className='flex items-center gap-1.5 rounded-full px-3 py-1 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600'>
+            <span className='w-1.5 h-1.5 rounded-full bg-gray-400 flex-shrink-0' />
+            <span className='text-xs font-bold text-gray-600 dark:text-gray-400'>{stats.descartados}</span>
+            <span className='text-xs text-gray-500 dark:text-gray-500'>Descartados</span>
+          </div>
+          {/* Convertidos */}
+          <div className='flex items-center gap-1.5 rounded-full px-3 py-1 bg-cyan-50 dark:bg-cyan-900/20 border border-cyan-200 dark:border-cyan-800'>
+            <span className='w-1.5 h-1.5 rounded-full bg-cyan-500 flex-shrink-0' />
+            <span className='text-xs font-bold text-cyan-700 dark:text-cyan-400'>{stats.convertidos}</span>
+            <span className='text-xs text-cyan-600 dark:text-cyan-500'>Convertidos</span>
+          </div>
         </div>
-
-        <button
-          onClick={onRegistrarInteres}
-          className='inline-flex items-center gap-1.5 rounded-lg bg-purple-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-purple-700 transition-colors'
-        >
-          <Plus className='h-3.5 w-3.5' />
-          Registrar Nuevo Interés
-        </button>
+        {stats.total > 0 && (
+          <div className='mt-2.5 pt-2.5 border-t border-gray-100 dark:border-gray-700'>
+            <p className='text-xs text-gray-500 dark:text-gray-400'>
+              <span className='font-semibold text-cyan-600 dark:text-cyan-400'>
+                {Math.round((stats.convertidos / stats.total) * 100)}% de conversión
+              </span>{' '}
+              ({stats.convertidos} de {stats.total} intereses derivaron en negociación)
+            </p>
+          </div>
+        )}
       </div>
 
-      {/* Lista de Intereses */}
+      {/* FILTER BAR + CTA */}
+      <div className='sticky top-4 z-40 backdrop-blur-xl bg-white/90 dark:bg-gray-800/90 rounded-xl border border-gray-200/50 dark:border-gray-700/50 p-3 shadow-lg'>
+        <div className='flex flex-wrap items-center justify-between gap-3'>
+          <div className='flex flex-wrap gap-1.5'>
+            <button
+              onClick={() => filtrarPorEstado(null)}
+              className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
+                estadoFiltro === null
+                  ? 'bg-gray-700 text-white dark:bg-gray-200 dark:text-gray-900'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
+              }`}
+            >
+              Todos ({stats.total})
+            </button>
+            <button
+              onClick={() => filtrarPorEstado('Activo')}
+              className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
+                estadoFiltro === 'Activo'
+                  ? 'bg-green-600 text-white'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
+              }`}
+            >
+              <span className='w-1.5 h-1.5 rounded-full bg-current flex-shrink-0' />
+              Activos ({stats.activos})
+            </button>
+            <button
+              onClick={() => filtrarPorEstado('Descartado')}
+              className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
+                estadoFiltro === 'Descartado'
+                  ? 'bg-gray-500 text-white'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
+              }`}
+            >
+              <span className='w-1.5 h-1.5 rounded-full bg-current flex-shrink-0' />
+              Descartados ({stats.descartados})
+            </button>
+            <button
+              onClick={() => filtrarPorEstado('Convertido')}
+              className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
+                estadoFiltro === 'Convertido'
+                  ? 'bg-cyan-600 text-white'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
+              }`}
+            >
+              <span className='w-1.5 h-1.5 rounded-full bg-current flex-shrink-0' />
+              Convertidos ({stats.convertidos})
+            </button>
+          </div>
+          <button
+            onClick={onRegistrarInteres}
+            className='inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 px-4 py-2 text-xs font-semibold text-white shadow-md shadow-cyan-500/25 hover:shadow-cyan-500/40 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]'
+          >
+            <Plus className='h-3.5 w-3.5' />
+            Registrar Interés
+          </button>
+        </div>
+      </div>
+
+      {/* CARDS */}
       {intereses.length === 0 ? (
-        <div className='rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 p-6 text-center dark:border-gray-700 dark:bg-gray-800/50'>
-          <p className='text-xs text-gray-600 dark:text-gray-400'>
+        <div className='rounded-xl border-2 border-dashed border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/30 p-8 text-center'>
+          <p className='text-sm text-gray-500 dark:text-gray-400'>
             No hay intereses con el filtro seleccionado
           </p>
         </div>
@@ -207,122 +303,199 @@ export function InteresesTab({ cliente, onRegistrarInteres }: InteresesTabProps)
           {intereses.map((interes) => {
             const IconoOrigen = ICONOS_ORIGEN[interes.origen || 'Otro'] || AlertCircle
             const esActivo = interes.estado === 'Activo'
+            const esConvertido = interes.estado === 'Convertido'
+            const esDescartado = interes.estado === 'Descartado'
 
             return (
-              <div
+              <motion.div
                 key={interes.id}
-                className={`rounded-lg border-2 p-4 shadow-sm transition-all hover:shadow-md ${
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                className={`rounded-xl border bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200/50 dark:border-gray-700/50 shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden border-l-4 ${
                   esActivo
-                    ? 'border-purple-200 bg-white dark:border-purple-700 dark:bg-purple-900/10'
-                    : 'border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800/50'
-                }`}
+                    ? 'border-l-cyan-500'
+                    : esConvertido
+                      ? 'border-l-indigo-500'
+                      : 'border-l-gray-300 dark:border-l-gray-600'
+                } ${esDescartado ? 'opacity-60' : ''}`}
               >
-                {/* Header del interés */}
-                <div className='mb-2.5 flex items-start justify-between'>
-                  <div className='flex items-center gap-2.5'>
-                    <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${
-                      esActivo
-                        ? 'bg-purple-100 dark:bg-purple-900/30'
-                        : 'bg-gray-200 dark:bg-gray-700'
-                    }`}>
-                      <Building2 className={`h-5 w-5 ${
-                        esActivo
-                          ? 'text-purple-600 dark:text-purple-400'
-                          : 'text-gray-500 dark:text-gray-400'
-                      }`} />
+                <div className='p-4'>
+                  {/* Header */}
+                  <div className='flex items-start justify-between gap-3 mb-3'>
+                    <div className='flex items-center gap-2.5 min-w-0'>
+                      <div
+                        className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                          esActivo
+                            ? 'bg-cyan-100 dark:bg-cyan-900/30'
+                            : esConvertido
+                              ? 'bg-indigo-100 dark:bg-indigo-900/30'
+                              : 'bg-gray-100 dark:bg-gray-700'
+                        }`}
+                      >
+                        <Building2
+                          className={`w-5 h-5 ${
+                            esActivo
+                              ? 'text-cyan-600 dark:text-cyan-400'
+                              : esConvertido
+                                ? 'text-indigo-600 dark:text-indigo-400'
+                                : 'text-gray-500 dark:text-gray-400'
+                          }`}
+                        />
+                      </div>
+                      <div className='min-w-0'>
+                        <h4 className='text-sm font-semibold text-gray-900 dark:text-gray-100 truncate'>
+                          {interes.proyecto_nombre}
+                        </h4>
+                        {interes.origen && (
+                          <div className='mt-0.5 flex items-center gap-1 text-[10px] text-gray-500 dark:text-gray-400'>
+                            <IconoOrigen className='h-3 w-3 flex-shrink-0' />
+                            <span className='truncate'>{interes.origen}</span>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                    <div>
-                      <h4 className='text-sm font-semibold text-gray-900 dark:text-gray-100'>
-                        {interes.proyecto_nombre}
-                      </h4>
-                      {interes.origen && (
-                        <div className='mt-0.5 flex items-center gap-1 text-[10px] text-gray-500 dark:text-gray-400'>
-                          <IconoOrigen className='h-3 w-3' />
-                          <span>{interes.origen}</span>
+                    {/* State badge */}
+                    <span
+                      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[10px] font-semibold flex-shrink-0 ${
+                        esActivo
+                          ? 'bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-400'
+                          : esConvertido
+                            ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400'
+                            : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400'
+                      }`}
+                    >
+                      <span
+                        className={`w-1.5 h-1.5 rounded-full ${
+                          esActivo ? 'bg-cyan-500' : esConvertido ? 'bg-indigo-500' : 'bg-gray-400'
+                        }`}
+                      />
+                      {interes.estado}
+                    </span>
+                  </div>
+
+                  {/* Vivienda pill */}
+                  {interes.vivienda_numero && (
+                    <div className='mb-2.5'>
+                      <p className='text-[10px] font-semibold text-gray-400 dark:text-gray-500 mb-1 ml-0.5'>
+                        Vivienda de interés
+                      </p>
+                    <div
+                      className={`flex items-center gap-2 rounded-lg px-2.5 py-1.5 ${
+                        esActivo
+                          ? 'bg-cyan-50 dark:bg-cyan-900/20'
+                          : esConvertido
+                            ? 'bg-indigo-50 dark:bg-indigo-900/20'
+                            : 'bg-gray-100 dark:bg-gray-700/50'
+                      }`}
+                    >
+                      <Home
+                        className={`h-3.5 w-3.5 flex-shrink-0 ${
+                          esActivo
+                            ? 'text-cyan-600 dark:text-cyan-400'
+                            : esConvertido
+                              ? 'text-indigo-500 dark:text-indigo-400'
+                              : 'text-gray-500 dark:text-gray-400'
+                        }`}
+                      />
+                      <span
+                        className={`text-xs font-medium ${
+                          esActivo
+                            ? 'text-cyan-900 dark:text-cyan-100'
+                            : esConvertido
+                              ? 'text-indigo-900 dark:text-indigo-100'
+                              : 'text-gray-700 dark:text-gray-300'
+                        }`}
+                      >
+                        {interes.manzana_nombre ? `${interes.manzana_nombre} · ` : ''}Casa{' '}
+                        {interes.vivienda_numero}
+                      </span>
+                      {interes.vivienda_valor && (
+                        <div className='ml-auto flex items-baseline gap-1'>
+                          <span className='text-[10px] text-gray-500 dark:text-gray-400 font-medium'>
+                            Valor ref.
+                          </span>
+                          <span className='text-xs font-bold text-gray-900 dark:text-gray-100'>
+                            ${interes.vivienda_valor.toLocaleString('es-CO')}
+                          </span>
                         </div>
                       )}
                     </div>
-                  </div>
-                  <span
-                    className={`rounded-full px-2.5 py-0.5 text-[10px] font-semibold ${
-                      esActivo
-                        ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                        : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400'
-                    }`}
-                  >
-                    {esActivo ? '🟢 Activo' : '⚪ Descartado'}
-                  </span>
-                </div>
+                    </div>
+                  )}
 
-                {/* Vivienda (si existe) */}
-                {interes.vivienda_numero && (
-                  <div className={`mb-2.5 flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 ${
-                    esActivo
-                      ? 'bg-purple-50 dark:bg-purple-900/20'
-                      : 'bg-gray-100 dark:bg-gray-700/50'
-                  }`}>
-                    <Home className={`h-3.5 w-3.5 ${
-                      esActivo
-                        ? 'text-purple-600 dark:text-purple-400'
-                        : 'text-gray-500 dark:text-gray-400'
-                    }`} />
-                    <span className={`text-xs font-medium ${
-                      esActivo
-                        ? 'text-purple-900 dark:text-purple-100'
-                        : 'text-gray-700 dark:text-gray-300'
-                    }`}>
-                      {interes.manzana_nombre ? `${interes.manzana_nombre} - ` : ''}Casa {interes.vivienda_numero}
-                    </span>
-                    {interes.vivienda_valor && (
-                      <span className='ml-auto text-xs font-semibold text-gray-900 dark:text-gray-100'>
-                        ${interes.vivienda_valor.toLocaleString('es-CO')}
+                  {/* Notas originales del interés */}
+                  {interes.notas && (
+                    <div className='mb-2.5 flex items-start gap-1.5 rounded-lg bg-gray-50 dark:bg-gray-800/50 px-2.5 py-1.5'>
+                      <MessageSquare className='mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-gray-400 dark:text-gray-500' />
+                      <div className='flex-1 min-w-0'>
+                        <p className='text-[10px] font-semibold text-gray-400 dark:text-gray-500 mb-0.5'>
+                          Notas del interés
+                        </p>
+                        <p className='text-xs italic text-gray-600 dark:text-gray-400'>
+                          &quot;{interes.notas}&quot;
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Motivo del descarte — solo cuando está descartado */}
+                  {esDescartado && interes.motivo_descarte && (
+                    <div className='mb-2.5 flex items-start gap-1.5 rounded-lg bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800/50 px-2.5 py-1.5'>
+                      <X className='mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-red-400 dark:text-red-500' />
+                      <div className='flex-1 min-w-0'>
+                        <p className='text-[10px] font-semibold text-red-500 dark:text-red-400 mb-0.5'>
+                          Motivo del descarte
+                        </p>
+                        <p className='text-xs text-red-700 dark:text-red-300'>
+                          {interes.motivo_descarte}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Footer */}
+                  <div className='flex items-center justify-between gap-2 pt-2 border-t border-gray-100 dark:border-gray-700'>
+                    <div className='flex items-center gap-1.5 text-[10px] text-gray-400 dark:text-gray-500'>
+                      <Clock className='h-3 w-3' />
+                      <span>
+                        {formatDistanceToNow(new Date(interes.fecha_interes), {
+                          addSuffix: true,
+                          locale: es,
+                        })}
                       </span>
-                    )}
-                  </div>
-                )}
-
-                {/* Notas (si existen) */}
-                {interes.notas && (
-                  <div className='mb-2.5 flex items-start gap-1.5 rounded-lg bg-gray-50 px-2.5 py-1.5 dark:bg-gray-800/50'>
-                    <MessageSquare className='mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-purple-500' />
-                    <p className='flex-1 text-xs italic text-gray-600 dark:text-gray-400'>
-                      &quot;{interes.notas}&quot;
-                    </p>
-                  </div>
-                )}
-
-                {/* Footer: Fecha y Acciones */}
-                <div className='flex items-center justify-between'>
-                  <div className='flex items-center gap-1.5 text-[10px] text-gray-500 dark:text-gray-400'>
-                    <Clock className='h-3 w-3' />
-                    <span>
-                      {formatDistanceToNow(new Date(interes.fecha_interes), {
-                        addSuffix: true,
-                        locale: es,
-                      })}
-                    </span>
-                  </div>
-
-                  {/* Acciones solo para intereses activos */}
-                  {esActivo && (
-                    <div className='flex items-center gap-1.5'>
+                    </div>
+                    {esActivo && (
                       <button
-                        onClick={() => handleDescartar(interes.id)}
+                        onClick={() => abrirModalDescartar(interes)}
                         disabled={descartando === interes.id}
-                        className='inline-flex items-center gap-1 rounded-lg bg-red-100 px-2.5 py-1 text-[10px] font-medium text-red-700 hover:bg-red-200 transition-colors disabled:opacity-50 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-900/50'
+                        className='inline-flex items-center gap-1 rounded-lg bg-red-50 dark:bg-red-900/20 px-2.5 py-1 text-[10px] font-medium text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors disabled:opacity-50 border border-red-200 dark:border-red-800'
                       >
                         <X className='h-3 w-3' />
                         {descartando === interes.id ? 'Descartando...' : 'Descartar'}
                       </button>
-                      {/* TODO: Botón convertir a negociación */}
-                    </div>
-                  )}
+                    )}
+                    {esConvertido && (
+                      <span className='inline-flex items-center gap-1 text-[10px] font-medium text-indigo-600 dark:text-indigo-400'>
+                        <CheckCircle2 className='h-3.5 w-3.5' />
+                        Negociación iniciada
+                      </span>
+                    )}
+                  </div>
                 </div>
-              </div>
+              </motion.div>
             )
           })}
         </div>
       )}
     </div>
+
+    {/* Modal de confirmación para descartar interés */}
+    <ModalDescartarInteres
+      interes={interesADescartar}
+      descartando={descartando !== null}
+      onConfirmar={confirmarDescartar}
+      onCancelar={cancelarDescartar}
+    />
+  </>
   )
 }

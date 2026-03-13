@@ -8,6 +8,7 @@
  * 4. TanStack Query (cache y debouncing)
  */
 
+// @ts-nocheck — Example file with unimplemented stubs
 'use client'
 
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -32,12 +33,12 @@ export function FormularioViviendaEjemplo() {
     setError,
     formState: { errors, isValid },
   } = useForm<ViviendaFormData>({
-    resolver: zodResolver(viviendaFormSchema), // ← Validación Zod automática
+    resolver: zodResolver(viviendaFormSchema), // â† Validación Zod automática
     mode: 'onChange', // Validar mientras escribe
   })
 
   // ============================================================================
-  // 2. OBSERVAR CAMBIOS PARA VALIDACIONES ASÍNCRONAS
+  // 2. OBSERVAR CAMBIOS PARA VALIDACIONES ASÃNCRONAS
   // ============================================================================
 
   const formValues = watch() // Observa todos los campos
@@ -49,7 +50,7 @@ export function FormularioViviendaEjemplo() {
   })
 
   // ============================================================================
-  // 3. SUBMIT CON VALIDACIÓN COMPLETA
+  // 3. SUBMIT CON VALIDACIÃ“N COMPLETA
   // ============================================================================
 
   const onSubmit = async (data: ViviendaFormData) => {
@@ -68,12 +69,10 @@ export function FormularioViviendaEjemplo() {
           })
         })
 
-        console.log('Errores de validación:', validacion.errores)
         return
       }
 
       // TODO: Guardar en BD
-      console.log('✅ Datos válidos, guardar:', data)
 
       // Aquí llamarías a tu service para crear la vivienda
       // await viviendaService.create(data)
@@ -105,7 +104,7 @@ export function FormularioViviendaEjemplo() {
             className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
           />
 
-          {/* INDICADOR DE VALIDACIÓN ASÍNCRONA */}
+          {/* INDICADOR DE VALIDACIÃ“N ASÃNCRONA */}
           <div className="absolute right-3 top-1/2 -translate-y-1/2">
             {validationStatus.matricula.isValidating && (
               <Loader2 className="w-5 h-5 animate-spin text-blue-500" />
@@ -129,7 +128,7 @@ export function FormularioViviendaEjemplo() {
           </p>
         )}
 
-        {/* ERRORES ASÍNCRONOS (BD) */}
+        {/* ERRORES ASÃNCRONOS (BD) */}
         {validationStatus.matricula.error && (
           <p className="text-sm text-red-500 flex items-center gap-1">
             <AlertCircle className="w-4 h-4" />
@@ -193,7 +192,7 @@ export function FormularioViviendaEjemplo() {
 
       {/* Más campos... */}
 
-      {/* BOTÓN SUBMIT */}
+      {/* BOTÃ“N SUBMIT */}
       <div className="flex items-center justify-end gap-3">
         {/* Indicador de validaciones en progreso */}
         {validationStatus.isAnyValidating && (

@@ -6,7 +6,7 @@
  */
 
 import { MOTIVOS_VERSION_ERRONEA, MOTIVOS_VERSION_OBSOLETA } from '@/types/documento.types'
-import { CheckCircle, Package, RotateCcw, XCircle } from 'lucide-react'
+import { CheckCircle, Package, RotateCcw, XCircle, type LucideIcon } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { useEstadosVersionVivienda } from './useEstadosVersionVivienda'
 
@@ -29,7 +29,7 @@ interface ConfigEstado {
   titulo: string
   descripcion: string
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  icon: any
+  icon: LucideIcon
   color: string
   motivosPredef: string[]
   gradient: string

@@ -74,9 +74,6 @@ export function ProtectedRoute({
   children,
   loading = <LoadingPage />,
 }: ProtectedRouteProps) {
-  console.warn('⚠️ [SISTEMA ANTIGUO] ProtectedRoute ejecutado - ESTO NO DEBERÍA PASAR CON MIDDLEWARE')
-  console.warn('  Módulo:', modulo, '| Acción:', accion || acciones)
-
   const router = useRouter()
   const { perfil, loading: authLoading } = useAuth()
   const { puede, puedeAlguno, puedeTodos, permisosLoading } = usePermissions()
@@ -225,9 +222,6 @@ interface RequireViewProps {
 }
 
 export function RequireView({ modulo, redirectTo, children }: RequireViewProps) {
-  console.warn('⚠️ [SISTEMA ANTIGUO] RequireView ejecutado - ESTO NO DEBERÍA PASAR CON MIDDLEWARE')
-  console.warn('  Módulo:', modulo)
-
   return (
     <ProtectedRoute modulo={modulo} accion="ver" redirectTo={redirectTo}>
       {children}

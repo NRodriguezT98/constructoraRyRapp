@@ -132,34 +132,33 @@ export function PasoResumenNuevo({ formData, proyectoNombre, manzanaNombre, gast
               {/* Items de la sección */}
               <div className="space-y-2">
                 {section.items.map((item, itemIndex) => {
-                  const ItemIcon = item.icon
-
+                  const ItemIcon = 'icon' in item ? item.icon : null
                   return (
                     <div
                       key={itemIndex}
                       className={`flex items-start gap-2 py-1 ${
-                        item.highlight
+                        'highlight' in item && item.highlight
                           ? 'p-2 rounded-lg bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950/30 dark:to-amber-950/30 border border-orange-200 dark:border-orange-800'
                           : ''
                       }`}
                     >
                       {ItemIcon && (
                         <ItemIcon className={`w-4 h-4 flex-shrink-0 mt-0.5 ${
-                          item.highlight
+                          'highlight' in item && item.highlight
                             ? 'text-orange-600 dark:text-orange-400'
                             : 'text-gray-400 dark:text-gray-500'
                         }`} />
                       )}
                       <div className="flex-1 min-w-0">
                         <p className={`text-xs font-medium ${
-                          item.highlight
+                          'highlight' in item && item.highlight
                             ? 'text-orange-900 dark:text-orange-100'
                             : 'text-gray-500 dark:text-gray-400'
                         }`}>
                           {item.label}
                         </p>
                         <p className={`text-sm mt-0.5 ${
-                          item.highlight
+                          'highlight' in item && item.highlight
                             ? 'font-bold text-lg bg-gradient-to-br from-orange-600 to-amber-600 bg-clip-text text-transparent'
                             : 'font-semibold text-gray-900 dark:text-white'
                         }`}>

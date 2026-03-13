@@ -13,7 +13,7 @@ interface ArchivoSelectorProps {
   archivoSeleccionado: File | null
   errorArchivo: string | null
   isDragging: boolean
-  fileInputRef: RefObject<HTMLInputElement>
+  fileInputRef: RefObject<HTMLInputElement | null>
   onDragOver: (e: React.DragEvent<HTMLDivElement>) => void
   onDragLeave: (e: React.DragEvent<HTMLDivElement>) => void
   onDrop: (e: React.DragEvent<HTMLDivElement>) => void

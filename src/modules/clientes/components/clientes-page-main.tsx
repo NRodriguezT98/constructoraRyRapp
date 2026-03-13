@@ -24,15 +24,18 @@ import { construirURLCliente } from '@/lib/utils/slug.utils'
 import { ModalConfirmacion } from '@/shared'
 import { useVistaPreference } from '@/shared/hooks/useVistaPreference'
 
+import { ClientesEmpty } from './clientes-empty'
+import { ClientesSkeleton } from './clientes-skeleton'
+
 import {
     ClientesHeader,
     EstadisticasClientes,
     FiltrosClientes,
-    FormularioClienteContainer,
 } from '../components'
 import { ClientesTabla } from '../components/ClientesTabla'
+import { FormularioClienteContainer } from '../containers/formulario-cliente-container'
 import { useClientesList } from '../hooks'
-import type { ClienteResumen, EstadoCliente, OrigenCliente } from '../types'
+import type { ClienteResumen, EstadoCliente } from '../types'
 import { ClienteCardCompacta } from './cards/cliente-card-compacta'
 
 /**
@@ -53,14 +56,6 @@ export function ClientesPageMain({
   canView = true,
   isAdmin = false,
 }: ClientesPageMainProps = {}) {
-  console.log('👥 [CLIENTES MAIN] Client Component montado con permisos:', {
-    canCreate,
-    canEdit,
-    canDelete,
-    canView,
-    isAdmin,
-  })
-
   const router = useRouter()
 
   // ✅ REACT QUERY: Hook de lista con gestión de estado y paginación
@@ -98,12 +93,11 @@ export function ClientesPageMain({
   // Estados para filtros locales (compatibilidad UI) - Para los selects de la interfaz
   const [busqueda, setBusqueda] = useState('')
   const [estadoFiltro, setEstadoFiltro] = useState<EstadoCliente | 'Todos'>('Todos')
-  const [origenFiltro, setOrigenFiltro] = useState<OrigenCliente | 'Todos'>('Todos')
 
   // ⭐ SINCRONIZAR FILTROS LOCALES CON EL HOOK
   useEffect(() => {
     actualizarFiltros({
-      busqueda: busqueda,
+      busqueda,
       estado: estadoFiltro === 'Todos' ? [] : [estadoFiltro],
     })
   }, [busqueda, estadoFiltro, actualizarFiltros])
@@ -145,7 +139,10 @@ export function ClientesPageMain({
   const handleIniciarAsignacion = useCallback(
     (cliente: ClienteResumen) => {
       // Redirigir al detalle del cliente para crear negociación
-      const url = construirURLCliente(cliente.id, cliente.nombres, cliente.apellidos)
+      const url = construirURLCliente({
+        id: cliente.id,
+        nombre_completo: cliente.nombre_completo,
+      })
       router.push(`${url}?action=crear-negociacion`)
     },
     [router]
@@ -156,7 +153,7 @@ export function ClientesPageMain({
   // =====================================================
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50 to-violet-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950">
+    <div className="min-h-screen bg-gray-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 dark:bg-gray-950">
       {/* Animación simplificada para navegación instantánea */}
       <motion.div
         initial={{ opacity: 0 }}
@@ -182,10 +179,8 @@ export function ClientesPageMain({
         <FiltrosClientes
           busqueda={busqueda}
           estadoSeleccionado={estadoFiltro}
-          origenSeleccionado={origenFiltro}
           onBusquedaChange={setBusqueda}
           onEstadoChange={setEstadoFiltro}
-          onOrigenChange={setOrigenFiltro}
           totalResultados={totalFiltrados}
           totalClientes={estadisticas.total}
           vista={vista}
@@ -194,58 +189,20 @@ export function ClientesPageMain({
 
         {/* Contenido Principal: Cards o Tabla */}
         {isLoading ? (
-          // Loading skeleton
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {[...Array(6)].map((_, i) => (
-              <div
-                key={i}
-                className="h-64 bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 dark:from-gray-700 dark:via-gray-600 dark:to-gray-700 rounded-xl animate-pulse"
-              />
-            ))}
-          </div>
+          <ClientesSkeleton />
         ) : clientesFiltrados.length === 0 ? (
-          // Empty state
-          <div className="text-center py-16 backdrop-blur-xl bg-white/80 dark:bg-gray-800/80 rounded-2xl border border-gray-200/50 dark:border-gray-700/50 shadow-lg">
-            <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-purple-500/10 to-violet-500/10 flex items-center justify-center">
-              <svg className="w-10 h-10 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-              </svg>
-            </div>
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-              No se encontraron clientes
-            </h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
-              {busqueda || estadoFiltro !== 'Todos' || origenFiltro !== 'Todos'
-                ? 'Intenta ajustar los filtros de búsqueda'
-                : 'Comienza agregando tu primer cliente'}
-            </p>
-            {canCreate && (
-              <button
-                onClick={handleNuevoCliente}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-violet-600 hover:from-purple-700 hover:to-violet-700 text-white rounded-xl font-medium transition-all shadow-lg shadow-purple-500/30"
-              >
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                </svg>
-                Nuevo Cliente
-              </button>
-            )}
-          </div>
+          <ClientesEmpty
+            onNuevoCliente={canCreate ? handleNuevoCliente : undefined}
+            mensaje={
+              busqueda || estadoFiltro !== 'Todos'
+                ? 'No hay clientes que coincidan con los filtros'
+                : undefined
+            }
+          />
         ) : vista === 'cards' ? (
           // Vista de Cards con Paginación
           <div className="space-y-4">
-            {isLoading && clientes.length === 0 ? (
-              // Loading skeleton solo si NO HAY datos previos
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {[...Array(6)].map((_, i) => (
-                  <div
-                    key={i}
-                    className="h-64 bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 dark:from-gray-700 dark:via-gray-600 dark:to-gray-700 rounded-xl animate-pulse"
-                  />
-                ))}
-              </div>
-            ) : (
-              <>
+            <>
                 {/* Indicador sutil de recarga */}
                 {isFetching && clientes.length > 0 && (
                   <div className="flex items-center justify-center gap-2 py-2 backdrop-blur-xl bg-cyan-50/80 dark:bg-cyan-950/20 rounded-lg border border-cyan-200 dark:border-cyan-800">
@@ -260,7 +217,7 @@ export function ClientesPageMain({
                       key={cliente.id}
                       cliente={cliente}
                       vista="grid"
-                      tieneCedula={cliente.tiene_cedula}
+                      tieneCedula={false}
                       onVer={handleVerCliente}
                       onEditar={canEdit ? handleEditarCliente : undefined}
                       onEliminar={canDelete ? handleEliminarCliente : undefined}
@@ -268,8 +225,7 @@ export function ClientesPageMain({
                     />
                   ))}
                 </div>
-              </>
-            )}
+            </>
 
             {/* Paginación */}
             {totalPaginas > 1 && (
@@ -282,7 +238,7 @@ export function ClientesPageMain({
                   <select
                     value={itemsPorPagina}
                     onChange={(e) => cambiarItemsPorPagina(Number(e.target.value))}
-                    className="px-2 py-1 text-xs border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    className="px-2 py-1 text-xs border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-cyan-500"
                   >
                     <option value={12}>12 por página</option>
                     <option value={24}>24 por página</option>
@@ -342,6 +298,7 @@ export function ClientesPageMain({
                   onDelete={canDelete ? abrirModalEliminar : undefined}
                   canEdit={canEdit}
                   canDelete={canDelete}
+                  initialSorting={[{ id: 'vivienda', desc: false }]}
                 />
               </div>
             )}
@@ -352,7 +309,8 @@ export function ClientesPageMain({
       {/* Formulario Modal */}
       {(modalCrear || modalEditar) && (
         <FormularioClienteContainer
-          clienteSeleccionado={clienteEditar || null}
+          clienteId={clienteEditar?.id || null}
+          cliente={clienteEditar}
           isOpen={modalCrear || modalEditar}
           onClose={cerrarModal}
         />

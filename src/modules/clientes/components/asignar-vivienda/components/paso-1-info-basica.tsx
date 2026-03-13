@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { motion } from 'framer-motion'
 import {
@@ -107,7 +107,7 @@ export function Paso1InfoBasica({
             className="h-full bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 shadow-lg"
             initial={{ width: 0 }}
             animate={{ width: `${porcentajeProgreso}%` }}
-            transition={{ duration: 0.5, ease: 'easeOut' }}
+            transition={{ duration: 0.15, ease: 'easeOut' }}
           />
         </div>
       </div>

@@ -1,9 +1,9 @@
 /**
  * DocumentoUploadCompact
  *
- * ✅ Componente genérico para uploads rápidos en formularios
- * ✅ Versión compacta y minimalista del DocumentoUpload completo
- * ✅ Reutilizable en cualquier flujo que necesite subir documentos
+ * âœ… Componente genérico para uploads rápidos en formularios
+ * âœ… Versión compacta y minimalista del DocumentoUpload completo
+ * âœ… Reutilizable en cualquier flujo que necesite subir documentos
  *
  * Casos de uso:
  * - Adjuntos en formularios (como fuentes de pago)
@@ -90,15 +90,6 @@ export function DocumentoUploadCompact({
   const { user } = useAuth()
   const [progress, setProgress] = useState(0)
 
-  console.log('📤 [DocumentoUploadCompact] Render:', {
-    titulo,
-    entidadId,
-    tipoEntidad,
-    existingUrl,
-    disabled,
-    validaciones,
-  })
-
   // ============================================
   // VALIDACIONES
   // ============================================
@@ -136,8 +127,6 @@ export function DocumentoUploadCompact({
 
   const uploadMutation = useMutation({
     mutationFn: async (file: File) => {
-      console.log('📤 [DocumentoUploadCompact] Iniciando upload...')
-      console.log('📊 Datos:', { entidadId, tipoEntidad, categoriaId, titulo })
 
       // Validar usuario
       if (!user?.id) {
@@ -174,7 +163,6 @@ export function DocumentoUploadCompact({
 
       setProgress(100)
 
-      console.log('✅ [DocumentoUploadCompact] Upload exitoso:', documento.url_storage)
       return documento.url_storage
     },
     onSuccess: (url) => {
@@ -182,7 +170,7 @@ export function DocumentoUploadCompact({
       setTimeout(() => setProgress(0), 500)
     },
     onError: (error: Error) => {
-      console.error('❌ [DocumentoUploadCompact] Error:', error)
+      console.error('âŒ [DocumentoUploadCompact] Error:', error)
       onUploadError?.(error.message)
       setProgress(0)
     },
@@ -197,19 +185,18 @@ export function DocumentoUploadCompact({
       const file = e.target.files?.[0]
       if (!file) return
 
-      console.log('📁 Archivo seleccionado:', file.name, file.type, `${(file.size / 1024 / 1024).toFixed(2)} MB`)
 
       // Validar archivo
       const validacion = validarArchivo(file)
       if (!validacion.valid) {
-        alert(`❌ ${validacion.error}`)
+        alert(`âŒ ${validacion.error}`)
         e.target.value = ''
         return
       }
 
       // Validar condiciones previas
       if (!validacionesOk) {
-        alert(`❌ ${mensajeValidacion}`)
+        alert(`âŒ ${mensajeValidacion}`)
         e.target.value = ''
         return
       }
@@ -250,7 +237,7 @@ export function DocumentoUploadCompact({
             <div className="flex items-center gap-2">
               <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400" />
               <span className="text-sm font-medium text-green-900 dark:text-green-100">
-                Documento cargado ✓
+                Documento cargado âœ“
               </span>
             </div>
             {onRemove && (

@@ -121,6 +121,7 @@ export function useDocumentoUploadVivienda({
           categoriaId: selectedCategoriaNombre,
           titulo,
           descripcion: descripcion || undefined,
+          userId: user?.id || '',
         })
 
         // Resetear formulario

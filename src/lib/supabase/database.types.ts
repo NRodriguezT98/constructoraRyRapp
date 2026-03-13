@@ -26,6 +26,7 @@ export type Database = {
           monto: number
           negociacion_id: string
           notas: string | null
+          numero_recibo: number
           numero_referencia: string | null
           usuario_registro: string | null
         }
@@ -40,6 +41,7 @@ export type Database = {
           monto: number
           negociacion_id: string
           notas?: string | null
+          numero_recibo?: number
           numero_referencia?: string | null
           usuario_registro?: string | null
         }
@@ -54,6 +56,7 @@ export type Database = {
           monto?: number
           negociacion_id?: string
           notas?: string | null
+          numero_recibo?: number
           numero_referencia?: string | null
           usuario_registro?: string | null
         }
@@ -63,6 +66,13 @@ export type Database = {
             columns: ["fuente_pago_id"]
             isOneToOne: false
             referencedRelation: "fuentes_pago"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "abonos_historial_fuente_pago_id_fkey"
+            columns: ["fuente_pago_id"]
+            isOneToOne: false
+            referencedRelation: "fuentes_pago_con_entidad"
             referencedColumns: ["id"]
           },
           {
@@ -85,6 +95,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "v_negociaciones_completas"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "abonos_historial_negociacion_id_fkey"
+            columns: ["negociacion_id"]
+            isOneToOne: false
+            referencedRelation: "vista_descuentos_aplicados"
+            referencedColumns: ["negociacion_id"]
           },
         ]
       }
@@ -196,7 +213,7 @@ export type Database = {
           modulos_permitidos: string[]
           nombre: string
           orden: number | null
-          user_id: string
+          user_id: string | null
         }
         Insert: {
           color?: string | null
@@ -209,7 +226,7 @@ export type Database = {
           modulos_permitidos?: string[]
           nombre: string
           orden?: number | null
-          user_id: string
+          user_id?: string | null
         }
         Update: {
           color?: string | null
@@ -222,7 +239,7 @@ export type Database = {
           modulos_permitidos?: string[]
           nombre?: string
           orden?: number | null
-          user_id?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -310,13 +327,6 @@ export type Database = {
             foreignKeyName: "cliente_intereses_cliente_id_fkey"
             columns: ["cliente_id"]
             isOneToOne: false
-            referencedRelation: "vista_abonos_completos"
-            referencedColumns: ["cliente_id"]
-          },
-          {
-            foreignKeyName: "cliente_intereses_cliente_id_fkey"
-            columns: ["cliente_id"]
-            isOneToOne: false
             referencedRelation: "vista_clientes_resumen"
             referencedColumns: ["id"]
           },
@@ -347,6 +357,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "v_negociaciones_completas"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cliente_intereses_negociacion_id_fkey"
+            columns: ["negociacion_id"]
+            isOneToOne: false
+            referencedRelation: "vista_descuentos_aplicados"
+            referencedColumns: ["negociacion_id"]
           },
           {
             foreignKeyName: "cliente_intereses_proyecto_id_fkey"
@@ -634,17 +651,25 @@ export type Database = {
           es_importante: boolean | null
           es_version_actual: boolean
           estado: string
+          estado_documento: string | null
           etiquetas: string[] | null
           fecha_actualizacion: string | null
           fecha_creacion: string | null
           fecha_documento: string | null
+          fecha_obsolescencia: string | null
           fecha_vencimiento: string | null
+          fuente_pago_relacionada: string | null
           id: string
           metadata: Json | null
+          motivo_categoria: string | null
+          motivo_detalle: string | null
           nombre_archivo: string
           nombre_original: string
+          razon_obsolescencia: string | null
+          requisito_config_id: string | null
           subido_por: string
           tamano_bytes: number
+          tipo_documento: string | null
           tipo_mime: string
           titulo: string
           url_storage: string
@@ -659,17 +684,25 @@ export type Database = {
           es_importante?: boolean | null
           es_version_actual?: boolean
           estado?: string
+          estado_documento?: string | null
           etiquetas?: string[] | null
           fecha_actualizacion?: string | null
           fecha_creacion?: string | null
           fecha_documento?: string | null
+          fecha_obsolescencia?: string | null
           fecha_vencimiento?: string | null
+          fuente_pago_relacionada?: string | null
           id?: string
           metadata?: Json | null
+          motivo_categoria?: string | null
+          motivo_detalle?: string | null
           nombre_archivo: string
           nombre_original: string
+          razon_obsolescencia?: string | null
+          requisito_config_id?: string | null
           subido_por: string
           tamano_bytes: number
+          tipo_documento?: string | null
           tipo_mime: string
           titulo: string
           url_storage: string
@@ -684,17 +717,25 @@ export type Database = {
           es_importante?: boolean | null
           es_version_actual?: boolean
           estado?: string
+          estado_documento?: string | null
           etiquetas?: string[] | null
           fecha_actualizacion?: string | null
           fecha_creacion?: string | null
           fecha_documento?: string | null
+          fecha_obsolescencia?: string | null
           fecha_vencimiento?: string | null
+          fuente_pago_relacionada?: string | null
           id?: string
           metadata?: Json | null
+          motivo_categoria?: string | null
+          motivo_detalle?: string | null
           nombre_archivo?: string
           nombre_original?: string
+          razon_obsolescencia?: string | null
+          requisito_config_id?: string | null
           subido_por?: string
           tamano_bytes?: number
+          tipo_documento?: string | null
           tipo_mime?: string
           titulo?: string
           url_storage?: string
@@ -733,13 +774,6 @@ export type Database = {
             foreignKeyName: "documentos_cliente_cliente_id_fkey"
             columns: ["cliente_id"]
             isOneToOne: false
-            referencedRelation: "vista_abonos_completos"
-            referencedColumns: ["cliente_id"]
-          },
-          {
-            foreignKeyName: "documentos_cliente_cliente_id_fkey"
-            columns: ["cliente_id"]
-            isOneToOne: false
             referencedRelation: "vista_clientes_resumen"
             referencedColumns: ["id"]
           },
@@ -755,6 +789,34 @@ export type Database = {
             columns: ["documento_padre_id"]
             isOneToOne: false
             referencedRelation: "documentos_cliente"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documentos_cliente_fuente_pago_relacionada_fkey"
+            columns: ["fuente_pago_relacionada"]
+            isOneToOne: false
+            referencedRelation: "fuentes_pago"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documentos_cliente_fuente_pago_relacionada_fkey"
+            columns: ["fuente_pago_relacionada"]
+            isOneToOne: false
+            referencedRelation: "fuentes_pago_con_entidad"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documentos_cliente_requisito_config_id_fkey"
+            columns: ["requisito_config_id"]
+            isOneToOne: false
+            referencedRelation: "requisitos_fuentes_pago_config"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documentos_cliente_requisito_config_id_fkey"
+            columns: ["requisito_config_id"]
+            isOneToOne: false
+            referencedRelation: "vista_requisitos_con_orden_visual"
             referencedColumns: ["id"]
           },
           {
@@ -775,48 +837,48 @@ export type Database = {
       }
       documentos_pendientes: {
         Row: {
-          categoria_id: string
           cliente_id: string
           completado_por: string | null
+          es_obligatorio: boolean | null
           estado: string | null
           fecha_completado: string | null
           fecha_creacion: string | null
-          fecha_limite: string | null
           fuente_pago_id: string
           id: string
           metadata: Json | null
+          orden: number | null
           prioridad: string | null
           recordatorios_enviados: number | null
           tipo_documento: string
           ultima_notificacion: string | null
         }
         Insert: {
-          categoria_id: string
           cliente_id: string
           completado_por?: string | null
+          es_obligatorio?: boolean | null
           estado?: string | null
           fecha_completado?: string | null
           fecha_creacion?: string | null
-          fecha_limite?: string | null
           fuente_pago_id: string
           id?: string
           metadata?: Json | null
+          orden?: number | null
           prioridad?: string | null
           recordatorios_enviados?: number | null
           tipo_documento: string
           ultima_notificacion?: string | null
         }
         Update: {
-          categoria_id?: string
           cliente_id?: string
           completado_por?: string | null
+          es_obligatorio?: boolean | null
           estado?: string | null
           fecha_completado?: string | null
           fecha_creacion?: string | null
-          fecha_limite?: string | null
           fuente_pago_id?: string
           id?: string
           metadata?: Json | null
+          orden?: number | null
           prioridad?: string | null
           recordatorios_enviados?: number | null
           tipo_documento?: string
@@ -842,13 +904,6 @@ export type Database = {
             columns: ["cliente_id"]
             isOneToOne: false
             referencedRelation: "v_renuncias_pendientes"
-            referencedColumns: ["cliente_id"]
-          },
-          {
-            foreignKeyName: "documentos_pendientes_cliente_id_fkey"
-            columns: ["cliente_id"]
-            isOneToOne: false
-            referencedRelation: "vista_abonos_completos"
             referencedColumns: ["cliente_id"]
           },
           {
@@ -886,6 +941,13 @@ export type Database = {
             referencedRelation: "fuentes_pago"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "documentos_pendientes_fuente_pago_id_fkey"
+            columns: ["fuente_pago_id"]
+            isOneToOne: false
+            referencedRelation: "fuentes_pago_con_entidad"
+            referencedColumns: ["id"]
+          },
         ]
       }
       documentos_proyecto: {
@@ -903,6 +965,8 @@ export type Database = {
           fecha_vencimiento: string | null
           id: string
           metadata: Json | null
+          motivo_categoria: string | null
+          motivo_detalle: string | null
           motivo_estado: string | null
           nombre_archivo: string
           nombre_original: string
@@ -929,6 +993,8 @@ export type Database = {
           fecha_vencimiento?: string | null
           id?: string
           metadata?: Json | null
+          motivo_categoria?: string | null
+          motivo_detalle?: string | null
           motivo_estado?: string | null
           nombre_archivo: string
           nombre_original: string
@@ -955,6 +1021,8 @@ export type Database = {
           fecha_vencimiento?: string | null
           id?: string
           metadata?: Json | null
+          motivo_categoria?: string | null
+          motivo_detalle?: string | null
           motivo_estado?: string | null
           nombre_archivo?: string
           nombre_original?: string
@@ -1042,6 +1110,8 @@ export type Database = {
           fecha_vencimiento: string | null
           id: string
           metadata: Json | null
+          motivo_categoria: string | null
+          motivo_detalle: string | null
           motivo_estado: string | null
           nombre_archivo: string
           nombre_original: string
@@ -1069,6 +1139,8 @@ export type Database = {
           fecha_vencimiento?: string | null
           id?: string
           metadata?: Json | null
+          motivo_categoria?: string | null
+          motivo_detalle?: string | null
           motivo_estado?: string | null
           nombre_archivo: string
           nombre_original: string
@@ -1096,6 +1168,8 @@ export type Database = {
           fecha_vencimiento?: string | null
           id?: string
           metadata?: Json | null
+          motivo_categoria?: string | null
+          motivo_detalle?: string | null
           motivo_estado?: string | null
           nombre_archivo?: string
           nombre_original?: string
@@ -1188,17 +1262,92 @@ export type Database = {
           },
         ]
       }
+      entidades_financieras: {
+        Row: {
+          activo: boolean
+          codigo: string
+          codigo_superintendencia: string | null
+          color: string
+          created_at: string
+          created_by: string | null
+          direccion: string | null
+          email_contacto: string | null
+          id: string
+          logo_url: string | null
+          nit: string | null
+          nombre: string
+          notas: string | null
+          orden: number
+          razon_social: string | null
+          sitio_web: string | null
+          telefono: string | null
+          tipo: string
+          tipos_fuentes_aplicables: string[] | null
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          activo?: boolean
+          codigo: string
+          codigo_superintendencia?: string | null
+          color?: string
+          created_at?: string
+          created_by?: string | null
+          direccion?: string | null
+          email_contacto?: string | null
+          id?: string
+          logo_url?: string | null
+          nit?: string | null
+          nombre: string
+          notas?: string | null
+          orden?: number
+          razon_social?: string | null
+          sitio_web?: string | null
+          telefono?: string | null
+          tipo: string
+          tipos_fuentes_aplicables?: string[] | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          activo?: boolean
+          codigo?: string
+          codigo_superintendencia?: string | null
+          color?: string
+          created_at?: string
+          created_by?: string | null
+          direccion?: string | null
+          email_contacto?: string | null
+          id?: string
+          logo_url?: string | null
+          nit?: string | null
+          nombre?: string
+          notas?: string | null
+          orden?: number
+          razon_social?: string | null
+          sitio_web?: string | null
+          telefono?: string | null
+          tipo?: string
+          tipos_fuentes_aplicables?: string[] | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       fuentes_pago: {
         Row: {
           carta_aprobacion_url: string | null
           carta_asignacion_url: string | null
           entidad: string | null
+          entidad_financiera_id: string | null
           estado: string
           estado_documentacion: string | null
+          estado_fuente: string | null
           fecha_acta: string | null
           fecha_actualizacion: string
           fecha_completado: string | null
           fecha_creacion: string
+          fecha_inactivacion: string | null
           fecha_resolucion: string | null
           id: string
           monto_aprobado: number
@@ -1207,19 +1356,26 @@ export type Database = {
           numero_referencia: string | null
           permite_multiples_abonos: boolean
           porcentaje_completado: number | null
+          razon_inactivacion: string | null
+          reemplazada_por: string | null
           saldo_pendiente: number | null
           tipo: string
+          tipo_fuente_id: string
+          version_negociacion: number
         }
         Insert: {
           carta_aprobacion_url?: string | null
           carta_asignacion_url?: string | null
           entidad?: string | null
+          entidad_financiera_id?: string | null
           estado?: string
           estado_documentacion?: string | null
+          estado_fuente?: string | null
           fecha_acta?: string | null
           fecha_actualizacion?: string
           fecha_completado?: string | null
           fecha_creacion?: string
+          fecha_inactivacion?: string | null
           fecha_resolucion?: string | null
           id?: string
           monto_aprobado: number
@@ -1228,19 +1384,26 @@ export type Database = {
           numero_referencia?: string | null
           permite_multiples_abonos?: boolean
           porcentaje_completado?: number | null
+          razon_inactivacion?: string | null
+          reemplazada_por?: string | null
           saldo_pendiente?: number | null
           tipo: string
+          tipo_fuente_id: string
+          version_negociacion?: number
         }
         Update: {
           carta_aprobacion_url?: string | null
           carta_asignacion_url?: string | null
           entidad?: string | null
+          entidad_financiera_id?: string | null
           estado?: string
           estado_documentacion?: string | null
+          estado_fuente?: string | null
           fecha_acta?: string | null
           fecha_actualizacion?: string
           fecha_completado?: string | null
           fecha_creacion?: string
+          fecha_inactivacion?: string | null
           fecha_resolucion?: string | null
           id?: string
           monto_aprobado?: number
@@ -1249,10 +1412,35 @@ export type Database = {
           numero_referencia?: string | null
           permite_multiples_abonos?: boolean
           porcentaje_completado?: number | null
+          razon_inactivacion?: string | null
+          reemplazada_por?: string | null
           saldo_pendiente?: number | null
           tipo?: string
+          tipo_fuente_id?: string
+          version_negociacion?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "fk_fuentes_pago_tipo_fuente"
+            columns: ["tipo_fuente_id"]
+            isOneToOne: false
+            referencedRelation: "tipos_fuentes_pago"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fuentes_pago_entidad_financiera_id_fkey"
+            columns: ["entidad_financiera_id"]
+            isOneToOne: false
+            referencedRelation: "entidades_financieras"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fuentes_pago_entidad_financiera_id_fkey"
+            columns: ["entidad_financiera_id"]
+            isOneToOne: false
+            referencedRelation: "vista_entidades_con_fuentes"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "fuentes_pago_negociacion_id_fkey"
             columns: ["negociacion_id"]
@@ -1274,7 +1462,67 @@ export type Database = {
             referencedRelation: "v_negociaciones_completas"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "fuentes_pago_negociacion_id_fkey"
+            columns: ["negociacion_id"]
+            isOneToOne: false
+            referencedRelation: "vista_descuentos_aplicados"
+            referencedColumns: ["negociacion_id"]
+          },
+          {
+            foreignKeyName: "fuentes_pago_reemplazada_por_fkey"
+            columns: ["reemplazada_por"]
+            isOneToOne: false
+            referencedRelation: "fuentes_pago"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fuentes_pago_reemplazada_por_fkey"
+            columns: ["reemplazada_por"]
+            isOneToOne: false
+            referencedRelation: "fuentes_pago_con_entidad"
+            referencedColumns: ["id"]
+          },
         ]
+      }
+      fuentes_pago_requisitos_config: {
+        Row: {
+          created_at: string | null
+          descripcion: string | null
+          es_obligatorio: boolean | null
+          icono: string | null
+          id: string
+          orden: number | null
+          se_valida_en: string | null
+          tipo_documento: string
+          tipo_fuente: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          descripcion?: string | null
+          es_obligatorio?: boolean | null
+          icono?: string | null
+          id?: string
+          orden?: number | null
+          se_valida_en?: string | null
+          tipo_documento: string
+          tipo_fuente: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          descripcion?: string | null
+          es_obligatorio?: boolean | null
+          icono?: string | null
+          id?: string
+          orden?: number | null
+          se_valida_en?: string | null
+          tipo_documento?: string
+          tipo_fuente?: string
+          updated_at?: string | null
+        }
+        Relationships: []
       }
       manzanas: {
         Row: {
@@ -1334,18 +1582,25 @@ export type Database = {
           fecha_creacion: string
           fecha_negociacion: string
           fecha_renuncia_efectiva: string | null
+          fecha_ultima_modificacion: string | null
           id: string
+          motivo_descuento: string | null
           notas: string | null
           otros_documentos: Json | null
+          porcentaje_descuento: number | null
           porcentaje_pagado: number | null
           promesa_compraventa_url: string | null
           promesa_firmada_url: string | null
           saldo_pendiente: number | null
+          tipo_descuento: string | null
           total_abonado: number | null
           total_fuentes_pago: number | null
           usuario_creacion: string | null
+          valor_escritura_publica: number | null
           valor_negociado: number
           valor_total: number | null
+          version_actual: number
+          version_lock: number
           vivienda_id: string
         }
         Insert: {
@@ -1359,18 +1614,25 @@ export type Database = {
           fecha_creacion?: string
           fecha_negociacion?: string
           fecha_renuncia_efectiva?: string | null
+          fecha_ultima_modificacion?: string | null
           id?: string
+          motivo_descuento?: string | null
           notas?: string | null
           otros_documentos?: Json | null
+          porcentaje_descuento?: number | null
           porcentaje_pagado?: number | null
           promesa_compraventa_url?: string | null
           promesa_firmada_url?: string | null
           saldo_pendiente?: number | null
+          tipo_descuento?: string | null
           total_abonado?: number | null
           total_fuentes_pago?: number | null
           usuario_creacion?: string | null
+          valor_escritura_publica?: number | null
           valor_negociado: number
           valor_total?: number | null
+          version_actual?: number
+          version_lock?: number
           vivienda_id: string
         }
         Update: {
@@ -1384,18 +1646,25 @@ export type Database = {
           fecha_creacion?: string
           fecha_negociacion?: string
           fecha_renuncia_efectiva?: string | null
+          fecha_ultima_modificacion?: string | null
           id?: string
+          motivo_descuento?: string | null
           notas?: string | null
           otros_documentos?: Json | null
+          porcentaje_descuento?: number | null
           porcentaje_pagado?: number | null
           promesa_compraventa_url?: string | null
           promesa_firmada_url?: string | null
           saldo_pendiente?: number | null
+          tipo_descuento?: string | null
           total_abonado?: number | null
           total_fuentes_pago?: number | null
           usuario_creacion?: string | null
+          valor_escritura_publica?: number | null
           valor_negociado?: number
           valor_total?: number | null
+          version_actual?: number
+          version_lock?: number
           vivienda_id?: string
         }
         Relationships: [
@@ -1418,13 +1687,6 @@ export type Database = {
             columns: ["cliente_id"]
             isOneToOne: false
             referencedRelation: "v_renuncias_pendientes"
-            referencedColumns: ["cliente_id"]
-          },
-          {
-            foreignKeyName: "negociaciones_cliente_id_fkey"
-            columns: ["cliente_id"]
-            isOneToOne: false
-            referencedRelation: "vista_abonos_completos"
             referencedColumns: ["cliente_id"]
           },
           {
@@ -1468,6 +1730,89 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "viviendas"
             referencedColumns: ["id"]
+          },
+        ]
+      }
+      negociaciones_historial: {
+        Row: {
+          campos_modificados: string[] | null
+          datos_anteriores: Json | null
+          datos_negociacion: Json
+          datos_nuevos: Json | null
+          documentos_snapshot: Json | null
+          fecha_cambio: string
+          fuentes_pago_snapshot: Json | null
+          id: string
+          negociacion_id: string
+          razon_cambio: string
+          tipo_cambio: string
+          usuario_email: string | null
+          usuario_id: string | null
+          usuario_nombre: string | null
+          version: number
+        }
+        Insert: {
+          campos_modificados?: string[] | null
+          datos_anteriores?: Json | null
+          datos_negociacion: Json
+          datos_nuevos?: Json | null
+          documentos_snapshot?: Json | null
+          fecha_cambio?: string
+          fuentes_pago_snapshot?: Json | null
+          id?: string
+          negociacion_id: string
+          razon_cambio: string
+          tipo_cambio: string
+          usuario_email?: string | null
+          usuario_id?: string | null
+          usuario_nombre?: string | null
+          version: number
+        }
+        Update: {
+          campos_modificados?: string[] | null
+          datos_anteriores?: Json | null
+          datos_negociacion?: Json
+          datos_nuevos?: Json | null
+          documentos_snapshot?: Json | null
+          fecha_cambio?: string
+          fuentes_pago_snapshot?: Json | null
+          id?: string
+          negociacion_id?: string
+          razon_cambio?: string
+          tipo_cambio?: string
+          usuario_email?: string | null
+          usuario_id?: string | null
+          usuario_nombre?: string | null
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "negociaciones_historial_negociacion_id_fkey"
+            columns: ["negociacion_id"]
+            isOneToOne: false
+            referencedRelation: "negociaciones"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "negociaciones_historial_negociacion_id_fkey"
+            columns: ["negociacion_id"]
+            isOneToOne: false
+            referencedRelation: "negociaciones_con_version_actual"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "negociaciones_historial_negociacion_id_fkey"
+            columns: ["negociacion_id"]
+            isOneToOne: false
+            referencedRelation: "v_negociaciones_completas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "negociaciones_historial_negociacion_id_fkey"
+            columns: ["negociacion_id"]
+            isOneToOne: false
+            referencedRelation: "vista_descuentos_aplicados"
+            referencedColumns: ["negociacion_id"]
           },
         ]
       }
@@ -1534,6 +1879,195 @@ export type Database = {
             columns: ["negociacion_id"]
             isOneToOne: false
             referencedRelation: "v_negociaciones_completas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "negociaciones_versiones_negociacion_id_fkey"
+            columns: ["negociacion_id"]
+            isOneToOne: false
+            referencedRelation: "vista_descuentos_aplicados"
+            referencedColumns: ["negociacion_id"]
+          },
+        ]
+      }
+      notas_historial_cliente: {
+        Row: {
+          actualizado_por: string | null
+          cliente_id: string
+          contenido: string
+          creado_por: string
+          es_importante: boolean | null
+          fecha_actualizacion: string | null
+          fecha_creacion: string | null
+          id: string
+          titulo: string
+        }
+        Insert: {
+          actualizado_por?: string | null
+          cliente_id: string
+          contenido: string
+          creado_por: string
+          es_importante?: boolean | null
+          fecha_actualizacion?: string | null
+          fecha_creacion?: string | null
+          id?: string
+          titulo: string
+        }
+        Update: {
+          actualizado_por?: string | null
+          cliente_id?: string
+          contenido?: string
+          creado_por?: string
+          es_importante?: boolean | null
+          fecha_actualizacion?: string | null
+          fecha_creacion?: string | null
+          id?: string
+          titulo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notas_historial_cliente_actualizado_por_fkey"
+            columns: ["actualizado_por"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notas_historial_cliente_actualizado_por_fkey"
+            columns: ["actualizado_por"]
+            isOneToOne: false
+            referencedRelation: "vista_usuarios_completos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notas_historial_cliente_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notas_historial_cliente_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "v_negociaciones_completas"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "notas_historial_cliente_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "v_renuncias_pendientes"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "notas_historial_cliente_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "vista_clientes_resumen"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notas_historial_cliente_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "vista_viviendas_completas"
+            referencedColumns: ["cliente_id_data"]
+          },
+          {
+            foreignKeyName: "notas_historial_cliente_creado_por_fkey"
+            columns: ["creado_por"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notas_historial_cliente_creado_por_fkey"
+            columns: ["creado_por"]
+            isOneToOne: false
+            referencedRelation: "vista_usuarios_completos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pasos_fuente_pago: {
+        Row: {
+          categoria_documento_requerida: string | null
+          completado: boolean
+          completado_automaticamente: boolean
+          descripcion: string | null
+          documento_id: string | null
+          fecha_actualizacion: string
+          fecha_completado: string | null
+          fecha_creacion: string
+          fuente_pago_id: string
+          id: string
+          nivel_validacion: string
+          observaciones: string | null
+          orden: number
+          paso: string
+          tipo_documento_requerido: string | null
+          titulo: string
+          usuario_completado: string | null
+        }
+        Insert: {
+          categoria_documento_requerida?: string | null
+          completado?: boolean
+          completado_automaticamente?: boolean
+          descripcion?: string | null
+          documento_id?: string | null
+          fecha_actualizacion?: string
+          fecha_completado?: string | null
+          fecha_creacion?: string
+          fuente_pago_id: string
+          id?: string
+          nivel_validacion: string
+          observaciones?: string | null
+          orden?: number
+          paso: string
+          tipo_documento_requerido?: string | null
+          titulo: string
+          usuario_completado?: string | null
+        }
+        Update: {
+          categoria_documento_requerida?: string | null
+          completado?: boolean
+          completado_automaticamente?: boolean
+          descripcion?: string | null
+          documento_id?: string | null
+          fecha_actualizacion?: string
+          fecha_completado?: string | null
+          fecha_creacion?: string
+          fuente_pago_id?: string
+          id?: string
+          nivel_validacion?: string
+          observaciones?: string | null
+          orden?: number
+          paso?: string
+          tipo_documento_requerido?: string | null
+          titulo?: string
+          usuario_completado?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pasos_fuente_pago_documento_id_fkey"
+            columns: ["documento_id"]
+            isOneToOne: false
+            referencedRelation: "documentos_cliente"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pasos_fuente_pago_fuente_pago_id_fkey"
+            columns: ["fuente_pago_id"]
+            isOneToOne: false
+            referencedRelation: "fuentes_pago"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pasos_fuente_pago_fuente_pago_id_fkey"
+            columns: ["fuente_pago_id"]
+            isOneToOne: false
+            referencedRelation: "fuentes_pago_con_entidad"
             referencedColumns: ["id"]
           },
         ]
@@ -1610,10 +2144,53 @@ export type Database = {
         }
         Relationships: []
       }
+      plantillas_requisitos_documentos: {
+        Row: {
+          created_at: string | null
+          descripcion: string | null
+          es_obligatorio: boolean | null
+          es_sistema: boolean | null
+          icono: string | null
+          id: string
+          nombre: string
+          orden: number | null
+          se_valida_en: string | null
+          tipo_documento: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          descripcion?: string | null
+          es_obligatorio?: boolean | null
+          es_sistema?: boolean | null
+          icono?: string | null
+          id?: string
+          nombre: string
+          orden?: number | null
+          se_valida_en?: string | null
+          tipo_documento: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          descripcion?: string | null
+          es_obligatorio?: boolean | null
+          es_sistema?: boolean | null
+          icono?: string | null
+          id?: string
+          nombre?: string
+          orden?: number | null
+          se_valida_en?: string | null
+          tipo_documento?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       procesos_negociacion: {
         Row: {
           depende_de: string[] | null
           descripcion: string | null
+          documentos_metadata: Json | null
           documentos_requeridos: Json | null
           documentos_urls: Json | null
           es_obligatorio: boolean
@@ -1635,6 +2212,7 @@ export type Database = {
         Insert: {
           depende_de?: string[] | null
           descripcion?: string | null
+          documentos_metadata?: Json | null
           documentos_requeridos?: Json | null
           documentos_urls?: Json | null
           es_obligatorio?: boolean
@@ -1656,6 +2234,7 @@ export type Database = {
         Update: {
           depende_de?: string[] | null
           descripcion?: string | null
+          documentos_metadata?: Json | null
           documentos_requeridos?: Json | null
           documentos_urls?: Json | null
           es_obligatorio?: boolean
@@ -1695,6 +2274,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "v_negociaciones_completas"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "procesos_negociacion_negociacion_id_fkey"
+            columns: ["negociacion_id"]
+            isOneToOne: false
+            referencedRelation: "vista_descuentos_aplicados"
+            referencedColumns: ["negociacion_id"]
           },
         ]
       }
@@ -1851,6 +2437,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "renuncias_negociacion_id_fkey"
+            columns: ["negociacion_id"]
+            isOneToOne: false
+            referencedRelation: "vista_descuentos_aplicados"
+            referencedColumns: ["negociacion_id"]
+          },
+          {
             foreignKeyName: "renuncias_vivienda_id_fkey"
             columns: ["vivienda_id"]
             isOneToOne: false
@@ -1879,6 +2472,209 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      requisitos_fuentes_pago_config: {
+        Row: {
+          activo: boolean
+          alcance: string | null
+          categoria_documento: string | null
+          descripcion: string | null
+          fecha_actualizacion: string
+          fecha_creacion: string
+          fuentes_aplicables: string[] | null
+          id: string
+          instrucciones: string | null
+          nivel_validacion: string
+          orden: number
+          paso_identificador: string
+          prerrequisitos: string[] | null
+          tipo_documento_sugerido: string | null
+          tipo_fuente: string
+          titulo: string
+          usuario_actualizacion: string | null
+          usuario_creacion: string | null
+          version: number
+        }
+        Insert: {
+          activo?: boolean
+          alcance?: string | null
+          categoria_documento?: string | null
+          descripcion?: string | null
+          fecha_actualizacion?: string
+          fecha_creacion?: string
+          fuentes_aplicables?: string[] | null
+          id?: string
+          instrucciones?: string | null
+          nivel_validacion: string
+          orden?: number
+          paso_identificador: string
+          prerrequisitos?: string[] | null
+          tipo_documento_sugerido?: string | null
+          tipo_fuente: string
+          titulo: string
+          usuario_actualizacion?: string | null
+          usuario_creacion?: string | null
+          version?: number
+        }
+        Update: {
+          activo?: boolean
+          alcance?: string | null
+          categoria_documento?: string | null
+          descripcion?: string | null
+          fecha_actualizacion?: string
+          fecha_creacion?: string
+          fuentes_aplicables?: string[] | null
+          id?: string
+          instrucciones?: string | null
+          nivel_validacion?: string
+          orden?: number
+          paso_identificador?: string
+          prerrequisitos?: string[] | null
+          tipo_documento_sugerido?: string | null
+          tipo_fuente?: string
+          titulo?: string
+          usuario_actualizacion?: string | null
+          usuario_creacion?: string | null
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_requisitos_categoria_documento"
+            columns: ["categoria_documento"]
+            isOneToOne: false
+            referencedRelation: "categorias_documento"
+            referencedColumns: ["nombre"]
+          },
+          {
+            foreignKeyName: "fk_requisitos_categoria_documento"
+            columns: ["categoria_documento"]
+            isOneToOne: false
+            referencedRelation: "vista_documentos_vivienda"
+            referencedColumns: ["categoria_nombre"]
+          },
+        ]
+      }
+      tipo_documento_mapping: {
+        Row: {
+          activo: boolean | null
+          alias_legible: string
+          alias_sistema: string
+          categoria: string | null
+          descripcion: string | null
+          fecha_creacion: string | null
+          id: string
+        }
+        Insert: {
+          activo?: boolean | null
+          alias_legible: string
+          alias_sistema: string
+          categoria?: string | null
+          descripcion?: string | null
+          fecha_creacion?: string | null
+          id?: string
+        }
+        Update: {
+          activo?: boolean | null
+          alias_legible?: string
+          alias_sistema?: string
+          categoria?: string | null
+          descripcion?: string | null
+          fecha_creacion?: string | null
+          id?: string
+        }
+        Relationships: []
+      }
+      tipos_fuente_plantillas: {
+        Row: {
+          created_at: string | null
+          es_obligatorio_personalizado: boolean | null
+          id: string
+          orden_personalizado: number | null
+          plantilla_id: string
+          tipo_fuente: string
+        }
+        Insert: {
+          created_at?: string | null
+          es_obligatorio_personalizado?: boolean | null
+          id?: string
+          orden_personalizado?: number | null
+          plantilla_id: string
+          tipo_fuente: string
+        }
+        Update: {
+          created_at?: string | null
+          es_obligatorio_personalizado?: boolean | null
+          id?: string
+          orden_personalizado?: number | null
+          plantilla_id?: string
+          tipo_fuente?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tipos_fuente_plantillas_plantilla_id_fkey"
+            columns: ["plantilla_id"]
+            isOneToOne: false
+            referencedRelation: "plantillas_requisitos_documentos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tipos_fuentes_pago: {
+        Row: {
+          activo: boolean
+          codigo: string
+          color: string
+          configuracion_campos: Json | null
+          created_at: string
+          created_by: string | null
+          descripcion: string | null
+          es_subsidio: boolean
+          icono: string
+          id: string
+          nombre: string
+          orden: number
+          permite_multiples_abonos: boolean
+          requiere_entidad: boolean
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          activo?: boolean
+          codigo: string
+          color?: string
+          configuracion_campos?: Json | null
+          created_at?: string
+          created_by?: string | null
+          descripcion?: string | null
+          es_subsidio?: boolean
+          icono?: string
+          id?: string
+          nombre: string
+          orden?: number
+          permite_multiples_abonos?: boolean
+          requiere_entidad?: boolean
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          activo?: boolean
+          codigo?: string
+          color?: string
+          configuracion_campos?: Json | null
+          created_at?: string
+          created_by?: string | null
+          descripcion?: string | null
+          es_subsidio?: boolean
+          icono?: string
+          id?: string
+          nombre?: string
+          orden?: number
+          permite_multiples_abonos?: boolean
+          requiere_entidad?: boolean
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
       }
       usuarios: {
         Row: {
@@ -2101,6 +2897,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "viviendas_negociacion_id_fkey"
+            columns: ["negociacion_id"]
+            isOneToOne: false
+            referencedRelation: "vista_descuentos_aplicados"
+            referencedColumns: ["negociacion_id"]
+          },
+          {
             foreignKeyName: "viviendas_reactivada_por_fkey"
             columns: ["reactivada_por"]
             isOneToOne: false
@@ -2285,6 +3088,97 @@ export type Database = {
       }
     }
     Views: {
+      fuentes_pago_con_entidad: {
+        Row: {
+          carta_aprobacion_url: string | null
+          carta_asignacion_url: string | null
+          entidad: string | null
+          entidad_codigo: string | null
+          entidad_display: string | null
+          entidad_financiera_id: string | null
+          entidad_nombre: string | null
+          entidad_tipo: string | null
+          estado: string | null
+          estado_documentacion: string | null
+          estado_fuente: string | null
+          fecha_acta: string | null
+          fecha_actualizacion: string | null
+          fecha_completado: string | null
+          fecha_creacion: string | null
+          fecha_inactivacion: string | null
+          fecha_resolucion: string | null
+          id: string | null
+          monto_aprobado: number | null
+          monto_recibido: number | null
+          negociacion_id: string | null
+          numero_referencia: string | null
+          permite_multiples_abonos: boolean | null
+          porcentaje_completado: number | null
+          razon_inactivacion: string | null
+          reemplazada_por: string | null
+          saldo_pendiente: number | null
+          tipo: string | null
+          version_negociacion: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fuentes_pago_entidad_financiera_id_fkey"
+            columns: ["entidad_financiera_id"]
+            isOneToOne: false
+            referencedRelation: "entidades_financieras"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fuentes_pago_entidad_financiera_id_fkey"
+            columns: ["entidad_financiera_id"]
+            isOneToOne: false
+            referencedRelation: "vista_entidades_con_fuentes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fuentes_pago_negociacion_id_fkey"
+            columns: ["negociacion_id"]
+            isOneToOne: false
+            referencedRelation: "negociaciones"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fuentes_pago_negociacion_id_fkey"
+            columns: ["negociacion_id"]
+            isOneToOne: false
+            referencedRelation: "negociaciones_con_version_actual"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fuentes_pago_negociacion_id_fkey"
+            columns: ["negociacion_id"]
+            isOneToOne: false
+            referencedRelation: "v_negociaciones_completas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fuentes_pago_negociacion_id_fkey"
+            columns: ["negociacion_id"]
+            isOneToOne: false
+            referencedRelation: "vista_descuentos_aplicados"
+            referencedColumns: ["negociacion_id"]
+          },
+          {
+            foreignKeyName: "fuentes_pago_reemplazada_por_fkey"
+            columns: ["reemplazada_por"]
+            isOneToOne: false
+            referencedRelation: "fuentes_pago"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fuentes_pago_reemplazada_por_fkey"
+            columns: ["reemplazada_por"]
+            isOneToOne: false
+            referencedRelation: "fuentes_pago_con_entidad"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       intereses_completos: {
         Row: {
           cliente_apellido: string | null
@@ -2345,13 +3239,6 @@ export type Database = {
             foreignKeyName: "cliente_intereses_cliente_id_fkey"
             columns: ["cliente_id"]
             isOneToOne: false
-            referencedRelation: "vista_abonos_completos"
-            referencedColumns: ["cliente_id"]
-          },
-          {
-            foreignKeyName: "cliente_intereses_cliente_id_fkey"
-            columns: ["cliente_id"]
-            isOneToOne: false
             referencedRelation: "vista_clientes_resumen"
             referencedColumns: ["id"]
           },
@@ -2382,6 +3269,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "v_negociaciones_completas"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cliente_intereses_negociacion_id_fkey"
+            columns: ["negociacion_id"]
+            isOneToOne: false
+            referencedRelation: "vista_descuentos_aplicados"
+            referencedColumns: ["negociacion_id"]
           },
           {
             foreignKeyName: "cliente_intereses_proyecto_id_fkey"
@@ -2486,13 +3380,6 @@ export type Database = {
             columns: ["cliente_id"]
             isOneToOne: false
             referencedRelation: "v_renuncias_pendientes"
-            referencedColumns: ["cliente_id"]
-          },
-          {
-            foreignKeyName: "negociaciones_cliente_id_fkey"
-            columns: ["cliente_id"]
-            isOneToOne: false
-            referencedRelation: "vista_abonos_completos"
             referencedColumns: ["cliente_id"]
           },
           {
@@ -2630,7 +3517,6 @@ export type Database = {
           cliente_id: string | null
           cliente_nombres: string | null
           cliente_numero_documento: string | null
-          comprobante_url: string | null
           fecha_abono: string | null
           fecha_actualizacion: string | null
           fecha_creacion: string | null
@@ -2644,6 +3530,7 @@ export type Database = {
           negociacion_estado: string | null
           negociacion_id: string | null
           notas: string | null
+          numero_recibo: number | null
           numero_referencia: string | null
           proyecto_id: string | null
           proyecto_nombre: string | null
@@ -2657,6 +3544,13 @@ export type Database = {
             columns: ["fuente_pago_id"]
             isOneToOne: false
             referencedRelation: "fuentes_pago"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "abonos_historial_fuente_pago_id_fkey"
+            columns: ["fuente_pago_id"]
+            isOneToOne: false
+            referencedRelation: "fuentes_pago_con_entidad"
             referencedColumns: ["id"]
           },
           {
@@ -2679,6 +3573,48 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "v_negociaciones_completas"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "abonos_historial_negociacion_id_fkey"
+            columns: ["negociacion_id"]
+            isOneToOne: false
+            referencedRelation: "vista_descuentos_aplicados"
+            referencedColumns: ["negociacion_id"]
+          },
+          {
+            foreignKeyName: "negociaciones_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "negociaciones_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "v_negociaciones_completas"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "negociaciones_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "v_renuncias_pendientes"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "negociaciones_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "vista_clientes_resumen"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "negociaciones_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "vista_viviendas_completas"
+            referencedColumns: ["cliente_id_data"]
           },
         ]
       }
@@ -2760,6 +3696,48 @@ export type Database = {
           tipo_documento?: string | null
           total_intereses?: never
           total_negociaciones?: never
+        }
+        Relationships: []
+      }
+      vista_descuentos_aplicados: {
+        Row: {
+          cliente: string | null
+          descuento_aplicado: number | null
+          diferencia_notarial: number | null
+          estado: string | null
+          fecha_negociacion: string | null
+          manzana: string | null
+          motivo_descuento: string | null
+          negociacion_id: string | null
+          porcentaje_descuento: number | null
+          proyecto: string | null
+          tipo_descuento: string | null
+          valor_escritura_publica: number | null
+          valor_final: number | null
+          valor_original: number | null
+          vivienda: string | null
+        }
+        Relationships: []
+      }
+      vista_documentos_pendientes_fuentes: {
+        Row: {
+          alcance: string | null
+          cliente_id: string | null
+          descripcion: string | null
+          entidad: string | null
+          estado: string | null
+          fecha_calculo: string | null
+          fecha_creacion: string | null
+          fuente_pago_id: string | null
+          metadata: Json | null
+          monto_aprobado: number | null
+          nivel_validacion: string | null
+          orden: number | null
+          prioridad: string | null
+          requisito_config_id: string | null
+          tipo_documento: string | null
+          tipo_documento_sistema: string | null
+          tipo_fuente: string | null
         }
         Relationships: []
       }
@@ -2889,6 +3867,21 @@ export type Database = {
           },
         ]
       }
+      vista_entidades_con_fuentes: {
+        Row: {
+          activo: boolean | null
+          codigo: string | null
+          color: string | null
+          fuentes_aplicables_codigos: string[] | null
+          fuentes_aplicables_nombres: string[] | null
+          id: string | null
+          nombre: string | null
+          orden: number | null
+          tipo: string | null
+          tipos_fuentes_aplicables: string[] | null
+        }
+        Relationships: []
+      }
       vista_manzanas_disponibilidad: {
         Row: {
           id: string | null
@@ -2920,6 +3913,87 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "vista_abonos_completos"
             referencedColumns: ["proyecto_id"]
+          },
+        ]
+      }
+      vista_requisitos_con_orden_visual: {
+        Row: {
+          activo: boolean | null
+          alcance: string | null
+          categoria_documento: string | null
+          descripcion: string | null
+          fecha_actualizacion: string | null
+          fecha_creacion: string | null
+          fuentes_aplicables: string[] | null
+          id: string | null
+          instrucciones: string | null
+          nivel_validacion: string | null
+          orden: number | null
+          paso_identificador: string | null
+          prerrequisitos: string[] | null
+          tipo_documento_sugerido: string | null
+          tipo_fuente: string | null
+          titulo: string | null
+          usuario_actualizacion: string | null
+          usuario_creacion: string | null
+          version: number | null
+        }
+        Insert: {
+          activo?: boolean | null
+          alcance?: string | null
+          categoria_documento?: string | null
+          descripcion?: string | null
+          fecha_actualizacion?: string | null
+          fecha_creacion?: string | null
+          fuentes_aplicables?: string[] | null
+          id?: string | null
+          instrucciones?: string | null
+          nivel_validacion?: string | null
+          orden?: number | null
+          paso_identificador?: string | null
+          prerrequisitos?: string[] | null
+          tipo_documento_sugerido?: string | null
+          tipo_fuente?: string | null
+          titulo?: string | null
+          usuario_actualizacion?: string | null
+          usuario_creacion?: string | null
+          version?: number | null
+        }
+        Update: {
+          activo?: boolean | null
+          alcance?: string | null
+          categoria_documento?: string | null
+          descripcion?: string | null
+          fecha_actualizacion?: string | null
+          fecha_creacion?: string | null
+          fuentes_aplicables?: string[] | null
+          id?: string | null
+          instrucciones?: string | null
+          nivel_validacion?: string | null
+          orden?: number | null
+          paso_identificador?: string | null
+          prerrequisitos?: string[] | null
+          tipo_documento_sugerido?: string | null
+          tipo_fuente?: string | null
+          titulo?: string | null
+          usuario_actualizacion?: string | null
+          usuario_creacion?: string | null
+          version?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_requisitos_categoria_documento"
+            columns: ["categoria_documento"]
+            isOneToOne: false
+            referencedRelation: "categorias_documento"
+            referencedColumns: ["nombre"]
+          },
+          {
+            foreignKeyName: "fk_requisitos_categoria_documento"
+            columns: ["categoria_documento"]
+            isOneToOne: false
+            referencedRelation: "vista_documentos_vivienda"
+            referencedColumns: ["categoria_nombre"]
           },
         ]
       }
@@ -3050,6 +4124,13 @@ export type Database = {
             referencedRelation: "v_negociaciones_completas"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "viviendas_negociacion_id_fkey"
+            columns: ["negociacion_id"]
+            isOneToOne: false
+            referencedRelation: "vista_descuentos_aplicados"
+            referencedColumns: ["negociacion_id"]
+          },
         ]
       }
     }
@@ -3067,10 +4148,28 @@ export type Database = {
         }
         Returns: string
       }
+      calcular_progreso_fuente_pago: {
+        Args: { p_fuente_id: string }
+        Returns: {
+          completados: number
+          pendientes: number
+          porcentaje: number
+          total_pasos: number
+        }[]
+      }
       categoria_aplica_a_modulo: {
         Args: { p_categoria_id: string; p_modulo: string }
         Returns: boolean
       }
+      clonar_configuracion_requisitos: {
+        Args: { p_tipo_fuente_destino: string; p_tipo_fuente_origen: string }
+        Returns: number
+      }
+      compactar_orden_requisitos: {
+        Args: { p_tipo_fuente: string }
+        Returns: undefined
+      }
+      compactar_todas_las_fuentes: { Args: never; Returns: undefined }
       convertir_interes_a_negociacion: {
         Args: {
           p_descuento?: number
@@ -3115,6 +4214,25 @@ export type Database = {
       }
       es_admin: { Args: { p_user_id: string }; Returns: boolean }
       exec_sql: { Args: { sql_query: string }; Returns: undefined }
+      get_entidades_por_tipo_fuente: {
+        Args: { p_solo_activas?: boolean; p_tipo_fuente_id: string }
+        Returns: {
+          codigo: string
+          color: string
+          id: string
+          nombre: string
+          orden: number
+          tipo: string
+        }[]
+      }
+      get_valor_total_original: {
+        Args: { negociacion_id: string }
+        Returns: number
+      }
+      inactivar_fuentes_pago_batch: {
+        Args: { p_fuente_ids: string[]; p_razon?: string }
+        Returns: Json
+      }
       is_admin: { Args: never; Returns: boolean }
       limpiar_logs_antiguos: {
         Args: { dias_retencion?: number }
@@ -3140,6 +4258,30 @@ export type Database = {
         Args: { p_nombre_categoria: string }
         Returns: string
       }
+      obtener_estado_documentacion_fuente: {
+        Args: { p_fuente_pago_id: string }
+        Returns: {
+          entidad: string
+          estado_general: string
+          fuente_pago_id: string
+          progreso_porcentaje: number
+          tipo_fuente: string
+          validacion: Json
+        }[]
+      }
+      obtener_historial_negociacion: {
+        Args: { p_negociacion_id: string }
+        Returns: {
+          campos_modificados: string[]
+          datos_anteriores: Json
+          datos_nuevos: Json
+          fecha_cambio: string
+          razon_cambio: string
+          tipo_cambio: string
+          usuario_nombre: string
+          version: number
+        }[]
+      }
       obtener_historial_registro: {
         Args: { p_limit?: number; p_registro_id: string; p_tabla: string }
         Returns: {
@@ -3150,6 +4292,45 @@ export type Database = {
           metadata: Json
           usuario_email: string
           usuario_rol: string
+        }[]
+      }
+      obtener_requisitos_con_orden_visual: {
+        Args: { p_codigo_fuente: string; p_tipo_fuente: string }
+        Returns: {
+          activo: boolean
+          alcance: string
+          categoria_documento: string
+          descripcion: string
+          fecha_actualizacion: string
+          fecha_creacion: string
+          fuentes_aplicables: string[]
+          id: string
+          instrucciones: string
+          nivel_validacion: string
+          orden: number
+          orden_visual: number
+          paso_identificador: string
+          prerrequisitos: string[]
+          tipo_documento_sugerido: string
+          tipo_fuente: string
+          titulo: string
+          usuario_actualizacion: string
+          usuario_creacion: string
+          version: number
+        }[]
+      }
+      obtener_requisitos_fuente: {
+        Args: { p_tipo_fuente: string }
+        Returns: {
+          categoria_documento: string
+          descripcion: string
+          id: string
+          instrucciones: string
+          nivel_validacion: string
+          orden: number
+          paso_identificador: string
+          tipo_documento_sugerido: string
+          titulo: string
         }[]
       }
       obtener_resumen_seguridad: {
@@ -3170,8 +4351,28 @@ export type Database = {
         Args: { p_negociacion_id: string }
         Returns: Json
       }
+      obtener_tipo_documento_normalizado: {
+        Args: { input_type: string }
+        Returns: string
+      }
+      obtener_tipo_documento_sistema: {
+        Args: { input_type: string }
+        Returns: string
+      }
+      obtener_tipos_fuente_dinamicos: {
+        Args: never
+        Returns: {
+          cantidad: number
+          label: string
+          value: string
+        }[]
+      }
       obtener_viviendas_disponibles_manzana: {
         Args: { p_manzana_id: string }
+        Returns: number
+      }
+      regenerar_pendientes_fuente: {
+        Args: { p_fuente_id: string }
         Returns: number
       }
       registrar_interes_inicial: {
@@ -3194,6 +4395,14 @@ export type Database = {
         }
         Returns: boolean
       }
+      tipos_fuente_sin_configuracion: {
+        Args: never
+        Returns: {
+          ejemplo_entidad: string
+          tipo_fuente: string
+          total_fuentes: number
+        }[]
+      }
       validar_cancelacion_renuncia: {
         Args: { p_renuncia_id: string }
         Returns: {
@@ -3206,6 +4415,51 @@ export type Database = {
       validar_password_admin: {
         Args: { p_password: string; p_user_id: string }
         Returns: boolean
+      }
+      validar_requisitos_desembolso: {
+        Args: { p_fuente_pago_id: string }
+        Returns: {
+          cumple_requisitos: boolean
+          documentos_completados: Json
+          documentos_faltantes: Json
+          obligatorios_faltantes: number
+          opcionales_faltantes: number
+          puede_continuar: boolean
+          requisitos_completados: number
+          total_requisitos: number
+        }[]
+      }
+      verificar_categorias_clientes: {
+        Args: never
+        Returns: {
+          accion: string
+          categoria_id: string
+          categoria_nombre: string
+        }[]
+      }
+      verificar_categorias_proyectos: {
+        Args: never
+        Returns: {
+          accion: string
+          categoria_id: string
+          categoria_nombre: string
+        }[]
+      }
+      verificar_categorias_sistema: {
+        Args: never
+        Returns: {
+          accion: string
+          categoria_id: string
+          categoria_nombre: string
+        }[]
+      }
+      verificar_categorias_viviendas: {
+        Args: never
+        Returns: {
+          accion: string
+          categoria_id: string
+          categoria_nombre: string
+        }[]
       }
     }
     Enums: {

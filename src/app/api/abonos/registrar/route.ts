@@ -67,37 +67,10 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // 2. Generar consecutivo único para esta negociación
-    // Formato: RYR-ABO-{año}-{mes}-{consecutivo}
-    const fecha = new Date()
-    const año = fecha.getFullYear()
-    const mes = String(fecha.getMonth() + 1).padStart(2, '0')
-
-    // Obtener el último consecutivo del mes actual para esta negociación
-    const { data: ultimoAbono } = await supabase
-      .from('abonos_historial' as any)
-      .select('numero_referencia')
-      .eq('negociacion_id', negociacion_id)
-      .like('numero_referencia', `RYR-ABO-${año}-${mes}-%`)
-      .order('fecha_creacion', { ascending: false })
-      .limit(1)
-      .single() as { data: { numero_referencia: string } | null }
-
-    let numeroConsecutivo = 1
-    if (ultimoAbono?.numero_referencia) {
-      // Extraer el número del consecutivo anterior
-      const match = ultimoAbono.numero_referencia.match(/RYR-ABO-\d{4}-\d{2}-(\d+)/)
-      if (match) {
-        numeroConsecutivo = parseInt(match[1]) + 1
-      }
-    }
-
-    const consecutivo = `RYR-ABO-${año}-${mes}-${String(numeroConsecutivo).padStart(3, '0')}`
-
-    // 3. Convertir fecha usando utilidad centralizada
+    // 2. Convertir fecha usando utilidad centralizada
     const fechaAbonoDB = formatDateForDB(fecha_abono)
 
-    // 4. Registrar el abono con el consecutivo
+    // 3. Registrar el abono (numero_recibo se asigna automáticamente por secuencia BD)
     const { data: nuevoAbono, error: abonoError } = await supabase
       .from('abonos_historial' as any)
       .insert({
@@ -106,7 +79,7 @@ export async function POST(request: NextRequest) {
         monto,
         fecha_abono: fechaAbonoDB,
         metodo_pago,
-        numero_referencia: consecutivo, // Consecutivo automático
+        numero_referencia: numero_referencia || null,
         comprobante_url: null,
         notas: notas || null,
       })
@@ -128,21 +101,13 @@ export async function POST(request: NextRequest) {
     // - negociaciones.saldo_pendiente
     // - negociaciones.porcentaje_pagado
 
-    console.log('✅ Abono registrado exitosamente:', {
-      id: nuevoAbono.id,
-      consecutivo,
-      monto,
-      fuente: fuente_pago_id,
-    })
-
     return NextResponse.json({
       success: true,
       abono: nuevoAbono,
-      consecutivo,
       message: 'Abono registrado exitosamente',
     })
   } catch (error: any) {
-    console.error('❌ Error en POST /api/abonos/registrar:', error)
+    console.error('âŒ Error en POST /api/abonos/registrar:', error)
     return NextResponse.json(
       { error: error.message || 'Error interno del servidor' },
       { status: 500 }

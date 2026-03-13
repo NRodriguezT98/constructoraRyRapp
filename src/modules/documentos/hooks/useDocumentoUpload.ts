@@ -8,18 +8,22 @@ import { useDocumentoIdentidad } from '../../clientes/documentos/hooks/useDocume
 import type { DocumentoFormData } from '../schemas/documento.schema'
 import { documentoConArchivoSchema, documentoFormSchema } from '../schemas/documento.schema'
 import type { TipoEntidad } from '../types'
+import type { TipoDocumentoValidacion } from '../types/tipos-documento'
+import { obtenerInfoTipoDocumento } from '../types/tipos-documento'
 
 import { useCategoriasQuery, useSubirDocumentoMutation } from './useDocumentosQuery'
 
 interface UseDocumentoUploadProps {
   entidadId: string
   tipoEntidad: TipoEntidad
+  metadata?: Record<string, any> | null  // ✅ NUEVO: Metadata para vincular con requisitos
   onSuccess?: () => void
 }
 
 export function useDocumentoUpload({
   entidadId,
   tipoEntidad,
+  metadata,  // ✅ NUEVO
   onSuccess,
 }: UseDocumentoUploadProps) {
   // Estado local
@@ -29,6 +33,11 @@ export function useDocumentoUpload({
   )
   const [errorArchivo, setErrorArchivo] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // ✅ NUEVO: Extraer tipo_documento y fuente_pago_id de metadata
+  const tipoDocumento = (metadata?.tipo_documento as TipoDocumentoValidacion | undefined) || null
+  const fuentePagoId = metadata?.fuente_pago_id as string | undefined
+  const infoTipoDocumento = obtenerInfoTipoDocumento(tipoDocumento)
 
   // Auth
   const { user } = useAuth()
@@ -54,6 +63,9 @@ export function useDocumentoUpload({
   // Mutation para subir documento (GENÉRICO)
   const { mutateAsync: subirDocumento, isPending: subiendoDocumento } = useSubirDocumentoMutation(entidadId, tipoEntidad)
 
+  // ✅ Detectar si viene desde contexto de cédula
+  const autoCheckIdentidad = metadata?.auto_check_identidad === true
+
   // Form con validaciones Zod (sin validación de archivo aquí - se valida en handleFileChange)
   const {
     register,
@@ -72,7 +84,7 @@ export function useDocumentoUpload({
       fecha_documento: undefined,
       fecha_vencimiento: undefined,
       es_importante: false,
-      es_documento_identidad: false,
+      es_documento_identidad: autoCheckIdentidad, // ✅ Pre-marcar si viene desde contexto de cédula
       metadata: {},
     },
     mode: 'onChange', // Validar mientras el usuario escribe
@@ -97,6 +109,18 @@ export function useDocumentoUpload({
       setValue('categoria_id', categoriaIdentidad.id)
     }
   }, [esDocumentoIdentidad, categoriaIdentidad, categoriaSeleccionada, setValue])
+
+  // ✅ NUEVO: Auto-seleccionar categoría sugerida desde metadata
+  useEffect(() => {
+    if (infoTipoDocumento?.categoria_sugerida) {
+      // Verificar que la categoría existe en la lista
+      const categoriaExiste = categorias.some(c => c.id === infoTipoDocumento.categoria_sugerida)
+
+      if (categoriaExiste) {
+        setValue('categoria_id', infoTipoDocumento.categoria_sugerida)
+      }
+    }
+  }, [infoTipoDocumento, categorias, setValue])
 
   // ✅ Deshabilitar checkbox si ya existe documento de identidad (solo clientes)
   const checkboxDeshabilitado = tipoEntidad === 'cliente' && yaExisteDocumentoIdentidad
@@ -204,13 +228,22 @@ export function useDocumentoUpload({
           archivo: archivoSeleccionado,
           titulo: data.titulo,
           descripcion: data.descripcion,
-          categoriaId: data.categoria_id,
-          fechaDocumento: data.fecha_documento,
+          categoriaId: data.categoria_id ?? undefined,
+          fechaDocumento: data.fecha_documento ?? undefined,
           fechaVencimiento: data.fecha_vencimiento,
           esImportante: data.es_importante,
           esDocumentoIdentidad: data.es_documento_identidad,
           userId: user.id,
-        })
+          // ✅ NUEVO: Incluir metadata con tipo_documento
+          ...(metadata ? {
+            metadata: {
+              ...metadata,
+              tipo_documento: tipoDocumento,
+              fuente_pago_id: fuentePagoId,
+            }
+          } : {}),
+          tipoDocumento: tipoDocumento ?? undefined,  // ✅ Campo directo en BD
+        } as any)
 
         // Reset form
         reset()
@@ -232,7 +265,13 @@ export function useDocumentoUpload({
     errorArchivo,
     subiendoDocumento,
     categorias,
-    esImportante,
+
+    // ✅ NUEVO: Info de tipo de documento para validación
+    tipoDocumento,
+    infoTipoDocumento,
+    fuentePagoId,
+
+    // Importante
     esDocumentoIdentidad,
     categoriaIdentidad, // ✅ Para deshabilitar select
     categoriaSeleccionada, // ✅ Para saber si hay categoría seleccionada

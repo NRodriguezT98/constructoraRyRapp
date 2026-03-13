@@ -8,6 +8,7 @@
 import { ChevronRight, Home } from 'lucide-react'
 import Link from 'next/link'
 
+import { formatNombreCompleto } from '@/lib/utils/string.utils'
 import { pageStyles as s } from '../styles'
 
 interface BreadcrumbsAsignarViviendaProps {
@@ -34,7 +35,7 @@ export function BreadcrumbsAsignarVivienda({
       <ChevronRight className={`h-3 w-3 ${s.breadcrumbs.separator}`} />
 
       <Link href={`/clientes/${clienteId}` as any} className={s.breadcrumbs.link}>
-        {clienteNombre || 'Cliente'}
+        {formatNombreCompleto(clienteNombre) || 'Cliente'}
       </Link>
 
       <ChevronRight className={`h-3 w-3 ${s.breadcrumbs.separator}`} />

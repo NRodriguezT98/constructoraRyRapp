@@ -41,14 +41,14 @@ export function ConfirmarCambiosModal({
   return (
     <AnimatePresence>
       {isOpen && (
-        <>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           {/* Overlay */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm"
-            onClick={onClose}
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            onClick={!isLoading ? onClose : undefined}
           />
 
           {/* Modal */}
@@ -56,7 +56,8 @@ export function ConfirmarCambiosModal({
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            className="fixed left-1/2 top-1/2 z-50 w-full max-w-2xl -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-white p-0 shadow-2xl dark:bg-gray-800"
+            onClick={(e) => e.stopPropagation()}
+            className="relative z-10 w-full max-w-2xl max-h-[85vh] flex flex-col rounded-2xl bg-white shadow-2xl dark:bg-gray-800"
           >
             {/* Header */}
             <div className="relative overflow-hidden rounded-t-2xl bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 px-6 py-5">
@@ -81,8 +82,8 @@ export function ConfirmarCambiosModal({
               </div>
             </div>
 
-            {/* Content */}
-            <div className="max-h-[60vh] overflow-y-auto p-6">
+            {/* Content - Con scroll */}
+            <div className="flex-1 overflow-y-auto p-6 min-h-0">
               {!tieneCambios ? (
                 /* Sin cambios */
                 <div className="rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 p-8 text-center dark:border-gray-700 dark:bg-gray-800/50">
@@ -151,8 +152,8 @@ export function ConfirmarCambiosModal({
               )}
             </div>
 
-            {/* Footer */}
-            <div className="flex items-center justify-end gap-3 border-t border-gray-200 px-6 py-4 dark:border-gray-700">
+            {/* Footer - Fijo */}
+            <div className="flex-shrink-0 flex items-center justify-end gap-3 border-t border-gray-200 px-6 py-4 dark:border-gray-700">
               <button
                 onClick={onClose}
                 disabled={isLoading}
@@ -179,7 +180,7 @@ export function ConfirmarCambiosModal({
               </button>
             </div>
           </motion.div>
-        </>
+        </div>
       )}
     </AnimatePresence>
   )

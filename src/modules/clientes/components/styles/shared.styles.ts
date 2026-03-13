@@ -31,7 +31,7 @@ export const sharedModalStyles = {
 
   // Header con gradiente
   header: {
-    wrapper: 'sticky top-0 z-10 bg-gradient-to-r from-purple-600 via-purple-700 to-violet-600 px-8 py-6',
+    wrapper: 'sticky top-0 z-10 bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 px-8 py-6',
     content: 'flex items-center justify-between',
     titleSection: 'flex items-center gap-4',
     iconContainer: 'flex h-16 w-16 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-sm ring-2 ring-white/30',
@@ -59,11 +59,11 @@ export const sharedButtonStyles = {
   // Botón cancelar/secundario
   secondary: 'rounded-xl border-2 border-gray-300 bg-white px-6 py-2.5 text-sm font-semibold text-gray-700 transition-all hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700',
 
-  // Botón primario (gradiente morado)
-  primary: 'rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 px-6 py-2.5 text-sm font-semibold text-white transition-all hover:from-purple-700 hover:to-pink-700 disabled:cursor-not-allowed disabled:opacity-50',
+  // Botón primario (gradiente cyan/azul)
+  primary: 'rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 px-6 py-2.5 text-sm font-semibold text-white transition-all hover:from-cyan-700 hover:to-blue-700 disabled:cursor-not-allowed disabled:opacity-50',
 
-  // Botón primario alternativo (violeta)
-  primaryViolet: 'flex items-center gap-2 rounded-xl bg-gradient-to-r from-purple-600 to-violet-600 px-6 py-2.5 font-medium text-white shadow-lg shadow-purple-500/30 transition-all hover:shadow-xl hover:shadow-purple-500/40 hover:-translate-y-0.5',
+  // Botón primario alternativo (cyan/indigo)
+  primaryViolet: 'flex items-center gap-2 rounded-xl bg-gradient-to-r from-cyan-600 to-indigo-600 px-6 py-2.5 font-medium text-white shadow-lg shadow-cyan-500/30 transition-all hover:shadow-xl hover:shadow-cyan-500/40 hover:-translate-y-0.5',
 
   // Botón peligro (rojo)
   danger: 'flex items-center gap-2 rounded-xl border-2 border-red-300 px-5 py-2.5 font-medium text-red-700 transition-all hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-900/20',
@@ -117,13 +117,13 @@ export const sharedInputStyles = {
   label: 'mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300',
 
   // Input base
-  base: 'w-full rounded-lg border-2 border-gray-200 bg-white px-4 py-2.5 text-gray-900 transition-all placeholder:text-gray-400 focus:border-purple-500 focus:outline-none focus:ring-4 focus:ring-purple-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white dark:placeholder:text-gray-500',
+  base: 'w-full rounded-lg border-2 border-gray-200 bg-white px-4 py-2.5 text-gray-900 transition-all placeholder:text-gray-400 focus:border-cyan-500 focus:outline-none focus:ring-4 focus:ring-cyan-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white dark:placeholder:text-gray-500',
 
   // Select
-  select: 'w-full rounded-lg border-2 border-gray-200 bg-white px-4 py-2.5 text-gray-900 transition-all focus:border-purple-500 focus:outline-none focus:ring-4 focus:ring-purple-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white',
+  select: 'w-full rounded-lg border-2 border-gray-200 bg-white px-4 py-2.5 text-gray-900 transition-all focus:border-cyan-500 focus:outline-none focus:ring-4 focus:ring-cyan-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white',
 
   // Textarea
-  textarea: 'w-full rounded-lg border-2 border-gray-200 bg-white px-4 py-2.5 text-gray-900 transition-all placeholder:text-gray-400 focus:border-purple-500 focus:outline-none focus:ring-4 focus:ring-purple-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white dark:placeholder:text-gray-500 resize-none',
+  textarea: 'w-full rounded-lg border-2 border-gray-200 bg-white px-4 py-2.5 text-gray-900 transition-all placeholder:text-gray-400 focus:border-cyan-500 focus:outline-none focus:ring-4 focus:ring-cyan-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white dark:placeholder:text-gray-500 resize-none',
 
   // Estados
   error: 'border-red-300 focus:border-red-500 focus:ring-red-500/10 dark:border-red-700',

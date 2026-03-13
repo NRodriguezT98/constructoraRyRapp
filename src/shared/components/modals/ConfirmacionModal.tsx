@@ -1,30 +1,5 @@
-/**
- * 🎨 COMPONENTE REUTILIZABLE: ConfirmacionModal
- *
- * Modal de confirmación profesional con diseño compacto
- * - Variantes: danger (rojo), warning (ámbar), info (azul), success (verde)
- * - Responsive: adaptativo móvil/desktop
- * - Glassmorphism + animaciones Framer Motion
- * - Type-safe props
- *
- * @example
- * ```tsx
- * <ConfirmacionModal
- *   isOpen={isOpen}
- *   onClose={() => setIsOpen(false)}
- *   onConfirm={handleEliminar}
- *   variant="danger"
- *   title="¿Eliminar definitivo?"
- *   message="Esta acción no se puede deshacer"
- *   confirmText="Sí, eliminar"
- *   isLoading={eliminando}
- * />
- * ```
- */
-
 'use client'
 
-import { Button } from '@/components/ui/button'
 import { AnimatePresence, motion } from 'framer-motion'
 import { AlertTriangle, CheckCircle, Info, Loader2, X, XCircle } from 'lucide-react'
 
@@ -43,41 +18,46 @@ interface ConfirmacionModalProps {
   loadingText?: string
 }
 
-/**
- * Tema visual por variante
- */
-const variantStyles = {
+const variantConfig = {
   danger: {
-    icon: XCircle,
-    iconClass: 'w-12 h-12 text-red-600 dark:text-red-400',
-    iconBg: 'bg-red-100 dark:bg-red-900/30',
-    titleClass: 'text-red-900 dark:text-red-100',
-    confirmButton: 'bg-red-600 hover:bg-red-700 text-white',
-    borderClass: 'border-red-200 dark:border-red-800',
+    Icon: XCircle,
+    barGradient: 'linear-gradient(to bottom, #ef4444 0%, transparent 100%)',
+    iconCls: 'text-red-400',
+    iconWrapCls: 'bg-red-500/10 ring-1 ring-red-500/25',
+    ambientStyle: 'radial-gradient(ellipse at bottom right, rgba(239,68,68,0.11) 0%, transparent 65%)',
+    confirmCls:
+      'bg-red-600 hover:bg-red-500 active:scale-[0.98] text-white shadow-[0_4px_18px_rgba(239,68,68,0.38)]',
+    loadingCls: 'bg-zinc-800 dark:bg-zinc-800 text-zinc-400 cursor-not-allowed',
   },
   warning: {
-    icon: AlertTriangle,
-    iconClass: 'w-12 h-12 text-amber-600 dark:text-amber-400',
-    iconBg: 'bg-amber-100 dark:bg-amber-900/30',
-    titleClass: 'text-amber-900 dark:text-amber-100',
-    confirmButton: 'bg-amber-600 hover:bg-amber-700 text-white',
-    borderClass: 'border-amber-200 dark:border-amber-800',
+    Icon: AlertTriangle,
+    barGradient: 'linear-gradient(to bottom, #f59e0b 0%, transparent 100%)',
+    iconCls: 'text-amber-400',
+    iconWrapCls: 'bg-amber-500/10 ring-1 ring-amber-500/25',
+    ambientStyle: 'radial-gradient(ellipse at bottom right, rgba(245,158,11,0.10) 0%, transparent 65%)',
+    confirmCls:
+      'bg-amber-500 hover:bg-amber-400 active:scale-[0.98] text-zinc-950 font-bold shadow-[0_4px_18px_rgba(245,158,11,0.32)]',
+    loadingCls: 'bg-zinc-800 dark:bg-zinc-800 text-zinc-400 cursor-not-allowed',
   },
   info: {
-    icon: Info,
-    iconClass: 'w-12 h-12 text-blue-600 dark:text-blue-400',
-    iconBg: 'bg-blue-100 dark:bg-blue-900/30',
-    titleClass: 'text-blue-900 dark:text-blue-100',
-    confirmButton: 'bg-blue-600 hover:bg-blue-700 text-white',
-    borderClass: 'border-blue-200 dark:border-blue-800',
+    Icon: Info,
+    barGradient: 'linear-gradient(to bottom, #3b82f6 0%, transparent 100%)',
+    iconCls: 'text-blue-400',
+    iconWrapCls: 'bg-blue-500/10 ring-1 ring-blue-500/25',
+    ambientStyle: 'radial-gradient(ellipse at bottom right, rgba(59,130,246,0.10) 0%, transparent 65%)',
+    confirmCls:
+      'bg-blue-600 hover:bg-blue-500 active:scale-[0.98] text-white shadow-[0_4px_18px_rgba(59,130,246,0.38)]',
+    loadingCls: 'bg-zinc-800 dark:bg-zinc-800 text-zinc-400 cursor-not-allowed',
   },
   success: {
-    icon: CheckCircle,
-    iconClass: 'w-12 h-12 text-green-600 dark:text-green-400',
-    iconBg: 'bg-green-100 dark:bg-green-900/30',
-    titleClass: 'text-green-900 dark:text-green-100',
-    confirmButton: 'bg-green-600 hover:bg-green-700 text-white',
-    borderClass: 'border-green-200 dark:border-green-800',
+    Icon: CheckCircle,
+    barGradient: 'linear-gradient(to bottom, #10b981 0%, transparent 100%)',
+    iconCls: 'text-emerald-400',
+    iconWrapCls: 'bg-emerald-500/10 ring-1 ring-emerald-500/25',
+    ambientStyle: 'radial-gradient(ellipse at bottom right, rgba(16,185,129,0.10) 0%, transparent 65%)',
+    confirmCls:
+      'bg-emerald-600 hover:bg-emerald-500 active:scale-[0.98] text-white shadow-[0_4px_18px_rgba(16,185,129,0.36)]',
+    loadingCls: 'bg-zinc-800 dark:bg-zinc-800 text-zinc-400 cursor-not-allowed',
   },
 }
 
@@ -93,13 +73,8 @@ export function ConfirmacionModal({
   isLoading = false,
   loadingText = 'Procesando...',
 }: ConfirmacionModalProps) {
-  const styles = variantStyles[variant]
-  const Icon = styles.icon
-
-  const handleConfirm = () => {
-    onConfirm()
-    // NO cerrar automáticamente - dejar que el padre controle
-  }
+  const cfg = variantConfig[variant]
+  const { Icon } = cfg
 
   return (
     <AnimatePresence>
@@ -110,85 +85,96 @@ export function ConfirmacionModal({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={onClose}
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50"
+            transition={{ duration: 0.18 }}
+            onClick={(e) => { e.stopPropagation(); if (!isLoading) onClose() }}
+            className='fixed inset-0 z-50 bg-black/70 backdrop-blur-[3px]'
           />
 
-          {/* Modal */}
-          <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
+          {/* Modal — stopPropagation evita que clicks en el modal suban al componente padre */}
+          <div
+            className='fixed inset-0 z-50 flex items-center justify-center p-4'
+            onClick={(e) => e.stopPropagation()}
+          >
             <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              transition={{ type: 'spring', duration: 0.3 }}
-              className={`
-                relative w-full max-w-md
-                bg-white dark:bg-gray-800
-                rounded-2xl shadow-2xl
-                border-2 ${styles.borderClass}
-                overflow-hidden
-              `}
+              initial={{ opacity: 0, y: 20, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 12, scale: 0.97 }}
+              transition={{ type: 'spring', stiffness: 500, damping: 28 }}
+              className='relative w-full max-w-sm overflow-hidden rounded-2xl border border-white/[0.07] bg-white shadow-[0_32px_72px_-12px_rgba(0,0,0,0.65)] dark:bg-zinc-900'
             >
-              {/* Header con icono */}
-              <div className="relative p-6 pb-4">
-                {/* Botón cerrar */}
-                <button
-                  onClick={onClose}
-                  disabled={isLoading}
-                  className="absolute top-4 right-4 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
-                  aria-label="Cerrar"
-                >
-                  <X className="w-5 h-5 text-gray-500 dark:text-gray-400" />
-                </button>
+              {/* Ambient glow — variant color bleeds from bottom-right */}
+              <div
+                className='pointer-events-none absolute inset-0'
+                style={{ background: cfg.ambientStyle }}
+              />
 
-                {/* Icono principal */}
-                <div className="flex justify-center mb-4">
-                  <div className={`p-4 rounded-2xl ${styles.iconBg}`}>
-                    <Icon className={styles.iconClass} />
+              {/* Left accent bar with gradient fade */}
+              <div
+                className='absolute bottom-0 left-0 top-0 w-[3px]'
+                style={{ background: cfg.barGradient }}
+              />
+
+              {/* Close */}
+              <button
+                onClick={onClose}
+                disabled={isLoading}
+                aria-label='Cerrar'
+                className='absolute right-3.5 top-3.5 z-10 rounded-lg p-1.5 text-zinc-400 transition-colors hover:bg-black/[0.06] hover:text-zinc-700 disabled:pointer-events-none disabled:opacity-30 dark:text-zinc-500 dark:hover:bg-white/[0.07] dark:hover:text-zinc-200'
+              >
+                <X className='h-4 w-4' />
+              </button>
+
+              {/* Body */}
+              <div className='relative pb-5 pl-6 pr-5 pt-5'>
+                {/* Icon + Title */}
+                <div className='mb-3.5 flex items-start gap-3 pr-8'>
+                  <div
+                    className={`mt-0.5 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-xl ${cfg.iconWrapCls}`}
+                  >
+                    <Icon className={`h-4 w-4 ${cfg.iconCls}`} />
                   </div>
+                  <h2 className='text-[15px] font-semibold leading-snug text-zinc-900 dark:text-white'>
+                    {title}
+                  </h2>
                 </div>
 
-                {/* Título */}
-                <h2 className={`text-xl font-bold text-center ${styles.titleClass}`}>
-                  {title}
-                </h2>
-              </div>
-
-              {/* Contenido */}
-              <div className="px-6 pb-6">
-                <div className="text-center text-gray-700 dark:text-gray-300 mb-6">
+                {/* Message — indented to align with title text */}
+                <div className='mb-5 pl-11 text-[13px] leading-relaxed text-zinc-500 dark:text-zinc-400'>
                   {typeof message === 'string' ? (
-                    <p className="whitespace-pre-line">{message}</p>
+                    <p className='whitespace-pre-line'>{message}</p>
                   ) : (
                     message
                   )}
                 </div>
 
-                {/* Botones de acción */}
-                <div className="flex flex-col-reverse sm:flex-row gap-3">
-                  <Button
-                    variant="outline"
+                {/* Separator */}
+                <div className='mb-4 h-px bg-zinc-900/[0.06] dark:bg-white/[0.07]' />
+
+                {/* Actions */}
+                <div className='flex items-center justify-end gap-2'>
+                  <button
                     onClick={onClose}
                     disabled={isLoading}
-                    className="flex-1 border-2"
+                    className='rounded-lg px-4 py-2 text-[13px] font-medium text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-800 disabled:pointer-events-none disabled:opacity-40 dark:text-zinc-400 dark:hover:bg-white/[0.07] dark:hover:text-zinc-100'
                   >
                     {cancelText}
-                  </Button>
-
-                  <Button
-                    onClick={handleConfirm}
+                  </button>
+                  <button
+                    onClick={onConfirm}
                     disabled={isLoading}
-                    className={`flex-1 ${styles.confirmButton} shadow-lg`}
+                    className={`flex items-center gap-2 rounded-lg px-4 py-2 text-[13px] transition-all ${
+                      isLoading ? cfg.loadingCls : cfg.confirmCls
+                    }`}
                   >
                     {isLoading ? (
                       <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        {loadingText}
+                        <Loader2 className='h-3.5 w-3.5 animate-spin' />
+                        <span>{loadingText}</span>
                       </>
                     ) : (
                       confirmText
                     )}
-                  </Button>
+                  </button>
                 </div>
               </div>
             </motion.div>

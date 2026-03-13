@@ -10,6 +10,8 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import { AlertCircle, ArchiveRestore, X } from 'lucide-react'
 
+import { formatDateForDisplay } from '@/lib/utils/date.utils'
+
 interface RestaurarProyectoModalProps {
   isOpen: boolean
   nombreProyecto: string
@@ -98,13 +100,7 @@ export function RestaurarProyectoModal({
                           Archivado el:
                         </p>
                         <p className="text-sm text-gray-900 dark:text-gray-100">
-                          {new Date(fechaArchivado).toLocaleDateString('es-ES', {
-                            year: 'numeric',
-                            month: 'long',
-                            day: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit',
-                          })}
+                          {formatDateForDisplay(fechaArchivado)}
                         </p>
                       </div>
                     )}

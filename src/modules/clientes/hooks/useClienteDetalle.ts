@@ -33,7 +33,7 @@ interface UseClienteDetalleProps {
   clienteIdSlug: string // Puede ser slug o UUID
 }
 
-export type TabType = 'general' | 'intereses' | 'negociaciones' | 'documentos' | 'actividad' | 'historial'
+export type TabType = 'general' | 'intereses' | 'negociacion' | 'negociaciones' | 'documentos' | 'historial' | 'vivienda-asignada' | 'fuentes-pago'
 
 export function useClienteDetalle({ clienteIdSlug }: UseClienteDetalleProps) {
   const router = useRouter()
@@ -46,6 +46,15 @@ export function useClienteDetalle({ clienteIdSlug }: UseClienteDetalleProps) {
   const [clienteUUID, setClienteUUID] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<TabType>('general')
   const [modalInteresAbierto, setModalInteresAbierto] = useState(false)
+
+  // Activar tab desde intent guardado en sessionStorage (p.ej. desde módulo Abonos)
+  useEffect(() => {
+    const intent = sessionStorage.getItem('cliente-tab-intent')
+    if (intent && ['general', 'intereses', 'negociacion', 'documentos', 'historial'].includes(intent)) {
+      setActiveTab(intent as TabType)
+      sessionStorage.removeItem('cliente-tab-intent')
+    }
+  }, [])
 
   // =====================================================
   // STORES Y QUERIES
@@ -90,10 +99,8 @@ export function useClienteDetalle({ clienteIdSlug }: UseClienteDetalleProps) {
   // 1. Resolver slug a UUID
   useEffect(() => {
     const resolverSlug = async () => {
-      console.log('🔍 [useClienteDetalle] Resolviendo slug:', clienteIdSlug)
       const uuid = await resolverSlugCliente(clienteIdSlug)
       if (uuid) {
-        console.log('✅ [useClienteDetalle] UUID resuelto:', uuid)
         setClienteUUID(uuid)
       } else {
         console.error('❌ [useClienteDetalle] No se pudo resolver el cliente')
@@ -107,8 +114,7 @@ export function useClienteDetalle({ clienteIdSlug }: UseClienteDetalleProps) {
   // 2. Cargar categorías al montar (si hay usuario)
   useEffect(() => {
     if (user?.id) {
-      console.log('📂 [useClienteDetalle] Cargando categorías para usuario:', user.id)
-      cargarCategorias(user.id)
+      cargarCategorias()
     }
   }, [user?.id, cargarCategorias])
 
@@ -116,7 +122,6 @@ export function useClienteDetalle({ clienteIdSlug }: UseClienteDetalleProps) {
   useEffect(() => {
     const handleCambiarTab = (event: any) => {
       const nuevoTab = event.detail as TabType
-      console.log('🔄 [useClienteDetalle] Cambiando a tab:', nuevoTab)
       setActiveTab(nuevoTab)
     }
 
@@ -131,7 +136,6 @@ export function useClienteDetalle({ clienteIdSlug }: UseClienteDetalleProps) {
     if (!clienteUUID) return
 
     const handleClienteActualizado = () => {
-      console.log('🔄 [useClienteDetalle] Cliente actualizado, recargando datos...')
       recargarCliente()
     }
 

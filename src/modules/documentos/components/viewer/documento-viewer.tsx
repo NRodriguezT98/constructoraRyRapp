@@ -17,7 +17,8 @@ import { createPortal } from 'react-dom'
 
 import { formatDateCompact } from '@/lib/utils/date.utils'
 import { moduleThemes, type ModuleName } from '@/shared/config/module-themes'
-import { DocumentoProyecto, formatFileSize, getFileIcon } from '../../../../types/documento.types'
+import { DocumentoProyecto, formatFileSize, getFileIcon } from '../../types/documento.types'
+import { formatearEntidad } from '../../utils/formatear-entidad'
 import { CategoriaIcon } from '../shared/categoria-icon'
 
 // ============================================
@@ -47,7 +48,27 @@ function humanizarCampoMetadata(key: string): string {
 /**
  * Formatear valor del metadata
  */
-function formatearValorMetadata(key: string, value: any): string {
+function formatearValorMetadata(key: string, value: any, metadata?: any): string {
+  // ✅ Caso especial: Entidad vacía - inferir del tipo de fuente
+  if (key === 'entidad' && (value === null || value === undefined || value === '')) {
+    // Inferir entidad según tipo de fuente
+    if (metadata?.tipo_fuente === 'Subsidio Mi Casa Ya') {
+      return 'Mi Casa Ya'
+    }
+    if (metadata?.tipo_fuente === 'Subsidio Caja Compensación') {
+      return 'Caja Compensación'
+    }
+    if (metadata?.tipo_fuente === 'Crédito Hipotecario') {
+      return 'Entidad Bancaria'
+    }
+    return 'No especifica'
+  }
+
+  // ✅ Formatear entidad financiera con formato de título
+  if (key === 'entidad' && value) {
+    return formatearEntidad(value)
+  }
+
   if (value === null || value === undefined || value === '') {
     return 'No especifica'
   }
@@ -105,8 +126,8 @@ interface DocumentoViewerProps {
   documento: DocumentoProyecto | null
   isOpen: boolean
   onClose: () => void
-  onDownload?: (documento: DocumentoProyecto) => void
-  onDelete?: (documento: DocumentoProyecto) => void
+  onDownload?: (documento: DocumentoProyecto) => void | Promise<void>
+  onDelete?: (documento: DocumentoProyecto) => void | Promise<void>
   onEdit?: (documento: DocumentoProyecto) => void
   urlPreview?: string
   moduleName?: ModuleName // 🎨 Tema del módulo
@@ -449,7 +470,7 @@ export function DocumentoViewer({
                                   {humanizarCampoMetadata(key)}
                                 </p>
                                 <p className='font-medium text-gray-900 dark:text-white'>
-                                  {formatearValorMetadata(key, value)}
+                                  {formatearValorMetadata(key, value, documento.metadata)}
                                 </p>
                               </div>
                             ))}

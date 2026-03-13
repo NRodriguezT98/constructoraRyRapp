@@ -26,8 +26,8 @@ interface DocumentosState {
   busqueda: string
   soloImportantes: boolean
 
-  // Vista actual (Activos/Archivados - Papelera es módulo independiente)
-  vistaActual: 'activos' | 'archivados'
+  // Vista actual
+  vistaActual: 'activos' | 'archivados' | 'papelera'
 
   // UI Modales
   modalSubirAbierto: boolean

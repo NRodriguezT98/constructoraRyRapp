@@ -10,6 +10,7 @@
 import { ChevronRight, Home } from 'lucide-react'
 import Link from 'next/link'
 
+import { formatNombreCompleto } from '@/lib/utils/string.utils'
 import { pageStyles } from '../styles'
 
 interface HeaderAsignarViviendaProps {
@@ -35,7 +36,7 @@ export function HeaderAsignarVivienda({
           </Link>
           <ChevronRight className="w-3 h-3" />
           <Link href={`/clientes/${clienteId}`} className={pageStyles.header.breadcrumbItem}>
-            {clienteNombre || 'Cliente'}
+            {formatNombreCompleto(clienteNombre) || 'Cliente'}
           </Link>
           <ChevronRight className="w-3 h-3" />
           <span className={pageStyles.header.breadcrumbCurrent}>Asignar Vivienda</span>
@@ -50,7 +51,7 @@ export function HeaderAsignarVivienda({
             <div className={pageStyles.header.titleWrapper}>
               <h1 className={pageStyles.header.title}>Asignar Vivienda</h1>
               <p className={pageStyles.header.subtitle}>
-                Completa los 3 pasos • Cierre financiero para {clienteNombre || 'el cliente'}
+                Completa los 3 pasos • Cierre financiero para {formatNombreCompleto(clienteNombre) || 'el cliente'}
               </p>
             </div>
           </div>

@@ -126,7 +126,8 @@ export const usuariosPremiumStyles = {
     badgeRol: {
       Administrador: 'bg-gradient-to-r from-red-500 to-rose-500 text-white shadow-md shadow-red-500/30',
       Gerente: 'bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-md shadow-orange-500/30',
-      Vendedor: 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-md shadow-blue-500/30',
+      Supervisor: 'bg-gradient-to-r from-purple-500 to-violet-500 text-white shadow-md shadow-purple-500/30',
+      Contador: 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-md shadow-blue-500/30',
     },
     badgeEstado: {
       Activo: 'bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-md shadow-green-500/30',

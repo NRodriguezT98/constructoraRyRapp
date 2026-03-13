@@ -3,15 +3,21 @@
  */
 
 import type { TipoFuentePago } from '@/modules/clientes/types'
+import type { ValorCampo } from '@/modules/configuracion/types/campos-dinamicos.types'
 
 export interface FuentePagoConfig {
   tipo: TipoFuentePago
-  monto_aprobado: number
-  entidad?: string
-  numero_referencia?: string
-  carta_aprobacion_url?: string // ⭐ URL del documento subido
+  /** ✅ V2: Objeto dinámico con todos los valores de campos configurables */
+  campos: Record<string, ValorCampo>
+  /** Documentos (mantener sistema existente) */
+  carta_aprobacion_url?: string
   carta_asignacion_url?: string
   permite_multiples_abonos?: boolean
+
+  /** @deprecated Legacy fields - mantener por compatibilidad, pero usar `campos` para nuevos */
+  monto_aprobado?: number
+  entidad?: string
+  numero_referencia?: string
 }
 
 export interface FuentePagoErrores {
@@ -38,6 +44,10 @@ export interface ViviendaDetalle {
   manzana_id: string
   manzana_nombre?: string
   valor_total: number
+  valor_base?: number
+  gastos_notariales?: number
+  es_esquinera?: boolean
+  recargo_esquinera?: number
   estado: string
 }
 
@@ -45,7 +55,11 @@ export interface FormDataAsignacion {
   proyectoSeleccionado: string
   viviendaId: string
   valorNegociado: number
+  aplicar_descuento?: boolean
   descuentoAplicado: number
+  tipo_descuento?: string
+  motivo_descuento?: string
+  valor_escritura_publica?: number
   notas: string
 }
 

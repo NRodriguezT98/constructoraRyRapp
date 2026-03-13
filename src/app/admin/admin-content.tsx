@@ -7,7 +7,8 @@
  */
 
 import { motion } from 'framer-motion'
-import { Shield } from 'lucide-react'
+import { ArrowRight, DollarSign, Layers, Settings, Shield } from 'lucide-react'
+import Link from 'next/link'
 
 interface AdminContentProps {
   canView: boolean
@@ -24,13 +25,6 @@ export default function AdminContent({
   canDelete,
   isAdmin,
 }: AdminContentProps) {
-  console.log('⚙️ [ADMIN CONTENT] Props recibidos:', {
-    canView,
-    canCreate,
-    canEdit,
-    canDelete,
-    isAdmin,
-  })
 
   // Solo admins pueden ver esta página
   if (!canView || !isAdmin) {
@@ -66,10 +60,118 @@ export default function AdminContent({
           <p className='mx-auto mb-6 max-w-2xl text-base text-gray-600 dark:text-gray-300'>
             Control total del sistema y configuraciones avanzadas
           </p>
-          <div className='rounded-xl border border-purple-200 bg-white/80 p-6 shadow-lg backdrop-blur-sm dark:border-purple-800 dark:bg-gray-800/80'>
-            <p className='text-sm text-gray-700 dark:text-gray-300'>
-              ⚙️ Módulo en construcción...
-            </p>
+
+          {/* Cards de Módulos */}
+          <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8'>
+            {/* Hub de Fuentes de Pago */}
+            <motion.div
+              whileHover={{ scale: 1.02, y: -4 }}
+              transition={{ type: 'spring', stiffness: 300 }}
+            >
+              <Link
+                href='/admin/fuentes-pago-hub'
+                className='block group'
+              >
+                <div className='rounded-xl border border-blue-200 bg-white/80 p-6 shadow-lg backdrop-blur-sm dark:border-blue-800 dark:bg-gray-800/80 hover:shadow-2xl transition-all h-full flex flex-col'>
+                  <div className='flex items-center gap-4 mb-4'>
+                    <div className='w-14 h-14 rounded-xl bg-gradient-to-br from-blue-500 via-cyan-500 to-indigo-600 flex items-center justify-center shadow-lg'>
+                      <Layers className='w-8 h-8 text-white' />
+                    </div>
+                    <div className='flex-1 text-left'>
+                      <h3 className='text-lg font-bold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors'>
+                        Fuentes de Pago
+                      </h3>
+                      <p className='text-sm text-gray-600 dark:text-gray-400'>
+                        Hub del módulo
+                      </p>
+                    </div>
+                  </div>
+                  <p className='text-sm text-gray-600 dark:text-gray-300 mb-4 min-h-[60px] flex-grow'>
+                    Centro de control para tipos de fuentes, requisitos documentales y configuración completa del sistema de negociaciones.
+                  </p>
+                  <div className='flex items-center justify-between'>
+                    <span className='inline-flex items-center gap-1 px-3 py-1 rounded-full bg-blue-100 dark:bg-blue-900/30 text-xs font-medium text-blue-700 dark:text-blue-300'>
+                      ðŸŽ¯ 4 Submódulos
+                    </span>
+                    <ArrowRight className='w-5 h-5 text-blue-600 dark:text-blue-400 group-hover:translate-x-1 transition-transform' />
+                  </div>
+                </div>
+              </Link>
+            </motion.div>
+
+            {/* Recargos */}
+            <motion.div
+              whileHover={{ scale: 1.02, y: -4 }}
+              transition={{ type: 'spring', stiffness: 300 }}
+            >
+              <Link
+                href='/administracion/configuracion'
+                className='block group'
+              >
+                <div className='rounded-xl border border-indigo-200 bg-white/80 p-6 shadow-lg backdrop-blur-sm dark:border-indigo-800 dark:bg-gray-800/80 hover:shadow-2xl transition-all h-full flex flex-col'>
+                  <div className='flex items-center gap-4 mb-4'>
+                    <div className='w-14 h-14 rounded-xl bg-gradient-to-br from-indigo-500 to-blue-600 flex items-center justify-center shadow-lg'>
+                      <DollarSign className='w-8 h-8 text-white' />
+                    </div>
+                    <div className='flex-1 text-left'>
+                      <h3 className='text-lg font-bold text-gray-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors'>
+                        Recargos
+                      </h3>
+                      <p className='text-sm text-gray-600 dark:text-gray-400'>
+                        Gastos y valores
+                      </p>
+                    </div>
+                  </div>
+                  <p className='text-sm text-gray-600 dark:text-gray-300 mb-4 min-h-[60px] flex-grow'>
+                    Configura escrituración, registro y otros gastos adicionales que se aplican en las negociaciones del sistema.
+                  </p>
+                  <div className='flex items-center justify-between'>
+                    <span className='inline-flex items-center gap-1 px-3 py-1 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-xs font-medium text-indigo-700 dark:text-indigo-300'>
+                      âš™ï¸ Configuración
+                    </span>
+                    <ArrowRight className='w-5 h-5 text-indigo-600 dark:text-indigo-400 group-hover:translate-x-1 transition-transform' />
+                  </div>
+                </div>
+              </Link>
+            </motion.div>
+
+            {/* Categorías de Sistema */}
+            <motion.div
+              whileHover={{ scale: 1.02, y: -4 }}
+              transition={{ type: 'spring', stiffness: 300 }}
+            >
+              <Link
+                href='/admin/categorias-sistema'
+                className='block group'
+              >
+                <div className='rounded-xl border border-purple-200 bg-white/80 p-6 shadow-lg backdrop-blur-sm dark:border-purple-800 dark:bg-gray-800/80 hover:shadow-2xl transition-all h-full flex flex-col'>
+                  <div className='flex items-center gap-4 mb-4'>
+                    <div className='w-14 h-14 rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center shadow-lg'>
+                      <Settings className='w-8 h-8 text-white' />
+                    </div>
+                    <div className='flex-1 text-left'>
+                      <h3 className='text-lg font-bold text-gray-900 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors'>
+                        Categorías de Sistema
+                      </h3>
+                      <p className='text-sm text-gray-600 dark:text-gray-400'>
+                        Documentos de módulos
+                      </p>
+                    </div>
+                  </div>
+                  <p className='text-sm text-gray-600 dark:text-gray-300 mb-4 min-h-[60px] flex-grow'>
+                    Verifica y crea las categorías críticas para Proyectos, Clientes y Viviendas.
+                  </p>
+                  <div className='flex items-center justify-between'>
+                    <span className='inline-flex items-center gap-1 px-3 py-1 rounded-full bg-green-100 dark:bg-green-900/30 text-xs font-medium text-green-700 dark:text-green-300'>
+                      ðŸ›¡ï¸ Protegido
+                    </span>
+                    <ArrowRight className='w-5 h-5 text-purple-600 dark:text-purple-400 group-hover:translate-x-1 transition-transform' />
+                  </div>
+                </div>
+              </Link>
+            </motion.div>
+
+
           </div>
         </motion.div>
       </div>

@@ -1,5 +1,5 @@
 /**
- * 🔄 Servicio de Gestión de Conflictos de Viviendas
+ * ðŸ”„ Servicio de Gestión de Conflictos de Viviendas
  *
  * Responsabilidad:
  * - Detectar viviendas inactivas con número/matrícula duplicados
@@ -11,7 +11,7 @@
  */
 
 import { supabase } from '@/lib/supabase/client'
-import type { Vivienda } from '@/lib/supabase/database.types'
+import type { Vivienda } from '@/modules/viviendas/types'
 
 // ============================================================
 // TIPOS
@@ -78,7 +78,7 @@ export class ViviendaConflictosService {
   ): Promise<ConflictoViviendaInactiva> {
     try {
       // Buscar vivienda inactiva con ese número
-      const { data: vivienda, error } = await supabase
+      const { data: viviendaRaw, error } = await supabase
         .from('viviendas')
         .select('*')
         .eq('proyecto_id', proyectoId)
@@ -86,6 +86,7 @@ export class ViviendaConflictosService {
         .eq('numero', numero)
         .eq('estado', 'Inactiva')
         .maybeSingle()
+      const vivienda = viviendaRaw as any
 
       if (error) throw error
 
@@ -104,12 +105,12 @@ export class ViviendaConflictosService {
         .eq('vivienda_id', vivienda.id)
 
       const { count: abonosCount } = await supabase
-        .from('abonos')
+        .from('abonos' as any)
         .select('*', { count: 'exact', head: true })
         .eq('vivienda_id', vivienda.id)
 
       const { count: documentosCount } = await supabase
-        .from('documentos_vivienda')
+        .from('documentos_vivienda' as any)
         .select('*', { count: 'exact', head: true })
         .eq('vivienda_id', vivienda.id)
         .eq('estado', 'activo')
@@ -163,7 +164,7 @@ export class ViviendaConflictosService {
         },
       }
     } catch (error) {
-      console.error('❌ Error al verificar vivienda inactiva reutilizable:', error)
+      console.error('âŒ Error al verificar vivienda inactiva reutilizable:', error)
       throw error
     }
   }
@@ -189,12 +190,13 @@ export class ViviendaConflictosService {
   ): Promise<Vivienda> {
     try {
       // Validar que vivienda esté inactiva
-      const { data: vivienda, error: viviendaError } = await supabase
+      const { data: viviendaInactivaRaw, error: viviendaError } = await supabase
         .from('viviendas')
         .select('*')
         .eq('id', viviendaId)
         .eq('estado', 'Inactiva')
         .single()
+      const vivienda = viviendaInactivaRaw as any
 
       if (viviendaError) throw viviendaError
 
@@ -203,7 +205,7 @@ export class ViviendaConflictosService {
       }
 
       // Actualizar con nuevos datos
-      const { data: viviendaActualizada, error: updateError } = await supabase
+      const { data: viviendaActualizadaRaw, error: updateError } = await supabase
         .from('viviendas')
         .update({
           numero: nuevosDatos.numero,
@@ -213,19 +215,20 @@ export class ViviendaConflictosService {
           area_construida: nuevosDatos.area_construida || vivienda.area_construida,
           valor_base: nuevosDatos.valor_base || vivienda.valor_base,
           descripcion: nuevosDatos.descripcion || vivienda.descripcion,
-          estado: 'Disponible', // ← Reactivar automáticamente
+          estado: 'Disponible', // â† Reactivar automáticamente
           fecha_reactivacion: new Date().toISOString(),
           motivo_reactivacion: 'Reactivada automáticamente al sobrescribir datos desde conflicto de creación',
           reactivada_por: userId,
-        })
+        } as any)
         .eq('id', viviendaId)
         .select()
         .single()
+      const viviendaActualizada = viviendaActualizadaRaw as any
 
       if (updateError) throw updateError
 
       // Registrar en historial (opcional)
-      await supabase.from('viviendas_historial_estados').insert({
+      await supabase.from('viviendas_historial_estados' as any).insert({
         vivienda_id: viviendaId,
         estado_anterior: 'Inactiva',
         estado_nuevo: 'Disponible',
@@ -242,11 +245,10 @@ export class ViviendaConflictosService {
         },
       })
 
-      console.log(`✅ Vivienda ${viviendaId} sobrescrita y reactivada`)
 
-      return viviendaActualizada as Vivienda
+      return viviendaActualizada as unknown as Vivienda
     } catch (error) {
-      console.error('❌ Error al sobrescribir vivienda inactiva:', error)
+      console.error('âŒ Error al sobrescribir vivienda inactiva:', error)
       throw error
     }
   }
@@ -308,7 +310,7 @@ export class ViviendaConflictosService {
         },
       }
     } catch (error) {
-      console.error('❌ Error al validar matrícula única:', error)
+      console.error('âŒ Error al validar matrícula única:', error)
       throw error
     }
   }

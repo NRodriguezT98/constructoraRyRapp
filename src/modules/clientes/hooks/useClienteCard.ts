@@ -29,6 +29,7 @@ const IconosPorEstado = {
   Inactivo: UserX,
   Propietario: Home,
   'En Proceso de Renuncia': UserX,
+  'Renunció': UserX, // ⭐ NUEVO (2025-12-11) - Usuario con X (como UserCheck pero rojo)
 }
 
 // Configuración de colores por estado
@@ -68,6 +69,12 @@ const estadoConfig: Record<string, {
     glow: 'from-orange-500/5 via-red-500/5 to-orange-500/5',
     shadow: 'shadow-orange-500/30',
   },
+  'Renunció': { // ⭐ NUEVO (2025-12-11) - Rojo para indicar renuncia
+    gradient: 'from-red-500 to-rose-500',
+    bg: 'bg-gradient-to-r from-red-500 to-rose-500',
+    glow: 'from-red-500/5 via-rose-500/5 to-red-500/5',
+    shadow: 'shadow-red-500/30',
+  },
 }
 
 export function useClienteCard({
@@ -94,10 +101,11 @@ export function useClienteCard({
   )
 
   // Label del estado para badge
-  const estadoLabel = useMemo(
-    () => cliente.estado === 'En Proceso de Renuncia' ? 'RENUNCIA' : cliente.estado.toUpperCase(),
-    [cliente.estado]
-  )
+  const estadoLabel = useMemo(() => {
+    if (cliente.estado === 'En Proceso de Renuncia') return 'RENUNCIA'
+    if (cliente.estado === 'Renunció') return 'RENUNCIÓ' // Sin emoji, badge rojo es suficiente
+    return cliente.estado.toUpperCase()
+  }, [cliente.estado])
 
   // Handlers
   const handleVer = () => {

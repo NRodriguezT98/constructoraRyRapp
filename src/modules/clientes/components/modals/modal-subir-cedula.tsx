@@ -143,16 +143,10 @@ export default function ModalSubirCedula({
     setProgreso(0)
 
     try {
-      // 1. Upload a Storage - PATH CONSISTENTE CON POLÍTICAS RLS
+      // 1. Upload a Storage - PATH CONSISTENTE CON POLÃTICAS RLS
       const extension = archivo.name.split('.').pop()
       const timestamp = Date.now()
       const filePath = `${user.id}/${clienteId}/cedula-${timestamp}.${extension}`
-
-      console.log('[CLIENTES] Subiendo cédula a Storage...', {
-        filePath,
-        size: archivo.size,
-        userId: user.id
-      })
 
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('documentos-clientes')
@@ -166,7 +160,6 @@ export default function ModalSubirCedula({
         throw uploadError;
       }
 
-      console.log('Archivo subido exitosamente:', uploadData);
       setProgreso(50);
 
       // 2. Obtener URL pública
@@ -174,7 +167,6 @@ export default function ModalSubirCedula({
         .from('documentos-clientes')
         .getPublicUrl(filePath);
 
-      console.log('URL pública generada:', publicUrl);
       setProgreso(75);
 
       // 3. Actualizar registro de cliente
@@ -188,7 +180,6 @@ export default function ModalSubirCedula({
         throw updateError;
       }
 
-      console.log('Cliente actualizado con URL de cédula');
       setProgreso(100);
 
       toast.success('Cédula subida exitosamente');

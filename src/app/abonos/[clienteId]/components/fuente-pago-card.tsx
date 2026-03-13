@@ -1,191 +1,231 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { Banknote, Building2, Clock, Gift, Home } from 'lucide-react'
+import { AlertTriangle, BadgeCheck, Building2, CheckCircle2, CreditCard, ExternalLink, FileWarning, Hash, Landmark, Lock } from 'lucide-react'
+import Link from 'next/link'
 
-import { BotonRegistrarDesembolso } from '@/modules/abonos/components/BotonRegistrarDesembolso'
 import type { FuentePagoConAbonos } from '@/modules/abonos/types'
-
-import { animations, colorSchemes, fuentesStyles } from '../styles/abonos-detalle.styles'
 
 interface FuentePagoCardProps {
   fuente: FuentePagoConAbonos
-  negociacionId: string  // ✅ NUEVO: Necesario para validación
+  negociacionId: string
+  clienteSlug?: string
   onRegistrarAbono: (fuente: FuentePagoConAbonos) => void
   index: number
+  canCreate?: boolean
   validacion?: {
     puedeRegistrarAbono: boolean
     estaCompletamentePagada: boolean
     razonBloqueo?: string
+    documentosObligatoriosPendientes?: number
+    documentosPendientesNombres?: string[]
   }
 }
 
-export function FuentePagoCard({ fuente, negociacionId, onRegistrarAbono, index, validacion }: FuentePagoCardProps) {
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('es-CO', {
-      style: 'currency',
-      currency: 'COP',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(value)
-  }
+const formatCurrency = (v: number) =>
+  new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(v)
 
-  // Seleccionar esquema de color basado en tipo de fuente
-  const colorScheme = colorSchemes[fuente.tipo as keyof typeof colorSchemes] || {
-    from: 'rgb(59, 130, 246)',
-    to: 'rgb(37, 99, 235)'
-  }
+const FUENTE_COLORS: Record<string, { accent: string; glow: string; bar: string; icon: string }> = {
+  'Cuota Inicial':               { accent: 'from-emerald-500 to-teal-600',   glow: 'rgba(16,185,129,0.28)',  bar: 'from-emerald-400 to-teal-400',    icon: 'bg-gradient-to-br from-emerald-500 to-teal-600' },
+  'Crédito Hipotecario':         { accent: 'from-blue-500 to-indigo-600',    glow: 'rgba(59,130,246,0.28)',  bar: 'from-blue-400 to-indigo-400',     icon: 'bg-gradient-to-br from-blue-500 to-indigo-600' },
+  'Subsidio Mi Casa Ya':         { accent: 'from-violet-500 to-purple-600',  glow: 'rgba(139,92,246,0.28)', bar: 'from-violet-400 to-purple-400',   icon: 'bg-gradient-to-br from-violet-500 to-purple-600' },
+  'Subsidio Caja Compensación':  { accent: 'from-pink-500 to-rose-600',      glow: 'rgba(236,72,153,0.28)', bar: 'from-pink-400 to-rose-400',       icon: 'bg-gradient-to-br from-pink-500 to-rose-600' },
+  'Leasing':                     { accent: 'from-cyan-500 to-blue-600',      glow: 'rgba(6,182,212,0.28)',  bar: 'from-cyan-400 to-blue-400',       icon: 'bg-gradient-to-br from-cyan-500 to-blue-600' },
+}
 
-  // Calcular progreso
-  const porcentajeCompletado = fuente.monto_aprobado > 0
-    ? (fuente.monto_recibido / fuente.monto_aprobado) * 100
+const getFuenteColors = (tipo: string) =>
+  FUENTE_COLORS[tipo] ?? { accent: 'from-slate-500 to-gray-600', glow: 'rgba(100,116,139,0.22)', bar: 'from-slate-400 to-gray-400', icon: 'bg-gradient-to-br from-slate-500 to-gray-600' }
+
+export function FuentePagoCard({ fuente, onRegistrarAbono, index, canCreate, validacion, clienteSlug }: FuentePagoCardProps) {
+  const completada = validacion?.estaCompletamentePagada ?? false
+  const esDesembolsoUnico = fuente.permite_multiples_abonos === false
+  const esCuotaInicial = fuente.tipo === 'Cuota Inicial'
+  const yaDesembolsada = esDesembolsoUnico && fuente.monto_recibido > 0
+  const docsPendientesObligatorios = validacion?.documentosObligatoriosPendientes ?? 0
+  const docsPendientesNombres = validacion?.documentosPendientesNombres ?? []
+  const bloqueadoPorDocs = docsPendientesObligatorios > 0
+  const pct = fuente.monto_aprobado > 0
+    ? Math.min((fuente.monto_recibido / fuente.monto_aprobado) * 100, 100)
     : 0
+  const puedeAbonar = canCreate && !completada && fuente.saldo_pendiente > 0 && !bloqueadoPorDocs
+  const colors = getFuenteColors(fuente.tipo)
 
-  // Seleccionar ícono según tipo de fuente
-  const getIconForFuente = () => {
-    switch (fuente.tipo) {
-      case 'Cuota Inicial':
-        return Home
-      case 'Crédito Hipotecario':
-        return Building2
-      case 'Subsidio Mi Casa Ya':
-      case 'Subsidio Caja Compensación':
-        return Gift
-      default:
-        return Banknote
-    }
-  }
-
-  const IconComponent = getIconForFuente()
-
-  // Clase condicional para card completada
-  const cardClassName = validacion?.estaCompletamentePagada
-    ? `${fuentesStyles.card} ${fuentesStyles.cardCompletada}`
-    : fuentesStyles.card
+  // Textos semánticos por tipo de fuente
+  const labelAprobado = esCuotaInicial ? 'Valor Pactado' : 'Aprobado'
+  const labelRecibido = esDesembolsoUnico ? 'Desembolsado' : 'Recibido'
 
   return (
     <motion.div
-      className={cardClassName}
-      variants={animations.fadeInUp}
-      transition={{ delay: 0.3 + index * 0.1 }}
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.07 }}
+      whileHover={{ y: -2, boxShadow: `0 16px 40px ${colors.glow}` }}
+      className="relative overflow-hidden rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/[0.07] shadow-sm dark:shadow-none backdrop-blur transition-all duration-300"
     >
-      {/* Borde lateral con gradiente (verde si está completada) */}
+      {/* Franja de acento lateral */}
+      <div className={`absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b ${colors.accent} rounded-l-2xl`} />
+
+      {/* Glow hover */}
       <div
-        className={fuentesStyles.cardBorder}
-        style={{
-          background: validacion?.estaCompletamentePagada
-            ? 'linear-gradient(to bottom, rgb(34, 197, 94), rgb(22, 163, 74))'
-            : `linear-gradient(to bottom, ${colorScheme.from}, ${colorScheme.to})`
-        }}
+        className="absolute inset-0 opacity-0 hover:opacity-100 transition-opacity duration-400 pointer-events-none"
+        style={{ background: `radial-gradient(ellipse 60% 80% at 0% 50%, ${colors.glow}, transparent 70%)` }}
       />
 
-      <div className={fuentesStyles.cardContent}>
-        {/* Header con tipo de fuente y botón */}
-        <div className={fuentesStyles.cardHeader}>
-          <div className={fuentesStyles.iconSection}>
-            {/* Ícono circular con gradiente */}
-            <div
-              className={fuentesStyles.iconCircle}
-              style={{ background: `linear-gradient(135deg, ${colorScheme.from}, ${colorScheme.to})` }}
-            >
-              <IconComponent className={fuentesStyles.iconImage} />
+      <div className="relative z-10 pl-5 pr-4 py-4">
+        {/* Encabezado */}
+        <div className="flex items-start justify-between gap-3 mb-3">
+          <div className="flex items-center gap-2.5">
+            <div className={`w-9 h-9 rounded-xl ${colors.icon} flex items-center justify-center shadow-lg flex-shrink-0`}>
+              <CreditCard className="w-4 h-4 text-white" />
             </div>
-
-            {/* Info de fuente */}
-            <div className={fuentesStyles.infoWrapper}>
-              <h3 className={fuentesStyles.infoTitle}>{fuente.tipo}</h3>
-              <p className={fuentesStyles.infoSubtitle}>
-                <Clock className={fuentesStyles.infoIcon} />
-                {fuente.fecha_creacion
-                  ? new Date(fuente.fecha_creacion).toLocaleDateString('es-CO', {
-                      day: '2-digit',
-                      month: 'short',
-                      year: 'numeric'
-                    })
-                  : 'Sin fecha'}
-              </p>
+            <div>
+              <p className="text-sm font-bold text-gray-900 dark:text-white leading-tight">{fuente.tipo}</p>
+              {(fuente.entidad || fuente.numero_referencia) && (
+                <div className="flex items-center gap-1.5 mt-0.5 text-[11px] text-gray-400 dark:text-white/45">
+                  {fuente.entidad && (
+                    <span className="flex items-center gap-1">
+                      <Building2 className="w-3 h-3" />
+                      {fuente.entidad}
+                    </span>
+                  )}
+                  {fuente.entidad && fuente.numero_referencia && <span>·</span>}
+                  {fuente.numero_referencia && (
+                    <span className="flex items-center gap-1">
+                      <Hash className="w-3 h-3" />
+                      {fuente.numero_referencia}
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
           </div>
 
-          {/* Botón de registrar abono/desembolso con validación */}
-          <BotonRegistrarDesembolso
-            negociacionId={negociacionId}
-            tipoFuente={fuente.tipo}
-            fuenteCompletada={validacion?.estaCompletamentePagada || false}
-            onClick={() => onRegistrarAbono(fuente)}
-            className={fuentesStyles.button}
-            colorScheme={colorScheme}
-          />
+          {/* Badge completada / botón */}
+          <div className="flex-shrink-0">
+            {completada ? (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs font-semibold">
+                <BadgeCheck className="w-3.5 h-3.5" />
+                {esDesembolsoUnico ? 'Desembolsado ✓' : 'Completada'}
+              </span>
+            ) : esDesembolsoUnico && yaDesembolsada ? (
+              // Desembolso único ya registrado pero no marcado completada aún (edge case)
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-blue-500/15 border border-blue-500/30 text-blue-300 text-xs font-semibold">
+                <CheckCircle2 className="w-3.5 h-3.5" />
+                Desembolsado
+              </span>
+            ) : bloqueadoPorDocs && fuente.saldo_pendiente > 0 ? (
+              // Bloqueado por documentos obligatorios pendientes
+              <div className="flex flex-col items-end gap-1">
+                <button
+                  disabled
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gray-100 dark:bg-white/8 border border-gray-200 dark:border-white/10 text-gray-400 dark:text-white/30 text-xs font-semibold cursor-not-allowed select-none"
+                >
+                  <Lock className="w-3.5 h-3.5" />
+                  {esDesembolsoUnico ? 'Registrar Desembolso' : '+ Abono'}
+                </button>
+                <span className="flex items-center gap-1 text-[10px] font-semibold text-amber-500 dark:text-amber-400">
+                  <AlertTriangle className="w-3 h-3" />
+                  {docsPendientesObligatorios} doc. obligatorio{docsPendientesObligatorios > 1 ? 's' : ''} pendiente{docsPendientesObligatorios > 1 ? 's' : ''}
+                </span>
+              </div>
+            ) : esDesembolsoUnico && puedeAbonar ? (
+              <motion.button
+                whileHover={{ scale: 1.05, boxShadow: `0 0 18px ${colors.glow}` }}
+                whileTap={{ scale: 0.96 }}
+                onClick={() => onRegistrarAbono(fuente)}
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r ${colors.accent} text-white text-xs font-semibold shadow-md`}
+              >
+                <Landmark className="w-3.5 h-3.5" />
+                Registrar Desembolso
+              </motion.button>
+            ) : puedeAbonar ? (
+              <motion.button
+                whileHover={{ scale: 1.05, boxShadow: `0 0 18px ${colors.glow}` }}
+                whileTap={{ scale: 0.96 }}
+                onClick={() => onRegistrarAbono(fuente)}
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r ${colors.accent} text-white text-xs font-semibold shadow-md`}
+              >
+                <CreditCard className="w-3.5 h-3.5" />
+                + Abono
+              </motion.button>
+            ) : null}
+          </div>
         </div>
 
-        {/* Grid de métricas */}
-        <div className={fuentesStyles.metricsGrid}>
-          <div className={fuentesStyles.metricItem}>
-            <p className={fuentesStyles.metricLabel}>Aprobado</p>
-            <p className={fuentesStyles.metricValue} style={{ color: colorScheme.from }}>
-              {formatCurrency(fuente.monto_aprobado)}
-            </p>
+        {/* Montos en 3 celdas */}
+        <div className="grid grid-cols-3 gap-2 mb-3">
+          <div className="rounded-xl bg-gray-100 dark:bg-white/[0.06] border border-gray-200 dark:border-white/[0.07] p-2.5 text-center">
+            <p className="text-[10px] text-gray-400 dark:text-white/40 uppercase tracking-wider mb-0.5">{labelAprobado}</p>
+            <p className="text-xs font-bold text-gray-900 dark:text-white leading-tight">{formatCurrency(fuente.monto_aprobado)}</p>
           </div>
-
-          <div className={fuentesStyles.metricItem}>
-            <p className={fuentesStyles.metricLabel}>Recibido</p>
-            <p className={fuentesStyles.metricValue} style={{ color: 'rgb(34, 197, 94)' }}>
-              {formatCurrency(fuente.monto_recibido)}
-            </p>
+          <div className="rounded-xl bg-emerald-50 dark:bg-emerald-500/[0.08] border border-emerald-200 dark:border-emerald-500/[0.15] p-2.5 text-center">
+            <p className="text-[10px] text-emerald-500 dark:text-emerald-400/60 uppercase tracking-wider mb-0.5">{labelRecibido}</p>
+            <p className="text-xs font-bold text-emerald-700 dark:text-emerald-300 leading-tight">{formatCurrency(fuente.monto_recibido)}</p>
           </div>
-
-          <div className={fuentesStyles.metricItem}>
-            <p className={fuentesStyles.metricLabel}>Pendiente</p>
-            <p className={fuentesStyles.metricValue} style={{ color: 'rgb(239, 68, 68)' }}>
-              {formatCurrency(fuente.saldo_pendiente)}
-            </p>
+          <div className="rounded-xl bg-amber-50 dark:bg-amber-500/[0.07] border border-amber-200 dark:border-amber-500/[0.12] p-2.5 text-center">
+            <p className="text-[10px] text-amber-500 dark:text-amber-400/60 uppercase tracking-wider mb-0.5">Pendiente</p>
+            <p className={`text-xs font-bold leading-tight ${fuente.saldo_pendiente > 0 ? 'text-amber-700 dark:text-amber-300' : 'text-gray-300 dark:text-white/30'}`}>{formatCurrency(fuente.saldo_pendiente)}</p>
           </div>
         </div>
 
-        {/* Barra de progreso con efecto shine */}
-        <div className={fuentesStyles.progressSection}>
-          <div className={fuentesStyles.progressHeader}>
-            <span className={fuentesStyles.progressLabel}>Progreso de pago</span>
-            <span className={fuentesStyles.progressPercent} style={{ color: colorScheme.from }}>
-              {porcentajeCompletado.toFixed(1)}%
-            </span>
-          </div>
-
-          <div className={fuentesStyles.progressBar}>
+        {/* Barra de progreso */}
+        <div className="space-y-1">
+          <div className="h-2 rounded-full bg-gray-200 dark:bg-white/10 overflow-hidden">
             <motion.div
-              className={fuentesStyles.progressFill}
-              style={{ background: `linear-gradient(to right, ${colorScheme.from}, ${colorScheme.to})` }}
+              className={`h-full rounded-full bg-gradient-to-r ${colors.bar}`}
               initial={{ width: 0 }}
-              animate={{ width: `${porcentajeCompletado}%` }}
-              transition={{ duration: 1, ease: 'easeOut', delay: 0.5 + index * 0.1 }}
-            >
-              {/* Efecto de brillo animado */}
-              <motion.div
-                className={fuentesStyles.progressShine}
-                animate={{
-                  x: ['-100%', '200%']
-                }}
-                transition={{
-                  duration: 2,
-                  repeat: Infinity,
-                  repeatDelay: 1,
-                  ease: 'easeInOut'
-                }}
-              />
-            </motion.div>
+              animate={{ width: `${pct}%` }}
+              transition={{ duration: 0.9, ease: 'easeOut', delay: 0.2 + index * 0.07 }}
+              style={{ boxShadow: `0 0 8px ${colors.glow}` }}
+            />
+          </div>
+          <div className="flex justify-between">
+            <span className="text-[10px] text-gray-400 dark:text-white/30">0%</span>
+            <span className={`text-[10px] font-bold ${completada ? 'text-emerald-600 dark:text-emerald-400' : 'text-gray-500 dark:text-white/60'}`}>{pct.toFixed(1)}%</span>
           </div>
         </div>
+      </div>
 
-        {/* Entidad (opcional) */}
-        {fuente.entidad && (
-          <div className="mt-4 p-3 rounded-lg bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600">
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              <strong>Entidad:</strong> {fuente.entidad}
-              {fuente.numero_referencia && ` - Ref: ${fuente.numero_referencia}`}
+      {/* Franja de advertencia: documentos obligatorios pendientes */}
+      {bloqueadoPorDocs && fuente.saldo_pendiente > 0 && (
+        <div className="px-5 py-3 bg-amber-50 dark:bg-amber-500/[0.08] border-t border-amber-200 dark:border-amber-500/[0.18] space-y-2">
+          <div className="flex items-start gap-2">
+            <FileWarning className="w-4 h-4 text-amber-500 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+            <p className="text-xs text-amber-700 dark:text-amber-300 font-medium leading-tight">
+              <span className="font-bold">Acción bloqueada.</span>{' '}
+              Debes aportar{' '}
+              <span className="font-bold">
+                {docsPendientesObligatorios} documento{docsPendientesObligatorios > 1 ? 's' : ''} obligatorio{docsPendientesObligatorios > 1 ? 's' : ''}
+              </span>{' '}
+              antes de registrar este{esDesembolsoUnico ? ' desembolso' : ' abono'}.
             </p>
           </div>
-        )}
-      </div>
+
+          {/* Lista de documentos pendientes */}
+          {docsPendientesNombres.length > 0 && (
+            <ul className="ml-6 space-y-0.5">
+              {docsPendientesNombres.map((nombre, i) => (
+                <li key={i} className="flex items-center gap-1.5 text-[11px] text-amber-700 dark:text-amber-300">
+                  <span className="w-1 h-1 rounded-full bg-amber-500 dark:bg-amber-400 flex-shrink-0" />
+                  {nombre}
+                </li>
+              ))}
+            </ul>
+          )}
+
+          {/* Acceso directo a documentos del cliente */}
+          {clienteSlug && (
+            <Link
+              href={`/clientes/${clienteSlug}`}
+              onClick={() => sessionStorage.setItem('cliente-tab-intent', 'documentos')}
+              className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-amber-700 dark:text-amber-400 hover:text-amber-900 dark:hover:text-amber-200 underline underline-offset-2 transition-colors"
+            >
+              <ExternalLink className="w-3 h-3" />
+              Ir a Documentos del cliente
+            </Link>
+          )}
+        </div>
+      )}
     </motion.div>
   )
 }

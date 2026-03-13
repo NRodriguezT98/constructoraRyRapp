@@ -131,7 +131,7 @@ export function useDocumentoVersiones({
       const docActual = versiones.find(v => v.id === versionId)
       if (docActual) {
         queryClient.invalidateQueries({
-          queryKey: documentosKeys.list(docActual.proyecto_id), // ✅ Key correcta
+          queryKey: documentosKeys.list(docActual.proyecto_id, tipoEntidad), // ✅ Key correcta
         })
       }
 
@@ -161,7 +161,7 @@ export function useDocumentoVersiones({
 
     // ✅ Validar rol de Administrador
     if (perfil?.rol !== 'Administrador') {
-      toast.error('❌ Solo Administradores pueden eliminar versiones')
+      toast.error('Solo Administradores pueden eliminar versiones')
       return
     }
 
@@ -197,7 +197,7 @@ export function useDocumentoVersiones({
       const docActual = versiones.find(v => v.id === versionAEliminar.id)
       if (docActual) {
         await Promise.all([
-          queryClient.refetchQueries({ queryKey: documentosKeys.list(docActual.proyecto_id) }),
+          queryClient.refetchQueries({ queryKey: documentosKeys.list(docActual.proyecto_id, tipoEntidad) }),
           queryClient.refetchQueries({ queryKey: ['documentos-eliminados'] }), // ← Papelera
           queryClient.refetchQueries({ queryKey: ['versiones-eliminadas'] }), // ← Versiones en papelera
         ])

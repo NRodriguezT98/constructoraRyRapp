@@ -44,7 +44,7 @@ export default function ViviendaDetalleClient({ viviendaId }: ViviendaDetalleCli
   const router = useRouter()
 
   // React Query hook (igual que proyectos)
-  const { vivienda, cargando: loading, error } = useViviendaQuery(viviendaId)
+  const { vivienda, loading, error } = useViviendaQuery(viviendaId)
 
   // Estados para modales y tabs
   const [activeTab, setActiveTab] = useState<TabType>('info')

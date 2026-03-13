@@ -1,9 +1,10 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Toaster } from 'sonner'
 
 import { Inter } from 'next/font/google'
 
-import { AutoLogoutProvider } from '@/components/auto-logout-provider'
+import { IdleTimerProvider } from '@/components/IdleTimerProvider'
+import { SessionInterceptor } from '@/components/SessionInterceptor'
 import { ConditionalLayout } from '@/components/conditional-layout'
 import { ConditionalSidebar } from '@/components/conditional-sidebar'
 import { ProtectedApp } from '@/components/protected-app'
@@ -18,11 +19,27 @@ import './globals.css'
 
 const inter = Inter({ subsets: ['latin'] })
 
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#f9fafb' },
+    { media: '(prefers-color-scheme: dark)', color: '#111827' },
+  ],
+}
+
 export const metadata: Metadata = {
-  title: 'RyR Constructora - Sistema de Gestión',
+  title: {
+    default: 'RyR Constructora - Sistema de Gestión',
+    template: '%s | RyR Constructora',
+  },
   description: 'Sistema de gestión administrativa para constructora RyR',
   icons: {
     icon: '/images/favicon.png',
+  },
+  robots: {
+    index: false,
+    follow: false,
   },
 }
 
@@ -52,10 +69,11 @@ export default function RootLayout({
         )}
       </head>
       <body className={inter.className} suppressHydrationWarning>
-        <ReactQueryProvider>
-          <AuthProvider>
-            {/* Sistema de auto-logout por inactividad */}
-            <AutoLogoutProvider />
+        <SessionInterceptor>
+          <ReactQueryProvider>
+            <AuthProvider>
+            {/* Sistema profesional de inactividad */}
+            <IdleTimerProvider />
 
             <ThemeProvider>
               <ModalProvider>
@@ -71,7 +89,26 @@ export default function RootLayout({
                     </div>
                   </ProtectedApp>
 
-                  <Toaster position='top-right' richColors />
+                  <Toaster
+                    position='bottom-right'
+                    duration={4000}
+                    gap={8}
+                    toastOptions={{
+                      // Fallback para toast.success/error() legacy — los toast.custom() ignoran esto
+                      unstyled: true,
+                      classNames: {
+                        toast: 'relative flex w-[360px] items-start gap-3 overflow-hidden rounded-xl border-l-[3px] border border-white/[0.07] bg-gray-950 p-4 pr-10 shadow-[0_24px_64px_rgba(0,0,0,0.5)]',
+                        title: 'text-[13px] font-semibold leading-snug text-white',
+                        description: 'mt-0.5 text-[11.5px] leading-relaxed text-white/45',
+                        icon: 'mt-px shrink-0',
+                        closeButton: 'absolute right-2.5 top-[13px] flex h-[22px] w-[22px] cursor-pointer items-center justify-center rounded-md border-0 bg-transparent text-white/25 transition-colors hover:bg-white/[0.08] hover:text-white/60',
+                        success: 'border-l-emerald-500',
+                        error: 'border-l-red-500',
+                        info: 'border-l-blue-500',
+                        warning: 'border-l-amber-400',
+                      },
+                    }}
+                  />
 
                   {/* Modales globales */}
                   <ConfirmModal />
@@ -79,8 +116,9 @@ export default function RootLayout({
                 </UnsavedChangesProvider>
               </ModalProvider>
             </ThemeProvider>
-          </AuthProvider>
-        </ReactQueryProvider>
+            </AuthProvider>
+          </ReactQueryProvider>
+        </SessionInterceptor>
       </body>
     </html>
   )

@@ -1,4 +1,4 @@
-﻿import { useCallback, useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 
 import type { Tables } from '@/lib/supabase/database.types'
 
@@ -23,7 +23,8 @@ interface UseViviendasReturn {
  * Refactorizado con React Query
  */
 export function useViviendas(filtros?: FiltrosViviendas): UseViviendasReturn {
-  const { data: viviendas = [], isLoading: cargando, error, refetch } = useViviendasQuery(filtros || {})
+  const { data: viviendasRaw = [], isLoading: cargando, error, refetch } = useViviendasQuery(filtros || undefined)
+  const viviendas = viviendasRaw as any[]
   const crearMutation = useCrearViviendaMutation()
   const actualizarMutation = useActualizarViviendaMutation()
   const eliminarMutation = useEliminarViviendaMutation()

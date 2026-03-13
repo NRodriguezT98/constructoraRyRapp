@@ -1,6 +1,5 @@
 'use client'
 
-import { useEffect } from 'react'
 
 import { motion } from 'framer-motion'
 import {
@@ -29,7 +28,6 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card'
-import { DebugLogger } from '@/lib/utils/debug-logger'
 
 
 
@@ -132,17 +130,7 @@ const stats = [
 ]
 
 export default function DashboardContent(props: DashboardContentProps) {
-  useEffect(() => {
-    DebugLogger.log('DASHBOARD', '🏠 Dashboard montado - Usuario autenticado')
-    console.log('🏠 [DASHBOARD CONTENT] Props recibidos:', props)
-
-    // Imprimir logs persistidos del login
-    const logs = DebugLogger.getLogs()
-    if (logs.length > 0) {
-      console.log('📋 [DASHBOARD] Logs del proceso de login:', logs.length)
-      DebugLogger.printLogs()
-    }
-  }, [props])
+  // Component initialization - logs removed for cleaner console
 
   return (
     <div className={styles.containerClasses}>

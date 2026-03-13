@@ -8,6 +8,7 @@ import type {
     Vivienda,
     ViviendaFormData,
 } from '../types'
+import { sanitizeViviendaFormData, sanitizeViviendaUpdate } from '../utils/sanitize-vivienda.utils'
 
 /**
  * Servicio para operaciones CRUD de Viviendas
@@ -247,8 +248,8 @@ class ViviendasService {
         vivienda.clientes = {
           id: clienteData.id,
           nombre_completo: `${clienteData.nombres} ${clienteData.apellidos}`,
-          telefono: clienteData.telefono,
-          email: clienteData.email,
+          telefono: clienteData.telefono ?? undefined,
+          email: clienteData.email ?? undefined,
         }
       }
 
@@ -307,36 +308,39 @@ class ViviendasService {
       )
     }
 
+    // 🧹 Sanitizar datos (strings vacíos → null)
+    const formDataSanitizada = sanitizeViviendaFormData(formData)
+
     // Calcular valor total
     const gastosNotariales = await this.obtenerGastosNotariales()
     const valorTotal =
-      formData.valor_base + gastosNotariales + formData.recargo_esquinera
+      formDataSanitizada.valor_base + gastosNotariales + formDataSanitizada.recargo_esquinera
 
     // Preparar datos para inserción
     const viviendaData = {
-      manzana_id: formData.manzana_id,
-      numero: formData.numero,
+      manzana_id: formDataSanitizada.manzana_id,
+      numero: formDataSanitizada.numero,
       estado: 'Disponible' as const,
 
-      // Linderos
-      lindero_norte: formData.lindero_norte,
-      lindero_sur: formData.lindero_sur,
-      lindero_oriente: formData.lindero_oriente,
-      lindero_occidente: formData.lindero_occidente,
+      // Linderos (sanitizados: null si vacíos)
+      lindero_norte: formDataSanitizada.lindero_norte,
+      lindero_sur: formDataSanitizada.lindero_sur,
+      lindero_oriente: formDataSanitizada.lindero_oriente,
+      lindero_occidente: formDataSanitizada.lindero_occidente,
 
-      // Información Legal
-      matricula_inmobiliaria: formData.matricula_inmobiliaria,
-      nomenclatura: formData.nomenclatura,
-      area: formData.area_construida || 0, // Campo legacy requerido
-      area_lote: formData.area_lote,
-      area_construida: formData.area_construida,
-      tipo_vivienda: formData.tipo_vivienda,
-      certificado_tradicion_url: certificadoUrl,
+      // Información Legal (sanitizados: null si vacíos)
+      matricula_inmobiliaria: formDataSanitizada.matricula_inmobiliaria,
+      nomenclatura: formDataSanitizada.nomenclatura,
+      area: formDataSanitizada.area_construida || 0, // Campo legacy requerido
+      area_lote: formDataSanitizada.area_lote,
+      area_construida: formDataSanitizada.area_construida,
+      tipo_vivienda: formDataSanitizada.tipo_vivienda,
+      certificado_tradicion_url: certificadoUrl || null,
 
       // Información Financiera
-      valor_base: formData.valor_base,
-      es_esquinera: formData.es_esquinera,
-      recargo_esquinera: formData.recargo_esquinera,
+      valor_base: formDataSanitizada.valor_base,
+      es_esquinera: formDataSanitizada.es_esquinera,
+      recargo_esquinera: formDataSanitizada.recargo_esquinera,
       gastos_notariales: gastosNotariales,
       // valor_total se calcula automáticamente en la BD
     }
@@ -369,10 +373,10 @@ class ViviendasService {
       total_abonado: 0,
       cantidad_abonos: 0,
       porcentaje_pagado: 0,
-      saldo_pendiente: data.valor_total,
-      fecha_creacion: new Date(data.fecha_creacion),
-      fecha_actualizacion: new Date(data.fecha_actualizacion),
-    }
+      saldo_pendiente: data.valor_total ?? undefined,
+      fecha_creacion: new Date(data.fecha_creacion!),
+      fecha_actualizacion: new Date(data.fecha_actualizacion!),
+    } as unknown as Vivienda
 
     // 📄 CREAR REGISTRO EN DOCUMENTOS_VIVIENDA si hay certificado
     if (certificadoUrl && formData.certificado_tradicion_file) {
@@ -397,8 +401,8 @@ class ViviendasService {
             categoria_id: categoria?.id || null,
             titulo: 'Certificado de Tradición y Libertad',
             descripcion: 'Documento oficial de tradición y libertad de la vivienda (subido en creación)',
-            nombre_archivo: formData.certificado_tradicion_file.name,
-            nombre_original: formData.certificado_tradicion_file.name,
+            nombre_archivo: formData.certificado_tradicion_file!.name,
+            nombre_original: formData.certificado_tradicion_file!.name,
             tamano_bytes: formData.certificado_tradicion_file.size,
             tipo_mime: formData.certificado_tradicion_file.type,
             url_storage: certificadoUrl,
@@ -413,7 +417,7 @@ class ViviendasService {
               matricula: formData.matricula_inmobiliaria,
               nomenclatura: formData.nomenclatura
             }
-          })
+          } as any)
 
         if (docError) {
           console.error('[VIVIENDAS] Error al crear registro de documento:', docError)
@@ -437,62 +441,63 @@ class ViviendasService {
     id: string,
     formData: Partial<ViviendaFormData>
   ): Promise<Vivienda> {
+    // 🧹 Sanitizar datos de actualización (strings vacíos → null)
+    const formDataSanitizada = sanitizeViviendaUpdate(formData)
+
     // ✅ VALIDAR MATRÍCULA ÚNICA (si se está cambiando)
-    if (formData.matricula_inmobiliaria !== undefined) {
-      console.log('🔍 [ACTUALIZAR VIVIENDA] Validando unicidad de matrícula:', formData.matricula_inmobiliaria)
-      const resultado = await this.verificarMatriculaUnica(formData.matricula_inmobiliaria, id)
+    if (formDataSanitizada.matricula_inmobiliaria !== undefined) {
+      const resultado = await this.verificarMatriculaUnica(formDataSanitizada.matricula_inmobiliaria, id)
       if (!resultado.esUnica && resultado.viviendaDuplicada) {
-        console.error('❌ [ACTUALIZAR VIVIENDA] Matrícula duplicada:', formData.matricula_inmobiliaria)
-        throw new Error(`La matrícula inmobiliaria "${formData.matricula_inmobiliaria}" ya está registrada en la Mz. ${resultado.viviendaDuplicada.manzana} Casa #${resultado.viviendaDuplicada.numero}`)
+        console.error('❌ [ACTUALIZAR VIVIENDA] Matrícula duplicada:', formDataSanitizada.matricula_inmobiliaria)
+        throw new Error(`La matrícula inmobiliaria "${formDataSanitizada.matricula_inmobiliaria}" ya está registrada en la Mz. ${resultado.viviendaDuplicada.manzana} Casa #${resultado.viviendaDuplicada.numero}`)
       }
-      console.log('✅ [ACTUALIZAR VIVIENDA] Matrícula única validada')
     }
 
     // Si hay nuevo certificado, subirlo
     let certificadoUrl: string | undefined
 
-    if (formData.certificado_tradicion_file) {
+    if (formDataSanitizada.certificado_tradicion_file) {
       // Obtener datos de la vivienda para el path del archivo
       const vivienda = await this.obtenerPorId(id)
       if (!vivienda) throw new Error('Vivienda no encontrada')
 
       certificadoUrl = await this.subirCertificado(
-        formData.certificado_tradicion_file,
+        formDataSanitizada.certificado_tradicion_file,
         vivienda.manzana_id,
         vivienda.numero
       )
     }
 
-    // Preparar datos de actualización
+    // Preparar datos de actualización (con datos sanitizados)
     const updateData: any = {}
 
-    // Linderos
-    if (formData.lindero_norte !== undefined)
-      updateData.lindero_norte = formData.lindero_norte
-    if (formData.lindero_sur !== undefined) updateData.lindero_sur = formData.lindero_sur
-    if (formData.lindero_oriente !== undefined)
-      updateData.lindero_oriente = formData.lindero_oriente
-    if (formData.lindero_occidente !== undefined)
-      updateData.lindero_occidente = formData.lindero_occidente
+    // Linderos (todos sanitizados)
+    if (formDataSanitizada.lindero_norte !== undefined)
+      updateData.lindero_norte = formDataSanitizada.lindero_norte
+    if (formDataSanitizada.lindero_sur !== undefined) updateData.lindero_sur = formDataSanitizada.lindero_sur
+    if (formDataSanitizada.lindero_oriente !== undefined)
+      updateData.lindero_oriente = formDataSanitizada.lindero_oriente
+    if (formDataSanitizada.lindero_occidente !== undefined)
+      updateData.lindero_occidente = formDataSanitizada.lindero_occidente
 
-    // Información Legal
-    if (formData.matricula_inmobiliaria !== undefined)
-      updateData.matricula_inmobiliaria = formData.matricula_inmobiliaria
-    if (formData.nomenclatura !== undefined)
-      updateData.nomenclatura = formData.nomenclatura
-    if (formData.area_lote !== undefined) updateData.area_lote = formData.area_lote
-    if (formData.area_construida !== undefined)
-      updateData.area_construida = formData.area_construida
-    if (formData.tipo_vivienda !== undefined)
-      updateData.tipo_vivienda = formData.tipo_vivienda
+    // Información Legal (todos sanitizados)
+    if (formDataSanitizada.matricula_inmobiliaria !== undefined)
+      updateData.matricula_inmobiliaria = formDataSanitizada.matricula_inmobiliaria
+    if (formDataSanitizada.nomenclatura !== undefined)
+      updateData.nomenclatura = formDataSanitizada.nomenclatura
+    if (formDataSanitizada.area_lote !== undefined) updateData.area_lote = formDataSanitizada.area_lote
+    if (formDataSanitizada.area_construida !== undefined)
+      updateData.area_construida = formDataSanitizada.area_construida
+    if (formDataSanitizada.tipo_vivienda !== undefined)
+      updateData.tipo_vivienda = formDataSanitizada.tipo_vivienda
     if (certificadoUrl) updateData.certificado_tradicion_url = certificadoUrl
 
     // Información Financiera
-    if (formData.valor_base !== undefined) updateData.valor_base = formData.valor_base
-    if (formData.es_esquinera !== undefined)
-      updateData.es_esquinera = formData.es_esquinera
-    if (formData.recargo_esquinera !== undefined)
-      updateData.recargo_esquinera = formData.recargo_esquinera
+    if (formDataSanitizada.valor_base !== undefined) updateData.valor_base = formDataSanitizada.valor_base
+    if (formDataSanitizada.es_esquinera !== undefined)
+      updateData.es_esquinera = formDataSanitizada.es_esquinera
+    if (formDataSanitizada.recargo_esquinera !== undefined)
+      updateData.recargo_esquinera = formDataSanitizada.recargo_esquinera
 
     const { data, error } = await supabase
       .from('viviendas')
@@ -676,9 +681,6 @@ class ViviendasService {
     manzanaId: string,
     numeroVivienda: string
   ): Promise<string> {
-    console.log('📤 [SUBIR CERTIFICADO] Iniciando upload...')
-    console.log('📤 [SUBIR CERTIFICADO] File:', file.name, file.type, file.size)
-    console.log('📤 [SUBIR CERTIFICADO] Bucket destino: documentos-proyectos')
 
     // Obtener proyecto_id de la manzana
     const { data: manzana } = await supabase
@@ -694,7 +696,6 @@ class ViviendasService {
     const fileName = `certificado_${manzanaId}_${numeroVivienda}_${Date.now()}.pdf`
     const filePath = `${manzana.proyecto_id}/certificados/${fileName}`
 
-    console.log('📤 [SUBIR CERTIFICADO] Path completo:', filePath)
 
     const { error: uploadError } = await supabase.storage
       .from('documentos-proyectos')
@@ -708,14 +709,12 @@ class ViviendasService {
       throw uploadError
     }
 
-    console.log('✅ [SUBIR CERTIFICADO] Archivo subido exitosamente')
 
     // Obtener URL pública
     const {
       data: { publicUrl },
     } = supabase.storage.from('documentos-proyectos').getPublicUrl(filePath)
 
-    console.log('🔗 [SUBIR CERTIFICADO] URL pública generada:', publicUrl)
 
     return publicUrl
   }

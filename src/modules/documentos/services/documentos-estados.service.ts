@@ -11,19 +11,13 @@ import { auditService } from '@/services/audit.service'
  */
 export class DocumentosEstadosService {
   /**
-   * MARCAR VERSIÓN COMO ERRÓNEA
+   * MARCAR VERSIÃ“N COMO ERRÃ“NEA
    */
   static async marcarVersionComoErronea(
     documentoId: string,
     motivo: string,
     versionCorrectaId?: string
   ): Promise<void> {
-    console.log('🚨 Marcando versión como errónea:', {
-      documentoId,
-      motivo,
-      versionCorrectaId
-    })
-
     // 1. Validar que el documento existe
     const { data: documento, error: fetchError } = await supabase
       .from('documentos_proyecto')
@@ -32,7 +26,7 @@ export class DocumentosEstadosService {
       .single()
 
     if (fetchError || !documento) {
-      console.error('❌ Error al buscar documento:', {
+      console.error('âŒ Error al buscar documento:', {
         documentoId,
         error: fetchError
       })
@@ -51,11 +45,7 @@ export class DocumentosEstadosService {
         throw new Error('La versión correcta especificada no existe')
       }
 
-      console.log('✓ Versión correcta validada:', {
-        id: versionCorrecta.id,
-        titulo: versionCorrecta.titulo,
-        version: versionCorrecta.version
-      })
+
     }
 
     // 3. Actualizar estado de la versión
@@ -70,7 +60,7 @@ export class DocumentosEstadosService {
       .eq('id', documentoId)
 
     if (updateError) {
-      console.error('❌ Error al marcar versión como errónea:', updateError)
+      console.error('âŒ Error al marcar versión como errónea:', updateError)
       throw new Error(`Error al actualizar estado: ${updateError.message}`)
     }
 
@@ -87,11 +77,10 @@ export class DocumentosEstadosService {
         .eq('id', versionCorrectaId)
 
       if (linkError) {
-        console.warn('⚠️ No se pudo vincular versión correcta:', linkError)
+        console.warn('âš ï¸ No se pudo vincular versión correcta:', linkError)
       }
     }
 
-    console.log('✅ Versión marcada como errónea')
 
     // 5. Registrar en auditoría
     try {
@@ -151,20 +140,18 @@ export class DocumentosEstadosService {
         modulo: 'documentos'
       })
 
-      console.log('✅ Auditoría registrada')
     } catch (auditError) {
-      console.error('❌ Error al registrar auditoría:', auditError)
+      console.error('âŒ Error al registrar auditoría:', auditError)
     }
   }
 
   /**
-   * MARCAR VERSIÓN COMO OBSOLETA
+   * MARCAR VERSIÃ“N COMO OBSOLETA
    */
   static async marcarVersionComoObsoleta(
     documentoId: string,
     motivo: string
   ): Promise<void> {
-    console.log('📦 Marcando versión como obsoleta:', { documentoId, motivo })
 
     // 1. Validar que el documento existe
     const { data: documento, error: fetchError } = await supabase
@@ -174,7 +161,7 @@ export class DocumentosEstadosService {
       .single()
 
     if (fetchError || !documento) {
-      console.error('❌ Error al buscar documento:', {
+      console.error('âŒ Error al buscar documento:', {
         documentoId,
         error: fetchError
       })
@@ -192,11 +179,10 @@ export class DocumentosEstadosService {
       .eq('id', documentoId)
 
     if (updateError) {
-      console.error('❌ Error al marcar versión como obsoleta:', updateError)
+      console.error('âŒ Error al marcar versión como obsoleta:', updateError)
       throw new Error(`Error al actualizar estado: ${updateError.message}`)
     }
 
-    console.log('✅ Versión marcada como obsoleta')
 
     // 3. Registrar en auditoría
     try {
@@ -248,17 +234,15 @@ export class DocumentosEstadosService {
         modulo: 'documentos'
       })
 
-      console.log('✅ Auditoría registrada')
     } catch (auditError) {
-      console.error('⚠️ Error al registrar auditoría:', auditError)
+      console.error('âš ï¸ Error al registrar auditoría:', auditError)
     }
   }
 
   /**
-   * RESTAURAR ESTADO DE VERSIÓN A "VÁLIDA"
+   * RESTAURAR ESTADO DE VERSIÃ“N A "VÁLIDA"
    */
   static async restaurarEstadoVersion(documentoId: string): Promise<void> {
-    console.log('♻️ Restaurando estado de versión:', { documentoId })
 
     // 1. Validar que el documento existe
     const { data: documento, error: fetchError } = await supabase
@@ -268,7 +252,7 @@ export class DocumentosEstadosService {
       .single()
 
     if (fetchError || !documento) {
-      console.error('❌ Error al buscar documento:', {
+      console.error('âŒ Error al buscar documento:', {
         documentoId,
         error: fetchError
       })
@@ -287,11 +271,10 @@ export class DocumentosEstadosService {
       .eq('id', documentoId)
 
     if (updateError) {
-      console.error('❌ Error al restaurar estado:', updateError)
+      console.error('âŒ Error al restaurar estado:', updateError)
       throw new Error(`Error al restaurar estado: ${updateError.message}`)
     }
 
-    console.log('✅ Estado restaurado a "valida"')
 
     // 3. Registrar en auditoría
     try {
@@ -349,9 +332,8 @@ export class DocumentosEstadosService {
         modulo: 'documentos'
       })
 
-      console.log('✅ Auditoría registrada')
     } catch (auditError) {
-      console.error('⚠️ Error al registrar auditoría:', auditError)
+      console.error('âš ï¸ Error al registrar auditoría:', auditError)
     }
   }
 }

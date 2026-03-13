@@ -5,6 +5,7 @@
 
 'use client'
 
+import { formatNombreCompleto } from '@/lib/utils/string.utils'
 import { pageStyles } from '../styles'
 
 interface HeaderNegociacionProps {
@@ -23,7 +24,7 @@ export function HeaderNegociacion({
       </h1>
 
       <p className={pageStyles.header.subtitle}>
-        Configura el cierre financiero para {clienteNombre || 'el cliente'}
+        Configura el cierre financiero para {formatNombreCompleto(clienteNombre) || 'el cliente'}
       </p>
     </div>
   )

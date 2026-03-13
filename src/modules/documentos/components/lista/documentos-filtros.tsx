@@ -51,7 +51,7 @@ export function DocumentosFiltros({
   // Calcular documentos filtrados localmente para evitar loops
   const documentosFiltrados = useMemo(() => {
     return documentos.filter(doc => {
-      if (doc.estado === 'archivado') return false
+      // ✅ NO filtrar por estado aquí (se filtra en documentos-lista.tsx)
       if (categoriaFiltro && doc.categoria_id !== categoriaFiltro) return false
       if (busqueda) {
         const searchLower = busqueda.toLowerCase()
@@ -68,9 +68,9 @@ export function DocumentosFiltros({
 
   // Calcular estadísticas localmente
   const estadisticas = useMemo(() => {
-    const activos = documentos.filter(d => d.estado !== 'archivado')
-    const importantes = activos.filter(d => d.es_importante).length
-    const porVencer = activos.filter(d => {
+    // ✅ Contar TODOS (activos + archivados) para el total
+    const importantes = documentos.filter(d => d.es_importante).length
+    const porVencer = documentos.filter(d => {
       if (!d.fecha_vencimiento) return false
       const diasParaVencer = Math.ceil(
         (new Date(d.fecha_vencimiento).getTime() - Date.now()) /
@@ -79,7 +79,7 @@ export function DocumentosFiltros({
       return diasParaVencer <= 30 && diasParaVencer >= 0
     }).length
     return {
-      total: activos.length,
+      total: documentos.length, // ✅ Total incluye activos + archivados
       importantes,
       porVencer,
     }

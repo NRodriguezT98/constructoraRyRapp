@@ -1,13 +1,14 @@
+import { formatNombreCompleto } from '@/lib/utils/string.utils'
 import { motion } from 'framer-motion'
 import {
-  Ban,
-  Building2,
-  Calendar,
-  CreditCard,
-  Eye,
-  FileText,
-  Home,
-  User
+    Ban,
+    Building2,
+    Calendar,
+    CreditCard,
+    Eye,
+    FileText,
+    Home,
+    User
 } from 'lucide-react'
 
 import { useRouter } from 'next/navigation'
@@ -77,7 +78,7 @@ export function AbonoCard({ abono, onAnular }: AbonoCardProps) {
     // Generar URL amigable con slug de cliente
     const clienteUrl = construirURLCliente({
       id: abono.cliente.id,
-      nombre_completo: `${abono.cliente.nombres} ${abono.cliente.apellidos}`
+      nombre_completo: formatNombreCompleto(`${abono.cliente.nombres} ${abono.cliente.apellidos}`)
     })
     router.push(clienteUrl.replace('/clientes/', '/abonos/'))
   }
@@ -142,7 +143,7 @@ export function AbonoCard({ abono, onAnular }: AbonoCardProps) {
               <div className={s.infoText}>
                 <p className={s.infoLabel}>Cliente</p>
                 <p className={s.infoValue}>
-                  {abono.cliente.nombres} {abono.cliente.apellidos}
+                  {formatNombreCompleto(`${abono.cliente.nombres} ${abono.cliente.apellidos}`)}
                 </p>
               </div>
             </div>

@@ -39,7 +39,6 @@ export function useVersionesEliminadasCard({
   } = useQuery({
     queryKey: ['versiones-eliminadas', documentoId, modulo, tipoEntidad],
     queryFn: async () => {
-      console.log('🔍 Cargando versiones eliminadas:', { documentoId, modulo, tipoEntidad })
 
       // Usar servicio correcto según módulo
       if (modulo === 'viviendas') {

@@ -204,7 +204,7 @@ export function SidebarResumen({
             {fuentesConfiguradas.length > 0 && (
               <div className="border-t border-gray-200 dark:border-gray-800 pt-4 space-y-2">
                 {fuentesConfiguradas.map((fuente) => {
-                  const porcentaje = ((fuente.config.monto_aprobado / valorTotal) * 100).toFixed(0)
+                  const porcentaje = (((fuente.config.monto_aprobado ?? 0) / valorTotal) * 100).toFixed(0)
 
                   return (
                     <div
@@ -219,7 +219,7 @@ export function SidebarResumen({
                           {porcentaje}%
                         </span>
                         <span className="text-gray-900 dark:text-white font-medium">
-                          ${fuente.config.monto_aprobado.toLocaleString('es-CO')}
+                          ${(fuente.config.monto_aprobado ?? 0).toLocaleString('es-CO')}
                         </span>
                       </div>
                     </div>
@@ -253,7 +253,7 @@ export function SidebarResumen({
                 className="h-full bg-gradient-to-r from-blue-500 to-green-500 rounded-full"
                 initial={{ width: 0 }}
                 animate={{ width: `${progressStep1}%` }}
-                transition={{ duration: 0.5, ease: 'easeOut' }}
+                transition={{ duration: 0.15, ease: 'easeOut' }}
               />
             </div>
           </div>
@@ -273,7 +273,7 @@ export function SidebarResumen({
                 className="h-full bg-gradient-to-r from-blue-500 to-green-500 rounded-full"
                 initial={{ width: 0 }}
                 animate={{ width: `${progressStep2}%` }}
-                transition={{ duration: 0.5, ease: 'easeOut' }}
+                transition={{ duration: 0.15, ease: 'easeOut' }}
               />
             </div>
           </div>

@@ -3,6 +3,7 @@
  * ✅ Zod + React Hook Form (ESTÁNDAR DE LA APLICACIÓN)
  * ✅ Validación por paso (Paso 1, Paso 2, Paso 3)
  * ✅ Mensajes de error en español
+ * ✅ Sistema de descuentos con tipo/motivo
  */
 
 import { z } from 'zod'
@@ -24,11 +25,28 @@ export const paso1Schema = z.object({
     .number()
     .positive('El valor debe ser mayor a 0'),
 
+  aplicar_descuento: z
+    .boolean()
+    .optional()
+    .default(false),
+
   descuento_aplicado: z
     .number()
     .min(0, 'El descuento no puede ser negativo')
     .optional()
     .default(0),
+
+  tipo_descuento: z
+    .string()
+    .optional(),
+
+  motivo_descuento: z
+    .string()
+    .optional(),
+
+  valor_escritura_publica: z
+    .number()
+    .positive('El valor debe ser mayor a 0'),
 
   notas: z
     .string()
@@ -46,6 +64,47 @@ export const paso1Schema = z.object({
   {
     message: 'El descuento no puede ser mayor o igual al valor de la vivienda',
     path: ['descuento_aplicado'],
+  }
+)
+.refine(
+  (data) => {
+    // Si checkbox marcado, monto es obligatorio
+    if (data.aplicar_descuento && (!data.descuento_aplicado || data.descuento_aplicado <= 0)) {
+      return false
+    }
+    return true
+  },
+  {
+    message: 'Debes ingresar un monto de descuento',
+    path: ['descuento_aplicado'],
+  }
+)
+.refine(
+  (data) => {
+    // Si checkbox marcado, tipo es obligatorio
+    if (data.aplicar_descuento && !data.tipo_descuento) {
+      return false
+    }
+    return true
+  },
+  {
+    message: 'Debes seleccionar un tipo de descuento',
+    path: ['tipo_descuento'],
+  }
+)
+.refine(
+  (data) => {
+    // Si checkbox marcado, motivo es obligatorio (min 10 chars)
+    if (data.aplicar_descuento) {
+      if (!data.motivo_descuento || data.motivo_descuento.trim().length < 10) {
+        return false
+      }
+    }
+    return true
+  },
+  {
+    message: 'El motivo debe tener al menos 10 caracteres',
+    path: ['motivo_descuento'],
   }
 )
 
@@ -132,5 +191,60 @@ export const asignarViviendaSchema = z.object({
   ...paso1Schema.shape,
   ...paso2Schema.shape,
 })
+// ✅ CRÍTICO: Aplicar las validaciones del paso 1 que se pierden con .shape
+.refine(
+  (data) => {
+    // Validar que descuento < valor_negociado
+    if (data.descuento_aplicado && data.descuento_aplicado >= data.valor_negociado) {
+      return false
+    }
+    return true
+  },
+  {
+    message: 'El descuento no puede ser mayor o igual al valor de la vivienda',
+    path: ['descuento_aplicado'],
+  }
+)
+.refine(
+  (data) => {
+    // Si checkbox marcado, monto es obligatorio
+    if (data.aplicar_descuento && (!data.descuento_aplicado || data.descuento_aplicado <= 0)) {
+      return false
+    }
+    return true
+  },
+  {
+    message: 'Debes ingresar un monto de descuento',
+    path: ['descuento_aplicado'],
+  }
+)
+.refine(
+  (data) => {
+    // Si checkbox marcado, tipo es obligatorio
+    if (data.aplicar_descuento && !data.tipo_descuento) {
+      return false
+    }
+    return true
+  },
+  {
+    message: 'Debes seleccionar un tipo de descuento',
+    path: ['tipo_descuento'],
+  }
+)
+.refine(
+  (data) => {
+    // Si checkbox marcado, motivo es obligatorio (min 10 chars)
+    if (data.aplicar_descuento) {
+      if (!data.motivo_descuento || data.motivo_descuento.trim().length < 10) {
+        return false
+      }
+    }
+    return true
+  },
+  {
+    message: 'El motivo debe tener al menos 10 caracteres',
+    path: ['motivo_descuento'],
+  }
+)
 
 export type AsignarViviendaFormData = z.infer<typeof asignarViviendaSchema>

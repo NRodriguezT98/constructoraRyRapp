@@ -56,11 +56,6 @@ export function useRegistrarAbono() {
       newErrors.metodo_pago = 'Debe seleccionar un método de pago';
     }
 
-    // Número de referencia es opcional pero recomendado
-    if (formData.metodo_pago !== 'Efectivo' && !formData.numero_referencia) {
-      newErrors.numero_referencia = 'Se recomienda ingresar un número de referencia';
-    }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };

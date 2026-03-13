@@ -1,14 +1,17 @@
 /**
  * Hook principal para la página de Asignar Vivienda
- * ✅ REFACTORIZADO: React Hook Form + Zod (ESTÁNDAR DE LA APLICACIÓN)
- * ✅ Sistema touchedFields (validación progresiva)
- * ✅ Orquesta stepper, form data y navegación entre pasos
+ * âœ… REFACTORIZADO: React Hook Form + Zod (ESTÁNDAR DE LA APLICACIÃ“N)
+ * âœ… Sistema touchedFields (validación progresiva)
+ * âœ… Orquesta stepper, form data y navegación entre pasos
+ * âœ… React Query: Invalidación automática de cache
  */
 
 import { useCallback, useMemo, useState } from 'react'
 
+import { useQueryClient } from '@tanstack/react-query'
 import { useRouter } from 'next/navigation'
 
+import { supabase } from '@/lib/supabase/client'
 import {
     useAsignarViviendaForm,
     useFuentesPago,
@@ -17,6 +20,7 @@ import {
 import type { StepNumber } from '@/modules/clientes/components/asignar-vivienda/types'
 import { useCrearNegociacion } from '@/modules/clientes/hooks'
 import { crearDocumentosPendientesBatch } from '@/modules/clientes/services/documentos-pendientes.service'
+import { documentosPendientesKeys } from '@/modules/clientes/types/documentos-pendientes.types'
 import { validarSumaTotal } from '@/modules/clientes/utils/validar-edicion-fuentes'
 import { useModal } from '@/shared/components/modals'
 
@@ -33,6 +37,7 @@ export function useAsignarViviendaPage({
 }: UseAsignarViviendaPageProps) {
   const router = useRouter()
   const { confirm } = useModal()
+  const queryClient = useQueryClient() // âœ… React Query client
 
   // ============================================
   // HOOKS EXTERNOS
@@ -65,15 +70,19 @@ export function useAsignarViviendaPage({
   })
 
   // ============================================
-  // REACT HOOK FORM (SISTEMA ESTÁNDAR) ✅
+  // REACT HOOK FORM (SISTEMA ESTÁNDAR) âœ…
   // ============================================
 
-  // ✅ MEMO para prevenir bucle infinito (objeto estable)
+  // âœ… MEMO para prevenir bucle infinito (objeto estable)
   const initialData = useMemo(() => ({
     proyecto_id: proyectosViviendas.proyectoSeleccionado,
     vivienda_id: proyectosViviendas.viviendaId,
     valor_negociado: proyectosViviendas.valorNegociado,
+    aplicar_descuento: false,
     descuento_aplicado: 0,
+    tipo_descuento: '',
+    motivo_descuento: '',
+    valor_escritura_publica: 128000000, // Default sugerido $128M
     notas: '',
     fuentes: [],
     valor_total: 0,
@@ -89,8 +98,13 @@ export function useAsignarViviendaPage({
   })
 
   // Sincronizar valores del formulario con hooks legacy
-  const descuentoAplicado = form.descuento_aplicado
-  const notas = form.notas
+  const {
+    descuento_aplicado: descuentoAplicado,
+    tipo_descuento: tipoDescuento,
+    motivo_descuento: motivoDescuento,
+    valor_escritura_publica: valorEscrituraPublica,
+    notas,
+  } = form
 
   const valorTotal = useMemo(() => {
     return Math.max(0, proyectosViviendas.valorNegociado - descuentoAplicado)
@@ -149,7 +163,7 @@ export function useAsignarViviendaPage({
   }, [fuentesPago.fuentes, fuentesPago.sumaCierra, fuentesPago.totalFuentes, valorTotal])
 
   // ============================================
-  // VALIDACIÓN DE CAMPOS (Mejora #1)
+  // VALIDACIÃ“N DE CAMPOS (Mejora #1)
   // ============================================
 
   const validacionCampos = useMemo(() => {
@@ -183,7 +197,7 @@ export function useAsignarViviendaPage({
   ])
 
   // ============================================
-  // NAVEGACIÓN (REFACTORIZADO CON REACT HOOK FORM) ✅
+  // NAVEGACIÃ“N (REFACTORIZADO CON REACT HOOK FORM) âœ…
   // ============================================
 
   const handleNext = useCallback(async () => {
@@ -194,8 +208,15 @@ export function useAsignarViviendaPage({
       const isStepValid = await form.validarPaso(currentStep)
 
       if (!isStepValid) {
-        // Los errores se muestran automáticamente debajo de cada campo
-        window.scrollTo({ top: 0, behavior: 'smooth' })
+        // Scroll al primer campo con error
+        setTimeout(() => {
+          const firstError = document.querySelector('[class*="border-red"]') || document.querySelector('[class*="text-red"]')
+          if (firstError) {
+            firstError.scrollIntoView({ behavior: 'smooth', block: 'center' })
+          } else {
+            window.scrollTo({ top: 0, behavior: 'smooth' })
+          }
+        }, 100)
         return
       }
     }
@@ -207,7 +228,8 @@ export function useAsignarViviendaPage({
 
       // Verificar que haya al menos una fuente activa
       if (fuentesPago.fuentesActivas.length === 0) {
-        setError('⚠️ Debes activar al menos una fuente de pago')
+        setError('âš ï¸ Debes activar al menos una fuente de pago')
+        window.scrollTo({ top: 0, behavior: 'smooth' })
         return
       }
 
@@ -216,7 +238,8 @@ export function useAsignarViviendaPage({
         const faltante = fuentesPago.diferencia > 0
           ? `Falta $${fuentesPago.diferencia.toLocaleString('es-CO')} para completar el monto`
           : `Sobra $${Math.abs(fuentesPago.diferencia).toLocaleString('es-CO')}`
-        setError(`⚠️ La suma de fuentes no coincide. ${faltante}`)
+        setError(`âš ï¸ La suma de fuentes no coincide. ${faltante}`)
+        window.scrollTo({ top: 0, behavior: 'smooth' })
         return
       }
 
@@ -224,35 +247,21 @@ export function useAsignarViviendaPage({
       const hayErrores = !fuentesPago.paso2Valido
 
       if (hayErrores) {
-        // Los errores individuales ya se muestran en cada fuente
-        window.scrollTo({ top: 0, behavior: 'smooth' })
+        // Scroll al primer campo con error
+        setTimeout(() => {
+          const firstError = document.querySelector('[class*="border-red"]') || document.querySelector('[class*="text-red"]')
+          if (firstError) {
+            firstError.scrollIntoView({ behavior: 'smooth', block: 'center' })
+          } else {
+            window.scrollTo({ top: 0, behavior: 'smooth' })
+          }
+        }, 100)
         return
       }
 
-      // ⭐ VALIDAR DOCUMENTOS OBLIGATORIOS (Crédito Hipotecario y Caja Compensación)
-      const documentosFaltantes: string[] = []
-
-      fuentesPago.fuentesActivas.forEach((fuente) => {
-        const tipo = fuente.tipo
-        const config = fuente.config
-
-        // Crédito Hipotecario requiere carta de aprobación
-        if (tipo === 'Crédito Hipotecario' && !config?.carta_aprobacion_url) {
-          documentosFaltantes.push('Carta de Aprobación de Crédito Hipotecario')
-        }
-
-        // Subsidio Caja Compensación requiere carta
-        if (tipo === 'Subsidio Caja Compensación' && !config?.carta_aprobacion_url) {
-          documentosFaltantes.push('Carta de Aprobación de Subsidio Caja Compensación')
-        }
-      })
-
-      if (documentosFaltantes.length > 0) {
-        const listaDocumentos = documentosFaltantes.map((doc) => `• ${doc}`).join('\n')
-        setError(`⚠️ Documentos obligatorios faltantes:\n\n${listaDocumentos}\n\nPor favor sube los documentos requeridos antes de continuar.`)
-        window.scrollTo({ top: 0, behavior: 'smooth' })
-        return
-      }
+      // âœ… Ya no validamos documentos aquí
+      // El sistema creará documentos_pendientes automáticamente
+      // Usuario sube documentos desde la pestaña Documentos del cliente
     }
 
     // Paso válido: avanzar
@@ -317,12 +326,14 @@ export function useAsignarViviendaPage({
       }
 
       // Crear negociación con fuentes de pago
-      console.log('📝 Creando negociación desde vista completa...')
       const negociacion = await crearNegociacion({
         cliente_id: clienteId,
         vivienda_id: proyectosViviendas.viviendaId,
         valor_negociado: proyectosViviendas.valorNegociado,
         descuento_aplicado: descuentoAplicado,
+        tipo_descuento: tipoDescuento,
+        motivo_descuento: motivoDescuento,
+        valor_escritura_publica: valorEscrituraPublica,
         notas,
         fuentes_pago: fuentesParaCrear,
       })
@@ -333,14 +344,47 @@ export function useAsignarViviendaPage({
         return
       }
 
-      console.log('✅ Negociación creada exitosamente:', negociacion.id)
 
-      // ⭐ NUEVO: Crear documentos pendientes para cartas NO subidas
+      // â­ Consultar fuentes de pago creadas
+      const { data: fuentesPagoCreadas, error: errorFuentes } = await supabase
+        .from('fuentes_pago')
+        .select('id, tipo, entidad')
+        .eq('negociacion_id', negociacion.id)
+
+      if (errorFuentes || !fuentesPagoCreadas) {
+        console.error('âŒ Error consultando fuentes de pago:', errorFuentes)
+        setError(errorFuentes?.message || 'Error consultando fuentes de pago')
+        setCreando(false)
+        return
+      }
+
+      // â­ Obtener IDs únicos de entidades (excluyendo nulls)
+      const entidadIds = [...new Set(
+        fuentesPagoCreadas
+          .map(f => f.entidad)
+          .filter((id): id is string => id !== null)
+      )]
+
+      // â­ Consultar nombres de entidades en una sola query
+      const nombresEntidades = new Map<string, string>()
+      if (entidadIds.length > 0) {
+        const { data: entidades } = await supabase
+          .from('entidades_financieras')
+          .select('id, nombre')
+          .in('id', entidadIds)
+
+        entidades?.forEach(e => {
+          nombresEntidades.set(e.id, e.nombre)
+        })
+      }
+
+
+      // â­ NUEVO: Crear documentos pendientes para cartas NO subidas
       const viviendaSeleccionada = proyectosViviendas.viviendas.find(
         (v) => v.id === proyectosViviendas.viviendaId
       )
 
-      if (viviendaSeleccionada?.manzana_nombre && viviendaSeleccionada?.numero) {
+      if (viviendaSeleccionada?.manzana_nombre && viviendaSeleccionada?.numero && fuentesPagoCreadas) {
         const documentosPendientes = fuentesPago.fuentesActivas
           .filter((fuente) => {
             // Solo crear pendiente si:
@@ -348,32 +392,85 @@ export function useAsignarViviendaPage({
             // 2. NO marcó "tengo la carta ahora"
             // 3. NO tiene carta subida
             const requiereCarta = fuente.tipo !== 'Cuota Inicial'
-            const noTieneCartaAhora = !fuentesPago.tieneCartasAhora[fuente.tipo]
+            const noTieneCartaAhora = !(fuentesPago as any).tieneCartasAhora[fuente.tipo]
             const noSubioCarta = !fuente.config?.carta_aprobacion_url
 
             return requiereCarta && noTieneCartaAhora && noSubioCarta
           })
-          .map((fuente) => ({
-            clienteId,
-            tipoFuente: fuente.tipo,
-            entidad: fuente.config?.entidad,
-            manzana: viviendaSeleccionada.manzana_nombre!,
-            numeroVivienda: viviendaSeleccionada.numero.toString(),
-          }))
+          .map((fuente) => {
+            // â­ Buscar el ID de la fuente de pago creada
+            // Priorizar búsqueda con entidad, luego solo por tipo
+            let fuenteCreada = fuentesPagoCreadas.find(
+              (fp) => fp.tipo === fuente.tipo && fp.entidad === fuente.config?.entidad
+            )
+
+            // Si no se encontró con entidad, buscar solo por tipo (para Mi Casa Ya sin entidad)
+            if (!fuenteCreada && !fuente.config?.entidad) {
+              fuenteCreada = fuentesPagoCreadas.find((fp) => fp.tipo === fuente.tipo)
+            }
+
+            if (!fuenteCreada) {
+              console.warn(`âš ï¸ No se encontró fuente de pago para ${fuente.tipo}`)
+              return null
+            }
+
+            return {
+              clienteId,
+              fuentePagoId: fuenteCreada.id,
+              tipoFuente: fuente.tipo,
+              entidad: fuenteCreada.entidad
+                ? nombresEntidades.get(fuenteCreada.entidad) || null
+                : null,
+              manzana: viviendaSeleccionada.manzana_nombre!,
+              numeroVivienda: viviendaSeleccionada.numero.toString(),
+            }
+          })
+          .filter((doc): doc is NonNullable<typeof doc> => doc !== null) // Filtrar nulls
 
         if (documentosPendientes.length > 0) {
-          console.log('📋 Creando documentos pendientes:', documentosPendientes)
-          await crearDocumentosPendientesBatch(documentosPendientes)
-          console.log(`✅ ${documentosPendientes.length} documento(s) pendiente(s) creado(s)`)
+
+
+          // âš ï¸ VERIFICAR: ¿Hay duplicados?
+          const fuenteIds = documentosPendientes.map(d => d.fuentePagoId)
+          const uniqueFuenteIds = new Set(fuenteIds)
+          if (fuenteIds.length !== uniqueFuenteIds.size) {
+            console.warn('âš ï¸ DUPLICADOS DETECTADOS:', {
+              total: fuenteIds.length,
+              unicos: uniqueFuenteIds.size,
+              ids: fuenteIds
+            })
+          }
+
+          await crearDocumentosPendientesBatch(documentosPendientes as any)
+
+          // âœ… Invalidar cache de React Query para documentos pendientes
+          queryClient.invalidateQueries({
+            queryKey: documentosPendientesKeys.byCliente(clienteId)
+          })
         }
       }
 
       // Limpiar y navegar al detalle del cliente
       limpiarHook()
-      router.push(`/clientes/${clienteId}?tab=negociaciones&highlight=${negociacion.id}` as any)
+      router.push(`/clientes/${clienteId}?tab=vivienda-asignada&highlight=${negociacion.id}` as any)
     } catch (err) {
-      console.error('❌ Error creando negociación:', err)
-      setError(err instanceof Error ? err.message : 'Error al crear negociación')
+      console.error('âŒ Error creando negociación:', err)
+
+      // Mensaje de error más claro
+      const errorMsg = err instanceof Error ? err.message : 'Error al crear negociación'
+      setError(
+        `${errorMsg}\n\nâš ï¸ Por favor revisa la información del descuento y vuelve a configurar las fuentes de pago.`
+      )
+
+      // â­ VOLVER AL PASO 1 para que usuario revise los datos
+      setCurrentStep(1)
+
+      // â­ RESETEAR fuentes de pago para evitar inconsistencias
+      // Las fuentes se recalcularán automáticamente con el valorTotal correcto
+      fuentesPago.resetear()
+
+      // Scroll al error
+      window.scrollTo({ top: 0, behavior: 'smooth' })
     } finally {
       setCreando(false)
     }
@@ -393,10 +490,10 @@ export function useAsignarViviendaPage({
   ])
 
   // ============================================
-  // RETURN (REFACTORIZADO) ✅
+  // RETURN (REFACTORIZADO) âœ…
   // ============================================
 
-  // ⭐ Obtener datos de vivienda seleccionada para documentos
+  // â­ Obtener datos de vivienda seleccionada para documentos
   const viviendaSeleccionada = proyectosViviendas.viviendas.find(
     (v) => v.id === proyectosViviendas.viviendaId
   )
@@ -406,18 +503,18 @@ export function useAsignarViviendaPage({
     currentStep,
     completedSteps,
 
-    // ✅ React Hook Form (SISTEMA ESTÁNDAR)
+    // âœ… React Hook Form (SISTEMA ESTÁNDAR)
     form, // Exponer todo el form para acceso directo
     register: form.register,
     errors: form.errors,
-    touchedFields: form.touchedFields, // ✅ Sistema estándar (reemplaza pasosTouched)
+    touchedFields: form.touchedFields, // âœ… Sistema estándar (reemplaza pasosTouched)
     setValue: form.setValue,
     watch: form.watch,
 
     // Proyectos y Viviendas
     ...proyectosViviendas,
 
-    // ⭐ Datos para documentos de fuentes de pago
+    // â­ Datos para documentos de fuentes de pago
     manzanaVivienda: viviendaSeleccionada?.manzana_nombre,
     numeroVivienda: viviendaSeleccionada?.numero,
 

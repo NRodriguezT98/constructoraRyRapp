@@ -176,7 +176,7 @@ export function DocumentoVersionesModal({
                   const cambios = version.metadata && typeof version.metadata === 'object'
                     ? (version.metadata as any).cambios
                     : null
-                  const estadoVersion = (version.estado_version as EstadoVersion) || 'valida'
+                  const estadoVersion = ((version as any).estado_version as EstadoVersion) || 'valida'
 
                   // 🆒 OPCIÓN C: Numeración secuencial visual (v1, v2, v3) + original para auditoría
                   const versionSecuencial = versiones.length - index // De mayor a menor (actual = 1)
@@ -277,8 +277,8 @@ export function DocumentoVersionesModal({
                         <div className="mb-3">
                           <EstadoVersionAlert
                             estado={estadoVersion}
-                            motivo={version.motivo_estado}
-                            versionCorrectaId={version.version_corrige_a}
+                            motivo={(version as any).motivo_estado}
+                            versionCorrectaId={(version as any).version_corrige_a}
                           />
                         </div>
                       )}

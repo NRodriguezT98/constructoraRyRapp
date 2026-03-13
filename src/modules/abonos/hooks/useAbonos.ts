@@ -36,7 +36,6 @@ export function useAbonos() {
     let cancelado = false
 
     if (!datosInicializados) {
-      console.log('💰 [ABONOS HOOK] Cargando datos iniciales...')
       cargarNegociaciones().catch(error => {
         if (!cancelado) {
           console.error('💰 [ABONOS HOOK] Error en carga inicial:', error)
@@ -82,18 +81,15 @@ export function useAbonos() {
 
   const cargarNegociaciones = useCallback(async () => {
     try {
-      console.log('🔄 Hook: Iniciando carga de negociaciones...');
       setIsLoading(true);
       setError(null);
       const data = await obtenerNegociacionesActivas();
-      console.log('✅ Hook: Negociaciones cargadas:', data.length);
       setNegociaciones(data);
     } catch (err: any) {
       console.error('❌ Hook: Error cargando negociaciones:', err);
       setError(err.message || 'Error al cargar negociaciones');
     } finally {
       setIsLoading(false);
-      console.log('🏁 Hook: Carga finalizada');
     }
   }, []);
 

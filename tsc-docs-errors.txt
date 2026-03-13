@@ -1,0 +1,51 @@
+﻿src/modules/documentos/services/documentos-eliminacion.service.ts(36,40): error TS2339: Property 'documento_padre_id' does not exist on type '{}'.
+src/modules/documentos/services/documentos-eliminacion.service.ts(69,40): error TS2339: Property 'documento_padre_id' does not exist on type '{}'.
+src/modules/documentos/services/documentos-eliminacion.service.ts(129,40): error TS2339: Property 'documento_padre_id' does not exist on type '{}'.
+src/modules/documentos/services/documentos-eliminacion.service.ts(210,40): error TS2339: Property 'documento_padre_id' does not exist on type '{}'.
+src/modules/documentos/services/documentos-eliminacion.service.ts(273,19): error TS2339: Property 'documento_padre_id' does not exist on type '{}'.
+src/modules/documentos/services/documentos-eliminacion.service.ts(278,29): error TS2339: Property 'documento_padre_id' does not exist on type '{}'.
+src/modules/documentos/services/documentos-eliminacion.service.ts(285,30): error TS2339: Property 'id' does not exist on type '{}'.
+src/modules/documentos/services/documentos-eliminacion.service.ts(285,64): error TS2339: Property 'id' does not exist on type '{}'.
+src/modules/documentos/services/documentos-eliminacion.service.ts(345,19): error TS2339: Property 'documento_padre_id' does not exist on type '{}'.
+src/modules/documentos/services/documentos-eliminacion.service.ts(349,29): error TS2339: Property 'documento_padre_id' does not exist on type '{}'.
+src/modules/documentos/services/documentos-eliminacion.service.ts(356,30): error TS2339: Property 'id' does not exist on type '{}'.
+src/modules/documentos/services/documentos-eliminacion.service.ts(356,64): error TS2339: Property 'id' does not exist on type '{}'.
+src/modules/documentos/services/documentos-reemplazo.service.ts(54,19): error TS2339: Property 'rol' does not exist on type '{}'.
+src/modules/documentos/services/documentos-versiones.service.ts(70,30): error TS18046: 'docOriginal' is of type 'unknown'.
+src/modules/documentos/services/documentos-versiones.service.ts(90,9): error TS18046: 'docOriginal' is of type 'unknown'.
+src/modules/documentos/services/documentos-versiones.service.ts(94,19): error TS18046: 'docOriginal' is of type 'unknown'.
+src/modules/documentos/services/documentos-versiones.service.ts(97,22): error TS2339: Property 'nombre' does not exist on type '{}'.
+src/modules/documentos/services/documentos-versiones.service.ts(98,56): error TS2339: Property 'nombre' does not exist on type '{}'.
+src/modules/documentos/services/documentos-versiones.service.ts(118,21): error TS18046: 'docOriginal' is of type 'unknown'.
+src/modules/documentos/services/documentos-versiones.service.ts(120,31): error TS18046: 'docOriginal' is of type 'unknown'.
+src/modules/documentos/services/documentos-versiones.service.ts(131,20): error TS18046: 'docOriginal' is of type 'unknown'.
+src/modules/documentos/services/documentos-versiones.service.ts(131,57): error TS18046: 'docOriginal' is of type 'unknown'.
+src/modules/documentos/services/documentos-versiones.service.ts(132,13): error TS18046: 'docOriginal' is of type 'unknown'.
+src/modules/documentos/services/documentos-versiones.service.ts(138,42): error TS18046: 'docOriginal' is of type 'unknown'.
+src/modules/documentos/services/documentos-versiones.service.ts(139,46): error TS18046: 'docOriginal' is of type 'unknown'.
+src/modules/documentos/services/documentos-versiones.service.ts(140,22): error TS18046: 'docOriginal' is of type 'unknown'.
+src/modules/documentos/services/documentos-versiones.service.ts(142,11): error TS18046: 'docOriginal' is of type 'unknown'.
+src/modules/documentos/services/documentos-versiones.service.ts(143,33): error TS18046: 'docOriginal' is of type 'unknown'.
+src/modules/documentos/services/documentos-versiones.service.ts(145,11): error TS18046: 'docOriginal' is of type 'unknown'.
+src/modules/documentos/services/documentos-versiones.service.ts(146,32): error TS18046: 'docOriginal' is of type 'unknown'.
+src/modules/documentos/services/documentos-versiones.service.ts(148,11): error TS18046: 'docOriginal' is of type 'unknown'.
+src/modules/documentos/services/documentos-versiones.service.ts(149,30): error TS18046: 'docOriginal' is of type 'unknown'.
+src/modules/documentos/services/documentos-versiones.service.ts(191,26): error TS2339: Property 'documento_padre_id' does not exist on type '{}'.
+src/modules/documentos/services/documentos-versiones.service.ts(238,17): error TS18046: 'versionAnterior' is of type 'unknown'.
+src/modules/documentos/services/documentos-versiones.service.ts(246,45): error TS18046: 'versionAnterior' is of type 'unknown'.
+src/modules/documentos/services/documentos-versiones.service.ts(247,13): error TS18046: 'versionAnterior' is of type 'unknown'.
+src/modules/documentos/services/documentos-versiones.service.ts(251,30): error TS18046: 'versionAnterior' is of type 'unknown'.
+src/modules/documentos/services/documentos-versiones.service.ts(252,30): error TS18046: 'versionAnterior' is of type 'unknown'.
+src/modules/documentos/services/documentos-versiones.service.ts(259,63): error TS18046: 'versionAnterior' is of type 'unknown'.
+src/modules/documentos/services/documentos-versiones.service.ts(261,7): error TS18046: 'versionAnterior' is of type 'unknown'.
+src/modules/documentos/services/documentos-versiones.service.ts(262,7): error TS18046: 'versionAnterior' is of type 'unknown'.
+src/modules/documentos/services/documentos-versiones.service.ts(302,17): error TS2339: Property 'es_version_actual' does not exist on type '{}'.
+src/modules/documentos/services/documentos-versiones.service.ts(304,31): error TS2339: Property 'documento_padre_id' does not exist on type '{}'.
+src/modules/documentos/services/documentos-versiones.service.ts(335,37): error TS2339: Property 'id' does not exist on type '{}'.
+src/modules/documentos/services/documentos-versiones.service.ts(345,30): error TS2339: Property 'metadata' does not exist on type '{}'.
+src/modules/documentos/services/documentos-versiones.service.ts(345,63): error TS2339: Property 'metadata' does not exist on type '{}'.
+src/modules/documentos/services/documentos-versiones.service.ts(346,23): error TS2339: Property 'metadata' does not exist on type '{}'.
+src/modules/documentos/services/documentos-versiones.service.ts(374,26): error TS2339: Property 'documento_padre_id' does not exist on type '{}'.
+src/modules/documentos/services/documentos-versiones.service.ts(386,20): error TS2339: Property 'version' does not exist on type '{}'.
+src/modules/documentos/services/documentos-versiones.service.ts(405,26): error TS2339: Property 'documento_padre_id' does not exist on type '{}'.
+src/modules/viviendas/services/documentos/documentos-eliminacion.service.ts(243,61): error TS2304: Cannot find name 'errorJoins'.

@@ -89,7 +89,6 @@ export function useNegociacionesTab({ clienteId, cliente }: UseNegociacionesTabP
     setLoading(true)
     try {
       const data = await negociacionesService.obtenerNegociacionesCliente(clienteId)
-      console.log('📊 [useNegociacionesTab] Negociaciones cargadas:', data.length)
       setNegociaciones(data)
     } catch (err) {
       console.error('❌ [useNegociacionesTab] Error cargando negociaciones:', err)
@@ -107,7 +106,6 @@ export function useNegociacionesTab({ clienteId, cliente }: UseNegociacionesTabP
     try {
       // Cargar fuentes de pago con abonos
       const fuentesData = await obtenerFuentesPagoConAbonos(negociacionId)
-      console.log('💰 [useNegociacionesTab] Fuentes de pago cargadas:', fuentesData.length)
       setFuentesPago(fuentesData)
 
       // Extraer todos los abonos de todas las fuentes
@@ -116,7 +114,6 @@ export function useNegociacionesTab({ clienteId, cliente }: UseNegociacionesTabP
       todosAbonos.sort((a: any, b: any) =>
         new Date(b.fecha_abono).getTime() - new Date(a.fecha_abono).getTime()
       )
-      console.log('📝 [useNegociacionesTab] Total abonos:', todosAbonos.length)
       setAbonos(todosAbonos)
     } catch (err) {
       console.error('❌ [useNegociacionesTab] Error cargando datos de negociación:', err)
@@ -243,7 +240,6 @@ export function useNegociacionesTab({ clienteId, cliente }: UseNegociacionesTabP
   // Escuchar evento de recarga (cuando se crea nueva negociación)
   useEffect(() => {
     const handleRecargar = () => {
-      console.log('🔄 [useNegociacionesTab] Evento recibido: recargar negociaciones')
       cargarNegociaciones()
     }
 

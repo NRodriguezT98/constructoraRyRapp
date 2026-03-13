@@ -1,5 +1,5 @@
 /**
- * 💤 Servicio de Inactivación de Viviendas (Soft Delete)
+ * ðŸ’¤ Servicio de Inactivación de Viviendas (Soft Delete)
  *
  * Responsabilidad:
  * - Validar si una vivienda puede ser inactivada (soft delete)
@@ -87,10 +87,11 @@ export class ViviendaInactivacionService {
       }
 
       // Contar abonos
-      const { data: abonos, error: abonosError } = await supabase
-        .from('abonos')
+      const { data: abonosRaw, error: abonosError } = await supabase
+        .from('abonos' as any)
         .select('monto_abono')
         .eq('vivienda_id', viviendaId)
+      const abonos = abonosRaw as any[] | null
 
       if (abonosError) throw abonosError
 
@@ -131,7 +132,7 @@ export class ViviendaInactivacionService {
         },
       }
     } catch (error) {
-      console.error('❌ Error al validar eliminación:', error)
+      console.error('âŒ Error al validar eliminación:', error)
       throw error
     }
   }
@@ -205,9 +206,8 @@ export class ViviendaInactivacionService {
 
       if (historialError) throw historialError
 
-      console.log(`✅ Vivienda ${viviendaId} marcada como inactiva`)
     } catch (error) {
-      console.error('❌ Error al marcar como inactiva:', error)
+      console.error('âŒ Error al marcar como inactiva:', error)
       throw error
     }
   }
@@ -222,7 +222,7 @@ export class ViviendaInactivacionService {
   static async validarReactivacion(viviendaId: string): Promise<ValidacionReactivacion> {
     try {
       // Obtener datos de la vivienda
-      const { data: vivienda, error: viviendaError } = await supabase
+      const { data: viviendaRaw, error: viviendaError } = await supabase
         .from('viviendas')
         .select(
           `
@@ -237,6 +237,7 @@ export class ViviendaInactivacionService {
         )
         .eq('id', viviendaId)
         .single()
+      const vivienda = viviendaRaw as any
 
       if (viviendaError) throw viviendaError
 
@@ -282,7 +283,7 @@ export class ViviendaInactivacionService {
         puedeReactivar: true,
       }
     } catch (error) {
-      console.error('❌ Error al validar reactivación:', error)
+      console.error('âŒ Error al validar reactivación:', error)
       throw error
     }
   }
@@ -342,9 +343,8 @@ export class ViviendaInactivacionService {
 
       if (historialError) throw historialError
 
-      console.log(`✅ Vivienda ${viviendaId} reactivada`)
     } catch (error) {
-      console.error('❌ Error al reactivar vivienda:', error)
+      console.error('âŒ Error al reactivar vivienda:', error)
       throw error
     }
   }

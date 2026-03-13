@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { EmptyState } from '../../../shared/components/ui/EmptyState'
 

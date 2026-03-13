@@ -5,6 +5,9 @@
 import { supabase } from '@/lib/supabase/client'
 import { type TipoEntidad, obtenerConfiguracionEntidad } from '../types/entidad.types'
 
+// Default bucket for backward-compatible methods
+const BUCKET_NAME = 'documentos'
+
 /**
  * Servicio de operaciones de Supabase Storage
  * Responsabilidades: descargar, URLs firmadas, eliminar archivos físicos

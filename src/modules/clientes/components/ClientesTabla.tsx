@@ -9,7 +9,7 @@
 
 'use client'
 
-import { type ColumnDef } from '@tanstack/react-table'
+import { type ColumnDef, type SortingState } from '@tanstack/react-table'
 import {
     Building2,
     Edit2,
@@ -20,7 +20,7 @@ import {
     User,
     UserCheck,
     Users,
-    UserX
+    UserX,
 } from 'lucide-react'
 
 import { formatNombreCompleto } from '@/lib/utils/string.utils'
@@ -36,6 +36,7 @@ interface ClientesTablaProps {
   onDelete?: (id: string) => void
   canEdit?: boolean
   canDelete?: boolean
+  initialSorting?: SortingState
 }
 
 // Estilos compactos del módulo
@@ -52,6 +53,7 @@ const styles = {
     base: 'inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-xs font-bold whitespace-nowrap',
     interesado: 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-md shadow-blue-500/30',
     activo: 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-md shadow-emerald-500/30',
+    renuncio: 'bg-gradient-to-r from-red-500 to-rose-500 text-white shadow-md shadow-red-500/30', // ⭐ NUEVO
     inactivo: 'bg-gradient-to-r from-gray-500 to-slate-500 text-white shadow-md shadow-gray-500/30',
     propietario: 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-md shadow-purple-500/30',
   },
@@ -82,6 +84,7 @@ export function ClientesTabla({
   onDelete,
   canEdit,
   canDelete,
+  initialSorting,
 }: ClientesTablaProps) {
   const columns: ColumnDef<ClienteResumen>[] = [
     // 1. CLIENTE (nombre formateado con Title Case - SIN TRUNCAR)
@@ -93,16 +96,21 @@ export function ClientesTabla({
         const nombreCompleto = formatNombreCompleto(row.original.nombre_completo)
         const estado = row.original.estado
         const isActivo = estado === 'Activo'
+        const isRenuncio = estado === 'Renunció' // ⭐ NUEVO
 
         return (
           <div className={styles.iconCell.container}>
             <div className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 ${
               isActivo
                 ? 'bg-gradient-to-br from-green-500 to-emerald-600'
+                : isRenuncio
+                ? 'bg-gradient-to-br from-red-500 to-rose-600' // ⭐ NUEVO - Rojo para renunció
                 : 'bg-gradient-to-br from-cyan-500 to-blue-600'
             }`}>
               {isActivo ? (
                 <UserCheck className="w-3.5 h-3.5 text-white" />
+              ) : isRenuncio ? (
+                <UserX className="w-3.5 h-3.5 text-white" /> // ⭐ Usuario con X rojo
               ) : (
                 <User className="w-3.5 h-3.5 text-white" />
               )}
@@ -160,6 +168,7 @@ export function ClientesTabla({
         const estado = row.original.estado
         const isInteresado = estado === 'Interesado'
         const isActivo = estado === 'Activo'
+        const isRenuncio = estado === 'Renunció' // ⭐ NUEVO
         const isInactivo = estado === 'Inactivo'
         const isPropietario = estado === 'Propietario'
 
@@ -167,6 +176,8 @@ export function ClientesTabla({
           ? Heart
           : isActivo
           ? UserCheck
+          : isRenuncio
+          ? UserX // ⭐ Usuario con X (igual que UserCheck pero rojo)
           : isInactivo
           ? UserX
           : Users
@@ -178,6 +189,7 @@ export function ClientesTabla({
                 styles.badge.base,
                 isInteresado && styles.badge.interesado,
                 isActivo && styles.badge.activo,
+                isRenuncio && styles.badge.renuncio, // ⭐ NUEVO
                 isInactivo && styles.badge.inactivo,
                 isPropietario && styles.badge.propietario
               )}
@@ -190,11 +202,11 @@ export function ClientesTabla({
       },
     },
 
-    // 5. PROYECTO (centrado y compacto)
+    // 5. PROYECTO (nowrap — sin salto de línea, sin puntos suspensivos)
     {
       id: 'proyecto',
       header: 'Proyecto',
-      size: 130,
+      size: 160,
       cell: ({ row }) => {
         const cliente = row.original
         const proyecto = cliente.estado === 'Activo'
@@ -206,9 +218,12 @@ export function ClientesTabla({
         return (
           <div className={styles.cell.center}>
             {proyecto ? (
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-1.5 max-w-full overflow-hidden">
                 <Building2 className="w-3.5 h-3.5 text-green-600 dark:text-green-400 flex-shrink-0" />
-                <span className="text-xs font-medium text-gray-900 dark:text-white" title={proyecto}>
+                <span
+                  className="text-xs font-medium text-gray-900 dark:text-white whitespace-nowrap overflow-hidden"
+                  title={proyecto}
+                >
                   {proyecto}
                 </span>
               </div>
@@ -220,11 +235,54 @@ export function ClientesTabla({
       },
     },
 
-    // 6. VIVIENDA (formato compacto con badge de estado)
+    // 6. VIVIENDA (formato compacto con badge de estado - SORTABLE)
     {
       id: 'vivienda',
       header: 'Vivienda',
       size: 100,
+      enableSorting: true,
+      // AccessorFn para que TanStack Table reconozca el valor
+      accessorFn: (row) => {
+        if (row.estado === 'Activo' && row.vivienda) {
+          const manzana = row.vivienda.nombre_manzana || ''
+          const numero = row.vivienda.numero_vivienda || ''
+          return `${manzana}${numero}`
+        } else if (row.estado === 'Interesado' && row.interes) {
+          const manzana = row.interes.nombre_manzana || ''
+          const numero = row.interes.numero_vivienda || ''
+          return `${manzana}${numero}`
+        }
+        return ''
+      },
+      sortingFn: (rowA, rowB) => {
+        const clienteA = rowA.original
+        const clienteB = rowB.original
+
+        // Obtener identificador de vivienda (manzana + numero)
+        const getViviendaId = (cliente: ClienteResumen) => {
+          if (cliente.estado === 'Activo' && cliente.vivienda) {
+            const manzana = cliente.vivienda.nombre_manzana || ''
+            const numero = cliente.vivienda.numero_vivienda || ''
+            return `${manzana}${numero}`
+          } else if (cliente.estado === 'Interesado' && cliente.interes) {
+            const manzana = cliente.interes.nombre_manzana || ''
+            const numero = cliente.interes.numero_vivienda || ''
+            return `${manzana}${numero}`
+          }
+          return ''
+        }
+
+        const viviendaA = getViviendaId(clienteA)
+        const viviendaB = getViviendaId(clienteB)
+
+        // Si alguno está vacío, ponerlo al final
+        if (!viviendaA && viviendaB) return 1
+        if (viviendaA && !viviendaB) return -1
+        if (!viviendaA && !viviendaB) return 0
+
+        // Ordenar alfabéticamente (A1, A2, A3, B1, B2...)
+        return viviendaA.localeCompare(viviendaB, undefined, { numeric: true })
+      },
       cell: ({ row }) => {
         const cliente = row.original
         let viviendaCompacta = null
@@ -233,12 +291,12 @@ export function ClientesTabla({
         if (cliente.estado === 'Activo' && cliente.vivienda) {
           const manzana = cliente.vivienda.nombre_manzana || ''
           const numero = cliente.vivienda.numero_vivienda || ''
-          viviendaCompacta = `${manzana}-${numero}`
+          viviendaCompacta = `${manzana}${numero}`
           esInteres = false
         } else if (cliente.estado === 'Interesado' && cliente.interes) {
           const manzana = cliente.interes.nombre_manzana || ''
           const numero = cliente.interes.numero_vivienda || ''
-          viviendaCompacta = `${manzana}-${numero}`
+          viviendaCompacta = `${manzana}${numero}`
           esInteres = true
         }
 
@@ -266,11 +324,11 @@ export function ClientesTabla({
       },
     },
 
-    // 7. VALORES (3 filas: Total / Abonado / Saldo)
+    // 7. VALORES — Saldo héroe + barra de progreso compacta
     {
       id: 'saldo',
-      header: 'Valores',
-      size: 140,
+      header: 'Saldo / Progreso',
+      size: 160,
       cell: ({ row }) => {
         const cliente = row.original
 
@@ -278,45 +336,52 @@ export function ClientesTabla({
           const valorTotal = cliente.vivienda.valor_total || 0
           const totalAbonado = cliente.vivienda.total_abonado || 0
           const saldo = cliente.vivienda.saldo_pendiente || 0
+          const porcentaje = valorTotal > 0 ? Math.round((totalAbonado / valorTotal) * 100) : 0
+          const pagadoCompleto = saldo === 0 && valorTotal > 0
 
-          const formatearValor = (valor: number) => {
-            return new Intl.NumberFormat('es-CO', {
+          const fmt = (v: number) =>
+            new Intl.NumberFormat('es-CO', {
               style: 'currency',
               currency: 'COP',
               minimumFractionDigits: 0,
               maximumFractionDigits: 0,
-            }).format(valor).replace(/\s/g, '')
-          }
-
-          const porcentajePagado = valorTotal > 0 ? ((totalAbonado / valorTotal) * 100).toFixed(1) : '0'
+            }).format(v).replace(/\s/g, '')
 
           return (
-            <div className="flex flex-col gap-1 py-1.5" title={`Progreso de pago: ${porcentajePagado}%`}>
-              {/* Total Vivienda */}
-              <div className="flex items-center justify-between gap-2 px-2 py-0.5 rounded-md bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900/30">
-                <span className="text-[10px] font-semibold text-blue-600 dark:text-blue-400">Total:</span>
-                <span className="text-[10px] font-bold text-blue-700 dark:text-blue-300">
-                  {formatearValor(valorTotal)}
+            <div className="py-1.5 space-y-1.5">
+              {/* Saldo — valor principal */}
+              <div className="flex items-baseline justify-between gap-1">
+                <span className="text-[10px] font-medium text-gray-400 dark:text-gray-500">Saldo</span>
+                <span className={`text-xs font-bold ${
+                  pagadoCompleto
+                    ? 'text-emerald-600 dark:text-emerald-400'
+                    : 'text-red-600 dark:text-red-400'
+                }`}>
+                  {pagadoCompleto ? '✓ Pagado' : fmt(saldo)}
                 </span>
               </div>
 
-              {/* Total Abonado */}
-              <div className="flex items-center justify-between gap-2 px-2 py-0.5 rounded-md bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-900/30">
-                <span className="text-[10px] font-semibold text-green-600 dark:text-green-400">Abonado:</span>
-                <span className="text-[10px] font-bold text-green-700 dark:text-green-300">
-                  {formatearValor(totalAbonado)}
-                </span>
+              {/* Barra de progreso */}
+              <div className="relative w-full h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                <div
+                  className={`absolute inset-y-0 left-0 rounded-full transition-all ${
+                    porcentaje >= 100
+                      ? 'bg-emerald-500'
+                      : porcentaje >= 50
+                      ? 'bg-blue-500'
+                      : 'bg-amber-500'
+                  }`}
+                  style={{ width: `${Math.min(porcentaje, 100)}%` }}
+                />
               </div>
 
-              {/* Saldo Pendiente */}
-              <div className={`flex items-center justify-between gap-2 px-2 py-0.5 rounded-md border ${
-                saldo > 0
-                  ? 'bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-900/30'
-                  : 'bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-900/30'
-              }`}>
-                <span className={`text-[10px] font-semibold ${saldo > 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>Saldo:</span>
-                <span className={`text-[10px] font-bold ${saldo > 0 ? 'text-red-700 dark:text-red-400' : 'text-green-700 dark:text-green-400'}`}>
-                  {formatearValor(saldo)}
+              {/* Total + % */}
+              <div className="flex items-baseline justify-between gap-1">
+                <span className="text-[10px] text-gray-400 dark:text-gray-500" title={`Total: ${fmt(valorTotal)}`}>
+                  {fmt(valorTotal)}
+                </span>
+                <span className="text-[10px] font-semibold text-gray-500 dark:text-gray-400">
+                  {porcentaje}%
                 </span>
               </div>
             </div>
@@ -325,7 +390,7 @@ export function ClientesTabla({
 
         return (
           <div className={styles.cell.center}>
-            <span className="text-xs text-gray-500 dark:text-gray-400 italic">N/A</span>
+            <span className="text-xs text-gray-400 dark:text-gray-500">—</span>
           </div>
         )
       },
@@ -396,8 +461,7 @@ export function ClientesTabla({
       <DataTable
         columns={columns}
         data={clientes}
-        searchPlaceholder="Buscar clientes..."
-        noResultsMessage="No se encontraron clientes"
+        initialSorting={initialSorting}
       />
     </div>
   )

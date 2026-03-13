@@ -1,5 +1,5 @@
 /**
- * 💤 Hook: Inactivación/Reactivación de Viviendas
+ * ?? Hook: Inactivaci�n/Reactivaci�n de Viviendas
  *
  * Responsabilidad:
  * - Validar si vivienda puede ser inactivada
@@ -22,7 +22,7 @@
 
 'use client'
 
-import { useAuth } from '@/contexts/AuthContext'
+import { useAuth } from '@/contexts/auth-context'
 import { useRouter } from 'next/navigation'
 import { useCallback, useState } from 'react'
 import {
@@ -68,7 +68,7 @@ export function useViviendaInactivacion(): UseViviendaInactivacionReturn {
   const validarEliminacion = useCallback(
     async (viviendaId: string): Promise<ValidacionEliminacion> => {
       if (!esAdmin) {
-        throw new Error('⛔ Solo los Administradores pueden inactivar viviendas')
+        throw new Error('? Solo los Administradores pueden inactivar viviendas')
       }
 
       try {
@@ -78,7 +78,7 @@ export function useViviendaInactivacion(): UseViviendaInactivacionReturn {
         const validacion = await ViviendaInactivacionService.validarEliminacion(viviendaId)
         return validacion
       } catch (err) {
-        const mensaje = err instanceof Error ? err.message : 'Error al validar eliminación'
+        const mensaje = err instanceof Error ? err.message : 'Error al validar eliminaci�n'
         setError(mensaje)
         throw err
       } finally {
@@ -92,14 +92,14 @@ export function useViviendaInactivacion(): UseViviendaInactivacionReturn {
   const desactivar = useCallback(
     async (viviendaId: string, motivo: string): Promise<void> => {
       if (!esAdmin || !user?.id) {
-        throw new Error('⛔ Solo los Administradores pueden inactivar viviendas')
+        throw new Error('? Solo los Administradores pueden inactivar viviendas')
       }
 
       try {
         setProcesando(true)
         setError(null)
 
-        // Validar motivo mínimo
+        // Validar motivo m�nimo
         if (!motivo || motivo.trim().length < 50) {
           throw new Error('El motivo debe tener al menos 50 caracteres')
         }
@@ -109,7 +109,7 @@ export function useViviendaInactivacion(): UseViviendaInactivacionReturn {
           userId: user.id,
         })
 
-        // Refrescar página o redirigir
+        // Refrescar p�gina o redirigir
         router.refresh()
       } catch (err) {
         const mensaje = err instanceof Error ? err.message : 'Error al desactivar vivienda'
@@ -126,7 +126,7 @@ export function useViviendaInactivacion(): UseViviendaInactivacionReturn {
   const validarReactivacion = useCallback(
     async (viviendaId: string): Promise<ValidacionReactivacion> => {
       if (!esAdmin) {
-        throw new Error('⛔ Solo los Administradores pueden reactivar viviendas')
+        throw new Error('? Solo los Administradores pueden reactivar viviendas')
       }
 
       try {
@@ -136,7 +136,7 @@ export function useViviendaInactivacion(): UseViviendaInactivacionReturn {
         const validacion = await ViviendaInactivacionService.validarReactivacion(viviendaId)
         return validacion
       } catch (err) {
-        const mensaje = err instanceof Error ? err.message : 'Error al validar reactivación'
+        const mensaje = err instanceof Error ? err.message : 'Error al validar reactivaci�n'
         setError(mensaje)
         throw err
       } finally {
@@ -150,14 +150,14 @@ export function useViviendaInactivacion(): UseViviendaInactivacionReturn {
   const reactivar = useCallback(
     async (viviendaId: string, motivo: string): Promise<void> => {
       if (!esAdmin || !user?.id) {
-        throw new Error('⛔ Solo los Administradores pueden reactivar viviendas')
+        throw new Error('? Solo los Administradores pueden reactivar viviendas')
       }
 
       try {
         setProcesando(true)
         setError(null)
 
-        // Validar motivo mínimo
+        // Validar motivo m�nimo
         if (!motivo || motivo.trim().length < 30) {
           throw new Error('El motivo debe tener al menos 30 caracteres')
         }
@@ -167,7 +167,7 @@ export function useViviendaInactivacion(): UseViviendaInactivacionReturn {
           userId: user.id,
         })
 
-        // Refrescar página o redirigir
+        // Refrescar p�gina o redirigir
         router.refresh()
       } catch (err) {
         const mensaje = err instanceof Error ? err.message : 'Error al reactivar vivienda'

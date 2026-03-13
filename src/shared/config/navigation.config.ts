@@ -16,18 +16,16 @@
 
 import type { LucideIcon } from 'lucide-react'
 import {
-  Activity,
-  BarChart3,
-  Building2,
-  ClipboardList,
-  CreditCard,
-  FileText,
-  FileX,
-  Home,
-  Settings,
-  Shield,
-  Trash2,
-  Users,
+    Activity,
+    BarChart3,
+    Building2,
+    CreditCard,
+    FileText,
+    FileX,
+    Home,
+    Shield,
+    Trash2,
+    Users
 } from 'lucide-react'
 
 // ============================================
@@ -147,22 +145,6 @@ export const navigationGroups: NavigationGroup[] = [
         color: 'from-red-500 to-rose-500',
         description: 'Documentos eliminados',
         adminOnly: true,
-      },
-      {
-        name: 'Plantillas Proceso',
-        href: '/admin/procesos',
-        icon: ClipboardList,
-        color: 'from-rose-500 to-pink-500',
-        description: 'Plantillas de negociación',
-        // No tiene permiso en BD, accesible para todos
-      },
-      {
-        name: 'Recargos',
-        href: '/administracion/configuracion',
-        icon: Settings,
-        color: 'from-blue-500 to-indigo-500',
-        description: 'Gastos y valores',
-        requiredPermission: { modulo: 'administracion', accion: 'gestionar' },
       },
       {
         name: 'Administración',

@@ -24,13 +24,6 @@ export class DocumentosReemplazoService {
     password: string,
     tipoEntidad: TipoEntidad = 'proyecto'
   ): Promise<void> {
-    console.log('🔄 [REEMPLAZO] Iniciando proceso seguro:', {
-      documentoId,
-      archivo: nuevoArchivo.name,
-      tamano: `${(nuevoArchivo.size / (1024 * 1024)).toFixed(2)} MB`,
-      tipoEntidad
-    })
-
     // ✅ Obtener configuración dinámica
     const config = obtenerConfiguracionEntidad(tipoEntidad)
     const { bucket, tabla, campoEntidad, nombreSingular } = config
@@ -38,6 +31,7 @@ export class DocumentosReemplazoService {
     // Variables para rollback
     let backupPath: string | null = null
     let archivoReemplazado = false
+    let documento: any = null
 
     try {
       // ============================================
@@ -47,11 +41,12 @@ export class DocumentosReemplazoService {
       if (!user) throw new Error('Usuario no autenticado')
 
       // Verificar rol de administrador
-      const { data: usuario, error: usuarioError } = await supabase
+      const { data: usuarioResult, error: usuarioError } = await supabase
         .from('usuarios')
         .select('rol')
         .eq('id', user.id)
         .single()
+      const usuario = usuarioResult as any
 
       if (usuarioError || !usuario) {
         throw new Error('No se pudo verificar el usuario')
@@ -76,16 +71,16 @@ export class DocumentosReemplazoService {
         throw new Error('❌ Contraseña incorrecta')
       }
 
-      console.log('✅ [REEMPLAZO] Validación de seguridad completada')
 
       // ============================================
       // 2. OBTENER DOCUMENTO Y VALIDAR
       // ============================================
-      const { data: documento, error: fetchError } = await supabase
-        .from(tabla)
+      const { data: _docData, error: fetchError } = await supabase
+        .from(tabla as any)
         .select('*')
         .eq('id', documentoId)
         .single()
+      documento = _docData as any
 
       if (fetchError || !documento) {
         throw new Error(`Documento no encontrado en ${tabla}`)
@@ -96,14 +91,12 @@ export class DocumentosReemplazoService {
         throw new Error(`Campo ${campoEntidad} no encontrado en documento`)
       }
 
-      console.log(`✅ [REEMPLAZO] Documento encontrado en ${nombreSingular}: ${entidadId}`)
 
       // ============================================
       // 3. CREAR Y VERIFICAR BACKUP
       // ============================================
       backupPath = `${entidadId}/backups/reemplazos/${documentoId}_backup_${Date.now()}_${documento.nombre_archivo}`
 
-      console.log('📦 [REEMPLAZO] Creando backup del archivo original...')
 
       // Descargar archivo original
       const { data: archivoOriginal, error: downloadError } = await supabase.storage
@@ -142,12 +135,10 @@ export class DocumentosReemplazoService {
         throw new Error('No se pudo verificar la creación del backup')
       }
 
-      console.log(`✅ [REEMPLAZO] Backup creado y verificado: ${backupPath}`)
 
       // ============================================
       // 4. REEMPLAZAR ARCHIVO EN STORAGE
       // ============================================
-      console.log('🔄 [REEMPLAZO] Reemplazando archivo en storage...')
 
       const { error: replaceError } = await supabase.storage
         .from(bucket)
@@ -161,7 +152,6 @@ export class DocumentosReemplazoService {
       }
 
       archivoReemplazado = true
-      console.log('✅ [REEMPLAZO] Archivo reemplazado en storage')
 
       // ============================================
       // 5. ACTUALIZAR METADATA EN BD
@@ -183,7 +173,7 @@ export class DocumentosReemplazoService {
       }
 
       const { error: updateError } = await supabase
-        .from(tabla)
+        .from(tabla as any)
         .update({
           nombre_archivo: nuevoArchivo.name,
           nombre_original: nuevoArchivo.name,
@@ -198,7 +188,6 @@ export class DocumentosReemplazoService {
         throw new Error(`Error al actualizar metadata: ${updateError.message}`)
       }
 
-      console.log('✅ [REEMPLAZO] Metadata actualizada en BD')
 
       // ============================================
       // 6. REGISTRAR AUDITORÍA
@@ -216,7 +205,6 @@ export class DocumentosReemplazoService {
         user
       })
 
-      console.log('🎉 [REEMPLAZO] Proceso completado exitosamente')
 
     } catch (error) {
       console.error('💥 [REEMPLAZO] Error en el proceso:', error)
@@ -240,8 +228,7 @@ export class DocumentosReemplazoService {
                 contentType: documento.tipo_mime,
                 upsert: true
               })
-            
-            console.log('✅ [ROLLBACK] Archivo original restaurado exitosamente')
+
           }
         } catch (rollbackError) {
           console.error('💥 [ROLLBACK] Error crítico al restaurar archivo:', rollbackError)
@@ -293,7 +280,7 @@ export class DocumentosReemplazoService {
         .createSignedUrl(documento.url_storage, 31536000)
 
       await auditService.registrarAccion({
-        tabla,
+        tabla: tabla as any,
         accion: 'UPDATE',
         registroId: documento.id,
         datosAnteriores: {
@@ -348,7 +335,6 @@ export class DocumentosReemplazoService {
         modulo: 'documentos'
       })
 
-      console.log('✅ [AUDITORÍA] Registro completado')
     } catch (auditError) {
       console.error('⚠️ [AUDITORÍA] Error al registrar (no crítico):', auditError)
     }

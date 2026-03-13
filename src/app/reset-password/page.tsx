@@ -25,13 +25,6 @@ export default function ResetPasswordPage() {
   const router = useRouter()
 
   useEffect(() => {
-    console.log('====================================================')
-    console.log('=== RESET PASSWORD - INICIO ===')
-    console.log('====================================================')
-    console.log('URL completa:', window.location.href)
-    console.log('Pathname:', window.location.pathname)
-    console.log('Search:', window.location.search)
-    console.log('Hash:', window.location.hash)
 
     const urlParams = new URLSearchParams(window.location.search)
     const code = urlParams.get('code')
@@ -39,15 +32,9 @@ export default function ResetPasswordPage() {
     const errorCode = urlParams.get('error_code')
     const errorDescription = urlParams.get('error_description')
 
-    console.log('📋 Parámetros URL:')
-    console.log('  - code:', code ? code.substring(0, 15) + '...' : 'NO')
-    console.log('  - error:', error || 'NO')
-    console.log('  - error_code:', errorCode || 'NO')
-    console.log('  - error_description:', errorDescription || 'NO')
-    console.log('====================================================')
 
     if (error) {
-      console.error('❌ ERROR EN URL:', error, errorCode, errorDescription)
+      console.error('âŒ ERROR EN URL:', error, errorCode, errorDescription)
       setError(errorDescription || 'El enlace es inválido o ha expirado')
       setValidToken(false)
       return
@@ -56,80 +43,41 @@ export default function ResetPasswordPage() {
     let mounted = true
     let sessionDetected = false
 
-    console.log('🎧 Configurando listener de auth state...')
 
     // Listener para auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log('====================================================')
-      console.log('🔔 AUTH STATE CHANGE EVENT')
-      console.log('====================================================')
-      console.log('Event:', event)
-      console.log('Session exists:', !!session)
-      console.log('User:', session?.user?.email || 'NO USER')
-      console.log('Access token:', session?.access_token ? 'PRESENTE (length: ' + session.access_token.length + ')' : 'AUSENTE')
-      console.log('Refresh token:', session?.refresh_token ? 'PRESENTE' : 'AUSENTE')
-      console.log('Session expires at:', session?.expires_at || 'NO EXPIRY')
-      console.log('Mounted:', mounted)
-      console.log('Session detected previously:', sessionDetected)
-      console.log('====================================================')
 
       if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && !sessionDetected) {
         if (session && mounted) {
           sessionDetected = true
-          console.log('✅✅✅ SESIÓN DETECTADA EXITOSAMENTE ✅✅✅')
-          console.log('Usuario:', session.user.email)
-          console.log('User ID:', session.user.id)
-          console.log('Estableciendo validToken = true...')
-          console.log('Guardando sesión en state...')
-          setCurrentSession(session) // GUARDAR SESIÓN
+          setCurrentSession(session) // GUARDAR SESIÃ“N
           setValidToken(true)
-          console.log('====================================================')
         } else {
-          console.warn('⚠️ Evento detectado pero sin sesión o componente desmontado')
+          console.warn('âš ï¸ Evento detectado pero sin sesión o componente desmontado')
         }
       } else if (event === 'SIGNED_OUT') {
-        console.log('🚪 Usuario cerró sesión')
       } else if (event === 'TOKEN_REFRESHED') {
-        console.log('🔄 Token refrescado')
       }
     })
 
-    console.log('✅ Listener configurado')
-    console.log('====================================================')
 
     // Verificar sesión inmediatamente por si ya existe
-    console.log('🔍 Verificando sesión existente inmediatamente...')
     supabase.auth.getSession().then(({ data: { session }, error }) => {
-      console.log('====================================================')
-      console.log('📊 RESULTADO DE getSession()')
-      console.log('====================================================')
-      console.log('Session exists:', !!session)
-      console.log('User:', session?.user?.email || 'NO USER')
-      console.log('Error:', error?.message || 'NO ERROR')
 
       if (error) {
-        console.error('❌ Error al obtener sesión:', error)
+        console.error('âŒ Error al obtener sesión:', error)
       }
 
       if (session && mounted && !sessionDetected) {
         sessionDetected = true
-        console.log('✅✅✅ SESIÓN YA EXISTENTE ✅✅✅')
-        console.log('Usuario:', session.user.email)
-        console.log('Estableciendo validToken = true...')
-        console.log('Guardando sesión en state...')
-        setCurrentSession(session) // GUARDAR SESIÓN
+        setCurrentSession(session) // GUARDAR SESIÃ“N
         setValidToken(true)
-        console.log('====================================================')
       } else if (!session && mounted) {
-        console.log('⏳ No hay sesión aún, esperando evento de auth...')
-        console.log('El código del enlace debería procesarse automáticamente')
-        console.log('====================================================')
       } else if (sessionDetected) {
-        console.log('ℹ️ Sesión ya fue detectada anteriormente')
       }
     }).catch((err) => {
       console.error('====================================================')
-      console.error('❌❌❌ EXCEPCIÓN EN getSession() ❌❌❌')
+      console.error('âŒâŒâŒ EXCEPCIÃ“N EN getSession() âŒâŒâŒ')
       console.error('Error:', err)
       console.error('Message:', err.message)
       console.error('Stack:', err.stack)
@@ -140,7 +88,7 @@ export default function ResetPasswordPage() {
     const timeout = setTimeout(() => {
       if (!sessionDetected && mounted) {
         console.error('====================================================')
-        console.error('⏱️⏱️⏱️ TIMEOUT ALCANZADO ⏱️⏱️⏱️')
+        console.error('â±ï¸â±ï¸â±ï¸ TIMEOUT ALCANZADO â±ï¸â±ï¸â±ï¸')
         console.error('Han pasado 15 segundos sin detectar sesión')
         console.error('El enlace puede ser inválido o haber expirado')
         console.error('====================================================')
@@ -149,15 +97,11 @@ export default function ResetPasswordPage() {
       }
     }, 15000)
 
-    console.log('⏲️ Timeout de 15s configurado')
-    console.log('====================================================')
 
     return () => {
-      console.log('🧹 Limpiando recursos...')
       mounted = false
       subscription.unsubscribe()
       clearTimeout(timeout)
-      console.log('✅ Recursos limpiados')
     }
   }, [])
 
@@ -165,44 +109,28 @@ export default function ResetPasswordPage() {
     e.preventDefault()
     setError('')
 
-    console.log('====================================================')
-    console.log('=== INICIANDO ACTUALIZACIÓN DE CONTRASEÑA ===')
-    console.log('====================================================')
 
     if (password !== confirmPassword) {
-      console.error('❌ Las contraseñas no coinciden')
+      console.error('âŒ Las contraseñas no coinciden')
       setError('Las contraseñas no coinciden')
       return
     }
 
     if (password.length < 6) {
-      console.error('❌ Contraseña muy corta')
+      console.error('âŒ Contraseña muy corta')
       setError('La contraseña debe tener al menos 6 caracteres')
       return
     }
 
-    console.log('✅ Validaciones pasadas')
-    console.log('Longitud de contraseña:', password.length)
 
     setLoading(true)
-    console.log('🔄 Loading = true')
 
     try {
-      console.log('====================================================')
-      console.log('✅ USANDO SESIÓN GUARDADA (no llamando a getSession)')
-      console.log('====================================================')
-      console.log('Sesión actual:')
-      console.log('  - Existe:', !!currentSession)
-      console.log('  - Usuario:', currentSession?.user?.email)
-      console.log('  - Access token:', currentSession?.access_token ? 'PRESENTE' : 'AUSENTE')
 
       if (!currentSession) {
         throw new Error('No hay sesión activa. Por favor, solicita un nuevo enlace.')
       }
 
-      console.log('====================================================')
-      console.log('🔐 Llamando a API REST DIRECTAMENTE (bypass del bug)...')
-      console.log('====================================================')
 
       // Usar API REST directamente con el access token de la sesión guardada
       const response = await fetch(
@@ -220,19 +148,12 @@ export default function ResetPasswordPage() {
         }
       )
 
-      console.log('====================================================')
-      console.log('📡 RESPUESTA DE API REST')
-      console.log('====================================================')
-      console.log('Status:', response.status)
-      console.log('OK:', response.ok)
 
       const result = await response.json()
-      console.log('Body:', JSON.stringify(result, null, 2))
-      console.log('====================================================')
 
       if (!response.ok) {
         const errorMsg = result.msg || result.message || result.error_description || 'Error al actualizar contraseña'
-        console.error('❌❌❌ ERROR AL ACTUALIZAR ❌❌❌')
+        console.error('âŒâŒâŒ ERROR AL ACTUALIZAR âŒâŒâŒ')
         console.error('Status:', response.status)
         console.error('Error:', errorMsg)
         console.error('Body completo:', result)
@@ -243,16 +164,10 @@ export default function ResetPasswordPage() {
         return
       }
 
-      console.log('✅✅✅ CONTRASEÑA ACTUALIZADA EXITOSAMENTE ✅✅✅')
       setSuccess(true)
       setLoading(false)
-      console.log('🔄 Loading = false, Success = true')
 
-      console.log('⏲️ Esperando 2 segundos antes de cerrar sesión y redirigir...')
       setTimeout(async () => {
-        console.log('====================================================')
-        console.log('🔐 CERRANDO SESIÓN Y LIMPIANDO COOKIES...')
-        console.log('====================================================')
 
         try {
           // Intentar signOut (puede colgarse, por eso usamos timeout)
@@ -262,10 +177,8 @@ export default function ResetPasswordPage() {
           )
 
           await Promise.race([signOutPromise, timeoutPromise])
-            .then(() => console.log('✅ SignOut exitoso'))
+            .then(() => console.log('âœ… SignOut exitoso'))
             .catch((err) => {
-              console.log('⚠️ SignOut timeout/error (esperado con PKCE):', err)
-              console.log('🧹 Limpiando cookies manualmente...')
 
               // Limpiar cookies manualmente
               document.cookie.split(";").forEach((c) => {
@@ -274,21 +187,18 @@ export default function ResetPasswordPage() {
                   .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/")
               })
 
-              console.log('✅ Cookies limpiadas')
             })
         } catch (error) {
-          console.error('❌ Error inesperado:', error)
+          console.error('âŒ Error inesperado:', error)
         }
 
-        console.log('🔀 Redirigiendo a /login para que el usuario se loguee con la nueva contraseña...')
         window.location.href = '/login'
-        console.log('====================================================')
       }, 2000)
 
     } catch (err) {
       const error = err instanceof Error ? err : new Error(String(err))
       console.error('====================================================')
-      console.error('❌❌❌ EXCEPCIÓN GENERAL ❌❌❌')
+      console.error('âŒâŒâŒ EXCEPCIÃ“N GENERAL âŒâŒâŒ')
       console.error('====================================================')
       console.error('Error:', error)
       console.error('Message:', error.message)
@@ -436,7 +346,7 @@ export default function ResetPasswordPage() {
                     value={password}
                     onChange={e => setPassword(e.target.value)}
                     className='w-full rounded-xl border border-white/20 bg-white/10 py-3 pl-11 pr-11 text-white placeholder-white/50 backdrop-blur-sm transition-all focus:border-blue-500/50 focus:bg-white/20 focus:outline-none focus:ring-2 focus:ring-blue-500/30'
-                    placeholder='••••••••'
+                    placeholder='â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢'
                     required
                     minLength={6}
                   />
@@ -471,7 +381,7 @@ export default function ResetPasswordPage() {
                     value={confirmPassword}
                     onChange={e => setConfirmPassword(e.target.value)}
                     className='w-full rounded-xl border border-white/20 bg-white/10 py-3 pl-11 pr-11 text-white placeholder-white/50 backdrop-blur-sm transition-all focus:border-blue-500/50 focus:bg-white/20 focus:outline-none focus:ring-2 focus:ring-blue-500/30'
-                    placeholder='••••••••'
+                    placeholder='â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢'
                     required
                     minLength={6}
                   />
@@ -628,7 +538,7 @@ export default function ResetPasswordPage() {
             transition={{ delay: 0.5 }}
             className='mt-8 text-center text-xs text-gray-400'
           >
-            <p>© 2024 RyR Constructora LTDA. Todos los derechos reservados.</p>
+            <p>Â© 2024 RyR Constructora LTDA. Todos los derechos reservados.</p>
           </motion.div>
         </motion.div>
       </div>

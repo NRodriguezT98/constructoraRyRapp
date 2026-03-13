@@ -156,8 +156,8 @@ export class NegociacionesVersionesService {
     }
 
     // Comparar fuentes de pago (simplificado)
-    const fuentesA = (vA.fuentes_pago as FuentePagoSnapshot[]) || []
-    const fuentesB = (vB.fuentes_pago as FuentePagoSnapshot[]) || []
+    const fuentesA = (vA.fuentes_pago as unknown as FuentePagoSnapshot[]) || []
+    const fuentesB = (vB.fuentes_pago as unknown as FuentePagoSnapshot[]) || []
 
     if (JSON.stringify(fuentesA) !== JSON.stringify(fuentesB)) {
       diferencias.fuentesPago = {

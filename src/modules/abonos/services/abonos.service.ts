@@ -14,6 +14,8 @@ import type {
     NegociacionConAbonos,
 } from '../types';
 
+import { validarPreDesembolso } from '@/modules/fuentes-pago/services/pasos-fuente-pago.service';
+
 // =====================================================
 // OBTENER NEGOCIACIONES ACTIVAS
 // =====================================================
@@ -25,7 +27,6 @@ import type {
  * Consultar: docs/DATABASE-SCHEMA-REFERENCE-ACTUALIZADO.md
  */
 export async function obtenerNegociacionesActivas(): Promise<NegociacionConAbonos[]> {
-  console.log('🔍 Obteniendo negociaciones activas...');
 
   // Query con campos REALES verificados en DB
   // Solo negociaciones 'Activa' permiten registrar abonos
@@ -46,7 +47,6 @@ export async function obtenerNegociacionesActivas(): Promise<NegociacionConAbono
     throw new Error(`Error al obtener negociaciones: ${error.message}`);
   }
 
-  console.log('✅ Negociaciones obtenidas:', data?.length || 0);
 
   // Obtener manzanas y proyectos por separado (viviendas → manzanas → proyectos)
   const manzanaIds = [...new Set(data?.map((n: any) => {
@@ -83,7 +83,13 @@ export async function obtenerNegociacionesActivas(): Promise<NegociacionConAbono
         manzana: manzana || undefined,
       },
       proyecto: proyecto || { id: '', nombre: 'Sin proyecto', ubicacion: '' },
-      fuentes_pago: Array.isArray(item.fuentes_pago) ? item.fuentes_pago.map((fp: any) => ({
+      fuentes_pago: Array.isArray(item.fuentes_pago) ? item.fuentes_pago
+        .filter((fp: any) => {
+          // Excluir fuentes inactivas (soporta ambas variantes de nombre de columna)
+          const estado = (fp.estado || fp.estado_fuente || '').toLowerCase()
+          return estado !== 'inactiva'
+        })
+        .map((fp: any) => ({
         ...fp,
         abonos: [],
       })) : [],
@@ -126,7 +132,7 @@ export async function obtenerNegociacionPorId(
   const { data: proyecto } = await supabase
     .from('proyectos')
     .select('id, nombre, ubicacion')
-    .eq('id', manzana?.proyecto_id)
+    .eq('id', manzana?.proyecto_id ?? '')
     .single();
 
   // Transformar manualmente (sin usar el mapa)
@@ -147,23 +153,47 @@ export async function obtenerFuentesPagoConAbonos(
     .from('fuentes_pago')
     .select(`
       *,
+      entidad_financiera:entidad_financiera_id (
+        id,
+        nombre,
+        tipo,
+        codigo
+      ),
       abonos:abonos_historial!fuente_pago_id(*)
     `)
     .eq('negociacion_id', negociacionId)
-    .order('tipo', { ascending: true }) as any;
+    .eq('estado_fuente', 'activa'); // ✅ CRÍTICO: Solo fuentes activas
 
   if (error) {
     console.error('❌ Error obteniendo fuentes de pago:', error);
     throw new Error(`Error al obtener fuentes de pago: ${error.message}`);
   }
 
-  // Ordenar abonos por fecha descendente
-  return (data as any[]).map((fuente) => ({
+  // Obtener orden de tipos de fuentes
+  const { data: tiposFuentes, error: errorTipos } = await supabase
+    .from('tipos_fuentes_pago')
+    .select('nombre, orden')
+    .eq('activo', true);
+
+  if (errorTipos) {
+    console.warn('⚠️ No se pudo obtener orden de tipos de fuentes:', errorTipos);
+  }
+
+  // Crear mapa de orden
+  const ordenMap = new Map<string, number>();
+  if (tiposFuentes) {
+    tiposFuentes.forEach(tipo => {
+      ordenMap.set(tipo.nombre, tipo.orden);
+    });
+  }
+
+  // Mapear y ordenar
+  const fuentesMapeadas = (data as any[]).map((fuente) => ({
     id: fuente.id, // ✅ Explícitamente incluir id
     tipo: fuente.tipo,
     monto: fuente.monto_aprobado, // ✅ Mapear a "monto" para consistencia
     monto_recibido: fuente.monto_recibido,
-    entidad: fuente.entidad,
+    entidad: fuente.entidad_financiera?.nombre || fuente.entidad || null, // ✅ Priorizar nombre de entidad_financiera
     numero_referencia: fuente.numero_referencia,
     detalles: fuente.detalles,
     abonos: (fuente.abonos || []).sort(
@@ -171,6 +201,13 @@ export async function obtenerFuentesPagoConAbonos(
         new Date(b.fecha_abono).getTime() - new Date(a.fecha_abono).getTime()
     ),
   }));
+
+  // ✅ Ordenar por el orden configurado en tipos_fuentes_pago
+  return fuentesMapeadas.sort((a, b) => {
+    const ordenA = ordenMap.get(a.tipo) || 999;
+    const ordenB = ordenMap.get(b.tipo) || 999;
+    return ordenA - ordenB;
+  }) as unknown as FuentePagoConAbonos[];
 }
 
 // =====================================================
@@ -186,7 +223,6 @@ export async function obtenerFuentesPagoConAbonos(
 export async function registrarAbono(
   datos: CrearAbonoDTO
 ): Promise<AbonoHistorial> {
-  console.log('🔍 Registrando abono:', datos);
   if (datos.monto <= 0) {
     throw new Error('El monto debe ser mayor a cero');
   }
@@ -203,10 +239,40 @@ export async function registrarAbono(
   }
 
   // Validar que no exceda el saldo (validación adicional en cliente)
-  if (datos.monto > fuente.saldo_pendiente) {
+  if (datos.monto > (fuente.saldo_pendiente ?? 0)) {
     throw new Error(
-      `El abono de $${datos.monto.toLocaleString('es-CO')} excede el saldo pendiente de $${fuente.saldo_pendiente.toLocaleString('es-CO')}`
+      `El abono de $${datos.monto.toLocaleString('es-CO')} excede el saldo pendiente de $${(fuente.saldo_pendiente ?? 0).toLocaleString('es-CO')}`
     );
+  }
+
+  // ==========================================
+  // 🚨 VALIDACIÓN PRE-DESEMBOLSO
+  // ==========================================
+  // Aplica a TODAS las fuentes — el admin controla qué requisitos
+  // exige para cada tipo desde el panel de configuración.
+  try {
+    const validacion = await validarPreDesembolso(datos.fuente_pago_id);
+
+    if (!validacion.valido) {
+      // Construir mensaje de error con requisitos faltantes
+      const requisitosFaltantes = validacion.errores
+        .map((error, index) => `${index + 1}. ${error}`)
+        .join('\n');
+
+      const mensaje = `❌ No se puede registrar el desembolso. Faltan los siguientes requisitos:\n\n${requisitosFaltantes}\n\nPor favor, completa todos los requisitos antes de registrar el desembolso.`;
+
+      console.error('❌ Validación de desembolso falló:', validacion.errores);
+      throw new Error(mensaje);
+    }
+
+  } catch (validacionError) {
+    // Si el error es de validación, re-throw
+    if (validacionError instanceof Error && validacionError.message.includes('No se puede registrar')) {
+      throw validacionError;
+    }
+
+    // Si es otro error (ej: error de red), loggeamos pero permitimos continuar
+    console.warn('⚠️ Error al validar requisitos (se permite continuar):', validacionError);
   }
 
   // Obtener usuario actual
@@ -230,14 +296,13 @@ export async function registrarAbono(
     // Traducir errores comunes
     if (error.message.includes('excede el saldo pendiente')) {
       throw new Error(
-        `El abono excede el saldo disponible. Saldo actual: $${fuente.saldo_pendiente.toLocaleString('es-CO')}`
+        `El abono excede el saldo disponible. Saldo actual: $${(fuente.saldo_pendiente ?? 0).toLocaleString('es-CO')}`
       );
     }
 
     throw new Error(`Error al registrar abono: ${error.message}`);
   }
 
-  console.log('✅ Abono registrado exitosamente:', (data as any)?.id);
 
   return data as unknown as AbonoHistorial;
 }
@@ -334,7 +399,6 @@ export async function obtenerEstadisticasAbonos(
  * El trigger automáticamente actualizará monto_recibido
  */
 export async function eliminarAbono(abonoId: string): Promise<void> {
-  console.log('🗑️ Eliminando abono:', abonoId);
 
   const { error } = await supabase
     .from('abonos_historial' as any)
@@ -346,7 +410,6 @@ export async function eliminarAbono(abonoId: string): Promise<void> {
     throw new Error(`Error al eliminar abono: ${error.message}`);
   }
 
-  console.log('✅ Abono eliminado exitosamente');
 }
 
 // =====================================================

@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 
 import { showLoginSuccessToast } from '@/components/toasts/custom-toasts'
 import { createClient } from '@/lib/supabase/client'
-import { DebugLogger } from '@/lib/utils/debug-logger'
+
 import { debugLog, errorLog, successLog } from '@/lib/utils/logger'
 import { traducirErrorSupabase } from '@/lib/utils/traducir-errores'
 import { auditLogService } from '@/services/audit-log.service'
@@ -27,6 +27,7 @@ interface UseLoginReturn {
   loginExitoso: boolean
   mensajeExito: string
   recordarUsuario: boolean
+  navegando: boolean
   setEmail: (email: string) => void
   setPassword: (password: string) => void
   setRecordarUsuario: (recordar: boolean) => void
@@ -49,7 +50,7 @@ export function useLogin(): UseLoginReturn {
   const [recordarUsuario, setRecordarUsuario] = useState(false)
   const [navegando, setNavegando] = useState(false)
 
-  // ✅ Ref para prevenir ejecuciones múltiples durante signIn
+  // âœ… Ref para prevenir ejecuciones múltiples durante signIn
   const isSubmittingRef = useRef(false)
 
   // Hooks externos
@@ -64,10 +65,10 @@ export function useLogin(): UseLoginReturn {
   // Obtener ruta de redirección (puede ser null en SSR/build)
   const redirectedFrom = searchParams?.get('redirectedFrom') || null
 
-  // ✅ CRÍTICO: Detectar si venimos de logout (hay timestamp en URL)
+  // âœ… CRÃTICO: Detectar si venimos de logout (hay timestamp en URL)
   const logoutTimestamp = searchParams?.get('_t')
 
-  // ✅ SOLUCIÓN DEFINITIVA: Limpiar TODO al montar si venimos de logout
+  // âœ… SOLUCIÃ“N DEFINITIVA: Limpiar TODO al montar si venimos de logout
   useEffect(() => {
     if (logoutTimestamp) {
       // Resetear TODOS los estados de UI (venimos de logout)
@@ -76,10 +77,9 @@ export function useLogin(): UseLoginReturn {
       setNavegando(false)
       setError('')
       setLoading(false)
-      setPassword('') // ✅ CRÍTICO: Limpiar password
+      setPassword('') // âœ… CRÃTICO: Limpiar password
 
-      DebugLogger.log('LOGIN', `🧹 Estados limpiados - Logout timestamp: ${logoutTimestamp}`)
-      console.log(`🧹 [CLEAN] Formulario limpiado después de logout`)
+
     }
   }, [logoutTimestamp]) // Ejecutar cuando cambie el timestamp
 
@@ -92,12 +92,11 @@ export function useLogin(): UseLoginReturn {
     }
   }, [])
 
-  // ✅ Listener de cambios de sesión de Supabase
+  // âœ… Listener de cambios de sesión de Supabase
   // Detecta cuando la sesión se actualiza correctamente
   useEffect(() => {
     // Si ya estamos logueados y el perfil está cargado, redirigir
     if (perfil && !loading && loginExitoso) {
-      console.log('✅ Sesión establecida correctamente, perfil:', perfil.nombres)
     }
   }, [perfil, loading, loginExitoso])
 
@@ -117,40 +116,31 @@ export function useLogin(): UseLoginReturn {
       e.preventDefault()
       setError('')
 
-      DebugLogger.log('LOGIN', '━━━ INICIO HANDLESUBMIT ━━━')
-      DebugLogger.log('LOGIN', '📧 Email: ' + email)
 
-      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
-      console.log('🟢 [INICIO] handleSubmit ejecutado')
-      console.log('📧 Email:', email)
-      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
 
-      debugLog('📝 Formulario de login enviado')
+      debugLog('ðŸ“ Formulario de login enviado')
 
       // Verificar si está bloqueado
       if (verificarBloqueo()) {
-        DebugLogger.warn('LOGIN', '🔴 Usuario bloqueado por rate limit')
-        console.log('🔴 [BLOQUEADO] Usuario bloqueado por rate limit')
+
         setError(
-          `🚨 Cuenta bloqueada por seguridad. Intenta nuevamente en ${minutosRestantes} minuto${minutosRestantes !== 1 ? 's' : ''}.`
+          `ðŸš¨ Cuenta bloqueada por seguridad. Intenta nuevamente en ${minutosRestantes} minuto${minutosRestantes !== 1 ? 's' : ''}.`
         )
         return
       }
 
       // Prevenir múltiples submissions
       if (loading || isSubmittingRef.current) {
-        DebugLogger.warn('LOGIN', '⚠️ Login ya en progreso, ignorando duplicado')
-        console.log('⚠️ [DUPLICADO] Login ya en progreso, ignorando')
-        debugLog('⚠️ Login ya en progreso, ignorando submission duplicado')
+
+        debugLog('âš ï¸ Login ya en progreso, ignorando submission duplicado')
         return
       }
 
       isSubmittingRef.current = true
       setLoading(true)
-      DebugLogger.log('LOGIN', '⏳ Estado loading activado')
-      console.log('⏳ [LOADING] Estado loading activado')
 
-      let loginSuccess = false // ✅ Flag para controlar el finally
+
+      let loginSuccess = false // âœ… Flag para controlar el finally
 
       try {
         // Determinar ruta de redirección ANTES del login
@@ -163,16 +153,14 @@ export function useLogin(): UseLoginReturn {
         const redirectTo = isInvalidRedirect ? '/' : redirectedFrom
         const destinoNombre = isInvalidRedirect ? 'Dashboard' : redirectedFrom.replace('/', '')
 
-        DebugLogger.log('LOGIN', '🎯 Destino calculado: ' + redirectTo)
-        DebugLogger.log('LOGIN', '🔐 Llamando a signIn()...')
-        console.log('🔐 [SIGNIN] Llamando a signIn()')
-        debugLog('🔐 Iniciando proceso de login', { email })
 
-        // ✅ CRÍTICO: signIn PRIMERO, navegación INMEDIATA después (sin cambios de estado)
+
+        debugLog('ðŸ” Iniciando proceso de login', { email })
+
+        // âœ… CRÃTICO: signIn PRIMERO, navegación INMEDIATA después (sin cambios de estado)
         await signIn(email, password)
 
-        DebugLogger.log('LOGIN', '✅ signIn() completado exitosamente')
-        console.log('✅ [SIGNIN] signIn() completado exitosamente')
+
         successLog('Login exitoso en signIn()')
 
         // Login exitoso: resetear intentos fallidos
@@ -185,52 +173,46 @@ export function useLogin(): UseLoginReturn {
           localStorage.removeItem(REMEMBER_EMAIL_KEY)
         }
 
-        // 📝 Registrar evento de auditoría
+        // ðŸ“ Registrar evento de auditoría
         auditLogService.logLoginExitoso(email)
 
-        DebugLogger.log('LOGIN', '✨ Mostrando toast de éxito')
-        console.log('✨ [TOAST] Mostrando toast de éxito')
+
         // Toast moderno personalizado
         showLoginSuccessToast()
 
-        // ❌ REMOVIDO: No cambiar estados UI (causa re-render y limpia el formulario visualmente)
+        // âŒ REMOVIDO: No cambiar estados UI (causa re-render y limpia el formulario visualmente)
         // setLoginExitoso(true)
         // setMensajeExito(...)
 
-        // ✅ Navegar INMEDIATAMENTE sin cambiar estado
-        DebugLogger.log('LOGIN', '➡️ Navegando INMEDIATAMENTE con router.push: ' + redirectTo)
-        console.log('➡️ [ROUTER] Navegación INMEDIATA sin cambios de estado')
-        debugLog('🚀 Navegando inmediatamente', { destino: redirectTo })
+        // âœ… Navegar INMEDIATAMENTE sin cambiar estado
 
-        // ✅ Navegación directa sin cambiar estado previos
+        debugLog('ðŸš€ Navegando inmediatamente', { destino: redirectTo })
+
+        // âœ… Navegación directa sin cambiar estado previos
         router.push(redirectTo)
 
-        DebugLogger.log('LOGIN', '✅ Login completado - Cache listo, navegando')
+
         successLog('Navegación exitosa con cache pre-poblado')
 
-        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
 
-        // ✅ Marcar como exitoso para que finally NO desactive loading
+        // âœ… Marcar como exitoso para que finally NO desactive loading
         loginSuccess = true
 
-        // ✅ NO ejecutar finally (no desactivar loading en caso exitoso)
+        // âœ… NO ejecutar finally (no desactivar loading en caso exitoso)
         return
 
       } catch (err) {
         const error = err instanceof Error ? err : new Error(String(err))
-        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
-        console.log('❌ [ERROR] Error en handleSubmit')
-        console.error(error)
-        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+        console.error('Login error:', error)
         errorLog('login-submit', error, { email })
 
-        // Calcular intentos restantes DESPUÉS de este fallo
+        // Calcular intentos restantes DESPUÃ‰S de este fallo
         const nuevoIntentosFallidos = intentosRestantes - 1
 
         // Login fallido: registrar intento
         registrarIntentoFallido()
 
-        // 📝 Registrar evento de auditoría
+        // ðŸ“ Registrar evento de auditoría
         auditLogService.logLoginFallido(email, nuevoIntentosFallidos)
 
         // Traducir mensaje de error al español
@@ -240,18 +222,18 @@ export function useLogin(): UseLoginReturn {
         if (nuevoIntentosFallidos === 0) {
           auditLogService.logCuentaBloqueada(email, 15)
           setError(
-            '🚨 Demasiados intentos fallidos. Cuenta bloqueada por 15 minutos por seguridad.'
+            'ðŸš¨ Demasiados intentos fallidos. Cuenta bloqueada por 15 minutos por seguridad.'
           )
         } else if (nuevoIntentosFallidos <= 2) {
           // Advertencia cuando quedan 2 o menos intentos
           setError(
-            `${mensajeError}. ⚠️ Te quedan ${nuevoIntentosFallidos} intento${nuevoIntentosFallidos !== 1 ? 's' : ''}.`
+            `${mensajeError}. âš ï¸ Te quedan ${nuevoIntentosFallidos} intento${nuevoIntentosFallidos !== 1 ? 's' : ''}.`
           )
         } else {
           setError(mensajeError)
         }
       } finally {
-        // ✅ Solo desactivar loading si NO fue exitoso
+        // âœ… Solo desactivar loading si NO fue exitoso
         if (!loginSuccess) {
           setLoading(false)
           isSubmittingRef.current = false
@@ -262,7 +244,7 @@ export function useLogin(): UseLoginReturn {
     [email, password, signIn, router, redirectedFrom, verificarBloqueo, minutosRestantes, registrarIntentoFallido, resetearIntentos, intentosRestantes, recordarUsuario]
   )
 
-  // ✅ Estabilizar funciones con useCallback para evitar re-renders
+  // âœ… Estabilizar funciones con useCallback para evitar re-renders
   const handleEmailChange = useCallback((value: string) => {
     setEmail(value)
   }, [])
@@ -286,7 +268,7 @@ export function useLogin(): UseLoginReturn {
     loginExitoso,
     mensajeExito,
     recordarUsuario,
-    navegando, // ✅ Estado para mostrar overlay
+    navegando, // âœ… Estado para mostrar overlay
     setEmail: handleEmailChange,
     setPassword: handlePasswordChange,
     setRecordarUsuario: handleRecordarChange,

@@ -419,7 +419,7 @@ export default function ProyectoDetalleClient({
         onClose={() => setModalEliminar(false)}
         title="Eliminar Proyecto"
         icon={<Trash2 className="w-6 h-6" />}
-        gradientColor="red"
+        gradientColor="orange"
       >
         <div className="space-y-4">
           <div className="rounded-lg border-2 border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-950/30 p-4">

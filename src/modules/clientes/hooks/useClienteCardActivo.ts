@@ -22,6 +22,8 @@ export interface FuentePagoCard {
   monto_aprobado: number
   monto_recibido: number
   porcentaje_completado: number
+  carta_aprobacion_url: string | null
+  entidad: string | null
 }
 
 export interface DatosNegociacion {
@@ -130,7 +132,7 @@ export function useClienteCardActivo({ clienteId }: UseClienteCardActivoProps) {
       // Obtener fuentes de pago de la negociación
       const { data: fuentes, error: errorFuentes } = await supabase
         .from('fuentes_pago')
-        .select('id, tipo, monto_aprobado, monto_recibido, porcentaje_completado')
+        .select('id, tipo, monto_aprobado, monto_recibido, porcentaje_completado, carta_aprobacion_url, entidad')
         .eq('negociacion_id', negociacion.id)
         .order('fecha_creacion', { ascending: true })
 
@@ -149,7 +151,7 @@ export function useClienteCardActivo({ clienteId }: UseClienteCardActivoProps) {
         porcentaje: Math.round(negociacion.porcentaje_pagado || 0),
         ultimaCuota,
         totalAbonos: abonos.length,
-        fuentesPago: fuentes || [],
+        fuentesPago: (fuentes as FuentePagoCard[]) || [],
       })
     } catch (err) {
       console.error('Error cargando datos de negociación:', err)

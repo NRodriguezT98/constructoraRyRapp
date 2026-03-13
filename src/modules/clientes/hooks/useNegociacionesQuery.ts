@@ -104,7 +104,6 @@ export function useNegociacionesQuery({ clienteId, enabled = true }: UseNegociac
   } = useQuery({
     queryKey: negociacionesQueryKeys.byCliente(clienteId),
     queryFn: async () => {
-      console.log('📊 [useNegociacionesQuery] Fetching negociaciones para cliente:', clienteId)
       const data = await negociacionesService.obtenerNegociacionesCliente(clienteId)
       return data as NegociacionDetalle[]
     },
@@ -159,7 +158,6 @@ export function useNegociacionesQuery({ clienteId, enabled = true }: UseNegociac
    * Invalidar cache de negociaciones (forzar refetch)
    */
   const invalidarNegociaciones = useCallback(() => {
-    console.log('🔄 [useNegociacionesQuery] Invalidando cache de negociaciones')
     queryClient.invalidateQueries({ queryKey: negociacionesQueryKeys.byCliente(clienteId) })
   }, [clienteId, queryClient])
 
@@ -167,7 +165,6 @@ export function useNegociacionesQuery({ clienteId, enabled = true }: UseNegociac
    * Invalidar todas las negociaciones (global)
    */
   const invalidarTodasNegociaciones = useCallback(() => {
-    console.log('🔄 [useNegociacionesQuery] Invalidando TODAS las negociaciones')
     queryClient.invalidateQueries({ queryKey: negociacionesQueryKeys.all })
   }, [queryClient])
 
@@ -213,10 +210,8 @@ export function useNegociacionDetalle({ negociacionId, enabled = true }: UseNego
     queryKey: negociacionesQueryKeys.fuentesPago(negociacionId || ''),
     queryFn: async () => {
       if (!negociacionId) return []
-
-      console.log('💰 [useNegociacionDetalle] Fetching fuentes de pago:', negociacionId)
       const data = await obtenerFuentesPagoConAbonos(negociacionId)
-      return data as FuentePago[]
+      return data as unknown as FuentePago[]
     },
     enabled: enabled && !!negociacionId,
     staleTime: 1000 * 60 * 2, // 2 minutos

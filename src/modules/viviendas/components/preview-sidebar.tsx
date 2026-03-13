@@ -199,7 +199,7 @@ export function PreviewSidebar({ data, proyectoNombre, manzanaNombre, resumenFin
               <div className="space-y-2">
                 <AnimatePresence>
                   {section.items.map((item, itemIndex) => {
-                    const ItemIcon = item.icon
+                    const ItemIcon = 'icon' in item ? item.icon : null
 
                     return (
                       <motion.div
@@ -209,28 +209,28 @@ export function PreviewSidebar({ data, proyectoNombre, manzanaNombre, resumenFin
                         exit={{ opacity: 0 }}
                         transition={{ duration: 0.2 }}
                         className={`flex items-start gap-2 text-xs ${
-                          item.highlight
+                          'highlight' in item && item.highlight
                             ? 'p-2 rounded-lg bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950/30 dark:to-amber-950/30 border border-orange-200 dark:border-orange-800'
                             : ''
                         }`}
                       >
                         {ItemIcon && (
                           <ItemIcon className={`w-4 h-4 flex-shrink-0 mt-0.5 ${
-                            item.highlight
+                            'highlight' in item && item.highlight
                               ? 'text-orange-600 dark:text-orange-400'
                               : 'text-gray-400 dark:text-gray-500'
                           }`} />
                         )}
                         <div className="flex-1 min-w-0">
                           <p className={`font-medium ${
-                            item.highlight
+                            'highlight' in item && item.highlight
                               ? 'text-orange-900 dark:text-orange-100'
                               : 'text-gray-500 dark:text-gray-400'
                           }`}>
                             {item.label}
                           </p>
                           <p className={`mt-0.5 truncate ${
-                            item.highlight
+                            'highlight' in item && item.highlight
                               ? 'font-bold text-sm bg-gradient-to-br from-orange-600 to-amber-600 bg-clip-text text-transparent'
                               : 'text-gray-900 dark:text-white'
                           }`}>

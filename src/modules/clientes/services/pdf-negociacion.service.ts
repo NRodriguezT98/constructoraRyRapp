@@ -507,3 +507,246 @@ export async function generarReportePDF(datos: DatosReportePDF): Promise<void> {
   const nombreArchivo = `Reporte_Negociacion_${datos.cliente.apellidos.replace(/\s+/g, '_')}_${getTodayDateString()}.pdf`
   doc.save(nombreArchivo)
 }
+
+// ============================================
+// FUNCIÓN PREVIEW (para wizard pre-creación)
+// ============================================
+
+export interface DatosPreviewPDF {
+  cliente: {
+    nombres: string
+    apellidos: string
+    cedula?: string
+  }
+  vivienda: {
+    proyecto: string
+    manzana?: string
+    numeroVivienda: string
+  }
+  valorBase: number
+  descuento: number
+  valorFinal: number
+  fuentesPago: Array<{
+    tipo: string
+    monto: number
+    entidad?: string
+  }>
+  notas?: string
+}
+
+/**
+ * Generar PDF preview de negociación (antes de crear en BD)
+ * Diseño simplificado con marca de agua "BORRADOR"
+ */
+export async function generarPDFPreview(datos: DatosPreviewPDF): Promise<void> {
+  const doc = new jsPDF()
+
+  let yPos = 20
+
+  // ============================================
+  // 1. ENCABEZADO CON MARCA DE AGUA BORRADOR
+  // ============================================
+
+  // Logo RyR
+  try {
+    doc.addImage(LOGO_RYR_BASE64, 'PNG', 15, 10, 35, 15)
+  } catch (error) {
+    console.warn('⚠️ [PDF Preview] No se pudo cargar el logo')
+  }
+
+  setFont(doc, 'title')
+  doc.setTextColor(...COLORES.primary)
+  doc.text('PREVIEW - NEGOCIACIÓN', 105, yPos, { align: 'center' })
+
+  yPos += 8
+  setFont(doc, 'caption')
+  doc.setTextColor(...COLORES.warning)
+  doc.text('🔸 BORRADOR - NO VÁLIDO PARA TRÁMITES 🔸', 105, yPos, { align: 'center' })
+
+  yPos += 4
+  doc.setTextColor(...COLORES.textSecondary)
+  const fechaGen = new Date().toLocaleDateString('es-CO', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  })
+  doc.text(`Generado: ${fechaGen}`, 105, yPos, { align: 'center' })
+
+  yPos += 12
+
+  // ============================================
+  // 2. INFORMACIÓN DEL CLIENTE
+  // ============================================
+
+  yPos = addSection(doc, 'DATOS DEL CLIENTE', yPos)
+
+  yPos = addDataRow(
+    doc,
+    'Nombre:',
+    `${datos.cliente.nombres} ${datos.cliente.apellidos}`,
+    yPos
+  )
+
+  if (datos.cliente.cedula) {
+    yPos = addDataRow(doc, 'Cédula:', datos.cliente.cedula, yPos)
+  }
+
+  yPos += 6
+
+  // ============================================
+  // 3. INFORMACIÓN DE LA VIVIENDA
+  // ============================================
+
+  yPos = addSection(doc, 'DETALLES DE LA VIVIENDA', yPos)
+
+  yPos = addDataRow(doc, 'Proyecto:', datos.vivienda.proyecto, yPos)
+  if (datos.vivienda.manzana) {
+    yPos = addDataRow(doc, 'Manzana:', datos.vivienda.manzana, yPos)
+  }
+  yPos = addDataRow(doc, 'Vivienda:', datos.vivienda.numeroVivienda, yPos)
+
+  yPos += 6
+
+  // ============================================
+  // 4. RESUMEN FINANCIERO
+  // ============================================
+
+  yPos = addSection(doc, 'RESUMEN FINANCIERO', yPos)
+
+  yPos = addDataRow(
+    doc,
+    'Valor Base:',
+    `$${datos.valorBase.toLocaleString('es-CO')}`,
+    yPos,
+    { align: 'right' }
+  )
+
+  if (datos.descuento > 0) {
+    yPos = addDataRow(
+      doc,
+      'Descuento:',
+      `-$${datos.descuento.toLocaleString('es-CO')}`,
+      yPos,
+      { align: 'right', color: COLORES.warning }
+    )
+  }
+
+  // Separador
+  doc.setDrawColor(...COLORES.border)
+  doc.setLineWidth(0.3)
+  doc.line(14, yPos, 196, yPos)
+  yPos += 4
+
+  yPos = addDataRow(
+    doc,
+    'VALOR FINAL:',
+    `$${datos.valorFinal.toLocaleString('es-CO')}`,
+    yPos,
+    { align: 'right', bold: true }
+  )
+
+  yPos += 8
+
+  // ============================================
+  // 5. FUENTES DE PAGO (Tabla)
+  // ============================================
+
+  yPos = addSection(doc, 'FUENTES DE PAGO', yPos)
+
+  if (datos.fuentesPago.length === 0) {
+    setFont(doc, 'body')
+    doc.setTextColor(...COLORES.textSecondary)
+    doc.text('Sin fuentes de pago configuradas', 14, yPos)
+    yPos += 10
+  } else {
+    const fuentesData = datos.fuentesPago.map((f) => [
+      f.tipo,
+      `$${f.monto.toLocaleString('es-CO')}`,
+      f.entidad || 'N/A',
+    ])
+
+    autoTable(doc, {
+      startY: yPos,
+      head: [['Tipo', 'Monto Configurado', 'Entidad']],
+      body: fuentesData,
+      theme: 'grid',
+      headStyles: {
+        fillColor: COLORES.primary,
+        textColor: [255, 255, 255],
+        fontStyle: 'bold',
+        fontSize: 9,
+      },
+      styles: {
+        fontSize: 9,
+        cellPadding: 3,
+      },
+      columnStyles: {
+        1: { halign: 'right' },
+      },
+    })
+
+    yPos = (doc as any).lastAutoTable.finalY + 12
+  }
+
+  // ============================================
+  // 6. NOTAS (si existen)
+  // ============================================
+
+  if (datos.notas && datos.notas.trim()) {
+    yPos = checkPageBreak(doc, yPos, 30)
+    yPos = addSection(doc, 'NOTAS Y OBSERVACIONES', yPos)
+
+    setFont(doc, 'body')
+    doc.setTextColor(...COLORES.textPrimary)
+    const splitNotas = doc.splitTextToSize(datos.notas, 182)
+    doc.text(splitNotas, 14, yPos)
+    yPos += splitNotas.length * 5 + 10
+  }
+
+  // ============================================
+  // 7. MARCA DE AGUA DIAGONAL "BORRADOR"
+  // ============================================
+
+  const totalPages = doc.getNumberOfPages()
+  for (let i = 1; i <= totalPages; i++) {
+    doc.setPage(i)
+
+    // Marca de agua diagonal
+    doc.saveGraphicsState()
+    // @ts-ignore — GState constructor not typed in jspdf types
+    doc.setGState(new doc.GState({ opacity: 0.1 }))
+    doc.setTextColor(...COLORES.warning)
+    doc.setFontSize(60)
+    doc.setFont('helvetica', 'bold')
+    doc.text('BORRADOR', 105, 150, {
+      align: 'center',
+      angle: 45,
+    })
+    doc.restoreGraphicsState()
+
+    // Pie de página
+    doc.setDrawColor(...COLORES.border)
+    doc.setLineWidth(0.3)
+    doc.line(14, 285, 196, 285)
+
+    setFont(doc, 'caption')
+    doc.setTextColor(...COLORES.textSecondary)
+    doc.text(
+      'Preview generado por el sistema de gestión de RyR Constructora Ltda.',
+      105,
+      290,
+      { align: 'center' }
+    )
+
+    doc.text(`Página ${i} de ${totalPages}`, 196, 290, { align: 'right' })
+  }
+
+  // ============================================
+  // GUARDAR ARCHIVO
+  // ============================================
+
+  const nombreArchivo = `Preview_Negociacion_${datos.cliente.apellidos.replace(/\s+/g, '_')}_${getTodayDateString()}.pdf`
+  doc.save(nombreArchivo)
+}

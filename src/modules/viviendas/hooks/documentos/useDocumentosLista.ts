@@ -22,6 +22,7 @@ import {
     useCategoriasViviendaQuery,
     useDocumentosViviendaQuery,
     useEliminarDocumentoViviendaMutation,
+    useRestaurarDocumentoViviendaMutation,
     useToggleImportanteViviendaMutation,
 } from './useDocumentosViviendaQuery'
 
@@ -57,6 +58,7 @@ export function useDocumentosLista({
   const eliminarMutation = useEliminarDocumentoViviendaMutation(viviendaId)
   const toggleImportanteMutation = useToggleImportanteViviendaMutation(viviendaId)
   const archivarMutation = useArchivarDocumentoViviendaMutation(viviendaId)
+  const restaurarMutation = useRestaurarDocumentoViviendaMutation(viviendaId)
 
   // Filtrado de documentos (local)
   const documentosFiltrados = useMemo(() => {
@@ -181,6 +183,26 @@ export function useDocumentosLista({
 
   const handleArchive = useCallback(
     async (documento: DocumentoVivienda) => {
+      // ✅ Si el documento ya está archivado → Confirmar antes de restaurar
+      if (documento.estado === 'archivado') {
+        const confirmed = await confirm({
+          title: 'Restaurar documento',
+          message: `¿Estás seguro de que deseas restaurar "${documento.titulo}"?\n\n✅ El documento volverá a estar activo y visible en la pestaña "Activos".\n\n💡 Podrás archivarlo nuevamente en cualquier momento.`,
+          confirmText: 'Restaurar',
+          variant: 'info'
+        })
+
+        if (confirmed) {
+          try {
+            await restaurarMutation.mutateAsync(documento.id)
+          } catch (error) {
+            console.error('Error al restaurar documento:', error)
+          }
+        }
+        return
+      }
+
+      // ❌ Si está activo → Mostrar confirmación antes de archivar
       // Contar versiones para mensaje informativo
       const { total } = await DocumentosViviendaService.contarVersionesActivas(documento.id)
 
@@ -199,7 +221,7 @@ export function useDocumentosLista({
         await archivarMutation.mutateAsync(documento.id)
       }
     },
-    [archivarMutation, confirm]
+    [archivarMutation, restaurarMutation, confirm]
   )
 
   const handleDelete = useCallback(

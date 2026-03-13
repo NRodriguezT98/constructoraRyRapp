@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react'
 
-import { getTodayDateString } from '@/lib/utils/date.utils'
+import { formatDateCompact, getTodayDateString } from '@/lib/utils/date.utils'
 
-import { validarDesembolso, type ResultadoValidacion } from '../../services/validacion-desembolsos.service'
+
 import type { FuentePagoConAbonos } from '../../types'
 
 interface UseModalRegistrarAbonoProps {
   negociacionId: string
   fuentePreseleccionada: FuentePagoConAbonos
+  fechaMinima?: string  // fecha_negociacion — límite inferior para fecha_abono
   onSuccess: () => void
   onClose: () => void
 }
@@ -15,6 +16,7 @@ interface UseModalRegistrarAbonoProps {
 export function useModalRegistrarAbono({
   negociacionId,
   fuentePreseleccionada,
+  fechaMinima,
   onSuccess,
   onClose,
 }: UseModalRegistrarAbonoProps) {
@@ -36,7 +38,7 @@ export function useModalRegistrarAbono({
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [loading, setLoading] = useState(false)
   const [metodoSeleccionado, setMetodoSeleccionado] = useState('Transferencia')
-  const [validacionDesembolso, setValidacionDesembolso] = useState<ResultadoValidacion | null>(null)
+  const [validacionDesembolso] = useState<null>(null)
 
   // Actualizar monto si cambia el tipo de fuente
   useEffect(() => {
@@ -63,6 +65,10 @@ export function useModalRegistrarAbono({
 
     if (!formData.fecha_abono) {
       newErrors.fecha_abono = 'La fecha es obligatoria'
+    } else if (fechaMinima && formData.fecha_abono < fechaMinima) {
+      newErrors.fecha_abono = `La fecha no puede ser anterior al inicio de la negociación (${formatDateCompact(fechaMinima)})`
+    } else if (formData.fecha_abono > getTodayDateString()) {
+      newErrors.fecha_abono = `La fecha no puede ser mayor a hoy (${formatDateCompact(getTodayDateString())})`
     }
 
     setErrors(newErrors)
@@ -78,24 +84,6 @@ export function useModalRegistrarAbono({
     setLoading(true)
 
     try {
-      // ✅ VALIDACIÓN: Verificar que el paso del proceso esté completado (solo para desembolsos)
-      if (esDesembolsoCompleto) {
-        const resultadoValidacion = await validarDesembolso(
-          negociacionId,
-          fuentePreseleccionada.tipo
-        )
-
-        setValidacionDesembolso(resultadoValidacion)
-
-        if (!resultadoValidacion.permitido) {
-          setErrors({
-            submit: resultadoValidacion.razon || 'No se puede registrar el desembolso en este momento.',
-          })
-          setLoading(false)
-          return
-        }
-      }
-
       const response = await fetch('/api/abonos/registrar', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -123,7 +111,6 @@ export function useModalRegistrarAbono({
       })
       setErrors({})
       setMetodoSeleccionado('Transferencia')
-      setValidacionDesembolso(null)
 
       onSuccess()
       onClose()
@@ -147,9 +134,8 @@ export function useModalRegistrarAbono({
     updateField('metodo_pago', metodo)
   }
 
-  // Limpiar validación de desembolso
+  // Limpiar error de submit
   const limpiarValidacion = () => {
-    setValidacionDesembolso(null)
     setErrors((prev) => ({ ...prev, submit: '' }))
   }
 

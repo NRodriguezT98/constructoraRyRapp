@@ -1,10 +1,15 @@
 /**
  * Hook para manejar las fuentes de pago y sus validaciones
+ * âœ… Carga dinámica desde BD (NO más hardcodeadas)
+ * âœ… V2: Soporta campos dinámicos con roles
  */
 
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
+import { cargarTiposFuentesPagoActivas } from '@/modules/clientes/services/tipos-fuentes-pago.service'
 import type { CrearFuentePagoDTO, TipoFuentePago } from '@/modules/clientes/types'
+import { obtenerMonto } from '@/modules/clientes/utils/fuentes-pago-campos.utils'
+import { useTiposFuentesConCampos } from '@/modules/configuracion/hooks/useTiposFuentesConCampos'
 
 import type { FuentePagoConfig, FuentePagoConfiguracion, FuentePagoErrores } from '../types'
 
@@ -13,45 +18,63 @@ interface UseFuentesPagoProps {
 }
 
 export function useFuentesPago({ valorTotal }: UseFuentesPagoProps) {
-  // Estado inicial de fuentes (todas opcionales)
-  const [fuentes, setFuentes] = useState<FuentePagoConfiguracion[]>([
-    {
-      tipo: 'Cuota Inicial',
-      enabled: false, // Opcional, como las demás
-      config: null,
-    },
-    {
-      tipo: 'Crédito Hipotecario',
-      enabled: false,
-      config: null,
-    },
-    {
-      tipo: 'Subsidio Mi Casa Ya',
-      enabled: false,
-      config: null,
-    },
-    {
-      tipo: 'Subsidio Caja Compensación',
-      enabled: false,
-      config: null,
-    },
-  ])
+  // ðŸ”¥ Cargar configuración de campos desde BD
+  const { data: tiposConCampos = [] } = useTiposFuentesConCampos()
 
-  // Estado de errores por fuente
-  const [erroresFuentes, setErroresFuentes] = useState<Record<TipoFuentePago, FuentePagoErrores>>({
-    'Cuota Inicial': {},
-    'Crédito Hipotecario': {},
-    'Subsidio Mi Casa Ya': {},
-    'Subsidio Caja Compensación': {},
-  })
+  // ðŸ”¥ Estado de carga y fuentes dinámicas desde BD
+  const [cargandoTipos, setCargandoTipos] = useState(true)
+  const [tiposFuentesDisponibles, setTiposFuentesDisponibles] = useState<string[]>([])
 
-  // ⭐ NUEVO: Estado para documentos pendientes
-  const [tieneCartasAhora, setTieneCartasAhora] = useState<Record<TipoFuentePago, boolean>>({
-    'Cuota Inicial': false,
-    'Crédito Hipotecario': false,
-    'Subsidio Mi Casa Ya': false,
-    'Subsidio Caja Compensación': false,
-  })
+  // Estado inicial de fuentes (se carga dinámicamente)
+  const [fuentes, setFuentes] = useState<FuentePagoConfiguracion[]>([])
+
+  // ðŸ”¥ Cargar tipos de fuentes desde BD al montar
+  useEffect(() => {
+    const cargarTipos = async () => {
+      const { data, error } = await cargarTiposFuentesPagoActivas()
+
+      if (error || !data) {
+        console.error('âŒ Error al cargar tipos de fuentes:', error)
+        // Fallback: usar las 4 por defecto si falla la carga
+        setTiposFuentesDisponibles([
+          'Cuota Inicial',
+          'Crédito Hipotecario',
+          'Subsidio Mi Casa Ya',
+          'Subsidio Caja Compensación',
+        ])
+      } else {
+        setTiposFuentesDisponibles(data.map(f => f.nombre))
+      }
+
+      setCargandoTipos(false)
+    }
+
+    cargarTipos()
+  }, [])
+
+  // ðŸ”¥ Inicializar fuentes cuando se cargan los tipos desde BD
+  useEffect(() => {
+    if (!cargandoTipos && tiposFuentesDisponibles.length > 0) {
+      const fuentesIniciales: FuentePagoConfiguracion[] = tiposFuentesDisponibles.map(nombre => ({
+        tipo: nombre as TipoFuentePago,
+        enabled: false,
+        config: null,
+      }))
+
+      setFuentes(fuentesIniciales)
+
+      // ðŸ”¥ Inicializar estado de errores dinámicamente
+      const erroresIniciales = tiposFuentesDisponibles.reduce((acc, nombre) => {
+        acc[nombre as TipoFuentePago] = {}
+        return acc
+      }, {} as Record<TipoFuentePago, FuentePagoErrores>)
+      setErroresFuentes(erroresIniciales)
+
+    }
+  }, [cargandoTipos, tiposFuentesDisponibles])
+
+  // Estado de errores por fuente (inicializado dinámicamente)
+  const [erroresFuentes, setErroresFuentes] = useState<Record<TipoFuentePago, FuentePagoErrores>>({} as any)
 
   // Cálculos
   const fuentesActivas = useMemo(() => {
@@ -59,8 +82,16 @@ export function useFuentesPago({ valorTotal }: UseFuentesPagoProps) {
   }, [fuentes])
 
   const totalFuentes = useMemo(() => {
-    return fuentesActivas.reduce((sum, f) => sum + (f.config?.monto_aprobado || 0), 0)
-  }, [fuentesActivas])
+    return fuentesActivas.reduce((sum, f) => {
+      // ðŸ”¥ Buscar configuración de campos para este tipo
+      const tipoConCampos = tiposConCampos.find(t => t.nombre === f.tipo)
+      const camposConfig = tipoConCampos?.configuracion_campos?.campos || []
+
+      // ðŸ”¥ Usar utility que busca por rol='monto'
+      const monto = obtenerMonto(f.config, camposConfig)
+      return sum + monto
+    }, 0)
+  }, [fuentesActivas, tiposConCampos])
 
   const diferencia = useMemo(() => {
     return valorTotal - totalFuentes
@@ -72,11 +103,19 @@ export function useFuentesPago({ valorTotal }: UseFuentesPagoProps) {
   const paso2Valido = useMemo(() => {
     // Debe haber al menos UNA fuente habilitada con monto > 0
     const tieneAlMenosUnaFuente = fuentesActivas.length > 0 &&
-      fuentesActivas.some((f) => (f.config?.monto_aprobado || 0) > 0)
+      fuentesActivas.some((f) => {
+        // ðŸ”¥ Buscar configuración de campos para este tipo
+        const tipoConCampos = tiposConCampos.find(t => t.nombre === f.tipo)
+        const camposConfig = tipoConCampos?.configuracion_campos?.campos || []
+
+        // ðŸ”¥ Usar utility que busca por rol='monto' (igual que totalFuentes)
+        const monto = obtenerMonto(f.config, camposConfig)
+        return monto > 0
+      })
 
     // Suma debe cerrar exactamente
     return tieneAlMenosUnaFuente && sumaCierra
-  }, [fuentesActivas, sumaCierra])
+  }, [fuentesActivas, sumaCierra, tiposConCampos])
 
   // Validar una fuente específica
   const validarFuente = useCallback((tipo: TipoFuentePago, config: FuentePagoConfig | null): FuentePagoErrores => {
@@ -109,6 +148,10 @@ export function useFuentesPago({ valorTotal }: UseFuentesPagoProps) {
       }
     }
 
+    // â„¹ï¸ NOTA: La carta de aprobación NO se valida aquí
+    // El sistema creará un documento pendiente automáticamente
+    // Usuario sube la carta desde la pestaña Documentos
+
     return errores
   }, [valorTotal])
 
@@ -130,7 +173,7 @@ export function useFuentesPago({ valorTotal }: UseFuentesPagoProps) {
           }
         }
         return f
-      })
+      }) as FuentePagoConfiguracion[]
     )
   }, [])
 
@@ -155,23 +198,22 @@ export function useFuentesPago({ valorTotal }: UseFuentesPagoProps) {
     [validarFuente]
   )
 
-  // ⭐ NUEVO: Handler para documentos pendientes
-  const handleTieneCartaAhoraChange = useCallback((tipo: TipoFuentePago, tiene: boolean) => {
-    setTieneCartasAhora((prev) => ({
-      ...prev,
-      [tipo]: tiene,
-    }))
-  }, [])
-
-  // Resetear (todas deshabilitadas)
+  // Resetear (todas deshabilitadas) - ðŸ”¥ Ahora dinámico
   const resetear = useCallback(() => {
-    setFuentes([
-      { tipo: 'Cuota Inicial', enabled: false, config: null },
-      { tipo: 'Crédito Hipotecario', enabled: false, config: null },
-      { tipo: 'Subsidio Mi Casa Ya', enabled: false, config: null },
-      { tipo: 'Subsidio Caja Compensación', enabled: false, config: null },
-    ])
-  }, [])
+    const fuentesReseteadas: FuentePagoConfiguracion[] = tiposFuentesDisponibles.map(nombre => ({
+      tipo: nombre as TipoFuentePago,
+      enabled: false,
+      config: null,
+    }))
+    setFuentes(fuentesReseteadas)
+
+    // â­ Resetear errores
+    const erroresReseteados = tiposFuentesDisponibles.reduce((acc, nombre) => {
+      acc[nombre as TipoFuentePago] = {}
+      return acc
+    }, {} as Record<TipoFuentePago, FuentePagoErrores>)
+    setErroresFuentes(erroresReseteados)
+  }, [tiposFuentesDisponibles])
 
   // Obtener fuentes para crear (convierte a DTO)
   const obtenerFuentesParaCrear = useCallback((): CrearFuentePagoDTO[] => {
@@ -186,15 +228,18 @@ export function useFuentesPago({ valorTotal }: UseFuentesPagoProps) {
         carta_aprobacion_url: config.carta_aprobacion_url,
         carta_asignacion_url: config.carta_asignacion_url,
         permite_multiples_abonos: config.tipo === 'Cuota Inicial',
-      }))
+      })) as CrearFuentePagoDTO[]
   }, [fuentesActivas])
 
   return {
+    // ðŸ”¥ Estado de carga
+    cargandoTipos,
+    tiposFuentesDisponibles,
+
     // Estado
     fuentes,
     fuentesActivas,
     erroresFuentes,
-    tieneCartasAhora, // ⭐ NUEVO
 
     // Cálculos
     totalFuentes,
@@ -205,7 +250,7 @@ export function useFuentesPago({ valorTotal }: UseFuentesPagoProps) {
     // Handlers
     handleFuenteEnabledChange,
     handleFuenteConfigChange,
-    handleTieneCartaAhoraChange, // ⭐ NUEVO
+
 
     // Utilidades
     resetear,

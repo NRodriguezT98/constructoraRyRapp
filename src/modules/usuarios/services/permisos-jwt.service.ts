@@ -7,9 +7,9 @@
  * Mejora performance del middleware (0 queries en navegación).
  *
  * ARQUITECTURA:
- * 1. Al login → Cargar permisos + Guardar en JWT
- * 2. Middleware → Leer del JWT (sin DB query)
- * 3. Al cambiar permisos → Invalidar sesión
+ * 1. Al login â†’ Cargar permisos + Guardar en JWT
+ * 2. Middleware â†’ Leer del JWT (sin DB query)
+ * 3. Al cambiar permisos â†’ Invalidar sesión
  */
 
 import { supabaseAdmin } from '@/lib/supabase/admin'
@@ -27,7 +27,6 @@ export type PermisoCompacto = string
  * Obtener permisos en formato compacto para JWT
  */
 export async function obtenerPermisosParaJWT(rol: Rol): Promise<PermisoCompacto[]> {
-  console.log('🔐 [JWT] Obteniendo permisos para cachear en JWT:', rol)
 
   // Administrador: No necesita cache (bypass automático)
   if (rol === 'Administrador') {
@@ -41,14 +40,13 @@ export async function obtenerPermisosParaJWT(rol: Rol): Promise<PermisoCompacto[
     .eq('permitido', true)
 
   if (error) {
-    console.error('❌ [JWT] Error obteniendo permisos:', error)
+    console.error('âŒ [JWT] Error obteniendo permisos:', error)
     throw error
   }
 
   // Convertir a formato compacto: "modulo.accion"
   const permisosCompactos = data.map(p => `${p.modulo}.${p.accion}`)
 
-  console.log(`✅ [JWT] ${permisosCompactos.length} permisos cacheados`)
   return permisosCompactos
 }
 
@@ -60,7 +58,6 @@ export async function sincronizarPermisosAlJWT(
   userId: string,
   rol: Rol
 ): Promise<void> {
-  console.log('🔄 [JWT] Sincronizando permisos al JWT para usuario:', userId)
 
   try {
     // Obtener permisos en formato compacto
@@ -75,13 +72,12 @@ export async function sincronizarPermisosAlJWT(
     })
 
     if (error) {
-      console.error('❌ [JWT] Error actualizando metadata:', error)
+      console.error('âŒ [JWT] Error actualizando metadata:', error)
       throw error
     }
 
-    console.log('✅ [JWT] Permisos sincronizados al JWT exitosamente')
   } catch (error) {
-    console.error('❌ [JWT] Error en sincronización:', error)
+    console.error('âŒ [JWT] Error en sincronización:', error)
     throw error
   }
 }
@@ -111,7 +107,6 @@ export function tienePermisoEnCache(
 export async function invalidarSesionPorCambioPermisos(
   rol: Rol
 ): Promise<void> {
-  console.log('🔄 [JWT] Invalidando sesiones por cambio de permisos:', rol)
 
   try {
     // Obtener todos los usuarios con ese rol
@@ -122,28 +117,25 @@ export async function invalidarSesionPorCambioPermisos(
       .eq('estado', 'Activo')
 
     if (errorUsuarios) {
-      console.error('❌ [JWT] Error obteniendo usuarios:', errorUsuarios)
+      console.error('âŒ [JWT] Error obteniendo usuarios:', errorUsuarios)
       throw errorUsuarios
     }
 
-    console.log(`🔄 [JWT] Encontrados ${usuarios?.length || 0} usuarios activos con rol ${rol}`)
 
     // Invalidar sesiones de cada usuario (sign out forzado)
     if (usuarios && usuarios.length > 0) {
       for (const usuario of usuarios) {
         try {
           await supabaseAdmin.auth.admin.signOut(usuario.id, 'global')
-          console.log(`✅ [JWT] Sesión invalidada para usuario: ${usuario.id}`)
         } catch (error) {
-          console.error(`⚠️ [JWT] Error invalidando sesión de ${usuario.id}:`, error)
+          console.error(`âš ï¸ [JWT] Error invalidando sesión de ${usuario.id}:`, error)
           // Continuar con los demás usuarios
         }
       }
     }
 
-    console.log('✅ [JWT] Sesiones invalidadas exitosamente')
   } catch (error) {
-    console.error('❌ [JWT] Error en invalidación de sesiones:', error)
+    console.error('âŒ [JWT] Error en invalidación de sesiones:', error)
     throw error
   }
 }
@@ -160,6 +152,6 @@ export async function sincronizarPermisosPostLogin(
     await sincronizarPermisosAlJWT(userId, rol)
   } catch (error) {
     // No bloquear login si falla la sincronización
-    console.error('⚠️ [JWT] Sincronización falló pero login continúa:', error)
+    console.error('âš ï¸ [JWT] Sincronización falló pero login continúa:', error)
   }
 }

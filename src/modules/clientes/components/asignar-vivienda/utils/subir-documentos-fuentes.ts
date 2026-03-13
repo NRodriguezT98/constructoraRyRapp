@@ -1,20 +1,20 @@
 /**
  * Helper: Subir Documentos de Fuentes de Pago
  *
- * ✅ Sube documentos a la pestaña de documentos del cliente
- * ✅ Usa nombres formateados según especificación
- * ✅ Categoría: "Cartas de aprobación, Promesas de Compraventa y Documentos del Proceso"
+ * âœ… Sube documentos a la pestaña de documentos del cliente
+ * âœ… Usa nombres formateados según especificación
+ * âœ… Categoría: "Cartas de aprobación, Promesas de Compraventa y Documentos del Proceso"
  *
  * Formato de nombres:
- * - Crédito Hipotecario: "CARTA DE APROBACIÓN CRÉDITO A1 - PEPE PEREZ"
- * - Caja Compensación: "CARTA CAJA DE COMPENSACIÓN A1 - PEPE PEREZ"
+ * - Crédito Hipotecario: "CARTA DE APROBACIÃ“N CRÃ‰DITO A1 - PEPE PEREZ"
+ * - Caja Compensación: "CARTA CAJA DE COMPENSACIÃ“N A1 - PEPE PEREZ"
  */
 
 import type { TipoFuentePago } from '@/modules/clientes/types'
 import { DocumentosBaseService } from '@/modules/documentos/services/documentos-base.service'
 import type { FuentePagoConfig } from '../types'
 
-// ⭐ ID de la categoría (verificado en DB)
+// â­ ID de la categoría (verificado en DB)
 const CATEGORIA_CARTAS_APROBACION_ID = '4898e798-c188-4f02-bfcf-b2b15be48e34'
 
 interface SubirDocumentoFuenteParams {
@@ -42,10 +42,10 @@ function generarTituloDocumento(
 
   switch (tipoFuente) {
     case 'Crédito Hipotecario':
-      return `CARTA DE APROBACIÓN CRÉDITO ${vivienda} - ${nombreMayusculas}`
+      return `CARTA DE APROBACIÃ“N CRÃ‰DITO ${vivienda} - ${nombreMayusculas}`
 
     case 'Subsidio Caja Compensación':
-      return `CARTA CAJA DE COMPENSACIÓN ${vivienda} - ${nombreMayusculas}`
+      return `CARTA CAJA DE COMPENSACIÃ“N ${vivienda} - ${nombreMayusculas}`
 
     default:
       return `DOCUMENTO ${tipoFuente.toUpperCase()} ${vivienda} - ${nombreMayusculas}`
@@ -67,7 +67,7 @@ export async function subirDocumentoFuente(
   const descripcion = `Carta de aprobación de ${tipoFuente} - ${entidad}`
 
   // Subir documento al sistema
-  const documento = await DocumentosBaseService.subirDocumento({
+  const documento = await (DocumentosBaseService as any).subirDocumento({
     entidad_id: clienteId,
     tipoEntidad: 'cliente',
     categoria_id: CATEGORIA_CARTAS_APROBACION_ID,
@@ -82,7 +82,7 @@ export async function subirDocumentoFuente(
     },
   })
 
-  return documento.url_archivo
+  return (documento as any).url_archivo
 }
 
 /**
@@ -100,9 +100,8 @@ export async function subirDocumentosFuentesPago(
 
   for (const fuente of fuentes) {
     // Solo subir si tiene archivo pendiente
-    if (fuente.archivo) {
+    if ((fuente as any).archivo) {
       try {
-        console.log(`📤 Subiendo documento de ${fuente.tipo}...`)
 
         const url = await subirDocumentoFuente({
           clienteId,
@@ -111,14 +110,13 @@ export async function subirDocumentosFuentesPago(
           numeroVivienda,
           tipoFuente: fuente.tipo,
           entidad: fuente.entidad || '',
-          archivo: fuente.archivo,
+          archivo: (fuente as any).archivo,
           negociacionId,
         })
 
         urls[fuente.tipo] = url
-        console.log(`✅ Documento de ${fuente.tipo} subido`)
       } catch (error) {
-        console.error(`❌ Error subiendo documento de ${fuente.tipo}:`, error)
+        console.error(`âŒ Error subiendo documento de ${fuente.tipo}:`, error)
         throw new Error(`Error al subir documento de ${fuente.tipo}`)
       }
     }

@@ -7,7 +7,6 @@
  * Los @ts-ignore son temporales hasta que se ejecute el SQL.
  */
 
-// @ts-nocheck
 import { supabase } from '@/lib/supabase/client'
 
 import type {
@@ -29,7 +28,12 @@ class InteresesService {
       // @ts-ignore - Tabla cliente_intereses no existe aún en database.types (ejecutar SQL primero)
       let query = supabase
         .from('intereses_completos')
-        .select('*')
+        .select(`
+          id, cliente_id, proyecto_id, vivienda_id, estado, origen,
+          notas, motivo_descarte, fecha_interes, fecha_actualizacion,
+          usuario_creacion, proyecto_nombre, proyecto_estado,
+          vivienda_numero, vivienda_valor, vivienda_estado, manzana_nombre
+        `)
         .eq('cliente_id', clienteId)
 
       if (soloActivos) {
@@ -44,7 +48,7 @@ class InteresesService {
 
       // Mapear vista a interface
       return (
-        data?.map((row: any) => ({
+        data?.map((row) => ({
           id: row.id,
           cliente_id: row.cliente_id,
           proyecto_id: row.proyecto_id,
@@ -62,7 +66,7 @@ class InteresesService {
           vivienda_estado: row.vivienda_estado,
           manzana_nombre: row.manzana_nombre,
         })) || []
-      )
+      ) as unknown as ClienteInteres[]
     } catch (error) {
       const mensaje = error instanceof Error ? error.message : 'Error desconocido'
       console.error('[CLIENTES] Error obteniendo intereses del cliente:', mensaje, error)
@@ -80,7 +84,12 @@ class InteresesService {
     try {
       let query = supabase
         .from('intereses_completos')
-        .select('*')
+        .select(`
+          id, cliente_id, proyecto_id, vivienda_id, estado, origen,
+          notas, motivo_descarte, fecha_interes, fecha_actualizacion,
+          usuario_creacion, proyecto_nombre, proyecto_estado,
+          vivienda_numero, vivienda_valor, vivienda_estado, manzana_nombre
+        `)
         .eq('proyecto_id', proyectoId)
 
       if (soloActivos) {
@@ -112,7 +121,7 @@ class InteresesService {
           vivienda_estado: row.vivienda_estado,
           manzana_nombre: row.manzana_nombre,
         })) || []
-      )
+      ) as unknown as ClienteInteres[]
     } catch (error) {
       const mensaje = error instanceof Error ? error.message : 'Error desconocido'
       console.error('[CLIENTES] Error obteniendo intereses del proyecto:', mensaje, error)

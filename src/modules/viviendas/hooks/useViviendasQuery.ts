@@ -284,5 +284,7 @@ export async function verificarMatriculaUnica(
   matricula: string,
   viviendaId?: string
 ): Promise<boolean> {
-  return viviendasService.verificarMatriculaUnica(matricula, viviendaId)
+  const result = await viviendasService.verificarMatriculaUnica(matricula, viviendaId)
+  if (typeof result === 'boolean') return result
+  return (result as any)?.esUnica ?? true
 }

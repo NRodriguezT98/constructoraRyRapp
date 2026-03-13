@@ -63,8 +63,8 @@ export function ViviendasCard({
               <Home className="w-4 h-4 text-muted-foreground" />
               <h3 className="text-base font-semibold">Vivienda #{vivienda.numero}</h3>
             </div>
-            <Badge className={`${viviendaCardStyles.badge} ${estadoColors[vivienda.estado]}`}>
-              {estadoLabels[vivienda.estado]}
+            <Badge className={`${viviendaCardStyles.badge} ${estadoColors[vivienda.estado as keyof typeof estadoColors]}`}>
+              {estadoLabels[vivienda.estado as keyof typeof estadoLabels]}
             </Badge>
           </div>
         </div>
@@ -94,7 +94,7 @@ export function ViviendasCard({
 
           <div className="pt-2.5 border-t">
             <div className="text-base font-bold text-primary">
-              {formatCurrency(vivienda.valor_total)}
+              {formatCurrency(vivienda.valor_total ?? 0)}
             </div>
           </div>
         </div>

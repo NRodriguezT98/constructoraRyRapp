@@ -3,7 +3,7 @@
  * HOOK: useSubirCartaModal
  * ============================================
  *
- * ✅ LÓGICA DE NEGOCIO SEPARADA
+ * âœ… LÃ“GICA DE NEGOCIO SEPARADA
  * Maneja upload de carta de aprobación con vinculación automática
  *
  * Features:
@@ -18,10 +18,12 @@
 
 import { useQueryClient } from '@tanstack/react-query'
 import { DragEvent, useEffect, useMemo, useRef, useState } from 'react'
-import { toast } from 'sonner'
 
 import { useAuth } from '@/contexts/auth-context'
+import { showToast } from '@/lib/utils/show-toast'
+import { formatNombreCompleto } from '@/lib/utils/string.utils'
 import { negociacionesQueryKeys } from '@/modules/clientes/hooks/useNegociacionesQuery'
+import { documentosPendientesKeys } from '@/modules/clientes/types/documentos-pendientes.types'
 import { DocumentosBaseService } from '@/modules/documentos/services/documentos-base.service'
 
 import type { DatosFuente } from './SubirCartaModal'
@@ -77,7 +79,8 @@ export function useSubirCartaModal({
     }
 
     if (fuente.cliente) {
-      extras.push(fuente.cliente.nombre_completo)
+      // âœ… Formatear nombre con capitalización
+      extras.push(formatNombreCompleto(fuente.cliente.nombre_completo))
     }
 
     if (extras.length > 0) {
@@ -96,7 +99,8 @@ export function useSubirCartaModal({
     }
 
     if (fuente.cliente) {
-      extras.push(fuente.cliente.nombre_completo)
+      // âœ… Formatear nombre con capitalización
+      extras.push(formatNombreCompleto(fuente.cliente.nombre_completo))
     }
 
     return extras.length > 0 ? `Carta de Aprobación - ${extras.join(' ')}` : 'Carta de Aprobación'
@@ -104,15 +108,8 @@ export function useSubirCartaModal({
 
   // Inicializar título cuando se abre el modal o cambia la fuente
   useEffect(() => {
-    console.log('🔍 Debug - Datos de fuente:', {
-      tipo: fuente.tipo,
-      vivienda: fuente.vivienda,
-      cliente: fuente.cliente,
-      tituloSugerido,
-    })
-
     setTitulo(tituloSugerido)
-  }, [tituloSugerido, fuente])
+  }, [tituloSugerido])
 
   // =====================================================
   // VALIDACIONES
@@ -191,25 +188,25 @@ export function useSubirCartaModal({
       const CATEGORIA_CARTAS_APROBACION = '4898e798-c188-4f02-bfcf-b2b15be48e34'
 
       // 2. Metadata para vinculación automática
+      // âœ… Usar entidad de fuente, NO sobrescribir con genéricos
       const metadata = {
         tipo_fuente: fuente.tipo,
-        entidad: fuente.entidad || '',
+        entidad: fuente.entidad || '', // â† Usar EXACTAMENTE lo que viene de fuente
         monto_aprobado: fuente.monto_aprobado,
-        fuente_pago_id: fuente.id,
-      }
+        fuente_pago_id: fuente.id,        // ✅ tipo_documento_sistema para vinculación en documentos-base.service
+        tipo_documento_sistema: fuente.tipo_documento_sistema,      }
 
-      console.log('📤 Subiendo carta con metadata:', metadata)
 
       // 3. Subir documento
       await DocumentosBaseService.subirDocumento(
         {
           entidad_id: clienteId,
           tipoEntidad: 'cliente',
-          categoria_id: CATEGORIA_CARTAS_APROBACION, // ✅ ID fijo de categoría global
-          titulo, // ✅ Título editable
+          categoria_id: CATEGORIA_CARTAS_APROBACION, // âœ… ID fijo de categoría global
+          titulo, // âœ… Título editable
           descripcion: `Carta de aprobación para ${fuente.tipo}`,
           archivo,
-          metadata, // ✅ Metadata para trigger de vinculación
+          metadata, // âœ… Metadata para trigger de vinculación
         },
         user.id
       )
@@ -220,9 +217,9 @@ export function useSubirCartaModal({
         queryClient.invalidateQueries({
           queryKey: negociacionesQueryKeys.all,
         }),
-        // Refrescar documentos pendientes (para eliminar el banner)
+        // Refrescar documentos pendientes (para eliminar el banner) âœ… CORREGIDO
         queryClient.invalidateQueries({
-          queryKey: ['documentos-pendientes', clienteId],
+          queryKey: documentosPendientesKeys.byCliente(clienteId),
         }),
         // Refrescar lista de documentos (para mostrar el nuevo documento)
         queryClient.invalidateQueries({
@@ -230,15 +227,15 @@ export function useSubirCartaModal({
         }),
       ])
 
-      toast.success('✅ Carta subida correctamente', {
+      showToast.success('Carta subida correctamente', {
         description: 'El documento se ha vinculado automáticamente a la fuente de pago',
       })
 
       onSuccess?.()
       onClose()
     } catch (error) {
-      console.error('❌ Error subiendo carta:', error)
-      toast.error('Error al subir la carta', {
+      console.error('Error subiendo carta:', error)
+      showToast.error('Error al subir la carta', {
         description: error instanceof Error ? error.message : 'Intenta nuevamente o contacta al soporte',
       })
     } finally {

@@ -11,10 +11,10 @@ export interface ConfiguracionRecargo {
   tipo: string
   nombre: string
   valor: number
-  descripcion?: string
-  activo: boolean
-  fecha_creacion: string
-  fecha_actualizacion: string
+  descripcion: string | null
+  activo: boolean | null
+  fecha_creacion: string | null
+  fecha_actualizacion: string | null
 }
 
 export interface CrearConfiguracionDTO {
@@ -39,7 +39,7 @@ class ConfiguracionService {
   async obtenerTodas(): Promise<ConfiguracionRecargo[]> {
     const { data, error } = await supabase
       .from('configuracion_recargos')
-      .select('*')
+      .select('id,tipo,nombre,valor,descripcion,activo,fecha_creacion,fecha_actualizacion')
       .order('tipo', { ascending: true })
       .order('valor', { ascending: false })
 
@@ -57,7 +57,7 @@ class ConfiguracionService {
   async obtenerActivas(): Promise<ConfiguracionRecargo[]> {
     const { data, error } = await supabase
       .from('configuracion_recargos')
-      .select('*')
+      .select('id,tipo,nombre,valor,descripcion,activo,fecha_creacion,fecha_actualizacion')
       .eq('activo', true)
       .order('tipo', { ascending: true })
       .order('valor', { ascending: false })
@@ -76,7 +76,7 @@ class ConfiguracionService {
   async obtenerPorId(id: string): Promise<ConfiguracionRecargo | null> {
     const { data, error } = await supabase
       .from('configuracion_recargos')
-      .select('*')
+      .select('id,tipo,nombre,valor,descripcion,activo,fecha_creacion,fecha_actualizacion')
       .eq('id', id)
       .single()
 

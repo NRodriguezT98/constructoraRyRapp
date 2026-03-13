@@ -44,8 +44,8 @@ export function DocumentosPapeleraContextual({
     documentosEliminados,
     isLoading,
     cantidadEliminados,
-    restaurarDocumento,
-    eliminarDefinitivo,
+    handleRestaurar: restaurarDocumento,
+    handleEliminarSeleccionadas: eliminarDefinitivo,
   } = useDocumentosPapeleraV2({ viviendaId: entidadId })
 
   if (isLoading) {
@@ -115,7 +115,7 @@ export function DocumentosPapeleraContextual({
               {/* Acciones */}
               <div className="flex items-center gap-2">
                 <button
-                  onClick={() => restaurarDocumento(documento.id)}
+                  onClick={() => restaurarDocumento(documento.id, documento.titulo, true)}
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-green-100 hover:bg-green-200 dark:bg-green-900/30 dark:hover:bg-green-900/50 text-green-700 dark:text-green-400 text-xs font-medium transition-colors"
                   title="Restaurar documento"
                 >
@@ -124,7 +124,7 @@ export function DocumentosPapeleraContextual({
                 </button>
 
                 <button
-                  onClick={() => eliminarDefinitivo(documento.id)}
+                  onClick={() => eliminarDefinitivo(documento.id, documento.titulo)}
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-100 hover:bg-red-200 dark:bg-red-900/30 dark:hover:bg-red-900/50 text-red-700 dark:text-red-400 text-xs font-medium transition-colors"
                   title="Eliminar permanentemente"
                 >

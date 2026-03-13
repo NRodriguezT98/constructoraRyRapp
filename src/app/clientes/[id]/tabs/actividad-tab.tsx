@@ -1,19 +1,18 @@
 'use client'
 
 /**
- * 📊 TAB DE ACTIVIDAD - PROCESO DE NEGOCIACIÓN
+ * ✅ TAB DE ACTIVIDAD - PROCESO DE NEGOCIACIÓN
  *
- * Muestra el proceso de compra del cliente con timeline visual.
- * Integra el componente TimelineProceso del módulo admin/procesos.
+ * Muestra el proceso de compra del cliente.
+ * Los pasos de validación por fuente se gestionan desde la pestaña
+ * de Fuentes de Pago usando el sistema de pasos_fuente_pago.
  */
 
-import { useEffect, useState } from 'react'
+import { AlertCircle, ClipboardList } from 'lucide-react'
 
-import { createClient } from '@/lib/supabase/client'
-import { Activity, AlertCircle } from 'lucide-react'
-
-import { TimelineProceso } from '@/modules/admin/procesos/components'
-
+import { useActividadTab } from '@/modules/clientes/hooks'
+import { EmptyState } from '@/shared/components/layout/EmptyState'
+import { LoadingState } from '@/shared/components/layout/LoadingState'
 
 import * as styles from '../cliente-detalle.styles'
 
@@ -22,71 +21,48 @@ interface ActividadTabProps {
 }
 
 export function ActividadTab({ clienteId }: ActividadTabProps) {
-  const [negociacionId, setNegociacionId] = useState<string | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  // ✅ Hook con TODA la lógica
+  const { isLoading, error, hasNegociacionActiva } = useActividadTab({ clienteId })
 
-  useEffect(() => {
-    async function cargarNegociacion() {
-      try {
-        const supabase = createClient()
+  // =====================================================
+  // RENDER: Loading State
+  // =====================================================
 
-        // Buscar negociación activa del cliente
-        const { data, error } = await supabase
-          .from('negociaciones')
-          .select('id')
-          .eq('cliente_id', clienteId)
-          .eq('estado', 'Activa')
-          .single()
-
-        if (error) {
-          // Si no hay negociación activa, no es un error crítico
-          if (error.code === 'PGRST116') {
-            setError('El cliente no tiene una negociación activa')
-          } else {
-            setError('Error al cargar negociación')
-          }
-          setNegociacionId(null)
-        } else {
-          setNegociacionId(data.id)
-        }
-      } catch (err) {
-        console.error('Error:', err)
-        setError('Error inesperado')
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    cargarNegociacion()
-  }, [clienteId])
-
-  // Loading
-  if (loading) {
+  if (isLoading) {
     return (
-      <div className={styles.emptyStateClasses.container}>
-        <Activity className={`${styles.emptyStateClasses.icon} animate-pulse`} />
-        <h3 className={styles.emptyStateClasses.title}>Cargando proceso...</h3>
+      <div className="py-12">
+        <LoadingState message="Cargando proceso de negociación..." />
       </div>
     )
   }
 
-  // Sin negociación activa
-  if (!negociacionId) {
+  // =====================================================
+  // RENDER: Sin Negociación Activa
+  // =====================================================
+
+  if (!hasNegociacionActiva) {
     return (
       <div className={styles.emptyStateClasses.container}>
-        <AlertCircle className={styles.emptyStateClasses.icon} />
-        <h3 className={styles.emptyStateClasses.title}>
-          {error || 'Sin negociación activa'}
-        </h3>
-        <p className={styles.emptyStateClasses.description}>
-          Este cliente no tiene una negociación activa.
-          El proceso de compra se mostrará cuando exista una negociación.
-        </p>
+        <EmptyState
+          icon={<AlertCircle className="w-12 h-12 text-amber-500" />}
+          title={error || 'Sin negociación activa'}
+          description="Este cliente no tiene una negociación activa. El proceso de compra se mostrará cuando exista una negociación."
+        />
       </div>
     )
   }
 
-  // Renderizar timeline de proceso
-  return <TimelineProceso negociacionId={negociacionId} />
+  // =====================================================
+  // RENDER: Estado de proceso
+  // =====================================================
+
+  return (
+    <div className={styles.emptyStateClasses.container}>
+      <EmptyState
+        icon={<ClipboardList className="w-12 h-12 text-blue-500" />}
+        title="Seguimiento de Pasos"
+        description="Los requisitos y pasos de validación por fuente de pago se gestionan desde la sección de Abonos del cliente, en cada tarjeta de fuente de pago."
+      />
+    </div>
+  )
 }

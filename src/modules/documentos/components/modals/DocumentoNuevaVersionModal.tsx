@@ -141,8 +141,8 @@ export function DocumentoNuevaVersionModal({
       const entidadId = tipoEntidad === 'proyecto'
         ? documento.proyecto_id
         : tipoEntidad === 'vivienda'
-        ? documento.vivienda_id
-        : documento.cliente_id
+        ? (documento as any).vivienda_id
+        : (documento as any).cliente_id
 
       queryClient.invalidateQueries({
         queryKey: documentosKeys.list(entidadId!, tipoEntidad),
@@ -417,7 +417,7 @@ export function DocumentoNuevaVersionModal({
               </button>
               <button
                 type="submit"
-                disabled={!archivo || !titulo.trim() || subiendo || fechaVencimientoInvalida}
+                disabled={!archivo || !titulo.trim() || subiendo || !!fechaVencimientoInvalida}
                 className="flex-1 rounded-lg bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 px-4 py-2.5 text-sm font-medium text-white transition-all hover:from-green-700 hover:via-emerald-700 hover:to-teal-700 disabled:cursor-not-allowed disabled:opacity-50 shadow-lg shadow-green-500/20"
               >
                 {subiendo ? (

@@ -7,7 +7,6 @@ export * from './detalle-cliente'
 export * from './estadisticas-clientes'
 export * from './estado-badge'
 export * from './filtros-clientes'
-export * from './formulario-cliente-container'
 export { FormularioCliente } from './formulario-cliente-modern'
 export * from './lista-clientes'
 
@@ -21,4 +20,6 @@ export * from './stepper-asignar-vivienda'
 export * from './stepper-negociacion'
 
 // Modales
+export { ConfirmarCambiosModal } from './ConfirmarCambiosModal'
+export { FuentesPagoEditarModal } from './modals/FuentesPagoEditarModal'
 export { HistorialVersionesModal } from './modals/HistorialVersionesModal'

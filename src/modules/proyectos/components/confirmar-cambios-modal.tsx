@@ -140,9 +140,9 @@ export function ConfirmarCambiosModal({
               </h4>
               <div className={styles.body.section.list}>
                 {cambios.manzanas.map((cambio, index) => {
-                  const containerClass = styles.cards.manzana[getManzanaContainerClass(cambio.tipo)]
-                  const badgeClass = styles.cards.manzana[getManzanaBadgeClass(cambio.tipo)]
-                  const iconClass = styles.cards.manzana[getManzanaIconClass(cambio.tipo)]
+                  const containerClass = styles.cards.manzana[getManzanaContainerClass(cambio.tipo) as keyof typeof styles.cards.manzana] as string
+                  const badgeClass = styles.cards.manzana[getManzanaBadgeClass(cambio.tipo) as keyof typeof styles.cards.manzana] as string
+                  const iconClass = styles.cards.manzana[getManzanaIconClass(cambio.tipo) as keyof typeof styles.cards.manzana] as string
 
                   return (
                     <div key={index} className={containerClass}>

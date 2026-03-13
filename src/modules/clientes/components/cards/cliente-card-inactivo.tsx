@@ -41,7 +41,10 @@ export function ClienteCardInactivo({
   onEditar,
   onEliminar,
 }: ClienteCardInactivoProps) {
-  const theme = clienteCardThemes.Inactivo
+  // ⭐ Usar tema rojo si el cliente renunció, gris si está inactivo
+  const theme = cliente.estado === 'Renunció'
+    ? clienteCardThemes.Renunció
+    : clienteCardThemes.Inactivo
 
   return (
     <motion.div
@@ -76,6 +79,7 @@ export function ClienteCardInactivo({
         {/* HEADER: Icono + Título + Badge */}
         <div className={styles.header.titleSection}>
           <div className={`${styles.header.icon} ${theme.bg}`}>
+            {/* ⭐ UserX tanto para Renunció (rojo) como Inactivo (gris) */}
             <UserX className={styles.header.iconSize} />
           </div>
 
@@ -96,28 +100,29 @@ export function ClienteCardInactivo({
             {/* Badge principal de estado */}
             <span className={`${styles.header.badge} ${theme.badge} ${theme.shadow}`}>
               <div className={styles.header.badgeDot} />
-              INACTIVO
+              {/* ⭐ Mostrar estado dinámicamente */}
+              {cliente.estado === 'Renunció' ? 'RENUNCIÓ' : 'INACTIVO'}
             </span>
           </div>
         </div>
 
-        {/* SECCIÓN: Estado de Inactividad */}
-        <div className={`${styles.section.container} bg-gradient-to-br from-red-50 to-orange-50 dark:from-red-900/20 dark:to-orange-900/20 border-2 border-red-200/50 dark:border-red-700/50`}>
-          <div className={`${styles.section.title} text-red-700 dark:text-red-300`}>
+        {/* SECCIÓN: Estado de Inactividad/Renuncia */}
+        <div className={`${styles.section.container} bg-gradient-to-br ${cliente.estado === 'Renunció' ? 'from-red-50 to-rose-50 dark:from-red-900/20 dark:to-rose-900/20 border-2 border-red-200/50 dark:border-red-700/50' : 'from-gray-50 to-slate-50 dark:from-gray-800/40 dark:to-slate-800/40 border-2 border-gray-200/50 dark:border-gray-600/50'}`}>
+          <div className={`${styles.section.title} ${cliente.estado === 'Renunció' ? 'text-red-700 dark:text-red-300' : 'text-gray-600 dark:text-gray-400'}`}>
             <XCircle className={styles.section.titleIcon} />
-            Estado de Inactividad
+            {cliente.estado === 'Renunció' ? 'Estado de Renuncia' : 'Estado de Inactividad'}
           </div>
 
           <div className="flex items-center gap-2 py-1">
-            <div className="p-1.5 rounded-md bg-red-100 dark:bg-red-900/30 flex-shrink-0">
+            <div className={`p-1.5 rounded-md ${cliente.estado === 'Renunció' ? 'bg-red-100 dark:bg-red-900/30' : 'bg-red-100 dark:bg-red-900/30'} flex-shrink-0`}>
               <XCircle className="w-4 h-4 text-red-600 dark:text-red-400" />
             </div>
             <div className="flex-1">
               <p className="text-xs text-red-700 dark:text-red-300 font-medium italic">
-                Cliente marcado como inactivo
+                {cliente.estado === 'Renunció' ? 'Cliente renunció a una vivienda' : 'Cliente marcado como inactivo'}
               </p>
               <p className="text-[10px] text-red-600 dark:text-red-400 mt-0.5">
-                Sin actividad reciente o proceso cancelado
+                {cliente.estado === 'Renunció' ? 'Puede volver a negociar otra vivienda' : 'Sin actividad reciente o proceso cancelado'}
               </p>
             </div>
           </div>

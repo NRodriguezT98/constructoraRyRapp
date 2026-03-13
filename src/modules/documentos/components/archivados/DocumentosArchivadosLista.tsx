@@ -28,12 +28,14 @@ interface DocumentosArchivadosListaProps {
   entidadId: string
   tipoEntidad: TipoEntidad
   moduleName?: ModuleName
+  onViewDocumento?: (documento: DocumentoProyecto) => void
 }
 
 export function DocumentosArchivadosLista({
   entidadId,
   tipoEntidad,
   moduleName = 'proyectos',
+  onViewDocumento,
 }: DocumentosArchivadosListaProps) {
   const { documentos, cargando, refrescar } = useDocumentosArchivadosQuery(entidadId, tipoEntidad)
   const restaurarMutation = useRestaurarDocumentoMutation(entidadId, tipoEntidad)
@@ -89,6 +91,7 @@ export function DocumentosArchivadosLista({
               key={documento.id}
               documento={documento}
               onRestaurar={() => handleRestaurar(documento)}
+              onView={onViewDocumento ? () => onViewDocumento(documento) : undefined}
               moduleName={moduleName}
             />
           ))}

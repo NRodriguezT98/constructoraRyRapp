@@ -126,6 +126,7 @@ export function AsignarViviendaPage({
                 {page.currentStep === 2 && (
                   <Paso2FuentesPago
                     key="paso2"
+                    cargandoTipos={page.cargandoTipos}
                     fuentes={page.fuentes}
                     valorTotal={page.valorTotal}
                     totalFuentes={page.totalFuentes}
@@ -134,13 +135,11 @@ export function AsignarViviendaPage({
                     erroresFuentes={page.erroresFuentes}
                     mostrarErrores={page.mostrarErroresPaso2}
                     clienteId={clienteId}
-                    clienteNombre={clienteNombre}
+                    clienteNombre={clienteNombre ?? ''}
                     manzana={page.manzanaVivienda}
                     numeroVivienda={page.numeroVivienda}
-                    tieneCartasAhora={page.tieneCartasAhora}
                     onFuenteEnabledChange={page.handleFuenteEnabledChange}
                     onFuenteConfigChange={page.handleFuenteConfigChange}
-                    onTieneCartaAhoraChange={page.handleTieneCartaAhoraChange}
                   />
                 )}
 

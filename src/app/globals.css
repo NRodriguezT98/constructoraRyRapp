@@ -185,3 +185,230 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* ============================================
+   🎨 SONNER TOAST CUSTOMIZATION (ULTRA MODERNO)
+   ============================================ */
+
+/* Container principal del toaster */
+[data-sonner-toaster] {
+  --normal-gap: 16px !important;
+  --gap: 16px !important;
+}
+
+/* Toast base - COMPLETAMENTE TRANSPARENTE PARA TOASTS CUSTOM */
+[data-sonner-toast] {
+  all: unset !important;
+  display: block !important;
+  position: relative !important;
+
+  /* SIN estilos visuales - completamente transparente */
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+
+  /* Sin animaciones del wrapper */
+  animation: none !important;
+  transition: none !important;
+
+  /* El contenido interno maneja su propio diseño */
+  width: auto !important;
+  min-width: 0 !important;
+  max-width: none !important;
+}
+
+/* Dark mode - también transparente */
+[data-sonner-toast][data-theme="dark"],
+.dark [data-sonner-toast] {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Animación de entrada dramática */
+@keyframes toastSlideIn {
+  from {
+    transform: translateX(calc(100% + 32px)) scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0) scale(1);
+    opacity: 1;
+  }
+}
+
+/* Hover effect espectacular */
+[data-sonner-toast]:hover {
+  transform: scale(1.03) translateY(-4px) !important;
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.05),
+    0 28px 80px rgba(0, 0, 0, 0.2),
+    0 12px 32px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Iconos grandes y coloridos */
+[data-sonner-toast] [data-icon] {
+  width: 28px !important;
+  height: 28px !important;
+  min-width: 28px !important;
+  flex-shrink: 0 !important;
+  margin-top: 0 !important;
+}
+
+/* Contenedor de contenido */
+[data-sonner-toast] [data-content] {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 6px !important;
+  flex: 1 !important;
+  min-width: 0 !important;
+}
+
+/* Título grande y bold */
+[data-sonner-toast] [data-title] {
+  font-weight: 700 !important;
+  font-size: 15px !important;
+  line-height: 1.4 !important;
+  color: #1a1a1a !important;
+  letter-spacing: -0.01em !important;
+}
+
+.dark [data-sonner-toast] [data-title] {
+  color: #f5f5f5 !important;
+}
+
+/* Descripción elegante */
+[data-sonner-toast] [data-description] {
+  font-size: 13px !important;
+  line-height: 1.5 !important;
+  color: #666666 !important;
+  font-weight: 400 !important;
+}
+
+.dark [data-sonner-toast] [data-description] {
+  color: #a0a0a0 !important;
+}
+
+/* Botón cerrar moderno */
+[data-sonner-toast] [data-close-button] {
+  position: absolute !important;
+  top: 14px !important;
+  right: 14px !important;
+  width: 28px !important;
+  height: 28px !important;
+  min-width: 28px !important;
+  min-height: 28px !important;
+  border-radius: 8px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: rgba(0, 0, 0, 0.06) !important;
+  border: 1px solid rgba(0, 0, 0, 0.1) !important;
+  transition: all 0.2s ease !important;
+  cursor: pointer !important;
+  z-index: 10 !important;
+  flex-shrink: 0 !important;
+}
+
+[data-sonner-toast] [data-close-button]:hover {
+  background: rgba(0, 0, 0, 0.12) !important;
+  transform: rotate(90deg) scale(1.1) !important;
+  border-color: rgba(0, 0, 0, 0.15) !important;
+}
+
+.dark [data-sonner-toast] [data-close-button] {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+.dark [data-sonner-toast] [data-close-button]:hover {
+  background: rgba(255, 255, 255, 0.2) !important;
+}
+
+/* ============================================
+   🎨 TOAST TYPES - COLORES DRAMÁTICOS
+   ============================================ */
+
+/* SUCCESS - Verde vibrante */
+[data-sonner-toast][data-type="success"] {
+  border-color: rgb(34, 197, 94) !important;
+  border-left-width: 5px !important;
+  background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%) !important;
+}
+
+.dark [data-sonner-toast][data-type="success"] {
+  background: linear-gradient(135deg, #14532d 0%, #1f1f23 100%) !important;
+}
+
+[data-sonner-toast][data-type="success"] [data-icon] {
+  color: rgb(34, 197, 94) !important;
+  filter: drop-shadow(0 2px 8px rgba(34, 197, 94, 0.4)) !important;
+}
+
+/* ERROR - Rojo intenso */
+[data-sonner-toast][data-type="error"] {
+  border-color: rgb(239, 68, 68) !important;
+  border-left-width: 5px !important;
+  background: linear-gradient(135deg, #fef2f2 0%, #ffffff 100%) !important;
+}
+
+.dark [data-sonner-toast][data-type="error"] {
+  background: linear-gradient(135deg, #450a0a 0%, #1f1f23 100%) !important;
+}
+
+[data-sonner-toast][data-type="error"] [data-icon] {
+  color: rgb(239, 68, 68) !important;
+  filter: drop-shadow(0 2px 8px rgba(239, 68, 68, 0.4)) !important;
+}
+
+/* WARNING - Ámbar brillante */
+[data-sonner-toast][data-type="warning"] {
+  border-color: rgb(245, 158, 11) !important;
+  border-left-width: 5px !important;
+  background: linear-gradient(135deg, #fffbeb 0%, #ffffff 100%) !important;
+}
+
+.dark [data-sonner-toast][data-type="warning"] {
+  background: linear-gradient(135deg, #451a03 0%, #1f1f23 100%) !important;
+}
+
+[data-sonner-toast][data-type="warning"] [data-icon] {
+  color: rgb(245, 158, 11) !important;
+  filter: drop-shadow(0 2px 8px rgba(245, 158, 11, 0.4)) !important;
+}
+
+/* INFO - Azul eléctrico */
+[data-sonner-toast][data-type="info"] {
+  border-color: rgb(59, 130, 246) !important;
+  border-left-width: 5px !important;
+  background: linear-gradient(135deg, #eff6ff 0%, #ffffff 100%) !important;
+}
+
+.dark [data-sonner-toast][data-type="info"] {
+  background: linear-gradient(135deg, #1e3a8a 0%, #1f1f23 100%) !important;
+}
+
+[data-sonner-toast][data-type="info"] [data-icon] {
+  color: rgb(59, 130, 246) !important;
+  filter: drop-shadow(0 2px 8px rgba(59, 130, 246, 0.4)) !important;
+}
+
+/* LOADING - Animación de pulso */
+[data-sonner-toast][data-type="loading"] [data-icon] {
+  animation: toastSpin 1s linear infinite !important;
+}
+
+@keyframes toastSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Progress bar si existe */
+[data-sonner-toast] [data-progress] {
+  height: 3px !important;
+  background: currentColor !important;
+  opacity: 0.3 !important;
+  border-radius: 999px !important;
+}

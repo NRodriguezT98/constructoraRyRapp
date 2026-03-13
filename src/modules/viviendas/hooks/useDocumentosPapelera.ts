@@ -13,6 +13,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
 import { useAuth } from '@/contexts/auth-context'
+import { documentosViviendaService } from '@/modules/viviendas/services/documentos-vivienda.service'
 
 
 interface UseDocumentosPapeleraParams {

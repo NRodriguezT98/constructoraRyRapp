@@ -1,519 +1,281 @@
-# 📚 DATABASE SCHEMA REFERENCE - RyR Constructora
+# 📋 SCHEMA REFERENCE - CONSULTA RÁPIDA
 
-**Última actualización**: 2025-11-04 09:26:50
-**Proyecto**: swyjhwgvkfcfdtemkyad
-**Total de tablas**: 18
-
----
-
-## 📋 Índice
-
-1. [abonos_historial](#abonos_historial)
-2. [audit_log](#audit_log)
-3. [audit_log_seguridad](#audit_log_seguridad)
-4. [categorias_documento](#categorias_documento)
-5. [cliente_intereses](#cliente_intereses)
-6. [clientes](#clientes)
-7. [configuracion_recargos](#configuracion_recargos)
-8. [documentos_cliente](#documentos_cliente)
-9. [documentos_proyecto](#documentos_proyecto)
-10. [fuentes_pago](#fuentes_pago)
-11. [manzanas](#manzanas)
-12. [negociaciones](#negociaciones)
-13. [plantillas_proceso](#plantillas_proceso)
-14. [procesos_negociacion](#procesos_negociacion)
-15. [proyectos](#proyectos)
-16. [renuncias](#renuncias)
-17. [usuarios](#usuarios)
-18. [viviendas](#viviendas)
+> **✅ GENERADO AUTOMÁTICAMENTE DESDE BD**
+> **Fecha**: 18/12/2025, 3:28:05 p. m.
+> **Propósito**: Referencia rápida para evitar errores en nombres de columnas
 
 ---
 
-## 1. Tabla: `abonos_historial`
+## ⚠️ REGLA DE USO
 
-**Descripción**: Tabla para gestión de abonos_historial
-
-### Columnas
-
-| Columna | Tipo | Nullable | Default | Descripción |
-|---------|------|----------|---------|-------------|
-| `id` | uuid | NO | gen_random_uuid() |  |
-| `negociacion_id` | uuid | NO | - |  |
-| `fuente_pago_id` | uuid | NO | - |  |
-| `monto` | numeric | NO | - |  |
-| `fecha_abono` | timestamp with time zone | NO | - |  |
-| `metodo_pago` | character varying(50) | NO | - |  |
-| `numero_referencia` | character varying(100) | YES | - |  |
-| `comprobante_url` | text | YES | - |  |
-| `notas` | text | YES | - |  |
-| `fecha_creacion` | timestamp with time zone | NO | now() |  |
-| `fecha_actualizacion` | timestamp with time zone | NO | now() |  |
-| `usuario_registro` | uuid | YES | - |  |
+**ANTES de escribir SQL:**
+1. Busca en este archivo con Ctrl+F
+2. Copia el nombre EXACTO de la columna
+3. NO asumas nombres, SIEMPRE verifica aquí
 
 ---
 
-## 2. Tabla: `audit_log`
+## `documentos_cliente` (30 columnas)
 
-**Descripción**: Tabla para gestión de audit_log
+```sql
+id                        uuid                 NOT NULL
+cliente_id                uuid                 NOT NULL
+categoria_id              uuid                 NULL
+titulo                    character varying    NOT NULL
+descripcion               text                 NULL
+nombre_archivo            character varying    NOT NULL
+nombre_original           character varying    NOT NULL
+tamano_bytes              bigint               NOT NULL
+tipo_mime                 character varying    NOT NULL
+url_storage               text                 NOT NULL
+etiquetas                 ARRAY                NULL
+version                   integer              NOT NULL
+es_version_actual         boolean              NOT NULL
+documento_padre_id        uuid                 NULL
+estado                    character varying    NOT NULL
+metadata                  jsonb                NULL
+subido_por                uuid                 NOT NULL
+fecha_documento           timestamp with time zone NULL
+fecha_vencimiento         timestamp with time zone NULL
+es_importante             boolean              NULL
+fecha_creacion            timestamp with time zone NULL
+fecha_actualizacion       timestamp with time zone NULL
+es_documento_identidad    boolean              NOT NULL
+estado_documento          character varying    NULL
+razon_obsolescencia       text                 NULL
+fuente_pago_relacionada   uuid                 NULL
+fecha_obsolescencia       timestamp with time zone NULL
+motivo_categoria          character varying    NULL
+motivo_detalle            text                 NULL
+tipo_documento            character varying    NULL
+```
 
-### Columnas
+## `fuentes_pago` (26 columnas)
 
-| Columna | Tipo | Nullable | Default | Descripción |
-|---------|------|----------|---------|-------------|
-| `id` | uuid | NO | gen_random_uuid() |  |
-| `tabla` | character varying(100) | NO | - |  |
-| `accion` | character varying(20) | NO | - |  |
-| `registro_id` | uuid | NO | - |  |
-| `usuario_id` | uuid | YES | - |  |
-| `usuario_email` | character varying(255) | NO | - |  |
-| `usuario_rol` | character varying(50) | YES | - |  |
-| `fecha_evento` | timestamp with time zone | NO | now() |  |
-| `ip_address` | inet | YES | - |  |
-| `user_agent` | text | YES | - |  |
-| `datos_anteriores` | jsonb | YES | - |  |
-| `datos_nuevos` | jsonb | YES | - |  |
-| `cambios_especificos` | jsonb | YES | - |  |
-| `metadata` | jsonb | YES | '{}'::jsonb |  |
-| `modulo` | character varying(50) | YES | - |  |
+```sql
+id                        uuid                 NOT NULL
+negociacion_id            uuid                 NOT NULL
+tipo                      character varying    NOT NULL
+monto_aprobado            numeric              NOT NULL
+monto_recibido            numeric              NULL
+saldo_pendiente           numeric              NULL
+porcentaje_completado     numeric              NULL
+entidad                   character varying    NULL
+numero_referencia         character varying    NULL
+permite_multiples_abonos  boolean              NOT NULL
+carta_aprobacion_url      text                 NULL
+carta_asignacion_url      text                 NULL
+estado                    character varying    NOT NULL
+fecha_completado          timestamp with time zone NULL
+fecha_creacion            timestamp with time zone NOT NULL
+fecha_actualizacion       timestamp with time zone NOT NULL
+fecha_resolucion          date                 NULL
+fecha_acta                date                 NULL
+estado_documentacion      character varying    NULL
+estado_fuente             character varying    NULL
+reemplazada_por           uuid                 NULL
+razon_inactivacion        text                 NULL
+fecha_inactivacion        timestamp with time zone NULL
+version_negociacion       integer              NOT NULL
+entidad_financiera_id     uuid                 NULL
+tipo_fuente_id            uuid                 NOT NULL
+```
 
----
+## `documentos_pendientes` (14 columnas)
 
-## 3. Tabla: `audit_log_seguridad`
+```sql
+id                        uuid                 NOT NULL
+fuente_pago_id            uuid                 NOT NULL
+cliente_id                uuid                 NOT NULL
+tipo_documento            character varying    NOT NULL
+metadata                  jsonb                NULL
+estado                    character varying    NULL
+prioridad                 character varying    NULL
+recordatorios_enviados    integer              NULL
+ultima_notificacion       timestamp with time zone NULL
+fecha_creacion            timestamp with time zone NULL
+fecha_completado          timestamp with time zone NULL
+completado_por            uuid                 NULL
+es_obligatorio            boolean              NULL
+orden                     integer              NULL
+```
 
-**Descripción**: Tabla para gestión de audit_log_seguridad
+## `negociaciones` (30 columnas)
 
-### Columnas
+```sql
+id                        uuid                 NOT NULL
+cliente_id                uuid                 NOT NULL
+vivienda_id               uuid                 NOT NULL
+estado                    character varying    NOT NULL
+valor_negociado           numeric              NOT NULL
+descuento_aplicado        numeric              NULL
+valor_total               numeric              NULL
+total_fuentes_pago        numeric              NULL
+total_abonado             numeric              NULL
+saldo_pendiente           numeric              NULL
+porcentaje_pagado         numeric              NULL
+fecha_negociacion         timestamp with time zone NOT NULL
+fecha_completada          timestamp with time zone NULL
+promesa_compraventa_url   text                 NULL
+promesa_firmada_url       text                 NULL
+evidencia_envio_correo_url text                 NULL
+escritura_url             text                 NULL
+otros_documentos          jsonb                NULL
+notas                     text                 NULL
+fecha_creacion            timestamp with time zone NOT NULL
+fecha_actualizacion       timestamp with time zone NOT NULL
+usuario_creacion          uuid                 NULL
+fecha_renuncia_efectiva   timestamp with time zone NULL
+version_actual            integer              NOT NULL
+version_lock              integer              NOT NULL
+fecha_ultima_modificacion timestamp with time zone NULL
+tipo_descuento            character varying    NULL
+motivo_descuento          text                 NULL
+porcentaje_descuento      numeric              NULL
+valor_escritura_publica   numeric              NULL
+```
 
-| Columna | Tipo | Nullable | Default | Descripción |
-|---------|------|----------|---------|-------------|
-| `id` | uuid | NO | uuid_generate_v4() |  |
-| `tipo` | character varying(50) | NO | - |  |
-| `usuario_email` | character varying(255) | NO | - |  |
-| `usuario_id` | uuid | YES | - |  |
-| `ip_address` | inet | YES | - |  |
-| `user_agent` | text | YES | - |  |
-| `metadata` | jsonb | YES | '{}'::jsonb |  |
-| `pais` | character varying(100) | YES | - |  |
-| `ciudad` | character varying(100) | YES | - |  |
-| `fecha_evento` | timestamp with time zone | YES | CURRENT_TIMESTAMP |  |
+## `clientes` (21 columnas)
 
----
+```sql
+id                        uuid                 NOT NULL
+nombres                   character varying    NOT NULL
+apellidos                 character varying    NOT NULL
+nombre_completo           character varying    NULL
+tipo_documento            character varying    NOT NULL
+numero_documento          character varying    NOT NULL
+fecha_nacimiento          date                 NULL
+telefono                  character varying    NULL
+telefono_alternativo      character varying    NULL
+email                     character varying    NULL
+direccion                 text                 NULL
+ciudad                    character varying    NULL
+departamento              character varying    NULL
+estado                    character varying    NOT NULL
+documento_identidad_url   text                 NULL
+notas                     text                 NULL
+fecha_creacion            timestamp with time zone NOT NULL
+fecha_actualizacion       timestamp with time zone NOT NULL
+usuario_creacion          uuid                 NULL
+documento_identidad_titulo character varying    NULL
+estado_civil              USER-DEFINED         NULL
+```
 
-## 4. Tabla: `categorias_documento`
+## `viviendas` (33 columnas)
 
-**Descripción**: Tabla para gestión de categorias_documento
+```sql
+id                        uuid                 NOT NULL
+manzana_id                uuid                 NOT NULL
+numero                    character varying    NOT NULL
+estado                    character varying    NOT NULL
+area                      numeric              NOT NULL
+cliente_id                uuid                 NULL
+fecha_creacion            timestamp with time zone NULL
+fecha_actualizacion       timestamp with time zone NULL
+lindero_norte             text                 NULL
+lindero_sur               text                 NULL
+lindero_oriente           text                 NULL
+lindero_occidente         text                 NULL
+matricula_inmobiliaria    character varying    NULL
+nomenclatura              character varying    NULL
+area_lote                 numeric              NULL
+area_construida           numeric              NULL
+tipo_vivienda             character varying    NULL
+certificado_tradicion_url text                 NULL
+valor_base                numeric              NOT NULL
+es_esquinera              boolean              NULL
+recargo_esquinera         numeric              NULL
+gastos_notariales         numeric              NULL
+valor_total               numeric              NULL
+fecha_asignacion          timestamp with time zone NULL
+negociacion_id            uuid                 NULL
+fecha_entrega             timestamp with time zone NULL
+fecha_inactivacion        timestamp with time zone NULL
+motivo_inactivacion       text                 NULL
+inactivada_por            uuid                 NULL
+fecha_reactivacion        timestamp with time zone NULL
+motivo_reactivacion       text                 NULL
+reactivada_por            uuid                 NULL
+contador_desactivaciones  integer              NULL
+```
 
-### Columnas
+## `proyectos` (15 columnas)
 
-| Columna | Tipo | Nullable | Default | Descripción |
-|---------|------|----------|---------|-------------|
-| `id` | uuid | NO | uuid_generate_v4() |  |
-| `user_id` | uuid | NO | - |  |
-| `nombre` | character varying(100) | NO | - |  |
-| `descripcion` | text | YES | - |  |
-| `color` | character varying(20) | YES | 'blue'::character varying |  |
-| `icono` | character varying(50) | YES | 'Folder'::character varying |  |
-| `orden` | integer | YES | 0 |  |
-| `fecha_creacion` | timestamp with time zone | YES | now() |  |
-| `modulos_permitidos` | ARRAY | NO | '{proyectos}'::text[] |  |
-| `es_global` | boolean | NO | false |  |
+```sql
+id                        uuid                 NOT NULL
+nombre                    character varying    NOT NULL
+descripcion               text                 NOT NULL
+ubicacion                 character varying    NOT NULL
+fecha_inicio              timestamp with time zone NULL
+fecha_fin_estimada        timestamp with time zone NULL
+presupuesto               numeric              NOT NULL
+estado                    character varying    NOT NULL
+progreso                  integer              NOT NULL
+fecha_creacion            timestamp with time zone NULL
+fecha_actualizacion       timestamp with time zone NULL
+user_id                   uuid                 NULL
+archivado                 boolean              NOT NULL
+fecha_archivado           timestamp with time zone NULL
+motivo_archivo            text                 NULL
+```
 
----
+## `abonos_historial` (12 columnas)
 
-## 5. Tabla: `cliente_intereses`
+```sql
+id                        uuid                 NOT NULL
+negociacion_id            uuid                 NOT NULL
+fuente_pago_id            uuid                 NOT NULL
+monto                     numeric              NOT NULL
+fecha_abono               timestamp with time zone NOT NULL
+metodo_pago               character varying    NOT NULL
+numero_referencia         character varying    NULL
+comprobante_url           text                 NULL
+notas                     text                 NULL
+fecha_creacion            timestamp with time zone NOT NULL
+fecha_actualizacion       timestamp with time zone NOT NULL
+usuario_registro          uuid                 NULL
+```
 
-**Descripción**: Tabla para gestión de cliente_intereses
+## `audit_log` (16 columnas)
 
-### Columnas
-
-| Columna | Tipo | Nullable | Default | Descripción |
-|---------|------|----------|---------|-------------|
-| `id` | uuid | NO | gen_random_uuid() |  |
-| `cliente_id` | uuid | NO | - |  |
-| `proyecto_id` | uuid | NO | - |  |
-| `vivienda_id` | uuid | YES | - |  |
-| `notas` | text | YES | - |  |
-| `estado` | character varying(20) | NO | 'Activo'::character varying |  |
-| `motivo_descarte` | text | YES | - |  |
-| `fecha_interes` | timestamp with time zone | NO | now() |  |
-| `fecha_actualizacion` | timestamp with time zone | NO | now() |  |
-| `usuario_creacion` | uuid | YES | - |  |
-| `valor_estimado` | numeric | YES | - |  |
-| `origen` | character varying(50) | YES | - |  |
-| `prioridad` | character varying(20) | YES | 'Media'::character varying |  |
-| `fecha_ultimo_contacto` | timestamp with time zone | YES | - |  |
-| `proximo_seguimiento` | timestamp with time zone | YES | - |  |
-| `negociacion_id` | uuid | YES | - |  |
-| `fecha_conversion` | timestamp with time zone | YES | - |  |
-
----
-
-## 6. Tabla: `clientes`
-
-**Descripción**: Tabla para gestión de clientes
-
-### Columnas
-
-| Columna | Tipo | Nullable | Default | Descripción |
-|---------|------|----------|---------|-------------|
-| `id` | uuid | NO | gen_random_uuid() |  |
-| `nombres` | character varying(100) | NO | - |  |
-| `apellidos` | character varying(100) | NO | - |  |
-| `nombre_completo` | character varying(200) | YES | - |  |
-| `tipo_documento` | character varying(10) | NO | 'CC'::character varying |  |
-| `numero_documento` | character varying(20) | NO | - |  |
-| `fecha_nacimiento` | date | YES | - |  |
-| `telefono` | character varying(20) | YES | - |  |
-| `telefono_alternativo` | character varying(20) | YES | - |  |
-| `email` | character varying(100) | YES | - |  |
-| `direccion` | text | YES | - |  |
-| `ciudad` | character varying(100) | YES | 'Cali'::character varying |  |
-| `departamento` | character varying(100) | YES | 'Valle del Cauca'::character varying |  |
-| `estado` | character varying(20) | NO | 'Interesado'::character varying |  |
-| `origen` | character varying(50) | YES | - |  |
-| `referido_por` | character varying(200) | YES | - |  |
-| `documento_identidad_url` | text | YES | - |  |
-| `notas` | text | YES | - |  |
-| `fecha_creacion` | timestamp with time zone | NO | now() |  |
-| `fecha_actualizacion` | timestamp with time zone | NO | now() |  |
-| `usuario_creacion` | uuid | YES | - |  |
-| `documento_identidad_titulo` | character varying(200) | YES | - |  |
-
----
-
-## 7. Tabla: `configuracion_recargos`
-
-**Descripción**: Tabla para gestión de configuracion_recargos
-
-### Columnas
-
-| Columna | Tipo | Nullable | Default | Descripción |
-|---------|------|----------|---------|-------------|
-| `id` | uuid | NO | uuid_generate_v4() |  |
-| `tipo` | character varying(50) | NO | - |  |
-| `nombre` | character varying(100) | NO | - |  |
-| `valor` | numeric | NO | - |  |
-| `descripcion` | text | YES | - |  |
-| `activo` | boolean | YES | true |  |
-| `fecha_creacion` | timestamp with time zone | YES | now() |  |
-| `fecha_actualizacion` | timestamp with time zone | YES | now() |  |
-
----
-
-## 8. Tabla: `documentos_cliente`
-
-**Descripción**: Tabla para gestión de documentos_cliente
-
-### Columnas
-
-| Columna | Tipo | Nullable | Default | Descripción |
-|---------|------|----------|---------|-------------|
-| `id` | uuid | NO | uuid_generate_v4() |  |
-| `cliente_id` | uuid | NO | - |  |
-| `categoria_id` | uuid | YES | - |  |
-| `titulo` | character varying(500) | NO | - |  |
-| `descripcion` | text | YES | - |  |
-| `nombre_archivo` | character varying(500) | NO | - |  |
-| `nombre_original` | character varying(500) | NO | - |  |
-| `tamano_bytes` | bigint | NO | - |  |
-| `tipo_mime` | character varying(100) | NO | - |  |
-| `url_storage` | text | NO | - |  |
-| `etiquetas` | ARRAY | YES | - |  |
-| `version` | integer | NO | 1 |  |
-| `es_version_actual` | boolean | NO | true |  |
-| `documento_padre_id` | uuid | YES | - |  |
-| `estado` | character varying(50) | NO | 'activo'::character varying |  |
-| `metadata` | jsonb | YES | '{}'::jsonb |  |
-| `subido_por` | text | NO | - |  |
-| `fecha_documento` | timestamp with time zone | YES | - |  |
-| `fecha_vencimiento` | timestamp with time zone | YES | - |  |
-| `es_importante` | boolean | YES | false |  |
-| `fecha_creacion` | timestamp with time zone | YES | CURRENT_TIMESTAMP |  |
-| `fecha_actualizacion` | timestamp with time zone | YES | CURRENT_TIMESTAMP |  |
-
----
-
-## 9. Tabla: `documentos_proyecto`
-
-**Descripción**: Tabla para gestión de documentos_proyecto
-
-### Columnas
-
-| Columna | Tipo | Nullable | Default | Descripción |
-|---------|------|----------|---------|-------------|
-| `id` | uuid | NO | uuid_generate_v4() |  |
-| `proyecto_id` | uuid | NO | - |  |
-| `categoria_id` | uuid | YES | - |  |
-| `titulo` | character varying(500) | NO | - |  |
-| `descripcion` | text | YES | - |  |
-| `nombre_archivo` | character varying(500) | NO | - |  |
-| `nombre_original` | character varying(500) | NO | - |  |
-| `tamano_bytes` | bigint | NO | - |  |
-| `tipo_mime` | character varying(100) | NO | - |  |
-| `url_storage` | text | NO | - |  |
-| `etiquetas` | ARRAY | YES | - |  |
-| `version` | integer | NO | 1 |  |
-| `es_version_actual` | boolean | NO | true |  |
-| `documento_padre_id` | uuid | YES | - |  |
-| `estado` | character varying(50) | NO | 'activo'::character varying |  |
-| `metadata` | jsonb | YES | - |  |
-| `subido_por` | character varying(255) | NO | - |  |
-| `fecha_documento` | timestamp with time zone | YES | - |  |
-| `fecha_vencimiento` | timestamp with time zone | YES | - |  |
-| `es_importante` | boolean | YES | false |  |
-| `fecha_creacion` | timestamp with time zone | YES | now() |  |
-| `fecha_actualizacion` | timestamp with time zone | YES | now() |  |
-
----
-
-## 10. Tabla: `fuentes_pago`
-
-**Descripción**: Tabla para gestión de fuentes_pago
-
-### Columnas
-
-| Columna | Tipo | Nullable | Default | Descripción |
-|---------|------|----------|---------|-------------|
-| `id` | uuid | NO | gen_random_uuid() |  |
-| `negociacion_id` | uuid | NO | - |  |
-| `tipo` | character varying(50) | NO | - |  |
-| `monto_aprobado` | numeric | NO | - |  |
-| `monto_recibido` | numeric | YES | 0 |  |
-| `saldo_pendiente` | numeric | YES | - |  |
-| `porcentaje_completado` | numeric | YES | - |  |
-| `entidad` | character varying(100) | YES | - |  |
-| `numero_referencia` | character varying(50) | YES | - |  |
-| `permite_multiples_abonos` | boolean | NO | false |  |
-| `carta_aprobacion_url` | text | YES | - |  |
-| `carta_asignacion_url` | text | YES | - |  |
-| `estado` | character varying(20) | NO | 'Pendiente'::character varying |  |
-| `fecha_completado` | timestamp with time zone | YES | - |  |
-| `fecha_creacion` | timestamp with time zone | NO | now() |  |
-| `fecha_actualizacion` | timestamp with time zone | NO | now() |  |
-
----
-
-## 11. Tabla: `manzanas`
-
-**Descripción**: Tabla para gestión de manzanas
-
-### Columnas
-
-| Columna | Tipo | Nullable | Default | Descripción |
-|---------|------|----------|---------|-------------|
-| `id` | uuid | NO | uuid_generate_v4() |  |
-| `proyecto_id` | uuid | NO | - |  |
-| `nombre` | character varying(10) | NO | - |  |
-| `numero_viviendas` | integer | NO | - |  |
-| `fecha_creacion` | timestamp with time zone | YES | now() |  |
+```sql
+id                        uuid                 NOT NULL
+tabla                     character varying    NOT NULL
+accion                    character varying    NOT NULL
+registro_id               uuid                 NOT NULL
+usuario_id                uuid                 NULL
+usuario_email             character varying    NOT NULL
+usuario_rol               character varying    NULL
+fecha_evento              timestamp with time zone NOT NULL
+ip_address                inet                 NULL
+user_agent                text                 NULL
+datos_anteriores          jsonb                NULL
+datos_nuevos              jsonb                NULL
+cambios_especificos       jsonb                NULL
+metadata                  jsonb                NULL
+modulo                    character varying    NULL
+usuario_nombres           character varying    NULL
+```
 
 ---
 
-## 12. Tabla: `negociaciones`
+## 🔍 BÚSQUEDAS COMUNES
 
-**Descripción**: Tabla para gestión de negociaciones
+### Documentos
+- **URL del archivo**: `url_storage` (NO `url` ni `ruta_archivo`)
+- **Cliente**: `cliente_id` (NOT NULL)
+- **Categoría**: `categoria_id` (NULL permitido)
+- **Metadata**: `metadata` (jsonb)
 
-### Columnas
+### Fuentes de Pago
+- **Carta de aprobación**: `carta_aprobacion_url` (NULL permitido)
+- **Estado documentación**: `estado_documentacion` (varchar)
+- **Monto**: `monto_aprobado` (NOT NULL)
 
-| Columna | Tipo | Nullable | Default | Descripción |
-|---------|------|----------|---------|-------------|
-| `id` | uuid | NO | gen_random_uuid() |  |
-| `cliente_id` | uuid | NO | - |  |
-| `vivienda_id` | uuid | NO | - |  |
-| `estado` | character varying(30) | NO | 'En Proceso'::character varying |  |
-| `valor_negociado` | numeric | NO | - |  |
-| `descuento_aplicado` | numeric | YES | 0 |  |
-| `valor_total` | numeric | YES | - |  |
-| `total_fuentes_pago` | numeric | YES | 0 |  |
-| `total_abonado` | numeric | YES | 0 |  |
-| `saldo_pendiente` | numeric | YES | 0 |  |
-| `porcentaje_pagado` | numeric | YES | 0 |  |
-| `fecha_negociacion` | timestamp with time zone | NO | now() |  |
-| `fecha_completada` | timestamp with time zone | YES | - |  |
-| `promesa_compraventa_url` | text | YES | - |  |
-| `promesa_firmada_url` | text | YES | - |  |
-| `evidencia_envio_correo_url` | text | YES | - |  |
-| `escritura_url` | text | YES | - |  |
-| `otros_documentos` | jsonb | YES | - |  |
-| `notas` | text | YES | - |  |
-| `fecha_creacion` | timestamp with time zone | NO | now() |  |
-| `fecha_actualizacion` | timestamp with time zone | NO | now() |  |
-| `usuario_creacion` | uuid | YES | - |  |
-| `fecha_renuncia_efectiva` | timestamp with time zone | YES | - |  |
+### Documentos Pendientes
+- **Metadata**: `metadata` (jsonb con tipo_fuente, entidad)
+- **Estado**: `estado` (Pendiente / Completado)
 
 ---
 
-## 13. Tabla: `plantillas_proceso`
-
-**Descripción**: Tabla para gestión de plantillas_proceso
-
-### Columnas
-
-| Columna | Tipo | Nullable | Default | Descripción |
-|---------|------|----------|---------|-------------|
-| `id` | uuid | NO | gen_random_uuid() |  |
-| `nombre` | character varying(200) | NO | - |  |
-| `descripcion` | text | YES | - |  |
-| `pasos` | jsonb | NO | - |  |
-| `activo` | boolean | NO | true |  |
-| `es_predeterminado` | boolean | NO | false |  |
-| `fecha_creacion` | timestamp with time zone | NO | now() |  |
-| `fecha_actualizacion` | timestamp with time zone | NO | now() |  |
-| `usuario_creacion` | uuid | YES | - |  |
-
----
-
-## 14. Tabla: `procesos_negociacion`
-
-**Descripción**: Tabla para gestión de procesos_negociacion
-
-### Columnas
-
-| Columna | Tipo | Nullable | Default | Descripción |
-|---------|------|----------|---------|-------------|
-| `id` | uuid | NO | gen_random_uuid() |  |
-| `negociacion_id` | uuid | NO | - |  |
-| `nombre` | character varying(200) | NO | - |  |
-| `descripcion` | text | YES | - |  |
-| `orden` | integer | NO | 1 |  |
-| `es_obligatorio` | boolean | NO | true |  |
-| `permite_omitir` | boolean | NO | false |  |
-| `estado` | character varying(20) | NO | 'Pendiente'::character varying |  |
-| `depende_de` | ARRAY | YES | - |  |
-| `documentos_requeridos` | jsonb | YES | - |  |
-| `documentos_urls` | jsonb | YES | - |  |
-| `fecha_inicio` | timestamp with time zone | YES | - |  |
-| `fecha_completado` | timestamp with time zone | YES | - |  |
-| `fecha_limite` | timestamp with time zone | YES | - |  |
-| `notas` | text | YES | - |  |
-| `motivo_omision` | text | YES | - |  |
-| `fecha_creacion` | timestamp with time zone | NO | now() |  |
-| `fecha_actualizacion` | timestamp with time zone | NO | now() |  |
-| `usuario_completo` | uuid | YES | - |  |
-
----
-
-## 15. Tabla: `proyectos`
-
-**Descripción**: Tabla para gestión de proyectos
-
-### Columnas
-
-| Columna | Tipo | Nullable | Default | Descripción |
-|---------|------|----------|---------|-------------|
-| `id` | uuid | NO | uuid_generate_v4() |  |
-| `nombre` | character varying(255) | NO | - |  |
-| `descripcion` | text | NO | - |  |
-| `ubicacion` | character varying(500) | NO | - |  |
-| `fecha_inicio` | timestamp with time zone | NO | - |  |
-| `fecha_fin_estimada` | timestamp with time zone | NO | - |  |
-| `presupuesto` | numeric | NO | 0 |  |
-| `estado` | character varying(50) | NO | 'en_planificacion'::character varying |  |
-| `progreso` | integer | NO | 0 |  |
-| `responsable` | character varying(255) | NO | - |  |
-| `telefono` | character varying(50) | NO | - |  |
-| `email` | character varying(255) | NO | - |  |
-| `fecha_creacion` | timestamp with time zone | YES | now() |  |
-| `fecha_actualizacion` | timestamp with time zone | YES | now() |  |
-| `user_id` | uuid | YES | - |  |
-
----
-
-## 16. Tabla: `renuncias`
-
-**Descripción**: Tabla para gestión de renuncias
-
-### Columnas
-
-| Columna | Tipo | Nullable | Default | Descripción |
-|---------|------|----------|---------|-------------|
-| `id` | uuid | NO | uuid_generate_v4() |  |
-| `vivienda_id` | uuid | NO | - |  |
-| `cliente_id` | uuid | NO | - |  |
-| `motivo` | text | NO | - |  |
-| `fecha_renuncia` | timestamp with time zone | NO | - |  |
-| `monto_a_devolver` | numeric | NO | 0 |  |
-| `estado` | character varying(50) | NO | 'pendiente'::character varying |  |
-| `fecha_creacion` | timestamp with time zone | YES | now() |  |
-| `fecha_actualizacion` | timestamp with time zone | YES | now() |  |
-| `negociacion_id` | uuid | YES | - |  |
-| `vivienda_valor_snapshot` | numeric | YES | - |  |
-| `abonos_snapshot` | jsonb | YES | - |  |
-| `requiere_devolucion` | boolean | NO | false |  |
-| `fecha_devolucion` | timestamp with time zone | YES | - |  |
-| `comprobante_devolucion_url` | text | YES | - |  |
-| `metodo_devolucion` | character varying(50) | YES | - |  |
-| `numero_comprobante` | character varying(100) | YES | - |  |
-| `fecha_cancelacion` | timestamp with time zone | YES | - |  |
-| `motivo_cancelacion` | text | YES | - |  |
-| `usuario_cancelacion` | uuid | YES | - |  |
-| `fecha_cierre` | timestamp with time zone | YES | - |  |
-| `usuario_registro` | uuid | YES | - |  |
-| `usuario_cierre` | uuid | YES | - |  |
-
----
-
-## 17. Tabla: `usuarios`
-
-**Descripción**: Tabla para gestión de usuarios
-
-### Columnas
-
-| Columna | Tipo | Nullable | Default | Descripción |
-|---------|------|----------|---------|-------------|
-| `id` | uuid | NO | - |  |
-| `email` | character varying(255) | NO | - |  |
-| `nombres` | character varying(100) | NO | - |  |
-| `apellidos` | character varying(100) | NO | - |  |
-| `telefono` | character varying(20) | YES | - |  |
-| `rol` | USER-DEFINED | NO | 'Vendedor'::rol_usuario |  |
-| `estado` | USER-DEFINED | NO | 'Activo'::estado_usuario |  |
-| `avatar_url` | text | YES | - |  |
-| `preferencias` | jsonb | YES | '{}'::jsonb |  |
-| `creado_por` | uuid | YES | - |  |
-| `ultimo_acceso` | timestamp with time zone | YES | - |  |
-| `fecha_creacion` | timestamp with time zone | NO | now() |  |
-| `fecha_actualizacion` | timestamp with time zone | NO | now() |  |
-| `debe_cambiar_password` | boolean | NO | false |  |
-| `intentos_fallidos` | integer | NO | 0 |  |
-| `bloqueado_hasta` | timestamp with time zone | YES | - |  |
-
----
-
-## 18. Tabla: `viviendas`
-
-**Descripción**: Tabla para gestión de viviendas
-
-### Columnas
-
-| Columna | Tipo | Nullable | Default | Descripción |
-|---------|------|----------|---------|-------------|
-| `id` | uuid | NO | uuid_generate_v4() |  |
-| `manzana_id` | uuid | NO | - |  |
-| `numero` | character varying(10) | NO | - |  |
-| `estado` | character varying(50) | NO | 'disponible'::character varying |  |
-| `area` | numeric | NO | - |  |
-| `cliente_id` | uuid | YES | - |  |
-| `fecha_creacion` | timestamp with time zone | YES | now() |  |
-| `fecha_actualizacion` | timestamp with time zone | YES | now() |  |
-| `lindero_norte` | text | YES | - |  |
-| `lindero_sur` | text | YES | - |  |
-| `lindero_oriente` | text | YES | - |  |
-| `lindero_occidente` | text | YES | - |  |
-| `matricula_inmobiliaria` | character varying(100) | YES | - |  |
-| `nomenclatura` | character varying(100) | YES | - |  |
-| `area_lote` | numeric | YES | - |  |
-| `area_construida` | numeric | YES | - |  |
-| `tipo_vivienda` | character varying(20) | YES | - |  |
-| `certificado_tradicion_url` | text | YES | - |  |
-| `valor_base` | numeric | NO | 0 |  |
-| `es_esquinera` | boolean | YES | false |  |
-| `recargo_esquinera` | numeric | YES | 0 |  |
-| `gastos_notariales` | numeric | YES | 5000000 |  |
-| `valor_total` | numeric | YES | - |  |
-| `fecha_asignacion` | timestamp with time zone | YES | - |  |
-| `negociacion_id` | uuid | YES | - |  |
-| `fecha_entrega` | timestamp with time zone | YES | - |  |
-
----
-
+**🔄 Regenerar**: `node generar-schema-simple.js`

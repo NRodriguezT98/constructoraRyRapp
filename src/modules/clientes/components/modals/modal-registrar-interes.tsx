@@ -11,8 +11,10 @@
 
 'use client'
 
+import { useEffect, useRef, useState } from 'react'
+
 import { AnimatePresence, motion } from 'framer-motion'
-import { AlertCircle, Building2, Home, Loader2, MessageSquare, Sparkles, X } from 'lucide-react'
+import { AlertCircle, Building2, Heart, Home, Loader2, MessageSquare, Search, X } from 'lucide-react'
 
 import { ModernSelect, ModernTextarea } from '@/shared/components/forms'
 
@@ -35,6 +37,10 @@ export function ModalRegistrarInteres({
   const {
     proyectos,
     viviendas,
+    viviendasFiltradas,
+    busquedaVivienda,
+    setBusquedaVivienda,
+    seleccionarVivienda,
     cargandoProyectos,
     cargandoViviendas,
     guardando,
@@ -47,6 +53,53 @@ export function ModalRegistrarInteres({
     handleRegistrar,
     handleCancelar,
   } = useRegistrarInteres({ clienteId, onSuccess, onClose })
+
+  // Estado local del combobox de vivienda
+  const comboboxRef = useRef<HTMLDivElement>(null)
+  const [comboboxOpen, setComboboxOpen] = useState(false)
+  const [comboboxInputValue, setComboboxInputValue] = useState('')
+
+  // Resetear combobox al cerrar modal
+  useEffect(() => {
+    if (!isOpen) {
+      setComboboxInputValue('')
+      setComboboxOpen(false)
+    }
+  }, [isOpen])
+
+  // Resetear input cuando se limpia la vivienda seleccionada (ej: cambio de proyecto)
+  useEffect(() => {
+    if (!viviendaIdSeleccionada) {
+      setComboboxInputValue('')
+    }
+  }, [viviendaIdSeleccionada])
+
+  // Cerrar dropdown al hacer clic fuera
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (comboboxRef.current && !comboboxRef.current.contains(e.target as Node)) {
+        setComboboxOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [])
+
+  const handleComboboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value
+    setComboboxInputValue(val)
+    setBusquedaVivienda(val)
+    setComboboxOpen(true)
+    if (!val) seleccionarVivienda('')
+  }
+
+  const handleComboboxSelect = (vivienda: typeof viviendas[number]) => {
+    seleccionarVivienda(vivienda.id)
+    const manzLabel = vivienda.manzanas?.nombre ? `Manzana ${vivienda.manzanas.nombre} · ` : ''
+    setComboboxInputValue(`${manzLabel}Casa ${vivienda.numero}`)
+    setBusquedaVivienda('')
+    setComboboxOpen(false)
+  }
 
   return (
     <AnimatePresence>
@@ -81,7 +134,7 @@ export function ModalRegistrarInteres({
                     transition={{ type: 'spring', delay: 0.2 }}
                     className={sharedModalStyles.header.iconSmall}
                   >
-                    <Sparkles className="h-7 w-7 text-white" />
+                    <Heart className="h-7 w-7 text-white" />
                   </motion.div>
                   <div>
                     <h2 className={sharedModalStyles.header.title}>
@@ -161,33 +214,106 @@ export function ModalRegistrarInteres({
             </motion.div>
           )}
 
-          {/* Selector de Vivienda */}
-          <ModernSelect
-            icon={Home}
-            label="Vivienda"
-            required
-            {...register('viviendaId', { required: 'Debes seleccionar una vivienda' })}
-            disabled={!proyectoIdSeleccionado || cargandoViviendas || guardando}
-            error={errors.viviendaId?.message}
-          >
-            <option value="">
-              {!proyectoIdSeleccionado
-                ? 'Primero selecciona un proyecto'
-                : cargandoViviendas
-                ? 'Cargando viviendas...'
-                : viviendas.length === 0
-                ? 'No hay viviendas disponibles'
-                : 'Selecciona una vivienda'}
-            </option>
-            {viviendas.map((vivienda) => (
-              <option key={vivienda.id} value={vivienda.id}>
-                Vivienda {vivienda.numero} - Manzana {vivienda.manzanas?.nombre} - $
-                {vivienda.valor_total.toLocaleString('es-CO')}
-              </option>
-            ))}
-          </ModernSelect>
+          {/* Combobox buscable de Vivienda */}
+          <div>
+            <label className="mb-1.5 flex items-center gap-1.5 text-sm font-medium text-gray-700 dark:text-gray-300">
+              <Home className="w-4 h-4 text-gray-400" />
+              Vivienda <span className="text-red-500 ml-0.5">*</span>
+            </label>
 
-          {/* Mensaje sin viviendas */}
+            {/* Campo oculto para que React Hook Form valide el valor */}
+            <input
+              type="hidden"
+              {...register('viviendaId', { required: 'Debes seleccionar una vivienda' })}
+            />
+
+            <div ref={comboboxRef} className="relative">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                <input
+                  type="text"
+                  value={comboboxInputValue}
+                  onChange={handleComboboxChange}
+                  onFocus={() => {
+                    if (!guardando && proyectoIdSeleccionado && !cargandoViviendas && viviendas.length > 0) {
+                      setComboboxOpen(true)
+                    }
+                  }}
+                  placeholder={
+                    !proyectoIdSeleccionado
+                      ? 'Primero selecciona un proyecto'
+                      : cargandoViviendas
+                      ? 'Cargando viviendas...'
+                      : viviendas.length === 0
+                      ? 'No hay viviendas disponibles'
+                      : 'Buscar por manzana o número (ej: A1, B2)...'
+                  }
+                  disabled={!proyectoIdSeleccionado || cargandoViviendas || guardando || viviendas.length === 0}
+                  className={`w-full pl-9 pr-9 py-2.5 rounded-xl border-2 transition-all text-sm placeholder:text-gray-400 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none ${
+                    errors.viviendaId
+                      ? 'border-red-300 dark:border-red-700 focus:border-red-500 focus:ring-2 focus:ring-red-500/20'
+                      : viviendaIdSeleccionada
+                      ? 'border-blue-400 dark:border-blue-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20'
+                      : 'border-gray-200 dark:border-gray-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20'
+                  }`}
+                />
+                {viviendaIdSeleccionada && !guardando && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      seleccionarVivienda('')
+                      setComboboxInputValue('')
+                      setBusquedaVivienda('')
+                    }}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+
+              {/* Dropdown de resultados */}
+              {comboboxOpen && proyectoIdSeleccionado && !cargandoViviendas && (
+                <div className="absolute z-50 mt-1 w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-2xl max-h-52 overflow-y-auto">
+                  {viviendasFiltradas.length === 0 ? (
+                    <div className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400 text-center">
+                      Sin resultados para &quot;{busquedaVivienda}&quot;
+                    </div>
+                  ) : (
+                    viviendasFiltradas.map((vivienda) => (
+                      <button
+                        key={vivienda.id}
+                        type="button"
+                        onMouseDown={(e) => {
+                          e.preventDefault() // Evitar que el input pierda foco antes del click
+                          handleComboboxSelect(vivienda)
+                        }}
+                        className={`w-full flex items-center justify-between px-4 py-2.5 text-left transition-colors text-sm border-b border-gray-50 dark:border-gray-700/50 last:border-0 ${
+                          viviendaIdSeleccionada === vivienda.id
+                            ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
+                            : 'hover:bg-gray-50 dark:hover:bg-gray-700/50 text-gray-900 dark:text-gray-100'
+                        }`}
+                      >
+                        <span className="font-medium">
+                          {vivienda.manzanas?.nombre ? `Manzana ${vivienda.manzanas.nombre} · ` : ''}
+                          Casa {vivienda.numero}
+                        </span>
+                        <span className="text-xs text-gray-500 dark:text-gray-400 ml-3 flex-shrink-0">
+                          ${vivienda.valor_total.toLocaleString('es-CO')}
+                        </span>
+                      </button>
+                    ))
+                  )}
+                </div>
+              )}
+            </div>
+
+            {errors.viviendaId && (
+              <p className="mt-1 text-xs text-red-500">{String(errors.viviendaId.message)}</p>
+            )}
+          </div>
+
+          {/* Alerta: Sin viviendas disponibles en el proyecto */}
           {proyectoIdSeleccionado && viviendas.length === 0 && !cargandoViviendas && (
             <motion.div
               initial={{ opacity: 0 }}
@@ -219,21 +345,6 @@ export function ModalRegistrarInteres({
             <option value="Referido">Referido</option>
             <option value="Sitio Web">Sitio Web</option>
             <option value="Otro">Otro</option>
-          </ModernSelect>
-
-          {/* Prioridad */}
-          <ModernSelect
-            icon={Sparkles}
-            label="Prioridad de Seguimiento"
-            required
-            {...register('prioridad', { required: 'Selecciona la prioridad' })}
-            disabled={guardando}
-            error={errors.prioridad?.message}
-          >
-            <option value="">Selecciona prioridad</option>
-            <option value="Alta">🔴 Alta - Seguimiento inmediato</option>
-            <option value="Media">🟡 Media - Seguimiento regular</option>
-            <option value="Baja">🟢 Baja - Seguimiento cuando sea posible</option>
           </ModernSelect>
 
           {/* Notas */}

@@ -61,7 +61,6 @@ export function useProyectoConValidacion(proyectoId?: string) {
     queryFn: async () => {
       if (!proyectoId) return null
 
-      console.log('🔍 [VALIDACION] Cargando proyecto con validación:', proyectoId)
 
       // ✅ 1 QUERY CON JOIN (en vez de N+1)
       const { data, error } = await supabase
@@ -88,7 +87,6 @@ export function useProyectoConValidacion(proyectoId?: string) {
         return null
       }
 
-      console.log('✅ [VALIDACION] Proyecto cargado con manzanas:', data.manzanas?.length || 0)
 
       // Mapear manzanas con estado de validación
       const manzanasConValidacion: ManzanaConValidacion[] = (data.manzanas || []).map(m => {
@@ -109,31 +107,22 @@ export function useProyectoConValidacion(proyectoId?: string) {
         }
       })
 
-      console.log(
-        '📊 [VALIDACION] Manzanas procesadas:',
-        manzanasConValidacion.map(m => ({
-          nombre: m.nombre,
-          viviendas: m.cantidadViviendasCreadas,
-          editable: m.esEditable,
-        }))
-      )
-
       // ✅ Mapear proyecto completo con nombres de campos correctos
       const proyecto: ProyectoConValidacion = {
         id: data.id,
         nombre: data.nombre,
         descripcion: data.descripcion,
         ubicacion: data.ubicacion,
-        fechaInicio: data.fecha_inicio,
-        fechaFinEstimada: data.fecha_fin_estimada,
+        fechaInicio: data.fecha_inicio ?? '',
+        fechaFinEstimada: data.fecha_fin_estimada ?? '',
         presupuesto: data.presupuesto,
         estado: data.estado as any,
-        responsable: data.responsable,
-        telefono: data.telefono,
-        email: data.email,
-        progreso: data.progreso,
-        fechaCreacion: data.fecha_creacion,
-        fechaActualizacion: data.fecha_actualizacion,
+        responsable: (data as any).responsable ?? '',
+        telefono: (data as any).telefono ?? '',
+        email: (data as any).email ?? '',
+        progreso: (data as any).progreso,
+        fechaCreacion: data.fecha_creacion ?? '',
+        fechaActualizacion: data.fecha_actualizacion ?? '',
         manzanas: manzanasConValidacion,
       }
 

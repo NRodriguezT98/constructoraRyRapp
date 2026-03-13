@@ -272,6 +272,8 @@ DROP VIEW IF EXISTS public.vista_clientes_resumen CASCADE;
 CREATE OR REPLACE VIEW public.vista_clientes_resumen AS
 SELECT
   c.id,
+  c.nombres,
+  c.apellidos,
   c.nombre_completo,
   c.tipo_documento,
   c.numero_documento,

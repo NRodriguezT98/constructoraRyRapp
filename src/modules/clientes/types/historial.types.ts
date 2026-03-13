@@ -31,10 +31,12 @@ export interface EventoHistorialCliente {
 export interface EventoHistorialHumanizado {
   id: string
   tipo: TipoEventoHistorial
+  accion: 'CREATE' | 'UPDATE' | 'DELETE' // Tipo genérico de acción
   titulo: string
   descripcion: string
   fecha: string
   usuario: {
+    id?: string
     email: string
     nombres: string | null
     rol: string | null
@@ -43,6 +45,7 @@ export interface EventoHistorialHumanizado {
   color: ColorEvento
   detalles?: DetalleEvento[]
   metadata?: Record<string, any>
+  modulo?: string // Módulo al que pertenece el evento
 }
 
 /**
@@ -68,6 +71,8 @@ export type TipoEventoHistorial =
   | 'renuncia_rechazada'
   // Interés
   | 'interes_registrado'
+  // Notas manuales
+  | 'nota_manual'
   | 'interes_actualizado'
   | 'interes_descartado'
   // Documento

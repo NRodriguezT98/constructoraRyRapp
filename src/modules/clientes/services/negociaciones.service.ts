@@ -3,24 +3,21 @@
  *
  * Gestiona la vinculación Cliente + Vivienda + Pagos
  *
- * ⚠️ NOMBRES DE CAMPOS VERIFICADOS EN: docs/DATABASE-SCHEMA-REFERENCE.md
- * ✅ ACTUALIZADO: 2025-10-22 (Migración 003)
+ * ?? NOMBRES DE CAMPOS VERIFICADOS EN: docs/DATABASE-SCHEMA-REFERENCE.md
+ * ? ACTUALIZADO: 2025-10-22 (Migración 003)
  *
  * Estados de negociación (CHECK constraint: negociaciones_estado_check):
- * - 'Activa' → Negociación activa recibiendo abonos
- * - 'Suspendida' → Temporalmente pausada
- * - 'Cerrada por Renuncia' → Cliente renunció (vinculada a tabla renuncias)
- * - 'Completada' → 100% pagado y entregado
+ * - 'Activa' ? Negociación activa recibiendo abonos
+ * - 'Suspendida' ? Temporalmente pausada
+ * - 'Cerrada por Renuncia' ? Cliente renunció (vinculada a tabla renuncias)
+ * - 'Completada' ? 100% pagado y entregado
  */
 
 import { supabase } from '@/lib/supabase/client'
 import { formatDateForDB, getTodayDateString } from '@/lib/utils/date.utils'
-import {
-    crearProcesoDesdePlantilla,
-    obtenerPlantillaPredeterminada
-} from '@/modules/admin/procesos/services/procesos.service'
-import { TipoFuentePago } from '@/modules/admin/procesos/types'
 import type { EstadoNegociacion, Negociacion } from '@/modules/clientes/types'
+import { obtenerRequisitosParaTipoFuente } from '@/modules/fuentes-pago/config/requisitos-fuentes'
+import { crearPasosFuentePago } from '@/modules/fuentes-pago/services/pasos-fuente-pago.service'
 
 // DTOs
 export interface CrearNegociacionDTO {
@@ -28,9 +25,12 @@ export interface CrearNegociacionDTO {
   vivienda_id: string
   valor_negociado: number
   descuento_aplicado?: number
+  tipo_descuento?: string
+  motivo_descuento?: string
+  valor_escritura_publica?: number
   notas?: string
 
-  // ⭐ NUEVO: Fuentes de pago (creación transaccional)
+  // ? NUEVO: Fuentes de pago (creación transaccional)
   fuentes_pago?: CrearFuentePagoDTO[]
 }
 
@@ -47,7 +47,7 @@ export interface ActualizarNegociacionDTO {
   estado?: EstadoNegociacion
   valor_negociado?: number
   descuento_aplicado?: number
-  fecha_completada?: string // ⭐ Requerida cuando estado='Completada'
+  fecha_completada?: string // ? Requerida cuando estado='Completada'
   notas?: string
 }
 
@@ -58,7 +58,7 @@ class NegociacionesService {
   /**
    * Crear nueva negociación CON o SIN fuentes de pago (transaccional)
    *
-   * ✅ FLUJO SIMPLIFICADO (2025-10-22):
+   * ? FLUJO SIMPLIFICADO (2025-10-22):
    * - Negociación se crea DIRECTO en estado 'Activa'
    * - Fuentes de pago son OPCIONALES (se pueden agregar después)
    * - Cliente pasa a 'Activo'
@@ -67,47 +67,59 @@ class NegociacionesService {
    * Pasos:
    * 1. Crear negociación en estado 'Activa'
    * 2. [Opcional] Crear fuentes de pago si se proporcionan
-   * 3. Actualizar vivienda → 'Asignada'
-   * 4. Actualizar cliente → 'Activo'
+   * 3. Actualizar vivienda ? 'Asignada'
+   * 4. Actualizar cliente ? 'Activo'
    * 5. Si algún paso falla, se hace rollback
    */
   async crearNegociacion(datos: CrearNegociacionDTO): Promise<Negociacion> {
     try {
       const tieneFuentesPago = datos.fuentes_pago && datos.fuentes_pago.length > 0
 
-      console.log('📝 Creando negociación:', {
-        ...datos,
-        fuentes: tieneFuentesPago ? `${datos.fuentes_pago!.length} fuentes` : 'sin fuentes',
-      })
-
       // ==========================================
       // PASO 1: Crear negociación en estado 'Activa'
       // ==========================================
+
+      // Construir objeto con campos condicionales
+      const datosNegociacion: any = {
+        cliente_id: datos.cliente_id,
+        vivienda_id: datos.vivienda_id,
+        valor_negociado: datos.valor_negociado,
+        descuento_aplicado: datos.descuento_aplicado || 0,
+        notas: datos.notas,
+        estado: 'Activa', // ? SIEMPRE 'Activa' (simplificado)
+      }
+
+      // Solo incluir campos de descuento si hay descuento aplicado
+      if (datos.descuento_aplicado && datos.descuento_aplicado > 0) {
+        // Solo agregar campos si tienen valor (no undefined)
+        if (datos.tipo_descuento !== undefined) {
+          datosNegociacion.tipo_descuento = datos.tipo_descuento
+        }
+        if (datos.motivo_descuento !== undefined) {
+          datosNegociacion.motivo_descuento = datos.motivo_descuento
+        }
+        if (datos.valor_escritura_publica !== undefined) {
+          datosNegociacion.valor_escritura_publica = datos.valor_escritura_publica
+        }
+      }
+
+
       const { data: negociacion, error: errorNegociacion } = await supabase
         .from('negociaciones')
-        .insert({
-          cliente_id: datos.cliente_id,
-          vivienda_id: datos.vivienda_id,
-          valor_negociado: datos.valor_negociado,
-          descuento_aplicado: datos.descuento_aplicado || 0,
-          notas: datos.notas,
-          estado: 'Activa', // ⭐ SIEMPRE 'Activa' (simplificado)
-        })
-        .select('id, cliente_id, vivienda_id, valor_negociado, descuento_aplicado, notas, estado, fecha_negociacion, fecha_completada, fecha_creacion, fecha_actualizacion')
+        .insert(datosNegociacion)
+        .select('id, cliente_id, vivienda_id, valor_negociado, descuento_aplicado, tipo_descuento, motivo_descuento, valor_escritura_publica, notas, estado, fecha_negociacion, fecha_completada, fecha_creacion, fecha_actualizacion')
         .single()
 
       if (errorNegociacion) {
-        console.error('❌ Error creando negociación:', errorNegociacion)
+        console.error('? Error creando negociación:', errorNegociacion)
         throw errorNegociacion
       }
 
-      console.log('✅ Negociación creada en estado "Activa":', negociacion.id)
 
       // ==========================================
       // PASO 2: Crear fuentes de pago (OPCIONAL)
       // ==========================================
       if (datos.fuentes_pago && datos.fuentes_pago.length > 0) {
-        console.log(`📝 Creando ${datos.fuentes_pago.length} fuentes de pago...`)
 
         const fuentesParaInsertar = datos.fuentes_pago.map(fuente => ({
           negociacion_id: negociacion.id,
@@ -121,36 +133,62 @@ class NegociacionesService {
           estado: 'Pendiente',
         }))
 
-        const { error: errorFuentes } = await supabase
+        const { data: fuentesCreadas, error: errorFuentes } = await supabase
           .from('fuentes_pago')
-          .insert(fuentesParaInsertar)
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          .insert(fuentesParaInsertar as any)
+          .select('id, tipo, negociacion_id')
 
         if (errorFuentes) {
-          console.error('❌ Error creando fuentes de pago:', errorFuentes)
+          console.error('? Error creando fuentes de pago:', errorFuentes)
           // ROLLBACK
           await supabase.from('negociaciones').delete().eq('id', negociacion.id)
           throw new Error(`Error creando fuentes de pago: ${errorFuentes.message}`)
         }
 
-        console.log('✅ Fuentes de pago creadas')
+
+        // ==========================================
+        // PASO 2.1: Crear pasos de validación para fuentes que lo requieren
+        // ==========================================
+        if (fuentesCreadas && fuentesCreadas.length > 0) {
+
+          for (const fuente of fuentesCreadas) {
+            const requisitos = obtenerRequisitosParaTipoFuente(fuente.tipo)
+
+            if (requisitos.length > 0) {
+
+              try {
+                await crearPasosFuentePago({
+                  fuente_pago_id: fuente.id,
+                  tipo_fuente: fuente.tipo,
+                })
+
+              } catch (errorPasos) {
+                console.error(`? Error creando pasos para ${fuente.tipo}:`, errorPasos)
+                // No hacemos rollback completo, solo loggeamos
+                // Los pasos se pueden crear después manualmente si fallan
+              }
+            } else {
+            }
+          }
+        }
       }
 
       // ==========================================
-      // PASO 3: Actualizar vivienda → 'Asignada'
+      // PASO 3: Actualizar vivienda ? 'Asignada'
       // ==========================================
-      console.log('📝 Actualizando vivienda a estado "Asignada"...')
       const { error: errorVivienda } = await supabase
         .from('viviendas')
         .update({
           estado: 'Asignada',
           cliente_id: datos.cliente_id,
-          negociacion_id: negociacion.id, // ⭐ NUEVO campo
+          negociacion_id: negociacion.id, // ? NUEVO campo
           fecha_asignacion: formatDateForDB(getTodayDateString()),
         })
         .eq('id', datos.vivienda_id)
 
       if (errorVivienda) {
-        console.error('❌ Error actualizando vivienda:', errorVivienda)
+        console.error('? Error actualizando vivienda:', errorVivienda)
         // ROLLBACK
         if (tieneFuentesPago) {
           await supabase.from('fuentes_pago').delete().eq('negociacion_id', negociacion.id)
@@ -159,19 +197,17 @@ class NegociacionesService {
         throw new Error(`Error actualizando vivienda: ${errorVivienda.message}`)
       }
 
-      console.log('✅ Vivienda actualizada a "Asignada"')
 
       // ==========================================
-      // PASO 4: Actualizar cliente → 'Activo'
+      // PASO 4: Actualizar cliente ? 'Activo'
       // ==========================================
-      console.log('📝 Actualizando cliente a estado "Activo"...')
       const { error: errorCliente } = await supabase
         .from('clientes')
         .update({ estado: 'Activo' })
         .eq('id', datos.cliente_id)
 
       if (errorCliente) {
-        console.error('❌ Error actualizando cliente:', errorCliente)
+        console.error('? Error actualizando cliente:', errorCliente)
         // ROLLBACK completo
         if (tieneFuentesPago) {
           await supabase.from('fuentes_pago').delete().eq('negociacion_id', negociacion.id)
@@ -186,70 +222,19 @@ class NegociacionesService {
         throw new Error(`Error actualizando cliente: ${errorCliente.message}`)
       }
 
-      console.log('✅ Cliente actualizado a "Activo"')
 
       // ==========================================
-      // PASO 5: Crear proceso desde plantilla predeterminada
+      // PASO 5: Sistema de procesos eliminado
       // ==========================================
-      try {
-        console.log('📝 Creando proceso de negociación desde plantilla predeterminada...')
+      // ?? NOTA: El sistema de plantillas de proceso fue eliminado.
+      // Se reemplazará con sistema de checklist en Fuentes de Pago.
 
-        // Obtener plantilla predeterminada
-        const plantilla = await obtenerPlantillaPredeterminada()
 
-        if (!plantilla) {
-          console.warn('⚠️ No hay plantilla predeterminada. Omitiendo creación de proceso.')
-        } else {
-          // Mapear fuentes de pago de negociación a enum de procesos
-          const fuentesProceso: TipoFuentePago[] = []
-
-          if (datos.fuentes_pago && datos.fuentes_pago.length > 0) {
-            datos.fuentes_pago.forEach(fuente => {
-              switch (fuente.tipo) {
-                case 'Crédito Hipotecario':
-                  fuentesProceso.push(TipoFuentePago.CREDITO_HIPOTECARIO)
-                  break
-                case 'Subsidio Caja de Compensación':
-                case 'Subsidio Caja Compensación':
-                  fuentesProceso.push(TipoFuentePago.SUBSIDIO_CAJA)
-                  break
-                case 'Subsidio Mi Casa Ya':
-                  fuentesProceso.push(TipoFuentePago.SUBSIDIO_MI_CASA_YA)
-                  break
-                case 'Cuota Inicial':
-                  fuentesProceso.push(TipoFuentePago.CUOTA_INICIAL)
-                  break
-                default:
-                  // Por defecto, usar Cuota Inicial si no reconocemos el tipo
-                  fuentesProceso.push(TipoFuentePago.CUOTA_INICIAL)
-              }
-            })
-          } else {
-            // Si no hay fuentes, asumir Cuota Inicial
-            fuentesProceso.push(TipoFuentePago.CUOTA_INICIAL)
-          }
-
-          // Crear proceso
-          await crearProcesoDesdePlantilla({
-            negociacionId: negociacion.id,
-            plantillaId: plantilla.id,
-            fuentesPago: fuentesProceso
-          })
-
-          console.log('✅ Proceso de negociación creado con', fuentesProceso.length, 'fuentes de pago')
-        }
-      } catch (errorProceso) {
-        // No fallar la negociación si el proceso no se puede crear
-        console.error('⚠️ Error creando proceso (no crítico):', errorProceso)
-      }
-
-      console.log('🎉 ¡Negociación creada exitosamente!')
-
-      return negociacion as Negociacion
+      return negociacion as unknown as Negociacion
 
     } catch (error) {
       const mensaje = error instanceof Error ? error.message : 'Error desconocido'
-      console.error('❌ [CLIENTES] Error en crearNegociacion:', mensaje, error)
+      console.error('? [CLIENTES] Error en crearNegociacion:', mensaje, error)
       throw error
     }
   }
@@ -261,15 +246,19 @@ class NegociacionesService {
     try {
       const { data, error} = await supabase
         .from('negociaciones')
-        .select('*')
+        .select(`
+          id, cliente_id, vivienda_id, estado, valor_total, valor_negociado,
+          total_abonado, saldo_pendiente, fecha_negociacion,
+          fecha_creacion, usuario_creacion, descuento_aplicado
+        `)
         .eq('id', id)
         .single()
 
       if (error) throw error
-      return data as Negociacion
+      return data as unknown as Negociacion
     } catch (error) {
       const mensaje = error instanceof Error ? error.message : 'Error desconocido'
-      console.error('❌ [CLIENTES] Error obteniendo negociación:', mensaje, error)
+      console.error('? [CLIENTES] Error obteniendo negociación:', mensaje, error)
       return null
     }
   }
@@ -287,6 +276,9 @@ class NegociacionesService {
             id,
             numero,
             valor_base,
+            gastos_notariales,
+            recargo_esquinera,
+            es_esquinera,
             estado,
             manzanas!viviendas_manzana_id_fkey (
               id,
@@ -302,12 +294,12 @@ class NegociacionesService {
         `)
         .eq('cliente_id', clienteId)
         .order('fecha_creacion', { ascending: false })
-        .limit(100) // ✅ Limitar a 100 negociaciones más recientes (performance)
+        .limit(100) // ? Limitar a 100 negociaciones más recientes (performance)
 
       if (error) throw error
 
       // Mapear para tener proyecto en el nivel superior
-      const negociacionesConProyecto = (data || []).map((neg: any) => ({
+      const negociacionesConProyecto = (data || []).map((neg) => ({
         ...neg,
         proyecto: neg.vivienda?.manzanas?.proyecto || null
       }))
@@ -315,7 +307,7 @@ class NegociacionesService {
       return negociacionesConProyecto as Negociacion[]
     } catch (error) {
       const mensaje = error instanceof Error ? error.message : 'Error desconocido'
-      console.error('❌ [CLIENTES] Error obteniendo negociaciones del cliente:', mensaje, error)
+      console.error('? [CLIENTES] Error obteniendo negociaciones del cliente:', mensaje, error)
       return []
     }
   }
@@ -327,18 +319,21 @@ class NegociacionesService {
     try {
       const { data, error } = await supabase
         .from('negociaciones')
-        .select('*')
+        .select(`
+          id, cliente_id, vivienda_id, estado, valor_total, valor_negociado,
+          total_abonado, saldo_pendiente, fecha_creacion
+        `)
         .eq('vivienda_id', viviendaId)
-        .in('estado', ['Activa', 'Suspendida']) // ⭐ ACTUALIZADO: Solo estados activos
+        .in('estado', ['Activa', 'Suspendida']) // ? ACTUALIZADO: Solo estados activos
         .order('fecha_creacion', { ascending: false })
         .limit(1)
         .single()
 
       if (error && error.code !== 'PGRST116') throw error // Ignore "not found"
-      return data as Negociacion | null
+      return data as unknown as Negociacion | null
     } catch (error) {
       const mensaje = error instanceof Error ? error.message : 'Error desconocido'
-      console.error('❌ [CLIENTES] Error obteniendo negociación de vivienda:', mensaje, error)
+      console.error('? [CLIENTES] Error obteniendo negociación de vivienda:', mensaje, error)
       return null
     }
   }
@@ -351,7 +346,6 @@ class NegociacionesService {
     datos: ActualizarNegociacionDTO
   ): Promise<Negociacion> {
     try {
-      console.log('📝 Actualizando negociación:', id, datos)
 
       const { data, error } = await supabase
         .from('negociaciones')
@@ -362,11 +356,10 @@ class NegociacionesService {
 
       if (error) throw error
 
-      console.log('✅ Negociación actualizada')
       return data as Negociacion
     } catch (error) {
       const mensaje = error instanceof Error ? error.message : 'Error desconocido'
-      console.error('❌ [CLIENTES] Error actualizando negociación:', mensaje, error)
+      console.error('? [CLIENTES] Error actualizando negociación:', mensaje, error)
       throw error
     }
   }
@@ -392,18 +385,18 @@ class NegociacionesService {
 
   /**
    * Completar negociación (100% pagado)
-   * ⚠️ Requiere fecha_completada (constraint de DB)
+   * ?? Requiere fecha_completada (constraint de DB)
    */
   async completarNegociacion(id: string): Promise<Negociacion> {
     return this.actualizarNegociacion(id, {
       estado: 'Completada',
-      fecha_completada: formatDateForDB(getTodayDateString()), // ⭐ REQUERIDO por constraint
+      fecha_completada: formatDateForDB(getTodayDateString()), // ? REQUERIDO por constraint
     })
   }
 
   /**
    * Cerrar negociación por renuncia
-   * ⚠️ Debe tener registro en tabla 'renuncias'
+   * ?? Debe tener registro en tabla 'renuncias'
    */
   async cerrarPorRenuncia(id: string): Promise<Negociacion> {
     return this.actualizarNegociacion(id, {
@@ -424,20 +417,20 @@ class NegociacionesService {
         .select('id', { count: 'exact', head: true })
         .eq('cliente_id', clienteId)
         .eq('vivienda_id', viviendaId)
-        .in('estado', ['Activa', 'Suspendida']) // ⭐ ACTUALIZADO
+        .in('estado', ['Activa', 'Suspendida']) // ? ACTUALIZADO
 
       if (error) throw error
       return (count ?? 0) > 0
     } catch (error) {
       const mensaje = error instanceof Error ? error.message : 'Error desconocido'
-      console.error('❌ [CLIENTES] Error verificando negociación activa:', mensaje, error)
+      console.error('? [CLIENTES] Error verificando negociación activa:', mensaje, error)
       return false
     }
   }
 
   /**
    * Eliminar negociación (solo si está recién creada y sin movimientos)
-   * ⚠️ PRECAUCIÓN: Verificar que no tenga abonos antes de eliminar
+   * ?? PRECAUCIÓN: Verificar que no tenga abonos antes de eliminar
    */
   async eliminarNegociacion(id: string): Promise<void> {
     try {
@@ -469,17 +462,16 @@ class NegociacionesService {
         .eq('id', id)
 
       if (error) throw error
-      console.log('✅ Negociación eliminada')
     } catch (error) {
       const mensaje = error instanceof Error ? error.message : 'Error desconocido'
-      console.error('❌ [CLIENTES] Error eliminando negociación:', mensaje, error)
+      console.error('? [CLIENTES] Error eliminando negociación:', mensaje, error)
       throw error
     }
   }
 
   /**
    * Actualizar fuentes de pago de una negociación
-   * ⚠️ Operación transaccional: elimina viejas e inserta nuevas
+   * ?? Operación transaccional: elimina viejas e inserta nuevas
    *
    * Validaciones:
    * - Suma total = valor_final de negociación
@@ -495,14 +487,16 @@ class NegociacionesService {
       entidad?: string | null
       numero_referencia?: string | null
       detalles?: string | null
-    }>
+    }>,
+    motivoCambio: string = 'Actualización de fuentes de pago'
   ): Promise<void> {
     try {
-      // 1. Obtener fuentes actuales para validar
+      // 1. Obtener fuentes actuales ACTIVAS para validar
       const { data: fuentesActuales, error: errorFetch } = await supabase
         .from('fuentes_pago')
         .select('id, monto_recibido')
         .eq('negociacion_id', negociacionId)
+        .eq('estado_fuente', 'activa') // ? Solo comparar con activas
 
       if (errorFetch) throw errorFetch
 
@@ -512,22 +506,51 @@ class NegociacionesService {
         fa => !idsNuevas.includes(fa.id)
       ) || []
 
-      const fuentesConAbonos = fuentesAEliminar.filter(f => f.monto_recibido > 0)
+      const fuentesConAbonos = fuentesAEliminar.filter(f => (f.monto_recibido ?? 0) > 0)
       if (fuentesConAbonos.length > 0) {
         throw new Error('No puedes eliminar fuentes de pago que tienen abonos registrados')
       }
 
-      // 3. Eliminar fuentes viejas que no están en la nueva lista
+      // 3. ? INACTIVAR fuentes viejas con UPDATE DIRECTO (sin triggers)
       if (fuentesAEliminar.length > 0) {
-        const { error: errorDelete } = await supabase
-          .from('fuentes_pago')
-          .delete()
-          .in('id', fuentesAEliminar.map(f => f.id))
 
-        if (errorDelete) throw errorDelete
+        const erroresInactivacion: Array<{ fuenteId: string; error: any }> = []
+
+        for (const fuente of fuentesAEliminar) {
+          const { data, error: errorInactivar, count } = await supabase
+            .from('fuentes_pago')
+            .update({
+              estado_fuente: 'inactiva',
+              razon_inactivacion: 'Fuente eliminada/reemplazada por el usuario durante edición',
+              fecha_inactivacion: new Date().toISOString(),
+            })
+            .eq('id', fuente.id)
+            // ? SIN .select().single() para evitar error 400
+
+          if (errorInactivar) {
+            console.error(`? Error inactivando fuente ${fuente.id}:`, {
+              message: errorInactivar.message,
+              code: errorInactivar.code,
+              details: errorInactivar.details,
+              hint: errorInactivar.hint,
+            })
+            erroresInactivacion.push({ fuenteId: fuente.id, error: errorInactivar })
+          } else {
+          }
+        }
+
+        // ? CRÍTICO: Si hubo errores al inactivar, lanzar excepción
+        if (erroresInactivacion.length > 0) {
+          const mensajeError = `No se pudieron inactivar ${erroresInactivacion.length} fuente(s). Errores: ${JSON.stringify(erroresInactivacion, null, 2)}`
+          console.error('?? [CRÍTICO] Errores al inactivar fuentes:', mensajeError)
+          throw new Error(mensajeError)
+        }
+
       }
 
       // 4. Actualizar fuentes existentes y crear nuevas
+      const nuevasFuentesCreadas: { id: string; tipo: string }[] = []
+
       for (const fuente of fuentes) {
         if (fuente.id) {
           // Actualizar existente
@@ -544,30 +567,201 @@ class NegociacionesService {
           if (errorUpdate) throw errorUpdate
         } else {
           // Crear nueva
-          const { error: errorInsert } = await supabase
+          const { data: nuevaFuente, error: errorInsert } = await supabase
             .from('fuentes_pago')
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             .insert({
               negociacion_id: negociacionId,
-              tipo: fuente.tipo as TipoFuentePago,
+              tipo: fuente.tipo,
               monto_aprobado: fuente.monto_aprobado,
               monto_recibido: 0,
-              // ❌ NO incluir columnas generadas: saldo_pendiente, porcentaje_completado
               entidad: fuente.entidad,
               numero_referencia: fuente.numero_referencia,
-              permite_multiples_abonos: true,
+              permite_multiples_abonos: fuente.tipo === 'Cuota Inicial',
               estado: 'Pendiente',
-            })
+              estado_fuente: 'activa', // ? Explícitamente marcar como activa
+            } as any)
+            .select('id, tipo')
+            .single()
 
           if (errorInsert) throw errorInsert
+          if (nuevaFuente) {
+            nuevasFuentesCreadas.push({ id: nuevaFuente.id, tipo: nuevaFuente.tipo })
+          }
         }
       }
 
-      console.log('✅ Fuentes de pago actualizadas correctamente')
+      // 5. ? Vincular fuentes nuevas con las inactivadas (si coinciden tipos)
+      if (fuentesAEliminar.length > 0 && nuevasFuentesCreadas.length > 0) {
+
+        for (const fuenteInactivada of fuentesAEliminar) {
+          // Buscar en fuentes actuales el tipo que tenía
+          const fuenteActualData = fuentesActuales?.find(f => f.id === fuenteInactivada.id)
+          if (!fuenteActualData) continue
+
+          // Obtener el tipo de la fuente inactivada
+          const { data: fuenteCompleta } = await supabase
+            .from('fuentes_pago')
+            .select('tipo')
+            .eq('id', fuenteInactivada.id)
+            .single()
+
+          if (!fuenteCompleta) continue
+
+          // Buscar si hay una nueva fuente del mismo tipo
+          const fuenteReemplazo = nuevasFuentesCreadas.find(
+            nf => nf.tipo === fuenteCompleta.tipo
+          )
+
+          if (fuenteReemplazo) {
+            // Actualizar la fuente inactivada con referencia a la nueva
+            await supabase
+              .from('fuentes_pago')
+              .update({
+                reemplazada_por: fuenteReemplazo.id,
+                razon_inactivacion: `Reemplazada por nueva fuente de tipo: ${fuenteReemplazo.tipo}`,
+              })
+              .eq('id', fuenteInactivada.id)
+
+          }
+        }
+      }
+
+      // 6. Crear snapshot manual con resumen de cambios
+      await this.crearSnapshotCambioFuentes(
+        negociacionId,
+        motivoCambio,
+        fuentesActuales || [],
+        fuentes,
+        {
+          agregadas: nuevasFuentesCreadas.length,
+          eliminadas: fuentesAEliminar.length,
+          modificadas: fuentes.filter(f => f.id).length,
+        }
+      )
+
     } catch (error) {
       const mensaje = error instanceof Error ? error.message : 'Error desconocido'
-      console.error('❌ [CLIENTES] Error actualizando fuentes de pago:', mensaje, error)
-      throw error
+      console.error('? [CLIENTES] Error actualizando fuentes de pago:', {
+        mensaje,
+        error,
+        negociacionId,
+        fuentesEnviadas: fuentes.length,
+        motivoCambio,
+      })
+
+      // ? Re-lanzar con mensaje más descriptivo
+      throw new Error(`Error al actualizar fuentes de pago: ${mensaje}`)
     }
+  }
+
+  /**
+   * Crear snapshot manual de cambio en fuentes de pago
+   */
+  private async crearSnapshotCambioFuentes(
+    negociacionId: string,
+    motivoCambio: string,
+    fuentesAnteriores: any[],
+    fuentesNuevas: any[],
+    resumen: { agregadas: number; eliminadas: number; modificadas: number }
+  ): Promise<void> {
+    // Obtener versión actual
+    const { data: negociacion } = await supabase
+      .from('negociaciones')
+      .select('id, version_actual, version_lock')
+      .eq('id', negociacionId)
+      .single()
+
+    const nuevaVersion = (negociacion?.version_actual || 0) + 1
+
+    // Obtener fuentes activas actuales para snapshot
+    const { data: fuentesActivas } = await supabase
+      .from('fuentes_pago')
+      .select(`
+        id, negociacion_id, tipo, entidad, monto_aprobado, monto_recibido,
+        estado, estado_fuente
+      `)
+      .eq('negociacion_id', negociacionId)
+      .eq('estado_fuente', 'activa')
+
+    // ? Documentos se obtienen por proyecto_id, no por negociacion_id
+    // Omitimos por ahora para evitar error 400
+    const documentos: any[] = []
+
+    // Obtener datos de negociación
+    const { data: datosNegociacion } = await supabase
+      .from('negociaciones')
+      .select(`
+        id, cliente_id, vivienda_id, estado, valor_total, valor_negociado,
+        total_abonado, saldo_pendiente, fecha_negociacion, fecha_creacion
+      `)
+      .eq('id', negociacionId)
+      .single()
+
+    // Construir razón del cambio
+    const partes = []
+    if (resumen.agregadas > 0) partes.push(`${resumen.agregadas} agregada(s)`)
+    if (resumen.eliminadas > 0) partes.push(`${resumen.eliminadas} eliminada(s)`)
+    if (resumen.modificadas > 0) partes.push(`${resumen.modificadas} modificada(s)`)
+    const razonCompleta = partes.length > 0
+      ? `${motivoCambio} | ${partes.join(', ')}`
+      : motivoCambio
+
+    // Construir detalles de cambios para mostrar en modal
+    const cambiosDetallados = {
+      motivo_usuario: motivoCambio,
+      resumen,
+      fuentes_finales: fuentesActivas?.map(f => ({
+        tipo: f.tipo,
+        entidad: f.entidad,
+        monto_aprobado: f.monto_aprobado,
+        monto_recibido: f.monto_recibido,
+      })) || [],
+    }
+
+    // Obtener datos del usuario actual para auditoría
+    const { data: { user } } = await supabase.auth.getUser()
+    const usuarioEmail = user?.email || null
+
+    // Obtener nombre del usuario desde tabla usuarios
+    let usuarioNombre = null
+    if (user?.id) {
+      const { data: usuarioData } = await supabase
+        .from('usuarios')
+        .select('nombres, apellidos')
+        .eq('id', user.id)
+        .single()
+
+      if (usuarioData) {
+        usuarioNombre = `${usuarioData.nombres} ${usuarioData.apellidos || ''}`.trim()
+      }
+    }
+
+    // Crear snapshot
+    await supabase.from('negociaciones_historial').insert({
+      negociacion_id: negociacionId,
+      version: nuevaVersion,
+      tipo_cambio: 'fuentes_pago_actualizadas',
+      razon_cambio: razonCompleta,
+      datos_negociacion: datosNegociacion,
+      fuentes_pago_snapshot: fuentesActivas || [],
+      documentos_snapshot: documentos || [],
+      datos_anteriores: null,
+      datos_nuevos: cambiosDetallados,
+      campos_modificados: ['fuentes_pago'],
+      usuario_email: usuarioEmail,
+      usuario_nombre: usuarioNombre,
+    })
+
+    // Actualizar versión en negociaciones
+    await supabase
+      .from('negociaciones')
+      .update({
+        version_actual: nuevaVersion,
+        version_lock: (negociacion?.version_lock || 0) + 1,
+      })
+      .eq('id', negociacionId)
+
   }
 }
 

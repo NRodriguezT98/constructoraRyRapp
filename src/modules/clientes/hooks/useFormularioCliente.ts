@@ -10,6 +10,7 @@ import type {
     ActualizarClienteDTO,
     CrearClienteDTO,
     TipoDocumento,
+    OrigenCliente,
 } from '../types'
 import { validarDocumentoIdentidad } from '../utils/validacion-documentos-colombia'
 
@@ -29,8 +30,8 @@ export function useFormularioCliente({
     apellidos: clienteInicial?.apellidos || '',
     tipo_documento: clienteInicial?.tipo_documento || 'CC',
     numero_documento: clienteInicial?.numero_documento || '',
-    fecha_nacimiento: clienteInicial?.fecha_nacimiento || '',
-    estado_civil: clienteInicial?.estado_civil || undefined,
+    fecha_nacimiento: clienteInicial?.fecha_nacimiento ?? '',
+    estado_civil: clienteInicial?.estado_civil ?? undefined,
     telefono: clienteInicial?.telefono || '',
     telefono_alternativo: clienteInicial?.telefono_alternativo || '',
     email: clienteInicial?.email || '',
@@ -49,39 +50,33 @@ export function useFormularioCliente({
   // =====================================================
   useEffect(() => {
     if (clienteInicial) {
-      // Si el cliente viene con nombre_completo pero sin nombres/apellidos
-      // intentamos separarlo (es un campo calculado en la BD)
-      let nombres = clienteInicial.nombres || ''
-      let apellidos = clienteInicial.apellidos || ''
-
-      // Si no hay nombres/apellidos pero sí nombre_completo, intentar separar
-      if (!nombres && !apellidos && (clienteInicial as any).nombre_completo) {
-        const nombreCompleto = (clienteInicial as any).nombre_completo as string
-        const partes = nombreCompleto.trim().split(' ')
-        if (partes.length >= 2) {
-          // Asumimos que la primera parte es el nombre y el resto apellidos
-          nombres = partes[0]
-          apellidos = partes.slice(1).join(' ')
-        } else {
-          nombres = nombreCompleto
+      // âœ… Solo actualizar si realmente hay un cambio (evitar re-renders innecesarios)
+      setFormData((prev) => {
+        // Si ya tiene los datos correctos, no actualizar
+        if (
+          prev.nombres === (clienteInicial.nombres || '') &&
+          prev.numero_documento === (clienteInicial.numero_documento || '')
+        ) {
+          return prev
         }
-      }
 
-      setFormData({
-        nombres,
-        apellidos,
-        tipo_documento: clienteInicial.tipo_documento || 'CC',
-        numero_documento: clienteInicial.numero_documento || '',
-        fecha_nacimiento: clienteInicial.fecha_nacimiento || '',
-        estado_civil: clienteInicial.estado_civil || undefined,
-        telefono: clienteInicial.telefono || '',
-        telefono_alternativo: clienteInicial.telefono_alternativo || '',
-        email: clienteInicial.email || '',
-        direccion: clienteInicial.direccion || '',
-        ciudad: clienteInicial.ciudad || '',
-        departamento: clienteInicial.departamento || '',
-        notas: clienteInicial.notas || '',
-        interes_inicial: undefined,
+        // Actualizar con datos del cliente
+        return {
+          nombres: clienteInicial.nombres || '',
+          apellidos: clienteInicial.apellidos || '',
+          tipo_documento: clienteInicial.tipo_documento || 'CC',
+          numero_documento: clienteInicial.numero_documento || '',
+          fecha_nacimiento: clienteInicial.fecha_nacimiento ?? '',
+          estado_civil: clienteInicial.estado_civil ?? undefined,
+          telefono: clienteInicial.telefono || '',
+          telefono_alternativo: clienteInicial.telefono_alternativo || '',
+          email: clienteInicial.email || '',
+          direccion: clienteInicial.direccion || '',
+          ciudad: clienteInicial.ciudad || '',
+          departamento: clienteInicial.departamento || '',
+          notas: clienteInicial.notas || '',
+          interes_inicial: undefined,
+        }
       })
     } else {
       // Reset para nuevo cliente
@@ -114,8 +109,8 @@ export function useFormularioCliente({
   /**
    * Validar Step 0: Información Personal
    * Campos obligatorios: nombres, apellidos, tipo_documento, numero_documento
-   * ⚠️ VALIDACIÓN ASYNC: Verifica duplicados en la base de datos
-   * ✅ VALIDACIÓN ALGORITMO: Dígito verificador para NIT y formato para CC/CE
+   * âš ï¸ VALIDACIÃ“N ASYNC: Verifica duplicados en la base de datos
+   * âœ… VALIDACIÃ“N ALGORITMO: Dígito verificador para NIT y formato para CC/CE
    */
   const validarStep0 = useCallback(async (): Promise<boolean> => {
     const nuevosErrores: Record<string, string> = {}
@@ -139,7 +134,7 @@ export function useFormularioCliente({
     if (!formData.numero_documento.trim()) {
       nuevosErrores.numero_documento = 'El número de documento es requerido'
     } else {
-      // ✅ VALIDACIÓN DE ALGORITMO (CC, CE, NIT, Pasaporte)
+      // âœ… VALIDACIÃ“N DE ALGORITMO (CC, CE, NIT, Pasaporte)
       const resultadoValidacion = validarDocumentoIdentidad(
         formData.tipo_documento as any,
         formData.numero_documento
@@ -151,9 +146,8 @@ export function useFormularioCliente({
           nuevosErrores.numero_documento += ` (${resultadoValidacion.detalles})`
         }
       } else if (!clienteInicial?.id) {
-        // ⚠️ VALIDACIÓN CRÍTICA: Verificar duplicados (solo si formato es válido y es cliente nuevo)
+        // âš ï¸ VALIDACIÃ“N CRÃTICA: Verificar duplicados (solo si formato es válido y es cliente nuevo)
         try {
-          console.log('🔍 Validando duplicados en Step 0...')
           const clienteExistente = await clientesService.buscarPorDocumento(
             formData.tipo_documento,
             formData.numero_documento
@@ -161,9 +155,8 @@ export function useFormularioCliente({
 
           if (clienteExistente) {
             nuevosErrores.numero_documento = `Ya existe un cliente con este documento: ${clienteExistente.nombres} ${clienteExistente.apellidos}`
-            console.error('❌ Cliente duplicado encontrado en Step 0')
+            console.error('âŒ Cliente duplicado encontrado en Step 0')
           } else {
-            console.log('✅ No hay duplicados - Step 0 OK')
           }
         } catch (error) {
           const mensaje = error instanceof Error ? error.message : 'Error desconocido'
@@ -179,7 +172,10 @@ export function useFormularioCliente({
 
   /**
    * Validar Step 1: Información de Contacto
-   * Campos obligatorios: telefono OR email (al menos uno válido)
+   * Campos obligatorios:
+   * - telefono OR email (al menos uno válido)
+   * - departamento (obligatorio)
+   * - ciudad (obligatoria)
    */
   const validarStep1 = useCallback((): boolean => {
     const nuevosErrores: Record<string, string> = {}
@@ -205,13 +201,23 @@ export function useFormularioCliente({
       }
     }
 
+    // Validar departamento (obligatorio)
+    if (!formData.departamento || formData.departamento.trim() === '') {
+      nuevosErrores.departamento = 'El departamento es obligatorio'
+    }
+
+    // Validar ciudad/municipio (obligatoria)
+    if (!formData.ciudad || formData.ciudad.trim() === '') {
+      nuevosErrores.ciudad = 'La ciudad/municipio es obligatoria'
+    }
+
     setErrors(nuevosErrores)
     return Object.keys(nuevosErrores).length === 0
   }, [formData])
 
   /**
    * Validar Step 2: Interés
-   * Todo opcional, pero si selecciona vivienda → proyecto es requerido
+   * Todo opcional, pero si selecciona vivienda â†’ proyecto es requerido
    */
   const validarStep2 = useCallback((): boolean => {
     const nuevosErrores: Record<string, string> = {}
@@ -235,7 +241,7 @@ export function useFormularioCliente({
   }, [])
 
   // =====================================================
-  // VALIDACIÓN COMPLETA (para submit final)
+  // VALIDACIÃ“N COMPLETA (para submit final)
   // =====================================================
 
   const validarFormulario = useCallback((): boolean => {

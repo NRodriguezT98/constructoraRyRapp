@@ -88,15 +88,9 @@ export function useModalNegociacion({
   // EFECTOS
   // ============================================
 
-  // Cargar proyectos al abrir modal
-  useEffect(() => {
-    if (isOpen) {
-      proyectosViviendas.cargarProyectos()
-    }
-  }, [isOpen]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // ============================================
-  // NAVEGACIÓN
+  // NAVEGACIÃ“N
   // ============================================
 
   const handleNext = useCallback(() => {
@@ -137,7 +131,6 @@ export function useModalNegociacion({
       }
 
       // Crear negociación con fuentes de pago
-      console.log('📝 Creando negociación con fuentes de pago...')
       const negociacion = await crearNegociacion({
         cliente_id: clienteId,
         vivienda_id: proyectosViviendas.viviendaId,
@@ -153,14 +146,13 @@ export function useModalNegociacion({
         return
       }
 
-      console.log('✅ Negociación creada exitosamente:', negociacion.id)
 
       // Limpiar y cerrar
       limpiarHook()
       onSuccess(negociacion.id)
       handleClose()
     } catch (err) {
-      console.error('❌ Error creando negociación:', err)
+      console.error('âŒ Error creando negociación:', err)
       setError(err instanceof Error ? err.message : 'Error al crear negociación')
     } finally {
       setCreando(false)
@@ -177,7 +169,7 @@ export function useModalNegociacion({
     errorHook,
     limpiarHook,
     onSuccess,
-  ])  
+  ])
 
   // ============================================
   // CERRAR Y RESETEAR

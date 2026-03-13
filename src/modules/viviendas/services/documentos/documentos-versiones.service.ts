@@ -13,7 +13,7 @@ const BUCKET_NAME = 'documentos-viviendas'
  */
 export class DocumentosVersionesService {
   /**
-   * CREAR NUEVA VERSIÓN de un documento existente
+   * CREAR NUEVA VERSIÃ“N de un documento existente
    */
   static async crearNuevaVersion(
     documentoIdOriginal: string,
@@ -24,7 +24,6 @@ export class DocumentosVersionesService {
     fechaDocumento?: string,
     fechaVencimiento?: string
   ): Promise<DocumentoVivienda> {
-    console.log('📤 Creando nueva versión del documento:', documentoIdOriginal)
 
     // 1. Obtener documento original
     const { data: docOriginal, error: fetchError } = await supabase
@@ -39,7 +38,6 @@ export class DocumentosVersionesService {
     const tituloDelArchivo = archivo.name.replace(/\.[^/.]+$/, '')
     const tituloFinal = tituloOverride || tituloDelArchivo
 
-    console.log('📝 Título de nueva versión:', tituloFinal)
 
     // 2. Encontrar el documento padre (la versión 1)
     const documentoPadreId = docOriginal.documento_padre_id || documentoIdOriginal
@@ -131,7 +129,6 @@ export class DocumentosVersionesService {
       throw insertError
     }
 
-    console.log(`✅ Nueva versión ${nuevaVersion} creada`)
     return nuevaVersionDoc as unknown as DocumentoVivienda
   }
 
@@ -168,7 +165,7 @@ export class DocumentosVersionesService {
   }
 
   /**
-   * RESTAURAR VERSIÓN anterior
+   * RESTAURAR VERSIÃ“N anterior
    * Descarga el archivo de la versión antigua y crea una nueva versión con ese contenido
    */
   static async restaurarVersion(
@@ -176,7 +173,6 @@ export class DocumentosVersionesService {
     userId: string,
     motivo: string
   ): Promise<DocumentoVivienda> {
-    console.log('🔄 Restaurando versión:', versionId)
 
     // 1. Obtener la versión a restaurar
     const { data: versionAnterior, error: fetchError } = await supabase
@@ -187,11 +183,6 @@ export class DocumentosVersionesService {
 
     if (fetchError) throw fetchError
 
-    console.log('📄 Versión a restaurar:', {
-      id: versionAnterior.id,
-      version: versionAnterior.version,
-      url_storage: versionAnterior.url_storage
-    })
 
     // 2. Descargar el archivo de esa versión
     const { data: archivoBlob, error: downloadError } = await supabase.storage
@@ -199,7 +190,7 @@ export class DocumentosVersionesService {
       .download(versionAnterior.url_storage)
 
     if (downloadError) {
-      console.error('❌ Error al descargar archivo:', downloadError)
+      console.error('âŒ Error al descargar archivo:', downloadError)
       throw new Error('No se pudo descargar el archivo de la versión anterior')
     }
 
@@ -216,18 +207,17 @@ export class DocumentosVersionesService {
       documentoPadreId,
       archivo,
       userId,
-      `[RESTAURACIÓN] ${motivo} - Restaurado desde versión ${versionAnterior.version}`,
+      `[RESTAURACIÃ“N] ${motivo} - Restaurado desde versión ${versionAnterior.version}`,
       tituloRestaurado,
-      versionAnterior.fecha_documento,
-      versionAnterior.fecha_vencimiento
+      versionAnterior.fecha_documento ?? undefined,
+      versionAnterior.fecha_vencimiento ?? undefined
     )
 
-    console.log(`✅ Versión ${versionAnterior.version} restaurada`)
     return resultado
   }
 
   /**
-   * ELIMINAR VERSIÓN (soft delete, solo Admin)
+   * ELIMINAR VERSIÃ“N (soft delete, solo Admin)
    */
   static async eliminarVersion(
     versionId: string,
@@ -235,16 +225,15 @@ export class DocumentosVersionesService {
     userRole: string,
     motivo: string
   ): Promise<void> {
-    console.log('🗑️ [ADMIN] Eliminando versión:', versionId)
 
     // Validar rol de Administrador
     if (userRole !== 'Administrador') {
-      throw new Error('❌ Solo Administradores pueden eliminar versiones')
+      throw new Error('âŒ Solo Administradores pueden eliminar versiones')
     }
 
     // Validar motivo
     if (!motivo || motivo.trim().length < 20) {
-      throw new Error('❌ Debe proporcionar un motivo detallado (mínimo 20 caracteres)')
+      throw new Error('âŒ Debe proporcionar un motivo detallado (mínimo 20 caracteres)')
     }
 
     // Obtener la versión a eliminar
@@ -271,7 +260,7 @@ export class DocumentosVersionesService {
 
       if ((versionesActivas?.length || 0) <= 1) {
         throw new Error(
-          '❌ No se puede eliminar la última versión activa. ' +
+          'âŒ No se puede eliminar la última versión activa. ' +
             'Usa "Eliminar Documento" en su lugar.'
         )
       }
@@ -313,7 +302,6 @@ export class DocumentosVersionesService {
 
     if (updateError) throw updateError
 
-    console.log('✅ Versión eliminada (soft delete)')
   }
 
   /**

@@ -61,7 +61,7 @@ export function FormularioConfiguracion({ configuracion, onGuardar, onCancelar }
         nombre: configuracion.nombre,
         valor: configuracion.valor,
         descripcion: configuracion.descripcion || '',
-        activo: configuracion.activo,
+        activo: configuracion.activo ?? true,
       })
     }
   }, [configuracion, reset])

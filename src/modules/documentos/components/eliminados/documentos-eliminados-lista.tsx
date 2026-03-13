@@ -87,7 +87,6 @@ export function DocumentosEliminadosLista() {
     return (
       <LoadingState
         message="Cargando papelera de todos los módulos..."
-        detail="Consultando proyectos, viviendas y más..."
       />
     )
   }

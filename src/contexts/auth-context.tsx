@@ -1,17 +1,17 @@
-﻿/**
+/**
  * ============================================
  * AUTH CONTEXT - Refactorizado con React Query
  * ============================================
  *
- * Context de autenticación que usa React Query internamente.
- * Mantiene la misma API para compatibilidad con código existente.
+ * Context de autenticaci�n que usa React Query internamente.
+ * Mantiene la misma API para compatibilidad con c�digo existente.
  *
  * BENEFICIOS:
- * - ✅ Cache automático de sesión y perfil
- * - ✅ Invalidación inteligente
- * - ✅ Sin problemas de closures
- * - ✅ Estados de carga precisos
- * - ✅ Refetch automático en background
+ * - ? Cache autom�tico de sesi�n y perfil
+ * - ? Invalidaci�n inteligente
+ * - ? Sin problemas de closures
+ * - ? Estados de carga precisos
+ * - ? Refetch autom�tico en background
  */
 
 'use client'
@@ -39,7 +39,7 @@ interface AuthContextType {
   user: User | null
   perfil: Perfil | null
   loading: boolean
-  signIn: (email: string, password: string) => Promise<void>
+  signIn: (email: string, password: string) => Promise<unknown>
   signOut: () => Promise<void>
 }
 
@@ -68,7 +68,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // ============================================
 
   const signIn = async (email: string, password: string) => {
-    debugLog('🔑 AuthContext.signIn() invocado', { email })
+    debugLog('?? AuthContext.signIn() invocado', { email })
 
     try {
       const result = await loginMutation.mutateAsync({ email, password })
@@ -85,7 +85,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // ============================================
 
   const signOut = async () => {
-    debugLog('🚪 AuthContext.signOut() invocado')
+    debugLog('?? AuthContext.signOut() invocado')
     try {
       await logoutMutation.mutateAsync()
       successLog('Logout completado desde AuthContext')

@@ -18,6 +18,7 @@ import { toast } from 'sonner'
 
 import { useDocumentoIdentidad } from '@/modules/clientes/documentos/hooks/useDocumentoIdentidad'
 import { useEliminarDocumento } from '@/modules/documentos/hooks/useEliminarDocumento'
+import { ConfirmacionModal } from '@/shared/components/modals'
 
 interface SeccionDocumentosIdentidadProps {
   clienteId: string
@@ -31,24 +32,12 @@ export default function SeccionDocumentosIdentidad({
   // ✅ Hook con lógica de documento de identidad
   const { tieneCedula, documentoIdentidad, cargando } = useDocumentoIdentidad({ clienteId })
 
-  // ✅ Hook para eliminar documento
-  const { eliminarDocumento, eliminando } = useEliminarDocumento()
+  // ✅ Hook para eliminar documento con confirmación inteligente
+  const { abrirConfirmacion, cerrarConfirmacion, ejecutarEliminacion, confirmacion, eliminando } = useEliminarDocumento()
 
-  const handleEliminar = async () => {
+  const handleEliminar = () => {
     if (!documentoIdentidad) return
-
-    if (!confirm('¿Estás seguro de eliminar la cédula? Esto bloqueará la creación de negociaciones hasta que subas una nueva.')) {
-      return
-    }
-
-    try {
-      await eliminarDocumento(documentoIdentidad.id)
-      toast.success('Cédula eliminada correctamente')
-    } catch (error) {
-      const mensaje = error instanceof Error ? error.message : 'Error al eliminar cédula'
-      console.error('[CLIENTES] Error eliminando cédula:', error)
-      toast.error(mensaje)
-    }
+    abrirConfirmacion(documentoIdentidad, 'cliente')
   }
 
   const handleVerDocumento = () => {
@@ -174,7 +163,7 @@ export default function SeccionDocumentosIdentidad({
                   </button>
                   <button
                     onClick={handleEliminar}
-                    disabled={eliminando}
+                    disabled={!!eliminando}
                     className="flex items-center gap-1.5 px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     title="Eliminar documento"
                   >
@@ -195,6 +184,26 @@ export default function SeccionDocumentosIdentidad({
           </div>
         </motion.div>
       </div>
+      {/* Modal de confirmación de eliminación */}
+      <ConfirmacionModal
+        isOpen={confirmacion.isOpen}
+        onClose={cerrarConfirmacion}
+        onConfirm={async () => {
+          await ejecutarEliminacion('cliente', () => {
+            toast.success('Cédula eliminada correctamente')
+          })
+        }}
+        variant={confirmacion.esDocumentoCritico ? 'warning' : 'danger'}
+        title="¿Eliminar cédula de ciudadanía?"
+        message={
+          confirmacion.detectando
+            ? 'Verificando el tipo de documento…'
+            : 'Esto bloqueará la creación de negociaciones hasta que subas una nueva. El documento puede recuperarse desde el panel de administración.'
+        }
+        confirmText="Sí, eliminar"
+        isLoading={confirmacion.detectando || eliminando}
+        loadingText={confirmacion.detectando ? 'Verificando…' : 'Eliminando…'}
+      />
     </>
   )
 }

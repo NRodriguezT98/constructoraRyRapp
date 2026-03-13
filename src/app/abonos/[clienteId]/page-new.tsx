@@ -18,6 +18,7 @@ import {
 import { useParams, useRouter } from 'next/navigation'
 
 import { Button } from '@/components/ui/button'
+import { formatNombreCompleto } from '@/lib/utils/string.utils'
 import { useAbonos } from '@/modules/abonos/hooks'
 import { obtenerHistorialAbonos } from '@/modules/abonos/services/abonos.service'
 import type { AbonoHistorial, FuentePagoConAbonos } from '@/modules/abonos/types'
@@ -117,7 +118,7 @@ export default function ClienteDetallePage() {
   }
 
   const { cliente, vivienda, proyecto, fuentes_pago } = negociacion
-  const nombreCompleto = `${cliente.nombres} ${cliente.apellidos}`.trim()
+  const nombreCompleto = formatNombreCompleto(`${cliente.nombres} ${cliente.apellidos}`)
   const totalAbonado = negociacion.total_abonado || 0
   const saldoPendiente = negociacion.saldo_pendiente || 0
   const valorTotal = negociacion.valor_total || 0

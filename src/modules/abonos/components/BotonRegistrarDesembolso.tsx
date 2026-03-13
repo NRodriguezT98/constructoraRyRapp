@@ -18,7 +18,7 @@ import { useValidacionBotonDesembolso } from '../hooks/useValidacionBotonDesembo
 import type { TipoFuentePago } from '../types'
 
 interface BotonRegistrarDesembolsoProps {
-  negociacionId: string
+  fuenteId: string
   tipoFuente: TipoFuentePago
   fuenteCompletada: boolean
   onClick: () => void
@@ -30,7 +30,7 @@ interface BotonRegistrarDesembolsoProps {
 }
 
 export function BotonRegistrarDesembolso({
-  negociacionId,
+  fuenteId,
   tipoFuente,
   fuenteCompletada,
   onClick,
@@ -41,7 +41,7 @@ export function BotonRegistrarDesembolso({
   },
 }: BotonRegistrarDesembolsoProps) {
   const { habilitado, texto, tooltipMensaje, cargando } = useValidacionBotonDesembolso({
-    negociacionId,
+    fuenteId,
     tipoFuente,
     fuenteCompletada,
   })

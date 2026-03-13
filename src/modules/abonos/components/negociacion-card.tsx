@@ -4,6 +4,7 @@ import { motion } from 'framer-motion'
 import { Building2, CreditCard, Home, MapPin, User } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
+import { formatNombreCompleto } from '@/lib/utils/string.utils'
 
 import { negociacionCardStyles as styles } from '../styles'
 import { NegociacionConAbonos } from '../types'
@@ -30,7 +31,7 @@ export function NegociacionCard({
   const porcentajePagado = negociacion.porcentaje_pagado || 0
 
   // Construir nombre completo del cliente
-  const nombreCompleto = `${cliente.nombres} ${cliente.apellidos}`.trim()
+  const nombreCompleto = formatNombreCompleto(`${cliente.nombres} ${cliente.apellidos}`)
 
   return (
     <motion.div

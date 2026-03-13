@@ -1,11 +1,11 @@
 /**
- * Hook principal para la página de Crear Negociación
- * Orquesta el stepper, form data y navegación entre pasos
+ * Hook principal para la p�gina de Crear Negociaci�n
+ * Orquesta el stepper, form data y navegaci�n entre pasos
  *
- * ⚠️ Reutiliza hooks del modal refactorizado
+ * ?? Reutiliza hooks del modal refactorizado
  */
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 
 import { useRouter } from 'next/navigation'
 
@@ -86,7 +86,7 @@ export function useCrearNegociacionPage({
   const { paso2Valido } = fuentesPago
 
   // ============================================
-  // CÁLCULO DE PROGRESO (Mejora #3)
+  // C�LCULO DE PROGRESO (Mejora #3)
   // ============================================
 
   const progressStep1 = useMemo(() => {
@@ -114,13 +114,13 @@ export function useCrearNegociacionPage({
     if (fuentesHabilitadas === 0) return 0
     if (sumaCierra) return 100
 
-    // Calcular % basado en cuánto falta/sobra
+    // Calcular % basado en cu�nto falta/sobra
     const porcentajeCubierto = (fuentesPago.totalFuentes / valorTotal) * 100
-    return Math.min(porcentajeCubierto, 99) // Máximo 99% si no cierra exacto
+    return Math.min(porcentajeCubierto, 99) // M�ximo 99% si no cierra exacto
   }, [fuentesPago.fuentes, fuentesPago.sumaCierra, fuentesPago.totalFuentes, valorTotal])
 
   // ============================================
-  // VALIDACIÓN DE CAMPOS (Mejora #1)
+  // VALIDACI�N DE CAMPOS (Mejora #1)
   // ============================================
 
   const validacionCampos = useMemo(() => {
@@ -143,7 +143,7 @@ export function useCrearNegociacionPage({
         valido: descuentoAplicado >= 0 && descuentoAplicado < proyectosViviendas.valorNegociado,
         mensaje: descuentoAplicado >= proyectosViviendas.valorNegociado
           ? 'El descuento no puede ser mayor al valor'
-          : 'Descuento válido',
+          : 'Descuento v�lido',
       },
     }
   }, [
@@ -157,17 +157,14 @@ export function useCrearNegociacionPage({
   // EFECTOS
   // ============================================
 
-  // Cargar proyectos al montar
-  useEffect(() => {
-    proyectosViviendas.cargarProyectos()
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  // Proyectos se cargan automáticamente dentro de useProyectosViviendas
 
   // ============================================
-  // NAVEGACIÓN
+  // NAVEGACI�N
   // ============================================
 
   const handleNext = useCallback(() => {
-    // PASO 1: Validar información básica
+    // PASO 1: Validar informaci�n b�sica
     if (currentStep === 1) {
       const errores: string[] = []
 
@@ -214,7 +211,7 @@ export function useCrearNegociacionPage({
       // Validar cada fuente habilitada
       fuentesHabilitadas.forEach((fuente) => {
         if (!fuente.config) {
-          errores.push(`${fuente.tipo}: No está configurada`)
+          errores.push(`${fuente.tipo}: No est� configurada`)
           return
         }
 
@@ -226,13 +223,13 @@ export function useCrearNegociacionPage({
           errores.push(`${nombreFuente}: El monto debe ser mayor a 0`)
         }
 
-        // Validar campos específicos por tipo (excepto Cuota Inicial)
+        // Validar campos espec�ficos por tipo (excepto Cuota Inicial)
         if (fuente.tipo !== 'Cuota Inicial') {
           if (!config.entidad || config.entidad.trim() === '') {
             errores.push(`${nombreFuente}: Debe especificar la entidad (banco o caja)`)
           }
           if (!config.numero_referencia || config.numero_referencia.trim() === '') {
-            errores.push(`${nombreFuente}: Debe especificar el número de referencia o radicado`)
+            errores.push(`${nombreFuente}: Debe especificar el n�mero de referencia o radicado`)
           }
         }
       })
@@ -280,9 +277,9 @@ export function useCrearNegociacionPage({
 
   const handleCancel = useCallback(async () => {
     const confirmed = await confirm({
-      title: '¿Cancelar creación?',
-      message: 'Se perderá toda la información ingresada.',
-      confirmText: 'Cancelar Negociación',
+      title: '�Cancelar creaci�n?',
+      message: 'Se perder� toda la informaci�n ingresada.',
+      confirmText: 'Cancelar Negociaci�n',
       cancelText: 'Continuar Editando',
       variant: 'warning'
     })
@@ -313,8 +310,7 @@ export function useCrearNegociacionPage({
         return
       }
 
-      // Crear negociación con fuentes de pago
-      console.log('📝 Creando negociación desde vista completa...')
+      // Crear negociaci�n con fuentes de pago
       const negociacion = await crearNegociacion({
         cliente_id: clienteId,
         vivienda_id: proyectosViviendas.viviendaId,
@@ -325,19 +321,18 @@ export function useCrearNegociacionPage({
       })
 
       if (!negociacion) {
-        setError(errorHook || 'Error al crear negociación')
+        setError(errorHook || 'Error al crear negociaci�n')
         setCreando(false)
         return
       }
 
-      console.log('✅ Negociación creada exitosamente:', negociacion.id)
 
       // Limpiar y navegar al detalle del cliente
       limpiarHook()
-      router.push(`/clientes/${clienteId}?tab=negociaciones&highlight=${negociacion.id}` as any)
+      router.push(`/clientes/${clienteId}?tab=vivienda-asignada&highlight=${negociacion.id}` as any)
     } catch (err) {
-      console.error('❌ Error creando negociación:', err)
-      setError(err instanceof Error ? err.message : 'Error al crear negociación')
+      console.error('? Error creando negociaci�n:', err)
+      setError(err instanceof Error ? err.message : 'Error al crear negociaci�n')
     } finally {
       setCreando(false)
     }
@@ -388,11 +383,11 @@ export function useCrearNegociacionPage({
     progressStep1,
     progressStep2,
 
-    // Estado de creación
+    // Estado de creaci�n
     creando: creando || creandoHook,
     error: error || errorHook,
 
-    // Navegación
+    // Navegaci�n
     handleNext,
     handleBack,
     handleCancel,

@@ -90,12 +90,6 @@ export const getServerUserProfile = cache(async (): Promise<Usuario | null> => {
         rol = payload.user_rol || 'Vendedor'
         nombres = payload.user_nombres || ''
         email = payload.user_email || user.email || ''
-
-        console.log('✅ [AUTH SERVICE] Claims leídos del JWT:', {
-          rol,
-          nombres,
-          email,
-        })
       }
     } catch (error) {
       console.error('❌ [AUTH SERVICE] Error decodificando JWT:', error)
@@ -108,7 +102,7 @@ export const getServerUserProfile = cache(async (): Promise<Usuario | null> => {
   // si realmente se necesitan mediante query separada y explícita
   const perfil: Partial<Usuario> = {
     id: user.id,
-    rol: rol as 'Administrador' | 'Contador' | 'Supervisor' | 'Gerencia',
+    rol: rol as 'Administrador' | 'Contador' | 'Supervisor' | 'Gerente',
     nombres,
     email,
     // Campos requeridos por tipo Usuario pero no disponibles en JWT:

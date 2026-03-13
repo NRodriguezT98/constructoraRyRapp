@@ -1,4 +1,4 @@
-﻿// ============================================
+// ============================================
 // SERVICE: Documentos Vivienda - Estados de Versión
 // ============================================
 
@@ -14,7 +14,6 @@ export class DocumentosEstadosService {
    * APROBAR VERSIÓN
    */
   static async aprobarVersion(documentoId: string, motivo: string): Promise<void> {
-    console.log('✅ Aprobando versión:', { documentoId, motivo })
 
     // 1. Validar que el documento existe
     const { data: documento, error: fetchError } = await supabase
@@ -63,14 +62,12 @@ export class DocumentosEstadosService {
       console.warn('⚠️ Error al registrar auditoría:', err)
     }
 
-    console.log('✅ Versión aprobada correctamente')
   }
 
   /**
    * RECHAZAR VERSIÓN
    */
   static async rechazarVersion(documentoId: string, motivo: string): Promise<void> {
-    console.log('❌ Rechazando versión:', { documentoId, motivo })
 
     // 1. Validar que el documento existe
     const { data: documento, error: fetchError } = await supabase
@@ -119,7 +116,6 @@ export class DocumentosEstadosService {
       console.warn('⚠️ Error al registrar auditoría:', err)
     }
 
-    console.log('✅ Versión rechazada correctamente')
   }
 
   /**
@@ -130,7 +126,6 @@ export class DocumentosEstadosService {
     nuevoEstado: 'valida' | 'rechazada' | 'aprobada' | 'corregida',
     motivo: string
   ): Promise<void> {
-    console.log('🔄 Marcando estado de versión:', { documentoId, nuevoEstado, motivo })
 
     // 1. Validar que el documento existe
     const { data: documento, error: fetchError } = await supabase
@@ -179,6 +174,5 @@ export class DocumentosEstadosService {
       console.warn('⚠️ Error al registrar auditoría:', err)
     }
 
-    console.log('✅ Estado de versión actualizado correctamente')
   }
 }

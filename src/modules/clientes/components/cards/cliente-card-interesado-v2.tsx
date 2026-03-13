@@ -73,7 +73,7 @@ export function ClienteCardInteresado({
       {/* Glow effect */}
       <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/20 to-blue-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
-      <div className="relative z-10 p-4 flex flex-col min-h-[500px]">
+      <div className="relative z-10 p-4 flex flex-col">
 
         {/* Contenido con flex-1 para que ocupe espacio disponible */}
         <div className="flex-1 space-y-3">
@@ -128,7 +128,7 @@ export function ClienteCardInteresado({
           {/* Fila 2: Badge */}
           <div className="flex justify-end">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600 text-white text-xs font-bold shadow-md shadow-cyan-500/50">
-              <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+              <div className="w-1.5 h-1.5 rounded-full bg-white" />
               INTERESADO
             </span>
           </div>

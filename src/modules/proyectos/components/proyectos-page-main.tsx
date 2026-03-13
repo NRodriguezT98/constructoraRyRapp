@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useState } from 'react'
 
@@ -398,8 +398,6 @@ export function ProyectosPage({
               presupuesto: proyectoConValidacion.presupuesto,
               estado: proyectoConValidacion.estado,
               responsable: proyectoConValidacion.responsable,
-              telefono: proyectoConValidacion.telefono,
-              email: proyectoConValidacion.email,
               // ✅ Manzanas CON validación pre-cargada (sin queries adicionales)
               manzanas: proyectoConValidacion.manzanas.map(m => ({
                 id: m.id,

@@ -71,13 +71,13 @@ export interface FuentePago {
   negociacion_id: string
   tipo: TipoFuentePago
   monto_aprobado: number
-  monto_recibido: number
-  saldo_pendiente: number
-  porcentaje_completado: number
+  monto_recibido: number | null
+  saldo_pendiente: number | null
+  porcentaje_completado: number | null
 
   // Detalles
-  entidad: string
-  numero_referencia: string
+  entidad: string | null
+  numero_referencia: string | null
 
   // Comportamiento
   permite_multiples_abonos: boolean
@@ -92,6 +92,7 @@ export interface FuentePago {
 
   // Estado
   estado: EstadoFuentePago
+  estado_fuente?: string | null // Para compatibilidad con BD
   fecha_completado: string | null
   fecha_creacion: string
   fecha_actualizacion: string

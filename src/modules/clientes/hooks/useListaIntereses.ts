@@ -3,7 +3,7 @@
  *
  * Gestiona la lista de intereses de un cliente con acciones.
  *
- * ⚠️ NOMBRES DE CAMPOS VERIFICADOS EN: docs/DATABASE-SCHEMA-REFERENCE.md
+ * âš ï¸ NOMBRES DE CAMPOS VERIFICADOS EN: docs/DATABASE-SCHEMA-REFERENCE.md
  *
  * Campos usados de cliente_intereses:
  * - id, cliente_id, proyecto_id, vivienda_id
@@ -56,11 +56,10 @@ export function useListaIntereses(clienteId: string): UseListaInteresesReturn {
    */
   const cargarIntereses = useCallback(async () => {
     if (!clienteId) {
-      console.warn('⚠️ useListaIntereses: clienteId no proporcionado')
+      console.warn('âš ï¸ useListaIntereses: clienteId no proporcionado')
       return
     }
 
-    console.log('🔄 Cargando intereses del cliente:', clienteId)
     setLoading(true)
     setError(null)
 
@@ -68,12 +67,11 @@ export function useListaIntereses(clienteId: string): UseListaInteresesReturn {
       // Obtener todos los intereses (activos y descartados)
       const data = await interesesService.obtenerInteresesCliente(clienteId, false)
 
-      console.log('✅ Intereses cargados:', data.length)
       setIntereses(data)
       setInteresesFiltrados(data) // Inicialmente sin filtro
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'Error al cargar intereses'
-      console.error('❌ Error cargando intereses:', err)
+      console.error('âŒ Error cargando intereses:', err)
       setError(errorMsg)
       setIntereses([])
       setInteresesFiltrados([])
@@ -86,16 +84,14 @@ export function useListaIntereses(clienteId: string): UseListaInteresesReturn {
    * Descartar un interés (cambiar estado a 'Descartado')
    */
   const descartarInteres = useCallback(async (interesId: string, motivo?: string) => {
-    console.log('🗑️ Descartando interés:', interesId)
 
     try {
       await interesesService.descartarInteres(interesId, motivo)
-      console.log('✅ Interés descartado exitosamente')
 
       // Recargar lista
       await cargarIntereses()
     } catch (err) {
-      console.error('❌ Error descartando interés:', err)
+      console.error('âŒ Error descartando interés:', err)
       throw err
     }
   }, [cargarIntereses])
@@ -104,7 +100,6 @@ export function useListaIntereses(clienteId: string): UseListaInteresesReturn {
    * Filtrar por estado
    */
   const filtrarPorEstado = useCallback((estado: string | null) => {
-    console.log('🔍 Filtrando por estado:', estado || 'Todos')
     setEstadoFiltro(estado)
 
     if (!estado) {

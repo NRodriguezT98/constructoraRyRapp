@@ -34,7 +34,7 @@ export function DocumentoDetalleRender({ registro }: DocumentoDetalleRenderProps
         datosAnteriores={registro.datosAnteriores}
         datosNuevos={registro.datosNuevos}
         usuarioEmail={registro.usuarioEmail}
-        usuarioNombres={registro.usuarioNombres}
+        usuarioNombres={registro.usuarioNombres ?? undefined}
         fechaEvento={registro.fechaEvento}
       />
     )

@@ -16,10 +16,11 @@
 import { useEffect, useState } from 'react'
 
 import { fuentesPagoService } from '@/modules/clientes/services/fuentes-pago.service'
+import type { TipoFuentePago } from '@/modules/clientes/types'
 
 export interface FuentePago {
   id?: string
-  tipo: 'Cuota Inicial' | 'Crédito Hipotecario' | 'Subsidio Mi Casa Ya' | 'Subsidio Caja Compensación'
+  tipo: TipoFuentePago
   monto_aprobado: number
   entidad?: string
   numero_referencia?: string
@@ -154,21 +155,34 @@ export function useConfigurarFuentesPago({
 
   /**
    * Eliminar una fuente de pago
+   * Marca como inactiva en lugar de eliminar permanentemente
    */
   const eliminarFuente = async (index: number) => {
     const fuente = fuentesPago[index]
 
-    // Si tiene ID, eliminar de la BD
+    // Si tiene ID, inactivar en la BD
     if (fuente.id) {
       try {
-        await fuentesPagoService.eliminarFuentePago(fuente.id)
+        // Usar inactivarFuentePago en lugar de eliminar
+        await fuentesPagoService.inactivarFuentePago(
+          fuente.id,
+          'Fuente eliminada por el usuario'
+        )
       } catch (err: any) {
-        setError(`Error eliminando fuente: ${err.message}`)
+        // Mostrar error amigable
+        if (err.message.includes('ya ha recibido')) {
+          setError(
+            `⚠️ No se puede eliminar esta fuente porque ya ha recibido dinero. ` +
+            `Para mantener la integridad del historial de abonos, esta fuente debe permanecer activa.`
+          )
+        } else {
+          setError(`Error eliminando fuente: ${err.message}`)
+        }
         return
       }
     }
 
-    // Eliminar del estado
+    // Eliminar del estado local
     setFuentesPago(fuentesPago.filter((_, i) => i !== index))
     setError(null)
   }

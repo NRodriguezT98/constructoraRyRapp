@@ -1,20 +1,20 @@
 /**
- * Página: Crear Negociación - REDISEÑADA ✨
+ * P�gina: Crear Negociaci�n - REDISE�ADA ?
  *
- * Vista completa para crear negociación con 3 pasos:
- * 1. Información Básica (Cliente, Vivienda, Valores)
- * 2. Fuentes de Pago (Configuración completa del financiamiento)
- * 3. Revisión y Confirmación
+ * Vista completa para crear negociaci�n con 3 pasos:
+ * 1. Informaci�n B�sica (Cliente, Vivienda, Valores)
+ * 2. Fuentes de Pago (Configuraci�n completa del financiamiento)
+ * 3. Revisi�n y Confirmaci�n
  *
- * ✨ MEJORAS IMPLEMENTADAS:
- * - #1: Validación en tiempo real con feedback visual
+ * ? MEJORAS IMPLEMENTADAS:
+ * - #1: Validaci�n en tiempo real con feedback visual
  * - #2: Sidebar sticky con resumen financiero siempre visible
  * - #3: Progreso visual por paso con barras de completitud
- * - Diseño minimalista y moderno
+ * - Dise�o minimalista y moderno
  * - Grid layout con sidebar
  *
- * ⚠️ ARQUITECTURA LIMPIA:
- * - Lógica: hooks/useCrearNegociacionPage.ts
+ * ?? ARQUITECTURA LIMPIA:
+ * - L�gica: hooks/useCrearNegociacionPage.ts
  * - UI Componentes: components/
  * - Estilos: styles.ts
  * - Reutiliza: Hooks y componentes del modal refactorizado
@@ -151,6 +151,8 @@ export function CrearNegociacionPage({
                     totalFuentes={page.totalFuentes}
                     diferencia={page.diferencia}
                     sumaCierra={page.sumaCierra}
+                    clienteId={clienteId}
+                    clienteNombre={clienteNombre ?? ''}
                     onFuenteEnabledChange={page.handleFuenteEnabledChange}
                     onFuenteConfigChange={page.handleFuenteConfigChange}
                   />
@@ -176,7 +178,7 @@ export function CrearNegociacionPage({
                 )}
               </AnimatePresence>
 
-              {/* Footer de Navegación */}
+              {/* Footer de Navegaci�n */}
               <FooterNegociacion
                 currentStep={page.currentStep}
                 paso1Valido={page.paso1Valido}

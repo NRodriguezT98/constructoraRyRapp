@@ -76,9 +76,10 @@ export function useDocumentosEliminados() {
         queryClient.refetchQueries({ queryKey: ['versiones-eliminadas-vivienda'] }), // ← Versiones en papelera
       ])
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       console.error('Error al restaurar documento:', error)
-      toast.error(error?.message || 'Error al restaurar el documento')
+      const msg = error instanceof Error ? error.message : 'Error al restaurar el documento'
+      toast.error(msg)
     },
   })
 
@@ -90,9 +91,10 @@ export function useDocumentosEliminados() {
       toast.success('🗑️ Documento eliminado permanentemente')
       queryClient.invalidateQueries({ queryKey: ['documentos-vivienda-eliminados'] })
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       console.error('Error al eliminar definitivamente:', error)
-      toast.error(error?.message || 'Error al eliminar el documento')
+      const msg = error instanceof Error ? error.message : 'Error al eliminar el documento'
+      toast.error(msg)
     },
   })
 

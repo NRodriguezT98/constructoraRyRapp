@@ -2,5 +2,5 @@
 // BARREL EXPORT: Hooks de Documentos Cliente
 // ============================================
 
-export { useCategoriasCliente } from './useCategoriasCliente';
-// ❌ ELIMINADO: useDocumentosListaCliente (migrado a sistema genérico)
+export { useCategoriasCliente } from './useCategoriasCliente'
+export { useDocumentosListaCliente } from './useDocumentosListaCliente'

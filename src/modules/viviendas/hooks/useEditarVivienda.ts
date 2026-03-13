@@ -1,9 +1,9 @@
 /**
  * useEditarVivienda - Hook PROFESIONAL para edición de viviendas
- * ✅ React Hook Form con Zod validation
- * ✅ React Query para mutations y cache
- * ✅ Wizard multi-paso con validación por paso
- * ✅ Separación de responsabilidades ESTRICTA
+ * âœ… React Hook Form con Zod validation
+ * âœ… React Query para mutations y cache
+ * âœ… Wizard multi-paso con validación por paso
+ * âœ… Separación de responsabilidades ESTRICTA
  */
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
@@ -35,7 +35,7 @@ import {
 } from './useViviendasQuery'
 
 // ==================== SCHEMAS POR PASO ====================
-// ✅ Importados desde archivo compartido (DRY principle)
+// âœ… Importados desde archivo compartido (DRY principle)
 
 type FormData = ViviendaSchemaType// ==================== PASOS ====================
 
@@ -96,7 +96,7 @@ export function useEditarVivienda({ vivienda, onSuccess, onCancel }: UseEditarVi
     reset,
     setError,
   } = useForm<FormData>({
-    resolver: zodResolver(viviendaFullSchema),
+    resolver: zodResolver(viviendaFullSchema) as any,
     mode: 'onChange',
     defaultValues: {
       proyecto_id: '',
@@ -108,8 +108,8 @@ export function useEditarVivienda({ vivienda, onSuccess, onCancel }: UseEditarVi
       lindero_occidente: '',
       matricula_inmobiliaria: '',
       nomenclatura: '',
-      area_lote: '',
-      area_construida: '',
+      area_lote: 0,
+      area_construida: 0,
       tipo_vivienda: '',
       valor_base: 0,
       es_esquinera: false,
@@ -132,15 +132,15 @@ export function useEditarVivienda({ vivienda, onSuccess, onCancel }: UseEditarVi
         lindero_occidente: vivienda.lindero_occidente || '',
         matricula_inmobiliaria: vivienda.matricula_inmobiliaria || '',
         nomenclatura: vivienda.nomenclatura || '',
-        area_lote: String(vivienda.area_lote || ''),
-        area_construida: String(vivienda.area_construida || ''),
+        area_lote: vivienda.area_lote || 0,
+        area_construida: vivienda.area_construida || 0,
         tipo_vivienda: vivienda.tipo_vivienda || '',
         valor_base: vivienda.valor_base || 0,
         es_esquinera: vivienda.es_esquinera || false,
         recargo_esquinera: vivienda.recargo_esquinera || 0,
       })
 
-      // ✅ Solo marcar paso 1 como completado (ubicación no editable)
+      // âœ… Solo marcar paso 1 como completado (ubicación no editable)
       // Los demás pasos requieren validación manual antes de avanzar
       setPasosCompletados([1])
     }
@@ -206,7 +206,7 @@ export function useEditarVivienda({ vivienda, onSuccess, onCancel }: UseEditarVi
   }, [vivienda, formData])
 
   // ============================================
-  // CONFIGURACIÓN DEL PASO ACTUAL
+  // CONFIGURACIÃ“N DEL PASO ACTUAL
   // ============================================
   const pasoActualConfig = PASOS.find((p) => p.id === pasoActual) || PASOS[0]
   const totalPasos = PASOS.length
@@ -215,13 +215,13 @@ export function useEditarVivienda({ vivienda, onSuccess, onCancel }: UseEditarVi
   const esUltimoPaso = pasoActual === totalPasos
 
   // ============================================
-  // VALIDACIÓN POR PASO
+  // VALIDACIÃ“N POR PASO
   // ============================================
   const validarPasoActual = useCallback(async (): Promise<boolean> => {
     const pasoConfig = PASOS.find((p) => p.id === pasoActual)
     if (!pasoConfig) return true
 
-    // ✅ PASO 1 en modo edición: Ya está validado (datos existentes, no modificables)
+    // âœ… PASO 1 en modo edición: Ya está validado (datos existentes, no modificables)
     if (pasoActual === 1 && vivienda) {
       return true
     }
@@ -229,7 +229,7 @@ export function useEditarVivienda({ vivienda, onSuccess, onCancel }: UseEditarVi
     // Validar con el schema del paso
     const valido = await trigger(Object.keys(pasoConfig.schema.shape) as any)
 
-    // ✅ Validaciones adicionales para paso 3: Ejecutar en PARALELO
+    // âœ… Validaciones adicionales para paso 3: Ejecutar en PARALELO
     if (pasoActual === 3 && valido) {
       const erroresEncontrados: Array<{ campo: string; mensaje: string }> = []
 
@@ -267,7 +267,7 @@ export function useEditarVivienda({ vivienda, onSuccess, onCancel }: UseEditarVi
         }
       }
 
-      // ✅ Setear TODOS los errores al mismo tiempo
+      // âœ… Setear TODOS los errores al mismo tiempo
       if (erroresEncontrados.length > 0) {
         erroresEncontrados.forEach((error) => {
           setError(error.campo as any, {
@@ -283,7 +283,7 @@ export function useEditarVivienda({ vivienda, onSuccess, onCancel }: UseEditarVi
   }, [pasoActual, trigger, getValues, vivienda])
 
   // ============================================
-  // NAVEGACIÓN
+  // NAVEGACIÃ“N
   // ============================================
   const irSiguiente = useCallback(async () => {
     const valido = await validarPasoActual()
@@ -307,10 +307,10 @@ export function useEditarVivienda({ vivienda, onSuccess, onCancel }: UseEditarVi
   }, [pasoActual])
 
   const irAPaso = useCallback((paso: number) => {
-    // ✅ Solo permitir ir a:
+    // âœ… Solo permitir ir a:
     // 1. Pasos completados (hacia atrás o cualquier paso ya validado)
     // 2. El paso actual
-    // ❌ NO permitir saltar hacia adelante sin validar
+    // âŒ NO permitir saltar hacia adelante sin validar
     if (pasosCompletados.includes(paso) || paso === pasoActual) {
       setPasoActual(paso)
     } else {
@@ -325,7 +325,6 @@ export function useEditarVivienda({ vivienda, onSuccess, onCancel }: UseEditarVi
   // ============================================
   // Mostrar modal de confirmación en lugar de guardar directamente
   const mostrarConfirmacion = useCallback(() => {
-    console.log('🔵 mostrarConfirmacion llamado')
     setMostrarModalConfirmacion(true)
   }, [])
 
@@ -359,7 +358,7 @@ export function useEditarVivienda({ vivienda, onSuccess, onCancel }: UseEditarVi
           data: updateData,
         })
 
-        // Éxito
+        // Ã‰xito
         setHayFormularioConCambios(false)
         setMostrarModalConfirmacion(false)
         onSuccess?.(viviendaActualizada)

@@ -1,6 +1,6 @@
 /**
  * ============================================
- * SCRIPT DE MIGRACIÓN A SISTEMA DE THEMING
+ * SCRIPT DE MIGRACIÃ“N A SISTEMA DE THEMING
  * ============================================
  *
  * Este script ayuda a refactorizar componentes que tienen
@@ -74,7 +74,7 @@ export const colorMigrationMap = {
 }
 
 // ===========================
-// CHECKLIST DE MIGRACIÓN
+// CHECKLIST DE MIGRACIÃ“N
 // ===========================
 export const migrationChecklist = [
   '[ ] Agregar import: import { moduleThemes, type ModuleName } from "@/shared/config/module-themes"',
@@ -90,7 +90,7 @@ export const migrationChecklist = [
 ]
 
 // ===========================
-// EJEMPLO DE REFACTORIZACIÓN
+// EJEMPLO DE REFACTORIZACIÃ“N
 // ===========================
 export const migrationExample = {
   before: `
@@ -229,7 +229,3 @@ export function [COMPONENT_NAME]({
 }
 `
 
-console.log('✅ Guía de migración a sistema de theming cargada')
-console.log('📋 Checklist:', migrationChecklist.length, 'pasos')
-console.log('🔄 Patrones comunes:', Object.keys(commonPatterns).length)
-console.log('📦 Componentes pendientes:', pendingComponents.length)

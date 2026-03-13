@@ -43,6 +43,7 @@ export type EstadoNegociacion =
  */
 export interface AbonoHistorial {
   id: string;
+  numero_recibo: number;
   negociacion_id: string;
   fuente_pago_id: string;
   monto: number;

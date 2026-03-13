@@ -18,7 +18,9 @@ import {
     CheckCircle2,
     Edit,
     Eye,
+    Hash,
     Home,
+    Layers,
     MapPin,
     Trash2,
     TrendingUp,
@@ -94,7 +96,7 @@ export function ClienteCardActivo({
       {/* Glow effect */}
       <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/20 to-teal-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
-      <div className="relative z-10 p-4 flex flex-col min-h-[500px]">
+      <div className="relative z-10 p-4 flex flex-col">
 
         {/* Contenido con flex-1 para que ocupe espacio disponible */}
         <div className="flex-1 space-y-3">
@@ -149,7 +151,7 @@ export function ClienteCardActivo({
           {/* Fila 2: Badge */}
           <div className="flex justify-end">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 text-white text-xs font-bold shadow-md shadow-emerald-500/50">
-              <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+              <div className="w-1.5 h-1.5 rounded-full bg-white" />
               ACTIVO
             </span>
           </div>
@@ -185,7 +187,7 @@ export function ClienteCardActivo({
             </div>
             {/* Manzana */}
             <div className="flex items-center gap-1.5">
-              <Home className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
+              <Layers className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
               <div>
                 <p className="text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wide">Manzana</p>
                 <p className="text-sm font-bold text-gray-900 dark:text-white">{datosVivienda.manzana}</p>
@@ -193,7 +195,7 @@ export function ClienteCardActivo({
             </div>
             {/* Casa */}
             <div className="flex items-center gap-1.5">
-              <Home className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
+              <Hash className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
               <div>
                 <p className="text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wide">Casa</p>
                 <p className="text-sm font-bold text-gray-900 dark:text-white">#{datosVivienda.numero}</p>

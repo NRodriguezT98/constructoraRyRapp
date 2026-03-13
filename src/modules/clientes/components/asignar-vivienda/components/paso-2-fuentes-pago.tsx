@@ -1,15 +1,19 @@
-﻿'use client'
+'use client'
 
 import { motion } from 'framer-motion'
 import { AlertCircle, CheckCircle2, DollarSign, Info } from 'lucide-react'
+import { useCallback } from 'react'
 
 import { FuentePagoCard } from '@/modules/clientes/components/fuente-pago-card'
 import type { TipoFuentePago } from '@/modules/clientes/types'
+import { useTiposFuentesConCampos } from '@/modules/configuracion/hooks/useTiposFuentesConCampos'
 
 import { pageStyles as s } from '@/modules/clientes/pages/asignar-vivienda/styles'
 import type { FuentePagoConfig, FuentePagoConfiguracion, FuentePagoErrores } from '../types'
 
 interface Paso2FuentesPagoProps {
+  // 🔥 Estado de carga
+  cargandoTipos?: boolean
   fuentes: FuentePagoConfiguracion[]
   valorTotal: number
   totalFuentes: number
@@ -17,19 +21,16 @@ interface Paso2FuentesPagoProps {
   sumaCierra: boolean
   erroresFuentes?: Record<TipoFuentePago, FuentePagoErrores>
   mostrarErrores?: boolean
-  // ⭐ Props para upload de documentos
   clienteId: string
   clienteNombre: string
   manzana?: string
   numeroVivienda?: string
-  // ⭐ Props para documentos pendientes
-  tieneCartasAhora?: Record<TipoFuentePago, boolean>
   onFuenteEnabledChange: (tipo: TipoFuentePago, enabled: boolean) => void
   onFuenteConfigChange: (tipo: TipoFuentePago, config: FuentePagoConfig | null) => void
-  onTieneCartaAhoraChange?: (tipo: TipoFuentePago, tiene: boolean) => void
 }
 
 export function Paso2FuentesPago({
+  cargandoTipos = false,
   fuentes,
   valorTotal,
   totalFuentes,
@@ -41,11 +42,24 @@ export function Paso2FuentesPago({
   clienteNombre,
   manzana,
   numeroVivienda,
-  tieneCartasAhora,
   onFuenteEnabledChange,
   onFuenteConfigChange,
-  onTieneCartaAhoraChange,
 }: Paso2FuentesPagoProps) {
+  // ============================================
+  // REACT QUERY: CARGAR CONFIGURACIÓN DE CAMPOS
+  // ============================================
+
+  const { data: tiposConCampos = [], isLoading: cargandoCampos } = useTiposFuentesConCampos()
+
+  // ✅ Memoizar callbacks para evitar re-renders innecesarios
+  const handleEnabledChange = useCallback((tipo: TipoFuentePago) => {
+    return (enabled: boolean) => onFuenteEnabledChange(tipo, enabled)
+  }, [onFuenteEnabledChange])
+
+  const handleConfigChange = useCallback((tipo: TipoFuentePago) => {
+    return (config: FuentePagoConfig | null) => onFuenteConfigChange(tipo, config)
+  }, [onFuenteConfigChange])
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
@@ -61,26 +75,56 @@ export function Paso2FuentesPago({
         </p>
       </div>
 
-      <div className="space-y-3">
-        {fuentes.map((fuente) => (
-          <FuentePagoCard
-            key={fuente.tipo}
-            tipo={fuente.tipo}
-            config={fuente.config}
-            enabled={fuente.enabled}
-            valorTotal={valorTotal}
-            errores={mostrarErrores ? erroresFuentes?.[fuente.tipo] : undefined}
-            clienteId={clienteId}
-            clienteNombre={clienteNombre}
-            manzana={manzana}
-            numeroVivienda={numeroVivienda}
-            tieneCartaAhora={tieneCartasAhora?.[fuente.tipo]}
-            onEnabledChange={(enabled) => onFuenteEnabledChange(fuente.tipo, enabled)}
-            onChange={(config) => onFuenteConfigChange(fuente.tipo, config)}
-            onTieneCartaAhoraChange={(tiene) => onTieneCartaAhoraChange?.(fuente.tipo, tiene)}
-          />
-        ))}
-      </div>
+      {/* 🔥 Estado de carga de fuentes desde BD */}
+      {(cargandoTipos || cargandoCampos) && (
+        <div className="backdrop-blur-xl bg-white/80 dark:bg-gray-800/80 border border-cyan-200/50 dark:border-cyan-800/50 rounded-lg p-4 shadow-lg">
+          <div className="flex items-center gap-3">
+            <div className="w-5 h-5 border-3 border-cyan-500 border-t-transparent rounded-full animate-spin" />
+            <p className="text-sm text-cyan-700 dark:text-cyan-300 font-medium">
+              {cargandoTipos
+                ? 'Cargando fuentes de pago activas desde el sistema...'
+                : 'Cargando configuración de campos dinámicos...'}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* 🔥 Lista dinámica de fuentes */}
+      {!cargandoTipos && fuentes.length === 0 && (
+        <div className="backdrop-blur-xl bg-yellow-50/90 dark:bg-yellow-950/30 border border-yellow-200/50 dark:border-yellow-800/50 rounded-lg p-4 shadow-lg">
+          <p className="text-sm text-yellow-800 dark:text-yellow-200">
+            ⚠️ No hay fuentes de pago activas configuradas. Contacta al administrador.
+          </p>
+        </div>
+      )}
+
+      {!cargandoTipos && !cargandoCampos && fuentes.length > 0 && (
+        <div className="space-y-3">
+          {fuentes.map((fuente) => {
+            // ✅ Obtener configuración de campos para este tipo
+            const tipoConCampos = tiposConCampos.find(t => t.nombre === fuente.tipo)
+            const camposConfig = tipoConCampos?.configuracion_campos?.campos || []
+
+            return (
+              <FuentePagoCard
+                key={fuente.tipo}
+                tipo={fuente.tipo}
+                config={fuente.config}
+                camposConfig={camposConfig} // ← Pasar configuración dinámica
+                enabled={fuente.enabled}
+                valorTotal={valorTotal}
+                errores={mostrarErrores ? erroresFuentes?.[fuente.tipo] : undefined}
+                clienteId={clienteId}
+                clienteNombre={clienteNombre}
+                manzana={manzana}
+                numeroVivienda={numeroVivienda}
+                onEnabledChange={handleEnabledChange(fuente.tipo)}
+                onChange={handleConfigChange(fuente.tipo)}
+              />
+            )
+          })}
+        </div>
+      )}
 
       <div
         className={`rounded-xl border-2 p-4 transition-all backdrop-blur-xl ${

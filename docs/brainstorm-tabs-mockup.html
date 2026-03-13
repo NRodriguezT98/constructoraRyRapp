@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Brainstorm — Detalle del Cliente</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #f1f5f9; color: #1e293b; padding: 32px 24px; }
+    h1 { font-size: 22px; font-weight: 800; margin-bottom: 4px; color: #0f172a; }
+    .subtitle { font-size: 13px; color: #64748b; margin-bottom: 40px; }
+
+    .section-title { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #94a3b8; margin-bottom: 16px; margin-top: 40px; }
+    .section-title:first-of-type { margin-top: 0; }
+
+    /* ─── Browser chrome ─── */
+    .browser { background: #fff; border-radius: 14px; box-shadow: 0 4px 24px rgba(0,0,0,0.10); overflow: hidden; margin-bottom: 12px; }
+    .browser-bar { background: #f8fafc; border-bottom: 1px solid #e2e8f0; padding: 10px 16px; display: flex; align-items: center; gap: 8px; }
+    .dot { width: 11px; height: 11px; border-radius: 50%; }
+    .dot.r { background: #f87171; }
+    .dot.y { background: #fbbf24; }
+    .dot.g { background: #34d399; }
+    .url { font-size: 11px; color: #94a3b8; background: #f1f5f9; padding: 4px 12px; border-radius: 6px; margin-left: 8px; }
+
+    /* ─── Mini header ─── */
+    .client-header { background: linear-gradient(135deg, #0891b2 0%, #2563eb 60%, #1e40af 100%); padding: 16px 20px; }
+    .client-name { font-size: 18px; font-weight: 800; color: #fff; }
+    .client-sub { font-size: 12px; color: rgba(255,255,255,0.65); margin-top: 2px; }
+
+    /* ─── Tab bars ─── */
+    .tab-bar { display: flex; gap: 4px; padding: 10px 16px 0; background: #fff; border-bottom: 2px solid #e2e8f0; overflow-x: auto; }
+    .tab { font-size: 12px; font-weight: 600; padding: 8px 14px; border-radius: 8px 8px 0 0; cursor: pointer; white-space: nowrap; display: flex; align-items: center; gap: 6px; color: #64748b; border: 1.5px solid transparent; border-bottom: none; position: relative; bottom: -2px; }
+    .tab.active { background: #fff; border-color: #e2e8f0; color: #0891b2; border-bottom-color: #fff; }
+    .tab.problem { background: #fef3c7; border-color: #fcd34d; color: #92400e; }
+    .tab.merged { background: #ecfdf5; border-color: #6ee7b7; color: #065f46; }
+    .badge { font-size: 10px; background: #0891b2; color: #fff; border-radius: 99px; padding: 1px 6px; }
+    .badge.warn { background: #f97316; }
+    .badge.new { background: #10b981; }
+
+    /* ─── Content panels ─── */
+    .content { padding: 16px 20px; background: #f8fafc; min-height: 120px; }
+    .content-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .card { background: #fff; border-radius: 10px; border: 1px solid #e2e8f0; padding: 12px 14px; }
+    .card-title { font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
+    .field { font-size: 12px; color: #334155; margin-bottom: 4px; }
+    .field span { font-weight: 600; color: #0f172a; }
+
+    .overlap-box { background: #fef3c7; border: 1.5px dashed #fcd34d; border-radius: 10px; padding: 12px 14px; font-size: 12px; color: #92400e; display: flex; align-items: flex-start; gap: 8px; }
+    .overlap-icon { font-size: 18px; flex-shrink: 0; }
+    .green-box { background: #ecfdf5; border: 1.5px solid #6ee7b7; border-radius: 10px; padding: 12px 14px; font-size: 12px; color: #065f46; }
+    .inner-tab-bar { display: flex; gap: 4px; margin-bottom: 10px; }
+    .inner-tab { font-size: 11px; font-weight: 600; padding: 5px 12px; border-radius: 6px; background: #f1f5f9; color: #64748b; cursor: pointer; }
+    .inner-tab.active { background: #0891b2; color: #fff; }
+
+    /* ─── Comparison table ─── */
+    .compare { width: 100%; border-collapse: collapse; font-size: 12px; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+    .compare th { background: #0f172a; color: #fff; padding: 10px 14px; text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; }
+    .compare td { padding: 10px 14px; border-bottom: 1px solid #f1f5f9; vertical-align: top; }
+    .compare tr:last-child td { border-bottom: none; }
+    .compare tr:hover td { background: #f8fafc; }
+    .pill { display: inline-block; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 99px; }
+    .pill.red { background: #fee2e2; color: #b91c1c; }
+    .pill.green { background: #dcfce7; color: #166534; }
+    .pill.yellow { background: #fef3c7; color: #92400e; }
+
+    /* ─── Legend ─── */
+    .legend { display: flex; gap: 16px; font-size: 11px; color: #64748b; margin-top: 8px; flex-wrap: wrap; }
+    .legend-item { display: flex; align-items: center; gap: 5px; }
+    .legend-dot { width: 10px; height: 10px; border-radius: 3px; }
+
+    /* ─── Proposal cards ─── */
+    .proposals { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+    .proposal { background: #fff; border-radius: 12px; border: 2px solid #e2e8f0; padding: 16px; }
+    .proposal.recommended { border-color: #0891b2; box-shadow: 0 0 0 3px rgba(8,145,178,0.12); }
+    .proposal-label { font-size: 10px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: #94a3b8; margin-bottom: 8px; }
+    .proposal-label.rec { color: #0891b2; }
+    .proposal-title { font-size: 14px; font-weight: 800; color: #0f172a; margin-bottom: 8px; }
+    .proposal-tabs { display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; }
+    .ptab { font-size: 11px; padding: 4px 8px; border-radius: 5px; color: #334155; background: #f8fafc; border: 1px solid #e2e8f0; }
+    .ptab.removed { text-decoration: line-through; color: #94a3b8; background: #f8fafc; border-style: dashed; }
+    .ptab.new-tab { background: #ecfdf5; border-color: #6ee7b7; color: #065f46; font-weight: 700; }
+    .ptab.inner { margin-left: 16px; background: #f0f9ff; border-color: #bae6fd; font-size: 10px; color: #0369a1; }
+    .pro { font-size: 11px; color: #166534; margin-top: 4px; }
+    .con { font-size: 11px; color: #9f1239; margin-top: 2px; }
+    .pro::before { content: "✓ "; }
+    .con::before { content: "✗ "; }
+
+    @media (max-width: 800px) { .proposals { grid-template-columns: 1fr; } .content-grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+
+<h1>Detalle del Cliente — Brainstorm de Pestañas</h1>
+<p class="subtitle">Análisis visual del estado actual y opciones de rediseño</p>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<p class="section-title">Estado Actual — 6 Pestañas</p>
+
+<div class="browser">
+  <div class="browser-bar">
+    <div class="dot r"></div><div class="dot y"></div><div class="dot g"></div>
+    <div class="url">localhost:3000/clientes/pedro-perez-af1b4e40</div>
+  </div>
+  <div class="client-header">
+    <div class="client-name">Pedro Perez <span style="font-size:11px;background:rgba(255,255,255,0.2);padding:2px 10px;border-radius:99px;margin-left:8px;">Activo</span></div>
+    <div class="client-sub">CC 12345678 &nbsp;·&nbsp; 🏠 Mza. A · Casa 1 | Las Américas 2</div>
+  </div>
+  <div class="tab-bar">
+    <div class="tab active">👤 Información General</div>
+    <div class="tab">❤️ Intereses <span class="badge">1</span></div>
+    <div class="tab problem">🏠 Vivienda Asignada <span class="badge warn">!</span></div>
+    <div class="tab problem">💲 Fuentes de Pago</div>
+    <div class="tab">📄 Documentos <span class="badge">3</span></div>
+    <div class="tab">🕐 Historial</div>
+  </div>
+  <div class="content">
+    <div class="overlap-box">
+      <div class="overlap-icon">⚠️</div>
+      <div>
+        <strong>Solapamiento detectado:</strong> tanto "Vivienda Asignada" como "Fuentes de Pago" operan sobre el mismo objeto: <code>negociacion</code>.
+        El usuario debe saltar entre dos pestañas para ver progreso financiero y luego editar las fuentes que lo generan.
+        No hay diferencia de dominio — es el mismo flujo fragmentado en dos URLs.
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="margin-bottom: 8px;">
+  <table class="compare">
+    <thead>
+      <tr><th>Pestaña</th><th>Qué muestra</th><th>Objeto principal</th><th>¿Tiene acción propia?</th><th>Diagnóstico</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><strong>Información General</strong></td><td>Nombre, doc, contacto, notas, resumen financiero</td><td>Cliente</td><td>Editar cliente</td><td><span class="pill green">✓ Única</span></td></tr>
+      <tr><td><strong>Intereses</strong></td><td>Proyectos/viviendas que interesaron antes de comprar</td><td>Interes[]</td><td>Registrar / Descartar interés</td><td><span class="pill green">✓ Única</span></td></tr>
+      <tr style="background:#fef9ec;"><td><strong>Vivienda Asignada</strong></td><td>Casa + <u>fuentes de pago</u> + abonos + barra de progreso + métricas</td><td>Negociacion</td><td>Ver historial abonos</td><td><span class="pill red">✗ Solapada</span></td></tr>
+      <tr style="background:#fef9ec;"><td><strong>Fuentes de Pago</strong></td><td><u>Mismas fuentes</u> + otra MetricasDashboard + editar/agregar fuentes</td><td>Negociacion</td><td>Editar / Agregar fuente</td><td><span class="pill red">✗ Solapada</span></td></tr>
+      <tr><td><strong>Documentos</strong></td><td>PDFs: cédula, contratos, escrituras, cartas</td><td>Documento[]</td><td>Subir / Eliminar / Reemplazar</td><td><span class="pill green">✓ Única</span></td></tr>
+      <tr><td><strong>Historial</strong></td><td>Audit log de todos los eventos del cliente</td><td>AuditLog[]</td><td>Agregar nota</td><td><span class="pill green">✓ Única</span></td></tr>
+    </tbody>
+  </table>
+</div>
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot" style="background:#fef3c7;border:1px solid #fcd34d;"></div> Problema — misma data duplicada en dos tabs</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<p class="section-title">Las 3 Opciones</p>
+
+<div class="proposals">
+
+  <!-- Opción A -->
+  <div class="proposal">
+    <div class="proposal-label">Opción A</div>
+    <div class="proposal-title">Fusión simple: tab "Negociación"</div>
+    <div class="proposal-tabs">
+      <div class="ptab">👤 Información General</div>
+      <div class="ptab">❤️ Intereses</div>
+      <div class="ptab removed">🏠 Vivienda Asignada</div>
+      <div class="ptab removed">💲 Fuentes de Pago</div>
+      <div class="ptab new-tab">📋 Negociación ← fusión</div>
+      <div class="ptab">📄 Documentos</div>
+      <div class="ptab">🕐 Historial</div>
+    </div>
+    <div class="pro">5 tabs en lugar de 6</div>
+    <div class="pro">Una sola pantalla para ver + editar negociación</div>
+    <div class="pro">Implementación directa, mínimo refactor</div>
+    <div class="con">Tab "Negociación" puede volverse grande</div>
+    <div class="con">El nombre no captura todo (también hay abonos)</div>
+  </div>
+
+  <!-- Opción B — RECOMENDADA -->
+  <div class="proposal recommended">
+    <div class="proposal-label rec">⭐ Opción B — Recomendada</div>
+    <div class="proposal-title">Fusión + sub-tabs internos</div>
+    <div class="proposal-tabs">
+      <div class="ptab">👤 Información General</div>
+      <div class="ptab">❤️ Intereses</div>
+      <div class="ptab removed">🏠 Vivienda Asignada</div>
+      <div class="ptab removed">💲 Fuentes de Pago</div>
+      <div class="ptab new-tab">🏠 Vivienda &amp; Pagos ← fusión</div>
+      <div class="ptab inner">Sub: Resumen</div>
+      <div class="ptab inner">Sub: Fuentes de Pago</div>
+      <div class="ptab inner">Sub: Abonos</div>
+      <div class="ptab">📄 Documentos</div>
+      <div class="ptab">🕐 Historial</div>
+    </div>
+    <div class="pro">5 tabs — misma reducción que A</div>
+    <div class="pro">Sub-tabs separan concerns sin fragmentar el dominio</div>
+    <div class="pro">Escalable: agregar "Procesos" como sub-tab futuro</div>
+    <div class="con">Implementación un poco más compleja (2 niveles de nav)</div>
+  </div>
+
+  <!-- Opción C -->
+  <div class="proposal">
+    <div class="proposal-label">Opción C</div>
+    <div class="proposal-title">Reorganizar por ciclo de vida</div>
+    <div class="proposal-tabs">
+      <div class="ptab new-tab">👤 Perfil (general + docs ID)</div>
+      <div class="ptab new-tab">📊 Proceso Comercial (intereses + neg.)</div>
+      <div class="ptab new-tab">💰 Financiero (fuentes + abonos)</div>
+      <div class="ptab">📄 Documentos</div>
+      <div class="ptab">🕐 Historial</div>
+    </div>
+    <div class="pro">Refleja el flujo real del negocio</div>
+    <div class="pro">Reduce a 5 tabs con alto nivel semántico</div>
+    <div class="con">Refactor muy grande — mueve código entre módulos</div>
+    <div class="con">Mezcla "Intereses" con "Negociación" — distintos estados del cliente</div>
+    <div class="con">Riesgo alto de regresiones</div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<p class="section-title">Mockup — Opción B (Recomendada)</p>
+
+<div class="browser">
+  <div class="browser-bar">
+    <div class="dot r"></div><div class="dot y"></div><div class="dot g"></div>
+    <div class="url">localhost:3000/clientes/pedro-perez-af1b4e40</div>
+  </div>
+  <div class="client-header">
+    <div class="client-name">Pedro Perez <span style="font-size:11px;background:rgba(255,255,255,0.2);padding:2px 10px;border-radius:99px;margin-left:8px;">Activo</span></div>
+    <div class="client-sub">CC 12345678 &nbsp;·&nbsp; 🏠 Mza. A · Casa 1 | Las Américas 2</div>
+  </div>
+  <div class="tab-bar">
+    <div class="tab">👤 Información General</div>
+    <div class="tab">❤️ Intereses <span class="badge">1</span></div>
+    <div class="tab active merged">🏠 Vivienda &amp; Pagos</div>
+    <div class="tab">📄 Documentos <span class="badge">3</span></div>
+    <div class="tab">🕐 Historial</div>
+  </div>
+  <div class="content">
+    <div class="green-box" style="margin-bottom:12px;">
+      <div class="inner-tab-bar">
+        <div class="inner-tab active">Resumen</div>
+        <div class="inner-tab">Fuentes de Pago</div>
+        <div class="inner-tab">Abonos</div>
+      </div>
+      <div class="content-grid">
+        <div class="card">
+          <div class="card-title">Vivienda Asignada</div>
+          <div class="field">Proyecto: <span>Las Américas 2</span></div>
+          <div class="field">Manzana / Casa: <span>A · 1</span></div>
+          <div class="field">Valor total: <span>$ 180.000.000</span></div>
+          <div style="margin-top:8px;background:#f1f5f9;border-radius:6px;height:8px;overflow:hidden;"><div style="width:42%;height:100%;background:#0891b2;border-radius:6px;"></div></div>
+          <div style="font-size:11px;color:#64748b;margin-top:4px;">42% completado · Saldo $ 104.400.000</div>
+        </div>
+        <div class="card">
+          <div class="card-title">Estado de Fuentes</div>
+          <div class="field">Cuota Inicial: <span style="color:#0891b2;">En Proceso</span></div>
+          <div class="field">Crédito Hipotecario: <span style="color:#0891b2;">En Proceso</span></div>
+          <div class="field">Subsidio Mi Casa Ya: <span style="color:#64748b;">Pendiente</span></div>
+          <div style="margin-top:8px;font-size:11px;color:#64748b;background:#f8fafc;border-radius:6px;padding:6px 8px;">Editar fuentes → sub-tab "Fuentes de Pago"</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<p class="section-title">Pregunta para ti</p>
+<div style="background:#fff;border-radius:12px;border:2px solid #0891b2;padding:20px 24px;font-size:13px;color:#1e293b;line-height:1.7;max-width:700px;">
+  <strong>¿Cuál de las 3 opciones te parece más acertada?</strong><br><br>
+  Mi recomendación es la <strong>Opción B</strong>: fusión con sub-tabs (<em>Resumen / Fuentes de Pago / Abonos</em>).
+  Elimina la redundancia sin aplanar todo en una pantalla enorme.
+  Los sub-tabs permiten crecer (ej: agregar "Procesos" en el futuro) sin añadir pestañas al nivel principal.<br><br>
+  También tengo una segunda pregunta antes de avanzar: <br>
+  ¿Hay algo que actualmente haces en "Vivienda Asignada" o "Fuentes de Pago" que sientas que <em>falta</em>
+  o que te resulte incómodo de usar? ¿O solo el problema es que son dos tabs duplicados?
+</div>
+
+<br><br>
+</body>
+</html>

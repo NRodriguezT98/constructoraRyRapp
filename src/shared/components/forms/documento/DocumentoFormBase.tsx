@@ -29,13 +29,14 @@ interface DocumentoFormBaseProps {
   archivoSeleccionado?: File | null
   errorArchivo?: string | null
   isDragging?: boolean
-  fileInputRef?: RefObject<HTMLInputElement>
+  fileInputRef?: RefObject<HTMLInputElement | null>
 
   // Datos del formulario
   categorias: CategoriaDocumento[]
   isSubmitting: boolean
   esDocumentoIdentidad?: boolean // ✅ Para deshabilitar categoría
   categoriaIdentidad?: CategoriaDocumento | undefined // ✅ Categoría auto-seleccionada
+  categoriaBloqueada?: boolean // ✅ Para bloquear categoría (requisitos de fuentes)
 
   // React Hook Form
   register: UseFormRegister<any>
@@ -73,6 +74,7 @@ export function DocumentoFormBase({
   isSubmitting,
   esDocumentoIdentidad = false,
   categoriaIdentidad,
+  categoriaBloqueada = false,
   register,
   handleSubmit,
   errors,
@@ -176,8 +178,8 @@ export function DocumentoFormBase({
                   value={categoriaId}
                   onChange={(value) => setValue('categoria_id', value)}
                   errors={errors}
-                  disabled={esDocumentoIdentidad} // ✅ Deshabilitar si es documento de identidad
-                  helperText={esDocumentoIdentidad && categoriaIdentidad ? `Categoría: ${categoriaIdentidad.nombre}` : undefined}
+                  disabled={esDocumentoIdentidad || categoriaBloqueada} // ✅ Deshabilitar si es documento de identidad O categoría bloqueada
+                  helperText={esDocumentoIdentidad && categoriaIdentidad ? `Categoría: ${categoriaIdentidad.nombre}` : categoriaBloqueada ? 'Categoría asignada por requisito' : undefined}
                 />
 
                 <ImportanteToggle

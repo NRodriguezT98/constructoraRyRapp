@@ -50,7 +50,7 @@ export function useViviendasQuery(proyectoId: string | undefined) {
         if (manzanaA > manzanaB) return 1
 
         // Si las manzanas son iguales, ordenar por número (numéricamente)
-        return a.numero - b.numero
+        return parseInt(a.numero, 10) - parseInt(b.numero, 10)
       })
     },
     enabled: !!proyectoId, // Solo ejecutar si hay proyecto

@@ -20,6 +20,7 @@
 
 import { AnimatePresence, motion } from 'framer-motion'
 import { AlertCircle, FileText, Upload, X } from 'lucide-react'
+import { createPortal } from 'react-dom'
 
 import { useSubirCartaModal } from './useSubirCartaModal'
 
@@ -32,6 +33,7 @@ export interface DatosFuente {
   tipo: string
   entidad?: string
   monto_aprobado: number
+  tipo_documento_sistema?: string  // ← tipo exacto para vinculación con la vista
   // Datos para título inteligente
   vivienda?: {
     numero: string
@@ -79,29 +81,31 @@ export function SubirCartaModal({
     limpiarArchivo,
   } = useSubirCartaModal({ fuente, clienteId, onClose, onSuccess })
 
-  if (!isOpen) return null
-
   const formatMoney = (valor: number) => `$${valor.toLocaleString('es-CO')}`
 
-  return (
-    <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-        {/* Backdrop */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          onClick={onClose}
-          className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-        />
+  const modalContent = (
+    <AnimatePresence mode="wait">
+      {isOpen && (
+        <>
+          {/* Backdrop con z-index más alto */}
+          <motion.div
+            key="backdrop-subir-carta"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+            className="fixed inset-0 z-[9998] bg-black/50 backdrop-blur-sm"
+          />
 
-        {/* Modal - COMPACTO */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95, y: 20 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.95, y: 20 }}
-          className="relative z-10 w-full max-w-2xl rounded-xl bg-white dark:bg-gray-800 shadow-2xl overflow-hidden"
-        >
+          {/* Modal - COMPACTO con z-index superior al backdrop */}
+          <div key="container-subir-carta" className="fixed inset-0 z-[9999] flex items-center justify-center p-4 pointer-events-none">
+            <motion.div
+              key="modal-subir-carta"
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="relative w-full max-w-2xl rounded-xl bg-white dark:bg-gray-800 shadow-2xl overflow-hidden pointer-events-auto"
+            >
           {/* Header - COMPACTO con colores del módulo clientes (cyan/azul) */}
           <div className="bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 p-4">
             <div className="flex items-center justify-between">
@@ -299,6 +303,11 @@ export function SubirCartaModal({
           </div>
         </motion.div>
       </div>
+        </>
+      )}
     </AnimatePresence>
   )
+
+  // Renderizar en portal para evitar problemas de z-index y positioning
+  return typeof window !== 'undefined' ? createPortal(modalContent, document.body) : null
 }

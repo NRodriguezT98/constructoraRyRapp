@@ -169,32 +169,32 @@ export const animations = {
   page: {
     initial: { opacity: 0 },
     animate: { opacity: 1 },
-    transition: { duration: 0.4, ease: 'easeOut' },
+    transition: { duration: 0.4, ease: 'easeOut' as const },
   },
 
   content: {
     initial: { opacity: 0, y: 20 },
     animate: { opacity: 1, y: 0 },
     exit: { opacity: 0, y: -20 },
-    transition: { duration: 0.3, ease: 'easeInOut' },
+    transition: { duration: 0.3, ease: 'easeInOut' as const },
   },
 
   sidebar: {
     initial: { opacity: 0, x: 30 },
     animate: { opacity: 1, x: 0 },
-    transition: { duration: 0.4, delay: 0.15, ease: 'easeOut' },
+    transition: { duration: 0.4, delay: 0.15, ease: 'easeOut' as const },
   },
 
   validation: {
     initial: { opacity: 0, scale: 0.9 },
     animate: { opacity: 1, scale: 1 },
-    transition: { duration: 0.2, ease: 'easeOut' },
+    transition: { duration: 0.2, ease: 'easeOut' as const },
   },
 
   card: {
     initial: { opacity: 0, scale: 0.95 },
     animate: { opacity: 1, scale: 1 },
     exit: { opacity: 0, scale: 0.95 },
-    transition: { duration: 0.3, ease: 'easeInOut' },
+    transition: { duration: 0.3, ease: 'easeInOut' as const },
   },
 }

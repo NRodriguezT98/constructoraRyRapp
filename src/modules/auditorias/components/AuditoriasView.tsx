@@ -36,6 +36,7 @@ import {
 import { useAuditorias } from '../hooks/useAuditorias'
 import { getAccionBadgeStyles, metricasIconColors, auditoriasStyles as styles } from '../styles/auditorias.styles'
 import type { AccionAuditoria, AuditoriaRegistro, ModuloAplicacion } from '../types'
+import { formatearFecha, getAccionLabel } from '../utils/formatters'
 
 import { DetalleAuditoriaModal } from './DetalleAuditoriaModal'
 
@@ -54,14 +55,6 @@ export function AuditoriasView({
   canView = true,
   isAdmin = false,
 }: AuditoriasViewProps = {}) {
-  console.log('📊 [AUDITORIAS VIEW] Client Component montado con permisos:', {
-    canCreate,
-    canEdit,
-    canDelete,
-    canView,
-    isAdmin,
-  })
-
   const {
     registros,
     estadisticas,
@@ -109,35 +102,7 @@ export function AuditoriasView({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []) // Solo ejecutar al montar
 
-  const getAccionLabel = (accion: AccionAuditoria) => {
-    switch (accion) {
-      case 'CREATE':
-        return 'Creación'
-      case 'UPDATE':
-        return 'Actualización'
-      case 'DELETE':
-        return 'Eliminación'
-    }
-  }
-
-  const formatearFecha = (fecha: string) => {
-    return new Date(fecha).toLocaleString('es-ES', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    })
-  }
-
   // Mostrar loading skeleton SOLO en carga inicial (sin datos previos)
-  console.log('🔍 [AUDITORIAS_VIEW] Evaluando skeleton:', {
-    cargando,
-    registrosLength: registros.length,
-    hasEstadisticas: !!estadisticas,
-    shouldShowSkeleton: cargando && registros.length === 0 && !estadisticas
-  })
-
   if (cargando && registros.length === 0 && !estadisticas) {
     return (
       <div className={styles.container.page}>
@@ -164,7 +129,7 @@ export function AuditoriasView({
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
+          transition={{ duration: 0.15 }}
           className={styles.header.container}
         >
           <div className={styles.header.pattern} />

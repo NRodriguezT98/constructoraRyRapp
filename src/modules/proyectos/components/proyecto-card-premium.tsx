@@ -24,7 +24,7 @@ import {
     TrendingUp,
 } from 'lucide-react'
 
-import { formatDate } from '@/shared/utils'
+import { formatDateCompact } from '@/lib/utils/date.utils'
 
 import { useProyectoCard } from '../hooks/useProyectoCard'
 import type { Proyecto } from '../types'
@@ -173,7 +173,7 @@ export function ProyectoCardPremium({
               isCompleted ? 'shadow-green-500/30' : 'shadow-blue-500/30'
             } flex-shrink-0`}
           >
-            <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+            <div className="w-1.5 h-1.5 rounded-full bg-white" />
             {isCompleted ? 'COMPLETADO' : 'EN PROCESO'}
           </span>
         </div>
@@ -291,7 +291,7 @@ export function ProyectoCardPremium({
         <div className="flex items-center justify-between gap-2 pt-2 border-t border-gray-200 dark:border-gray-700">
           <div className="flex items-center gap-1.5 text-[10px] text-gray-500 dark:text-gray-400">
             <Calendar className="w-3 h-3" />
-            <span>Creado {formatDate(proyecto.fechaCreacion)}</span>
+            <span>Creado {formatDateCompact(proyecto.fechaCreacion)}</span>
           </div>
         </div>
       </div>

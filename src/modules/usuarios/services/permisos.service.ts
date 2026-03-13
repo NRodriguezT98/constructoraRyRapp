@@ -28,7 +28,7 @@ export async function obtenerPermisosPorRol(rol: string): Promise<PermisoRol[]> 
     .order('accion', { ascending: true })
 
   if (error) {
-    console.error('❌ [SERVICE] Error obteniendo permisos:', error)
+    console.error('âŒ [SERVICE] Error obteniendo permisos:', error)
     throw new Error(`Error al obtener permisos: ${error.message}`)
   }
 
@@ -39,7 +39,6 @@ export async function obtenerPermisosPorRol(rol: string): Promise<PermisoRol[]> 
  * Obtener todos los permisos del sistema (para matriz de configuración)
  */
 export async function obtenerTodosLosPermisos(): Promise<PermisoRol[]> {
-  console.log('🔐 [SERVICE] Obteniendo todos los permisos del sistema')
 
   const { data, error } = await supabase
     .from('permisos_rol')
@@ -49,11 +48,10 @@ export async function obtenerTodosLosPermisos(): Promise<PermisoRol[]> {
     .order('accion', { ascending: true })
 
   if (error) {
-    console.error('❌ [SERVICE] Error obteniendo permisos:', error)
+    console.error('âŒ [SERVICE] Error obteniendo permisos:', error)
     throw new Error(`Error al obtener permisos: ${error.message}`)
   }
 
-  console.log(`✅ [SERVICE] ${data?.length || 0} permisos totales obtenidos`)
   return data || []
 }
 
@@ -67,11 +65,9 @@ export async function verificarPermiso(
   modulo: string,
   accion: string
 ): Promise<boolean> {
-  console.log('🔐 [SERVICE] Verificando permiso:', { rol, modulo, accion })
 
   // Bypass para Administrador
   if (rol === 'Administrador') {
-    console.log('✅ [SERVICE] Administrador - permiso automático')
     return true
   }
 
@@ -86,15 +82,13 @@ export async function verificarPermiso(
   if (error) {
     if (error.code === 'PGRST116') {
       // Not found - permiso no existe
-      console.log('⚠️ [SERVICE] Permiso no existe en BD')
       return false
     }
-    console.error('❌ [SERVICE] Error verificando permiso:', error)
+    console.error('âŒ [SERVICE] Error verificando permiso:', error)
     return false
   }
 
   const resultado = data?.permitido || false
-  console.log(`${resultado ? '✅' : '❌'} [SERVICE] Permiso ${resultado ? 'concedido' : 'denegado'}`)
   return resultado
 }
 
@@ -107,7 +101,6 @@ export async function actualizarPermiso(
   id: string,
   permitido: boolean
 ): Promise<PermisoRol> {
-  console.log('🔐 [SERVICE] Actualizando permiso:', { id, permitido })
 
   const { data, error } = await supabase
     .from('permisos_rol')
@@ -117,23 +110,21 @@ export async function actualizarPermiso(
     .single()
 
   if (error) {
-    console.error('❌ [SERVICE] Error actualizando permiso:', error)
+    console.error('âŒ [SERVICE] Error actualizando permiso:', error)
     throw new Error(`Error al actualizar permiso: ${error.message}`)
   }
 
-  console.log('✅ [SERVICE] Permiso actualizado exitosamente')
   return data
 }
 
 /**
  * Actualizar múltiples permisos a la vez
  *
- * Útil para cambios masivos en matriz de permisos.
+ * Ãštil para cambios masivos en matriz de permisos.
  */
 export async function actualizarPermisosEnLote(
   actualizaciones: Array<{ id: string; permitido: boolean }>
 ): Promise<void> {
-  console.log('🔐 [SERVICE] Actualizando permisos en lote:', actualizaciones.length)
 
   const promesas = actualizaciones.map(({ id, permitido }) =>
     supabase
@@ -146,11 +137,10 @@ export async function actualizarPermisosEnLote(
 
   const errores = resultados.filter(r => r.error)
   if (errores.length > 0) {
-    console.error('❌ [SERVICE] Errores en actualización en lote:', errores)
+    console.error('âŒ [SERVICE] Errores en actualización en lote:', errores)
     throw new Error(`${errores.length} permisos fallaron al actualizar`)
   }
 
-  console.log('✅ [SERVICE] Todos los permisos actualizados exitosamente')
 }
 
 /**
@@ -163,7 +153,7 @@ export async function obtenerModulos(): Promise<string[]> {
     .limit(1000)
 
   if (error) {
-    console.error('❌ [SERVICE] Error obteniendo módulos:', error)
+    console.error('âŒ [SERVICE] Error obteniendo módulos:', error)
     return []
   }
 
@@ -181,7 +171,7 @@ export async function obtenerAcciones(): Promise<string[]> {
     .limit(1000)
 
   if (error) {
-    console.error('❌ [SERVICE] Error obteniendo acciones:', error)
+    console.error('âŒ [SERVICE] Error obteniendo acciones:', error)
     return []
   }
 

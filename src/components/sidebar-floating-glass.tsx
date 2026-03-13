@@ -44,6 +44,7 @@ export function SidebarFloatingGlass() {
     toggleSidebar,
     closeSidebar,
     isActive,
+    getMostSpecificMatch,
   } = useSidebar()
 
   // 🗑️ Contador de documentos en papelera (solo para admins)
@@ -294,8 +295,9 @@ export function SidebarFloatingGlass() {
 
                 {/* Navigation Items */}
                 <div className="space-y-1">
-                  {group.items
-                    .filter(
+                  {(() => {
+                    // ✅ Filtrar items visibles
+                    const visibleItems = group.items.filter(
                       (item) =>
                         // Filtro de búsqueda
                         (!searchQuery ||
@@ -313,10 +315,16 @@ export function SidebarFloatingGlass() {
                               (item as any).requiredPermission.modulo,
                               (item as any).requiredPermission.accion
                             )
-                          : true) // Si no tiene requiredPermission, mostrar por defecto
+                          : true)
                     )
-                    .map((item) => {
-                      const active = isActive(item.href)
+
+                    // ✅ Obtener la ruta MÁS ESPECÍFICA que coincide
+                    const mostSpecificHref = getMostSpecificMatch(visibleItems)
+
+                    return visibleItems.map((item) => {
+                      // ✅ Solo activar si es la ruta más específica
+                      const active = item.href === mostSpecificHref
+
                       return (
                         <Link key={item.href} href={item.href} prefetch={true}>
                           <motion.div
@@ -438,7 +446,8 @@ export function SidebarFloatingGlass() {
                           </motion.div>
                         </Link>
                       )
-                    })}
+                    })
+                  })()}
                 </div>
               </div>
             ))}

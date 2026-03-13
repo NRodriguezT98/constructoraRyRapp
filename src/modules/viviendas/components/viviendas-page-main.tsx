@@ -48,7 +48,7 @@ interface ViviendasPageMainProps {
  * Orquesta todos los componentes hijos
  * Lógica delegada a useViviendasList
  *
- * ✅ PROTEGIDA POR MIDDLEWARE
+ * âœ… PROTEGIDA POR MIDDLEWARE
  * - Recibe permisos como props desde Server Component
  * - No necesita validar autenticación (ya validada)
  * - Solo maneja UI y lógica de negocio
@@ -94,12 +94,10 @@ export function ViviendasPageMain({
   const [modalEditar, setModalEditar] = useState(false)
   const [viviendaEditar, setViviendaEditar] = useState<Vivienda | null>(null)
 
-  const handleVerDetalle = (vivienda: any) => {
-    console.log('🔍 handleVerDetalle called with:', vivienda)
+  const handleVerDetalle = (vivienda: Vivienda) => {
 
     // Validar que tenemos id y numero
     if (!vivienda?.id || !vivienda?.numero) {
-      console.error('handleVerDetalle - Datos inválidos:', { vivienda })
       toast.error('Error: Datos de vivienda incompletos')
       return
     }
@@ -120,13 +118,11 @@ export function ViviendasPageMain({
   // HANDLER: EDITAR VIVIENDA
   // ============================================
   const handleEditarVivienda = (vivienda: Vivienda) => {
-    console.log('✏️ Editar vivienda:', vivienda)
     setViviendaEditar(vivienda)
     setModalEditar(true)
   }
 
-  const handleEditarSuccess = (viviendaActualizada: Vivienda) => {
-    console.log('✅ Vivienda actualizada:', viviendaActualizada)
+  const handleEditarSuccess = (_viviendaActualizada: Vivienda) => {
     // Refrescar lista para mostrar cambios
     refrescar()
     setModalEditar(false)
@@ -177,22 +173,18 @@ export function ViviendasPageMain({
           <ViviendasEmpty onCrear={() => router.push('/viviendas/nueva')} />
         ) : vista === 'cards' ? (
           <ViviendasLista
-            viviendas={viviendas} // ← Viviendas paginadas (hook maneja paginación)
+            viviendas={viviendas} // ← Viviendas paginadas (hook maneja paginación)
             onVerDetalle={handleVerDetalle}
             onAsignarCliente={(vivienda) => {
-              console.log('Asignar cliente a:', vivienda)
               // TODO: Implementar lógica de asignación
             }}
             onVerAbonos={(vivienda) => {
-              console.log('Ver abonos de:', vivienda)
               // TODO: Implementar vista de abonos
             }}
             onRegistrarPago={(vivienda) => {
-              console.log('Registrar pago para:', vivienda)
               // TODO: Implementar registro de pago
             }}
             onGenerarEscritura={(vivienda) => {
-              console.log('Generar escritura para:', vivienda)
               // TODO: Implementar generación de escritura
             }}
             onEditar={canEdit ? handleEditarVivienda : undefined}
@@ -207,7 +199,7 @@ export function ViviendasPageMain({
           />
         ) : (
           <ViviendasTabla
-            viviendas={viviendasFiltradas} // ← Todas las viviendas filtradas (TanStack Table maneja paginación)
+            viviendas={viviendasFiltradas} // ← Todas las viviendas filtradas (TanStack Table maneja paginación)
             onView={handleVerDetalle}
             onEdit={canEdit ? handleEditarVivienda : undefined}
             onDelete={abrirModalEliminar}
@@ -248,7 +240,7 @@ export function ViviendasPageMain({
           {viviendaEliminando?.matricula_inmobiliaria && (
             <div className={styles.deleteModal.warning}>
               <p className={styles.deleteModal.warningText}>
-                ⚠️ Matrícula:{' '}
+                âš ï¸ Matrícula:{' '}
                 <strong>{viviendaEliminando.matricula_inmobiliaria}</strong>
               </p>
             </div>

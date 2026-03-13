@@ -1,127 +1,86 @@
+'use client'
+
 import { motion } from 'framer-motion'
-import {
-  ArrowLeft,
-  Building,
-  ChevronRight,
-  Hash,
-  Mail,
-  Phone,
-  Sparkles,
-  User,
-  Wallet
-} from 'lucide-react'
+import { ArrowLeft, Building2, Home } from 'lucide-react'
 
-import { Button } from '@/components/ui/button'
+import { formatNombreCompleto } from '@/lib/utils/string.utils'
+import { getAvatarGradient } from '@/modules/abonos/styles/seleccion-cliente.styles'
 import type { NegociacionConAbonos } from '@/modules/abonos/types'
-
-import { animations, headerStyles } from '../styles/abonos-detalle.styles'
 
 interface HeaderClienteProps {
   negociacion: NegociacionConAbonos
   onVolver: () => void
+  onRegistrarAbono?: () => void
+  canCreate?: boolean
 }
 
-/**
- * 🎨 COMPONENTE PRESENTACIONAL - Header Premium
- * Muestra: avatar, info del cliente, breadcrumb, botón volver
- */
-export function HeaderCliente({ negociacion, onVolver }: HeaderClienteProps) {
+export function HeaderCliente({ negociacion, onVolver, onRegistrarAbono, canCreate }: HeaderClienteProps) {
   const { cliente, vivienda, proyecto } = negociacion
-  const nombreCompleto = `${cliente.nombres} ${cliente.apellidos}`.trim()
+  const nombreCompleto = formatNombreCompleto(`${cliente.nombres} ${cliente.apellidos}`)
+  const iniciales = `${cliente.nombres[0] || ''}${cliente.apellidos[0] || ''}`.toUpperCase()
+  const avatarGradient = getAvatarGradient(nombreCompleto)
 
   return (
     <motion.div
-      {...animations.fadeInDown}
-      className={headerStyles.container}
+      initial={{ opacity: 0, y: -20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.25 }}
+      className="relative overflow-hidden rounded-2xl shadow-2xl shadow-emerald-900/40"
+      style={{ background: 'linear-gradient(135deg, #064e3b 0%, #065f46 40%, #0f766e 100%)' }}
     >
-      {/* Patrón de fondo animado */}
-      <div className={headerStyles.backgroundPattern}>
-        <div
-          className={headerStyles.patternInner}
-          style={{
-            backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)',
-            backgroundSize: '40px 40px'
-          }}
-        ></div>
-      </div>
+      {/* Grid pattern */}
+      <div className="absolute inset-0 bg-grid-white/[0.04] [mask-image:linear-gradient(0deg,transparent,rgba(255,255,255,0.8),transparent)]" />
+      {/* Orb superior derecho */}
+      <div className="absolute -top-12 -right-12 w-48 h-48 rounded-full bg-emerald-400/20 blur-2xl pointer-events-none" />
+      {/* Orb inferior izquierdo */}
+      <div className="absolute -bottom-8 -left-8 w-40 h-40 rounded-full bg-teal-300/10 blur-2xl pointer-events-none" />
+      {/* Franja de acento superior */}
+      <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-emerald-300/60 to-transparent" />
 
-      {/* Efectos de luz */}
-      <div className={headerStyles.lightEffect1}></div>
-      <div className={headerStyles.lightEffect2}></div>
-
-      <div className={headerStyles.content}>
+      <div className="relative z-10 p-5">
         {/* Breadcrumb */}
-        <div className={headerStyles.breadcrumb}>
-          <button
-            onClick={onVolver}
-            className={headerStyles.breadcrumbButton}
-          >
-            <Wallet className={headerStyles.metaIcon} />
-            <span>Abonos</span>
-          </button>
-          <ChevronRight className={headerStyles.metaIcon} />
-          <span className={headerStyles.breadcrumbCurrent}>{nombreCompleto}</span>
-        </div>
+        <button
+          onClick={onVolver}
+          className="flex items-center gap-1.5 text-emerald-300/80 hover:text-emerald-100 text-xs font-medium transition-colors mb-4 group"
+        >
+          <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform" />
+          <span>Abonos</span>
+        </button>
 
-        <div className={headerStyles.infoWrapper}>
-          {/* Info del cliente */}
-          <div className={headerStyles.clienteSection}>
-            {/* Avatar grande */}
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              className={headerStyles.avatar}
-            >
-              <User className={headerStyles.avatarIcon} />
-            </motion.div>
-
-            <div className="space-y-2">
-              <h1 className={headerStyles.title}>
-                {nombreCompleto}
-                <Sparkles className={headerStyles.sparkle} />
-              </h1>
-
-              <div className={headerStyles.metaInfo}>
-                <div className={headerStyles.metaItem}>
-                  <Hash className={headerStyles.metaIcon} />
-                  <span className={headerStyles.metaText}>CC {cliente.numero_documento}</span>
-                </div>
-                {cliente.telefono && (
-                  <div className={headerStyles.metaItem}>
-                    <Phone className={headerStyles.metaIcon} />
-                    <span className={headerStyles.metaText}>{cliente.telefono}</span>
-                  </div>
-                )}
-                {cliente.email && (
-                  <div className={headerStyles.metaItem}>
-                    <Mail className={headerStyles.metaIcon} />
-                    <span className={headerStyles.metaText}>{cliente.email}</span>
-                  </div>
-                )}
+        <div className="flex items-end justify-between gap-4">
+          {/* Avatar + info */}
+          <div className="flex items-center gap-4">
+            <div className="relative flex-shrink-0">
+              <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${avatarGradient} flex items-center justify-center shadow-xl`}>
+                <span className="text-white font-extrabold text-lg tracking-tight">{iniciales}</span>
               </div>
+              <div className="absolute inset-0 rounded-2xl ring-1 ring-white/20" />
+            </div>
 
-              <div className={headerStyles.projectInfo}>
-                <Building className={headerStyles.projectIcon} />
-                <span>{proyecto.nombre}</span>
-                <span className="text-white/60">•</span>
-                <span>
-                  Manzana {vivienda.manzana?.nombre
-                    ? `${vivienda.manzana.nombre} - Casa Número ${vivienda.numero}`
-                    : `Casa Número ${vivienda.numero}`
-                  }
+            <div>
+              <h1 className="text-2xl font-extrabold text-white leading-tight tracking-tight">{nombreCompleto}</h1>
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1.5">
+                <span className="flex items-center gap-1 text-xs text-emerald-200/70">
+                  CC {cliente.numero_documento}
                 </span>
+              </div>
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1.5">
+                {proyecto && (
+                  <span className="flex items-center gap-1 text-xs text-emerald-200/70">
+                    <Building2 className="w-3 h-3" />
+                    {proyecto.nombre}
+                  </span>
+                )}
+                {vivienda && (
+                  <span className="flex items-center gap-1 text-xs text-emerald-200/70">
+                    <Home className="w-3 h-3" />
+                    {vivienda.manzana?.nombre ? `Mz.${vivienda.manzana.nombre} ` : ''}Casa No. {vivienda.numero}
+                  </span>
+                )}
               </div>
             </div>
           </div>
-
-          {/* Botón de volver */}
-          <Button
-            onClick={onVolver}
-            variant="outline"
-            className={headerStyles.backButton}
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Volver
-          </Button>
+          {/* CTA principal */}
         </div>
       </div>
     </motion.div>

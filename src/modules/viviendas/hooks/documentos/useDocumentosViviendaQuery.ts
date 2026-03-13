@@ -7,10 +7,10 @@
  * Reemplaza Zustand store con cache inteligente
  *
  * BENEFICIOS vs Zustand:
- * - ✅ Cache automático (stale-while-revalidate)
- * - ✅ Sin race conditions
- * - ✅ Invalidación automática después de mutations
- * - ✅ Background refetching inteligente
+ * - âœ… Cache automático (stale-while-revalidate)
+ * - âœ… Sin race conditions
+ * - âœ… Invalidación automática después de mutations
+ * - âœ… Background refetching inteligente
  */
 
 'use client'
@@ -72,9 +72,8 @@ export function useCategoriasViviendaQuery(userId?: string) {
     queryFn: async () => {
       const cats = await CategoriasService.obtenerCategoriasPorModulo(userId!, 'viviendas')
 
-      // ✅ SEED AUTOMÁTICO: Si no hay categorías para viviendas, crear las por defecto
+      // âœ… SEED AUTOMÁTICO: Si no hay categorías para viviendas, crear las por defecto
       if (cats.length === 0) {
-        console.log('📋 No hay categorías para viviendas. Creando categorías por defecto...')
         // Por ahora retornar vacío, el usuario puede crear manualmente o usar las de proyectos
         return []
       }
@@ -124,18 +123,18 @@ export function useSubirDocumentoViviendaMutation(viviendaId: string) {
         params.userId
       ),
     onSuccess: async (nuevoDocumento) => {
-      // ✅ PASO 1: Invalidar todas las queries relacionadas con documentos
+      // âœ… PASO 1: Invalidar todas las queries relacionadas con documentos
       await queryClient.invalidateQueries({
         queryKey: documentosViviendaKeys.list(viviendaId),
       })
 
-      // ✅ PASO 2: Refetch INMEDIATO y FORZADO
+      // âœ… PASO 2: Refetch INMEDIATO y FORZADO
       await queryClient.refetchQueries({
         queryKey: documentosViviendaKeys.list(viviendaId),
         type: 'active',
       })
 
-      // ✅ PASO 3: Actualización optimista del cache (agregar documento manualmente)
+      // âœ… PASO 3: Actualización optimista del cache (agregar documento manualmente)
       queryClient.setQueryData<DocumentoVivienda[]>(
         documentosViviendaKeys.list(viviendaId),
         (oldDocumentos = []) => {
@@ -195,11 +194,11 @@ export function useEliminarDocumentoViviendaMutation(viviendaId: string) {
   return useMutation({
     mutationFn: (documentoId: string) => DocumentosViviendaService.eliminarDocumento(documentoId),
     onSuccess: async () => {
-      // 🔧 FIX: Usar refetchQueries para forzar recarga INMEDIATA en Papelera
+      // ðŸ”§ FIX: Usar refetchQueries para forzar recarga INMEDIATA en Papelera
       await Promise.all([
         queryClient.refetchQueries({ queryKey: documentosViviendaKeys.list(viviendaId) }),
-        queryClient.refetchQueries({ queryKey: ['documentos-vivienda-eliminados'] }), // ← Papelera
-        queryClient.refetchQueries({ queryKey: ['versiones-vivienda-eliminadas'] }), // ← Versiones en papelera
+        queryClient.refetchQueries({ queryKey: ['documentos-vivienda-eliminados'] }), // â† Papelera
+        queryClient.refetchQueries({ queryKey: ['versiones-vivienda-eliminadas'] }), // â† Versiones en papelera
       ])
       toast.success('Documento eliminado correctamente')
     },
@@ -219,7 +218,6 @@ export function useToggleImportanteViviendaMutation(viviendaId: string) {
 
   return useMutation({
     mutationFn: async (documentoId: string) => {
-      console.log('🔄 [Toggle Importante] Iniciando para documento:', documentoId)
 
       // Obtener documento actual del cache
       const documentos = queryClient.getQueryData<DocumentoVivienda[]>(
@@ -228,16 +226,9 @@ export function useToggleImportanteViviendaMutation(viviendaId: string) {
       const documento = documentos?.find((d) => d.id === documentoId)
 
       if (!documento) {
-        console.error('❌ [Toggle Importante] Documento no encontrado en cache')
+        console.error('âŒ [Toggle Importante] Documento no encontrado en cache')
         throw new Error('Documento no encontrado')
       }
-
-      console.log('📄 [Toggle Importante] Documento actual:', {
-        id: documento.id,
-        titulo: documento.titulo,
-        es_importante: documento.es_importante,
-        nuevo_valor: !documento.es_importante
-      })
 
       // Toggle importante
       return DocumentosViviendaService.actualizarDocumento(documentoId, {
@@ -245,9 +236,8 @@ export function useToggleImportanteViviendaMutation(viviendaId: string) {
       })
     },
     onSuccess: async (result) => {
-      console.log('✅ [Toggle Importante] Actualización exitosa')
 
-      // ✅ Invalidar y refetch inmediato (sin optimistic update)
+      // âœ… Invalidar y refetch inmediato (sin optimistic update)
       await queryClient.invalidateQueries({
         queryKey: documentosViviendaKeys.list(viviendaId),
       })
@@ -257,10 +247,10 @@ export function useToggleImportanteViviendaMutation(viviendaId: string) {
         type: 'active',
       })
 
-      toast.success('✅ Documento actualizado')
+      toast.success('âœ… Documento actualizado')
     },
     onError: (err) => {
-      console.error('❌ [Toggle Importante] Error:', err)
+      console.error('âŒ [Toggle Importante] Error:', err)
       toast.error('Error al actualizar documento')
     },
   })
@@ -281,7 +271,7 @@ export function useArchivarDocumentoViviendaMutation(viviendaId: string) {
         queryClient.refetchQueries({ queryKey: [...documentosViviendaKeys.list(viviendaId), 'archivados'] }),
       ])
 
-      toast.success('📦 Documento archivado correctamente')
+      toast.success('ðŸ“¦ Documento archivado correctamente')
     },
     onError: (error: Error) => {
       toast.error('Error al archivar documento', {
@@ -306,7 +296,7 @@ export function useRestaurarDocumentoViviendaMutation(viviendaId: string) {
         queryClient.refetchQueries({ queryKey: [...documentosViviendaKeys.list(viviendaId), 'archivados'] }),
       ])
 
-      toast.success('✅ Documento restaurado correctamente')
+      toast.success('âœ… Documento restaurado correctamente')
     },
     onError: (error: Error) => {
       toast.error('Error al restaurar documento', {

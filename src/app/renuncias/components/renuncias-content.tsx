@@ -15,7 +15,7 @@ interface RenunciasContentProps {
 }
 
 /**
- * ✅ PROTEGIDO POR MIDDLEWARE
+ * âœ… PROTEGIDO POR MIDDLEWARE
  * - Recibe permisos como props desde Server Component
  * - No necesita validar autenticación (ya validada)
  * - Solo maneja UI (módulo en construcción)
@@ -27,13 +27,6 @@ export default function RenunciasContent({
   canView = true,
   isAdmin = false,
 }: RenunciasContentProps = {}) {
-  console.log('📋 [RENUNCIAS CONTENT] Client Component montado con permisos:', {
-    canCreate,
-    canEdit,
-    canDelete,
-    canView,
-    isAdmin,
-  })
 
   return (
     <div className='min-h-screen bg-gradient-to-br from-red-50 via-rose-50 to-pink-100 p-4 dark:from-gray-900 dark:via-red-900/20 dark:to-rose-900/30'>
@@ -55,11 +48,11 @@ export default function RenunciasContent({
           </p>
           <div className='rounded-xl border border-red-200 bg-white/80 p-6 shadow-lg backdrop-blur-sm dark:border-red-800 dark:bg-gray-800/80'>
             <p className='text-sm text-gray-700 dark:text-gray-300'>
-              📋 Módulo en construcción...
+              ðŸ“‹ Módulo en construcción...
             </p>
             {canCreate && (
               <p className='text-xs text-gray-500 dark:text-gray-400 mt-2'>
-                ✅ Tienes permiso para crear renuncias
+                âœ… Tienes permiso para crear renuncias
               </p>
             )}
           </div>

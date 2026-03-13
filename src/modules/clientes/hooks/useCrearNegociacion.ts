@@ -28,6 +28,9 @@ interface FormDataNegociacion {
   vivienda_id: string
   valor_negociado: number
   descuento_aplicado: number
+  tipo_descuento?: string
+  motivo_descuento?: string
+  valor_escritura_publica?: number
   notas: string
 
   // ⭐ NUEVO: Fuentes de pago (OPCIONAL para retrocompatibilidad con modal viejo)
@@ -131,7 +134,6 @@ export function useCrearNegociacion(): UseCrearNegociacionReturn {
    * Crear negociación
    */
   const crearNegociacion = useCallback(async (datos: FormDataNegociacion): Promise<Negociacion | null> => {
-    console.log('🔄 Iniciando creación de negociación:', datos)
     setCreando(true)
     setError(null)
     setNegociacionCreada(null)
@@ -150,7 +152,6 @@ export function useCrearNegociacion(): UseCrearNegociacionReturn {
       // No es necesario volver a validar aquí (evita query redundante)
 
       // Verificar si ya existe negociación activa
-      console.log('🔍 Verificando negociación existente...')
       const yaExiste = await negociacionesService.existeNegociacionActiva(
         datos.cliente_id,
         datos.vivienda_id
@@ -164,26 +165,21 @@ export function useCrearNegociacion(): UseCrearNegociacionReturn {
       }
 
       // Crear negociación
-      console.log('📝 Creando negociación en la base de datos...')
       const negociacion = await negociacionesService.crearNegociacion({
         cliente_id: datos.cliente_id,
         vivienda_id: datos.vivienda_id,
         valor_negociado: datos.valor_negociado,
         descuento_aplicado: datos.descuento_aplicado,
+        tipo_descuento: datos.tipo_descuento,
+        motivo_descuento: datos.motivo_descuento,
+        valor_escritura_publica: datos.valor_escritura_publica,
         notas: datos.notas,
         fuentes_pago: datos.fuentes_pago, // ⭐ NUEVO
       })
-
-      console.log('✅ Negociación creada exitosamente:', negociacion.id)
-
       // ⭐ Invalidar caché de viviendas para que se actualice el select
       await queryClient.invalidateQueries({ queryKey: ['viviendas', 'disponibles'] })
-      console.log('🔄 Caché de viviendas invalidado')
-
       // Disparar evento para refrescar tab de negociaciones
       window.dispatchEvent(new Event('negociacion-creada'))
-      console.log('📢 Evento "negociacion-creada" disparado')
-
       setNegociacionCreada(negociacion)
       return negociacion
     } catch (err) {

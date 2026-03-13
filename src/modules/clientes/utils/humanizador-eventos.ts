@@ -49,10 +49,12 @@ export function humanizarEvento(
   return {
     id: evento.id,
     tipo,
+    accion: evento.accion, // Acción genérica de audit_log
     titulo,
     descripcion,
     fecha: evento.fecha_evento,
     usuario: {
+      id: evento.metadata?.usuario_id,
       email: evento.usuario_email,
       nombres: evento.usuario_nombres,
       rol: evento.usuario_rol,
@@ -61,6 +63,7 @@ export function humanizarEvento(
     color,
     detalles: detalles.length > 0 ? detalles : undefined,
     metadata: evento.metadata,
+    modulo: evento.modulo ?? undefined,
   }
 }
 
@@ -311,6 +314,7 @@ function obtenerIcono(tipo: TipoEventoHistorial): LucideIcon {
     renuncia_aprobada: FileCheck,
     renuncia_rechazada: FileX,
     interes_registrado: Heart,
+    nota_manual: Edit3,
     interes_actualizado: Edit3,
     interes_descartado: HeartOff,
     documento_subido: Upload,
@@ -341,6 +345,7 @@ function obtenerColor(tipo: TipoEventoHistorial): ColorEvento {
     renuncia_aprobada: 'green',
     renuncia_rechazada: 'red',
     interes_registrado: 'cyan',
+    nota_manual: 'gray',
     interes_actualizado: 'yellow',
     interes_descartado: 'orange',
     documento_subido: 'cyan',

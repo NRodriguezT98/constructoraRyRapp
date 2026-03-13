@@ -127,22 +127,36 @@ async function executeSQL(sqlFile) {
 
     const duration = Date.now() - startTime
 
+    // DEBUG: Ver estructura del resultado
+    console.log('')
+    log('🔍 DEBUG - Estructura del resultado:', 'gray')
+    log(`  - Comando: ${result.command}`, 'gray')
+    log(`  - rowCount: ${result.rowCount}`, 'gray')
+    log(`  - rows length: ${result.rows ? result.rows.length : 'undefined'}`, 'gray')
+    if (result.rows && result.rows.length > 0) {
+      log(`  - Primera fila: ${JSON.stringify(result.rows[0])}`, 'gray')
+    }
+
     console.log('')
     header('✅ SQL EJECUTADO EXITOSAMENTE')
 
     log(`Tiempo de ejecución: ${duration}ms`, 'gray')
 
+    // Mostrar resultados de SELECT
     if (result.rows && result.rows.length > 0) {
-      log(`Filas afectadas: ${result.rowCount}`, 'gray')
+      log(`Filas retornadas: ${result.rows.length}`, 'green')
       console.log('')
-      log('RESULTADO:', 'yellow')
-      console.table(result.rows.slice(0, 10)) // Mostrar primeras 10 filas
+      log('📊 RESULTADOS:', 'cyan')
+      console.log('')
+      console.table(result.rows.slice(0, 20)) // Mostrar primeras 20 filas
 
-      if (result.rows.length > 10) {
-        log(`... y ${result.rows.length - 10} filas más`, 'gray')
+      if (result.rows.length > 20) {
+        log(`\n... y ${result.rows.length - 20} filas más`, 'gray')
       }
-    } else if (result.rowCount !== null) {
+    } else if (result.rowCount !== null && result.rowCount !== undefined) {
       log(`Filas afectadas: ${result.rowCount}`, 'green')
+    } else if (result.command === 'SELECT') {
+      log('No se encontraron resultados', 'yellow')
     } else {
       log('Comando ejecutado correctamente', 'green')
     }

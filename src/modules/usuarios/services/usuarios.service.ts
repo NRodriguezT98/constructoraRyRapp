@@ -21,29 +21,39 @@ import type {
 } from '../types'
 
 /**
- * Generar contraseña segura aleatoria
+ * Generar contraseña segura aleatoria usando crypto.getRandomValues()
+ * (criptográficamente seguro — reemplaza Math.random())
  */
 function generarPasswordTemporal(): string {
   const length = 12
   const charset = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*'
+
+  const randomIndex = (max: number): number => {
+    const buf = new Uint32Array(1)
+    crypto.getRandomValues(buf)
+    return buf[0] % max
+  }
+
   let password = ''
 
   // Asegurar al menos: 1 mayúscula, 1 minúscula, 1 número, 1 especial
-  password += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'[Math.floor(Math.random() * 26)]
-  password += 'abcdefghijklmnopqrstuvwxyz'[Math.floor(Math.random() * 26)]
-  password += '0123456789'[Math.floor(Math.random() * 10)]
-  password += '!@#$%^&*'[Math.floor(Math.random() * 8)]
+  password += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'[randomIndex(26)]
+  password += 'abcdefghijklmnopqrstuvwxyz'[randomIndex(26)]
+  password += '0123456789'[randomIndex(10)]
+  password += '!@#$%^&*'[randomIndex(8)]
 
   // Rellenar resto
   for (let i = password.length; i < length; i++) {
-    password += charset[Math.floor(Math.random() * charset.length)]
+    password += charset[randomIndex(charset.length)]
   }
 
-  // Mezclar caracteres
-  return password
-    .split('')
-    .sort(() => Math.random() - 0.5)
-    .join('')
+  // Mezclar caracteres (Fisher-Yates con crypto — seguro)
+  const chars = password.split('')
+  for (let i = chars.length - 1; i > 0; i--) {
+    const j = randomIndex(i + 1)
+    ;[chars[i], chars[j]] = [chars[j], chars[i]]
+  }
+  return chars.join('')
 }
 
 class UsuariosService {

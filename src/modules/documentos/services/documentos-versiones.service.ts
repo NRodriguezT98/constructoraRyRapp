@@ -1,23 +1,23 @@
 // ============================================
-// SERVICE: Documentos - Gestión de Versiones (GENÉRICO)
+// SERVICE: Documentos - Gestión de Versiones (GENÃ‰RICO)
 // ============================================
 
 import { supabase } from '@/lib/supabase/client'
 import type { DocumentoProyecto } from '../types/documento.types'
 import { type TipoEntidad, obtenerConfiguracionEntidad } from '../types/entidad.types'
 
-// ⚠️ DEPRECADO: usar obtenerConfiguracionEntidad(tipoEntidad).bucket
+// âš ï¸ DEPRECADO: usar obtenerConfiguracionEntidad(tipoEntidad).bucket
 const BUCKET_NAME = 'documentos-proyectos'
 
 /**
- * ✅ SANITIZACIÓN: Convierte tildes/acentos a ASCII para paths de storage
+ * âœ… SANITIZACIÃ“N: Convierte tildes/acentos a ASCII para paths de storage
  */
 function sanitizeForStorage(text: string): string {
   const accentMap: Record<string, string> = {
     'á': 'a', 'é': 'e', 'í': 'i', 'ó': 'o', 'ú': 'u',
-    'Á': 'A', 'É': 'E', 'Í': 'I', 'Ó': 'O', 'Ú': 'U',
-    'ñ': 'n', 'Ñ': 'N',
-    'ü': 'u', 'Ü': 'U'
+    'Á': 'A', 'Ã‰': 'E', 'Ã': 'I', 'Ã“': 'O', 'Ãš': 'U',
+    'ñ': 'n', 'Ã‘': 'N',
+    'ü': 'u', 'Ãœ': 'U'
   }
 
   let sanitized = text
@@ -37,28 +37,28 @@ function sanitizeForStorage(text: string): string {
  */
 export class DocumentosVersionesService {
   /**
-   * ✅ GENÉRICO: CREAR NUEVA VERSIÓN de un documento existente
+   * âœ… GENÃ‰RICO: CREAR NUEVA VERSIÃ“N de un documento existente
    */
   static async crearNuevaVersion(
     documentoIdOriginal: string,
     archivo: File,
     userId: string,
-    tipoEntidad: TipoEntidad, // ✅ NUEVO parámetro
+    tipoEntidad: TipoEntidad, // âœ… NUEVO parámetro
     cambios?: string,
     tituloOverride?: string,
     fechaDocumento?: string,
     fechaVencimiento?: string
   ): Promise<DocumentoProyecto> {
-    console.log('📤 Creando nueva versión del documento:', documentoIdOriginal)
 
     const config = obtenerConfiguracionEntidad(tipoEntidad)
 
     // 1. Obtener documento original
-    const { data: docOriginal, error: fetchError } = await supabase
+    const { data: docOriginalResult, error: fetchError } = await supabase
       .from(config.tabla as any)
       .select('*')
       .eq('id', documentoIdOriginal)
       .single()
+    const docOriginal = docOriginalResult as any
 
     if (fetchError) throw fetchError
 
@@ -66,7 +66,6 @@ export class DocumentosVersionesService {
     const tituloDelArchivo = archivo.name.replace(/\.[^/.]+$/, '')
     const tituloFinal = tituloOverride || tituloDelArchivo
 
-    console.log('📝 Título de nueva versión:', tituloFinal)
 
     // 2. Encontrar el documento padre (la versión 1)
     const documentoPadreId = docOriginal.documento_padre_id || documentoIdOriginal
@@ -79,7 +78,7 @@ export class DocumentosVersionesService {
       .order('version', { ascending: false })
       .limit(1)
 
-    const nuevaVersion = (versiones?.[0]?.version || 0) + 1
+    const nuevaVersion = ((versiones as any)?.[0]?.version || 0) + 1
 
     // 4. Marcar versiones anteriores como NO actuales
     await supabase
@@ -128,7 +127,7 @@ export class DocumentosVersionesService {
       version: nuevaVersion,
       es_version_actual: true,
       documento_padre_id: documentoPadreId,
-      estado: 'activo', // ✅ Minúscula para consistencia con documentos_proyecto/vivienda
+      estado: 'activo', // âœ… Minúscula para consistencia con documentos_proyecto/vivienda
       metadata: {
         ...(typeof docOriginal.metadata === 'object' && docOriginal.metadata !== null
           ? docOriginal.metadata
@@ -140,7 +139,7 @@ export class DocumentosVersionesService {
       fecha_documento: fechaDocumento || docOriginal.fecha_documento,
       fecha_vencimiento: fechaVencimiento || docOriginal.fecha_vencimiento,
       es_importante: docOriginal.es_importante,
-      // ✅ FIX: Propagar campos críticos del documento original a la nueva versión
+      // âœ… FIX: Propagar campos críticos del documento original a la nueva versión
       ...(docOriginal.es_documento_identidad !== undefined && {
         es_documento_identidad: docOriginal.es_documento_identidad
       }),
@@ -149,6 +148,14 @@ export class DocumentosVersionesService {
       }),
       ...(docOriginal.es_contrato_promesa !== undefined && {
         es_contrato_promesa: docOriginal.es_contrato_promesa
+      }),
+      // ✅ FIX: Propagar campos de vinculación a requisitos de desembolso
+      // Sin esto, la nueva versión no satisface el requisito y el pendiente reaparece
+      ...(docOriginal.fuente_pago_relacionada && {
+        fuente_pago_relacionada: docOriginal.fuente_pago_relacionada
+      }),
+      ...(docOriginal.tipo_documento && {
+        tipo_documento: docOriginal.tipo_documento
       })
     }
 
@@ -171,12 +178,11 @@ export class DocumentosVersionesService {
       throw insertError
     }
 
-    console.log(`✅ Nueva versión ${nuevaVersion} creada`)
     return nuevaVersionDoc as unknown as DocumentoProyecto
   }
 
   /**
-   * ✅ GENÉRICO: OBTENER VERSIONES de un documento
+   * âœ… GENÃ‰RICO: OBTENER VERSIONES de un documento
    */
   static async obtenerVersiones(
     documentoId: string,
@@ -185,11 +191,12 @@ export class DocumentosVersionesService {
     const config = obtenerConfiguracionEntidad(tipoEntidad)
 
     // Obtener documento para saber si es padre o hijo
-    const { data: doc } = await supabase
+    const { data: docResult } = await supabase
       .from(config.tabla as any)
       .select('documento_padre_id')
       .eq('id', documentoId)
       .single()
+    const doc = docResult as any
 
     const padreId = doc?.documento_padre_id || documentoId
 
@@ -213,7 +220,7 @@ export class DocumentosVersionesService {
   }
 
   /**
-   * ✅ GENÉRICO: RESTAURAR VERSIÓN anterior
+   * âœ… GENÃ‰RICO: RESTAURAR VERSIÃ“N anterior
    * Descarga el archivo de la versión antigua y crea una nueva versión con ese contenido
    */
   static async restaurarVersion(
@@ -222,24 +229,19 @@ export class DocumentosVersionesService {
     tipoEntidad: TipoEntidad,
     motivo: string
   ): Promise<DocumentoProyecto> {
-    console.log('🔄 Restaurando versión:', versionId)
 
     const config = obtenerConfiguracionEntidad(tipoEntidad)
 
     // 1. Obtener la versión a restaurar
-    const { data: versionAnterior, error: fetchError } = await supabase
+    const { data: versionAnteriorResult, error: fetchError } = await supabase
       .from(config.tabla as any)
       .select('*')
       .eq('id', versionId)
       .single()
+    const versionAnterior = versionAnteriorResult as any
 
     if (fetchError) throw fetchError
 
-    console.log('📄 Versión a restaurar:', {
-      id: versionAnterior.id,
-      version: versionAnterior.version,
-      url_storage: versionAnterior.url_storage
-    })
 
     // 2. Descargar el archivo de esa versión
     const { data: archivoBlob, error: downloadError } = await supabase.storage
@@ -247,7 +249,7 @@ export class DocumentosVersionesService {
       .download(versionAnterior.url_storage)
 
     if (downloadError) {
-      console.error('❌ Error al descargar archivo:', downloadError)
+      console.error('âŒ Error al descargar archivo:', downloadError)
       throw new Error('No se pudo descargar el archivo de la versión anterior')
     }
 
@@ -265,18 +267,17 @@ export class DocumentosVersionesService {
       archivo,
       userId,
       tipoEntidad,
-      `[RESTAURACIÓN] ${motivo} - Restaurado desde versión ${versionAnterior.version}`,
+      `[RESTAURACIÃ“N] ${motivo} - Restaurado desde versión ${versionAnterior.version}`,
       tituloRestaurado,
       versionAnterior.fecha_documento,
       versionAnterior.fecha_vencimiento
     )
 
-    console.log(`✅ Versión ${versionAnterior.version} restaurada`)
     return resultado
   }
 
   /**
-   * ✅ GENÉRICO: ELIMINAR VERSIÓN (soft delete, solo Admin)
+   * âœ… GENÃ‰RICO: ELIMINAR VERSIÃ“N (soft delete, solo Admin)
    */
   static async eliminarVersion(
     versionId: string,
@@ -285,26 +286,26 @@ export class DocumentosVersionesService {
     tipoEntidad: TipoEntidad,
     motivo: string
   ): Promise<void> {
-    console.log('🗑️ [ADMIN] Eliminando versión:', versionId)
 
     // Validar rol de Administrador
     if (userRole !== 'Administrador') {
-      throw new Error('❌ Solo Administradores pueden eliminar versiones')
+      throw new Error('âŒ Solo Administradores pueden eliminar versiones')
     }
 
     // Validar motivo
     if (!motivo || motivo.trim().length < 20) {
-      throw new Error('❌ Debe proporcionar un motivo detallado (mínimo 20 caracteres)')
+      throw new Error('âŒ Debe proporcionar un motivo detallado (mínimo 20 caracteres)')
     }
 
     const config = obtenerConfiguracionEntidad(tipoEntidad)
 
     // Obtener la versión a eliminar
-    const { data: version, error: fetchError } = await supabase
+    const { data: versionResult, error: fetchError } = await supabase
       .from(config.tabla as any)
       .select('*')
       .eq('id', versionId)
       .single()
+    const version = versionResult as any
 
     if (fetchError) throw fetchError
     if (!version) throw new Error('Versión no encontrada')
@@ -323,13 +324,13 @@ export class DocumentosVersionesService {
 
       if ((versionesActivas?.length || 0) <= 1) {
         throw new Error(
-          '❌ No se puede eliminar la última versión activa. ' +
+          'âŒ No se puede eliminar la última versión activa. ' +
             'Usa "Eliminar Documento" en su lugar.'
         )
       }
 
       // Promover versión anterior a actual
-      const { data: versionAnterior } = await supabase
+      const { data: versionAnteriorInnerResult } = await supabase
         .from(config.tabla as any)
         .select('id')
         .or(`id.eq.${padreId},documento_padre_id.eq.${padreId}`)
@@ -338,6 +339,7 @@ export class DocumentosVersionesService {
         .order('version', { ascending: false })
         .limit(1)
         .single()
+      const versionAnterior = versionAnteriorInnerResult as any
 
       if (versionAnterior) {
         await supabase
@@ -365,29 +367,29 @@ export class DocumentosVersionesService {
 
     if (updateError) throw updateError
 
-    console.log('✅ Versión eliminada (soft delete)')
   }
 
   /**
-   * ✅ GENÉRICO: CONTAR VERSIONES ACTIVAS de un documento
+   * âœ… GENÃ‰RICO: CONTAR VERSIONES ACTIVAS de un documento
    */
   static async contarVersionesActivas(
     documentoId: string,
     tipoEntidad: TipoEntidad
-  ): Promise<{ total: number; actual: number }> {
+  ): Promise<{ total: number; actual: number; versiones: { id: string; version: number; titulo?: string }[] }> {
     const config = obtenerConfiguracionEntidad(tipoEntidad)
 
-    const { data: doc } = await supabase
+    const { data: docVersionResult } = await supabase
       .from(config.tabla as any)
       .select('documento_padre_id, version')
       .eq('id', documentoId)
       .single()
+    const doc = docVersionResult as any
 
     const padreId = doc?.documento_padre_id || documentoId
 
     const { data: versiones, error } = await supabase
       .from(config.tabla as any)
-      .select('id, version')
+      .select('id, version, titulo')
       .or(`id.eq.${padreId},documento_padre_id.eq.${padreId}`)
       .eq('estado', 'activo')
 
@@ -395,12 +397,13 @@ export class DocumentosVersionesService {
 
     return {
       total: versiones?.length || 0,
-      actual: doc?.version || 1
+      actual: doc?.version || 1,
+      versiones: versiones || [],
     }
   }
 
   /**
-   * ✅ GENÉRICO: OBTENER VERSIONES ELIMINADAS de un documento
+   * âœ… GENÃ‰RICO: OBTENER VERSIONES ELIMINADAS de un documento
    */
   static async obtenerVersionesEliminadas(
     documentoId: string,
@@ -408,11 +411,12 @@ export class DocumentosVersionesService {
   ): Promise<DocumentoProyecto[]> {
     const config = obtenerConfiguracionEntidad(tipoEntidad)
 
-    const { data: doc } = await supabase
+    const { data: docResult } = await supabase
       .from(config.tabla as any)
       .select('documento_padre_id')
       .eq('id', documentoId)
       .single()
+    const doc = docResult as any
 
     const padreId = doc?.documento_padre_id || documentoId
 
@@ -435,7 +439,7 @@ export class DocumentosVersionesService {
   }
 
   /**
-   * ✅ GENÉRICO: RESTAURAR VERSIONES SELECCIONADAS (múltiples)
+   * âœ… GENÃ‰RICO: RESTAURAR VERSIONES SELECCIONADAS (múltiples)
    */
   static async restaurarVersionesSeleccionadas(
     versionIds: string[],

@@ -10,10 +10,11 @@ import { DocumentoProyecto } from '../../../../types/documento.types'
 import { useDocumentosLista } from '../../hooks'
 import { useDocumentosStore } from '../../store/documentos.store'
 import { type TipoEntidad, obtenerConfiguracionEntidad } from '../../types'
-import { DocumentosArchivadosLista } from '../archivados'
+import { ArchivarDocumentoModal, RestaurarDocumentoModal } from '../modals'
 import { DocumentoViewer } from '../viewer/documento-viewer'
 
 import { DocumentoCard } from './documento-card'
+import { DocumentoCardHorizontal } from './documento-card-horizontal'
 import { DocumentosFiltros } from './documentos-filtros'
 
 interface DocumentosListaProps {
@@ -43,7 +44,14 @@ export function DocumentosLista({
     documentoSeleccionado,
     modalViewerAbierto,
     urlPreview,
-    documentosFiltrados,
+    modalArchivarAbierto,
+    setModalArchivarAbierto, // ✅ Extraer setter del hook
+    documentoParaArchivar,
+    modalRestaurarAbierto,
+    setModalRestaurarAbierto,
+    documentoParaRestaurar,
+    procesandoRestaurar,
+    documentosFiltrados, // Ya incluye filtro por estado según vistaActual
     categorias,
     cargandoDocumentos,
     hasDocumentos,
@@ -53,6 +61,8 @@ export function DocumentosLista({
     handleDownload,
     handleToggleImportante,
     handleArchive,
+    confirmarArchivado,
+    confirmarRestauracion,
     handleDelete,
     getCategoriaByDocumento,
     refrescar, // 🆕 Para refrescar después de editar/reemplazar
@@ -62,6 +72,13 @@ export function DocumentosLista({
   const handleRefresh = async () => {
     await refrescar()
   }
+
+  // 🆕 Filtrar por estado según tab activa
+  const documentosMostrar = documentosFiltrados.filter(doc =>
+    vistaActual === 'archivados'
+      ? doc.estado === 'archivado'
+      : doc.estado === 'activo'
+  )
 
   if (cargandoDocumentos) {
     return (
@@ -117,39 +134,39 @@ export function DocumentosLista({
       </div>
 
       {/* Contenido según tab activa */}
-      {vistaActual === 'archivados' ? (
-        <DocumentosArchivadosLista entidadId={entidadId} tipoEntidad={tipoEntidad} moduleName={themeModuleName} />
-      ) : (
-        <>
-          {/* Filtros (solo en vista activos) */}
-          <DocumentosFiltros
-            documentos={documentosFiltrados}
-            categorias={categorias}
-            onChangeVista={setVista}
-            moduleName={themeModuleName}
-          />
-
-      {/* Lista de documentos */}
-      {documentosFiltrados.length === 0 ? (
-        <EmptyState
-          icon={FileX}
-          title='No se encontraron documentos'
-          description={
-            !hasDocumentos
-              ? `Aún no has subido ningún documento a este ${config.nombreSingular}`
-              : 'No hay documentos que coincidan con los filtros aplicados'
-          }
-          action={
-            !hasDocumentos && onUploadClick
-              ? {
-                  label: 'Subir primer documento',
-                  onClick: onUploadClick,
-                }
-              : undefined
-          }
+      {/* 🎯 USAR MISMA CARD para activos y archivados */}
+      <>
+        {/* Filtros (común para ambas vistas) */}
+        <DocumentosFiltros
+          documentos={documentosMostrar}
+          categorias={categorias}
+          onChangeVista={setVista}
           moduleName={themeModuleName}
         />
-      ) : (
+
+        {/* Lista de documentos */}
+        {documentosMostrar.length === 0 ? (
+          <EmptyState
+            icon={vistaActual === 'archivados' ? Archive : FileX}
+            title={vistaActual === 'archivados' ? 'No hay documentos archivados' : 'No se encontraron documentos'}
+            description={
+              vistaActual === 'archivados'
+                ? 'Los documentos que archives aparecerán aquí'
+                : !hasDocumentos
+                ? `Aún no has subido ningún documento a este ${config.nombreSingular}`
+                : 'No hay documentos que coincidan con los filtros aplicados'
+            }
+            action={
+              !hasDocumentos && onUploadClick && vistaActual === 'activos'
+                ? {
+                    label: 'Subir primer documento',
+                    onClick: onUploadClick,
+                  }
+                : undefined
+            }
+            moduleName={themeModuleName}
+          />
+        ) : (
         <AnimatePresence mode='popLayout'>
           {vista === 'grid' ? (
             <motion.div
@@ -159,7 +176,7 @@ export function DocumentosLista({
               exit={{ opacity: 0 }}
               className='grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3'
             >
-              {documentosFiltrados.map((documento, index) => {
+              {documentosMostrar.map((documento, index) => {
                 const categoria = getCategoriaByDocumento(documento)
                 return (
                   <motion.div
@@ -181,6 +198,7 @@ export function DocumentosLista({
                       onDelete={handleDelete}
                       onRefresh={handleRefresh} // 🆕 Pasar callback de refresh
                       moduleName={themeModuleName}
+                      esArchivado={vistaActual === 'archivados'} // 🆕 Indicar si está en vista archivados
                     />
                   </motion.div>
                 )
@@ -192,9 +210,9 @@ export function DocumentosLista({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className='space-y-4'
+              className='space-y-1.5'
             >
-              {documentosFiltrados.map((documento, index) => {
+              {documentosMostrar.map((documento, index) => {
                 const categoria = getCategoriaByDocumento(documento)
                 return (
                   <motion.div
@@ -204,18 +222,17 @@ export function DocumentosLista({
                     exit={{ opacity: 0, x: 20 }}
                     transition={{ delay: index * 0.03 }}
                   >
-                    <DocumentoCard
+                    <DocumentoCardHorizontal
                       documento={documento}
                       categoria={categoria}
-                      categorias={categorias} // 🆕 Para modal de editar
-                      tipoEntidad={tipoEntidadFromHook} // ✅ Pasar tipoEntidad
+                      categorias={categorias}
+                      tipoEntidad={tipoEntidadFromHook}
                       onView={handleView}
                       onDownload={handleDownload}
                       onToggleImportante={handleToggleImportante}
                       onArchive={handleArchive}
                       onDelete={handleDelete}
-                      onRefresh={handleRefresh} // 🆕 Pasar callback de refresh
-                      moduleName={themeModuleName}
+                      onRefresh={handleRefresh}
                     />
                   </motion.div>
                 )
@@ -223,7 +240,8 @@ export function DocumentosLista({
             </motion.div>
           )}
         </AnimatePresence>
-      )}
+        )}
+      </>
 
       {/* Modal Viewer */}
       <DocumentoViewer
@@ -235,8 +253,25 @@ export function DocumentosLista({
         urlPreview={urlPreview}
         moduleName={themeModuleName}
       />
-        </>
-      )}
+
+      {/* Modal Archivar con motivo */}
+      <ArchivarDocumentoModal
+        isOpen={modalArchivarAbierto}
+        onClose={() => setModalArchivarAbierto(false)}
+        onConfirm={confirmarArchivado}
+        tituloDocumento={documentoParaArchivar?.titulo || ''}
+        moduleName={themeModuleName}
+      />
+
+      {/* Modal Restaurar con confirmación */}
+      <RestaurarDocumentoModal
+        isOpen={modalRestaurarAbierto}
+        onClose={() => setModalRestaurarAbierto(false)}
+        onConfirm={confirmarRestauracion}
+        documentoTitulo={documentoParaRestaurar?.titulo || ''}
+        moduleName={themeModuleName}
+        procesando={procesandoRestaurar}
+      />
     </div>
   )
 }

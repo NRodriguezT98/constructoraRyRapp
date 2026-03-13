@@ -10,16 +10,23 @@
 import { useEffect, useState } from 'react'
 
 import { motion } from 'framer-motion'
-import { AlertCircle, ArrowRight, CheckCircle2, Clock } from 'lucide-react'
+import { AlertCircle, ArrowRight, CheckCircle2, Clock, FileUp } from 'lucide-react'
 
 import { useRouter } from 'next/navigation'
 
 import { construirURLCliente } from '@/lib/utils/slug.utils'
 import { clientesService } from '@/modules/clientes/services/clientes.service'
 
-
-
-import type { ResultadoValidacion } from '../../services/validacion-desembolsos.service'
+interface ResultadoValidacion {
+  permitido: boolean
+  razon?: string
+  cartaFaltante?: boolean
+  pasoRequerido?: {
+    nombre: string
+    estado: string
+    descripcion?: string
+  }
+}
 
 interface AlertaValidacionDesembolsoProps {
   resultado: ResultadoValidacion
@@ -43,7 +50,8 @@ export function AlertaValidacionDesembolso({
       try {
         const cliente = await clientesService.obtenerCliente(clienteId)
         if (!cliente) {
-          setClienteUrl(`/clientes/${clienteId}?tab=proceso`)
+          const tab = resultado.cartaFaltante ? 'documentos' : 'proceso'
+          setClienteUrl(`/clientes/${clienteId}?tab=${tab}`)
           return
         }
         const url = construirURLCliente({
@@ -52,24 +60,68 @@ export function AlertaValidacionDesembolso({
           nombres: cliente.nombres,
           apellidos: cliente.apellidos
         })
-        setClienteUrl(`${url}?tab=proceso`)
+        const tab = resultado.cartaFaltante ? 'documentos' : 'proceso'
+        setClienteUrl(`${url}?tab=${tab}`)
       } catch (error) {
         console.error('Error al construir URL de cliente:', error)
-        // Fallback a UUID directo
-        setClienteUrl(`/clientes/${clienteId}?tab=proceso`)
+        const tab = resultado.cartaFaltante ? 'documentos' : 'proceso'
+        setClienteUrl(`/clientes/${clienteId}?tab=${tab}`)
       }
     }
     construirUrl()
-  }, [clienteId])
+  }, [clienteId, resultado.cartaFaltante])
 
   if (resultado.permitido) return null
 
   const handleIrAProceso = () => {
-    // Redirigir al proceso del cliente con URL amigable
     router.push(clienteUrl)
     onDismiss?.()
   }
 
+  // ── Caso: Carta de Aprobación faltante ──────────────────────────────────
+  if (resultado.cartaFaltante) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95, y: -10 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95, y: -10 }}
+        className="rounded-lg border-2 border-amber-200 bg-amber-50/80 backdrop-blur-sm p-4 space-y-3"
+      >
+        <div className="flex items-start gap-3">
+          <div className="flex-shrink-0">
+            <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center">
+              <FileUp className="w-5 h-5 text-amber-600" />
+            </div>
+          </div>
+          <div className="flex-1 min-w-0">
+            <h4 className="text-sm font-semibold text-amber-900 mb-1">
+              Carta de Aprobación Requerida
+            </h4>
+            <p className="text-sm text-amber-700 leading-relaxed">
+              {resultado.razon}
+            </p>
+          </div>
+        </div>
+
+        <div className="ml-13">
+          <button
+            onClick={handleIrAProceso}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg
+                     bg-gradient-to-r from-amber-500 to-orange-500
+                     hover:from-amber-600 hover:to-orange-600
+                     text-white text-sm font-medium
+                     transition-all duration-200 shadow-sm hover:shadow-md
+                     group"
+          >
+            <span>Ir a Documentos</span>
+            <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+          </button>
+        </div>
+      </motion.div>
+    )
+  }
+
+  // ── Caso: Paso del proceso requerido ────────────────────────────────────
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.95, y: -10 }}

@@ -21,7 +21,7 @@ export function ClientesHeader({ onNuevoCliente, totalClientes }: ClientesHeader
     <motion.div
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
+      transition={{ duration: 0.15 }}
       className={styles.header.container}
     >
       <div className={styles.header.pattern} />

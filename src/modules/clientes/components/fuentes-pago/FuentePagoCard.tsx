@@ -129,7 +129,7 @@ export function FuentePagoCard({ fuente, onSubirCarta }: FuentePagoCardProps) {
             <motion.div
               initial={{ width: 0 }}
               animate={{ width: `${porcentaje_completado || 0}%` }}
-              transition={{ duration: 0.5, ease: 'easeOut' }}
+              transition={{ duration: 0.15, ease: 'easeOut' }}
               className={styles.progreso.relleno}
             />
           </div>

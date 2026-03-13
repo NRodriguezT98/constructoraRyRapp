@@ -349,12 +349,27 @@ export function ConfigurarFuentesPago({
                               <option value="Banco Caja Social">Banco Caja Social</option>
                               <option value="Banco Popular">Banco Popular</option>
                             </select>
+                          ) : fuente.tipo === 'Subsidio Caja Compensación' ? (
+                            <select
+                              value={fuente.entidad || ''}
+                              onChange={(e) => actualizarFuente(index, 'entidad', e.target.value)}
+                              className="w-full rounded-lg border-2 border-gray-200 bg-white px-4 py-2 text-gray-900 transition-all focus:border-purple-500 focus:outline-none focus:ring-4 focus:ring-purple-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+                            >
+                              <option value="">Selecciona una caja de compensación</option>
+                              <option value="COMFANDI">COMFANDI</option>
+                              <option value="COMFENALCO VALLE">COMFENALCO VALLE</option>
+                              <option value="COMFAMILIAR HUILA">COMFAMILIAR HUILA</option>
+                              <option value="COMFACAUCA">COMFACAUCA</option>
+                              <option value="COMFENALCO ANTIOQUIA">COMFENALCO ANTIOQUIA</option>
+                              <option value="COMPENSAR">COMPENSAR</option>
+                              <option value="COLSUBSIDIO">COLSUBSIDIO</option>
+                            </select>
                           ) : (
                             <input
                               type="text"
                               value={fuente.entidad || ''}
                               onChange={(e) => actualizarFuente(index, 'entidad', e.target.value)}
-                              placeholder="Ej: Comfandi"
+                              placeholder="Nombre de la entidad"
                               className="w-full rounded-lg border-2 border-gray-200 bg-white px-4 py-2 text-gray-900 transition-all focus:border-purple-500 focus:outline-none focus:ring-4 focus:ring-purple-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
                             />
                           )}

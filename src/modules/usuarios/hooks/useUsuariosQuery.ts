@@ -73,11 +73,10 @@ export function useCrearUsuarioMutation() {
       // Invalidar queries de usuarios y estadísticas
       queryClient.invalidateQueries({ queryKey: ['usuarios'] })
 
-      console.log('✅ [MUTATION] Usuario creado, cache invalidado')
     },
 
     onError: error => {
-      console.error('❌ [MUTATION] Error creando usuario:', error)
+      console.error('âŒ [MUTATION] Error creando usuario:', error)
     },
   })
 }
@@ -97,11 +96,10 @@ export function useActualizarUsuarioMutation() {
       queryClient.invalidateQueries({ queryKey: ['usuarios'] })
       queryClient.invalidateQueries({ queryKey: ['usuarios', variables.id] })
 
-      console.log('✅ [MUTATION] Usuario actualizado, cache invalidado')
     },
 
     onError: error => {
-      console.error('❌ [MUTATION] Error actualizando usuario:', error)
+      console.error('âŒ [MUTATION] Error actualizando usuario:', error)
     },
   })
 }
@@ -120,11 +118,10 @@ export function useCambiarRolMutation() {
       queryClient.invalidateQueries({ queryKey: ['usuarios'] })
       queryClient.invalidateQueries({ queryKey: ['usuarios', variables.id] })
 
-      console.log('✅ [MUTATION] Rol actualizado, cache invalidado')
     },
 
     onError: error => {
-      console.error('❌ [MUTATION] Error cambiando rol:', error)
+      console.error('âŒ [MUTATION] Error cambiando rol:', error)
     },
   })
 }
@@ -143,11 +140,10 @@ export function useCambiarEstadoMutation() {
       queryClient.invalidateQueries({ queryKey: ['usuarios'] })
       queryClient.invalidateQueries({ queryKey: ['usuarios', variables.id] })
 
-      console.log('✅ [MUTATION] Estado actualizado, cache invalidado')
     },
 
     onError: error => {
-      console.error('❌ [MUTATION] Error cambiando estado:', error)
+      console.error('âŒ [MUTATION] Error cambiando estado:', error)
     },
   })
 }
@@ -165,11 +161,10 @@ export function useResetearIntentosMutation() {
       queryClient.invalidateQueries({ queryKey: ['usuarios'] })
       queryClient.invalidateQueries({ queryKey: ['usuarios', id] })
 
-      console.log('✅ [MUTATION] Intentos reseteados, cache invalidado')
     },
 
     onError: error => {
-      console.error('❌ [MUTATION] Error reseteando intentos:', error)
+      console.error('âŒ [MUTATION] Error reseteando intentos:', error)
     },
   })
 }
@@ -186,11 +181,10 @@ export function useEliminarUsuarioMutation() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['usuarios'] })
 
-      console.log('✅ [MUTATION] Usuario eliminado, cache invalidado')
     },
 
     onError: error => {
-      console.error('❌ [MUTATION] Error eliminando usuario:', error)
+      console.error('âŒ [MUTATION] Error eliminando usuario:', error)
     },
   })
 }

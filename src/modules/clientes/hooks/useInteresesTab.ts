@@ -3,20 +3,21 @@
  * HOOK: useInteresesTab
  * ============================================
  *
- * ✅ SEPARACIÓN DE RESPONSABILIDADES
+ * ✅ SEPARACIÓN DE RESPONSABILIDADES + REACT QUERY
  * Hook que maneja TODA la lógica del tab de intereses.
  * El componente solo renderiza UI.
  *
  * Responsabilidades:
- * - Cargar intereses del cliente con useListaIntereses
- * - Descartar intereses
- * - Filtrar por estado
- * - Calcular estadísticas
+ * - Cargar intereses del cliente con React Query (cache automático)
+ * - Descartar intereses con optimistic updates
+ * - Filtrar por estado (client-side)
+ * - Calcular estadísticas (memoizadas)
  */
 
 import { useCallback, useState } from 'react'
 
-import { useListaIntereses } from './useListaIntereses'
+import type { ClienteInteres } from '../types'
+import { useInteresesQuery } from './useInteresesQuery'
 
 interface UseInteresesTabProps {
   clienteId: string
@@ -27,42 +28,51 @@ export function useInteresesTab({ clienteId }: UseInteresesTabProps) {
   // ESTADO
   // =====================================================
 
-  const [descartando, setDescartando] = useState<string | null>(null)
+  const [descartandoId, setDescartandoId] = useState<string | null>(null)
+  const [interesADescartar, setInteresADescartar] = useState<ClienteInteres | null>(null)
 
-  // ✅ Hook existente que ya maneja la lógica de intereses
+  // ✅ Hook con React Query (cache, refetch automático, estados optimizados)
   const {
-    intereses,
+    interesesFiltrados: intereses,
     loading,
     stats,
     descartarInteres,
+    descartando: descartandoMutation,
     filtrarPorEstado,
     estadoFiltro,
-    recargar,
-  } = useListaIntereses(clienteId)
+    refetch,
+  } = useInteresesQuery({ clienteId })
 
   // =====================================================
   // ACCIONES
   // =====================================================
 
-  /**
-   * Descartar interés con confirmación
-   */
-  const handleDescartar = useCallback(
-    async (interesId: string) => {
-      if (!confirm('¿Estás seguro de descartar este interés?')) return
+  /** Abre el modal de confirmación para descartar */
+  const abrirModalDescartar = useCallback((interes: ClienteInteres) => {
+    setInteresADescartar(interes)
+  }, [])
 
-      setDescartando(interesId)
+  /** Cancela sin descartar */
+  const cancelarDescartar = useCallback(() => {
+    setInteresADescartar(null)
+  }, [])
+
+  /** Ejecuta el descarte con el motivo ingresado */
+  const confirmarDescartar = useCallback(
+    async (motivo: string) => {
+      if (!interesADescartar) return
+
+      setDescartandoId(interesADescartar.id)
+      setInteresADescartar(null)
       try {
-        await descartarInteres(interesId, 'Cliente ya no está interesado')
-        await recargar()
+        await descartarInteres(interesADescartar.id, motivo || 'Cliente ya no está interesado')
       } catch (error) {
         console.error('❌ [useInteresesTab] Error al descartar:', error)
-        alert('Error al descartar el interés')
       } finally {
-        setDescartando(null)
+        setDescartandoId(null)
       }
     },
-    [descartarInteres, recargar]
+    [interesADescartar, descartarInteres]
   )
 
   // =====================================================
@@ -75,11 +85,16 @@ export function useInteresesTab({ clienteId }: UseInteresesTabProps) {
     loading,
     stats,
     estadoFiltro,
-    descartando,
+    descartando: descartandoId,
+
+    // Modal descartar
+    interesADescartar,
+    abrirModalDescartar,
+    cancelarDescartar,
+    confirmarDescartar,
 
     // Acciones
-    handleDescartar,
     filtrarPorEstado,
-    recargar,
+    recargar: refetch,
   }
 }

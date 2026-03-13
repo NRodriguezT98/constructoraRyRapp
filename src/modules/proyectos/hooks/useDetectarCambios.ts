@@ -133,11 +133,11 @@ export function useDetectarCambios(
     }
 
     // 🆕 Comparar responsable del proyecto
-    if (proyectoOriginal.responsable !== nuevosDatos.responsable) {
+    if ((proyectoOriginal as any).responsable !== nuevosDatos.responsable) {
       cambiosProyecto.push({
         campo: 'responsable',
         label: 'Responsable del Proyecto',
-        valorAnterior: proyectoOriginal.responsable || 'No asignado',
+        valorAnterior: (proyectoOriginal as any).responsable || 'No asignado',
         valorNuevo: nuevosDatos.responsable || 'No asignado',
         tipo: 'texto',
       })

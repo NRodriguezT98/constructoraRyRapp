@@ -20,6 +20,7 @@
  */
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { toast } from 'sonner'
 
 import { clientesService } from '../services/clientes.service'
 import type {
@@ -95,10 +96,23 @@ export function useCrearClienteMutation() {
 
   return useMutation({
     mutationFn: (datos: CrearClienteDTO) => clientesService.crearCliente(datos),
-    onSuccess: () => {
+    onSuccess: (cliente) => {
       // Invalidar todas las listas de clientes
       queryClient.invalidateQueries({ queryKey: clientesKeys.lists() })
       queryClient.invalidateQueries({ queryKey: clientesKeys.estadisticas() })
+
+      // 🎉 Toast de éxito
+      toast.success('Cliente creado exitosamente', {
+        description: `${cliente.nombres} ${cliente.apellidos}`,
+        duration: 4000,
+      })
+    },
+    onError: (error: Error) => {
+      // ❌ Toast de error
+      toast.error('Error al crear cliente', {
+        description: error.message,
+        duration: 5000,
+      })
     },
   })
 }
@@ -112,12 +126,25 @@ export function useActualizarClienteMutation() {
   return useMutation({
     mutationFn: ({ id, datos }: { id: string; datos: ActualizarClienteDTO }) =>
       clientesService.actualizarCliente(id, datos),
-    onSuccess: (data, variables) => {
+    onSuccess: (cliente, variables) => {
       // Invalidar detalle del cliente actualizado
       queryClient.invalidateQueries({ queryKey: clientesKeys.detail(variables.id) })
       // Invalidar listas
       queryClient.invalidateQueries({ queryKey: clientesKeys.lists() })
       queryClient.invalidateQueries({ queryKey: clientesKeys.estadisticas() })
+
+      // 🎉 Toast de éxito
+      toast.success('Cliente actualizado exitosamente', {
+        description: `${cliente.nombres} ${cliente.apellidos}`,
+        duration: 4000,
+      })
+    },
+    onError: (error: Error) => {
+      // ❌ Toast de error
+      toast.error('Error al actualizar cliente', {
+        description: error.message,
+        duration: 5000,
+      })
     },
   })
 }
@@ -136,6 +163,18 @@ export function useEliminarClienteMutation() {
       // Invalidar listas
       queryClient.invalidateQueries({ queryKey: clientesKeys.lists() })
       queryClient.invalidateQueries({ queryKey: clientesKeys.estadisticas() })
+
+      // 🎉 Toast de éxito
+      toast.success('Cliente eliminado exitosamente', {
+        duration: 4000,
+      })
+    },
+    onError: (error: Error) => {
+      // ❌ Toast de error
+      toast.error('Error al eliminar cliente', {
+        description: error.message,
+        duration: 5000,
+      })
     },
   })
 }

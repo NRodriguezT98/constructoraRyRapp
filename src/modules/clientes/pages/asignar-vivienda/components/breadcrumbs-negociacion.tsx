@@ -9,6 +9,7 @@ import { ChevronRight, Home } from 'lucide-react'
 
 import Link from 'next/link'
 
+import { formatNombreCompleto } from '@/lib/utils/string.utils'
 import { pageStyles } from '../styles'
 
 interface BreadcrumbsNegociacionProps {
@@ -38,7 +39,7 @@ export function BreadcrumbsNegociacion({
         href={`/clientes/${clienteId}` as any}
         className={pageStyles.breadcrumbs.link}
       >
-        {clienteNombre || 'Cliente'}
+        {formatNombreCompleto(clienteNombre) || 'Cliente'}
       </Link>
 
       <ChevronRight className="h-3 w-3" />

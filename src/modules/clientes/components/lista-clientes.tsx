@@ -54,7 +54,7 @@ export function ListaClientes({
           key={cliente.id}
           cliente={cliente}
           vista="grid"
-          tieneCedula={cliente.tiene_cedula}
+          tieneCedula={cliente.tiene_documento_identidad}
           onVer={onVerCliente}
           onEditar={onEditarCliente}
           onEliminar={onEliminarCliente}

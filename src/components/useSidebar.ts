@@ -13,6 +13,7 @@ interface UseSidebarReturn {
   toggleSidebar: () => void
   closeSidebar: () => void
   isActive: (href: string) => boolean
+  getMostSpecificMatch: (items: { href: string }[]) => string | null  // ✅ Nueva función
 }
 
 /**
@@ -50,10 +51,59 @@ export function useSidebar(): UseSidebarReturn {
   // Verificar si una ruta está activa
   const isActive = useCallback(
     (href: string) => {
+      // Caso especial: Home debe ser match exacto
       if (href === '/') {
         return pathname === '/'
       }
-      return pathname.startsWith(href)
+
+      // Match exacto
+      if (pathname === href) {
+        return true
+      }
+
+      // Para subrutas: pathname debe empezar con href + '/'
+      return pathname.startsWith(href + '/')
+    },
+    [pathname]
+  )
+
+  /**
+   * Obtiene la ruta MÁS ESPECÍFICA que coincide con pathname
+   *
+   * Algoritmo:
+   * 1. Filtra rutas que coinciden (exactas o subrutas)
+   * 2. Cuenta segmentos de path por ruta
+   * 3. Retorna ruta con más segmentos
+   *
+   * Ejemplo:
+   * - pathname: "/admin/procesos/xxx/editar"
+   * - candidates: ["/admin", "/admin/procesos"]
+   * - result: "/admin/procesos" (2 segmentos > 1 segmento)
+   *
+   * @param items - Lista de items de navegación con propiedad href
+   * @returns href de la ruta más específica, o null si no hay matches
+   */
+  const getMostSpecificMatch = useCallback(
+    (items: { href: string }[]) => {
+      // Filtrar solo las rutas que coinciden (exactas o subrutas)
+      const matches = items.filter(item => {
+        if (item.href === '/') {
+          return pathname === '/'
+        }
+        return pathname === item.href || pathname.startsWith(item.href + '/')
+      })
+
+      // Si no hay matches, retornar null
+      if (matches.length === 0) return null
+
+      // Retornar la ruta con MÁS segmentos (la más específica)
+      const mostSpecific = matches.reduce((prev, current) => {
+        const prevSegments = prev.href.split('/').filter(Boolean).length
+        const currentSegments = current.href.split('/').filter(Boolean).length
+        return currentSegments > prevSegments ? current : prev
+      })
+
+      return mostSpecific.href
     },
     [pathname]
   )
@@ -67,5 +117,6 @@ export function useSidebar(): UseSidebarReturn {
     toggleSidebar,
     closeSidebar,
     isActive,
+    getMostSpecificMatch,
   }
 }

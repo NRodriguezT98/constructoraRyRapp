@@ -15,7 +15,11 @@ export class DocumentosEliminacionService {
   /**
    * ARCHIVAR DOCUMENTO COMPLETO (todas las versiones)
    */
-  static async archivarDocumento(documentoId: string): Promise<void> {
+  static async archivarDocumento(
+    documentoId: string,
+    motivoCategoria?: string,
+    motivoDetalle?: string
+  ): Promise<void> {
     const { data: documento, error: getError } = await supabase
       .from('documentos_vivienda')
       .select('id, documento_padre_id')
@@ -29,7 +33,11 @@ export class DocumentosEliminacionService {
 
     const { error } = await supabase
       .from('documentos_vivienda')
-      .update({ estado: 'archivado' })
+      .update({
+        estado: 'archivado',
+        motivo_categoria: motivoCategoria || null,
+        motivo_detalle: motivoDetalle || null
+      })
       .or(`id.eq.${documentoPadreId},documento_padre_id.eq.${documentoPadreId}`)
 
     if (error) throw error
@@ -88,7 +96,6 @@ export class DocumentosEliminacionService {
    * Elimina el documento y TODAS sus versiones
    */
   static async eliminarDocumento(documentoId: string): Promise<void> {
-    console.log('🗑️ Eliminando documento (soft delete):', documentoId)
 
     const { data: documento, error: getError } = await supabase
       .from('documentos_vivienda')
@@ -110,7 +117,6 @@ export class DocumentosEliminacionService {
 
     if (versionesError) throw versionesError
 
-    console.log(`📊 Eliminando ${versiones?.length || 0} versiones activas`)
 
     if (versiones && versiones.length > 0) {
       const versionMasAlta = versiones[0]
@@ -131,7 +137,6 @@ export class DocumentosEliminacionService {
 
       if (flagError) throw flagError
 
-      console.log(`✅ ${versiones.length} versiones eliminadas`)
     }
   }
 
@@ -235,7 +240,7 @@ export class DocumentosEliminacionService {
    */
   static async obtenerDocumentosEliminadosSimple(): Promise<DocumentoVivienda[]> {
     // Fallback: Sin JOINs (solo documentos básicos)
-    console.warn('⚠️ JOINs fallaron, usando query simple:', errorJoins?.message)
+    console.warn('⚠️ JOINs fallaron, usando query simple')
     const { data, error } = await supabase
       .from('documentos_vivienda')
       .select('*')

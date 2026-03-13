@@ -8,8 +8,10 @@ import { AlertCircle, Eye, EyeOff, Lock, Mail } from 'lucide-react'
 import Image from 'next/image'
 import { useSearchParams } from 'next/navigation'
 
-import { DebugLogsButton } from '@/components/debug/DebugLogsButton'
-import { DebugLogger } from '@/lib/utils/debug-logger'
+
+
+
+
 
 import { loginStyles } from './page.styles'
 import { ResetPasswordModal } from './reset-password-modal'
@@ -43,6 +45,10 @@ function LoginForm() {
   const emailInputRef = useRef<HTMLInputElement>(null)
   const passwordInputRef = useRef<HTMLInputElement>(null)
 
+
+
+
+
   // ✅ Autofocus inteligente: Si hay email guardado -> password, si no -> email
   useEffect(() => {
     // Esperar a que recordarUsuario y email estén inicializados desde el hook
@@ -59,16 +65,9 @@ function LoginForm() {
     return () => clearTimeout(timer)
   }, [recordarUsuario, email]) // ✅ Ejecutar cuando recordarUsuario o email cambien
 
-  // ✅ CRÍTICO: Limpiar cache de React Query al montar (después de logout)
-  useEffect(() => {
-    DebugLogger.log('LOGIN_PAGE', '🔵 LoginForm montado')
-    console.log('🔵 [PAGE] LoginForm montado')
 
-    return () => {
-      DebugLogger.log('LOGIN_PAGE', '🔴 LoginForm desmontado')
-      console.log('🔴 [PAGE] LoginForm desmontado')
-    }
-  }, []) // ✅ Solo al montar/desmontar
+
+
 
   // Mostrar toast cuando login es exitoso
   // ❌ DESACTIVADO: Ahora usamos toast moderno personalizado en useLogin.ts
@@ -77,6 +76,8 @@ function LoginForm() {
   //     setShowToast(true)
   //   }
   // }, [loginExitoso])
+
+
 
   return (
     <div className={s.container}>
@@ -89,6 +90,7 @@ function LoginForm() {
           sizes='100vw'
           className={s.backgroundImage}
           priority
+          fetchPriority="low"
           quality={90}
         />
         {/* Overlay oscuro para mejorar legibilidad */}
@@ -105,10 +107,11 @@ function LoginForm() {
               src='/images/logo1-dark.png'
               alt='Logo RyR Constructora'
               fill
-              sizes='(max-width: 768px) 100vw, 600px'
+              sizes='(max-width: 640px) 280px, (max-width: 1024px) 400px, 600px'
               className={s.logo1Image}
               style={inlineStyles.logo1Filter}
               priority
+              fetchPriority="high"
             />
           </div>
 
@@ -330,7 +333,7 @@ export default function LoginPage() {
     >
       {/* ✅ SOLUCIÓN: Wrapper con key para forzar remontaje */}
       <LoginFormWrapper />
-      <DebugLogsButton />
+
     </Suspense>
   )
 }

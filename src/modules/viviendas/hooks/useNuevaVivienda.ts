@@ -1,4 +1,4 @@
-﻿/**
+/**
  * useNuevaVivienda - Hook con lógica del wizard de 5 pasos
  * ✅ Separación de responsabilidades ESTRICTA
  * ✅ Gestión de pasos
@@ -108,14 +108,14 @@ const paso4Schema = z.object({
     z.string().min(1, 'El valor base es obligatorio'),
     z.number()
   ]).pipe(
-    z.coerce.number().min(1, 'El valor base debe ser mayor a 0')
+    z.coerce.number().min(1, 'El valor base debe ser mayor a 0') as any
   ),
   es_esquinera: z.boolean(),
   recargo_esquinera: z.union([
     z.string(),
     z.number()
   ]).pipe(
-    z.coerce.number().min(0, 'El recargo debe ser mayor o igual a 0')
+    z.coerce.number().min(0, 'El recargo debe ser mayor o igual a 0') as any
   ).optional().default(0),
 })
 
@@ -271,7 +271,7 @@ export function useNuevaVivienda({ onSubmit, viviendaId }: UseNuevaViviendaParam
     getValues,
     formState: { errors, isValidating },
   } = useForm<ViviendaFormSchema>({
-    resolver: zodResolver(viviendaSchema), // ← Schema base sin validación async
+    resolver: zodResolver(viviendaSchema) as any, // ← Schema base sin validación async
     mode: 'onChange',
     defaultValues: {
       proyecto_id: '',
@@ -283,8 +283,8 @@ export function useNuevaVivienda({ onSubmit, viviendaId }: UseNuevaViviendaParam
       lindero_occidente: '',
       matricula_inmobiliaria: '',
       nomenclatura: '',
-      area_lote: '',
-      area_construida: '',
+      area_lote: '' as any,
+      area_construida: '' as any,
       tipo_vivienda: 'Regular' as const,
       valor_base: 0,
       es_esquinera: false,
@@ -524,9 +524,9 @@ export function useNuevaVivienda({ onSubmit, viviendaId }: UseNuevaViviendaParam
       setSubmitting(true)
 
       // Transformar datos al formato esperado
-      const viviendaData: ViviendaFormData = {
+      const viviendaData = {
         ...data,
-      }
+      } as unknown as ViviendaFormData
 
       await onSubmit(viviendaData)
 
@@ -594,7 +594,7 @@ export function useNuevaVivienda({ onSubmit, viviendaId }: UseNuevaViviendaParam
   return {
     // Form state
     register,
-    handleSubmit: handleSubmit(onSubmitForm),
+    handleSubmit: handleSubmit(onSubmitForm as any),
     errors,
     isValidating, // ← Exponer estado de validación async
     setValue,

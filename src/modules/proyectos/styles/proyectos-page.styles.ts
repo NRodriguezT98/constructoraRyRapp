@@ -133,12 +133,12 @@ export const proyectosPageStyles = {
     header: {
       initial: { opacity: 0, y: 20 },
       animate: { opacity: 1, y: 0 },
-      transition: { duration: 0.5 },
+      transition: { duration: 0.15 },
     },
     metricas: {
       initial: { opacity: 0, y: 20 },
       animate: { opacity: 1, y: 0 },
-      transition: { duration: 0.5, delay: 0.1 },
+      transition: { duration: 0.15 },
     },
     metricaCard: {
       whileHover: { scale: 1.02, y: -4 },
@@ -147,7 +147,7 @@ export const proyectosPageStyles = {
     filtros: {
       initial: { opacity: 0, y: -20 },
       animate: { opacity: 1, y: 0 },
-      transition: { duration: 0.5, delay: 0.2 },
+      transition: { duration: 0.15 },
     },
     button: {
       whileHover: { scale: 1.05 },

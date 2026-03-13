@@ -7,18 +7,13 @@
  * 3. Subsidio Mi Casa Ya (desembolso único)
  * 4. Subsidio Caja Compensación (desembolso único)
  *
- * ⚠️ NOMBRES DE CAMPOS VERIFICADOS EN: docs/DATABASE-SCHEMA-REFERENCE.md
+ * âš ï¸ NOMBRES DE CAMPOS VERIFICADOS EN: docs/DATABASE-SCHEMA-REFERENCE.md
  */
 
 import { supabase } from '@/lib/supabase/client'
 import { formatDateForDB, getTodayDateString } from '@/lib/utils/date.utils'
-
-// Tipos de fuente de pago
-export type TipoFuentePago =
-  | 'Cuota Inicial'
-  | 'Crédito Hipotecario'
-  | 'Subsidio Mi Casa Ya'
-  | 'Subsidio Caja Compensación'
+import type { TipoFuentePago } from '@/modules/clientes/types'
+export type { TipoFuentePago }
 
 // DTOs
 export interface CrearFuentePagoDTO {
@@ -59,7 +54,8 @@ export interface FuentePago {
   permite_multiples_abonos: boolean
   carta_aprobacion_url?: string
   carta_asignacion_url?: string
-  estado: 'Pendiente' | 'En Proceso' | 'Completada'
+  estado: 'Activa' | 'Inactiva'
+  estado_fuente?: string
   fecha_completado?: string
   fecha_creacion: string
   fecha_actualizacion: string
@@ -71,53 +67,73 @@ class FuentesPagoService {
    */
   async crearFuentePago(datos: CrearFuentePagoDTO): Promise<FuentePago> {
     try {
-      console.log('📝 Creando fuente de pago:', datos)
 
       // Determinar si permite múltiples abonos (solo Cuota Inicial)
       const permiteMultiplesAbonos = datos.tipo === 'Cuota Inicial'
+
+      // Resolver tipo_fuente_id (FK NOT NULL) desde tipos_fuentes_pago
+      const { data: tipoFuente, error: tipoError } = await supabase
+        .from('tipos_fuentes_pago')
+        .select('id')
+        .eq('nombre', datos.tipo)
+        .single()
+
+      if (tipoError || !tipoFuente) {
+        throw new Error(`No se encontró el tipo de fuente de pago: ${datos.tipo}`)
+      }
 
       const { data, error } = await supabase
         .from('fuentes_pago')
         .insert({
           negociacion_id: datos.negociacion_id,
           tipo: datos.tipo,
+          tipo_fuente_id: tipoFuente.id,
           monto_aprobado: datos.monto_aprobado,
           monto_recibido: 0,
           entidad: datos.entidad,
           numero_referencia: datos.numero_referencia,
           permite_multiples_abonos: permiteMultiplesAbonos,
-          estado: 'Pendiente',
-        })
+          estado: 'Activa',
+        } as any)
         .select()
         .single()
 
       if (error) throw error
 
-      console.log('✅ Fuente de pago creada:', data.id)
-      return data as FuentePago
+      return data as unknown as FuentePago
     } catch (error) {
       const mensaje = error instanceof Error ? error.message : 'Error desconocido'
-      console.error('❌ [CLIENTES] Error creando fuente de pago:', mensaje, error)
+      console.error('âŒ [CLIENTES] Error creando fuente de pago:', mensaje, error)
       throw error
     }
   }
 
   /**
-   * Obtener fuentes de pago de una negociación
+   * Obtener fuentes de pago de una negociación ordenadas según configuración FK robusta
    */
   async obtenerFuentesPagoNegociacion(negociacionId: string): Promise<FuentePago[]> {
     try {
+      // âœ… JOIN ROBUSTA con FK tipo_fuente_id -> tipos_fuentes_pago.id
       const { data, error } = await supabase
         .from('fuentes_pago')
-        .select('*')
+        .select(`
+          id, negociacion_id, tipo, entidad, monto_aprobado,
+          numero_referencia, estado, estado_fuente, fecha_creacion, fecha_actualizacion,
+          permite_multiples_abonos, carta_aprobacion_url, carta_asignacion_url, monto_recibido, saldo_pendiente,
+          tipos_fuentes_pago!fk_fuentes_pago_tipo_fuente(
+            orden, nombre, activo
+          )
+        `)
         .eq('negociacion_id', negociacionId)
-        .order('fecha_creacion', { ascending: true })
+        .eq('estado_fuente', 'activa') // âœ… Solo fuentes activas
+        .eq('tipos_fuentes_pago.activo', true) // âœ… Solo tipos activos
+        .order('tipos_fuentes_pago(orden)', { ascending: true }) // âœ… Orden por configuración
 
       if (error) throw error
-      return (data as FuentePago[]) || []
+      return (data as unknown as FuentePago[]) || []
     } catch (error) {
       const mensaje = error instanceof Error ? error.message : 'Error desconocido'
-      console.error('❌ [CLIENTES] Error obteniendo fuentes de pago:', mensaje, error)
+      console.error('âŒ [CLIENTES] Error obteniendo fuentes de pago:', mensaje, error)
       return []
     }
   }
@@ -129,15 +145,19 @@ class FuentesPagoService {
     try {
       const { data, error } = await supabase
         .from('fuentes_pago')
-        .select('*')
+        .select(`
+          id, negociacion_id, tipo_fuente, entidad_financiera, valor_aprobado,
+          numero_aprobacion, estado_fuente, fecha_aprobacion, observaciones,
+          fecha_creacion, usuario_creacion, url_documento_aprobacion
+        `)
         .eq('id', id)
         .single()
 
       if (error) throw error
-      return data as FuentePago
+      return data as unknown as FuentePago
     } catch (error) {
       const mensaje = error instanceof Error ? error.message : 'Error desconocido'
-      console.error('❌ [CLIENTES] Error obteniendo fuente de pago:', mensaje, error)
+      console.error('âŒ [CLIENTES] Error obteniendo fuente de pago:', mensaje, error)
       return null
     }
   }
@@ -147,7 +167,6 @@ class FuentesPagoService {
    */
   async actualizarFuentePago(id: string, datos: ActualizarFuentePagoDTO): Promise<FuentePago> {
     try {
-      console.log('📝 Actualizando fuente de pago:', id, datos)
 
       const { data, error } = await supabase
         .from('fuentes_pago')
@@ -158,11 +177,10 @@ class FuentesPagoService {
 
       if (error) throw error
 
-      console.log('✅ Fuente de pago actualizada')
-      return data as FuentePago
+      return data as unknown as FuentePago
     } catch (error) {
       const mensaje = error instanceof Error ? error.message : 'Error desconocido'
-      console.error('❌ [CLIENTES] Error actualizando fuente de pago:', mensaje, error)
+      console.error('âŒ [CLIENTES] Error actualizando fuente de pago:', mensaje, error)
       throw error
     }
   }
@@ -203,30 +221,85 @@ class FuentesPagoService {
       return await this.actualizarFuentePago(id, updates)
     } catch (error) {
       const mensaje = error instanceof Error ? error.message : 'Error desconocido'
-      console.error('❌ [CLIENTES] Error registrando monto recibido:', mensaje, error)
+      console.error('âŒ [CLIENTES] Error registrando monto recibido:', mensaje, error)
       throw error
     }
   }
 
   /**
-   * Eliminar fuente de pago
+   * Inactivar fuente de pago (soft delete)
+   * Marca como inactiva en lugar de eliminar permanentemente
+   * Conserva historial y dispara trigger para marcar documentos como obsoletos
+   */
+  async inactivarFuentePago(
+    id: string,
+    razon: string,
+    reemplazadaPor?: string
+  ): Promise<void> {
+    try {
+      const fuente = await this.obtenerFuentePago(id)
+      if (!fuente) throw new Error('Fuente de pago no encontrada')
+
+      // âš ï¸ PROHIBIDO: No permitir si ha recibido dinero
+      if (fuente.monto_recibido > 0) {
+        throw new Error(
+          `No se puede eliminar una fuente de pago que ya ha recibido $${fuente.monto_recibido.toLocaleString('es-CO')}. ` +
+          `Esta fuente debe permanecer activa para mantener el historial de abonos.`
+        )
+      }
+
+      // Marcar como inactiva — sincronizar AMBAS columnas de estado
+      const nuevoEstadoFuente = reemplazadaPor ? 'reemplazada' : 'inactiva'
+      const { error } = await supabase
+        .from('fuentes_pago')
+        .update({
+          estado: 'Inactiva',
+          estado_fuente: nuevoEstadoFuente,
+          razon_inactivacion: razon,
+          fecha_inactivacion: new Date().toISOString(),
+          reemplazada_por: reemplazadaPor || null,
+        })
+        .eq('id', id)
+
+      if (error) throw error
+
+    } catch (error) {
+      console.error('âŒ Error inactivando fuente de pago:', error)
+      throw error
+    }
+  }
+
+  /**
+   * Eliminar PERMANENTEMENTE fuente de pago
+   * âš ï¸ SOLO usar si NO tiene dinero recibido (trigger en BD lo valida)
+   * @deprecated Usar inactivarFuentePago() para mantener historial
    */
   async eliminarFuentePago(id: string): Promise<void> {
     try {
       const fuente = await this.obtenerFuentePago(id)
       if (!fuente) throw new Error('Fuente de pago no encontrada')
 
-      // Solo permitir eliminar si no ha recibido dinero
+      // Validación adicional (trigger en BD también lo valida)
       if (fuente.monto_recibido > 0) {
-        throw new Error('No se puede eliminar una fuente de pago que ya ha recibido dinero')
+        throw new Error(
+          `PROHIBIDO: No se puede eliminar una fuente con $${fuente.monto_recibido.toLocaleString('es-CO')} recibidos. ` +
+          `El trigger de base de datos bloqueará esta operación.`
+        )
       }
 
+      // Intentar eliminar (trigger puede rechazar)
       const { error } = await supabase.from('fuentes_pago').delete().eq('id', id)
 
-      if (error) throw error
-      console.log('✅ Fuente de pago eliminada')
+      if (error) {
+        // Si el trigger rechaza, mostrar mensaje amigable
+        if (error.message.includes('PROHIBIDO')) {
+          throw new Error('No se puede eliminar esta fuente porque ya ha recibido dinero')
+        }
+        throw error
+      }
+
     } catch (error) {
-      console.error('❌ Error eliminando fuente de pago:', error)
+      console.error('âŒ Error eliminando fuente de pago:', error)
       throw error
     }
   }
@@ -255,7 +328,7 @@ class FuentesPagoService {
         porcentaje_completado,
       }
     } catch (error) {
-      console.error('❌ Error calculando totales:', error)
+      console.error('âŒ Error calculando totales:', error)
       return {
         total_aprobado: 0,
         total_recibido: 0,
@@ -277,7 +350,7 @@ class FuentesPagoService {
       const { total_aprobado } = await this.calcularTotales(negociacionId)
       return total_aprobado >= valorTotalNegociacion
     } catch (error) {
-      console.error('❌ Error verificando cierre financiero:', error)
+      console.error('âŒ Error verificando cierre financiero:', error)
       return false
     }
   }
@@ -287,7 +360,6 @@ class FuentesPagoService {
    */
   async subirCartaAprobacion(datos: SubirCartaAprobacionDTO): Promise<string> {
     try {
-      console.log('📤 Subiendo carta de aprobación:', datos.tipoDocumento)
 
       const { fuentePagoId, archivo, tipoDocumento } = datos
 
@@ -325,10 +397,9 @@ class FuentesPagoService {
         [campoActualizar]: publicUrl,
       })
 
-      console.log('✅ Carta de aprobación subida:', publicUrl)
       return publicUrl
     } catch (error) {
-      console.error('❌ Error subiendo carta de aprobación:', error)
+      console.error('âŒ Error subiendo carta de aprobación:', error)
       throw error
     }
   }
@@ -361,7 +432,7 @@ class FuentesPagoService {
         errores,
       }
     } catch (error) {
-      console.error('❌ Error validando documentos:', error)
+      console.error('âŒ Error validando documentos:', error)
       return {
         valido: false,
         errores: ['Error al validar documentos requeridos'],

@@ -4,6 +4,8 @@ import { useAuth } from '@/contexts/auth-context'
 import { usePermisosQuery } from '@/modules/usuarios/hooks/usePermisosQuery'
 import type { DocumentoProyecto } from '@/types/documento.types'
 import { useClickOutside } from '../../../shared/hooks'
+import type { TipoEntidad } from '../types/entidad.types'
+import { useEliminarDocumento } from './useEliminarDocumento'
 // ❌ ELIMINADO: DocumentosClienteService (servicio legacy eliminado)
 // TODO: Migrar métodos obtenerEstadoProceso y esDocumentoDeProceso a servicio genérico
 
@@ -19,7 +21,22 @@ export function useDocumentoCard({ documento, esDocumentoProyecto = true }: UseD
   const esAdmin = useMemo(() => perfil?.rol === 'Administrador', [perfil?.rol])
   const puedeEliminar = useMemo(() => puede('documentos', 'eliminar'), [puede])
 
-  // 📋 Estados de UI
+  // �️ Confirmación de eliminación inteligente
+  const {
+    abrirConfirmacion,
+    cerrarConfirmacion,    ejecutarEliminacion,    confirmacion: confirmacionEliminar,
+    eliminando,
+  } = useEliminarDocumento()
+
+  const abrirConfirmacionEliminar = useCallback((doc: DocumentoProyecto, tipoEntidad: TipoEntidad = 'cliente') => {
+    abrirConfirmacion(doc, tipoEntidad)
+  }, [abrirConfirmacion])
+
+  const cerrarConfirmacionEliminar = useCallback(() => {
+    cerrarConfirmacion()
+  }, [cerrarConfirmacion])
+
+  // �📋 Estados de UI
   const [menuAbierto, setMenuAbierto] = useState(false)
   const [modalEditarAbierto, setModalEditarAbierto] = useState(false)
   const [modalReemplazarAbierto, setModalReemplazarAbierto] = useState(false)
@@ -217,5 +234,12 @@ export function useDocumentoCard({ documento, esDocumentoProyecto = true }: UseD
     // 📊 Propiedades del documento
     esDocumentoDeProceso,
     tieneVersiones,
+
+    // 🗑️ Confirmación de eliminación
+    confirmacionEliminar,
+    abrirConfirmacionEliminar,
+    cerrarConfirmacionEliminar,
+    ejecutarEliminacion,
+    eliminando,
   }
 }

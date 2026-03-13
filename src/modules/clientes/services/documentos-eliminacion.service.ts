@@ -7,7 +7,7 @@
 // - Eliminar definitivo (BD + Storage)
 // ============================================
 
-import { supabase } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase/client'
 import type { Database } from '@/lib/supabase/database.types'
 import { formatDateForDB, getTodayDateString } from '@/lib/utils/date.utils'
 

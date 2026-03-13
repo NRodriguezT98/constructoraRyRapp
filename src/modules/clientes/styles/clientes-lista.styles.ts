@@ -39,8 +39,8 @@ export const clientesListaStyles = {
   // 🎈 FAB (Floating Action Button - Superior derecho)
   fab: {
     container: 'fixed top-6 right-6 z-50',
-    button: 'group relative overflow-hidden flex items-center gap-2 px-6 py-4 bg-gradient-to-r from-purple-600 via-violet-600 to-indigo-600 hover:from-purple-700 hover:via-violet-700 hover:to-indigo-700 text-white font-bold rounded-2xl shadow-2xl shadow-purple-500/50 hover:shadow-purple-600/60 hover:scale-110 transition-all duration-300',
-    buttonGlow: 'absolute inset-0 bg-gradient-to-r from-purple-400 to-indigo-400 blur-xl opacity-50 group-hover:opacity-75 transition-opacity',
+    button: 'group relative overflow-hidden flex items-center gap-2 px-6 py-4 bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 hover:from-cyan-700 hover:via-blue-700 hover:to-indigo-700 text-white font-bold rounded-2xl shadow-2xl shadow-cyan-500/50 hover:shadow-cyan-600/60 hover:scale-110 transition-all duration-300',
+    buttonGlow: 'absolute inset-0 bg-gradient-to-r from-cyan-400 to-indigo-400 blur-xl opacity-50 group-hover:opacity-75 transition-opacity',
     buttonContent: 'relative z-10 flex items-center gap-2',
     icon: 'w-5 h-5',
     text: 'text-sm font-bold'

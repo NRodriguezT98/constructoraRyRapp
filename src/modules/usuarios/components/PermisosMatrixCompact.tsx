@@ -50,10 +50,6 @@ export function PermisosMatrixCompact() {
       result[permiso.rol][permiso.modulo][permiso.accion] = permiso
     })
 
-    // Debug: mostrar roles encontrados
-    console.log('🔍 Roles en permisos:', Object.keys(result))
-    console.log('📊 Total permisos:', permisos.length)
-
     return result
   }, [permisos])
 

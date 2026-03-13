@@ -7,26 +7,29 @@ import type { DocumentoProyecto } from '../types/documento.types'
 import { type TipoEntidad, obtenerConfiguracionEntidad } from '../types/entidad.types'
 
 /**
- * ✅ SERVICIO GENÉRICO: Eliminación de documentos (soft/hard delete)
+ * âœ… SERVICIO GENÃ‰RICO: Eliminación de documentos (soft/hard delete)
  * Soporta: proyectos, viviendas, clientes, contratos, proveedores
  * Responsabilidades: archivar, eliminar (soft), restaurar, eliminar definitivo (hard)
  */
 export class DocumentosEliminacionService {
   /**
-   * ✅ GENÉRICO: Archivar documento completo (todas las versiones)
+   * âœ… GENÃ‰RICO: Archivar documento completo (todas las versiones)
    */
   static async archivarDocumento(
     documentoId: string,
-    tipoEntidad: TipoEntidad
+    tipoEntidad: TipoEntidad,
+    motivoCategoria?: string,
+    motivoDetalle?: string
   ): Promise<void> {
     const config = obtenerConfiguracionEntidad(tipoEntidad)
     const tabla = config.tabla
 
-    const { data: documento, error: getError } = await supabase
-      .from(tabla)
+    const { data: documentoResult, error: getError } = await supabase
+      .from(tabla as any)
       .select('id, documento_padre_id')
       .eq('id', documentoId)
       .single()
+    const documento = documentoResult as any
 
     if (getError) throw getError
     if (!documento) throw new Error('Documento no encontrado')
@@ -34,15 +37,19 @@ export class DocumentosEliminacionService {
     const documentoPadreId = documento.documento_padre_id || documentoId
 
     const { error } = await supabase
-      .from(tabla)
-      .update({ estado: 'archivado' })
+      .from(tabla as any)
+      .update({
+        estado: 'archivado',
+        motivo_categoria: motivoCategoria || null,
+        motivo_detalle: motivoDetalle || null
+      })
       .or(`id.eq.${documentoPadreId},documento_padre_id.eq.${documentoPadreId}`)
 
     if (error) throw error
   }
 
   /**
-   * ✅ GENÉRICO: Restaurar documento archivado (todas las versiones)
+   * âœ… GENÃ‰RICO: Restaurar documento archivado (todas las versiones)
    */
   static async restaurarDocumentoArchivado(
     documentoId: string,
@@ -51,11 +58,12 @@ export class DocumentosEliminacionService {
     const config = obtenerConfiguracionEntidad(tipoEntidad)
     const tabla = config.tabla
 
-    const { data: documento, error: getError } = await supabase
-      .from(tabla)
+    const { data: documentoResult, error: getError } = await supabase
+      .from(tabla as any)
       .select('id, documento_padre_id')
       .eq('id', documentoId)
       .single()
+    const documento = documentoResult as any
 
     if (getError) throw getError
     if (!documento) throw new Error('Documento no encontrado')
@@ -63,7 +71,7 @@ export class DocumentosEliminacionService {
     const documentoPadreId = documento.documento_padre_id || documentoId
 
     const { error } = await supabase
-      .from(tabla)
+      .from(tabla as any)
       .update({ estado: 'activo' })
       .or(`id.eq.${documentoPadreId},documento_padre_id.eq.${documentoPadreId}`)
 
@@ -71,7 +79,7 @@ export class DocumentosEliminacionService {
   }
 
   /**
-   * ✅ GENÉRICO: Obtener documentos archivados de una entidad
+   * âœ… GENÃ‰RICO: Obtener documentos archivados de una entidad
    */
   static async obtenerDocumentosArchivados(
     entidadId: string,
@@ -81,7 +89,7 @@ export class DocumentosEliminacionService {
     const tabla = config.tabla
 
     const { data, error } = await supabase
-      .from(tabla)
+      .from(tabla as any)
       .select(`
         *,
         usuario:usuarios (
@@ -100,23 +108,23 @@ export class DocumentosEliminacionService {
   }
 
   /**
-   * ✅ GENÉRICO: Eliminar documento (soft delete)
+   * âœ… GENÃ‰RICO: Eliminar documento (soft delete)
    * Elimina el documento y TODAS sus versiones
    */
   static async eliminarDocumento(
     documentoId: string,
     tipoEntidad: TipoEntidad
   ): Promise<void> {
-    console.log('🗑️ Eliminando documento (soft delete):', documentoId)
 
     const config = obtenerConfiguracionEntidad(tipoEntidad)
     const tabla = config.tabla
 
-    const { data: documento, error: getError } = await supabase
-      .from(tabla)
+    const { data: documentoResult2, error: getError } = await supabase
+      .from(tabla as any)
       .select('id, documento_padre_id, version, es_version_actual')
       .eq('id', documentoId)
       .single()
+    const documento = documentoResult2 as any
 
     if (getError) throw getError
     if (!documento) throw new Error('Documento no encontrado')
@@ -124,7 +132,7 @@ export class DocumentosEliminacionService {
     const documentoPadreId = documento.documento_padre_id || documentoId
 
     const { data: versiones, error: versionesError } = await supabase
-      .from(tabla)
+      .from(tabla as any)
       .select('id, version, es_version_actual')
       .or(`id.eq.${documentoPadreId},documento_padre_id.eq.${documentoPadreId}`)
       .eq('estado', 'activo')
@@ -132,14 +140,13 @@ export class DocumentosEliminacionService {
 
     if (versionesError) throw versionesError
 
-    console.log(`📊 Eliminando ${versiones?.length || 0} versiones activas`)
 
     if (versiones && versiones.length > 0) {
-      const versionMasAlta = versiones[0]
-      const idsAEliminar = versiones.map((v) => v.id)
+      const versionMasAlta = (versiones as any[])[0]
+      const idsAEliminar = (versiones as any[]).map((v: any) => v.id)
 
       const { error: updateError } = await supabase
-        .from(tabla)
+        .from(tabla as any)
         .update({ estado: 'eliminado' })
         .in('id', idsAEliminar)
 
@@ -147,18 +154,17 @@ export class DocumentosEliminacionService {
 
       // Asegurar que la versión más alta tenga es_version_actual=true
       const { error: flagError } = await supabase
-        .from(tabla)
+        .from(tabla as any)
         .update({ es_version_actual: true })
-        .eq('id', versionMasAlta.id)
+        .eq('id', (versionMasAlta as any).id)
 
       if (flagError) throw flagError
 
-      console.log(`✅ ${versiones.length} versiones eliminadas`)
     }
   }
 
   /**
-   * ✅ GENÉRICO: Obtener documentos eliminados (Papelera)
+   * âœ… GENÃ‰RICO: Obtener documentos eliminados (Papelera)
    * @param tipoEntidad - Opcional: filtra por tipo de entidad. Si no se provee, muestra todos
    */
   static async obtenerDocumentosEliminados(
@@ -172,7 +178,7 @@ export class DocumentosEliminacionService {
     const tabla = config?.tabla || 'documentos_proyecto' // Fallback para compatibilidad
 
     const { data, error } = await supabase
-      .from(tabla)
+      .from(tabla as any)
       .select(`
         *,
         usuarios(nombres, apellidos, email)
@@ -186,7 +192,7 @@ export class DocumentosEliminacionService {
   }
 
   /**
-   * ✅ GENÉRICO: Obtener versiones eliminadas de un documento
+   * âœ… GENÃ‰RICO: Obtener versiones eliminadas de un documento
    */
   static async obtenerVersionesEliminadas(
     documentoId: string,
@@ -195,11 +201,12 @@ export class DocumentosEliminacionService {
     const config = obtenerConfiguracionEntidad(tipoEntidad)
     const tabla = config.tabla
 
-    const { data: documento, error: getError } = await supabase
-      .from(tabla)
+    const { data: documentoResult, error: getError } = await supabase
+      .from(tabla as any)
       .select('id, documento_padre_id')
       .eq('id', documentoId)
       .single()
+    const documento = documentoResult as any
 
     if (getError) throw getError
     if (!documento) throw new Error('Documento no encontrado')
@@ -207,7 +214,7 @@ export class DocumentosEliminacionService {
     const documentoPadreId = documento.documento_padre_id || documentoId
 
     const { data, error } = await supabase
-      .from(tabla)
+      .from(tabla as any)
       .select(`
         *,
         usuario:usuarios (
@@ -225,7 +232,7 @@ export class DocumentosEliminacionService {
   }
 
   /**
-   * ✅ GENÉRICO: Restaurar versiones seleccionadas
+   * âœ… GENÃ‰RICO: Restaurar versiones seleccionadas
    */
   static async restaurarVersionesSeleccionadas(
     versionIds: string[],
@@ -239,7 +246,7 @@ export class DocumentosEliminacionService {
     const tabla = config.tabla
 
     const { error } = await supabase
-      .from(tabla)
+      .from(tabla as any)
       .update({ estado: 'activo' })
       .in('id', versionIds)
 
@@ -247,7 +254,7 @@ export class DocumentosEliminacionService {
   }
 
   /**
-   * ✅ GENÉRICO: Restaurar documento eliminado (con todas sus versiones)
+   * âœ… GENÃ‰RICO: Restaurar documento eliminado (con todas sus versiones)
    */
   static async restaurarDocumentoEliminado(
     documentoId: string,
@@ -256,11 +263,12 @@ export class DocumentosEliminacionService {
     const config = obtenerConfiguracionEntidad(tipoEntidad)
     const tabla = config.tabla
 
-    const { data: documento, error: getError } = await supabase
-      .from(tabla)
+    const { data: documentoResult3, error: getError } = await supabase
+      .from(tabla as any)
       .select('id, documento_padre_id, es_version_actual')
       .eq('id', documentoId)
       .single()
+    const documento = documentoResult3 as any
 
     if (getError) throw getError
     if (!documento) throw new Error('Documento no encontrado')
@@ -268,40 +276,41 @@ export class DocumentosEliminacionService {
     let documentosARestaurar: string[] = []
 
     if (documento.documento_padre_id) {
-      // Es una versión → Restaurar toda la cadena
-      const { data: padre } = await supabase
-        .from(tabla)
+      // Es una versión â†’ Restaurar toda la cadena
+      const { data: padreResult } = await supabase
+        .from(tabla as any)
         .select('id')
         .eq('id', documento.documento_padre_id)
         .single()
+      const padre = padreResult as any
 
       if (padre) {
         const { data: versiones } = await supabase
-          .from(tabla)
+          .from(tabla as any)
           .select('id')
           .or(`id.eq.${padre.id},documento_padre_id.eq.${padre.id}`)
           .eq('estado', 'eliminado')
 
         if (versiones) {
-          documentosARestaurar = versiones.map((v) => v.id)
+          documentosARestaurar = (versiones as any[]).map((v: any) => v.id)
         }
       }
     } else {
       // Es documento independiente o versión 1
       const { data: versiones } = await supabase
-        .from(tabla)
+        .from(tabla as any)
         .select('id')
         .or(`id.eq.${documentoId},documento_padre_id.eq.${documentoId}`)
         .eq('estado', 'eliminado')
 
       if (versiones) {
-        documentosARestaurar = versiones.map((v) => v.id)
+        documentosARestaurar = (versiones as any[]).map((v: any) => v.id)
       }
     }
 
     if (documentosARestaurar.length > 0) {
       const { error: updateError } = await supabase
-        .from(tabla)
+        .from(tabla as any)
         .update({ estado: 'activo' })
         .in('id', documentosARestaurar)
 
@@ -309,7 +318,7 @@ export class DocumentosEliminacionService {
     } else {
       // Fallback
       const { error } = await supabase
-        .from(tabla)
+        .from(tabla as any)
         .update({ estado: 'activo' })
         .eq('id', documentoId)
 
@@ -318,7 +327,7 @@ export class DocumentosEliminacionService {
   }
 
   /**
-   * ✅ GENÉRICO: Eliminar definitivamente (hard delete - NO reversible)
+   * âœ… GENÃ‰RICO: Eliminar definitivamente (hard delete - NO reversible)
    */
   static async eliminarDefinitivo(
     documentoId: string,
@@ -328,11 +337,12 @@ export class DocumentosEliminacionService {
     const tabla = config.tabla
     const bucket = config.bucket
 
-    const { data: documento, error: getError } = await supabase
-      .from(tabla)
+    const { data: documentoResult3, error: getError } = await supabase
+      .from(tabla as any)
       .select('id, documento_padre_id, es_version_actual')
       .eq('id', documentoId)
       .single()
+    const documento = documentoResult3 as any
 
     if (getError) throw getError
     if (!documento) throw new Error('Documento no encontrado')
@@ -340,57 +350,58 @@ export class DocumentosEliminacionService {
     let documentosAEliminar: string[] = []
 
     if (documento.documento_padre_id) {
-      const { data: padre } = await supabase
-        .from(tabla)
+      const { data: padreDefResult } = await supabase
+        .from(tabla as any)
         .select('id')
         .eq('id', documento.documento_padre_id)
         .single()
+      const padre = padreDefResult as any
 
       if (padre) {
         const { data: versiones } = await supabase
-          .from(tabla)
+          .from(tabla as any)
           .select('id, url_storage')
           .or(`id.eq.${padre.id},documento_padre_id.eq.${padre.id}`)
           .eq('estado', 'eliminado')
 
         if (versiones) {
-          // ✅ STORAGE GENÉRICO
-          for (const version of versiones) {
+          // âœ… STORAGE GENÃ‰RICO
+          for (const version of (versiones as any[]) as any[]) {
             try {
               await supabase.storage.from(bucket).remove([version.url_storage])
             } catch (err) {
-              console.warn('⚠️ Error al eliminar archivo de Storage:', err)
+              console.warn('âš ï¸ Error al eliminar archivo de Storage:', err)
             }
           }
 
-          documentosAEliminar = versiones.map((v) => v.id)
+          documentosAEliminar = (versiones as any[]).map((v: any) => v.id)
         }
       }
     } else {
       const { data: versiones } = await supabase
-        .from(tabla)
+        .from(tabla as any)
         .select('id, url_storage')
         .or(`id.eq.${documentoId},documento_padre_id.eq.${documentoId}`)
         .eq('estado', 'eliminado')
 
       if (versiones) {
-        // ✅ STORAGE GENÉRICO
-        for (const version of versiones) {
+        // âœ… STORAGE GENÃ‰RICO
+        for (const version of (versiones as any[]) as any[]) {
           try {
             await supabase.storage.from(bucket).remove([version.url_storage])
           } catch (err) {
-            console.warn('⚠️ Error al eliminar archivo de Storage:', err)
+            console.warn('âš ï¸ Error al eliminar archivo de Storage:', err)
           }
         }
 
-        documentosAEliminar = versiones.map((v) => v.id)
+        documentosAEliminar = (versiones as any[]).map((v: any) => v.id)
       }
     }
 
     // Eliminar registros de BD (DELETE físico)
     if (documentosAEliminar.length > 0) {
       const { error: deleteError } = await supabase
-        .from(tabla)
+        .from(tabla as any)
         .delete()
         .in('id', documentosAEliminar)
 

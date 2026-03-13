@@ -29,7 +29,7 @@ export function useClientesList() {
   const [modalCrear, setModalCrear] = useState(false)
   const [modalEditar, setModalEditar] = useState(false)
   const [modalEliminar, setModalEliminar] = useState(false)
-  const [clienteEditar, setClienteEditar] = useState<ClienteResumen | null>(null)
+  const [clienteEditar, setClienteEditar] = useState<ClienteResumen | null>(null) // ✅ Objeto completo
   const [clienteEliminar, setClienteEliminar] = useState<string | null>(null)
 
   const [filtros, setFiltros] = useState<FiltrosClientes>({
@@ -98,6 +98,34 @@ export function useClientesList() {
         }
       )
     }
+
+    // ⭐ ORDENAR POR VIVIENDA (orden base natural)
+    resultado.sort((a, b) => {
+      // Función para obtener el identificador de vivienda
+      const getViviendaId = (cliente: ClienteResumen): string => {
+        if (cliente.estado === 'Activo' && cliente.vivienda) {
+          const manzana = cliente.vivienda.nombre_manzana || ''
+          const numero = cliente.vivienda.numero_vivienda || ''
+          return `${manzana}${numero}`
+        } else if (cliente.estado === 'Interesado' && cliente.interes) {
+          const manzana = cliente.interes.nombre_manzana || ''
+          const numero = cliente.interes.numero_vivienda || ''
+          return `${manzana}${numero}`
+        }
+        return ''
+      }
+
+      const viviendaA = getViviendaId(a)
+      const viviendaB = getViviendaId(b)
+
+      // Si alguno está vacío, ponerlo al final
+      if (!viviendaA && viviendaB) return 1
+      if (viviendaA && !viviendaB) return -1
+      if (!viviendaA && !viviendaB) return 0
+
+      // Ordenar alfabéticamente con sensibilidad numérica (A1, A2, A3, A10)
+      return viviendaA.localeCompare(viviendaB, undefined, { numeric: true })
+    })
 
     return resultado
   }, [clientes, filtros.busqueda])

@@ -5,10 +5,12 @@ import { auditService } from '@/services/audit.service'
 
 import type {
     EstadoManzana,
+    EstadoProyecto,
     Manzana,
     Proyecto,
     ProyectoFormData,
 } from '../types'
+import { sanitizeProyectoFormData, sanitizeProyectoUpdate } from '../utils/sanitize-proyecto.utils'
 
 /**
  * Servicio para gestionar proyectos usando Supabase
@@ -55,7 +57,7 @@ class ProyectosService {
     }
 
     // Transformar datos de Supabase a formato de la aplicación
-    return (data || []).map(this.transformarProyectoDeDB)
+    return (data || []).map(d => this.transformarProyectoDeDB(d as any))
   }
 
   /**
@@ -93,7 +95,7 @@ class ProyectosService {
       throw new Error(`Error al obtener proyecto: ${error.message}`)
     }
 
-    return this.transformarProyectoDeDB(data)
+    return this.transformarProyectoDeDB(data as any)
   }
 
   /**
@@ -112,6 +114,9 @@ class ProyectosService {
    * ```
    */
   async crearProyecto(proyectoData: ProyectoFormData): Promise<Proyecto> {
+    // 🧹 Sanitizar datos (strings vacíos → null)
+    const formData = sanitizeProyectoFormData(proyectoData)
+
     // 1. Crear el proyecto principal
     const { data: proyecto, error: errorProyecto } = await supabase
       .from('proyectos')
@@ -164,8 +169,8 @@ class ProyectosService {
               ?.superficieTotal || 0,
           proyectoId: proyecto.id,
           estado: 'planificada' as EstadoManzana,
-          fechaCreacion: m.fecha_creacion,
-        }))
+          fechaCreacion: m.fecha_creacion ?? '',
+        })) as unknown as Manzana[]
       }
     }
 
@@ -181,8 +186,8 @@ class ProyectosService {
       estado: proyecto.estado as any, // Type assertion para evitar error de tipos con Supabase
       progreso: proyecto.progreso,
       manzanas,
-      fechaCreacion: proyecto.fecha_creacion,
-      fechaActualizacion: proyecto.fecha_actualizacion,
+      fechaCreacion: proyecto.fecha_creacion ?? '',
+      fechaActualizacion: proyecto.fecha_actualizacion ?? '',
       // ✅ Campos de archivado
       archivado: proyecto.archivado || false,
       fechaArchivado: proyecto.fecha_archivado || null,
@@ -298,18 +303,21 @@ class ProyectosService {
     }
 
     // 4. Preparar datos para actualización
+    // 🧹 Sanitizar datos (strings vacíos → null)
+    const dataSanitizada = sanitizeProyectoUpdate(data)
+
     const updateData: Partial<Database['public']['Tables']['proyectos']['Update']> = {}
 
     // Mapear campos de la aplicación a campos de DB
-    if (data.nombre !== undefined) updateData.nombre = data.nombre
-    if (data.descripcion !== undefined) updateData.descripcion = data.descripcion
-    if (data.ubicacion !== undefined) updateData.ubicacion = data.ubicacion
-    if (data.fechaInicio !== undefined) updateData.fecha_inicio = data.fechaInicio
-    if (data.fechaFinEstimada !== undefined)
-      updateData.fecha_fin_estimada = data.fechaFinEstimada
-    if (data.presupuesto !== undefined)
-      updateData.presupuesto = data.presupuesto
-    if (data.estado !== undefined) updateData.estado = data.estado
+    if (dataSanitizada.nombre !== undefined) updateData.nombre = dataSanitizada.nombre
+    if (dataSanitizada.descripcion !== undefined) updateData.descripcion = dataSanitizada.descripcion
+    if (dataSanitizada.ubicacion !== undefined) updateData.ubicacion = dataSanitizada.ubicacion
+    if (dataSanitizada.fechaInicio !== undefined) updateData.fecha_inicio = dataSanitizada.fechaInicio
+    if (dataSanitizada.fechaFinEstimada !== undefined)
+      updateData.fecha_fin_estimada = dataSanitizada.fechaFinEstimada
+    if (dataSanitizada.presupuesto !== undefined)
+      updateData.presupuesto = dataSanitizada.presupuesto
+    if (dataSanitizada.estado !== undefined) updateData.estado = dataSanitizada.estado
 
     // 5. Actualizar proyecto en DB
     const { data: proyecto, error } = await supabase
@@ -399,7 +407,7 @@ class ProyectosService {
       }
     }
 
-    const proyectoActualizado = this.transformarProyectoDeDB(proyecto)
+    const proyectoActualizado = this.transformarProyectoDeDB(proyecto as any)
 
     // 7. 🔍 AUDITORÍA: Registrar actualización
     if (proyectoAnterior) {
@@ -678,7 +686,7 @@ class ProyectosService {
       fechaInicio: data.fecha_inicio,
       fechaFinEstimada: data.fecha_fin_estimada,
       presupuesto: data.presupuesto,
-      estado: data.estado,
+      estado: data.estado as EstadoProyecto,
       progreso: data.progreso,
       manzanas: (data.manzanas || []).map((m) => ({
         id: m.id,
@@ -691,8 +699,8 @@ class ProyectosService {
         estado: 'planificada' as EstadoManzana,
         fechaCreacion: m.fecha_creacion || formatDateForDB(getTodayDateString()),
       })),
-      fechaCreacion: data.fecha_creacion,
-      fechaActualizacion: data.fecha_actualizacion,
+      fechaCreacion: data.fecha_creacion ?? '',
+      fechaActualizacion: data.fecha_actualizacion ?? '',
       // ✅ Campos de archivado
       archivado: data.archivado || false,
       fechaArchivado: data.fecha_archivado || null,

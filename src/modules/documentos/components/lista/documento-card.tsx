@@ -30,14 +30,16 @@ import { createPortal } from 'react-dom'
 import {
     formatDateCompact
 } from '@/lib/utils/date.utils'
+import { ConfirmacionModal } from '@/shared/components/modals'
 import { moduleThemes, type ModuleName } from '@/shared/config/module-themes'
+import { MOTIVOS_ARCHIVADO } from '../../constants/archivado.constants'
+import { useDocumentoCard } from '../../hooks'
+import type { CategoriaDocumento, TipoEntidad } from '../../types'
 import {
     DocumentoProyecto,
     formatFileSize,
     getFileExtension,
-} from '../../../../types/documento.types'
-import { useDocumentoCard } from '../../hooks'
-import type { CategoriaDocumento, TipoEntidad } from '../../types'
+} from '../../types/documento.types'
 import { BadgeEstadoProceso } from '../badge-estado-proceso'
 import {
     DocumentoEditarMetadatosModal,
@@ -47,19 +49,29 @@ import {
 } from '../modals'
 import { CategoriaIcon } from '../shared/categoria-icon'
 
+/**
+ * Formatea el value del motivo de archivado a su label legible
+ */
+function formatMotivoArchivado(value: string): string {
+  const motivo = MOTIVOS_ARCHIVADO.find(m => m.value === value)
+  return motivo ? motivo.label : value
+}
+
 interface DocumentoCardProps {
   documento: DocumentoProyecto
   categoria?: { nombre: string; color: string; icono: string }
   categorias?: CategoriaDocumento[] // 🆕 Para el modal de editar
   tipoEntidad?: TipoEntidad // ✅ Tipo de entidad para edición
-  onView: (documento: DocumentoProyecto) => void
-  onDownload: (documento: DocumentoProyecto) => void
-  onToggleImportante: (documento: DocumentoProyecto) => void
-  onArchive: (documento: DocumentoProyecto) => void
-  onDelete: (documento: DocumentoProyecto) => void
+  onView: (documento: DocumentoProyecto) => void | Promise<void>
+  onDownload: (documento: DocumentoProyecto) => void | Promise<void>
+  onToggleImportante: (documento: DocumentoProyecto) => void | Promise<void>
+  onArchive: (documento: DocumentoProyecto) => void | Promise<void>
+  onDelete: (documento: DocumentoProyecto) => void | Promise<void>
   onRename?: (documento: DocumentoProyecto) => void
   onRefresh?: () => void | Promise<void> // 🆕 Callback para refrescar después de versión/edición
   moduleName?: ModuleName // 🎨 Tema del módulo padre
+  esArchivado?: boolean // 🆕 Indica si está en vista de archivados
+  fuenteInactiva?: boolean // 🔴 Indica que la fuente de pago asociada fue desactivada
 }
 
 export function DocumentoCard({
@@ -75,13 +87,35 @@ export function DocumentoCard({
   onRename,
   onRefresh, // 🆕 Prop de refresh
   moduleName = 'proyectos', // 🎨 Default a proyectos
+  esArchivado = false, // 🆕 Default a false
+  fuenteInactiva = false, // 🔴 Default a false
 }: DocumentoCardProps) {
   // 🎨 Obtener tema dinámico
   const theme = moduleThemes[moduleName]
 
-  // 🎯 Estado para posicionamiento del menú con portal
-  const [posicionMenu, setPosicionMenu] = useState({ top: 0, left: 0 })
-  const botonMenuRef = useRef<HTMLButtonElement>(null)
+  // 📐 Fixed positioning del menú (escapa cualquier overflow)
+  const triggerRef = useRef<HTMLButtonElement>(null)
+  const [menuPos, setMenuPos] = useState<{ top?: number; bottom?: number; right: number; maxHeight: number } | null>(null)
+
+  const handleAbrirMenu = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (!menuAbierto && triggerRef.current) {
+      const rect = triggerRef.current.getBoundingClientRect()
+      const spaceBelow = window.innerHeight - rect.bottom
+      const spaceAbove = rect.top
+      const rightOffset = window.innerWidth - rect.right
+      const MARGIN = 8
+      if (spaceBelow < 150) {
+        // Solo flipear si estamos literalmente en el borde inferior del viewport
+        setMenuPos({ bottom: window.innerHeight - rect.top + MARGIN, right: rightOffset, maxHeight: spaceAbove - MARGIN })
+      } else {
+        // Por defecto: siempre abrir hacia abajo
+        setMenuPos({ top: rect.bottom + MARGIN, right: rightOffset, maxHeight: spaceBelow - MARGIN })
+      }
+    }
+    toggleMenu()
+  }
 
   // 🎯 TODA la lógica en el hook
   const {
@@ -112,6 +146,11 @@ export function DocumentoCard({
     diasParaVencer,
     esDocumentoDeProceso,
     tieneVersiones,
+    confirmacionEliminar,
+    abrirConfirmacionEliminar,
+    cerrarConfirmacionEliminar,
+    ejecutarEliminacion,
+    eliminando,
   } = useDocumentoCard({ documento, esDocumentoProyecto: true })
 
   return (
@@ -122,47 +161,77 @@ export function DocumentoCard({
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.95 }}
         whileHover={{ y: -2 }}
-        className="group relative flex h-full flex-col rounded-xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:shadow-lg dark:border-gray-700 dark:bg-gray-800"
+        className={`group relative flex h-full flex-col rounded-xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:shadow-lg dark:border-gray-700 dark:bg-gray-800 ${
+          menuAbierto ? 'z-20' : 'z-0'
+        }`}
       >
         {/* Badge de Documento de Identidad */}
         {(documento as any).es_documento_identidad && (
-          <div className='absolute -top-2 -right-2 z-10'>
+          <div className='absolute -top-3 -right-1.5 z-10'>
             <motion.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
-              className='flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-full shadow-lg border-2 border-white dark:border-gray-800'
+              className='flex items-center gap-1 px-2.5 py-1 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-full shadow-md border border-white dark:border-gray-800'
             >
-              <Lock className='w-3.5 h-3.5' />
-              <span className='text-xs font-bold'>IDENTIDAD</span>
+              <Lock className='w-3 h-3' />
+              <span className='text-[10px] font-bold uppercase leading-none'>Documento de Identidad</span>
             </motion.div>
           </div>
         )}
 
-      <div className='flex flex-1 flex-col p-4'>
+        {/* Badge de Documento Archivado */}
+        {esArchivado && (
+          <div className='absolute -top-3 -right-1.5 z-10'>
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              className='flex items-center gap-1 px-2.5 py-1 bg-gradient-to-r from-slate-600 to-slate-700 dark:from-slate-700 dark:to-slate-800 text-white rounded-full shadow-md border border-white dark:border-gray-800'
+            >
+              <Archive className='w-3 h-3' />
+              <span className='text-[10px] font-bold uppercase leading-none'>Archivado</span>
+            </motion.div>
+          </div>
+        )}
+
+        {/* Badge de Fuente Inactiva */}
+        {fuenteInactiva && !esArchivado && (
+          <div className='absolute -top-3 -right-1.5 z-10'>
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              className='flex items-center gap-1 px-2.5 py-1 bg-gradient-to-r from-amber-500 to-orange-500 dark:from-amber-600 dark:to-orange-600 text-white rounded-full shadow-md border border-white dark:border-gray-800'
+            >
+              <AlertCircle className='w-3 h-3' />
+              <span className='text-[10px] font-bold uppercase leading-none'>Fuente inactiva</span>
+            </motion.div>
+          </div>
+        )}
+
+      <div className='flex flex-1 flex-col p-3'>
         {/* Header: Icon + Categoría + Menú */}
-        <div className='mb-3 flex items-start justify-between gap-3'>
-          <div className='flex items-center gap-3 flex-1 min-w-0'>
+        <div className='mb-2.5 flex items-start justify-between gap-2.5'>
+          <div className='flex items-center gap-2.5 flex-1 min-w-0'>
             {/* Icono de categoría */}
             {categoria ? (
-              <div className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-gradient-to-br ${theme.classes.gradient.background} dark:${theme.classes.gradient.backgroundDark}`}>
+              <div className={`flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-gradient-to-br ${theme.classes.gradient.background} dark:${theme.classes.gradient.backgroundDark}`}>
                 <CategoriaIcon
                   icono={categoria.icono}
                   color={categoria.color}
-                  size={20}
+                  size={18}
                 />
               </div>
             ) : (
-              <div className='flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-700'>
-                <FileText size={20} className='text-gray-400' />
+              <div className='flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-700'>
+                <FileText size={18} className='text-gray-400' />
               </div>
             )}
 
             {/* Título + Badges inline */}
             <div className='min-w-0 flex-1'>
-              <div className='flex items-center gap-2 mb-1'>
+              <div className='flex items-center gap-2 mb-0.5'>
                 {/* Título truncado con tooltip */}
                 <h3
-                  className='font-semibold text-gray-900 dark:text-white truncate text-sm'
+                  className='font-bold text-gray-900 dark:text-white truncate text-sm leading-tight'
                   title={documento.titulo}
                 >
                   {documento.titulo}
@@ -170,7 +239,7 @@ export function DocumentoCard({
 
                 {/* Badge importante */}
                 {documento.es_importante && (
-                  <Star size={14} className='flex-shrink-0 fill-yellow-500 text-yellow-500' />
+                  <Star size={13} className='flex-shrink-0 fill-yellow-500 text-yellow-500' />
                 )}
               </div>
 
@@ -200,35 +269,29 @@ export function DocumentoCard({
           {/* Menú de acciones */}
           <div className='relative flex-shrink-0'>
             <button
-              ref={botonMenuRef}
-              onClick={(e) => {
-                e.preventDefault()
-                e.stopPropagation()
-                const rect = e.currentTarget.getBoundingClientRect()
-                setPosicionMenu({
-                  top: rect.bottom + window.scrollY + 8,
-                  left: rect.right + window.scrollX - 220 // Alineado a la derecha del botón
-                })
-                toggleMenu()
-              }}
-              className='rounded-lg p-2 opacity-0 transition-colors hover:bg-gray-100 group-hover:opacity-100 dark:hover:bg-gray-700'
+              ref={triggerRef}
+              onClick={handleAbrirMenu}
+              className='rounded-lg p-2 opacity-40 transition-opacity hover:bg-gray-100 group-hover:opacity-100 focus-visible:opacity-100 dark:hover:bg-gray-700'
+              aria-label="Menú de acciones"
             >
               <MoreVertical size={18} className='text-gray-500' />
             </button>
-          </div>
 
-          {/* Menú renderizado con portal fuera del contenedor para evitar z-index de sidebar */}
-          {menuAbierto && createPortal(
-            <div
-              ref={menuRef}
-              style={{
-                position: 'absolute',
-                top: `${posicionMenu.top}px`,
-                left: `${posicionMenu.left}px`,
-                zIndex: 9999
-              }}
-              className='min-w-[220px] rounded-xl border border-gray-200 bg-white py-1 shadow-2xl dark:border-gray-700 dark:bg-gray-800'
-            >
+            {/* Portal: renderizado en document.body, fuera del transform de motion.div */}
+            {menuAbierto && menuPos && createPortal(
+              <div
+                ref={menuRef}
+                style={{
+                  position: 'fixed',
+                  top: menuPos.top,
+                  bottom: menuPos.bottom,
+                  right: menuPos.right,
+                  maxHeight: menuPos.maxHeight,
+                  overflowY: 'auto',
+                  zIndex: 9999,
+                }}
+                className='min-w-[220px] rounded-xl border border-gray-200 bg-white py-1 shadow-2xl dark:border-gray-700 dark:bg-gray-800'
+              >
                 {/* Marcar/Quitar importante */}
                 <button
                   type="button"
@@ -280,7 +343,7 @@ export function DocumentoCard({
                     e.stopPropagation()
                     abrirModalEditar()
                   }}
-                  className='flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-blue-600 transition-colors hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/20'
+                  className='flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
                 >
                   <Edit size={16} />
                   Editar Documento
@@ -299,7 +362,7 @@ export function DocumentoCard({
                         e.stopPropagation()
                         abrirModalVersiones()
                       }}
-                      className='flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-purple-600 transition-colors hover:bg-purple-50 dark:text-purple-400 dark:hover:bg-purple-900/20'
+                      className='flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
                     >
                       <History size={16} />
                       Ver Historial (v{documento.version})
@@ -321,7 +384,7 @@ export function DocumentoCard({
                       e.stopPropagation()
                       abrirModalNuevaVersion()
                     }}
-                    className='flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-emerald-600 transition-colors hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-900/20'
+                    className='flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
                   >
                     <FileUp size={16} />
                     Nueva Versión
@@ -339,7 +402,7 @@ export function DocumentoCard({
                         e.stopPropagation()
                         abrirModalReemplazar()
                       }}
-                      className='relative flex w-full items-center gap-2 px-3 py-2 text-left text-sm bg-gradient-to-r from-amber-50/50 to-orange-50/50 dark:from-amber-950/20 dark:to-orange-950/20 text-orange-600 dark:text-orange-400 hover:bg-gradient-to-r hover:from-amber-50 hover:to-orange-50 dark:hover:from-amber-950/30 dark:hover:to-orange-950/30 transition-all'
+                      className='flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-amber-600 transition-colors hover:bg-gray-100 dark:text-amber-400 dark:hover:bg-gray-700'
                     >
                       <RefreshCw size={16} />
                       <span>Reemplazar Archivo</span>
@@ -356,13 +419,17 @@ export function DocumentoCard({
                   onClick={(e) => {
                     e.preventDefault()
                     e.stopPropagation()
-                    onArchive(documento)
+                    onArchive(documento) // Hook detecta si restaurar o archivar
                     cerrarMenu()
                   }}
-                  className='flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
+                  className={`flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition-colors ${
+                    esArchivado
+                      ? 'text-emerald-600 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-900/20'
+                      : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
+                  }`}
                 >
-                  <Archive size={16} />
-                  Archivar
+                  {esArchivado ? <RefreshCw size={16} /> : <Archive size={16} />}
+                  {esArchivado ? 'Restaurar' : 'Archivar'}
                 </button>
 
                 {/* Separador antes de eliminar */}
@@ -377,8 +444,8 @@ export function DocumentoCard({
                     onClick={(e) => {
                       e.preventDefault()
                       e.stopPropagation()
-                      onDelete(documento)
                       cerrarMenu()
+                      abrirConfirmacionEliminar(documento, tipoEntidad)
                     }}
                     className='flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-red-600 transition-colors hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20'
                   >
@@ -402,10 +469,11 @@ export function DocumentoCard({
                       </div>
                     </div>
                   </div>
-                  )}
+                )}
               </div>,
               document.body
             )}
+          </div>
         </div>
 
         {/* Descripción (si existe) - Compacta */}
@@ -415,101 +483,126 @@ export function DocumentoCard({
           </p>
         )}
 
-        {/* Metadatos en grid 2x2 con títulos */}
-        <div className='mb-3 grid grid-cols-2 gap-2.5 text-xs'>
+        {/* 🆕 Sección de Motivo de Archivado (solo visible si está archivado) */}
+        {esArchivado && (documento as any).motivo_categoria && (
+          <div className='mb-3 rounded-lg border border-amber-200 dark:border-amber-800 bg-amber-50/50 dark:bg-amber-900/20 p-2.5'>
+            <div className='flex items-start gap-2'>
+              <AlertCircle className='w-4 h-4 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5' />
+              <div className='flex-1 min-w-0 space-y-1.5'>
+                <div>
+                  <p className='text-[10px] font-semibold text-amber-600 dark:text-amber-400 uppercase tracking-wide'>
+                    Motivo:
+                  </p>
+                  <p className='text-xs font-medium text-amber-900 dark:text-amber-100'>
+                    {formatMotivoArchivado((documento as any).motivo_categoria)}
+                  </p>
+                </div>
+                {(documento as any).motivo_detalle && (
+                  <div>
+                    <p className='text-[10px] font-semibold text-amber-600 dark:text-amber-400 uppercase tracking-wide'>
+                      Observaciones:
+                    </p>
+                    <p className='text-xs text-amber-700 dark:text-amber-300 line-clamp-2'>
+                      {(documento as any).motivo_detalle}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Metadatos en grid 2x2 con títulos (COMPACTO) */}
+        <div className='mb-2.5 grid grid-cols-2 gap-2 text-xs'>
           {/* FILA 1: Fecha del documento + Fecha de expiración */}
 
           {/* Fecha de emisión del documento */}
           {documento.fecha_documento ? (
-            <div className='flex flex-col gap-0.5'>
-              <span className='text-[10px] font-semibold text-gray-500 dark:text-gray-500 uppercase tracking-wide'>
-                Emisión
-              </span>
-              <div className='flex items-center gap-1.5 text-gray-600 dark:text-gray-400'>
-                <Calendar size={12} className='flex-shrink-0 text-blue-500 dark:text-blue-400' />
-                <span className='truncate' title={`Fecha del documento: ${formatDateCompact(documento.fecha_documento)}`}>
+            <div className='flex items-center gap-1.5 text-gray-600 dark:text-gray-400'>
+              <Calendar size={12} className='flex-shrink-0 text-blue-500 dark:text-blue-400' />
+              <div className='min-w-0 flex-1'>
+                <div className='text-[10px] font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wide leading-none mb-0.5'>
+                  Emisión
+                </div>
+                <div className='text-xs font-medium truncate' title={`Fecha del documento: ${formatDateCompact(documento.fecha_documento)}`}>
                   {formatDateCompact(documento.fecha_documento)}
-                </span>
+                </div>
               </div>
             </div>
           ) : (
-            <div className='flex flex-col gap-0.5'>
-              <span className='text-[10px] font-semibold text-gray-500 dark:text-gray-500 uppercase tracking-wide'>
-                Emisión
-              </span>
-              <div className='flex items-center gap-1.5 text-gray-400 dark:text-gray-500'>
-                <Calendar size={12} className='flex-shrink-0' />
-                <span className='text-xs'>Sin fecha</span>
+            <div className='flex items-center gap-1.5 text-gray-400 dark:text-gray-500'>
+              <Calendar size={12} className='flex-shrink-0' />
+              <div className='min-w-0 flex-1'>
+                <div className='text-[10px] font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wide leading-none mb-0.5'>
+                  Emisión
+                </div>
+                <div className='text-xs'>Sin fecha</div>
               </div>
             </div>
           )}
 
           {/* Fecha de expiración */}
-          <div className='flex flex-col gap-0.5'>
-            <span className='text-[10px] font-semibold text-gray-500 dark:text-gray-500 uppercase tracking-wide'>
-              Expiración
-            </span>
-            {documento.fecha_vencimiento ? (
-              <div className='flex items-center gap-1.5'>
-                {estaVencido ? (
+          <div className='flex items-start gap-1.5'>
+            <Clock size={12} className='flex-shrink-0 text-orange-500 dark:text-orange-400 mt-3.5' />
+            <div className='min-w-0 flex-1'>
+              <div className='text-[10px] font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wide leading-none mb-0.5'>
+                Expiración
+              </div>
+              {documento.fecha_vencimiento ? (
+                <div>
+                  {estaVencido ? (
                   <span className='inline-flex items-center gap-1 rounded-md bg-red-100 px-1.5 py-0.5 text-xs font-medium text-red-700 dark:bg-red-900/30 dark:text-red-400'>
-                    <AlertCircle size={12} />
-                    Vencido hace {Math.abs(diasParaVencer!)}d
+                    <AlertCircle size={11} />
+                    Vencido {Math.abs(diasParaVencer!)}d
                   </span>
                 ) : diasParaVencer !== null && diasParaVencer <= 30 ? (
                   <span className='inline-flex items-center gap-1 rounded-md bg-orange-100 px-1.5 py-0.5 text-xs font-medium text-orange-700 dark:bg-orange-900/30 dark:text-orange-400'>
-                    <Clock size={12} />
                     Vence en {diasParaVencer}d
                   </span>
                 ) : (
-                  <div className='flex items-center gap-1.5 text-gray-600 dark:text-gray-400'>
-                    <Clock size={12} className='flex-shrink-0 text-orange-500 dark:text-orange-400' />
-                    <span className='truncate' title={`Vence: ${formatDateCompact(documento.fecha_vencimiento)}`}>
-                      {formatDateCompact(documento.fecha_vencimiento)}
-                    </span>
+                  <div className='text-xs font-medium text-gray-600 dark:text-gray-400 truncate' title={`Vence: ${formatDateCompact(documento.fecha_vencimiento)}`}>
+                    {formatDateCompact(documento.fecha_vencimiento)}
                   </div>
                 )}
-              </div>
-            ) : (
-              <div className='flex items-center gap-1.5 text-gray-400 dark:text-gray-500'>
-                <Clock size={12} className='flex-shrink-0' />
-                <span className='text-xs'>No expira</span>
-              </div>
-            )}
+                </div>
+              ) : (
+                <div className='text-xs text-gray-400 dark:text-gray-500'>No expira</div>
+              )}
+            </div>
           </div>
 
           {/* FILA 2: Subido por + Fecha de subida */}
 
           {/* Subido por (usuario) */}
-          <div className='flex flex-col gap-0.5'>
-            <span className='text-[10px] font-semibold text-gray-500 dark:text-gray-500 uppercase tracking-wide'>
-              Subido por
-            </span>
-            <div className='flex items-center gap-1.5 text-gray-600 dark:text-gray-400'>
-              <User size={12} className='flex-shrink-0 text-purple-500 dark:text-purple-400' />
-              <span className='truncate' title={`${documento.usuario ? `${documento.usuario.nombres} ${documento.usuario.apellidos}` : 'Desconocido'}`}>
+          <div className='flex items-center gap-1.5 text-gray-600 dark:text-gray-400'>
+            <User size={12} className='flex-shrink-0 text-purple-500 dark:text-purple-400' />
+            <div className='min-w-0 flex-1'>
+              <div className='text-[10px] font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wide leading-none mb-0.5'>
+                Subido por
+              </div>
+              <div className='text-xs font-medium truncate' title={`${documento.usuario ? `${documento.usuario.nombres} ${documento.usuario.apellidos}` : 'Desconocido'}`}>
                 {documento.usuario ? `${documento.usuario.nombres} ${documento.usuario.apellidos}` : 'Desconocido'}
-              </span>
+              </div>
             </div>
           </div>
 
           {/* Fecha de subida al sistema */}
-          <div className='flex flex-col gap-0.5'>
-            <span className='text-[10px] font-semibold text-gray-500 dark:text-gray-500 uppercase tracking-wide'>
-              Fecha de carga
-            </span>
-            <div className='flex items-center gap-1.5 text-gray-600 dark:text-gray-400'>
-              <Upload size={12} className='flex-shrink-0 text-green-500 dark:text-green-400' />
-              <span className='truncate' title={`Subido: ${formatDateCompact(documento.fecha_creacion)} a las ${format(new Date(documento.fecha_creacion), "hh:mm:ss a", { locale: es })}`}>
-                {formatDateCompact(documento.fecha_creacion)} {format(new Date(documento.fecha_creacion), "hh:mm:ss a")}
-              </span>
+          <div className='flex items-center gap-1.5 text-gray-600 dark:text-gray-400'>
+            <Upload size={12} className='flex-shrink-0 text-green-500 dark:text-green-400' />
+            <div className='min-w-0 flex-1'>
+              <div className='text-[10px] font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wide leading-none mb-0.5'>
+                Carga
+              </div>
+              <div className='text-xs font-medium truncate' title={`Subido: ${formatDateCompact(documento.fecha_creacion)} a las ${format(new Date(documento.fecha_creacion), "hh:mm a", { locale: es })}`}>
+                {formatDateCompact(documento.fecha_creacion)} {format(new Date(documento.fecha_creacion), "hh:mm a")}
+              </div>
             </div>
           </div>
         </div>
 
         {/* Badge de estado del proceso */}
         {estadoProceso.esDeProceso && estadoProceso.estadoPaso && (
-          <div className='mb-3'>
+          <div className='mb-2.5'>
             <BadgeEstadoProceso estadoPaso={estadoProceso.estadoPaso} />
           </div>
         )}
@@ -527,20 +620,21 @@ export function DocumentoCard({
           </div>
         )}
 
-        {/* Acciones principales - MÁS COMPACTAS */}
-        <div className='mt-auto flex gap-2'>
+        {/* Acciones principales - Botones balanceados */}
+        <div className='mt-auto grid grid-cols-2 gap-2'>
           <button
             onClick={() => onView(documento)}
-            className={`flex flex-1 items-center justify-center gap-1.5 rounded-lg ${theme.classes.button.primary} px-3 py-2 text-sm font-medium`}
+            className={`flex items-center justify-center gap-1.5 rounded-lg ${theme.classes.button.primary} px-3 py-2 text-sm font-medium transition-all`}
           >
-            <Eye size={14} />
-            Ver
+            <Eye size={15} />
+            <span>Ver</span>
           </button>
           <button
             onClick={() => onDownload(documento)}
-            className='rounded-lg bg-gray-100 px-3 py-2 text-gray-700 transition-all hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
+            className='flex items-center justify-center gap-1.5 rounded-lg bg-gray-100 px-3 py-2 text-sm font-medium text-gray-700 transition-all hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
           >
-            <Download size={14} />
+            <Download size={15} />
+            <span>Descargar</span>
           </button>
         </div>
       </div>
@@ -609,6 +703,39 @@ export function DocumentoCard({
           }}
         />
       )}
+
+      {/* Modal de confirmación de eliminación */}
+      <ConfirmacionModal
+        isOpen={confirmacionEliminar.isOpen}
+        onClose={cerrarConfirmacionEliminar}
+        onConfirm={async () => {
+          await ejecutarEliminacion(tipoEntidad, async () => {
+            await onRefresh?.()
+          })
+        }}
+        variant={confirmacionEliminar.esDocumentoCritico ? 'warning' : 'danger'}
+        title={confirmacionEliminar.esDocumentoCritico ? '¿Eliminar documento crítico?' : '¿Eliminar documento?'}
+        message={
+          confirmacionEliminar.detectando
+            ? 'Verificando el tipo de documento…'
+            : confirmacionEliminar.esDocumentoCritico
+              ? `Este documento es un requisito obligatorio para el desembolso${
+                  confirmacionEliminar.entidadAfectada ? ` (${confirmacionEliminar.entidadAfectada})` : ''
+                }. Al eliminarlo quedará registrado como pendiente nuevamente.\n\nSe moverán a la papelera ${
+                  confirmacionEliminar.totalVersiones > 1
+                    ? `las ${confirmacionEliminar.totalVersiones} versiones`
+                    : 'el documento'
+                }. Puede recuperarlos desde administración.`
+              : `Esta acción moverá el documento${
+                  confirmacionEliminar.totalVersiones > 1
+                    ? ` y sus ${confirmacionEliminar.totalVersiones} versiones`
+                    : ''
+                } a la papelera. Puede recuperarlo desde el panel de administración.`
+        }
+        confirmText={confirmacionEliminar.esDocumentoCritico ? 'Entiendo, eliminar de todas formas' : 'Sí, eliminar'}
+        isLoading={confirmacionEliminar.detectando || eliminando}
+        loadingText={confirmacionEliminar.detectando ? 'Verificando…' : 'Eliminando…'}
+      />
     </>
   )
 }

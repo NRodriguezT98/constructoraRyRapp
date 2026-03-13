@@ -18,7 +18,10 @@ import { useCallback, useState } from 'react'
 
 import { useRouter } from 'next/navigation'
 
+import { useQueryClient } from '@tanstack/react-query'
+
 import { useDocumentoIdentidad } from '@/modules/clientes/documentos/hooks/useDocumentoIdentidad'
+import { documentosPendientesKeys } from '@/modules/clientes/types/documentos-pendientes.types'
 
 interface UseDocumentosTabProps {
   clienteId: string
@@ -28,6 +31,7 @@ type Vista = 'documentos' | 'upload' | 'categorias'
 
 export function useDocumentosTab({ clienteId }: UseDocumentosTabProps) {
   const router = useRouter()
+  const queryClient = useQueryClient()
 
   // =====================================================
   // ESTADO
@@ -51,7 +55,11 @@ export function useDocumentosTab({ clienteId }: UseDocumentosTabProps) {
    */
   const mostrarUpload = useCallback((esCedula: boolean = false, metadata?: Record<string, any>) => {
     setUploadTipoCedula(esCedula)
-    setMetadataPendiente(metadata || null)
+    // ✅ Si es cédula, agregar flag para pre-marcar checkbox
+    const metadataConFlag = esCedula
+      ? { ...metadata, auto_check_identidad: true }
+      : metadata || null
+    setMetadataPendiente(metadataConFlag)
     setVistaActual('upload')
   }, [])
 
@@ -76,9 +84,13 @@ export function useDocumentosTab({ clienteId }: UseDocumentosTabProps) {
    */
   const onSuccessUpload = useCallback(() => {
     volverADocumentos()
-    // ✅ Recargar página para actualizar lista de documentos
+    // ✅ Invalidar documentos pendientes para que el banner desaparezca inmediatamente
+    queryClient.invalidateQueries({
+      queryKey: documentosPendientesKeys.byCliente(clienteId),
+    })
+    // ✅ Refrescar Server Components (lista de documentos)
     router.refresh()
-  }, [router, volverADocumentos])
+  }, [queryClient, router, volverADocumentos, clienteId])
 
   /**
    * Cancelar upload

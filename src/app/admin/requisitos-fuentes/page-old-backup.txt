@@ -1,0 +1,422 @@
+/**
+ * ============================================
+ * PAGE: Configuración de Requisitos de Fuentes
+ * ============================================
+ *
+ * Panel administrativo profesional para gestionar requisitos
+ * de validación de fuentes de pago.
+ *
+ * ARQUITECTURA:
+ * - Separación de responsabilidades (hook + componentes)
+ * - React Query para estado
+ * - Diseño compacto y moderno
+ * - Componentes reutilizables
+ */
+
+'use client'
+
+import { Settings, Plus, AlertCircle } from 'lucide-react'
+import { motion } from 'framer-motion'
+import { useState, useMemo } from 'react'
+import { useRequisitos } from '@/modules/requisitos-fuentes/hooks'
+import {
+  RequisitoCard,
+  RequisitoForm,
+  RequisitosMetricas,
+  RequisitosTipoSelector,
+} from '@/modules/requisitos-fuentes/components'
+import { requisitosConfigStyles as styles } from '@/modules/requisitos-fuentes/styles/requisitos-config.styles'
+import { TIPOS_FUENTE } from '@/modules/requisitos-fuentes/types'
+import type { CrearRequisitoDTO } from '@/modules/requisitos-fuentes/types'
+
+export default function ConfiguracionRequisitosPage() {
+  // ============================================
+  // ESTADO LOCAL (UI ONLY)
+  // ============================================
+  const [tipoFuenteSeleccionado, setTipoFuenteSeleccionado] = useState<string>(TIPOS_FUENTE[1])
+  const [editandoId, setEditandoId] = useState<string | null>(null)
+  const [mostrarNuevo, setMostrarNuevo] = useState(false)
+
+  // ============================================
+  // REACT QUERY HOOK (TODA LA LÓGICA)
+  // ============================================
+  const {
+    requisitos,
+    isLoading,
+    error,
+    crearRequisito,
+    actualizarRequisito,
+    desactivarRequisito,
+  } = useRequisitos(tipoFuenteSeleccionado)
+
+  // ============================================
+  // CÁLCULOS DERIVADOS
+  // ============================================
+  const conteosPorTipo = useMemo(() => {
+    // TODO: Obtener de BD los conteos reales por tipo
+    // Por ahora retornamos el conteo actual
+    const conteos: Record<string, number> = {}
+    TIPOS_FUENTE.forEach((tipo) => {
+      conteos[tipo] = tipo === tipoFuenteSeleccionado ? requisitos.length : 0
+    })
+    return conteos
+  }, [tipoFuenteSeleccionado, requisitos])
+
+  // ============================================
+  // HANDLERS (solo transformación)
+  // ============================================
+  const handleCrear = (datos: CrearRequisitoDTO) => {
+    crearRequisito(datos)
+    setMostrarNuevo(false)
+  }
+
+  const handleActualizar = (id: string, datos: any) => {
+    actualizarRequisito({ id, datos })
+    setEditandoId(null)
+  }
+
+  const handleEliminar = (id: string) => {
+    if (confirm('¿Estás seguro de eliminar este requisito?')) {
+      desactivarRequisito(id)
+    }
+  }
+
+  // ============================================
+  // RENDER
+  // ============================================
+  return (
+    <div className={styles.container.page}>
+      <div className={styles.container.content}
+
+        {/* ============================================ */}
+        {/* HEADER PREMIUM COMPACTO */}
+        {/* ============================================ */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className={styles.header.container}
+        >
+          <div className={styles.header.pattern} />
+          <div className={styles.header.content}>
+            <div className="flex items-center gap-3">
+              <div className={styles.header.iconBox}>
+                <Settings className={styles.header.icon} />
+              </div>
+              <div className={styles.header.textContainer}>
+                <h1 className={styles.header.title}>Configuración de Requisitos</h1>
+                <p className={styles.header.subtitle}>
+                  Gestiona los pasos de validación de fuentes de pago
+                </p>
+              </div>
+            </div>
+            <div className={styles.header.badge}>
+              <span>{requisitos.length} configurados</span>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* ============================================ */}
+        {/* MÉTRICAS (4 CARDS SUPERIORES) */}
+        {/* ============================================ */}
+        {!isLoading && <RequisitosMetricas requisitos={requisitos} />}
+
+        {/* ============================================ */}
+        {/* SELECTOR DE TIPO DE FUENTE */}
+        {/* ============================================ */}
+        <RequisitosTipoSelector
+          tipoSeleccionado={tipoFuenteSeleccionado}
+          onCambiarTipo={(tipo) => {
+            setTipoFuenteSeleccionado(tipo)
+            setMostrarNuevo(false)
+            setEditandoId(null)
+          }}
+          conteos={conteosPorTipo}
+        />
+
+        {/* ============================================ */}
+        {/* LISTA DE REQUISITOS */}
+        {/* ============================================ */}
+        <div className={styles.lista.container}>
+          {/* Header con título y botón */}
+          <div className={styles.lista.header}>
+            <div>
+              <h2 className={styles.lista.title}>Requisitos de {tipoFuenteSeleccionado}</h2>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                {requisitos.length} requisito{requisitos.length !== 1 ? 's' : ''} configurado
+                {requisitos.length !== 1 ? 's' : ''}
+              </p>
+            </div>
+
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => setMostrarNuevo(true)}
+              disabled={mostrarNuevo}
+              className={`${styles.lista.btnAgregar} disabled:opacity-50 disabled:cursor-not-allowed`}
+            >
+              <Plus className="w-4 h-4" />
+              Nuevo Requisito
+            </motion.button>
+          </div>
+
+          {/* Estado: Cargando */}
+          {isLoading && (
+            <div className={styles.loading.container}>
+              <div className={styles.loading.spinner} />
+              <p className={styles.loading.text}>Cargando requisitos...</p>
+            </div>
+          )}
+
+          {/* Estado: Error */}
+          {error && (
+            <div className="flex flex-col items-center justify-center py-8 px-4">
+              <AlertCircle className="w-12 h-12 text-red-500 mb-3" />
+              <p className="text-red-600 dark:text-red-400 font-semibold">
+                Error al cargar requisitos
+              </p>
+              <p className="text-sm text-gray-500 mt-1">{error.message}</p>
+            </div>
+          )}
+
+          {/* Formulario NUEVO (va antes de la lista) */}
+          {mostrarNuevo && !isLoading && (
+            <RequisitoForm
+              tipoFuente={tipoFuenteSeleccionado}
+              ordenSiguiente={requisitos.length + 1}
+              onGuardar={handleCrear}
+              onCancelar={() => setMostrarNuevo(false)}
+            />
+          )}
+
+          {/* Estado: Lista vacía */}
+          {!isLoading && !error && requisitos.length === 0 && !mostrarNuevo && (
+            <div className={styles.lista.empty}>
+              <p className={styles.lista.emptyText}>
+                No hay requisitos configurados para <strong>{tipoFuenteSeleccionado}</strong>
+              </p>
+              <p className={styles.lista.emptyHint}>
+                Esta fuente no tendrá pasos de validación automáticos al crearla
+              </p>
+              <button
+                onClick={() => setMostrarNuevo(true)}
+                className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 transition-colors"
+              >
+                <Plus className="w-4 h-4" />
+                Agregar Primer Requisito
+              </button>
+            </div>
+          )}
+
+          {/* Lista de requisitos */}
+          {!isLoading && !error && requisitos.length > 0 && (
+            <div className={styles.lista.grid}>
+              {requisitos.map((requisito) => (
+                <RequisitoCard
+                  key={requisito.id}
+                  requisito={requisito}
+                  onEditar={() => setEditandoId(requisito.id)}
+                  onEliminar={() => handleEliminar(requisito.id)}
+                />
+              ))}
+            </div>
+          )}
+
+          {/* Modal de Edición (TODO: implementar) */}
+          {editandoId && (
+            <div className="mt-4 p-4 rounded-lg bg-yellow-50 dark:bg-yellow-950/20 border border-yellow-300 dark:border-yellow-800">
+              <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                ⚠️ Función de edición en desarrollo. Por ahora puedes eliminar y crear uno nuevo.
+              </p>
+              <button
+                onClick={() => setEditandoId(null)}
+                className="mt-2 text-xs text-yellow-600 dark:text-yellow-400 underline"
+              >
+                Cerrar
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ============================================
+// FIN DEL COMPONENTE
+// ============================================
+  const [formData, setFormData] = useState(requisito)
+
+  if (!editando) {
+    return (
+      <div className="flex items-start gap-3 p-4 rounded-lg border-2 border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600 transition-all group">
+        <GripVertical className="w-5 h-5 text-gray-400 dark:text-gray-500 mt-1 cursor-move" />
+        <div className="flex-1">
+          <div className="flex items-start justify-between">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300">
+                  Orden {requisito.orden}
+                </span>
+                <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold ${
+                  requisito.nivel_validacion === 'DOCUMENTO_OBLIGATORIO'
+                    ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
+                    : requisito.nivel_validacion === 'DOCUMENTO_OPCIONAL'
+                    ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300'
+                    : 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
+                }`}>
+                  {NIVELES_VALIDACION.find(n => n.value === requisito.nivel_validacion)?.label}
+                </span>
+              </div>
+              <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-1">
+                {requisito.titulo}
+              </h3>
+              <p className="text-xs text-gray-600 dark:text-gray-400">
+                {requisito.descripcion}
+              </p>
+              <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                ID: <code>{requisito.paso_identificador}</code>
+              </p>
+            </div>
+            <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              <button
+                onClick={onEditar}
+                className="p-2 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 text-blue-600 dark:text-blue-400"
+              >
+                <Edit className="w-4 h-4" />
+              </button>
+              <button
+                onClick={onEliminar}
+                className="p-2 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="p-4 rounded-lg border-2 border-blue-500 bg-blue-50 dark:bg-blue-950/30">
+      <div className="space-y-3">
+        <input
+          type="text"
+          value={formData.titulo}
+          onChange={(e) => setFormData({ ...formData, titulo: e.target.value })}
+          className="w-full px-3 py-2 rounded-lg border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm"
+          placeholder="Título"
+        />
+        <textarea
+          value={formData.descripcion || ''}
+          onChange={(e) => setFormData({ ...formData, descripcion: e.target.value })}
+          className="w-full px-3 py-2 rounded-lg border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm"
+          placeholder="Descripción"
+          rows={2}
+        />
+        <select
+          value={formData.nivel_validacion}
+          onChange={(e) => setFormData({ ...formData, nivel_validacion: e.target.value as NivelValidacion })}
+          className="w-full px-3 py-2 rounded-lg border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm"
+        >
+          {NIVELES_VALIDACION.map((nivel) => (
+            <option key={nivel.value} value={nivel.value}>
+              {nivel.label}
+            </option>
+          ))}
+        </select>
+        <div className="flex justify-end gap-2">
+          <button
+            onClick={onCancelar}
+            className="px-3 py-1.5 rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm"
+          >
+            <X className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => onGuardar(formData)}
+            className="px-3 py-1.5 rounded-lg bg-blue-600 text-white text-sm"
+          >
+            <Save className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ============================================
+// Componente: Formulario Nuevo Requisito
+// ============================================
+
+interface NuevoRequisitoFormProps {
+  tipoFuente: string
+  ordenSiguiente: number
+  onGuardar: (datos: CrearRequisitoDTO) => void
+  onCancelar: () => void
+}
+
+function NuevoRequisitoForm({ tipoFuente, ordenSiguiente, onGuardar, onCancelar }: NuevoRequisitoFormProps) {
+  const [formData, setFormData] = useState<CrearRequisitoDTO>({
+    tipo_fuente: tipoFuente,
+    paso_identificador: '',
+    titulo: '',
+    descripcion: '',
+    instrucciones: '',
+    nivel_validacion: 'DOCUMENTO_OBLIGATORIO',
+    orden: ordenSiguiente,
+  })
+
+  return (
+    <div className="mt-4 p-4 rounded-lg border-2 border-green-500 bg-green-50 dark:bg-green-950/30">
+      <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-3">Nuevo Requisito</h3>
+      <div className="space-y-3">
+        <input
+          type="text"
+          value={formData.paso_identificador}
+          onChange={(e) => setFormData({ ...formData, paso_identificador: e.target.value })}
+          className="w-full px-3 py-2 rounded-lg border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm"
+          placeholder="ID del paso (snake_case)"
+        />
+        <input
+          type="text"
+          value={formData.titulo}
+          onChange={(e) => setFormData({ ...formData, titulo: e.target.value })}
+          className="w-full px-3 py-2 rounded-lg border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm"
+          placeholder="Título"
+        />
+        <textarea
+          value={formData.descripcion}
+          onChange={(e) => setFormData({ ...formData, descripcion: e.target.value })}
+          className="w-full px-3 py-2 rounded-lg border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm"
+          placeholder="Descripción"
+          rows={2}
+        />
+        <select
+          value={formData.nivel_validacion}
+          onChange={(e) => setFormData({ ...formData, nivel_validacion: e.target.value as NivelValidacion })}
+          className="w-full px-3 py-2 rounded-lg border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm"
+        >
+          {NIVELES_VALIDACION.map((nivel) => (
+            <option key={nivel.value} value={nivel.value}>
+              {nivel.label}
+            </option>
+          ))}
+        </select>
+        <div className="flex justify-end gap-2">
+          <button
+            onClick={onCancelar}
+            className="px-4 py-2 rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm"
+          >
+            Cancelar
+          </button>
+          <button
+            onClick={() => onGuardar(formData)}
+            className="px-4 py-2 rounded-lg bg-green-600 text-white text-sm font-medium"
+          >
+            Crear Requisito
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}

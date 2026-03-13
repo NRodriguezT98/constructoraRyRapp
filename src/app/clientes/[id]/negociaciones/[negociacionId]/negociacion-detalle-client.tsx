@@ -84,6 +84,27 @@ function TimelineStep({
 // Badge de Estado
 function EstadoBadge({ estado }: { estado: string }) {
   const config: Record<string, { bg: string; text: string; icon: any }> = {
+    Activa: {
+      bg: 'bg-green-100 dark:bg-green-900/30',
+      text: 'text-green-700 dark:text-green-300',
+      icon: CheckCircle2,
+    },
+    Suspendida: {
+      bg: 'bg-yellow-100 dark:bg-yellow-900/30',
+      text: 'text-yellow-700 dark:text-yellow-300',
+      icon: Clock,
+    },
+    Completada: {
+      bg: 'bg-blue-100 dark:bg-blue-900/30',
+      text: 'text-blue-700 dark:text-blue-300',
+      icon: TrendingUp,
+    },
+    'Cerrada por Renuncia': {
+      bg: 'bg-gray-100 dark:bg-gray-900/30',
+      text: 'text-gray-700 dark:text-gray-300',
+      icon: AlertCircle,
+    },
+    // Estados legacy (compatibilidad con datos históricos)
     'En Proceso': {
       bg: 'bg-yellow-100 dark:bg-yellow-900/30',
       text: 'text-yellow-700 dark:text-yellow-300',
@@ -94,29 +115,14 @@ function EstadoBadge({ estado }: { estado: string }) {
       text: 'text-orange-700 dark:text-orange-300',
       icon: DollarSign,
     },
-    Activa: {
-      bg: 'bg-green-100 dark:bg-green-900/30',
-      text: 'text-green-700 dark:text-green-300',
-      icon: CheckCircle2,
-    },
-    Completada: {
-      bg: 'bg-blue-100 dark:bg-blue-900/30',
-      text: 'text-blue-700 dark:text-blue-300',
-      icon: TrendingUp,
-    },
     Cancelada: {
       bg: 'bg-red-100 dark:bg-red-900/30',
       text: 'text-red-700 dark:text-red-300',
       icon: XCircle,
     },
-    Renuncia: {
-      bg: 'bg-gray-100 dark:bg-gray-900/30',
-      text: 'text-gray-700 dark:text-gray-300',
-      icon: AlertCircle,
-    },
   }
 
-  const { bg, text, icon: Icon } = config[estado] || config['En Proceso']
+  const { bg, text, icon: Icon } = config[estado] || config['Activa']
 
   return (
     <span className={`inline-flex items-center gap-2 rounded-full ${bg} px-4 py-2 text-sm font-semibold ${text}`}>

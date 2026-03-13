@@ -1,9 +1,9 @@
-﻿/**
+/**
  * NuevaViviendaView - Vista dedicada para crear vivienda
- * ✅ Componente presentacional puro
- * ✅ Separación de responsabilidades
- * ✅ Diseño estándar compacto
- * ✅ Paleta Naranja/Ámbar (Viviendas)
+ * ? Componente presentacional puro
+ * ? Separaci�n de responsabilidades
+ * ? Dise�o est�ndar compacto
+ * ? Paleta Naranja/�mbar (Viviendas)
  */
 
 'use client'
@@ -56,7 +56,7 @@ export function NuevaViviendaView() {
   const [proyectoNombre, setProyectoNombre] = useState<string | null>(null)
   const [manzanaNombre, setManzanaNombre] = useState<string | null>(null)
 
-  // ✅ Mutation de React Query para crear vivienda (sin toast automático)
+  // ? Mutation de React Query para crear vivienda (sin toast autom�tico)
   const crearViviendaMutation = useCrearViviendaMutation({ showToast: false })
 
   const {
@@ -76,7 +76,7 @@ export function NuevaViviendaView() {
     irAPaso,
     cancelar,
     submitting,
-    autorizarSubmit, // ← NUEVA función para autorizar submit
+    autorizarSubmit, // ? NUEVA funci�n para autorizar submit
     previewData,
     formData,
     pasos,
@@ -86,23 +86,23 @@ export function NuevaViviendaView() {
   } = useNuevaVivienda({
     onSubmit: async (data) => {
       try {
-        // ✅ Usar mutation de React Query (invalida caché automáticamente)
+
         const nuevaVivienda = await crearViviendaMutation.mutateAsync(data)
 
-        // ✅ Toast con nombre de manzana
-        toast.success('¡Vivienda creada exitosamente!', {
+        // ? Toast con nombre de manzana
+        toast.success('�Vivienda creada exitosamente!', {
           description: manzanaNombre
-            ? `Se creó con éxito la vivienda ${data.numero} de ${manzanaNombre}`
-            : `Se creó con éxito la vivienda ${data.numero}`,
+            ? `Se cre� con �xito la vivienda ${data.numero} de ${manzanaNombre}`
+            : `Se cre� con �xito la vivienda ${data.numero}`,
           duration: 4000,
         })
 
-        // ✅ Retornar la vivienda creada para que el hook sepa que todo salió bien
-        return nuevaVivienda
+        // Retornar la vivienda creada para que el hook sepa que todo sali\u00f3 bien
+        return void nuevaVivienda
       } catch (error) {
-        console.error('❌ Error al crear vivienda:', error)
+        console.error('? Error al crear vivienda:', error)
         toast.error('Error al crear vivienda', {
-          description: error instanceof Error ? error.message : 'Ocurrió un error inesperado',
+          description: error instanceof Error ? error.message : 'Ocurri� un error inesperado',
           duration: 5000,
         })
         throw error // Re-lanzar para que el hook maneje el estado
@@ -164,7 +164,7 @@ export function NuevaViviendaView() {
               <span className={styles.header.breadcrumbCurrent}>Nueva Vivienda</span>
             </nav>
 
-            {/* Título */}
+            {/* T�tulo */}
             <div className={styles.header.titleRow}>
               <div className={styles.header.titleLeft}>
                 <div className={styles.header.icon}>
@@ -173,12 +173,12 @@ export function NuevaViviendaView() {
                 <div className={styles.header.titleContent}>
                   <h1 className={styles.header.title}>Nueva Vivienda</h1>
                   <p className={styles.header.subtitle}>
-                    Completa los 5 pasos • Progreso: {progreso}%
+                    Completa los 5 pasos � Progreso: {progreso}%
                   </p>
                 </div>
               </div>
 
-              {/* Botón cancelar */}
+              {/* Bot�n cancelar */}
               <div className={styles.header.actions}>
                 <button onClick={cancelar} className={styles.header.cancelButton} type="button">
                   <X className="w-4 h-4" />
@@ -200,7 +200,7 @@ export function NuevaViviendaView() {
 
               return (
                 <div key={paso.id} className={styles.stepper.step.container}>
-                  {/* Conector (línea entre pasos) - ANTES del iconWrapper */}
+                  {/* Conector (l�nea entre pasos) - ANTES del iconWrapper */}
                   {index < pasos.length - 1 && (
                     <div
                       className={cn(
@@ -250,13 +250,13 @@ export function NuevaViviendaView() {
         </motion.div>
 
         {/* FORMULARIO */}
-        {/* ⚠️ IMPORTANTE: El submit está protegido en useNuevaVivienda.onSubmitForm */}
+        {/* ?? IMPORTANTE: El submit est� protegido en useNuevaVivienda.onSubmitForm */}
         {/* Solo se procesa cuando pasoActual === 5 (Resumen) */}
         {/* Si se presiona Enter en pasos 1-4, avanza al siguiente paso en lugar de crear */}
-        {/* 🔒 CRÍTICO: onSubmit con preventDefault para evitar auto-submit de React Hook Form */}
+        {/* ?? CR�TICO: onSubmit con preventDefault para evitar auto-submit de React Hook Form */}
         <form onSubmit={(e) => {
 
-          // 🚨 PREVENIR AUTO-SUBMIT: Si no estamos en paso 5, bloquear submit
+          // ?? PREVENIR AUTO-SUBMIT: Si no estamos en paso 5, bloquear submit
           if (pasoActual < 5) {
                                     e.preventDefault()
             e.stopPropagation()
@@ -293,15 +293,17 @@ export function NuevaViviendaView() {
                             errors={errors}
                           />
                         )
-                      case 3:
+                      case 3: {
+                        const PasoLegal = PasoLegalNuevo as any
                         return (
-                          <PasoLegalNuevo
+                          <PasoLegal
                             key="paso-3"
                             register={register}
                             errors={errors}
                             setValue={setValue}
                           />
                         )
+                      }
                       case 4:
                         return (
                           <PasoFinancieroNuevo
@@ -333,10 +335,10 @@ export function NuevaViviendaView() {
             </div>
           </motion.div>
 
-          {/* BOTONES DE NAVEGACIÓN (STICKY BOTTOM) */}
+          {/* BOTONES DE NAVEGACI�N (STICKY BOTTOM) */}
           <motion.div {...styles.animations.container} className={styles.navigation.container}>
             <div className={styles.navigation.content}>
-              {/* Botón Atrás */}
+              {/* Bot�n Atr�s */}
               <button
                 onClick={irAtras}
                 disabled={esPrimerPaso}
@@ -344,7 +346,7 @@ export function NuevaViviendaView() {
                 type="button"
               >
                 <ChevronLeft className={styles.navigation.backIcon} />
-                Atrás
+                Atr�s
               </button>
 
               {/* Indicador de paso */}
@@ -352,7 +354,7 @@ export function NuevaViviendaView() {
                 Paso {pasoActual} de {totalPasos}
               </span>
 
-              {/* Botón Siguiente/Guardar */}
+              {/* Bot�n Siguiente/Guardar */}
               {(() => {
 
                 if (esUltimoPaso) {
@@ -364,11 +366,11 @@ export function NuevaViviendaView() {
                       className={styles.navigation.submitButton}
                       onClick={(e) => {
 
-                        // 🔒 AUTORIZAR SUBMIT: Marcar que el usuario hizo click explícitamente
+                        // ?? AUTORIZAR SUBMIT: Marcar que el usuario hizo click expl�citamente
                         autorizarSubmit()
 
 
-                        // El submit se dispara automáticamente porque type="submit"
+                        // El submit se dispara autom�ticamente porque type="submit"
                       }}
                     >
                       {submitting ? (

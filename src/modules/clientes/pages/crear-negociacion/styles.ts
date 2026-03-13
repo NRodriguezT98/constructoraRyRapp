@@ -48,3 +48,11 @@ export const pageStyles = {
       'px-4 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 rounded-lg transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed',
   },
 }
+
+export const animations = {
+  sidebar: {
+    initial: { opacity: 0, x: 30 },
+    animate: { opacity: 1, x: 0 },
+    transition: { duration: 0.4, delay: 0.15, ease: 'easeOut' as const },
+  },
+}

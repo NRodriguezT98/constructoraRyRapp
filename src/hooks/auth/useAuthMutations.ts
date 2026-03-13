@@ -10,6 +10,7 @@
 'use client'
 
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { toast } from 'sonner'
 
 import { createClient } from '@/lib/supabase/client'
 import { debugLog, errorLog, successLog, warnLog } from '@/lib/utils/logger'
@@ -36,7 +37,7 @@ export function useLoginMutation() {
 
   return useMutation({
     mutationFn: async ({ email, password }: LoginCredentials) => {
-      debugLog('🔐 Login mutation iniciado', { email })
+      debugLog('ðŸ” Login mutation iniciado', { email })
 
       // 1. Iniciar sesión con Supabase Auth
       const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
@@ -44,7 +45,7 @@ export function useLoginMutation() {
         password,
       })
 
-      debugLog('📥 Respuesta de Supabase Auth', {
+      debugLog('ðŸ“¥ Respuesta de Supabase Auth', {
         hasUser: !!authData?.user,
         hasSession: !!authData?.session,
       })
@@ -68,7 +69,7 @@ export function useLoginMutation() {
         .eq('id', authData.user.id)
         .single()
 
-      debugLog('📥 Perfil obtenido', {
+      debugLog('ðŸ“¥ Perfil obtenido', {
         hasPerfil: !!perfilData,
         rol: perfilData?.rol,
       })
@@ -78,7 +79,7 @@ export function useLoginMutation() {
         throw perfilError
       }
 
-      // ✅ 3. Sincronizar permisos al JWT (async, no bloquea login)
+      // âœ… 3. Sincronizar permisos al JWT (async, no bloquea login)
       try {
         const syncResponse = await fetch('/api/auth/sync-permisos', {
           method: 'POST',
@@ -98,7 +99,7 @@ export function useLoginMutation() {
         warnLog('Error sincronizando permisos (no crítico)', error)
       }
 
-      debugLog('🎉 Login mutation completado exitosamente')
+      debugLog('ðŸŽ‰ Login mutation completado exitosamente')
 
       return {
         session: authData.session,
@@ -107,7 +108,10 @@ export function useLoginMutation() {
       }
     },
     onSuccess: (data) => {
-      debugLog('✅ Login mutation onSuccess ejecutado')
+      debugLog('âœ… Login mutation onSuccess ejecutado')
+
+      // âœ… LIMPIAR TODOS LOS TOASTS anteriores (especialmente "Sesión cerrada")
+      toast.dismiss()
 
       // Invalidar todas las queries de autenticación
       queryClient.invalidateQueries({ queryKey: authKeys.all })
@@ -139,7 +143,7 @@ export function useLogoutMutation() {
 
   return useMutation({
     mutationFn: async () => {
-      debugLog('🔐 Ejecutando supabase.auth.signOut()...')
+      debugLog('ðŸ” Ejecutando supabase.auth.signOut()...')
       const { error } = await supabase.auth.signOut()
       if (error) {
         errorLog('logout-mutation', error)
@@ -148,7 +152,7 @@ export function useLogoutMutation() {
       successLog('SignOut ejecutado correctamente')
     },
     onSuccess: () => {
-      debugLog('🧹 Limpiando cache de autenticación...')
+      debugLog('ðŸ§¹ Limpiando cache de autenticación...')
 
       // Limpiar TODAS las queries de autenticación
       queryClient.removeQueries({ queryKey: authKeys.all })
@@ -213,12 +217,11 @@ export function useUpdatePerfilMutation(userId: string) {
       if (context?.previousPerfil) {
         queryClient.setQueryData(authKeys.perfil(userId), context.previousPerfil)
       }
-      console.error('❌ Error actualizando perfil:', err)
+      console.error('âŒ Error actualizando perfil:', err)
     },
     onSuccess: () => {
       // Invalidar para refetch
       queryClient.invalidateQueries({ queryKey: authKeys.perfil(userId) })
-      console.log('✅ Perfil actualizado')
     },
   })
 }
@@ -229,7 +232,7 @@ export function useUpdatePerfilMutation(userId: string) {
 
 /**
  * Mutación para refrescar la sesión actual
- * Útil cuando el token está por expirar
+ * Ãštil cuando el token está por expirar
  */
 export function useRefreshSessionMutation() {
   const queryClient = useQueryClient()
@@ -242,10 +245,9 @@ export function useRefreshSessionMutation() {
     },
     onSuccess: (session) => {
       queryClient.setQueryData(authKeys.session(), session)
-      console.log('✅ Sesión refrescada')
     },
     onError: (error: Error) => {
-      console.error('❌ Error refrescando sesión:', error.message)
+      console.error('âŒ Error refrescando sesión:', error.message)
     },
   })
 }

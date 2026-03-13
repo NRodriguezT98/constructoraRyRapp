@@ -1,11 +1,15 @@
-﻿'use client'
+'use client'
 
 import { motion } from 'framer-motion'
 import { Building2, DollarSign, Download, Edit2, FileText, Info, User } from 'lucide-react'
 
+import { formatNombreCompleto } from '@/lib/utils/string.utils'
 import type { TipoFuentePago } from '@/modules/clientes/types'
+import { obtenerMonto } from '@/modules/clientes/utils/fuentes-pago-campos.utils'
+import { useTiposFuentesConCampos } from '@/modules/configuracion/hooks/useTiposFuentesConCampos'
 
 import { pageStyles as s } from '@/modules/clientes/pages/asignar-vivienda/styles'
+import { generarPDFPreview } from '@/modules/clientes/services/pdf-preview-react.service'
 import type { FuentePagoConfig, ViviendaDetalle } from '../types'
 
 interface FuenteConfiguracion {
@@ -49,6 +53,8 @@ export function Paso3Revision({
   fuentes,
   goToStep,
 }: Paso3RevisionProps) {
+  // 🔥 Hook para obtener configuración de campos dinámicos
+  const { data: tiposConCampos = [] } = useTiposFuentesConCampos()
 
   const InfoField = ({ label, value }: { label: string; value: string | number }) => (
     <div>
@@ -83,6 +89,42 @@ export function Paso3Revision({
     </div>
   )
 
+  const handleGenerarPDF = async () => {
+    try {
+      await generarPDFPreview({
+        cliente: {
+          nombres: clienteNombre?.split(' ')[0] || 'Cliente',
+          apellidos: clienteNombre?.split(' ').slice(1).join(' ') || 'Apellido',
+          cedula: undefined, // No disponible en este paso
+        },
+        vivienda: {
+          proyecto: proyectoNombre,
+          manzana: vivienda?.manzana_nombre,
+          numeroVivienda: vivienda?.numero?.toString() || '',
+        },
+        valorBase: valorNegociado,
+        descuento: descuentoAplicado,
+        valorFinal: valorTotal,
+        fuentesPago: fuentes.map(({ tipo, config }) => {
+          // 🔥 Obtener monto usando campos dinámicos
+          const tipoConCampos = tiposConCampos.find(t => t.nombre === tipo)
+          const camposConfig = tipoConCampos?.configuracion_campos?.campos || []
+          const monto = obtenerMonto(config, camposConfig)
+
+          return {
+            tipo: getFuenteLabel(tipo),
+            monto,
+            entidad: config?.entidad || undefined,
+          }
+        }),
+        notas: notas,
+      })
+    } catch (error) {
+      console.error('❌ Error al generar PDF preview:', error)
+      alert('⚠️ Error al generar el PDF. Por favor, intenta nuevamente.')
+    }
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
@@ -95,10 +137,7 @@ export function Paso3Revision({
       <motion.button
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
-        onClick={() => {
-          // TODO: Implementar generación de PDF
-          alert('📄 Función de descarga PDF en desarrollo.\n\nEl PDF incluirá:\n✅ Información completa de la negociación\n✅ Datos del cliente y vivienda\n✅ Desglose de fuentes de pago\n✅ Resumen financiero\n✅ Fecha y hora de creación')
-        }}
+        onClick={handleGenerarPDF}
         className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-xl font-semibold text-sm shadow-lg shadow-green-500/30 hover:shadow-green-500/50 transition-all"
       >
         <Download className="w-4 h-4" />
@@ -113,7 +152,7 @@ export function Paso3Revision({
         />
 
         <dl className="grid grid-cols-1 md:grid-cols-2 gap-2">
-          <InfoField label="Cliente" value={clienteNombre || 'Cliente'} />
+          <InfoField label="Cliente" value={formatNombreCompleto(clienteNombre || 'Cliente')} />
           <InfoField label="Proyecto" value={proyectoNombre} />
           <InfoField
             label="Vivienda"
@@ -135,7 +174,7 @@ export function Paso3Revision({
 
         <dl className="space-y-1.5">
           <div className="flex items-center justify-between py-1">
-            <dt className="text-xs text-gray-600 dark:text-gray-400">Valor de la Vivienda</dt>
+            <dt className="text-xs text-gray-600 dark:text-gray-400">Valor Base + Gastos Notariales</dt>
             <dd className="text-sm font-medium text-gray-900 dark:text-white">
               ${valorNegociado.toLocaleString('es-CO')}
             </dd>
@@ -145,8 +184,13 @@ export function Paso3Revision({
             <>
               <div className="h-px bg-gray-200 dark:bg-gray-700" />
               <div className="flex items-center justify-between py-1">
-                <dt className="text-xs text-gray-600 dark:text-gray-400">Descuento Aplicado</dt>
-                <dd className="text-sm font-medium text-green-600 dark:text-green-400">
+                <dt className="text-xs text-gray-600 dark:text-gray-400 flex items-center gap-1">
+                  Descuento Aplicado
+                  <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400">
+                    {((descuentoAplicado / valorNegociado) * 100).toFixed(1)}%
+                  </span>
+                </dt>
+                <dd className="text-sm font-bold text-red-600 dark:text-red-400">
                   -${descuentoAplicado.toLocaleString('es-CO')}
                 </dd>
               </div>
@@ -155,9 +199,9 @@ export function Paso3Revision({
 
           <div className="h-px bg-gray-200 dark:bg-gray-700" />
 
-          <div className="flex items-center justify-between py-1.5 bg-gradient-to-br from-cyan-50/90 to-blue-50/90 dark:from-cyan-950/30 dark:to-blue-950/30 -mx-4 px-4 rounded-xl border border-cyan-200/50 dark:border-cyan-800/50">
-            <dt className="text-sm font-bold text-cyan-900 dark:text-cyan-100">Valor Total</dt>
-            <dd className="text-lg font-bold bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 bg-clip-text text-transparent">
+          <div className="flex items-center justify-between py-1.5 bg-gradient-to-br from-green-50/90 to-emerald-50/90 dark:from-green-950/30 dark:to-emerald-950/30 -mx-4 px-4 rounded-xl border border-green-200/50 dark:border-green-800/50">
+            <dt className="text-sm font-bold text-green-900 dark:text-green-100">Total a Financiar</dt>
+            <dd className="text-lg font-bold bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 bg-clip-text text-transparent">
               ${valorTotal.toLocaleString('es-CO')}
             </dd>
           </div>
@@ -173,23 +217,36 @@ export function Paso3Revision({
 
         {fuentes.length > 0 ? (
           <dl className="space-y-1.5">
-            {fuentes.map(({ tipo, config }) => (
-              <div key={tipo} className="flex items-center justify-between py-1">
-                <dt className="text-xs text-gray-600 dark:text-gray-400">
-                  {getFuenteLabel(tipo)}
-                </dt>
-                <dd className="text-sm font-medium text-gray-900 dark:text-white">
-                  ${config?.monto_aprobado?.toLocaleString('es-CO') || '0'}
-                </dd>
-              </div>
-            ))}
+            {fuentes.map(({ tipo, config }) => {
+              // 🔥 Obtener monto usando campos dinámicos
+              const tipoConCampos = tiposConCampos.find(t => t.nombre === tipo)
+              const camposConfig = tipoConCampos?.configuracion_campos?.campos || []
+              const monto = obtenerMonto(config, camposConfig)
+
+              return (
+                <div key={tipo} className="flex items-center justify-between py-1">
+                  <dt className="text-xs text-gray-600 dark:text-gray-400">
+                    {getFuenteLabel(tipo)}
+                  </dt>
+                  <dd className="text-sm font-medium text-gray-900 dark:text-white">
+                    ${monto.toLocaleString('es-CO')}
+                  </dd>
+                </div>
+              )
+            })}
 
             <div className="h-px bg-gray-200 dark:bg-gray-700" />
 
             <div className="flex items-center justify-between py-1.5 bg-gradient-to-br from-green-50/90 to-emerald-50/90 dark:from-green-950/30 dark:to-emerald-950/30 -mx-4 px-4 rounded-xl border border-green-200/50 dark:border-green-800/50">
               <dt className="text-sm font-bold text-green-900 dark:text-green-100">Total Fuentes</dt>
               <dd className="text-lg font-bold bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 bg-clip-text text-transparent">
-                ${fuentes.reduce((sum, f) => sum + (f.config?.monto_aprobado || 0), 0).toLocaleString('es-CO')}
+                ${fuentes.reduce((sum, f) => {
+                  // 🔥 Obtener monto usando campos dinámicos
+                  const tipoConCampos = tiposConCampos.find(t => t.nombre === f.tipo)
+                  const camposConfig = tipoConCampos?.configuracion_campos?.campos || []
+                  const monto = obtenerMonto(f.config, camposConfig)
+                  return sum + monto
+                }, 0).toLocaleString('es-CO')}
               </dd>
             </div>
           </dl>

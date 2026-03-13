@@ -3,13 +3,26 @@
  * Ahora guarda en cliente_intereses en vez de negociaciones
  */
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
+import { useQueryClient } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
 
 import { supabase } from '@/lib/supabase/client'
 
 import { interesesService } from '../services/intereses.service'
+import { interesesKeys } from './useInteresesQuery'
+
+// Orden natural: manzana alphabético → número de vivienda numérico
+function sortViviendasNatural<T extends { numero: string; manzanas?: { nombre: string } | null }>(vivs: T[]): T[] {
+  return [...vivs].sort((a, b) => {
+    const ma = a.manzanas?.nombre ?? ''
+    const mb = b.manzanas?.nombre ?? ''
+    const mCmp = ma.localeCompare(mb, 'es', { sensitivity: 'base' })
+    if (mCmp !== 0) return mCmp
+    return a.numero.localeCompare(b.numero, 'es', { numeric: true, sensitivity: 'base' })
+  })
+}
 
 interface Proyecto {
   id: string
@@ -31,7 +44,6 @@ interface FormData {
   viviendaId: string
   notas?: string
   origen?: string
-  prioridad?: string
 }
 
 interface UseRegistrarInteresProps {
@@ -41,8 +53,10 @@ interface UseRegistrarInteresProps {
 }
 
 export function useRegistrarInteres({ clienteId, onSuccess, onClose }: UseRegistrarInteresProps) {
+  const queryClient = useQueryClient()
   const [proyectos, setProyectos] = useState<Proyecto[]>([])
   const [viviendas, setViviendas] = useState<Vivienda[]>([])
+  const [busquedaVivienda, setBusquedaVivienda] = useState('')
   const [cargandoProyectos, setCargandoProyectos] = useState(false)
   const [cargandoViviendas, setCargandoViviendas] = useState(false)
   const [guardando, setGuardando] = useState(false)
@@ -61,7 +75,6 @@ export function useRegistrarInteres({ clienteId, onSuccess, onClose }: UseRegist
       viviendaId: '',
       notas: '',
       origen: 'Otro',
-      prioridad: 'Media',
     },
   })
 
@@ -85,7 +98,7 @@ export function useRegistrarInteres({ clienteId, onSuccess, onClose }: UseRegist
 
       setProyectos(data || [])
     } catch (error) {
-      console.error('❌ Error al cargar proyectos:', error)
+      console.error('âŒ Error al cargar proyectos:', error)
       setProyectos([])
     } finally {
       setCargandoProyectos(false)
@@ -108,7 +121,7 @@ export function useRegistrarInteres({ clienteId, onSuccess, onClose }: UseRegist
         .eq('proyecto_id', proyectoId)
 
       if (manzanasError) {
-        console.error('❌ Error al cargar manzanas:', manzanasError)
+        console.error('âŒ Error al cargar manzanas:', manzanasError)
         throw manzanasError
       }
 
@@ -120,7 +133,6 @@ export function useRegistrarInteres({ clienteId, onSuccess, onClose }: UseRegist
         return
       }
 
-      console.log('🔍 Buscando viviendas en manzanas:', manzanaIds)
 
       // Ahora obtenemos las viviendas de esas manzanas
       const { data, error } = await supabase
@@ -139,12 +151,10 @@ export function useRegistrarInteres({ clienteId, onSuccess, onClose }: UseRegist
         .order('numero')
 
       if (error) {
-        console.error('❌ Error en query de viviendas:', error)
+        console.error('âŒ Error en query de viviendas:', error)
         throw error
       }
 
-      console.log('✅ Viviendas disponibles cargadas:', data?.length || 0)
-      console.log('📊 Datos de viviendas:', data)
 
       // Mapear la respuesta al tipo correcto
       const viviendasMapeadas = (data || []).map((v: any) => ({
@@ -155,7 +165,7 @@ export function useRegistrarInteres({ clienteId, onSuccess, onClose }: UseRegist
         manzanas: v.manzanas,
       }))
 
-      setViviendas(viviendasMapeadas)
+      setViviendas(sortViviendasNatural(viviendasMapeadas))
     } catch (error) {
       console.error('Error al cargar viviendas:', error)
       setViviendas([])
@@ -174,17 +184,43 @@ export function useRegistrarInteres({ clienteId, onSuccess, onClose }: UseRegist
     if (proyectoIdSeleccionado) {
       cargarViviendas(proyectoIdSeleccionado)
       setValue('viviendaId', '') // Reset vivienda seleccionada
+      setBusquedaVivienda('')
     } else {
       setViviendas([])
+      setBusquedaVivienda('')
     }
   }, [proyectoIdSeleccionado, cargarViviendas, setValue])
+
+  // Filtrado client-side por manzana o número de vivienda
+  const viviendasFiltradas = useMemo(() => {
+    if (!busquedaVivienda.trim()) return viviendas
+    const q = busquedaVivienda.toLowerCase()
+    return viviendas.filter((v) => {
+      const manzana = (v.manzanas?.nombre ?? '').toLowerCase()
+      const numero = v.numero.toLowerCase()
+      return (
+        manzana.includes(q) ||
+        numero.includes(q) ||
+        `${manzana}${numero}`.includes(q.replace(/\s+/g, '')) ||
+        `manzana ${manzana} casa ${numero}`.includes(q)
+      )
+    })
+  }, [viviendas, busquedaVivienda])
+
+  // Seleccionar vivienda desde el combobox
+  const seleccionarVivienda = useCallback(
+    (id: string) => {
+      setValue('viviendaId', id, { shouldValidate: !!id, shouldDirty: true })
+    },
+    [setValue]
+  )
 
   const handleRegistrar = async (data: FormData) => {
     setGuardando(true)
     setErrorNegociacionExistente(false)
 
     try {
-      // ⚠️ PENDIENTE: Validación de cédula (TEMPORALMENTE DESHABILITADA)
+      // âš ï¸ PENDIENTE: Validación de cédula (TEMPORALMENTE DESHABILITADA)
       // TODO: Rehabilitar cuando se ejecute migración SQL en Supabase
       // Archivo: supabase/migrations/20250120_add_es_documento_identidad.sql
       // Documentación: PENDIENTE-VALIDACION-CEDULA.md
@@ -196,7 +232,7 @@ export function useRegistrarInteres({ clienteId, onSuccess, onClose }: UseRegist
         return
       }
       */
-      console.warn('⚠️ BYPASS TEMPORAL: Validación de cédula deshabilitada - Ver PENDIENTE-VALIDACION-CEDULA.md')
+      console.warn('âš ï¸ BYPASS TEMPORAL: Validación de cédula deshabilitada - Ver PENDIENTE-VALIDACION-CEDULA.md')
 
       // Verificar si ya existe un interés activo para esta vivienda
       const interesesExistentes = await interesesService.obtenerInteresesCliente(clienteId, true)
@@ -208,16 +244,17 @@ export function useRegistrarInteres({ clienteId, onSuccess, onClose }: UseRegist
         return
       }
 
-      // Registrar el interés (sin valor_estimado)
+      // Registrar el interés
       await interesesService.crearInteres({
         cliente_id: clienteId,
         proyecto_id: data.proyectoId,
         vivienda_id: data.viviendaId,
         notas: data.notas,
         origen: (data.origen as any) || 'Otro',
-        prioridad: (data.prioridad as any) || 'Media',
       })
 
+      // Refrescar la lista de intereses en React Query sin recargar página
+      await queryClient.invalidateQueries({ queryKey: interesesKeys.byCliente(clienteId) })
       reset()
       onSuccess()
     } catch (error) {
@@ -230,6 +267,7 @@ export function useRegistrarInteres({ clienteId, onSuccess, onClose }: UseRegist
 
   const handleCancelar = () => {
     reset()
+    setBusquedaVivienda('')
     setErrorNegociacionExistente(false)
     onClose()
   }
@@ -238,6 +276,9 @@ export function useRegistrarInteres({ clienteId, onSuccess, onClose }: UseRegist
     // Estados
     proyectos,
     viviendas,
+    viviendasFiltradas,
+    busquedaVivienda,
+    setBusquedaVivienda,
     cargandoProyectos,
     cargandoViviendas,
     guardando,
@@ -255,5 +296,6 @@ export function useRegistrarInteres({ clienteId, onSuccess, onClose }: UseRegist
     // Handlers
     handleRegistrar,
     handleCancelar,
+    seleccionarVivienda,
   }
 }

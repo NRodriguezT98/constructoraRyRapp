@@ -47,7 +47,7 @@ export function FooterNegociacion({
         <button
           type="button"
           onClick={onCancel}
-          className={pageStyles.button.ghost}
+          className={pageStyles.button.secondary}
         >
           <X className="h-3.5 w-3.5" />
           <span>Cancelar</span>

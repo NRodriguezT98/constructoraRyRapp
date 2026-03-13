@@ -3,6 +3,7 @@
  *
  * Formulario multi-step para crear/editar clientes.
  * Diseño moderno con animaciones y glassmorphism.
+ * ✅ TEMA: Cyan/Blue/Indigo (módulo Clientes)
  *
  * ⭐ REFACTORIZADO: Usa componentes shared de formulario
  */
@@ -32,7 +33,7 @@ import {
 } from 'lucide-react'
 
 import { ModernInput, ModernSelect, ModernTextarea } from '@/shared/components/forms'
-
+import { useLocationSelector } from '@/shared/hooks/useLocationSelector'
 
 import type { CrearClienteDTO, EstadoCivil, TipoDocumento } from '../types'
 import { ESTADOS_CIVILES, TIPOS_DOCUMENTO } from '../types'
@@ -44,11 +45,13 @@ interface FormularioClienteProps {
   errors: Record<string, string>
   isSubmitting: boolean
   esEdicion: boolean
+  hayCambios?: boolean
+  cargandoDatos?: boolean
   onSubmit: (e: React.FormEvent) => void
   onChange: (campo: keyof CrearClienteDTO, valor: any) => void
   // Props adicionales para el interés
   proyectos?: Array<{ id: string; nombre: string; ubicacion: string }>
-  viviendas?: Array<{ id: string; numero: string; manzana_nombre: string; precio: number }>
+  viviendas?: Array<{ id: string; numero: string; manzana_nombre: string; valor_total: number }>
   cargandoProyectos?: boolean
   cargandoViviendas?: boolean
   onProyectoChange?: (proyectoId: string) => void
@@ -67,6 +70,8 @@ export function FormularioCliente({
   errors,
   isSubmitting,
   esEdicion,
+  hayCambios = true,
+  cargandoDatos = false,
   onSubmit,
   onChange,
   proyectos = [],
@@ -82,12 +87,35 @@ export function FormularioCliente({
 }: FormularioClienteProps) {
   const [currentStep, setCurrentStep] = useState(0)
 
-  const steps = [
-    { id: 0, label: 'Personal', icon: User, color: 'from-blue-500 to-cyan-500' },
-    { id: 1, label: 'Contacto', icon: Phone, color: 'from-purple-500 to-pink-500' },
-    { id: 2, label: 'Interés', icon: Heart, color: 'from-rose-500 to-orange-500' },
-    { id: 3, label: 'Adicional', icon: MessageSquare, color: 'from-orange-500 to-red-500' },
-  ]
+  // Hook para selección de departamento/ciudad en cascada
+  const {
+    departamentos,
+    departamentoSeleccionado,
+    ciudadesDisponibles,
+    ciudadSeleccionada,
+    handleDepartamentoChange,
+    handleCiudadChange,
+    ciudadDeshabilitada,
+  } = useLocationSelector({
+    departamentoInicial: formData.departamento || '',
+    ciudadInicial: formData.ciudad || '',
+    onDepartamentoChange: (departamento) => onChange('departamento', departamento),
+    onCiudadChange: (ciudad) => onChange('ciudad', ciudad),
+  })
+
+  // ✅ Steps dinámicos: En edición no incluye paso de Interés
+  const steps = esEdicion
+    ? [
+        { id: 0, label: 'Personal', icon: User, color: 'from-cyan-500 to-blue-500' },
+        { id: 1, label: 'Contacto', icon: Phone, color: 'from-blue-500 to-indigo-500' },
+        { id: 2, label: 'Adicional', icon: MessageSquare, color: 'from-cyan-500 to-blue-500' },
+      ]
+    : [
+        { id: 0, label: 'Personal', icon: User, color: 'from-cyan-500 to-blue-500' },
+        { id: 1, label: 'Contacto', icon: Phone, color: 'from-blue-500 to-indigo-500' },
+        { id: 2, label: 'Interés', icon: Heart, color: 'from-indigo-500 to-cyan-500' },
+        { id: 3, label: 'Adicional', icon: MessageSquare, color: 'from-cyan-500 to-blue-500' },
+      ]
 
   // Resetear step cuando se abre/cierra el modal
   useEffect(() => {
@@ -169,7 +197,6 @@ export function FormularioCliente({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           className='fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-md p-4'
-          onClick={onClose}
         >
           <motion.div
             initial={{ scale: 0.95, opacity: 0, y: 20 }}
@@ -179,8 +206,28 @@ export function FormularioCliente({
             onClick={(e) => e.stopPropagation()}
             className='relative w-full max-w-4xl max-h-[90vh] overflow-hidden rounded-2xl bg-white shadow-2xl dark:bg-gray-900'
           >
-            {/* Header con gradiente animado */}
-            <div className='relative overflow-hidden bg-gradient-to-r from-purple-600 via-violet-600 to-fuchsia-600 px-6 py-5'>
+            {/* Loading State cuando carga datos en edición */}
+            {cargandoDatos && esEdicion ? (
+              <div className='flex items-center justify-center min-h-[600px] bg-white dark:bg-gray-900'>
+                <div className='flex flex-col items-center gap-4'>
+                  <div className='relative'>
+                    <div className='w-16 h-16 border-4 border-cyan-200 dark:border-cyan-900 rounded-full' />
+                    <div className='absolute inset-0 w-16 h-16 border-4 border-t-cyan-600 dark:border-t-cyan-400 rounded-full animate-spin' />
+                  </div>
+                  <div className='text-center'>
+                    <p className='text-base font-semibold text-gray-900 dark:text-gray-100'>
+                      Cargando datos del cliente...
+                    </p>
+                    <p className='text-sm text-gray-500 dark:text-gray-400 mt-1'>
+                      Espera un momento
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <>
+                {/* Header con gradiente animado */}
+                <div className='relative overflow-hidden bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 px-6 py-5'>
               {/* Patrón de fondo animado */}
               <div className='absolute inset-0 opacity-20'>
                 <div className='absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(255,255,255,0.3),transparent)]' />
@@ -197,10 +244,28 @@ export function FormularioCliente({
                     <Sparkles className='h-6 w-6 text-white' />
                   </motion.div>
                   <div>
-                    <h2 className='text-xl font-bold text-white'>
-                      {esEdicion ? 'Editar Cliente' : 'Nuevo Cliente'}
-                    </h2>
-                    <p className='text-xs text-purple-100'>
+                    <div className='flex items-center gap-2'>
+                      <h2 className='text-xl font-bold text-white'>
+                        {esEdicion ? 'Editar Cliente' : 'Nuevo Cliente'}
+                      </h2>
+                      {esEdicion && (
+                        <span
+                          className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${
+                            hayCambios
+                              ? 'bg-amber-500/90 text-white'
+                              : 'bg-white/20 text-white'
+                          }`}
+                          title={
+                            hayCambios
+                              ? 'Hay cambios sin guardar'
+                              : 'No hay cambios pendientes'
+                          }
+                        >
+                          {hayCambios ? '● Modificado' : '✓ Sin cambios'}
+                        </span>
+                      )}
+                    </div>
+                    <p className='text-xs text-cyan-100'>
                       {esEdicion
                         ? 'Actualiza la información del cliente'
                         : 'Paso ' + (currentStep + 1) + ' de ' + steps.length}
@@ -237,9 +302,9 @@ export function FormularioCliente({
                           }}
                           className={`flex h-10 w-10 items-center justify-center rounded-lg shadow-lg transition-all ${
                             isCompleted
-                              ? 'bg-white text-purple-600'
+                              ? 'bg-white text-cyan-600'
                               : isActive
-                                ? 'bg-white text-purple-600'
+                                ? 'bg-white text-cyan-600'
                                 : 'bg-white/20 text-white backdrop-blur-sm'
                           }`}
                         >
@@ -293,7 +358,7 @@ export function FormularioCliente({
                       <div className='space-y-4'>
                         <div className='mb-5'>
                           <h3 className='text-base font-semibold text-gray-900 dark:text-white flex items-center gap-1.5'>
-                            <User className='h-4 w-4 text-purple-500' />
+                            <User className='h-4 w-4 text-cyan-500' />
                             Información Personal
                           </h3>
                           <p className='mt-0.5 text-xs text-gray-500 dark:text-gray-400'>
@@ -390,7 +455,7 @@ export function FormularioCliente({
                       <div className='space-y-4'>
                         <div className='mb-5'>
                           <h3 className='text-base font-semibold text-gray-900 dark:text-white flex items-center gap-1.5'>
-                            <Phone className='h-4 w-4 text-purple-500' />
+                            <Phone className='h-4 w-4 text-blue-500' />
                             Información de Contacto
                           </h3>
                           <p className='mt-0.5 text-xs text-gray-500 dark:text-gray-400'>
@@ -441,25 +506,47 @@ export function FormularioCliente({
                             disabled={isSubmitting}
                           />
 
-                          <ModernInput
-                            icon={Building2}
-                            label='Ciudad'
-                            type='text'
-                            value={formData.ciudad}
-                            onChange={(e: any) => onChange('ciudad', e.target.value)}
-                            placeholder='Ej: Cali'
-                            disabled={isSubmitting}
-                          />
-
-                          <ModernInput
+                          {/* Departamento (Select en cascada) */}
+                          <ModernSelect
                             icon={Home}
                             label='Departamento'
-                            type='text'
-                            value={formData.departamento}
-                            onChange={(e: any) => onChange('departamento', e.target.value)}
-                            placeholder='Ej: Valle del Cauca'
+                            value={departamentoSeleccionado}
+                            onChange={(e: any) => handleDepartamentoChange(e.target.value)}
                             disabled={isSubmitting}
-                          />
+                            required
+                            error={errors.departamento}
+                          >
+                            <option value=''>Seleccione un departamento</option>
+                            {departamentos.map((dept) => (
+                              <option key={dept} value={dept}>
+                                {dept}
+                              </option>
+                            ))}
+                          </ModernSelect>
+
+                          {/* Ciudad/Municipio (Select que depende de departamento) */}
+                          <ModernSelect
+                            icon={Building2}
+                            label='Ciudad / Municipio'
+                            value={ciudadSeleccionada}
+                            onChange={(e: any) => handleCiudadChange(e.target.value)}
+                            disabled={isSubmitting || ciudadDeshabilitada}
+                            required
+                            error={errors.ciudad}
+                          >
+                            <option value=''>
+                              {!departamentoSeleccionado
+                                ? 'Primero selecciona un departamento'
+                                : ciudadesDisponibles.length === 0
+                                  ? 'No hay municipios disponibles'
+                                  : 'Seleccione un municipio'}
+                            </option>
+                            {ciudadesDisponibles.map((ciudad) => (
+                              <option key={ciudad} value={ciudad}>
+                                {ciudad}
+                              </option>
+                            ))}
+                          </ModernSelect>
                         </div>
                       </div>
                     )}
@@ -469,7 +556,7 @@ export function FormularioCliente({
                       <div className='space-y-4'>
                         <div className='mb-5'>
                           <h3 className='text-base font-semibold text-gray-900 dark:text-white flex items-center gap-1.5'>
-                            <Heart className='h-4 w-4 text-rose-500' />
+                            <Heart className='h-4 w-4 text-indigo-500' />
                             ¿En qué está interesado?
                           </h3>
                           <p className='mt-0.5 text-xs text-gray-500 dark:text-gray-400'>
@@ -572,12 +659,12 @@ export function FormularioCliente({
                       </div>
                     )}
 
-                    {/* Step 3: Información Adicional */}
-                    {currentStep === 3 && (
+                    {/* Step 2 (Edición) / Step 3 (Creación): Información Adicional */}
+                    {((esEdicion && currentStep === 2) || (!esEdicion && currentStep === 3)) && (
                       <div className='space-y-4'>
                         <div className='mb-5'>
                           <h3 className='text-base font-semibold text-gray-900 dark:text-white flex items-center gap-1.5'>
-                            <MessageSquare className='h-4 w-4 text-purple-500' />
+                            <MessageSquare className='h-4 w-4 text-indigo-500' />
                             Información Adicional
                           </h3>
                           <p className='mt-0.5 text-xs text-gray-500 dark:text-gray-400'>
@@ -630,7 +717,7 @@ export function FormularioCliente({
                     <button
                       type='button'
                       onClick={nextStep}
-                      className='flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-purple-600 to-violet-600 px-5 py-2 font-medium text-white shadow-lg shadow-purple-500/30 transition-all hover:shadow-xl hover:shadow-purple-500/40 hover:-translate-y-0.5'
+                      className='flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-cyan-600 to-blue-600 px-5 py-2 font-medium text-white shadow-lg shadow-cyan-500/30 transition-all hover:shadow-xl hover:shadow-cyan-500/40 hover:-translate-y-0.5'
                     >
                       Siguiente
                       <ChevronRight className='h-4 w-4' />
@@ -639,8 +726,15 @@ export function FormularioCliente({
                     <button
                       type='submit'
                       onClick={onSubmit}
-                      disabled={isSubmitting}
-                      className='group flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-purple-600 to-violet-600 px-5 py-2 font-medium text-white shadow-lg shadow-purple-500/30 transition-all hover:shadow-xl hover:shadow-purple-500/40 hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0'
+                      disabled={isSubmitting || (esEdicion && !hayCambios)}
+                      title={
+                        esEdicion && !hayCambios
+                          ? 'No hay cambios por guardar'
+                          : esEdicion
+                            ? 'Guardar cambios'
+                            : 'Crear cliente'
+                      }
+                      className='group flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-cyan-600 to-blue-600 px-5 py-2 font-medium text-white shadow-lg shadow-cyan-500/30 transition-all hover:shadow-xl hover:shadow-cyan-500/40 hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0 disabled:shadow-none'
                     >
                       {isSubmitting ? (
                         <>
@@ -650,6 +744,11 @@ export function FormularioCliente({
                             className='h-4 w-4 rounded-full border-2 border-white border-t-transparent'
                           />
                           Guardando...
+                        </>
+                      ) : esEdicion && !hayCambios ? (
+                        <>
+                          <Check className='h-4 w-4' />
+                          Sin Cambios
                         </>
                       ) : (
                         <>
@@ -662,6 +761,8 @@ export function FormularioCliente({
                 </div>
               </div>
             </div>
+              </>
+            )}
           </motion.div>
         </motion.div>
       )}

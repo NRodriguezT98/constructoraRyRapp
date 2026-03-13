@@ -52,7 +52,7 @@ export function DocumentoEliminadoCard({
     toggleExpansion,
   } = useVersionesEliminadasCard({
     documentoId: documento.id,
-    documentoTitulo: documento.titulo,
+    documentoTitulo: documento.titulo ?? '',
     modulo: modulo,
   })
 
@@ -91,7 +91,7 @@ export function DocumentoEliminadoCard({
                 <div className="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-400">
                   <FileText className="w-3 h-3 flex-shrink-0" />
                   <span className="font-semibold">Documento creado:</span>
-                  <span>{formatDateCompact(documento.fecha_documento)}</span>
+                  <span>{formatDateCompact(documento.fecha_documento ?? '')}</span>
                 </div>
 
                 {/* Usuario que subió el documento */}
@@ -134,7 +134,7 @@ export function DocumentoEliminadoCard({
             className="overflow-hidden border-t border-gray-200 dark:border-gray-700"
           >
             <VersionesList
-              versiones={versiones}
+              versiones={versiones as unknown as DocumentoConUsuario[]}
               modulo={modulo}
               isLoading={isLoading}
               seleccionadas={new Set()}

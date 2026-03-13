@@ -75,7 +75,7 @@ export function ViviendaCardDisponible({
             </p>
           </div>
           <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-xs font-bold shadow-md shadow-emerald-500/30 flex-shrink-0">
-            <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+            <div className="w-1.5 h-1.5 rounded-full bg-white" />
             DISPONIBLE
           </span>
         </div>

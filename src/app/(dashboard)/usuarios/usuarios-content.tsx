@@ -5,7 +5,7 @@
  * COMPONENTE: Contenido de Gestión de Usuarios (Premium Design)
  * ============================================
  *
- * ✨ VERSIÓN 2.0.0 - Integrado con UsuariosTabs + Sistema de Permisos v2
+ * âœ¨ VERSIÃ“N 2.0.0 - Integrado con UsuariosTabs + Sistema de Permisos v2
  *
  * Contenido del módulo de usuarios con:
  * - Sistema de tabs (Usuarios, Permisos, Configuración)
@@ -48,15 +48,8 @@ export default function UsuariosContent({
   canDelete,
   isAdmin,
 }: UsuariosContentProps) {
-  console.log('👥 [USUARIOS CONTENT] Props recibidos:', {
-    canView,
-    canCreate,
-    canEdit,
-    canDelete,
-    isAdmin,
-  })
 
-  // ✨ Hook antiguo (todavía tiene filtros y funcionalidades que necesitamos)
+  // âœ¨ Hook antiguo (todavía tiene filtros y funcionalidades que necesitamos)
   const {
     usuarios,
     estadisticas,
@@ -69,7 +62,7 @@ export default function UsuariosContent({
     actualizarUsuario,
   } = useUsuarios()
 
-  // ✨ NUEVO: Hook de permisos dinámicos
+  // âœ¨ NUEVO: Hook de permisos dinámicos
   const { esAdmin: esAdminDinamico } = usePermisosQuery()
 
   // Estado de modales
@@ -114,7 +107,7 @@ export default function UsuariosContent({
       <UsuariosTabs>
         <div className="space-y-4">
 
-      {/* 🎈 FAB SUPERIOR DERECHO (Solo si tiene permiso de crear) */}
+      {/* ðŸŽˆ FAB SUPERIOR DERECHO (Solo si tiene permiso de crear) */}
       {canCreate && (
         <motion.div
           initial={{ scale: 0, rotate: -180 }}
@@ -227,7 +220,7 @@ export default function UsuariosContent({
                   <th className={styles.tabla.th}>Email</th>
                   <th className={styles.tabla.th}>Rol</th>
                   <th className={styles.tabla.th}>Estado</th>
-                  <th className={styles.tabla.th}>Último Acceso</th>
+                  <th className={styles.tabla.th}>Ãšltimo Acceso</th>
                   {canEdit && <th className={styles.tabla.th}>Acciones</th>}
                 </tr>
               </thead>
@@ -289,7 +282,7 @@ export default function UsuariosContent({
                       </span>
                     </td>
 
-                    {/* Último Acceso */}
+                    {/* Ãšltimo Acceso */}
                     <td className={styles.tabla.td}>
                       <div className={styles.tabla.email}>
                         {usuario.ultimo_acceso

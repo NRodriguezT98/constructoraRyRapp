@@ -90,7 +90,7 @@ export function ConfirmarCambiosModal({
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className={`relative px-4 py-3 border-b border-gray-200/50 dark:border-gray-700/50 ${theme.classes.bg.gradient}`}>
+        <div className={`relative px-4 py-3 border-b border-gray-200/50 dark:border-gray-700/50 bg-gradient-to-r ${theme.classes.gradient.triple}`}>
           <div className="absolute inset-0 bg-grid-white/10 [mask-image:linear-gradient(0deg,transparent,black,transparent)]" />
           <div className="relative z-10 flex items-center justify-between gap-3">
             <div className="flex items-center gap-2">
@@ -130,7 +130,7 @@ export function ConfirmarCambiosModal({
           ) : (
             <div className="space-y-4">
               {/* Resumen */}
-              <div className={`flex items-center gap-2 p-2.5 rounded-lg border ${theme.classes.bg.light} ${theme.classes.border.base}`}>
+              <div className={`flex items-center gap-2 p-2.5 rounded-lg border ${theme.classes.bg.light} ${theme.classes.border.light}`}>
                 <CheckCircle2 className={`w-5 h-5 flex-shrink-0 ${theme.classes.text.primary}`} />
                 <p className={`text-xs ${theme.classes.text.dark}`}>
                   <strong className={`font-bold ${theme.classes.text.primary}`}>
@@ -155,7 +155,7 @@ export function ConfirmarCambiosModal({
                     {/* Header categoría */}
                     <div className="px-3 py-2 bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-700">
                       <div className="flex items-center gap-2">
-                        <div className={`w-6 h-6 rounded-md flex items-center justify-center shadow-sm ${theme.classes.bg.gradient}`}>
+                        <div className={`w-6 h-6 rounded-md flex items-center justify-center shadow-sm bg-gradient-to-br ${theme.classes.gradient.triple}`}>
                           <IconoCategoria className="w-3.5 h-3.5 text-white" />
                         </div>
                         <h4 className="text-sm font-bold text-gray-900 dark:text-white">

@@ -156,7 +156,7 @@ export function useDocumentoUpload({
           archivo: archivoSeleccionado,
           titulo: data.titulo,
           descripcion: data.descripcion,
-          categoriaId: data.categoria_id,
+          categoriaId: data.categoria_id ?? undefined,
           fechaDocumento: data.fecha_documento,
           fechaVencimiento: data.fecha_vencimiento,
           esImportante: data.es_importante,

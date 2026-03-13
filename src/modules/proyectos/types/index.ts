@@ -72,6 +72,8 @@ export type FiltroProyecto = {
 
 // Formulario de proyecto
 export interface ProyectoFormData {
+  id?: string
+  responsable?: string
   nombre: string
   descripcion: string
   ubicacion: string

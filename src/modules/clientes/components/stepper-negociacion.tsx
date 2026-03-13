@@ -125,7 +125,7 @@ export function StepperNegociacion({ currentStep, completedSteps }: StepperNegoc
                           scaleX:
                             step.number < currentStep || isCompleted ? 1 : 0,
                         }}
-                        transition={{ duration: 0.5, ease: 'easeInOut' }}
+                        transition={{ duration: 0.15, ease: 'easeInOut' }}
                       />
                     </div>
                   </div>

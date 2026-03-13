@@ -20,7 +20,7 @@ export class CategoriasService {
   ): Promise<CategoriaDocumento[]> {
     const { data, error } = await supabase
       .from('categorias_documento')
-      .select('*')
+      .select('id,user_id,nombre,descripcion,color,icono,orden,es_global,modulos_permitidos,fecha_creacion')
       .eq('user_id', userId)
       .order('orden', { ascending: true })
       .order('nombre', { ascending: true })
@@ -41,7 +41,7 @@ export class CategoriasService {
     // ✅ SOLO categorías globales (visibles para TODOS los usuarios: admin, contadora, ayudante)
     const { data, error } = await supabase
       .from('categorias_documento')
-      .select('*')
+      .select('id,user_id,nombre,descripcion,color,icono,orden,es_global,modulos_permitidos,fecha_creacion')
       .eq('es_global', true) // Solo categorías globales del sistema
       .order('orden', { ascending: true })
       .order('nombre', { ascending: true })
@@ -52,7 +52,7 @@ export class CategoriasService {
     }
 
     // Filtrar por módulo en JavaScript
-    const filtradas = (data || []).filter((cat: any) => {
+    const filtradas = (data || []).filter((cat) => {
       // Si tiene modulos_permitidos y contiene el módulo actual
       if (cat.modulos_permitidos && Array.isArray(cat.modulos_permitidos)) {
         return cat.modulos_permitidos.includes(modulo)

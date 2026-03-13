@@ -194,21 +194,26 @@ export const colorSchemes = {
   'Cuota Inicial': {
     from: 'rgb(59, 130, 246)', // blue-500
     to: 'rgb(37, 99, 235)', // blue-600
+    icon: 'DollarSign', // Icono configurado para Cuota Inicial
   },
   'Crédito Hipotecario': {
     from: 'rgb(168, 85, 247)', // purple-500
     to: 'rgb(147, 51, 234)', // purple-600
+    icon: 'Building2', // Icono configurado para Crédito Hipotecario
   },
   'Subsidio Mi Casa Ya': {
     from: 'rgb(34, 197, 94)', // green-500
     to: 'rgb(16, 185, 129)', // green-600
+    icon: 'Home', // Icono configurado para Subsidio Mi Casa Ya
   },
   'Subsidio Caja Compensación': {
     from: 'rgb(251, 146, 60)', // orange-400
     to: 'rgb(249, 115, 22)', // orange-500
+    icon: 'Gift', // Icono configurado para Subsidio Caja Compensación
   },
   'Subsidio': {
     from: 'rgb(34, 197, 94)', // green-500 (fallback)
     to: 'rgb(16, 185, 129)', // green-600
+    icon: 'Gift', // Icono configurado para Subsidio genérico
   },
 }

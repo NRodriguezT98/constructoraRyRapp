@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { motion } from 'framer-motion'
 import { CheckCircle, DoorOpen, Home, Key } from 'lucide-react'
@@ -64,7 +64,7 @@ export function ViviendasStats({
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay: 0.1 }}
+      transition={{ duration: 0.15 }}
       className={styles.metricas.grid}
     >
       {metricas.map((metrica, index) => {
@@ -74,7 +74,7 @@ export function ViviendasStats({
             key={metrica.label}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 + index * 0.1 }}
+            transition={{ duration: 0.15, delay: index * 0.03 }}
             whileHover={{ scale: 1.02, y: -4 }}
             className={styles.metricas.card}
           >

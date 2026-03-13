@@ -1,10 +1,10 @@
 /**
  * useProyectosForm - Hook con lógica del formulario de proyectos
- * ✅ Separación de responsabilidades ESTRICTA
- * ✅ Validación con Zod
- * ✅ React Hook Form
- * ✅ Cálculos y transformaciones
- * ✅ Validación granular de manzanas editables
+ * âœ… Separación de responsabilidades ESTRICTA
+ * âœ… Validación con Zod
+ * âœ… React Hook Form
+ * âœ… Cálculos y transformaciones
+ * âœ… Validación granular de manzanas editables
  */
 
 import { useEffect, useMemo, useState } from 'react'
@@ -14,6 +14,8 @@ import { useFieldArray, useForm } from 'react-hook-form'
 import { z } from 'zod'
 
 import type { ProyectoFormData } from '../types'
+
+import { toast } from 'sonner'
 
 import { useFormChanges } from '@/shared/hooks/useFormChanges'
 import { proyectosService } from '../services/proyectos.service'
@@ -26,30 +28,31 @@ const manzanaSchema = z.object({
     .string()
     .min(1, 'El nombre de la manzana es obligatorio')
     .regex(
-      /^[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\s\-_().]+$/,
+      /^[a-zA-ZáéíóúÁÃ‰ÃÃ“ÃšñÃ‘0-9\s\-_().]+$/,
       'Solo se permiten letras, números, espacios, guiones, paréntesis y puntos'
     ),
   totalViviendas: z
     .number({
-      errorMap: () => ({ message: 'La cantidad de viviendas es obligatoria' }),
-      invalid_type_error: 'Ingresa un número válido',
+      message: 'La cantidad de viviendas es obligatoria',
     })
     .min(1, 'Mínimo 1 vivienda')
     .max(100, 'Máximo 100 viviendas')
     .int('Debe ser un número entero'),
-  // ✅ Campos opcionales para validación precargada
+  // âœ… Campos opcionales para validación precargada
   cantidadViviendasCreadas: z.number().optional(),
   esEditable: z.boolean().optional(),
   motivoBloqueado: z.string().optional(),
 })
 
 const proyectoSchema = z.object({
+  id: z.string().optional(), // ID del proyecto (cuando se edita)
+  responsable: z.string().optional(), // Responsable del proyecto
   nombre: z
     .string()
     .min(3, 'El nombre del proyecto debe tener al menos 3 caracteres')
     .max(100, 'El nombre no puede exceder 100 caracteres')
     .regex(
-      /^[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\s\-_().]+$/,
+      /^[a-zA-ZáéíóúÁÃ‰ÃÃ“ÃšñÃ‘0-9\s\-_().]+$/,
       'Solo se permiten letras (con acentos), números, espacios, guiones, paréntesis y puntos'
     ),
   descripcion: z
@@ -57,7 +60,7 @@ const proyectoSchema = z.object({
     .min(10, 'La descripción debe tener al menos 10 caracteres')
     .max(1000, 'La descripción no puede exceder 1000 caracteres')
     .regex(
-      /^[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\s\-_.,;:()\n¿?¡!'"°%$]+$/,
+      /^[a-zA-ZáéíóúÁÃ‰ÃÃ“ÃšñÃ‘0-9\s\-_.,;:()\n¿?¡!'"Â°%$]+$/,
       'Caracteres no permitidos en la descripción. Use solo letras, números y puntuación básica'
     ),
   ubicacion: z
@@ -65,11 +68,11 @@ const proyectoSchema = z.object({
     .min(5, 'La ubicación debe tener al menos 5 caracteres')
     .max(200, 'La ubicación no puede exceder 200 caracteres')
     .regex(
-      /^[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\s\-,#.°]+$/,
+      /^[a-zA-ZáéíóúÁÃ‰ÃÃ“ÃšñÃ‘0-9\s\-,#.Â°]+$/,
       'Solo se permiten letras (con acentos), números, espacios, comas, guiones, # y puntos'
     ),
   estado: z.enum(['en_planificacion', 'en_proceso', 'en_construccion', 'completado', 'pausado'], {
-    errorMap: () => ({ message: 'Selecciona un estado para el proyecto' }),
+    message: 'Selecciona un estado para el proyecto',
   }),
   fechaInicio: z.string().optional(),
   fechaFinEstimada: z.string().optional(),
@@ -89,7 +92,7 @@ const proyectoSchema = z.object({
   }
 ).refine(
   (data) => {
-    // ✅ VALIDACIÓN: Fechas coherentes con estado del proyecto
+    // âœ… VALIDACIÃ“N: Fechas coherentes con estado del proyecto
     const ahora = new Date()
     const fechaInicio = data.fechaInicio ? new Date(data.fechaInicio) : null
     const fechaFin = data.fechaFinEstimada ? new Date(data.fechaFinEstimada) : null
@@ -116,10 +119,10 @@ const proyectoSchema = z.object({
   }
 )
 
-// ✅ Schema factory: permite acceso a initialData e isEditing para validaciones async
+// âœ… Schema factory: permite acceso a initialData e isEditing para validaciones async
 const createProyectoSchema = (params: { initialData?: Partial<ProyectoFormData>, isEditing: boolean }) => {
   return proyectoSchema.superRefine(async (data, ctx) => {
-    // ✅ Validación async: Verificar nombres duplicados de PROYECTOS
+    // âœ… Validación async: Verificar nombres duplicados de PROYECTOS
     if (data.nombre && data.nombre.length >= 3) {
       // No validar si es el mismo nombre en modo edición
       if (params.isEditing && data.nombre === params.initialData?.nombre) {
@@ -145,7 +148,7 @@ const createProyectoSchema = (params: { initialData?: Partial<ProyectoFormData>,
       }
     }
 
-    // ✅ Validación síncrona: Verificar nombres únicos de MANZANAS dentro del proyecto
+    // âœ… Validación síncrona: Verificar nombres únicos de MANZANAS dentro del proyecto
     if (data.manzanas && data.manzanas.length > 1) {
       const nombresNormalizados = data.manzanas.map(m => m.nombre.trim().toLowerCase())
       const duplicados = nombresNormalizados.filter((nombre, index) =>
@@ -166,7 +169,7 @@ const createProyectoSchema = (params: { initialData?: Partial<ProyectoFormData>,
       }
     }
 
-    // ✅ Validación síncrona: Verificar formato de ubicación (evitar genéricas)
+    // âœ… Validación síncrona: Verificar formato de ubicación (evitar genéricas)
     if (data.ubicacion) {
       const ubicacionNormalizada = data.ubicacion.trim().toLowerCase()
       const ubicacionesGenericas = ['sin ubicación', 'n/a', 'na', 'sin definir', 'por definir', 'tbd']
@@ -189,7 +192,7 @@ interface UseProyectosFormParams {
   initialData?: Partial<ProyectoFormData>
   onSubmit: (data: ProyectoFormData) => void | Promise<void>
   isEditing?: boolean
-  onHasChanges?: (hasChanges: boolean) => void // ✅ Callback para notificar cambios al padre
+  onHasChanges?: (hasChanges: boolean) => void // âœ… Callback para notificar cambios al padre
 }
 
 export function useProyectosForm({
@@ -201,7 +204,7 @@ export function useProyectosForm({
   // Estado para spinner de validación de nombre
   const [validandoNombre, setValidandoNombre] = useState(false)
 
-  // ✅ OPTIMIZACIÓN: Si initialData ya tiene validación (de useProyectoConValidacion),
+  // âœ… OPTIMIZACIÃ“N: Si initialData ya tiene validación (de useProyectoConValidacion),
   // construir Map desde initialData en vez de consultar DB
   const manzanasConValidacionInicial = initialData?.manzanas?.filter(m => m.id && m.esEditable !== undefined)
   const validacionPrecargada = manzanasConValidacionInicial && manzanasConValidacionInicial.length > 0
@@ -234,9 +237,9 @@ export function useProyectosForm({
     trigger,
     formState: { errors, touchedFields, isValidating },
   } = useForm<ProyectoFormSchema>({
-    resolver: zodResolver(proyectoSchema), // ← Schema básico SIN validación async
-    mode: 'onBlur', // ← Validar al salir del campo
-    reValidateMode: 'onSubmit', // ← CRÍTICO: No re-validar en cada cambio, solo al enviar
+    resolver: zodResolver(proyectoSchema), // â† Schema básico SIN validación async
+    mode: 'onBlur', // â† Validar al salir del campo
+    reValidateMode: 'onSubmit', // â† CRÃTICO: No re-validar en cada cambio, solo al enviar
     defaultValues: {
       nombre: initialData?.nombre || '',
       descripcion: initialData?.descripcion || '',
@@ -258,8 +261,8 @@ export function useProyectosForm({
   const manzanasWatch = watch('manzanas')
 
   // ==================== EFECTOS ====================
-  // 🔄 CRÍTICO: Reset del formulario cuando initialData cambia (ej: después de actualización exitosa)
-  // ⚠️ SOLO resetear cuando el ID del proyecto cambia, NO en cada render
+  // ðŸ”„ CRÃTICO: Reset del formulario cuando initialData cambia (ej: después de actualización exitosa)
+  // âš ï¸ SOLO resetear cuando el ID del proyecto cambia, NO en cada render
   useEffect(() => {
     if (!initialData) return
 
@@ -272,12 +275,11 @@ export function useProyectosForm({
       fechaFinEstimada: initialData?.fechaFinEstimada?.split('T')[0] || '',
       manzanas: initialData?.manzanas || [],
     })
-  }, [initialData?.id, reset]) // ✅ Solo cuando cambia el ID (proyecto diferente)
+  }, [initialData?.id, reset]) // âœ… Solo cuando cambia el ID (proyecto diferente)
 
-  // ✅ OPTIMIZACIÓN: Validar manzanas SOLO si NO hay validación precargada
+  // âœ… OPTIMIZACIÃ“N: Validar manzanas SOLO si NO hay validación precargada
   useEffect(() => {
     if (validacionPrecargada) {
-      console.log('⚡ [FORM] Validación precargada detectada, saltando consultas DB')
       return
     }
 
@@ -288,7 +290,6 @@ export function useProyectosForm({
         .filter(Boolean) as string[]
 
       if (manzanasIds.length > 0) {
-        console.log('🔍 [FORM] Validando manzanas desde DB (sin precarga)...')
         validarManzanas(manzanasIds)
       }
     }
@@ -304,7 +305,7 @@ export function useProyectosForm({
     return manzanasWatch?.reduce((sum, m) => sum + (m.totalViviendas || 0), 0) || 0
   }, [manzanasWatch])
 
-  // ==================== DETECCIÓN DE CAMBIOS (solo en modo edición) ====================
+  // ==================== DETECCIÃ“N DE CAMBIOS (solo en modo edición) ====================
   const {
     hasChanges,
     changes,
@@ -349,7 +350,7 @@ export function useProyectosForm({
   const shouldShowChanges = isEditing
   const canSave = isEditing ? hasChanges : true // En creación siempre puede guardar
 
-  // ✅ Notificar al padre cuando cambie hasChanges
+  // âœ… Notificar al padre cuando cambie hasChanges
   useEffect(() => {
     onHasChanges?.(hasChanges)
   }, [hasChanges, onHasChanges])
@@ -368,7 +369,7 @@ export function useProyectosForm({
       const manzana = manzanasWatch[index]
       if (manzana.id && !puedeEliminar(manzana.id)) {
         const motivo = obtenerMotivoBloqueado(manzana.id)
-        alert(`❌ No se puede eliminar esta manzana\n\n${motivo}\n\nLas manzanas con viviendas creadas están protegidas para mantener la integridad de datos.`)
+        toast.error(`No se puede eliminar esta manzana: ${motivo}`)
         return
       }
     }
@@ -376,7 +377,7 @@ export function useProyectosForm({
   }
 
   const onSubmitForm = async (data: ProyectoFormSchema) => {
-    // ✅ VALIDACIÓN DE DUPLICADOS: Solo al enviar el formulario
+    // âœ… VALIDACIÃ“N DE DUPLICADOS: Solo al enviar el formulario
     if (data.nombre && data.nombre !== initialData?.nombre) {
       try {
         const esDuplicado = await proyectosService.verificarNombreDuplicado(
@@ -401,7 +402,7 @@ export function useProyectosForm({
       }
     }
 
-    // ✅ FIX: En modo edición, enviar TODOS los campos del formulario
+    // âœ… FIX: En modo edición, enviar TODOS los campos del formulario
     if (isEditing) {
       // Modo edición: Enviar todos los campos editables
       const formDataEdicion: ProyectoFormData = {
@@ -422,7 +423,6 @@ export function useProyectosForm({
           : null,
       } as ProyectoFormData
 
-      console.log('📝 [FORM] Datos de edición preparados:', formDataEdicion)
       onSubmit(formDataEdicion)
     } else {
       // Modo creación: Completar con valores por defecto
@@ -445,7 +445,6 @@ export function useProyectosForm({
         presupuesto: 0,
       }
 
-      console.log('📋 [FORM] Datos de creación preparados:', formDataCompleto)
       onSubmit(formDataCompleto)
     }
   }
@@ -468,7 +467,7 @@ export function useProyectosForm({
     const manzana = manzanasWatch?.[index]
     if (!manzana || !manzana.id) return true // Manzana nueva (sin ID), es editable
 
-    // ✅ OPTIMIZACIÓN: Usar validación precargada si existe
+    // âœ… OPTIMIZACIÃ“N: Usar validación precargada si existe
     if (manzana.esEditable !== undefined) {
       return manzana.esEditable
     }
@@ -486,7 +485,7 @@ export function useProyectosForm({
     const manzana = manzanasWatch?.[index]
     if (!manzana || !manzana.id) return true // Manzana nueva, puede eliminarse
 
-    // ✅ OPTIMIZACIÓN: Usar validación precargada si existe
+    // âœ… OPTIMIZACIÃ“N: Usar validación precargada si existe
     if (manzana.esEditable !== undefined) {
       return manzana.esEditable
     }
@@ -499,7 +498,7 @@ export function useProyectosForm({
    * Obtiene el motivo por el cual una manzana está bloqueada
    */
   const obtenerMotivoBloqueadoLocal = (manzanaId: string): string => {
-    // ✅ OPTIMIZACIÓN: Buscar en manzanas precargadas primero
+    // âœ… OPTIMIZACIÃ“N: Buscar en manzanas precargadas primero
     const manzanaPrecargada = manzanasWatch?.find(m => m.id === manzanaId)
     if (manzanaPrecargada?.motivoBloqueado) {
       return manzanaPrecargada.motivoBloqueado
@@ -515,7 +514,7 @@ export function useProyectosForm({
     handleSubmit: handleSubmit(onSubmitForm),
     control,
     errors,
-    touchedFields, // ← Exportar para validación progresiva
+    touchedFields, // â† Exportar para validación progresiva
 
     // Field array
     fields,
@@ -525,7 +524,7 @@ export function useProyectosForm({
     // Computed values
     totalManzanas,
     totalViviendas,
-    manzanasWatch, // ✅ Exportar para acceder a valores reales
+    manzanasWatch, // âœ… Exportar para acceder a valores reales
 
     // Detección de cambios
     hasChanges,
@@ -544,7 +543,7 @@ export function useProyectosForm({
 
     // Validación state
     validandoManzanas,
-    validandoNombre: false, // ✅ Validación solo al enviar, no mostrar spinner en campo
+    validandoNombre: false, // âœ… Validación solo al enviar, no mostrar spinner en campo
     manzanasState,
   }
 }

@@ -200,8 +200,9 @@ export function DocumentosListaCliente({
             >
               {documentosFiltrados.map((documento, index) => {
                 const categoria = getCategoriaByDocumento(documento)
+                const CardComponent = DocumentoCardHorizontal as any
                 return (
-                  <DocumentoCardHorizontal
+                  <CardComponent
                     key={documento.id}
                     documento={documento as any}
                     categoria={categoria}

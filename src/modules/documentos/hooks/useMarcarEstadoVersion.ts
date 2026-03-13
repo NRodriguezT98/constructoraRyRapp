@@ -5,7 +5,7 @@
 
 import { useEstadosVersionProyecto } from '@/modules/proyectos/hooks/useEstadosVersionProyecto'
 import { MOTIVOS_VERSION_ERRONEA, MOTIVOS_VERSION_OBSOLETA } from '@/types/documento.types'
-import { CheckCircle, Package, RotateCcw, XCircle } from 'lucide-react'
+import { CheckCircle, Package, RotateCcw, XCircle, type LucideIcon } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import type { AccionEstado } from '../components/modals/MarcarEstadoVersionModal'
 
@@ -25,7 +25,7 @@ interface UseMarcarEstadoVersionParams {
 interface ConfigEstado {
   titulo: string
   descripcion: string
-  icon: any
+  icon: LucideIcon
   color: string
   motivosPredef: string[]
   gradient: string

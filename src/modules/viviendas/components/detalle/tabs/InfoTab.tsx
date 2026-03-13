@@ -13,8 +13,8 @@ interface InfoTabProps {
 }
 
 /**
- * Tab de información de la vivienda
- * Componente de presentación puro (sigue patrón de GeneralTab de proyectos)
+ * Tab de informaci�n de la vivienda
+ * Componente de presentaci�n puro (sigue patr�n de GeneralTab de proyectos)
  */
 export function InfoTab({ vivienda }: InfoTabProps) {
   // Calcular progreso de pagos si aplica
@@ -25,7 +25,7 @@ export function InfoTab({ vivienda }: InfoTabProps) {
       key='info'
       className='space-y-3 animate-fade-in'
     >
-      {/* Barra de Progreso de Pagos (solo si está asignada o vendida) */}
+      {/* Barra de Progreso de Pagos (solo si est� asignada o vendida) */}
       {vivienda.estado !== 'Disponible' && (
         <div
           className={`${styles.progressClasses.container} animate-slide-down`}
@@ -41,7 +41,7 @@ export function InfoTab({ vivienda }: InfoTabProps) {
                   Progreso de Pagos
                 </p>
                 <p className={styles.progressClasses.subtitle}>
-                  Calculado según abonos realizados
+                  Calculado seg�n abonos realizados
                 </p>
               </div>
             </div>
@@ -103,7 +103,7 @@ export function InfoTab({ vivienda }: InfoTabProps) {
         </div>
       )}
 
-      {/* SECCIÓN 1: Información Financiera - Full Width Hero Destacado */}
+      {/* SECCI�N 1: Informaci�n Financiera - Full Width Hero Destacado */}
       <div
         className={`${styles.infoCardClasses.card} animate-slide-down`}
         style={{ animationDelay: '150ms' }}
@@ -115,7 +115,7 @@ export function InfoTab({ vivienda }: InfoTabProps) {
             <DollarSign className={styles.infoCardClasses.icon} />
           </div>
           <h3 className={styles.infoCardClasses.title}>
-            Información Financiera
+            Informaci�n Financiera
           </h3>
         </div>
         <div className={styles.infoCardClasses.content}>
@@ -139,7 +139,7 @@ export function InfoTab({ vivienda }: InfoTabProps) {
             {/* Valor Base */}
             <div className='p-4 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow'>
               <div className='flex items-center gap-1.5 mb-2'>
-                <span className='text-base'>🏠</span>
+                <span className='text-base'>??</span>
                 <p className='text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide'>Base</p>
               </div>
               <p className='text-2xl font-black text-gray-900 dark:text-white mb-0.5'>
@@ -151,7 +151,7 @@ export function InfoTab({ vivienda }: InfoTabProps) {
             {/* Gastos Notariales */}
             <div className='p-4 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow'>
               <div className='flex items-center gap-1.5 mb-2'>
-                <span className='text-base'>📄</span>
+                <span className='text-base'>??</span>
                 <p className='text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide'>Gastos</p>
               </div>
               <p className='text-2xl font-black text-gray-900 dark:text-white mb-0.5'>
@@ -164,7 +164,7 @@ export function InfoTab({ vivienda }: InfoTabProps) {
             {vivienda.es_esquinera && vivienda.recargo_esquinera && vivienda.recargo_esquinera > 0 ? (
               <div className='p-4 rounded-xl bg-gradient-to-br from-yellow-50 to-amber-50 dark:from-yellow-950/30 dark:to-amber-950/30 border border-yellow-300 dark:border-yellow-700 shadow-sm hover:shadow-md transition-shadow'>
                 <div className='flex items-center gap-1.5 mb-2'>
-                  <span className='text-base'>🏘️</span>
+                  <span className='text-base'>???</span>
                   <p className='text-xs font-semibold text-yellow-700 dark:text-yellow-400 uppercase tracking-wide'>Recargo</p>
                 </div>
                 <p className='text-2xl font-black text-yellow-800 dark:text-yellow-300 mb-0.5'>
@@ -175,7 +175,7 @@ export function InfoTab({ vivienda }: InfoTabProps) {
             ) : (
               <div className='p-4 rounded-xl bg-gray-50 dark:bg-gray-900/30 border border-gray-200 dark:border-gray-700 shadow-sm'>
                 <div className='flex items-center gap-1.5 mb-2'>
-                  <span className='text-base opacity-50'>🏘️</span>
+                  <span className='text-base opacity-50'>???</span>
                   <p className='text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide'>Recargo</p>
                 </div>
                 <p className='text-2xl font-black text-gray-400 dark:text-gray-600 mb-0.5'>
@@ -191,25 +191,25 @@ export function InfoTab({ vivienda }: InfoTabProps) {
             <div className='mt-4 p-4 rounded-xl bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 border border-purple-200 dark:border-purple-800'>
               <div className='flex items-center gap-3 mb-3'>
                 <div className='w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center shadow-md'>
-                  <span className='text-base'>👤</span>
+                  <span className='text-base'>??</span>
                 </div>
                 <div className='flex-1'>
                   <p className='text-xs font-semibold text-purple-600 dark:text-purple-400 uppercase tracking-wide'>Cliente Asignado</p>
                   <p className='text-base font-bold text-gray-900 dark:text-white mt-0.5'>
-                    {vivienda.clientes.nombres} {vivienda.clientes.apellidos}
+                    {vivienda.clientes.nombre_completo}
                   </p>
                 </div>
               </div>
               <div className='flex items-center gap-4 pt-3 border-t border-purple-200 dark:border-purple-800'>
                 {vivienda.clientes.telefono && (
                   <div className='flex items-center gap-2 text-sm'>
-                    <span className='text-purple-600 dark:text-purple-400'>📞</span>
+                    <span className='text-purple-600 dark:text-purple-400'>??</span>
                     <p className='font-medium text-gray-700 dark:text-gray-300'>{vivienda.clientes.telefono}</p>
                   </div>
                 )}
                 {vivienda.clientes.email && (
                   <div className='flex items-center gap-2 text-xs'>
-                    <span className='text-purple-600 dark:text-purple-400'>📧</span>
+                    <span className='text-purple-600 dark:text-purple-400'>??</span>
                     <p className='text-gray-600 dark:text-gray-400 truncate'>{vivienda.clientes.email}</p>
                   </div>
                 )}
@@ -219,9 +219,9 @@ export function InfoTab({ vivienda }: InfoTabProps) {
         </div>
       </div>
 
-      {/* SECCIÓN 2: Grid 2 Columnas - Información General + Linderos */}
+      {/* SECCI�N 2: Grid 2 Columnas - Informaci�n General + Linderos */}
       <div className='grid gap-4 lg:grid-cols-2'>
-        {/* COLUMNA 1: Información General */}
+        {/* COLUMNA 1: Informaci�n General */}
         <div
           className={`${styles.infoCardClasses.card} animate-slide-down`}
           style={{ animationDelay: '200ms' }}
@@ -233,19 +233,19 @@ export function InfoTab({ vivienda }: InfoTabProps) {
               <Info className={styles.infoCardClasses.icon} />
             </div>
             <h3 className={styles.infoCardClasses.title}>
-              Información General
+              Informaci�n General
             </h3>
           </div>
           <div className={styles.infoCardClasses.content}>
-            {/* Identificación */}
+            {/* Identificaci�n */}
             <div className='p-3 rounded-lg bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-950/30 dark:to-amber-950/30 border border-orange-200/50 dark:border-orange-800/50'>
-              <p className='text-xs font-medium text-orange-600 dark:text-orange-400 mb-1'>Identificación</p>
+              <p className='text-xs font-medium text-orange-600 dark:text-orange-400 mb-1'>Identificaci�n</p>
               <p className='text-lg font-bold text-gray-900 dark:text-white'>
                 Mz. {vivienda.manzanas?.nombre || 'N/A'} Casa {vivienda.numero}
               </p>
             </div>
 
-            {/* Grid 2x2: Proyecto, Tipo, Áreas */}
+            {/* Grid 2x2: Proyecto, Tipo, �reas */}
             <div className='mt-4 p-3 rounded-lg bg-gray-50 dark:bg-gray-900/30 border border-gray-200 dark:border-gray-700'>
               <div className='grid grid-cols-2 gap-3'>
                 <div>
@@ -261,13 +261,13 @@ export function InfoTab({ vivienda }: InfoTabProps) {
                   </p>
                 </div>
                 <div>
-                  <p className={styles.infoCardClasses.label}>Área Construida</p>
+                  <p className={styles.infoCardClasses.label}>�rea Construida</p>
                   <p className='text-base font-bold text-gray-900 dark:text-white font-mono'>
                     {formatArea(vivienda.area_construida)}
                   </p>
                 </div>
                 <div>
-                  <p className={styles.infoCardClasses.label}>Área de Lote</p>
+                  <p className={styles.infoCardClasses.label}>�rea de Lote</p>
                   <p className='text-base font-bold text-gray-900 dark:text-white font-mono'>
                     {formatArea(vivienda.area_lote)}
                   </p>
@@ -275,12 +275,12 @@ export function InfoTab({ vivienda }: InfoTabProps) {
               </div>
             </div>
 
-            {/* Matrícula y Nomenclatura (si existen) */}
+            {/* Matr�cula y Nomenclatura (si existen) */}
             {(vivienda.matricula_inmobiliaria || vivienda.nomenclatura) && (
               <div className='mt-4 space-y-2'>
                 {vivienda.matricula_inmobiliaria && (
                   <div className='p-2 rounded-lg bg-gray-50 dark:bg-gray-900/30 border border-gray-200 dark:border-gray-700'>
-                    <p className='text-xs font-medium text-gray-600 dark:text-gray-400 mb-0.5'>Matrícula Inmobiliaria</p>
+                    <p className='text-xs font-medium text-gray-600 dark:text-gray-400 mb-0.5'>Matr�cula Inmobiliaria</p>
                     <p className='text-sm font-mono font-semibold text-gray-900 dark:text-white'>
                       {vivienda.matricula_inmobiliaria}
                     </p>
@@ -320,7 +320,7 @@ export function InfoTab({ vivienda }: InfoTabProps) {
                 {vivienda.lindero_norte && (
                   <div className='p-3 rounded-lg bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800'>
                     <p className='text-xs font-semibold text-blue-600 dark:text-blue-400 mb-1.5 flex items-center gap-1.5'>
-                      <span className='text-sm'>⬆️</span> Norte
+                      <span className='text-sm'>??</span> Norte
                     </p>
                     <p className='text-sm text-gray-900 dark:text-white'>{vivienda.lindero_norte}</p>
                   </div>
@@ -328,7 +328,7 @@ export function InfoTab({ vivienda }: InfoTabProps) {
                 {vivienda.lindero_sur && (
                   <div className='p-3 rounded-lg bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-800'>
                     <p className='text-xs font-semibold text-orange-600 dark:text-orange-400 mb-1.5 flex items-center gap-1.5'>
-                      <span className='text-sm'>⬇️</span> Sur
+                      <span className='text-sm'>??</span> Sur
                     </p>
                     <p className='text-sm text-gray-900 dark:text-white'>{vivienda.lindero_sur}</p>
                   </div>
@@ -336,7 +336,7 @@ export function InfoTab({ vivienda }: InfoTabProps) {
                 {vivienda.lindero_oriente && (
                   <div className='p-3 rounded-lg bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-800'>
                     <p className='text-xs font-semibold text-rose-600 dark:text-rose-400 mb-1.5 flex items-center gap-1.5'>
-                      <span className='text-sm'>➡️</span> Oriente
+                      <span className='text-sm'>??</span> Oriente
                     </p>
                     <p className='text-sm text-gray-900 dark:text-white'>{vivienda.lindero_oriente}</p>
                   </div>
@@ -344,7 +344,7 @@ export function InfoTab({ vivienda }: InfoTabProps) {
                 {vivienda.lindero_occidente && (
                   <div className='p-3 rounded-lg bg-purple-50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-800'>
                     <p className='text-xs font-semibold text-purple-600 dark:text-purple-400 mb-1.5 flex items-center gap-1.5'>
-                      <span className='text-sm'>⬅️</span> Occidente
+                      <span className='text-sm'>??</span> Occidente
                     </p>
                     <p className='text-sm text-gray-900 dark:text-white'>{vivienda.lindero_occidente}</p>
                   </div>

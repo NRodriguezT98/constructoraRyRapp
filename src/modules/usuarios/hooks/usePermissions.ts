@@ -30,8 +30,6 @@ import {
 } from '../types'
 
 export function usePermissions() {
-  console.log('🔐 [SISTEMA ANTIGUO] usePermissions ejecutado')
-
   const { perfil, loading: authLoading } = useAuth()
   const rol = perfil?.rol as Rol | undefined
 

@@ -1,131 +1,103 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { ArrowRight, Building2, Home, User } from 'lucide-react'
+import { ArrowRight, Building2, Home } from 'lucide-react'
 
 import Link from 'next/link'
 
+import { formatNombreCompleto } from '@/lib/utils/string.utils'
+
 import { getAvatarGradient, seleccionClienteStyles as styles } from '../styles/seleccion-cliente.styles'
 import { NegociacionConAbonos } from '../types'
+
+const formatCOP = (v: number) =>
+  new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(v)
+
+// Colores semánticos según porcentaje de avance
+function getProgressColor(pct: number) {
+  if (pct >= 80) return { bar: 'bg-emerald-500', text: 'text-emerald-600 dark:text-emerald-400' }
+  if (pct >= 40) return { bar: 'bg-blue-500', text: 'text-blue-600 dark:text-blue-400' }
+  return { bar: 'bg-amber-400', text: 'text-amber-500 dark:text-amber-400' }
+}
 
 interface ClienteCardProps {
   negociacion: NegociacionConAbonos
 }
 
-/**
- * 💳 Tarjeta premium de cliente con glassmorphism
- * Hover effect, gradientes y progress bar animado
- */
 export function ClienteCard({ negociacion }: ClienteCardProps) {
   const { cliente, vivienda, proyecto } = negociacion
-  const nombreCompleto = `${cliente.nombres} ${cliente.apellidos}`.trim()
+  const nombreCompleto = formatNombreCompleto(`${cliente.nombres} ${cliente.apellidos}`)
 
   const totalAbonado = negociacion.total_abonado || 0
   const saldoPendiente = negociacion.saldo_pendiente || 0
-  const valorTotal = negociacion.valor_total || 0
   const porcentajePagado = negociacion.porcentaje_pagado || 0
 
-  // Obtener gradient único para el avatar basado en el nombre
+  const progressColor = getProgressColor(porcentajePagado)
+
   const avatarGradient = getAvatarGradient(nombreCompleto)
+  const initials = nombreCompleto.split(' ').filter(Boolean).slice(0, 2).map(n => n[0]).join('').toUpperCase()
+
+  const viviendaLabel = [
+    vivienda.manzana?.nombre ? `Mz. ${vivienda.manzana.nombre}` : null,
+    vivienda.numero ? `Casa No. ${vivienda.numero}` : 'Vivienda',
+  ].filter(Boolean).join(' · ')
 
   return (
     <Link href={`/abonos/${cliente.id}`}>
       <motion.div
-        whileHover={{ y: -4 }}
-        transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+        whileHover={{ backgroundColor: 'rgba(16, 185, 129, 0.05)' }}
+        transition={{ duration: 0.1 }}
         className={styles.card.container}
       >
-        {/* Glow effect */}
-        <div className={styles.card.glow} />
+        {/* Avatar con iniciales */}
+        <div className={`${styles.card.avatarCircle} bg-gradient-to-br ${avatarGradient}`}>
+          <span className={styles.card.avatarInitials}>{initials}</span>
+        </div>
 
-        {/* Content */}
-        <div className={styles.card.content}>
-          {/* TOP ROW: Cliente + Financiero */}
-          <div className={styles.card.topRow}>
-            {/* CLIENTE SECTION (Left) */}
-            <div className={styles.card.clienteSection}>
-              {/* Avatar con gradient único */}
-              <div className={`${styles.card.avatarCircle} bg-gradient-to-br ${avatarGradient}`}>
-                <User className={styles.card.avatarIcon} />
-              </div>
-
-              {/* Info del cliente */}
-              <div className={styles.card.clienteInfo}>
-                <h3 className={styles.card.clienteNombre}>{nombreCompleto}</h3>
-                <p className={styles.card.clienteDocumento}>CC {cliente.numero_documento}</p>
-
-                {/* Badges: Proyecto + Vivienda */}
-                <div className={styles.card.viviendaBadges}>
-                  {proyecto && (
-                    <div className={styles.card.proyectoBadge}>
-                      <Building2 className={styles.card.badgeIcon} />
-                      <span>{proyecto.nombre}</span>
-                    </div>
-                  )}
-                  <div className={styles.card.viviendaBadge}>
-                    <Home className={styles.card.badgeIcon} />
-                    <span>
-                      {vivienda.manzana?.nombre ? `Mz. ${vivienda.manzana.nombre}` : ''}
-                      {vivienda.manzana?.nombre && vivienda.numero ? ' - ' : ''}
-                      {vivienda.numero ? `N° ${vivienda.numero}` : 'Vivienda'}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* FINANCIERO SECTION (Right) */}
-            <div className="flex items-center gap-4">
-              {/* Grid de métricas */}
-              <div className={styles.card.financieroGrid}>
-                {/* Total */}
-                <div className={`${styles.card.metricBox} bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700`}>
-                  <p className={styles.card.metricLabel}>Total</p>
-                  <p className={`${styles.card.metricValue} text-gray-900 dark:text-white`}>
-                    ${(valorTotal / 1_000_000).toFixed(1)}M
-                  </p>
-                </div>
-
-                {/* Pagado */}
-                <div className={`${styles.card.metricBox} bg-gradient-to-br from-green-50 to-emerald-100 dark:from-green-900/20 dark:to-emerald-900/30`}>
-                  <p className={styles.card.metricLabel}>Pagado</p>
-                  <p className={`${styles.card.metricValue} text-green-600 dark:text-green-400`}>
-                    ${(totalAbonado / 1_000_000).toFixed(1)}M
-                  </p>
-                </div>
-
-                {/* Pendiente */}
-                <div className={`${styles.card.metricBox} bg-gradient-to-br from-orange-50 to-amber-100 dark:from-orange-900/20 dark:to-amber-900/30`}>
-                  <p className={styles.card.metricLabel}>Pendiente</p>
-                  <p className={`${styles.card.metricValue} text-orange-600 dark:text-orange-400`}>
-                    ${(saldoPendiente / 1_000_000).toFixed(1)}M
-                  </p>
-                </div>
-              </div>
-
-              {/* Arrow icon con animación */}
-              <ArrowRight className={styles.card.arrowIcon} />
-            </div>
-          </div>
-
-          {/* PROGRESS BAR (Bottom) */}
-          <div className={styles.card.progressSection}>
-            <div className={styles.card.progressHeader}>
-              <span className={styles.card.progressLabel}>Progreso de pago</span>
-              <span className={styles.card.progressPercent}>
-                {porcentajePagado.toFixed(1)}%
-              </span>
-            </div>
-            <div className={styles.card.progressBar}>
-              <motion.div
-                initial={{ width: 0 }}
-                animate={{ width: `${porcentajePagado}%` }}
-                transition={{ duration: 0.8, ease: 'easeOut', delay: 0.2 }}
-                className={styles.card.progressFill}
-              />
-            </div>
+        {/* Info principal */}
+        <div className={styles.card.clienteInfo}>
+          <p className={styles.card.clienteNombre}>{nombreCompleto}</p>
+          <p className={styles.card.clienteCC}>CC {cliente.numero_documento}</p>
+          <div className={styles.card.clienteUbicacion}>
+            {proyecto ? (
+              <>
+                <Building2 className={styles.card.badgeIcon} />
+                <span className="truncate max-w-[10rem]">{proyecto.nombre}</span>
+                <span className={styles.card.ubicacionSep}>›</span>
+              </>
+            ) : null}
+            <Home className={styles.card.badgeIcon} />
+            <span>{viviendaLabel}</span>
           </div>
         </div>
+
+        {/* Progress (sm+) */}
+        <div className={styles.card.progressWrapper}>
+          <div className={styles.card.progressBar}>
+            <motion.div
+              initial={{ width: 0 }}
+              animate={{ width: `${Math.min(porcentajePagado, 100)}%` }}
+              transition={{ duration: 0.6, ease: 'easeOut' }}
+              className={`h-full rounded-full ${progressColor.bar}`}
+            />
+          </div>
+          <span className={`${styles.card.progressPercent} ${progressColor.text}`}>{porcentajePagado.toFixed(0)}%</span>
+        </div>
+
+        {/* Financiero (lg+) */}
+        <div className={styles.card.financieroSection}>
+          <div className={styles.card.metricGroup}>
+            <p className={styles.card.metricLabel}>Pagado</p>
+            <p className={`${styles.card.metricValue} text-emerald-600 dark:text-emerald-400`}>{formatCOP(totalAbonado)}</p>
+          </div>
+          <div className={styles.card.metricGroup}>
+            <p className={styles.card.metricLabel}>Pendiente</p>
+            <p className={`${styles.card.metricValue} text-orange-500 dark:text-orange-400`}>{formatCOP(saldoPendiente)}</p>
+          </div>
+        </div>
+
+        {/* Arrow */}
+        <ArrowRight className={styles.card.arrowIcon} />
       </motion.div>
     </Link>
   )

@@ -109,21 +109,21 @@ export function useDocumentosEliminados() {
 
   // ✅ Unificar documentos de todos los módulos con metadata
   const documentosUnificados: DocumentoEliminadoUnificado[] = useMemo(() => {
-    const docProyectos = documentosProyectos.map((doc: any) => ({
+    const docProyectos = documentosProyectos.map((doc) => ({
       ...doc,
       modulo: 'proyectos' as const,
-      entidad_nombre: doc.proyectos?.nombre || 'Proyecto sin nombre',
+      entidad_nombre: (doc as any).proyectos?.nombre || 'Proyecto sin nombre',
     }))
 
-    const docViviendas = documentosViviendas.map((doc: any) => {
+    const docViviendas = documentosViviendas.map((doc) => {
       // Determinar nombre de vivienda con formato Mz. X Casa Y
       let nombreVivienda = 'Sin identificar'
 
       // Obtener número (puede estar en diferentes ubicaciones)
-      const numeroReal = doc.vivienda?.numero_vivienda || doc.vivienda?.numero || doc.numero_vivienda || doc.numero
+      const numeroReal = (doc as any).vivienda?.numero_vivienda || (doc as any).vivienda?.numero || (doc as any).numero_vivienda || (doc as any).numero
 
       // Obtener manzana (puede estar en vivienda.manzana o en doc.manzana directamente)
-      const manzana = doc.vivienda?.manzana || doc.manzana
+      const manzana = (doc as any).vivienda?.manzana || (doc as any).manzana
 
       // Caso 1: Tiene manzana con nombre y número
       if (manzana?.nombre && numeroReal) {
@@ -145,15 +145,15 @@ export function useDocumentosEliminados() {
       }
     })
 
-    const docClientes = documentosClientes.map((doc: any) => ({
+    const docClientes = documentosClientes.map((doc) => ({
       ...doc,
       modulo: 'clientes' as const,
-      entidad_nombre: doc.cliente
-        ? `${doc.cliente.nombres} ${doc.cliente.apellidos}`.trim()
+      entidad_nombre: (doc as any).cliente
+        ? `${(doc as any).cliente.nombres} ${(doc as any).cliente.apellidos}`.trim()
         : 'Cliente sin identificar',
     }))
 
-    return [...docProyectos, ...docViviendas, ...docClientes]
+    return [...docProyectos, ...docViviendas, ...docClientes] as DocumentoEliminadoUnificado[]
   }, [documentosProyectos, documentosViviendas, documentosClientes])
 
   const cargando = cargandoProyectos || cargandoViviendas || cargandoClientes
@@ -183,9 +183,10 @@ export function useDocumentosEliminados() {
         queryClient.refetchQueries({ queryKey: ['papelera-count-clientes'] }),
       ])
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       console.error('Error al restaurar documento:', error)
-      toast.error(error?.message || 'Error al restaurar el documento')
+      const msg = error instanceof Error ? error.message : 'Error al restaurar el documento'
+      toast.error(msg)
     },
   })
 
@@ -205,9 +206,10 @@ export function useDocumentosEliminados() {
       queryClient.invalidateQueries({ queryKey: ['papelera-count-viviendas'] })
       queryClient.invalidateQueries({ queryKey: ['papelera-count-clientes'] })
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       console.error('Error al eliminar definitivamente:', error)
-      toast.error(error?.message || 'Error al eliminar el documento')
+      const msg = error instanceof Error ? error.message : 'Error al eliminar el documento'
+      toast.error(msg)
     },
   })
 

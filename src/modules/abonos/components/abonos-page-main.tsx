@@ -3,13 +3,15 @@
 import { useMemo, useState } from 'react'
 
 import { AnimatePresence, motion } from 'framer-motion'
-import { AlertCircle, CreditCard, DollarSign, TrendingUp, UserCircle2, Users } from 'lucide-react'
+import { CreditCard, UserCircle2, Users } from 'lucide-react'
 
 import { useAbonos } from '../hooks'
-import { metricasIconColors, seleccionClienteStyles as styles } from '../styles/seleccion-cliente.styles'
+import { seleccionClienteStyles as styles } from '../styles/seleccion-cliente.styles'
 
 import { ClienteCard } from './cliente-card'
 import { ClienteSearch } from './cliente-search'
+
+type OrdenClientes = 'urgente' | 'mayor_pago' | 'nombre_az' | 'nombre_za' | 'vivienda_asc' | 'mayor_saldo'
 
 /**
  * Componente principal del módulo de Abonos
@@ -19,26 +21,85 @@ import { ClienteSearch } from './cliente-search'
 export function AbonosPageMain() {
   const { negociaciones, isLoading, estadisticas } = useAbonos()
   const [busqueda, setBusqueda] = useState('')
+  const [proyectoFiltro, setProyectoFiltro] = useState('')
+  const [ordenar, setOrdenar] = useState<OrdenClientes>('vivienda_asc')
 
-  // Filtrar negociaciones por búsqueda
+  // Lista única de proyectos disponibles
+  const proyectosDisponibles = useMemo(() => {
+    const nombres = negociaciones
+      .map(n => n.proyecto?.nombre)
+      .filter((n): n is string => Boolean(n))
+    return [...new Set(nombres)].sort()
+  }, [negociaciones])
+
+  // Promedio de avance del portafolio
+  const promedioAvance = useMemo(() => {
+    if (!negociaciones.length) return 0
+    const suma = negociaciones.reduce((acc, n) => acc + (n.porcentaje_pagado || 0), 0)
+    return Math.round(suma / negociaciones.length)
+  }, [negociaciones])
+
+  // Filtrar + ordenar por urgencia (menor % pagado primero)
   const negociacionesFiltradas = useMemo(() => {
-    if (!busqueda.trim()) return negociaciones
+    let result = negociaciones
 
-    const termino = busqueda.toLowerCase().trim()
-    return negociaciones.filter((neg) => {
-      const nombreCompleto = `${neg.cliente.nombres} ${neg.cliente.apellidos}`.toLowerCase()
-      const documento = neg.cliente.numero_documento.toLowerCase()
-      const proyecto = neg.proyecto?.nombre?.toLowerCase() || ''
-      const vivienda = neg.vivienda.numero.toLowerCase()
+    if (busqueda.trim()) {
+      const termino = busqueda.toLowerCase().trim().replace(/\s/g, '')
+      result = result.filter((neg) => {
+        const nombre = `${neg.cliente.nombres} ${neg.cliente.apellidos}`.toLowerCase()
+        const documento = neg.cliente.numero_documento.toLowerCase()
+        const proyectoNombre = neg.proyecto?.nombre?.toLowerCase() || ''
+        const viviendaNumero = (neg.vivienda.numero || '').toLowerCase()
+        // Búsqueda compacta tipo "A1" → Manzana A + N°1
+        const manzana = (neg.vivienda.manzana?.nombre || '').toLowerCase()
+        const codigoCombinado = `${manzana}${viviendaNumero}`.replace(/\s/g, '')
+        const codigoCompleto = `${manzana} ${viviendaNumero}`
+        return (
+          nombre.includes(termino) ||
+          documento.includes(termino) ||
+          proyectoNombre.includes(termino) ||
+          viviendaNumero.includes(termino) ||
+          codigoCombinado.includes(termino) ||
+          codigoCompleto.includes(termino)
+        )
+      })
+    }
 
-      return (
-        nombreCompleto.includes(termino) ||
-        documento.includes(termino) ||
-        proyecto.includes(termino) ||
-        vivienda.includes(termino)
-      )
+    if (proyectoFiltro) {
+      result = result.filter(n => n.proyecto?.nombre === proyectoFiltro)
+    }
+
+    // Ordenar segun criterio seleccionado
+    return [...result].sort((a, b) => {
+      switch (ordenar) {
+        case 'mayor_pago':
+          return (b.porcentaje_pagado || 0) - (a.porcentaje_pagado || 0)
+        case 'nombre_az': {
+          const na = `${a.cliente.apellidos} ${a.cliente.nombres}`.toLowerCase()
+          const nb = `${b.cliente.apellidos} ${b.cliente.nombres}`.toLowerCase()
+          return na.localeCompare(nb, 'es')
+        }
+        case 'nombre_za': {
+          const na = `${a.cliente.apellidos} ${a.cliente.nombres}`.toLowerCase()
+          const nb = `${b.cliente.apellidos} ${b.cliente.nombres}`.toLowerCase()
+          return nb.localeCompare(na, 'es')
+        }
+        case 'vivienda_asc': {
+          const ka = `${a.vivienda.manzana?.nombre || ''}${(a.vivienda.numero || '').padStart(5, '0')}`.toLowerCase()
+          const kb = `${b.vivienda.manzana?.nombre || ''}${(b.vivienda.numero || '').padStart(5, '0')}`.toLowerCase()
+          return ka.localeCompare(kb, 'es')
+        }
+        case 'mayor_saldo': {
+          const sa = (a.valor_total || 0) - (a.total_abonado || 0)
+          const sb = (b.valor_total || 0) - (b.total_abonado || 0)
+          return sb - sa
+        }
+        case 'urgente':
+        default:
+          return (a.porcentaje_pagado || 0) - (b.porcentaje_pagado || 0)
+      }
     })
-  }, [negociaciones, busqueda])
+  }, [negociaciones, busqueda, proyectoFiltro, ordenar])
 
   // Mostrar loading skeleton premium
   if (isLoading) {
@@ -71,7 +132,7 @@ export function AbonosPageMain() {
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
+          transition={{ duration: 0.15 }}
           className={styles.header.container}
         >
           <div className={styles.header.pattern} />
@@ -90,111 +151,33 @@ export function AbonosPageMain() {
               </div>
               <span className={styles.header.badge}>
                 <Users className="w-4 h-4" />
-                {negociaciones.length} Cliente{negociaciones.length !== 1 ? 's' : ''}
+                {negociacionesFiltradas.length} Cliente{negociacionesFiltradas.length !== 1 ? 's' : ''}
               </span>
             </div>
           </div>
         </motion.div>
 
-        {/* 📊 MÉTRICAS PREMIUM */}
+        {/* � BÚSQUEDA — PROTAGONISTA */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className={styles.metricas.grid}
-        >
-          {/* Clientes Activos */}
-          <motion.div
-            whileHover={{ scale: 1.02, y: -4 }}
-            transition={{ type: 'spring', stiffness: 300 }}
-            className={styles.metricas.card}
-          >
-            <div className={`${styles.metricas.cardGlow} bg-gradient-to-br ${metricasIconColors.clientes.glowColor}`} />
-            <div className={styles.metricas.content}>
-              <div className={`${styles.metricas.iconCircle} bg-gradient-to-br ${metricasIconColors.clientes.gradient} shadow-blue-500/50`}>
-                <Users className={styles.metricas.icon} />
-              </div>
-              <div className={styles.metricas.textGroup}>
-                <p className={`${styles.metricas.value} bg-gradient-to-br ${metricasIconColors.clientes.textGradient}`}>
-                  {estadisticas.totalNegociaciones}
-                </p>
-                <p className={styles.metricas.label}>Clientes Activos</p>
-              </div>
-            </div>
-          </motion.div>
-
-          {/* Total Abonado */}
-          <motion.div
-            whileHover={{ scale: 1.02, y: -4 }}
-            transition={{ type: 'spring', stiffness: 300 }}
-            className={styles.metricas.card}
-          >
-            <div className={`${styles.metricas.cardGlow} bg-gradient-to-br ${metricasIconColors.abonado.glowColor}`} />
-            <div className={styles.metricas.content}>
-              <div className={`${styles.metricas.iconCircle} bg-gradient-to-br ${metricasIconColors.abonado.gradient} shadow-green-500/50`}>
-                <DollarSign className={styles.metricas.icon} />
-              </div>
-              <div className={styles.metricas.textGroup}>
-                <p className={`${styles.metricas.value} bg-gradient-to-br ${metricasIconColors.abonado.textGradient}`}>
-                  ${(estadisticas.totalAbonado / 1_000_000).toFixed(1)}M
-                </p>
-                <p className={styles.metricas.label}>Total Abonado</p>
-              </div>
-            </div>
-          </motion.div>
-
-          {/* Total en Ventas */}
-          <motion.div
-            whileHover={{ scale: 1.02, y: -4 }}
-            transition={{ type: 'spring', stiffness: 300 }}
-            className={styles.metricas.card}
-          >
-            <div className={`${styles.metricas.cardGlow} bg-gradient-to-br ${metricasIconColors.ventas.glowColor}`} />
-            <div className={styles.metricas.content}>
-              <div className={`${styles.metricas.iconCircle} bg-gradient-to-br ${metricasIconColors.ventas.gradient} shadow-purple-500/50`}>
-                <TrendingUp className={styles.metricas.icon} />
-              </div>
-              <div className={styles.metricas.textGroup}>
-                <p className={`${styles.metricas.value} bg-gradient-to-br ${metricasIconColors.ventas.textGradient}`}>
-                  ${(estadisticas.totalVentas / 1_000_000).toFixed(1)}M
-                </p>
-                <p className={styles.metricas.label}>Total en Ventas</p>
-              </div>
-            </div>
-          </motion.div>
-
-          {/* Saldo Pendiente */}
-          <motion.div
-            whileHover={{ scale: 1.02, y: -4 }}
-            transition={{ type: 'spring', stiffness: 300 }}
-            className={styles.metricas.card}
-          >
-            <div className={`${styles.metricas.cardGlow} bg-gradient-to-br ${metricasIconColors.pendiente.glowColor}`} />
-            <div className={styles.metricas.content}>
-              <div className={`${styles.metricas.iconCircle} bg-gradient-to-br ${metricasIconColors.pendiente.gradient} shadow-orange-500/50`}>
-                <AlertCircle className={styles.metricas.icon} />
-              </div>
-              <div className={styles.metricas.textGroup}>
-                <p className={`${styles.metricas.value} bg-gradient-to-br ${metricasIconColors.pendiente.textGradient}`}>
-                  ${(estadisticas.saldoPendiente / 1_000_000).toFixed(1)}M
-                </p>
-                <p className={styles.metricas.label}>Saldo Pendiente</p>
-              </div>
-            </div>
-          </motion.div>
-        </motion.div>
-
-        {/* 🔍 BÚSQUEDA PREMIUM */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
         >
           <ClienteSearch
             busqueda={busqueda}
             onBusquedaChange={setBusqueda}
             totalResultados={negociacionesFiltradas.length}
             totalClientes={negociaciones.length}
+            proyectos={proyectosDisponibles}
+            proyectoFiltro={proyectoFiltro}
+            onProyectoFiltroChange={setProyectoFiltro}
+            ordenar={ordenar}
+            onOrdenarChange={setOrdenar}
+            promedioAvance={promedioAvance}
+            resumen={{
+              totalVentas: estadisticas.totalVentas,
+              saldoPendiente: estadisticas.saldoPendiente,
+            }}
           />
         </motion.div>
 
@@ -221,27 +204,26 @@ export function AbonosPageMain() {
             </p>
           </motion.div>
         ) : (
-          <div className="space-y-4">
-            {/* Lista con AnimatePresence */}
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="rounded-2xl bg-white dark:bg-gray-800 border border-gray-200/50 dark:border-gray-700/50 shadow-lg overflow-hidden divide-y divide-gray-100 dark:divide-gray-700/50"
+          >
             <AnimatePresence mode="popLayout">
               {negociacionesFiltradas.map((negociacion, index) => (
                 <motion.div
                   key={negociacion.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  transition={{
-                    delay: index * 0.05,
-                    type: 'spring',
-                    stiffness: 300,
-                    damping: 25
-                  }}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ delay: index * 0.03 }}
                 >
                   <ClienteCard negociacion={negociacion} />
                 </motion.div>
               ))}
             </AnimatePresence>
-          </div>
+          </motion.div>
         )}
       </div>
     </div>

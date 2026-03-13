@@ -14,15 +14,33 @@ import type {
     CrearClienteDTO,
     FiltrosClientes,
 } from '../types'
+import { sanitizeActualizarClienteDTO, sanitizeCrearClienteDTO } from '../utils/sanitize-cliente.utils'
 
 class ClientesService {
   /**
    * Obtener todos los clientes con estadísticas, negociaciones e intereses
-   * ✅ Incluye datos de viviendas, proyectos y manzanas para la tabla
+   * âœ… Incluye datos de viviendas, proyectos y manzanas para la tabla
    */
   async obtenerClientes(filtros?: FiltrosClientes): Promise<ClienteResumen[]> {
     // 1. Obtener datos básicos de clientes desde la vista
-    let query = supabase.from('vista_clientes_resumen').select('*')
+    let query = supabase.from('vista_clientes_resumen').select(`
+      id,
+      nombres,
+      apellidos,
+      nombre_completo,
+      tipo_documento,
+      numero_documento,
+      telefono,
+      email,
+      estado,
+      estado_civil,
+      fecha_nacimiento,
+      tiene_documento_identidad,
+      fecha_creacion,
+      total_negociaciones,
+      negociaciones_activas,
+      negociaciones_completadas
+    `)
 
     // Aplicar filtros
     if (filtros?.estado && filtros.estado.length > 0) {
@@ -43,7 +61,7 @@ class ClientesService {
       query = query.lte('fecha_creacion', filtros.fecha_hasta)
     }
 
-    // ⚡ EJECUTAR TODAS LAS CONSULTAS EN PARALELO (Promise.all)
+    // âš¡ EJECUTAR TODAS LAS CONSULTAS EN PARALELO (Promise.all)
     const [
       { data, error },
       { data: negociaciones },
@@ -99,9 +117,9 @@ class ClientesService {
 
     if (error) throw error
 
-    // ⚡ CREAR MAPAS DE BÚSQUEDA RÁPIDA (O(1) lookup)
+    // âš¡ CREAR MAPAS DE BÃšSQUEDA RÁPIDA (O(1) lookup)
     const negociacionesMap = new Map(
-      negociaciones?.map((neg: any) => [
+      negociaciones?.map((neg) => [
         neg.cliente_id,
         {
           nombre_proyecto: neg.viviendas?.manzanas?.proyectos?.nombre,
@@ -117,8 +135,8 @@ class ClientesService {
 
     const interesesMap = new Map(
       intereses
-        ?.filter((int: any) => !negociacionesMap.has(int.cliente_id)) // Solo si no tiene negociación
-        .map((int: any) => [
+        ?.filter((int) => !negociacionesMap.has(int.cliente_id)) // Solo si no tiene negociación
+        .map((int) => [
           int.cliente_id,
           {
             nombre_proyecto: int.proyectos?.nombre,
@@ -128,22 +146,17 @@ class ClientesService {
         ]) || []
     )
 
-    // ⚡ TRANSFORMAR Y ENRIQUECER DATOS (O(n) single pass)
+    // âš¡ TRANSFORMAR Y ENRIQUECER DATOS (O(n) single pass)
     return (data || []).map((item) => {
-      const negociacion = negociacionesMap.get(item.id)
-      const interes = interesesMap.get(item.id)
-
-      // Parsear nombre una sola vez
-      const nombreParts = item.nombre_completo?.split(' ') || ['']
-      const nombres = nombreParts[0] || ''
-      const apellidos = nombreParts.slice(1).join(' ') || ''
+      const negociacion = negociacionesMap.get(item.id!)
+      const interes = interesesMap.get(item.id!)
 
       return {
         id: item.id || '',
         tipo_documento: (item.tipo_documento as any) || 'CC',
         numero_documento: item.numero_documento || '',
-        nombres,
-        apellidos,
+        nombres: item.nombres || '',
+        apellidos: item.apellidos || '',
         nombre_completo: item.nombre_completo || '',
         telefono: item.telefono || '',
         email: item.email || '',
@@ -157,11 +170,11 @@ class ClientesService {
           total_negociaciones: item.total_negociaciones || 0,
           negociaciones_activas: item.negociaciones_activas || 0,
           negociaciones_completadas: item.negociaciones_completadas || 0,
-          ultima_negociacion: item.ultima_negociacion || undefined,
+          ultima_negociacion: undefined,
         },
-        // ⭐ Datos de vivienda para clientes Activos (pre-calculados)
+        // â­ Datos de vivienda para clientes Activos (pre-calculados)
         vivienda: negociacion || undefined,
-        // ⭐ Datos de interés para clientes Interesados (pre-calculados)
+        // â­ Datos de interés para clientes Interesados (pre-calculados)
         interes: interes || undefined,
       } as ClienteResumen
     })
@@ -209,7 +222,12 @@ class ClientesService {
     // 2. Obtener intereses del cliente usando la vista intereses_completos
     const { data: interesesData, error: interesesError } = await supabase
       .from('intereses_completos')
-      .select('*')
+      .select(`
+        id, cliente_id, proyecto_id, vivienda_id, estado, origen,
+        notas, fecha_interes, proyecto_nombre, vivienda_numero,
+        vivienda_valor, manzana_nombre, proyecto_estado, vivienda_estado,
+        motivo_descarte, fecha_actualizacion
+      `)
       .eq('cliente_id', id)
       .order('fecha_interes', { ascending: false })
 
@@ -222,10 +240,10 @@ class ClientesService {
     const negociaciones = clienteData.negociaciones || []
     const estadisticas = {
       total_negociaciones: negociaciones.length,
-      negociaciones_activas: negociaciones.filter((n: any) =>
+      negociaciones_activas: negociaciones.filter((n) =>
         ['Activa', 'En Proceso'].includes(n.estado)
       ).length,
-      negociaciones_completadas: negociaciones.filter((n: any) =>
+      negociaciones_completadas: negociaciones.filter((n) =>
         n.estado === 'Completada'
       ).length,
       ultima_negociacion: negociaciones.length > 0
@@ -234,7 +252,7 @@ class ClientesService {
     }
 
     // 4. Mapear intereses al formato ClienteInteres
-    const intereses = (interesesData || []).map((interes: any) => ({
+    const intereses = (interesesData || []).map((interes) => ({
       id: interes.id,
       cliente_id: interes.cliente_id,
       proyecto_id: interes.proyecto_id,
@@ -267,11 +285,10 @@ class ClientesService {
     tipo_documento: string,
     numero_documento: string
   ): Promise<Cliente | null> {
-    console.log('🔍 Buscando cliente duplicado:', { tipo_documento, numero_documento })
 
     const { data, error } = await supabase
       .from('clientes')
-      .select('*')
+      .select('id, nombres, apellidos, tipo_documento, numero_documento, estado')
       .eq('tipo_documento', tipo_documento)
       .eq('numero_documento', numero_documento)
       .maybeSingle()
@@ -284,9 +301,7 @@ class ClientesService {
     }
 
     if (data) {
-      console.log('⚠️ Cliente duplicado encontrado:', data.id)
     } else {
-      console.log('✅ No hay cliente duplicado')
     }
 
     return data as Cliente | null
@@ -296,12 +311,6 @@ class ClientesService {
    * Crear un nuevo cliente
    */
   async crearCliente(datos: CrearClienteDTO): Promise<Cliente> {
-    console.log('📝 Iniciando creación de cliente:', {
-      tipo_documento: datos.tipo_documento,
-      numero_documento: datos.numero_documento,
-      nombres: datos.nombres
-    })
-
     // Verificar que no exista cliente con el mismo documento
     const clienteExistente = await this.buscarPorDocumento(
       datos.tipo_documento,
@@ -310,23 +319,23 @@ class ClientesService {
 
     if (clienteExistente) {
       const error = `Ya existe un cliente registrado con ${datos.tipo_documento} ${datos.numero_documento}.\n\nCliente existente: ${clienteExistente.nombres} ${clienteExistente.apellidos}`
-      console.error('❌ Cliente duplicado:', error)
+      console.error('âŒ Cliente duplicado:', error)
       throw new Error(error)
     }
 
-    console.log('✅ Validación de duplicados OK, procediendo a crear...')
 
     const {
       data: { user },
     } = await supabase.auth.getUser()
 
-    // Excluir interes_inicial (no es un campo de la tabla clientes)
-    const { interes_inicial, ...datosCliente } = datos
+    // ðŸ§¹ Sanitizar y limpiar datos (convierte strings vacíos a null, valida enums)
+    const datosSanitizados = sanitizeCrearClienteDTO(datos)
 
-    // 🔧 Sanitizar campos de fecha: convertir strings vacíos a null
+    // Excluir interes_inicial (no es un campo de la tabla clientes)
+    const { interes_inicial, ...datosCliente } = datosSanitizados
+
     const datosLimpios = {
       ...datosCliente,
-      fecha_nacimiento: datosCliente.fecha_nacimiento || null,
       usuario_creacion: user?.id,
     }
 
@@ -337,17 +346,16 @@ class ClientesService {
       .single()
 
     if (error) {
-      console.error('❌ Error insertando en DB:', error)
+      console.error('âŒ Error insertando en DB:', error)
       throw error
     }
 
-    console.log('✅ Cliente creado exitosamente:', data.id)
 
-    // 🔍 Auditar creación de cliente
+    // ðŸ” Auditar creación de cliente
     try {
       await auditService.auditarCreacionCliente(data)
     } catch (auditError) {
-      console.error('⚠️ Error auditando creación de cliente:', auditError)
+      console.error('âš ï¸ Error auditando creación de cliente:', auditError)
       // No bloqueamos la operación si falla la auditoría
     }
 
@@ -364,16 +372,16 @@ class ClientesService {
     // 1. Obtener datos anteriores para auditoría
     const { data: datosAnteriores } = await supabase
       .from('clientes')
-      .select('*')
+      .select(`
+        id, nombres, apellidos, tipo_documento, numero_documento,
+        telefono, telefono_alternativo, email, direccion, ciudad,
+        departamento, fecha_nacimiento, estado_civil, notas, estado
+      `)
       .eq('id', id)
       .single()
-
     // 2. Actualizar cliente
-    // 🔧 Sanitizar campos de fecha: convertir strings vacíos a null
-    const datosLimpios = {
-      ...datos,
-      fecha_nacimiento: datos.fecha_nacimiento || null,
-    }
+    // ðŸ§¹ Sanitizar datos (strings vacíos â†’ null, validar enums)
+    const datosLimpios = sanitizeActualizarClienteDTO(datos)
 
     const { data, error } = await supabase
       .from('clientes')
@@ -384,7 +392,7 @@ class ClientesService {
 
     if (error) throw error
 
-    // 3. 🔍 Auditar actualización
+    // 3. ðŸ” Auditar actualización
     if (datosAnteriores) {
       try {
         await auditService.auditarActualizacion(
@@ -399,7 +407,7 @@ class ClientesService {
           'clientes'
         )
       } catch (auditError) {
-        console.error('⚠️ Error auditando actualización:', auditError)
+        console.error('âš ï¸ Error auditando actualización:', auditError)
       }
     }
 
@@ -462,7 +470,7 @@ class ClientesService {
     // 4. Obtener datos del cliente para auditoría
     const { data: clienteData } = await supabase
       .from('clientes')
-      .select('*')
+      .select('id, nombres, apellidos, tipo_documento, numero_documento, estado')
       .eq('id', id)
       .single()
 
@@ -471,7 +479,7 @@ class ClientesService {
 
     if (error) throw error
 
-    // 6. 🔍 Auditar eliminación
+    // 6. ðŸ” Auditar eliminación
     if (clienteData) {
       try {
         await auditService.auditarEliminacion(
@@ -486,7 +494,7 @@ class ClientesService {
           'clientes'
         )
       } catch (auditError) {
-        console.error('⚠️ Error auditando eliminación:', auditError)
+        console.error('âš ï¸ Error auditando eliminación:', auditError)
       }
     }
   }

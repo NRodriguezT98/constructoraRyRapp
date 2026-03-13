@@ -8,6 +8,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
 import { useAuth } from '@/contexts/auth-context'
+import { documentosViviendaService, type SubirDocumentoParams, type ActualizarDocumentoParams } from '@/modules/viviendas/services/documentos-vivienda.service'
 
 /**
  * DEPRECATED: Usar hooks de documentos/useDocumentosViviendaQuery.ts

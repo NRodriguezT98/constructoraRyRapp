@@ -6,7 +6,7 @@
  * Hook con React Query para gestionar permisos desde BD.
  * Reemplaza el sistema hardcodeado de usePermissions.
  *
- * CARACTERÍSTICAS:
+ * CARACTERÃSTICAS:
  * - Consulta permisos desde tabla permisos_rol
  * - Cache automático con React Query
  * - Bypass automático para Administrador
@@ -180,7 +180,7 @@ export function usePermisosQuery() {
 
 /**
  * Hook para obtener TODOS los permisos del sistema (Admin only)
- * Útil para matriz de configuración de permisos
+ * Ãštil para matriz de configuración de permisos
  */
 export function useTodosLosPermisosQuery() {
   const { perfil } = useAuth()
@@ -197,7 +197,7 @@ export function useTodosLosPermisosQuery() {
 
 /**
  * Mutation: Actualizar un permiso específico
- * ✅ Invalida sesiones de usuarios afectados
+ * âœ… Invalida sesiones de usuarios afectados
  */
 export function useActualizarPermisoMutation() {
   const queryClient = useQueryClient()
@@ -206,7 +206,7 @@ export function useActualizarPermisoMutation() {
     mutationFn: async ({ id, permitido, rol }: { id: string; permitido: boolean; rol?: string }) => {
       const resultado = await actualizarPermiso(id, permitido)
 
-      // ✅ Invalidar sesiones si se proporcionó el rol
+      // âœ… Invalidar sesiones si se proporcionó el rol
       if (rol) {
         try {
           await fetch('/api/auth/invalidar-sesiones', {
@@ -214,9 +214,8 @@ export function useActualizarPermisoMutation() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ rol }),
           })
-          console.log(`✅ [MUTATION] Sesiones invalidadas para rol: ${rol}`)
         } catch (error) {
-          console.warn('⚠️ [MUTATION] Error invalidando sesiones (no crítico):', error)
+          console.warn('âš ï¸ [MUTATION] Error invalidando sesiones (no crítico):', error)
         }
       }
 
@@ -227,18 +226,17 @@ export function useActualizarPermisoMutation() {
       // Invalidar TODOS los queries de permisos
       queryClient.invalidateQueries({ queryKey: ['permisos'] })
 
-      console.log('✅ [MUTATION] Permiso actualizado y cache invalidado')
     },
 
     onError: error => {
-      console.error('❌ [MUTATION] Error actualizando permiso:', error)
+      console.error('âŒ [MUTATION] Error actualizando permiso:', error)
     },
   })
 }
 
 /**
  * Mutation: Actualizar múltiples permisos en lote
- * ✅ Invalida sesiones de usuarios afectados
+ * âœ… Invalida sesiones de usuarios afectados
  */
 export function useActualizarPermisosEnLoteMutation() {
   const queryClient = useQueryClient()
@@ -253,7 +251,7 @@ export function useActualizarPermisosEnLoteMutation() {
     }) => {
       const resultado = await actualizarPermisosEnLote(actualizaciones)
 
-      // ✅ Invalidar sesiones si se proporcionó el rol
+      // âœ… Invalidar sesiones si se proporcionó el rol
       if (rol) {
         try {
           await fetch('/api/auth/invalidar-sesiones', {
@@ -261,9 +259,8 @@ export function useActualizarPermisosEnLoteMutation() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ rol }),
           })
-          console.log(`✅ [MUTATION] Sesiones invalidadas para rol: ${rol}`)
         } catch (error) {
-          console.warn('⚠️ [MUTATION] Error invalidando sesiones (no crítico):', error)
+          console.warn('âš ï¸ [MUTATION] Error invalidando sesiones (no crítico):', error)
         }
       }
 
@@ -274,11 +271,10 @@ export function useActualizarPermisosEnLoteMutation() {
       // Invalidar TODOS los queries de permisos
       queryClient.invalidateQueries({ queryKey: ['permisos'] })
 
-      console.log('✅ [MUTATION] Permisos en lote actualizados y cache invalidado')
     },
 
     onError: error => {
-      console.error('❌ [MUTATION] Error actualizando permisos en lote:', error)
+      console.error('âŒ [MUTATION] Error actualizando permisos en lote:', error)
     },
   })
 }

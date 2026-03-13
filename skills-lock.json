@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "skills": {
+    "find-skills": {
+      "source": "vercel-labs/skills",
+      "sourceType": "github",
+      "computedHash": "25872a21881a950edc3db1f3329664d60405d539660ce05b3265db2de06a7dfd"
+    },
+    "mastering-typescript": {
+      "source": "spillwavesolutions/mastering-typescript-skill",
+      "sourceType": "github",
+      "computedHash": "144b5c2feda736321f0383a08dafd74b23abc5d95102daba2aab245ff9435518"
+    },
+    "nextjs-app-router-fundamentals": {
+      "source": "wsimmonds/claude-nextjs-skills",
+      "sourceType": "github",
+      "computedHash": "7db69d3b4cdc7e880b667b7173146f3ff8b8fb096aace7f2e7f47ec4bac3ee79"
+    },
+    "nextjs-seo": {
+      "source": "laguagu/claude-code-nextjs-skills",
+      "sourceType": "github",
+      "computedHash": "9a797ec9e41d4a2d8c46a6c7942616b6a010a66643a64995a303b55a108221d9"
+    },
+    "supabase-postgres-best-practices": {
+      "source": "supabase/agent-skills",
+      "sourceType": "github",
+      "computedHash": "e3ba3d760c5f4cc43b02a91fb8924f726c7818f95cc35d79d0a606ca622b72f5"
+    },
+    "tailwindcss-performance": {
+      "source": "josiahsiegel/claude-plugin-marketplace",
+      "sourceType": "github",
+      "computedHash": "c742c355c32aca48fdc1731b3838ddbf8a4ae4bf60339d6d9448c92fdf547c0c"
+    }
+  }
+}

@@ -1,11 +1,11 @@
 /**
- * 🔄 Hook: Gestión de Conflictos de Viviendas
+ * ?? Hook: Gesti�n de Conflictos de Viviendas
  *
  * Responsabilidad:
- * - Detectar viviendas inactivas con número duplicado
+ * - Detectar viviendas inactivas con n�mero duplicado
  * - Validar si vivienda inactiva puede ser reutilizada
  * - Sobrescribir vivienda inactiva con nuevos datos
- * - Validar unicidad de matrícula inmobiliaria
+ * - Validar unicidad de matr�cula inmobiliaria
  *
  * Uso:
  * ```tsx
@@ -14,14 +14,14 @@
  * // Al crear vivienda
  * const conflicto = await verificarConflicto(proyectoId, manzanaId, numero)
  * if (conflicto.existeInactiva && conflicto.puedeReutilizar) {
- *   // Mostrar modal de decisión
+ *   // Mostrar modal de decisi�n
  * }
  * ```
  */
 
 'use client'
 
-import { useAuth } from '@/contexts/AuthContext'
+import { useAuth } from '@/contexts/auth-context'
 import { useRouter } from 'next/navigation'
 import { useCallback, useState } from 'react'
 import {
@@ -71,7 +71,7 @@ export function useViviendaConflictos(): UseViviendaConflictosReturn {
   const [procesando, setProcesando] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  // Verificar conflicto de número duplicado
+  // Verificar conflicto de n�mero duplicado
   const verificarConflicto = useCallback(
     async (
       proyectoId: string,
@@ -131,7 +131,7 @@ export function useViviendaConflictos(): UseViviendaConflictosReturn {
     [user, router]
   )
 
-  // Validar unicidad de matrícula
+  // Validar unicidad de matr�cula
   const validarMatricula = useCallback(
     async (matricula: string, viviendaId?: string): Promise<ValidacionMatricula> => {
       try {
@@ -145,7 +145,7 @@ export function useViviendaConflictos(): UseViviendaConflictosReturn {
 
         return validacion
       } catch (err) {
-        const mensaje = err instanceof Error ? err.message : 'Error al validar matrícula'
+        const mensaje = err instanceof Error ? err.message : 'Error al validar matr�cula'
         setError(mensaje)
         throw err
       } finally {

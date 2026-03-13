@@ -10,7 +10,6 @@ import { getTodayDateString } from '@/lib/utils/date.utils'
 
 import type { FuentePagoConAbonos } from '../types'
 
-import { AlertaValidacionDesembolso } from './modal-registrar-abono/AlertaValidacionDesembolso'
 import { CampoMonto } from './modal-registrar-abono/CampoMonto'
 import { MetodosPagoSelector } from './modal-registrar-abono/MetodosPagoSelector'
 import { ModalHeader } from './modal-registrar-abono/ModalHeader'
@@ -22,6 +21,7 @@ interface ModalRegistrarAbonoProps {
   onClose: () => void
   negociacionId: string
   clienteId: string  // ✅ NUEVO: Necesario para redirección al proceso
+  fechaMinima?: string  // fecha_negociacion — límite inferior para fecha_abono
   fuentesPago: FuentePagoConAbonos[]
   fuenteInicial?: FuentePagoConAbonos
   onSuccess: () => void
@@ -32,6 +32,7 @@ export function ModalRegistrarAbono({
   onClose,
   negociacionId,
   clienteId,
+  fechaMinima,
   fuentesPago,
   fuenteInicial,
   onSuccess,
@@ -47,7 +48,6 @@ export function ModalRegistrarAbono({
     montoAutomatico,
     saldoPendiente,
     montoIngresado,
-    validacionDesembolso,
     handleSubmit,
     updateField,
     selectMetodo,
@@ -56,6 +56,7 @@ export function ModalRegistrarAbono({
   } = useModalRegistrarAbono({
     negociacionId,
     fuentePreseleccionada,
+    fechaMinima,
     onSuccess,
     onClose,
   })
@@ -108,10 +109,17 @@ export function ModalRegistrarAbono({
                   type="date"
                   id="fecha_abono"
                   value={formData.fecha_abono}
+                  min={fechaMinima}
                   max={getTodayDateString()}
                   onChange={(e) => updateField('fecha_abono', e.target.value)}
-                  className={modalStyles.form.input}
+                  className={`${modalStyles.form.input} ${errors.fecha_abono ? 'border-red-400 focus:ring-red-400/20' : ''}`}
                 />
+                {errors.fecha_abono && (
+                  <p className="mt-1 text-xs text-red-500 flex items-center gap-1">
+                    <AlertCircle className="w-3 h-3 flex-shrink-0" />
+                    {errors.fecha_abono}
+                  </p>
+                )}
               </motion.div>
 
               {/* Métodos de Pago */}
@@ -137,16 +145,9 @@ export function ModalRegistrarAbono({
                 />
               </motion.div>
 
-              {/* Error general o alerta de validación */}
+              {/* Error general */}
               <AnimatePresence>
-                {validacionDesembolso && !validacionDesembolso.permitido ? (
-                  <AlertaValidacionDesembolso
-                    resultado={validacionDesembolso}
-                    negociacionId={negociacionId}
-                    clienteId={clienteId}
-                    onDismiss={limpiarValidacion}
-                  />
-                ) : errors.submit ? (
+                {errors.submit ? (
                   <motion.div
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}

@@ -17,6 +17,8 @@ import {
 
 import type { FuentePagoConfig } from '@/modules/clientes/components/asignar-vivienda/types'
 import type { TipoFuentePago } from '@/modules/clientes/types'
+import { obtenerMonto } from '@/modules/clientes/utils/fuentes-pago-campos.utils'
+import { useTiposFuentesConCampos } from '@/modules/configuracion/hooks/useTiposFuentesConCampos'
 
 import { animations, pageStyles as s } from '../styles'
 
@@ -60,6 +62,9 @@ export function SidebarResumen({
   progressStep1,
   progressStep2,
 }: SidebarResumenProps) {
+  // 🔥 Hook para obtener configuración de campos dinámicos
+  const { data: tiposConCampos = [] } = useTiposFuentesConCampos()
+
   const diferencia = valorTotal - totalFuentes
   const porcentajeDescuento = valorVivienda > 0
     ? ((descuentoAplicado / valorVivienda) * 100).toFixed(1)
@@ -181,7 +186,15 @@ export function SidebarResumen({
                 <div className={s.sidebar.divider} />
                 <div className="space-y-2.5">
                   {fuentesConfiguradas.map((fuente) => {
-                    const porcentaje = ((fuente.config.monto_aprobado / valorTotal) * 100).toFixed(0)
+                    // 🔥 Buscar configuración de campos para este tipo
+                    const tipoConCampos = tiposConCampos.find(t => t.nombre === fuente.tipo)
+                    const camposConfig = tipoConCampos?.configuracion_campos?.campos || []
+
+                    // 🔥 Usar utility que busca por rol='monto' (igual que totalFuentes y paso2Valido)
+                    const monto = obtenerMonto(fuente.config, camposConfig)
+                    const porcentaje = monto > 0 && valorTotal > 0
+                      ? ((monto / valorTotal) * 100).toFixed(0)
+                      : '0'
 
                     return (
                       <div key={fuente.tipo} className={s.sidebar.item}>
@@ -193,7 +206,7 @@ export function SidebarResumen({
                             {porcentaje}%
                           </span>
                           <span className={s.sidebar.itemValue}>
-                            ${fuente.config.monto_aprobado.toLocaleString('es-CO')}
+                            ${monto.toLocaleString('es-CO')}
                           </span>
                         </div>
                       </div>

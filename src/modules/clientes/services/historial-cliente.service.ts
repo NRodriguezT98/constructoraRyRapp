@@ -9,8 +9,13 @@ import type { EventoHistorialCliente } from '../types/historial.types'
 
 class HistorialClienteService {
   /**
-   * Obtener historial completo de un cliente
-   * Incluye: audit_log de cliente + negociaciones + abonos + renuncias
+   * ✅ REFACTORIZADO: Obtener historial completo de un cliente
+   *
+   * MEJORAS ARQUITECTÓNICAS:
+   * 1. ✅ Queries paralelas con Promise.all (rápido y seguro)
+   * 2. ✅ JOIN con usuarios para obtener datos reales
+   * 3. ✅ Consolidación en memoria
+   * 4. ✅ TypeScript estricto
    *
    * @param clienteId - ID del cliente
    * @param limit - Número máximo de eventos a retornar
@@ -21,89 +26,113 @@ class HistorialClienteService {
     limit = 200
   ): Promise<EventoHistorialCliente[]> {
     try {
-      // 1. Eventos directos del cliente (CREATE, UPDATE, DELETE)
-      const { data: eventosCliente } = await (supabase as any)
-        .from('audit_log')
-        .select('*')
-        .eq('tabla', 'clientes')
-        .eq('registro_id', clienteId)
-        .order('fecha_evento', { ascending: false })
+      // ✅ PASO 1: Obtener eventos SIN JOIN (más confiable)
+      const [
+        eventosCliente,
+        eventosNegociaciones,
+        eventosAbonos,
+        eventosRenuncias,
+        eventosIntereses,
+        eventosDocumentos,
+      ] = await Promise.all([
+        supabase
+          .from('audit_log')
+          .select('id,tabla,accion,registro_id,fecha_evento,usuario_id,datos_anteriores,datos_nuevos,cambios_especificos,metadata,modulo')
+          .eq('tabla', 'clientes')
+          .eq('registro_id', clienteId)
+          .order('fecha_evento', { ascending: false }),
 
-      // 2. Eventos de negociaciones del cliente
-      const { data: eventosNegociaciones } = await (supabase as any)
-        .from('audit_log')
-        .select('*')
-        .eq('tabla', 'negociaciones')
-        .contains('metadata', { cliente_id: clienteId })
-        .order('fecha_evento', { ascending: false })
+        supabase
+          .from('audit_log')
+          .select('id,tabla,accion,registro_id,fecha_evento,usuario_id,datos_anteriores,datos_nuevos,cambios_especificos,metadata,modulo')
+          .eq('tabla', 'negociaciones')
+          .contains('metadata', { cliente_id: clienteId })
+          .order('fecha_evento', { ascending: false }),
 
-      // 3. Eventos de abonos relacionados con el cliente
-      const { data: eventosAbonos } = await (supabase as any)
-        .from('audit_log')
-        .select('*')
-        .eq('tabla', 'abonos_historial')
-        .contains('metadata', { cliente_id: clienteId })
-        .order('fecha_evento', { ascending: false })
+        supabase
+          .from('audit_log')
+          .select('id,tabla,accion,registro_id,fecha_evento,usuario_id,datos_anteriores,datos_nuevos,cambios_especificos,metadata,modulo')
+          .eq('tabla', 'abonos_historial')
+          .contains('metadata', { cliente_id: clienteId })
+          .order('fecha_evento', { ascending: false }),
 
-      // 4. Eventos de renuncias del cliente
-      const { data: eventosRenuncias } = await (supabase as any)
-        .from('audit_log')
-        .select('*')
-        .eq('tabla', 'renuncias')
-        .contains('metadata', { cliente_id: clienteId })
-        .order('fecha_evento', { ascending: false })
+        supabase
+          .from('audit_log')
+          .select('id,tabla,accion,registro_id,fecha_evento,usuario_id,datos_anteriores,datos_nuevos,cambios_especificos,metadata,modulo')
+          .eq('tabla', 'renuncias')
+          .contains('metadata', { cliente_id: clienteId })
+          .order('fecha_evento', { ascending: false }),
 
-      // 5. Eventos de intereses del cliente
-      const { data: eventosIntereses } = await (supabase as any)
-        .from('audit_log')
-        .select('*')
-        .eq('tabla', 'intereses')
-        .contains('metadata', { cliente_id: clienteId })
-        .order('fecha_evento', { ascending: false })
+        supabase
+          .from('audit_log')
+          .select('id,tabla,accion,registro_id,fecha_evento,usuario_id,datos_anteriores,datos_nuevos,cambios_especificos,metadata,modulo')
+          .eq('tabla', 'intereses')
+          .contains('metadata', { cliente_id: clienteId })
+          .order('fecha_evento', { ascending: false }),
 
-      // 6. Eventos de documentos del cliente
-      const { data: eventosDocumentos } = await (supabase as any)
-        .from('audit_log')
-        .select('*')
-        .eq('tabla', 'documentos_cliente')
-        .contains('metadata', { cliente_id: clienteId })
-        .order('fecha_evento', { ascending: false })
+        supabase
+          .from('audit_log')
+          .select('id,tabla,accion,registro_id,fecha_evento,usuario_id,datos_anteriores,datos_nuevos,cambios_especificos,metadata,modulo')
+          .eq('tabla', 'documentos_cliente')
+          .contains('metadata', { cliente_id: clienteId })
+          .order('fecha_evento', { ascending: false }),
+      ])
 
-      // 7. Consolidar todos los eventos
+      // Consolidar eventos
       const todosEventos = [
-        ...(eventosCliente || []),
-        ...(eventosNegociaciones || []),
-        ...(eventosAbonos || []),
-        ...(eventosRenuncias || []),
-        ...(eventosIntereses || []),
-        ...(eventosDocumentos || []),
+        ...(eventosCliente.data || []),
+        ...(eventosNegociaciones.data || []),
+        ...(eventosAbonos.data || []),
+        ...(eventosRenuncias.data || []),
+        ...(eventosIntereses.data || []),
+        ...(eventosDocumentos.data || []),
       ]
 
-      // 8. Ordenar por fecha_evento descendente y limitar
+      // Ordenar y limitar
       const eventosOrdenados = todosEventos
-        .sort((a, b) => {
-          const fechaA = new Date(a.fecha_evento).getTime()
-          const fechaB = new Date(b.fecha_evento).getTime()
-          return fechaB - fechaA
-        })
+        .sort((a, b) => new Date(b.fecha_evento).getTime() - new Date(a.fecha_evento).getTime())
         .slice(0, limit)
 
-      // 9. Mapear a EventoHistorialCliente
-      return eventosOrdenados.map((evento) => ({
-        id: evento.id,
-        tabla: evento.tabla,
-        accion: evento.accion,
-        registro_id: evento.registro_id,
-        fecha_evento: evento.fecha_evento,
-        usuario_email: evento.usuario_email,
-        usuario_nombres: evento.usuario_nombres,
-        usuario_rol: evento.usuario_rol,
-        datos_anteriores: evento.datos_anteriores,
-        datos_nuevos: evento.datos_nuevos,
-        cambios_especificos: evento.cambios_especificos,
-        metadata: evento.metadata,
-        modulo: evento.modulo,
-      }))
+      // ✅ PASO 2: Obtener IDs únicos de usuarios
+      const usuarioIds = [...new Set(eventosOrdenados.map(e => e.usuario_id).filter((id): id is string => Boolean(id)))]
+
+      // ✅ PASO 3: Obtener datos de usuarios en UN SOLO QUERY
+      const { data: usuarios } = await supabase
+        .from('usuarios')
+        .select('id,email,nombres,apellidos,rol')
+        .in('id', usuarioIds)
+
+      // Crear map para lookup rápido
+      const usuariosMap = new Map(
+        (usuarios || []).map(u => [u.id, u])
+      )
+
+      // ✅ PASO 4: Mapear eventos con datos de usuarios
+      return eventosOrdenados.map((evento) => {
+        const usuario = usuariosMap.get(evento.usuario_id ?? '')
+
+        // Construir nombre completo (nombres + apellidos)
+        const nombreCompleto = usuario
+          ? [usuario.nombres, usuario.apellidos].filter(Boolean).join(' ') || null
+          : null
+
+        return {
+          id: evento.id,
+          tabla: evento.tabla,
+          accion: evento.accion,
+          registro_id: evento.registro_id,
+          fecha_evento: evento.fecha_evento,
+          // ✅ Datos reales del usuario desde query separado
+          usuario_email: usuario?.email || 'Sistema',
+          usuario_nombres: nombreCompleto,
+          usuario_rol: usuario?.rol || null,
+          datos_anteriores: evento.datos_anteriores,
+          datos_nuevos: evento.datos_nuevos,
+          cambios_especificos: evento.cambios_especificos,
+          metadata: evento.metadata,
+          modulo: evento.modulo,
+        }
+      }) as unknown as EventoHistorialCliente[]
     } catch (error) {
       const mensaje = error instanceof Error ? error.message : 'Error desconocido'
       console.error('❌ [CLIENTES] Error obteniendo historial del cliente:', mensaje, error)
@@ -112,7 +141,7 @@ class HistorialClienteService {
   }
 
   /**
-   * Obtener eventos por tipo de tabla
+   * ✅ REFACTORIZADO: Obtener eventos por tipo de tabla
    * Útil para filtros en la UI
    *
    * @param clienteId - ID del cliente
@@ -125,40 +154,50 @@ class HistorialClienteService {
     limit = 50
   ): Promise<EventoHistorialCliente[]> {
     try {
-      let query = (supabase as any)
+      let query = supabase
         .from('audit_log')
-        .select('*')
+        .select('id,tabla,accion,registro_id,fecha_evento,usuario_id,datos_anteriores,datos_nuevos,cambios_especificos,metadata,modulo')
         .eq('tabla', tabla)
 
-      // Si es la tabla clientes, filtrar por registro_id
-      // Para otras tablas, filtrar por metadata.cliente_id
       if (tabla === 'clientes') {
         query = query.eq('registro_id', clienteId)
       } else {
         query = query.contains('metadata', { cliente_id: clienteId })
       }
 
-      const { data, error } = await query
+      const { data: eventos, error } = await query
         .order('fecha_evento', { ascending: false })
         .limit(limit)
 
       if (error) throw error
 
-      return (data || []).map((evento: any) => ({
-        id: evento.id,
-        tabla: evento.tabla,
-        accion: evento.accion,
-        registro_id: evento.registro_id,
-        fecha_evento: evento.fecha_evento,
-        usuario_email: evento.usuario_email,
-        usuario_nombres: evento.usuario_nombres,
-        usuario_rol: evento.usuario_rol,
-        datos_anteriores: evento.datos_anteriores,
-        datos_nuevos: evento.datos_nuevos,
-        cambios_especificos: evento.cambios_especificos,
-        metadata: evento.metadata,
-        modulo: evento.modulo,
-      }))
+      // Obtener usuarios
+      const usuarioIds = [...new Set((eventos || []).map(e => e.usuario_id).filter((id): id is string => Boolean(id)))]
+      const { data: usuarios } = await supabase
+        .from('usuarios')
+        .select('id,email,nombres,rol')
+        .in('id', usuarioIds)
+
+      const usuariosMap = new Map((usuarios || []).map(u => [u.id, u]))
+
+      return (eventos || []).map((evento) => {
+        const usuario = usuariosMap.get(evento.usuario_id ?? '')
+        return {
+          id: evento.id,
+          tabla: evento.tabla,
+          accion: evento.accion,
+          registro_id: evento.registro_id,
+          fecha_evento: evento.fecha_evento,
+          usuario_email: usuario?.email || 'Sistema',
+          usuario_nombres: usuario?.nombres || null,
+          usuario_rol: usuario?.rol || null,
+          datos_anteriores: evento.datos_anteriores,
+          datos_nuevos: evento.datos_nuevos,
+          cambios_especificos: evento.cambios_especificos,
+          metadata: evento.metadata,
+          modulo: evento.modulo,
+        }
+      }) as unknown as EventoHistorialCliente[]
     } catch (error) {
       const mensaje = error instanceof Error ? error.message : 'Error desconocido'
       console.error('❌ [CLIENTES] Error obteniendo eventos por tipo:', mensaje, error)

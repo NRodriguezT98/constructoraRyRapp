@@ -9,7 +9,9 @@ import { useQuery } from '@tanstack/react-query'
 import { useMemo, useState } from 'react'
 
 import { historialClienteService } from '../services/historial-cliente.service'
+import { notasHistorialService } from '../services/notas-historial.service'
 import { humanizarEventos } from '../utils/humanizador-eventos'
+import { convertirNotasAEventos } from '../utils/notas-a-eventos.utils'
 
 import { formatDateForDisplay } from '@/lib/utils/date.utils'
 import type {
@@ -32,31 +34,91 @@ export function useHistorialCliente({
   // ========== ESTADO ==========
   const [filtros, setFiltros] = useState<FiltrosHistorial>({})
   const [busqueda, setBusqueda] = useState('')
+  const [tipoEvento, setTipoEvento] = useState('')
+  const [modulo, setModulo] = useState('')
+  const [usuarioFiltro, setUsuarioFiltro] = useState('')
 
-  // ========== QUERY ==========
+  // ========== QUERIES (Eventos automáticos + Notas manuales) ==========
   const {
     data: eventosRaw = [],
-    isLoading,
-    error,
-    refetch,
+    isLoading: isLoadingEventos,
+    error: errorEventos,
+    refetch: refetchEventos,
   } = useQuery({
     queryKey: ['historial-cliente', clienteId, limit],
     queryFn: () => historialClienteService.obtenerHistorial(clienteId, limit),
     enabled: habilitado && !!clienteId,
     refetchOnWindowFocus: false,
-    staleTime: 1000 * 60 * 5, // 5 minutos
+    staleTime: 0, // Sin cache - siempre fresh
   })
 
-  // ========== HUMANIZAR EVENTOS ==========
+  const {
+    data: notasRaw = [],
+    isLoading: isLoadingNotas,
+    error: errorNotas,
+    refetch: refetchNotas,
+  } = useQuery({
+    queryKey: ['notas-historial-cliente', clienteId],
+    queryFn: () => notasHistorialService.obtenerNotasCliente(clienteId),
+    enabled: habilitado && !!clienteId,
+    refetchOnWindowFocus: false,
+    staleTime: 0, // Sin cache - siempre fresh
+  })
+
+  // ========== HUMANIZAR EVENTOS + CONVERTIR NOTAS ==========
   const eventosHumanizados = useMemo(() => {
     return humanizarEventos(eventosRaw)
   }, [eventosRaw])
 
+  const notasComoEventos = useMemo(() => {
+    return convertirNotasAEventos(notasRaw)
+  }, [notasRaw])
+
+  // ========== UNIFICAR EVENTOS + NOTAS EN TIMELINE ==========
+  const todosLosEventos = useMemo(() => {
+    return [...eventosHumanizados, ...notasComoEventos].sort((a, b) => {
+      return new Date(b.fecha).getTime() - new Date(a.fecha).getTime()
+    })
+  }, [eventosHumanizados, notasComoEventos])
+
+  // ========== USUARIOS DISPONIBLES ==========
+  const usuariosDisponibles = useMemo(() => {
+    const usuariosMap = new Map<string, { id: string; email: string }>()
+
+    todosLosEventos.forEach((evento) => {
+      if (evento.usuario.id && evento.usuario.email) {
+        usuariosMap.set(evento.usuario.id, {
+          id: evento.usuario.id,
+          email: evento.usuario.email,
+        })
+      }
+    })
+
+    return Array.from(usuariosMap.values()).sort((a, b) =>
+      a.email.localeCompare(b.email)
+    )
+  }, [todosLosEventos])
+
   // ========== FILTRAR Y BUSCAR ==========
   const eventosFiltrados = useMemo(() => {
-    let eventos = eventosHumanizados
+    let eventos = todosLosEventos
 
-    // Filtrar por tipo
+    // Filtrar por tipo de evento (CREATE, UPDATE, DELETE)
+    if (tipoEvento) {
+      eventos = eventos.filter((e) => e.accion === tipoEvento)
+    }
+
+    // Filtrar por módulo
+    if (modulo) {
+      eventos = eventos.filter((e) => e.metadata?.modulo === modulo)
+    }
+
+    // Filtrar por usuario
+    if (usuarioFiltro) {
+      eventos = eventos.filter((e) => e.usuario.id === usuarioFiltro)
+    }
+
+    // Filtrar por tipo (legacy - mantener compatibilidad)
     if (filtros.tipo && filtros.tipo.length > 0) {
       eventos = eventos.filter((e) => filtros.tipo!.includes(e.tipo))
     }
@@ -88,7 +150,7 @@ export function useHistorialCliente({
     }
 
     return eventos
-  }, [eventosHumanizados, filtros, busqueda])
+  }, [todosLosEventos, filtros, busqueda, tipoEvento, modulo, usuarioFiltro])
 
   // ========== AGRUPAR POR FECHA ==========
   const eventosAgrupados = useMemo(() => {
@@ -127,16 +189,36 @@ export function useHistorialCliente({
 
   // ========== ESTADÍSTICAS ==========
   const estadisticas = useMemo(() => {
-    const total = eventosHumanizados.length
+    const total = todosLosEventos.length
     const porTipo: Record<string, number> = {}
     const porColor: Record<string, number> = {}
 
-    eventosHumanizados.forEach((evento) => {
+    // Métricas temporales
+    const ahora = new Date()
+    const inicioSemana = new Date(ahora)
+    inicioSemana.setDate(ahora.getDate() - 7)
+    const inicioMes = new Date(ahora)
+    inicioMes.setDate(1)
+
+    let estaSemana = 0
+    let esteMes = 0
+    let criticos = 0
+
+    todosLosEventos.forEach((evento) => {
+      const fechaEvento = new Date(evento.fecha)
+
       // Contar por tipo
       porTipo[evento.tipo] = (porTipo[evento.tipo] || 0) + 1
 
       // Contar por color
       porColor[evento.color] = (porColor[evento.color] || 0) + 1
+
+      // Contar temporales
+      if (fechaEvento >= inicioSemana) estaSemana++
+      if (fechaEvento >= inicioMes) esteMes++
+
+      // Contar críticos (DELETE o acciones de renuncias/eliminación)
+      if (evento.accion === 'DELETE' || evento.color === 'red') criticos++
     })
 
     return {
@@ -145,8 +227,12 @@ export function useHistorialCliente({
       porColor,
       filtrados: eventosFiltrados.length,
       grupos: eventosAgrupados.length,
+      // Nuevas métricas
+      estaSemana,
+      esteMes,
+      criticos,
     }
-  }, [eventosHumanizados, eventosFiltrados, eventosAgrupados])
+  }, [todosLosEventos, eventosFiltrados, eventosAgrupados])
 
   // ========== FUNCIONES DE FILTRADO ==========
   const aplicarFiltros = (nuevosFiltros: Partial<FiltrosHistorial>) => {
@@ -156,33 +242,53 @@ export function useHistorialCliente({
   const limpiarFiltros = () => {
     setFiltros({})
     setBusqueda('')
+    setTipoEvento('')
+    setModulo('')
+    setUsuarioFiltro('')
   }
 
-  const tieneAplicados = Object.keys(filtros).length > 0 || busqueda.trim() !== ''
+  const tieneAplicados =
+    Object.keys(filtros).length > 0 ||
+    busqueda.trim() !== '' ||
+    tipoEvento !== '' ||
+    modulo !== '' ||
+    usuarioFiltro !== ''
 
   // ========== RETORNO ==========
   return {
     // Datos
     eventosRaw,
     eventosHumanizados,
+    notasRaw,
+    todosLosEventos,
     eventosFiltrados,
     eventosAgrupados,
     estadisticas,
+    usuariosDisponibles,
 
     // Estados
-    isLoading,
-    error,
+    isLoading: isLoadingEventos || isLoadingNotas,
+    error: errorEventos || errorNotas,
 
     // Filtros y búsqueda
     filtros,
     busqueda,
+    tipoEvento,
+    modulo,
+    usuarioFiltro,
     setBusqueda,
+    setTipoEvento,
+    setModulo,
+    setUsuarioFiltro,
     aplicarFiltros,
     limpiarFiltros,
     tieneAplicados,
 
     // Acciones
-    refetch,
+    refetch: () => {
+      refetchEventos()
+      refetchNotas()
+    },
   }
 }
 

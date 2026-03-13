@@ -1,10 +1,10 @@
-'use client'
+﻿'use client'
 
 /**
- * ✅ COMPONENTE PRESENTACIONAL (REFACTORIZADO)
+ * âœ… COMPONENTE PRESENTACIONAL (REFACTORIZADO)
  * Cliente Detalle Client - Usa useClienteDetalle hook
  *
- * SEPARACIÓN DE RESPONSABILIDADES:
+ * SEPARACIÃ“N DE RESPONSABILIDADES:
  * - TODA la lógica consolidada en useClienteDetalle hook
  * - Este componente SOLO orquesta la UI
  */
@@ -13,31 +13,29 @@ import { useEffect } from 'react'
 
 import { AnimatePresence, motion } from 'framer-motion'
 import {
-  Activity,
-  ArrowLeft,
-  Building2,
-  ChevronRight,
-  Edit2,
-  FileText,
-  Heart,
-  History,
-  Home,
-  Info,
-  Lock,
-  Trash2,
-  User,
-  Wallet
+    ArrowLeft,
+    Building2,
+    ChevronRight,
+    Edit2,
+    FileText,
+    Heart,
+    History,
+    Home,
+    Lock,
+    Trash2,
+    User
 } from 'lucide-react'
 
 import { useRouter } from 'next/navigation'
 
 import { construirURLCliente } from '@/lib/utils/slug.utils'
+import { formatNombreCompleto } from '@/lib/utils/string.utils'
 import { ModalRegistrarInteres } from '@/modules/clientes/components/modals'
 import { useAsignacionVivienda, useClienteDetalle } from '@/modules/clientes/hooks'
 import { Tooltip } from '@/shared/components/ui'
 
 import * as styles from './cliente-detalle.styles'
-import { ActividadTab, DocumentosTab, GeneralTab, InteresesTab, NegociacionesTab } from './tabs'
+import { DocumentosTab, GeneralTab, InteresesTab, NegociacionTab } from './tabs'
 import { HistorialTab } from './tabs/historial-tab'
 
 interface ClienteDetalleClientProps {
@@ -77,7 +75,7 @@ function EstadoBadge({ estado }: { estado: string }) {
 export default function ClienteDetalleClient({ clienteId }: ClienteDetalleClientProps) {
   const router = useRouter()
 
-  // ✅ Hook consolidado con TODA la lógica
+  // âœ… Hook consolidado con TODA la lógica
   const {
     clienteUUID,
     cliente,
@@ -98,7 +96,6 @@ export default function ClienteDetalleClient({ clienteId }: ClienteDetalleClient
   } = useClienteDetalle({ clienteIdSlug: clienteId })
 
   const handleEditar = () => {
-    console.log('Editar cliente:', clienteUUID)
     // TODO: Abrir modal de edición o navegar a página de edición
   }
 
@@ -108,7 +105,6 @@ export default function ClienteDetalleClient({ clienteId }: ClienteDetalleClient
         `¿Estás seguro de eliminar al cliente ${cliente?.nombre_completo}? Esta acción no se puede deshacer.`
       )
     ) {
-      console.log('Eliminar cliente:', clienteUUID)
       router.push('/clientes')
     }
   }
@@ -117,7 +113,7 @@ export default function ClienteDetalleClient({ clienteId }: ClienteDetalleClient
     abrirModalInteres()
   }
 
-  // ✅ Hook de asignación de vivienda con validación centralizada
+  // âœ… Hook de asignación de vivienda con validación centralizada
   const clienteSlug = cliente ? construirURLCliente({
     id: clienteUUID!,
     nombres: cliente.nombres,
@@ -136,7 +132,7 @@ export default function ClienteDetalleClient({ clienteId }: ClienteDetalleClient
     clienteSlug: clienteSlug || ''
   })
 
-  // ✅ Detectar query param "action=crear-negociacion" y usar hook de asignación
+  // âœ… Detectar query param "action=crear-negociacion" y usar hook de asignación
   useEffect(() => {
     if (!cliente || !clienteUUID) return
 
@@ -160,7 +156,7 @@ export default function ClienteDetalleClient({ clienteId }: ClienteDetalleClient
 
   const handleInteresRegistrado = async () => {
     cerrarModalInteres()
-    // ✅ React Query refetch automático
+    // âœ… React Query refetch automático
     recargarCliente()
   }
 
@@ -267,9 +263,9 @@ export default function ClienteDetalleClient({ clienteId }: ClienteDetalleClient
       badge: null,
     },
     {
-      id: 'negociaciones' as const,
-      label: 'Negociaciones',
-      icon: Wallet,
+      id: 'negociacion' as const,
+      label: 'Negociación',
+      icon: Home,
       count: (cliente as any).negociaciones?.length || 0,
       badge: null,
     },
@@ -278,9 +274,8 @@ export default function ClienteDetalleClient({ clienteId }: ClienteDetalleClient
       label: 'Documentos',
       icon: FileText,
       count: totalDocumentos,
-      badge: !tieneCedula ? { text: '⚠️ Requerido', color: 'orange', pulse: true } : null,
+      badge: !tieneCedula ? { text: 'âš ï¸ Requerido', color: 'orange', pulse: true } : null,
     },
-    { id: 'actividad' as const, label: 'Actividad', icon: Activity, count: null, badge: null },
     { id: 'historial' as const, label: 'Historial', icon: History, count: null, badge: null },
   ]
 
@@ -317,8 +312,7 @@ export default function ClienteDetalleClient({ clienteId }: ClienteDetalleClient
           >
             {/* Patrón de fondo */}
             <div className={styles.headerClasses.backgroundPattern}>
-              <div className='absolute left-10 top-10 h-32 w-32 animate-pulse rounded-full bg-white/10'></div>
-              <div className='absolute bottom-10 right-10 h-24 w-24 animate-pulse rounded-full bg-white/10'></div>
+              <div className='absolute inset-0 bg-grid-white/10 [mask-image:linear-gradient(0deg,transparent,black,transparent)]' />
             </div>
 
             {/* Breadcrumb */}
@@ -328,7 +322,7 @@ export default function ClienteDetalleClient({ clienteId }: ClienteDetalleClient
               <span>Clientes</span>
               <ChevronRight className={styles.headerClasses.breadcrumbIcon} />
               <span className={styles.headerClasses.breadcrumbCurrent}>
-                {cliente.nombre_completo}
+                {formatNombreCompleto(cliente.nombre_completo)}
               </span>
             </div>
 
@@ -346,7 +340,7 @@ export default function ClienteDetalleClient({ clienteId }: ClienteDetalleClient
                   {/* Nombre + Estado (lo más importante primero) */}
                   <div className="flex items-center gap-3 flex-wrap">
                     <h1 className={styles.headerClasses.title}>
-                      {cliente.nombre_completo}
+                      {formatNombreCompleto(cliente.nombre_completo)}
                     </h1>
                     <EstadoBadge estado={cliente.estado} />
                   </div>
@@ -356,7 +350,7 @@ export default function ClienteDetalleClient({ clienteId }: ClienteDetalleClient
                     {cliente.tipo_documento} {cliente.numero_documento}
                   </p>
 
-                  {/* Info de Vivienda Asignada (solo para clientes Activos con negociación) */}
+                  {/* Chip compacto de vivienda asignada */}
                   {cliente.estado === 'Activo' && (cliente as any).negociaciones?.[0] && (() => {
                     const neg = (cliente as any).negociaciones[0]
                     const proyecto = neg?.viviendas?.manzanas?.proyectos?.nombre || 'Sin proyecto'
@@ -364,32 +358,13 @@ export default function ClienteDetalleClient({ clienteId }: ClienteDetalleClient
                     const numero = neg?.viviendas?.numero || 'N/A'
 
                     return (
-                      <motion.div
-                        initial={{ opacity: 0, y: -5 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="mt-2 px-3 py-2 rounded-lg bg-white/10 backdrop-blur-md border border-white/20"
-                      >
-                        {/* Línea 1: Texto informativo */}
-                        <div className="flex items-center gap-2 mb-1.5">
-                          <Info className="w-3.5 h-3.5 text-cyan-300 flex-shrink-0" />
-                          <p className="text-xs text-white/90 font-medium">
-                            Este cliente actualmente tiene asignada la vivienda:
-                          </p>
-                        </div>
-
-                        {/* Línea 2: Mza. Casa del Proyecto */}
-                        <div className="flex items-center gap-1.5 flex-wrap ml-5">
-                          <Home className="w-3.5 h-3.5 text-emerald-300 flex-shrink-0" />
-                          <span className="text-xs text-white font-semibold">
-                            Mza. {manzana} Casa {numero}
-                          </span>
-                          <span className="text-xs text-white/70">del proyecto</span>
-                          <Building2 className="w-3.5 h-3.5 text-blue-300 flex-shrink-0" />
-                          <span className="text-xs text-white font-semibold">
-                            {proyecto}
-                          </span>
-                        </div>
-                      </motion.div>
+                      <div className="mt-2 inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/15 backdrop-blur-md border border-white/25 text-white/95">
+                        <Home className="w-3.5 h-3.5 text-emerald-300 flex-shrink-0" />
+                        <span className="text-xs font-semibold">Mza. {manzana} · Casa {numero}</span>
+                        <span className="w-px h-3 bg-white/30" />
+                        <Building2 className="w-3.5 h-3.5 text-blue-300 flex-shrink-0" />
+                        <span className="text-xs text-white/80">{proyecto}</span>
+                      </div>
                     )
                   })()}
                 </div>
@@ -397,7 +372,7 @@ export default function ClienteDetalleClient({ clienteId }: ClienteDetalleClient
 
               {/* Acciones */}
               <div className={styles.headerClasses.actionsContainer}>
-                {/* ✅ Botón Asignar Vivienda (solo visible para Interesados sin negociación) */}
+                {/* âœ… Botón Asignar Vivienda (solo visible para Interesados sin negociación) */}
                 {cliente.estado === 'Interesado' && !(cliente as any).negociaciones?.length && (
                   <Tooltip
                     content={mensajeValidacion}
@@ -446,46 +421,27 @@ export default function ClienteDetalleClient({ clienteId }: ClienteDetalleClient
             transition={{ delay: 0.2 }}
             className={styles.tabsClasses.container}
           >
-            <nav className={styles.tabsClasses.nav}>
+            <nav className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
               {tabs.map((tab) => (
                 <motion.button
                   key={tab.id}
+                  data-tab={tab.id}
                   onClick={() => cambiarTab(tab.id)}
-                  className={`${styles.tabsClasses.tab} ${
+                  className={`flex-shrink-0 ${styles.tabsClasses.tab} ${
                     activeTab === tab.id
                       ? styles.tabsClasses.tabActive
                       : styles.tabsClasses.tabInactive
-                  }`}
+                  } relative`}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                 >
                   <div className={styles.tabsClasses.tabContent}>
                     <tab.icon className={styles.tabsClasses.tabIcon} />
-                    <span>{tab.label}</span>
-                    {tab.count !== null && (
+                    <span className="whitespace-nowrap">{tab.label}</span>
+                    {tab.count !== null && tab.count > 0 && (
                       <span className={styles.tabsClasses.tabBadge}>
                         {tab.count}
                       </span>
-                    )}
-                    {tab.badge && (
-                      <motion.span
-                        className={`ml-2 px-2 py-0.5 text-xs font-semibold rounded-full ${
-                          tab.badge.color === 'orange'
-                            ? 'bg-orange-100 dark:bg-orange-900/40 text-orange-700 dark:text-orange-300 border border-orange-300 dark:border-orange-700'
-                            : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300'
-                        }`}
-                        animate={tab.badge.pulse ? {
-                          scale: [1, 1.05, 1],
-                          opacity: [0.8, 1, 0.8],
-                        } : {}}
-                        transition={tab.badge.pulse ? {
-                          duration: 2,
-                          repeat: Infinity,
-                          ease: 'easeInOut',
-                        } : {}}
-                      >
-                        {tab.badge.text}
-                      </motion.span>
                     )}
                   </div>
                 </motion.button>
@@ -501,9 +457,8 @@ export default function ClienteDetalleClient({ clienteId }: ClienteDetalleClient
               onRegistrarInteres={handleRegistrarInteres}
             />
           )}
-          {activeTab === 'negociaciones' && <NegociacionesTab cliente={cliente} />}
+          {activeTab === 'negociacion' && <NegociacionTab cliente={cliente} />}
           {activeTab === 'documentos' && <DocumentosTab cliente={cliente} />}
-          {activeTab === 'actividad' && <ActividadTab clienteId={clienteUUID} />}
           {activeTab === 'historial' && (
             <HistorialTab
               clienteId={clienteUUID || ''}

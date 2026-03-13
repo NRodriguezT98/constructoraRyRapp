@@ -9,8 +9,8 @@ interface ProyectoInfoTabProps {
 }
 
 /**
- * Tab de información del proyecto
- * Componente de presentación puro
+ * Tab de informaci�n del proyecto
+ * Componente de presentaci�n puro
  */
 export function ProyectoInfoTab({ proyecto }: ProyectoInfoTabProps) {
   return (
@@ -21,10 +21,10 @@ export function ProyectoInfoTab({ proyecto }: ProyectoInfoTabProps) {
         </div>
         <div>
           <h2 className='text-base font-bold text-gray-900 dark:text-white'>
-            Información del Proyecto
+            Informaci�n del Proyecto
           </h2>
           <p className='text-xs text-gray-500 dark:text-gray-400'>
-            Detalles generales y configuración
+            Detalles generales y configuraci�n
           </p>
         </div>
       </div>
@@ -41,14 +41,14 @@ export function ProyectoInfoTab({ proyecto }: ProyectoInfoTabProps) {
 
         <div>
           <label className='mb-1.5 block text-xs font-medium text-gray-700 dark:text-gray-300'>
-            Ubicación
+            Ubicaci�n
           </label>
           <p className='text-sm text-gray-900 dark:text-white'>{proyecto.ubicacion}</p>
         </div>
 
         <div className='md:col-span-2'>
           <label className='mb-1.5 block text-xs font-medium text-gray-700 dark:text-gray-300'>
-            Descripción
+            Descripci�n
           </label>
           <p className='text-xs text-gray-700 dark:text-gray-300'>
             {proyecto.descripcion}
@@ -60,7 +60,7 @@ export function ProyectoInfoTab({ proyecto }: ProyectoInfoTabProps) {
             Responsable
           </label>
           <p className='text-sm text-gray-900 dark:text-white'>
-            {proyecto.responsable}
+            {(proyecto as any).responsable || '-'}
           </p>
         </div>
 
@@ -75,16 +75,16 @@ export function ProyectoInfoTab({ proyecto }: ProyectoInfoTabProps) {
 
         <div>
           <label className='mb-1.5 block text-xs font-medium text-gray-700 dark:text-gray-300'>
-            Teléfono
+            Tel�fono
           </label>
-          <p className='text-sm text-gray-900 dark:text-white'>{proyecto.telefono}</p>
+          <p className='text-sm text-gray-900 dark:text-white'>{(proyecto as any).telefono || '-'}</p>
         </div>
 
         <div>
           <label className='mb-1.5 block text-xs font-medium text-gray-700 dark:text-gray-300'>
             Email
           </label>
-          <p className='text-sm text-gray-900 dark:text-white'>{proyecto.email}</p>
+          <p className='text-sm text-gray-900 dark:text-white'>{(proyecto as any).email || '-'}</p>
         </div>
       </div>
     </div>

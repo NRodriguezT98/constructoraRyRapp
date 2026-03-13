@@ -1,22 +1,38 @@
 /**
- * FuentePagoCard - Componente Refactorizado V2
+ * Smart Card Adaptiva para Fuentes de Pago V6 - CAMPOS DINÁMICOS
  *
- * ✅ REUTILIZACIÓN DE COMPONENTES GENÉRICOS
- * - UI presentacional pura
- * - Lógica en useFuentePagoCard (simplificado)
- * - Upload delegado a DocumentoUploadCompact (genérico reutilizable)
- * - Estilos en fuente-pago-card.styles.ts
+ * ✨ ARQUITECTURA MODULAR:
+ * - Configuración de campos desde BD (sin hardcode)
+ * - CampoFormularioDinamico renderiza cualquier tipo
+ * - Escalable: agregar fuentes sin cambiar código
+ * - React Query para caché y tiempo real
+ *
+ * ✨ DISEÑO COMPACTO Y EFICIENTE:
+ * - Vista compacta por defecto (info esencial en una línea)
+ * - Expansión inteligente al click (todos los detalles)
+ * - Estados visuales claros (completo, pendiente)
+ * - Inputs reducidos (py-2) para mejor densidad
+ *
+ * 📋 SISTEMA DE DOCUMENTOS (MENSAJE CLARO):
+ * - Si requiere carta → Mensaje informativo
+ * - Usuario sabe que debe subir desde pestaña Documentos
+ * - Sistema crea pendiente automático
+ *
+ * @version 6.0 - Sistema de Campos Dinámicos
  */
 
 'use client'
 
-import { AlertCircle, Building2, DollarSign, Gift, Home } from 'lucide-react'
+import { AnimatePresence, motion } from 'framer-motion'
+import { AlertCircle, Building2, CheckCircle2, DollarSign, Gift, Home, X } from 'lucide-react'
+import { memo, useState } from 'react'
 
 import type { TipoFuentePago } from '@/modules/clientes/types'
-import { DocumentoUploadCompact } from '@/shared/components/documents'
+import { obtenerMonto } from '@/modules/clientes/utils/fuentes-pago-campos.utils'
+import type { CampoConfig } from '@/modules/configuracion/types/campos-dinamicos.types'
 import type { FuentePagoConfig, FuentePagoErrores } from '../asignar-vivienda/types'
 
-import { fuentePagoCardStyles as s } from './fuente-pago-card.styles'
+import { CampoFormularioDinamico } from './CampoFormularioDinamico'
 import { useFuentePagoCard } from './useFuentePagoCard'
 
 // ============================================
@@ -72,12 +88,24 @@ const TIPO_CONFIG: Record<TipoFuentePago, TipoConfigItem> = {
   },
 }
 
-const BANCOS = [
-  'Banco de Bogotá', 'Bancolombia', 'Banco Davivienda', 'BBVA Colombia',
-  'Banco de Occidente', 'Banco Popular', 'Banco Caja Social', 'Otro'
-]
+// 🔥 Configuración por defecto para fuentes dinámicas desconocidas
+const DEFAULT_TIPO_CONFIG: TipoConfigItem = {
+  icon: DollarSign,
+  color: 'text-cyan-600 dark:text-cyan-400',
+  bgColor: 'bg-cyan-50 dark:bg-cyan-900/20',
+  borderColor: 'border-cyan-300 dark:border-cyan-700',
+  descripcion: 'Fuente de pago personalizada',
+  requiereCarta: true,
+  requiereEntidad: false,
+  obligatorio: false,
+}
 
-const CAJAS = ['Comfenalco', 'Comfandi', 'Compensar', 'Comfama', 'Cafam', 'Otro']
+/**
+ * 🔥 Obtener configuración de tipo (con fallback para fuentes dinámicas)
+ */
+function getTipoConfig(tipo: TipoFuentePago): TipoConfigItem {
+  return TIPO_CONFIG[tipo] || DEFAULT_TIPO_CONFIG
+}
 
 const CATEGORIA_CARTAS_APROBACION_ID = '4898e798-c188-4f02-bfcf-b2b15be48e34'
 
@@ -116,9 +144,11 @@ function generarTituloDocumento(
 // PROPS
 // ============================================
 
-interface FuentePagoCardProps {
+export interface FuentePagoCardProps {
   tipo: TipoFuentePago
   config: FuentePagoConfig | null
+  /** ✨ Configuración dinámica de campos desde BD */
+  camposConfig: CampoConfig[]
   enabled?: boolean
   valorTotal: number
   errores?: FuentePagoErrores
@@ -128,219 +158,241 @@ interface FuentePagoCardProps {
   numeroVivienda?: string
   onEnabledChange?: (enabled: boolean) => void
   onChange: (config: FuentePagoConfig | null) => void
-  // ⭐ NUEVO: Sistema de documentos pendientes
-  tieneCartaAhora?: boolean
-  onTieneCartaAhoraChange?: (tiene: boolean) => void
 }
 
 // ============================================
-// COMPONENTE
+// COMPONENTE (SMART CARD ADAPTIVA)
 // ============================================
 
-export function FuentePagoCard(props: FuentePagoCardProps) {
+function FuentePagoCardComponent(props: FuentePagoCardProps) {
   const {
-    tipo, config, valorTotal, errores, clienteId, clienteNombre, manzana, numeroVivienda, onChange,
-    tieneCartaAhora = false,
-    onTieneCartaAhoraChange
+    tipo, config, camposConfig, valorTotal, errores, onChange,
+    enabled = false,
+    onEnabledChange
   } = props
 
-  console.log(`🎨 [FuentePagoCard ${tipo}] Render:`, {
-    enabled: props.enabled,
-    config,
-    clienteId,
-    manzana,
-    numeroVivienda,
-  })
+  // ✨ ESTADO DE EXPANSIÓN (se expande automáticamente al activar)
+  const [isExpanded, setIsExpanded] = useState(enabled)
 
-  // ✅ Hook con lógica simplificada (sin upload)
+  // ✅ Hook con lógica de campos dinámicos
   const hook = useFuentePagoCard({
     tipo,
     config,
-    obligatorio: TIPO_CONFIG[tipo].obligatorio,
+    camposConfig, // ← Pasar configuración de campos
+    obligatorio: getTipoConfig(tipo).obligatorio || false,
     enabledProp: props.enabled,
     onEnabledChange: props.onEnabledChange,
     onChange,
   })
 
-  console.log(`🎨 [FuentePagoCard ${tipo}] Hook enabled:`, hook.enabled)
-
-  const tipoConfig = TIPO_CONFIG[tipo]
+  const tipoConfig = getTipoConfig(tipo) // 🔥 Usar función con fallback
   const Icon = tipoConfig.icon
 
-  const porcentaje = config?.monto_aprobado && valorTotal > 0
-    ? ((config.monto_aprobado / valorTotal) * 100).toFixed(1)
+  // 🔥 Obtener monto usando campos dinámicos
+  const monto = obtenerMonto(config, camposConfig)
+
+  const porcentaje = monto > 0 && valorTotal > 0
+    ? ((monto / valorTotal) * 100).toFixed(1)
     : '0.0'
 
-  console.log(`🔴 [FuentePagoCard ${tipo}] ANTES DE RETURN:`, {
-    'hook.enabled': hook.enabled,
-    'tipoConfig.requiereCarta': tipoConfig.requiereCarta,
-    clienteId,
-    manzana,
-    numeroVivienda,
-    config,
-  })
+  // ✨ DETERMINAR ESTADO VISUAL (solo si está enabled y configurado)
+  const getEstadoVisual = () => {
+    if (!enabled || monto === 0) return null // No mostrar badge si no está activa o sin monto
+
+    // ✅ Solo validar CAMPOS (no documentos)
+    const tieneEntidad = !tipoConfig.requiereEntidad || (config?.entidad && config.entidad.trim() !== '')
+    const tieneReferencia = tipo === 'Cuota Inicial' || (config?.numero_referencia && config.numero_referencia.trim() !== '')
+
+    // ✅ Si todos los campos requeridos están llenos → Badge verde "Configurado"
+    if (tieneEntidad && tieneReferencia) {
+      return { icon: CheckCircle2, label: 'Configurado', color: 'text-green-600', bg: 'bg-green-100' }
+    }
+
+    // ❌ Si faltan campos → Sin badge (o podrías mostrar "Incompleto" si prefieres)
+    return null
+  }
+
+  const estadoVisual = getEstadoVisual()
 
   return (
-    <div className={hook.enabled ? s.container.enabled(tipoConfig.bgColor, tipoConfig.borderColor) : s.container.disabled}>
-      {/* Header */}
-      <div className={s.header.container}>
-        <div className="flex items-center gap-3">
-          <div className={hook.enabled ? s.header.iconWrapper.enabled(tipoConfig.bgColor) : s.header.iconWrapper.disabled}>
-            <Icon className={hook.enabled ? s.header.icon.enabled(tipoConfig.color) : s.header.icon.disabled} />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h4 className={s.header.title}>{tipo}</h4>
-              {tipoConfig.obligatorio && (
-                <span className={s.header.badgeObligatorio}>Obligatoria</span>
-              )}
-            </div>
-            <p className={s.header.description}>{tipoConfig.descripcion}</p>
-          </div>
-        </div>
-
-        {!tipoConfig.obligatorio && (
-          <label className="relative inline-flex cursor-pointer items-center">
-            <input
-              type="checkbox"
-              className="peer sr-only"
-              checked={hook.enabled}
-              onChange={(e) => hook.handleEnabledChange(e.target.checked)}
-            />
-            <div className={s.toggle.track} />
-          </label>
-        )}
-      </div>
-
-      {/* Body */}
-      {hook.enabled && (
-        <div className={s.body.container}>
-          {/* Monto */}
-          <div>
-            <label className={s.input.label}>
-              <DollarSign className="h-4 w-4" />
-              Monto Aprobado <span className={s.input.labelRequired}>*</span>
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className={`rounded-xl border transition-all duration-200 ${
+        enabled
+          ? 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:shadow-md'
+          : 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50'
+      }`}
+    >
+      {/* 🎯 VISTA COMPACTA (SIEMPRE VISIBLE) */}
+      <div
+        className="flex items-center justify-between p-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+        onClick={() => enabled && setIsExpanded(!isExpanded)}
+      >
+        {/* Left: Icono + Info Principal */}
+        <div className="flex items-center gap-3 flex-1">
+          {/* Toggle Enabled */}
+          {!tipoConfig.obligatorio && (
+            <label
+              className="relative inline-flex cursor-pointer items-center"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <input
+                type="checkbox"
+                className="peer sr-only"
+                checked={enabled}
+                onChange={(e) => {
+                  const isChecked = e.target.checked
+                  onEnabledChange?.(isChecked)
+                  // 🔥 Si activa, expandir automáticamente
+                  setIsExpanded(isChecked)
+                }}
+              />
+              <div className="peer h-5 w-9 rounded-full bg-gray-300 after:absolute after:left-[2px] after:top-[2px] after:h-4 after:w-4 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-blue-600 peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 dark:border-gray-600 dark:bg-gray-700"></div>
             </label>
-            <input
-              type="text"
-              value={config?.monto_aprobado?.toLocaleString('es-CO') || ''}
-              onChange={(e) => hook.handleMontoChange(e.target.value)}
-              className={s.input.field}
-              placeholder="Ej: 50.000.000"
-            />
-            {errores?.monto_aprobado && (
-              <p className={s.input.error}>
-                <AlertCircle className="h-3 w-3" />
-                {errores.monto_aprobado}
+          )}
+
+          {/* Icono de tipo */}
+          <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${enabled ? tipoConfig.bgColor : 'bg-gray-200 dark:bg-gray-700'}`}>
+            <Icon className={`h-4 w-4 ${enabled ? tipoConfig.color : 'text-gray-500'}`} />
+          </div>
+
+          {/* Info principal */}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2">
+              <h4 className="font-semibold text-gray-900 dark:text-white text-sm truncate">
+                {tipo}
+                {config?.entidad && (
+                  <span className="text-xs text-gray-500 font-normal ml-1">
+                    - {config.entidad}
+                  </span>
+                )}
+              </h4>
+            </div>
+
+            {enabled && monto > 0 && (
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                ${monto.toLocaleString('es-CO')} ({porcentaje}%)
               </p>
             )}
-            <p className={s.info.text}>
-              Representa el {porcentaje}% del valor total
-            </p>
+            {!enabled && (
+              <p className="text-xs text-gray-500">Clic en el toggle para activar</p>
+            )}
           </div>
+        </div>
 
-          {/* Entidad (Banco o Caja) - Solo para Crédito Hipotecario y Subsidio Caja */}
-          {tipoConfig.requiereEntidad && (
-            <div>
-              <label className={s.input.label}>
-                <Building2 className="h-4 w-4" />
-                {tipo === 'Crédito Hipotecario' ? 'Banco' : 'Caja de Compensación'} <span className={s.input.labelRequired}>*</span>
-              </label>
-              <select
-                value={config?.entidad || ''}
-                onChange={(e) => hook.handleEntidadChange(e.target.value)}
-                className={s.select.field}
-              >
-                <option value="">Seleccionar...</option>
-                {(tipo === 'Crédito Hipotecario' ? BANCOS : CAJAS).map(opt => (
-                  <option key={opt} value={opt}>{opt}</option>
-                ))}
-              </select>
-              {errores?.entidad && (
-                <p className={s.input.error}>
-                  <AlertCircle className="h-3 w-3" />
-                  {errores.entidad}
-                </p>
-              )}
-            </div>
-          )}
-
-          {/* Sistema de Documentos Pendientes */}
-          {tipoConfig.requiereCarta && (
-            <div className="md:col-span-2 space-y-3">
-              {/* Checkbox: ¿Tienes la carta ahora? */}
-              <label className="flex items-center gap-3 p-3 rounded-lg border-2 border-cyan-200 dark:border-cyan-800 bg-cyan-50/50 dark:bg-cyan-950/30 cursor-pointer hover:bg-cyan-100/50 dark:hover:bg-cyan-950/50 transition-all">
-                <input
-                  type="checkbox"
-                  checked={tieneCartaAhora}
-                  onChange={(e) => onTieneCartaAhoraChange?.(e.target.checked)}
-                  className="w-4 h-4 text-cyan-600 bg-gray-100 border-gray-300 rounded focus:ring-cyan-500 dark:focus:ring-cyan-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
-                />
-                <div className="flex-1">
-                  <p className="text-sm font-semibold text-cyan-900 dark:text-cyan-100">
-                    ¿Tienes la carta de aprobación ahora?
-                  </p>
-                  <p className="text-xs text-cyan-700 dark:text-cyan-300 mt-0.5">
-                    Si no la tienes, se creará un recordatorio para subirla después
-                  </p>
-                </div>
-              </label>
-
-              {/* Upload solo si tiene la carta ahora */}
-              {tieneCartaAhora && (
-                <div>
-                  <label className={s.input.label}>
-                    Carta de Aprobación
-                    {tipoConfig.obligatorio && <span className={s.input.labelRequired}> * (Obligatorio)</span>}
-                  </label>
-
-                  <DocumentoUploadCompact
-                entidadId={clienteId}
-                tipoEntidad="cliente"
-                categoriaId={CATEGORIA_CARTAS_APROBACION_ID}
-                titulo={generarTituloDocumento(tipo, manzana, numeroVivienda, clienteNombre)}
-                descripcion={`Carta de aprobación de ${tipo}${config?.entidad ? ` - ${config.entidad}` : ''}`}
-                metadata={{
-                  tipo_fuente: tipo,
-                  entidad: config?.entidad,
-                  vivienda: `${manzana}${numeroVivienda}`,
-                  subido_desde: 'asignacion_vivienda',
-                }}
-                validaciones={[
-                  {
-                    campo: 'vivienda',
-                    valor: manzana && numeroVivienda,
-                    mensaje: 'Selecciona una vivienda primero',
-                  },
-                  // Solo validar entidad si el tipo la requiere
-                  ...(tipoConfig.requiereEntidad ? [{
-                    campo: 'entidad',
-                    valor: config?.entidad,
-                    mensaje: `Selecciona el ${tipo === 'Crédito Hipotecario' ? 'banco' : 'caja de compensación'} primero`,
-                  }] : []),
-                ]}
-                existingUrl={config?.carta_aprobacion_url}
-                onUploadSuccess={(url) => {
-                  if (config) {
-                    onChange({
-                      ...config,
-                      carta_aprobacion_url: url,
-                    })
-                  }
-                }}
-                onUploadError={(error) => {
-                  console.error('Error subiendo documento:', error)
-                }}
-                onRemove={hook.handleRemoveDocument}
-                maxSizeMB={10}
-                allowedTypes={['application/pdf', 'image/jpeg', 'image/jpg', 'image/png']}
-              />
-                </div>
-              )}
+        {/* Right: Solo badge de estado */}
+        <div className="flex items-center gap-2">
+          {/* Badge de estado (solo si está enabled y tiene config) */}
+          {estadoVisual && (
+            <div className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${estadoVisual.bg} ${estadoVisual.color}`}>
+              <estadoVisual.icon className="h-3 w-3" />
+              <span className="hidden sm:inline">{estadoVisual.label}</span>
             </div>
           )}
         </div>
-      )}
-    </div>
+      </div>
+
+      {/* 🎯 VISTA EXPANDIDA (CON ANIMACIÓN) */}
+      <AnimatePresence>
+        {enabled && isExpanded && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3, ease: 'easeInOut' }}
+            className="overflow-hidden border-t border-gray-200 dark:border-gray-700"
+          >
+            <div className="p-3 space-y-3 bg-gray-50/50 dark:bg-gray-700/20">
+              {/* ============================================ */}
+              {/* CAMPOS DINÁMICOS DESDE BD */}
+              {/* ============================================ */}
+
+              {camposConfig
+                .sort((a, b) => a.orden - b.orden) // ← Ordenar por propiedad "orden"
+                .map((campoConfig) => (
+                  <CampoFormularioDinamico
+                    key={campoConfig.nombre}
+                    config={campoConfig}
+                    value={hook.valores[campoConfig.nombre] || null}
+                    onChange={(valor) => hook.handleCampoChange(campoConfig.nombre, valor)}
+                    error={hook.errores[campoConfig.nombre]}
+                  />
+                ))}
+
+              {/* Mensaje de porcentaje (solo para monto_aprobado) */}
+              {config?.monto_aprobado && valorTotal > 0 && (
+                <div className="px-3 py-2 rounded-lg bg-gradient-to-r from-cyan-50 to-blue-50 dark:from-cyan-950/30 dark:to-blue-950/30 border border-cyan-200 dark:border-cyan-800">
+                  <p className="text-xs text-cyan-800 dark:text-cyan-200 font-medium">
+                    💰 Representa el <span className="font-bold">{porcentaje}%</span> del valor total (${valorTotal.toLocaleString('es-CO')})
+                  </p>
+                </div>
+              )}
+
+              {/* Mensaje informativo para documentación */}
+              {tipoConfig.requiereCarta && (
+                <div>
+                  {/* Mensaje específico según tipo de fuente */}
+                  <div className="p-3 rounded-lg border border-blue-200 dark:border-blue-800 bg-blue-50/80 dark:bg-blue-950/30">
+                    <div className="flex items-start gap-2">
+                      <AlertCircle className="h-4 w-4 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
+                      <div className="flex-1">
+                        <p className="text-sm font-semibold text-blue-900 dark:text-blue-100">
+                          {tipo === 'Crédito Hipotecario' && '📄 Carta de Aprobación del Banco'}
+                          {tipo === 'Subsidio Mi Casa Ya' && '📄 Carta de Asignación del Subsidio'}
+                          {tipo === 'Subsidio Caja Compensación' && '📄 Carta de Asignación de la Caja'}
+                          {!['Crédito Hipotecario', 'Subsidio Mi Casa Ya', 'Subsidio Caja Compensación'].includes(tipo) && '📄 Documentación Requerida'}
+                        </p>
+                        <p className="text-xs text-blue-700 dark:text-blue-300 mt-1">
+                          Una vez asignada la vivienda, ve a la pestaña <span className="font-semibold">"Documentos"</span> del cliente para subir {tipo === 'Crédito Hipotecario' ? 'la carta de aprobación del banco' : tipo === 'Subsidio Mi Casa Ya' ? 'la carta de asignación del subsidio' : tipo === 'Subsidio Caja Compensación' ? 'la carta de asignación de la caja de compensación' : 'la documentación requerida'}.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Mostrar estado de documento si ya existe */}
+                  {config?.carta_aprobacion_url && (
+                    <div className="mt-2 flex items-center justify-between p-2.5 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 className="h-4 w-4 text-green-600" />
+                        <span className="text-sm font-medium text-green-800 dark:text-green-200">
+                          {tipo === 'Crédito Hipotecario' && 'Carta del banco registrada'}
+                          {tipo === 'Subsidio Mi Casa Ya' && 'Carta del subsidio registrada'}
+                          {tipo === 'Subsidio Caja Compensación' && 'Carta de la caja registrada'}
+                          {!['Crédito Hipotecario', 'Subsidio Mi Casa Ya', 'Subsidio Caja Compensación'].includes(tipo) && 'Documento registrado'}
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={hook.handleRemoveDocument}
+                        className="p-1.5 text-red-600 hover:text-red-800 transition-colors rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30"
+                        title="Desvincular documento"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
   )
 }
+
+// ✅ Exportar con React.memo para optimización de rendimiento
+// Solo re-renderiza si las props relevantes cambian
+export const FuentePagoCard = memo(FuentePagoCardComponent, (prevProps, nextProps) => {
+  // Comparación personalizada: solo re-renderizar si estas props cambian
+  return (
+    prevProps.tipo === nextProps.tipo &&
+    prevProps.enabled === nextProps.enabled &&
+    prevProps.valorTotal === nextProps.valorTotal &&
+    JSON.stringify(prevProps.config) === JSON.stringify(nextProps.config) &&
+    JSON.stringify(prevProps.errores) === JSON.stringify(nextProps.errores) &&
+    JSON.stringify(prevProps.camposConfig) === JSON.stringify(nextProps.camposConfig) // ← Comparar configuración de campos
+  )
+})

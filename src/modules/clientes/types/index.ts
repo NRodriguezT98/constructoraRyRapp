@@ -25,6 +25,7 @@ export type EstadoCliente =
   | 'En Proceso de Renuncia' // ⭐ NUEVO (2025-10-22)
   | 'Inactivo'
   | 'Propietario' // ⭐ NUEVO (2025-10-22)
+  | 'Renunció' // Legacy state (clients who completed renunciation process)
 
 export type EstadoInteres = 'Activo' | 'Descartado' | 'Convertido'
 
@@ -62,7 +63,7 @@ export type TipoFuentePago =
   | 'Subsidio Mi Casa Ya'
   | 'Subsidio Caja Compensación'
 
-export type EstadoFuentePago = 'Pendiente' | 'En Proceso' | 'Completada'
+export type EstadoFuentePago = 'Activa' | 'Inactiva'
 
 export type EstadoProceso = 'Pendiente' | 'En Proceso' | 'Completado' | 'Omitido'
 
@@ -497,10 +498,13 @@ export interface CrearNegociacionDTO {
   vivienda_id: string
   valor_negociado: number
   descuento_aplicado?: number
+  tipo_descuento?: string
+  motivo_descuento?: string
+  valor_escritura_publica?: number
   notas?: string
 
-  // Fuentes de pago (se crean junto con la negociación)
-  fuentes_pago: CrearFuentePagoDTO[]
+  // Fuentes de pago (se crean junto con la negociación) - OPCIONAL para retrocompatibilidad
+  fuentes_pago?: CrearFuentePagoDTO[]
 
   // Documentos iniciales
   promesa_compraventa_url?: string
@@ -601,9 +605,10 @@ export const ESTADOS_CIVILES: Record<EstadoCivil, string> = {
 export const ESTADOS_CLIENTE: Record<EstadoCliente, string> = {
   Interesado: 'Interesado',
   Activo: 'Activo',
-  'En Proceso de Renuncia': 'En Proceso de Renuncia', // ⭐ NUEVO
+  'En Proceso de Renuncia': 'En Proceso de Renuncia',
+  'Renunció': 'Renunció', // ⭐ NUEVO (2025-12-11)
   Inactivo: 'Inactivo',
-  Propietario: 'Propietario', // ⭐ NUEVO
+  Propietario: 'Propietario',
 }
 
 export const ESTADOS_INTERES: Record<EstadoInteres, string> = {

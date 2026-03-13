@@ -254,7 +254,7 @@ export function useProyectosFiltrados() {
           proyecto.nombre.toLowerCase().includes(termino) ||
           proyecto.ubicacion.toLowerCase().includes(termino) ||
           proyecto.descripcion.toLowerCase().includes(termino) ||
-          proyecto.responsable.toLowerCase().includes(termino)
+          (proyecto as any).responsable?.toLowerCase().includes(termino)
       )
     }
 
@@ -278,13 +278,13 @@ export function useProyectosFiltrados() {
     // Filtro por fechas
     if (filtros.fechaDesde) {
       resultado = resultado.filter(
-        proyecto => new Date(proyecto.fechaInicio) >= new Date(filtros.fechaDesde!)
+        proyecto => new Date(proyecto.fechaInicio ?? '') >= new Date(filtros.fechaDesde!)
       )
     }
 
     if (filtros.fechaHasta) {
       resultado = resultado.filter(
-        proyecto => new Date(proyecto.fechaInicio) <= new Date(filtros.fechaHasta!)
+        proyecto => new Date(proyecto.fechaInicio ?? '') <= new Date(filtros.fechaHasta!)
       )
     }
 

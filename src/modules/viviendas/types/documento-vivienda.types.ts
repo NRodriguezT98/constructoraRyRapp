@@ -2,6 +2,17 @@
 // TYPES: Documentos de Vivienda - Sistema Flexible
 // ============================================
 
+import {
+    File,
+    FileArchive,
+    FileCode,
+    FileImage,
+    FileSpreadsheet,
+    FileText,
+    FileVideo,
+    type LucideIcon,
+} from 'lucide-react'
+
 export type EstadoDocumento = 'activo' | 'archivado' | 'eliminado'
 export type EstadoVersion = 'valida' | 'erronea' | 'obsoleta'
 
@@ -205,22 +216,11 @@ export function getFileExtension(filename: string): string {
 
 // Helper para validar tipo de archivo
 export function isValidFileType(type: string): boolean {
-  return MIME_TYPES_PERMITIDOS.includes(type as any)
+  return MIME_TYPES_PERMITIDOS.includes(type as (typeof MIME_TYPES_PERMITIDOS)[number])
 }
 
 // Helper para obtener ícono según tipo MIME
-export function getFileIcon(mimeType: string): any {
-  // Importamos desde lucide-react
-  const {
-    FileText,
-    File,
-    FileImage,
-    FileVideo,
-    FileArchive,
-    FileSpreadsheet,
-    FileCode,
-  } = require('lucide-react')
-
+export function getFileIcon(mimeType: string): LucideIcon {
   if (mimeType.includes('pdf')) return FileText
   if (mimeType.startsWith('image/')) return FileImage
   if (mimeType.startsWith('video/')) return FileVideo

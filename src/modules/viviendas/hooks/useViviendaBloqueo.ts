@@ -1,10 +1,10 @@
 /**
- * 🔐 Hook: Estado de Bloqueo de Vivienda
+ * ?? Hook: Estado de Bloqueo de Vivienda
  *
  * Responsabilidad:
- * - Cargar estado de bloqueo de edición de una vivienda
+ * - Cargar estado de bloqueo de edici�n de una vivienda
  * - Determinar campos editables/restringidos/bloqueados
- * - Validar permisos por campo específico
+ * - Validar permisos por campo espec�fico
  * - Refrescar estado cuando cambian negociaciones
  *
  * Uso:
@@ -15,7 +15,7 @@
 
 'use client'
 
-import { useAuth } from '@/contexts/AuthContext'
+import { useAuth } from '@/contexts/auth-context'
 import { useCallback, useEffect, useState } from 'react'
 import {
     ViviendaValidacionService,
@@ -65,7 +65,7 @@ export function useViviendaBloqueo(viviendaId: string | null): UseViviendaBloque
     } catch (err) {
       const mensaje = err instanceof Error ? err.message : 'Error al cargar estado de bloqueo'
       setError(mensaje)
-      console.error('❌ Error en useViviendaBloqueo:', err)
+      console.error('? Error en useViviendaBloqueo:', err)
     } finally {
       setCargando(false)
     }
@@ -76,7 +76,7 @@ export function useViviendaBloqueo(viviendaId: string | null): UseViviendaBloque
     cargarEstadoBloqueo()
   }, [cargarEstadoBloqueo])
 
-  // Validar campo específico
+  // Validar campo espec�fico
   const validarCampo = useCallback(
     async (campo: CampoVivienda): Promise<ValidacionCampo> => {
       if (!viviendaId) {
@@ -84,7 +84,7 @@ export function useViviendaBloqueo(viviendaId: string | null): UseViviendaBloque
           puedeEditar: false,
           requiereAdmin: false,
           requiereMotivo: false,
-          razon: 'ID de vivienda no válido',
+          razon: 'ID de vivienda no v�lido',
         }
       }
 
@@ -98,22 +98,22 @@ export function useViviendaBloqueo(viviendaId: string | null): UseViviendaBloque
     (campo: CampoVivienda): boolean => {
       if (!estadoBloqueo) return false
 
-      // Si está bloqueada completamente, solo campos editables permitidos
+      // Si est� bloqueada completamente, solo campos editables permitidos
       if (estadoBloqueo.bloqueadaCompletamente) {
         return estadoBloqueo.camposEditables.includes(campo)
       }
 
-      // Si el campo está bloqueado, no permitir
+      // Si el campo est� bloqueado, no permitir
       if (estadoBloqueo.camposBloqueados.includes(campo)) {
         return false
       }
 
-      // Si el campo está restringido, solo admin
+      // Si el campo est� restringido, solo admin
       if (estadoBloqueo.camposRestringidos.includes(campo)) {
         return esAdmin
       }
 
-      // Si está en editables, permitir
+      // Si est� en editables, permitir
       return estadoBloqueo.camposEditables.includes(campo)
     },
     [estadoBloqueo, esAdmin]

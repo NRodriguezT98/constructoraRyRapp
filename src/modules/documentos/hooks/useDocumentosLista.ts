@@ -17,7 +17,6 @@ import { useCallback, useMemo, useState } from 'react'
 
 import { supabase } from '@/lib/supabase/client'
 import { useAuth } from '../../../contexts/auth-context'
-import { useModal } from '../../../shared/components/modals'
 import { DocumentosService } from '../services'
 import { useDocumentosStore } from '../store/documentos.store'
 import { DocumentoProyecto, obtenerConfiguracionEntidad, type TipoEntidad } from '../types'
@@ -27,6 +26,7 @@ import {
     useCategoriasQuery,
     useDocumentosQuery,
     useEliminarDocumentoMutation,
+    useRestaurarDocumentoMutation,
     useToggleImportanteMutation,
 } from './useDocumentosQuery'
 
@@ -47,9 +47,13 @@ export function useDocumentosLista({
     useState<DocumentoProyecto | null>(null)
   const [modalViewerAbierto, setModalViewerAbierto] = useState(false)
   const [urlPreview, setUrlPreview] = useState<string | undefined>(undefined)
+  const [modalArchivarAbierto, setModalArchivarAbierto] = useState(false)
+  const [documentoParaArchivar, setDocumentoParaArchivar] = useState<DocumentoProyecto | null>(null)
+  const [modalRestaurarAbierto, setModalRestaurarAbierto] = useState(false)
+  const [documentoParaRestaurar, setDocumentoParaRestaurar] = useState<DocumentoProyecto | null>(null)
+  const [procesandoRestaurar, setProcesandoRestaurar] = useState(false)
 
   const { user } = useAuth()
-  const { confirm } = useModal()
 
   // ✅ Convertir tipoEntidad a moduleName para categorías
   const modulosCategorias: Record<TipoEntidad, 'proyectos' | 'clientes' | 'viviendas'> = {
@@ -68,6 +72,7 @@ export function useDocumentosLista({
   const eliminarMutation = useEliminarDocumentoMutation(entidadId, tipoEntidad)
   const toggleImportanteMutation = useToggleImportanteMutation(entidadId, tipoEntidad)
   const archivarMutation = useArchivarDocumentoMutation(entidadId, tipoEntidad)
+  const restaurarMutation = useRestaurarDocumentoMutation(entidadId, tipoEntidad)
 
   // ✅ ZUSTAND: Solo estado UI (filtros, búsqueda)
   const {
@@ -161,7 +166,6 @@ export function useDocumentosLista({
             console.error('❌ Error al crear URL firmada:', error)
             setUrlPreview(undefined)
           } else if (data?.signedUrl) {
-            console.log('✅ Signed URL generada correctamente')
             setUrlPreview(data.signedUrl)
           }
         } catch (error) {
@@ -186,13 +190,14 @@ export function useDocumentosLista({
   const handleDownload = useCallback(async (documento: DocumentoProyecto) => {
     try {
       const url = await DocumentosService.obtenerUrlDescarga(
-        documento.url_storage
+        documento.url_storage,
+        tipoEntidad // ✅ Pasar tipoEntidad para usar el bucket correcto
       )
       window.open(url, '_blank')
     } catch (error) {
       console.error('Error al descargar documento:', error)
     }
-  }, [])
+  }, [tipoEntidad])
 
   const handleToggleImportante = useCallback(
     async (documento: DocumentoProyecto) => {
@@ -207,25 +212,52 @@ export function useDocumentosLista({
 
   const handleArchive = useCallback(
     async (documento: DocumentoProyecto) => {
-      // Contar versiones para mensaje informativo
-      const { total } = await DocumentosService.contarVersionesActivas(documento.id, tipoEntidad)
+      // ✅ Si el documento ya está archivado → Abrir modal de confirmación
+      if (documento.estado === 'archivado') {
+        setDocumentoParaRestaurar(documento)
+        setModalRestaurarAbierto(true)
+        return
+      }
 
-      const mensaje = total > 1
-        ? `¿Estás seguro de que deseas archivar "${documento.titulo}"?\n\n⚠️ Se archivarán TODAS las ${total} versiones de este documento.\n\n✅ Podrás restaurarlo completo desde la pestaña "Archivados".`
-        : `¿Estás seguro de que deseas archivar "${documento.titulo}"?\n\n✅ Podrás restaurarlo desde la pestaña "Archivados".`
+      // ❌ Si está activo → Abrir modal para archivar con motivo
+      setDocumentoParaArchivar(documento)
+      setModalArchivarAbierto(true)
+    },
+    []
+  )
 
-      const confirmed = await confirm({
-        title: 'Archivar documento completo',
-        message: mensaje,
-        confirmText: 'Archivar',
-        variant: 'warning'
+  const confirmarArchivado = useCallback(
+    async (motivoCategoria: string, motivoDetalle: string) => { // ✅ motivoDetalle obligatorio
+      if (!documentoParaArchivar) return
+
+      await archivarMutation.mutateAsync({
+        documentoId: documentoParaArchivar.id,
+        motivoCategoria,
+        motivoDetalle,
       })
 
-      if (confirmed) {
-        await archivarMutation.mutateAsync(documento.id)
+      setModalArchivarAbierto(false)
+      setDocumentoParaArchivar(null)
+    },
+    [archivarMutation, documentoParaArchivar]
+  )
+
+  const confirmarRestauracion = useCallback(
+    async () => {
+      if (!documentoParaRestaurar) return
+
+      setProcesandoRestaurar(true)
+      try {
+        await restaurarMutation.mutateAsync(documentoParaRestaurar.id)
+        setModalRestaurarAbierto(false)
+        setDocumentoParaRestaurar(null)
+      } catch (error) {
+        console.error('Error al restaurar documento:', error)
+      } finally {
+        setProcesandoRestaurar(false)
       }
     },
-    [archivarMutation, confirm]
+    [restaurarMutation, documentoParaRestaurar]
   )
 
   const handleDelete = useCallback(
@@ -235,7 +267,7 @@ export function useDocumentosLista({
         const esAdmin = user?.role === 'Administrador'
 
         // 2. Contar versiones activas del documento
-        const { total, versiones } = await DocumentosService.contarVersionesActivas(documento.id, tipoEntidad)
+        const { total, versiones = [] } = await DocumentosService.contarVersionesActivas(documento.id, tipoEntidad) as any
 
         // 3. Construir mensaje según cantidad de versiones y rol
         let title = '¿Eliminar documento?'
@@ -246,7 +278,7 @@ export function useDocumentosLista({
           title = `⚠️ Eliminar documento con ${total} versiones`
           message = `Se eliminarán TODAS las versiones de "${documento.titulo}":\n\n`
 
-          versiones.forEach((v) => {
+          versiones.forEach((v: any) => {
             message += `• v${v.version}: ${v.titulo}\n`
           })
 
@@ -270,7 +302,7 @@ export function useDocumentosLista({
           confirmText: total > 1 ? `Eliminar ${total} versiones` : 'Eliminar',
           cancelText: 'Cancelar',
           variant: 'danger'
-        })
+        } as any)
 
         if (confirmed) {
           await eliminarMutation.mutateAsync(documento.id)
@@ -299,6 +331,13 @@ export function useDocumentosLista({
     documentoSeleccionado,
     modalViewerAbierto,
     urlPreview,
+    modalArchivarAbierto,
+    setModalArchivarAbierto, // ✅ Exponer setter
+    documentoParaArchivar,
+    modalRestaurarAbierto,
+    setModalRestaurarAbierto,
+    documentoParaRestaurar,
+    procesandoRestaurar,
 
     // Datos
     documentosFiltrados,
@@ -313,6 +352,8 @@ export function useDocumentosLista({
     handleDownload,
     handleToggleImportante,
     handleArchive,
+    confirmarArchivado,
+    confirmarRestauracion,
     handleDelete,
     getCategoriaByDocumento,
 
