@@ -21,7 +21,6 @@ import {
     CheckCircle2,
     CreditCard,
     DollarSign,
-    FileText,
     Home,
     Info,
     Loader2,
@@ -29,7 +28,6 @@ import {
     Save,
     Shield,
     Trash2,
-    Upload,
     Wallet
 } from 'lucide-react'
 
@@ -113,7 +111,6 @@ export function ConfigurarFuentesPago({
     fuentesPago,
     cargando,
     guardando,
-    subiendoArchivo,
     error,
     totales,
     cierreCompleto,
@@ -121,7 +118,6 @@ export function ConfigurarFuentesPago({
     agregarFuente,
     actualizarFuente,
     eliminarFuente,
-    subirCartaAprobacion,
     guardarFuentes,
   } = useConfigurarFuentesPago({ negociacionId, valorTotal, onFuentesActualizadas })
 
@@ -395,82 +391,6 @@ export function ConfigurarFuentesPago({
                         </div>
                       )}
 
-                      {/* Carta de Aprobación (REQUERIDA para Crédito Hipotecario y Subsidio Caja) */}
-                      {(fuente.tipo === 'Crédito Hipotecario' || fuente.tipo === 'Subsidio Caja Compensación') && fuente.id && (
-                        <div>
-                          <label className="mb-2 flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                            <FileText className="h-4 w-4 text-purple-500" />
-                            Carta de Aprobación <span className="text-red-500">*</span>
-                          </label>
-                          {fuente.carta_aprobacion_url ? (
-                            <div className="flex items-center gap-2 rounded-lg border-2 border-green-200 bg-green-50 p-3 dark:border-green-700 dark:bg-green-900/20">
-                              <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400" />
-                              <div className="flex-1">
-                                <p className="text-sm font-medium text-green-900 dark:text-green-100">
-                                  Documento cargado
-                                </p>
-                                <a
-                                  href={fuente.carta_aprobacion_url}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-xs text-green-600 hover:underline dark:text-green-400"
-                                >
-                                  Ver documento
-                                </a>
-                              </div>
-                              <label className="cursor-pointer rounded-lg bg-green-600 px-3 py-1 text-xs text-white hover:bg-green-700">
-                                <Upload className="inline h-3 w-3 mr-1" />
-                                Cambiar
-                                <input
-                                  type="file"
-                                  accept=".pdf,.jpg,.jpeg,.png"
-                                  className="hidden"
-                                  disabled={subiendoArchivo === fuente.id}
-                                  onChange={(e) => {
-                                    const file = e.target.files?.[0]
-                                    if (file && fuente.id) {
-                                      subirCartaAprobacion(fuente.id, file, 'aprobacion')
-                                    }
-                                  }}
-                                />
-                              </label>
-                            </div>
-                          ) : (
-                            <label className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border-2 border-dashed border-purple-300 bg-purple-50 p-4 transition-colors hover:border-purple-500 hover:bg-purple-100 dark:border-purple-700 dark:bg-purple-900/20 dark:hover:bg-purple-900/40">
-                              {subiendoArchivo === fuente.id ? (
-                                <>
-                                  <Loader2 className="h-5 w-5 animate-spin text-purple-600" />
-                                  <span className="text-sm font-medium text-purple-600 dark:text-purple-400">
-                                    Subiendo...
-                                  </span>
-                                </>
-                              ) : (
-                                <>
-                                  <Upload className="h-5 w-5 text-purple-600 dark:text-purple-400" />
-                                  <span className="text-sm font-medium text-purple-600 dark:text-purple-400">
-                                    Subir carta de aprobación (PDF, JPG, PNG)
-                                  </span>
-                                  <input
-                                    type="file"
-                                    accept=".pdf,.jpg,.jpeg,.png"
-                                    className="hidden"
-                                    disabled={subiendoArchivo === fuente.id}
-                                    onChange={(e) => {
-                                      const file = e.target.files?.[0]
-                                      if (file && fuente.id) {
-                                        subirCartaAprobacion(fuente.id, file, 'aprobacion')
-                                      }
-                                    }}
-                                  />
-                                </>
-                              )}
-                            </label>
-                          )}
-                          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                            Documento obligatorio antes de activar la negociación
-                          </p>
-                        </div>
-                      )}
                     </div>
                   </motion.div>
                 )

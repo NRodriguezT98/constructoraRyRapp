@@ -14,6 +14,7 @@
  * ⚠️ Integrado con Supabase y tablas: negociaciones, viviendas, manzanas, proyectos, abonos_historial, fuentes_pago
  */
 
+import { errorLog, warnLog } from '@/lib/utils/logger'
 import { useEffect, useState } from 'react'
 
 export interface FuentePagoCard {
@@ -22,7 +23,6 @@ export interface FuentePagoCard {
   monto_aprobado: number
   monto_recibido: number
   porcentaje_completado: number
-  carta_aprobacion_url: string | null
   entidad: string | null
 }
 
@@ -107,13 +107,13 @@ export function useClienteCardActivo({ clienteId }: UseClienteCardActivoProps) {
         .maybeSingle() // ✅ Permite 0 o 1 resultado sin error
 
       if (error) {
-        console.error('❌ Error consultando negociación activa:', error)
+        errorLog('❌ Error consultando negociación activa:', error)
         setDatosVivienda(null)
         return
       }
 
       if (!negociacion) {
-        console.warn('⚠️ Cliente activo sin negociación encontrada')
+        warnLog('⚠️ Cliente activo sin negociación encontrada')
         setDatosVivienda(null)
         return
       }
@@ -132,7 +132,7 @@ export function useClienteCardActivo({ clienteId }: UseClienteCardActivoProps) {
       // Obtener fuentes de pago de la negociación
       const { data: fuentes, error: errorFuentes } = await supabase
         .from('fuentes_pago')
-        .select('id, tipo, monto_aprobado, monto_recibido, porcentaje_completado, carta_aprobacion_url, entidad')
+        .select('id, tipo, monto_aprobado, monto_recibido, porcentaje_completado, entidad')
         .eq('negociacion_id', negociacion.id)
         .order('fecha_creacion', { ascending: true })
 

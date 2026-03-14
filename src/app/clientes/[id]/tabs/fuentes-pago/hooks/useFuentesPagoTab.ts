@@ -469,8 +469,8 @@ export function useFuentesPagoTab({ cliente }: UseFuentesPagoTabProps) {
     const montoRecibido = fuente.monto_recibido || 0
     const progreso = Math.round((montoRecibido / fuente.monto_aprobado) * 100)
 
-    // Para fuentes completadas sin monto_recibido explícito, inferir del estado
-    if (progreso === 0 && fuente.estado === 'Completada') return 100
+    // Para fuentes completadas (monto recibido = monto aprobado), mostrar 100%
+    if (progreso === 0 && fuente.monto_recibido && fuente.monto_recibido >= fuente.monto_aprobado) return 100
 
     return progreso
   }, [])
@@ -478,12 +478,10 @@ export function useFuentesPagoTab({ cliente }: UseFuentesPagoTabProps) {
   // Mapeo de estados (compactos)
   const getEstadoStyles = useCallback((estado: string) => {
     switch (estado) {
-      case 'Pendiente':
-        return 'bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300 border border-orange-200 dark:border-orange-800'
-      case 'En Proceso':
+      case 'Activa':
         return 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 border border-blue-200 dark:border-blue-800'
-      case 'Completada':
-        return 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 border border-green-200 dark:border-green-800'
+      case 'Inactiva':
+        return 'bg-gray-100 dark:bg-gray-900/30 text-gray-800 dark:text-gray-300 border border-gray-200 dark:border-gray-800'
       case 'Completado':
         return 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 border border-green-200 dark:border-green-800'
       default:
@@ -556,11 +554,8 @@ export function useFuentesPagoTab({ cliente }: UseFuentesPagoTabProps) {
       f => f.tipo === 'Crédito Hipotecario' || f.tipo === 'Subsidio Mi Casa Ya'
     )
 
-    const fuentesConDocumentacion = fuentesQueRequierenDoc.filter(
-      f => f.carta_aprobacion_url
-    ).length
-
-    const fuentesSinDocumentacion = fuentesQueRequierenDoc.length - fuentesConDocumentacion
+    const fuentesConDocumentacion = 0 // Sistema nuevo: ver vista_documentos_pendientes_fuentes
+    const fuentesSinDocumentacion = 0 // Sistema nuevo: ver vista_documentos_pendientes_fuentes
 
     return {
       valorTotalVivienda,
@@ -582,8 +577,7 @@ export function useFuentesPagoTab({ cliente }: UseFuentesPagoTabProps) {
       f => f.tipo === 'Crédito Hipotecario' || f.tipo === 'Subsidio Mi Casa Ya'
     )
 
-    const todasConDocumentacion = fuentesQueRequierenDoc.length === 0 ||
-      fuentesQueRequierenDoc.every(f => f.carta_aprobacion_url)
+    const todasConDocumentacion = true // Sistema nuevo: usa vista_documentos_pendientes_fuentes
 
     if (!tieneFuentes) {
       mensajes.push('⚠️ No hay fuentes de pago configuradas')

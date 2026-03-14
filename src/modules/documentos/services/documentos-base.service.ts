@@ -278,6 +278,10 @@ export class DocumentosBaseService {
       ...(tipoEntidad === 'cliente' && metadata?.fuente_pago_id && {
         fuente_pago_relacionada: String(metadata.fuente_pago_id)
       }),
+      // ✅ FK al requisito exacto — la vista usa este campo para detectar doc subido
+      ...(tipoEntidad === 'cliente' && metadata?.requisito_config_id && {
+        requisito_config_id: String(metadata.requisito_config_id)
+      }),
       metadata: metadata || {},
       version: 1,
       es_version_actual: true,
@@ -286,14 +290,13 @@ export class DocumentosBaseService {
 
     const tabla = getTablaDocumentos(tipoEntidad)
 
-    // ✅ INSERT con SELECT que incluye JOIN a usuarios (1 sola query)
+    // ✅ INSERT simple sin JOIN — el join usuarios!subido_por en POST falla con
+    // usuarios autenticados (comportamiento de PostgREST con RLS en INSERT+SELECT).
+    // La info del usuario no se necesita en el valor de retorno de esta función.
     const { data: documento, error: dbError } = await supabase
       .from(tabla)
       .insert(insertData)
-      .select(`
-        *,
-        usuarios!subido_por(id, nombres, apellidos, email)
-      `)
+      .select('*')
       .single()
 
     if (dbError) {
@@ -302,14 +305,8 @@ export class DocumentosBaseService {
       throw dbError
     }
 
-    // ✅ Mapear "usuarios" → "usuario" para consistencia con UI
-    const documentoConUsuario = {
-      ...(documento as any),
-      usuario: (documento as any).usuarios,
-      usuarios: undefined,
-    }
-
-    return documentoConUsuario as DocumentoProyecto
+    // Retornar el documento (sin join de usuario — userId ya conocido por contexto)
+    return documento as DocumentoProyecto
   }
 
   /**

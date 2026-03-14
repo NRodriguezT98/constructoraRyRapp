@@ -16,8 +16,6 @@
 import { supabase } from '@/lib/supabase/client'
 import { formatDateForDB, getTodayDateString } from '@/lib/utils/date.utils'
 import type { EstadoNegociacion, Negociacion } from '@/modules/clientes/types'
-import { obtenerRequisitosParaTipoFuente } from '@/modules/fuentes-pago/config/requisitos-fuentes'
-import { crearPasosFuentePago } from '@/modules/fuentes-pago/services/pasos-fuente-pago.service'
 
 // DTOs
 export interface CrearNegociacionDTO {
@@ -39,7 +37,6 @@ export interface CrearFuentePagoDTO {
   monto_aprobado: number
   entidad?: string
   numero_referencia?: string
-  carta_aprobacion_url?: string
   carta_asignacion_url?: string
 }
 
@@ -121,16 +118,33 @@ class NegociacionesService {
       // ==========================================
       if (datos.fuentes_pago && datos.fuentes_pago.length > 0) {
 
+        // Resolver tipo_fuente_id en batch
+        const tipoNombres = datos.fuentes_pago.map(f => f.tipo)
+        const { data: tiposFuentes, error: errorTipos } = await supabase
+          .from('tipos_fuentes_pago')
+          .select('id, nombre')
+          .in('nombre', tipoNombres)
+
+        if (errorTipos) {
+          await supabase.from('negociaciones').delete().eq('id', negociacion.id)
+          throw new Error(`Error resolviendo tipos de fuente: ${errorTipos.message}`)
+        }
+
+        const tipoIdMap = Object.fromEntries(
+          (tiposFuentes || []).map(t => [t.nombre, t.id])
+        )
+
         const fuentesParaInsertar = datos.fuentes_pago.map(fuente => ({
           negociacion_id: negociacion.id,
           tipo: fuente.tipo,
+          tipo_fuente_id: tipoIdMap[fuente.tipo] || null,
           monto_aprobado: fuente.monto_aprobado,
           entidad: fuente.entidad || null,
           numero_referencia: fuente.numero_referencia || null,
-          carta_aprobacion_url: fuente.carta_aprobacion_url || null,
           carta_asignacion_url: fuente.carta_asignacion_url || null,
           permite_multiples_abonos: fuente.tipo === 'Cuota Inicial',
-          estado: 'Pendiente',
+          estado: 'Activa',
+          estado_fuente: 'activa',
         }))
 
         const { data: fuentesCreadas, error: errorFuentes } = await supabase
@@ -146,32 +160,6 @@ class NegociacionesService {
           throw new Error(`Error creando fuentes de pago: ${errorFuentes.message}`)
         }
 
-
-        // ==========================================
-        // PASO 2.1: Crear pasos de validación para fuentes que lo requieren
-        // ==========================================
-        if (fuentesCreadas && fuentesCreadas.length > 0) {
-
-          for (const fuente of fuentesCreadas) {
-            const requisitos = obtenerRequisitosParaTipoFuente(fuente.tipo)
-
-            if (requisitos.length > 0) {
-
-              try {
-                await crearPasosFuentePago({
-                  fuente_pago_id: fuente.id,
-                  tipo_fuente: fuente.tipo,
-                })
-
-              } catch (errorPasos) {
-                console.error(`? Error creando pasos para ${fuente.tipo}:`, errorPasos)
-                // No hacemos rollback completo, solo loggeamos
-                // Los pasos se pueden crear después manualmente si fallan
-              }
-            } else {
-            }
-          }
-        }
       }
 
       // ==========================================

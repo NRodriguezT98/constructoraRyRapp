@@ -19,8 +19,6 @@ import {
 } from '@/modules/clientes/components/asignar-vivienda/hooks'
 import type { StepNumber } from '@/modules/clientes/components/asignar-vivienda/types'
 import { useCrearNegociacion } from '@/modules/clientes/hooks'
-import { crearDocumentosPendientesBatch } from '@/modules/clientes/services/documentos-pendientes.service'
-import { documentosPendientesKeys } from '@/modules/clientes/types/documentos-pendientes.types'
 import { validarSumaTotal } from '@/modules/clientes/utils/validar-edicion-fuentes'
 import { useModal } from '@/shared/components/modals'
 
@@ -379,76 +377,7 @@ export function useAsignarViviendaPage({
       }
 
 
-      // â­ NUEVO: Crear documentos pendientes para cartas NO subidas
-      const viviendaSeleccionada = proyectosViviendas.viviendas.find(
-        (v) => v.id === proyectosViviendas.viviendaId
-      )
-
-      if (viviendaSeleccionada?.manzana_nombre && viviendaSeleccionada?.numero && fuentesPagoCreadas) {
-        const documentosPendientes = fuentesPago.fuentesActivas
-          .filter((fuente) => {
-            // Solo crear pendiente si:
-            // 1. La fuente requiere carta (no es Cuota Inicial)
-            // 2. NO marcó "tengo la carta ahora"
-            // 3. NO tiene carta subida
-            const requiereCarta = fuente.tipo !== 'Cuota Inicial'
-            const noTieneCartaAhora = !(fuentesPago as any).tieneCartasAhora[fuente.tipo]
-            const noSubioCarta = !fuente.config?.carta_aprobacion_url
-
-            return requiereCarta && noTieneCartaAhora && noSubioCarta
-          })
-          .map((fuente) => {
-            // â­ Buscar el ID de la fuente de pago creada
-            // Priorizar búsqueda con entidad, luego solo por tipo
-            let fuenteCreada = fuentesPagoCreadas.find(
-              (fp) => fp.tipo === fuente.tipo && fp.entidad === fuente.config?.entidad
-            )
-
-            // Si no se encontró con entidad, buscar solo por tipo (para Mi Casa Ya sin entidad)
-            if (!fuenteCreada && !fuente.config?.entidad) {
-              fuenteCreada = fuentesPagoCreadas.find((fp) => fp.tipo === fuente.tipo)
-            }
-
-            if (!fuenteCreada) {
-              console.warn(`âš ï¸ No se encontró fuente de pago para ${fuente.tipo}`)
-              return null
-            }
-
-            return {
-              clienteId,
-              fuentePagoId: fuenteCreada.id,
-              tipoFuente: fuente.tipo,
-              entidad: fuenteCreada.entidad
-                ? nombresEntidades.get(fuenteCreada.entidad) || null
-                : null,
-              manzana: viviendaSeleccionada.manzana_nombre!,
-              numeroVivienda: viviendaSeleccionada.numero.toString(),
-            }
-          })
-          .filter((doc): doc is NonNullable<typeof doc> => doc !== null) // Filtrar nulls
-
-        if (documentosPendientes.length > 0) {
-
-
-          // âš ï¸ VERIFICAR: ¿Hay duplicados?
-          const fuenteIds = documentosPendientes.map(d => d.fuentePagoId)
-          const uniqueFuenteIds = new Set(fuenteIds)
-          if (fuenteIds.length !== uniqueFuenteIds.size) {
-            console.warn('âš ï¸ DUPLICADOS DETECTADOS:', {
-              total: fuenteIds.length,
-              unicos: uniqueFuenteIds.size,
-              ids: fuenteIds
-            })
-          }
-
-          await crearDocumentosPendientesBatch(documentosPendientes as any)
-
-          // âœ… Invalidar cache de React Query para documentos pendientes
-          queryClient.invalidateQueries({
-            queryKey: documentosPendientesKeys.byCliente(clienteId)
-          })
-        }
-      }
+      // Sistema de vista_documentos_pendientes_fuentes calcula pendientes automáticamente
 
       // Limpiar y navegar al detalle del cliente
       limpiarHook()

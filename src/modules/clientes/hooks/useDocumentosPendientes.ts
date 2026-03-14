@@ -1,4 +1,4 @@
-/**
+﻿/**
  * ============================================
  * HOOK: useDocumentosPendientes (React Query)
  * ============================================
@@ -13,14 +13,15 @@
  */
 
 import {
-    completarDocumentoPendiente,
-    eliminarDocumentoPendiente,
     fetchDocumentosPendientesPorCliente
 } from '@/modules/clientes/services/documentos-pendientes.service'
 import {
     documentosPendientesKeys
 } from '@/modules/clientes/types/documentos-pendientes.types'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import {
+    useQuery,
+    useQueryClient
+} from '@tanstack/react-query'
 
 // ============================================
 // QUERY HOOK
@@ -54,61 +55,6 @@ export function useDocumentosPendientes(
   })
 }
 
-// ============================================
-// MUTATION HOOKS
-// ============================================
-
-/**
- * Hook para completar un documento pendiente
- * âœ… Con invalidación automática de cache
- */
-export function useCompletarDocumentoPendiente() {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationFn: ({ documentoId, completadoPor }: { documentoId: string; completadoPor: string }) =>
-      completarDocumentoPendiente(documentoId, completadoPor),
-
-    onSuccess: (_, variables) => {
-      // âœ… Invalidar cache del cliente asociado
-      // (React Query refetcheará automáticamente)
-      queryClient.invalidateQueries({
-        queryKey: documentosPendientesKeys.all
-      })
-
-    },
-
-    onError: (error) => {
-      console.error('âŒ Error al completar documento:', error)
-    }
-  })
-}
-
-/**
- * Hook para eliminar un documento pendiente
- * âœ… Con invalidación automática de cache
- */
-export function useEliminarDocumentoPendiente() {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationFn: (documentoId: string) => eliminarDocumentoPendiente(documentoId),
-
-    onSuccess: () => {
-      // âœ… Invalidar cache de todos los documentos pendientes
-      queryClient.invalidateQueries({
-        queryKey: documentosPendientesKeys.all
-      })
-
-    },
-
-    onError: (error) => {
-      console.error('âŒ Error al eliminar documento:', error)
-    }
-  })
-}
-
-// ============================================
 // UTILITY HOOKS
 // ============================================
 

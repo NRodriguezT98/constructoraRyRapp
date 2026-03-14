@@ -191,10 +191,13 @@ export function useSubirCartaModal({
       // âœ… Usar entidad de fuente, NO sobrescribir con genéricos
       const metadata = {
         tipo_fuente: fuente.tipo,
-        entidad: fuente.entidad || '', // â† Usar EXACTAMENTE lo que viene de fuente
+        entidad: fuente.entidad || '', // ← Usar EXACTAMENTE lo que viene de fuente
         monto_aprobado: fuente.monto_aprobado,
-        fuente_pago_id: fuente.id,        // ✅ tipo_documento_sistema para vinculación en documentos-base.service
-        tipo_documento_sistema: fuente.tipo_documento_sistema,      }
+        fuente_pago_id: fuente.id,
+        tipo_documento_sistema: fuente.tipo_documento_sistema,
+        // ✅ FK al requisito exacto — documentos-base.service lo guarda en la columna
+        requisito_config_id: fuente.requisito_config_id,
+      }
 
 
       // 3. Subir documento

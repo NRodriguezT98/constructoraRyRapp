@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
 
-import { supabase } from '@/lib/supabase/client'
 import { useAbonos } from '@/modules/abonos/hooks'
 import { obtenerHistorialAbonos } from '@/modules/abonos/services/abonos.service'
 import type { AbonoHistorial, FuentePagoConAbonos } from '@/modules/abonos/types'
+import { useDocumentosPendientesObligatorios } from '@/modules/clientes/hooks/useDocumentosPendientesObligatorios'
+import { filtrarPendientesPorFuente } from '@/modules/clientes/utils/documentos-pendientes.utils'
 
 /**
  * Hook personalizado para la lógica de negocio del detalle de abonos
@@ -18,33 +19,14 @@ export function useAbonosDetalle(clienteId: string) {
   const [abonos, setAbonos] = useState<AbonoHistorial[]>([])
   const [loadingAbonos, setLoadingAbonos] = useState(false)
 
-  // Documentos obligatorios pendientes (para bloquear botones de abono/desembolso)
-  const [pendientesObligatorios, setPendientesObligatorios] = useState<Array<{
-    fuente_pago_id: string | null
-    alcance: string | null
-    tipo_documento: string | null
-    tipo_documento_sistema: string | null
-  }>>([])
+  // Documentos obligatorios pendientes — cache compartido vía React Query
+  const { data: pendientesObligatorios = [] } = useDocumentosPendientesObligatorios(clienteId)
 
   // Buscar la negociación del cliente
   const negociacion = useMemo(
     () => negociaciones.find((n) => n.cliente.id === clienteId),
     [negociaciones, clienteId]
   )
-
-  // Cargar documentos obligatorios pendientes para el cliente
-  useEffect(() => {
-    if (!clienteId) return
-
-    supabase
-      .from('vista_documentos_pendientes_fuentes')
-      .select('fuente_pago_id, alcance, nivel_validacion, tipo_documento, tipo_documento_sistema')
-      .eq('cliente_id', clienteId)
-      .eq('nivel_validacion', 'DOCUMENTO_OBLIGATORIO')
-      .then(({ data }) => {
-        if (data) setPendientesObligatorios(data)
-      })
-  }, [clienteId])
 
   // Cargar historial de abonos cuando se obtiene la negociación
   useEffect(() => {
@@ -123,26 +105,14 @@ export function useAbonosDetalle(clienteId: string) {
       documentosPendientesNombres: string[]
     }> = {}
 
-    // Documentos compartidos del cliente
-    const docsCompartidosArray = pendientesObligatorios.filter(
-      d => d.alcance === 'COMPARTIDO_CLIENTE'
-    )
-
     negociacion.fuentes_pago.forEach((fuente) => {
       const saldoPendiente = fuente.saldo_pendiente || 0
       const estaCompletamentePagada = saldoPendiente === 0
 
-      // Docs obligatorios específicos a esta fuente
-      const docsEspecificosArray = pendientesObligatorios.filter(
-        d => d.fuente_pago_id === fuente.id && d.alcance === 'ESPECIFICO_FUENTE'
-      )
-
-      // COMPARTIDO_CLIENTE bloquea todas las fuentes que lo requieran
-      const docsCompartidosAplicables = docsCompartidosArray
-
-      const todosLosPendientes = [...docsEspecificosArray, ...docsCompartidosAplicables]
-      const documentosObligatoriosPendientes = todosLosPendientes.length
-      const documentosPendientesNombres = todosLosPendientes
+      // Función pura: única fuente de verdad del filtro de pendientes por fuente
+      const pendientesFuente = filtrarPendientesPorFuente(pendientesObligatorios, fuente.id, fuente.tipo)
+      const documentosObligatoriosPendientes = pendientesFuente.length
+      const documentosPendientesNombres = pendientesFuente
         .map(d => d.tipo_documento || d.tipo_documento_sistema || '')
         .filter(Boolean)
 

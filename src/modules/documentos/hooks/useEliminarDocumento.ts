@@ -35,26 +35,12 @@ const TABLAS_POR_ENTIDAD: Record<TipoEntidad, string> = {
 }
 
 async function detectarCriticidad(documento: any): Promise<{ esCritico: boolean; entidad: string | null }> {
-  // Señal directa: ya vinculado a una fuente de pago
-  if (documento.fuente_pago_relacionada) {
-    const entidad = documento.metadata?.entidad_fuente || documento.entidad || null
-    return { esCritico: true, entidad }
-  }
-
-  // Señal por tipo_documento: verificar si coincide con un requisito activo
-  const tipoDoc = documento.tipo_documento || documento.metadata?.tipo_documento_sistema
-  if (tipoDoc) {
-    const { count } = await supabase
-      .from('requisitos_fuentes_pago_config')
-      .select('*', { count: 'exact', head: true })
-      .eq('tipo_documento_sugerido', tipoDoc)
-      .eq('activo', true)
-    if ((count ?? 0) > 0) {
-      return { esCritico: true, entidad: null }
-    }
-  }
-
-  return { esCritico: false, entidad: null }
+  // Con el FK requisito_config_id, la criticidad se detecta directamente:
+  // - Subido desde el banner → requisito_config_id NOT NULL → crítico
+  // - Subido con vinculación manual a fuente → fuente_pago_relacionada NOT NULL → crítico
+  const esCritico = !!documento.requisito_config_id || !!documento.fuente_pago_relacionada
+  const entidad = documento.metadata?.entidad_fuente || documento.entidad || null
+  return { esCritico, entidad }
 }
 
 async function contarVersionesActivas(documento: any, tipoEntidad: TipoEntidad): Promise<number> {

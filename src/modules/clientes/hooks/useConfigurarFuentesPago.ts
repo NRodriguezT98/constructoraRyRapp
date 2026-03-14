@@ -24,7 +24,6 @@ export interface FuentePago {
   monto_aprobado: number
   entidad?: string
   numero_referencia?: string
-  carta_aprobacion_url?: string
   carta_asignacion_url?: string
 }
 
@@ -51,7 +50,6 @@ export function useConfigurarFuentesPago({
   const [fuentesPago, setFuentesPago] = useState<FuentePago[]>([])
   const [cargando, setCargando] = useState(true)
   const [guardando, setGuardando] = useState(false)
-  const [subiendoArchivo, setSubiendoArchivo] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [totales, setTotales] = useState<Totales>({
     total: 0,
@@ -96,7 +94,6 @@ export function useConfigurarFuentesPago({
           monto_aprobado: f.monto_aprobado || 0,
           entidad: f.entidad,
           numero_referencia: f.numero_referencia,
-          carta_aprobacion_url: f.carta_aprobacion_url,
           carta_asignacion_url: f.carta_asignacion_url,
         }))
       )
@@ -188,47 +185,6 @@ export function useConfigurarFuentesPago({
   }
 
   /**
-   * Subir carta de aprobación o asignación
-   */
-  const subirCartaAprobacion = async (
-    fuenteId: string,
-    archivo: File,
-    tipoDocumento: 'aprobacion' | 'asignacion'
-  ) => {
-    try {
-      setSubiendoArchivo(fuenteId)
-      setError(null)
-
-      const url = await fuentesPagoService.subirCartaAprobacion({
-        fuentePagoId: fuenteId,
-        archivo,
-        tipoDocumento,
-      })
-
-      // Actualizar la fuente en el estado local
-      setFuentesPago((prev) =>
-        prev.map((f) =>
-          f.id === fuenteId
-            ? {
-                ...f,
-                [tipoDocumento === 'aprobacion'
-                  ? 'carta_aprobacion_url'
-                  : 'carta_asignacion_url']: url,
-              }
-            : f
-        )
-      )
-
-      alert('✅ Documento subido correctamente')
-    } catch (err: any) {
-      console.error('Error subiendo documento:', err)
-      setError(`Error subiendo documento: ${err.message}`)
-    } finally {
-      setSubiendoArchivo(null)
-    }
-  }
-
-  /**
    * Validar y guardar todas las fuentes de pago
    */
   const guardarFuentes = async () => {
@@ -251,18 +207,6 @@ export function useConfigurarFuentesPago({
           !fuente.entidad?.trim()
         ) {
           setError(`La fuente "${fuente.tipo}" requiere especificar la entidad`)
-          return
-        }
-      }
-
-      // ⚠️ Validar documentos requeridos
-      for (const fuente of fuentesPago) {
-        if (fuente.tipo === 'Crédito Hipotecario' && !fuente.carta_aprobacion_url) {
-          setError('Crédito Hipotecario requiere carta de aprobación del banco')
-          return
-        }
-        if (fuente.tipo === 'Subsidio Caja Compensación' && !fuente.carta_aprobacion_url) {
-          setError('Subsidio Caja Compensación requiere carta de aprobación')
           return
         }
       }
@@ -319,7 +263,6 @@ export function useConfigurarFuentesPago({
     fuentesPago,
     cargando,
     guardando,
-    subiendoArchivo,
     error,
     totales,
 
@@ -331,7 +274,6 @@ export function useConfigurarFuentesPago({
     agregarFuente,
     actualizarFuente,
     eliminarFuente,
-    subirCartaAprobacion,
     guardarFuentes,
     cargarFuentesPago, // Exportar por si se necesita refrescar manualmente
   }

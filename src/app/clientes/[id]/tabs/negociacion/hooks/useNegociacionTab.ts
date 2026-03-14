@@ -202,7 +202,7 @@ export function useNegociacionTab({ cliente }: UseNegociacionTabProps) {
       const esObligatorio = doc.nivel_validacion === 'DOCUMENTO_OBLIGATORIO'
       mapa[key].total++
       if (esObligatorio) mapa[key].obligatorios++
-      mapa[key].docs.push({ nombre: doc.tipo_documento, obligatorio: esObligatorio })
+      mapa[key].docs.push({ nombre: doc.tipo_documento ?? '', obligatorio: esObligatorio })
     }
 
     return mapa
@@ -213,7 +213,7 @@ export function useNegociacionTab({ cliente }: UseNegociacionTabProps) {
     return documentosPendientesRaw
       .filter((d) => !d.fuente_pago_id)
       .map((d) => ({
-        nombre: d.tipo_documento,
+        nombre: d.tipo_documento ?? '',
         obligatorio: d.nivel_validacion === 'DOCUMENTO_OBLIGATORIO',
       }))
   }, [documentosPendientesRaw])

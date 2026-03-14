@@ -53,6 +53,7 @@ export function DocumentosTab({ cliente }: DocumentosTabProps) {
     entidad?: string
     monto_aprobado: number
     tipo_documento_sistema?: string
+    requisito_config_id?: string
     vivienda?: { numero: string; manzana: string }
     cliente?: { nombre_completo: string }
   } | null>(null)
@@ -240,6 +241,8 @@ export function DocumentosTab({ cliente }: DocumentosTabProps) {
               monto_aprobado: metadata.monto_aprobado || 0,
               // ✅ Pasar tipo exacto del doc para que la vista haga match al subir
               tipo_documento_sistema: tipoDocumento,
+              // ✅ FK al requisito: documentos-base.service lo guarda → vista lo detecta por UUID
+              requisito_config_id: metadata.requisito_config_id,
               vivienda: metadata.vivienda,
               cliente: metadata.cliente,
             })

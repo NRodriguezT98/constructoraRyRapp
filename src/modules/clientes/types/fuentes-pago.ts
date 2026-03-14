@@ -20,9 +20,8 @@ export const TIPOS_FUENTE_PAGO = {
 export type TipoFuentePago = typeof TIPOS_FUENTE_PAGO[keyof typeof TIPOS_FUENTE_PAGO]
 
 export const ESTADOS_FUENTE_PAGO = {
-  PENDIENTE: 'Pendiente',
-  EN_PROCESO: 'En Proceso',
-  COMPLETADA: 'Completada',
+  ACTIVA: 'Activa',
+  INACTIVA: 'Inactiva',
 } as const
 
 export type EstadoFuentePago = typeof ESTADOS_FUENTE_PAGO[keyof typeof ESTADOS_FUENTE_PAGO]
@@ -38,7 +37,6 @@ export interface CrearFuentePagoDTO {
   // Opcionales
   entidad?: string
   numero_referencia?: string
-  carta_aprobacion_url?: string
   carta_asignacion_url?: string
 
   // Campos específicos para subsidios
@@ -53,7 +51,6 @@ export interface ActualizarFuentePagoDTO {
   monto_aprobado?: number
   entidad?: string
   numero_referencia?: string
-  carta_aprobacion_url?: string
   carta_asignacion_url?: string
   estado?: EstadoFuentePago
   fecha_completado?: string
@@ -83,7 +80,6 @@ export interface FuentePago {
   permite_multiples_abonos: boolean
 
   // Documentos
-  carta_aprobacion_url: string | null
   carta_asignacion_url: string | null
 
   // Campos específicos para subsidios

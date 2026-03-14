@@ -3,6 +3,7 @@
 // ✅ React Query Hooks (NUEVOS - Usar estos)
 export * from './useClientesList';
 export * from './useClientesQuery';
+export * from './useDocumentosPendientesObligatorios'; // fuente única de docs obligatorios pendientes
 export * from './useInteresesQuery'; // 🆕 React Query para intereses (migrado 2025-12-05)
 export * from './useNegociacionesQuery'; // 🆕 React Query para negociaciones
 
@@ -21,14 +22,13 @@ export * from './useNegociacionesTab'; // ⚠️ DEPRECADO - Usar useNegociacion
 
 // ✅ NEW: Hooks para Subsecciones de Negociaciones (REFACTORIZADO 2025-11-27)
 export * from './useAccionesSection';
-export * from './useFuentesPagoSection';
 export * from './useGenerarReportePDF'; // 🆕 Generación de reportes PDF
 export * from './useProgressSection';
 export * from './useUltimosAbonosSection';
 
 // ✅ NEW: Hooks para Versiones de Negociaciones
-export * from './useHistorialVersiones';
 export * from './useActividadTab';
+export * from './useHistorialVersiones';
 
 // Legacy Hooks (Compatibilidad)
 export * from './useClienteCardActivo';

@@ -1,5 +1,0 @@
-export { CampoMonto } from './CampoMonto'
-export { MetodosPagoSelector } from './MetodosPagoSelector'
-export { ModalHeader } from './ModalHeader'
-export { colorSchemes, metodoPagoConfig, modalStyles } from './styles'
-export { useModalRegistrarAbono } from './useModalRegistrarAbono'

@@ -14,7 +14,6 @@ import type {
     NegociacionConAbonos,
 } from '../types';
 
-import { validarPreDesembolso } from '@/modules/fuentes-pago/services/pasos-fuente-pago.service';
 
 // =====================================================
 // OBTENER NEGOCIACIONES ACTIVAS
@@ -243,36 +242,6 @@ export async function registrarAbono(
     throw new Error(
       `El abono de $${datos.monto.toLocaleString('es-CO')} excede el saldo pendiente de $${(fuente.saldo_pendiente ?? 0).toLocaleString('es-CO')}`
     );
-  }
-
-  // ==========================================
-  // 🚨 VALIDACIÓN PRE-DESEMBOLSO
-  // ==========================================
-  // Aplica a TODAS las fuentes — el admin controla qué requisitos
-  // exige para cada tipo desde el panel de configuración.
-  try {
-    const validacion = await validarPreDesembolso(datos.fuente_pago_id);
-
-    if (!validacion.valido) {
-      // Construir mensaje de error con requisitos faltantes
-      const requisitosFaltantes = validacion.errores
-        .map((error, index) => `${index + 1}. ${error}`)
-        .join('\n');
-
-      const mensaje = `❌ No se puede registrar el desembolso. Faltan los siguientes requisitos:\n\n${requisitosFaltantes}\n\nPor favor, completa todos los requisitos antes de registrar el desembolso.`;
-
-      console.error('❌ Validación de desembolso falló:', validacion.errores);
-      throw new Error(mensaje);
-    }
-
-  } catch (validacionError) {
-    // Si el error es de validación, re-throw
-    if (validacionError instanceof Error && validacionError.message.includes('No se puede registrar')) {
-      throw validacionError;
-    }
-
-    // Si es otro error (ej: error de red), loggeamos pero permitimos continuar
-    console.warn('⚠️ Error al validar requisitos (se permite continuar):', validacionError);
   }
 
   // Obtener usuario actual

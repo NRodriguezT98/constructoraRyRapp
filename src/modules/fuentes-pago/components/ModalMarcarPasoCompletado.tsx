@@ -29,15 +29,23 @@ import { toast } from 'sonner'
 
 import { getTodayDateString } from '@/lib/utils/date.utils'
 
-import { NivelValidacion, type PasoFuentePago } from '../types'
+import { NivelValidacion } from '../types'
 
 // ============================================
 // TYPES
 // ============================================
 
+/** Información mínima de un paso/documento pendiente para mostrar en el modal */
+interface PasoInfo {
+  nivel_validacion: string
+  titulo?: string
+  descripcion?: string
+  [key: string]: unknown
+}
+
 interface ModalMarcarPasoCompletadoProps {
   isOpen: boolean
-  paso: PasoFuentePago | null
+  paso: PasoInfo | null
   onClose: () => void
   onConfirmar: (datos: {
     fecha_completado: string

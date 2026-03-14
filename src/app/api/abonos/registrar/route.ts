@@ -8,10 +8,10 @@ import { formatDateForDB } from '@/lib/utils/date.utils'
  * Registra un nuevo abono para una fuente de pago específica
  */
 export async function POST(request: NextRequest) {
-  // Crear cliente con contexto de autenticación
-  const supabase = await createRouteClient()
-
   try {
+    // Crear cliente con contexto de autenticación (dentro del try para capturar errores de sesión)
+    const supabase = await createRouteClient()
+
     const body = await request.json()
     const {
       negociacion_id,
@@ -21,12 +21,20 @@ export async function POST(request: NextRequest) {
       metodo_pago,
       numero_referencia,
       notas,
+      comprobante_path,
     } = body
 
     // Validaciones
     if (!negociacion_id || !fuente_pago_id || !monto || !fecha_abono || !metodo_pago) {
       return NextResponse.json(
         { error: 'Faltan campos obligatorios' },
+        { status: 400 }
+      )
+    }
+
+    if (!comprobante_path || typeof comprobante_path !== 'string') {
+      return NextResponse.json(
+        { error: 'El comprobante de pago es obligatorio' },
         { status: 400 }
       )
     }
@@ -67,6 +75,23 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // 1b. Validar que la fecha_abono no es anterior a fecha_negociacion en BD
+    const { data: negociacion, error: negError } = await supabase
+      .from('negociaciones')
+      .select('fecha_negociacion')
+      .eq('id', negociacion_id)
+      .single()
+
+    if (!negError && negociacion?.fecha_negociacion) {
+      const fechaNeg = negociacion.fecha_negociacion.slice(0, 10)  // YYYY-MM-DD
+      if (fecha_abono < fechaNeg) {
+        return NextResponse.json(
+          { error: `La fecha del abono no puede ser anterior al inicio de la negociación (${fechaNeg})` },
+          { status: 400 }
+        )
+      }
+    }
+
     // 2. Convertir fecha usando utilidad centralizada
     const fechaAbonoDB = formatDateForDB(fecha_abono)
 
@@ -80,7 +105,7 @@ export async function POST(request: NextRequest) {
         fecha_abono: fechaAbonoDB,
         metodo_pago,
         numero_referencia: numero_referencia || null,
-        comprobante_url: null,
+        comprobante_url: comprobante_path,
         notas: notas || null,
       })
       .select()
@@ -107,9 +132,9 @@ export async function POST(request: NextRequest) {
       message: 'Abono registrado exitosamente',
     })
   } catch (error: any) {
-    console.error('âŒ Error en POST /api/abonos/registrar:', error)
+    console.error('❌ Error en POST /api/abonos/registrar:', error?.message ?? error)
     return NextResponse.json(
-      { error: error.message || 'Error interno del servidor' },
+      { error: error?.message || 'Error interno del servidor' },
       { status: 500 }
     )
   }

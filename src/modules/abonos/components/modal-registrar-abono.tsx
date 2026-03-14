@@ -1,7 +1,7 @@
 'use client'
 
 import { AnimatePresence, motion } from 'framer-motion'
-import { AlertCircle, Calendar, CheckCircle2, DollarSign, FileText, X } from 'lucide-react'
+import { AlertCircle, Calendar, CheckCircle2, DollarSign, FileText, Upload, X } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
@@ -10,6 +10,7 @@ import { getTodayDateString } from '@/lib/utils/date.utils'
 
 import type { FuentePagoConAbonos } from '../types'
 
+import { CampoComprobante } from './modal-registrar-abono/CampoComprobante'
 import { CampoMonto } from './modal-registrar-abono/CampoMonto'
 import { MetodosPagoSelector } from './modal-registrar-abono/MetodosPagoSelector'
 import { ModalHeader } from './modal-registrar-abono/ModalHeader'
@@ -42,16 +43,20 @@ export function ModalRegistrarAbono({
   const {
     formData,
     errors,
+    faseLoading,
     loading,
     metodoSeleccionado,
     esDesembolsoCompleto,
     montoAutomatico,
     saldoPendiente,
     montoIngresado,
+    comprobante,
     handleSubmit,
+    handleClose,
     updateField,
     selectMetodo,
     limpiarValidacion,
+    setComprobante,
     formatCurrency,
   } = useModalRegistrarAbono({
     negociacionId,
@@ -66,7 +71,7 @@ export function ModalRegistrarAbono({
   const colorScheme = colorSchemes[fuentePreseleccionada.tipo as keyof typeof colorSchemes] || colorSchemes['Cuota Inicial']
 
   return (
-    <Dialog open={open} onOpenChange={onClose}>
+    <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-[550px] p-0 gap-0 border-0 bg-white dark:bg-gray-900 overflow-hidden">
         {/* Header Premium */}
         <ModalHeader
@@ -125,6 +130,24 @@ export function ModalRegistrarAbono({
               {/* Métodos de Pago */}
               <MetodosPagoSelector metodoSeleccionado={metodoSeleccionado} onSelect={selectMetodo} />
 
+              {/* Comprobante de pago */}
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.45 }}
+              >
+                <Label className={modalStyles.form.label}>
+                  <Upload className={modalStyles.form.labelIcon} />
+                  Comprobante de pago{' '}
+                  <span className={modalStyles.form.required}>*</span>
+                </Label>
+                <CampoComprobante
+                  archivo={comprobante}
+                  error={errors.comprobante}
+                  onChange={setComprobante}
+                />
+              </motion.div>
+
               {/* Observaciones */}
               <motion.div
                 initial={{ opacity: 0, x: -20 }}
@@ -172,7 +195,7 @@ export function ModalRegistrarAbono({
             <Button
               type="button"
               variant="outline"
-              onClick={onClose}
+              onClick={handleClose}
               disabled={loading}
               className={`${modalStyles.footer.button} ${modalStyles.footer.cancelButton}`}
             >
@@ -181,10 +204,20 @@ export function ModalRegistrarAbono({
             </Button>
             <Button
               type="submit"
-              disabled={loading}
+              disabled={loading || !comprobante}
               className={`${modalStyles.footer.button} ${modalStyles.footer.submitButton} bg-gradient-to-r ${colorScheme.gradient}`}
             >
-              {loading ? (
+              {faseLoading === 'subiendo' ? (
+                <>
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                  >
+                    <Upload className={modalStyles.footer.submitIcon} />
+                  </motion.div>
+                  Subiendo comprobante...
+                </>
+              ) : faseLoading === 'guardando' ? (
                 <>
                   <motion.div
                     animate={{ rotate: 360 }}
@@ -192,7 +225,7 @@ export function ModalRegistrarAbono({
                   >
                     <DollarSign className={modalStyles.footer.submitIcon} />
                   </motion.div>
-                  Procesando...
+                  Guardando abono...
                 </>
               ) : (
                 <>

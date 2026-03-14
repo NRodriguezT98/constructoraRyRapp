@@ -12,27 +12,27 @@
  * - Estados visuales
  * - Handlers de eventos
  *
- * ✅ BENEFICIOS:
- * - Lógica reutilizable
- * - Testing aislado
- * - Separación clara UI/Logic
- * - Performance optimizado
+ * ✅ SISTEMA NUEVO: Usa vista_documentos_pendientes_fuentes
+ * ❌ SISTEMA VIEJO: pasos_fuente_pago (eliminado)
  */
 
+import { useQuery } from '@tanstack/react-query'
 import type { LucideIcon } from 'lucide-react'
 import {
-  BadgeDollarSign,
-  Banknote,
-  Building2,
-  DollarSign,
-  Gift,
-  HandCoins,
-  Home,
-  Wallet
+    BadgeDollarSign,
+    Banknote,
+    Building2,
+    DollarSign,
+    Gift,
+    HandCoins,
+    Home,
+    Wallet
 } from 'lucide-react'
 import { useCallback, useMemo } from 'react'
 
-import { usePasosFuentePago, useTiposFuentePagoConfig } from '../hooks'
+import { supabase } from '@/lib/supabase/client'
+
+import { useTiposFuentePagoConfig } from '../hooks'
 
 // =====================================================
 // TYPES
@@ -50,11 +50,6 @@ interface MetricasFinancieras {
   abonado: number
   pendiente: number
   porcentajePagado: number
-}
-
-interface TemaColores {
-  gradientFrom: string
-  gradientTo: string
 }
 
 export interface FuentePagoData {
@@ -83,32 +78,36 @@ interface UseFuentePagoCardProps {
 // =====================================================
 
 export function useFuentePagoCard({ fuente, clienteId }: UseFuentePagoCardProps) {
-  // ✅ Data fetching con React Query
-  const {
-    pasos,
-    progreso,
-    validacion,
-    puedeDesembolsar,
-    isLoading: isLoadingPasos,
-    error: errorPasos,
-  } = usePasosFuentePago(fuente.id)
+  // ✅ Documentos pendientes obligatorios desde la vista nueva
+  const { data: documentosPendientes, isLoading: isLoadingPendientes } = useQuery({
+    queryKey: ['documentos-pendientes-fuente', fuente.id, clienteId],
+    queryFn: async () => {
+      if (!fuente.id || !clienteId) return []
+      const { data, error } = await supabase
+        .from('vista_documentos_pendientes_fuentes')
+        .select('tipo_documento, alcance, nivel_validacion')
+        .eq('cliente_id', clienteId)
+        .or(`fuente_pago_id.eq.${fuente.id},alcance.eq.COMPARTIDO_CLIENTE`)
+      if (error) throw error
+      return data || []
+    },
+    enabled: !!fuente.id && !!clienteId,
+    staleTime: 1000 * 30, // 30 segundos — validación en tiempo real
+  })
 
   // ✅ Configuración dinámica desde BD
   const { getTipoConfig, isLoading: isLoadingConfig } = useTiposFuentePagoConfig()
 
   // ✅ Mapeo de iconos optimizado
   const iconMap = useMemo<Record<string, LucideIcon>>(() => ({
-    // Iconos principales configurados en BD
     Wallet,
     Building2,
     HandCoins,
     BadgeDollarSign,
-    // Iconos adicionales
     DollarSign,
     Home,
     Gift,
     Banknote,
-    // Compatibilidad
     Shield: Gift,
     CreditCard: Building2,
     Landmark: Building2,
@@ -129,18 +128,22 @@ export function useFuentePagoCard({ fuente, clienteId }: UseFuentePagoCardProps)
     const config = getTipoConfig(fuente.tipo)
     const iconName = config.icono || 'Banknote'
     const IconComponent = iconMap[iconName] || Banknote
-
     return {
       icono: IconComponent,
-      colores: {
-        gradientFrom: config.from,
-        gradientTo: config.to,
-      },
+      colores: { gradientFrom: config.from, gradientTo: config.to },
       config,
     }
   }, [fuente.tipo, getTipoConfig, iconMap])
 
-  // ✅ Tipos que requieren validación (constante)
+  // ✅ Cálculos de pendientes (memoizados)
+  const pendientesObligatorios = useMemo(() =>
+    (documentosPendientes || []).filter(d => d.nivel_validacion === 'DOCUMENTO_OBLIGATORIO'),
+    [documentosPendientes]
+  )
+
+  const puedeDesembolsar = pendientesObligatorios.length === 0
+
+  // ✅ Tipos que requieren validación de documentos
   const tiposQueRequierenValidacion = useMemo(
     () => ['Crédito Hipotecario', 'Subsidio Mi Casa Ya', 'Subsidio Caja Compensación'],
     []
@@ -150,7 +153,7 @@ export function useFuentePagoCard({ fuente, clienteId }: UseFuentePagoCardProps)
   const estadoVisual = useMemo<EstadoVisual>(() => {
     const requiereValidacion = tiposQueRequierenValidacion.includes(fuente.tipo)
 
-    // Cuota Inicial - sin requisitos
+    // Cuota Inicial - sin requisitos de documentos
     if (!requiereValidacion) {
       if (metricas.porcentajePagado === 100) {
         return {
@@ -168,8 +171,8 @@ export function useFuentePagoCard({ fuente, clienteId }: UseFuentePagoCardProps)
       }
     }
 
-    // Fuentes con requisitos
-    if (progreso.porcentaje === 100) {
+    // Fuentes con requisitos de documentos
+    if (puedeDesembolsar) {
       return {
         tipo: 'completo',
         label: '✓ Habilitada para desembolso',
@@ -178,31 +181,14 @@ export function useFuentePagoCard({ fuente, clienteId }: UseFuentePagoCardProps)
       }
     }
 
-    if (progreso.pendientes > 0) {
-      return {
-        tipo: 'progreso',
-        label: `⚠️ ${progreso.pendientes} documento${progreso.pendientes > 1 ? 's' : ''} para habilitar desembolso`,
-        color: 'text-amber-600 dark:text-amber-400',
-        iconClass: 'text-amber-600 dark:text-amber-400'
-      }
-    }
-
-    if (progreso.completados === 0 && pasos.length > 0) {
-      return {
-        tipo: 'sin-configurar',
-        label: '⚠️ Sin documentos - No se puede desembolsar',
-        color: 'text-amber-600 dark:text-amber-400',
-        iconClass: 'text-amber-600 dark:text-amber-400'
-      }
-    }
-
+    const n = pendientesObligatorios.length
     return {
-      tipo: 'bloqueado',
-      label: '❌ Bloqueada para desembolso',
-      color: 'text-red-600 dark:text-red-400',
-      iconClass: 'text-red-600 dark:text-red-400'
+      tipo: 'progreso',
+      label: `⚠️ ${n} documento${n > 1 ? 's' : ''} obligatorio${n > 1 ? 's' : ''} pendiente${n > 1 ? 's' : ''}`,
+      color: 'text-amber-600 dark:text-amber-400',
+      iconClass: 'text-amber-600 dark:text-amber-400'
     }
-  }, [fuente.tipo, metricas.porcentajePagado, progreso, pasos.length, tiposQueRequierenValidacion])
+  }, [fuente.tipo, metricas.porcentajePagado, puedeDesembolsar, pendientesObligatorios, tiposQueRequierenValidacion])
 
   // ✅ Formateador de moneda (memoizado)
   const formatCurrency = useCallback((amount: number) =>
@@ -213,24 +199,19 @@ export function useFuentePagoCard({ fuente, clienteId }: UseFuentePagoCardProps)
     }).format(amount), []
   )
 
-  // ✅ Estados derivados
-  const isLoading = isLoadingPasos || isLoadingConfig
-  const hasError = !!errorPasos
+  const isLoading = isLoadingPendientes || isLoadingConfig
 
   return {
     // Datos
     fuente,
-    pasos,
-    progreso,
-    validacion,
+    documentosPendientes: documentosPendientes || [],
+    pendientesObligatorios,
     metricas,
     estadoVisual,
     configuracion,
 
     // Estados
     isLoading,
-    hasError,
-    errorPasos,
     puedeDesembolsar,
 
     // Utilidades

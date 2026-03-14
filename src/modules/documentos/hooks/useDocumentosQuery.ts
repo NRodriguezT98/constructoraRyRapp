@@ -135,6 +135,7 @@ export function useSubirDocumentoMutation(entidadId: string, tipoEntidad: TipoEn
       esImportante?: boolean
       esDocumentoIdentidad?: boolean
       userId: string
+      metadata?: Record<string, any> // ✅ Para vincular con requisito (requisito_config_id, fuente_pago_id, etc.)
     }) =>
       DocumentosBaseService.subirDocumento(
         {
@@ -148,6 +149,7 @@ export function useSubirDocumentoMutation(entidadId: string, tipoEntidad: TipoEn
           fecha_vencimiento: params.fechaVencimiento,
           es_importante: params.esImportante,
           es_documento_identidad: params.esDocumentoIdentidad,
+          metadata: params.metadata, // ✅ Pasa requisito_config_id y fuente_pago_id al service
         },
         params.userId
       ),

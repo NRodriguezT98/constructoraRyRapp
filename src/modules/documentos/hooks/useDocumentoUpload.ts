@@ -234,7 +234,7 @@ export function useDocumentoUpload({
           esImportante: data.es_importante,
           esDocumentoIdentidad: data.es_documento_identidad,
           userId: user.id,
-          // ✅ NUEVO: Incluir metadata con tipo_documento
+          // ✅ Metadata completa: incluye requisito_config_id, fuente_pago_id, tipo_documento, etc.
           ...(metadata ? {
             metadata: {
               ...metadata,
@@ -243,7 +243,7 @@ export function useDocumentoUpload({
             }
           } : {}),
           tipoDocumento: tipoDocumento ?? undefined,  // ✅ Campo directo en BD
-        } as any)
+        })
 
         // Reset form
         reset()

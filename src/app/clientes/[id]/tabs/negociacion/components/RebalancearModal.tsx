@@ -342,19 +342,17 @@ export function RebalancearModal({
     !isGuardando
 
   // ── Detectar cambios que invalidarán cartas de aprobación ─────────────
-  // Fuentes existentes: cambia entidad o aumenta monto Y tenía carta adjunta
+  // Fuentes existentes: cambia entidad o aumenta monto
   const fuentesExistentesQueInvalidan = useMemo(() => {
     return ajustes
       .filter((a) => !a.paraEliminar)
       .filter((a) => {
-        const original = fuentesPago.find((f) => f.id === a.id)
-        const teniaCarta = !!original?.carta_aprobacion_url
         const cambioEntidad = a.entidadEditable !== a.entidad
         const aumentoMonto = a.montoEditable > a.montoOriginal
-        return teniaCarta && (cambioEntidad || aumentoMonto)
+        return cambioEntidad || aumentoMonto
       })
       .map((a) => a.tipo)
-  }, [ajustes, fuentesPago])
+  }, [ajustes])
 
   // Fuentes nuevas que requerirán carta (no Cuota Inicial)
   const fuentesNuevasQueNecesitanCarta = useMemo(() => {

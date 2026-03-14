@@ -190,6 +190,28 @@ export interface CrearAbonoDTO {
   notas?: string;
 }
 
+// =====================================================
+// MODO DE REGISTRO
+// =====================================================
+
+/**
+ * Modo de registro de pago:
+ * - 'abono': El cliente realiza un pago parcial (ej: Cuota Inicial)
+ * - 'desembolso': Una entidad transfiere el total aprobado de una sola vez
+ *
+ * Discriminado por `fuente.permite_multiples_abonos` — NO hardcodea nombres.
+ */
+export type ModoRegistro = 'abono' | 'desembolso'
+
+/**
+ * Determina el modo a partir de la fuente de pago.
+ * `permite_multiples_abonos = true` → abono parcial (cliente paga en cuotas)
+ * `permite_multiples_abonos = false` → desembolso único (banco/gobierno gira el total)
+ */
+export function getModoRegistro(fuente: Pick<FuentePago, 'permite_multiples_abonos'>): ModoRegistro {
+  return fuente.permite_multiples_abonos ? 'abono' : 'desembolso'
+}
+
 /**
  * DTO para filtrar abonos
  */

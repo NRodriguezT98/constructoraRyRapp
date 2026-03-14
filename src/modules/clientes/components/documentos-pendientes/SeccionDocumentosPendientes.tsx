@@ -121,9 +121,9 @@ export function SeccionDocumentosPendientes({
     return Object.values(agrupados)
       .filter((grupo) => grupo.pendientes.length > 0)
       .sort((a, b) => {
-        // "Requisitos para Desembolso" (docs compartidos como Boleta de Registro) siempre van al final
-        const aEsCompartida = a.tipo === 'Requisitos para Desembolso'
-        const bEsCompartida = b.tipo === 'Requisitos para Desembolso'
+        // Documentación final (docs compartidos como Boleta de Registro) siempre van al final
+        const aEsCompartida = a.tipo === 'Compartido'
+        const bEsCompartida = b.tipo === 'Compartido'
         if (aEsCompartida && !bEsCompartida) return 1
         if (!aEsCompartida && bEsCompartida) return -1
         return 0
@@ -222,8 +222,8 @@ export function SeccionDocumentosPendientes({
                       </div>
                       <div className="flex-1">
                         <h4 className="text-sm font-bold text-gray-900 dark:text-white">
-                          {grupo.tipo}
-                          {grupo.entidad && <span className="text-cyan-600 dark:text-cyan-400"> • {grupo.entidad}</span>}
+                          {grupo.tipo === 'Compartido' ? 'Documentación final' : grupo.tipo}
+                          {grupo.tipo !== 'Compartido' && grupo.entidad && <span className="text-cyan-600 dark:text-cyan-400"> • {grupo.entidad}</span>}
                         </h4>
                         <p className="text-xs text-gray-500 dark:text-gray-400">
                           {grupo.pendientes.length} pendiente{grupo.pendientes.length !== 1 ? 's' : ''}

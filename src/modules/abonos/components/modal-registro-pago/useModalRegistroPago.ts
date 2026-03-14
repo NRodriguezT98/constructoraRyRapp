@@ -1,0 +1,234 @@
+import { useEffect, useRef, useState } from 'react'
+
+import { formatDateCompact, getTodayDateString } from '@/lib/utils/date.utils'
+
+import {
+    eliminarComprobante,
+    generarPathComprobante,
+    subirComprobante,
+} from '../../services/abonos-storage.service'
+import { getModoRegistro, type FuentePagoConAbonos, type MetodoPago, type ModoRegistro } from '../../types'
+import { getColorScheme, type ColorScheme } from './ModalRegistroPago.styles'
+
+type FaseLoading = 'idle' | 'subiendo' | 'guardando'
+
+export interface UseModalRegistroPagoProps {
+  open: boolean
+  negociacionId: string
+  fuentesPago: FuentePagoConAbonos[]
+  fuenteInicial?: FuentePagoConAbonos
+  fechaMinima?: string
+  onSuccess: () => void
+  onClose: () => void
+}
+
+function buildInitialState(fuenteInicial: FuentePagoConAbonos, fechaMinima?: string) {
+  const modo: ModoRegistro = getModoRegistro(fuenteInicial)
+  const montoInicial = modo === 'desembolso' ? (fuenteInicial.monto_aprobado ?? 0).toString() : ''
+  return {
+    fuente: fuenteInicial,
+    monto: montoInicial,
+    fechaAbono: getTodayDateString(),
+    metodoPago: 'Transferencia' as MetodoPago,
+    referencia: '',
+    notas: '',
+    comprobante: null as File | null,
+    fechaMinima,
+  }
+}
+
+export function useModalRegistroPago({
+  open,
+  negociacionId,
+  fuentesPago,
+  fuenteInicial,
+  fechaMinima,
+  onSuccess,
+  onClose,
+}: UseModalRegistroPagoProps) {
+  const fallbackFuente = fuenteInicial ?? fuentesPago[0]
+
+  const [fuenteSeleccionada, setFuenteSeleccionadaState] = useState<FuentePagoConAbonos>(fallbackFuente)
+  const [monto, setMonto] = useState('')
+  const [fechaAbono, setFechaAbono] = useState(getTodayDateString())
+  const [metodoPago, setMetodoPago] = useState<MetodoPago>('Transferencia')
+  const [referencia, setReferencia] = useState('')
+  const [notas, setNotas] = useState('')
+  const [comprobante, setComprobante] = useState<File | null>(null)
+  const [errors, setErrors] = useState<Record<string, string>>({})
+  const [faseLoading, setFaseLoading] = useState<FaseLoading>('idle')
+
+  const cancelledRef = useRef(false)
+
+  // ── Reset de estado cuando el modal se abre ─────────────────────────────────
+  useEffect(() => {
+    if (!open) return
+    const fuente = fuenteInicial ?? fuentesPago[0]
+    const initial = buildInitialState(fuente, fechaMinima)
+    setFuenteSeleccionadaState(fuente)
+    setMonto(initial.monto)
+    setFechaAbono(initial.fechaAbono)
+    setMetodoPago(initial.metodoPago)
+    setReferencia('')
+    setNotas('')
+    setComprobante(null)
+    setErrors({})
+    setFaseLoading('idle')
+    cancelledRef.current = false
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open])
+
+  // ── Cuando cambia la fuente: recalcular monto y método ─────────────────────
+  useEffect(() => {
+    const esDesembolso = !fuenteSeleccionada.permite_multiples_abonos
+    if (esDesembolso) {
+      setMonto((fuenteSeleccionada.monto_aprobado ?? 0).toString())
+      // Si el método actual era Efectivo (no válido para desembolso), resetearlo
+      setMetodoPago((prev) => (prev === 'Efectivo' ? 'Transferencia' : prev))
+    } else {
+      setMonto('')
+    }
+    setErrors({})
+  }, [fuenteSeleccionada])
+
+  // ── Valores derivados ───────────────────────────────────────────────────────
+  const modo: ModoRegistro = getModoRegistro(fuenteSeleccionada)
+  const esDesembolso = modo === 'desembolso'
+  const colorScheme: ColorScheme = getColorScheme(fuenteSeleccionada.tipo)
+  const saldoPendiente = fuenteSeleccionada.saldo_pendiente ?? 0
+  const montoNum = parseFloat(monto) || 0
+  const isSubmitting = faseLoading !== 'idle'
+
+  const metodosDisponibles: MetodoPago[] = esDesembolso
+    ? ['Transferencia', 'Cheque']
+    : ['Efectivo', 'Transferencia', 'Cheque']
+
+  // ── Cambio de fuente (wrapper) ──────────────────────────────────────────────
+  const setFuenteSeleccionada = (fuente: FuentePagoConAbonos) => {
+    setFuenteSeleccionadaState(fuente)
+  }
+
+  // ── Validación ──────────────────────────────────────────────────────────────
+  const validar = (): boolean => {
+    const newErrors: Record<string, string> = {}
+
+    if (!esDesembolso) {
+      if (!monto || isNaN(montoNum) || montoNum <= 0) {
+        newErrors.monto = 'El monto debe ser mayor a cero'
+      } else if (montoNum > saldoPendiente) {
+        newErrors.monto = 'No puede exceder el saldo pendiente'
+      }
+    }
+
+    if (!fechaAbono) {
+      newErrors.fechaAbono = 'La fecha es obligatoria'
+    } else if (fechaMinima && fechaAbono < fechaMinima) {
+      newErrors.fechaAbono = `No puede ser anterior al inicio de la negociación (${formatDateCompact(fechaMinima)})`
+    } else if (fechaAbono > getTodayDateString()) {
+      newErrors.fechaAbono = `No puede ser mayor a hoy (${formatDateCompact(getTodayDateString())})`
+    }
+
+    if (!comprobante) {
+      newErrors.comprobante = 'El comprobante es obligatorio'
+    }
+
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
+
+  // ── Submit: 2 fases (Storage → BD) ─────────────────────────────────────────
+  const handleSubmit = async () => {
+    if (!validar()) return
+    if (!comprobante) return
+
+    cancelledRef.current = false
+
+    // Fase 1: subir comprobante a Storage
+    setFaseLoading('subiendo')
+    const path = generarPathComprobante(negociacionId, fuenteSeleccionada.id, comprobante)
+
+    let uploadedPath: string
+    try {
+      uploadedPath = await subirComprobante(path, comprobante)
+    } catch {
+      setFaseLoading('idle')
+      setErrors({ submit: 'No se pudo subir el comprobante. Verifica tu conexión e intenta de nuevo.' })
+      return
+    }
+
+    if (cancelledRef.current) {
+      await eliminarComprobante(uploadedPath)
+      return
+    }
+
+    // Fase 2: registrar en BD
+    setFaseLoading('guardando')
+    try {
+      const response = await fetch('/api/abonos/registrar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          negociacion_id: negociacionId,
+          fuente_pago_id: fuenteSeleccionada.id,
+          monto: esDesembolso ? (fuenteSeleccionada.monto_aprobado ?? 0) : montoNum,
+          fecha_abono: fechaAbono,
+          metodo_pago: metodoPago,
+          numero_referencia: referencia || null,
+          notas: notas || null,
+          comprobante_path: uploadedPath,
+        }),
+      })
+
+      if (!response.ok) {
+        const err = await response.json()
+        throw new Error(err.error || 'Error al registrar el pago')
+      }
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : 'Error desconocido'
+      console.error('Error guardando pago:', msg)
+      setFaseLoading('idle')
+      setErrors({ submit: 'No se pudo guardar el pago. El comprobante puede haber quedado sin registrar — intenta de nuevo.' })
+      return
+    }
+
+    setFaseLoading('idle')
+    onSuccess()
+    onClose()
+  }
+
+  // ── Cierre del modal (marca cancelado para rollback si hay upload en curso) ─
+  const handleClose = () => {
+    cancelledRef.current = true
+    onClose()
+  }
+
+  return {
+    // Estado controlado
+    fuenteSeleccionada,
+    setFuenteSeleccionada,
+    monto,
+    setMonto,
+    fechaAbono,
+    setFechaAbono,
+    metodoPago,
+    setMetodoPago,
+    referencia,
+    setReferencia,
+    notas,
+    setNotas,
+    comprobante,
+    setComprobante,
+    // Derivados
+    modo,
+    esDesembolso,
+    colorScheme,
+    metodosDisponibles,
+    saldoPendiente,
+    montoNum,
+    isSubmitting,
+    errors,
+    // Handlers
+    handleSubmit,
+    handleClose,
+  }
+}

@@ -33,7 +33,8 @@ export interface DatosFuente {
   tipo: string
   entidad?: string
   monto_aprobado: number
-  tipo_documento_sistema?: string  // ← tipo exacto para vinculación con la vista
+  tipo_documento_sistema?: string    // ← tipo exacto para vinculación con la vista
+  requisito_config_id?: string       // ← FK al requisito: la vista lo usa para detectar doc subido
   // Datos para título inteligente
   vivienda?: {
     numero: string

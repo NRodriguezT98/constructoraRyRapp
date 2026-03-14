@@ -27,7 +27,6 @@ import {
     type NegociacionConValores,
 } from '@/modules/clientes/hooks/useNegociacionesQuery'
 import type { Cliente } from '@/modules/clientes/types'
-import type { MarcarPasoCompletadoDTO, PasoFuentePago } from '@/modules/fuentes-pago/types'
 
 import { useEditarFuentesPago } from './useEditarFuentesPago'
 
@@ -83,7 +82,7 @@ export function useViviendaAsignadaTab({ cliente }: UseViviendaAsignadaTabProps)
 
   // Modal de marcar paso completado
   const [modalMarcarPasoOpen, setModalMarcarPasoOpen] = useState(false)
-  const [pasoSeleccionado, setPasoSeleccionado] = useState<PasoFuentePago | null>(null)
+  const [pasoSeleccionado, setPasoSeleccionado] = useState<Record<string, unknown> | null>(null)
 
   // =====================================================
   // REACT QUERY: Detalle de vivienda activa
@@ -195,7 +194,7 @@ export function useViviendaAsignadaTab({ cliente }: UseViviendaAsignadaTabProps)
   // HANDLERS: Modal de marcar paso completado
   // =====================================================
 
-  const abrirModalMarcarPaso = (paso: PasoFuentePago) => {
+  const abrirModalMarcarPaso = (paso: Record<string, unknown>) => {
     setPasoSeleccionado(paso)
     setModalMarcarPasoOpen(true)
   }
@@ -205,7 +204,7 @@ export function useViviendaAsignadaTab({ cliente }: UseViviendaAsignadaTabProps)
     setPasoSeleccionado(null)
   }
 
-  const handleConfirmarPaso = async (datos: MarcarPasoCompletadoDTO) => {
+  const handleConfirmarPaso = async (datos: { fecha_completado: string; documento_id?: string; observaciones?: string }) => {
     try {
       // TODO: Llamar mutation para marcar paso
       alert('âœ… Paso marcado como completado')

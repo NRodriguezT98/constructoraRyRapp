@@ -69,15 +69,12 @@ export function FuentePagoCardRefactored({
 }: FuentePagoCardRefactoredProps) {
   // ✅ Toda la lógica encapsulada en hook
   const {
-    pasos,
-    progreso,
-    validacion,
+    documentosPendientes,
+    pendientesObligatorios,
     metricas,
     estadoVisual,
     configuracion,
     isLoading,
-    hasError,
-    errorPasos,
     formatCurrency,
     tiposQueRequierenValidacion,
   } = useFuentePagoCard({ fuente, clienteId })
@@ -132,15 +129,7 @@ export function FuentePagoCardRefactored({
   // RENDER: ERROR STATE
   // ==========================================
 
-  if (hasError) {
-    return (
-      <div className="rounded-xl border border-red-200 dark:border-red-700 bg-red-50 dark:bg-red-900/20 p-4">
-        <div className="text-sm text-red-600 dark:text-red-400">
-          Error al cargar fuente de pago: {errorPasos?.message}
-        </div>
-      </div>
-    )
-  }
+
 
   // ==========================================
   // RENDER: MAIN COMPONENT
@@ -187,9 +176,9 @@ export function FuentePagoCardRefactored({
             >
               <div className="px-4 pb-4 border-t border-gray-200 dark:border-gray-700 pt-4">
                 <FuentePagoCardProgress
-                  pasos={pasos as any}
-                  progreso={progreso as any}
-                  validacion={validacion as any}
+                  pasos={documentosPendientes as any}
+                  progreso={pendientesObligatorios as any}
+                  validacion={null as any}
                   tieneRequisitos={tieneRequisitos}
                   onAbrirModalSubida={handleAbrirModalSubida}
                   onVerDocumento={onVerDocumento}

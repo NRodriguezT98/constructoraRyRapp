@@ -1,15 +1,17 @@
 /**
  * 🔍 HOOK: VALIDACIÓN DE BOTÓN DE DESEMBOLSO
  *
- * Valida si se puede mostrar/habilitar el botón de registrar desembolso
- * usando el sistema dinámico de pasos (validarPreDesembolso).
+ * Valida si se puede mostrar/habilitar el botón de registrar desembolso.
+ * Usa useDocumentosPendientesObligatorios (cache compartido con React Query)
+ * y filtrarPendientesPorFuente (función pura — única fuente de verdad del filtro).
  */
 
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useMemo } from 'react'
 
-import { validarPreDesembolso } from '@/modules/fuentes-pago/services/pasos-fuente-pago.service'
+import { useDocumentosPendientesObligatorios } from '@/modules/clientes/hooks/useDocumentosPendientesObligatorios'
+import { filtrarPendientesPorFuente } from '@/modules/clientes/utils/documentos-pendientes.utils'
 
 import type { TipoFuentePago } from '../types'
 
@@ -22,16 +24,18 @@ interface EstadoBoton {
 
 interface UseValidacionBotonDesembolsoProps {
   fuenteId: string
+  clienteId?: string
   tipoFuente: TipoFuentePago
   fuenteCompletada: boolean
 }
 
 /**
  * Hook para validar si el botón de desembolso debe estar habilitado.
- * Usa el sistema dinámico de pasos (requisitos_fuentes_pago_config).
+ * Un documento OBLIGATORIO pendiente que aplique a esta fuente bloquea el botón.
  */
 export function useValidacionBotonDesembolso({
   fuenteId,
+  clienteId,
   tipoFuente,
   fuenteCompletada,
 }: UseValidacionBotonDesembolsoProps): EstadoBoton {
@@ -42,53 +46,43 @@ export function useValidacionBotonDesembolso({
 
   const textoBoton = esDesembolsoUnico ? 'Registrar Desembolso' : 'Registrar Abono'
 
-  const [estadoBoton, setEstadoBoton] = useState<EstadoBoton>({
-    habilitado: false,
-    texto: textoBoton,
-    cargando: true,
-  })
+  const { data: todosLosPendientes = [], isLoading, isError } = useDocumentosPendientesObligatorios(clienteId)
 
-  useEffect(() => {
-    async function validar() {
-      // Fuente completada → deshabilitar
-      if (fuenteCompletada) {
-        setEstadoBoton({ habilitado: false, texto: 'Completada', cargando: false })
-        return
-      }
+  return useMemo((): EstadoBoton => {
+    if (fuenteCompletada) {
+      return { habilitado: false, texto: 'Completada', cargando: false }
+    }
 
-      if (!fuenteId) {
-        setEstadoBoton({ habilitado: true, texto: textoBoton, cargando: false })
-        return
-      }
+    if (!fuenteId || !clienteId) {
+      return { habilitado: true, texto: textoBoton, cargando: false }
+    }
 
-      try {
-        const validacion = await validarPreDesembolso(fuenteId)
+    if (isLoading) {
+      return { habilitado: false, texto: textoBoton, cargando: true }
+    }
 
-        if (validacion.valido) {
-          setEstadoBoton({ habilitado: true, texto: textoBoton, cargando: false })
-        } else {
-          const pendientes = validacion.pasos_pendientes.map(p => `• ${p.titulo}`).join('\n')
-          setEstadoBoton({
-            habilitado: false,
-            texto: textoBoton,
-            tooltipMensaje: `Completa los siguientes requisitos antes de registrar:\n\n${pendientes}`,
-            cargando: false,
-          })
-        }
-      } catch (error) {
-        console.error('Error al validar requisitos del desembolso:', error)
-        // Fail-open: no bloquear por errores de red
-        setEstadoBoton({
-          habilitado: true,
-          texto: textoBoton,
-          tooltipMensaje: 'No se pudo verificar los requisitos. Proceda con precaución.',
-          cargando: false,
-        })
+    if (isError) {
+      // Fail-open: no bloquear por errores de red
+      return {
+        habilitado: true,
+        texto: textoBoton,
+        tooltipMensaje: 'No se pudo verificar los requisitos. Proceda con precaución.',
+        cargando: false,
       }
     }
 
-    validar()
-  }, [fuenteId, fuenteCompletada, textoBoton])
+    const pendientes = filtrarPendientesPorFuente(todosLosPendientes, fuenteId, tipoFuente)
 
-  return estadoBoton
+    if (pendientes.length === 0) {
+      return { habilitado: true, texto: textoBoton, cargando: false }
+    }
+
+    const lista = pendientes.map(p => `• ${p.tipo_documento}`).join('\n')
+    return {
+      habilitado: false,
+      texto: textoBoton,
+      tooltipMensaje: `Completa los siguientes documentos antes de registrar:\n\n${lista}`,
+      cargando: false,
+    }
+  }, [fuenteCompletada, fuenteId, clienteId, isLoading, isError, todosLosPendientes, tipoFuente, textoBoton])
 }

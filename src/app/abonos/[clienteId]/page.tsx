@@ -7,8 +7,9 @@ import { Loader2, Wallet } from 'lucide-react'
 
 import { useRouter } from 'next/navigation'
 
+import { formatDateForInput } from '@/lib/utils/date.utils'
 import { resolverSlugCliente } from '@/lib/utils/slug.utils'
-import { ModalRegistrarAbono } from '@/modules/abonos/components/modal-registrar-abono'
+import { ModalRegistroPago } from '@/modules/abonos/components/modal-registro-pago'
 
 import { FuentePagoCard, HeaderCliente, MetricasCards, TimelineAbonos } from './components'
 import { useAbonosDetalle } from './hooks/useAbonosDetalle'
@@ -130,14 +131,14 @@ export default function AbonosDetallePage({ params }: PageProps) {
         <TimelineAbonos abonos={abonos} loading={loadingAbonos} />
 
         {/* Modal */}
-        {modalAbonoOpen && fuenteSeleccionada && negociacion.fuentes_pago && (
-          <ModalRegistrarAbono
+        {modalAbonoOpen && fuenteSeleccionada && (
+          <ModalRegistroPago
             open={modalAbonoOpen}
             onClose={handleCerrarModal}
             negociacionId={negociacion.id}
             clienteId={clienteId}
-            fechaMinima={negociacion.fecha_negociacion ?? undefined}
-            fuentesPago={negociacion.fuentes_pago}
+            fechaMinima={negociacion.fecha_negociacion ? formatDateForInput(negociacion.fecha_negociacion) : undefined}
+            fuentesPago={[fuenteSeleccionada]}
             fuenteInicial={fuenteSeleccionada}
             onSuccess={handleAbonoRegistrado}
           />

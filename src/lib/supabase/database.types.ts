@@ -835,121 +835,7 @@ export type Database = {
           },
         ]
       }
-      documentos_pendientes: {
-        Row: {
-          cliente_id: string
-          completado_por: string | null
-          es_obligatorio: boolean | null
-          estado: string | null
-          fecha_completado: string | null
-          fecha_creacion: string | null
-          fuente_pago_id: string
-          id: string
-          metadata: Json | null
-          orden: number | null
-          prioridad: string | null
-          recordatorios_enviados: number | null
-          tipo_documento: string
-          ultima_notificacion: string | null
-        }
-        Insert: {
-          cliente_id: string
-          completado_por?: string | null
-          es_obligatorio?: boolean | null
-          estado?: string | null
-          fecha_completado?: string | null
-          fecha_creacion?: string | null
-          fuente_pago_id: string
-          id?: string
-          metadata?: Json | null
-          orden?: number | null
-          prioridad?: string | null
-          recordatorios_enviados?: number | null
-          tipo_documento: string
-          ultima_notificacion?: string | null
-        }
-        Update: {
-          cliente_id?: string
-          completado_por?: string | null
-          es_obligatorio?: boolean | null
-          estado?: string | null
-          fecha_completado?: string | null
-          fecha_creacion?: string | null
-          fuente_pago_id?: string
-          id?: string
-          metadata?: Json | null
-          orden?: number | null
-          prioridad?: string | null
-          recordatorios_enviados?: number | null
-          tipo_documento?: string
-          ultima_notificacion?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "documentos_pendientes_cliente_id_fkey"
-            columns: ["cliente_id"]
-            isOneToOne: false
-            referencedRelation: "clientes"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "documentos_pendientes_cliente_id_fkey"
-            columns: ["cliente_id"]
-            isOneToOne: false
-            referencedRelation: "v_negociaciones_completas"
-            referencedColumns: ["cliente_id"]
-          },
-          {
-            foreignKeyName: "documentos_pendientes_cliente_id_fkey"
-            columns: ["cliente_id"]
-            isOneToOne: false
-            referencedRelation: "v_renuncias_pendientes"
-            referencedColumns: ["cliente_id"]
-          },
-          {
-            foreignKeyName: "documentos_pendientes_cliente_id_fkey"
-            columns: ["cliente_id"]
-            isOneToOne: false
-            referencedRelation: "vista_clientes_resumen"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "documentos_pendientes_cliente_id_fkey"
-            columns: ["cliente_id"]
-            isOneToOne: false
-            referencedRelation: "vista_viviendas_completas"
-            referencedColumns: ["cliente_id_data"]
-          },
-          {
-            foreignKeyName: "documentos_pendientes_completado_por_fkey"
-            columns: ["completado_por"]
-            isOneToOne: false
-            referencedRelation: "usuarios"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "documentos_pendientes_completado_por_fkey"
-            columns: ["completado_por"]
-            isOneToOne: false
-            referencedRelation: "vista_usuarios_completos"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "documentos_pendientes_fuente_pago_id_fkey"
-            columns: ["fuente_pago_id"]
-            isOneToOne: false
-            referencedRelation: "fuentes_pago"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "documentos_pendientes_fuente_pago_id_fkey"
-            columns: ["fuente_pago_id"]
-            isOneToOne: false
-            referencedRelation: "fuentes_pago_con_entidad"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
+
       documentos_proyecto: {
         Row: {
           categoria_id: string | null
@@ -1336,7 +1222,6 @@ export type Database = {
       }
       fuentes_pago: {
         Row: {
-          carta_aprobacion_url: string | null
           carta_asignacion_url: string | null
           entidad: string | null
           entidad_financiera_id: string | null
@@ -1364,7 +1249,6 @@ export type Database = {
           version_negociacion: number
         }
         Insert: {
-          carta_aprobacion_url?: string | null
           carta_asignacion_url?: string | null
           entidad?: string | null
           entidad_financiera_id?: string | null
@@ -1392,7 +1276,6 @@ export type Database = {
           version_negociacion?: number
         }
         Update: {
-          carta_aprobacion_url?: string | null
           carta_asignacion_url?: string | null
           entidad?: string | null
           entidad_financiera_id?: string | null
@@ -1990,88 +1873,7 @@ export type Database = {
           },
         ]
       }
-      pasos_fuente_pago: {
-        Row: {
-          categoria_documento_requerida: string | null
-          completado: boolean
-          completado_automaticamente: boolean
-          descripcion: string | null
-          documento_id: string | null
-          fecha_actualizacion: string
-          fecha_completado: string | null
-          fecha_creacion: string
-          fuente_pago_id: string
-          id: string
-          nivel_validacion: string
-          observaciones: string | null
-          orden: number
-          paso: string
-          tipo_documento_requerido: string | null
-          titulo: string
-          usuario_completado: string | null
-        }
-        Insert: {
-          categoria_documento_requerida?: string | null
-          completado?: boolean
-          completado_automaticamente?: boolean
-          descripcion?: string | null
-          documento_id?: string | null
-          fecha_actualizacion?: string
-          fecha_completado?: string | null
-          fecha_creacion?: string
-          fuente_pago_id: string
-          id?: string
-          nivel_validacion: string
-          observaciones?: string | null
-          orden?: number
-          paso: string
-          tipo_documento_requerido?: string | null
-          titulo: string
-          usuario_completado?: string | null
-        }
-        Update: {
-          categoria_documento_requerida?: string | null
-          completado?: boolean
-          completado_automaticamente?: boolean
-          descripcion?: string | null
-          documento_id?: string | null
-          fecha_actualizacion?: string
-          fecha_completado?: string | null
-          fecha_creacion?: string
-          fuente_pago_id?: string
-          id?: string
-          nivel_validacion?: string
-          observaciones?: string | null
-          orden?: number
-          paso?: string
-          tipo_documento_requerido?: string | null
-          titulo?: string
-          usuario_completado?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "pasos_fuente_pago_documento_id_fkey"
-            columns: ["documento_id"]
-            isOneToOne: false
-            referencedRelation: "documentos_cliente"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "pasos_fuente_pago_fuente_pago_id_fkey"
-            columns: ["fuente_pago_id"]
-            isOneToOne: false
-            referencedRelation: "fuentes_pago"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "pasos_fuente_pago_fuente_pago_id_fkey"
-            columns: ["fuente_pago_id"]
-            isOneToOne: false
-            referencedRelation: "fuentes_pago_con_entidad"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
+
       permisos_rol: {
         Row: {
           accion: string
@@ -3090,7 +2892,6 @@ export type Database = {
     Views: {
       fuentes_pago_con_entidad: {
         Row: {
-          carta_aprobacion_url: string | null
           carta_asignacion_url: string | null
           entidad: string | null
           entidad_codigo: string | null
@@ -3729,6 +3530,7 @@ export type Database = {
           fecha_calculo: string | null
           fecha_creacion: string | null
           fuente_pago_id: string | null
+          fuentes_aplicables: string[] | null
           metadata: Json | null
           monto_aprobado: number | null
           nivel_validacion: string | null
