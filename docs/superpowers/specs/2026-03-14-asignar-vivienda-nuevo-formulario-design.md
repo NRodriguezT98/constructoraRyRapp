@@ -137,6 +137,13 @@ Cada sección comparte la misma estructura base:
 - Checkmark: `text-emerald-400`
 - Hover: `hover:bg-zinc-800 cursor-pointer` — abre para editar
 
+**Ejemplos de línea de resumen por sección:**
+
+- Sección ①: `Casa A3 · Los Pinos · $185.500.000 · -$5M desc.`
+- Sección ②: `Cuota Inicial · Crédito Hipotecario — $185.500.000 cubierto`
+  - Formato: nombres de fuentes activas separados por `·`, luego ` — $X cubierto`
+  - Si `sumaCierra === true` el total se muestra en `text-emerald-400`; si no, en `text-rose-400`
+
 ### Estado: Bloqueado (pendiente)
 
 ```
@@ -325,6 +332,7 @@ TOTAL A PAGAR              $180.500.000
 
 - `[Editar ①]` `[Editar ②]` — `text-zinc-400 text-xs underline-offset-2 hover:text-cyan-400 transition-colors`
 - `[↓ Descargar PDF]` — `border border-zinc-600 text-zinc-300 hover:border-zinc-400 rounded-lg px-4 py-2 text-sm w-full`
+  - **⚠️ Fuera de alcance en V1.** El botón se renderiza visualmente pero está desactivado: `opacity-50 cursor-not-allowed` y sin `onClick`. No hay generación de PDF en esta versión. El form anterior tampoco lo tenía como core — si se necesita en el futuro es una historia separada.
 
 ---
 
@@ -460,7 +468,21 @@ interface UseAsignarViviendaV2Return {
 ### Validación por paso
 
 - **Paso ①:** Válido cuando `proyecto_id` y `vivienda_id` están seleccionados. Si descuento activo: también `descuento_aplicado > 0`, `tipo_descuento` y `motivo_descuento` (≥10 chars). Implementar con `trigger(['proyecto_id', 'vivienda_id', ...])` al hacer click en "Continuar".
-- **Paso ②:** Válido cuando `sumaCierra === true` (total fuentes === valorTotal). Para fuentes activas no-"Cuota Inicial": `entidad` y `numero_referencia` son obligatorios — validados con `fuentePagoValidadaSchema`.
+- **Paso ②:** Válido cuando `sumaCierra === true` (total fuentes === valorTotal). Para fuentes activas no-"Cuota Inicial": `entidad` y `numero_referencia` son obligatorios. La validación se hace manualmente en el hook antes de navegar, NO con `fuentePagoValidadaSchema` — ese schema no existe todavía y no debe crearse. Patrón:
+  ```typescript
+  const errores: Record<string, string> = {}
+  fuentes
+    .filter(f => f.enabled && f.tipo !== 'Cuota Inicial')
+    .forEach(f => {
+      if (!f.config?.entidad) errores[f.tipo] = 'Entidad requerida'
+      if (!f.config?.numero_referencia)
+        errores[f.tipo] = 'Número de referencia requerido'
+    })
+  if (Object.keys(errores).length > 0) {
+    setErroresFuentes(errores)
+    return
+  }
+  ```
 - **Errores inline:** Aparecen debajo del campo afectado, `text-rose-400 text-xs flex items-center gap-1`.
 - **Transición bloqueado→activo:** Solo cuando el paso anterior está validado — el acordeón bloqueado no tiene hover ni responde a clicks.
 - **Editar desde Revisión:** La sección ③ permanece visible; se expande la sección editada. `irAPaso(1)` o `irAPaso(2)` desde los botones de edición.
