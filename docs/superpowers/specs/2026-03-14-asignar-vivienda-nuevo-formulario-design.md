@@ -47,6 +47,17 @@ Texto:       zinc-100 (principal) / zinc-400 (secundario)
 ### Animaciones
 
 - Framer Motion para expand/collapse de acordeones: `height: 'auto'`, `duration: 0.25`, `ease: easeInOut`
+  - **⚠️ Footgun crítico de Framer Motion:** `height: 'auto'` **requiere** que el contenedor wrapper tenga `style={{ overflow: 'hidden' }}` (o `className="overflow-hidden"`). Sin esto el contenido no se recorta al colapsar y la animación rompe el layout.
+  - Patrón correcto:
+    ```tsx
+    <motion.div
+      animate={{ height: isOpen ? 'auto' : 0 }}
+      style={{ overflow: 'hidden' }} // ← OBLIGATORIO
+      transition={{ duration: 0.25, ease: 'easeInOut' }}
+    >
+      {/* contenido del acordeón */}
+    </motion.div>
+    ```
 - Barra de progreso de monto: `animate={{ width }}`, `duration: 0.35`, `ease: easeOut`
 - Transición de barra lateral izquierda de color (bloqueado→activo→completado): `transition-colors duration-200`
 - **Sin** animaciones `whileHover: scale` en inputs ni cards de contenido
@@ -240,15 +251,19 @@ Cada fuente es una **row expandible**:
 ```
 ●  CRÉDITO HIPOTECARIO                $120.000.000
    ─────────────────────────────────────────────
-   ENTIDAD    [input]
-   MONTO      $ [input DM Mono]
-   [campos dinámicos adicionales desde BD]
+   ENTIDAD           [input text]
+   NÚMERO REFERENCIA  [input text]   ← requerido para fuentes no-Cuota Inicial
+   MONTO             $ [input DM Mono]
+   [campos dinámicos adicionales desde BD si aplica]
+   [toggle] Permite múltiples abonos    (default: OFF)
 ```
 
 - Switch ON `bg-cyan-400`, nombre `text-zinc-100 text-sm font-medium`
 - Monto calculado a la derecha en `DM Mono text-cyan-400 text-sm`
 - Campos internos en `pl-7` (alineados con el texto del título)
-- Animación: `height: 'auto' AnimatePresence`
+- Para fuente "Cuota Inicial": omitir `ENTIDAD` y `NÚMERO REFERENCIA` del UI (no requeridos según schema)
+- `permite_multiples_abonos`: toggle discreto al final de los campos, sin label prominente
+- Animación: `height: 'auto'` con `overflow: hidden` (ver §2 Animaciones)
 
 ### Panel totales (fixed al fondo de la sección)
 
@@ -294,7 +309,7 @@ TOTAL A PAGAR              $180.500.000
 
 - Separador doble `border-t-2 border-zinc-600`
 - Total: `DM Mono text-xl text-cyan-400 font-bold`
-- Descuento: `text-rose-400`
+- Descuento: `text-amber-400` con prefijo `−` — no usar `rose-400` (reservado para errores)
 
 ### Resumen fuentes
 
@@ -356,10 +371,76 @@ src/modules/clientes/pages/asignar-vivienda-v2/
 │   └── index.ts
 ```
 
+### 10.1 Interfaz de `useAsignarViviendaV2`
+
+El hook es el orquestador central. Delega a sub-hooks existentes y expone esta interfaz a los componentes hijos:
+
+```typescript
+interface UseAsignarViviendaV2Return {
+  // Navegación entre secciones
+  pasoActivo: 1 | 2 | 3
+  pasosCompletados: number[] // [1, 2] cuando ambos están validados
+  irAPaso: (paso: 1 | 2 | 3) => void
+
+  // React Hook Form (de useAsignarViviendaForm existente)
+  register: UseFormRegister<AsignarViviendaFormValues>
+  errors: FieldErrors<AsignarViviendaFormValues>
+  touchedFields: Partial<Record<keyof AsignarViviendaFormValues, boolean>>
+  setValue: UseFormSetValue<AsignarViviendaFormValues>
+  watch: UseFormWatch<AsignarViviendaFormValues>
+
+  // Datos de proyecto y vivienda (de useProyectosViviendas existente)
+  proyectos: Proyecto[]
+  viviendas: Vivienda[]
+  cargandoProyectos: boolean
+  cargandoViviendas: boolean
+  proyectoSeleccionado: string
+  viviendaSeleccionada: Vivienda | null
+  setProyectoSeleccionado: (id: string) => void
+
+  // Valores calculados de la sección ①
+  valorBase: number
+  gastosNotariales: number
+  recargoEsquinera: number
+  descuentoAplicado: number
+  valorTotal: number // = valor_negociado guardado en BD
+
+  // Fuentes de pago (de useFuentesPago + cargarTiposFuentesPagoActivas)
+  cargandoTipos: boolean
+  fuentes: FuentePagoConfig[]
+  totalFuentes: number
+  diferencia: number // valorTotal - totalFuentes
+  sumaCierra: boolean // diferencia === 0
+
+  // Validación de fuentes
+  erroresFuentes: Record<string, string> // { [fuenteId]: mensaje de error }
+  mostrarErroresFuentes: boolean
+
+  // Manejadores de fuentes
+  handleFuenteEnabledChange: (tipo: string, enabled: boolean) => void
+  handleFuenteConfigChange: (
+    tipo: string,
+    config: Partial<FuentePagoConfig>
+  ) => void
+
+  // Validación por sección
+  paso1Valido: boolean
+  paso2Valido: boolean
+
+  // Guardado
+  handleContinuar: () => Promise<void> // navegación + guardado final en paso 3
+  handleCancelar: () => void // navega back a perfil del cliente
+  creando: boolean // spinner durante guardado
+  errorApi: string | null // mensaje de error de API para banner
+}
+```
+
+---
+
 ### Reutilización permitida (desde módulos existentes)
 
 - `ViviendaCombobox` — el combobox de búsqueda ya funciona correctamente
-- `FuentePagoCard` — el sistema de campos dinámicos por fuente se mantiene, solo cambia su wrapper visual
+- `FuentePagoCard` — el sistema de campos dinámicos por fuente; **solo cambia su wrapper visual** (fondo `zinc-900` en lugar del actual)
 - `useCrearNegociacion` hook — la lógica de guardado no cambia
 - `useProyectosViviendas`, `useFuentesPago`, `useAsignarViviendaForm` hooks — reutilizables
 - `cargarTiposFuentesPagoActivas` service — sin cambios
@@ -374,13 +455,47 @@ src/modules/clientes/pages/asignar-vivienda-v2/
 
 ---
 
-## 11. Comportamiento de Validación
+## 11. Comportamiento de Validación y Errores
 
-- **Paso ①:** Válido cuando `proyecto_id` y `vivienda_id` están seleccionados. Si descuento activo: también `descuento_aplicado > 0`, `tipo_descuento` y `motivo_descuento` (≥10 chars).
-- **Paso ②:** Válido cuando `sumaCierra === true` (total fuentes === valor total).
+### Validación por paso
+
+- **Paso ①:** Válido cuando `proyecto_id` y `vivienda_id` están seleccionados. Si descuento activo: también `descuento_aplicado > 0`, `tipo_descuento` y `motivo_descuento` (≥10 chars). Implementar con `trigger(['proyecto_id', 'vivienda_id', ...])` al hacer click en "Continuar".
+- **Paso ②:** Válido cuando `sumaCierra === true` (total fuentes === valorTotal). Para fuentes activas no-"Cuota Inicial": `entidad` y `numero_referencia` son obligatorios — validados con `fuentePagoValidadaSchema`.
 - **Errores inline:** Aparecen debajo del campo afectado, `text-rose-400 text-xs flex items-center gap-1`.
 - **Transición bloqueado→activo:** Solo cuando el paso anterior está validado — el acordeón bloqueado no tiene hover ni responde a clicks.
-- **Editar desde Revisión:** Cierra la sección ③ no (siempre visible) y abre/expande la sección editada.
+- **Editar desde Revisión:** La sección ③ permanece visible; se expande la sección editada. `irAPaso(1)` o `irAPaso(2)` desde los botones de edición.
+
+### Errores de API (guardado)
+
+Cuando `useCrearNegociacion` falla:
+
+- El botón "Asignar Vivienda" vuelve a estado normal (no spinner)
+- Se muestra un banner de error encima de la sección ③: `bg-rose-950/50 border border-rose-800 text-rose-300 text-sm p-3 rounded-lg` con el mensaje del error
+- El error se limpia cuando el usuario modifica cualquier campo
+- Casos específicos a manejar con mensaje explicativo:
+  - Vivienda ya asignada (duplicate constraint)
+  - Error de red / timeout
+  - Error genérico de Supabase
+
+### Campo `valor_negociado` — aclaración
+
+`TOTAL A CUBRIR` que se muestra en la UI **es** el valor que se guarda como `valor_negociado` en BD. Se calcula como:
+
+```
+valor_negociado = valor_base + gastos_notariales + recargo_esquinera - descuento_aplicado
+```
+
+Este valor se setea automáticamente vía `setValue('valor_negociado', valorTotal)` cuando cambia la vivienda o el descuento. No es un campo editable directo — es el resultado del cálculo mostrado como `TOTAL A CUBRIR`.
+
+### Campo `permite_multiples_abonos`
+
+Boolean en cada fuente configurada. Se muestra como toggle dentro de la fuente expandida en sección ②:
+
+```
+[toggle] Permite múltiples abonos    text-zinc-400 text-xs
+```
+
+Default: `false`. No requiere validación. Se incluye en el payload de cada fuente al guardar.
 
 ---
 
@@ -415,5 +530,5 @@ Via `next/font/google` para zero-layout-shift.
 - [ ] Tipografía `DM Mono` en todos los valores monetarios
 - [ ] Paleta monocromática zinc + acento único cyan
 - [ ] Dark mode nativo (zinc es dark-first)
-- [ ] Responsive: apilado en móvil, `max-w-2xl` en desktop
+- [ ] Responsive: grid `grid-cols-2` colapsa a `grid-cols-1` en `< sm` (640px); status bar apila monto arriba y botón abajo en móvil (`flex-col sm:flex-row`)
 - [ ] Lógica de guardado idéntica al formulario actual (mismos hooks/services)
