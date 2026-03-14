@@ -391,11 +391,11 @@ interface UseAsignarViviendaV2Return {
   irAPaso: (paso: 1 | 2 | 3) => void
 
   // React Hook Form (de useAsignarViviendaForm existente)
-  register: UseFormRegister<AsignarViviendaFormValues>
-  errors: FieldErrors<AsignarViviendaFormValues>
-  touchedFields: Partial<Record<keyof AsignarViviendaFormValues, boolean>>
-  setValue: UseFormSetValue<AsignarViviendaFormValues>
-  watch: UseFormWatch<AsignarViviendaFormValues>
+  register: UseFormRegister<AsignarViviendaFormData>
+  errors: FieldErrors<AsignarViviendaFormData>
+  touchedFields: Partial<Record<keyof AsignarViviendaFormData, boolean>>
+  setValue: UseFormSetValue<AsignarViviendaFormData>
+  watch: UseFormWatch<AsignarViviendaFormData>
 
   // Datos de proyecto y vivienda (de useProyectosViviendas existente)
   proyectos: Proyecto[]
@@ -415,13 +415,13 @@ interface UseAsignarViviendaV2Return {
 
   // Fuentes de pago (de useFuentesPago + cargarTiposFuentesPagoActivas)
   cargandoTipos: boolean
-  fuentes: FuentePagoConfig[]
+  fuentes: FuentePagoConfiguracion[] // { tipo, enabled, config: FuentePagoConfig | null }
   totalFuentes: number
   diferencia: number // valorTotal - totalFuentes
   sumaCierra: boolean // diferencia === 0
 
   // Validación de fuentes
-  erroresFuentes: Record<string, string> // { [fuenteId]: mensaje de error }
+  erroresFuentes: Record<string, string> // clave = fuente.tipo (nombre string, ej. "Cuota Inicial")
   mostrarErroresFuentes: boolean
 
   // Manejadores de fuentes
