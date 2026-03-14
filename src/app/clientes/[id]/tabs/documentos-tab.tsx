@@ -221,9 +221,15 @@ export function DocumentosTab({ cliente }: DocumentosTabProps) {
 
       {/* 🚨 Banner informativo cuando no hay documento de identidad */}
       <AnimatePresence>
-        {!tieneCedula && !cargandoValidacion && (
-          <BannerDocumentoRequerido />
-        )}
+        {!tieneCedula && !cargandoValidacion && (() => {
+          // Si ya tiene negociación activa (vivienda asignada), mostrar advertencia suave
+          const tieneNegociacion = (cliente.estadisticas?.negociaciones_activas ?? 0) > 0
+          return (
+            <BannerDocumentoRequerido
+              variant={tieneNegociacion ? 'advertencia' : 'bloqueante'}
+            />
+          )
+        })()}
       </AnimatePresence>
 
       {/* 📄 Sección de documentos pendientes de fuentes (colapsable) */}

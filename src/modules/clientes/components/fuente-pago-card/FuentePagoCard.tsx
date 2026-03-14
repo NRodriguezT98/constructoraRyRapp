@@ -321,7 +321,7 @@ function FuentePagoCardComponent(props: FuentePagoCardProps) {
                 ))}
 
               {/* Mensaje de porcentaje (solo para monto_aprobado) */}
-              {config?.monto_aprobado && valorTotal > 0 && (
+              {!!config?.monto_aprobado && valorTotal > 0 && (
                 <div className="px-3 py-2 rounded-lg bg-gradient-to-r from-cyan-50 to-blue-50 dark:from-cyan-950/30 dark:to-blue-950/30 border border-cyan-200 dark:border-cyan-800">
                   <p className="text-xs text-cyan-800 dark:text-cyan-200 font-medium">
                     💰 Representa el <span className="font-bold">{porcentaje}%</span> del valor total (${valorTotal.toLocaleString('es-CO')})

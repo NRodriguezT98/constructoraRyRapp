@@ -9,8 +9,8 @@ import { clientesService } from '../services/clientes.service'
 import type {
     ActualizarClienteDTO,
     CrearClienteDTO,
-    TipoDocumento,
     OrigenCliente,
+    TipoDocumento,
 } from '../types'
 import { validarDocumentoIdentidad } from '../utils/validacion-documentos-colombia'
 
@@ -263,10 +263,11 @@ export function useFormularioCliente({
     }
 
     // Número documento (requerido)
+    // ✅ Regex permisivo: acepta CC (numérico), CE, PP, PEP (alfanumérico)
     if (!formData.numero_documento.trim()) {
       nuevosErrores.numero_documento = 'El número de documento es requerido'
-    } else if (!/^[0-9]+$/.test(formData.numero_documento)) {
-      nuevosErrores.numero_documento = 'Solo se permiten números'
+    } else if (!/^[A-Za-z0-9]+$/.test(formData.numero_documento.trim())) {
+      nuevosErrores.numero_documento = 'El documento solo puede contener letras y números'
     }
 
     // Contacto: Al menos teléfono o email
@@ -286,6 +287,14 @@ export function useFormularioCliente({
     // Teléfono (opcional pero con formato)
     if (formData.telefono && !/^[0-9+\-\s()]+$/.test(formData.telefono)) {
       nuevosErrores.telefono = 'Teléfono inválido'
+    }
+
+    // Ubicación (obligatoria)
+    if (!formData.departamento || formData.departamento.trim() === '') {
+      nuevosErrores.departamento = 'El departamento es obligatorio'
+    }
+    if (!formData.ciudad || formData.ciudad.trim() === '') {
+      nuevosErrores.ciudad = 'La ciudad/municipio es obligatoria'
     }
 
     setErrors(nuevosErrores)

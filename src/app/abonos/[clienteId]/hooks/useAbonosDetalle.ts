@@ -112,7 +112,14 @@ export function useAbonosDetalle(clienteId: string) {
       // Función pura: única fuente de verdad del filtro de pendientes por fuente
       const pendientesFuente = filtrarPendientesPorFuente(pendientesObligatorios, fuente.id, fuente.tipo)
       const documentosObligatoriosPendientes = pendientesFuente.length
-      const documentosPendientesNombres = pendientesFuente
+      const documentosPendientesNombres = [...pendientesFuente]
+        .sort((a, b) => {
+          // Cartas de aprobación/asignación (ESPECIFICO_FUENTE) van primero
+          // Boleta de Registro y docs compartidos (COMPARTIDO_CLIENTE) van al final
+          if (a.alcance === 'ESPECIFICO_FUENTE' && b.alcance !== 'ESPECIFICO_FUENTE') return -1
+          if (a.alcance !== 'ESPECIFICO_FUENTE' && b.alcance === 'ESPECIFICO_FUENTE') return 1
+          return 0
+        })
         .map(d => d.tipo_documento || d.tipo_documento_sistema || '')
         .filter(Boolean)
 

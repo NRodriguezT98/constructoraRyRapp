@@ -2,10 +2,11 @@
 
 import { motion } from 'framer-motion'
 import { AlertCircle, CheckCircle2, DollarSign, Info } from 'lucide-react'
-import { useCallback } from 'react'
+import { useCallback, useMemo } from 'react'
 
 import { FuentePagoCard } from '@/modules/clientes/components/fuente-pago-card'
 import type { TipoFuentePago } from '@/modules/clientes/types'
+import { obtenerMonto } from '@/modules/clientes/utils/fuentes-pago-campos.utils'
 import { useTiposFuentesConCampos } from '@/modules/configuracion/hooks/useTiposFuentesConCampos'
 
 import { pageStyles as s } from '@/modules/clientes/pages/asignar-vivienda/styles'
@@ -50,6 +51,27 @@ export function Paso2FuentesPago({
   // ============================================
 
   const { data: tiposConCampos = [], isLoading: cargandoCampos } = useTiposFuentesConCampos()
+
+  // Paleta de colores para la barra de distribución (por índice)
+  const FUENTE_COLORS = [
+    { bar: 'bg-blue-500', dot: 'bg-blue-500', text: 'text-blue-600 dark:text-blue-400' },
+    { bar: 'bg-green-500', dot: 'bg-green-500', text: 'text-green-600 dark:text-green-400' },
+    { bar: 'bg-amber-500', dot: 'bg-amber-500', text: 'text-amber-600 dark:text-amber-400' },
+    { bar: 'bg-purple-500', dot: 'bg-purple-500', text: 'text-purple-600 dark:text-purple-400' },
+  ]
+
+  // Fuentes activas con su monto calculado para la barra de distribución
+  const fuentesConMonto = useMemo(() => {
+    return fuentes
+      .filter(f => f.enabled && f.config !== null)
+      .map(f => {
+        const tipoConCampos = tiposConCampos.find(t => t.nombre === f.tipo)
+        const camposConfig = tipoConCampos?.configuracion_campos?.campos || []
+        const monto = obtenerMonto(f.config, camposConfig)
+        return { tipo: f.tipo, monto }
+      })
+      .filter(f => f.monto > 0)
+  }, [fuentes, tiposConCampos])
 
   // ✅ Memoizar callbacks para evitar re-renders innecesarios
   const handleEnabledChange = useCallback((tipo: TipoFuentePago) => {
@@ -100,6 +122,49 @@ export function Paso2FuentesPago({
 
       {!cargandoTipos && !cargandoCampos && fuentes.length > 0 && (
         <div className="space-y-3">
+          {/* Barra de distribución de financiamiento */}
+          {fuentesConMonto.length > 0 && (
+            <div className="backdrop-blur-xl bg-white/80 dark:bg-gray-800/80 border border-gray-200/50 dark:border-gray-700/50 rounded-lg p-3 shadow-lg">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-semibold text-gray-600 dark:text-gray-400">Distribución del financiamiento</span>
+                <span className={`text-xs font-bold ${
+                  sumaCierra
+                    ? 'text-green-600 dark:text-green-400'
+                    : totalFuentes > 0
+                    ? 'text-red-500 dark:text-red-400'
+                    : 'text-gray-400'
+                }`}>
+                  ${totalFuentes.toLocaleString('es-CO')} / ${valorTotal.toLocaleString('es-CO')}
+                  {sumaCierra ? ' ✓' : ''}
+                </span>
+              </div>
+              {/* Segmentos proporcionales */}
+              <div className="h-2.5 bg-gray-100 dark:bg-gray-900/60 rounded-full overflow-hidden flex gap-0.5">
+                {fuentesConMonto.map((f, i) => (
+                  <motion.div
+                    key={f.tipo}
+                    className={`h-full rounded-sm ${FUENTE_COLORS[i % FUENTE_COLORS.length].bar}`}
+                    initial={{ width: 0 }}
+                    animate={{ width: `${(f.monto / valorTotal) * 100}%` }}
+                    transition={{ duration: 0.35, ease: 'easeOut' }}
+                  />
+                ))}
+              </div>
+              {/* Leyenda */}
+              <div className="flex flex-wrap gap-x-4 gap-y-0.5 mt-2">
+                {fuentesConMonto.map((f, i) => (
+                  <div key={f.tipo} className="flex items-center gap-1.5">
+                    <div className={`w-2 h-2 rounded-sm flex-shrink-0 ${FUENTE_COLORS[i % FUENTE_COLORS.length].dot}`} />
+                    <span className="text-[10px] text-gray-500 dark:text-gray-400">{f.tipo}</span>
+                    <span className={`text-[10px] font-bold ${FUENTE_COLORS[i % FUENTE_COLORS.length].text}`}>
+                      {((f.monto / valorTotal) * 100).toFixed(1)}%
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {fuentes.map((fuente) => {
             // ✅ Obtener configuración de campos para este tipo
             const tipoConCampos = tiposConCampos.find(t => t.nombre === fuente.tipo)

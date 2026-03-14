@@ -93,21 +93,6 @@ export default function RootLayout({
                     position='bottom-right'
                     duration={4000}
                     gap={8}
-                    toastOptions={{
-                      // Fallback para toast.success/error() legacy — los toast.custom() ignoran esto
-                      unstyled: true,
-                      classNames: {
-                        toast: 'relative flex w-[360px] items-start gap-3 overflow-hidden rounded-xl border-l-[3px] border border-white/[0.07] bg-gray-950 p-4 pr-10 shadow-[0_24px_64px_rgba(0,0,0,0.5)]',
-                        title: 'text-[13px] font-semibold leading-snug text-white',
-                        description: 'mt-0.5 text-[11.5px] leading-relaxed text-white/45',
-                        icon: 'mt-px shrink-0',
-                        closeButton: 'absolute right-2.5 top-[13px] flex h-[22px] w-[22px] cursor-pointer items-center justify-center rounded-md border-0 bg-transparent text-white/25 transition-colors hover:bg-white/[0.08] hover:text-white/60',
-                        success: 'border-l-emerald-500',
-                        error: 'border-l-red-500',
-                        info: 'border-l-blue-500',
-                        warning: 'border-l-amber-400',
-                      },
-                    }}
                   />
 
                   {/* Modales globales */}

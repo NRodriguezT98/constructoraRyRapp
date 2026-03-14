@@ -20,6 +20,7 @@ import { useCallback, useState } from 'react'
 
 import { useQueryClient } from '@tanstack/react-query'
 
+import { tieneDocumentoIdentidad } from '@/modules/clientes/documentos/utils/validacion-cedula'
 import { negociacionesService } from '@/modules/clientes/services/negociaciones.service'
 import type { CrearFuentePagoDTO, Negociacion } from '@/modules/clientes/types'
 
@@ -98,12 +99,6 @@ export function useCrearNegociacion(): UseCrearNegociacionReturn {
 
     // ⭐ VALIDACIONES DE FUENTES DE PAGO (solo si se proporcionan)
     if (datos.fuentes_pago && datos.fuentes_pago.length > 0) {
-      // Validar que exista Cuota Inicial
-      const tieneCuotaInicial = datos.fuentes_pago.some(f => f.tipo === 'Cuota Inicial')
-      if (!tieneCuotaInicial) {
-        errores.push('Debe configurar la Cuota Inicial (obligatoria)')
-      }
-
       // Validar que la suma de fuentes = valor total
       const sumaFuentes = datos.fuentes_pago.reduce((sum, f) => sum + f.monto_aprobado, 0)
       if (Math.abs(sumaFuentes - valorTotal) > 0.01) {
@@ -148,8 +143,12 @@ export function useCrearNegociacion(): UseCrearNegociacionReturn {
         return null
       }
 
-      // ℹ️ NOTA: La validación de cédula se hace ANTES de permitir acceso al formulario
-      // No es necesario volver a validar aquí (evita query redundante)
+      // ✅ VALIDACIÓN SERVER-SIDE: Verificar documento de identidad en BD
+      const tieneDoc = await tieneDocumentoIdentidad(datos.cliente_id)
+      if (!tieneDoc) {
+        setError('Este cliente no tiene documento de identidad registrado. Sube la cédula o pasaporte en la pestaña "Documentos" antes de crear una negociación.')
+        return null
+      }
 
       // Verificar si ya existe negociación activa
       const yaExiste = await negociacionesService.existeNegociacionActiva(

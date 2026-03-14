@@ -13,9 +13,7 @@ import { type ColumnDef, type SortingState } from '@tanstack/react-table'
 import {
     Building2,
     Edit2,
-    Eye,
     Heart,
-    Phone,
     Trash2,
     User,
     UserCheck,
@@ -91,7 +89,7 @@ export function ClientesTabla({
     {
       accessorKey: 'nombre_completo',
       header: 'Cliente',
-      size: 200,
+      size: 260,
       cell: ({ row }) => {
         const nombreCompleto = formatNombreCompleto(row.original.nombre_completo)
         const estado = row.original.estado
@@ -135,28 +133,6 @@ export function ClientesTabla({
           </span>
         </div>
       ),
-    },
-
-    // 3. TELÉFONO
-    {
-      accessorKey: 'telefono',
-      header: 'Teléfono',
-      size: 110,
-      cell: ({ row }) => {
-        const telefono = row.original.telefono
-        return telefono ? (
-          <div className={styles.iconCell.container}>
-            <Phone className={`${styles.iconCell.icon} text-purple-600 dark:text-purple-400`} />
-            <span className={styles.iconCell.text} title={telefono}>
-              {telefono}
-            </span>
-          </div>
-        ) : (
-          <div className={styles.cell.center}>
-            <span className="text-xs text-gray-400 dark:text-gray-500">—</span>
-          </div>
-        )
-      },
     },
 
     // 4. ESTADO (badge con colores)
@@ -324,11 +300,11 @@ export function ClientesTabla({
       },
     },
 
-    // 7. VALORES — Saldo héroe + barra de progreso compacta
+    // 7. VALORES — Saldo + anillo de progreso SVG
     {
       id: 'saldo',
       header: 'Saldo / Progreso',
-      size: 160,
+      size: 190,
       cell: ({ row }) => {
         const cliente = row.original
 
@@ -347,42 +323,58 @@ export function ClientesTabla({
               maximumFractionDigits: 0,
             }).format(v).replace(/\s/g, '')
 
+          // Anillo SVG: circunferencia = 2π × r = 2π × 14 ≈ 87.96
+          const CIRCUNFERENCIA = 87.96
+          const strokeDash = Math.min(porcentaje / 100, 1) * CIRCUNFERENCIA
+          const ringColor = pagadoCompleto
+            ? '#10b981'
+            : porcentaje >= 50
+            ? '#3b82f6'
+            : '#f59e0b'
+
           return (
-            <div className="py-1.5 space-y-1.5">
-              {/* Saldo — valor principal */}
-              <div className="flex items-baseline justify-between gap-1">
-                <span className="text-[10px] font-medium text-gray-400 dark:text-gray-500">Saldo</span>
-                <span className={`text-xs font-bold ${
+            <div className="flex items-center justify-between gap-2 py-1">
+              {/* Izquierda: saldo + total */}
+              <div className="flex flex-col min-w-0">
+                <span className={`text-xs font-bold leading-tight ${
                   pagadoCompleto
                     ? 'text-emerald-600 dark:text-emerald-400'
                     : 'text-red-600 dark:text-red-400'
                 }`}>
                   {pagadoCompleto ? '✓ Pagado' : fmt(saldo)}
                 </span>
+                <span className="text-[10px] text-gray-400 dark:text-gray-500 leading-tight">
+                  de {fmt(valorTotal)}
+                </span>
               </div>
 
-              {/* Barra de progreso */}
-              <div className="relative w-full h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                <div
-                  className={`absolute inset-y-0 left-0 rounded-full transition-all ${
-                    porcentaje >= 100
-                      ? 'bg-emerald-500'
-                      : porcentaje >= 50
-                      ? 'bg-blue-500'
-                      : 'bg-amber-500'
-                  }`}
-                  style={{ width: `${Math.min(porcentaje, 100)}%` }}
-                />
-              </div>
-
-              {/* Total + % */}
-              <div className="flex items-baseline justify-between gap-1">
-                <span className="text-[10px] text-gray-400 dark:text-gray-500" title={`Total: ${fmt(valorTotal)}`}>
-                  {fmt(valorTotal)}
-                </span>
-                <span className="text-[10px] font-semibold text-gray-500 dark:text-gray-400">
-                  {porcentaje}%
-                </span>
+              {/* Derecha: anillo SVG */}
+              <div className="relative flex-shrink-0 w-9 h-9">
+                <svg width="36" height="36" viewBox="0 0 36 36" style={{ transform: 'rotate(-90deg)' }}>
+                  {/* Track */}
+                  <circle
+                    cx="18" cy="18" r="14"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                    className="text-gray-200 dark:text-gray-700"
+                  />
+                  {/* Progress */}
+                  <circle
+                    cx="18" cy="18" r="14"
+                    fill="none"
+                    stroke={ringColor}
+                    strokeWidth="4"
+                    strokeLinecap="round"
+                    strokeDasharray={`${strokeDash} ${CIRCUNFERENCIA}`}
+                  />
+                </svg>
+                {/* Porcentaje centrado */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="text-[9px] font-bold text-gray-700 dark:text-gray-200 leading-none">
+                    {pagadoCompleto ? '✓' : `${porcentaje}%`}
+                  </span>
+                </div>
               </div>
             </div>
           )
@@ -400,21 +392,12 @@ export function ClientesTabla({
     {
       id: 'acciones',
       header: 'Acciones',
-      size: 100,
+      size: 80,
       cell: ({ row }) => (
         <div className={styles.actions.container}>
-          {onView && (
-            <button
-              onClick={() => onView(row.original)}
-              className={cn(styles.actions.button, styles.actions.view)}
-              title="Ver detalle"
-            >
-              <Eye className="w-3.5 h-3.5" />
-            </button>
-          )}
           {canEdit && onEdit && (
             <button
-              onClick={() => onEdit(row.original)}
+              onClick={(e) => { e.stopPropagation(); onEdit(row.original) }}
               className={cn(styles.actions.button, styles.actions.edit)}
               title="Editar"
             >
@@ -423,7 +406,7 @@ export function ClientesTabla({
           )}
           {canDelete && onDelete && (
             <button
-              onClick={() => onDelete(row.original.id)}
+              onClick={(e) => { e.stopPropagation(); onDelete(row.original.id) }}
               className={cn(styles.actions.button, styles.actions.delete)}
               title="Eliminar"
             >
@@ -462,6 +445,7 @@ export function ClientesTabla({
         columns={columns}
         data={clientes}
         initialSorting={initialSorting}
+        onRowClick={onView}
       />
     </div>
   )

@@ -78,7 +78,7 @@ export function ResumenNegociacion({ negociacion, clienteId }: ResumenNegociacio
           </div>
 
           <a
-            href={`/abonos?cliente_id=${clienteId}`}
+            href={`/abonos/${clienteId}`}
             className="flex items-center gap-1 text-[11px] font-medium text-cyan-600 dark:text-cyan-400 hover:text-cyan-800 dark:hover:text-cyan-200 transition-colors"
           >
             <Clock className="w-3 h-3" />

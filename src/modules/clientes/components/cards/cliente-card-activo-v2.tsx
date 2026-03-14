@@ -17,7 +17,6 @@ import {
     Calendar,
     CheckCircle2,
     Edit,
-    Eye,
     Hash,
     Home,
     Layers,
@@ -87,11 +86,12 @@ export function ClienteCardActivo({
 
   return (
     <motion.div
-      className="group relative overflow-hidden rounded-2xl backdrop-blur-xl bg-white/80 dark:bg-gray-800/80 border border-gray-200/50 dark:border-gray-700/50 shadow-lg hover:shadow-2xl transition-all duration-300"
+      className="group relative overflow-hidden rounded-2xl backdrop-blur-xl bg-white/80 dark:bg-gray-800/80 border border-gray-200/50 dark:border-gray-700/50 shadow-lg hover:shadow-2xl transition-all duration-300 cursor-pointer"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       whileHover={{ y: -4 }}
       transition={{ duration: 0.3 }}
+      onClick={() => onVer?.(cliente)}
     >
       {/* Glow effect */}
       <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/20 to-teal-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
@@ -119,18 +119,9 @@ export function ClienteCardActivo({
             </div>
             {/* Actions */}
             <div className="flex gap-1 flex-shrink-0">
-              {onVer && (
-                <button
-                  onClick={() => onVer(cliente)}
-                  className="p-1.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 hover:text-emerald-600 dark:hover:text-emerald-400 transition-all"
-                  title="Ver detalle"
-                >
-                  <Eye className="w-4 h-4" />
-                </button>
-              )}
               {onEditar && (
                 <button
-                  onClick={() => onEditar(cliente)}
+                  onClick={(e) => { e.stopPropagation(); onEditar(cliente) }}
                   className="p-1.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 hover:text-emerald-600 dark:hover:text-emerald-400 transition-all"
                   title="Editar"
                 >
@@ -139,7 +130,7 @@ export function ClienteCardActivo({
               )}
               {onEliminar && (
                 <button
-                  onClick={() => onEliminar(cliente)}
+                  onClick={(e) => { e.stopPropagation(); onEliminar(cliente) }}
                   className="p-1.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-red-100 dark:hover:bg-red-900/30 hover:text-red-600 dark:hover:text-red-400 transition-all"
                   title="Eliminar"
                 >
@@ -268,7 +259,7 @@ export function ClienteCardActivo({
         {/* === ACTION BUTTON === */}
         {onRegistrarAbono && (
           <motion.button
-            onClick={() => onRegistrarAbono(cliente)}
+            onClick={(e) => { e.stopPropagation(); onRegistrarAbono(cliente) }}
             className="w-full px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white text-sm font-bold shadow-lg shadow-emerald-500/30 hover:shadow-xl hover:shadow-emerald-500/40 transition-all"
             whileHover={{ scale: 1.01 }}
             whileTap={{ scale: 0.99 }}

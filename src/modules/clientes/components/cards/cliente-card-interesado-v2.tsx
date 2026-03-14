@@ -8,10 +8,10 @@
 
 import { motion } from 'framer-motion'
 import {
+    ArrowRight,
     Building2,
     Calendar,
     Edit,
-    Eye,
     Heart,
     Home,
     Mail,
@@ -64,11 +64,12 @@ export function ClienteCardInteresado({
 
   return (
     <motion.div
-      className="group relative overflow-hidden rounded-2xl backdrop-blur-xl bg-white/80 dark:bg-gray-800/80 border border-gray-200/50 dark:border-gray-700/50 shadow-lg hover:shadow-2xl transition-all duration-300"
+      className="group relative overflow-hidden rounded-2xl backdrop-blur-xl bg-white/80 dark:bg-gray-800/80 border border-gray-200/50 dark:border-gray-700/50 shadow-lg hover:shadow-2xl transition-all duration-300 cursor-pointer"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       whileHover={{ y: -4 }}
       transition={{ duration: 0.3 }}
+      onClick={() => onVer?.(cliente)}
     >
       {/* Glow effect */}
       <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/20 to-blue-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
@@ -96,18 +97,9 @@ export function ClienteCardInteresado({
             </div>
             {/* Actions */}
             <div className="flex gap-1 flex-shrink-0">
-              {onVer && (
-                <button
-                  onClick={() => onVer(cliente)}
-                  className="p-1.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-cyan-100 dark:hover:bg-cyan-900/30 hover:text-cyan-600 dark:hover:text-cyan-400 transition-all"
-                  title="Ver detalle"
-                >
-                  <Eye className="w-4 h-4" />
-                </button>
-              )}
               {onEditar && (
                 <button
-                  onClick={() => onEditar(cliente)}
+                  onClick={(e) => { e.stopPropagation(); onEditar(cliente) }}
                   className="p-1.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-cyan-100 dark:hover:bg-cyan-900/30 hover:text-cyan-600 dark:hover:text-cyan-400 transition-all"
                   title="Editar"
                 >
@@ -116,7 +108,7 @@ export function ClienteCardInteresado({
               )}
               {onEliminar && (
                 <button
-                  onClick={() => onEliminar(cliente)}
+                  onClick={(e) => { e.stopPropagation(); onEliminar(cliente) }}
                   className="p-1.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-red-100 dark:hover:bg-red-900/30 hover:text-red-600 dark:hover:text-red-400 transition-all"
                   title="Eliminar"
                 >
@@ -260,7 +252,7 @@ export function ClienteCardInteresado({
             whileTap={{ scale: 0.99 }}
           >
             <div className="flex items-center justify-center gap-2">
-              <Eye className="w-4 h-4" />
+              <ArrowRight className="w-4 h-4" />
               <span>Ver Interés</span>
             </div>
           </motion.button>

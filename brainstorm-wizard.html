@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Diseño Wizard — Asignar Vivienda</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f172a; color: #e2e8f0; min-height: 100vh; }
+
+  /* ── NAV ── */
+  nav { background: #1e293b; border-bottom: 1px solid #334155; padding: 12px 24px; display: flex; align-items: center; gap: 16px; position: sticky; top: 0; z-index: 100; }
+  nav h1 { font-size: 15px; font-weight: 700; color: #f1f5f9; }
+  .tab-pills { display: flex; gap: 6px; margin-left: auto; }
+  .tab-pill { padding: 6px 14px; border-radius: 20px; border: 1px solid #475569; background: transparent; color: #94a3b8; cursor: pointer; font-size: 13px; font-weight: 500; transition: all .2s; }
+  .tab-pill.active { background: #6366f1; border-color: #6366f1; color: #fff; }
+  .tab-pill:hover:not(.active) { border-color: #6366f1; color: #a5b4fc; }
+
+  /* ── LAYOUT ── */
+  .page { max-width: 1100px; margin: 0 auto; padding: 32px 24px; }
+  section { display: none; }
+  section.visible { display: block; }
+
+  h2 { font-size: 22px; font-weight: 700; color: #f1f5f9; margin-bottom: 6px; }
+  .subtitle { font-size: 14px; color: #64748b; margin-bottom: 28px; }
+
+  /* ── PROBLEM PANEL ── */
+  .problem-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 32px; }
+  .problem-card { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 20px; }
+  .problem-card.red { border-color: #ef4444; background: #1e0a0a; }
+  .problem-card.amber { border-color: #f59e0b; background: #1a1400; }
+  .problem-card.green { border-color: #22c55e; background: #0a1a0a; }
+  .problem-card h3 { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 12px; }
+  .problem-card.red h3 { color: #ef4444; }
+  .problem-card.amber h3 { color: #f59e0b; }
+  .problem-card.green h3 { color: #22c55e; }
+  .problem-card ul { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+  .problem-card li { font-size: 13px; color: #94a3b8; display: flex; gap: 8px; align-items: flex-start; }
+  .problem-card li::before { content: '→'; color: #475569; flex-shrink: 0; margin-top: 1px; }
+
+  /* ── COMPARISON STRIP ── */
+  .compare-strip { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 40px; }
+  .option-tag { text-align: center; background: #1e293b; border: 2px solid #334155; border-radius: 12px; padding: 18px 12px; cursor: pointer; transition: all .2s; }
+  .option-tag:hover { border-color: #6366f1; }
+  .option-tag .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; margin-bottom: 8px; }
+  .badge.rec { background: #22c55e22; color: #22c55e; border: 1px solid #22c55e44; }
+  .badge.alt { background: #6366f122; color: #818cf8; border: 1px solid #6366f144; }
+  .badge.simple { background: #f59e0b22; color: #f59e0b; border: 1px solid #f59e0b44; }
+  .option-tag h3 { font-size: 14px; font-weight: 700; color: #f1f5f9; margin-bottom: 4px; }
+  .option-tag p { font-size: 12px; color: #64748b; }
+
+  /* ── WIZARD MOCKUP ── */
+  .wizard-wrap { display: grid; grid-template-columns: 1fr 280px; gap: 20px; align-items: start; }
+  .wizard-main { background: #1e293b; border: 1px solid #334155; border-radius: 16px; overflow: hidden; }
+  .wizard-header { background: linear-gradient(135deg, #6366f1, #8b5cf6); padding: 20px 24px; }
+  .wizard-header h3 { font-size: 18px; font-weight: 700; color: #fff; }
+  .wizard-header p { font-size: 12px; color: #c4b5fd; margin-top: 2px; }
+
+  /* Stepper */
+  .stepper { display: flex; align-items: center; background: #0f172a; padding: 16px 24px; gap: 0; }
+  .step { display: flex; align-items: center; gap: 8px; flex: 1; }
+  .step-dot { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0; }
+  .step-dot.done { background: #22c55e; color: #fff; }
+  .step-dot.active { background: #6366f1; color: #fff; box-shadow: 0 0 0 3px #6366f133; }
+  .step-dot.pending { background: #1e293b; color: #64748b; border: 2px solid #334155; }
+  .step-label { font-size: 12px; }
+  .step-label .name { font-weight: 600; color: #f1f5f9; }
+  .step-label .desc { color: #64748b; font-size: 11px; }
+  .step-line { flex: 1; height: 2px; background: #334155; margin: 0 8px; }
+  .step-line.done { background: #22c55e; }
+
+  /* Wizard body */
+  .wizard-body { padding: 24px; }
+  .field-group { margin-bottom: 18px; }
+  .field-group label { display: block; font-size: 12px; font-weight: 600; color: #94a3b8; margin-bottom: 6px; text-transform: uppercase; letter-spacing: .05em; }
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .fake-input { background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 10px 14px; font-size: 14px; color: #64748b; }
+  .fake-input.filled { color: #f1f5f9; border-color: #6366f1; }
+  .fake-input.money { color: #22c55e; font-weight: 700; }
+  .field-hint { font-size: 11px; color: #475569; margin-top: 4px; }
+  .toggle-row { display: flex; align-items: center; justify-content: space-between; background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 12px 14px; }
+  .toggle-row .toggle-label { font-size: 13px; color: #94a3b8; }
+  .toggle-pill { width: 36px; height: 20px; border-radius: 10px; background: #334155; position: relative; cursor: pointer; }
+  .toggle-pill.on { background: #6366f1; }
+  .toggle-pill::after { content: ''; width: 16px; height: 16px; border-radius: 50%; background: #fff; position: absolute; top: 2px; left: 2px; transition: left .2s; }
+  .toggle-pill.on::after { left: 18px; }
+
+  /* Wizard footer */
+  .wizard-footer { padding: 16px 24px; border-top: 1px solid #334155; display: flex; align-items: center; justify-content: space-between; background: #0f172a; }
+  .btn { padding: 9px 20px; border-radius: 8px; font-size: 13px; font-weight: 600; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all .2s; }
+  .btn-ghost { background: transparent; border: 1px solid #334155; color: #64748b; }
+  .btn-primary { background: #6366f1; color: #fff; }
+  .btn-primary:hover { background: #4f46e5; }
+  .btn-danger { background: #ef444422; border: 1px solid #ef4444; color: #ef4444; }
+
+  /* Sidebar */
+  .wizard-sidebar { display: flex; flex-direction: column; gap: 12px; }
+  .sidebar-card { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 16px; }
+  .sidebar-card h4 { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: #64748b; margin-bottom: 10px; }
+  .sidebar-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid #1e293b; }
+  .sidebar-row:last-child { border-bottom: none; }
+  .sidebar-row .key { font-size: 12px; color: #64748b; }
+  .sidebar-row .val { font-size: 13px; font-weight: 600; color: #f1f5f9; }
+  .sidebar-row .val.green { color: #22c55e; }
+  .sidebar-row .val.amber { color: #f59e0b; }
+  .progress-bar { height: 6px; background: #0f172a; border-radius: 3px; overflow: hidden; margin-top: 8px; }
+  .progress-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, #6366f1, #8b5cf6); transition: width .3s; }
+
+  /* Fuentes cards */
+  .fuente-card { background: #0f172a; border: 1px solid #334155; border-radius: 10px; margin-bottom: 10px; overflow: hidden; }
+  .fuente-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; cursor: pointer; }
+  .fuente-nombre { display: flex; align-items: center; gap: 10px; }
+  .fuente-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .fuente-nombre span { font-size: 13px; font-weight: 600; color: #f1f5f9; }
+  .fuente-toggle { width: 34px; height: 18px; border-radius: 9px; background: #334155; position: relative; }
+  .fuente-toggle.on { background: #22c55e; }
+  .fuente-toggle::after { content: ''; width: 14px; height: 14px; border-radius: 50%; background: #fff; position: absolute; top: 2px; left: 2px; }
+  .fuente-toggle.on::after { left: 18px; }
+  .fuente-body { padding: 12px 16px; border-top: 1px solid #1e293b; display: flex; flex-direction: column; gap: 8px; }
+  .fuente-body.hidden { display: none; }
+  .inline-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+  /* Distribución visual */
+  .dist-bar { height: 12px; border-radius: 6px; overflow: hidden; display: flex; gap: 2px; margin: 12px 0; }
+  .dist-seg { height: 100%; border-radius: 3px; }
+
+  /* Sección revision */
+  .revision-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .revision-block { background: #0f172a; border: 1px solid #334155; border-radius: 10px; padding: 16px; }
+  .revision-block h5 { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: #64748b; margin-bottom: 12px; }
+  .rev-row { display: flex; justify-content: space-between; font-size: 13px; padding: 5px 0; border-bottom: 1px solid #1e293b; }
+  .rev-row:last-child { border-bottom: none; }
+  .rev-key { color: #64748b; }
+  .rev-val { color: #f1f5f9; font-weight: 500; }
+  .alert-strip { display: flex; align-items: center; gap: 8px; padding: 10px 14px; border-radius: 8px; font-size: 13px; font-weight: 500; margin-top: 16px; }
+  .alert-strip.ok { background: #14532d22; border: 1px solid #22c55e44; color: #22c55e; }
+  .alert-strip.warn { background: #78350f22; border: 1px solid #f59e0b44; color: #f59e0b; }
+
+  /* Opcion B — all-in-one */
+  .aio-wrap { display: grid; grid-template-columns: 1fr 300px; gap: 20px; align-items: start; }
+  .aio-main { background: #1e293b; border: 1px solid #334155; border-radius: 16px; overflow: hidden; }
+  .aio-header { background: linear-gradient(135deg, #0891b2, #6366f1); padding: 20px 24px; }
+  .aio-section { padding: 20px 24px; border-bottom: 1px solid #1e293b; }
+  .aio-section h4 { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: #6366f1; margin-bottom: 14px; display: flex; align-items: center; gap-8: 8px; }
+  .aio-section h4 span { background: #6366f122; border: 1px solid #6366f144; border-radius: 4px; padding: 2px 8px; margin-right: 8px; font-size: 11px; color: #818cf8; }
+
+  /* Chips */
+  .chip-selector { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+  .chip { padding: 6px 14px; border-radius: 20px; border: 1px solid #334155; color: #64748b; font-size: 13px; cursor: pointer; transition: all .2s; }
+  .chip.selected { background: #6366f122; border-color: #6366f1; color: #a5b4fc; }
+
+  /* C — modal approach */
+  .modal-overlay { background: #00000088; border-radius: 16px; padding: 24px; display: flex; align-items: center; justify-content: center; }
+  .modal-box { background: #1e293b; border: 1px solid #475569; border-radius: 16px; width: 100%; max-width: 560px; overflow: hidden; margin: 0 auto; }
+  .modal-top { background: linear-gradient(135deg, #7c3aed, #6366f1); padding: 18px 22px; display: flex; align-items: center; justify-content: space-between; }
+  .modal-top h3 { font-size: 16px; font-weight: 700; color: #fff; }
+  .modal-top .close { width: 26px; height: 26px; border-radius: 50%; background: #ffffff22; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 14px; cursor: pointer; }
+  .modal-body { padding: 20px 22px; }
+  .modal-section { margin-bottom: 18px; }
+  .modal-section h5 { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: #64748b; margin-bottom: 10px; }
+  .valor-display { background: #0f172a; border-radius: 10px; padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; }
+  .valor-display .label { font-size: 13px; color: #64748b; }
+  .valor-display .amount { font-size: 22px; font-weight: 800; color: #f1f5f9; }
+  .mini-fuente { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: #0f172a; border-radius: 8px; margin-bottom: 6px; }
+  .mini-fuente .left { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #f1f5f9; }
+  .mini-fuente .right { font-size: 13px; font-weight: 600; color: #f1f5f9; }
+  .mini-fuente .dot { width: 8px; height: 8px; border-radius: 50%; }
+  .mini-eq { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: #14532d22; border: 1px solid #22c55e44; border-radius: 8px; font-size: 13px; }
+  .mini-eq .label { color: #64748b; }
+  .mini-eq .val { color: #22c55e; font-weight: 700; }
+  .modal-footer { padding: 16px 22px; border-top: 1px solid #334155; display: flex; justify-content: flex-end; gap: 8px; }
+
+  /* Tags de problemas */
+  .tag { display: inline-block; font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 4px; margin: 2px; }
+  .tag.red { background: #ef444422; color: #f87171; border: 1px solid #ef444444; }
+  .tag.green { background: #22c55e22; color: #4ade80; border: 1px solid #22c55e44; }
+  .tag.amber { background: #f59e0b22; color: #fbbf24; border: 1px solid #f59e0b44; }
+  .tag.blue { background: #3b82f622; color: #60a5fa; border: 1px solid #3b82f644; }
+
+  /* Nota al pie */
+  .note { background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 12px 16px; font-size: 12px; color: #64748b; margin-top: 20px; }
+  .note strong { color: #94a3b8; }
+
+  /* Escritura field */
+  .escritura-row { background: #0f1729; border: 1px solid #1e3a5f; border-radius: 8px; padding: 12px 14px; display: flex; justify-content: space-between; align-items: center; }
+  .escritura-row .info { font-size: 12px; color: #3b82f6; }
+  .escritura-row .badge-info { background: #1e3a5f; border: 1px solid #1d4ed8; border-radius: 4px; padding: 2px 8px; font-size: 11px; color: #60a5fa; font-weight: 600; }
+
+  hr { border: none; border-top: 1px solid #334155; margin: 28px 0; }
+</style>
+</head>
+<body>
+
+<nav>
+  <h1>🏗️ Asignar Vivienda — Exploración de Diseño</h1>
+  <div class="tab-pills">
+    <button class="tab-pill active" onclick="showSection('diagnostico')">① Diagnóstico</button>
+    <button class="tab-pill" onclick="showSection('opcion-a')">② Opción A — Wizard</button>
+    <button class="tab-pill" onclick="showSection('opcion-b')">③ Opción B — Página única</button>
+    <button class="tab-pill" onclick="showSection('opcion-c')">④ Opción C — Modal</button>
+  </div>
+</nav>
+
+<div class="page">
+
+  <!-- ──────────────── DIAGNÓSTICO ──────────────── -->
+  <section id="diagnostico" class="visible">
+    <h2>Diagnóstico del formulario actual</h2>
+    <p class="subtitle">Qué funciona, qué está roto y qué es confuso — antes de proponer opciones</p>
+
+    <div class="problem-grid">
+      <div class="problem-card red">
+        <h3>🚨 Bugs activos</h3>
+        <ul>
+          <li>Columna <code>requiere_carta_aprobacion</code> no existe en BD → 400 en cada carga <span class="tag red">Corregido ✓</span></li>
+          <li>Cuota Inicial obligatoria hardcodeada → bloquea negociaciones válidas sin cuota <span class="tag red">Corregido ✓</span></li>
+          <li><code>handleNext</code> paso 2 tiene deps incompletas en useCallback → cierre estale posible en React strict</li>
+          <li>El campo <code>fuentes</code> en React Hook Form siempre es <code>[]</code> — el estado real vive en <code>useFuentesPago</code> separado, desconectado</li>
+        </ul>
+      </div>
+
+      <div class="problem-card amber">
+        <h3>⚠️ Deuda técnica visible</h3>
+        <ul>
+          <li><code>paso-1-info-basica.tsx</code> y <code>paso-1-info-basica-refactored.tsx</code> coexisten — archivo muerto</li>
+          <li>Dos sistemas de validación paralelos que no se sincronizan: RHF/Zod en paso 1, estado manual en paso 2</li>
+          <li><code>valor_escritura_publica</code> hardcodeado a $128M en el default — valor ficticio que el usuario puede omitir accidentalmente</li>
+          <li>Validaciones de negocio duplicadas: en <code>useCrearNegociacion</code> Y en <code>useAsignarViviendaForm</code></li>
+        </ul>
+      </div>
+
+      <div class="problem-card green" style="grid-column: span 2;">
+        <h3>✅ Lo que YA está bien</h3>
+        <ul style="flex-direction: row; flex-wrap: wrap;">
+          <li>Modal "Ajustar plan" post-creación funciona bien — no hay que replicarlo en el wizard</li>
+          <li>Sistema de fuentes dinámicas desde BD (no hardcodeadas)</li>
+          <li>Sistema de documentos pendientes automático al crear negociación</li>
+          <li>Cálculo de diferencia en tiempo real (sumaCierra)</li>
+          <li>Sidebar con resumen financiero en tiempo real</li>
+          <li>Paso 3 de revisión antes de confirmar</li>
+          <li>Validación de documento de identidad antes de permitir negociación</li>
+        </ul>
+      </div>
+    </div>
+
+    <hr />
+
+    <h2 style="margin-bottom: 6px;">El problema de UX central</h2>
+    <p class="subtitle">El Paso 2 carga 4 fuentes de pago expandibles con muchos campos cada una — el usuario no sabe cuántas necesita ni cuáles</p>
+
+    <div style="background:#1e293b;border:1px solid #334155;border-radius:12px;padding:20px;margin-bottom:20px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+        <div>
+          <p style="font-size:12px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px;">Lo que ve el usuario ahora en Paso 2</p>
+          <!-- 4 fuentes stacked -->
+          <div class="fuente-card">
+            <div class="fuente-header">
+              <div class="fuente-nombre"><div class="fuente-dot" style="background:#3b82f6"></div><span>Cuota Inicial</span></div>
+              <div class="fuente-toggle"></div>
+            </div>
+          </div>
+          <div class="fuente-card">
+            <div class="fuente-header">
+              <div class="fuente-nombre"><div class="fuente-dot" style="background:#22c55e"></div><span>Crédito Hipotecario</span></div>
+              <div class="fuente-toggle"></div>
+            </div>
+          </div>
+          <div class="fuente-card">
+            <div class="fuente-header">
+              <div class="fuente-nombre"><div class="fuente-dot" style="background:#f59e0b"></div><span>Subsidio Mi Casa Ya</span></div>
+              <div class="fuente-toggle"></div>
+            </div>
+          </div>
+          <div class="fuente-card">
+            <div class="fuente-header">
+              <div class="fuente-nombre"><div class="fuente-dot" style="background:#a855f7"></div><span>Subsidio Caja Compensación</span></div>
+              <div class="fuente-toggle"></div>
+            </div>
+          </div>
+          <p style="font-size:12px;color:#ef4444;margin-top:8px;">→ El usuario activa toggle, aparecen campos ocultos que no esperaba. Suma no cierra. Confusión.</p>
+        </div>
+        <div>
+          <p style="font-size:12px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px;">Problema principal: "¿La suma debe ser exacta?"</p>
+          <div style="background:#0f172a;border-radius:10px;padding:16px;margin-bottom:12px;">
+            <p style="font-size:13px;color:#94a3b8;margin-bottom:8px;">El usuario activa Crédito Hipotecario e ingresa $70M.</p>
+            <p style="font-size:13px;color:#94a3b8;margin-bottom:8px;">Activa Cuota Inicial e ingresa $52M.</p>
+            <p style="font-size:13px;color:#94a3b8;margin-bottom:8px;">Total vivienda: $118.600.000</p>
+            <div style="background:#14532d22;border:1px solid #22c55e44;border-radius:6px;padding:8px 12px;font-size:12px;color:#4ade80;">✓ $70M + $52M = $122M — <strong>Error</strong>, no cierra. Pero el usuario no sabe qué ajustar.</div>
+          </div>
+          <p style="font-size:12px;color:#f59e0b;">→ Falta un feedback claro de cuánto queda por asignar, en tiempo real, por fuente.</p>
+          <p style="font-size:12px;color:#64748b;margin-top:8px;">→ El campo "Valor escritura pública" ($128M) aparece junto a "Valor vivienda" → el usuario puede confundirse y usarlo como base.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="note">
+      <strong>Resumen:</strong> El wizard actual puede mantenerse como estructura (3 pasos tiene sentido) pero necesita: (1) feedback visual de distribución en vivo, (2) quitar la confusión entre valor real y valor escritura, (3) limpiar la deuda técnica interna. Hay también una alternativa de página única que puede ser más directa. Ver las opciones →
+    </div>
+  </section>
+
+  <!-- ──────────────── OPCIÓN A ──────────────── -->
+  <section id="opcion-a">
+    <h2>Opción A — Wizard de 3 pasos mejorado</h2>
+    <p class="subtitle">Misma estructura, feedback visual mejorado, deuda técnica eliminada. <span class="tag green">★ Recomendada</span></p>
+
+    <div class="compare-strip">
+      <div class="option-tag" style="border-color:#22c55e">
+        <div class="badge rec">★ RECOMENDADA</div>
+        <h3>Opción A — Wizard</h3>
+        <p>Refinar lo existente sin reescribir desde 0</p>
+      </div>
+      <div class="option-tag">
+        <div class="badge alt">ALTERNATIVA</div>
+        <h3>Opción B — Página única</h3>
+        <p>Todo visible a la vez, scroll vertical</p>
+      </div>
+      <div class="option-tag">
+        <div class="badge simple">MÁS SIMPLE</div>
+        <h3>Opción C — Modal compacto</h3>
+        <p>Solo lo esencial en un modal sin scroll</p>
+      </div>
+    </div>
+
+    <!-- PASO 1 mockup -->
+    <p style="font-size:13px;font-weight:700;color:#94a3b8;margin-bottom:12px;text-transform:uppercase;letter-spacing:.06em;">Paso 1 — Información Básica (mejorado)</p>
+    <div class="wizard-wrap">
+      <div class="wizard-main">
+        <div class="wizard-header">
+          <h3>Asignar Vivienda</h3>
+          <p>Cierre financiero · Erminson Moreno Cuero</p>
+        </div>
+        <div class="stepper">
+          <div class="step">
+            <div class="step-dot active">1</div>
+            <div class="step-label"><div class="name">Vivienda</div><div class="desc">Proyecto y valor</div></div>
+          </div>
+          <div class="step-line"></div>
+          <div class="step">
+            <div class="step-dot pending">2</div>
+            <div class="step-label"><div class="name">Plan financiero</div><div class="desc">Fuentes de pago</div></div>
+          </div>
+          <div class="step-line"></div>
+          <div class="step">
+            <div class="step-dot pending">3</div>
+            <div class="step-label"><div class="name">Confirmar</div><div class="desc">Revisión final</div></div>
+          </div>
+        </div>
+        <div class="wizard-body">
+          <div class="field-row">
+            <div class="field-group">
+              <label>Proyecto *</label>
+              <div class="fake-input filled">Las Américas 2</div>
+            </div>
+            <div class="field-group">
+              <label>Vivienda *</label>
+              <div class="fake-input filled">Mza. A · Casa 1</div>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label>Valor de venta <span style="color:#22c55e;font-size:11px;">(auto-cargado)</span></label>
+            <div class="fake-input money">$ 118.600.000</div>
+            <div class="field-hint">Valor base de la vivienda según catálogo. Puedes aplicar un descuento abajo.</div>
+          </div>
+
+          <div class="toggle-row" style="margin-bottom:12px;">
+            <span class="toggle-label">Aplicar descuento</span>
+            <div class="toggle-pill"></div>
+          </div>
+
+          <div class="field-group">
+            <label>Notas / Observaciones <span style="color:#475569;font-size:11px;">(opcional)</span></label>
+            <div class="fake-input" style="height:48px;">Ej: Cliente solicitó descuento por pronto pago...</div>
+          </div>
+
+          <!-- CAMPO ESCRITURA — tratado diferente -->
+          <div class="escritura-row">
+            <div>
+              <div style="font-size:13px;font-weight:600;color:#60a5fa;margin-bottom:2px;">📋 Valor en escritura pública</div>
+              <div class="info">Solo para registro legal — <strong>NO afecta</strong> el plan financiero ni los cálculos</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <div class="fake-input" style="width:130px;text-align:right;color:#60a5fa;font-weight:600;border-color:#1d4ed8;">$ 128.000.000</div>
+              <div class="badge-info">DATO LEGAL</div>
+            </div>
+          </div>
+
+        </div>
+        <div class="wizard-footer">
+          <button class="btn btn-danger">✕ Cancelar</button>
+          <span style="font-size:12px;color:#64748b;">Paso 1 de 3</span>
+          <button class="btn btn-primary">Siguiente →</button>
+        </div>
+      </div>
+
+      <div class="wizard-sidebar">
+        <div class="sidebar-card">
+          <h4>Resumen</h4>
+          <div class="sidebar-row"><span class="key">Vivienda</span><span class="val">Mza.A · Casa 1</span></div>
+          <div class="sidebar-row"><span class="key">Valor base</span><span class="val green">$118.600.000</span></div>
+          <div class="sidebar-row"><span class="key">Descuento</span><span class="val">$0</span></div>
+          <div class="sidebar-row"><span class="key">Total a financiar</span><span class="val green">$118.600.000</span></div>
+          <div class="sidebar-row"><span class="key">Valor escritura</span><span class="val" style="color:#60a5fa;font-size:11px;">$128M (legal)</span></div>
+        </div>
+        <div class="sidebar-card">
+          <h4>Progreso</h4>
+          <div class="sidebar-row"><span class="key">Paso 1</span><span class="val amber">75%</span></div>
+          <div class="progress-bar"><div class="progress-fill" style="width:75%"></div></div>
+          <div class="sidebar-row" style="margin-top:8px;"><span class="key">Paso 2</span><span class="val" style="color:#475569;">Pendiente</span></div>
+          <div class="progress-bar"><div class="progress-fill" style="width:0%"></div></div>
+        </div>
+        <div class="note" style="font-size:11px;">
+          <strong>💡 Tip:</strong> El valor en escritura es solo para efectos legales/bancarios. El plan financiero se calcula sobre el valor de venta real.
+        </div>
+      </div>
+    </div>
+
+    <hr />
+
+    <!-- PASO 2 mejorado -->
+    <p style="font-size:13px;font-weight:700;color:#94a3b8;margin-bottom:12px;text-transform:uppercase;letter-spacing:.06em;">Paso 2 — Plan Financiero (mejorado)</p>
+    <div class="wizard-wrap">
+      <div class="wizard-main">
+        <div class="wizard-header" style="background:linear-gradient(135deg,#0891b2,#6366f1);">
+          <h3>Plan Financiero</h3>
+          <p>Configura cómo se financia la vivienda · Total: $118.600.000</p>
+        </div>
+        <div class="stepper">
+          <div class="step">
+            <div class="step-dot done">✓</div>
+            <div class="step-label"><div class="name">Vivienda</div><div class="desc">Completado</div></div>
+          </div>
+          <div class="step-line done"></div>
+          <div class="step">
+            <div class="step-dot active">2</div>
+            <div class="step-label"><div class="name">Plan financiero</div><div class="desc">Configura fuentes</div></div>
+          </div>
+          <div class="step-line"></div>
+          <div class="step">
+            <div class="step-dot pending">3</div>
+            <div class="step-label"><div class="name">Confirmar</div><div class="desc"></div></div>
+          </div>
+        </div>
+        <div class="wizard-body">
+          <!-- Barra distribución en vivo -->
+          <div style="background:#0f172a;border:1px solid #334155;border-radius:10px;padding:14px 16px;margin-bottom:16px;">
+            <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+              <span style="font-size:12px;font-weight:600;color:#64748b;">Distribución del financiamiento</span>
+              <span style="font-size:13px;font-weight:700;color:#22c55e;">$118.600.000 / $118.600.000 ✓</span>
+            </div>
+            <div class="dist-bar">
+              <div class="dist-seg" style="width:2.9%;background:#3b82f6;" title="Cuota Inicial"></div>
+              <div class="dist-seg" style="width:97.1%;background:#22c55e;" title="Crédito Hipotecario"></div>
+            </div>
+            <div style="display:flex;gap:16px;margin-top:6px;">
+              <span style="font-size:11px;color:#3b82f6;">● Cuota Inicial $3.400.000 (2.9%)</span>
+              <span style="font-size:11px;color:#22c55e;">● Crédito Hip. $115.200.000 (97.1%)</span>
+            </div>
+          </div>
+
+          <!-- Fuente activa con campos visibles -->
+          <div class="fuente-card" style="border-color:#3b82f6;">
+            <div class="fuente-header" style="background:#1e3a5f22;">
+              <div class="fuente-nombre"><div class="fuente-dot" style="background:#3b82f6"></div><span>Cuota Inicial</span><span style="font-size:11px;color:#64748b;margin-left:4px;">(múltiples abonos)</span></div>
+              <div class="fuente-toggle on"></div>
+            </div>
+            <div class="fuente-body">
+              <div class="field-group">
+                <label>Monto *</label>
+                <div class="fake-input money">$ 3.400.000</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Fuente activa con campos -->
+          <div class="fuente-card" style="border-color:#22c55e;">
+            <div class="fuente-header" style="background:#14532d22;">
+              <div class="fuente-nombre"><div class="fuente-dot" style="background:#22c55e"></div><span>Crédito Hipotecario</span><span style="font-size:11px;color:#64748b;margin-left:4px;">(desembolso único)</span></div>
+              <div class="fuente-toggle on"></div>
+            </div>
+            <div class="fuente-body">
+              <div class="inline-fields">
+                <div class="field-group">
+                  <label>Monto aprobado *</label>
+                  <div class="fake-input money">$ 115.200.000</div>
+                </div>
+                <div class="field-group">
+                  <label>Entidad bancaria *</label>
+                  <div class="fake-input filled">Fondo Nacional del Ahorro</div>
+                </div>
+              </div>
+              <div class="field-group">
+                <label>N° radicado / referencia</label>
+                <div class="fake-input">Ej: RAD-2025-00123</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Fuentes desactivadas — colapsadas -->
+          <div class="fuente-card" style="opacity:.55;">
+            <div class="fuente-header">
+              <div class="fuente-nombre"><div class="fuente-dot" style="background:#f59e0b"></div><span>Subsidio Mi Casa Ya</span></div>
+              <div class="fuente-toggle"></div>
+            </div>
+          </div>
+          <div class="fuente-card" style="opacity:.55;">
+            <div class="fuente-header">
+              <div class="fuente-nombre"><div class="fuente-dot" style="background:#a855f7"></div><span>Subsidio Caja Compensación</span></div>
+              <div class="fuente-toggle"></div>
+            </div>
+          </div>
+
+          <div class="alert-strip ok">✅ Ecuación balanceada · Total fuentes = Valor vivienda</div>
+        </div>
+        <div class="wizard-footer">
+          <button class="btn btn-ghost">← Atrás</button>
+          <span style="font-size:12px;color:#64748b;">Paso 2 de 3</span>
+          <button class="btn btn-primary">Siguiente →</button>
+        </div>
+      </div>
+
+      <div class="wizard-sidebar">
+        <div class="sidebar-card">
+          <h4>Balance</h4>
+          <div class="sidebar-row"><span class="key">Total vivienda</span><span class="val">$118.600.000</span></div>
+          <div class="sidebar-row"><span class="key">Total fuentes</span><span class="val green">$118.600.000</span></div>
+          <div class="sidebar-row"><span class="key">Diferencia</span><span class="val green">$0 ✓</span></div>
+          <div class="progress-bar" style="margin-top:8px;"><div class="progress-fill" style="width:100%;background:linear-gradient(90deg,#22c55e,#16a34a);"></div></div>
+        </div>
+        <div class="sidebar-card">
+          <h4>Fuentes activas</h4>
+          <div class="sidebar-row"><div style="display:flex;align-items:center;gap:6px;"><div style="width:8px;height:8px;border-radius:50%;background:#3b82f6;"></div><span class="key">Cuota Inicial</span></div><span class="val">$3.4M</span></div>
+          <div class="sidebar-row"><div style="display:flex;align-items:center;gap:6px;"><div style="width:8px;height:8px;border-radius:50%;background:#22c55e;"></div><span class="key">Crédito Hip.</span></div><span class="val">$115.2M</span></div>
+        </div>
+        <div class="note" style="font-size:11px;">
+          <strong>💡</strong> Las cartas de aprobación y documentos obligatorios se suben desde la pestaña <strong>Documentos</strong> del cliente.
+        </div>
+      </div>
+    </div>
+
+    <hr />
+
+    <!-- Pros/contras -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:4px;">
+      <div class="problem-card green">
+        <h3>✅ Ventajas Opción A</h3>
+        <ul>
+          <li>Reutiliza estructura existente — menos riesgo de regresiones</li>
+          <li>El paso a paso guía al usuario sin overwhelm cognitivo</li>
+          <li>Barra de distribución en vivo → el usuario ve cuánto le falta asignar</li>
+          <li>Campo escritura claramente marcado como "dato legal", no afecta cálculos</li>
+          <li>Fuentes deshabilitadas visibles pero opacas → el usuario sabe que existen</li>
+          <li>Deuda técnica eliminada: un solo sistema de validación (RHF unificado)</li>
+        </ul>
+      </div>
+      <div class="problem-card amber">
+        <h3>⚠️ Compromisos</h3>
+        <ul>
+          <li>Requiere refactorizar el hook de fuentes para integrarlo con RHF</li>
+          <li>El Paso 2 sigue siendo el más complejo — no se puede simplificar mucho si los campos son obligatorios</li>
+          <li>3 pasos puede sentirse largo para negociaciones simples (solo cuota + crédito)</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ──────────────── OPCIÓN B ──────────────── -->
+  <section id="opcion-b">
+    <h2>Opción B — Página única (scroll)</h2>
+    <p class="subtitle">Todo el formulario en una sola página con secciones colapsables. El usuario ve el resumen en tiempo real siempre.</p>
+
+    <div class="compare-strip">
+      <div class="option-tag">
+        <div class="badge rec">★ RECOMENDADA</div>
+        <h3>Opción A — Wizard</h3>
+        <p>3 pasos separados</p>
+      </div>
+      <div class="option-tag" style="border-color:#6366f1">
+        <div class="badge alt">ESTA OPCIÓN</div>
+        <h3>Opción B — Página única</h3>
+        <p>Scroll vertical, todo visible</p>
+      </div>
+      <div class="option-tag">
+        <div class="badge simple">MÁS SIMPLE</div>
+        <h3>Opción C — Modal</h3>
+        <p>Solo lo esencial</p>
+      </div>
+    </div>
+
+    <div class="aio-wrap">
+      <div class="aio-main">
+        <div class="aio-header">
+          <h3 style="color:#fff;font-size:18px;font-weight:700;">Asignar Vivienda · Erminson Moreno Cuero</h3>
+          <p style="color:#bae6fd;font-size:12px;margin-top:2px;">Completa las secciones abajo · El resumen se actualiza en tiempo real</p>
+        </div>
+
+        <div class="aio-section">
+          <h4><span>1</span> VIVIENDA Y VALORES</h4>
+          <div class="field-row">
+            <div class="field-group">
+              <label>Proyecto *</label>
+              <div class="fake-input filled">Las Américas 2</div>
+            </div>
+            <div class="field-group">
+              <label>Vivienda *</label>
+              <div class="fake-input filled">Mza. A · Casa 1</div>
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field-group">
+              <label>Valor de venta *</label>
+              <div class="fake-input money">$ 118.600.000</div>
+            </div>
+            <div class="field-group">
+              <label>Descuento</label>
+              <div class="fake-input">$ 0</div>
+            </div>
+          </div>
+          <div class="escritura-row" style="margin-top:8px;">
+            <div>
+              <div style="font-size:13px;font-weight:600;color:#60a5fa;">📋 Valor en escritura pública</div>
+              <div class="info">Solo para registro legal · no afecta el plan financiero</div>
+            </div>
+            <div class="fake-input" style="width:130px;text-align:right;color:#60a5fa;font-weight:600;border-color:#1d4ed8;">$ 128.000.000</div>
+          </div>
+        </div>
+
+        <div class="aio-section">
+          <h4><span>2</span> PLAN FINANCIERO</h4>
+
+          <div style="background:#0f172a;border:1px solid #334155;border-radius:10px;padding:12px 14px;margin-bottom:14px;">
+            <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+              <span style="font-size:12px;color:#64748b;">Total a financiar</span>
+              <span style="font-size:14px;font-weight:700;color:#f1f5f9;">$ 118.600.000</span>
+            </div>
+            <div class="dist-bar">
+              <div class="dist-seg" style="width:2.9%;background:#3b82f6;"></div>
+              <div class="dist-seg" style="width:97.1%;background:#22c55e;"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;margin-top:6px;">
+              <span style="font-size:11px;color:#3b82f6;">● Cuota $3.4M</span>
+              <span style="font-size:11px;color:#22c55e;">● Crédito $115.2M</span>
+              <span style="font-size:11px;font-weight:700;color:#22c55e;">✓ Balanceado</span>
+            </div>
+          </div>
+
+          <div class="fuente-card" style="border-color:#3b82f6;">
+            <div class="fuente-header" style="background:#1e3a5f22;"><div class="fuente-nombre"><div class="fuente-dot" style="background:#3b82f6"></div><span>Cuota Inicial</span></div><div class="fuente-toggle on"></div></div>
+            <div class="fuente-body">
+              <div class="field-group"><label>Monto</label><div class="fake-input money">$ 3.400.000</div></div>
+            </div>
+          </div>
+
+          <div class="fuente-card" style="border-color:#22c55e;">
+            <div class="fuente-header" style="background:#14532d22;"><div class="fuente-nombre"><div class="fuente-dot" style="background:#22c55e"></div><span>Crédito Hipotecario</span></div><div class="fuente-toggle on"></div></div>
+            <div class="fuente-body">
+              <div class="inline-fields">
+                <div class="field-group"><label>Monto aprobado</label><div class="fake-input money">$ 115.200.000</div></div>
+                <div class="field-group"><label>Entidad</label><div class="fake-input filled">Fondo Nacional del Ahorro</div></div>
+              </div>
+            </div>
+          </div>
+          <div class="fuente-card" style="opacity:.5;"><div class="fuente-header"><div class="fuente-nombre"><div class="fuente-dot" style="background:#f59e0b"></div><span>Subsidio Mi Casa Ya</span></div><div class="fuente-toggle"></div></div></div>
+          <div class="fuente-card" style="opacity:.5;"><div class="fuente-header"><div class="fuente-nombre"><div class="fuente-dot" style="background:#a855f7"></div><span>Subsidio Caja Compensación</span></div><div class="fuente-toggle"></div></div></div>
+        </div>
+
+        <div class="aio-section">
+          <h4><span>3</span> NOTAS</h4>
+          <div class="fake-input" style="height:48px;color:#475569;">Observaciones opcionales del asesor...</div>
+        </div>
+
+        <div style="padding:16px 24px;display:flex;justify-content:space-between;align-items:center;border-top:1px solid #334155;background:#0f172a;">
+          <button class="btn btn-danger">✕ Cancelar</button>
+          <button class="btn btn-primary" style="background:linear-gradient(135deg,#22c55e,#16a34a);">✓ Crear Negociación</button>
+        </div>
+      </div>
+
+      <div class="wizard-sidebar">
+        <div class="sidebar-card" style="position:sticky;top:72px;">
+          <h4>Resumen en vivo</h4>
+          <div class="sidebar-row"><span class="key">Vivienda</span><span class="val">Mza.A · Casa 1</span></div>
+          <div class="sidebar-row"><span class="key">Proyecto</span><span class="val">Las Américas 2</span></div>
+          <div class="sidebar-row"><span class="key">Valor venta</span><span class="val green">$118.600.000</span></div>
+          <div style="height:1px;background:#334155;margin:10px 0;"></div>
+          <div class="sidebar-row"><div style="display:flex;align-items:center;gap:6px;"><div style="width:8px;height:8px;border-radius:50%;background:#3b82f6;"></div><span class="key">Cuota Inicial</span></div><span class="val">$3.4M</span></div>
+          <div class="sidebar-row"><div style="display:flex;align-items:center;gap:6px;"><div style="width:8px;height:8px;border-radius:50%;background:#22c55e;"></div><span class="key">Crédito Hip.</span></div><span class="val">$115.2M</span></div>
+          <div style="height:1px;background:#334155;margin:10px 0;"></div>
+          <div class="sidebar-row"><span class="key">Diferencia</span><span class="val green">$0 ✓</span></div>
+          <div class="progress-bar" style="margin-top:4px;"><div class="progress-fill" style="width:100%;background:linear-gradient(90deg,#22c55e,#16a34a);"></div></div>
+          <div style="margin-top:12px;background:#14532d22;border:1px solid #22c55e44;border-radius:6px;padding:8px;text-align:center;font-size:12px;color:#4ade80;font-weight:600;">✅ Listo para crear</div>
+        </div>
+      </div>
+    </div>
+
+    <hr />
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:4px;">
+      <div class="problem-card green">
+        <h3>✅ Ventajas Opción B</h3>
+        <ul>
+          <li>Menos clics — no hay "siguiente / atrás"</li>
+          <li>El usuario ve el resumen sticky siempre visible mientras llena</li>
+          <li>Más rápido para usuarios expertos que ya saben qué van a ingresar</li>
+          <li>Sin lógica de pasos → implementación más simple</li>
+        </ul>
+      </div>
+      <div class="problem-card red">
+        <h3>❌ Desventajas Opción B</h3>
+        <ul>
+          <li>Puede sentirse abrumador ver todo junto — especialmente si hay muchos campos activos</li>
+          <li>Sin estructura de pasos, el usuario novato no sabe por dónde empezar</li>
+          <li>El flujo natural (primero elegir vivienda, luego configurar fuentes) se pierde</li>
+          <li>El botón "Crear Negociación" puede presionarse antes de completar los campos</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ──────────────── OPCIÓN C ──────────────── -->
+  <section id="opcion-c">
+    <h2>Opción C — Modal compacto con 2 pasos</h2>
+    <p class="subtitle">Máxima simplicidad. Solo los campos indispensables. Diseñado para negociaciones rápidas.</p>
+
+    <div class="compare-strip">
+      <div class="option-tag">
+        <div class="badge rec">★ RECOMENDADA</div>
+        <h3>Opción A — Wizard</h3>
+        <p>Completo y guiado</p>
+      </div>
+      <div class="option-tag">
+        <div class="badge alt">ALTERNATIVA</div>
+        <h3>Opción B — Página única</h3>
+        <p>Todo en scroll</p>
+      </div>
+      <div class="option-tag" style="border-color:#f59e0b">
+        <div class="badge simple">ESTA OPCIÓN</div>
+        <h3>Opción C — Modal</h3>
+        <p>Mínimo necesario</p>
+      </div>
+    </div>
+
+    <div style="max-width:600px;margin:0 auto;">
+      <div class="modal-box">
+        <div class="modal-top">
+          <div>
+            <h3>Asignar Vivienda</h3>
+            <p style="font-size:11px;color:#c4b5fd;margin-top:1px;">Erminson Moreno Cuero · CC 1094123456</p>
+          </div>
+          <div class="close">✕</div>
+        </div>
+
+        <div class="modal-body">
+          <!-- Paso indicador simple -->
+          <div style="display:flex;gap:4px;margin-bottom:18px;">
+            <div style="flex:1;height:3px;border-radius:2px;background:#6366f1;"></div>
+            <div style="flex:1;height:3px;border-radius:2px;background:#334155;"></div>
+          </div>
+          <p style="font-size:11px;font-weight:700;color:#6366f1;text-transform:uppercase;letter-spacing:.06em;margin-bottom:14px;">Paso 1 de 2 — Vivienda y valor</p>
+
+          <div class="modal-section">
+            <div class="field-row" style="margin-bottom:10px;">
+              <div class="field-group"><label>Proyecto</label><div class="fake-input filled" style="font-size:13px;">Las Américas 2</div></div>
+              <div class="field-group"><label>Vivienda</label><div class="fake-input filled" style="font-size:13px;">Mza.A · Casa 1</div></div>
+            </div>
+            <div class="valor-display">
+              <span class="label">Valor a financiar</span>
+              <span class="amount">$118.600.000</span>
+            </div>
+          </div>
+
+          <div class="modal-section">
+            <h5>Plan de pago (activar fuentes)</h5>
+            <div class="mini-fuente" style="border:1px solid #3b82f644;">
+              <div class="left"><div class="dot" style="background:#3b82f6;"></div>Cuota Inicial</div>
+              <div class="right">$3.400.000</div>
+            </div>
+            <div class="mini-fuente" style="border:1px solid #22c55e44;">
+              <div class="left"><div class="dot" style="background:#22c55e;"></div>Crédito Hipotecario</div>
+              <div class="right">$115.200.000</div>
+            </div>
+            <div class="mini-eq">
+              <span class="label">✅ Financiamiento completo</span>
+              <span class="val">$118.600.000 / $118.600.000</span>
+            </div>
+          </div>
+
+          <div class="field-group" style="margin-top:12px;">
+            <label style="font-size:12px;font-weight:600;color:#64748b;">Notas <span style="color:#475569;">(opcional)</span></label>
+            <div class="fake-input" style="height:40px;font-size:12px;color:#475569;">Observaciones...</div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn btn-ghost">Cancelar</button>
+          <button class="btn btn-primary" style="background:linear-gradient(135deg,#22c55e,#16a34a);">✓ Crear Negociación</button>
+        </div>
+      </div>
+    </div>
+
+    <hr />
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:4px;">
+      <div class="problem-card green">
+        <h3>✅ Ventajas Opción C</h3>
+        <ul>
+          <li>Máxima velocidad — ideal si los datos ya están claros</li>
+          <li>No invasivo — el modal puede abrirse desde cualquier pantalla</li>
+          <li>Menos código, menos superficie de bugs</li>
+        </ul>
+      </div>
+      <div class="problem-card red">
+        <h3>❌ Desventajas Opción C</h3>
+        <ul>
+          <li>Los campos de entidad/radicado quedan fuera → hay que abrir "Ajustar plan" después</li>
+          <li>Pierde el paso de revisión antes de confirmar</li>
+          <li>El valor de escritura no tiene un lugar natural</li>
+          <li>Para negociaciones con 3-4 fuentes activas el modal se vuelve muy largo</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="note" style="margin-top:20px;">
+      <strong>Opinión:</strong> La Opción C funciona bien si después de crear la negociación el usuario SIEMPRE va a "Ajustar plan" para completar los detalles. Pero dado que el modal de ajuste solo está disponible para administradores, esto genera un flujo roto para asesores sin ese permiso.
+    </div>
+  </section>
+
+</div>
+
+<script>
+function showSection(id) {
+  document.querySelectorAll('section').forEach(s => s.classList.remove('visible'))
+  document.querySelectorAll('.tab-pill').forEach(p => p.classList.remove('active'))
+  document.getElementById(id).classList.add('visible')
+  event.target.classList.add('active')
+}
+</script>
+</body>
+</html>

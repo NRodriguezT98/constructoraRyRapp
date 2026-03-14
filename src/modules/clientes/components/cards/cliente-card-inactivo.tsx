@@ -12,7 +12,6 @@ import { motion } from 'framer-motion'
 import {
     Calendar,
     Edit,
-    Eye,
     Mail,
     Phone,
     Trash2,
@@ -48,10 +47,11 @@ export function ClienteCardInactivo({
 
   return (
     <motion.div
-      className={`${styles.container} ${theme.hoverShadow}`}
+      className={`${styles.container} ${theme.hoverShadow} cursor-pointer`}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
+      onClick={() => onVer?.(cliente)}
     >
       {/* Efecto de brillo */}
       <div className={`${styles.glow} ${theme.glow}`} />
@@ -59,18 +59,13 @@ export function ClienteCardInactivo({
       <div className={styles.content}>
         {/* HEADER: Botones de acción */}
         <div className={styles.header.actions}>
-          {onVer && (
-            <button onClick={() => onVer(cliente)} className={styles.header.actionButton} title="Ver detalle">
-              <Eye className={styles.header.iconSize} />
-            </button>
-          )}
           {onEditar && (
-            <button onClick={() => onEditar(cliente)} className={styles.header.actionButton} title="Editar">
+            <button onClick={(e) => { e.stopPropagation(); onEditar(cliente) }} className={styles.header.actionButton} title="Editar">
               <Edit className={styles.header.iconSize} />
             </button>
           )}
           {onEliminar && (
-            <button onClick={() => onEliminar(cliente)} className={styles.header.actionButtonDelete} title="Eliminar">
+            <button onClick={(e) => { e.stopPropagation(); onEliminar(cliente) }} className={styles.header.actionButtonDelete} title="Eliminar">
               <Trash2 className={styles.header.iconSize} />
             </button>
           )}

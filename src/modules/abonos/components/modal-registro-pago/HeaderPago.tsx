@@ -41,7 +41,7 @@ export function HeaderPago({
               Registrar {esDesembolso ? 'Desembolso' : 'Abono'}
             </h2>
             <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${esDesembolso ? colorScheme.headerBadgeDesembolso : colorScheme.headerBadgeAbono}`}>
-              {esDesembolso ? '🏦 Desembolso único · No editable' : '💰 Abono parcial'}
+              {esDesembolso ? '🏦 Desembolso único · No editable' : '💰 Pago en cuotas'}
             </span>
           </div>
           <p className="text-white/80 text-xs mt-0.5">{fuenteSeleccionada.tipo}</p>
@@ -72,7 +72,9 @@ export function HeaderPago({
       <div className="relative z-10 bg-white/10 backdrop-blur-xl rounded-xl px-4 py-3 border border-white/20 mt-3">
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <p className="text-white/70 text-[10px] font-medium uppercase tracking-wider mb-0.5">Monto aprobado</p>
+            <p className="text-white/70 text-[10px] font-medium uppercase tracking-wider mb-0.5">
+              {fuenteSeleccionada.tipo === 'Cuota Inicial' ? 'Monto pactado' : 'Monto aprobado'}
+            </p>
             <p className="text-white font-bold text-base">
               {fuenteSeleccionada.monto_aprobado != null
                 ? formatCurrency(fuenteSeleccionada.monto_aprobado)

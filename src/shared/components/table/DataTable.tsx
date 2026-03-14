@@ -32,6 +32,7 @@ interface DataTableProps<TData> {
   pageSize?: number
   showPagination?: boolean
   initialSorting?: SortingState
+  onRowClick?: (row: TData) => void
 }
 
 const gradientClasses = {
@@ -80,6 +81,7 @@ export function DataTable<TData>({
   pageSize = 10,
   showPagination = true,
   initialSorting = [],
+  onRowClick,
 }: DataTableProps<TData>) {
   const [sorting, setSorting] = useState<SortingState>(initialSorting)
   const [pagination, setPagination] = useState({ pageIndex: 0, pageSize })
@@ -158,9 +160,11 @@ export function DataTable<TData>({
               table.getRowModel().rows.map((row, idx) => (
                 <tr
                   key={row.id}
+                  onClick={onRowClick ? () => onRowClick(row.original) : undefined}
                   className={cn(
                     'transition-all duration-200',
                     theme.hover,
+                    onRowClick && 'cursor-pointer',
                     idx % 2 === 0
                       ? 'bg-white dark:bg-gray-800'
                       : 'bg-gray-50/30 dark:bg-gray-800/30'

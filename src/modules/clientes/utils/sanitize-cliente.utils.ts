@@ -5,7 +5,7 @@
  * antes de enviarlos a la base de datos.
  */
 
-import { sanitizeDate, sanitizeEnum, sanitizeString } from '@/lib/utils/sanitize.utils'
+import { formatNombrePropio, sanitizeDate, sanitizeEnum, sanitizeString } from '@/lib/utils/sanitize.utils'
 import type { ActualizarClienteDTO, CrearClienteDTO, EstadoCivil } from '../types'
 
 /**
@@ -27,15 +27,15 @@ export function sanitizeCrearClienteDTO(datos: CrearClienteDTO): CrearClienteDTO
   return {
     ...datos,
     // Campos obligatorios (strings)
-    nombres: sanitizeString(datos.nombres) || '',
-    apellidos: sanitizeString(datos.apellidos) || '',
+    nombres: formatNombrePropio(datos.nombres) || '',
+    apellidos: formatNombrePropio(datos.apellidos) || '',
     tipo_documento: datos.tipo_documento,
     numero_documento: sanitizeString(datos.numero_documento) || '',
 
     // Campos opcionales (strings)
     telefono: sanitizeString(datos.telefono) ?? undefined,
     telefono_alternativo: sanitizeString(datos.telefono_alternativo) ?? undefined,
-    email: sanitizeString(datos.email) ?? undefined,
+    email: datos.email ? (sanitizeString(datos.email)?.toLowerCase() ?? undefined) : undefined,
     direccion: sanitizeString(datos.direccion) ?? undefined,
     ciudad: sanitizeString(datos.ciudad) ?? undefined,
     departamento: sanitizeString(datos.departamento) ?? undefined,
@@ -60,14 +60,14 @@ export function sanitizeActualizarClienteDTO(
   const sanitized: ActualizarClienteDTO = {}
 
   // Solo incluir campos que existen en el DTO original (con valor !== undefined)
-  if (datos.nombres !== undefined) sanitized.nombres = sanitizeString(datos.nombres) || ''
-  if (datos.apellidos !== undefined) sanitized.apellidos = sanitizeString(datos.apellidos) || ''
+  if (datos.nombres !== undefined) sanitized.nombres = formatNombrePropio(datos.nombres) || ''
+  if (datos.apellidos !== undefined) sanitized.apellidos = formatNombrePropio(datos.apellidos) || ''
   if (datos.tipo_documento !== undefined) sanitized.tipo_documento = datos.tipo_documento
   if (datos.numero_documento !== undefined) sanitized.numero_documento = sanitizeString(datos.numero_documento) || ''
 
   if (datos.telefono !== undefined) sanitized.telefono = sanitizeString(datos.telefono) ?? undefined
   if (datos.telefono_alternativo !== undefined) sanitized.telefono_alternativo = sanitizeString(datos.telefono_alternativo) ?? undefined
-  if (datos.email !== undefined) sanitized.email = sanitizeString(datos.email) ?? undefined
+  if (datos.email !== undefined) sanitized.email = datos.email ? (sanitizeString(datos.email)?.toLowerCase() ?? undefined) : undefined
   if (datos.direccion !== undefined) sanitized.direccion = sanitizeString(datos.direccion) ?? undefined
   if (datos.ciudad !== undefined) sanitized.ciudad = sanitizeString(datos.ciudad) ?? undefined
   if (datos.departamento !== undefined) sanitized.departamento = sanitizeString(datos.departamento) ?? undefined

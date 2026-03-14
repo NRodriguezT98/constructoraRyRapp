@@ -81,6 +81,53 @@ export function sanitizeObject<T extends Record<string, any>>(obj: T): T {
 }
 
 /**
+ * Palabras que NO deben capitalizarse en nombres propios en español
+ * (excepto si son la primera palabra)
+ */
+const PALABRAS_MINUSCULAS_ES = new Set([
+  'de', 'del', 'la', 'las', 'los', 'el', 'y', 'e', 'o', 'u',
+  'a', 'al', 'con', 'en', 'por', 'para', 'sin', 'sobre',
+])
+
+function capitalizarPalabra(word: string): string {
+  // Maneja palabras con guion: "Ana-Maria" → "Ana-Maria"
+  return word
+    .split('-')
+    .map((part) => (part.length > 0 ? part.charAt(0).toUpperCase() + part.slice(1) : part))
+    .join('-')
+}
+
+/**
+ * Formatear nombre propio con Title Case inteligente en español.
+ * Capitaliza la primera letra de cada palabra excepto preposiciones y artículos.
+ * Siempre capitaliza la primera palabra.
+ *
+ * @example
+ * formatNombrePropio("JUAN PABLO")          → "Juan Pablo"
+ * formatNombrePropio("maria de los angeles") → "Maria de los Angeles"
+ * formatNombrePropio("ana-maria")            → "Ana-Maria"
+ * formatNombrePropio("juan de dios")         → "Juan de Dios"
+ *
+ * @param value - Nombre a formatear
+ * @returns Nombre formateado o null si está vacío
+ */
+export function formatNombrePropio(value: string | null | undefined): string | null {
+  if (value === null || value === undefined) return null
+  const trimmed = value.trim()
+  if (trimmed === '') return null
+
+  const palabras = trimmed.toLowerCase().split(/\s+/).filter((w) => w.length > 0)
+
+  return palabras
+    .map((word, index) => {
+      if (index === 0) return capitalizarPalabra(word)
+      if (PALABRAS_MINUSCULAS_ES.has(word)) return word
+      return capitalizarPalabra(word)
+    })
+    .join(' ')
+}
+
+/**
  * Remover campos con valores null/undefined de un objeto
  * Útil para updates parciales donde solo quieres enviar campos modificados
  * @param obj - Objeto a limpiar

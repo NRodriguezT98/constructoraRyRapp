@@ -36,7 +36,7 @@ export async function obtenerNegociacionesActivas(): Promise<NegociacionConAbono
       *,
       clientes!negociaciones_cliente_id_fkey(id, nombres, apellidos, numero_documento, telefono, email, ciudad),
       viviendas!negociaciones_vivienda_id_fkey(id, numero, manzana_id, valor_base, area, tipo_vivienda),
-      fuentes_pago!fuentes_pago_negociacion_id_fkey(*)
+      fuentes_pago!fuentes_pago_negociacion_id_fkey(*, tipos_fuentes_pago!fk_fuentes_pago_tipo_fuente(orden))
     `)
     .eq('estado', 'Activa')
     .order('fecha_creacion', { ascending: false });
@@ -87,6 +87,11 @@ export async function obtenerNegociacionesActivas(): Promise<NegociacionConAbono
           // Excluir fuentes inactivas (soporta ambas variantes de nombre de columna)
           const estado = (fp.estado || fp.estado_fuente || '').toLowerCase()
           return estado !== 'inactiva'
+        })
+        .sort((a: any, b: any) => {
+          const ordenA = a.tipos_fuentes_pago?.orden ?? 999
+          const ordenB = b.tipos_fuentes_pago?.orden ?? 999
+          return ordenA - ordenB
         })
         .map((fp: any) => ({
         ...fp,

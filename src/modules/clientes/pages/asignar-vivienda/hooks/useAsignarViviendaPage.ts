@@ -270,7 +270,7 @@ export function useAsignarViviendaPage({
       setMostrarErroresPaso2(false) // Reset al cambiar de paso
       window.scrollTo({ top: 0, behavior: 'smooth' })
     }
-  }, [currentStep, form])
+  }, [currentStep, form, fuentesPago])
 
   const handleBack = useCallback(() => {
     if (currentStep > 1) {

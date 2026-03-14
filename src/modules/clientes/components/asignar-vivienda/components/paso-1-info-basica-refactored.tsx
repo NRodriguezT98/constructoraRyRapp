@@ -456,19 +456,26 @@ export function Paso1InfoBasicaRefactored({
         </div>
       )}
 
-      {/* Valor en Minuta/Escritura Pública */}
+      {/* Valor en Escritura Pública — DATO LEGAL, no afecta el plan financiero */}
       {vivienda_id && valor_total_original > 0 && (
-        <div className="space-y-1">
-          <label className={s.label.base}>
-            <DollarSign className="w-4 h-4 text-blue-500 dark:text-blue-400" />
-            Valor de Vivienda en Minuta
-            <span className="text-red-500 ml-0.5" title="Campo obligatorio">*</span>
-            <span className="text-xs text-gray-500 dark:text-gray-400 ml-auto font-normal">
-              (Valor para escritura pública)
+        <div className="backdrop-blur-xl bg-blue-50/80 dark:bg-blue-950/20 border border-blue-200/60 dark:border-blue-800/60 rounded-lg p-3 shadow-sm">
+          <div className="flex items-center justify-between mb-2.5">
+            <div className="flex items-center gap-2">
+              <Info className="w-4 h-4 text-blue-500 dark:text-blue-400 flex-shrink-0" />
+              <span className="text-xs font-bold text-blue-700 dark:text-blue-300">
+                Valor en Escritura Pública
+              </span>
+            </div>
+            <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800">
+              DATO LEGAL
             </span>
-          </label>
+          </div>
+          <p className="text-[10px] text-blue-600/80 dark:text-blue-400/80 mb-2.5 leading-relaxed">
+            Solo para efectos legales y bancarios.{' '}
+            <strong>No afecta el plan financiero</strong> — el banco lo usa para calcular el crédito.
+          </p>
           <div className="relative">
-            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-blue-400 dark:text-blue-500 text-sm">$</span>
             <input
               type="text"
               value={valor_escritura_publica ? valor_escritura_publica.toLocaleString('es-CO') : ''}
@@ -480,53 +487,18 @@ export function Paso1InfoBasicaRefactored({
                 }
               }}
               placeholder="128.000.000"
-              className={`${getInputClasses('valor_escritura_publica')} pl-8`}
+              className="w-full pl-7 pr-3 py-2.5 bg-white dark:bg-gray-900/60 border border-blue-200 dark:border-blue-800 rounded-lg text-sm text-blue-800 dark:text-blue-200 font-semibold focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-400/20 transition-all"
             />
           </div>
-          {showError('valor_escritura_publica') && (
-            <p className="mt-1 text-xs text-red-600 dark:text-red-400 flex items-center gap-1">
-              <AlertCircle className="w-3 h-3" />
-              {errors.valor_escritura_publica?.message as string}
-            </p>
-          )}
-          <p className="text-[10px] text-gray-500 dark:text-gray-400 flex items-center gap-1">
-            <Info className="w-3 h-3" />
-            Sugerido: $128.000.000 (facilita crédito bancario)
-          </p>
-
-          {/* Alerta de Diferencia Notarial */}
           {valor_escritura_publica && diferencia_notarial !== 0 && (
-            <div className={`mt-2 p-2.5 rounded-lg border ${
-              diferencia_notarial > 0
-                ? 'bg-blue-50/80 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800'
-                : 'bg-yellow-50/80 dark:bg-yellow-950/30 border-yellow-200 dark:border-yellow-800'
-            }`}>
-              <div className="flex items-start gap-2">
-                <Info className={`w-4 h-4 mt-0.5 flex-shrink-0 ${
-                  diferencia_notarial > 0
-                    ? 'text-blue-600 dark:text-blue-400'
-                    : 'text-yellow-600 dark:text-yellow-400'
-                }`} />
-                <div className="flex-1 text-xs">
-                  <p className={`font-semibold ${
-                    diferencia_notarial > 0
-                      ? 'text-blue-700 dark:text-blue-300'
-                      : 'text-yellow-700 dark:text-yellow-300'
-                  }`}>
-                    {diferencia_notarial > 0 ? 'Diferencia Notarial Positiva' : 'Advertencia: Escritura Menor'}
-                  </p>
-                  <div className="mt-1 space-y-0.5 text-gray-600 dark:text-gray-400">
-                    <p>Valor Real a Pagar: <span className="font-bold">${valor_final.toLocaleString('es-CO')}</span></p>
-                    <p>Valor en Minuta: <span className="font-bold">${valor_escritura_publica.toLocaleString('es-CO')}</span></p>
-                    <p>Diferencia: <span className={`font-bold ${
-                      diferencia_notarial > 0 ? 'text-blue-600 dark:text-blue-400' : 'text-yellow-600 dark:text-yellow-400'
-                    }`}>
-                      {diferencia_notarial > 0 ? '+' : ''}${diferencia_notarial.toLocaleString('es-CO')}
-                    </span> {diferencia_notarial > 0 ? '(solo en papel)' : ''}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <p className="mt-2 text-[10px] text-blue-600 dark:text-blue-400 flex items-center gap-1">
+              <Info className="w-3 h-3" />
+              Diferencia con valor real:{' '}
+              <span className="font-bold">
+                {diferencia_notarial > 0 ? '+' : ''}${diferencia_notarial.toLocaleString('es-CO')}
+              </span>
+              {' '}(solo en papel)
+            </p>
           )}
         </div>
       )}

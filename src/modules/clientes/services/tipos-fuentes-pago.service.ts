@@ -19,7 +19,6 @@ export interface TipoFuentePagoCatalogo {
   icono: string | null
   color: string | null
   requiere_entidad: boolean
-  requiere_carta_aprobacion: boolean
   permite_multiples_abonos: boolean
 }
 
@@ -40,7 +39,7 @@ export async function cargarTiposFuentesPagoActivas(): Promise<ConsultaTiposFuen
   try {
     const { data, error } = await supabase
       .from('tipos_fuentes_pago')
-      .select('id,nombre,descripcion,activo,orden,icono,color,requiere_entidad,requiere_carta_aprobacion,permite_multiples_abonos')
+      .select('id,nombre,descripcion,activo,orden,icono,color,requiere_entidad,permite_multiples_abonos')
       .eq('activo', true)
       .order('orden', { ascending: true })
 
@@ -65,7 +64,7 @@ export async function cargarTodosTiposFuentesPago(): Promise<ConsultaTiposFuente
   try {
     const { data, error } = await supabase
       .from('tipos_fuentes_pago')
-      .select('id,nombre,descripcion,activo,orden,icono,color,requiere_entidad,requiere_carta_aprobacion,permite_multiples_abonos')
+      .select('id,nombre,descripcion,activo,orden,icono,color,requiere_entidad,permite_multiples_abonos')
       .order('orden', { ascending: true })
 
     if (error) {
@@ -92,7 +91,7 @@ export async function obtenerTipoFuentePorNombre(
   try {
     const { data, error } = await supabase
       .from('tipos_fuentes_pago')
-      .select('id,nombre,descripcion,activo,orden,icono,color,requiere_entidad,requiere_carta_aprobacion,permite_multiples_abonos')
+      .select('id,nombre,descripcion,activo,orden,icono,color,requiere_entidad,permite_multiples_abonos')
       .eq('nombre', nombre)
       .eq('activo', true)
       .single()
