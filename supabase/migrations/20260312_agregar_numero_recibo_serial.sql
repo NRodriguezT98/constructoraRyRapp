@@ -45,6 +45,7 @@ SELECT
   ah.fecha_abono,
   ah.metodo_pago,
   ah.numero_referencia,
+  ah.comprobante_url,
   ah.notas,
   ah.fecha_creacion,
   ah.fecha_actualizacion,

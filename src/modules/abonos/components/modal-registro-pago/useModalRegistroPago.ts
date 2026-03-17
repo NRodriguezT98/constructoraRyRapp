@@ -3,11 +3,17 @@ import { useEffect, useRef, useState } from 'react'
 import { formatDateCompact, getTodayDateString } from '@/lib/utils/date.utils'
 
 import {
-    eliminarComprobante,
-    generarPathComprobante,
-    subirComprobante,
+  eliminarComprobante,
+  generarPathComprobante,
+  subirComprobante,
 } from '../../services/abonos-storage.service'
-import { getModoRegistro, type FuentePagoConAbonos, type MetodoPago, type ModoRegistro } from '../../types'
+import {
+  getModoRegistro,
+  type FuentePagoConAbonos,
+  type MetodoPago,
+  type ModoRegistro,
+} from '../../types'
+
 import { getColorScheme, type ColorScheme } from './ModalRegistroPago.styles'
 
 type FaseLoading = 'idle' | 'subiendo' | 'guardando'
@@ -22,9 +28,13 @@ export interface UseModalRegistroPagoProps {
   onClose: () => void
 }
 
-function buildInitialState(fuenteInicial: FuentePagoConAbonos, fechaMinima?: string) {
+function buildInitialState(
+  fuenteInicial: FuentePagoConAbonos,
+  fechaMinima?: string
+) {
   const modo: ModoRegistro = getModoRegistro(fuenteInicial)
-  const montoInicial = modo === 'desembolso' ? (fuenteInicial.monto_aprobado ?? 0).toString() : ''
+  const montoInicial =
+    modo === 'desembolso' ? (fuenteInicial.monto_aprobado ?? 0).toString() : ''
   return {
     fuente: fuenteInicial,
     monto: montoInicial,
@@ -48,7 +58,8 @@ export function useModalRegistroPago({
 }: UseModalRegistroPagoProps) {
   const fallbackFuente = fuenteInicial ?? fuentesPago[0]
 
-  const [fuenteSeleccionada, setFuenteSeleccionadaState] = useState<FuentePagoConAbonos>(fallbackFuente)
+  const [fuenteSeleccionada, setFuenteSeleccionadaState] =
+    useState<FuentePagoConAbonos>(fallbackFuente)
   const [monto, setMonto] = useState('')
   const [fechaAbono, setFechaAbono] = useState(getTodayDateString())
   const [metodoPago, setMetodoPago] = useState<MetodoPago>('Transferencia')
@@ -57,6 +68,17 @@ export function useModalRegistroPago({
   const [comprobante, setComprobante] = useState<File | null>(null)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [faseLoading, setFaseLoading] = useState<FaseLoading>('idle')
+  const [abonoRegistrado, setAbonoRegistrado] = useState<{
+    id: string
+    numero_recibo: number
+    monto: number
+    fecha_abono: string
+    metodo_pago: string
+    numero_referencia: string | null
+    comprobante_url: string | null
+    notas: string | null
+    fecha_creacion: string
+  } | null>(null)
 
   const cancelledRef = useRef(false)
 
@@ -74,8 +96,9 @@ export function useModalRegistroPago({
     setComprobante(null)
     setErrors({})
     setFaseLoading('idle')
+    setAbonoRegistrado(null)
     cancelledRef.current = false
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open])
 
   // ── Cuando cambia la fuente: recalcular monto y método ─────────────────────
@@ -84,7 +107,7 @@ export function useModalRegistroPago({
     if (esDesembolso) {
       setMonto((fuenteSeleccionada.monto_aprobado ?? 0).toString())
       // Si el método actual era Efectivo (no válido para desembolso), resetearlo
-      setMetodoPago((prev) => (prev === 'Efectivo' ? 'Transferencia' : prev))
+      setMetodoPago(prev => (prev === 'Efectivo' ? 'Transferencia' : prev))
     } else {
       setMonto('')
     }
@@ -145,14 +168,21 @@ export function useModalRegistroPago({
 
     // Fase 1: subir comprobante a Storage
     setFaseLoading('subiendo')
-    const path = generarPathComprobante(negociacionId, fuenteSeleccionada.id, comprobante)
+    const path = generarPathComprobante(
+      negociacionId,
+      fuenteSeleccionada.id,
+      comprobante
+    )
 
     let uploadedPath: string
     try {
       uploadedPath = await subirComprobante(path, comprobante)
     } catch {
       setFaseLoading('idle')
-      setErrors({ submit: 'No se pudo subir el comprobante. Verifica tu conexión e intenta de nuevo.' })
+      setErrors({
+        submit:
+          'No se pudo subir el comprobante. Verifica tu conexión e intenta de nuevo.',
+      })
       return
     }
 
@@ -170,7 +200,9 @@ export function useModalRegistroPago({
         body: JSON.stringify({
           negociacion_id: negociacionId,
           fuente_pago_id: fuenteSeleccionada.id,
-          monto: esDesembolso ? (fuenteSeleccionada.monto_aprobado ?? 0) : montoNum,
+          monto: esDesembolso
+            ? (fuenteSeleccionada.monto_aprobado ?? 0)
+            : montoNum,
           fecha_abono: fechaAbono,
           metodo_pago: metodoPago,
           numero_referencia: referencia || null,
@@ -183,15 +215,28 @@ export function useModalRegistroPago({
         const err = await response.json()
         throw new Error(err.error || 'Error al registrar el pago')
       }
-    } catch (error: unknown) {
-      const msg = error instanceof Error ? error.message : 'Error desconocido'
-      console.error('Error guardando pago:', msg)
+
+      // Capturar datos del abono registrado para mostrar pantalla de éxito
+      const respuestaJson = await response.json()
+      if (respuestaJson?.abono) {
+        setAbonoRegistrado(respuestaJson.abono)
+      }
+    } catch {
       setFaseLoading('idle')
-      setErrors({ submit: 'No se pudo guardar el pago. El comprobante puede haber quedado sin registrar — intenta de nuevo.' })
+      setErrors({
+        submit:
+          'No se pudo guardar el pago. El comprobante puede haber quedado sin registrar — intenta de nuevo.',
+      })
       return
     }
 
     setFaseLoading('idle')
+    // No llamar onSuccess() aquí — la pantalla de éxito maneja el cierre
+  }
+
+  // ── Cierra la pantalla de éxito: refresca datos y cierra modal ────────────
+  const handleCloseExito = () => {
+    setAbonoRegistrado(null)
     onSuccess()
     onClose()
   }
@@ -227,8 +272,11 @@ export function useModalRegistroPago({
     montoNum,
     isSubmitting,
     errors,
+    // Éxito
+    abonoRegistrado,
     // Handlers
     handleSubmit,
     handleClose,
+    handleCloseExito,
   }
 }
