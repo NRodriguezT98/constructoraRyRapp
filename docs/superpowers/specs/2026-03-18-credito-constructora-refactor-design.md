@@ -1,7 +1,7 @@
 # Spec: Crédito con la Constructora — Refactor y Features
 
 **Fecha:** 2026-03-18  
-**Estado:** Aprobado  
+**Estado:** En revisión  
 **Módulo afectado:** `src/modules/fuentes-pago/`  
 **Archivo de entrada actual:** `src/app/abonos/[clienteId]/components/fuente-pago-card.tsx`
 
@@ -37,13 +37,14 @@ La infraestructura de BD ya está correcta (tabla `creditos_constructora`, tabla
 src/modules/fuentes-pago/
 ├── hooks/
 │   ├── useCreditoConstructora.ts     (EXISTENTE — sin cambios en responsabilidades)
-│   └── useCuotasCredito.ts           (NUEVO — cálculos: próxima cuota, progreso)
+│   └── useCuotasCredito.ts           (NUEVO — envuelve useCreditoConstructora + cálculos + acción atómica)
 │
 ├── components/
 │   ├── CuotasCreditoTab.tsx          (REFACTOR — orquestador < 150 líneas)
-│   ├── PanelResumenCredito.tsx       (NUEVO — stats + panel próxima cuota)
-│   ├── TablaAmortizacion.tsx         (NUEVO — tabla de cuotas con acciones)
-│   ├── ConfirmacionPagoCuota.tsx     (NUEVO — panel inline confirmación de pago)
+│   ├── PanelResumenCredito.tsx       (NUEVO — reemplaza las 4 StatCards actuales + card próxima cuota)
+│   ├── TablaAmortizacion.tsx         (NUEVO — extrae el <table> inline de CuotasCreditoTab)
+│   ├── ConfirmacionPagoCuota.tsx     (NUEVO — extrae el bloque JSX inline cuotaParaPago de CuotasCreditoTab)
+│   ├── ConfigurarPlanCredito.tsx     (NUEVO — extrae el form "sin plan" de CuotasCreditoTab, bloque !credito || cuotas.length===0)
 │   ├── AplicarMoraModal.tsx          (EXISTENTE — sin cambios)
 │   └── ReestructurarCreditoModal.tsx (EXISTENTE — sin cambios)
 │
@@ -53,14 +54,15 @@ src/modules/fuentes-pago/
 
 ### Regla de responsabilidad única
 
-| Archivo                     | Responsabilidad exacta                                                                                |
-| --------------------------- | ----------------------------------------------------------------------------------------------------- |
-| `useCreditoConstructora.ts` | Carga de datos desde BD, acciones de mora y reestructuración                                          |
-| `useCuotasCredito.ts`       | Cálculos derivados: próxima cuota, progreso, monto pendiente total. Envuelve `useCreditoConstructora` |
-| `CuotasCreditoTab.tsx`      | Orquestador: conecta hook → subcomponentes. Sin lógica propia                                         |
-| `PanelResumenCredito.tsx`   | UI presentacional: 4 stats del crédito + card próxima cuota                                           |
-| `TablaAmortizacion.tsx`     | UI presentacional: tabla de cuotas con botones Mora/Pagar                                             |
-| `ConfirmacionPagoCuota.tsx` | UI presentacional: desglose cuota+mora → confirmar pago                                               |
+| Archivo                     | Responsabilidad exacta                                                                                                                       |
+| --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| `useCreditoConstructora.ts` | Carga de datos desde BD, acciones de mora y reestructuración                                                                                 |
+| `useCuotasCredito.ts`       | Cálculos derivados: próxima cuota, progreso, monto pendiente total. Envuelve `useCreditoConstructora`. Expone `registrarPagoCuota` (atómica) |
+| `CuotasCreditoTab.tsx`      | Orquestador: conecta hook → subcomponentes. Sin lógica propia                                                                                |
+| `PanelResumenCredito.tsx`   | UI presentacional pura: 4 stats + card próxima cuota. Reemplaza exactamente el bloque `grid grid-cols-2 gap-3 sm:grid-cols-4` actual         |
+| `TablaAmortizacion.tsx`     | UI presentacional pura: tabla de cuotas + alerta vencidas. Extrae el `<table>` y el bloque de alerta de CuotasCreditoTab                     |
+| `ConfirmacionPagoCuota.tsx` | UI presentacional pura: desglose cuota+mora → confirmar pago inline                                                                          |
+| `ConfigurarPlanCredito.tsx` | UI presentacional pura: formulario crear plan para fuentes sin cuotas (clientes históricos)                                                  |
 
 ---
 
@@ -68,36 +70,68 @@ src/modules/fuentes-pago/
 
 Hook que envuelve `useCreditoConstructora` y agrega cálculos sin duplicar llamadas a BD.
 
+> Los tipos `ProximaCuota` y `ProgresoCredito` se definen en `src/modules/fuentes-pago/types/index.ts` (ver sección "Tipos nuevos" más adelante).
+
+**Retorno del hook:**
+
 ```typescript
-interface ProximaCuota {
-  cuota: CuotaVigente
-  estaVencida: boolean
-  diasVencida: number
-  moraSugerida: number   // calculada con tasa_mora_diaria de BD (solo referencia informativa)
-  totalAPagar: number    // valor_cuota + mora_aplicada (mora ya registrada en BD)
-}
-
-interface ProgresoCredito {
-  cuotasPagadas: number
-  cuotasTotales: number
-  cuotasPendientes: number
-  montoPagado: number       // suma de valor_cuota de cuotas con estado 'Pagada'
-  montoPendiente: number    // suma de total_a_cobrar de cuotas no pagadas
-  porcentajeAvance: number  // 0–100
-}
-
-// Retorno del hook
 {
-  // Delegado de useCreditoConstructora
+  // Delegado de useCreditoConstructora (sin cambios)
   credito, cuotas, resumen, cargando, procesando, error,
   recargar, aplicarMora, reestructurar, crearPlan,
 
-  // Calculados
-  proximaCuota: ProximaCuota | null,
+  // NUEVO: Calculados con useMemo
+  proximaCuota: ProximaCuota | null,  // null si todas las cuotas están pagadas
   progresoCredito: ProgresoCredito,
 
-  // Acción atómica (R7)
-  registrarPagoCuota: (cuotaId: string, monto: number, mora: number) => Promise<boolean>
+  // NUEVO: Acción atómica (R7)
+  registrarPagoCuota: (cuotaId: string) => Promise<boolean>
+}
+```
+
+**Regla de cálculo de `proximaCuota`:**
+
+- Primera cuota donde `estado !== 'Pagada'` y `estado !== 'Reestructurada'`, ordenada por `numero_cuota` asc
+- Si no hay ninguna: retorna `null` (crédito completamente pagado)
+- `mora_sugerida` se calcula solo si `estado === 'Vencida' && mora_aplicada === 0`; en otro caso es `null`
+- `total_a_pagar = valor_cuota + mora_aplicada` (siempre usa mora registrada en BD, no sugerida)
+
+**Edge case — cuota pagada con mora:**
+
+- No interfiere en `proximaCuota` (estados 'Pagada' son excluidos)
+- `progresoCredito.montoPagado` suma solo `valor_cuota` (no mora) de pagadas — mora se contabiliza en `mora_total_recibida` de la fuente
+
+**Edge case — crédito sin plan (fuentes históricas):**
+
+- `cuotas.length === 0` → `proximaCuota = null`, `progresoCredito` con todos los campos en 0
+- El componente `ConfigurarPlanCredito` se muestra cuando `!credito || cuotas.length === 0`
+
+---
+
+## Tipos nuevos a agregar en `src/modules/fuentes-pago/types/index.ts`
+
+```typescript
+/** La siguiente cuota pendiente de pagar, calculada en useCuotasCredito */
+export interface ProximaCuota {
+  id: string
+  numero_cuota: number
+  fecha_vencimiento: string // YYYY-MM-DD
+  valor_cuota: number // Capital + interés de esa cuota
+  mora_aplicada: number // 0 si no se ha aplicado mora
+  mora_sugerida: number | null // Calculada por calcularMoraSugerida(), null si no vencida
+  total_a_pagar: number // valor_cuota + mora_aplicada
+  estado: 'Pendiente' | 'Vencida'
+  dias_mora: number // 0 si no vencida
+}
+
+/** Progreso global del crédito */
+export interface ProgresoCredito {
+  totalCuotas: number
+  cuotasPagadas: number
+  cuotasPendientes: number
+  montoTotal: number // monto_aprobado
+  montoPagado: number // suma de valor_cuota de cuotas pagadas (sin mora)
+  porcentaje: number // 0-100
 }
 ```
 
@@ -105,54 +139,77 @@ interface ProgresoCredito {
 
 ## Detalle: `registrarPagoYMarcarCuota` (corrección bug R7)
 
-Función nueva en `cuotas-credito.service.ts`:
+Función nueva en `cuotas-credito.service.ts`. Reemplaza el patrón de doble llamada que existe en `fuente-pago-card.tsx`.
 
 ```typescript
-export async function registrarPagoYMarcarCuota(dto: {
+export interface PagoCuotaDTO {
   negociacion_id: string
   fuente_pago_id: string
   cuota_id: string
-  monto: number // valor_cuota + mora_aplicada
-  mora_incluida: number // mora_aplicada de la cuota (puede ser 0)
-  fecha_pago: string // YYYY-MM-DD
-}): Promise<{ error: Error | null }>
+  /** valor_cuota + mora_aplicada. Nunca puede ser 0. */
+  monto: number
+  /** mora_aplicada de la cuota. Puede ser 0. Siempre number, nunca undefined. */
+  mora_incluida: number
+  /** YYYY-MM-DD */
+  fecha_pago: string
+}
+
+export async function registrarPagoYMarcarCuota(
+  dto: PagoCuotaDTO
+): Promise<{ error: Error | null }>
 ```
 
-**Lógica:**
+**Lógica detallada:**
 
-1. Insertar en `abonos_historial` con `mora_incluida`
-2. Si falla → retornar error (nada que revertir)
-3. Actualizar `cuotas_credito.estado = 'Pagada'` y `fecha_pago`
-4. Si falla → eliminar el abono recién insertado (rollback manual)
-5. Retornar éxito
+1. Insertar en `abonos_historial` con `mora_incluida = dto.mora_incluida`
+   - Trigger BD actualiza `monto_recibido` en `fuentes_pago` (excluye mora automáticamente)
+   - Si falla → retornar `{ error }`. Nada que revertir.
+2. Guardar el `id` del abono insertado
+3. `UPDATE cuotas_credito SET estado = 'Pagada', fecha_pago = dto.fecha_pago WHERE id = dto.cuota_id`
+   - Si falla → rollback: `DELETE FROM abonos_historial WHERE id = abonoId`
+   - Retornar `{ error: new Error('Cuota no marcada pagada — abono revertido') }`
+4. Ambos OK → `{ error: null }`
+
+**Verificación criterio de aceptación R1:**
+Después de registrar pago $55.000 (cuota $50.000 + mora $5.000):
+
+- `fuentes_pago.monto_recibido` incrementa en **$50.000** (no $55.000)
+- `fuentes_pago.mora_total_recibida` incrementa en **$5.000**
+- `fuentes_pago.saldo_pendiente` decrece en **$50.000**
+
+**Edge case `mora_incluida = 0`:** válido. El trigger lo maneja (`monto - 0 = monto`).
 
 ---
 
 ## Detalle: UI `PanelResumenCredito`
 
+**Reemplaza:** el bloque de 4 stats que actualmente se renderiza inline en `CuotasCreditoTab.tsx` (líneas ~60-120 del archivo actual, dentro del bloque `credito &&`).
+
 **Zona A — 4 stats compactas:**
 
-- Capital prestado
-- Interés total
-- Mora acumulada
-- Tasa mensual (%)
+- Capital prestado (`credito.monto_aprobado - credito.interes_total`)
+- Interés total (`credito.interes_total`)
+- Mora acumulada (`fuente.mora_total_recibida`)
+- Tasa mensual (`credito.tasa_interes_mensual %`)
 
-**Zona B — Card próxima cuota:**
+**Zona B — Card próxima cuota** (datos de `ProximaCuota`):
 
 - Número de cuota y total (ej: "Cuota 5 de 12")
 - Fecha de vencimiento formateada con `formatDateCompact`
-- Indicador visual: verde (vigente), ámbar (<7 días), rojo (vencida + días de mora)
+- Indicador semáforo: verde (vigente), ámbar (≤7 días), rojo (vencida + "X días mora")
 - Valor cuota base
-- Mora aplicada (si existe y > 0)
-- Mora sugerida como referencia si está vencida y no tiene mora aplicada aún
-- Total a pagar (destacado)
-- Barra de progreso: cuotas pagadas / total con porcentaje
+- Mora aplicada: visible **solo si `proximaCuota.mora_aplicada > 0`**
+- Mora sugerida: visible **solo si la cuota está vencida Y `mora_aplicada === 0`**, como texto informativo gris (ej: "Mora estimada: $2.500"). **No es editable aquí.**
+- Total a pagar (bold destacado)
+- Barra de progreso: `cuotasPagadas / totalCuotas` con porcentaje y texto "X de Y cuotas"
+
+**Sin datos (edge case):** si `proximaCuota === null` (todas las cuotas están pagadas), mostrar badge verde "Crédito completado ✓".
 
 ---
 
 ## Detalle: UI `ConfirmacionPagoCuota`
 
-Panel inline que reemplaza el panel de confirmación actual en `CuotasCreditoTab`:
+Panel inline (no modal) que aparece al hacer clic en "Pagar" en la fila de la tabla. Reemplaza el bloque `cuotaParaPago &&` actual en `CuotasCreditoTab.tsx`.
 
 ```
 ┌─ Confirmar pago — Cuota N° X ─────────────────┐
@@ -166,9 +223,41 @@ Panel inline que reemplaza el panel de confirmación actual en `CuotasCreditoTab
 └────────────────────────────────────────────────┘
 ```
 
-- Si la cuota no tiene mora (`mora_aplicada === 0`), no se muestra la fila de mora
-- El botón confirmar llama a `registrarPagoCuota` del hook
-- Muestra spinner mientras procesa, deshabilita botones
+- Si `cuota.mora_aplicada === 0`: ocultar fila mora, total = valor_cuota
+- **NO se muestra mora_sugerida aquí.** La mora ya debe estar registrada antes de pagar (con el botón "Aplicar Mora" de la tabla).
+- El botón confirmar llama a `registrarPagoCuota(cuota.id)` del hook
+- Muestra spinner mientras procesa, deshabilita ambos botones
+- Si `error !== null` después de confirmar: muestra mensaje de error inline, no cierra el panel
+
+---
+
+## Detalle: UI `ConfigurarPlanCredito`
+
+**Extrae** el formulario de "Configurar plan de cuotas" que actualmente vive inline en `CuotasCreditoTab.tsx` (bloque `!credito || cuotas.length === 0`, líneas ~25-60).
+
+Este bloque es para **fuentes históricas** que fueron creadas antes de que existiera el sistema de cuotas.
+
+**Props:**
+
+```typescript
+interface ConfigurarPlanCreditoProps {
+  fuentePagoId: string
+  negociacionId: string
+  montoAprobado: number
+  onPlanCreado: () => void
+}
+```
+
+**Campos:**
+
+- Monto del crédito (pre-llenado con `montoAprobado`, readonly)
+- Tasa de interés mensual (%)
+- Número de cuotas
+- Fecha primera cuota
+
+**Acción:** llama a `crearPlan(dto)` del hook existente `useCreditoConstructora`. No necesita lógica nueva.
+
+**Edge case:** si la fuente tiene `credito` pero `cuotas.length === 0` (plan eliminado sin recrear) → mostrar mismo formulario con mensaje explicativo.
 
 ---
 
@@ -177,14 +266,15 @@ Panel inline que reemplaza el panel de confirmación actual en `CuotasCreditoTab
 ```
 BD (cuotas_credito + abonos_historial)
   ↓
-useCreditoConstructora (carga raw, acciones)
+useCreditoConstructora (carga raw, acciones: aplicarMora, reestructurar, crearPlan)
   ↓
-useCuotasCredito (cálculos: próxima cuota, progreso, acción atómica)
+useCuotasCredito (cálculos: próxima cuota, progreso; acción atómica registrarPagoCuota)
   ↓
-CuotasCreditoTab (orquestador, estado UI)
-  ├─→ PanelResumenCredito (props: credito, proximaCuota, progresoCredito)
-  ├─→ TablaAmortizacion (props: cuotas, onMora, onPagar)
-  └─→ ConfirmacionPagoCuota (props: cuota seleccionada, onConfirmar, onCancelar)
+CuotasCreditoTab (orquestador – solo estado UI: cuotaSeleccionada, mostrarConfirmacion)
+  ├─→ ConfigurarPlanCredito  (cuando !credito || cuotas.length === 0)
+  ├─→ PanelResumenCredito    (cuando credito && cuotas.length > 0)
+  ├─→ TablaAmortizacion      (lista de cuotas, onMora → AplicarMoraModal, onPagar → setCuotaSeleccionada)
+  └─→ ConfirmacionPagoCuota  (cuando cuotaSeleccionada !== null)
 ```
 
 ---
@@ -199,13 +289,15 @@ CuotasCreditoTab (orquestador, estado UI)
 
 ## Checklist de verificación post-implementación
 
-- [ ] R1: Registrar abono con mora → `monto_recibido` de la fuente NO incluye la mora
-- [ ] R2: No existe UI para pagar mora por separado
-- [ ] R3: `mora_total_recibida` en `fuentes_pago` refleja correctamente la mora cobrada
-- [ ] R4: El panel "Próxima cuota" muestra N°, fecha, valor, mora (si existe), total y progreso
-- [ ] R5: Clic en "Pagar" muestra panel inline con desglose — no abre modal general
-- [ ] R6: `CuotasCreditoTab.tsx` tiene < 150 líneas. Sin `useState` de lógica de negocio
-- [ ] R7: Si falla `marcarCuotaPagada` después de registrar abono, el abono se revierte
-- [ ] Mora sugerida (no aplicada) se muestra como referencia informativa cuando la cuota está vencida sin mora
+- [ ] R1: Registrar abono $55k (cuota $50k + mora $5k) → `fuentes_pago.monto_recibido` sube $50k, `mora_total_recibida` sube $5k
+- [ ] R2: No existe botón ni flujo para pagar mora por separado (solo junto a la cuota)
+- [ ] R3: `saldo_pendiente` en `fuentes_pago` = suma de `valor_cuota` de cuotas pendientes (nunca incluye mora)
+- [ ] R4: `PanelResumenCredito` muestra N°, fecha, valor, mora si existe, mora_sugerida si vencida sin mora, total, barra progreso
+- [ ] R5: Clic "Pagar" abre `ConfirmacionPagoCuota` inline (no modal general de abonos)
+- [ ] R6: `CuotasCreditoTab.tsx` tiene ≤ 150 líneas. Sin `useState` con lógica de negocio
+- [ ] R7: Si falla `UPDATE cuotas_credito` después de insertar abono → abono queda eliminado (consistencia BD)
+- [ ] `ConfirmacionPagoCuota` NO muestra mora_sugerida (solo mora_aplicada ya registrada)
+- [ ] `ConfigurarPlanCredito` se monta cuando `!credito || cuotas.length === 0`
+- [ ] `useCuotasCredito` devuelve `proximaCuota === null` cuando todas las cuotas están pagadas
 - [ ] Dark mode correcto en todos los componentes nuevos
-- [ ] TypeScript sin errores: `npm run type-check` exitoso
+- [ ] `npm run type-check` sin errores
