@@ -71,6 +71,36 @@ export function obtenerMonto(
 }
 
 /**
+ * Obtiene el monto que cuenta para el cierre financiero de la vivienda.
+ *
+ * Para créditos con la constructora (`genera_cuotas = true`) usa `capital_para_cierre`
+ * (solo el capital, sin intereses) porque los intereses son ganancia del prestamista,
+ * no parte del precio de la vivienda.
+ *
+ * Para cualquier otra fuente devuelve el mismo resultado que `obtenerMonto`.
+ *
+ * @example
+ * // Casa $122M, crédito constructora $13M capital + $0.78M intereses
+ * // → devuelve $13M (no $13.78M)
+ * const monto = obtenerMontoParaCierre(config, tipoConCampos, camposConfig)
+ */
+export function obtenerMontoParaCierre(
+  config: FuentePagoConfig | null,
+  tipoConCampos: import('@/modules/configuracion/types/campos-dinamicos.types').TipoFuentePagoConCampos | undefined,
+  camposConfig: CampoConfig[]
+): number {
+  if (!config) return 0
+  if (
+    tipoConCampos?.logica_negocio?.genera_cuotas &&
+    config.capital_para_cierre != null &&
+    config.capital_para_cierre > 0
+  ) {
+    return config.capital_para_cierre
+  }
+  return obtenerMonto(config, camposConfig)
+}
+
+/**
  * Obtiene la entidad financiera de una fuente de pago
  *
  * @param config - Configuración de la fuente de pago

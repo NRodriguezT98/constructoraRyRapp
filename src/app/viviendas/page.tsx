@@ -3,7 +3,7 @@
  * PÁGINA: Viviendas
  * ============================================
  *
- * âœ… PROTEGIDA POR MIDDLEWARE
+ * ✅ PROTEGIDA POR MIDDLEWARE
  * - Middleware ya validó autenticación
  * - Middleware ya validó permisos (Administrador, Gerente, Vendedor)
  * - No necesita <RequireView> wrapper
@@ -19,12 +19,12 @@ import { ViviendasPageMain } from '@/modules/viviendas/components/viviendas-page
 
 export default async function ViviendasPage() {
 
-  // âœ… Obtener permisos desde el servidor
+  // ✅ Obtener permisos desde el servidor
   // No hay query a DB aquí - usa React cache del servicio auth
   const permisos = await getServerPermissions()
 
 
-  // âœ… Pasar permisos como props
+  // ✅ Pasar permisos como props
   // El Client Component solo maneja UI
   return <ViviendasPageMain {...permisos} />
 }

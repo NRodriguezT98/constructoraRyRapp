@@ -34,7 +34,7 @@ interface UseDocumentosPendientesOptions {
 
 /**
  * Hook para obtener documentos pendientes de un cliente
- * âœ… Con cache, refetch automático y manejo de errores
+ * ✅ Con cache, refetch automático y manejo de errores
  */
 export function useDocumentosPendientes(
   clienteId: string,

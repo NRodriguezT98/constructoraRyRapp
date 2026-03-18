@@ -12,10 +12,10 @@ import { resolverSlugCliente } from '@/lib/utils/slug.utils'
 import { ModalRegistroPago } from '@/modules/abonos/components/modal-registro-pago'
 
 import {
-  FuentePagoCard,
-  HeaderCliente,
-  MetricasCards,
-  TimelineAbonos,
+    FuentePagoCard,
+    HeaderCliente,
+    MetricasCards,
+    TimelineAbonos,
 } from './components'
 import { useAbonosDetalle } from './hooks/useAbonosDetalle'
 
@@ -129,6 +129,7 @@ export default function AbonosDetallePage({ params }: PageProps) {
                   negociacionId={negociacion.id}
                   clienteSlug={clienteIdOrSlug}
                   onRegistrarAbono={handleRegistrarAbono}
+                  onAbonoRegistrado={handleAbonoRegistrado}
                   index={index}
                   canCreate={true}
                   validacion={validarFuentePago[fuente.id]}

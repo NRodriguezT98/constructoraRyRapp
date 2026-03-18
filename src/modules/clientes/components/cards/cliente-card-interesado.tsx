@@ -1,9 +1,9 @@
 /**
  * ClienteCardInteresado - Card para clientes en estado "Interesado"
  *
- * âœ… Muestra: Interés manifestado, proyecto/vivienda de interés, contacto
- * âœ… Tema: Cyan/Azul
- * âœ… Diseño consistente con sistema base
+ * ✅ Muestra: Interés manifestado, proyecto/vivienda de interés, contacto
+ * ✅ Tema: Cyan/Azul
+ * ✅ Diseño consistente con sistema base
  */
 
 'use client'
@@ -116,7 +116,7 @@ export function ClienteCardInteresado({
         </div>
         </div>
 
-        {/* SECCIÃ“N: Información de Contacto - HORIZONTAL */}
+        {/* SECCIÓN: Información de Contacto - HORIZONTAL */}
         <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-gradient-to-r from-cyan-500/10 via-blue-500/10 to-cyan-500/10 border-l-4 border-cyan-500 dark:border-cyan-400">
           <div className="flex items-center gap-2 flex-1 min-w-0">
             <div className="p-1.5 rounded-lg bg-cyan-500 shadow-lg shadow-cyan-500/30">
@@ -134,7 +134,7 @@ export function ClienteCardInteresado({
           </div>
         </div>
 
-        {/* SECCIÃ“N: Interés Manifestado - HORIZONTAL */}
+        {/* SECCIÓN: Interés Manifestado - HORIZONTAL */}
         <div className="space-y-2">
           {isLoading ? (
             <div className="px-3 py-4 rounded-lg bg-gray-100 dark:bg-gray-800 animate-pulse">

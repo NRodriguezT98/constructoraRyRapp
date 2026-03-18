@@ -9,7 +9,7 @@ import { supabase } from '@/lib/supabase/client'
 import type { ConfiguracionCampos, TipoFuentePagoConCampos } from '../types/campos-dinamicos.types'
 
 // ============================================
-// CARGAR TIPOS CON CONFIGURACIÃ“N DE CAMPOS
+// CARGAR TIPOS CON CONFIGURACIÓN DE CAMPOS
 // ============================================
 
 /**
@@ -23,15 +23,15 @@ export async function cargarTiposFuentesConCampos() {
     .order('orden', { ascending: true })
 
   if (error) {
-    console.error('âŒ Error al cargar tipos de fuentes con campos:', error)
+    console.error('❌ Error al cargar tipos de fuentes con campos:', error)
     throw new Error(`Error al cargar configuración: ${error.message}`)
   }
 
-  // âœ… Cast JSON to ConfiguracionCampos
+  // ✅ Cast JSON to ConfiguracionCampos
   return data.map(tipo => ({
     ...tipo,
     configuracion_campos: tipo.configuracion_campos as unknown as ConfiguracionCampos,
-  })) as TipoFuentePagoConCampos[]
+  })) as unknown as TipoFuentePagoConCampos[]
 }
 
 /**
@@ -45,19 +45,19 @@ export async function cargarTipoFuenteConCampos(tipoId: string) {
     .single()
 
   if (error) {
-    console.error(`âŒ Error al cargar tipo ${tipoId}:`, error)
+    console.error(`❌ Error al cargar tipo ${tipoId}:`, error)
     throw new Error(`Error al cargar tipo: ${error.message}`)
   }
 
-  // âœ… Cast JSON to ConfiguracionCampos
+  // ✅ Cast JSON to ConfiguracionCampos
   return {
     ...data,
     configuracion_campos: data.configuracion_campos as unknown as ConfiguracionCampos,
-  } as TipoFuentePagoConCampos
+  } as unknown as TipoFuentePagoConCampos
 }
 
 // ============================================
-// ACTUALIZAR CONFIGURACIÃ“N DE CAMPOS
+// ACTUALIZAR CONFIGURACIÓN DE CAMPOS
 // ============================================
 
 /**
@@ -78,18 +78,18 @@ export async function actualizarConfiguracionCampos(
     .single()
 
   if (error) {
-    console.error('âŒ Error al actualizar configuración:', error)
+    console.error('❌ Error al actualizar configuración:', error)
     throw new Error(`Error al guardar configuración: ${error.message}`)
   }
 
   return {
     ...data,
     configuracion_campos: data.configuracion_campos as unknown as ConfiguracionCampos,
-  } as TipoFuentePagoConCampos
+  } as unknown as TipoFuentePagoConCampos
 }
 
 // ============================================
-// VALIDAR CONFIGURACIÃ“N
+// VALIDAR CONFIGURACIÓN
 // ============================================
 
 /**

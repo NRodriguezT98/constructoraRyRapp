@@ -1,5 +1,5 @@
 /**
- * ðŸ”„ Servicio de Gestión de Conflictos de Viviendas
+ * 🔄 Servicio de Gestión de Conflictos de Viviendas
  *
  * Responsabilidad:
  * - Detectar viviendas inactivas con número/matrícula duplicados
@@ -164,7 +164,7 @@ export class ViviendaConflictosService {
         },
       }
     } catch (error) {
-      console.error('âŒ Error al verificar vivienda inactiva reutilizable:', error)
+      console.error('❌ Error al verificar vivienda inactiva reutilizable:', error)
       throw error
     }
   }
@@ -248,7 +248,7 @@ export class ViviendaConflictosService {
 
       return viviendaActualizada as unknown as Vivienda
     } catch (error) {
-      console.error('âŒ Error al sobrescribir vivienda inactiva:', error)
+      console.error('❌ Error al sobrescribir vivienda inactiva:', error)
       throw error
     }
   }
@@ -310,7 +310,7 @@ export class ViviendaConflictosService {
         },
       }
     } catch (error) {
-      console.error('âŒ Error al validar matrícula única:', error)
+      console.error('❌ Error al validar matrícula única:', error)
       throw error
     }
   }

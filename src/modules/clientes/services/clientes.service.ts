@@ -19,7 +19,7 @@ import { sanitizeActualizarClienteDTO, sanitizeCrearClienteDTO } from '../utils/
 class ClientesService {
   /**
    * Obtener todos los clientes con estadísticas, negociaciones e intereses
-   * âœ… Incluye datos de viviendas, proyectos y manzanas para la tabla
+   * ✅ Incluye datos de viviendas, proyectos y manzanas para la tabla
    */
   async obtenerClientes(filtros?: FiltrosClientes): Promise<ClienteResumen[]> {
     // 1. Obtener datos básicos de clientes desde la vista
@@ -61,7 +61,7 @@ class ClientesService {
       query = query.lte('fecha_creacion', filtros.fecha_hasta)
     }
 
-    // âš¡ EJECUTAR TODAS LAS CONSULTAS EN PARALELO (Promise.all)
+    // ⚡ EJECUTAR TODAS LAS CONSULTAS EN PARALELO (Promise.all)
     const [
       { data, error },
       { data: negociaciones },
@@ -117,7 +117,7 @@ class ClientesService {
 
     if (error) throw error
 
-    // âš¡ CREAR MAPAS DE BÃšSQUEDA RÁPIDA (O(1) lookup)
+    // ⚡ CREAR MAPAS DE BÚSQUEDA RÁPIDA (O(1) lookup)
     const negociacionesMap = new Map(
       negociaciones?.map((neg) => [
         neg.cliente_id,
@@ -146,7 +146,7 @@ class ClientesService {
         ]) || []
     )
 
-    // âš¡ TRANSFORMAR Y ENRIQUECER DATOS (O(n) single pass)
+    // ⚡ TRANSFORMAR Y ENRIQUECER DATOS (O(n) single pass)
     return (data || []).map((item) => {
       const negociacion = negociacionesMap.get(item.id!)
       const interes = interesesMap.get(item.id!)
@@ -319,7 +319,7 @@ class ClientesService {
 
     if (clienteExistente) {
       const error = `Ya existe un cliente registrado con ${datos.tipo_documento} ${datos.numero_documento}.\n\nCliente existente: ${clienteExistente.nombres} ${clienteExistente.apellidos}`
-      console.error('âŒ Cliente duplicado:', error)
+      console.error('❌ Cliente duplicado:', error)
       throw new Error(error)
     }
 
@@ -328,7 +328,7 @@ class ClientesService {
       data: { user },
     } = await supabase.auth.getUser()
 
-    // ðŸ§¹ Sanitizar y limpiar datos (convierte strings vacíos a null, valida enums)
+    // 🧹 Sanitizar y limpiar datos (convierte strings vacíos a null, valida enums)
     const datosSanitizados = sanitizeCrearClienteDTO(datos)
 
     // Excluir interes_inicial (no es un campo de la tabla clientes)
@@ -346,16 +346,16 @@ class ClientesService {
       .single()
 
     if (error) {
-      console.error('âŒ Error insertando en DB:', error)
+      console.error('❌ Error insertando en DB:', error)
       throw error
     }
 
 
-    // ðŸ” Auditar creación de cliente
+    // 🔍 Auditar creación de cliente
     try {
       await auditService.auditarCreacionCliente(data)
     } catch (auditError) {
-      console.error('âš ï¸ Error auditando creación de cliente:', auditError)
+      console.error('⚠️ Error auditando creación de cliente:', auditError)
       // No bloqueamos la operación si falla la auditoría
     }
 
@@ -380,7 +380,7 @@ class ClientesService {
       .eq('id', id)
       .single()
     // 2. Actualizar cliente
-    // ðŸ§¹ Sanitizar datos (strings vacíos â†’ null, validar enums)
+    // 🧹 Sanitizar datos (strings vacíos â†’ null, validar enums)
     const datosLimpios = sanitizeActualizarClienteDTO(datos)
 
     const { data, error } = await supabase
@@ -392,7 +392,7 @@ class ClientesService {
 
     if (error) throw error
 
-    // 3. ðŸ” Auditar actualización
+    // 3. 🔍 Auditar actualización
     if (datosAnteriores) {
       try {
         await auditService.auditarActualizacion(
@@ -407,7 +407,7 @@ class ClientesService {
           'clientes'
         )
       } catch (auditError) {
-        console.error('âš ï¸ Error auditando actualización:', auditError)
+        console.error('⚠️ Error auditando actualización:', auditError)
       }
     }
 
@@ -479,7 +479,7 @@ class ClientesService {
 
     if (error) throw error
 
-    // 6. ðŸ” Auditar eliminación
+    // 6. 🔍 Auditar eliminación
     if (clienteData) {
       try {
         await auditService.auditarEliminacion(
@@ -494,7 +494,7 @@ class ClientesService {
           'clientes'
         )
       } catch (auditError) {
-        console.error('âš ï¸ Error auditando eliminación:', auditError)
+        console.error('⚠️ Error auditando eliminación:', auditError)
       }
     }
   }

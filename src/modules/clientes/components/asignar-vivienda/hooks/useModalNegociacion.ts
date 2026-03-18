@@ -93,7 +93,7 @@ export function useModalNegociacion({
 
 
   // ============================================
-  // NAVEGACIÃ“N
+  // NAVEGACIÓN
   // ============================================
 
   const handleNext = useCallback(() => {
@@ -155,7 +155,7 @@ export function useModalNegociacion({
       onSuccess(negociacion.id)
       handleClose()
     } catch (err) {
-      console.error('âŒ Error creando negociación:', err)
+      console.error('❌ Error creando negociación:', err)
       setError(err instanceof Error ? err.message : 'Error al crear negociación')
     } finally {
       setCreando(false)

@@ -15,13 +15,10 @@ export type MetodoPago =
   | 'Tarjeta de Débito';
 
 /**
- * Tipos de fuentes de pago
+ * Tipos de fuentes de pago — importado desde módulo clientes (fuente única de verdad)
  */
-export type TipoFuentePago =
-  | 'Cuota Inicial'
-  | 'Crédito Hipotecario'
-  | 'Subsidio Mi Casa Ya'
-  | 'Subsidio Caja Compensación';
+import type { TipoFuentePago } from '@/modules/clientes/types/fuentes-pago';
+export type { TipoFuentePago };
 
 /**
  * Estados de negociación
@@ -185,6 +182,8 @@ export interface CrearAbonoDTO {
   monto: number;
   fecha_abono: string; // ISO string
   metodo_pago: MetodoPago;
+  /** Porción del monto que corresponde a mora (no cotiza para monto_recibido del principal) */
+  mora_incluida?: number;
   numero_referencia?: string;
   comprobante_url?: string;
   notas?: string;

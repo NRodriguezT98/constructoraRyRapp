@@ -34,7 +34,7 @@ export default function ResetPasswordPage() {
 
 
     if (error) {
-      console.error('âŒ ERROR EN URL:', error, errorCode, errorDescription)
+      console.error('❌ ERROR EN URL:', error, errorCode, errorDescription)
       setError(errorDescription || 'El enlace es inválido o ha expirado')
       setValidToken(false)
       return
@@ -50,10 +50,10 @@ export default function ResetPasswordPage() {
       if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && !sessionDetected) {
         if (session && mounted) {
           sessionDetected = true
-          setCurrentSession(session) // GUARDAR SESIÃ“N
+          setCurrentSession(session) // GUARDAR SESIÓN
           setValidToken(true)
         } else {
-          console.warn('âš ï¸ Evento detectado pero sin sesión o componente desmontado')
+          console.warn('⚠️ Evento detectado pero sin sesión o componente desmontado')
         }
       } else if (event === 'SIGNED_OUT') {
       } else if (event === 'TOKEN_REFRESHED') {
@@ -65,19 +65,19 @@ export default function ResetPasswordPage() {
     supabase.auth.getSession().then(({ data: { session }, error }) => {
 
       if (error) {
-        console.error('âŒ Error al obtener sesión:', error)
+        console.error('❌ Error al obtener sesión:', error)
       }
 
       if (session && mounted && !sessionDetected) {
         sessionDetected = true
-        setCurrentSession(session) // GUARDAR SESIÃ“N
+        setCurrentSession(session) // GUARDAR SESIÓN
         setValidToken(true)
       } else if (!session && mounted) {
       } else if (sessionDetected) {
       }
     }).catch((err) => {
       console.error('====================================================')
-      console.error('âŒâŒâŒ EXCEPCIÃ“N EN getSession() âŒâŒâŒ')
+      console.error('❌❌❌ EXCEPCIÓN EN getSession() ❌❌❌')
       console.error('Error:', err)
       console.error('Message:', err.message)
       console.error('Stack:', err.stack)
@@ -111,13 +111,13 @@ export default function ResetPasswordPage() {
 
 
     if (password !== confirmPassword) {
-      console.error('âŒ Las contraseñas no coinciden')
+      console.error('❌ Las contraseñas no coinciden')
       setError('Las contraseñas no coinciden')
       return
     }
 
     if (password.length < 6) {
-      console.error('âŒ Contraseña muy corta')
+      console.error('❌ Contraseña muy corta')
       setError('La contraseña debe tener al menos 6 caracteres')
       return
     }
@@ -153,7 +153,7 @@ export default function ResetPasswordPage() {
 
       if (!response.ok) {
         const errorMsg = result.msg || result.message || result.error_description || 'Error al actualizar contraseña'
-        console.error('âŒâŒâŒ ERROR AL ACTUALIZAR âŒâŒâŒ')
+        console.error('❌❌❌ ERROR AL ACTUALIZAR ❌❌❌')
         console.error('Status:', response.status)
         console.error('Error:', errorMsg)
         console.error('Body completo:', result)
@@ -177,7 +177,7 @@ export default function ResetPasswordPage() {
           )
 
           await Promise.race([signOutPromise, timeoutPromise])
-            .then(() => console.log('âœ… SignOut exitoso'))
+            .then(() => console.log('✅ SignOut exitoso'))
             .catch((err) => {
 
               // Limpiar cookies manualmente
@@ -189,7 +189,7 @@ export default function ResetPasswordPage() {
 
             })
         } catch (error) {
-          console.error('âŒ Error inesperado:', error)
+          console.error('❌ Error inesperado:', error)
         }
 
         window.location.href = '/login'
@@ -198,7 +198,7 @@ export default function ResetPasswordPage() {
     } catch (err) {
       const error = err instanceof Error ? err : new Error(String(err))
       console.error('====================================================')
-      console.error('âŒâŒâŒ EXCEPCIÃ“N GENERAL âŒâŒâŒ')
+      console.error('❌❌❌ EXCEPCIÓN GENERAL ❌❌❌')
       console.error('====================================================')
       console.error('Error:', error)
       console.error('Message:', error.message)
@@ -346,7 +346,7 @@ export default function ResetPasswordPage() {
                     value={password}
                     onChange={e => setPassword(e.target.value)}
                     className='w-full rounded-xl border border-white/20 bg-white/10 py-3 pl-11 pr-11 text-white placeholder-white/50 backdrop-blur-sm transition-all focus:border-blue-500/50 focus:bg-white/20 focus:outline-none focus:ring-2 focus:ring-blue-500/30'
-                    placeholder='â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢'
+                    placeholder='••••••••'
                     required
                     minLength={6}
                   />
@@ -381,7 +381,7 @@ export default function ResetPasswordPage() {
                     value={confirmPassword}
                     onChange={e => setConfirmPassword(e.target.value)}
                     className='w-full rounded-xl border border-white/20 bg-white/10 py-3 pl-11 pr-11 text-white placeholder-white/50 backdrop-blur-sm transition-all focus:border-blue-500/50 focus:bg-white/20 focus:outline-none focus:ring-2 focus:ring-blue-500/30'
-                    placeholder='â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢'
+                    placeholder='••••••••'
                     required
                     minLength={6}
                   />

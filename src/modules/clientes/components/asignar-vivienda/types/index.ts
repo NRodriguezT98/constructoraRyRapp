@@ -4,6 +4,7 @@
 
 import type { TipoFuentePago } from '@/modules/clientes/types'
 import type { ValorCampo } from '@/modules/configuracion/types/campos-dinamicos.types'
+import type { ParametrosCredito } from '@/modules/fuentes-pago/types'
 
 export interface FuentePagoConfig {
   tipo: TipoFuentePago
@@ -13,6 +14,11 @@ export interface FuentePagoConfig {
   carta_aprobacion_url?: string
   carta_asignacion_url?: string
   permite_multiples_abonos?: boolean
+
+  /** Crédito con la constructora: parámetros de amortización */
+  parametrosCredito?: ParametrosCredito
+  /** Crédito con la constructora: capital sin intereses, para cierre financiero */
+  capital_para_cierre?: number
 
   /** @deprecated Legacy fields - mantener por compatibilidad, pero usar `campos` para nuevos */
   monto_aprobado?: number

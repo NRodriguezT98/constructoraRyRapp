@@ -143,7 +143,7 @@ export default function ModalSubirCedula({
     setProgreso(0)
 
     try {
-      // 1. Upload a Storage - PATH CONSISTENTE CON POLÃTICAS RLS
+      // 1. Upload a Storage - PATH CONSISTENTE CON POLÍTICAS RLS
       const extension = archivo.name.split('.').pop()
       const timestamp = Date.now()
       const filePath = `${user.id}/${clienteId}/cedula-${timestamp}.${extension}`

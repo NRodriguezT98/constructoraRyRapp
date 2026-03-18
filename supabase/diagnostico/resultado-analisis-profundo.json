@@ -1,0 +1,439 @@
+{
+  "huerfanas": [
+    {
+      "funcion": "actualizar_estado_vivienda",
+      "argumentos": "",
+      "usada_en_tablas": "viviendas"
+    },
+    {
+      "funcion": "actualizar_fecha_actualizacion_requisitos",
+      "argumentos": "",
+      "usada_en_tablas": "requisitos_fuentes_pago_config"
+    },
+    {
+      "funcion": "actualizar_fecha_nota_historial",
+      "argumentos": "",
+      "usada_en_tablas": "notas_historial_cliente"
+    },
+    {
+      "funcion": "actualizar_monto_recibido_fuente",
+      "argumentos": "",
+      "usada_en_tablas": "abonos_historial"
+    },
+    {
+      "funcion": "actualizar_timestamp_permisos",
+      "argumentos": "",
+      "usada_en_tablas": "permisos_rol"
+    },
+    {
+      "funcion": "autoconfigurar_requisitos_tipo_fuente",
+      "argumentos": "",
+      "usada_en_tablas": "fuentes_pago"
+    },
+    {
+      "funcion": "calcular_monto_devolver",
+      "argumentos": "",
+      "usada_en_tablas": "renuncias"
+    },
+    {
+      "funcion": "calcular_porcentaje_descuento",
+      "argumentos": "",
+      "usada_en_tablas": "negociaciones, descuentos_negociacion"
+    },
+    {
+      "funcion": "crear_nueva_version_negociacion",
+      "argumentos": "",
+      "usada_en_tablas": "negociaciones"
+    },
+    {
+      "funcion": "crear_snapshot_negociacion",
+      "argumentos": "",
+      "usada_en_tablas": "negociaciones"
+    },
+    {
+      "funcion": "crear_version_inicial_negociacion",
+      "argumentos": "",
+      "usada_en_tablas": "negociaciones"
+    },
+    {
+      "funcion": "fn_invalidar_carta_por_cambio",
+      "argumentos": "",
+      "usada_en_tablas": "fuentes_pago"
+    },
+    {
+      "funcion": "handle_fuente_inactivada",
+      "argumentos": "",
+      "usada_en_tablas": "fuentes_pago"
+    },
+    {
+      "funcion": "handle_new_user",
+      "argumentos": "",
+      "usada_en_tablas": "users"
+    },
+    {
+      "funcion": "incrementar_version_lock",
+      "argumentos": "",
+      "usada_en_tablas": "negociaciones"
+    },
+    {
+      "funcion": "prevenir_eliminacion_categoria_sistema",
+      "argumentos": "",
+      "usada_en_tablas": "categorias_documento"
+    },
+    {
+      "funcion": "prevent_delete_fuente_con_dinero",
+      "argumentos": "",
+      "usada_en_tablas": "fuentes_pago"
+    },
+    {
+      "funcion": "proteger_categorias_sistema",
+      "argumentos": "",
+      "usada_en_tablas": "categorias_documento"
+    },
+    {
+      "funcion": "sincronizar_estado_fuente_pago",
+      "argumentos": "",
+      "usada_en_tablas": "fuentes_pago"
+    },
+    {
+      "funcion": "sync_entidad_from_fk",
+      "argumentos": "",
+      "usada_en_tablas": "fuentes_pago"
+    },
+    {
+      "funcion": "trigger_compactar_despues_delete",
+      "argumentos": "",
+      "usada_en_tablas": "requisitos_fuentes_pago_config"
+    },
+    {
+      "funcion": "trigger_compactar_despues_insert",
+      "argumentos": "",
+      "usada_en_tablas": "requisitos_fuentes_pago_config"
+    },
+    {
+      "funcion": "trigger_compactar_despues_update",
+      "argumentos": "",
+      "usada_en_tablas": "requisitos_fuentes_pago_config"
+    },
+    {
+      "funcion": "update_abonos_historial_fecha_actualizacion",
+      "argumentos": "",
+      "usada_en_tablas": "abonos_historial"
+    },
+    {
+      "funcion": "update_cliente_estado_on_negociacion",
+      "argumentos": "",
+      "usada_en_tablas": "negociaciones"
+    },
+    {
+      "funcion": "update_documentos_vivienda_updated_at",
+      "argumentos": "",
+      "usada_en_tablas": "documentos_vivienda"
+    },
+    {
+      "funcion": "update_entidades_financieras_updated_at",
+      "argumentos": "",
+      "usada_en_tablas": "entidades_financieras"
+    },
+    {
+      "funcion": "update_negociaciones_fecha_actualizacion",
+      "argumentos": "",
+      "usada_en_tablas": "negociaciones"
+    },
+    {
+      "funcion": "update_negociaciones_totales",
+      "argumentos": "",
+      "usada_en_tablas": "fuentes_pago, fuentes_pago, fuentes_pago"
+    },
+    {
+      "funcion": "update_tipos_fuentes_pago_updated_at",
+      "argumentos": "",
+      "usada_en_tablas": "tipos_fuentes_pago"
+    },
+    {
+      "funcion": "update_updated_at_column",
+      "argumentos": "",
+      "usada_en_tablas": "proyectos, viviendas, renuncias, documentos_proyecto, configuracion_recargos, cliente_intereses, documentos_cliente"
+    },
+    {
+      "funcion": "update_usuarios_fecha_actualizacion",
+      "argumentos": "",
+      "usada_en_tablas": "usuarios"
+    },
+    {
+      "funcion": "validar_abono_no_excede_saldo",
+      "argumentos": "",
+      "usada_en_tablas": "abonos_historial"
+    },
+    {
+      "funcion": "validar_categoria_documento",
+      "argumentos": "",
+      "usada_en_tablas": "requisitos_fuentes_pago_config"
+    },
+    {
+      "funcion": "validar_configuracion_campos",
+      "argumentos": "",
+      "usada_en_tablas": "tipos_fuentes_pago"
+    },
+    {
+      "funcion": "validar_motivo_descuento",
+      "argumentos": "",
+      "usada_en_tablas": "negociaciones"
+    }
+  ],
+  "comentadas": [
+    {
+      "funcion": "actualizar_estado_vivienda",
+      "comentario": "Actualiza automáticamente el estado de la vivienda según asignación de cliente"
+    },
+    {
+      "funcion": "autoconfigurar_requisitos_tipo_fuente",
+      "comentario": "Detecta automáticamente nuevos tipos de fuente y les asigna requisitos base según su categoría."
+    },
+    {
+      "funcion": "calcular_cambios_json",
+      "comentario": "Compara dos objetos JSON y retorna solo los campos que cambiaron"
+    },
+    {
+      "funcion": "categoria_aplica_a_modulo",
+      "comentario": "Verifica si una categoria aplica a un modulo especifico (considera es_global y modulos_permitidos)"
+    },
+    {
+      "funcion": "clonar_configuracion_requisitos",
+      "comentario": "Permite clonar la configuración de requisitos de un tipo de fuente a otro (útil para variaciones)."
+    },
+    {
+      "funcion": "compactar_orden_requisitos",
+      "comentario": "Recalcula el orden secuencial (1,2,3...) de requisitos para una fuente específica, eliminando huecos visuales"
+    },
+    {
+      "funcion": "compactar_todas_las_fuentes",
+      "comentario": "Función de mantenimiento que compacta el orden de TODAS las fuentes activas"
+    },
+    {
+      "funcion": "crear_categorias_clientes_default",
+      "comentario": "Crea 5 categorías predeterminadas para módulo clientes si el usuario no tiene ninguna"
+    },
+    {
+      "funcion": "crear_categorias_proyectos_default",
+      "comentario": "Crea 6 categorías predeterminadas para módulo proyectos si el usuario no tiene ninguna"
+    },
+    {
+      "funcion": "crear_categorias_viviendas_default",
+      "comentario": "Crea categorías predeterminadas para módulo viviendas si el usuario no tiene ninguna"
+    },
+    {
+      "funcion": "crear_nueva_version_negociacion",
+      "comentario": "Crea nueva versión de negociación (solo admin)"
+    },
+    {
+      "funcion": "crear_nueva_version_negociacion",
+      "comentario": "Inicializa version_actual = 1 al crear nueva negociación.\r\nLas actualizaciones se manejan manualmente desde el servicio."
+    },
+    {
+      "funcion": "crear_version_inicial_negociacion",
+      "comentario": "Crea la versión inicial (v1) de una negociación al ser insertada. ✅ CORREGIDO: usa fp.tipo"
+    },
+    {
+      "funcion": "detectar_eliminaciones_masivas",
+      "comentario": "Detecta posibles eliminaciones masivas sospechosas (más de X eliminaciones por día). \r\nUso: SELECT * FROM detectar_eliminaciones_masivas(7, 5)"
+    },
+    {
+      "funcion": "es_admin",
+      "comentario": "Verifica si un usuario tiene rol de Administrador y está activo"
+    },
+    {
+      "funcion": "get_entidades_por_tipo_fuente",
+      "comentario": "Obtiene entidades financieras aplicables a un tipo de fuente específico. Ejemplo: get_entidades_por_tipo_fuente('uuid-credito-hipotecario', true)"
+    },
+    {
+      "funcion": "get_valor_total_original",
+      "comentario": "Devuelve el valor total original de una negociación (antes de descuento)"
+    },
+    {
+      "funcion": "marcar_interes_convertido",
+      "comentario": "Marca interés como convertido cuando se asigna vivienda al cliente"
+    },
+    {
+      "funcion": "obtener_actividad_usuario",
+      "comentario": "Obtiene la actividad reciente de un usuario específico. \r\nUso: SELECT * FROM obtener_actividad_usuario('uuid-usuario', 7, 50)"
+    },
+    {
+      "funcion": "obtener_categoria_sistema_vivienda",
+      "comentario": "Obtiene el ID de una categoría de sistema para viviendas por su nombre"
+    },
+    {
+      "funcion": "obtener_estado_documentacion_fuente",
+      "comentario": "Obtiene estado de validación de requisitos de una fuente de pago.\r\n✅ Type-safe: Explicit CAST para match VARCHAR→TEXT.\r\n🔄 Stable: No modifica datos, permite optimización de queries."
+    },
+    {
+      "funcion": "obtener_historial_registro",
+      "comentario": "Obtiene el historial de cambios de un registro específico. \r\nUso: SELECT * FROM obtener_historial_registro('viviendas', 'uuid-aqui', 50)"
+    },
+    {
+      "funcion": "obtener_requisitos_con_orden_visual",
+      "comentario": "Retorna requisitos de una fuente con orden_visual secuencial (1,2,3...) sin huecos"
+    },
+    {
+      "funcion": "obtener_siguiente_numero_vivienda",
+      "comentario": "Obtiene el siguiente número de vivienda disponible en una manzana"
+    },
+    {
+      "funcion": "obtener_snapshot_abonos",
+      "comentario": "Genera un JSON con el snapshot de todas las fuentes de pago de una negociación (para auditoría)"
+    },
+    {
+      "funcion": "obtener_tipos_fuente_dinamicos",
+      "comentario": "Retorna todos los tipos de fuente de pago existentes en el sistema con su conteo.\r\nUsado para poblar selectores dinámicos en UI."
+    },
+    {
+      "funcion": "obtener_viviendas_disponibles_manzana",
+      "comentario": "Calcula cuántas viviendas quedan disponibles en una manzana"
+    },
+    {
+      "funcion": "prevenir_eliminacion_categoria_sistema",
+      "comentario": "Previene la eliminación o modificación de categorías críticas del sistema"
+    },
+    {
+      "funcion": "registrar_interes_inicial",
+      "comentario": "Registra el interés inicial de un cliente al ser creado"
+    },
+    {
+      "funcion": "tiene_permiso",
+      "comentario": "Verifica si un usuario tiene permiso específico. Administrador bypass automático."
+    },
+    {
+      "funcion": "tiene_rol",
+      "comentario": "Verifica si un usuario tiene uno de los roles especificados y está activo"
+    },
+    {
+      "funcion": "tipos_fuente_sin_configuracion",
+      "comentario": "Lista tipos de fuente que existen en el sistema pero no tienen requisitos configurados."
+    },
+    {
+      "funcion": "trigger_compactar_despues_delete",
+      "comentario": "Trigger function: Auto-compacta orden después de eliminar un requisito"
+    },
+    {
+      "funcion": "trigger_compactar_despues_insert",
+      "comentario": "Trigger function: Auto-compacta orden después de insertar un requisito"
+    },
+    {
+      "funcion": "trigger_compactar_despues_update",
+      "comentario": "Trigger function: Auto-compacta orden después de actualizar un requisito"
+    },
+    {
+      "funcion": "validar_cancelacion_renuncia",
+      "comentario": "Valida si una renuncia puede cancelarse: vivienda debe estar Disponible y precio no debe haber cambiado"
+    },
+    {
+      "funcion": "validar_categoria_documento",
+      "comentario": "Trigger function: Valida que la categoría especificada existe en categorias_documento antes de INSERT/UPDATE"
+    },
+    {
+      "funcion": "validar_configuracion_campos",
+      "comentario": "Valida que la configuración de campos tenga la estructura JSON correcta"
+    },
+    {
+      "funcion": "validar_password_admin",
+      "comentario": "Valida la contraseña de un administrador antes de permitir reemplazo de archivo"
+    },
+    {
+      "funcion": "verificar_categorias_sistema",
+      "comentario": "Verifica y crea automáticamente las categorías de sistema si faltan. Puede ser llamada desde la UI sin permisos especiales."
+    }
+  ],
+  "doblesInsert": [
+    {
+      "tabla": "negociaciones",
+      "momento": "BEFORE",
+      "evento": "UPDATE",
+      "cantidad": "5",
+      "triggers": "trigger_snapshot_negociacion, trigger_calcular_porcentaje_descuento, trigger_validar_motivo_descuento, trigger_version_lock, trigger_update_negociaciones_fecha_actualizacion"
+    },
+    {
+      "tabla": "fuentes_pago",
+      "momento": "BEFORE",
+      "evento": "UPDATE",
+      "cantidad": "3",
+      "triggers": "trg_invalidar_carta_por_cambio, trigger_sincronizar_estado_fuente, fuentes_pago_sync_entidad"
+    },
+    {
+      "tabla": "negociaciones",
+      "momento": "BEFORE",
+      "evento": "INSERT",
+      "cantidad": "3",
+      "triggers": "trigger_init_version_negociacion, trigger_validar_motivo_descuento, trigger_calcular_porcentaje_descuento"
+    },
+    {
+      "tabla": "abonos_historial",
+      "momento": "BEFORE",
+      "evento": "UPDATE",
+      "cantidad": "2",
+      "triggers": "trigger_validar_abono_no_excede_saldo, trigger_update_abonos_historial_fecha_actualizacion"
+    },
+    {
+      "tabla": "categorias_documento",
+      "momento": "BEFORE",
+      "evento": "DELETE",
+      "cantidad": "2",
+      "triggers": "trigger_proteger_categoria_sistema, trigger_proteger_categorias_sistema"
+    },
+    {
+      "tabla": "fuentes_pago",
+      "momento": "AFTER",
+      "evento": "UPDATE",
+      "cantidad": "2",
+      "triggers": "trigger_fuente_inactivada, trigger_update_negociaciones_totales_update"
+    },
+    {
+      "tabla": "fuentes_pago",
+      "momento": "BEFORE",
+      "evento": "INSERT",
+      "cantidad": "2",
+      "triggers": "fuentes_pago_sync_entidad, trigger_sincronizar_estado_fuente"
+    },
+    {
+      "tabla": "fuentes_pago",
+      "momento": "AFTER",
+      "evento": "INSERT",
+      "cantidad": "2",
+      "triggers": "trigger_update_negociaciones_totales_insert, trigger_autoconfigurar_requisitos"
+    },
+    {
+      "tabla": "negociaciones",
+      "momento": "AFTER",
+      "evento": "INSERT",
+      "cantidad": "2",
+      "triggers": "trigger_update_cliente_estado_on_negociacion, trigger_crear_version_inicial_negociacion"
+    },
+    {
+      "tabla": "requisitos_fuentes_pago_config",
+      "momento": "BEFORE",
+      "evento": "UPDATE",
+      "cantidad": "2",
+      "triggers": "trg_actualizar_fecha_requisitos, trigger_validar_categoria_documento"
+    },
+    {
+      "tabla": "tipos_fuentes_pago",
+      "momento": "BEFORE",
+      "evento": "UPDATE",
+      "cantidad": "2",
+      "triggers": "tipos_fuentes_pago_updated_at, trigger_validar_configuracion_campos"
+    },
+    {
+      "tabla": "viviendas",
+      "momento": "BEFORE",
+      "evento": "UPDATE",
+      "cantidad": "2",
+      "triggers": "update_viviendas_fecha_actualizacion, trigger_actualizar_estado_vivienda"
+    }
+  ],
+  "similares": [
+    {
+      "funcion": "crear_nueva_version_negociacion",
+      "versiones": "2",
+      "firmas": "p_negociacion_id uuid, p_valor_vivienda numeric, p_descuento_aplicado numeric, p_valor_total numeric, p_fuentes_pago jsonb, p_motivo_cambio text, p_tipo_cambio character varying | "
+    }
+  ]
+}

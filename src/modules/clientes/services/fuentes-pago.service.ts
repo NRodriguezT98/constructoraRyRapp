@@ -10,6 +10,8 @@ export interface CrearFuentePagoDTO {
   negociacion_id: string
   tipo: TipoFuentePago
   monto_aprobado: number
+  /** Para créditos: capital sin intereses. Se guarda en capital_para_cierre */
+  capital_para_cierre?: number
   entidad?: string             // nombre legible (nunca UUID)
   entidad_financiera_id?: string // opcional: ID resuelto por el caller
   numero_referencia?: string
@@ -32,6 +34,9 @@ export interface FuentePago {
   negociacion_id: string
   tipo: TipoFuentePago
   monto_aprobado: number
+  /** Para créditos: el capital sin intereses. Para otras fuentes: igual a monto_aprobado */
+  capital_para_cierre: number | null
+  mora_total_recibida: number
   monto_recibido: number
   saldo_pendiente: number
   porcentaje_completado: number
@@ -100,6 +105,7 @@ class FuentesPagoService {
         entidad_financiera_id: entidadFinancieraId,
         numero_referencia: datos.numero_referencia ?? null,
         permite_multiples_abonos: datos.permite_multiples_abonos ?? tipoFuente.permite_multiples_abonos ?? false,
+        capital_para_cierre: datos.capital_para_cierre ?? null,
         estado: 'Activa',
         estado_fuente: 'activa',
       })
@@ -257,10 +263,20 @@ class FuentesPagoService {
     }
   }
 
-  /** Verificar si el cierre financiero está completo */
+  /**
+   * Verificar si el cierre financiero está completo.
+   *
+   * Usa COALESCE(capital_para_cierre, monto_aprobado) para que los créditos
+   * contribuyan con su capital (no con capital+intereses) al total de financiación.
+   * Evita que los intereses inflen el total por encima del valor de la vivienda.
+   */
   async verificarCierreFinancieroCompleto(negociacionId: string, valorTotal: number): Promise<boolean> {
-    const { total_aprobado } = await this.calcularTotales(negociacionId)
-    return total_aprobado >= valorTotal
+    const fuentes = await this.obtenerFuentesPagoNegociacion(negociacionId)
+    const total_para_cierre = fuentes.reduce(
+      (sum, f) => sum + (f.capital_para_cierre ?? f.monto_aprobado),
+      0
+    )
+    return total_para_cierre >= valorTotal
   }
 }
 

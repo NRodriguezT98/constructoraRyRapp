@@ -16,6 +16,9 @@
 import { supabase } from '@/lib/supabase/client'
 import { formatDateForDB, getTodayDateString } from '@/lib/utils/date.utils'
 import type { EstadoNegociacion, Negociacion } from '@/modules/clientes/types'
+import { crearCredito } from '@/modules/fuentes-pago/services/creditos-constructora.service'
+import { crearCuotasCredito } from '@/modules/fuentes-pago/services/cuotas-credito.service'
+import { calcularTablaAmortizacion, fechaCuotaParaBD } from '@/modules/fuentes-pago/utils/calculos-credito'
 
 // DTOs
 export interface CrearNegociacionDTO {
@@ -38,6 +41,18 @@ export interface CrearFuentePagoDTO {
   entidad?: string
   numero_referencia?: string
   carta_asignacion_url?: string
+  /** Solo para fuentes con genera_cuotas=true (Crédito con la Constructora) */
+  capital_para_cierre?: number
+  /** Parámetros del préstamo — si presentes, crea creditos_constructora + cuotas_credito */
+  parametrosCredito?: {
+    capital: number
+    tasaMensual: number       // porcentaje: 1.5 = 1.5%
+    numCuotas: number
+    fechaInicio: Date | string
+    tasaMoraDiaria?: number   // default 0.001 (0.1%/día)
+  }
+  /** true para fuentes que permiten múltiples abonos parciales (Cuota Inicial, Crédito Constructora) */
+  permite_multiples_abonos?: boolean
 }
 
 export interface ActualizarNegociacionDTO {
@@ -139,10 +154,11 @@ class NegociacionesService {
           tipo: fuente.tipo,
           tipo_fuente_id: tipoIdMap[fuente.tipo] || null,
           monto_aprobado: fuente.monto_aprobado,
+          capital_para_cierre: fuente.capital_para_cierre ?? null,
           entidad: fuente.entidad || null,
           numero_referencia: fuente.numero_referencia || null,
           carta_asignacion_url: fuente.carta_asignacion_url || null,
-          permite_multiples_abonos: fuente.tipo === 'Cuota Inicial',
+          permite_multiples_abonos: fuente.permite_multiples_abonos ?? (fuente.tipo === 'Cuota Inicial'),
           estado: 'Activa',
           estado_fuente: 'activa',
         }))
@@ -154,16 +170,80 @@ class NegociacionesService {
           .select('id, tipo, negociacion_id')
 
         if (errorFuentes) {
-          console.error('? Error creando fuentes de pago:', errorFuentes)
+          console.error('❌ Error creando fuentes de pago:', errorFuentes)
           // ROLLBACK
           await supabase.from('negociaciones').delete().eq('id', negociacion.id)
           throw new Error(`Error creando fuentes de pago: ${errorFuentes.message}`)
         }
 
-      }
+        // ==========================================
+        // PASO 2b: Crear crédito + cuotas para fuentes con parametrosCredito
+        // ==========================================
+        const fuentesConCredito: string[] = [] // acumular IDs para rollback
+        try {
+          for (const fuente of datos.fuentes_pago) {
+            if (!fuente.parametrosCredito) continue
+
+            const fuenteCreada = (fuentesCreadas ?? []).find(fc => fc.tipo === fuente.tipo)
+            if (!fuenteCreada) continue
+
+            const p = fuente.parametrosCredito
+            const fechaDate = typeof p.fechaInicio === 'string'
+              ? new Date(p.fechaInicio + 'T12:00:00')
+              : p.fechaInicio
+
+            const calculo = calcularTablaAmortizacion({
+              capital: p.capital,
+              tasaMensual: p.tasaMensual,
+              numCuotas: p.numCuotas,
+              fechaInicio: fechaDate,
+            })
+
+            const { error: errorCredito } = await crearCredito({
+              fuente_pago_id: fuenteCreada.id,
+              capital: p.capital,
+              tasa_mensual: p.tasaMensual,
+              num_cuotas: p.numCuotas,
+              fecha_inicio: fechaCuotaParaBD(fechaDate),
+              valor_cuota: calculo.valorCuotaMensual,
+              interes_total: calculo.interesTotal,
+              monto_total: calculo.montoTotal,
+              tasa_mora_diaria: p.tasaMoraDiaria ?? 0.001,
+            })
+
+            if (errorCredito) {
+              throw new Error(`Error creando crédito: ${errorCredito.message}`)
+            }
+
+            fuentesConCredito.push(fuenteCreada.id)
+
+            const { error: errorCuotas } = await crearCuotasCredito(
+              fuenteCreada.id,
+              calculo.cuotas,
+              1
+            )
+
+            if (errorCuotas) {
+              throw new Error(`Error creando cuotas: ${errorCuotas.message}`)
+            }
+          }
+        } catch (errorPaso2b) {
+          console.error('❌ Error en Paso 2b (crédito/cuotas):', errorPaso2b)
+          // ROLLBACK: eliminar créditos y cuotas creados en esta operación
+          for (const fid of fuentesConCredito) {
+            await supabase.from('cuotas_credito').delete().eq('fuente_pago_id', fid)
+            await supabase.from('creditos_constructora').delete().eq('fuente_pago_id', fid)
+          }
+          // Continuar con rollback estándar
+          await supabase.from('fuentes_pago').delete().eq('negociacion_id', negociacion.id)
+          await supabase.from('negociaciones').delete().eq('id', negociacion.id)
+          throw errorPaso2b
+        }
+
+      } // end if (datos.fuentes_pago)
 
       // ==========================================
-      // PASO 3: Actualizar vivienda ? 'Asignada'
+      // PASO 3: Actualizar vivienda → 'Asignada'
       // ==========================================
       const { error: errorVivienda } = await supabase
         .from('viviendas')
@@ -565,7 +645,7 @@ class NegociacionesService {
               monto_recibido: 0,
               entidad: fuente.entidad,
               numero_referencia: fuente.numero_referencia,
-              permite_multiples_abonos: fuente.tipo === 'Cuota Inicial',
+              permite_multiples_abonos: fuente.permite_multiples_abonos ?? (fuente.tipo === 'Cuota Inicial'),
               estado: 'Pendiente',
               estado_fuente: 'activa', // ? Explícitamente marcar como activa
             } as any)

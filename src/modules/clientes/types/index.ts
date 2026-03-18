@@ -57,11 +57,9 @@ export type EstadoNegociacion =
   | 'Cerrada por Renuncia' // ⭐ NUEVO (reemplaza 'Renuncia')
   | 'Completada'
 
-export type TipoFuentePago =
-  | 'Cuota Inicial'
-  | 'Crédito Hipotecario'
-  | 'Subsidio Mi Casa Ya'
-  | 'Subsidio Caja Compensación'
+// Dinámico: los tipos reales se cargan desde tipos_fuentes_pago en BD.
+// Las constantes de referencia están en @/modules/clientes/types/fuentes-pago
+export type TipoFuentePago = string
 
 export type EstadoFuentePago = 'Activa' | 'Inactiva'
 
@@ -624,7 +622,7 @@ export const ESTADOS_NEGOCIACION: Record<EstadoNegociacion, string> = {
   Completada: 'Completada',
 }
 
-export const TIPOS_FUENTE_PAGO: Record<TipoFuentePago, string> = {
+export const TIPOS_FUENTE_PAGO: Record<string, string> = {
   'Cuota Inicial': 'Cuota Inicial',
   'Crédito Hipotecario': 'Crédito Hipotecario',
   'Subsidio Mi Casa Ya': 'Subsidio Mi Casa Ya',

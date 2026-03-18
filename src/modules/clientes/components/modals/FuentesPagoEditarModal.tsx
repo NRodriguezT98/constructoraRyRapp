@@ -41,7 +41,7 @@ export function FuentesPagoEditarModal({
   const [error, setError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  // âœ… Resetear estado cuando se abre el modal
+  // ✅ Resetear estado cuando se abre el modal
   useEffect(() => {
     if (isOpen) {
       setFuentes(fuentesActuales.map((f) => ({ ...f })))
@@ -50,7 +50,7 @@ export function FuentesPagoEditarModal({
     }
   }, [isOpen, fuentesActuales])
 
-  // âœ… Calcular total de fuentes
+  // ✅ Calcular total de fuentes
   const totalFuentes = useMemo(() => {
     return fuentes.reduce((sum, f) => sum + (Number(f.monto_aprobado) || 0), 0)
   }, [fuentes])
@@ -74,7 +74,7 @@ export function FuentesPagoEditarModal({
   const actualizarFuente = (index: number, campo: string, valor: any) => {
     const nuevasFuentes = [...fuentes]
 
-    // âœ… Convertir a número si es campo de monto
+    // ✅ Convertir a número si es campo de monto
     const valorFinal = (campo === 'monto_aprobado' || campo === 'monto_recibido')
       ? Number(valor) || 0
       : valor

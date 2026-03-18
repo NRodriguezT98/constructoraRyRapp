@@ -98,7 +98,7 @@ export function useRegistrarInteres({ clienteId, onSuccess, onClose }: UseRegist
 
       setProyectos(data || [])
     } catch (error) {
-      console.error('âŒ Error al cargar proyectos:', error)
+      console.error('❌ Error al cargar proyectos:', error)
       setProyectos([])
     } finally {
       setCargandoProyectos(false)
@@ -121,7 +121,7 @@ export function useRegistrarInteres({ clienteId, onSuccess, onClose }: UseRegist
         .eq('proyecto_id', proyectoId)
 
       if (manzanasError) {
-        console.error('âŒ Error al cargar manzanas:', manzanasError)
+        console.error('❌ Error al cargar manzanas:', manzanasError)
         throw manzanasError
       }
 
@@ -151,7 +151,7 @@ export function useRegistrarInteres({ clienteId, onSuccess, onClose }: UseRegist
         .order('numero')
 
       if (error) {
-        console.error('âŒ Error en query de viviendas:', error)
+        console.error('❌ Error en query de viviendas:', error)
         throw error
       }
 
@@ -220,7 +220,7 @@ export function useRegistrarInteres({ clienteId, onSuccess, onClose }: UseRegist
     setErrorNegociacionExistente(false)
 
     try {
-      // âš ï¸ PENDIENTE: Validación de cédula (TEMPORALMENTE DESHABILITADA)
+      // ⚠️ PENDIENTE: Validación de cédula (TEMPORALMENTE DESHABILITADA)
       // TODO: Rehabilitar cuando se ejecute migración SQL en Supabase
       // Archivo: supabase/migrations/20250120_add_es_documento_identidad.sql
       // Documentación: PENDIENTE-VALIDACION-CEDULA.md
@@ -232,7 +232,7 @@ export function useRegistrarInteres({ clienteId, onSuccess, onClose }: UseRegist
         return
       }
       */
-      console.warn('âš ï¸ BYPASS TEMPORAL: Validación de cédula deshabilitada - Ver PENDIENTE-VALIDACION-CEDULA.md')
+      console.warn('⚠️ BYPASS TEMPORAL: Validación de cédula deshabilitada - Ver PENDIENTE-VALIDACION-CEDULA.md')
 
       // Verificar si ya existe un interés activo para esta vivienda
       const interesesExistentes = await interesesService.obtenerInteresesCliente(clienteId, true)

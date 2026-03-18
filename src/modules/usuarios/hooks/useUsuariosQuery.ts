@@ -76,7 +76,7 @@ export function useCrearUsuarioMutation() {
     },
 
     onError: error => {
-      console.error('âŒ [MUTATION] Error creando usuario:', error)
+      console.error('❌ [MUTATION] Error creando usuario:', error)
     },
   })
 }
@@ -99,7 +99,7 @@ export function useActualizarUsuarioMutation() {
     },
 
     onError: error => {
-      console.error('âŒ [MUTATION] Error actualizando usuario:', error)
+      console.error('❌ [MUTATION] Error actualizando usuario:', error)
     },
   })
 }
@@ -121,7 +121,7 @@ export function useCambiarRolMutation() {
     },
 
     onError: error => {
-      console.error('âŒ [MUTATION] Error cambiando rol:', error)
+      console.error('❌ [MUTATION] Error cambiando rol:', error)
     },
   })
 }
@@ -143,7 +143,7 @@ export function useCambiarEstadoMutation() {
     },
 
     onError: error => {
-      console.error('âŒ [MUTATION] Error cambiando estado:', error)
+      console.error('❌ [MUTATION] Error cambiando estado:', error)
     },
   })
 }
@@ -164,7 +164,7 @@ export function useResetearIntentosMutation() {
     },
 
     onError: error => {
-      console.error('âŒ [MUTATION] Error reseteando intentos:', error)
+      console.error('❌ [MUTATION] Error reseteando intentos:', error)
     },
   })
 }
@@ -184,7 +184,7 @@ export function useEliminarUsuarioMutation() {
     },
 
     onError: error => {
-      console.error('âŒ [MUTATION] Error eliminando usuario:', error)
+      console.error('❌ [MUTATION] Error eliminando usuario:', error)
     },
   })
 }

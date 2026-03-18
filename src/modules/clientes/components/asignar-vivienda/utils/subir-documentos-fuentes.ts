@@ -1,13 +1,13 @@
 /**
  * Helper: Subir Documentos de Fuentes de Pago
  *
- * âœ… Sube documentos a la pestaña de documentos del cliente
- * âœ… Usa nombres formateados según especificación
- * âœ… Categoría: "Cartas de aprobación, Promesas de Compraventa y Documentos del Proceso"
+ * ✅ Sube documentos a la pestaña de documentos del cliente
+ * ✅ Usa nombres formateados según especificación
+ * ✅ Categoría: "Cartas de aprobación, Promesas de Compraventa y Documentos del Proceso"
  *
  * Formato de nombres:
- * - Crédito Hipotecario: "CARTA DE APROBACIÃ“N CRÃ‰DITO A1 - PEPE PEREZ"
- * - Caja Compensación: "CARTA CAJA DE COMPENSACIÃ“N A1 - PEPE PEREZ"
+ * - Crédito Hipotecario: "CARTA DE APROBACIÓN CRÉDITO A1 - PEPE PEREZ"
+ * - Caja Compensación: "CARTA CAJA DE COMPENSACIÓN A1 - PEPE PEREZ"
  */
 
 import type { TipoFuentePago } from '@/modules/clientes/types'
@@ -42,10 +42,10 @@ function generarTituloDocumento(
 
   switch (tipoFuente) {
     case 'Crédito Hipotecario':
-      return `CARTA DE APROBACIÃ“N CRÃ‰DITO ${vivienda} - ${nombreMayusculas}`
+      return `CARTA DE APROBACIÓN CRÉDITO ${vivienda} - ${nombreMayusculas}`
 
     case 'Subsidio Caja Compensación':
-      return `CARTA CAJA DE COMPENSACIÃ“N ${vivienda} - ${nombreMayusculas}`
+      return `CARTA CAJA DE COMPENSACIÓN ${vivienda} - ${nombreMayusculas}`
 
     default:
       return `DOCUMENTO ${tipoFuente.toUpperCase()} ${vivienda} - ${nombreMayusculas}`
@@ -116,7 +116,7 @@ export async function subirDocumentosFuentesPago(
 
         urls[fuente.tipo] = url
       } catch (error) {
-        console.error(`âŒ Error subiendo documento de ${fuente.tipo}:`, error)
+        console.error(`❌ Error subiendo documento de ${fuente.tipo}:`, error)
         throw new Error(`Error al subir documento de ${fuente.tipo}`)
       }
     }

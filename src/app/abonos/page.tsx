@@ -3,7 +3,7 @@
  * PÁGINA: Abonos
  * ============================================
  *
- * âœ… PROTEGIDA POR MIDDLEWARE
+ * ✅ PROTEGIDA POR MIDDLEWARE
  * - Middleware ya validó autenticación
  * - Middleware ya validó permisos (Administrador, Gerente)
  * - No necesita <RequireView> wrapper
@@ -13,7 +13,7 @@
  * - Obtiene permisos del servidor
  * - Pasa permisos como props al Client Component
  *
- * ðŸŽ¯ RUTA: /abonos
+ * 🎯 RUTA: /abonos
  * Vista principal del módulo de abonos
  * Lista TODOS los abonos del sistema con filtros y búsqueda
  */
@@ -24,12 +24,12 @@ import { AbonosListPage } from './components/abonos-list-page-new'
 
 export default async function AbonosPage() {
 
-  // âœ… Obtener permisos desde el servidor
+  // ✅ Obtener permisos desde el servidor
   // No hay query a DB aquí - usa React cache del servicio auth
   const permisos = await getServerPermissions()
 
 
-  // âœ… Pasar permisos como props
+  // ✅ Pasar permisos como props
   // El Client Component solo maneja UI
   return <AbonosListPage {...permisos} />
 }

@@ -1,7 +1,7 @@
 /**
  * @file useCategoriasSistemaViviendas.ts
  * @description Hook para acceder a categorías predefinidas del sistema para viviendas
- * âœ… AUTO-SEED: Crea categorías automáticamente si no existen
+ * ✅ AUTO-SEED: Crea categorías automáticamente si no existen
  * @module viviendas/hooks
  */
 
@@ -107,7 +107,7 @@ async function seedCategoriasSistema(supabase: any, userId: string) {
     .insert(categorias)
 
   if (error) {
-    console.error('âŒ Error al crear categorías del sistema:', error)
+    console.error('❌ Error al crear categorías del sistema:', error)
     throw new Error(`Error al crear categorías: ${error.message}`)
   }
 
@@ -115,7 +115,7 @@ async function seedCategoriasSistema(supabase: any, userId: string) {
 
 /**
  * Hook para obtener categorías del sistema para viviendas
- * âœ… AUTO-SEED: Crea automáticamente las categorías si no existen
+ * ✅ AUTO-SEED: Crea automáticamente las categorías si no existen
  */
 export function useCategoriasSistemaViviendas() {
   const supabase = createClient()
@@ -132,19 +132,19 @@ export function useCategoriasSistemaViviendas() {
         .order('orden', { ascending: true })
 
       if (error) {
-        console.error('âŒ Error al cargar categorías de sistema:', error)
+        console.error('❌ Error al cargar categorías de sistema:', error)
         throw new Error(`Error al cargar categorías: ${error.message}`)
       }
 
       // 2. Si NO hay categorías, crear las predefinidas
       if (!data || data.length === 0) {
-        console.warn('âš ï¸ No se encontraron categorías del sistema. Creando automáticamente...')
+        console.warn('⚠️ No se encontraron categorías del sistema. Creando automáticamente...')
 
         // Obtener usuario actual (necesario para user_id)
         const { data: { user } } = await supabase.auth.getUser()
 
         if (!user) {
-          console.error('âŒ No hay usuario autenticado para crear categorías')
+          console.error('❌ No hay usuario autenticado para crear categorías')
           return []
         }
 
@@ -160,7 +160,7 @@ export function useCategoriasSistemaViviendas() {
           .order('orden', { ascending: true })
 
         if (refetchError) {
-          console.error('âŒ Error al recargar categorías:', refetchError)
+          console.error('❌ Error al recargar categorías:', refetchError)
           return []
         }
 

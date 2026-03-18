@@ -3,10 +3,10 @@
  * HOOK: useViviendaAsignadaTab
  * ============================================
  *
- * âœ… TODA LA LÃ“GICA DE NEGOCIO
+ * ✅ TODA LA LÓGICA DE NEGOCIO
  * Hook principal con toda la lógica del tab de Vivienda Asignada.
  *
- * SEPARACIÃ“N ESTRICTA:
+ * SEPARACIÓN ESTRICTA:
  * - Hook: Lógica + Estado + Queries + Handlers
  * - Componente: SOLO UI presentacional
  *
@@ -54,7 +54,7 @@ export function useViviendaAsignadaTab({ cliente }: UseViviendaAsignadaTabProps)
   })
 
   // =====================================================
-  // VALIDACIÃ“N: Documento de identidad
+  // VALIDACIÓN: Documento de identidad
   // =====================================================
 
   const { tieneCedula: tieneDocumentoFisico, cargando: cargandoDoc } = useDocumentoIdentidad({
@@ -207,12 +207,12 @@ export function useViviendaAsignadaTab({ cliente }: UseViviendaAsignadaTabProps)
   const handleConfirmarPaso = async (datos: { fecha_completado: string; documento_id?: string; observaciones?: string }) => {
     try {
       // TODO: Llamar mutation para marcar paso
-      alert('âœ… Paso marcado como completado')
+      alert('✅ Paso marcado como completado')
       cerrarModalMarcarPaso()
       invalidarNegociaciones()
     } catch (error) {
       console.error('Error marcando paso:', error)
-      alert('âŒ Error al marcar paso')
+      alert('❌ Error al marcar paso')
     }
   }
 

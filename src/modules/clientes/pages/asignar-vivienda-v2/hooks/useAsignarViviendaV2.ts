@@ -126,8 +126,9 @@ export function useAsignarViviendaV2({
       .forEach(f => {
         const tipoConCampos = tiposConCampos.find(t => t.nombre === f.tipo)
         const camposConfig = tipoConCampos?.configuracion_campos?.campos ?? []
-        const requiereEntidad = camposConfig.some(c => c.rol === 'entidad')
-        const requiereReferencia = camposConfig.some(c => c.rol === 'referencia')
+        // Respetar el flag requerido del campo — si requerido:false no bloquear
+        const requiereEntidad = camposConfig.some(c => c.rol === 'entidad' && c.requerido)
+        const requiereReferencia = camposConfig.some(c => c.rol === 'referencia' && c.requerido)
 
         if (requiereEntidad && (!f.config?.entidad || f.config.entidad.trim() === '')) {
           errores[f.tipo] = 'Entidad requerida'
@@ -214,14 +215,20 @@ export function useAsignarViviendaV2({
         .map(f => {
           const tipoConCampos = tiposConCampos.find(t => t.nombre === f.tipo)
           const camposConfig = tipoConCampos?.configuracion_campos?.campos ?? []
+          // monto_aprobado = deuda total que el cliente paga por esta fuente
+          // Para crédito constructora: capital + intereses (lo que trackea el módulo de abonos)
+          // capital_para_cierre = capital (lo que cubre el precio de la vivienda)
           const monto = obtenerMonto(f.config, camposConfig)
+          const generaCuotas = tipoConCampos?.logica_negocio?.genera_cuotas === true
           return {
             tipo: f.tipo,
             monto_aprobado: monto,
+            capital_para_cierre: f.config.capital_para_cierre ?? undefined,
+            parametrosCredito: f.config.parametrosCredito ?? undefined,
             entidad: (entidades.find(e => e.value === f.config.entidad)?.label ?? f.config.entidad) || undefined,
             numero_referencia: f.config.numero_referencia || undefined,
-            permite_multiples_abonos:
-              f.config.permite_multiples_abonos ?? false,
+            // genera_cuotas implica múltiples pagos mensuales
+            permite_multiples_abonos: generaCuotas || (f.config.permite_multiples_abonos ?? false),
           }
         })
 

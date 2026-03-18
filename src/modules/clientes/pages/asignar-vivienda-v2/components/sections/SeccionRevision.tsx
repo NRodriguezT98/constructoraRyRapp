@@ -1,15 +1,16 @@
 'use client'
 
 import { PDFDownloadLink } from '@react-pdf/renderer'
-import { AlertCircle, ArrowRight, Banknote, Building2, Calculator, Download, Edit2, Loader2, MapPin, User } from 'lucide-react'
+import { AlertCircle, ArrowRight, Banknote, Building2, Calculator, Download, Edit2, Loader2, MapPin, TrendingUp, User } from 'lucide-react'
 import { useMemo, useState } from 'react'
 
 import { formatDateForDisplay, getTodayDateString } from '@/lib/utils/date.utils'
 import { formatCurrency } from '@/lib/utils/format.utils'
 import type { FuentePagoConfiguracion, ViviendaDetalle } from '@/modules/clientes/components/asignar-vivienda/types'
-import { obtenerMonto } from '@/modules/clientes/utils/fuentes-pago-campos.utils'
+import { obtenerMontoParaCierre } from '@/modules/clientes/utils/fuentes-pago-campos.utils'
 import { useEntidadesFinancierasCombinadas } from '@/modules/configuracion/hooks/useEntidadesFinancierasParaFuentes'
 import type { TipoFuentePagoConCampos } from '@/modules/configuracion/types/campos-dinamicos.types'
+import { calcularTablaAmortizacion } from '@/modules/fuentes-pago/utils/calculos-credito'
 import { NegociacionPDF } from '../NegociacionPDF'
 
 import { styles as s } from '../../styles'
@@ -69,7 +70,7 @@ export function SeccionRevision({
   const fuentesPDF = useMemo(() => fuentesActivas.map(f => {
     const tipoConCampos = tiposConCampos.find(t => t.nombre === f.tipo)
     const camposConfig = tipoConCampos?.configuracion_campos?.campos ?? []
-    const monto = f.config ? obtenerMonto(f.config, camposConfig) : 0
+    const monto = f.config ? obtenerMontoParaCierre(f.config, tipoConCampos, camposConfig) : 0
     const entidadNombre = f.config?.entidad
       ? (entidades.find(e => e.value === f.config!.entidad)?.label ?? f.config.entidad)
       : undefined
@@ -202,7 +203,29 @@ export function SeccionRevision({
         {fuentesActivas.map(f => {
           const tipoConCampos = tiposConCampos.find(t => t.nombre === f.tipo)
           const camposConfig = tipoConCampos?.configuracion_campos?.campos ?? []
-          const monto = f.config ? obtenerMonto(f.config, camposConfig) : 0
+          const monto = f.config ? obtenerMontoParaCierre(f.config, tipoConCampos, camposConfig) : 0
+
+          // Calcular desglose de crédito si aplica (deps primitivos para memoización correcta)
+          const params = f.config?.parametrosCredito
+          // eslint-disable-next-line react-hooks/rules-of-hooks
+          const creditoInfo = useMemo(() => {
+            if (!params) return null
+            try {
+              const fechaDate = typeof params.fechaInicio === 'string'
+                ? new Date(params.fechaInicio + 'T12:00:00')
+                : params.fechaInicio
+              return calcularTablaAmortizacion({ ...params, fechaInicio: fechaDate })
+            } catch {
+              return null
+            }
+          // eslint-disable-next-line react-hooks/exhaustive-deps
+          }, [
+            params?.capital,
+            params?.tasaMensual,
+            params?.numCuotas,
+            String(params?.fechaInicio),
+          ])
+
           return (
             <div key={f.tipo} className={s.revision.fuenteRow}>
               <div className={s.revision.fuenteDot} />
@@ -212,6 +235,31 @@ export function SeccionRevision({
                   <span className={`${s.revision.fuenteEntidad} block`}>
                     {entidades.find(e => e.value === f.config!.entidad)?.label ?? f.config.entidad}
                   </span>
+                )}
+                {creditoInfo && (
+                  <div className='mt-1.5 space-y-0.5 text-xs'>
+                    <div className='flex justify-between text-gray-500 dark:text-gray-400'>
+                      <span>Capital a financiar</span>
+                      <span>{formatCurrency(creditoInfo.capital)}</span>
+                    </div>
+                    <div className='flex justify-between text-gray-500 dark:text-gray-400'>
+                      <span className='flex items-center gap-1'>
+                        <TrendingUp className='w-3 h-3' />
+                        Interés ({params!.tasaMensual}% mens.)
+                      </span>
+                      <span>+{formatCurrency(creditoInfo.interesTotal)}</span>
+                    </div>
+                    <div className='flex justify-between font-medium text-gray-700 dark:text-gray-300 border-t border-gray-200 dark:border-gray-700 pt-0.5'>
+                      <span>Total a pagar al crédito</span>
+                      <span>{formatCurrency(creditoInfo.montoTotal)}</span>
+                    </div>
+                    <div className='text-gray-400 dark:text-gray-500 pt-0.5'>
+                      {params!.numCuotas} cuotas de {formatCurrency(creditoInfo.valorCuotaMensual)}/mes
+                      {creditoInfo.cuotas[0] && (
+                        <> · Primera: {formatDateForDisplay(creditoInfo.cuotas[0].fechaVencimiento.toISOString().split('T')[0])}</>
+                      )}
+                    </div>
+                  </div>
                 )}
               </div>
               <span className={s.revision.fuenteMonto}>

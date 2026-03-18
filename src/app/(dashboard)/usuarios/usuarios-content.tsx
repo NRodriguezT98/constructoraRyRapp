@@ -5,7 +5,7 @@
  * COMPONENTE: Contenido de Gestión de Usuarios (Premium Design)
  * ============================================
  *
- * âœ¨ VERSIÃ“N 2.0.0 - Integrado con UsuariosTabs + Sistema de Permisos v2
+ * âœ¨ VERSIÓN 2.0.0 - Integrado con UsuariosTabs + Sistema de Permisos v2
  *
  * Contenido del módulo de usuarios con:
  * - Sistema de tabs (Usuarios, Permisos, Configuración)
@@ -220,7 +220,7 @@ export default function UsuariosContent({
                   <th className={styles.tabla.th}>Email</th>
                   <th className={styles.tabla.th}>Rol</th>
                   <th className={styles.tabla.th}>Estado</th>
-                  <th className={styles.tabla.th}>Ãšltimo Acceso</th>
+                  <th className={styles.tabla.th}>Último Acceso</th>
                   {canEdit && <th className={styles.tabla.th}>Acciones</th>}
                 </tr>
               </thead>
@@ -282,7 +282,7 @@ export default function UsuariosContent({
                       </span>
                     </td>
 
-                    {/* Ãšltimo Acceso */}
+                    {/* Último Acceso */}
                     <td className={styles.tabla.td}>
                       <div className={styles.tabla.email}>
                         {usuario.ultimo_acceso

@@ -17,15 +17,27 @@ import { useEffect, useState } from 'react'
 
 import { supabase } from '@/lib/supabase/client'
 import { fuentesPagoService } from '@/modules/clientes/services/fuentes-pago.service'
+import {
+    cargarTiposFuentesPagoActivas,
+    type TipoFuentePagoCatalogo,
+} from '@/modules/clientes/services/tipos-fuentes-pago.service'
 import type { TipoFuentePago } from '@/modules/clientes/types'
+import { crearCredito } from '@/modules/fuentes-pago/services/creditos-constructora.service'
+import { crearCuotasCredito } from '@/modules/fuentes-pago/services/cuotas-credito.service'
+import type { ParametrosCredito } from '@/modules/fuentes-pago/types'
+import { calcularTablaAmortizacion } from '@/modules/fuentes-pago/utils/calculos-credito'
 
 export interface FuentePago {
   id?: string
   tipo: TipoFuentePago
   monto_aprobado: number
+  /** Solo para créditos: capital sin intereses (para cierre financiero correcto) */
+  capital_para_cierre?: number
   entidad?: string
   numero_referencia?: string
   carta_asignacion_url?: string
+  /** Solo para créditos: parámetros del crédito (capital, tasa, cuotas, fecha) */
+  parametrosCredito?: ParametrosCredito | null
 }
 
 interface Totales {
@@ -50,6 +62,8 @@ export function useConfigurarFuentesPago({
   // =====================================================
   const [fuentesPago, setFuentesPago] = useState<FuentePago[]>([])
   const [cargando, setCargando] = useState(true)
+  const [cargandoTipos, setCargandoTipos] = useState(true)
+  const [tiposDisponibles, setTiposDisponibles] = useState<TipoFuentePagoCatalogo[]>([])
   const [guardando, setGuardando] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [totales, setTotales] = useState<Totales>({
@@ -61,6 +75,18 @@ export function useConfigurarFuentesPago({
   // =====================================================
   // EFECTOS
   // =====================================================
+
+  /**
+   * Cargar tipos de fuentes activos desde catálogo (una sola vez)
+   */
+  useEffect(() => {
+    const cargarTipos = async () => {
+      const { data } = await cargarTiposFuentesPagoActivas()
+      if (data) setTiposDisponibles(data)
+      setCargandoTipos(false)
+    }
+    cargarTipos()
+  }, [])
 
   /**
    * Cargar fuentes de pago existentes al montar o cambiar negociacionId
@@ -108,9 +134,15 @@ export function useConfigurarFuentesPago({
 
   /**
    * Calcular totales: monto total, porcentaje cubierto, diferencia
+   *
+   * Para créditos usa capital_para_cierre (no monto_aprobado que incluye intereses).
+   * Evita que los intereses inflen el total por encima del valor de la vivienda.
    */
   const calcularTotales = () => {
-    const total = fuentesPago.reduce((sum, f) => sum + (f.monto_aprobado || 0), 0)
+    const total = fuentesPago.reduce(
+      (sum, f) => sum + (f.capital_para_cierre ?? f.monto_aprobado ?? 0),
+      0
+    )
     const porcentaje = valorTotal > 0 ? (total / valorTotal) * 100 : 0
     const diferencia = valorTotal - total
 
@@ -226,13 +258,38 @@ export function useConfigurarFuentesPago({
           })
         } else {
           // Crear nueva
-          await fuentesPagoService.crearFuentePago({
+          const nuevaFuente = await fuentesPagoService.crearFuentePago({
             negociacion_id: negociacionId,
             tipo: fuente.tipo,
             monto_aprobado: fuente.monto_aprobado,
+            capital_para_cierre: fuente.capital_para_cierre,
             entidad: fuente.entidad,
             numero_referencia: fuente.numero_referencia,
           })
+
+          // Si el tipo genera cuotas y hay parámetros de crédito, crear tabla de amortización
+          const tipoConfig = tiposDisponibles.find(t => t.nombre === fuente.tipo)
+          if (tipoConfig?.logica_negocio?.genera_cuotas && fuente.parametrosCredito) {
+            const calculo = calcularTablaAmortizacion(fuente.parametrosCredito)
+
+            // Crear registro en creditos_constructora
+            const { error: eCred } = await crearCredito({
+              fuente_pago_id: nuevaFuente.id,
+              capital: fuente.parametrosCredito.capital,
+              tasa_mensual: fuente.parametrosCredito.tasaMensual,
+              num_cuotas: fuente.parametrosCredito.numCuotas,
+              fecha_inicio: fuente.parametrosCredito.fechaInicio.toISOString().split('T')[0],
+              valor_cuota: calculo.valorCuotaMensual,
+              interes_total: calculo.interesTotal,
+              monto_total: calculo.montoTotal,
+              tasa_mora_diaria: fuente.parametrosCredito.tasaMoraDiaria ?? 0.001,
+            })
+            if (eCred) throw eCred
+
+            // Crear cuotas de amortización
+            const { error: eCuotas } = await crearCuotasCredito(nuevaFuente.id, calculo.cuotas)
+            if (eCuotas) throw eCuotas
+          }
         }
       }
 
@@ -266,6 +323,8 @@ export function useConfigurarFuentesPago({
     // Estado
     fuentesPago,
     cargando,
+    cargandoTipos,
+    tiposDisponibles,
     guardando,
     error,
     totales,
@@ -279,6 +338,6 @@ export function useConfigurarFuentesPago({
     actualizarFuente,
     eliminarFuente,
     guardarFuentes,
-    cargarFuentesPago, // Exportar por si se necesita refrescar manualmente
+    cargarFuentesPago,
   }
 }

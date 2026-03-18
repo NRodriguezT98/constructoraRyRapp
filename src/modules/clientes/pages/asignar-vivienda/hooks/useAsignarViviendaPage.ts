@@ -1,9 +1,9 @@
 /**
  * Hook principal para la página de Asignar Vivienda
- * âœ… REFACTORIZADO: React Hook Form + Zod (ESTÁNDAR DE LA APLICACIÃ“N)
- * âœ… Sistema touchedFields (validación progresiva)
- * âœ… Orquesta stepper, form data y navegación entre pasos
- * âœ… React Query: Invalidación automática de cache
+ * ✅ REFACTORIZADO: React Hook Form + Zod (ESTÁNDAR DE LA APLICACIÓN)
+ * ✅ Sistema touchedFields (validación progresiva)
+ * ✅ Orquesta stepper, form data y navegación entre pasos
+ * ✅ React Query: Invalidación automática de cache
  */
 
 import { useCallback, useMemo, useState } from 'react'
@@ -36,7 +36,7 @@ export function useAsignarViviendaPage({
 }: UseAsignarViviendaPageProps) {
   const router = useRouter()
   const { confirm } = useModal()
-  const queryClient = useQueryClient() // âœ… React Query client
+  const queryClient = useQueryClient() // ✅ React Query client
 
   // ============================================
   // HOOKS EXTERNOS
@@ -69,10 +69,10 @@ export function useAsignarViviendaPage({
   })
 
   // ============================================
-  // REACT HOOK FORM (SISTEMA ESTÁNDAR) âœ…
+  // REACT HOOK FORM (SISTEMA ESTÁNDAR) ✅
   // ============================================
 
-  // âœ… MEMO para prevenir bucle infinito (objeto estable)
+  // ✅ MEMO para prevenir bucle infinito (objeto estable)
   const initialData = useMemo(() => ({
     proyecto_id: proyectosViviendas.proyectoSeleccionado,
     vivienda_id: proyectosViviendas.viviendaId,
@@ -164,7 +164,7 @@ export function useAsignarViviendaPage({
   }, [fuentesPago.fuentes, fuentesPago.sumaCierra, fuentesPago.totalFuentes, valorTotal])
 
   // ============================================
-  // VALIDACIÃ“N DE CAMPOS (Mejora #1)
+  // VALIDACIÓN DE CAMPOS (Mejora #1)
   // ============================================
 
   const validacionCampos = useMemo(() => {
@@ -198,7 +198,7 @@ export function useAsignarViviendaPage({
   ])
 
   // ============================================
-  // NAVEGACIÃ“N (REFACTORIZADO CON REACT HOOK FORM) âœ…
+  // NAVEGACIÓN (REFACTORIZADO CON REACT HOOK FORM) ✅
   // ============================================
 
   const handleNext = useCallback(async () => {
@@ -229,7 +229,7 @@ export function useAsignarViviendaPage({
 
       // Verificar que haya al menos una fuente activa
       if (fuentesPago.fuentesActivas.length === 0) {
-        setError('âš ï¸ Debes activar al menos una fuente de pago')
+        setError('⚠️ Debes activar al menos una fuente de pago')
         window.scrollTo({ top: 0, behavior: 'smooth' })
         return
       }
@@ -239,7 +239,7 @@ export function useAsignarViviendaPage({
         const faltante = fuentesPago.diferencia > 0
           ? `Falta $${fuentesPago.diferencia.toLocaleString('es-CO')} para completar el monto`
           : `Sobra $${Math.abs(fuentesPago.diferencia).toLocaleString('es-CO')}`
-        setError(`âš ï¸ La suma de fuentes no coincide. ${faltante}`)
+        setError(`⚠️ La suma de fuentes no coincide. ${faltante}`)
         window.scrollTo({ top: 0, behavior: 'smooth' })
         return
       }
@@ -260,7 +260,7 @@ export function useAsignarViviendaPage({
         return
       }
 
-      // âœ… Ya no validamos documentos aquí
+      // ✅ Ya no validamos documentos aquí
       // El sistema creará documentos_pendientes automáticamente
       // Usuario sube documentos desde la pestaña Documentos del cliente
     }
@@ -353,7 +353,7 @@ export function useAsignarViviendaPage({
         .eq('negociacion_id', negociacion.id)
 
       if (errorFuentes || !fuentesPagoCreadas) {
-        console.error('âŒ Error consultando fuentes de pago:', errorFuentes)
+        console.error('❌ Error consultando fuentes de pago:', errorFuentes)
         setError(errorFuentes?.message || 'Error consultando fuentes de pago')
         setCreando(false)
         return
@@ -386,12 +386,12 @@ export function useAsignarViviendaPage({
       limpiarHook()
       router.push(`/clientes/${clienteId}?tab=vivienda-asignada&highlight=${negociacion.id}` as any)
     } catch (err) {
-      console.error('âŒ Error creando negociación:', err)
+      console.error('❌ Error creando negociación:', err)
 
       // Mensaje de error más claro
       const errorMsg = err instanceof Error ? err.message : 'Error al crear negociación'
       setError(
-        `${errorMsg}\n\nâš ï¸ Por favor revisa la información del descuento y vuelve a configurar las fuentes de pago.`
+        `${errorMsg}\n\n⚠️ Por favor revisa la información del descuento y vuelve a configurar las fuentes de pago.`
       )
 
       // â­ VOLVER AL PASO 1 para que usuario revise los datos
@@ -422,7 +422,7 @@ export function useAsignarViviendaPage({
   ])
 
   // ============================================
-  // RETURN (REFACTORIZADO) âœ…
+  // RETURN (REFACTORIZADO) ✅
   // ============================================
 
   // â­ Obtener datos de vivienda seleccionada para documentos
@@ -435,11 +435,11 @@ export function useAsignarViviendaPage({
     currentStep,
     completedSteps,
 
-    // âœ… React Hook Form (SISTEMA ESTÁNDAR)
+    // ✅ React Hook Form (SISTEMA ESTÁNDAR)
     form, // Exponer todo el form para acceso directo
     register: form.register,
     errors: form.errors,
-    touchedFields: form.touchedFields, // âœ… Sistema estándar (reemplaza pasosTouched)
+    touchedFields: form.touchedFields, // ✅ Sistema estándar (reemplaza pasosTouched)
     setValue: form.setValue,
     watch: form.watch,
 

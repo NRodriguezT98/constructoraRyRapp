@@ -11,7 +11,7 @@ import { auditService } from '@/services/audit.service'
  */
 export class DocumentosEstadosService {
   /**
-   * MARCAR VERSIÃ“N COMO ERRÃ“NEA
+   * MARCAR VERSIÓN COMO ERRÓNEA
    */
   static async marcarVersionComoErronea(
     documentoId: string,
@@ -26,7 +26,7 @@ export class DocumentosEstadosService {
       .single()
 
     if (fetchError || !documento) {
-      console.error('âŒ Error al buscar documento:', {
+      console.error('❌ Error al buscar documento:', {
         documentoId,
         error: fetchError
       })
@@ -60,7 +60,7 @@ export class DocumentosEstadosService {
       .eq('id', documentoId)
 
     if (updateError) {
-      console.error('âŒ Error al marcar versión como errónea:', updateError)
+      console.error('❌ Error al marcar versión como errónea:', updateError)
       throw new Error(`Error al actualizar estado: ${updateError.message}`)
     }
 
@@ -77,7 +77,7 @@ export class DocumentosEstadosService {
         .eq('id', versionCorrectaId)
 
       if (linkError) {
-        console.warn('âš ï¸ No se pudo vincular versión correcta:', linkError)
+        console.warn('⚠️ No se pudo vincular versión correcta:', linkError)
       }
     }
 
@@ -141,12 +141,12 @@ export class DocumentosEstadosService {
       })
 
     } catch (auditError) {
-      console.error('âŒ Error al registrar auditoría:', auditError)
+      console.error('❌ Error al registrar auditoría:', auditError)
     }
   }
 
   /**
-   * MARCAR VERSIÃ“N COMO OBSOLETA
+   * MARCAR VERSIÓN COMO OBSOLETA
    */
   static async marcarVersionComoObsoleta(
     documentoId: string,
@@ -161,7 +161,7 @@ export class DocumentosEstadosService {
       .single()
 
     if (fetchError || !documento) {
-      console.error('âŒ Error al buscar documento:', {
+      console.error('❌ Error al buscar documento:', {
         documentoId,
         error: fetchError
       })
@@ -179,7 +179,7 @@ export class DocumentosEstadosService {
       .eq('id', documentoId)
 
     if (updateError) {
-      console.error('âŒ Error al marcar versión como obsoleta:', updateError)
+      console.error('❌ Error al marcar versión como obsoleta:', updateError)
       throw new Error(`Error al actualizar estado: ${updateError.message}`)
     }
 
@@ -235,12 +235,12 @@ export class DocumentosEstadosService {
       })
 
     } catch (auditError) {
-      console.error('âš ï¸ Error al registrar auditoría:', auditError)
+      console.error('⚠️ Error al registrar auditoría:', auditError)
     }
   }
 
   /**
-   * RESTAURAR ESTADO DE VERSIÃ“N A "VÁLIDA"
+   * RESTAURAR ESTADO DE VERSIÓN A "VÁLIDA"
    */
   static async restaurarEstadoVersion(documentoId: string): Promise<void> {
 
@@ -252,7 +252,7 @@ export class DocumentosEstadosService {
       .single()
 
     if (fetchError || !documento) {
-      console.error('âŒ Error al buscar documento:', {
+      console.error('❌ Error al buscar documento:', {
         documentoId,
         error: fetchError
       })
@@ -271,7 +271,7 @@ export class DocumentosEstadosService {
       .eq('id', documentoId)
 
     if (updateError) {
-      console.error('âŒ Error al restaurar estado:', updateError)
+      console.error('❌ Error al restaurar estado:', updateError)
       throw new Error(`Error al restaurar estado: ${updateError.message}`)
     }
 
@@ -333,7 +333,7 @@ export class DocumentosEstadosService {
       })
 
     } catch (auditError) {
-      console.error('âš ï¸ Error al registrar auditoría:', auditError)
+      console.error('⚠️ Error al registrar auditoría:', auditError)
     }
   }
 }

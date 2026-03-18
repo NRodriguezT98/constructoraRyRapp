@@ -3,7 +3,7 @@
  *
  * Gestiona la lista de intereses de un cliente con acciones.
  *
- * âš ï¸ NOMBRES DE CAMPOS VERIFICADOS EN: docs/DATABASE-SCHEMA-REFERENCE.md
+ * ⚠️ NOMBRES DE CAMPOS VERIFICADOS EN: docs/DATABASE-SCHEMA-REFERENCE.md
  *
  * Campos usados de cliente_intereses:
  * - id, cliente_id, proyecto_id, vivienda_id
@@ -56,7 +56,7 @@ export function useListaIntereses(clienteId: string): UseListaInteresesReturn {
    */
   const cargarIntereses = useCallback(async () => {
     if (!clienteId) {
-      console.warn('âš ï¸ useListaIntereses: clienteId no proporcionado')
+      console.warn('⚠️ useListaIntereses: clienteId no proporcionado')
       return
     }
 
@@ -71,7 +71,7 @@ export function useListaIntereses(clienteId: string): UseListaInteresesReturn {
       setInteresesFiltrados(data) // Inicialmente sin filtro
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'Error al cargar intereses'
-      console.error('âŒ Error cargando intereses:', err)
+      console.error('❌ Error cargando intereses:', err)
       setError(errorMsg)
       setIntereses([])
       setInteresesFiltrados([])
@@ -91,7 +91,7 @@ export function useListaIntereses(clienteId: string): UseListaInteresesReturn {
       // Recargar lista
       await cargarIntereses()
     } catch (err) {
-      console.error('âŒ Error descartando interés:', err)
+      console.error('❌ Error descartando interés:', err)
       throw err
     }
   }, [cargarIntereses])

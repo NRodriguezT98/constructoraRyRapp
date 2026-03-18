@@ -1,9 +1,9 @@
 /**
  * DocumentoUploadCompact
  *
- * âœ… Componente genérico para uploads rápidos en formularios
- * âœ… Versión compacta y minimalista del DocumentoUpload completo
- * âœ… Reutilizable en cualquier flujo que necesite subir documentos
+ * ✅ Componente genérico para uploads rápidos en formularios
+ * ✅ Versión compacta y minimalista del DocumentoUpload completo
+ * ✅ Reutilizable en cualquier flujo que necesite subir documentos
  *
  * Casos de uso:
  * - Adjuntos en formularios (como fuentes de pago)
@@ -170,7 +170,7 @@ export function DocumentoUploadCompact({
       setTimeout(() => setProgress(0), 500)
     },
     onError: (error: Error) => {
-      console.error('âŒ [DocumentoUploadCompact] Error:', error)
+      console.error('❌ [DocumentoUploadCompact] Error:', error)
       onUploadError?.(error.message)
       setProgress(0)
     },
@@ -189,14 +189,14 @@ export function DocumentoUploadCompact({
       // Validar archivo
       const validacion = validarArchivo(file)
       if (!validacion.valid) {
-        alert(`âŒ ${validacion.error}`)
+        alert(`❌ ${validacion.error}`)
         e.target.value = ''
         return
       }
 
       // Validar condiciones previas
       if (!validacionesOk) {
-        alert(`âŒ ${mensajeValidacion}`)
+        alert(`❌ ${mensajeValidacion}`)
         e.target.value = ''
         return
       }

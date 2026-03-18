@@ -13,7 +13,7 @@ const BUCKET_NAME = 'documentos-viviendas'
  */
 export class DocumentosVersionesService {
   /**
-   * CREAR NUEVA VERSIÃ“N de un documento existente
+   * CREAR NUEVA VERSIÓN de un documento existente
    */
   static async crearNuevaVersion(
     documentoIdOriginal: string,
@@ -165,7 +165,7 @@ export class DocumentosVersionesService {
   }
 
   /**
-   * RESTAURAR VERSIÃ“N anterior
+   * RESTAURAR VERSIÓN anterior
    * Descarga el archivo de la versión antigua y crea una nueva versión con ese contenido
    */
   static async restaurarVersion(
@@ -190,7 +190,7 @@ export class DocumentosVersionesService {
       .download(versionAnterior.url_storage)
 
     if (downloadError) {
-      console.error('âŒ Error al descargar archivo:', downloadError)
+      console.error('❌ Error al descargar archivo:', downloadError)
       throw new Error('No se pudo descargar el archivo de la versión anterior')
     }
 
@@ -207,7 +207,7 @@ export class DocumentosVersionesService {
       documentoPadreId,
       archivo,
       userId,
-      `[RESTAURACIÃ“N] ${motivo} - Restaurado desde versión ${versionAnterior.version}`,
+      `[RESTAURACIÓN] ${motivo} - Restaurado desde versión ${versionAnterior.version}`,
       tituloRestaurado,
       versionAnterior.fecha_documento ?? undefined,
       versionAnterior.fecha_vencimiento ?? undefined
@@ -217,7 +217,7 @@ export class DocumentosVersionesService {
   }
 
   /**
-   * ELIMINAR VERSIÃ“N (soft delete, solo Admin)
+   * ELIMINAR VERSIÓN (soft delete, solo Admin)
    */
   static async eliminarVersion(
     versionId: string,
@@ -228,12 +228,12 @@ export class DocumentosVersionesService {
 
     // Validar rol de Administrador
     if (userRole !== 'Administrador') {
-      throw new Error('âŒ Solo Administradores pueden eliminar versiones')
+      throw new Error('❌ Solo Administradores pueden eliminar versiones')
     }
 
     // Validar motivo
     if (!motivo || motivo.trim().length < 20) {
-      throw new Error('âŒ Debe proporcionar un motivo detallado (mínimo 20 caracteres)')
+      throw new Error('❌ Debe proporcionar un motivo detallado (mínimo 20 caracteres)')
     }
 
     // Obtener la versión a eliminar
@@ -260,7 +260,7 @@ export class DocumentosVersionesService {
 
       if ((versionesActivas?.length || 0) <= 1) {
         throw new Error(
-          'âŒ No se puede eliminar la última versión activa. ' +
+          '❌ No se puede eliminar la última versión activa. ' +
             'Usa "Eliminar Documento" en su lugar.'
         )
       }

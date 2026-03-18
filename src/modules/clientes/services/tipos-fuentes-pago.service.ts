@@ -8,6 +8,16 @@
 import { supabase } from '@/lib/supabase/client'
 
 /**
+ * Feature flags de lógica de negocio del tipo de fuente
+ */
+export interface LogicaNegocioTipo {
+  genera_cuotas: boolean
+  capital_para_cierre: boolean
+  permite_mora: boolean
+  formula_interes: 'simple'
+}
+
+/**
  * Tipo de fuente de pago desde catálogo
  */
 export interface TipoFuentePagoCatalogo {
@@ -20,6 +30,8 @@ export interface TipoFuentePagoCatalogo {
   color: string | null
   requiere_entidad: boolean
   permite_multiples_abonos: boolean
+  /** Feature flags: genera_cuotas, capital_para_cierre, permite_mora, etc. */
+  logica_negocio: LogicaNegocioTipo | null
 }
 
 /**
@@ -31,7 +43,7 @@ interface ConsultaTiposFuentesResult {
 }
 
 /**
- * ðŸ”¥ Cargar tipos de fuentes de pago ACTIVAS desde BD
+ * 🔥 Cargar tipos de fuentes de pago ACTIVAS desde BD
  *
  * @returns Array de tipos de fuentes activos, ordenados
  */
@@ -39,24 +51,24 @@ export async function cargarTiposFuentesPagoActivas(): Promise<ConsultaTiposFuen
   try {
     const { data, error } = await supabase
       .from('tipos_fuentes_pago')
-      .select('id,nombre,descripcion,activo,orden,icono,color,requiere_entidad,permite_multiples_abonos')
+      .select('id,nombre,descripcion,activo,orden,icono,color,requiere_entidad,permite_multiples_abonos,logica_negocio')
       .eq('activo', true)
       .order('orden', { ascending: true })
 
     if (error) {
-      console.error('âŒ Error al cargar tipos de fuentes de pago:', error)
+      console.error('❌ Error al cargar tipos de fuentes de pago:', error)
       return { data: null, error: new Error(error.message) }
     }
 
     return { data: data as unknown as TipoFuentePagoCatalogo[], error: null }
   } catch (err) {
-    console.error('âŒ Error inesperado al cargar tipos de fuentes:', err)
+    console.error('❌ Error inesperado al cargar tipos de fuentes:', err)
     return { data: null, error: err as Error }
   }
 }
 
 /**
- * ðŸ”¥ Cargar TODOS los tipos (activos e inactivos) para admin
+ * 🔥 Cargar TODOS los tipos (activos e inactivos) para admin
  *
  * @returns Array completo de tipos de fuentes
  */
@@ -68,19 +80,19 @@ export async function cargarTodosTiposFuentesPago(): Promise<ConsultaTiposFuente
       .order('orden', { ascending: true })
 
     if (error) {
-      console.error('âŒ Error al cargar todos los tipos de fuentes:', error)
+      console.error('❌ Error al cargar todos los tipos de fuentes:', error)
       return { data: null, error: new Error(error.message) }
     }
 
     return { data: data as unknown as TipoFuentePagoCatalogo[], error: null }
   } catch (err) {
-    console.error('âŒ Error inesperado al cargar tipos de fuentes:', err)
+    console.error('❌ Error inesperado al cargar tipos de fuentes:', err)
     return { data: null, error: err as Error }
   }
 }
 
 /**
- * ðŸ”¥ Obtener configuración de una fuente específica por nombre
+ * 🔥 Obtener configuración de una fuente específica por nombre
  *
  * @param nombre - Nombre exacto de la fuente (ej: "Cuota Inicial")
  * @returns Configuración de la fuente o null
@@ -97,13 +109,13 @@ export async function obtenerTipoFuentePorNombre(
       .single()
 
     if (error) {
-      console.error(`âŒ Error al buscar fuente "${nombre}":`, error)
+      console.error(`❌ Error al buscar fuente "${nombre}":`, error)
       return null
     }
 
     return data as unknown as TipoFuentePagoCatalogo
   } catch (err) {
-    console.error(`âŒ Error inesperado al buscar fuente "${nombre}":`, err)
+    console.error(`❌ Error inesperado al buscar fuente "${nombre}":`, err)
     return null
   }
 }

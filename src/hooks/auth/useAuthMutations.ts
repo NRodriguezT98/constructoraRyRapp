@@ -79,7 +79,7 @@ export function useLoginMutation() {
         throw perfilError
       }
 
-      // âœ… 3. Sincronizar permisos al JWT (async, no bloquea login)
+      // ✅ 3. Sincronizar permisos al JWT (async, no bloquea login)
       try {
         const syncResponse = await fetch('/api/auth/sync-permisos', {
           method: 'POST',
@@ -108,9 +108,9 @@ export function useLoginMutation() {
       }
     },
     onSuccess: (data) => {
-      debugLog('âœ… Login mutation onSuccess ejecutado')
+      debugLog('✅ Login mutation onSuccess ejecutado')
 
-      // âœ… LIMPIAR TODOS LOS TOASTS anteriores (especialmente "Sesión cerrada")
+      // ✅ LIMPIAR TODOS LOS TOASTS anteriores (especialmente "Sesión cerrada")
       toast.dismiss()
 
       // Invalidar todas las queries de autenticación
@@ -152,7 +152,7 @@ export function useLogoutMutation() {
       successLog('SignOut ejecutado correctamente')
     },
     onSuccess: () => {
-      debugLog('ðŸ§¹ Limpiando cache de autenticación...')
+      debugLog('🧹 Limpiando cache de autenticación...')
 
       // Limpiar TODAS las queries de autenticación
       queryClient.removeQueries({ queryKey: authKeys.all })
@@ -217,7 +217,7 @@ export function useUpdatePerfilMutation(userId: string) {
       if (context?.previousPerfil) {
         queryClient.setQueryData(authKeys.perfil(userId), context.previousPerfil)
       }
-      console.error('âŒ Error actualizando perfil:', err)
+      console.error('❌ Error actualizando perfil:', err)
     },
     onSuccess: () => {
       // Invalidar para refetch
@@ -232,7 +232,7 @@ export function useUpdatePerfilMutation(userId: string) {
 
 /**
  * Mutación para refrescar la sesión actual
- * Ãštil cuando el token está por expirar
+ * Útil cuando el token está por expirar
  */
 export function useRefreshSessionMutation() {
   const queryClient = useQueryClient()
@@ -247,7 +247,7 @@ export function useRefreshSessionMutation() {
       queryClient.setQueryData(authKeys.session(), session)
     },
     onError: (error: Error) => {
-      console.error('âŒ Error refrescando sesión:', error.message)
+      console.error('❌ Error refrescando sesión:', error.message)
     },
   })
 }

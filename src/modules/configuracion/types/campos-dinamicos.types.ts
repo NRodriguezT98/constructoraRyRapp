@@ -85,6 +85,13 @@ export interface ConfiguracionCampos {
 // TIPO DE FUENTE PAGO CON CONFIGURACIÓN
 // ============================================
 
+export interface LogicaNegocioTipo {
+  genera_cuotas: boolean
+  capital_para_cierre: boolean
+  permite_mora: boolean
+  formula_interes: 'simple'
+}
+
 export interface TipoFuentePagoConCampos {
   id: string
   nombre: string
@@ -98,6 +105,7 @@ export interface TipoFuentePagoConCampos {
   permite_multiples_abonos: boolean
   es_subsidio: boolean
   configuracion_campos: ConfiguracionCampos
+  logica_negocio: LogicaNegocioTipo | null
   created_at: string
   updated_at: string
 }

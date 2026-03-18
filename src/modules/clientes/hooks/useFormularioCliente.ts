@@ -50,7 +50,7 @@ export function useFormularioCliente({
   // =====================================================
   useEffect(() => {
     if (clienteInicial) {
-      // âœ… Solo actualizar si realmente hay un cambio (evitar re-renders innecesarios)
+      // ✅ Solo actualizar si realmente hay un cambio (evitar re-renders innecesarios)
       setFormData((prev) => {
         // Si ya tiene los datos correctos, no actualizar
         if (
@@ -109,8 +109,8 @@ export function useFormularioCliente({
   /**
    * Validar Step 0: Información Personal
    * Campos obligatorios: nombres, apellidos, tipo_documento, numero_documento
-   * âš ï¸ VALIDACIÃ“N ASYNC: Verifica duplicados en la base de datos
-   * âœ… VALIDACIÃ“N ALGORITMO: Dígito verificador para NIT y formato para CC/CE
+   * ⚠️ VALIDACIÓN ASYNC: Verifica duplicados en la base de datos
+   * ✅ VALIDACIÓN ALGORITMO: Dígito verificador para NIT y formato para CC/CE
    */
   const validarStep0 = useCallback(async (): Promise<boolean> => {
     const nuevosErrores: Record<string, string> = {}
@@ -134,7 +134,7 @@ export function useFormularioCliente({
     if (!formData.numero_documento.trim()) {
       nuevosErrores.numero_documento = 'El número de documento es requerido'
     } else {
-      // âœ… VALIDACIÃ“N DE ALGORITMO (CC, CE, NIT, Pasaporte)
+      // ✅ VALIDACIÓN DE ALGORITMO (CC, CE, NIT, Pasaporte)
       const resultadoValidacion = validarDocumentoIdentidad(
         formData.tipo_documento as any,
         formData.numero_documento
@@ -146,7 +146,7 @@ export function useFormularioCliente({
           nuevosErrores.numero_documento += ` (${resultadoValidacion.detalles})`
         }
       } else if (!clienteInicial?.id) {
-        // âš ï¸ VALIDACIÃ“N CRÃTICA: Verificar duplicados (solo si formato es válido y es cliente nuevo)
+        // ⚠️ VALIDACIÓN CRÍTICA: Verificar duplicados (solo si formato es válido y es cliente nuevo)
         try {
           const clienteExistente = await clientesService.buscarPorDocumento(
             formData.tipo_documento,
@@ -155,7 +155,7 @@ export function useFormularioCliente({
 
           if (clienteExistente) {
             nuevosErrores.numero_documento = `Ya existe un cliente con este documento: ${clienteExistente.nombres} ${clienteExistente.apellidos}`
-            console.error('âŒ Cliente duplicado encontrado en Step 0')
+            console.error('❌ Cliente duplicado encontrado en Step 0')
           } else {
           }
         } catch (error) {
@@ -241,7 +241,7 @@ export function useFormularioCliente({
   }, [])
 
   // =====================================================
-  // VALIDACIÃ“N COMPLETA (para submit final)
+  // VALIDACIÓN COMPLETA (para submit final)
   // =====================================================
 
   const validarFormulario = useCallback((): boolean => {

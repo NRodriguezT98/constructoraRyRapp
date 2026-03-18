@@ -40,7 +40,7 @@ export async function obtenerPermisosParaJWT(rol: Rol): Promise<PermisoCompacto[
     .eq('permitido', true)
 
   if (error) {
-    console.error('âŒ [JWT] Error obteniendo permisos:', error)
+    console.error('❌ [JWT] Error obteniendo permisos:', error)
     throw error
   }
 
@@ -72,12 +72,12 @@ export async function sincronizarPermisosAlJWT(
     })
 
     if (error) {
-      console.error('âŒ [JWT] Error actualizando metadata:', error)
+      console.error('❌ [JWT] Error actualizando metadata:', error)
       throw error
     }
 
   } catch (error) {
-    console.error('âŒ [JWT] Error en sincronización:', error)
+    console.error('❌ [JWT] Error en sincronización:', error)
     throw error
   }
 }
@@ -117,7 +117,7 @@ export async function invalidarSesionPorCambioPermisos(
       .eq('estado', 'Activo')
 
     if (errorUsuarios) {
-      console.error('âŒ [JWT] Error obteniendo usuarios:', errorUsuarios)
+      console.error('❌ [JWT] Error obteniendo usuarios:', errorUsuarios)
       throw errorUsuarios
     }
 
@@ -128,14 +128,14 @@ export async function invalidarSesionPorCambioPermisos(
         try {
           await supabaseAdmin.auth.admin.signOut(usuario.id, 'global')
         } catch (error) {
-          console.error(`âš ï¸ [JWT] Error invalidando sesión de ${usuario.id}:`, error)
+          console.error(`⚠️ [JWT] Error invalidando sesión de ${usuario.id}:`, error)
           // Continuar con los demás usuarios
         }
       }
     }
 
   } catch (error) {
-    console.error('âŒ [JWT] Error en invalidación de sesiones:', error)
+    console.error('❌ [JWT] Error en invalidación de sesiones:', error)
     throw error
   }
 }
@@ -152,6 +152,6 @@ export async function sincronizarPermisosPostLogin(
     await sincronizarPermisosAlJWT(userId, rol)
   } catch (error) {
     // No bloquear login si falla la sincronización
-    console.error('âš ï¸ [JWT] Sincronización falló pero login continúa:', error)
+    console.error('⚠️ [JWT] Sincronización falló pero login continúa:', error)
   }
 }

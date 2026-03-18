@@ -50,7 +50,7 @@ export function useLogin(): UseLoginReturn {
   const [recordarUsuario, setRecordarUsuario] = useState(false)
   const [navegando, setNavegando] = useState(false)
 
-  // âœ… Ref para prevenir ejecuciones múltiples durante signIn
+  // ✅ Ref para prevenir ejecuciones múltiples durante signIn
   const isSubmittingRef = useRef(false)
 
   // Hooks externos
@@ -65,10 +65,10 @@ export function useLogin(): UseLoginReturn {
   // Obtener ruta de redirección (puede ser null en SSR/build)
   const redirectedFrom = searchParams?.get('redirectedFrom') || null
 
-  // âœ… CRÃTICO: Detectar si venimos de logout (hay timestamp en URL)
+  // ✅ CRÍTICO: Detectar si venimos de logout (hay timestamp en URL)
   const logoutTimestamp = searchParams?.get('_t')
 
-  // âœ… SOLUCIÃ“N DEFINITIVA: Limpiar TODO al montar si venimos de logout
+  // ✅ SOLUCIÓN DEFINITIVA: Limpiar TODO al montar si venimos de logout
   useEffect(() => {
     if (logoutTimestamp) {
       // Resetear TODOS los estados de UI (venimos de logout)
@@ -77,7 +77,7 @@ export function useLogin(): UseLoginReturn {
       setNavegando(false)
       setError('')
       setLoading(false)
-      setPassword('') // âœ… CRÃTICO: Limpiar password
+      setPassword('') // ✅ CRÍTICO: Limpiar password
 
 
     }
@@ -92,7 +92,7 @@ export function useLogin(): UseLoginReturn {
     }
   }, [])
 
-  // âœ… Listener de cambios de sesión de Supabase
+  // ✅ Listener de cambios de sesión de Supabase
   // Detecta cuando la sesión se actualiza correctamente
   useEffect(() => {
     // Si ya estamos logueados y el perfil está cargado, redirigir
@@ -132,7 +132,7 @@ export function useLogin(): UseLoginReturn {
       // Prevenir múltiples submissions
       if (loading || isSubmittingRef.current) {
 
-        debugLog('âš ï¸ Login ya en progreso, ignorando submission duplicado')
+        debugLog('⚠️ Login ya en progreso, ignorando submission duplicado')
         return
       }
 
@@ -140,7 +140,7 @@ export function useLogin(): UseLoginReturn {
       setLoading(true)
 
 
-      let loginSuccess = false // âœ… Flag para controlar el finally
+      let loginSuccess = false // ✅ Flag para controlar el finally
 
       try {
         // Determinar ruta de redirección ANTES del login
@@ -157,7 +157,7 @@ export function useLogin(): UseLoginReturn {
 
         debugLog('ðŸ” Iniciando proceso de login', { email })
 
-        // âœ… CRÃTICO: signIn PRIMERO, navegación INMEDIATA después (sin cambios de estado)
+        // ✅ CRÍTICO: signIn PRIMERO, navegación INMEDIATA después (sin cambios de estado)
         await signIn(email, password)
 
 
@@ -180,25 +180,25 @@ export function useLogin(): UseLoginReturn {
         // Toast moderno personalizado
         showLoginSuccessToast()
 
-        // âŒ REMOVIDO: No cambiar estados UI (causa re-render y limpia el formulario visualmente)
+        // ❌ REMOVIDO: No cambiar estados UI (causa re-render y limpia el formulario visualmente)
         // setLoginExitoso(true)
         // setMensajeExito(...)
 
-        // âœ… Navegar INMEDIATAMENTE sin cambiar estado
+        // ✅ Navegar INMEDIATAMENTE sin cambiar estado
 
         debugLog('ðŸš€ Navegando inmediatamente', { destino: redirectTo })
 
-        // âœ… Navegación directa sin cambiar estado previos
+        // ✅ Navegación directa sin cambiar estado previos
         router.push(redirectTo)
 
 
         successLog('Navegación exitosa con cache pre-poblado')
 
 
-        // âœ… Marcar como exitoso para que finally NO desactive loading
+        // ✅ Marcar como exitoso para que finally NO desactive loading
         loginSuccess = true
 
-        // âœ… NO ejecutar finally (no desactivar loading en caso exitoso)
+        // ✅ NO ejecutar finally (no desactivar loading en caso exitoso)
         return
 
       } catch (err) {
@@ -206,7 +206,7 @@ export function useLogin(): UseLoginReturn {
         console.error('Login error:', error)
         errorLog('login-submit', error, { email })
 
-        // Calcular intentos restantes DESPUÃ‰S de este fallo
+        // Calcular intentos restantes DESPUÉS de este fallo
         const nuevoIntentosFallidos = intentosRestantes - 1
 
         // Login fallido: registrar intento
@@ -227,13 +227,13 @@ export function useLogin(): UseLoginReturn {
         } else if (nuevoIntentosFallidos <= 2) {
           // Advertencia cuando quedan 2 o menos intentos
           setError(
-            `${mensajeError}. âš ï¸ Te quedan ${nuevoIntentosFallidos} intento${nuevoIntentosFallidos !== 1 ? 's' : ''}.`
+            `${mensajeError}. ⚠️ Te quedan ${nuevoIntentosFallidos} intento${nuevoIntentosFallidos !== 1 ? 's' : ''}.`
           )
         } else {
           setError(mensajeError)
         }
       } finally {
-        // âœ… Solo desactivar loading si NO fue exitoso
+        // ✅ Solo desactivar loading si NO fue exitoso
         if (!loginSuccess) {
           setLoading(false)
           isSubmittingRef.current = false
@@ -244,7 +244,7 @@ export function useLogin(): UseLoginReturn {
     [email, password, signIn, router, redirectedFrom, verificarBloqueo, minutosRestantes, registrarIntentoFallido, resetearIntentos, intentosRestantes, recordarUsuario]
   )
 
-  // âœ… Estabilizar funciones con useCallback para evitar re-renders
+  // ✅ Estabilizar funciones con useCallback para evitar re-renders
   const handleEmailChange = useCallback((value: string) => {
     setEmail(value)
   }, [])
@@ -268,7 +268,7 @@ export function useLogin(): UseLoginReturn {
     loginExitoso,
     mensajeExito,
     recordarUsuario,
-    navegando, // âœ… Estado para mostrar overlay
+    navegando, // ✅ Estado para mostrar overlay
     setEmail: handleEmailChange,
     setPassword: handlePasswordChange,
     setRecordarUsuario: handleRecordarChange,

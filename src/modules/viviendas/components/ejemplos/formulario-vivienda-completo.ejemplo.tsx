@@ -38,7 +38,7 @@ export function FormularioViviendaEjemplo() {
   })
 
   // ============================================================================
-  // 2. OBSERVAR CAMBIOS PARA VALIDACIONES ASÃNCRONAS
+  // 2. OBSERVAR CAMBIOS PARA VALIDACIONES ASÍNCRONAS
   // ============================================================================
 
   const formValues = watch() // Observa todos los campos
@@ -50,7 +50,7 @@ export function FormularioViviendaEjemplo() {
   })
 
   // ============================================================================
-  // 3. SUBMIT CON VALIDACIÃ“N COMPLETA
+  // 3. SUBMIT CON VALIDACIÓN COMPLETA
   // ============================================================================
 
   const onSubmit = async (data: ViviendaFormData) => {
@@ -104,7 +104,7 @@ export function FormularioViviendaEjemplo() {
             className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
           />
 
-          {/* INDICADOR DE VALIDACIÃ“N ASÃNCRONA */}
+          {/* INDICADOR DE VALIDACIÓN ASÍNCRONA */}
           <div className="absolute right-3 top-1/2 -translate-y-1/2">
             {validationStatus.matricula.isValidating && (
               <Loader2 className="w-5 h-5 animate-spin text-blue-500" />
@@ -128,7 +128,7 @@ export function FormularioViviendaEjemplo() {
           </p>
         )}
 
-        {/* ERRORES ASÃNCRONOS (BD) */}
+        {/* ERRORES ASÍNCRONOS (BD) */}
         {validationStatus.matricula.error && (
           <p className="text-sm text-red-500 flex items-center gap-1">
             <AlertCircle className="w-4 h-4" />
@@ -192,7 +192,7 @@ export function FormularioViviendaEjemplo() {
 
       {/* Más campos... */}
 
-      {/* BOTÃ“N SUBMIT */}
+      {/* BOTÓN SUBMIT */}
       <div className="flex items-center justify-end gap-3">
         {/* Indicador de validaciones en progreso */}
         {validationStatus.isAnyValidating && (

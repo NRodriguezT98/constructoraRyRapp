@@ -132,7 +132,7 @@ export class ViviendaInactivacionService {
         },
       }
     } catch (error) {
-      console.error('âŒ Error al validar eliminación:', error)
+      console.error('❌ Error al validar eliminación:', error)
       throw error
     }
   }
@@ -207,7 +207,7 @@ export class ViviendaInactivacionService {
       if (historialError) throw historialError
 
     } catch (error) {
-      console.error('âŒ Error al marcar como inactiva:', error)
+      console.error('❌ Error al marcar como inactiva:', error)
       throw error
     }
   }
@@ -283,7 +283,7 @@ export class ViviendaInactivacionService {
         puedeReactivar: true,
       }
     } catch (error) {
-      console.error('âŒ Error al validar reactivación:', error)
+      console.error('❌ Error al validar reactivación:', error)
       throw error
     }
   }
@@ -344,7 +344,7 @@ export class ViviendaInactivacionService {
       if (historialError) throw historialError
 
     } catch (error) {
-      console.error('âŒ Error al reactivar vivienda:', error)
+      console.error('❌ Error al reactivar vivienda:', error)
       throw error
     }
   }

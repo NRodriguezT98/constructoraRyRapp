@@ -24,7 +24,7 @@ const LEVEL_CONFIG = {
     message: 'Detectamos que has estado inactivo por un tiempo.',
   },
   warning: {
-    title: 'âš ï¸ Tu sesión está por expirar',
+    title: '⚠️ Tu sesión está por expirar',
     icon: AlertTriangle,
     gradient: 'from-red-700 via-red-600 to-red-800',
     iconBg: 'bg-red-600',
@@ -89,7 +89,7 @@ export function IdleWarningModal({
     }
   }, [isOpen])
 
-  // ðŸš¨ CRÃTICO: Cerrar sesión automáticamente cuando llegue a 0 (SOLO si ya empezó countdown)
+  // ðŸš¨ CRÍTICO: Cerrar sesión automáticamente cuando llegue a 0 (SOLO si ya empezó countdown)
   useEffect(() => {
     if (countdown === 0 && hasStartedCountdown && isOpen && onLogout && !isLoggingOut && !isClosingSession) {
       setIsClosingSession(true)

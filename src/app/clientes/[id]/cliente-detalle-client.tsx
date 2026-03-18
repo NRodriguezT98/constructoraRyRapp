@@ -1,10 +1,10 @@
 ﻿'use client'
 
 /**
- * âœ… COMPONENTE PRESENTACIONAL (REFACTORIZADO)
+ * ✅ COMPONENTE PRESENTACIONAL (REFACTORIZADO)
  * Cliente Detalle Client - Usa useClienteDetalle hook
  *
- * SEPARACIÃ“N DE RESPONSABILIDADES:
+ * SEPARACIÓN DE RESPONSABILIDADES:
  * - TODA la lógica consolidada en useClienteDetalle hook
  * - Este componente SOLO orquesta la UI
  */
@@ -75,7 +75,7 @@ function EstadoBadge({ estado }: { estado: string }) {
 export default function ClienteDetalleClient({ clienteId }: ClienteDetalleClientProps) {
   const router = useRouter()
 
-  // âœ… Hook consolidado con TODA la lógica
+  // ✅ Hook consolidado con TODA la lógica
   const {
     clienteUUID,
     cliente,
@@ -113,7 +113,7 @@ export default function ClienteDetalleClient({ clienteId }: ClienteDetalleClient
     abrirModalInteres()
   }
 
-  // âœ… Hook de asignación de vivienda con validación centralizada
+  // ✅ Hook de asignación de vivienda con validación centralizada
   const clienteSlug = cliente ? construirURLCliente({
     id: clienteUUID!,
     nombres: cliente.nombres,
@@ -132,7 +132,7 @@ export default function ClienteDetalleClient({ clienteId }: ClienteDetalleClient
     clienteSlug: clienteSlug || ''
   })
 
-  // âœ… Detectar query param "action=crear-negociacion" y usar hook de asignación
+  // ✅ Detectar query param "action=crear-negociacion" y usar hook de asignación
   useEffect(() => {
     if (!cliente || !clienteUUID) return
 
@@ -156,7 +156,7 @@ export default function ClienteDetalleClient({ clienteId }: ClienteDetalleClient
 
   const handleInteresRegistrado = async () => {
     cerrarModalInteres()
-    // âœ… React Query refetch automático
+    // ✅ React Query refetch automático
     recargarCliente()
   }
 
@@ -274,7 +274,7 @@ export default function ClienteDetalleClient({ clienteId }: ClienteDetalleClient
       label: 'Documentos',
       icon: FileText,
       count: totalDocumentos,
-      badge: !tieneCedula ? { text: 'âš ï¸ Requerido', color: 'orange', pulse: true } : null,
+      badge: !tieneCedula ? { text: '⚠️ Requerido', color: 'orange', pulse: true } : null,
     },
     { id: 'historial' as const, label: 'Historial', icon: History, count: null, badge: null },
   ]
@@ -372,7 +372,7 @@ export default function ClienteDetalleClient({ clienteId }: ClienteDetalleClient
 
               {/* Acciones */}
               <div className={styles.headerClasses.actionsContainer}>
-                {/* âœ… Botón Asignar Vivienda (solo visible para Interesados sin negociación) */}
+                {/* ✅ Botón Asignar Vivienda (solo visible para Interesados sin negociación) */}
                 {cliente.estado === 'Interesado' && !(cliente as any).negociaciones?.length && (
                   <Tooltip
                     content={mensajeValidacion}

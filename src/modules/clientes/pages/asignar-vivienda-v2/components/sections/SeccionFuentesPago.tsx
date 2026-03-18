@@ -2,7 +2,7 @@
 
 import { AnimatePresence, motion } from 'framer-motion'
 import { AlertCircle, Banknote, Building2, Check, CircleDollarSign, Home, Wallet } from 'lucide-react'
-import { useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 
 import { formatCurrency } from '@/lib/utils/format.utils'
 import type {
@@ -11,8 +11,10 @@ import type {
 } from '@/modules/clientes/components/asignar-vivienda/types'
 import { CampoFormularioDinamico } from '@/modules/clientes/components/fuente-pago-card/CampoFormularioDinamico'
 import type { TipoFuentePago } from '@/modules/clientes/types'
-import { obtenerMonto } from '@/modules/clientes/utils/fuentes-pago-campos.utils'
+import { obtenerMonto, obtenerMontoParaCierre } from '@/modules/clientes/utils/fuentes-pago-campos.utils'
 import type { CampoConfig, TipoFuentePagoConCampos, ValorCampo, ValoresCampos } from '@/modules/configuracion/types/campos-dinamicos.types'
+import { CreditoConstructoraForm } from '@/modules/fuentes-pago/components/CreditoConstructoraForm'
+import type { ParametrosCredito } from '@/modules/fuentes-pago/types'
 
 import { styles as s } from '../../styles'
 
@@ -105,8 +107,11 @@ export function SeccionFuentesPago({
             t => t.nombre === fuente.tipo
           )
           const camposConfig = tipoConCampos?.configuracion_campos?.campos ?? []
+          const generaCuotas = tipoConCampos?.logica_negocio?.genera_cuotas ?? false
+          // Para crédito constructora: muestra capital (sin intereses) para que
+          // el badge sea coherente con la barra de progreso
           const monto = fuente.config
-            ? obtenerMonto(fuente.config, camposConfig)
+            ? obtenerMontoParaCierre(fuente.config, tipoConCampos, camposConfig)
             : 0
           const esError = mostrarErroresFuentes && erroresFuentes[fuente.tipo]
 
@@ -172,6 +177,7 @@ export function SeccionFuentesPago({
                       fuente={fuente}
                       camposConfig={camposConfig}
                       permiteMultiples={tipoConCampos?.permite_multiples_abonos ?? false}
+                      generaCuotas={generaCuotas}
                       esError={!!esError}
                       mensajeError={erroresFuentes[fuente.tipo] ?? ''}
                       onChange={(config) => {
@@ -237,6 +243,7 @@ interface FuenteExpandidaProps {
   fuente: FuentePagoConfiguracion
   camposConfig: CampoConfig[]
   permiteMultiples: boolean
+  generaCuotas: boolean
   esError: boolean
   mensajeError: string
   onChange: (config: FuentePagoConfig) => void
@@ -246,11 +253,41 @@ function FuenteExpandida({
   fuente,
   camposConfig,
   permiteMultiples,
+  generaCuotas,
   esError,
   mensajeError,
   onChange,
 }: FuenteExpandidaProps) {
   const sorted = [...camposConfig].sort((a, b) => a.orden - b.orden)
+
+  // Acumula los tres updates que emite CreditoConstructoraForm antes de llamar onChange
+  const creditoRef = useRef<{
+    monto_aprobado?: number
+    capital_para_cierre?: number
+    parametrosCredito?: ParametrosCredito
+  }>({
+    monto_aprobado: fuente.config?.monto_aprobado,
+    capital_para_cierre: fuente.config?.capital_para_cierre,
+    parametrosCredito: fuente.config?.parametrosCredito,
+  })
+
+  const handleCreditoActualizar = useCallback(
+    (campo: 'monto_aprobado' | 'capital_para_cierre' | 'parametrosCredito', valor: unknown) => {
+      creditoRef.current = { ...creditoRef.current, [campo]: valor }
+      const acc = creditoRef.current
+      if (acc.monto_aprobado != null && acc.monto_aprobado > 0) {
+        onChange({
+          tipo: fuente.tipo as TipoFuentePago,
+          monto_aprobado: acc.monto_aprobado,
+          capital_para_cierre: acc.capital_para_cierre,
+          parametrosCredito: acc.parametrosCredito,
+          permite_multiples_abonos: permiteMultiples,
+          campos: {},
+        })
+      }
+    },
+    [onChange, fuente.tipo, permiteMultiples]
+  )
 
   const [valores, setValores] = useState<ValoresCampos>(() => {
     const initial: ValoresCampos = {}
@@ -292,6 +329,18 @@ function FuenteExpandida({
     const newValores = { ...valores, [nombre]: valor }
     setValores(newValores)
     onChange(buildConfig(newValores))
+  }
+
+  // Crédito con la constructora: muestra el formulario de amortización
+  if (generaCuotas) {
+    return (
+      <div className={s.fuentes.fuenteContent}>
+        <CreditoConstructoraForm
+          parametrosIniciales={fuente.config?.parametrosCredito}
+          onActualizar={handleCreditoActualizar}
+        />
+      </div>
+    )
   }
 
   return (

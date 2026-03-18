@@ -3,7 +3,7 @@
  * HOOK: useSubirCartaModal
  * ============================================
  *
- * âœ… LÃ“GICA DE NEGOCIO SEPARADA
+ * ✅ LÓGICA DE NEGOCIO SEPARADA
  * Maneja upload de carta de aprobación con vinculación automática
  *
  * Features:
@@ -79,7 +79,7 @@ export function useSubirCartaModal({
     }
 
     if (fuente.cliente) {
-      // âœ… Formatear nombre con capitalización
+      // ✅ Formatear nombre con capitalización
       extras.push(formatNombreCompleto(fuente.cliente.nombre_completo))
     }
 
@@ -99,7 +99,7 @@ export function useSubirCartaModal({
     }
 
     if (fuente.cliente) {
-      // âœ… Formatear nombre con capitalización
+      // ✅ Formatear nombre con capitalización
       extras.push(formatNombreCompleto(fuente.cliente.nombre_completo))
     }
 
@@ -188,7 +188,7 @@ export function useSubirCartaModal({
       const CATEGORIA_CARTAS_APROBACION = '4898e798-c188-4f02-bfcf-b2b15be48e34'
 
       // 2. Metadata para vinculación automática
-      // âœ… Usar entidad de fuente, NO sobrescribir con genéricos
+      // ✅ Usar entidad de fuente, NO sobrescribir con genéricos
       const metadata = {
         tipo_fuente: fuente.tipo,
         entidad: fuente.entidad || '', // ← Usar EXACTAMENTE lo que viene de fuente
@@ -205,11 +205,11 @@ export function useSubirCartaModal({
         {
           entidad_id: clienteId,
           tipoEntidad: 'cliente',
-          categoria_id: CATEGORIA_CARTAS_APROBACION, // âœ… ID fijo de categoría global
-          titulo, // âœ… Título editable
+          categoria_id: CATEGORIA_CARTAS_APROBACION, // ✅ ID fijo de categoría global
+          titulo, // ✅ Título editable
           descripcion: `Carta de aprobación para ${fuente.tipo}`,
           archivo,
-          metadata, // âœ… Metadata para trigger de vinculación
+          metadata, // ✅ Metadata para trigger de vinculación
         },
         user.id
       )
@@ -220,7 +220,7 @@ export function useSubirCartaModal({
         queryClient.invalidateQueries({
           queryKey: negociacionesQueryKeys.all,
         }),
-        // Refrescar documentos pendientes (para eliminar el banner) âœ… CORREGIDO
+        // Refrescar documentos pendientes (para eliminar el banner) ✅ CORREGIDO
         queryClient.invalidateQueries({
           queryKey: documentosPendientesKeys.byCliente(clienteId),
         }),

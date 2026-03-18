@@ -7,13 +7,13 @@ import type { DocumentoProyecto } from '../types/documento.types'
 import { type TipoEntidad, obtenerConfiguracionEntidad } from '../types/entidad.types'
 
 /**
- * âœ… SERVICIO GENÃ‰RICO: Eliminación de documentos (soft/hard delete)
+ * ✅ SERVICIO GENÉRICO: Eliminación de documentos (soft/hard delete)
  * Soporta: proyectos, viviendas, clientes, contratos, proveedores
  * Responsabilidades: archivar, eliminar (soft), restaurar, eliminar definitivo (hard)
  */
 export class DocumentosEliminacionService {
   /**
-   * âœ… GENÃ‰RICO: Archivar documento completo (todas las versiones)
+   * ✅ GENÉRICO: Archivar documento completo (todas las versiones)
    */
   static async archivarDocumento(
     documentoId: string,
@@ -49,7 +49,7 @@ export class DocumentosEliminacionService {
   }
 
   /**
-   * âœ… GENÃ‰RICO: Restaurar documento archivado (todas las versiones)
+   * ✅ GENÉRICO: Restaurar documento archivado (todas las versiones)
    */
   static async restaurarDocumentoArchivado(
     documentoId: string,
@@ -79,7 +79,7 @@ export class DocumentosEliminacionService {
   }
 
   /**
-   * âœ… GENÃ‰RICO: Obtener documentos archivados de una entidad
+   * ✅ GENÉRICO: Obtener documentos archivados de una entidad
    */
   static async obtenerDocumentosArchivados(
     entidadId: string,
@@ -108,7 +108,7 @@ export class DocumentosEliminacionService {
   }
 
   /**
-   * âœ… GENÃ‰RICO: Eliminar documento (soft delete)
+   * ✅ GENÉRICO: Eliminar documento (soft delete)
    * Elimina el documento y TODAS sus versiones
    */
   static async eliminarDocumento(
@@ -164,7 +164,7 @@ export class DocumentosEliminacionService {
   }
 
   /**
-   * âœ… GENÃ‰RICO: Obtener documentos eliminados (Papelera)
+   * ✅ GENÉRICO: Obtener documentos eliminados (Papelera)
    * @param tipoEntidad - Opcional: filtra por tipo de entidad. Si no se provee, muestra todos
    */
   static async obtenerDocumentosEliminados(
@@ -192,7 +192,7 @@ export class DocumentosEliminacionService {
   }
 
   /**
-   * âœ… GENÃ‰RICO: Obtener versiones eliminadas de un documento
+   * ✅ GENÉRICO: Obtener versiones eliminadas de un documento
    */
   static async obtenerVersionesEliminadas(
     documentoId: string,
@@ -232,7 +232,7 @@ export class DocumentosEliminacionService {
   }
 
   /**
-   * âœ… GENÃ‰RICO: Restaurar versiones seleccionadas
+   * ✅ GENÉRICO: Restaurar versiones seleccionadas
    */
   static async restaurarVersionesSeleccionadas(
     versionIds: string[],
@@ -254,7 +254,7 @@ export class DocumentosEliminacionService {
   }
 
   /**
-   * âœ… GENÃ‰RICO: Restaurar documento eliminado (con todas sus versiones)
+   * ✅ GENÉRICO: Restaurar documento eliminado (con todas sus versiones)
    */
   static async restaurarDocumentoEliminado(
     documentoId: string,
@@ -327,7 +327,7 @@ export class DocumentosEliminacionService {
   }
 
   /**
-   * âœ… GENÃ‰RICO: Eliminar definitivamente (hard delete - NO reversible)
+   * ✅ GENÉRICO: Eliminar definitivamente (hard delete - NO reversible)
    */
   static async eliminarDefinitivo(
     documentoId: string,
@@ -365,12 +365,12 @@ export class DocumentosEliminacionService {
           .eq('estado', 'eliminado')
 
         if (versiones) {
-          // âœ… STORAGE GENÃ‰RICO
+          // ✅ STORAGE GENÉRICO
           for (const version of (versiones as any[]) as any[]) {
             try {
               await supabase.storage.from(bucket).remove([version.url_storage])
             } catch (err) {
-              console.warn('âš ï¸ Error al eliminar archivo de Storage:', err)
+              console.warn('⚠️ Error al eliminar archivo de Storage:', err)
             }
           }
 
@@ -385,12 +385,12 @@ export class DocumentosEliminacionService {
         .eq('estado', 'eliminado')
 
       if (versiones) {
-        // âœ… STORAGE GENÃ‰RICO
+        // ✅ STORAGE GENÉRICO
         for (const version of (versiones as any[]) as any[]) {
           try {
             await supabase.storage.from(bucket).remove([version.url_storage])
           } catch (err) {
-            console.warn('âš ï¸ Error al eliminar archivo de Storage:', err)
+            console.warn('⚠️ Error al eliminar archivo de Storage:', err)
           }
         }
 

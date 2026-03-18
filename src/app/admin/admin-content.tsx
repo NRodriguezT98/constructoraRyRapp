@@ -91,7 +91,7 @@ export default function AdminContent({
                   </p>
                   <div className='flex items-center justify-between'>
                     <span className='inline-flex items-center gap-1 px-3 py-1 rounded-full bg-blue-100 dark:bg-blue-900/30 text-xs font-medium text-blue-700 dark:text-blue-300'>
-                      ðŸŽ¯ 4 Submódulos
+                      🎯 4 Submódulos
                     </span>
                     <ArrowRight className='w-5 h-5 text-blue-600 dark:text-blue-400 group-hover:translate-x-1 transition-transform' />
                   </div>
@@ -127,7 +127,7 @@ export default function AdminContent({
                   </p>
                   <div className='flex items-center justify-between'>
                     <span className='inline-flex items-center gap-1 px-3 py-1 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-xs font-medium text-indigo-700 dark:text-indigo-300'>
-                      âš™ï¸ Configuración
+                      ⚙️ Configuración
                     </span>
                     <ArrowRight className='w-5 h-5 text-indigo-600 dark:text-indigo-400 group-hover:translate-x-1 transition-transform' />
                   </div>
@@ -163,7 +163,7 @@ export default function AdminContent({
                   </p>
                   <div className='flex items-center justify-between'>
                     <span className='inline-flex items-center gap-1 px-3 py-1 rounded-full bg-green-100 dark:bg-green-900/30 text-xs font-medium text-green-700 dark:text-green-300'>
-                      ðŸ›¡ï¸ Protegido
+                      🛡️ Protegido
                     </span>
                     <ArrowRight className='w-5 h-5 text-purple-600 dark:text-purple-400 group-hover:translate-x-1 transition-transform' />
                   </div>

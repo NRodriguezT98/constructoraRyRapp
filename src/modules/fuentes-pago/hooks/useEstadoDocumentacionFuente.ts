@@ -6,7 +6,7 @@
  * Hook personalizado con React Query para obtener el estado
  * de documentación de una fuente de pago.
  *
- * âœ… SEPARACIÃ“N DE RESPONSABILIDADES
+ * ✅ SEPARACIÓN DE RESPONSABILIDADES
  * - Solo lógica de negocio
  * - Cache con React Query
  * - Revalidación automática

@@ -2,8 +2,8 @@
  * @file useCategoriasSistemaClientes.ts
  * @description Hook para garantizar que las categorías del sistema de clientes existan
  *
- * âœ… AUTO-SEED: Crea/recrea categorías automáticamente con UUIDs fijos
- * âš ï¸ CRÃTICO: Los UUIDs son fijos y usados en triggers, no modificar
+ * ✅ AUTO-SEED: Crea/recrea categorías automáticamente con UUIDs fijos
+ * ⚠️ CRÍTICO: Los UUIDs son fijos y usados en triggers, no modificar
  *
  * @usage
  * ```tsx
@@ -56,7 +56,7 @@ export function useCategoriasSistemaClientes(): UseCategoriasSistemaClientesRetu
       const { data: { user }, error: userError } = await supabase.auth.getUser()
 
       if (userError || !user) {
-        console.warn('âš ï¸ Usuario no autenticado, omitiendo verificación de categorías')
+        console.warn('⚠️ Usuario no autenticado, omitiendo verificación de categorías')
         return
       }
 
@@ -85,7 +85,7 @@ export function useCategoriasSistemaClientes(): UseCategoriasSistemaClientesRetu
         .from('categorias_documento')
         .insert(
           categoriasFaltantes.map(cat => ({
-            id: cat.id,  // âš ï¸ UUID FIJO (no auto-generado)
+            id: cat.id,  // ⚠️ UUID FIJO (no auto-generado)
             user_id: user.id,
             nombre: cat.nombre,
             descripcion: cat.descripcion,
@@ -110,7 +110,7 @@ export function useCategoriasSistemaClientes(): UseCategoriasSistemaClientesRetu
 
     } catch (err) {
       const mensaje = err instanceof Error ? err.message : 'Error desconocido'
-      console.error('âŒ Error en verificación de categorías:', mensaje)
+      console.error('❌ Error en verificación de categorías:', mensaje)
       setError(mensaje)
     } finally {
       setCargando(false)

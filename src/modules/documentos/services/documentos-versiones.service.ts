@@ -1,21 +1,21 @@
 // ============================================
-// SERVICE: Documentos - Gestión de Versiones (GENÃ‰RICO)
+// SERVICE: Documentos - Gestión de Versiones (GENÉRICO)
 // ============================================
 
 import { supabase } from '@/lib/supabase/client'
 import type { DocumentoProyecto } from '../types/documento.types'
 import { type TipoEntidad, obtenerConfiguracionEntidad } from '../types/entidad.types'
 
-// âš ï¸ DEPRECADO: usar obtenerConfiguracionEntidad(tipoEntidad).bucket
+// ⚠️ DEPRECADO: usar obtenerConfiguracionEntidad(tipoEntidad).bucket
 const BUCKET_NAME = 'documentos-proyectos'
 
 /**
- * âœ… SANITIZACIÃ“N: Convierte tildes/acentos a ASCII para paths de storage
+ * ✅ SANITIZACIÓN: Convierte tildes/acentos a ASCII para paths de storage
  */
 function sanitizeForStorage(text: string): string {
   const accentMap: Record<string, string> = {
     'á': 'a', 'é': 'e', 'í': 'i', 'ó': 'o', 'ú': 'u',
-    'Á': 'A', 'Ã‰': 'E', 'Ã': 'I', 'Ã“': 'O', 'Ãš': 'U',
+    'Á': 'A', 'É': 'E', 'Í': 'I', 'Ó': 'O', 'Ú': 'U',
     'ñ': 'n', 'Ã‘': 'N',
     'ü': 'u', 'Ãœ': 'U'
   }
@@ -37,13 +37,13 @@ function sanitizeForStorage(text: string): string {
  */
 export class DocumentosVersionesService {
   /**
-   * âœ… GENÃ‰RICO: CREAR NUEVA VERSIÃ“N de un documento existente
+   * ✅ GENÉRICO: CREAR NUEVA VERSIÓN de un documento existente
    */
   static async crearNuevaVersion(
     documentoIdOriginal: string,
     archivo: File,
     userId: string,
-    tipoEntidad: TipoEntidad, // âœ… NUEVO parámetro
+    tipoEntidad: TipoEntidad, // ✅ NUEVO parámetro
     cambios?: string,
     tituloOverride?: string,
     fechaDocumento?: string,
@@ -127,7 +127,7 @@ export class DocumentosVersionesService {
       version: nuevaVersion,
       es_version_actual: true,
       documento_padre_id: documentoPadreId,
-      estado: 'activo', // âœ… Minúscula para consistencia con documentos_proyecto/vivienda
+      estado: 'activo', // ✅ Minúscula para consistencia con documentos_proyecto/vivienda
       metadata: {
         ...(typeof docOriginal.metadata === 'object' && docOriginal.metadata !== null
           ? docOriginal.metadata
@@ -139,7 +139,7 @@ export class DocumentosVersionesService {
       fecha_documento: fechaDocumento || docOriginal.fecha_documento,
       fecha_vencimiento: fechaVencimiento || docOriginal.fecha_vencimiento,
       es_importante: docOriginal.es_importante,
-      // âœ… FIX: Propagar campos críticos del documento original a la nueva versión
+      // ✅ FIX: Propagar campos críticos del documento original a la nueva versión
       ...(docOriginal.es_documento_identidad !== undefined && {
         es_documento_identidad: docOriginal.es_documento_identidad
       }),
@@ -182,7 +182,7 @@ export class DocumentosVersionesService {
   }
 
   /**
-   * âœ… GENÃ‰RICO: OBTENER VERSIONES de un documento
+   * ✅ GENÉRICO: OBTENER VERSIONES de un documento
    */
   static async obtenerVersiones(
     documentoId: string,
@@ -220,7 +220,7 @@ export class DocumentosVersionesService {
   }
 
   /**
-   * âœ… GENÃ‰RICO: RESTAURAR VERSIÃ“N anterior
+   * ✅ GENÉRICO: RESTAURAR VERSIÓN anterior
    * Descarga el archivo de la versión antigua y crea una nueva versión con ese contenido
    */
   static async restaurarVersion(
@@ -249,7 +249,7 @@ export class DocumentosVersionesService {
       .download(versionAnterior.url_storage)
 
     if (downloadError) {
-      console.error('âŒ Error al descargar archivo:', downloadError)
+      console.error('❌ Error al descargar archivo:', downloadError)
       throw new Error('No se pudo descargar el archivo de la versión anterior')
     }
 
@@ -267,7 +267,7 @@ export class DocumentosVersionesService {
       archivo,
       userId,
       tipoEntidad,
-      `[RESTAURACIÃ“N] ${motivo} - Restaurado desde versión ${versionAnterior.version}`,
+      `[RESTAURACIÓN] ${motivo} - Restaurado desde versión ${versionAnterior.version}`,
       tituloRestaurado,
       versionAnterior.fecha_documento,
       versionAnterior.fecha_vencimiento
@@ -277,7 +277,7 @@ export class DocumentosVersionesService {
   }
 
   /**
-   * âœ… GENÃ‰RICO: ELIMINAR VERSIÃ“N (soft delete, solo Admin)
+   * ✅ GENÉRICO: ELIMINAR VERSIÓN (soft delete, solo Admin)
    */
   static async eliminarVersion(
     versionId: string,
@@ -289,12 +289,12 @@ export class DocumentosVersionesService {
 
     // Validar rol de Administrador
     if (userRole !== 'Administrador') {
-      throw new Error('âŒ Solo Administradores pueden eliminar versiones')
+      throw new Error('❌ Solo Administradores pueden eliminar versiones')
     }
 
     // Validar motivo
     if (!motivo || motivo.trim().length < 20) {
-      throw new Error('âŒ Debe proporcionar un motivo detallado (mínimo 20 caracteres)')
+      throw new Error('❌ Debe proporcionar un motivo detallado (mínimo 20 caracteres)')
     }
 
     const config = obtenerConfiguracionEntidad(tipoEntidad)
@@ -324,7 +324,7 @@ export class DocumentosVersionesService {
 
       if ((versionesActivas?.length || 0) <= 1) {
         throw new Error(
-          'âŒ No se puede eliminar la última versión activa. ' +
+          '❌ No se puede eliminar la última versión activa. ' +
             'Usa "Eliminar Documento" en su lugar.'
         )
       }
@@ -370,7 +370,7 @@ export class DocumentosVersionesService {
   }
 
   /**
-   * âœ… GENÃ‰RICO: CONTAR VERSIONES ACTIVAS de un documento
+   * ✅ GENÉRICO: CONTAR VERSIONES ACTIVAS de un documento
    */
   static async contarVersionesActivas(
     documentoId: string,
@@ -403,7 +403,7 @@ export class DocumentosVersionesService {
   }
 
   /**
-   * âœ… GENÃ‰RICO: OBTENER VERSIONES ELIMINADAS de un documento
+   * ✅ GENÉRICO: OBTENER VERSIONES ELIMINADAS de un documento
    */
   static async obtenerVersionesEliminadas(
     documentoId: string,
@@ -439,7 +439,7 @@ export class DocumentosVersionesService {
   }
 
   /**
-   * âœ… GENÃ‰RICO: RESTAURAR VERSIONES SELECCIONADAS (múltiples)
+   * ✅ GENÉRICO: RESTAURAR VERSIONES SELECCIONADAS (múltiples)
    */
   static async restaurarVersionesSeleccionadas(
     versionIds: string[],

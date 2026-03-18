@@ -8,7 +8,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import type { CrearFuentePagoDTO, TipoFuentePago } from '@/modules/clientes/types'
-import { obtenerMonto } from '@/modules/clientes/utils/fuentes-pago-campos.utils'
+import { obtenerMonto, obtenerMontoParaCierre } from '@/modules/clientes/utils/fuentes-pago-campos.utils'
 import type { TipoFuentePagoConCampos } from '@/modules/configuracion/types/campos-dinamicos.types'
 
 import type { FuentePagoConfig, FuentePagoConfiguracion, FuentePagoErrores } from '../types'
@@ -63,7 +63,9 @@ export function useFuentesPago({ valorTotal, tiposConCampos, cargandoTipos }: Us
     return fuentesActivas.reduce((sum, f) => {
       const tipoConCampos = tiposConCampos.find(t => t.nombre === f.tipo)
       const camposConfig = tipoConCampos?.configuracion_campos?.campos || []
-      const monto = obtenerMonto(f.config, camposConfig)
+      // Para crédito constructora: usa capital_para_cierre (sin intereses)
+      // para que los intereses no inflen el precio de la vivienda
+      const monto = obtenerMontoParaCierre(f.config, tipoConCampos, camposConfig)
       return sum + monto
     }, 0)
   }, [fuentesActivas, tiposConCampos])
@@ -80,7 +82,7 @@ export function useFuentesPago({ valorTotal, tiposConCampos, cargandoTipos }: Us
       fuentesActivas.some((f) => {
         const tipoConCampos = tiposConCampos.find(t => t.nombre === f.tipo)
         const camposConfig = tipoConCampos?.configuracion_campos?.campos || []
-        const monto = obtenerMonto(f.config, camposConfig)
+        const monto = obtenerMontoParaCierre(f.config, tipoConCampos, camposConfig)
         return monto > 0
       })
 

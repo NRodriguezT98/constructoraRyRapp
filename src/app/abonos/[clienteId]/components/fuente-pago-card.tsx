@@ -2,27 +2,35 @@
 
 import { motion } from 'framer-motion'
 import {
-  AlertTriangle,
-  BadgeCheck,
-  Building2,
-  CheckCircle2,
-  CreditCard,
-  ExternalLink,
-  FileWarning,
-  Hash,
-  Landmark,
-  Lock,
+    AlertTriangle,
+    BadgeCheck,
+    Building2,
+    CheckCircle2,
+    ChevronDown,
+    ChevronUp,
+    CreditCard,
+    ExternalLink,
+    FileWarning,
+    Hash,
+    Landmark,
+    Lock,
 } from 'lucide-react'
 
 import Link from 'next/link'
+import { useState } from 'react'
 
+import { getTodayDateString } from '@/lib/utils/date.utils'
+import { registrarAbono } from '@/modules/abonos/services/abonos.service'
 import type { FuentePagoConAbonos } from '@/modules/abonos/types'
+import { CuotasCreditoTab } from '@/modules/fuentes-pago/components/CuotasCreditoTab'
+import { marcarCuotaPagada } from '@/modules/fuentes-pago/services/cuotas-credito.service'
 
 interface FuentePagoCardProps {
   fuente: FuentePagoConAbonos
   negociacionId: string
   clienteSlug?: string
   onRegistrarAbono: (fuente: FuentePagoConAbonos) => void
+  onAbonoRegistrado?: () => void
   index: number
   canCreate?: boolean
   validacion?: {
@@ -46,6 +54,12 @@ const FUENTE_COLORS: Record<
   string,
   { accent: string; glow: string; bar: string; icon: string }
 > = {
+  'Crédito con la Constructora': {
+    accent: 'from-violet-500 to-purple-600',
+    glow: 'rgba(139,92,246,0.28)',
+    bar: 'from-violet-400 to-purple-400',
+    icon: 'bg-gradient-to-br from-violet-500 to-purple-600',
+  },
   'Cuota Inicial': {
     accent: 'from-emerald-500 to-teal-600',
     glow: 'rgba(16,185,129,0.28)',
@@ -88,7 +102,9 @@ const getFuenteColors = (tipo: string) =>
 
 export function FuentePagoCard({
   fuente,
+  negociacionId,
   onRegistrarAbono,
+  onAbonoRegistrado,
   index,
   canCreate,
   validacion,
@@ -97,6 +113,7 @@ export function FuentePagoCard({
   const completada = validacion?.estaCompletamentePagada ?? false
   const esDesembolsoUnico = fuente.permite_multiples_abonos === false
   const esCuotaInicial = fuente.tipo === 'Cuota Inicial'
+  const esCreditoConstructora = fuente.tipo === 'Crédito con la Constructora'
   const yaDesembolsada = esDesembolsoUnico && fuente.monto_recibido > 0
   const docsPendientesObligatorios =
     validacion?.documentosObligatoriosPendientes ?? 0
@@ -109,6 +126,23 @@ export function FuentePagoCard({
   const puedeAbonar =
     canCreate && !completada && fuente.saldo_pendiente > 0 && !bloqueadoPorDocs
   const colors = getFuenteColors(fuente.tipo)
+
+  const [cuotasExpandidas, setCuotasExpandidas] = useState(false)
+
+  // Registra abono + marca cuota pagada (crédito interno)
+  const handlePagarCuota = async (cuotaId: string, monto: number, mora: number) => {
+    await registrarAbono({
+      negociacion_id: negociacionId,
+      fuente_pago_id: fuente.id,
+      monto,
+      mora_incluida: mora > 0 ? mora : undefined,
+      fecha_abono: getTodayDateString(),
+      metodo_pago: 'Transferencia',
+      notas: 'Pago de cuota — crédito con la constructora',
+    })
+    await marcarCuotaPagada(cuotaId, getTodayDateString())
+    onAbonoRegistrado?.()
+  }
 
   // Textos semánticos por tipo de fuente
   const labelAprobado = esCuotaInicial ? 'Valor Pactado' : 'Aprobado'
@@ -170,7 +204,22 @@ export function FuentePagoCard({
 
           {/* Badge completada / botón */}
           <div className='flex-shrink-0'>
-            {completada ? (
+            {/* Crédito constructora: toggle de plan de cuotas */}
+            {esCreditoConstructora ? (
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.96 }}
+                onClick={() => setCuotasExpandidas((p) => !p)}
+                className={`inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r px-3 py-1.5 ${colors.accent} text-xs font-semibold text-white shadow-md`}
+              >
+                {cuotasExpandidas ? (
+                  <ChevronUp className='h-3.5 w-3.5' />
+                ) : (
+                  <ChevronDown className='h-3.5 w-3.5' />
+                )}
+                {cuotasExpandidas ? 'Ocultar cuotas' : 'Ver cuotas'}
+              </motion.button>
+            ) : completada ? (
               <span className='inline-flex items-center gap-1.5 rounded-lg border border-emerald-500/30 bg-emerald-500/15 px-2.5 py-1 text-xs font-semibold text-emerald-300'>
                 <BadgeCheck className='h-3.5 w-3.5' />
                 {esDesembolsoUnico ? 'Desembolsado ✓' : 'Completada'}
@@ -332,6 +381,15 @@ export function FuentePagoCard({
           )}
         </div>
       )}
-    </motion.div>
+      {/* Plan de cuotas expandible (solo Crédito con la Constructora) */}
+      {esCreditoConstructora && cuotasExpandidas ? (
+        <div className='border-t border-violet-200 bg-violet-50/50 px-4 py-4 dark:border-violet-800/30 dark:bg-violet-900/5'>
+          <CuotasCreditoTab
+            fuentePagoId={fuente.id}
+            montoFuente={fuente.monto_aprobado}
+            onPagarCuota={handlePagarCuota}
+          />
+        </div>
+      ) : null}    </motion.div>
   )
 }

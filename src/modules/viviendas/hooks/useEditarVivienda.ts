@@ -1,9 +1,9 @@
 /**
  * useEditarVivienda - Hook PROFESIONAL para edición de viviendas
- * âœ… React Hook Form con Zod validation
- * âœ… React Query para mutations y cache
- * âœ… Wizard multi-paso con validación por paso
- * âœ… Separación de responsabilidades ESTRICTA
+ * ✅ React Hook Form con Zod validation
+ * ✅ React Query para mutations y cache
+ * ✅ Wizard multi-paso con validación por paso
+ * ✅ Separación de responsabilidades ESTRICTA
  */
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
@@ -35,7 +35,7 @@ import {
 } from './useViviendasQuery'
 
 // ==================== SCHEMAS POR PASO ====================
-// âœ… Importados desde archivo compartido (DRY principle)
+// ✅ Importados desde archivo compartido (DRY principle)
 
 type FormData = ViviendaSchemaType// ==================== PASOS ====================
 
@@ -140,7 +140,7 @@ export function useEditarVivienda({ vivienda, onSuccess, onCancel }: UseEditarVi
         recargo_esquinera: vivienda.recargo_esquinera || 0,
       })
 
-      // âœ… Solo marcar paso 1 como completado (ubicación no editable)
+      // ✅ Solo marcar paso 1 como completado (ubicación no editable)
       // Los demás pasos requieren validación manual antes de avanzar
       setPasosCompletados([1])
     }
@@ -206,7 +206,7 @@ export function useEditarVivienda({ vivienda, onSuccess, onCancel }: UseEditarVi
   }, [vivienda, formData])
 
   // ============================================
-  // CONFIGURACIÃ“N DEL PASO ACTUAL
+  // CONFIGURACIÓN DEL PASO ACTUAL
   // ============================================
   const pasoActualConfig = PASOS.find((p) => p.id === pasoActual) || PASOS[0]
   const totalPasos = PASOS.length
@@ -215,13 +215,13 @@ export function useEditarVivienda({ vivienda, onSuccess, onCancel }: UseEditarVi
   const esUltimoPaso = pasoActual === totalPasos
 
   // ============================================
-  // VALIDACIÃ“N POR PASO
+  // VALIDACIÓN POR PASO
   // ============================================
   const validarPasoActual = useCallback(async (): Promise<boolean> => {
     const pasoConfig = PASOS.find((p) => p.id === pasoActual)
     if (!pasoConfig) return true
 
-    // âœ… PASO 1 en modo edición: Ya está validado (datos existentes, no modificables)
+    // ✅ PASO 1 en modo edición: Ya está validado (datos existentes, no modificables)
     if (pasoActual === 1 && vivienda) {
       return true
     }
@@ -229,7 +229,7 @@ export function useEditarVivienda({ vivienda, onSuccess, onCancel }: UseEditarVi
     // Validar con el schema del paso
     const valido = await trigger(Object.keys(pasoConfig.schema.shape) as any)
 
-    // âœ… Validaciones adicionales para paso 3: Ejecutar en PARALELO
+    // ✅ Validaciones adicionales para paso 3: Ejecutar en PARALELO
     if (pasoActual === 3 && valido) {
       const erroresEncontrados: Array<{ campo: string; mensaje: string }> = []
 
@@ -267,7 +267,7 @@ export function useEditarVivienda({ vivienda, onSuccess, onCancel }: UseEditarVi
         }
       }
 
-      // âœ… Setear TODOS los errores al mismo tiempo
+      // ✅ Setear TODOS los errores al mismo tiempo
       if (erroresEncontrados.length > 0) {
         erroresEncontrados.forEach((error) => {
           setError(error.campo as any, {
@@ -283,7 +283,7 @@ export function useEditarVivienda({ vivienda, onSuccess, onCancel }: UseEditarVi
   }, [pasoActual, trigger, getValues, vivienda])
 
   // ============================================
-  // NAVEGACIÃ“N
+  // NAVEGACIÓN
   // ============================================
   const irSiguiente = useCallback(async () => {
     const valido = await validarPasoActual()
@@ -307,10 +307,10 @@ export function useEditarVivienda({ vivienda, onSuccess, onCancel }: UseEditarVi
   }, [pasoActual])
 
   const irAPaso = useCallback((paso: number) => {
-    // âœ… Solo permitir ir a:
+    // ✅ Solo permitir ir a:
     // 1. Pasos completados (hacia atrás o cualquier paso ya validado)
     // 2. El paso actual
-    // âŒ NO permitir saltar hacia adelante sin validar
+    // ❌ NO permitir saltar hacia adelante sin validar
     if (pasosCompletados.includes(paso) || paso === pasoActual) {
       setPasoActual(paso)
     } else {
@@ -358,7 +358,7 @@ export function useEditarVivienda({ vivienda, onSuccess, onCancel }: UseEditarVi
           data: updateData,
         })
 
-        // Ã‰xito
+        // Éxito
         setHayFormularioConCambios(false)
         setMostrarModalConfirmacion(false)
         onSuccess?.(viviendaActualizada)

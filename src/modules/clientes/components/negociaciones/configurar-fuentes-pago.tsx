@@ -17,12 +17,15 @@ import { AnimatePresence, motion } from 'framer-motion'
 import {
     AlertCircle,
     BadgeDollarSign,
+    Banknote,
     Building2,
     CheckCircle2,
     CreditCard,
     DollarSign,
+    HandCoins,
     Home,
     Info,
+    Landmark,
     Loader2,
     Plus,
     Save,
@@ -31,7 +34,9 @@ import {
     Wallet
 } from 'lucide-react'
 
-import { useConfigurarFuentesPago, type FuentePago } from '../../hooks'
+import { CreditoConstructoraForm } from '@/modules/fuentes-pago/components/CreditoConstructoraForm'
+import { useConfigurarFuentesPago } from '../../hooks'
+import type { TipoFuentePagoCatalogo } from '../../services/tipos-fuentes-pago.service'
 
 interface ConfigurarFuentesPagoProps {
   negociacionId: string
@@ -39,65 +44,45 @@ interface ConfigurarFuentesPagoProps {
   onFuentesActualizadas?: () => void
 }
 
-// Configuración de las fuentes de pago
-const TIPOS_FUENTE = {
-  'Cuota Inicial': {
-    icon: Wallet,
-    color: 'purple',
-    bgLight: 'bg-purple-50',
-    bgDark: 'bg-purple-900/20',
-    textLight: 'text-purple-600',
-    textDark: 'text-purple-400',
-    borderLight: 'border-purple-200',
-    borderDark: 'border-purple-700',
-    label: 'Cuota Inicial',
-    descripcion: 'Pagos directos del cliente (permite múltiples abonos)',
-    requiereEntidad: false,
-    permiteMultiples: true,
-  },
-  'Crédito Hipotecario': {
-    icon: Building2,
-    color: 'blue',
-    bgLight: 'bg-blue-50',
-    bgDark: 'bg-blue-900/20',
-    textLight: 'text-blue-600',
-    textDark: 'text-blue-400',
-    borderLight: 'border-blue-200',
-    borderDark: 'border-blue-700',
-    label: 'Crédito Hipotecario',
-    descripcion: 'Financiación bancaria',
-    requiereEntidad: true,
-    permiteMultiples: false,
-  },
-  'Subsidio Mi Casa Ya': {
-    icon: Home,
-    color: 'green',
-    bgLight: 'bg-green-50',
-    bgDark: 'bg-green-900/20',
-    textLight: 'text-green-600',
-    textDark: 'text-green-400',
-    borderLight: 'border-green-200',
-    borderDark: 'border-green-700',
-    label: 'Subsidio Mi Casa Ya',
-    descripcion: 'Subsidio del gobierno nacional',
-    requiereEntidad: false,
-    permiteMultiples: false,
-  },
-  'Subsidio Caja Compensación': {
-    icon: Shield,
-    color: 'orange',
-    bgLight: 'bg-orange-50',
-    bgDark: 'bg-orange-900/20',
-    textLight: 'text-orange-600',
-    textDark: 'text-orange-400',
-    borderLight: 'border-orange-200',
-    borderDark: 'border-orange-700',
-    label: 'Subsidio Caja Compensación',
-    descripcion: 'Subsidio de caja de compensación familiar',
-    requiereEntidad: true,
-    permiteMultiples: false,
-  },
-} as const
+// Mapeo icono (string de BD) → componente Lucide.
+// El admin elige el icono desde el panel de configuración; se refleja aqui automaticamente.
+const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
+  Wallet, Building2, Home, Shield, CreditCard, Landmark,
+  BadgeDollarSign, DollarSign, Banknote, HandCoins,
+}
+
+// Mapeo color (string de BD) → clases Tailwind.
+// Mismo patrón que en TiposFuentesPagoLista del módulo de configuración.
+const COLOR_CLASSES: Record<string, { bgLight: string; bgDark: string; textLight: string; textDark: string; borderLight: string; borderDark: string }> = {
+  purple:  { bgLight: 'bg-purple-50',  bgDark: 'bg-purple-900/20',  textLight: 'text-purple-600',  textDark: 'text-purple-400',  borderLight: 'border-purple-200',  borderDark: 'border-purple-700'  },
+  blue:    { bgLight: 'bg-blue-50',    bgDark: 'bg-blue-900/20',    textLight: 'text-blue-600',    textDark: 'text-blue-400',    borderLight: 'border-blue-200',    borderDark: 'border-blue-700'    },
+  green:   { bgLight: 'bg-green-50',   bgDark: 'bg-green-900/20',   textLight: 'text-green-600',   textDark: 'text-green-400',   borderLight: 'border-green-200',   borderDark: 'border-green-700'   },
+  orange:  { bgLight: 'bg-orange-50',  bgDark: 'bg-orange-900/20',  textLight: 'text-orange-600',  textDark: 'text-orange-400',  borderLight: 'border-orange-200',  borderDark: 'border-orange-700'  },
+  cyan:    { bgLight: 'bg-cyan-50',    bgDark: 'bg-cyan-900/20',    textLight: 'text-cyan-600',    textDark: 'text-cyan-400',    borderLight: 'border-cyan-200',    borderDark: 'border-cyan-700'    },
+  red:     { bgLight: 'bg-red-50',     bgDark: 'bg-red-900/20',     textLight: 'text-red-600',     textDark: 'text-red-400',     borderLight: 'border-red-200',     borderDark: 'border-red-700'     },
+  pink:    { bgLight: 'bg-pink-50',    bgDark: 'bg-pink-900/20',    textLight: 'text-pink-600',    textDark: 'text-pink-400',    borderLight: 'border-pink-200',    borderDark: 'border-pink-700'    },
+  indigo:  { bgLight: 'bg-indigo-50',  bgDark: 'bg-indigo-900/20',  textLight: 'text-indigo-600',  textDark: 'text-indigo-400',  borderLight: 'border-indigo-200',  borderDark: 'border-indigo-700'  },
+  yellow:  { bgLight: 'bg-yellow-50',  bgDark: 'bg-yellow-900/20',  textLight: 'text-yellow-600',  textDark: 'text-yellow-400',  borderLight: 'border-yellow-200',  borderDark: 'border-yellow-700'  },
+  emerald: { bgLight: 'bg-emerald-50', bgDark: 'bg-emerald-900/20', textLight: 'text-emerald-600', textDark: 'text-emerald-400', borderLight: 'border-emerald-200', borderDark: 'border-emerald-700' },
+  teal:    { bgLight: 'bg-teal-50',    bgDark: 'bg-teal-900/20',    textLight: 'text-teal-600',    textDark: 'text-teal-400',    borderLight: 'border-teal-200',    borderDark: 'border-teal-700'    },
+}
+
+const COLORS_FALLBACK = {
+  bgLight: 'bg-gray-50', bgDark: 'bg-gray-900/20',
+  textLight: 'text-gray-600', textDark: 'text-gray-400',
+  borderLight: 'border-gray-200', borderDark: 'border-gray-700',
+}
+
+/**
+ * Deriva icono + colores desde los campos BD del tipo.
+ * El admin controla `icono` y `color` desde el panel de configuración;
+ * cualquier cambio ahi se refleja aquí sin modificar código.
+ */
+function getVisualConfig(tipo: TipoFuentePagoCatalogo) {
+  const icon = ((tipo.icono && ICON_MAP[tipo.icono]) ?? DollarSign) as React.ComponentType<{ className?: string }>
+  const colors = (tipo.color && COLOR_CLASSES[tipo.color]) ?? COLORS_FALLBACK
+  return { icon, ...colors }
+}
 
 export function ConfigurarFuentesPago({
   negociacionId,
@@ -110,6 +95,8 @@ export function ConfigurarFuentesPago({
   const {
     fuentesPago,
     cargando,
+    cargandoTipos,
+    tiposDisponibles,
     guardando,
     error,
     totales,
@@ -203,40 +190,52 @@ export function ConfigurarFuentesPago({
           Agregar Fuente de Pago
         </h3>
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-4">
-          {(Object.entries(TIPOS_FUENTE) as [FuentePago['tipo'], typeof TIPOS_FUENTE[keyof typeof TIPOS_FUENTE]][]).map(([tipo, config]) => {
-            const Icon = config.icon
-            const yaExiste = fuentesPago.some((f) => f.tipo === tipo)
-            const deshabilitado = yaExiste && !config.permiteMultiples
+          {cargandoTipos ? (
+            <div className="col-span-full flex items-center justify-center gap-2 py-4 text-sm text-gray-500 dark:text-gray-400">
+              <Loader2 className="h-5 w-5 animate-spin" />
+              Cargando fuentes disponibles...
+            </div>
+          ) : tiposDisponibles.length === 0 ? (
+            <div className="col-span-full rounded-xl border-2 border-dashed border-gray-200 p-4 text-center text-sm text-gray-500 dark:border-gray-700 dark:text-gray-400">
+              No hay fuentes de pago configuradas en el sistema.
+            </div>
+          ) : (
+            tiposDisponibles.map((tipo) => {
+              const visual = getVisualConfig(tipo)
+              const Icon = visual.icon
+              const yaExiste = fuentesPago.some((f) => f.tipo === tipo.nombre)
+              const deshabilitado = yaExiste && !tipo.permite_multiples_abonos
 
-            return (
-              <button
-                key={tipo}
-                onClick={() => agregarFuente(tipo, config.permiteMultiples)}
-                disabled={deshabilitado}
-                className={`group relative overflow-hidden rounded-xl border-2 p-4 text-left transition-all ${
-                  deshabilitado
-                    ? 'cursor-not-allowed opacity-50'
-                    : `${config.borderLight} hover:shadow-lg dark:${config.borderDark} hover:scale-[1.02]`
-                }`}
-              >
-                <div className={`${config.bgLight} dark:${config.bgDark} absolute inset-0 opacity-50`} />
-                <div className="relative">
-                  <Icon className={`h-8 w-8 ${config.textLight} dark:${config.textDark} mb-2`} />
-                  <p className={`font-semibold ${config.textLight} dark:${config.textDark}`}>
-                    {config.label}
-                  </p>
-                  <p className="mt-1 text-xs text-gray-600 dark:text-gray-400">
-                    {config.descripcion}
-                  </p>
-                  {deshabilitado && (
-                    <p className="mt-2 text-xs font-medium text-red-600 dark:text-red-400">
-                      Ya agregado
+              return (
+                <button
+                  key={tipo.id}
+                  onClick={() => agregarFuente(tipo.nombre, tipo.permite_multiples_abonos)}
+                  disabled={deshabilitado}
+                  className={`group relative overflow-hidden rounded-xl border-2 p-4 text-left transition-all ${
+                    deshabilitado
+                      ? 'cursor-not-allowed opacity-50'
+                      : `${visual.borderLight} hover:shadow-lg dark:${visual.borderDark} hover:scale-[1.02]`
+                  }`}
+                >
+                  <div className={`${visual.bgLight} dark:${visual.bgDark} absolute inset-0 opacity-50`} />
+                  <div className="relative">
+                    <Icon className={`h-8 w-8 ${visual.textLight} dark:${visual.textDark} mb-2`} />
+                    <p className={`font-semibold ${visual.textLight} dark:${visual.textDark}`}>
+                      {tipo.nombre}
                     </p>
-                  )}
-                </div>
-              </button>
-            )
-          })}
+                    <p className="mt-1 text-xs text-gray-600 dark:text-gray-400">
+                      {tipo.descripcion ?? ''}
+                    </p>
+                    {deshabilitado && (
+                      <p className="mt-2 text-xs font-medium text-red-600 dark:text-red-400">
+                        Ya agregado
+                      </p>
+                    )}
+                  </div>
+                </button>
+              )
+            })
+          )}
         </div>
       </div>
 
@@ -250,8 +249,9 @@ export function ConfigurarFuentesPago({
           <div className="space-y-4">
             <AnimatePresence mode="popLayout">
               {fuentesPago.map((fuente, index) => {
-                const config = TIPOS_FUENTE[fuente.tipo]
-                const Icon = config.icon
+                const tipoConfig = tiposDisponibles.find((t) => t.nombre === fuente.tipo)
+                const visual = tipoConfig ? getVisualConfig(tipoConfig) : { icon: DollarSign, ...COLORS_FALLBACK }
+                const Icon = visual.icon
 
                 return (
                   <motion.div
@@ -259,17 +259,17 @@ export function ConfigurarFuentesPago({
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, x: -100 }}
-                    className={`rounded-xl border-2 ${config.borderLight} dark:${config.borderDark} overflow-hidden bg-white dark:bg-gray-800`}
+                    className={`rounded-xl border-2 ${visual.borderLight} dark:${visual.borderDark} overflow-hidden bg-white dark:bg-gray-800`}
                   >
                     {/* Header de la fuente */}
-                    <div className={`${config.bgLight} dark:${config.bgDark} flex items-center justify-between p-4`}>
+                    <div className={`${visual.bgLight} dark:${visual.bgDark} flex items-center justify-between p-4`}>
                       <div className="flex items-center gap-3">
-                        <Icon className={`h-6 w-6 ${config.textLight} dark:${config.textDark}`} />
+                        <Icon className={`h-6 w-6 ${visual.textLight} dark:${visual.textDark}`} />
                         <div>
-                          <p className={`font-semibold ${config.textLight} dark:${config.textDark}`}>
-                            {config.label}
+                          <p className={`font-semibold ${visual.textLight} dark:${visual.textDark}`}>
+                            {fuente.tipo}
                           </p>
-                          {config.permiteMultiples && (
+                          {tipoConfig?.permite_multiples_abonos && (
                             <p className="text-xs text-gray-600 dark:text-gray-400">
                               Abono #{fuentesPago.filter((f) => f.tipo === fuente.tipo).indexOf(fuente) + 1}
                             </p>
@@ -286,7 +286,9 @@ export function ConfigurarFuentesPago({
 
                     {/* Formulario */}
                     <div className="space-y-4 p-4">
-                      {/* Monto (Cuota Inicial) o Monto Aprobado (otras fuentes) */}
+                      {/* Monto (Cuota Inicial) o Monto Aprobado (otras fuentes)
+                          Para créditos con la constructora: es read-only (calculado por CreditoConstructoraForm) */}
+                      {!tipoConfig?.logica_negocio?.genera_cuotas && (
                       <div>
                         <label className="mb-2 flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
                           <DollarSign className="h-4 w-4 text-purple-500" />
@@ -321,14 +323,23 @@ export function ConfigurarFuentesPago({
                           </p>
                         )}
                       </div>
+                      )}
+
+                      {/* Crédito con la Constructora — form de amortización */}
+                      {tipoConfig?.logica_negocio?.genera_cuotas && (
+                        <CreditoConstructoraForm
+                          parametrosIniciales={fuente.parametrosCredito}
+                          onActualizar={(campo, valor) => actualizarFuente(index, campo, valor)}
+                        />
+                      )}
 
                       {/* Entidad (si se requiere) */}
-                      {config.requiereEntidad && (
+                      {tipoConfig?.requiere_entidad && (
                         <div>
                           <label className="mb-2 flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
                             <Building2 className="h-4 w-4 text-purple-500" />
                             {fuente.tipo === 'Crédito Hipotecario' ? 'Banco' : 'Entidad'}{' '}
-                            {config.requiereEntidad && <span className="text-red-500">*</span>}
+                            {tipoConfig?.requiere_entidad && <span className="text-red-500">*</span>}
                           </label>
                           {fuente.tipo === 'Crédito Hipotecario' ? (
                             <select

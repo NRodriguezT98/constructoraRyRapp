@@ -1,0 +1,94 @@
+/**
+ * Service: Créditos con la Constructora
+ *
+ * CRUD para la tabla creditos_constructora.
+ * Esta tabla almacena los parámetros financieros tipados de cada fuente de crédito.
+ *
+ * Responsabilidades:
+ * - Crear registro al configurar una fuente de tipo "Crédito con la Constructora"
+ * - Obtener crédito por fuente_pago_id
+ * - Actualizar version_actual al reestructurar (atomicamente con cuotas)
+ */
+
+import { supabase } from '@/lib/supabase/client';
+
+import type { CrearCreditoDTO, CreditoConstructora } from '../types';
+
+// ============================================================
+// OBTENER
+// ============================================================
+
+/**
+ * Obtiene el crédito asociado a una fuente de pago.
+ * Retorna null si la fuente no es de tipo crédito.
+ */
+export async function getCreditoByFuente(
+  fuentePagoId: string
+): Promise<{ data: CreditoConstructora | null; error: Error | null }> {
+  const { data, error } = await supabase
+    .from('creditos_constructora')
+    .select('*')
+    .eq('fuente_pago_id', fuentePagoId)
+    .maybeSingle()
+
+  return {
+    data: data as CreditoConstructora | null,
+    error: error ? new Error(error.message) : null,
+  }
+}
+
+// ============================================================
+// CREAR
+// ============================================================
+
+/**
+ * Crea el registro de crédito.
+ * Debe llamarse DESPUÉS de crear la fuente en fuentes_pago para tener el ID.
+ * En el flujo normal es parte de la transacción de guardar la fuente completa.
+ */
+export async function crearCredito(
+  dto: CrearCreditoDTO
+): Promise<{ data: CreditoConstructora | null; error: Error | null }> {
+  const { data, error } = await supabase
+    .from('creditos_constructora')
+    .insert({
+      fuente_pago_id: dto.fuente_pago_id,
+      capital: dto.capital,
+      tasa_mensual: dto.tasa_mensual,
+      num_cuotas: dto.num_cuotas,
+      fecha_inicio: dto.fecha_inicio,
+      valor_cuota: dto.valor_cuota,
+      interes_total: dto.interes_total,
+      monto_total: dto.monto_total,
+      tasa_mora_diaria: dto.tasa_mora_diaria,
+    })
+    .select()
+    .single()
+
+  return {
+    data: data as CreditoConstructora | null,
+    error: error ? new Error(error.message) : null,
+  }
+}
+
+// ============================================================
+// ACTUALIZAR
+// ============================================================
+
+/**
+ * Actualiza version_actual al reestructurar el crédito.
+ * Se llama DESPUÉS de crear las cuotas nueva versión.
+ * El trigger sync_version_credito en cuotas_credito también actualiza version_actual,
+ * por lo que este método es redundante — se mantiene para claridad de intención.
+ */
+export async function actualizarVersionCredito(
+  creditoId: string,
+  nuevaVersion: number
+): Promise<{ error: Error | null }> {
+  const { error } = await supabase
+    .from('creditos_constructora')
+    .update({ version_actual: nuevaVersion })
+    .eq('id', creditoId)
+
+  return { error: error ? new Error(error.message) : null }
+}

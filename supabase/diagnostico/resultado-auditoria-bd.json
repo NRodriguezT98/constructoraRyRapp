@@ -1,0 +1,793 @@
+{
+  "triggers": [
+    {
+      "trigger_name": "trigger_actualizar_monto_recibido",
+      "tabla": "abonos_historial",
+      "eventos": "DELETE/INSERT/UPDATE",
+      "momento": "AFTER",
+      "estado": "HABILITADO"
+    },
+    {
+      "trigger_name": "trigger_update_abonos_historial_fecha_actualizacion",
+      "tabla": "abonos_historial",
+      "eventos": "UPDATE",
+      "momento": "BEFORE",
+      "estado": "HABILITADO"
+    },
+    {
+      "trigger_name": "trigger_validar_abono_no_excede_saldo",
+      "tabla": "abonos_historial",
+      "eventos": "INSERT/UPDATE",
+      "momento": "BEFORE",
+      "estado": "HABILITADO"
+    },
+    {
+      "trigger_name": "trigger_proteger_categoria_sistema",
+      "tabla": "categorias_documento",
+      "eventos": "DELETE/UPDATE",
+      "momento": "BEFORE",
+      "estado": "HABILITADO"
+    },
+    {
+      "trigger_name": "trigger_proteger_categorias_sistema",
+      "tabla": "categorias_documento",
+      "eventos": "DELETE",
+      "momento": "BEFORE",
+      "estado": "HABILITADO"
+    },
+    {
+      "trigger_name": "update_cliente_intereses_fecha_actualizacion",
+      "tabla": "cliente_intereses",
+      "eventos": "UPDATE",
+      "momento": "BEFORE",
+      "estado": "HABILITADO"
+    },
+    {
+      "trigger_name": "update_configuracion_recargos_fecha_actualizacion",
+      "tabla": "configuracion_recargos",
+      "eventos": "UPDATE",
+      "momento": "BEFORE",
+      "estado": "HABILITADO"
+    },
+    {
+      "trigger_name": "trigger_calcular_porcentaje",
+      "tabla": "descuentos_negociacion",
+      "eventos": "INSERT/UPDATE",
+      "momento": "BEFORE",
+      "estado": "HABILITADO"
+    },
+    {
+      "trigger_name": "update_documentos_cliente_fecha_actualizacion",
+      "tabla": "documentos_cliente",
+      "eventos": "UPDATE",
+      "momento": "BEFORE",
+      "estado": "HABILITADO"
+    },
+    {
+      "trigger_name": "update_documentos_fecha_actualizacion",
+      "tabla": "documentos_proyecto",
+      "eventos": "UPDATE",
+      "momento": "BEFORE",
+      "estado": "HABILITADO"
+    },
+    {
+      "trigger_name": "trigger_documentos_vivienda_updated_at",
+      "tabla": "documentos_vivienda",
+      "eventos": "UPDATE",
+      "momento": "BEFORE",
+      "estado": "HABILITADO"
+    },
+    {
+      "trigger_name": "entidades_financieras_updated_at",
+      "tabla": "entidades_financieras",
+      "eventos": "UPDATE",
+      "momento": "BEFORE",
+      "estado": "HABILITADO"
+    },
+    {
+      "trigger_name": "fuentes_pago_sync_entidad",
+      "tabla": "fuentes_pago",
+      "eventos": "INSERT/UPDATE",
+      "momento": "BEFORE",
+      "estado": "HABILITADO"
+    },
+    {
+      "trigger_name": "trg_invalidar_carta_por_cambio",
+      "tabla": "fuentes_pago",
+      "eventos": "UPDATE",
+      "momento": "BEFORE",
+      "estado": "HABILITADO"
+    },
+    {
+      "trigger_name": "trigger_autoconfigurar_requisitos",
+      "tabla": "fuentes_pago",
+      "eventos": "INSERT",
+      "momento": "AFTER",
+      "estado": "HABILITADO"
+    },
+    {
+      "trigger_name": "trigger_fuente_inactivada",
+      "tabla": "fuentes_pago",
+      "eventos": "UPDATE",
+      "momento": "AFTER",
+      "estado": "HABILITADO"
+    },
+    {
+      "trigger_name": "trigger_prevent_delete_fuente_con_dinero",
+      "tabla": "fuentes_pago",
+      "eventos": "DELETE",
+      "momento": "BEFORE",
+      "estado": "HABILITADO"
+    },
+    {
+      "trigger_name": "trigger_sincronizar_estado_fuente",
+      "tabla": "fuentes_pago",
+      "eventos": "INSERT/UPDATE",
+      "momento": "BEFORE",
+      "estado": "HABILITADO"
+    },
+    {
+      "trigger_name": "trigger_update_negociaciones_totales_delete",
+      "tabla": "fuentes_pago",
+      "eventos": "DELETE",
+      "momento": "AFTER",
+      "estado": "HABILITADO"
+    },
+    {
+      "trigger_name": "trigger_update_negociaciones_totales_insert",
+      "tabla": "fuentes_pago",
+      "eventos": "INSERT",
+      "momento": "AFTER",
+      "estado": "HABILITADO"
+    },
+    {
+      "trigger_name": "trigger_update_negociaciones_totales_update",
+      "tabla": "fuentes_pago",
+      "eventos": "UPDATE",
+      "momento": "AFTER",
+      "estado": "HABILITADO"
+    },
+    {
+      "trigger_name": "trigger_calcular_porcentaje_descuento",
+      "tabla": "negociaciones",
+      "eventos": "INSERT/UPDATE",
+      "momento": "BEFORE",
+      "estado": "HABILITADO"
+    },
+    {
+      "trigger_name": "trigger_crear_version_inicial_negociacion",
+      "tabla": "negociaciones",
+      "eventos": "INSERT",
+      "momento": "AFTER",
+      "estado": "HABILITADO"
+    },
+    {
+      "trigger_name": "trigger_init_version_negociacion",
+      "tabla": "negociaciones",
+      "eventos": "INSERT",
+      "momento": "BEFORE",
+      "estado": "HABILITADO"
+    },
+    {
+      "trigger_name": "trigger_snapshot_negociacion",
+      "tabla": "negociaciones",
+      "eventos": "UPDATE",
+      "momento": "BEFORE",
+      "estado": "HABILITADO"
+    },
+    {
+      "trigger_name": "trigger_update_cliente_estado_on_negociacion",
+      "tabla": "negociaciones",
+      "eventos": "INSERT/UPDATE",
+      "momento": "AFTER",
+      "estado": "HABILITADO"
+    },
+    {
+      "trigger_name": "trigger_update_negociaciones_fecha_actualizacion",
+      "tabla": "negociaciones",
+      "eventos": "UPDATE",
+      "momento": "BEFORE",
+      "estado": "HABILITADO"
+    },
+    {
+      "trigger_name": "trigger_validar_motivo_descuento",
+      "tabla": "negociaciones",
+      "eventos": "INSERT/UPDATE",
+      "momento": "BEFORE",
+      "estado": "HABILITADO"
+    },
+    {
+      "trigger_name": "trigger_version_lock",
+      "tabla": "negociaciones",
+      "eventos": "UPDATE",
+      "momento": "BEFORE",
+      "estado": "HABILITADO"
+    },
+    {
+      "trigger_name": "trigger_actualizar_fecha_nota",
+      "tabla": "notas_historial_cliente",
+      "eventos": "UPDATE",
+      "momento": "BEFORE",
+      "estado": "HABILITADO"
+    },
+    {
+      "trigger_name": "trigger_actualizar_timestamp_permisos",
+      "tabla": "permisos_rol",
+      "eventos": "UPDATE",
+      "momento": "BEFORE",
+      "estado": "HABILITADO"
+    },
+    {
+      "trigger_name": "update_proyectos_fecha_actualizacion",
+      "tabla": "proyectos",
+      "eventos": "UPDATE",
+      "momento": "BEFORE",
+      "estado": "HABILITADO"
+    },
+    {
+      "trigger_name": "trigger_calcular_monto_devolver",
+      "tabla": "renuncias",
+      "eventos": "INSERT",
+      "momento": "BEFORE",
+      "estado": "HABILITADO"
+    },
+    {
+      "trigger_name": "update_renuncias_fecha_actualizacion",
+      "tabla": "renuncias",
+      "eventos": "UPDATE",
+      "momento": "BEFORE",
+      "estado": "HABILITADO"
+    },
+    {
+      "trigger_name": "after_delete_requisito",
+      "tabla": "requisitos_fuentes_pago_config",
+      "eventos": "DELETE",
+      "momento": "AFTER",
+      "estado": "HABILITADO"
+    },
+    {
+      "trigger_name": "after_insert_requisito",
+      "tabla": "requisitos_fuentes_pago_config",
+      "eventos": "INSERT",
+      "momento": "AFTER",
+      "estado": "HABILITADO"
+    },
+    {
+      "trigger_name": "after_update_requisito",
+      "tabla": "requisitos_fuentes_pago_config",
+      "eventos": "UPDATE",
+      "momento": "AFTER",
+      "estado": "HABILITADO"
+    },
+    {
+      "trigger_name": "trg_actualizar_fecha_requisitos",
+      "tabla": "requisitos_fuentes_pago_config",
+      "eventos": "UPDATE",
+      "momento": "BEFORE",
+      "estado": "HABILITADO"
+    },
+    {
+      "trigger_name": "trigger_validar_categoria_documento",
+      "tabla": "requisitos_fuentes_pago_config",
+      "eventos": "INSERT/UPDATE",
+      "momento": "BEFORE",
+      "estado": "HABILITADO"
+    },
+    {
+      "trigger_name": "tipos_fuentes_pago_updated_at",
+      "tabla": "tipos_fuentes_pago",
+      "eventos": "UPDATE",
+      "momento": "BEFORE",
+      "estado": "HABILITADO"
+    },
+    {
+      "trigger_name": "trigger_validar_configuracion_campos",
+      "tabla": "tipos_fuentes_pago",
+      "eventos": "INSERT/UPDATE",
+      "momento": "BEFORE",
+      "estado": "HABILITADO"
+    },
+    {
+      "trigger_name": "trigger_update_usuarios_fecha_actualizacion",
+      "tabla": "usuarios",
+      "eventos": "UPDATE",
+      "momento": "BEFORE",
+      "estado": "HABILITADO"
+    },
+    {
+      "trigger_name": "trigger_actualizar_estado_vivienda",
+      "tabla": "viviendas",
+      "eventos": "UPDATE",
+      "momento": "BEFORE",
+      "estado": "HABILITADO"
+    },
+    {
+      "trigger_name": "update_viviendas_fecha_actualizacion",
+      "tabla": "viviendas",
+      "eventos": "UPDATE",
+      "momento": "BEFORE",
+      "estado": "HABILITADO"
+    }
+  ],
+  "funciones": [
+    {
+      "funcion": "actualizar_estado_documentacion_fuente",
+      "argumentos": "",
+      "security_definer": false
+    },
+    {
+      "funcion": "actualizar_estado_vivienda",
+      "argumentos": "",
+      "security_definer": false
+    },
+    {
+      "funcion": "actualizar_fecha_actualizacion_requisitos",
+      "argumentos": "",
+      "security_definer": false
+    },
+    {
+      "funcion": "actualizar_fecha_nota_historial",
+      "argumentos": "",
+      "security_definer": false
+    },
+    {
+      "funcion": "actualizar_monto_recibido_fuente",
+      "argumentos": "",
+      "security_definer": false
+    },
+    {
+      "funcion": "actualizar_timestamp_permisos",
+      "argumentos": "",
+      "security_definer": false
+    },
+    {
+      "funcion": "autoconfigurar_requisitos_tipo_fuente",
+      "argumentos": "",
+      "security_definer": false
+    },
+    {
+      "funcion": "calcular_cambios_json",
+      "argumentos": "datos_antes jsonb, datos_despues jsonb",
+      "security_definer": false
+    },
+    {
+      "funcion": "calcular_monto_devolver",
+      "argumentos": "",
+      "security_definer": false
+    },
+    {
+      "funcion": "calcular_nivel_riesgo_matricula",
+      "argumentos": "p_vivienda_id uuid, p_tiene_negociaciones boolean, p_tiene_abonos boolean, p_negociacion_firmada boolean",
+      "security_definer": false
+    },
+    {
+      "funcion": "calcular_porcentaje_descuento",
+      "argumentos": "",
+      "security_definer": false
+    },
+    {
+      "funcion": "categoria_aplica_a_modulo",
+      "argumentos": "p_categoria_id uuid, p_modulo text",
+      "security_definer": true
+    },
+    {
+      "funcion": "clonar_configuracion_requisitos",
+      "argumentos": "p_tipo_fuente_origen text, p_tipo_fuente_destino text",
+      "security_definer": false
+    },
+    {
+      "funcion": "compactar_orden_requisitos",
+      "argumentos": "p_tipo_fuente text",
+      "security_definer": false
+    },
+    {
+      "funcion": "compactar_todas_las_fuentes",
+      "argumentos": "",
+      "security_definer": false
+    },
+    {
+      "funcion": "convertir_interes_a_negociacion",
+      "argumentos": "p_interes_id uuid, p_valor_negociado numeric, p_descuento numeric",
+      "security_definer": false
+    },
+    {
+      "funcion": "crear_categorias_clientes_default",
+      "argumentos": "p_user_id uuid",
+      "security_definer": false
+    },
+    {
+      "funcion": "crear_categorias_proyectos_default",
+      "argumentos": "p_user_id uuid",
+      "security_definer": false
+    },
+    {
+      "funcion": "crear_categorias_viviendas_default",
+      "argumentos": "p_user_id uuid",
+      "security_definer": false
+    },
+    {
+      "funcion": "crear_documento_pendiente_si_falta_carta",
+      "argumentos": "",
+      "security_definer": false
+    },
+    {
+      "funcion": "crear_documentos_pendientes_fuente_completos",
+      "argumentos": "",
+      "security_definer": false
+    },
+    {
+      "funcion": "crear_nueva_version_negociacion",
+      "argumentos": "p_negociacion_id uuid, p_valor_vivienda numeric, p_descuento_aplicado numeric, p_valor_total numeric, p_fuentes_pago jsonb, p_motivo_cambio text, p_tipo_cambio character varying",
+      "security_definer": true
+    },
+    {
+      "funcion": "crear_nueva_version_negociacion",
+      "argumentos": "",
+      "security_definer": false
+    },
+    {
+      "funcion": "crear_snapshot_negociacion",
+      "argumentos": "",
+      "security_definer": false
+    },
+    {
+      "funcion": "crear_snapshot_por_cambio_fuente",
+      "argumentos": "",
+      "security_definer": true
+    },
+    {
+      "funcion": "crear_version_inicial_negociacion",
+      "argumentos": "",
+      "security_definer": true
+    },
+    {
+      "funcion": "custom_access_token_hook",
+      "argumentos": "event jsonb",
+      "security_definer": true
+    },
+    {
+      "funcion": "desvincular_documento_de_paso",
+      "argumentos": "",
+      "security_definer": true
+    },
+    {
+      "funcion": "detectar_eliminaciones_masivas",
+      "argumentos": "p_dias integer, p_umbral integer",
+      "security_definer": true
+    },
+    {
+      "funcion": "es_admin",
+      "argumentos": "p_user_id uuid",
+      "security_definer": true
+    },
+    {
+      "funcion": "exec_sql",
+      "argumentos": "sql_query text",
+      "security_definer": true
+    },
+    {
+      "funcion": "fn_invalidar_carta_por_cambio",
+      "argumentos": "",
+      "security_definer": false
+    },
+    {
+      "funcion": "get_entidades_por_tipo_fuente",
+      "argumentos": "p_tipo_fuente_id uuid, p_solo_activas boolean",
+      "security_definer": false
+    },
+    {
+      "funcion": "get_valor_total_original",
+      "argumentos": "negociacion_id uuid",
+      "security_definer": false
+    },
+    {
+      "funcion": "handle_fuente_inactivada",
+      "argumentos": "",
+      "security_definer": true
+    },
+    {
+      "funcion": "handle_new_user",
+      "argumentos": "",
+      "security_definer": true
+    },
+    {
+      "funcion": "inactivar_fuentes_pago_batch",
+      "argumentos": "p_fuente_ids uuid[], p_razon text",
+      "security_definer": true
+    },
+    {
+      "funcion": "incrementar_version_lock",
+      "argumentos": "",
+      "security_definer": false
+    },
+    {
+      "funcion": "is_admin",
+      "argumentos": "",
+      "security_definer": true
+    },
+    {
+      "funcion": "limpiar_logs_antiguos",
+      "argumentos": "dias_retencion integer",
+      "security_definer": true
+    },
+    {
+      "funcion": "limpiar_pendientes_fuente_eliminada",
+      "argumentos": "",
+      "security_definer": false
+    },
+    {
+      "funcion": "limpiar_pendientes_fuente_inactiva",
+      "argumentos": "",
+      "security_definer": false
+    },
+    {
+      "funcion": "marcar_interes_convertido",
+      "argumentos": "p_cliente_id uuid, p_vivienda_id uuid",
+      "security_definer": false
+    },
+    {
+      "funcion": "obtener_actividad_usuario",
+      "argumentos": "p_usuario_id uuid, p_dias integer, p_limit integer",
+      "security_definer": true
+    },
+    {
+      "funcion": "obtener_categoria_sistema_vivienda",
+      "argumentos": "p_nombre_categoria text",
+      "security_definer": false
+    },
+    {
+      "funcion": "obtener_estado_documentacion_fuente",
+      "argumentos": "p_fuente_pago_id uuid",
+      "security_definer": false
+    },
+    {
+      "funcion": "obtener_historial_negociacion",
+      "argumentos": "p_negociacion_id uuid",
+      "security_definer": false
+    },
+    {
+      "funcion": "obtener_historial_registro",
+      "argumentos": "p_tabla character varying, p_registro_id uuid, p_limit integer",
+      "security_definer": true
+    },
+    {
+      "funcion": "obtener_requisitos_con_orden_visual",
+      "argumentos": "p_tipo_fuente text, p_codigo_fuente text",
+      "security_definer": false
+    },
+    {
+      "funcion": "obtener_requisitos_fuente",
+      "argumentos": "p_tipo_fuente text",
+      "security_definer": true
+    },
+    {
+      "funcion": "obtener_resumen_seguridad",
+      "argumentos": "p_usuario_email character varying",
+      "security_definer": true
+    },
+    {
+      "funcion": "obtener_siguiente_numero_vivienda",
+      "argumentos": "p_manzana_id uuid",
+      "security_definer": false
+    },
+    {
+      "funcion": "obtener_snapshot_abonos",
+      "argumentos": "p_negociacion_id uuid",
+      "security_definer": false
+    },
+    {
+      "funcion": "obtener_tipo_documento_normalizado",
+      "argumentos": "input_type text",
+      "security_definer": false
+    },
+    {
+      "funcion": "obtener_tipo_documento_sistema",
+      "argumentos": "input_type text",
+      "security_definer": false
+    },
+    {
+      "funcion": "obtener_tipos_fuente_dinamicos",
+      "argumentos": "",
+      "security_definer": false
+    },
+    {
+      "funcion": "obtener_viviendas_disponibles_manzana",
+      "argumentos": "p_manzana_id uuid",
+      "security_definer": false
+    },
+    {
+      "funcion": "prevenir_eliminacion_categoria_sistema",
+      "argumentos": "",
+      "security_definer": false
+    },
+    {
+      "funcion": "prevent_delete_fuente_con_dinero",
+      "argumentos": "",
+      "security_definer": false
+    },
+    {
+      "funcion": "proteger_categorias_sistema",
+      "argumentos": "",
+      "security_definer": false
+    },
+    {
+      "funcion": "regenerar_pendientes_fuente",
+      "argumentos": "p_fuente_id uuid",
+      "security_definer": false
+    },
+    {
+      "funcion": "registrar_interes_inicial",
+      "argumentos": "p_cliente_id uuid, p_proyecto_id uuid, p_vivienda_id uuid, p_notas text",
+      "security_definer": false
+    },
+    {
+      "funcion": "sincronizar_estado_fuente_pago",
+      "argumentos": "",
+      "security_definer": false
+    },
+    {
+      "funcion": "sync_entidad_from_fk",
+      "argumentos": "",
+      "security_definer": false
+    },
+    {
+      "funcion": "tiene_permiso",
+      "argumentos": "p_usuario_id uuid, p_modulo text, p_accion text",
+      "security_definer": true
+    },
+    {
+      "funcion": "tiene_rol",
+      "argumentos": "p_user_id uuid, p_roles rol_usuario[]",
+      "security_definer": true
+    },
+    {
+      "funcion": "tipos_fuente_sin_configuracion",
+      "argumentos": "",
+      "security_definer": false
+    },
+    {
+      "funcion": "trigger_compactar_despues_delete",
+      "argumentos": "",
+      "security_definer": false
+    },
+    {
+      "funcion": "trigger_compactar_despues_insert",
+      "argumentos": "",
+      "security_definer": false
+    },
+    {
+      "funcion": "trigger_compactar_despues_update",
+      "argumentos": "",
+      "security_definer": false
+    },
+    {
+      "funcion": "update_abonos_historial_fecha_actualizacion",
+      "argumentos": "",
+      "security_definer": false
+    },
+    {
+      "funcion": "update_cliente_estado_on_negociacion",
+      "argumentos": "",
+      "security_definer": false
+    },
+    {
+      "funcion": "update_documentos_vivienda_updated_at",
+      "argumentos": "",
+      "security_definer": false
+    },
+    {
+      "funcion": "update_entidades_financieras_updated_at",
+      "argumentos": "",
+      "security_definer": false
+    },
+    {
+      "funcion": "update_negociaciones_fecha_actualizacion",
+      "argumentos": "",
+      "security_definer": false
+    },
+    {
+      "funcion": "update_negociaciones_totales",
+      "argumentos": "",
+      "security_definer": false
+    },
+    {
+      "funcion": "update_tipos_fuentes_pago_updated_at",
+      "argumentos": "",
+      "security_definer": false
+    },
+    {
+      "funcion": "update_updated_at_column",
+      "argumentos": "",
+      "security_definer": false
+    },
+    {
+      "funcion": "update_usuarios_fecha_actualizacion",
+      "argumentos": "",
+      "security_definer": false
+    },
+    {
+      "funcion": "validar_abono_no_excede_saldo",
+      "argumentos": "",
+      "security_definer": false
+    },
+    {
+      "funcion": "validar_cancelacion_renuncia",
+      "argumentos": "p_renuncia_id uuid",
+      "security_definer": false
+    },
+    {
+      "funcion": "validar_categoria_documento",
+      "argumentos": "",
+      "security_definer": false
+    },
+    {
+      "funcion": "validar_categoria_documento_paso",
+      "argumentos": "",
+      "security_definer": false
+    },
+    {
+      "funcion": "validar_configuracion_campos",
+      "argumentos": "",
+      "security_definer": false
+    },
+    {
+      "funcion": "validar_motivo_descuento",
+      "argumentos": "",
+      "security_definer": false
+    },
+    {
+      "funcion": "validar_password_admin",
+      "argumentos": "p_user_id uuid, p_password text",
+      "security_definer": true
+    },
+    {
+      "funcion": "verificar_categorias_clientes",
+      "argumentos": "",
+      "security_definer": true
+    },
+    {
+      "funcion": "verificar_categorias_proyectos",
+      "argumentos": "",
+      "security_definer": true
+    },
+    {
+      "funcion": "verificar_categorias_sistema",
+      "argumentos": "",
+      "security_definer": true
+    },
+    {
+      "funcion": "verificar_categorias_viviendas",
+      "argumentos": "",
+      "security_definer": true
+    },
+    {
+      "funcion": "vincular_documento_a_paso_fuente",
+      "argumentos": "",
+      "security_definer": true
+    },
+    {
+      "funcion": "vincular_documento_subido_a_pendiente_mejorado",
+      "argumentos": "",
+      "security_definer": false
+    }
+  ],
+  "vistas": [
+    "fuentes_pago_con_entidad",
+    "intereses_completos",
+    "negociaciones_con_version_actual",
+    "v_auditoria_por_modulo",
+    "v_negociaciones_completas",
+    "v_reemplazos_admin",
+    "v_renuncias_pendientes",
+    "vista_abonos_completos",
+    "vista_clientes_resumen",
+    "vista_descuentos_aplicados",
+    "vista_documentos_pendientes_fuentes",
+    "vista_documentos_vivienda",
+    "vista_entidades_con_fuentes",
+    "vista_manzanas_disponibilidad",
+    "vista_requisitos_con_orden_visual",
+    "vista_usuarios_completos",
+    "vista_viviendas_completas"
+  ]
+}

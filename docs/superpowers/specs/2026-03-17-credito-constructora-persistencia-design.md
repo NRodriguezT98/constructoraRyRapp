@@ -1,7 +1,7 @@
 # Spec: Persistencia del Crédito con la Constructora al Asignar Vivienda
 
-**Fecha:** 2026-03-17  
-**Estado:** Aprobado por usuario  
+**Fecha:** 2026-03-17
+**Estado:** Aprobado por usuario
 **Módulos afectados:** `negociaciones.service.ts`, `useAsignarViviendaV2.ts`, `SeccionRevision.tsx`
 
 ---

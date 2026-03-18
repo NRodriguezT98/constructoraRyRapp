@@ -1,6 +1,6 @@
 /**
  * Hook para gestionar historial de versiones de negociaciones
- * âœ… ACTUALIZADO: Usa tabla negociaciones_historial (nuevo sistema)
+ * ✅ ACTUALIZADO: Usa tabla negociaciones_historial (nuevo sistema)
  */
 
 import { supabase } from '@/lib/supabase/client'
@@ -40,7 +40,7 @@ export function useHistorialVersiones(negociacionId: string) {
         .order('version', { ascending: false })
 
       if (error) {
-        console.error('âŒ [useHistorialVersiones] Error:', error)
+        console.error('❌ [useHistorialVersiones] Error:', error)
         throw error
       }
 

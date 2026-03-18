@@ -3,11 +3,11 @@
  * SERVICE: PDF Preview con React-PDF (PREMIUM)
  * ============================================
  *
- * âœ… Diseño moderno y profesional
- * âœ… Componentes React declarativos
- * âœ… Estilos consistentes con la aplicación
- * âœ… Logo de alta calidad
- * âœ… Marca de agua elegante
+ * ✅ Diseño moderno y profesional
+ * ✅ Componentes React declarativos
+ * ✅ Estilos consistentes con la aplicación
+ * ✅ Logo de alta calidad
+ * ✅ Marca de agua elegante
  *
  * @version 2.0.0 - 2025-12-02 (React-PDF Premium)
  */
@@ -50,7 +50,7 @@ export interface DatosPreviewPDF {
 }
 
 // ============================================
-// CONFIGURACIÃ“N DE FUENTES (OPCIONAL)
+// CONFIGURACIÓN DE FUENTES (OPCIONAL)
 // ============================================
 
 // Si tienes fuentes custom, registrarlas aquí:
@@ -334,11 +334,11 @@ const PDFHeader = ({ cliente }: { cliente: DatosPreviewPDF['cliente'] }) => (
       />
 
       <View style={styles.borradorBadge}>
-        <Text style={styles.borradorText}>âš ï¸ BORRADOR - NO VÁLIDO âš ï¸</Text>
+        <Text style={styles.borradorText}>⚠️ BORRADOR - NO VÁLIDO ⚠️</Text>
       </View>
     </View>
 
-    <Text style={styles.title}>PREVIEW - NEGOCIACIÃ“N</Text>
+    <Text style={styles.title}>PREVIEW - NEGOCIACIÓN</Text>
     <Text style={styles.subtitle}>
       Generado: {new Date().toLocaleDateString('es-CO', {
         day: 'numeric',
@@ -357,7 +357,7 @@ const PDFHeader = ({ cliente }: { cliente: DatosPreviewPDF['cliente'] }) => (
 const SeccionCliente = ({ cliente }: { cliente: DatosPreviewPDF['cliente'] }) => (
   <View style={styles.section}>
     <View style={styles.sectionHeader}>
-      <Text style={styles.sectionTitle}>â€¢ DATOS DEL CLIENTE</Text>
+      <Text style={styles.sectionTitle}>• DATOS DEL CLIENTE</Text>
     </View>
     <View style={styles.card}>
       <View style={styles.dataRow}>
@@ -382,7 +382,7 @@ const SeccionCliente = ({ cliente }: { cliente: DatosPreviewPDF['cliente'] }) =>
 const SeccionVivienda = ({ vivienda }: { vivienda: DatosPreviewPDF['vivienda'] }) => (
   <View style={styles.section}>
     <View style={styles.sectionHeader}>
-      <Text style={styles.sectionTitle}>â€¢ DETALLES DE LA VIVIENDA</Text>
+      <Text style={styles.sectionTitle}>• DETALLES DE LA VIVIENDA</Text>
     </View>
     <View style={styles.card}>
       <View style={styles.dataRow}>
@@ -406,7 +406,7 @@ const SeccionVivienda = ({ vivienda }: { vivienda: DatosPreviewPDF['vivienda'] }
 const SeccionFinanciera = ({ datos }: { datos: DatosPreviewPDF }) => (
   <View style={styles.section}>
     <View style={styles.sectionHeader}>
-      <Text style={styles.sectionTitle}>â€¢ RESUMEN FINANCIERO</Text>
+      <Text style={styles.sectionTitle}>• RESUMEN FINANCIERO</Text>
     </View>
 
     <View style={styles.summaryBox}>
@@ -436,7 +436,7 @@ const SeccionFinanciera = ({ datos }: { datos: DatosPreviewPDF }) => (
 const SeccionFuentesPago = ({ fuentes }: { fuentes: DatosPreviewPDF['fuentesPago'] }) => (
   <View style={styles.section}>
     <View style={styles.sectionHeader}>
-      <Text style={styles.sectionTitle}>â€¢ FUENTES DE PAGO</Text>
+      <Text style={styles.sectionTitle}>• FUENTES DE PAGO</Text>
     </View>
 
     {fuentes.length === 0 ? (
@@ -486,7 +486,7 @@ const SeccionNotas = ({ notas }: { notas?: string }) => {
   return (
     <View style={styles.section}>
       <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>â€¢ NOTAS Y OBSERVACIONES</Text>
+        <Text style={styles.sectionTitle}>• NOTAS Y OBSERVACIONES</Text>
       </View>
       <View style={styles.notasBox}>
         <Text style={styles.notasTitle}>Información Adicional:</Text>
@@ -534,7 +534,7 @@ const PDFPreviewDocument = ({ datos }: { datos: DatosPreviewPDF }) => (
 )
 
 // ============================================
-// FUNCIÃ“N PRINCIPAL DE EXPORTACIÃ“N
+// FUNCIÓN PRINCIPAL DE EXPORTACIÓN
 // ============================================
 
 /**
@@ -563,7 +563,7 @@ export async function generarPDFPreview(datos: DatosPreviewPDF): Promise<void> {
     URL.revokeObjectURL(url)
 
   } catch (error) {
-    console.error('âŒ [PDF] Error al generar preview:', error)
+    console.error('❌ [PDF] Error al generar preview:', error)
     throw error
   }
 }

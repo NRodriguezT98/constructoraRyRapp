@@ -48,7 +48,7 @@ interface ViviendasPageMainProps {
  * Orquesta todos los componentes hijos
  * Lógica delegada a useViviendasList
  *
- * âœ… PROTEGIDA POR MIDDLEWARE
+ * ✅ PROTEGIDA POR MIDDLEWARE
  * - Recibe permisos como props desde Server Component
  * - No necesita validar autenticación (ya validada)
  * - Solo maneja UI y lógica de negocio
@@ -240,7 +240,7 @@ export function ViviendasPageMain({
           {viviendaEliminando?.matricula_inmobiliaria && (
             <div className={styles.deleteModal.warning}>
               <p className={styles.deleteModal.warningText}>
-                âš ï¸ Matrícula:{' '}
+                ⚠️ Matrícula:{' '}
                 <strong>{viviendaEliminando.matricula_inmobiliaria}</strong>
               </p>
             </div>

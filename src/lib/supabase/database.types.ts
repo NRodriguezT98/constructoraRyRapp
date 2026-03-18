@@ -2888,8 +2888,141 @@ export type Database = {
           },
         ]
       }
+      creditos_constructora: {
+        Row: {
+          id: string
+          fuente_pago_id: string
+          capital: number
+          tasa_mensual: number
+          num_cuotas: number
+          fecha_inicio: string
+          valor_cuota: number
+          interes_total: number
+          monto_total: number
+          tasa_mora_diaria: number
+          version_actual: number
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          fuente_pago_id: string
+          capital: number
+          tasa_mensual: number
+          num_cuotas: number
+          fecha_inicio: string
+          valor_cuota: number
+          interes_total: number
+          monto_total: number
+          tasa_mora_diaria?: number
+          version_actual?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          fuente_pago_id?: string
+          capital?: number
+          tasa_mensual?: number
+          num_cuotas?: number
+          fecha_inicio?: string
+          valor_cuota?: number
+          interes_total?: number
+          monto_total?: number
+          tasa_mora_diaria?: number
+          version_actual?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "creditos_constructora_fuente_pago_id_fkey"
+            columns: ["fuente_pago_id"]
+            isOneToOne: true
+            referencedRelation: "fuentes_pago"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cuotas_credito: {
+        Row: {
+          id: string
+          fuente_pago_id: string
+          numero_cuota: number
+          fecha_vencimiento: string
+          valor_cuota: number
+          mora_aplicada: number
+          total_a_cobrar: number
+          estado: string
+          fecha_pago: string | null
+          version_plan: number
+          notas: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          fuente_pago_id: string
+          numero_cuota: number
+          fecha_vencimiento: string
+          valor_cuota: number
+          mora_aplicada?: number
+          total_a_cobrar?: number
+          estado?: string
+          fecha_pago?: string | null
+          version_plan?: number
+          notas?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          fuente_pago_id?: string
+          numero_cuota?: number
+          fecha_vencimiento?: string
+          valor_cuota?: number
+          mora_aplicada?: number
+          total_a_cobrar?: number
+          estado?: string
+          fecha_pago?: string | null
+          version_plan?: number
+          notas?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cuotas_credito_fuente_pago_id_fkey"
+            columns: ["fuente_pago_id"]
+            isOneToOne: false
+            referencedRelation: "fuentes_pago"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
+      vista_cuotas_vigentes: {
+        Row: {
+          id: string | null
+          fuente_pago_id: string | null
+          numero_cuota: number | null
+          fecha_vencimiento: string | null
+          valor_cuota: number | null
+          mora_aplicada: number | null
+          total_a_cobrar: number | null
+          estado: string | null
+          fecha_pago: string | null
+          version_plan: number | null
+          notas: string | null
+          created_at: string | null
+          updated_at: string | null
+          estado_efectivo: string | null
+          esta_vencida: boolean | null
+          dias_mora: number | null
+        }
+        Relationships: []
+      }
       fuentes_pago_con_entidad: {
         Row: {
           carta_asignacion_url: string | null

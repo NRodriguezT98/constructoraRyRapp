@@ -15,7 +15,7 @@ interface RenunciasContentProps {
 }
 
 /**
- * âœ… PROTEGIDO POR MIDDLEWARE
+ * ✅ PROTEGIDO POR MIDDLEWARE
  * - Recibe permisos como props desde Server Component
  * - No necesita validar autenticación (ya validada)
  * - Solo maneja UI (módulo en construcción)
@@ -52,7 +52,7 @@ export default function RenunciasContent({
             </p>
             {canCreate && (
               <p className='text-xs text-gray-500 dark:text-gray-400 mt-2'>
-                âœ… Tienes permiso para crear renuncias
+                ✅ Tienes permiso para crear renuncias
               </p>
             )}
           </div>

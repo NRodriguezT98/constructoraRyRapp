@@ -17,7 +17,9 @@ export const TIPOS_FUENTE_PAGO = {
   SUBSIDIO_CAJA: 'Subsidio Caja Compensación',
 } as const
 
-export type TipoFuentePago = typeof TIPOS_FUENTE_PAGO[keyof typeof TIPOS_FUENTE_PAGO]
+// Dinámico: los tipos reales se cargan desde tipos_fuentes_pago en BD.
+// TIPOS_FUENTE_PAGO queda como constantes de referencia para compatibilidad.
+export type TipoFuentePago = string
 
 /**
  * Códigos técnicos estables de fuentes de pago (columna `codigo` en BD).

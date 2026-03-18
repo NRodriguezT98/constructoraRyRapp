@@ -7,10 +7,10 @@
  * Reemplaza Zustand store con cache inteligente
  *
  * BENEFICIOS vs Zustand:
- * - âœ… Cache automático (stale-while-revalidate)
- * - âœ… Sin race conditions
- * - âœ… Invalidación automática después de mutations
- * - âœ… Background refetching inteligente
+ * - ✅ Cache automático (stale-while-revalidate)
+ * - ✅ Sin race conditions
+ * - ✅ Invalidación automática después de mutations
+ * - ✅ Background refetching inteligente
  */
 
 'use client'
@@ -32,13 +32,13 @@ export const documentosKeys = {
   all: ['documentos'] as const,
   lists: () => [...documentosKeys.all, 'list'] as const,
   list: (entidadId: string, tipoEntidad: TipoEntidad) => [...documentosKeys.lists(), tipoEntidad, entidadId] as const,
-  // âš ï¸ LEGACY: mantener para compatibilidad
+  // ⚠️ LEGACY: mantener para compatibilidad
   listProyecto: (proyectoId: string) => [...documentosKeys.lists(), 'proyecto', proyectoId] as const,
   categorias: (userId: string) => ['categorias', userId] as const,
 }
 
 // ============================================
-// 1. HOOK: useDocumentosQuery (GENÃ‰RICO)
+// 1. HOOK: useDocumentosQuery (GENÉRICO)
 // ============================================
 export function useDocumentosQuery(entidadId: string, tipoEntidad: TipoEntidad) {
   const {
@@ -62,7 +62,7 @@ export function useDocumentosQuery(entidadId: string, tipoEntidad: TipoEntidad) 
   }
 }
 
-// âš ï¸ LEGACY: Mantener para compatibilidad con código existente
+// ⚠️ LEGACY: Mantener para compatibilidad con código existente
 export function useDocumentosProyectoQuery(proyectoId: string) {
   return useDocumentosQuery(proyectoId, 'proyecto')
 }
@@ -85,21 +85,21 @@ export function useCategoriasQuery(
     queryFn: async () => {
       const cats = await CategoriasService.obtenerCategoriasPorModulo(userId!, modulo)
 
-      // âœ… SEED AUTOMÁTICO: Si no hay categorías, crear las por defecto según el módulo
+      // ✅ SEED AUTOMÁTICO: Si no hay categorías, crear las por defecto según el módulo
       if (cats.length === 0) {
         if (modulo === 'proyectos') {
           await CategoriasService.crearCategoriasProyectosDefault(userId!)
 
           // Refrescar categorías después de crearlas
           const categoriasNuevas = await CategoriasService.obtenerCategoriasPorModulo(userId!, modulo)
-          toast.success('âœ… Categorías de proyectos creadas automáticamente')
+          toast.success('✅ Categorías de proyectos creadas automáticamente')
           return categoriasNuevas
         } else if (modulo === 'viviendas') {
           await CategoriasService.crearCategoriasViviendasDefault(userId!)
 
           // Refrescar categorías después de crearlas
           const categoriasNuevas = await CategoriasService.obtenerCategoriasPorModulo(userId!, modulo)
-          toast.success('âœ… Categorías de viviendas creadas automáticamente')
+          toast.success('✅ Categorías de viviendas creadas automáticamente')
           return categoriasNuevas
         }
       }
@@ -119,7 +119,7 @@ export function useCategoriasQuery(
 }
 
 // ============================================
-// 3. HOOK: useSubirDocumentoMutation (GENÃ‰RICO)
+// 3. HOOK: useSubirDocumentoMutation (GENÉRICO)
 // ============================================
 export function useSubirDocumentoMutation(entidadId: string, tipoEntidad: TipoEntidad) {
   const queryClient = useQueryClient()
@@ -154,18 +154,18 @@ export function useSubirDocumentoMutation(entidadId: string, tipoEntidad: TipoEn
         params.userId
       ),
     onSuccess: async (nuevoDocumento) => {
-      // âœ… PASO 1: Invalidar todas las queries relacionadas con documentos
+      // ✅ PASO 1: Invalidar todas las queries relacionadas con documentos
       await queryClient.invalidateQueries({
         queryKey: documentosKeys.list(entidadId, tipoEntidad),
       })
 
-      // âœ… PASO 2: Refetch INMEDIATO y FORZADO
+      // ✅ PASO 2: Refetch INMEDIATO y FORZADO
       await queryClient.refetchQueries({
         queryKey: documentosKeys.list(entidadId, tipoEntidad),
         type: 'active',
       })
 
-      // âœ… PASO 3: Actualización optimista del cache (agregar documento manualmente)
+      // ✅ PASO 3: Actualización optimista del cache (agregar documento manualmente)
       queryClient.setQueryData<DocumentoProyecto[]>(
         documentosKeys.list(entidadId, tipoEntidad),
         (oldDocumentos = []) => {
@@ -191,7 +191,7 @@ export function useSubirDocumentoMutation(entidadId: string, tipoEntidad: TipoEn
 }
 
 // ============================================
-// 4. HOOK: useActualizarDocumentoMutation (GENÃ‰RICO)
+// 4. HOOK: useActualizarDocumentoMutation (GENÉRICO)
 // ============================================
 export function useActualizarDocumentoMutation(entidadId: string, tipoEntidad: TipoEntidad) {
   const queryClient = useQueryClient()
@@ -218,7 +218,7 @@ export function useActualizarDocumentoMutation(entidadId: string, tipoEntidad: T
 }
 
 // ============================================
-// 5. HOOK: useEliminarDocumentoMutation (GENÃ‰RICO)
+// 5. HOOK: useEliminarDocumentoMutation (GENÉRICO)
 // ============================================
 export function useEliminarDocumentoMutation(entidadId: string, tipoEntidad: TipoEntidad) {
   const queryClient = useQueryClient()
@@ -226,7 +226,7 @@ export function useEliminarDocumentoMutation(entidadId: string, tipoEntidad: Tip
   return useMutation({
     mutationFn: (documentoId: string) => DocumentosEliminacionService.eliminarDocumento(documentoId, tipoEntidad),
     onSuccess: async () => {
-      // ðŸ”§ FIX: Usar refetchQueries para forzar recarga INMEDIATA en Papelera
+      // 🔧 FIX: Usar refetchQueries para forzar recarga INMEDIATA en Papelera
       await Promise.all([
         queryClient.refetchQueries({ queryKey: documentosKeys.list(entidadId, tipoEntidad) }),
         queryClient.refetchQueries({ queryKey: ['documentos-eliminados'] }), // â† Papelera
@@ -243,7 +243,7 @@ export function useEliminarDocumentoMutation(entidadId: string, tipoEntidad: Tip
 }
 
 // ============================================
-// 6. HOOK: useToggleImportanteMutation (GENÃ‰RICO)
+// 6. HOOK: useToggleImportanteMutation (GENÉRICO)
 // ============================================
 export function useToggleImportanteMutation(entidadId: string, tipoEntidad: TipoEntidad) {
   const queryClient = useQueryClient()
@@ -258,7 +258,7 @@ export function useToggleImportanteMutation(entidadId: string, tipoEntidad: Tipo
       const documento = documentos?.find((d) => d.id === documentoId)
 
       if (!documento) {
-        console.error('âŒ [Toggle Importante] Documento no encontrado en cache')
+        console.error('❌ [Toggle Importante] Documento no encontrado en cache')
         throw new Error('Documento no encontrado')
       }
 
@@ -269,7 +269,7 @@ export function useToggleImportanteMutation(entidadId: string, tipoEntidad: Tipo
     },
     onSuccess: async () => {
 
-      // âœ… Invalidar y refetch inmediato (sin optimistic update)
+      // ✅ Invalidar y refetch inmediato (sin optimistic update)
       await queryClient.invalidateQueries({
         queryKey: documentosKeys.list(entidadId, tipoEntidad),
       })
@@ -282,7 +282,7 @@ export function useToggleImportanteMutation(entidadId: string, tipoEntidad: Tipo
       toast.success('Estado de importancia actualizado')
     },
     onError: (err) => {
-      console.error('âŒ [Toggle Importante] Error:', err)
+      console.error('❌ [Toggle Importante] Error:', err)
       toast.error('Error al actualizar documento')
     },
   })
@@ -306,16 +306,16 @@ export function useCrearCategoriaMutation(userId: string) {
         color: categoria.color,
         icono: categoria.icono || '',
         orden: 0,
-        es_global: true, // âœ… FIX: Crear como global para que sea visible
+        es_global: true, // ✅ FIX: Crear como global para que sea visible
         modulos_permitidos: [categoria.modulo],
       }),
     onSuccess: async (nuevaCategoria, variables) => {
-      // âœ… FIX: Invalidar queries con el módulo específico
+      // ✅ FIX: Invalidar queries con el módulo específico
       await queryClient.invalidateQueries({
         queryKey: [...documentosKeys.categorias(userId), variables.modulo],
       })
 
-      // âœ… Forzar refetch inmediato
+      // ✅ Forzar refetch inmediato
       await queryClient.refetchQueries({
         queryKey: [...documentosKeys.categorias(userId), variables.modulo],
         type: 'active',
@@ -354,7 +354,7 @@ export function useActualizarCategoriaMutation(userId: string) {
       }
     }) => CategoriasService.actualizarCategoria(categoriaId, updates),
     onSuccess: async (categoriaActualizada) => {
-      // âœ… FIX: Invalidar todas las queries de categorías (todos los módulos)
+      // ✅ FIX: Invalidar todas las queries de categorías (todos los módulos)
       await queryClient.invalidateQueries({
         queryKey: documentosKeys.categorias(userId),
       })
@@ -380,7 +380,7 @@ export function useEliminarCategoriaMutation(userId: string) {
   return useMutation({
     mutationFn: (categoriaId: string) => CategoriasService.eliminarCategoria(categoriaId),
     onSuccess: async () => {
-      // âœ… FIX: Invalidar todas las queries de categorías (todos los módulos)
+      // ✅ FIX: Invalidar todas las queries de categorías (todos los módulos)
       await queryClient.invalidateQueries({
         queryKey: documentosKeys.categorias(userId),
       })
@@ -396,7 +396,7 @@ export function useEliminarCategoriaMutation(userId: string) {
 }
 
 // ============================================
-// 10. HOOK: useDocumentosArchivadosQuery (GENÃ‰RICO)
+// 10. HOOK: useDocumentosArchivadosQuery (GENÉRICO)
 // ============================================
 export function useDocumentosArchivadosQuery(entidadId: string, tipoEntidad: TipoEntidad) {
   const {
@@ -421,7 +421,7 @@ export function useDocumentosArchivadosQuery(entidadId: string, tipoEntidad: Tip
 }
 
 // ============================================
-// 11. HOOK: useArchivarDocumentoMutation (GENÃ‰RICO)
+// 11. HOOK: useArchivarDocumentoMutation (GENÉRICO)
 // ============================================
 export function useArchivarDocumentoMutation(entidadId: string, tipoEntidad: TipoEntidad) {
   const queryClient = useQueryClient()
@@ -443,7 +443,7 @@ export function useArchivarDocumentoMutation(entidadId: string, tipoEntidad: Tip
         queryClient.refetchQueries({ queryKey: [...documentosKeys.list(entidadId, tipoEntidad), 'archivados'] }),
       ])
 
-      toast.success('ðŸ“¦ Documento archivado correctamente')
+      toast.success('📦 Documento archivado correctamente')
     },
     onError: (error: Error) => {
       toast.error('Error al archivar documento', {
@@ -454,7 +454,7 @@ export function useArchivarDocumentoMutation(entidadId: string, tipoEntidad: Tip
 }
 
 // ============================================
-// 12. HOOK: useRestaurarDocumentoMutation (GENÃ‰RICO)
+// 12. HOOK: useRestaurarDocumentoMutation (GENÉRICO)
 // ============================================
 export function useRestaurarDocumentoMutation(entidadId: string, tipoEntidad: TipoEntidad) {
   const queryClient = useQueryClient()
@@ -468,7 +468,7 @@ export function useRestaurarDocumentoMutation(entidadId: string, tipoEntidad: Ti
         queryClient.refetchQueries({ queryKey: [...documentosKeys.list(entidadId, tipoEntidad), 'archivados'] }),
       ])
 
-      toast.success('âœ… Documento restaurado correctamente')
+      toast.success('✅ Documento restaurado correctamente')
     },
     onError: (error: Error) => {
       toast.error('Error al restaurar documento', {
