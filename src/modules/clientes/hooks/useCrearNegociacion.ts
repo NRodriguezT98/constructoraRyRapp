@@ -20,7 +20,7 @@ import { useCallback, useState } from 'react'
 
 import { useQueryClient } from '@tanstack/react-query'
 
-import { tieneDocumentoIdentidad } from '@/modules/clientes/documentos/utils/validacion-cedula'
+import { clientesKeys } from '@/modules/clientes/hooks/useClientesQuery'
 import { negociacionesService } from '@/modules/clientes/services/negociaciones.service'
 import type { CrearFuentePagoDTO, Negociacion } from '@/modules/clientes/types'
 
@@ -143,26 +143,6 @@ export function useCrearNegociacion(): UseCrearNegociacionReturn {
         return null
       }
 
-      // ✅ VALIDACIÓN SERVER-SIDE: Verificar documento de identidad en BD
-      const tieneDoc = await tieneDocumentoIdentidad(datos.cliente_id)
-      if (!tieneDoc) {
-        setError('Este cliente no tiene documento de identidad registrado. Sube la cédula o pasaporte en la pestaña "Documentos" antes de crear una negociación.')
-        return null
-      }
-
-      // Verificar si ya existe negociación activa
-      const yaExiste = await negociacionesService.existeNegociacionActiva(
-        datos.cliente_id,
-        datos.vivienda_id
-      )
-
-      if (yaExiste) {
-        const mensajeError = 'Ya existe una negociación activa para este cliente con esta vivienda.\n\nPara crear una nueva negociación, primero debe cancelar o completar la negociación existente.'
-        console.warn('⚠️', mensajeError)
-        setError(mensajeError)
-        return null
-      }
-
       // Crear negociación
       const negociacion = await negociacionesService.crearNegociacion({
         cliente_id: datos.cliente_id,
@@ -177,6 +157,9 @@ export function useCrearNegociacion(): UseCrearNegociacionReturn {
       })
       // ⭐ Invalidar caché de viviendas para que se actualice el select
       await queryClient.invalidateQueries({ queryKey: ['viviendas', 'disponibles'] })
+      // ⭐ Invalidar caché del cliente para que banner y tab count se actualicen
+      await queryClient.invalidateQueries({ queryKey: clientesKeys.detail(datos.cliente_id) })
+      await queryClient.invalidateQueries({ queryKey: clientesKeys.lists() })
       // Disparar evento para refrescar tab de negociaciones
       window.dispatchEvent(new Event('negociacion-creada'))
       setNegociacionCreada(negociacion)

@@ -1,6 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
+import { ArrowRight } from 'lucide-react'
 
 import { formatCurrency } from '@/lib/utils/format.utils'
 
@@ -43,14 +44,22 @@ export function StatusBar({
 
       <div className={s.statusBar.inner}>
         {paso === 1 ? (
-          <span className={s.statusBar.text}>
-            Selecciona el proyecto y la vivienda
-          </span>
+          <div className={s.statusBar.valueWrapper}>
+            <span className={s.statusBar.valueLabel}>Paso 1 de 3</span>
+            <span className={s.statusBar.valueAmount}>Vivienda y Valores</span>
+          </div>
         ) : (
-          <span className={s.statusBar.text}>
-            {formatCurrency(totalCubierto)} cubierto de{' '}
-            {formatCurrency(valorTotal)}
-          </span>
+          <div className={s.statusBar.valueWrapper}>
+            <span className={s.statusBar.valueLabel}>Cubierto</span>
+            <span className={s.statusBar.valueAmount}>
+              {formatCurrency(totalCubierto)}
+              {valorTotal > 0 && (
+                <span className='text-muted-foreground font-normal text-sm ml-1'>
+                  / {formatCurrency(valorTotal)}
+                </span>
+              )}
+            </span>
+          </div>
         )}
 
         <div className='flex items-center gap-3'>
@@ -67,7 +76,14 @@ export function StatusBar({
             className={s.statusBar.continueBtn}
             type='button'
           >
-            {cargando ? <span className={s.spinner} /> : <>Continuar →</>}
+            {cargando ? (
+              <span className={s.spinner} />
+            ) : (
+              <>
+                Continuar
+                <ArrowRight className='h-4 w-4' />
+              </>
+            )}
           </button>
         </div>
       </div>

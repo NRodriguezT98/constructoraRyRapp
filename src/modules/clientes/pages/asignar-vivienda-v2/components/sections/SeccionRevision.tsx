@@ -1,12 +1,16 @@
 'use client'
 
-import { Loader2 } from 'lucide-react'
+import { PDFDownloadLink } from '@react-pdf/renderer'
+import { AlertCircle, ArrowRight, Banknote, Building2, Calculator, Download, Edit2, Loader2, MapPin, User } from 'lucide-react'
+import { useMemo, useState } from 'react'
 
+import { formatDateForDisplay, getTodayDateString } from '@/lib/utils/date.utils'
 import { formatCurrency } from '@/lib/utils/format.utils'
-import type { FuentePagoConfiguracion } from '@/modules/clientes/components/asignar-vivienda/types'
-import type { ViviendaDetalle } from '@/modules/clientes/components/asignar-vivienda/types'
+import type { FuentePagoConfiguracion, ViviendaDetalle } from '@/modules/clientes/components/asignar-vivienda/types'
 import { obtenerMonto } from '@/modules/clientes/utils/fuentes-pago-campos.utils'
-import { useTiposFuentesConCampos } from '@/modules/configuracion/hooks/useTiposFuentesConCampos'
+import { useEntidadesFinancierasCombinadas } from '@/modules/configuracion/hooks/useEntidadesFinancierasParaFuentes'
+import type { TipoFuentePagoConCampos } from '@/modules/configuracion/types/campos-dinamicos.types'
+import { NegociacionPDF } from '../NegociacionPDF'
 
 import { styles as s } from '../../styles'
 
@@ -23,6 +27,7 @@ interface SeccionRevisionProps {
   tipoDescuento: string
   notas: string
   fuentes: FuentePagoConfiguracion[]
+  tiposConCampos: TipoFuentePagoConCampos[]
   errorApi: string | null
   creando: boolean
   onGuardar: () => void
@@ -42,89 +47,134 @@ export function SeccionRevision({
   aplicarDescuento,
   notas,
   fuentes,
+  tiposConCampos,
   errorApi,
   creando,
   onGuardar,
   onEditarSeccion1,
   onEditarSeccion2,
 }: SeccionRevisionProps) {
-  const { data: tiposConCampos = [] } = useTiposFuentesConCampos()
+  const { entidades } = useEntidadesFinancierasCombinadas()
 
   const fuentesActivas = fuentes.filter(f => f.enabled && f.config !== null)
+
+  const viviendaLabel = viviendaSeleccionada
+    ? [viviendaSeleccionada.manzana_nombre, `Casa ${viviendaSeleccionada.numero}`]
+        .filter(Boolean)
+        .join(' · ')
+    : '—'
+
   const valorBaseTotal = valorBase + gastosNotariales + recargoEsquinera
+
+  const fuentesPDF = useMemo(() => fuentesActivas.map(f => {
+    const tipoConCampos = tiposConCampos.find(t => t.nombre === f.tipo)
+    const camposConfig = tipoConCampos?.configuracion_campos?.campos ?? []
+    const monto = f.config ? obtenerMonto(f.config, camposConfig) : 0
+    const entidadNombre = f.config?.entidad
+      ? (entidades.find(e => e.value === f.config!.entidad)?.label ?? f.config.entidad)
+      : undefined
+    return { nombre: f.tipo, entidad: entidadNombre, monto }
+  }), [fuentesActivas, tiposConCampos, entidades])
+
+  const fechaGeneracion = useMemo(
+    () => formatDateForDisplay(getTodayDateString()),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [] // estable: calculado solo una vez al montar el componente
+  )
+
+  const nombreArchivo = useMemo(
+    () =>
+      `negociacion-${clienteNombre.toLowerCase().replace(/\s+/g, '-')}-${Date.now()}.pdf`,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [] // estable: nombre generado una sola vez al abrir revisión
+  )
+
   const pctDescuento =
     valorBaseTotal > 0
       ? ((descuentoAplicado / valorBaseTotal) * 100).toFixed(1)
       : '0'
 
-  const viviendaLabel = viviendaSeleccionada
-    ? [
-        viviendaSeleccionada.manzana_nombre,
-        `Casa ${viviendaSeleccionada.numero}`,
-      ]
-        .filter(Boolean)
-        .join(' · ')
-    : '—'
+  // Lazy PDF: solo montar PDFDownloadLink cuando el usuario lo solicita
+  // Previene el crash del reconciliador de react-pdf por renders intermedios
+  const [pdfSolicitado, setPdfSolicitado] = useState(false)
 
   return (
     <div className='space-y-3'>
       {/* Error de API */}
       {errorApi && (
         <div className={s.revision.errorBanner} role='alert'>
+          <AlertCircle className={s.revision.errorIcon} />
           {errorApi}
         </div>
       )}
 
       {/* Información básica */}
-      <div className={s.revision.grid}>
-        <div>
-          <p className={s.revision.label}>Cliente</p>
-          <p className={s.revision.value}>{clienteNombre}</p>
-        </div>
-        <div>
-          <p className={s.revision.label}>Proyecto</p>
-          <p className={s.revision.value}>{proyectoNombre || '—'}</p>
-        </div>
-        <div>
-          <p className={s.revision.label}>Vivienda</p>
-          <p className={s.revision.value}>{viviendaLabel}</p>
-        </div>
-        {notas && (
-          <div className='col-span-2'>
-            <p className={s.revision.label}>Notas</p>
-            <p className={`${s.revision.value} text-xs text-zinc-400`}>
-              {notas}
+      <div className={s.revision.infoCard}>
+        <p className={s.revision.sectionTitle}>
+          <User className={s.revision.sectionTitleIcon} />
+          Datos de la Negociación
+        </p>
+        <div className={s.revision.grid}>
+          <div>
+            <p className={s.revision.label}>
+              <User className={s.revision.labelIcon} />
+              Cliente
             </p>
+            <p className={s.revision.value}>{clienteNombre}</p>
           </div>
-        )}
+          <div>
+            <p className={s.revision.label}>
+              <Building2 className={s.revision.labelIcon} />
+              Proyecto
+            </p>
+            <p className={s.revision.value}>{proyectoNombre || '—'}</p>
+          </div>
+          <div>
+            <p className={s.revision.label}>
+              <MapPin className={s.revision.labelIcon} />
+              Vivienda
+            </p>
+            <p className={s.revision.value}>{viviendaLabel}</p>
+          </div>
+          {notas && (
+            <div className='col-span-2'>
+              <p className={s.revision.label}>Notas</p>
+              <p className={`${s.revision.value} text-xs`}>{notas}</p>
+            </div>
+          )}
+        </div>
+        <button
+          type='button'
+          onClick={onEditarSeccion1}
+          className={s.revision.editLink}
+        >
+          <Edit2 className='w-3 h-3' />
+          Editar vivienda y valores
+        </button>
       </div>
 
-      {/* Botón editar sección 1 */}
-      <button
-        type='button'
-        onClick={onEditarSeccion1}
-        className={s.revision.editLink}
-      >
-        Editar vivienda y valores ↑
-      </button>
-
-      <div className={s.revision.sep} />
-
       {/* Resumen financiero */}
-      <div className='space-y-1.5'>
-        <div className='flex items-center justify-between'>
-          <span className={s.revision.label}>Valor base + notariales</span>
-          <span className={`${s.revision.value} font-mono text-xs`}>
+      <div className={s.revision.financialCard}>
+        <p className={s.revision.sectionTitle}>
+          <Calculator className={s.revision.sectionTitleIcon} />
+          Resumen Financiero
+        </p>
+        <div className={s.revision.financialRow}>
+          <span className={s.revision.financialLabel}>
+            <Building2 className={s.revision.financialLabelIcon} />
+            Valor base + notariales
+          </span>
+          <span className={s.revision.financialValue}>
             {formatCurrency(valorBaseTotal)}
           </span>
         </div>
 
         {aplicarDescuento && descuentoAplicado > 0 && (
-          <div className='flex items-center justify-between'>
-            <span className={s.revision.label}>
+          <div className={s.revision.financialRow}>
+            <span className={s.revision.financialLabel}>
               Descuento ({pctDescuento}%)
             </span>
-            <span className={`${s.revision.descuento} font-mono text-xs`}>
+            <span className={`${s.revision.financialValue} ${s.revision.descuento}`}>
               −{formatCurrency(descuentoAplicado)}
             </span>
           </div>
@@ -132,49 +182,53 @@ export function SeccionRevision({
 
         <div className={s.revision.sepDouble} />
 
-        <div className='flex items-center justify-between'>
-          <span className={s.revision.totalLabel}>Total a pagar</span>
+        <div className={s.revision.financialRow}>
+          <span className={s.revision.totalLabel}>
+            <Calculator className='w-3.5 h-3.5' />
+            Total a pagar
+          </span>
           <span className={s.revision.totalValue}>
             {formatCurrency(valorTotal)}
           </span>
         </div>
       </div>
 
-      <div className={s.revision.sep} />
-
       {/* Resumen fuentes */}
-      <div className='space-y-2'>
+      <div className={s.revision.fuentesCard}>
+        <p className={s.revision.sectionTitle}>
+          <Banknote className={s.revision.sectionTitleIcon} />
+          Fuentes de Pago
+        </p>
         {fuentesActivas.map(f => {
           const tipoConCampos = tiposConCampos.find(t => t.nombre === f.tipo)
           const camposConfig = tipoConCampos?.configuracion_campos?.campos ?? []
           const monto = f.config ? obtenerMonto(f.config, camposConfig) : 0
           return (
-            <div key={f.tipo} className='flex items-center gap-2'>
+            <div key={f.tipo} className={s.revision.fuenteRow}>
               <div className={s.revision.fuenteDot} />
-              <span className={s.revision.fuenteNombre}>{f.tipo}</span>
-              {f.config?.entidad && (
-                <span className={s.revision.fuenteEntidad}>
-                  {f.config.entidad}
-                </span>
-              )}
+              <div className='flex-1 min-w-0'>
+                <span className={s.revision.fuenteNombre}>{f.tipo}</span>
+                {f.config?.entidad && (
+                  <span className={`${s.revision.fuenteEntidad} block`}>
+                    {entidades.find(e => e.value === f.config!.entidad)?.label ?? f.config.entidad}
+                  </span>
+                )}
+              </div>
               <span className={s.revision.fuenteMonto}>
                 {formatCurrency(monto)}
               </span>
             </div>
           )
         })}
+        <button
+          type='button'
+          onClick={onEditarSeccion2}
+          className={s.revision.editLink}
+        >
+          <Edit2 className='w-3 h-3' />
+          Editar fuentes de pago
+        </button>
       </div>
-
-      {/* Botón editar sección 2 */}
-      <button
-        type='button'
-        onClick={onEditarSeccion2}
-        className={s.revision.editLink}
-      >
-        Editar fuentes de pago ↑
-      </button>
-
-      <div className={s.revision.sep} />
 
       {/* Acciones */}
       <div>
@@ -188,20 +242,54 @@ export function SeccionRevision({
             {creando ? (
               <Loader2 className='h-4 w-4 animate-spin' />
             ) : (
-              '✓ Asignar Vivienda'
+              <>
+                Asignar Vivienda
+                <ArrowRight className='h-4 w-4' />
+              </>
             )}
           </button>
         </div>
 
-        {/* PDF — fuera de alcance V1 */}
-        <button
-          type='button'
-          disabled
-          className={s.revision.pdfBtn}
-          title='Disponible próximamente'
-        >
-          ↓ Descargar PDF
-        </button>
+        {pdfSolicitado ? (
+          <PDFDownloadLink
+            document={
+              <NegociacionPDF
+                clienteNombre={clienteNombre}
+                proyectoNombre={proyectoNombre}
+                viviendaLabel={viviendaLabel}
+                valorBase={valorBase}
+                gastosNotariales={gastosNotariales}
+                recargoEsquinera={recargoEsquinera}
+                descuentoAplicado={descuentoAplicado}
+                valorTotal={valorTotal}
+                aplicarDescuento={aplicarDescuento}
+                fuentes={fuentesPDF}
+                notas={notas}
+                fechaGeneracion={fechaGeneracion}
+              />
+            }
+            fileName={nombreArchivo}
+            className={s.revision.pdfBtn}
+          >
+            {({ loading }) => (
+              <>
+                {loading
+                  ? <Loader2 className='h-3.5 w-3.5 animate-spin' />
+                  : <Download className='h-3.5 w-3.5' />}
+                {loading ? 'Generando PDF...' : 'Descargar PDF'}
+              </>
+            )}
+          </PDFDownloadLink>
+        ) : (
+          <button
+            type='button'
+            onClick={() => setPdfSolicitado(true)}
+            className={s.revision.pdfBtn}
+          >
+            <Download className='h-3.5 w-3.5' />
+            Descargar PDF
+          </button>
+        )}
       </div>
     </div>
   )

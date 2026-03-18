@@ -19,6 +19,7 @@ import { useNegociacionesQuery } from '@/modules/clientes/hooks/useNegociaciones
 import type { FuentePago } from '@/modules/clientes/services/fuentes-pago.service'
 import { fuentesPagoService } from '@/modules/clientes/services/fuentes-pago.service'
 import type { Cliente } from '@/modules/clientes/types'
+import { documentosPendientesKeys } from '@/modules/clientes/types/documentos-pendientes.types'
 import { usePermissions } from '@/modules/usuarios/hooks/usePermissions'
 import { auditService } from '@/services/audit.service'
 
@@ -39,35 +40,83 @@ export const MOTIVOS_AJUSTE = [
 
 export type MotivoAjuste = (typeof MOTIVOS_AJUSTE)[number]
 
-export const COLORES_FUENTE: Record<string, { barra: string; badge: string; texto: string }> = {
-  'Cuota Inicial': {
+/**
+ * Maps generic color tokens (from tipos_fuentes_pago.color in BD) → Tailwind classes.
+ * New type sources added from BD automatically work as long as they use a token that exists here.
+ * This is a UI-only mapping: business logic (requiere_entidad, permite_multiples) lives in the DB.
+ */
+export const COLOR_TOKEN_CLASSES: Record<string, { barra: string; badge: string; texto: string }> = {
+  blue: {
     barra: 'bg-blue-500',
     badge: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300',
     texto: 'text-blue-600 dark:text-blue-400',
   },
-  'Crédito Hipotecario': {
+  emerald: {
     barra: 'bg-emerald-500',
     badge: 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300',
     texto: 'text-emerald-600 dark:text-emerald-400',
   },
-  'Subsidio Mi Casa Ya': {
+  green: {
+    barra: 'bg-green-500',
+    badge: 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300',
+    texto: 'text-green-600 dark:text-green-400',
+  },
+  purple: {
     barra: 'bg-purple-500',
     badge: 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300',
     texto: 'text-purple-600 dark:text-purple-400',
   },
-  'Subsidio Caja Compensación': {
+  amber: {
     barra: 'bg-amber-500',
     badge: 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300',
     texto: 'text-amber-600 dark:text-amber-400',
   },
-}
-
-export const getFuenteColor = (tipo: string) =>
-  COLORES_FUENTE[tipo] ?? {
+  orange: {
+    barra: 'bg-orange-500',
+    badge: 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300',
+    texto: 'text-orange-600 dark:text-orange-400',
+  },
+  red: {
+    barra: 'bg-red-500',
+    badge: 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300',
+    texto: 'text-red-600 dark:text-red-400',
+  },
+  pink: {
+    barra: 'bg-pink-500',
+    badge: 'bg-pink-100 dark:bg-pink-900/30 text-pink-700 dark:text-pink-300',
+    texto: 'text-pink-600 dark:text-pink-400',
+  },
+  indigo: {
+    barra: 'bg-indigo-500',
+    badge: 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300',
+    texto: 'text-indigo-600 dark:text-indigo-400',
+  },
+  cyan: {
     barra: 'bg-cyan-500',
     badge: 'bg-cyan-100 dark:bg-cyan-900/30 text-cyan-700 dark:text-cyan-300',
     texto: 'text-cyan-600 dark:text-cyan-400',
-  }
+  },
+  yellow: {
+    barra: 'bg-yellow-500',
+    badge: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300',
+    texto: 'text-yellow-600 dark:text-yellow-400',
+  },
+  teal: {
+    barra: 'bg-teal-500',
+    badge: 'bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300',
+    texto: 'text-teal-600 dark:text-teal-400',
+  },
+}
+
+const COLOR_FALLBACK = {
+  barra: 'bg-cyan-500',
+  badge: 'bg-cyan-100 dark:bg-cyan-900/30 text-cyan-700 dark:text-cyan-300',
+  texto: 'text-cyan-600 dark:text-cyan-400',
+}
+
+/** Accepts a color token from tipos_fuentes_pago.color (e.g. 'blue', 'emerald', 'amber', ...) */
+export const getFuenteColor = (colorToken?: string) =>
+  COLOR_TOKEN_CLASSES[colorToken ?? ''] ?? COLOR_FALLBACK
 
 // ============================================
 // TYPES
@@ -148,10 +197,10 @@ export function useNegociacionTab({ cliente }: UseNegociacionTabProps) {
     queryFn: async () => {
       const { data } = await supabase
         .from('tipos_fuentes_pago')
-        .select('nombre, icono, color, descripcion')
+        .select('nombre, icono, color, descripcion, requiere_entidad')
         .eq('activo', true)
         .order('orden')
-      return (data ?? []) as { nombre: string; icono: string; color: string; descripcion: string }[]
+      return (data ?? []) as { nombre: string; icono: string; color: string; descripcion: string; requiere_entidad: boolean }[]
     },
     staleTime: 5 * 60_000,
   })
@@ -160,6 +209,34 @@ export function useNegociacionTab({ cliente }: UseNegociacionTabProps) {
     const usados = new Set(fuentesPago.map((f) => f.tipo))
     return tiposFuentes.filter((t) => !usados.has(t.nombre as any))
   }, [tiposFuentes, fuentesPago])
+
+  // ============================================
+  // QUERY: Requisitos obligatorios por tipo de fuente (para warnings del modal)
+  // ============================================
+
+  const { data: requisitosConfig = [] } = useQuery({
+    queryKey: ['requisitos-fuentes-pago-config-obligatorios'],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('requisitos_fuentes_pago_config')
+        .select('tipo_fuente, titulo')
+        .eq('activo', true)
+        .eq('nivel_validacion', 'DOCUMENTO_OBLIGATORIO')
+      return (data ?? []) as { tipo_fuente: string; titulo: string }[]
+    },
+    staleTime: 10 * 60_000,
+  })
+
+  /** Mapa tipo_fuente → lista de títulos de documentos obligatorios */
+  const requisitosMap = useMemo(() => {
+    const map = new Map<string, string[]>()
+    for (const req of requisitosConfig) {
+      const list = map.get(req.tipo_fuente) ?? []
+      list.push(req.titulo)
+      map.set(req.tipo_fuente, list)
+    }
+    return map
+  }, [requisitosConfig])
 
   // ============================================
   // QUERY: Documentos pendientes (desde vista en tiempo real)
@@ -283,7 +360,44 @@ export function useNegociacionTab({ cliente }: UseNegociacionTabProps) {
         monto_aprobado: f.monto_aprobado,
       }))
 
-      // 1. Actualizar montos de fuentes existentes
+      // 1. Invalidar documentos existentes para fuentes que cambiaron (Bug 1 fix)
+      //    La vista considera un doc como "done" si existe en documentos_cliente con estado='activo'.
+      //    Si el monto subió o la entidad cambió en una fuente que requiere docs,
+      //    la carta vieja ya no es válida → se archiva para que la vista la vea como pendiente.
+      const tiposFuentesMap = new Map(tiposFuentes.map((t) => [t.nombre, t]))
+      for (const ajuste of ajustes) {
+        if (ajuste.paraEliminar) continue
+        const requiereEntidad = tiposFuentesMap.get(ajuste.tipo)?.requiere_entidad ?? false
+        if (!requiereEntidad) continue
+        const cambioEntidad = ajuste.entidadEditable !== ajuste.entidad
+        const aumentoMonto = ajuste.montoEditable > ajuste.montoOriginal
+        if (!cambioEntidad && !aumentoMonto) continue
+
+        // Archivar documentos activos vinculados a esta fuente
+        const razon = cambioEntidad && aumentoMonto
+          ? `Invalidado: entidad cambió (${ajuste.entidad} → ${ajuste.entidadEditable}) y monto aumentó`
+          : cambioEntidad
+          ? `Invalidado: entidad cambió (${ajuste.entidad} → ${ajuste.entidadEditable})`
+          : `Invalidado: monto aumentó de $${ajuste.montoOriginal.toLocaleString('es-CO')} a $${ajuste.montoEditable.toLocaleString('es-CO')}`
+
+        await supabase
+          .from('documentos_cliente')
+          .update({
+            estado: 'archivado',
+            razon_obsolescencia: razon,
+            fecha_obsolescencia: new Date().toISOString(),
+          })
+          .eq('fuente_pago_relacionada', ajuste.id)
+          .eq('estado', 'activo')
+
+        // Limpiar carta_asignacion_url de la fuente (campo legacy de tracking)
+        await supabase
+          .from('fuentes_pago')
+          .update({ carta_asignacion_url: null })
+          .eq('id', ajuste.id)
+      }
+
+      // 2. Actualizar montos/entidades de fuentes existentes
       for (const ajuste of ajustes) {
         if (ajuste.paraEliminar) {
           await supabase
@@ -301,7 +415,7 @@ export function useNegociacionTab({ cliente }: UseNegociacionTabProps) {
         }
       }
 
-      // 2. Agregar fuentes nuevas
+      // 3. Agregar fuentes nuevas
       for (const nueva of nuevas) {
         await fuentesPagoService.crearFuentePago({
           negociacion_id: negociacion!.id,
@@ -311,7 +425,7 @@ export function useNegociacionTab({ cliente }: UseNegociacionTabProps) {
         })
       }
 
-      // 3. Audit log
+      // 4. Audit log
       await auditService.registrarAccion({
         tabla: 'negociaciones',
         accion: 'UPDATE',
@@ -337,7 +451,12 @@ export function useNegociacionTab({ cliente }: UseNegociacionTabProps) {
       })
     },
     onSuccess: () => {
+      // Invalidar fuentes del tab negociación
       queryClient.invalidateQueries({ queryKey: ['fuentes-pago-neg-tab', negociacion?.id] })
+      // Bug 2 fix: invalidar cache de documentos pendientes del banner (tab Documentos)
+      queryClient.invalidateQueries({ queryKey: documentosPendientesKeys.byCliente(cliente.id) })
+      // Bug 3 fix: invalidar cache de docs pendientes del propio tab de negociación
+      queryClient.invalidateQueries({ queryKey: ['docs-pendientes-neg-tab', cliente.id] })
       toast.success('Plan financiero actualizado correctamente')
       closeRebalancear()
     },
@@ -357,6 +476,8 @@ export function useNegociacionTab({ cliente }: UseNegociacionTabProps) {
     diferencia,
     estaBalanceado,
     tiposDisponibles,
+    tiposFuentes,
+    requisitosMap,
 
     // Estado
     isLoading: isLoadingNeg || isLoadingFuentes,

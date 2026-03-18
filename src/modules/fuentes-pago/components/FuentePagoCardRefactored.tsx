@@ -76,7 +76,7 @@ export function FuentePagoCardRefactored({
     configuracion,
     isLoading,
     formatCurrency,
-    tiposQueRequierenValidacion,
+    requiereDocumentos,
   } = useFuentePagoCard({ fuente, clienteId })
 
   // ✅ Estado UI local mínimo
@@ -107,7 +107,7 @@ export function FuentePagoCardRefactored({
   }, [handleCerrarModal])
 
   // ✅ Estados derivados
-  const tieneRequisitos = tiposQueRequierenValidacion.includes(fuente.tipo)
+  const tieneRequisitos = requiereDocumentos
 
   // ==========================================
   // RENDER: LOADING STATE

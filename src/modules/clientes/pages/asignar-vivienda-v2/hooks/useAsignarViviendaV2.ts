@@ -7,20 +7,22 @@
 
 'use client'
 
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 
 import { useAsignarViviendaForm } from '@/modules/clientes/components/asignar-vivienda/hooks/useAsignarViviendaForm'
 import { useFuentesPago } from '@/modules/clientes/components/asignar-vivienda/hooks/useFuentesPago'
 import { useProyectosViviendas } from '@/modules/clientes/components/asignar-vivienda/hooks/useProyectosViviendas'
 import type {
-  FuentePagoConfig,
-  FuentePagoConfiguracion,
+    FuentePagoConfig,
+    FuentePagoConfiguracion,
 } from '@/modules/clientes/components/asignar-vivienda/types'
 import { useCrearNegociacion } from '@/modules/clientes/hooks/useCrearNegociacion'
 import type { CrearFuentePagoDTO } from '@/modules/clientes/types'
 import { obtenerMonto } from '@/modules/clientes/utils/fuentes-pago-campos.utils'
+import { useEntidadesFinancierasCombinadas } from '@/modules/configuracion/hooks/useEntidadesFinancierasParaFuentes'
 import { useTiposFuentesConCampos } from '@/modules/configuracion/hooks/useTiposFuentesConCampos'
 
 interface UseAsignarViviendaV2Props {
@@ -53,9 +55,10 @@ export function useAsignarViviendaV2({
     setViviendaId,
   } = useProyectosViviendas()
 
-  const { data: tiposConCampos = [] } = useTiposFuentesConCampos()
+  const { data: tiposConCampos = [], isLoading: cargandoTiposConCampos } = useTiposFuentesConCampos()
+  const { entidades } = useEntidadesFinancierasCombinadas()
 
-  const { crearNegociacion, creando } = useCrearNegociacion()
+  const { crearNegociacion, creando, error: errorNegociacion, limpiar: limpiarNegociacion } = useCrearNegociacion()
 
   // ─── Valores observados ────────────────────────────────
   const aplicarDescuento = watch('aplicar_descuento')
@@ -83,22 +86,27 @@ export function useAsignarViviendaV2({
     [valorBase, gastosNotariales, recargoEsquinera, descuentoAplicado]
   )
 
-  // Sincronizar valor_negociado en RHF
-  const prevValorTotal = useMemo(() => valorTotal, [valorTotal])
-  useMemo(() => {
-    setValue('valor_negociado', prevValorTotal)
-  }, [prevValorTotal, setValue])
+  // Sincronizar valor_negociado en RHF cuando cambia el total
+  useEffect(() => {
+    setValue('valor_negociado', valorTotal)
+  }, [valorTotal, setValue])
+
+  // Propagar el error real de useCrearNegociacion una vez que React actualiza su estado
+  useEffect(() => {
+    if (errorNegociacion) {
+      setErrorApi(errorNegociacion)
+    }
+  }, [errorNegociacion])
 
   // ─── Fuentes de pago ──────────────────────────────────
   const {
-    cargandoTipos,
     fuentes,
     totalFuentes,
     diferencia,
     sumaCierra,
     handleFuenteEnabledChange: _handleFuenteEnabledChange,
     handleFuenteConfigChange: _handleFuenteConfigChange,
-  } = useFuentesPago({ valorTotal })
+  } = useFuentesPago({ valorTotal, tiposConCampos, cargandoTipos: cargandoTiposConCampos })
 
   // Adaptadores de nombres al spec
   const handleFuenteEnabledChange = _handleFuenteEnabledChange
@@ -114,20 +122,22 @@ export function useAsignarViviendaV2({
   const validarFuentesManual = useCallback((): boolean => {
     const errores: Record<string, string> = {}
     fuentes
-      .filter(f => f.enabled && f.tipo !== 'Cuota Inicial')
+      .filter(f => f.enabled)
       .forEach(f => {
-        if (!f.config?.entidad || f.config.entidad.trim() === '') {
+        const tipoConCampos = tiposConCampos.find(t => t.nombre === f.tipo)
+        const camposConfig = tipoConCampos?.configuracion_campos?.campos ?? []
+        const requiereEntidad = camposConfig.some(c => c.rol === 'entidad')
+        const requiereReferencia = camposConfig.some(c => c.rol === 'referencia')
+
+        if (requiereEntidad && (!f.config?.entidad || f.config.entidad.trim() === '')) {
           errores[f.tipo] = 'Entidad requerida'
-        } else if (
-          !f.config?.numero_referencia ||
-          f.config.numero_referencia.trim() === ''
-        ) {
+        } else if (requiereReferencia && (!f.config?.numero_referencia || f.config.numero_referencia.trim() === '')) {
           errores[f.tipo] = 'Número de referencia requerido'
         }
       })
     setErroresFuentes(errores)
     return Object.keys(errores).length === 0
-  }, [fuentes])
+  }, [fuentes, tiposConCampos])
 
   // ─── Validación por paso ──────────────────────────────
   const paso1Valido = useMemo(() => {
@@ -208,7 +218,7 @@ export function useAsignarViviendaV2({
           return {
             tipo: f.tipo,
             monto_aprobado: monto,
-            entidad: f.config.entidad || undefined,
+            entidad: (entidades.find(e => e.value === f.config.entidad)?.label ?? f.config.entidad) || undefined,
             numero_referencia: f.config.numero_referencia || undefined,
             permite_multiples_abonos:
               f.config.permite_multiples_abonos ?? false,
@@ -228,11 +238,14 @@ export function useAsignarViviendaV2({
       })
 
       if (!result) {
-        setErrorApi(
-          'Error al guardar la negociación. Verifica que la vivienda no esté ya asignada e intenta de nuevo.'
-        )
+        // errorNegociacion se propaga a errorApi via useEffect en el próximo render
         return
       }
+
+      toast.success('¡Vivienda asignada exitosamente!', {
+        description: 'La negociación ha sido registrada y la vivienda asignada al cliente.',
+        duration: 5000,
+      })
 
       router.push(`/clientes/${clienteSlug ?? clienteId}`)
     }
@@ -262,7 +275,10 @@ export function useAsignarViviendaV2({
   }, [router, clienteSlug, clienteId])
 
   // Limpiar errorApi al modificar campos
-  const clearErrorApi = useCallback(() => setErrorApi(null), [])
+  const clearErrorApi = useCallback(() => {
+    setErrorApi(null)
+    limpiarNegociacion()
+  }, [limpiarNegociacion])
 
   return {
     // Navegación
@@ -296,7 +312,8 @@ export function useAsignarViviendaV2({
     valorTotal,
 
     // Fuentes
-    cargandoTipos,
+    cargandoTipos: cargandoTiposConCampos,
+    tiposConCampos,
     fuentes,
     totalFuentes,
     diferencia,

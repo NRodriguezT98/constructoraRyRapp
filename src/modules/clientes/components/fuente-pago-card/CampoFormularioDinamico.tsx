@@ -183,7 +183,7 @@ export const CampoFormularioDinamico = forwardRef<HTMLInputElement, CampoFormula
                 {cargandoBancos ? 'Cargando bancos...' : config.placeholder || 'Seleccionar...'}
               </option>
               {bancos.map((banco) => (
-                <option key={banco.value} value={banco.value}>
+                <option key={banco.value} value={banco.label}>
                   {banco.label}
                 </option>
               ))}
@@ -204,7 +204,7 @@ export const CampoFormularioDinamico = forwardRef<HTMLInputElement, CampoFormula
                 {cargandoCajas ? 'Cargando cajas...' : config.placeholder || 'Seleccionar...'}
               </option>
               {cajas.map((caja) => (
-                <option key={caja.value} value={caja.value}>
+                <option key={caja.value} value={caja.label}>
                   {caja.label}
                 </option>
               ))}

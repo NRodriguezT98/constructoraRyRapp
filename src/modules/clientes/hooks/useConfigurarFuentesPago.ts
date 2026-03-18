@@ -15,6 +15,7 @@
 
 import { useEffect, useState } from 'react'
 
+import { supabase } from '@/lib/supabase/client'
 import { fuentesPagoService } from '@/modules/clientes/services/fuentes-pago.service'
 import type { TipoFuentePago } from '@/modules/clientes/types'
 
@@ -199,13 +200,16 @@ export function useConfigurarFuentesPago({
         return
       }
 
-      // Validar entidades requeridas (inyectar desde componente)
+      // Cargar configuración de tipos desde BD para validar sin hardcodear nombres
+      const { data: tiposConfig } = await supabase
+        .from('tipos_fuentes_pago')
+        .select('nombre, requiere_entidad')
+      const tiposMap = new Map((tiposConfig ?? []).map((t) => [t.nombre, t]))
+
+      // Validar entidades requeridas usando la flag de BD
       for (const fuente of fuentesPago) {
-        // La validación específica se puede pasar como parámetro si es necesario
-        if (
-          (fuente.tipo === 'Crédito Hipotecario' || fuente.tipo === 'Subsidio Caja Compensación') &&
-          !fuente.entidad?.trim()
-        ) {
+        const config = tiposMap.get(fuente.tipo)
+        if (config?.requiere_entidad && !fuente.entidad?.trim()) {
           setError(`La fuente "${fuente.tipo}" requiere especificar la entidad`)
           return
         }

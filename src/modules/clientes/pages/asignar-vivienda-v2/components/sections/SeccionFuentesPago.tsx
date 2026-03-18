@@ -1,22 +1,25 @@
 'use client'
 
 import { AnimatePresence, motion } from 'framer-motion'
-import { AlertCircle } from 'lucide-react'
+import { AlertCircle, Banknote, Building2, Check, CircleDollarSign, Home, Wallet } from 'lucide-react'
+import { useState } from 'react'
 
 import { formatCurrency } from '@/lib/utils/format.utils'
 import type {
-  FuentePagoConfig,
-  FuentePagoConfiguracion,
+    FuentePagoConfig,
+    FuentePagoConfiguracion,
 } from '@/modules/clientes/components/asignar-vivienda/types'
+import { CampoFormularioDinamico } from '@/modules/clientes/components/fuente-pago-card/CampoFormularioDinamico'
 import type { TipoFuentePago } from '@/modules/clientes/types'
 import { obtenerMonto } from '@/modules/clientes/utils/fuentes-pago-campos.utils'
-import { useTiposFuentesConCampos } from '@/modules/configuracion/hooks/useTiposFuentesConCampos'
+import type { CampoConfig, TipoFuentePagoConCampos, ValorCampo, ValoresCampos } from '@/modules/configuracion/types/campos-dinamicos.types'
 
 import { styles as s } from '../../styles'
 
 interface SeccionFuentesPagoProps {
   valorTotal: number
   cargandoTipos: boolean
+  tiposConCampos: TipoFuentePagoConCampos[]
   fuentes: FuentePagoConfiguracion[]
   totalFuentes: number
   diferencia: number
@@ -30,11 +33,19 @@ interface SeccionFuentesPagoProps {
   ) => void
 }
 
-const SIN_ENTIDAD = new Set<TipoFuentePago>(['Cuota Inicial'])
+function iconForFuente(nombre: string) {
+  const n = nombre.toLowerCase()
+  if (n.includes('hipotecario') || n.includes('banco')) return Building2
+  if (n.includes('subsidio') || n.includes('vivienda') || n.includes('casa')) return Home
+  if (n.includes('cuota') || n.includes('inicial')) return Wallet
+  if (n.includes('leasing')) return CircleDollarSign
+  return Banknote
+}
 
 export function SeccionFuentesPago({
   valorTotal,
   cargandoTipos,
+  tiposConCampos,
   fuentes,
   totalFuentes,
   diferencia,
@@ -44,8 +55,6 @@ export function SeccionFuentesPago({
   handleFuenteEnabledChange,
   handleFuenteConfigChange,
 }: SeccionFuentesPagoProps) {
-  const { data: tiposConCampos = [] } = useTiposFuentesConCampos()
-
   const pct =
     valorTotal > 0 ? Math.min(100, (totalFuentes / valorTotal) * 100) : 0
 
@@ -61,21 +70,21 @@ export function SeccionFuentesPago({
   return (
     <div className='space-y-3'>
       {/* Barra de progreso de cobertura */}
-      <div>
-        <div className='mb-1 flex items-center justify-between'>
+      <div className={s.fuentes.progressWrapper}>
+        <div className='flex items-center justify-between mb-1'>
           <span className={s.fuentes.progressLabel}>
             Por cubrir: {formatCurrency(valorTotal)}
           </span>
           <span
             className={
               sumaCierra
-                ? 'font-mono text-[11px] text-emerald-400'
+                ? 'font-mono text-[11px] text-emerald-500 font-semibold'
                 : s.fuentes.progressLabelRight
             }
           >
             {sumaCierra
               ? '✓ Cubierto exactamente'
-              : `${formatCurrency(totalFuentes)} cubierto (${pct.toFixed(0)}%)`}
+              : `${formatCurrency(totalFuentes)} (${pct.toFixed(0)}%)`}
           </span>
         </div>
         <div className={s.fuentes.progressTrack}>
@@ -100,29 +109,20 @@ export function SeccionFuentesPago({
             ? obtenerMonto(fuente.config, camposConfig)
             : 0
           const esError = mostrarErroresFuentes && erroresFuentes[fuente.tipo]
-          const omitirEntidad = SIN_ENTIDAD.has(fuente.tipo as TipoFuentePago)
 
           return (
             <div key={fuente.tipo}>
               {/* Fila de toggle */}
               <div className={s.fuentes.fuenteRow}>
-                {/* Switch */}
-                <button
-                  type='button'
-                  role='switch'
-                  aria-checked={fuente.enabled}
-                  onClick={() =>
-                    handleFuenteEnabledChange(
-                      fuente.tipo as TipoFuentePago,
-                      !fuente.enabled
-                    )
-                  }
-                >
-                  <div className={s.switch.track(fuente.enabled)}>
-                    <div className={s.switch.thumb(fuente.enabled)} />
-                  </div>
-                </button>
+                {/* Icono */}
+                <div className={s.fuentes.fuenteIconWrapper(fuente.enabled)}>
+                  {(() => {
+                    const Icon = iconForFuente(fuente.tipo)
+                    return <Icon className={s.fuentes.fuenteIcon(fuente.enabled)} />
+                  })()}
+                </div>
 
+                {/* Switch + nombre */}
                 <span
                   className={
                     fuente.enabled
@@ -138,6 +138,23 @@ export function SeccionFuentesPago({
                     {formatCurrency(monto)}
                   </span>
                 )}
+
+                <button
+                  type='button'
+                  role='switch'
+                  aria-checked={fuente.enabled}
+                  className='ml-auto shrink-0'
+                  onClick={() =>
+                    handleFuenteEnabledChange(
+                      fuente.tipo as TipoFuentePago,
+                      !fuente.enabled
+                    )
+                  }
+                >
+                  <div className={s.switch.track(fuente.enabled)}>
+                    <div className={s.switch.thumb(fuente.enabled)} />
+                  </div>
+                </button>
               </div>
 
               {/* Contenido expandible */}
@@ -153,21 +170,12 @@ export function SeccionFuentesPago({
                   >
                     <FuenteExpandida
                       fuente={fuente}
-                      omitirEntidad={omitirEntidad}
+                      camposConfig={camposConfig}
+                      permiteMultiples={tipoConCampos?.permite_multiples_abonos ?? false}
                       esError={!!esError}
                       mensajeError={erroresFuentes[fuente.tipo] ?? ''}
-                      onChange={(campo, valor) => {
-                        const configActual = fuente.config ?? {
-                          tipo: fuente.tipo as TipoFuentePago,
-                          campos: {},
-                        }
-                        handleFuenteConfigChange(
-                          fuente.tipo as TipoFuentePago,
-                          {
-                            ...configActual,
-                            [campo]: valor,
-                          } as FuentePagoConfig
-                        )
+                      onChange={(config) => {
+                        handleFuenteConfigChange(fuente.tipo as TipoFuentePago, config)
                       }}
                     />
                   </motion.div>
@@ -181,16 +189,22 @@ export function SeccionFuentesPago({
       {/* Panel totales */}
       <div className={s.fuentes.totalesBox}>
         <div className={s.fuentes.totalesRow}>
-          <span className={s.fuentes.totalesLabel}>Total fuentes</span>
+          <span className={s.fuentes.totalesLabel}>
+            <Banknote className={s.fuentes.totalesLabelIcon} />
+            Total fuentes
+          </span>
           <span className={s.fuentes.totalesValue}>
             {formatCurrency(totalFuentes)}
           </span>
         </div>
         <div className={s.fuentes.totalesRow}>
-          <span className={s.fuentes.totalesLabel}>Diferencia</span>
+          <span className={s.fuentes.totalesLabel}>
+            <AlertCircle className={s.fuentes.totalesLabelIcon} />
+            Diferencia
+          </span>
           <span
             className={`${s.fuentes.totalesValue} ${
-              diferencia !== 0 ? 'text-rose-400' : 'text-emerald-400'
+              diferencia !== 0 ? 'text-rose-500' : 'text-emerald-500'
             }`}
           >
             {diferencia !== 0 ? formatCurrency(Math.abs(diferencia)) : '—'}
@@ -200,9 +214,13 @@ export function SeccionFuentesPago({
         <div className={s.fuentes.totalesDivider} />
 
         {sumaCierra ? (
-          <p className={s.fuentes.okMsg}>✓ Puedes continuar</p>
+          <p className={s.fuentes.okMsg}>
+            <Check className={s.fuentes.okIcon} />
+            Puedes continuar
+          </p>
         ) : (
           <p className={s.fuentes.errMsg}>
+            <AlertCircle className={s.fuentes.errIcon} />
             {diferencia > 0
               ? `Falta cubrir ${formatCurrency(diferencia)}`
               : `Exceso de ${formatCurrency(Math.abs(diferencia))}`}
@@ -217,94 +235,78 @@ export function SeccionFuentesPago({
 
 interface FuenteExpandidaProps {
   fuente: FuentePagoConfiguracion
-  omitirEntidad: boolean
+  camposConfig: CampoConfig[]
+  permiteMultiples: boolean
   esError: boolean
   mensajeError: string
-  onChange: (campo: string, valor: unknown) => void
+  onChange: (config: FuentePagoConfig) => void
 }
 
 function FuenteExpandida({
   fuente,
-  omitirEntidad,
+  camposConfig,
+  permiteMultiples,
   esError,
   mensajeError,
   onChange,
 }: FuenteExpandidaProps) {
-  const config = fuente.config
-  const permiteMultiples = config?.permite_multiples_abonos ?? false
+  const sorted = [...camposConfig].sort((a, b) => a.orden - b.orden)
+
+  const [valores, setValores] = useState<ValoresCampos>(() => {
+    const initial: ValoresCampos = {}
+    sorted.forEach(campo => {
+      if (fuente.config?.campos?.[campo.nombre] !== undefined) {
+        initial[campo.nombre] = fuente.config.campos[campo.nombre]
+      } else if (campo.nombre === 'monto_aprobado') {
+        initial[campo.nombre] = fuente.config?.monto_aprobado ?? 0
+      } else if (campo.nombre === 'entidad') {
+        initial[campo.nombre] = fuente.config?.entidad ?? ''
+      } else if (campo.nombre === 'numero_referencia') {
+        initial[campo.nombre] = fuente.config?.numero_referencia ?? ''
+      } else if (campo.tipo === 'number' || campo.tipo === 'currency') {
+        initial[campo.nombre] = 0
+      } else if (campo.tipo === 'checkbox') {
+        initial[campo.nombre] = false
+      } else {
+        initial[campo.nombre] = ''
+      }
+    })
+    return initial
+  })
+
+  const buildConfig = (newValores: ValoresCampos): FuentePagoConfig => {
+    const montoCampo = sorted.find(c => c.rol === 'monto')
+    const entidadCampo = sorted.find(c => c.rol === 'entidad')
+    const refCampo = sorted.find(c => c.rol === 'referencia')
+    return {
+      tipo: fuente.tipo as TipoFuentePago,
+      monto_aprobado: montoCampo ? (newValores[montoCampo.nombre] as number ?? 0) : 0,
+      entidad: entidadCampo ? (newValores[entidadCampo.nombre] as string ?? '') : '',
+      numero_referencia: refCampo ? (newValores[refCampo.nombre] as string ?? '') : '',
+      permite_multiples_abonos: permiteMultiples,
+      campos: { ...newValores },
+    }
+  }
+
+  const handleCampoChange = (nombre: string, valor: ValorCampo) => {
+    const newValores = { ...valores, [nombre]: valor }
+    setValores(newValores)
+    onChange(buildConfig(newValores))
+  }
 
   return (
     <div className={s.fuentes.fuenteContent}>
-      {/* Entidad */}
-      {!omitirEntidad && (
-        <div>
-          <label className={s.field.label}>Entidad</label>
-          <input
-            type='text'
-            className={s.field.input}
-            placeholder='Nombre del banco, caja de compensación...'
-            defaultValue={config?.entidad ?? ''}
-            onChange={e => onChange('entidad', e.target.value)}
-          />
-        </div>
-      )}
-
-      {/* Número de referencia */}
-      {!omitirEntidad && (
-        <div>
-          <label className={s.field.label}>Número de referencia</label>
-          <input
-            type='text'
-            className={s.field.input}
-            placeholder='N° radicado, acta, resolución...'
-            defaultValue={config?.numero_referencia ?? ''}
-            onChange={e => onChange('numero_referencia', e.target.value)}
-          />
-          {esError && mensajeError && (
-            <p className={s.field.error}>
-              <AlertCircle className='h-3 w-3' />
-              {mensajeError}
-            </p>
-          )}
-        </div>
-      )}
-
-      {/* Monto */}
-      <div>
-        <label className={s.field.label}>Monto</label>
-        <div className='relative'>
-          <span className={s.field.prefix}>$</span>
-          <input
-            type='number'
-            min='0'
-            className={`${s.field.inputMono} ${s.field.inputWithPrefix}`}
-            placeholder='0'
-            defaultValue={config?.monto_aprobado ?? ''}
-            onChange={e =>
-              onChange('monto_aprobado', parseFloat(e.target.value) || 0)
-            }
-          />
-        </div>
-      </div>
-
-      {/* Permite múltiples abonos */}
-      <div className='flex items-center gap-2.5 pt-1'>
-        <button
-          type='button'
-          role='switch'
-          aria-checked={permiteMultiples}
-          onClick={() =>
-            onChange('permite_multiples_abonos', !permiteMultiples)
+      {sorted.map(campo => (
+        <CampoFormularioDinamico
+          key={campo.nombre}
+          config={campo}
+          value={valores[campo.nombre] ?? null}
+          onChange={valor => handleCampoChange(campo.nombre, valor)}
+          error={
+            esError && campo.rol === 'referencia' ? mensajeError : undefined
           }
-        >
-          <div className={`${s.switch.track(permiteMultiples)} !h-4 !w-8`}>
-            <div
-              className={`${s.switch.thumb(permiteMultiples)} !h-3 !w-3 ${permiteMultiples ? '!translate-x-4' : ''}`}
-            />
-          </div>
-        </button>
-        <span className='text-xs text-zinc-400'>Permite múltiples abonos</span>
-      </div>
+        />
+      ))}
     </div>
   )
 }

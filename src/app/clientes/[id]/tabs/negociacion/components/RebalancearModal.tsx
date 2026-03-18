@@ -90,16 +90,18 @@ function FilaFuente({
   onChange,
   onCambioEntidad,
   onToggleEliminar,
+  requiereEntidad,
 }: {
   ajuste: AjusteLocal
   onChange: (id: string, monto: number) => void
   onCambioEntidad: (id: string, entidad: string) => void
   onToggleEliminar: (id: string) => void
+  requiereEntidad: boolean
 }) {
   const color = getFuenteColor(ajuste.tipo)
   const [inputValue, setInputValue] = useState(formatMontoInput(ajuste.montoEditable))
   const entidades = getEntidadesParaTipo(ajuste.tipo)
-  const mostrarEntidad = ajuste.tipo !== 'Cuota Inicial'
+  const mostrarEntidad = requiereEntidad
 
   useEffect(() => {
     setInputValue(formatMontoInput(ajuste.montoEditable))
@@ -201,16 +203,18 @@ function FilaNueva({
   index,
   onChange,
   onEliminar,
+  requiereEntidad,
 }: {
   fuente: FuAlteNueva
   index: number
   onChange: (index: number, campo: keyof FuAlteNueva, valor: string | number) => void
   onEliminar: (index: number) => void
+  requiereEntidad: boolean
 }) {
   const color = getFuenteColor(fuente.tipo)
   const [inputValue, setInputValue] = useState(formatMontoInput(fuente.monto))
   const entidades = getEntidadesParaTipo(fuente.tipo)
-  const mostrarEntidad = fuente.tipo !== 'Cuota Inicial'
+  const mostrarEntidad = requiereEntidad
 
   const handleChange = (raw: string) => {
     const soloDigitos = raw.replace(/[^0-9]/g, '')
@@ -273,6 +277,25 @@ function FilaNueva({
 }
 
 // ============================================
+// TIPOS: Cambios enriquecidos para el warning
+// ============================================
+
+interface CambioEnriquecido {
+  tipo: string
+  motivoCambio: 'entidad' | 'monto' | 'ambos'
+  entidadAnterior?: string
+  entidadNueva?: string
+  montoAnterior?: number
+  montoNuevo?: number
+  documentos: string[]
+}
+
+interface NuevaEnriquecida {
+  tipo: string
+  documentos: string[]
+}
+
+// ============================================
 // COMPONENTE PRINCIPAL
 // ============================================
 
@@ -281,7 +304,11 @@ interface RebalancearModalProps {
   onClose: () => void
   fuentesPago: FuentePago[]
   valorVivienda: number
-  tiposDisponibles: { nombre: string; descripcion: string }[]
+  tiposDisponibles: { nombre: string; descripcion: string; requiere_entidad?: boolean; color?: string }[]
+  /** Todos los tipos activos (no solo los disponibles), para lookup de config: requiere_entidad, etc. */
+  tiposConfig: { nombre: string; requiere_entidad?: boolean }[]
+  /** Mapa tipo_fuente → títulos de documentos obligatorios (desde requisitos_fuentes_pago_config) */
+  requisitosMap: Map<string, string[]>
   onGuardar: (datos: DatosRebalanceo) => void
   isGuardando: boolean
 }
@@ -292,6 +319,8 @@ export function RebalancearModal({
   fuentesPago,
   valorVivienda,
   tiposDisponibles,
+  tiposConfig,
+  requisitosMap,
   onGuardar,
   isGuardando,
 }: RebalancearModalProps) {
@@ -303,6 +332,12 @@ export function RebalancearModal({
   const [mostrarNuevaFuente, setMostrarNuevaFuente] = useState(false)
 
   const [mostrandoAdvertencia, setMostrandoAdvertencia] = useState(false)
+
+  // Mapa nombre → config para lookup sin hardcodear nombres de tipos
+  const tiposConfigMap = useMemo(
+    () => new Map(tiposConfig.map((t) => [t.nombre, t])),
+    [tiposConfig]
+  )
 
   // Sincronizar cuando abren el modal
   useEffect(() => {
@@ -341,25 +376,44 @@ export function RebalancearModal({
     (!motivoRequiereNotas || notas.trim() !== '') &&
     !isGuardando
 
-  // ── Detectar cambios que invalidarán cartas de aprobación ─────────────
-  // Fuentes existentes: cambia entidad o aumenta monto
-  const fuentesExistentesQueInvalidan = useMemo(() => {
+  // ── Detectar cambios que generarán requisitos de documentos ─────────────
+  // Fuentes existentes que requerirán nueva documentación (solo tipos que requieren docs según BD)
+  const fuentesExistentesQueInvalidan = useMemo<CambioEnriquecido[]>(() => {
     return ajustes
       .filter((a) => !a.paraEliminar)
       .filter((a) => {
+        // Solo advertir para tipos que requieren documentos — desde BD, no hardcodeado
+        if (!tiposConfigMap.get(a.tipo)?.requiere_entidad) return false
         const cambioEntidad = a.entidadEditable !== a.entidad
-        const aumentoMonto = a.montoEditable > a.montoOriginal
+        const aumentoMonto = a.montoEditable > a.montoOriginal // disminuir NO requiere docs
         return cambioEntidad || aumentoMonto
       })
-      .map((a) => a.tipo)
-  }, [ajustes])
+      .map((a) => {
+        const cambioEntidad = a.entidadEditable !== a.entidad
+        const aumentoMonto = a.montoEditable > a.montoOriginal
+        const motivoCambio =
+          cambioEntidad && aumentoMonto ? 'ambos' : cambioEntidad ? 'entidad' : 'monto'
+        return {
+          tipo: a.tipo,
+          motivoCambio,
+          entidadAnterior: cambioEntidad ? (a.entidad || 'Sin entidad') : undefined,
+          entidadNueva: cambioEntidad ? (a.entidadEditable || 'Sin entidad') : undefined,
+          montoAnterior: aumentoMonto ? a.montoOriginal : undefined,
+          montoNuevo: aumentoMonto ? a.montoEditable : undefined,
+          documentos: requisitosMap.get(a.tipo) ?? [],
+        }
+      })
+  }, [ajustes, tiposConfigMap, requisitosMap])
 
-  // Fuentes nuevas que requerirán carta (no Cuota Inicial)
-  const fuentesNuevasQueNecesitanCarta = useMemo(() => {
+  // Fuentes nuevas que requerirán documentación (según flag requiere_entidad de BD)
+  const fuentesNuevasQueNecesitanCarta = useMemo<NuevaEnriquecida[]>(() => {
     return nuevas
-      .filter((n) => n.tipo !== 'Cuota Inicial')
-      .map((n) => n.tipo)
-  }, [nuevas])
+      .filter((n) => tiposConfigMap.get(n.tipo)?.requiere_entidad ?? false)
+      .map((n) => ({
+        tipo: n.tipo,
+        documentos: requisitosMap.get(n.tipo) ?? [],
+      }))
+  }, [nuevas, tiposConfigMap, requisitosMap])
 
   const hayCambiosConAdvertencia =
     fuentesExistentesQueInvalidan.length > 0 || fuentesNuevasQueNecesitanCarta.length > 0
@@ -437,7 +491,7 @@ export function RebalancearModal({
                   </div>
                   <div>
                     <h2 className="text-base font-bold text-white leading-tight">
-                      Rebalancear Plan Financiero
+                      Ajustar Cierre Financiero
                     </h2>
                     <p className="text-xs text-cyan-100 mt-0.5">Solo Administrador</p>
                   </div>
@@ -473,6 +527,7 @@ export function RebalancearModal({
                       onChange={handleCambioMonto}
                       onCambioEntidad={handleCambioEntidad}
                       onToggleEliminar={handleToggleEliminar}
+                      requiereEntidad={tiposConfigMap.get(ajuste.tipo)?.requiere_entidad ?? false}
                     />
                   ))}
                 </div>
@@ -490,6 +545,7 @@ export function RebalancearModal({
                         index={i}
                         onChange={handleCambioNueva}
                         onEliminar={handleEliminarNueva}
+                        requiereEntidad={tiposConfigMap.get(fuente.tipo)?.requiere_entidad ?? false}
                       />
                     ))}
                   </div>
@@ -610,28 +666,62 @@ export function RebalancearModal({
                       </div>
 
                       {fuentesExistentesQueInvalidan.length > 0 && (
-                        <div className="space-y-1">
+                        <div className="space-y-2">
                           <p className="text-xs font-semibold text-amber-700 dark:text-amber-400">
-                            Cartas que se invalidarán (por cambio de entidad o aumento de monto):
+                            Fuentes modificadas que requerirán nueva documentación:
                           </p>
-                          {fuentesExistentesQueInvalidan.map((tipo) => (
-                            <div key={tipo} className="flex items-center gap-1.5 text-xs text-amber-700 dark:text-amber-500">
-                              <span className="w-1.5 h-1.5 rounded-full bg-amber-500 flex-shrink-0" />
-                              <span>{tipo} — deberás subir nueva Carta de Aprobación</span>
+                          {fuentesExistentesQueInvalidan.map((cambio) => (
+                            <div
+                              key={cambio.tipo}
+                              className="pl-2.5 border-l-2 border-amber-400 dark:border-amber-600 space-y-0.5"
+                            >
+                              <p className="text-xs font-semibold text-amber-800 dark:text-amber-300">
+                                {cambio.tipo}
+                              </p>
+                              {(cambio.motivoCambio === 'entidad' || cambio.motivoCambio === 'ambos') ? (
+                                <p className="text-xs text-amber-700 dark:text-amber-500">
+                                  Entidad cambiada:{' '}
+                                  <span className="font-medium">{cambio.entidadAnterior}</span>
+                                  {' → '}
+                                  <span className="font-medium">{cambio.entidadNueva}</span>
+                                </p>
+                              ) : null}
+                              {(cambio.motivoCambio === 'monto' || cambio.motivoCambio === 'ambos') ? (
+                                <p className="text-xs text-amber-700 dark:text-amber-500">
+                                  Monto aumentó:{' '}
+                                  <span className="font-medium">{formatCurrency(cambio.montoAnterior ?? 0)}</span>
+                                  {' → '}
+                                  <span className="font-medium">{formatCurrency(cambio.montoNuevo ?? 0)}</span>
+                                </p>
+                              ) : null}
+                              {cambio.documentos.length > 0 ? (
+                                <p className="text-xs text-amber-600 dark:text-amber-400 font-medium">
+                                  Deberás subir: {cambio.documentos.join(', ')}
+                                </p>
+                              ) : null}
                             </div>
                           ))}
                         </div>
                       )}
 
                       {fuentesNuevasQueNecesitanCarta.length > 0 && (
-                        <div className="space-y-1">
+                        <div className="space-y-2">
                           <p className="text-xs font-semibold text-amber-700 dark:text-amber-400">
-                            Fuentes nuevas que requerirán carta:
+                            Fuentes nuevas que requerirán documentación:
                           </p>
-                          {fuentesNuevasQueNecesitanCarta.map((tipo) => (
-                            <div key={tipo} className="flex items-center gap-1.5 text-xs text-amber-700 dark:text-amber-500">
-                              <span className="w-1.5 h-1.5 rounded-full bg-amber-400 flex-shrink-0" />
-                              <span>{tipo} — Carta de Aprobación requerida antes de desembolso</span>
+                          {fuentesNuevasQueNecesitanCarta.map((nueva) => (
+                            <div
+                              key={nueva.tipo}
+                              className="pl-2.5 border-l-2 border-amber-300 dark:border-amber-700 space-y-0.5"
+                            >
+                              <p className="text-xs font-semibold text-amber-800 dark:text-amber-300">
+                                {nueva.tipo}
+                              </p>
+                              {nueva.documentos.length > 0 ? (
+                                <p className="text-xs text-amber-600 dark:text-amber-400 font-medium">
+                                  Requiere: {nueva.documentos.join(', ')}
+                                </p>
+                              ) : null}
                             </div>
                           ))}
                         </div>

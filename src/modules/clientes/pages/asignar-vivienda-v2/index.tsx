@@ -2,16 +2,13 @@
 
 import { useMemo } from 'react'
 
-import type { FuentePagoConfig } from '@/modules/clientes/components/asignar-vivienda/types'
-import type { TipoFuentePago } from '@/modules/clientes/types'
-
 import {
-  AccordionSection,
-  AsignarViviendaHeader,
-  SeccionFuentesPago,
-  SeccionRevision,
-  SeccionViviendaValores,
-  StatusBar,
+    AccordionSection,
+    AsignarViviendaHeader,
+    SeccionFuentesPago,
+    SeccionRevision,
+    SeccionViviendaValores,
+    StatusBar,
 } from './components'
 import { useAsignarViviendaV2 } from './hooks'
 import { styles as s } from './styles'
@@ -55,6 +52,7 @@ export function AsignarViviendaV2Page({
     valorTotal,
     // Fuentes
     cargandoTipos,
+    tiposConCampos,
     fuentes,
     totalFuentes,
     diferencia,
@@ -89,9 +87,7 @@ export function AsignarViviendaV2Page({
       ? 'active'
       : pasosCompletados.includes(2)
         ? 'completed'
-        : pasosCompletados.includes(1)
-          ? 'locked'
-          : 'locked'
+        : 'locked'
   const estado3 = pasoActivo === 3 ? 'active' : 'locked'
 
   // Resumen sección 1 (para estado "completado")
@@ -176,24 +172,15 @@ export function AsignarViviendaV2Page({
             <SeccionFuentesPago
               valorTotal={valorTotal}
               cargandoTipos={cargandoTipos}
+              tiposConCampos={tiposConCampos}
               fuentes={fuentes}
               totalFuentes={totalFuentes}
               diferencia={diferencia}
               sumaCierra={sumaCierra}
               erroresFuentes={erroresFuentes}
               mostrarErroresFuentes={mostrarErroresFuentes}
-              handleFuenteEnabledChange={
-                handleFuenteEnabledChange as (
-                  tipo: TipoFuentePago,
-                  enabled: boolean
-                ) => void
-              }
-              handleFuenteConfigChange={
-                handleFuenteConfigChange as (
-                  tipo: TipoFuentePago,
-                  config: FuentePagoConfig | null
-                ) => void
-              }
+              handleFuenteEnabledChange={handleFuenteEnabledChange}
+              handleFuenteConfigChange={handleFuenteConfigChange}
             />
           </AccordionSection>
 
@@ -217,6 +204,7 @@ export function AsignarViviendaV2Page({
               tipoDescuento={tipoDescuento}
               notas={notas}
               fuentes={fuentes}
+              tiposConCampos={tiposConCampos}
               errorApi={errorApi}
               creando={creando}
               onGuardar={handleContinuar}

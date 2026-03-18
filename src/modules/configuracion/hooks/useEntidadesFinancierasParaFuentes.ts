@@ -1,154 +1,66 @@
 /**
  * Hook: useEntidadesFinancierasParaFuentes
  *
- * Hook optimizado para obtener bancos y cajas en formularios de fuentes de pago.
- * Filtra entidades por tipo de fuente de pago aplicable usando función SQL.
+ * Hooks para obtener bancos y cajas en formularios de fuentes de pago.
+ * Retorna todas las entidades activas por tipo — sin filtros adicionales.
  */
 
 'use client'
 
-import { supabase } from '@/lib/supabase/client'
-import { useQuery } from '@tanstack/react-query'
 import { useMemo } from 'react'
 import type { TipoEntidadFinanciera } from '../types/entidades-financieras.types'
 import { useEntidadesFinancierasActivas } from './useEntidadesFinancieras'
 
 interface EntidadOption {
-  value: string // ID para guardar en BD
-  label: string // Nombre para mostrar
+  value: string
+  label: string
   codigo: string
 }
 
 /**
- * 🔥 Obtener solo bancos activos MARCADOS para Crédito Hipotecario
- * Usa función SQL get_entidades_por_tipo_fuente() con índice GIN optimizado
+ * Retorna todos los bancos activos para el selector de Crédito Hipotecario.
  */
 export function useBancos() {
-  // 1. Obtener ID de "Crédito Hipotecario" desde tipos_fuentes_pago
-  const { data: tipoFuente, isLoading: cargandoTipo } = useQuery({
-    queryKey: ['tipo-fuente-credito-hipotecario'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('tipos_fuentes_pago')
-        .select('id, nombre')
-        .eq('nombre', 'Crédito Hipotecario')
-        .eq('activo', true)
-        .single()
-
-      if (error) throw error
-      return data
-    },
-    staleTime: 30 * 60 * 1000, // Cache 30 minutos (dato estable)
-  })
-
-  // 2. Obtener entidades filtradas por tipo de fuente aplicable
-  const { data: entidades, isLoading: cargandoEntidades, isError } = useQuery({
-    queryKey: ['entidades-bancos-credito-hipotecario', tipoFuente?.id],
-    queryFn: async () => {
-      if (!tipoFuente?.id) return []
-
-      const { data, error } = await supabase
-        .rpc('get_entidades_por_tipo_fuente', {
-          p_tipo_fuente_id: tipoFuente.id,
-          p_solo_activas: true
-        })
-
-      if (error) throw error
-
-      // Filtrar solo Bancos
-      return (data || []).filter((e: any) => e.tipo === 'Banco')
-    },
-    enabled: !!tipoFuente?.id,
-    staleTime: 10 * 60 * 1000,
-  })
+  const { data: entidades, isLoading, isError } = useEntidadesFinancierasActivas('Banco')
 
   const bancos = useMemo<EntidadOption[]>(() => {
     if (!entidades) return []
-
-    return entidades.map((entidad: any) => ({
-      value: entidad.id,
-      label: entidad.nombre,
-      codigo: entidad.codigo,
+    return entidades.map((e) => ({
+      value: e.id,
+      label: e.nombre,
+      codigo: e.codigo,
     }))
   }, [entidades])
 
-  return {
-    bancos,
-    isLoading: cargandoTipo || cargandoEntidades,
-    isError
-  }
+  return { bancos, isLoading, isError }
 }
 
 /**
- * 🔥 Obtener solo cajas activas MARCADAS para Subsidio Caja Compensación
- * Usa función SQL get_entidades_por_tipo_fuente() con índice GIN optimizado
+ * Retorna todas las cajas de compensación activas para el selector de Subsidio.
  */
 export function useCajas() {
-  // 1. Obtener ID de "Subsidio Caja Compensación" desde tipos_fuentes_pago
-  const { data: tipoFuente, isLoading: cargandoTipo } = useQuery({
-    queryKey: ['tipo-fuente-subsidio-caja'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('tipos_fuentes_pago')
-        .select('id, nombre')
-        .eq('nombre', 'Subsidio Caja Compensación')
-        .eq('activo', true)
-        .single()
-
-      if (error) throw error
-      return data
-    },
-    staleTime: 30 * 60 * 1000, // Cache 30 minutos (dato estable)
-  })
-
-  // 2. Obtener entidades filtradas por tipo de fuente aplicable
-  const { data: entidades, isLoading: cargandoEntidades, isError } = useQuery({
-    queryKey: ['entidades-cajas-subsidio', tipoFuente?.id],
-    queryFn: async () => {
-      if (!tipoFuente?.id) return []
-
-      const { data, error } = await supabase
-        .rpc('get_entidades_por_tipo_fuente', {
-          p_tipo_fuente_id: tipoFuente.id,
-          p_solo_activas: true
-        })
-
-      if (error) throw error
-
-      // Filtrar solo Cajas de Compensación
-      return (data || []).filter((e: any) => e.tipo === 'Caja de Compensación')
-    },
-    enabled: !!tipoFuente?.id,
-    staleTime: 10 * 60 * 1000,
-  })
+  const { data: entidades, isLoading, isError } = useEntidadesFinancierasActivas('Caja de Compensación')
 
   const cajas = useMemo<EntidadOption[]>(() => {
     if (!entidades) return []
-
-    return entidades.map((entidad: any) => ({
-      value: entidad.id,
-      label: entidad.nombre,
-      codigo: entidad.codigo,
+    return entidades.map((e) => ({
+      value: e.id,
+      label: e.nombre,
+      codigo: e.codigo,
     }))
   }, [entidades])
 
-  return {
-    cajas,
-    isLoading: cargandoTipo || cargandoEntidades,
-    isError
-  }
+  return { cajas, isLoading, isError }
 }
 
 /**
- * Obtener bancos + cajas (para formularios generales)
+ * Obtener bancos + cajas combinados (para formularios generales).
  */
 export function useEntidadesFinancierasCombinadas() {
   const { bancos, isLoading: loadingBancos, isError: errorBancos } = useBancos()
   const { cajas, isLoading: loadingCajas, isError: errorCajas } = useCajas()
 
-  const entidades = useMemo<EntidadOption[]>(() => {
-    return [...bancos, ...cajas]
-  }, [bancos, cajas])
+  const entidades = useMemo<EntidadOption[]>(() => [...bancos, ...cajas], [bancos, cajas])
 
   return {
     bancos,
@@ -160,18 +72,17 @@ export function useEntidadesFinancierasCombinadas() {
 }
 
 /**
- * Obtener entidades por tipo dinámicamente
+ * Obtener entidades por tipo dinámicamente.
  */
 export function useEntidadesPorTipo(tipo: TipoEntidadFinanciera) {
   const { data: entidades, isLoading, isError } = useEntidadesFinancierasActivas(tipo)
 
   const opciones = useMemo<EntidadOption[]>(() => {
     if (!entidades) return []
-
-    return entidades.map((entidad) => ({
-      value: entidad.id,
-      label: entidad.nombre,
-      codigo: entidad.codigo,
+    return entidades.map((e) => ({
+      value: e.id,
+      label: e.nombre,
+      codigo: e.codigo,
     }))
   }, [entidades])
 
@@ -179,17 +90,13 @@ export function useEntidadesPorTipo(tipo: TipoEntidadFinanciera) {
 }
 
 /**
- * Helper: Obtener nombre de entidad por ID
+ * Helper: Obtener nombre de entidad por ID.
  */
 export function useEntidadNombre(entidadId: string | null | undefined) {
   const { entidades } = useEntidadesFinancierasCombinadas()
 
-  const nombre = useMemo(() => {
+  return useMemo(() => {
     if (!entidadId || !entidades.length) return null
-
-    const entidad = entidades.find((e) => e.value === entidadId)
-    return entidad?.label || null
+    return entidades.find((e) => e.value === entidadId)?.label ?? null
   }, [entidadId, entidades])
-
-  return nombre
 }

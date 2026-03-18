@@ -13,6 +13,8 @@ interface TipoFuenteConfig {
   color: string
   from: string
   to: string
+  /** Si true, la fuente requiere entidad financiera y puede requerir documentos de aprobación */
+  requiere_entidad: boolean
 }
 
 type TiposFuenteConfigMap = Record<string, TipoFuenteConfig>
@@ -23,24 +25,28 @@ const FALLBACK_CONFIG: TiposFuenteConfigMap = {
     color: 'purple',
     from: 'rgb(168, 85, 247)',
     to: 'rgb(147, 51, 234)',
+    requiere_entidad: false,
   },
   'Crédito Hipotecario': {
     icono: 'Building2',
     color: 'blue',
     from: 'rgb(59, 130, 246)',
     to: 'rgb(37, 99, 235)',
+    requiere_entidad: true,
   },
   'Subsidio Mi Casa Ya': {
     icono: 'HandCoins',
     color: 'green',
     from: 'rgb(34, 197, 94)',
     to: 'rgb(16, 185, 129)',
+    requiere_entidad: false,
   },
   'Subsidio Caja Compensación': {
     icono: 'BadgeDollarSign',
     color: 'orange',
     from: 'rgb(251, 146, 60)',
     to: 'rgb(249, 115, 22)',
+    requiere_entidad: true,
   },
 }
 
@@ -69,7 +75,7 @@ export function useTiposFuentePagoConfig() {
 
         const { data, error } = await supabase
           .from('tipos_fuentes_pago')
-          .select('nombre, icono, color')
+          .select('nombre, icono, color, requiere_entidad')
           .eq('activo', true)
           .order('orden')
 
@@ -89,6 +95,7 @@ export function useTiposFuentePagoConfig() {
               color: tipo.color,
               from: colorInfo.from,
               to: colorInfo.to,
+              requiere_entidad: tipo.requiere_entidad ?? false,
             }
           })
 

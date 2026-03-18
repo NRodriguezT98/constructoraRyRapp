@@ -1,8 +1,8 @@
 # Spec: Nuevo Formulario "Asignar Vivienda" — Accordion Progresivo
 
-**Fecha:** 2026-03-14  
-**Estado:** Aprobado por usuario  
-**Reemplaza:** `src/modules/clientes/pages/asignar-vivienda/` (formulario actual de 3 pasos con sidebar)  
+**Fecha:** 2026-03-14
+**Estado:** Aprobado por usuario
+**Reemplaza:** `src/modules/clientes/pages/asignar-vivienda/` (formulario actual de 3 pasos con sidebar)
 **Ruta destino:** `src/modules/clientes/pages/asignar-vivienda-v2/` (nuevo módulo, no reutiliza código del actual)
 
 ---
@@ -76,8 +76,8 @@ Texto:       zinc-100 (principal) / zinc-400 (secundario)
 [Status Bar sticky inferior — siempre visible en pasos 1 y 2]
 ```
 
-**Ancho máximo:** `max-w-2xl mx-auto` — sin grid de dos columnas, sin sidebar.  
-**Padding:** `px-4 py-6` (móvil) / `px-6 py-8` (md+)  
+**Ancho máximo:** `max-w-2xl mx-auto` — sin grid de dos columnas, sin sidebar.
+**Padding:** `px-4 py-6` (móvil) / `px-6 py-8` (md+)
 **Gap entre acordeones:** `space-y-2`
 
 ---
@@ -201,7 +201,7 @@ Aparece debajo del toggle cuando está ON:
 - **Monto:** Input numérico con `$` prefijo, `DM Mono`
 - **Tipo:** Select con 7 opciones (Trabajador Empresa, Cliente VIP, Promoción Especial, Pronto Pago, Negociación Comercial, Liquidación, Otro)
 - **Motivo:** Textarea `rows-2`, contador `0/500 (mín 10)` en `text-zinc-500 text-[10px]`
-- **Línea de resumen del descuento** (1 sola línea):  
+- **Línea de resumen del descuento** (1 sola línea):
   `$185.500.000` con `line-through text-zinc-500` + `→` + `$180.500.000` en `text-emerald-400 font-bold DM Mono`
   - porcentaje `(-2.7%)` en `text-zinc-400 text-xs`
 

@@ -19,6 +19,21 @@ export const TIPOS_FUENTE_PAGO = {
 
 export type TipoFuentePago = typeof TIPOS_FUENTE_PAGO[keyof typeof TIPOS_FUENTE_PAGO]
 
+/**
+ * Códigos técnicos estables de fuentes de pago (columna `codigo` en BD).
+ * Siempre snake_case minúsculas — la BD tiene un CHECK constraint que lo impone.
+ * Usar ESTOS en SQL, queries y lógica interna.
+ * Usar TIPOS_FUENTE_PAGO solo para displays y comparaciones con datos existentes.
+ */
+export const FUENTES_PAGO_CODIGOS = {
+  CUOTA_INICIAL: 'cuota_inicial',
+  CREDITO_HIPOTECARIO: 'credito_hipotecario',
+  SUBSIDIO_MI_CASA_YA: 'subsidio_mi_casa_ya',
+  SUBSIDIO_CAJA_COMPENSACION: 'subsidio_caja_compensacion',
+} as const
+
+export type FuentePagoCodigo = typeof FUENTES_PAGO_CODIGOS[keyof typeof FUENTES_PAGO_CODIGOS]
+
 export const ESTADOS_FUENTE_PAGO = {
   ACTIVA: 'Activa',
   INACTIVA: 'Inactiva',

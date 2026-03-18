@@ -21,10 +21,12 @@ interface FuenteCardPlanProps {
   fuente: FuentePago
   valorVivienda: number
   docsPendientes?: DocsPendientesInfo
+  /** Color token from tipos_fuentes_pago.color in BD (e.g. 'blue', 'emerald'). Drives the card accent color. */
+  colorToken?: string
 }
 
-export function FuenteCardPlan({ fuente, valorVivienda, docsPendientes }: FuenteCardPlanProps) {
-  const color = getFuenteColor(fuente.tipo)
+export function FuenteCardPlan({ fuente, valorVivienda, docsPendientes, colorToken }: FuenteCardPlanProps) {
+  const color = getFuenteColor(colorToken)
   const pct = valorVivienda > 0 ? ((fuente.monto_aprobado / valorVivienda) * 100).toFixed(1) : '0'
 
   const tienePendientes = (docsPendientes?.total ?? 0) > 0

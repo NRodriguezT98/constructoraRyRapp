@@ -74,7 +74,7 @@ function SinNegociacion({ onAsignar }: { onAsignar?: () => void }) {
           Sin vivienda asignada
         </h3>
         <p className="text-sm text-gray-500 dark:text-gray-400 max-w-xs">
-          Cuando el cliente tenga una vivienda asignada, aquí verás el plan financiero y el
+          Cuando el cliente tenga una vivienda asignada, aquí verás el cierre financiero y el
           seguimiento de pagos.
         </p>
       </div>
@@ -99,6 +99,8 @@ export function NegociacionTab({ cliente }: NegociacionTabProps) {
     diferencia,
     estaBalanceado,
     tiposDisponibles,
+    tiposFuentes,
+    requisitosMap,
     isLoading,
     isLoadingAbonos,
     isRebalanceando,
@@ -178,7 +180,7 @@ export function NegociacionTab({ cliente }: NegociacionTabProps) {
         </button>
       </motion.div>
 
-      {/* ─── 2. PLAN FINANCIERO ──────────────────────────────── */}
+      {/* ─── 2. CIERRE FINANCIERO ──────────────────────────────── */}
       <motion.div
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
@@ -190,7 +192,7 @@ export function NegociacionTab({ cliente }: NegociacionTabProps) {
           <div className="flex items-center gap-2">
             <DollarSign className="w-4 h-4 text-gray-400 dark:text-gray-500" />
             <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
-              Plan Financiero
+              Cierre Financiero
             </h3>
             <span className="text-xs text-gray-400 dark:text-gray-500">
               ({fuentesPago.length} fuente{fuentesPago.length !== 1 ? 's' : ''})
@@ -204,7 +206,7 @@ export function NegociacionTab({ cliente }: NegociacionTabProps) {
               className="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1.5 rounded-lg bg-cyan-50 dark:bg-cyan-900/20 text-cyan-700 dark:text-cyan-400 hover:bg-cyan-100 dark:hover:bg-cyan-900/30 transition-colors border border-cyan-200 dark:border-cyan-800/40"
             >
               <SlidersHorizontal className="w-3.5 h-3.5" />
-              Ajustar plan
+              Ajustar cierre
             </button>
           )}
 
@@ -221,7 +223,7 @@ export function NegociacionTab({ cliente }: NegociacionTabProps) {
           {fuentesPago.length === 0 ? (
             <div className="py-6 text-center text-sm text-gray-400 dark:text-gray-500">
               {isAdmin
-                ? 'No hay fuentes configuradas. Usa "Ajustar plan" para agregarlas.'
+                ? 'No hay fuentes configuradas. Usa "Ajustar cierre" para agregarlas.'
                 : 'No hay fuentes de pago configuradas.'}
             </div>
           ) : (
@@ -295,6 +297,7 @@ export function NegociacionTab({ cliente }: NegociacionTabProps) {
                     fuente={fuente}
                     valorVivienda={valorVivienda}
                     docsPendientes={pendientesPorFuente[fuente.id]}
+                    colorToken={tiposFuentes.find((t) => t.nombre === fuente.tipo)?.color}
                   />
                 ))}
               </div>
@@ -312,7 +315,7 @@ export function NegociacionTab({ cliente }: NegociacionTabProps) {
                 <p className="text-xs text-center text-amber-600 dark:text-amber-400">
                   Usa{' '}
                   <button onClick={openRebalancear} className="underline font-semibold">
-                    Ajustar plan
+                    Ajustar cierre
                   </button>{' '}
                   para corregir el balance.
                 </p>
@@ -351,7 +354,7 @@ export function NegociacionTab({ cliente }: NegociacionTabProps) {
         </div>
       </motion.div>
 
-      {/* ─── MODAL ADMIN: Rebalancear plan ───────────────────── */}
+      {/* ─── MODAL ADMIN: Ajustar cierre financiero ─────────── */}
       {isAdmin && (
         <RebalancearModal
           isOpen={modalRebalancearOpen}
@@ -359,6 +362,8 @@ export function NegociacionTab({ cliente }: NegociacionTabProps) {
           fuentesPago={fuentesPago}
           valorVivienda={valorVivienda}
           tiposDisponibles={tiposDisponibles}
+          tiposConfig={tiposFuentes}
+          requisitosMap={requisitosMap}
           onGuardar={handleGuardarRebalanceo}
           isGuardando={isRebalanceando}
         />

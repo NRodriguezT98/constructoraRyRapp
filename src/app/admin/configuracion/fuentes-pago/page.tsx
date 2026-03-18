@@ -57,6 +57,27 @@ function obtenerIcono(nombreIcono: string) {
 }
 
 // ============================================
+// COLOR MAP: CSS name → hex (para gradientes y alpha)
+// ============================================
+
+const COLOR_HEX_MAP: Record<string, string> = {
+  blue: '#3b82f6',
+  green: '#22c55e',
+  orange: '#f97316',
+  purple: '#a855f7',
+  red: '#ef4444',
+  cyan: '#06b6d4',
+  pink: '#ec4899',
+  indigo: '#6366f1',
+  yellow: '#eab308',
+  emerald: '#10b981',
+}
+
+function toHex(color: string) {
+  return COLOR_HEX_MAP[color] ?? color
+}
+
+// ============================================
 // COMPONENTE PRINCIPAL
 // ============================================
 
@@ -202,8 +223,8 @@ export default function FuentesPagoConfigPage() {
                         <span
                           className={s.tipoCard.badge}
                           style={{
-                            background: numCampos > 0 ? `${tipo.color}20` : '#f3f4f620',
-                            color: numCampos > 0 ? tipo.color : '#9ca3af',
+                            background: numCampos > 0 ? `${toHex(tipo.color)}20` : '#f3f4f620',
+                            color: numCampos > 0 ? toHex(tipo.color) : '#9ca3af',
                           }}
                         >
                           {numCampos} campo{numCampos !== 1 ? 's' : ''}
@@ -224,7 +245,7 @@ export default function FuentesPagoConfigPage() {
                       onClick={() => handleAbrirConfigurador(tipo)}
                       className={s.tipoCard.button}
                       style={{
-                        background: `linear-gradient(135deg, ${tipo.color}, ${tipo.color}dd)`,
+                        background: `linear-gradient(135deg, ${toHex(tipo.color)}, ${toHex(tipo.color)}cc)`,
                         color: '#fff',
                       }}
                     >

@@ -22,14 +22,14 @@ export async function tieneDocumentoIdentidad(clienteId: string): Promise<boolea
     .eq('es_documento_identidad', true)
     .eq('estado', 'Activo')
     .limit(1)
-    .single()
+    .maybeSingle()
 
   if (error) {
     console.error('Error verificando documento identidad:', error)
     return false
   }
 
-  return !!data
+  return data !== null
 }
 
 /**

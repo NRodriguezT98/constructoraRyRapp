@@ -14,9 +14,9 @@ import { AuthProvider } from '@/contexts/auth-context'
 import { UnsavedChangesProvider } from '@/contexts/unsaved-changes-context'
 import { ReactQueryProvider } from '@/lib/react-query'
 import {
-  AlertModal,
-  ConfirmModal,
-  ModalProvider,
+    AlertModal,
+    ConfirmModal,
+    ModalProvider,
 } from '@/shared/components/modals'
 
 import './globals.css'

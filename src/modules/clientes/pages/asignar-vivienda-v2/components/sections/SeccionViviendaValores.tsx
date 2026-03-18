@@ -1,12 +1,13 @@
 'use client'
 
 import { AnimatePresence, motion } from 'framer-motion'
-import { AlertCircle } from 'lucide-react'
+import { AlertCircle, Calculator, DollarSign, FileText, Tag, User } from 'lucide-react'
+import { useState } from 'react'
 import type {
-  UseFormRegister,
-  FieldErrors,
-  UseFormSetValue,
-  UseFormWatch,
+    FieldErrors,
+    UseFormRegister,
+    UseFormSetValue,
+    UseFormWatch,
 } from 'react-hook-form'
 
 import { formatCurrency } from '@/lib/utils/format.utils'
@@ -84,12 +85,40 @@ export function SeccionViviendaValores({
       ? ((descuentoActual / valorBaseTotal) * 100).toFixed(1)
       : '0'
 
+  // Display value for number inputs (formatted)
+  const [descuentoDisplay, setDescuentoDisplay] = useState(
+    descuentoActual > 0 ? descuentoActual.toLocaleString('es-CO') : ''
+  )
+  const [escrituraDisplay, setEscrituraDisplay] = useState(
+    valorEscrituraPublica > 0 ? valorEscrituraPublica.toLocaleString('es-CO') : ''
+  )
+
+  const handleDescuentoChange = (raw: string) => {
+    const digits = raw.replace(/\D/g, '')
+    const num = parseInt(digits || '0', 10)
+    setDescuentoDisplay(digits ? num.toLocaleString('es-CO') : '')
+    setValue('descuento_aplicado', num)
+    onClearErrorApi?.()
+  }
+
+  const handleEscrituraChange = (raw: string) => {
+    const digits = raw.replace(/\D/g, '')
+    const num = parseInt(digits || '0', 10)
+    setEscrituraDisplay(digits ? num.toLocaleString('es-CO') : '')
+    setValue('valor_escritura_publica', num)
+  }
+
   return (
     <div className='space-y-4'>
       {/* Cliente (readonly) */}
       <div className={s.clientChip.wrapper}>
-        <span className={s.clientChip.label}>Cliente</span>
-        <span className={s.clientChip.value}>{clienteNombre}</span>
+        <div className={s.clientChip.iconWrapper}>
+          <User className={s.clientChip.icon} />
+        </div>
+        <div>
+          <span className={s.clientChip.label}>Cliente</span>
+          <span className={s.clientChip.value}>{clienteNombre}</span>
+        </div>
       </div>
 
       {/* Fila: Proyecto + Vivienda */}
@@ -160,12 +189,14 @@ export function SeccionViviendaValores({
             {/* Tres chips */}
             <div className={s.field.grid3}>
               <div className={s.valueChip.wrapper}>
+                <DollarSign className={s.valueChip.icon} />
                 <span className={s.valueChip.label}>Valor base</span>
                 <span className={s.valueChip.value}>
                   {formatCurrency(valorBase)}
                 </span>
               </div>
               <div className={s.valueChip.wrapper}>
+                <FileText className={s.valueChip.icon} />
                 <span className={s.valueChip.label}>Gastos Not.</span>
                 <span className={s.valueChip.value}>
                   {formatCurrency(gastosNotariales)}
@@ -173,6 +204,7 @@ export function SeccionViviendaValores({
               </div>
               {recargoEsquinera > 0 && (
                 <div className={s.valueChip.wrapper}>
+                  <Tag className={s.valueChip.icon} />
                   <span className={s.valueChip.label}>Recargo Esq.</span>
                   <span className={s.valueChip.value}>
                     {formatCurrency(recargoEsquinera)}
@@ -183,7 +215,10 @@ export function SeccionViviendaValores({
 
             {/* Total a cubrir */}
             <div className={s.totalRow.wrapper}>
-              <span className={s.totalRow.label}>Total a cubrir</span>
+              <span className={s.totalRow.label}>
+                <Calculator className={s.totalRow.labelIcon} />
+                Total a cubrir
+              </span>
               <span className={s.totalRow.value}>
                 {formatCurrency(valorTotal)}
               </span>
@@ -193,12 +228,15 @@ export function SeccionViviendaValores({
       </AnimatePresence>
 
       {/* Toggle descuento */}
-      <div className={`${s.field.row} ${s.field.divider}`}>
-        <div>
-          <p className='text-sm text-zinc-300'>¿Aplicar descuento?</p>
-          <p className='mt-0.5 text-xs text-zinc-500'>
-            Reduce el total a cubrir
-          </p>
+      <div className={s.discountToggle.wrapper}>
+        <div className={s.discountToggle.left}>
+          <div className={s.discountToggle.iconWrapper}>
+            <Tag className={s.discountToggle.icon} />
+          </div>
+          <div>
+            <p className={s.discountToggle.title}>Aplicar descuento</p>
+            <p className={s.discountToggle.subtitle}>Reduce el total a cubrir</p>
+          </div>
         </div>
         <button
           type='button'
@@ -210,6 +248,7 @@ export function SeccionViviendaValores({
               setValue('descuento_aplicado', 0)
               setValue('tipo_descuento', '')
               setValue('motivo_descuento', '')
+              setDescuentoDisplay('')
             }
           }}
         >
@@ -237,18 +276,12 @@ export function SeccionViviendaValores({
                   <div className='relative'>
                     <span className={s.field.prefix}>$</span>
                     <input
-                      type='number'
-                      min='0'
+                      type='text'
+                      inputMode='numeric'
                       className={`${s.field.inputMono} ${s.field.inputWithPrefix}`}
                       placeholder='0'
-                      {...register('descuento_aplicado', {
-                        valueAsNumber: true,
-                      })}
-                      onChange={e => {
-                        const val = parseFloat(e.target.value) || 0
-                        setValue('descuento_aplicado', val)
-                        onClearErrorApi?.()
-                      }}
+                      value={descuentoDisplay}
+                      onChange={e => handleDescuentoChange(e.target.value)}
                     />
                   </div>
                   {errors.descuento_aplicado && (
@@ -346,16 +379,11 @@ export function SeccionViviendaValores({
           <div className='relative mt-1'>
             <span className={s.field.prefix}>$</span>
             <input
-              type='number'
-              min='0'
+              type='text'
+              inputMode='numeric'
               className={`${s.field.inputMono} ${s.field.inputWithPrefix}`}
-              {...register('valor_escritura_publica', { valueAsNumber: true })}
-              onChange={e => {
-                setValue(
-                  'valor_escritura_publica',
-                  parseFloat(e.target.value) || 0
-                )
-              }}
+              value={escrituraDisplay}
+              onChange={e => handleEscrituraChange(e.target.value)}
             />
           </div>
           {valorEscrituraPublica > 0 && valorTotal > 0 && (

@@ -25,120 +25,161 @@ COMMENT ON COLUMN tipos_fuentes_pago.configuracion_campos IS
 
 -- ============================================
 -- 2. SEED: CONFIGURACIONES PARA FUENTES OFICIALES
+--
+-- REGLA: los códigos en tipos_fuentes_pago son siempre minúsculas
+-- (snake_case). Nunca usar MAYÚSCULAS en WHERE codigo = '...' —
+-- PostgreSQL es case-sensitive y el UPDATE silenciosamente afectaría
+-- 0 filas. Usar DO $$ con GET DIAGNOSTICS para detectar esto.
 -- ============================================
 
--- Cuota Inicial (solo monto)
-UPDATE tipos_fuentes_pago
-SET configuracion_campos = '{
-  "campos": [
-    {
-      "nombre": "monto_aprobado",
-      "tipo": "currency",
-      "label": "Monto de Cuota Inicial",
-      "placeholder": "Ej: 20.000.000",
-      "requerido": true,
-      "orden": 1,
-      "ayuda": "Monto que el cliente pagará como cuota inicial"
-    }
-  ]
-}'::jsonb
-WHERE codigo = 'CUOTA_INICIAL';
+DO $$
+DECLARE
+  filas_afectadas INT;
+BEGIN
 
--- Crédito Hipotecario (monto + banco + radicado)
-UPDATE tipos_fuentes_pago
-SET configuracion_campos = '{
-  "campos": [
-    {
-      "nombre": "monto_aprobado",
-      "tipo": "currency",
-      "label": "Monto Aprobado",
-      "placeholder": "Ej: 80.000.000",
-      "requerido": true,
-      "orden": 1,
-      "ayuda": "Monto total aprobado por el banco"
-    },
-    {
-      "nombre": "entidad",
-      "tipo": "select_banco",
-      "label": "Banco",
-      "placeholder": "Seleccionar banco...",
-      "requerido": true,
-      "orden": 2,
-      "ayuda": "Entidad bancaria que aprobó el crédito"
-    },
-    {
-      "nombre": "numero_referencia",
-      "tipo": "text",
-      "label": "Radicado/Número de Crédito",
-      "placeholder": "Ej: #BCO-2025-789456",
-      "requerido": false,
-      "orden": 3,
-      "ayuda": "Número de radicado o referencia del crédito"
-    }
-  ]
-}'::jsonb
-WHERE codigo = 'CREDITO_HIPOTECARIO';
+  -- ── Cuota Inicial (solo monto) ──────────────────────────────────
+  UPDATE tipos_fuentes_pago
+  SET configuracion_campos = '{
+    "campos": [
+      {
+        "nombre": "monto_aprobado",
+        "tipo": "currency",
+        "rol": "monto",
+        "label": "Monto Cuota Inicial",
+        "placeholder": "Ej: 20.000.000",
+        "requerido": true,
+        "orden": 1,
+        "ayuda": "Monto que el cliente pagará como cuota inicial"
+      }
+    ]
+  }'::jsonb
+  WHERE codigo = 'cuota_inicial';
 
--- Subsidio Mi Casa Ya (monto + número resolución)
-UPDATE tipos_fuentes_pago
-SET configuracion_campos = '{
-  "campos": [
-    {
-      "nombre": "monto_aprobado",
-      "tipo": "currency",
-      "label": "Monto del Subsidio",
-      "placeholder": "Ej: 30.000.000",
-      "requerido": true,
-      "orden": 1,
-      "ayuda": "Monto aprobado del subsidio Mi Casa Ya"
-    },
-    {
-      "nombre": "numero_referencia",
-      "tipo": "text",
-      "label": "Número de Resolución",
-      "placeholder": "Ej: RES-2025-12345",
-      "requerido": false,
-      "orden": 2,
-      "ayuda": "Número de la resolución del subsidio"
-    }
-  ]
-}'::jsonb
-WHERE codigo = 'SUBSIDIO_MI_CASA_YA';
+  GET DIAGNOSTICS filas_afectadas = ROW_COUNT;
+  IF filas_afectadas = 0 THEN
+    RAISE EXCEPTION 'SEED FALLÓ: No se encontró tipos_fuentes_pago con codigo = ''cuota_inicial''. Verifica el seed inicial.';
+  END IF;
 
--- Subsidio Caja Compensación (monto + caja + referencia)
-UPDATE tipos_fuentes_pago
-SET configuracion_campos = '{
-  "campos": [
-    {
-      "nombre": "monto_aprobado",
-      "tipo": "currency",
-      "label": "Monto del Subsidio",
-      "placeholder": "Ej: 15.000.000",
-      "requerido": true,
-      "orden": 1,
-      "ayuda": "Monto aprobado por la caja de compensación"
-    },
-    {
-      "nombre": "entidad",
-      "tipo": "select_caja",
-      "label": "Caja de Compensación",
-      "placeholder": "Seleccionar caja...",
-      "requerido": true,
-      "orden": 2,
-      "ayuda": "Caja de compensación que aprobó el subsidio"
-    },
-    {
-      "nombre": "numero_referencia",
-      "tipo": "text",
-      "label": "Número de Referencia",
-      "placeholder": "Ej: CAJA-2025-456",
-      "requerido": false,
-      "orden": 3,
-      "ayuda": "Número de referencia del subsidio"
-    }
-  ]
-}'::jsonb
-WHERE codigo = 'SUBSIDIO_CAJA_COMPENSACION';
+  -- ── Crédito Hipotecario (monto + banco + radicado) ──────────────
+  UPDATE tipos_fuentes_pago
+  SET configuracion_campos = '{
+    "campos": [
+      {
+        "nombre": "monto_aprobado",
+        "tipo": "currency",
+        "rol": "monto",
+        "label": "Monto Crédito Aprobado",
+        "placeholder": "Ej: 80.000.000",
+        "requerido": true,
+        "orden": 1,
+        "ayuda": "Escribe aquí el monto de crédito aprobado del cliente"
+      },
+      {
+        "nombre": "entidad",
+        "tipo": "select_banco",
+        "rol": "entidad",
+        "label": "Banco",
+        "placeholder": "Seleccionar...",
+        "requerido": true,
+        "orden": 2,
+        "ayuda": "Selecciona el Banco que aprueba el crédito"
+      },
+      {
+        "nombre": "numero_referencia",
+        "tipo": "text",
+        "rol": "referencia",
+        "label": "Referencia Crédito",
+        "placeholder": "SIB_2025_123456",
+        "requerido": false,
+        "orden": 3,
+        "ayuda": "Número de radicado o referencia del crédito"
+      }
+    ]
+  }'::jsonb
+  WHERE codigo = 'credito_hipotecario';
+
+  GET DIAGNOSTICS filas_afectadas = ROW_COUNT;
+  IF filas_afectadas = 0 THEN
+    RAISE EXCEPTION 'SEED FALLÓ: No se encontró tipos_fuentes_pago con codigo = ''credito_hipotecario''.';
+  END IF;
+
+  -- ── Subsidio Mi Casa Ya (monto + resolución) ────────────────────
+  UPDATE tipos_fuentes_pago
+  SET configuracion_campos = '{
+    "campos": [
+      {
+        "nombre": "monto_aprobado",
+        "tipo": "currency",
+        "rol": "monto",
+        "label": "Monto del Subsidio",
+        "placeholder": "Ej: 30.000.000",
+        "requerido": true,
+        "orden": 1,
+        "ayuda": "Monto aprobado del subsidio Mi Casa Ya"
+      },
+      {
+        "nombre": "numero_referencia",
+        "tipo": "text",
+        "rol": "referencia",
+        "label": "Número de Resolución",
+        "placeholder": "Ej: RES-2025-12345",
+        "requerido": false,
+        "orden": 2,
+        "ayuda": "Número de la resolución del subsidio"
+      }
+    ]
+  }'::jsonb
+  WHERE codigo = 'subsidio_mi_casa_ya';
+
+  GET DIAGNOSTICS filas_afectadas = ROW_COUNT;
+  IF filas_afectadas = 0 THEN
+    RAISE EXCEPTION 'SEED FALLÓ: No se encontró tipos_fuentes_pago con codigo = ''subsidio_mi_casa_ya''.';
+  END IF;
+
+  -- ── Subsidio Caja Compensación (monto + caja + referencia) ──────
+  UPDATE tipos_fuentes_pago
+  SET configuracion_campos = '{
+    "campos": [
+      {
+        "nombre": "monto_aprobado",
+        "tipo": "currency",
+        "rol": "monto",
+        "label": "Monto del Subsidio",
+        "placeholder": "Ej: 15.000.000",
+        "requerido": true,
+        "orden": 1,
+        "ayuda": "Monto aprobado por la caja de compensación"
+      },
+      {
+        "nombre": "entidad",
+        "tipo": "select_caja",
+        "rol": "entidad",
+        "label": "Caja de Compensación",
+        "placeholder": "Seleccionar...",
+        "requerido": true,
+        "orden": 2,
+        "ayuda": "Selecciona la caja de compensación que aprobó el subsidio"
+      },
+      {
+        "nombre": "numero_referencia",
+        "tipo": "text",
+        "rol": "referencia",
+        "label": "Número de Referencia",
+        "placeholder": "Ej: CAJA-2025-456",
+        "requerido": false,
+        "orden": 3,
+        "ayuda": "Número de referencia del subsidio"
+      }
+    ]
+  }'::jsonb
+  WHERE codigo = 'subsidio_caja_compensacion';
+
+  GET DIAGNOSTICS filas_afectadas = ROW_COUNT;
+  IF filas_afectadas = 0 THEN
+    RAISE EXCEPTION 'SEED FALLÓ: No se encontró tipos_fuentes_pago con codigo = ''subsidio_caja_compensacion''.';
+  END IF;
+
+END $$;
 
 -- ============================================
 -- 3. ÍNDICE PARA BÚSQUEDAS EN JSON

@@ -6,6 +6,7 @@
 import { useState } from 'react'
 
 import { createClient } from '@/lib/supabase/client'
+import { FUENTES_PAGO_CODIGOS } from '@/modules/clientes/types/fuentes-pago'
 
 interface TipoFuente {
   id: string
@@ -24,14 +25,8 @@ interface ResultadoOperacion {
   fuentes?: TipoFuente[]
 }
 
-const IDS_OFICIALES = {
-  cuota_inicial: '25336a87-035e-47ac-a382-335af02219cf',
-  credito_hipotecario: 'e635231f-6f71-4180-8e79-e50e1a82ef7d',
-  subsidio_mi_casa_ya: '6a58205b-7297-4fd8-a0ae-b899b8a2c2ce',
-  subsidio_caja_compensacion: '2a21e525-2731-4270-8668-4d64359eeeb6',
-}
-
-const IDS_ARRAY = Object.values(IDS_OFICIALES)
+/** Códigos oficiales de las 4 fuentes de pago del sistema */
+const CODIGOS_OFICIALES = Object.values(FUENTES_PAGO_CODIGOS)
 
 export function useTiposFuentesPago() {
   const [loading, setLoading] = useState(false)
@@ -54,7 +49,7 @@ export function useTiposFuentesPago() {
       }
 
       const codigosActuales = new Set(fuentesActuales?.map((f) => f.codigo) || [])
-      const faltantes = Object.keys(IDS_OFICIALES).filter((cod) => !codigosActuales.has(cod))
+      const faltantes = CODIGOS_OFICIALES.filter((cod) => !codigosActuales.has(cod))
 
       if (faltantes.length === 0) {
         setResultado({
@@ -93,7 +88,7 @@ export function useTiposFuentesPago() {
       const { data: fuentesActuales, error: errorConsulta } = await supabase
         .from('tipos_fuentes_pago')
         .select('id,nombre,codigo,descripcion,requiere_entidad,permite_multiples_abonos,es_subsidio,color,icono,orden,activo,created_at,updated_at,created_by,updated_by')
-        .in('id', IDS_ARRAY)
+        .in('codigo', CODIGOS_OFICIALES)
         .order('orden')
 
       if (errorConsulta) {
@@ -102,11 +97,11 @@ export function useTiposFuentesPago() {
 
       // 2. Analizar diferencias
       const fuentesExistentes = fuentesActuales || []
-      const idsExistentes = fuentesExistentes.map((f) => f.id)
-      const faltantes = IDS_ARRAY.filter((id) => !idsExistentes.includes(id))
+      const codigosExistentes = new Set(fuentesExistentes.map((f) => f.codigo))
+      const faltantes = CODIGOS_OFICIALES.filter((cod) => !codigosExistentes.has(cod))
 
       // Si existen las 4 y tienen configuración correcta
-      if (faltantes.length === 0 && fuentesExistentes.length === 4) {
+      if (faltantes.length === 0 && fuentesExistentes.length === CODIGOS_OFICIALES.length) {
         // Verificar si la configuración es idéntica (nombre, descripción, color, icono)
         const configuracionActual = fuentesExistentes.every((fuente) => {
           // Aquí podrías hacer una validación más estricta comparando con FUENTES_OFICIALES

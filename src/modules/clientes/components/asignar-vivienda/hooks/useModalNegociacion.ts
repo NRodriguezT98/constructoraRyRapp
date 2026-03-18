@@ -3,10 +3,11 @@
  * Orquesta el stepper, form data y navegación entre pasos
  */
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 
 import { useCrearNegociacion } from '@/modules/clientes/hooks'
 import { validarSumaTotal } from '@/modules/clientes/utils/validar-edicion-fuentes'
+import { useTiposFuentesConCampos } from '@/modules/configuracion/hooks/useTiposFuentesConCampos'
 
 import type { StepNumber } from '../types'
 
@@ -65,7 +66,9 @@ export function useModalNegociacion({
     return Math.max(0, proyectosViviendas.valorNegociado - descuentoAplicado)
   }, [proyectosViviendas.valorNegociado, descuentoAplicado])
 
-  const fuentesPago = useFuentesPago({ valorTotal })
+  const { data: tiposConCampos = [], isLoading: cargandoTipos } = useTiposFuentesConCampos()
+
+  const fuentesPago = useFuentesPago({ valorTotal, tiposConCampos, cargandoTipos })
 
   // ============================================
   // VALIDACIONES POR PASO

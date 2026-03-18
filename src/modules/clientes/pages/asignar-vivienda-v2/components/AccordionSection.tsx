@@ -1,6 +1,6 @@
 'use client'
 
-import { motion, AnimatePresence } from 'framer-motion'
+import { AnimatePresence, motion } from 'framer-motion'
 import { Check, ChevronUp, Lock } from 'lucide-react'
 
 import { styles as s } from '../styles'
@@ -36,7 +36,9 @@ export function AccordionSection({
       <div className={s.accordion.locked.wrapper}>
         <div className={s.accordion.locked.header}>
           <div className='flex items-center'>
-            <span className={s.accordion.locked.number}>{number}</span>
+            <div className={s.accordion.locked.numberWrapper}>
+              <span className={s.accordion.locked.number}>{number}</span>
+            </div>
             <span className={s.accordion.locked.title}>{title}</span>
           </div>
           <Lock className={s.accordion.locked.lock} />
@@ -56,12 +58,11 @@ export function AccordionSection({
         aria-expanded={false}
       >
         <div className={s.accordion.completed.header}>
-          <Check className={`${s.accordion.completed.check} h-4 w-4`} />
+          <div className={s.accordion.completed.checkWrapper}>
+            <Check className={`${s.accordion.completed.check} h-3 w-3`} />
+          </div>
           <div className='min-w-0 flex-1'>
-            <div className='flex items-center gap-1'>
-              <span className={s.accordion.completed.number}>{number}</span>
-              <span className={s.accordion.completed.title}>{title}</span>
-            </div>
+            <span className={s.accordion.completed.title}>{title}</span>
             {summary && (
               <p className={s.accordion.completed.summary}>{summary}</p>
             )}
@@ -76,7 +77,9 @@ export function AccordionSection({
     <div className={s.accordion.active.wrapper}>
       <div className={s.accordion.active.header}>
         <div className='flex items-center'>
-          <span className={s.accordion.active.number}>{number}</span>
+          <div className={s.accordion.active.numberWrapper}>
+            <span className={s.accordion.active.number}>{number}</span>
+          </div>
           <span className={s.accordion.active.title}>{title}</span>
         </div>
         <ChevronUp className={s.accordion.active.chevron} />

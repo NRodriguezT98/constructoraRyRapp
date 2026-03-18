@@ -143,18 +143,14 @@ export function useFuentePagoCard({ fuente, clienteId }: UseFuentePagoCardProps)
 
   const puedeDesembolsar = pendientesObligatorios.length === 0
 
-  // ✅ Tipos que requieren validación de documentos
-  const tiposQueRequierenValidacion = useMemo(
-    () => ['Crédito Hipotecario', 'Subsidio Mi Casa Ya', 'Subsidio Caja Compensación'],
-    []
-  )
-
   // ✅ Estado visual calculado (memoizado)
+  // requiere_entidad viene de tipos_fuentes_pago en BD — sin hardcodear nombres de tipos
   const estadoVisual = useMemo<EstadoVisual>(() => {
-    const requiereValidacion = tiposQueRequierenValidacion.includes(fuente.tipo)
+    const tipoConfig = getTipoConfig(fuente.tipo)
+    const requiereDocumentos = tipoConfig.requiere_entidad
 
-    // Cuota Inicial - sin requisitos de documentos
-    if (!requiereValidacion) {
+    // Fuentes sin requisitos de documentos (ej: Cuota Inicial)
+    if (!requiereDocumentos) {
       if (metricas.porcentajePagado === 100) {
         return {
           tipo: 'completo',
@@ -188,7 +184,7 @@ export function useFuentePagoCard({ fuente, clienteId }: UseFuentePagoCardProps)
       color: 'text-amber-600 dark:text-amber-400',
       iconClass: 'text-amber-600 dark:text-amber-400'
     }
-  }, [fuente.tipo, metricas.porcentajePagado, puedeDesembolsar, pendientesObligatorios, tiposQueRequierenValidacion])
+  }, [fuente.tipo, metricas.porcentajePagado, puedeDesembolsar, pendientesObligatorios, getTipoConfig])
 
   // ✅ Formateador de moneda (memoizado)
   const formatCurrency = useCallback((amount: number) =>
@@ -200,6 +196,7 @@ export function useFuentePagoCard({ fuente, clienteId }: UseFuentePagoCardProps)
   )
 
   const isLoading = isLoadingPendientes || isLoadingConfig
+  const requiereDocumentos = getTipoConfig(fuente.tipo).requiere_entidad
 
   return {
     // Datos
@@ -213,10 +210,10 @@ export function useFuentePagoCard({ fuente, clienteId }: UseFuentePagoCardProps)
     // Estados
     isLoading,
     puedeDesembolsar,
+    requiereDocumentos,
 
     // Utilidades
     formatCurrency,
-    tiposQueRequierenValidacion,
 
     // Configuración
     clienteId,
