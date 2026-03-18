@@ -113,6 +113,10 @@ const fuentesParaInsertar = datos.fuentes_pago.map(fuente => ({
 
 **Paso 2b — después del INSERT de fuentes, para cada fuente con `parametrosCredito`:**
 
+Envolver todo Paso 2b en try/catch: si `calcularTablaAmortizacion` lanza (parámetros inválidos) o si `crearCredito`/`crearCuotasCredito` falla, disparar el rollback inmediatamente. Los parámetros ya fueron validados en el form, pero el service debe protegerse.
+
+`calcularTablaAmortizacion` valida todas las entradas y lanza con mensaje descriptivo si: capital ≤ 0, tasaMensual ≤ 0 o > 10, numCuotas < 1 o > 360.
+
 ```
 a) Normalizar fecha:
    const fechaDate = typeof parametrosCredito.fechaInicio === 'string'
@@ -147,11 +151,12 @@ d) crearCuotasCredito(fuenteCreada.id, calculo.cuotas, versionPlan=1)
    → Si error: ir a rollback
 ```
 
-**Rollback del Paso 2b** — mismo patrón de compensación manual ya usado en el service:
+**Rollback del Paso 2b** — mismo patrón de compensación manual ya usado en el service.
+Si múltiples fuentes tienen `parametrosCredito`, el rollback elimina TODOS los registros creados en esta llamada (no solo el que falló). El service debe acumular los `fuente_pago_id` con crédito exitoso y eliminarlos todos.
 ```typescript
-// Antes del rollback existente, borrar lo creado en 2b:
-await supabase.from('cuotas_credito').delete().eq('fuente_pago_id', fuenteCreada.id)
-await supabase.from('creditos_constructora').delete().eq('fuente_pago_id', fuenteCreada.id)
+// Para cada fuenteConCreditoCreado.id (todos los insertados en esta operación):
+await supabase.from('cuotas_credito').delete().eq('fuente_pago_id', fuenteConCreditoCreado.id)
+await supabase.from('creditos_constructora').delete().eq('fuente_pago_id', fuenteConCreditoCreado.id)
 // luego continúa el rollback existente:
 // → DELETE fuentes_pago WHERE negociacion_id
 // → DELETE negociaciones WHERE id
@@ -228,6 +233,7 @@ const creditoInfo = useMemo(() => {
   Total a pagar:          $15.260.000
   6 cuotas de $2.543.333/mes · Primera: 01 abr 2026
 ```
+Fecha primera cuota = `creditoInfo.cuotas[0].fechaVencimiento` (= addMonths(fechaInicio, 1)). No es `fechaInicio` — la primera cuota vence un mes después de la fecha de inicio.
 
 **UI fallback** (si `creditoInfo` es null):
 ```
