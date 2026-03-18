@@ -58,7 +58,7 @@ src/modules/fuentes-pago/
 | --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `useCreditoConstructora.ts` | Carga de datos desde BD, acciones de mora y reestructuración                                                                                                                           |
 | `useCuotasCredito.ts`       | Cálculos derivados: próxima cuota, progreso, monto pendiente total. Envuelve `useCreditoConstructora`. Expone `registrarPagoCuota` (atómica). Recibe `fuentePagoId` + `negociacionId`. |
-| `CuotasCreditoTab.tsx`      | Orquestador: conecta hook → subcomponentes. Props: `fuentePagoId`, `negociacionId`, `montoFuente`. Sin lógica propia                                                                   |
+| `CuotasCreditoTab.tsx`      | Orquestador: conecta hook → subcomponentes. Props: `fuentePagoId`, `negociacionId`, `montoFuente`, `onPagoCuotaRegistrado?`. Sin lógica propia                                         |
 | `PanelResumenCredito.tsx`   | UI presentacional pura: 4 stats monetarias (capital, interés, mora, tasa) + card próxima cuota. **El contenido cambia respecto al bloque actual** (que muestra counts de cuotas).      |
 | `TablaAmortizacion.tsx`     | UI presentacional pura: tabla de cuotas + alerta vencidas. Extrae el `<table>` y el bloque de alerta de CuotasCreditoTab                                                               |
 | `ConfirmacionPagoCuota.tsx` | UI presentacional pura: desglose cuota+mora → confirmar pago inline                                                                                                                    |
@@ -85,7 +85,7 @@ interface TablaAmortizacionProps {
 
 // ConfirmacionPagoCuota — panel inline de confirmación (no modal)
 interface ConfirmacionPagoCuotaProps {
-  cuota: CuotaVigente // usar cuota.valor_cuota + cuota.mora_aplicada para el desglose
+  cuota: CuotaVigente // usar cuota.total_a_cobrar para el total (= valor_cuota + mora_aplicada)
   procesando: boolean
   error: string | null
   onConfirmar: () => void
@@ -93,7 +93,7 @@ interface ConfirmacionPagoCuotaProps {
 }
 ```
 
-**Cascading change en `fuente-pago-card.tsx`:** agregar `negociacionId` al `<CuotasCreditoTab>` y eliminar `onPagarCuota`. El componente ya recibe `negociacionId` como prop.
+**Cascading change en `fuente-pago-card.tsx`:** agregar `negociacionId` y `onPagoCuotaRegistrado` al `<CuotasCreditoTab>` y eliminar `onPagarCuota`. El componente ya recibe `negociacionId` como prop. `onPagoCuotaRegistrado` debe llamar a la función que el padre actualmente llama en `onAbonoRegistrado?.()` para refrescar el saldo de la tarjeta.
 
 Hook que envuelve `useCreditoConstructora` y agrega cálculos sin duplicar llamadas a BD.
 
@@ -120,6 +120,9 @@ interface UseCuotasCreditoProps {
   proximaCuota: ProximaCuota | null,  // null si todas las cuotas están pagadas
   progresoCredito: ProgresoCredito,
 
+  // NUEVO: delegar getMoraSugerida de useCreditoConstructora
+  getMoraSugerida: (cuotaId: string) => number,
+
   // NUEVO: Acción atómica (R7)
   registrarPagoCuota: (cuotaId: string) => Promise<boolean>
   // El hook construye el PagoCuotaDTO internamente usando negociacionId + cuota lookup
@@ -140,7 +143,7 @@ interface UseCuotasCreditoProps {
 
 **Edge case — crédito sin plan (fuentes históricas):**
 
-- `cuotas.length === 0` → `proximaCuota = null`, `progresoCredito` con todos los campos en 0
+- `cuotas.length === 0` → `proximaCuota = null`, `progresoCredito = { totalCuotas: 0, cuotasPagadas: 0, cuotasPendientes: 0, montoTotal: credito?.monto_total ?? 0, montoPagado: 0, porcentaje: 0 }`
 - El componente `ConfigurarPlanCredito` se muestra cuando `!credito || cuotas.length === 0`
 
 ---
@@ -187,7 +190,9 @@ export interface PagoCuotaDTO {
   monto: number
   /** mora_aplicada de la cuota. Puede ser 0. Siempre number, nunca undefined. */
   mora_incluida: number
-  /** YYYY-MM-DD */
+  /** `'Transferencia'` — hardcodeado en la función, no expuesto al usuario */
+  metodo_pago: 'Transferencia'
+  /** YYYY-MM-DD — construido con `getTodayDateString()` */
   fecha_pago: string
 }
 
@@ -282,10 +287,10 @@ Este bloque es para **fuentes históricas** que fueron creadas antes de que exis
 
 ```typescript
 interface ConfigurarPlanCreditoProps {
-  fuentePagoId: string
-  negociacionId: string
-  montoAprobado: number
-  onPlanCreado: () => void
+  montoAprobado: number // pre-llenado como readonly en el form
+  crearPlan: (params: ParametrosCredito) => Promise<boolean> // del hook padre
+  procesando: boolean // para spinner / deshabilitar botón
+  onPlanCreado: () => void // callback al completar satisfactoriamente
 }
 ```
 
