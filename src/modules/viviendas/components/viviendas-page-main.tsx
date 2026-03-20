@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation'
 
 import { construirURLVivienda } from '@/lib/utils/slug.utils'
 import { Modal } from '@/shared/components/ui/Modal'
+import { NoResults } from '@/shared/components/ui/NoResults'
 
 import { useVistaPreference } from '@/shared/hooks/useVistaPreference'
 
@@ -170,7 +171,15 @@ export function ViviendasPageMain({
         {cargando ? (
           <ViviendasSkeleton />
         ) : viviendas.length === 0 ? (
-          <ViviendasEmpty onCrear={() => router.push('/viviendas/nueva')} />
+          filtros.search || filtros.estado || filtros.proyecto_id || filtros.manzana_id ? (
+            <NoResults
+              moduleName="viviendas"
+              onLimpiarFiltros={limpiarFiltros}
+              mensaje="No se encontraron viviendas con los filtros aplicados"
+            />
+          ) : (
+            <ViviendasEmpty onCrear={() => router.push('/viviendas/nueva')} />
+          )
         ) : vista === 'cards' ? (
           <ViviendasLista
             viviendas={viviendas} // ← Viviendas paginadas (hook maneja paginación)

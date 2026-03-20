@@ -4,296 +4,25 @@
  * RebalancearModal
  *
  * Modal Admin-only para ajustar el plan financiero de una negociación.
- *
- * Permite en una sola operación atómica:
- * - Modificar montos de fuentes existentes
- * - Agregar nuevas fuentes (ej: subsidio que entró)
- * - Desactivar fuentes que salieron de la ecuación
- *
- * La ecuación debe cerrar exactamente antes de poder guardar.
- * Motivo obligatorio para trazabilidad en audit_log.
+ * Sub-componentes extraídos en ./rebalancear/
  */
 
 import { AnimatePresence, motion } from 'framer-motion'
-import { AlertTriangle, CheckCircle2, FileWarning, Lock, Minus, Plus, X } from 'lucide-react'
+import { AlertTriangle, CheckCircle2, Lock, Plus, X } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
 
 import type { FuentePago } from '@/modules/clientes/services/fuentes-pago.service'
+import { esCreditoConstructora } from '@/shared/constants/fuentes-pago.constants'
 import { formatCurrency } from '@/shared/utils/format'
+import {
+    calcularRestriccionesFuente,
+    validarRebalanceo,
+} from '@/shared/utils/reglas-cierre-financiero'
 import type { AjusteLocal, DatosRebalanceo, FuAlteNueva } from '../hooks'
 import { MOTIVOS_AJUSTE, getFuenteColor } from '../hooks'
-
-// ============================================
-// ENTIDADES POR TIPO DE FUENTE
-// ============================================
-
-const BANCOS_HIPOTECARIO = [
-  'Bancolombia',
-  'Banco de Bogotá',
-  'Davivienda',
-  'BBVA Colombia',
-  'Banco de Occidente',
-  'Banco Popular',
-  'Banco Caja Social',
-  'Banco AV Villas',
-  'Banco Agrario',
-  'Fondo Nacional del Ahorro',
-  'Banco Pichincha',
-  'Scotiabank Colpatria',
-  'Itaú',
-  'Otro',
-] as const
-
-const CAJAS_COMPENSACION_LIST = [
-  'Comfenalco',
-  'Comfandi',
-  'Compensar',
-  'Comfama',
-  'Cafam',
-  'Comfamiliar',
-  'Comfacor',
-  'Comparta',
-  'Cofrem',
-  'Comfacundi',
-  'Comfaoriente',
-  'Comfamiliar Risaralda',
-  'Otro',
-] as const
-
-function getEntidadesParaTipo(tipo: string): readonly string[] {
-  if (tipo === 'Crédito Hipotecario') return BANCOS_HIPOTECARIO
-  if (tipo === 'Subsidio Caja Compensación') return CAJAS_COMPENSACION_LIST
-  return []
-}
-
-// ============================================
-// HELPERS
-// ============================================
-
-function parseMonto(raw: string): number {
-  const cleaned = raw.replace(/[^0-9]/g, '')
-  return cleaned ? parseInt(cleaned, 10) : 0
-}
-
-function formatMontoInput(value: number): string {
-  if (!value) return ''
-  return value.toLocaleString('es-CO')
-}
-
-// ============================================
-// COMPONENTE: Fila de fuente editable
-// ============================================
-
-function FilaFuente({
-  ajuste,
-  onChange,
-  onCambioEntidad,
-  onToggleEliminar,
-  requiereEntidad,
-}: {
-  ajuste: AjusteLocal
-  onChange: (id: string, monto: number) => void
-  onCambioEntidad: (id: string, entidad: string) => void
-  onToggleEliminar: (id: string) => void
-  requiereEntidad: boolean
-}) {
-  const color = getFuenteColor(ajuste.tipo)
-  const [inputValue, setInputValue] = useState(formatMontoInput(ajuste.montoEditable))
-  const entidades = getEntidadesParaTipo(ajuste.tipo)
-  const mostrarEntidad = requiereEntidad
-
-  useEffect(() => {
-    setInputValue(formatMontoInput(ajuste.montoEditable))
-  }, [ajuste.montoEditable])
-
-  const handleChange = (raw: string) => {
-    const soloDigitos = raw.replace(/[^0-9]/g, '')
-    const numero = soloDigitos ? parseInt(soloDigitos, 10) : 0
-    setInputValue(soloDigitos ? numero.toLocaleString('es-CO') : '')
-    onChange(ajuste.id, numero)
-  }
-
-  return (
-    <div
-      className={`flex items-center gap-3 rounded-lg p-3 transition-all ${
-        ajuste.paraEliminar
-          ? 'opacity-40 bg-gray-50 dark:bg-gray-800/30 border-2 border-dashed border-gray-300 dark:border-gray-600'
-          : 'bg-white dark:bg-gray-800/60 border border-gray-200/80 dark:border-gray-700/50'
-      }`}
-    >
-      <div className={`w-1 self-stretch rounded-full flex-shrink-0 ${color.barra}`} />
-
-      <div className="flex-1 min-w-0">
-        <p
-          className={`text-sm font-semibold text-gray-900 dark:text-white ${ajuste.paraEliminar ? 'line-through' : ''}`}
-        >
-          {ajuste.tipo}
-        </p>
-
-        {/* Entidad: solo lectura al eliminar, editable en modo activo */}
-        {ajuste.paraEliminar ? (
-          ajuste.entidad ? (
-            <p className="text-xs text-gray-400 dark:text-gray-500">{ajuste.entidad}</p>
-          ) : null
-        ) : mostrarEntidad ? (
-          entidades.length > 0 ? (
-            <select
-              value={ajuste.entidadEditable}
-              onChange={(e) => onCambioEntidad(ajuste.id, e.target.value)}
-              className="mt-1 w-full text-xs bg-gray-50 dark:bg-gray-700/60 border border-gray-200 dark:border-gray-600 rounded-md px-2 py-1 focus:outline-none focus:border-cyan-500 text-gray-700 dark:text-gray-300"
-            >
-              <option value="">Seleccionar entidad...</option>
-              {entidades.map((e) => (
-                <option key={e} value={e}>{e}</option>
-              ))}
-            </select>
-          ) : (
-            <input
-              type="text"
-              placeholder="Entidad"
-              value={ajuste.entidadEditable}
-              onChange={(e) => onCambioEntidad(ajuste.id, e.target.value)}
-              className="mt-1 w-full text-xs bg-transparent border-b border-gray-200 dark:border-gray-600 focus:outline-none focus:border-cyan-500 text-gray-600 dark:text-gray-400 placeholder:text-gray-300"
-            />
-          )
-        ) : null}
-      </div>
-
-      {!ajuste.paraEliminar && (
-        <div className="flex items-center gap-1.5">
-          <span className="text-xs text-gray-400 font-medium">$</span>
-          <input
-            type="text"
-            inputMode="numeric"
-            value={inputValue}
-            onChange={(e) => handleChange(e.target.value)}
-            className="w-36 text-right text-sm font-semibold text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-700/60 border border-gray-200 dark:border-gray-600 rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 tabular-nums"
-            placeholder="0"
-          />
-        </div>
-      )}
-
-      <button
-        type="button"
-        onClick={() => onToggleEliminar(ajuste.id)}
-        title={ajuste.paraEliminar ? 'Restaurar fuente' : 'Quitar fuente'}
-        className={`w-7 h-7 flex items-center justify-center rounded-lg transition-colors flex-shrink-0 ${
-          ajuste.paraEliminar
-            ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-200'
-            : 'bg-red-100 dark:bg-red-900/30 text-red-500 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50'
-        }`}
-      >
-        {ajuste.paraEliminar ? (
-          <Plus className="w-3.5 h-3.5" />
-        ) : (
-          <Minus className="w-3.5 h-3.5" />
-        )}
-      </button>
-    </div>
-  )
-}
-
-// ============================================
-// COMPONENTE: Fila de fuente NUEVA
-// ============================================
-
-function FilaNueva({
-  fuente,
-  index,
-  onChange,
-  onEliminar,
-  requiereEntidad,
-}: {
-  fuente: FuAlteNueva
-  index: number
-  onChange: (index: number, campo: keyof FuAlteNueva, valor: string | number) => void
-  onEliminar: (index: number) => void
-  requiereEntidad: boolean
-}) {
-  const color = getFuenteColor(fuente.tipo)
-  const [inputValue, setInputValue] = useState(formatMontoInput(fuente.monto))
-  const entidades = getEntidadesParaTipo(fuente.tipo)
-  const mostrarEntidad = requiereEntidad
-
-  const handleChange = (raw: string) => {
-    const soloDigitos = raw.replace(/[^0-9]/g, '')
-    const numero = soloDigitos ? parseInt(soloDigitos, 10) : 0
-    setInputValue(soloDigitos ? numero.toLocaleString('es-CO') : '')
-    onChange(index, 'monto', numero)
-  }
-
-  return (
-    <div className="flex items-center gap-3 rounded-lg p-3 bg-emerald-50/60 dark:bg-emerald-900/10 border border-emerald-200/80 dark:border-emerald-800/40">
-      <div className={`w-1 self-stretch rounded-full flex-shrink-0 ${color.barra}`} />
-
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold text-gray-900 dark:text-white">{fuente.tipo}</p>
-        {mostrarEntidad && (
-          entidades.length > 0 ? (
-            <select
-              value={fuente.entidad}
-              onChange={(e) => onChange(index, 'entidad', e.target.value)}
-              className="mt-1 w-full text-xs bg-white dark:bg-gray-700/60 border border-gray-200 dark:border-gray-600 rounded-md px-2 py-1 focus:outline-none focus:border-cyan-500 text-gray-700 dark:text-gray-300"
-            >
-              <option value="">Seleccionar entidad...</option>
-              {entidades.map((e) => (
-                <option key={e} value={e}>{e}</option>
-              ))}
-            </select>
-          ) : (
-            <input
-              type="text"
-              placeholder="Entidad (opcional)"
-              value={fuente.entidad}
-              onChange={(e) => onChange(index, 'entidad', e.target.value)}
-              className="mt-1 w-full text-xs bg-transparent border-b border-gray-200 dark:border-gray-600 focus:outline-none focus:border-cyan-500 text-gray-600 dark:text-gray-400 placeholder:text-gray-300 dark:placeholder:text-gray-600"
-            />
-          )
-        )}
-      </div>
-
-      <div className="flex items-center gap-1.5">
-        <span className="text-xs text-gray-400 font-medium">$</span>
-        <input
-          type="text"
-          inputMode="numeric"
-          value={inputValue}
-          onChange={(e) => handleChange(e.target.value)}
-          className="w-36 text-right text-sm font-semibold text-gray-900 dark:text-white bg-white dark:bg-gray-700/60 border border-emerald-200 dark:border-emerald-800/60 rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 tabular-nums"
-          placeholder="0"
-        />
-      </div>
-
-      <button
-        type="button"
-        onClick={() => onEliminar(index)}
-        className="w-7 h-7 flex items-center justify-center rounded-lg bg-red-100 dark:bg-red-900/30 text-red-500 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors flex-shrink-0"
-      >
-        <X className="w-3.5 h-3.5" />
-      </button>
-    </div>
-  )
-}
-
-// ============================================
-// TIPOS: Cambios enriquecidos para el warning
-// ============================================
-
-interface CambioEnriquecido {
-  tipo: string
-  motivoCambio: 'entidad' | 'monto' | 'ambos'
-  entidadAnterior?: string
-  entidadNueva?: string
-  montoAnterior?: number
-  montoNuevo?: number
-  documentos: string[]
-}
-
-interface NuevaEnriquecida {
-  tipo: string
-  documentos: string[]
-}
+import type { CambioEnriquecido, NuevaEnriquecida } from './rebalancear'
+import { AdvertenciaDocumentos, FilaFuente, FilaNueva } from './rebalancear'
 
 // ============================================
 // COMPONENTE PRINCIPAL
@@ -348,10 +77,13 @@ export function RebalancearModal({
         id: f.id,
         tipo: f.tipo,
         montoOriginal: f.monto_aprobado,
-        montoEditable: f.monto_aprobado,
+        montoEditable: f.capital_para_cierre ?? f.monto_aprobado,
         entidad: f.entidad ?? '',
         entidadEditable: f.entidad ?? '',
         paraEliminar: false,
+        monto_recibido: f.monto_recibido ?? 0,
+        capital_para_cierre: f.capital_para_cierre,
+        tienePlanCuotas: esCreditoConstructora(f.tipo) && f.capital_para_cierre !== null,
       }))
     )
     setNuevas([])
@@ -360,18 +92,53 @@ export function RebalancearModal({
     setMostrarNuevaFuente(false)
   }, [isOpen, fuentesPago])
 
+  // ── Restricciones por fuente ────────────────────────────
+  const restriccionesMap = useMemo(() => {
+    const map = new Map<string, ReturnType<typeof calcularRestriccionesFuente>>()
+    for (const a of ajustes) {
+      map.set(a.id, calcularRestriccionesFuente({
+        id: a.id,
+        tipo: a.tipo,
+        monto_aprobado: a.montoOriginal,
+        capital_para_cierre: a.capital_para_cierre,
+        monto_recibido: a.monto_recibido,
+        tienePlanCuotas: a.tienePlanCuotas,
+      }))
+    }
+    return map
+  }, [ajustes])
+
   // ── Cálculos en tiempo real ───────────────────────────────
   const subtotal = useMemo(() => {
-    const activas = ajustes.filter((a) => !a.paraEliminar).reduce((s, a) => s + a.montoEditable, 0)
+    const activas = ajustes.filter((a) => !a.paraEliminar).reduce((s, a) => {
+      const r = restriccionesMap.get(a.id)
+      return s + (r?.montoParaCierre ?? a.montoEditable)
+    }, 0)
     const agregadas = nuevas.reduce((s, n) => s + n.monto, 0)
     return activas + agregadas
-  }, [ajustes, nuevas])
+  }, [ajustes, nuevas, restriccionesMap])
 
   const diferencia = valorVivienda - subtotal
   const estaBalanceado = Math.abs(diferencia) < 1
+
+  // ── Validación global antes de guardar ────────────────────
+  const erroresRebalanceo = useMemo(() => {
+    return validarRebalanceo(
+      ajustes.map((a) => ({
+        id: a.id,
+        montoEditable: a.montoEditable,
+        paraEliminar: a.paraEliminar,
+        restricciones: restriccionesMap.get(a.id)!,
+      })),
+      valorVivienda,
+      subtotal,
+    )
+  }, [ajustes, restriccionesMap, valorVivienda, subtotal])
+
   const motivoRequiereNotas = motivo === 'Otro'
   const puedeGuardar =
     estaBalanceado &&
+    erroresRebalanceo.length === 0 &&
     motivo !== '' &&
     (!motivoRequiereNotas || notas.trim() !== '') &&
     !isGuardando
@@ -524,6 +291,7 @@ export function RebalancearModal({
                     <FilaFuente
                       key={ajuste.id}
                       ajuste={ajuste}
+                      restricciones={restriccionesMap.get(ajuste.id)!}
                       onChange={handleCambioMonto}
                       onCambioEntidad={handleCambioEntidad}
                       onToggleEliminar={handleToggleEliminar}
@@ -648,91 +416,28 @@ export function RebalancearModal({
               {/* Footer fijo: balance + botones */}
               <div className="border-t border-gray-200 dark:border-gray-700 px-5 py-4 flex-shrink-0 space-y-3">
                 {/* Advertencia: cambios que invalidarán cartas */}
-                <AnimatePresence>
-                  {mostrandoAdvertencia && hayCambiosConAdvertencia && (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: 'auto' }}
-                      exit={{ opacity: 0, height: 0 }}
-                      className="rounded-xl border-2 border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-900/20 p-3 space-y-2 overflow-hidden"
-                    >
-                      <div className="flex items-start gap-2">
-                        <FileWarning className="w-4 h-4 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-xs font-bold text-amber-800 dark:text-amber-300 leading-tight">
-                            ¿Confirmar? Algunos documentos quedarán pendientes
-                          </p>
-                        </div>
-                      </div>
+                <AdvertenciaDocumentos
+                  visible={mostrandoAdvertencia}
+                  fuentesExistentes={fuentesExistentesQueInvalidan}
+                  fuentesNuevas={fuentesNuevasQueNecesitanCarta}
+                />
 
-                      {fuentesExistentesQueInvalidan.length > 0 && (
-                        <div className="space-y-2">
-                          <p className="text-xs font-semibold text-amber-700 dark:text-amber-400">
-                            Fuentes modificadas que requerirán nueva documentación:
-                          </p>
-                          {fuentesExistentesQueInvalidan.map((cambio) => (
-                            <div
-                              key={cambio.tipo}
-                              className="pl-2.5 border-l-2 border-amber-400 dark:border-amber-600 space-y-0.5"
-                            >
-                              <p className="text-xs font-semibold text-amber-800 dark:text-amber-300">
-                                {cambio.tipo}
-                              </p>
-                              {(cambio.motivoCambio === 'entidad' || cambio.motivoCambio === 'ambos') ? (
-                                <p className="text-xs text-amber-700 dark:text-amber-500">
-                                  Entidad cambiada:{' '}
-                                  <span className="font-medium">{cambio.entidadAnterior}</span>
-                                  {' → '}
-                                  <span className="font-medium">{cambio.entidadNueva}</span>
-                                </p>
-                              ) : null}
-                              {(cambio.motivoCambio === 'monto' || cambio.motivoCambio === 'ambos') ? (
-                                <p className="text-xs text-amber-700 dark:text-amber-500">
-                                  Monto aumentó:{' '}
-                                  <span className="font-medium">{formatCurrency(cambio.montoAnterior ?? 0)}</span>
-                                  {' → '}
-                                  <span className="font-medium">{formatCurrency(cambio.montoNuevo ?? 0)}</span>
-                                </p>
-                              ) : null}
-                              {cambio.documentos.length > 0 ? (
-                                <p className="text-xs text-amber-600 dark:text-amber-400 font-medium">
-                                  Deberás subir: {cambio.documentos.join(', ')}
-                                </p>
-                              ) : null}
-                            </div>
-                          ))}
-                        </div>
-                      )}
-
-                      {fuentesNuevasQueNecesitanCarta.length > 0 && (
-                        <div className="space-y-2">
-                          <p className="text-xs font-semibold text-amber-700 dark:text-amber-400">
-                            Fuentes nuevas que requerirán documentación:
-                          </p>
-                          {fuentesNuevasQueNecesitanCarta.map((nueva) => (
-                            <div
-                              key={nueva.tipo}
-                              className="pl-2.5 border-l-2 border-amber-300 dark:border-amber-700 space-y-0.5"
-                            >
-                              <p className="text-xs font-semibold text-amber-800 dark:text-amber-300">
-                                {nueva.tipo}
-                              </p>
-                              {nueva.documentos.length > 0 ? (
-                                <p className="text-xs text-amber-600 dark:text-amber-400 font-medium">
-                                  Requiere: {nueva.documentos.join(', ')}
-                                </p>
-                              ) : null}
-                            </div>
-                          ))}
-                        </div>
-                      )}
-
-                      <p className="text-xs text-amber-600 dark:text-amber-500 italic">
-                        El sistema quedará bloqueado para desembolsos hasta que se adjunten los documentos.
-                      </p>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                {/* Errores de validación de montos mínimos */}
+                {erroresRebalanceo.filter((e) => e.campo !== 'balance').length > 0 ? (
+                  <div className="space-y-1">
+                    {erroresRebalanceo
+                      .filter((e) => e.campo !== 'balance')
+                      .map((err) => (
+                        <p
+                          key={err.campo}
+                          className="text-xs text-red-600 dark:text-red-400 flex items-center gap-1.5 px-3 py-1.5 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800/50"
+                        >
+                          <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0" />
+                          {err.mensaje}
+                        </p>
+                      ))}
+                  </div>
+                ) : null}
 
                 {/* Balance indicator */}
                 <div

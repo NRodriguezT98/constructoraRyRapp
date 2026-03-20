@@ -34,25 +34,25 @@ export function IndicadorBalance({
       <div className="flex-1 min-w-0">
         {estaBalanceado ? (
           <p className="text-sm font-semibold text-emerald-800 dark:text-emerald-200">
-            Ecuación balanceada —{' '}
+            Valor cubierto —{' '}
             <span className="font-bold tabular-nums">{formatCurrency(valorVivienda)}</span>
           </p>
         ) : diferencia > 0 ? (
           <p className="text-sm font-semibold text-red-700 dark:text-red-300">
-            Déficit de{' '}
+            Faltan{' '}
             <span className="font-bold tabular-nums">{formatCurrency(Math.abs(diferencia))}</span>
-            {' '}— las fuentes no cubren el valor total
+            {' '}por asignar a fuentes de pago
           </p>
         ) : (
           <p className="text-sm font-semibold text-red-700 dark:text-red-300">
-            Excedente de{' '}
+            Sobran{' '}
             <span className="font-bold tabular-nums">{formatCurrency(Math.abs(diferencia))}</span>
-            {' '}— las fuentes superan el valor total
+            {' '}— se asignó de más en las fuentes
           </p>
         )}
 
         <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 tabular-nums">
-          Total fuentes: {formatCurrency(totalFuentes)} · Vivienda: {formatCurrency(valorVivienda)}
+          Total asignado: {formatCurrency(totalFuentes)} · Precio vivienda: {formatCurrency(valorVivienda)}
         </p>
       </div>
     </div>

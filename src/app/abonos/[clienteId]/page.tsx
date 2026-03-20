@@ -85,16 +85,18 @@ export default function AbonosDetallePage({ params }: PageProps) {
       </div>
 
       <div className='relative z-10 mx-auto max-w-5xl space-y-5 px-4 py-6'>
-        {/* Header */}
-        <HeaderCliente
-          negociacion={negociacion}
-          onVolver={handleVolver}
-          onRegistrarAbono={() =>
-            negociacion.fuentes_pago?.[0] &&
-            handleRegistrarAbono(negociacion.fuentes_pago[0])
-          }
-          canCreate={true}
-        />
+        {/* Header (sticky al hacer scroll) */}
+        <div className="sticky top-0 z-20">
+          <HeaderCliente
+            negociacion={negociacion}
+            onVolver={handleVolver}
+            onRegistrarAbono={() =>
+              negociacion.fuentes_pago?.[0] &&
+              handleRegistrarAbono(negociacion.fuentes_pago[0])
+            }
+            canCreate={true}
+          />
+        </div>
 
         {/* Métricas */}
         {metricas && <MetricasCards metricas={metricas} />}

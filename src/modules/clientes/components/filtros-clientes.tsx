@@ -58,9 +58,8 @@ export function FiltrosClientes({
 
   return (
     <div className={styles.filtros.container}>
-      {/* FILA 1: Búsqueda + Toggle Vista */}
+      {/* FILA 1: Búsqueda */}
       <div className="flex items-center gap-2">
-        {/* 🔍 BÚSQUEDA */}
         <div className="relative flex-1">
           <label htmlFor="search-clientes" className="sr-only">Buscar</label>
           <Search className={styles.filtros.searchIconLeft} />
@@ -82,8 +81,29 @@ export function FiltrosClientes({
             </button>
           )}
         </div>
+      </div>
 
-        {/* Toggle Vista Cards/Tabla — visible en primer plano */}
+      {/* FILA 2: Pill buttons de estado */}
+      <div className="flex items-center gap-1.5 flex-wrap pt-2">
+        {ESTADOS.map((estado) => {
+          const isActive = estadoSeleccionado === estado.value
+          return (
+            <button
+              key={estado.value}
+              onClick={() => onEstadoChange(estado.value)}
+              className={`px-3 py-1 rounded-full border text-xs font-medium transition-all duration-150 cursor-pointer ${
+                isActive ? estado.activeColor : `bg-white dark:bg-gray-900/30 ${estado.color}`
+              }`}
+            >
+              {estado.label}
+            </button>
+          )
+        })}
+      </div>
+
+      {/* FOOTER: Toggle Vista + Contador + Limpiar */}
+      <div className={styles.filtros.footer}>
+        {/* Toggle Vista Cards/Tabla */}
         <div className="flex items-center gap-1 p-1 bg-gray-100 dark:bg-gray-800/80 rounded-lg flex-shrink-0">
           <button
             onClick={() => onCambiarVista('cards')}
@@ -110,44 +130,25 @@ export function FiltrosClientes({
             <span className="hidden sm:inline">Tabla</span>
           </button>
         </div>
-      </div>
 
-      {/* FILA 2: Pill buttons de estado — siempre visibles */}
-      <div className="flex items-center gap-1.5 flex-wrap pt-2">
-        {ESTADOS.map((estado) => {
-          const isActive = estadoSeleccionado === estado.value
-          return (
+        <div className="flex items-center gap-3">
+          <p className={styles.filtros.resultCount}>
+            <span>
+              {totalResultados === totalClientes
+                ? `${totalClientes} cliente${totalClientes !== 1 ? 's' : ''}`
+                : `${totalResultados} de ${totalClientes} clientes`}
+            </span>
+          </p>
+
+          {hayFiltrosActivos && (
             <button
-              key={estado.value}
-              onClick={() => onEstadoChange(estado.value)}
-              className={`px-3 py-1 rounded-full border text-xs font-medium transition-all duration-150 cursor-pointer ${
-                isActive ? estado.activeColor : `bg-white dark:bg-gray-900/30 ${estado.color}`
-              }`}
+              onClick={handleClearFilters}
+              className={styles.filtros.clearFiltersButton}
             >
-              {estado.label}
+              Limpiar filtros
             </button>
-          )
-        })}
-      </div>
-
-      {/* FOOTER: Contador + Limpiar */}
-      <div className="flex items-center justify-between pt-2 mt-1 border-t border-gray-200 dark:border-gray-700">
-        <p className={styles.filtros.resultCount}>
-          <span>
-            {totalResultados === totalClientes
-              ? `${totalClientes} cliente${totalClientes !== 1 ? 's' : ''}`
-              : `${totalResultados} de ${totalClientes} clientes`}
-          </span>
-        </p>
-
-        {hayFiltrosActivos && (
-          <button
-            onClick={handleClearFilters}
-            className={styles.filtros.clearFiltersButton}
-          >
-            Limpiar filtros
-          </button>
-        )}
+          )}
+        </div>
       </div>
     </div>
   )

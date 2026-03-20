@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 
 import { useQueryClient } from '@tanstack/react-query'
 import { motion } from 'framer-motion'
@@ -21,7 +21,10 @@ import { useDetectarCambios } from '../hooks/useDetectarCambios'
 import { proyectosPageStyles as styles } from '../styles/proyectos-page.styles'
 import type { Proyecto, ProyectoFormData } from '../types'
 
+import { NoResults } from '@/shared/components/ui/NoResults'
+import { Pagination } from '@/shared/components/ui/Pagination'
 import { ConfirmarCambiosModal } from './confirmar-cambios-modal'
+
 import { ArchivarProyectoModal } from './modals/archivar-proyecto-modal'
 import { RestaurarProyectoModal } from './modals/restaurar-proyecto-modal'
 import { ProyectosBadgesResumen } from './proyectos-badges-resumen'
@@ -31,7 +34,6 @@ import { ProyectosForm } from './proyectos-form'
 import { ProyectosHeaderPremium } from './proyectos-header-premium'
 import { ProyectosLista } from './proyectos-lista'
 import { ProyectosMetricasPremium } from './proyectos-metricas-premium'
-import { ProyectosNoResults } from './proyectos-no-results'
 import { ProyectosSkeleton } from './proyectos-skeleton'
 import { ProyectosTabla } from './proyectos-tabla'
 
@@ -123,6 +125,29 @@ export function ProyectosPage({
 
   // Hook para preferencia de vista (cards vs tabla)
   const [vista, setVista] = useVistaPreference({ moduleName: 'proyectos' })
+
+  // Paginación para vista de cards
+  const [paginaActual, setPaginaActual] = useState(1)
+  const [itemsPorPagina, setItemsPorPagina] = useState(9)
+
+  const totalPaginas = useMemo(
+    () => Math.max(1, Math.ceil(proyectos.length / itemsPorPagina)),
+    [proyectos.length, itemsPorPagina]
+  )
+
+  const proyectosPaginados = useMemo(
+    () => proyectos.slice((paginaActual - 1) * itemsPorPagina, paginaActual * itemsPorPagina),
+    [proyectos, paginaActual, itemsPorPagina]
+  )
+
+  const cambiarPagina = useCallback((pagina: number) => {
+    setPaginaActual(Math.max(1, Math.min(pagina, totalPaginas)))
+  }, [totalPaginas])
+
+  const cambiarItemsPorPagina = useCallback((items: number) => {
+    setItemsPorPagina(items)
+    setPaginaActual(1)
+  }, [])
 
   // Estado para manejar cierre con confirmación
   const [modalConfirmarDescarte, setModalConfirmarDescarte] = useState(false)
@@ -307,24 +332,45 @@ export function ProyectosPage({
           // Si hay filtros activos pero no hay resultados → NoResults
           // Si NO hay filtros y no hay proyectos → Empty
           hayFiltrosActivos ? (
-            <ProyectosNoResults
+            <NoResults
+              moduleName="proyectos"
               onLimpiarFiltros={limpiarFiltros}
-              tieneBusqueda={Boolean(filtros.busqueda)}
-              tieneEstado={Boolean(filtros.estado)}
+              mensaje={
+                filtros.busqueda && filtros.estado
+                  ? 'No se encontraron proyectos que coincidan con tu búsqueda y el estado seleccionado'
+                  : filtros.busqueda
+                    ? 'No se encontraron proyectos que coincidan con tu búsqueda'
+                    : filtros.estado
+                      ? 'No hay proyectos con el estado seleccionado'
+                      : undefined
+              }
             />
           ) : (
             <ProyectosEmpty onCrear={canCreate ? handleAbrirModal : undefined} />
           )
         ) : vista === 'cards' ? (
-          <ProyectosLista
-            proyectos={proyectos}
-            onEdit={canEdit ? handleEditarProyecto : undefined}
-            onDelete={canDelete ? handleEliminarProyecto : undefined}
-            onArchive={canEdit ? handleArchivarProyecto : undefined}
-            onRestore={canEdit ? handleRestaurarProyecto : undefined}
-            canEdit={canEdit}
-            canDelete={canDelete}
-          />
+          <div className="space-y-4">
+            <ProyectosLista
+              proyectos={proyectosPaginados}
+              onEdit={canEdit ? handleEditarProyecto : undefined}
+              onDelete={canDelete ? handleEliminarProyecto : undefined}
+              onArchive={canEdit ? handleArchivarProyecto : undefined}
+              onRestore={canEdit ? handleRestaurarProyecto : undefined}
+              canEdit={canEdit}
+              canDelete={canDelete}
+            />
+
+            {totalPaginas > 1 ? (
+              <Pagination
+                currentPage={paginaActual}
+                totalPages={totalPaginas}
+                totalItems={proyectos.length}
+                itemsPerPage={itemsPorPagina}
+                onPageChange={cambiarPagina}
+                onItemsPerPageChange={cambiarItemsPorPagina}
+              />
+            ) : null}
+          </div>
         ) : (
           <ProyectosTabla
             proyectos={proyectos}

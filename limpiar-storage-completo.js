@@ -1,126 +1,116 @@
+#!/usr/bin/env node
 /**
- * Limpieza agresiva de Storage - Elimina TODO
+ * Limpieza total de Storage buckets.
+ * Buckets: documentos, documentos-viviendas, documentos-proyectos, comprobantes-abonos, procesos
  */
 
-import { createClient } from '@supabase/supabase-js'
-import dotenv from 'dotenv'
+const { createClient } = require('@supabase/supabase-js')
+const fs = require('fs')
+const path = require('path')
 
-dotenv.config({ path: '.env.local' })
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
-)
-
-async function limpiarStorageCompleto() {
-  console.log('🧹 Limpieza AGRESIVA de Storage\n')
-
-  const buckets = [
-    'documentos-viviendas',
-    'documentos-proyectos',
-  ]
-
-  for (const bucket of buckets) {
-    console.log(`📦 Procesando: ${bucket}`)
-
-    try {
-      // Método 1: Listar carpetas raíz
-      const { data: items, error } = await supabase.storage
-        .from(bucket)
-        .list('', {
-          limit: 1000,
-          offset: 0,
-        })
-
-      if (error) {
-        console.log(`   ⚠️  Error al listar: ${error.message}`)
-        continue
-      }
-
-      console.log(`   Encontrados: ${items.length} items`)
-
-      if (items.length === 0) {
-        console.log(`   ✓ Bucket vacío\n`)
-        continue
-      }
-
-      // Procesar cada item
-      for (const item of items) {
-        const path = item.name
-
-        // Si es carpeta, listar su contenido
-        if (item.id) {
-          console.log(`   📁 Carpeta: ${path}`)
-
-          const { data: files } = await supabase.storage
-            .from(bucket)
-            .list(path, { limit: 1000 })
-
-          if (files && files.length > 0) {
-            console.log(`      Archivos: ${files.length}`)
-
-            const filePaths = files.map(f => `${path}/${f.name}`)
-
-            const { error: delError } = await supabase.storage
-              .from(bucket)
-              .remove(filePaths)
-
-            if (delError) {
-              console.log(`      ⚠️  Error al eliminar: ${delError.message}`)
-            } else {
-              console.log(`      ✓ ${files.length} archivos eliminados`)
-            }
-          }
-        } else {
-          // Es un archivo en raíz
-          const { error: delError } = await supabase.storage
-            .from(bucket)
-            .remove([path])
-
-          if (!delError) {
-            console.log(`   ✓ Archivo eliminado: ${path}`)
-          }
-        }
-      }
-
-      console.log(`   ✅ Bucket limpio\n`)
-    } catch (error) {
-      console.log(`   ❌ Error: ${error.message}\n`)
-    }
-  }
-
-  // Verificación final
-  console.log('\n📊 VERIFICACIÓN FINAL:\n')
-
-  for (const bucket of buckets) {
-    const { data: items } = await supabase.storage
-      .from(bucket)
-      .list('', { limit: 1000 })
-
-    let totalArchivos = 0
-
-    if (items) {
-      for (const item of items) {
-        if (item.id) {
-          const { data: files } = await supabase.storage
-            .from(bucket)
-            .list(item.name)
-          totalArchivos += files?.length || 0
-        }
-      }
-    }
-
-    const icono = totalArchivos === 0 ? '✅' : '⚠️'
-    console.log(`${icono} ${bucket}: ${totalArchivos} archivos restantes`)
-  }
+const colors = {
+  reset: '\x1b[0m', green: '\x1b[32m', red: '\x1b[31m',
+  yellow: '\x1b[33m', cyan: '\x1b[36m', gray: '\x1b[90m',
+}
+function log(msg, color = 'reset') {
+  console.log(colors[color] + msg + colors.reset)
 }
 
-limpiarStorageCompleto()
-  .then(() => {
-    console.log('\n✅ Limpieza de Storage completada')
-    process.exit(0)
+function loadEnv() {
+  const envPath = path.join(process.cwd(), '.env.local')
+  if (!fs.existsSync(envPath)) throw new Error('.env.local no encontrado')
+  const content = fs.readFileSync(envPath, 'utf8')
+  const env = {}
+  content.split('\n').forEach(line => {
+    const m = line.match(/^\s*([^#][^=]*)\s*=\s*(.*)$/)
+    if (m) env[m[1].trim()] = m[2].trim().replace(/^["']|["']$/g, '')
   })
-  .catch((error) => {
-    console.error('❌ Error:', error)
-    process.exit(1)
-  })
+  return env
+}
+
+const env = loadEnv()
+const supabase = createClient(
+  env.NEXT_PUBLIC_SUPABASE_URL,
+  env.SUPABASE_SERVICE_ROLE_KEY,
+  { auth: { persistSession: false } }
+)
+
+const BUCKETS = [
+  'documentos',
+  'documentos-viviendas',
+  'documentos-proyectos',
+  'comprobantes-abonos',
+  'procesos',
+]
+
+async function listarRecursivo(bucket, carpeta = '') {
+  const archivos = []
+  const { data, error } = await supabase.storage
+    .from(bucket)
+    .list(carpeta, { limit: 1000 })
+
+  if (error || !data || data.length === 0) return archivos
+
+  for (const item of data) {
+    const fullPath = carpeta ? `${carpeta}/${item.name}` : item.name
+    if (item.id) {
+      archivos.push(fullPath)
+    } else {
+      const subArchivos = await listarRecursivo(bucket, fullPath)
+      archivos.push(...subArchivos)
+    }
+  }
+  return archivos
+}
+
+async function main() {
+  console.log('')
+  log('=======================================================', 'cyan')
+  log('   🗑️  LIMPIEZA DE STORAGE BUCKETS', 'cyan')
+  log('=======================================================', 'cyan')
+  log('\n✓ Conectado a Supabase Storage', 'green')
+
+  let totalEliminados = 0
+
+  for (const bucket of BUCKETS) {
+    log(`\n   📦 Bucket: ${bucket}`, 'cyan')
+
+    try {
+      const archivos = await listarRecursivo(bucket)
+
+      if (archivos.length === 0) {
+        log(`      (vacío)`, 'gray')
+        continue
+      }
+
+      log(`      Encontrados: ${archivos.length} archivos`, 'yellow')
+
+      // Eliminar en lotes de 100
+      let eliminados = 0
+      for (let i = 0; i < archivos.length; i += 100) {
+        const lote = archivos.slice(i, i + 100)
+        const { error } = await supabase.storage.from(bucket).remove(lote)
+        if (error) {
+          log(`      ❌ Error lote: ${error.message}`, 'red')
+        } else {
+          eliminados += lote.length
+        }
+      }
+
+      log(`      ✅ ${eliminados}/${archivos.length} eliminados`, 'green')
+      totalEliminados += eliminados
+    } catch (err) {
+      log(`      ❌ Error: ${err.message}`, 'red')
+    }
+  }
+
+  console.log('')
+  log('=======================================================', 'green')
+  log(`   ✅ STORAGE LIMPIO — ${totalEliminados} archivos eliminados`, 'green')
+  log('=======================================================', 'green')
+}
+
+main().catch(err => {
+  log(`💥 Error fatal: ${err.message}`, 'red')
+  process.exit(1)
+})

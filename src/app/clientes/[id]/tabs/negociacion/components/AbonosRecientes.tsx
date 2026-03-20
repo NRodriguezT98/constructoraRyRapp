@@ -41,8 +41,16 @@ export function AbonosRecientes({
 
   if (abonos.length === 0) {
     return (
-      <div className="py-6 text-center text-sm text-gray-400 dark:text-gray-500">
-        No hay abonos registrados aún.
+      <div className="flex flex-col items-center py-8 text-center space-y-2">
+        <div className="w-10 h-10 rounded-xl bg-gray-100 dark:bg-gray-700/50 flex items-center justify-center">
+          <CreditCard className="w-5 h-5 text-gray-400 dark:text-gray-500" />
+        </div>
+        <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
+          Aún no se han registrado abonos
+        </p>
+        <p className="text-xs text-gray-400 dark:text-gray-500">
+          Los pagos aparecerán aquí a medida que se registren.
+        </p>
       </div>
     )
   }

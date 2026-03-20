@@ -7,7 +7,7 @@ import type { Cliente } from '@/modules/clientes/types'
 
 import * as styles from '../../../cliente-detalle.styles'
 
-const EMPTY = 'No indica'
+const EMPTY = 'Sin registrar'
 
 interface ContactoUbicacionCardProps {
   cliente: Cliente
@@ -39,25 +39,46 @@ export function ContactoUbicacionCard({ cliente }: ContactoUbicacionCardProps) {
           {/* Teléfono Principal */}
           <div>
             <p className={styles.infoCardClasses.label}>Teléfono Principal</p>
-            <p className={cliente.telefono ? styles.infoCardClasses.value : 'text-xs text-gray-400 dark:text-gray-500 italic'}>
-              {cliente.telefono || EMPTY}
-            </p>
+            {cliente.telefono ? (
+              <a
+                href={`tel:${cliente.telefono}`}
+                className={`${styles.infoCardClasses.value} hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors underline-offset-2 hover:underline`}
+              >
+                {cliente.telefono}
+              </a>
+            ) : (
+              <p className="text-xs text-gray-400 dark:text-gray-500 italic">{EMPTY}</p>
+            )}
           </div>
 
           {/* Teléfono Alternativo */}
           <div>
             <p className={styles.infoCardClasses.label}>Teléfono Alternativo</p>
-            <p className={cliente.telefono_alternativo ? styles.infoCardClasses.value : 'text-xs text-gray-400 dark:text-gray-500 italic'}>
-              {cliente.telefono_alternativo || EMPTY}
-            </p>
+            {cliente.telefono_alternativo ? (
+              <a
+                href={`tel:${cliente.telefono_alternativo}`}
+                className={`${styles.infoCardClasses.value} hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors underline-offset-2 hover:underline`}
+              >
+                {cliente.telefono_alternativo}
+              </a>
+            ) : (
+              <p className="text-xs text-gray-400 dark:text-gray-500 italic">{EMPTY}</p>
+            )}
           </div>
 
           {/* Correo Electrónico */}
           <div className="col-span-2">
             <p className={styles.infoCardClasses.label}>Correo Electrónico</p>
-            <p className={`truncate ${cliente.email ? styles.infoCardClasses.value : 'text-xs text-gray-400 dark:text-gray-500 italic'}`}>
-              {cliente.email || EMPTY}
-            </p>
+            {cliente.email ? (
+              <a
+                href={`mailto:${cliente.email}`}
+                className={`truncate block ${styles.infoCardClasses.value} hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors underline-offset-2 hover:underline`}
+              >
+                {cliente.email}
+              </a>
+            ) : (
+              <p className="text-xs text-gray-400 dark:text-gray-500 italic">{EMPTY}</p>
+            )}
           </div>
 
           {/* Separador */}

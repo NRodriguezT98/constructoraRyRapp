@@ -1,8 +1,8 @@
 # Spec: Crédito con la Constructora — Refactor y Features
 
-**Fecha:** 2026-03-18  
-**Estado:** Aprobado ✅  
-**Módulo afectado:** `src/modules/fuentes-pago/`  
+**Fecha:** 2026-03-18
+**Estado:** Aprobado ✅
+**Módulo afectado:** `src/modules/fuentes-pago/`
 **Archivo de entrada actual:** `src/app/abonos/[clienteId]/components/fuente-pago-card.tsx`
 
 ---

@@ -1,8 +1,9 @@
 'use client'
 
-import { AlertCircle, Building2, CheckCircle2, DollarSign } from 'lucide-react'
+import { AlertCircle, Building2, CheckCircle2, DollarSign, Percent } from 'lucide-react'
 
 import type { FuentePago } from '@/modules/clientes/services/fuentes-pago.service'
+import { esCreditoConstructora } from '@/shared/constants/fuentes-pago.constants'
 import { formatCurrency } from '@/shared/utils/format'
 import { getFuenteColor } from '../hooks'
 
@@ -27,7 +28,16 @@ interface FuenteCardPlanProps {
 
 export function FuenteCardPlan({ fuente, valorVivienda, docsPendientes, colorToken }: FuenteCardPlanProps) {
   const color = getFuenteColor(colorToken)
-  const pct = valorVivienda > 0 ? ((fuente.monto_aprobado / valorVivienda) * 100).toFixed(1) : '0'
+  // Para créditos: usar capital_para_cierre como monto de referencia (el capital aprobado,
+  // sin intereses). Para otras fuentes: monto_aprobado como siempre.
+  const esCredito = esCreditoConstructora(fuente.tipo)
+  const montoReferencia = fuente.capital_para_cierre ?? fuente.monto_aprobado
+  const pct = valorVivienda > 0 ? ((montoReferencia / valorVivienda) * 100).toFixed(1) : '0'
+
+  // Desglose crédito
+  const interesesCredito = esCredito && fuente.capital_para_cierre
+    ? fuente.monto_aprobado - fuente.capital_para_cierre
+    : null
 
   const tienePendientes = (docsPendientes?.total ?? 0) > 0
   const pendientesTotal = docsPendientes?.total ?? 0
@@ -55,20 +65,26 @@ export function FuenteCardPlan({ fuente, valorVivienda, docsPendientes, colorTok
 
           <div className="text-right flex-shrink-0">
             <p className="text-base font-bold text-gray-900 dark:text-white tabular-nums">
-              {formatCurrency(fuente.monto_aprobado)}
+              {formatCurrency(montoReferencia)}
             </p>
             <p className={`text-xs font-medium tabular-nums ${color.texto}`}>{pct}%</p>
+            {esCredito && interesesCredito !== null && interesesCredito > 0 ? (
+              <p className="flex items-center justify-end gap-1 text-xs text-violet-500 dark:text-violet-400 mt-0.5">
+                <Percent className="w-2.5 h-2.5" />
+                Intereses: {formatCurrency(interesesCredito)}
+              </p>
+            ) : null}
           </div>
         </div>
 
         {/* Progress bar de lo ya pagado */}
-        {fuente.monto_aprobado > 0 && (
+        {montoReferencia > 0 && (
           <div className="mt-2 space-y-1">
             <div className="h-1.5 w-full rounded-full bg-gray-100 dark:bg-gray-700 overflow-hidden">
               <div
                 className={`h-full rounded-full ${color.barra} opacity-80 transition-all duration-500`}
                 style={{
-                  width: `${Math.min(100, ((fuente.monto_recibido ?? 0) / fuente.monto_aprobado) * 100)}%`,
+                  width: `${Math.min(100, ((fuente.monto_recibido ?? 0) / montoReferencia) * 100)}%`,
                 }}
               />
             </div>
@@ -105,7 +121,7 @@ export function FuenteCardPlan({ fuente, valorVivienda, docsPendientes, colorTok
         {tienePendientes && docsPendientes && docsPendientes.docs.length > 0 && (
           <div className="mt-1.5 space-y-0.5">
             {docsPendientes.docs.slice(0, 4).map((doc, i) => (
-              <div key={i} className="flex items-center gap-1.5 text-[11px]">
+              <div key={i} className="flex items-center gap-1.5 text-xs">
                 {doc.obligatorio ? (
                   <span className="w-1.5 h-1.5 rounded-full bg-red-400 dark:bg-red-500 flex-shrink-0" title="Obligatorio" />
                 ) : (
@@ -115,14 +131,14 @@ export function FuenteCardPlan({ fuente, valorVivienda, docsPendientes, colorTok
                   {doc.nombre}
                 </span>
                 {doc.obligatorio ? (
-                  <span className="text-[10px] text-red-400 dark:text-red-500 flex-shrink-0">obligatorio</span>
+                  <span className="text-xs text-red-400 dark:text-red-500 flex-shrink-0">obligatorio</span>
                 ) : (
-                  <span className="text-[10px] text-gray-300 dark:text-gray-600 flex-shrink-0">opcional</span>
+                  <span className="text-xs text-gray-300 dark:text-gray-600 flex-shrink-0">opcional</span>
                 )}
               </div>
             ))}
             {docsPendientes.docs.length > 4 && (
-              <p className="text-[11px] text-gray-400 dark:text-gray-500 pl-3">
+              <p className="text-xs text-gray-400 dark:text-gray-500 pl-3">
                 y {docsPendientes.docs.length - 4} más…
               </p>
             )}

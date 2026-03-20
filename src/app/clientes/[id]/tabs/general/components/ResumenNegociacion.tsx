@@ -23,7 +23,7 @@ export function ResumenNegociacion({ negociacion, clienteId }: ResumenNegociacio
   const manzana = negociacion.viviendas?.manzanas?.nombre
   const numero = negociacion.viviendas?.numero
 
-  const ubicacion = [manzana && `Mza. ${manzana}`, numero && `Casa ${numero}`]
+  const ubicacion = [manzana && `Manzana ${manzana}`, numero && `Casa ${numero}`]
     .filter(Boolean)
     .join(' · ')
 
@@ -69,7 +69,7 @@ export function ResumenNegociacion({ negociacion, clienteId }: ResumenNegociacio
                 {estaCompleta ? 'Negociación Completada' : 'Negociación Activa'}
               </p>
               {proyecto && (
-                <p className="text-[11px] text-gray-500 dark:text-gray-400">
+                <p className="text-xs text-gray-500 dark:text-gray-400">
                   {proyecto}
                   {ubicacion ? ` · ${ubicacion}` : ''}
                 </p>
@@ -79,7 +79,7 @@ export function ResumenNegociacion({ negociacion, clienteId }: ResumenNegociacio
 
           <a
             href={`/abonos/${clienteId}`}
-            className="flex items-center gap-1 text-[11px] font-medium text-cyan-600 dark:text-cyan-400 hover:text-cyan-800 dark:hover:text-cyan-200 transition-colors"
+            className="flex items-center gap-1 text-xs font-medium text-cyan-600 dark:text-cyan-400 hover:text-cyan-800 dark:hover:text-cyan-200 transition-colors"
           >
             <Clock className="w-3 h-3" />
             Ver abonos
@@ -96,6 +96,7 @@ export function ResumenNegociacion({ negociacion, clienteId }: ResumenNegociacio
             <p className="text-sm font-bold text-gray-800 dark:text-gray-100">
               {formatCurrency(valorTotal)}
             </p>
+            <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-0.5">Precio de la vivienda</p>
           </div>
           <div className="text-center p-2.5 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800/40">
             <p className="text-[10px] font-medium text-emerald-600 dark:text-emerald-500 uppercase tracking-wide mb-0.5">
@@ -104,6 +105,7 @@ export function ResumenNegociacion({ negociacion, clienteId }: ResumenNegociacio
             <p className="text-sm font-bold text-emerald-700 dark:text-emerald-400">
               {formatCurrency(totalAbonado)}
             </p>
+            <p className="text-[10px] text-emerald-500/70 dark:text-emerald-500/50 mt-0.5">Total pagado a la fecha</p>
           </div>
           <div
             className={`text-center p-2.5 rounded-lg border ${
@@ -130,6 +132,7 @@ export function ResumenNegociacion({ negociacion, clienteId }: ResumenNegociacio
             >
               {formatCurrency(saldoPendiente)}
             </p>
+            <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-0.5">Resta por pagar</p>
           </div>
         </div>
 

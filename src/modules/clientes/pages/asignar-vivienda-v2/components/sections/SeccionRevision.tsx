@@ -1,7 +1,7 @@
 'use client'
 
 import { PDFDownloadLink } from '@react-pdf/renderer'
-import { AlertCircle, ArrowRight, Banknote, Building2, Calculator, Download, Edit2, Loader2, MapPin, TrendingUp, User } from 'lucide-react'
+import { AlertCircle, AlertTriangle, ArrowRight, Banknote, Building2, Calculator, Download, Edit2, FileText, Home, Loader2, MapPin, TrendingUp, User } from 'lucide-react'
 import { useMemo, useState } from 'react'
 
 import { formatDateForDisplay, getTodayDateString } from '@/lib/utils/date.utils'
@@ -24,6 +24,7 @@ interface SeccionRevisionProps {
   recargoEsquinera: number
   descuentoAplicado: number
   valorTotal: number
+  valorEscrituraPublica: number
   aplicarDescuento: boolean
   tipoDescuento: string
   notas: string
@@ -45,6 +46,7 @@ export function SeccionRevision({
   recargoEsquinera,
   descuentoAplicado,
   valorTotal,
+  valorEscrituraPublica,
   aplicarDescuento,
   notas,
   fuentes,
@@ -160,15 +162,56 @@ export function SeccionRevision({
           <Calculator className={s.revision.sectionTitleIcon} />
           Resumen Financiero
         </p>
+
+        {/* Desglose detallado */}
         <div className={s.revision.financialRow}>
           <span className={s.revision.financialLabel}>
-            <Building2 className={s.revision.financialLabelIcon} />
-            Valor base + notariales
+            <Home className={s.revision.financialLabelIcon} />
+            Valor base vivienda
           </span>
           <span className={s.revision.financialValue}>
-            {formatCurrency(valorBaseTotal)}
+            {formatCurrency(valorBase)}
           </span>
         </div>
+
+        {gastosNotariales > 0 && (
+          <div className={s.revision.financialRow}>
+            <span className={s.revision.financialLabel}>
+              <FileText className={s.revision.financialLabelIcon} />
+              Gastos notariales
+            </span>
+            <span className={s.revision.financialValue}>
+              +{formatCurrency(gastosNotariales)}
+            </span>
+          </div>
+        )}
+
+        {recargoEsquinera > 0 && (
+          <div className={s.revision.financialRow}>
+            <span className={s.revision.financialLabel}>
+              <MapPin className={s.revision.financialLabelIcon} />
+              Recargo esquinera
+            </span>
+            <span className={s.revision.financialValue}>
+              +{formatCurrency(recargoEsquinera)}
+            </span>
+          </div>
+        )}
+
+        {(gastosNotariales > 0 || recargoEsquinera > 0) && (
+          <>
+            <div className={s.revision.sep} />
+            <div className={s.revision.financialRow}>
+              <span className={s.revision.financialLabel}>
+                <Building2 className={s.revision.financialLabelIcon} />
+                Subtotal vivienda
+              </span>
+              <span className={s.revision.financialValue}>
+                {formatCurrency(valorBaseTotal)}
+              </span>
+            </div>
+          </>
+        )}
 
         {aplicarDescuento && descuentoAplicado > 0 && (
           <div className={s.revision.financialRow}>
@@ -186,12 +229,38 @@ export function SeccionRevision({
         <div className={s.revision.financialRow}>
           <span className={s.revision.totalLabel}>
             <Calculator className='w-3.5 h-3.5' />
-            Total a pagar
+            Total a financiar
           </span>
           <span className={s.revision.totalValue}>
             {formatCurrency(valorTotal)}
           </span>
         </div>
+
+        {/* Valor escritura pública */}
+        {valorEscrituraPublica > 0 && (
+          <>
+            <div className={s.revision.sep} />
+            <div className={s.revision.financialRow}>
+              <span className={s.revision.financialLabel}>
+                <FileText className={s.revision.financialLabelIcon} />
+                Valor escritura pública
+              </span>
+              <span className={s.revision.financialValue}>
+                {formatCurrency(valorEscrituraPublica)}
+              </span>
+            </div>
+            {Math.abs(valorEscrituraPublica - valorTotal) > 1000 && (
+              <div className='flex items-start gap-2 mt-1.5 px-3 py-2 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/40'>
+                <AlertTriangle className='w-3.5 h-3.5 text-amber-500 mt-0.5 flex-shrink-0' />
+                <p className='text-xs text-amber-700 dark:text-amber-300'>
+                  El valor de escritura pública ({formatCurrency(valorEscrituraPublica)})
+                  difiere del total a financiar ({formatCurrency(valorTotal)}).
+                  Esto puede ser intencional por ajustes notariales o comerciales.
+                </p>
+              </div>
+            )}
+          </>
+        )}
       </div>
 
       {/* Resumen fuentes */}
@@ -268,6 +337,46 @@ export function SeccionRevision({
             </div>
           )
         })}
+
+        {/* Total fuentes + balance check */}
+        {(() => {
+          const totalFuentes = fuentesActivas.reduce((sum, f) => {
+            const tipoConCampos2 = tiposConCampos.find(t => t.nombre === f.tipo)
+            const camposConfig2 = tipoConCampos2?.configuracion_campos?.campos ?? []
+            return sum + (f.config ? obtenerMontoParaCierre(f.config, tipoConCampos2, camposConfig2) : 0)
+          }, 0)
+          const diff = Math.abs(totalFuentes - valorTotal)
+          const balanced = diff < 1
+
+          return (
+            <>
+              <div className='border-t border-gray-200 dark:border-gray-700 mt-2 pt-2'>
+                <div className={s.revision.financialRow}>
+                  <span className={s.revision.totalLabel}>
+                    <Calculator className='w-3.5 h-3.5' />
+                    Total fuentes
+                  </span>
+                  <span className={s.revision.totalValue}>
+                    {formatCurrency(totalFuentes)}
+                  </span>
+                </div>
+              </div>
+
+              {!balanced && (
+                <div className='flex items-start gap-2 mt-2 px-3 py-2 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/40'>
+                  <AlertTriangle className='w-3.5 h-3.5 text-amber-500 mt-0.5 flex-shrink-0' />
+                  <p className='text-xs text-amber-700 dark:text-amber-300'>
+                    Las fuentes suman {formatCurrency(totalFuentes)} pero el total a financiar es {formatCurrency(valorTotal)}.
+                    {totalFuentes > valorTotal
+                      ? ` Sobra ${formatCurrency(totalFuentes - valorTotal)}.`
+                      : ` Faltan ${formatCurrency(valorTotal - totalFuentes)}.`}
+                  </p>
+                </div>
+              )}
+            </>
+          )
+        })()}
+
         <button
           type='button'
           onClick={onEditarSeccion2}
@@ -310,6 +419,7 @@ export function SeccionRevision({
                 recargoEsquinera={recargoEsquinera}
                 descuentoAplicado={descuentoAplicado}
                 valorTotal={valorTotal}
+                valorEscrituraPublica={valorEscrituraPublica}
                 aplicarDescuento={aplicarDescuento}
                 fuentes={fuentesPDF}
                 notas={notas}

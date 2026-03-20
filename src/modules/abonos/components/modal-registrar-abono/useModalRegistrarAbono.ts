@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 
 import { formatDateCompact, getTodayDateString } from '@/lib/utils/date.utils'
+import { esDesembolsoUnico } from '@/shared/constants/fuentes-pago.constants'
 import {
     eliminarComprobante,
     generarPathComprobante,
@@ -26,10 +27,7 @@ export function useModalRegistrarAbono({
   onClose,
 }: UseModalRegistrarAbonoProps) {
   // Determinar si es desembolso completo (Crédito o Subsidio)
-  const esDesembolsoCompleto =
-    fuentePreseleccionada?.tipo === 'Crédito Hipotecario' ||
-    fuentePreseleccionada?.tipo === 'Subsidio Mi Casa Ya' ||
-    fuentePreseleccionada?.tipo === 'Subsidio Caja Compensación'
+  const esDesembolsoCompleto = esDesembolsoUnico(fuentePreseleccionada?.tipo)
 
   const montoAutomatico = esDesembolsoCompleto ? fuentePreseleccionada?.monto_aprobado : null
 

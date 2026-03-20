@@ -2,7 +2,7 @@
 
 import { Home, Plus } from 'lucide-react'
 
-import { viviendasListStyles as styles } from '../styles/viviendasList.styles'
+import { EmptyState } from '@/shared/components/ui/EmptyState'
 
 interface ViviendasEmptyProps {
   onCrear: () => void
@@ -10,20 +10,20 @@ interface ViviendasEmptyProps {
 
 /**
  * Estado vacío cuando no hay viviendas
- * Componente presentacional puro
+ * ✅ Usa EmptyState compartido con theming de viviendas
  */
 export function ViviendasEmpty({ onCrear }: ViviendasEmptyProps) {
   return (
-    <div className={styles.empty.container}>
-      <Home className={styles.empty.icon} />
-      <h3 className={styles.empty.title}>No hay viviendas registradas</h3>
-      <p className={styles.empty.description}>
-        Comienza agregando la primera vivienda de tu proyecto
-      </p>
-      <button onClick={onCrear} className={styles.empty.button}>
-        <Plus className="h-5 w-5" />
-        Crear Primera Vivienda
-      </button>
-    </div>
+    <EmptyState
+      icon={Home}
+      title="No hay viviendas registradas"
+      description="Comienza agregando la primera vivienda de tu proyecto"
+      action={{
+        label: 'Crear Primera Vivienda',
+        onClick: onCrear,
+        icon: Plus,
+      }}
+      moduleName="viviendas"
+    />
   )
 }

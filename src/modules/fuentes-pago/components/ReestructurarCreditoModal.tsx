@@ -18,6 +18,7 @@ import { calcularTablaAmortizacion } from '@/modules/fuentes-pago/utils/calculos
 interface ReestructurarCreditoModalProps {
   fuentePagoId: string
   creditoActual: CreditoConstructora
+  capitalPendiente: number
   cuotasPendientes: number
   procesando: boolean
   onConfirmar: (params: ParametrosReestructuracion) => Promise<void>
@@ -27,31 +28,12 @@ interface ReestructurarCreditoModalProps {
 export function ReestructurarCreditoModal({
   fuentePagoId,
   creditoActual,
+  capitalPendiente,
   cuotasPendientes,
   procesando,
   onConfirmar,
   onCerrar,
 }: ReestructurarCreditoModalProps) {
-  // Capital pendiente: suma de capitalPorCuota de las cuotas no pagadas
-  const cuotasPagadas = creditoActual.num_cuotas - cuotasPendientes
-  const capitalPendiente = useMemo(() => {
-    if (creditoActual.capital <= 0 || creditoActual.num_cuotas <= 0) return 0
-    try {
-      const calculo = calcularTablaAmortizacion({
-        capital: creditoActual.capital,
-        tasaMensual: creditoActual.tasa_mensual,
-        numCuotas: creditoActual.num_cuotas,
-        fechaInicio: new Date(creditoActual.fecha_inicio + 'T12:00:00'),
-      })
-      return calculo.cuotas
-        .slice(cuotasPagadas)
-        .reduce((sum, c) => sum + c.capitalPorCuota, 0)
-    } catch {
-      // Fallback lineal
-      return Math.round((creditoActual.capital / creditoActual.num_cuotas) * cuotasPendientes)
-    }
-  }, [creditoActual, cuotasPagadas])
-
   const [nuevaTasa, setNuevaTasa] = useState(String(creditoActual.tasa_mensual))
   const [nuevasCuotas, setNuevasCuotas] = useState(String(cuotasPendientes))
   const [fechaStr, setFechaStr] = useState(getTodayDateString())

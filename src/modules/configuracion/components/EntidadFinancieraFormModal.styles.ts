@@ -13,10 +13,10 @@ import type { EntidadColor } from '../types/entidades-financieras.types'
 
 export const entidadFinancieraModalStyles = {
   // Backdrop
-  backdrop: 'fixed inset-0 z-50 bg-black/60 backdrop-blur-sm',
+  backdrop: 'fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm',
 
   // Container principal
-  container: 'fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto',
+  container: 'fixed inset-0 z-[60] flex items-center justify-center p-4 overflow-y-auto',
 
   // Modal card
   modal: 'relative w-full max-w-3xl bg-white dark:bg-gray-800 rounded-2xl shadow-2xl',

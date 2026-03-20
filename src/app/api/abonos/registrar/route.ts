@@ -22,7 +22,11 @@ export async function POST(request: NextRequest) {
       numero_referencia,
       notas,
       comprobante_path,
+      mora_incluida,
     } = body
+
+    // mora_incluida: porción del monto que corresponde a mora (no se descuenta del saldo)
+    const moraIncluida = typeof mora_incluida === 'number' && mora_incluida > 0 ? mora_incluida : 0
 
     // Validaciones
     if (!negociacion_id || !fuente_pago_id || !monto || !fecha_abono || !metodo_pago) {
@@ -68,9 +72,10 @@ export async function POST(request: NextRequest) {
     }
 
     const saldoDisponible = fuente.saldo_pendiente || 0
-    if (monto > saldoDisponible) {
+    const montoSinMora = monto - moraIncluida
+    if (montoSinMora > saldoDisponible) {
       return NextResponse.json(
-        { error: `El monto ($${monto}) excede el saldo disponible ($${saldoDisponible})` },
+        { error: `El monto principal ($${montoSinMora}) excede el saldo disponible ($${saldoDisponible})` },
         { status: 400 }
       )
     }
@@ -102,6 +107,7 @@ export async function POST(request: NextRequest) {
         negociacion_id,
         fuente_pago_id,
         monto,
+        mora_incluida: moraIncluida > 0 ? moraIncluida : undefined,
         fecha_abono: fechaAbonoDB,
         metodo_pago,
         numero_referencia: numero_referencia || null,

@@ -22,6 +22,8 @@ import { useRouter } from 'next/navigation'
 
 import { construirURLCliente } from '@/lib/utils/slug.utils'
 import { ModalConfirmacion } from '@/shared'
+import { NoResults } from '@/shared/components/ui/NoResults'
+import { Pagination } from '@/shared/components/ui/Pagination'
 import { useVistaPreference } from '@/shared/hooks/useVistaPreference'
 
 import { ClientesEmpty } from './clientes-empty'
@@ -35,6 +37,7 @@ import {
 import { ClientesTabla } from '../components/ClientesTabla'
 import { FormularioClienteContainer } from '../containers/formulario-cliente-container'
 import { useClientesList } from '../hooks'
+import { clientesListaStyles } from '../styles/clientes-lista.styles'
 import type { ClienteResumen, EstadoCliente } from '../types'
 import { ClienteCardCompacta } from './cards/cliente-card-compacta'
 
@@ -153,13 +156,13 @@ export function ClientesPageMain({
   // =====================================================
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 dark:bg-gray-950">
+    <div className={clientesListaStyles.container.page}>
       {/* Animación simplificada para navegación instantánea */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.15 }}
-        className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-4"
+        className={clientesListaStyles.container.content}
       >
         {/* Header Hero + FAB */}
         <ClientesHeader
@@ -191,14 +194,20 @@ export function ClientesPageMain({
         {isLoading ? (
           <ClientesSkeleton />
         ) : clientesFiltrados.length === 0 ? (
-          <ClientesEmpty
-            onNuevoCliente={canCreate ? handleNuevoCliente : undefined}
-            mensaje={
-              busqueda || estadoFiltro !== 'Todos'
-                ? 'No hay clientes que coincidan con los filtros'
-                : undefined
-            }
-          />
+          busqueda || estadoFiltro !== 'Todos' ? (
+            <NoResults
+              moduleName="clientes"
+              onLimpiarFiltros={() => {
+                setBusqueda('')
+                setEstadoFiltro('Todos')
+              }}
+              mensaje="No hay clientes que coincidan con los filtros aplicados"
+            />
+          ) : (
+            <ClientesEmpty
+              onNuevoCliente={canCreate ? handleNuevoCliente : undefined}
+            />
+          )
         ) : vista === 'cards' ? (
           // Vista de Cards con Paginación
           <div className="space-y-4">
@@ -229,43 +238,15 @@ export function ClientesPageMain({
 
             {/* Paginación */}
             {totalPaginas > 1 && (
-              <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
-                <div className="flex items-center gap-2">
-                  <p className="text-xs text-gray-600 dark:text-gray-400">
-                    Mostrando {(paginaActual - 1) * itemsPorPagina + 1} -{' '}
-                    {Math.min(paginaActual * itemsPorPagina, totalFiltrados)} de {totalFiltrados}
-                  </p>
-                  <select
-                    value={itemsPorPagina}
-                    onChange={(e) => cambiarItemsPorPagina(Number(e.target.value))}
-                    className="px-2 py-1 text-xs border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-cyan-500"
-                  >
-                    <option value={12}>12 por página</option>
-                    <option value={24}>24 por página</option>
-                    <option value={48}>48 por página</option>
-                  </select>
-                </div>
-
-                <div className="flex items-center gap-1">
-                  <button
-                    onClick={() => cambiarPagina(paginaActual - 1)}
-                    disabled={paginaActual === 1}
-                    className="px-3 py-1 text-xs font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                  >
-                    Anterior
-                  </button>
-                  <span className="px-3 py-1 text-xs font-medium text-gray-700 dark:text-gray-300">
-                    {paginaActual} / {totalPaginas}
-                  </span>
-                  <button
-                    onClick={() => cambiarPagina(paginaActual + 1)}
-                    disabled={paginaActual === totalPaginas}
-                    className="px-3 py-1 text-xs font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                  >
-                    Siguiente
-                  </button>
-                </div>
-              </div>
+              <Pagination
+                currentPage={paginaActual}
+                totalPages={totalPaginas}
+                totalItems={totalFiltrados}
+                itemsPerPage={itemsPorPagina}
+                onPageChange={cambiarPagina}
+                onItemsPerPageChange={cambiarItemsPorPagina}
+                itemsPerPageOptions={[12, 24, 48]}
+              />
             )}
           </div>
         ) : (

@@ -42,6 +42,8 @@ interface UseNegociacionReturn {
   puedeCompletarse: boolean
   esActiva: boolean
   estaSuspendida: boolean
+  estaCompletada: boolean
+  estaCerrada: boolean
   estadoLegible: string
 }
 
@@ -88,9 +90,11 @@ export function useNegociacion(negociacionId: string): UseNegociacionReturn {
    * Calcular totales de fuentes de pago
    */
   const calcularTotales = useCallback(() => {
+    // Para créditos con la constructora usamos capital_para_cierre (sin intereses).
+    // Para el resto, monto_aprobado es el valor correcto.
     const valorTotal = negociacion?.valor_total || 0
     const totalFuentes = fuentesPago.reduce(
-      (sum, f) => sum + (f.monto_aprobado || 0),
+      (sum, f: any) => sum + (f.capital_para_cierre ?? f.monto_aprobado ?? 0),
       0
     )
     const porcentajeCubierto = valorTotal > 0 ? (totalFuentes / valorTotal) * 100 : 0
@@ -112,6 +116,8 @@ export function useNegociacion(negociacionId: string): UseNegociacionReturn {
    */
   const esActiva = negociacion?.estado === 'Activa'
   const estaSuspendida = negociacion?.estado === 'Suspendida'
+  const estaCompletada = negociacion?.estado === 'Completada'
+  const estaCerrada = negociacion?.estado === 'Cerrada por Renuncia'
   const puedeCompletarse = esActiva && totales.porcentajeCubierto >= 100
 
   const estadoLegible =
@@ -215,6 +221,8 @@ export function useNegociacion(negociacionId: string): UseNegociacionReturn {
     puedeCompletarse,
     esActiva,
     estaSuspendida,
+    estaCompletada,
+    estaCerrada,
     estadoLegible,
   }
 }

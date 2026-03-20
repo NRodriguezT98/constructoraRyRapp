@@ -55,11 +55,11 @@ export function EstadisticasComerciales({ estadisticas, cliente }: EstadisticasC
       transition={{ delay: 0.15 }}
       className="flex items-center gap-2 flex-wrap"
     >
-      <p className="text-[11px] font-medium text-gray-400 dark:text-gray-500 mr-1">Actividad:</p>
+      <p className="text-xs font-medium text-gray-400 dark:text-gray-500 mr-1">Actividad:</p>
       {pills.map((pill) => (
         <span
           key={pill.label}
-          className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold ${pill.color}`}
+          className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold ${pill.color}`}
         >
           <span className="font-bold">{pill.value}</span>
           {pill.label}

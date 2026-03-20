@@ -294,6 +294,7 @@ export default function ClienteDetalleClient({ clienteId }: ClienteDetalleClient
           <motion.div {...styles.animations.fadeInUp}>
             <button
               onClick={() => router.back()}
+              aria-label="Volver a la lista de clientes"
               className='group inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800'
             >
               <ArrowLeft className='h-4 w-4 transition-transform group-hover:-translate-x-1' />
@@ -421,10 +422,13 @@ export default function ClienteDetalleClient({ clienteId }: ClienteDetalleClient
             transition={{ delay: 0.2 }}
             className={styles.tabsClasses.container}
           >
-            <nav className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+            <nav role="tablist" aria-label="Secciones del cliente" className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
               {tabs.map((tab) => (
                 <motion.button
                   key={tab.id}
+                  role="tab"
+                  aria-selected={activeTab === tab.id}
+                  aria-controls={`panel-${tab.id}`}
                   data-tab={tab.id}
                   onClick={() => cambiarTab(tab.id)}
                   className={`flex-shrink-0 ${styles.tabsClasses.tab} ${
@@ -450,21 +454,23 @@ export default function ClienteDetalleClient({ clienteId }: ClienteDetalleClient
           </motion.div>
 
           {/* Contenido de Tabs - Componentes Modulares */}
-          {activeTab === 'general' && <GeneralTab cliente={cliente} />}
-          {activeTab === 'intereses' && (
-            <InteresesTab
-              cliente={cliente}
-              onRegistrarInteres={handleRegistrarInteres}
-            />
-          )}
-          {activeTab === 'negociacion' && <NegociacionTab cliente={cliente} />}
-          {activeTab === 'documentos' && <DocumentosTab cliente={cliente} />}
-          {activeTab === 'historial' && (
-            <HistorialTab
-              clienteId={clienteUUID || ''}
-              clienteNombre={`${cliente.nombres} ${cliente.apellidos}`}
-            />
-          )}
+          <div role="tabpanel" id={`panel-${activeTab}`} aria-labelledby={activeTab}>
+            {activeTab === 'general' && <GeneralTab cliente={cliente} />}
+            {activeTab === 'intereses' && (
+              <InteresesTab
+                cliente={cliente}
+                onRegistrarInteres={handleRegistrarInteres}
+              />
+            )}
+            {activeTab === 'negociacion' && <NegociacionTab cliente={cliente} />}
+            {activeTab === 'documentos' && <DocumentosTab cliente={cliente} />}
+            {activeTab === 'historial' && (
+              <HistorialTab
+                clienteId={clienteUUID || ''}
+                clienteNombre={`${cliente.nombres} ${cliente.apellidos}`}
+              />
+            )}
+          </div>
         </div>
 
         {/* Modal Registrar Interés */}

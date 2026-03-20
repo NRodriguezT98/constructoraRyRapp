@@ -22,6 +22,8 @@ import { useRouter } from 'next/navigation'
 
 import { ConfigurarFuentesPago } from '@/modules/clientes/components/negociaciones'
 import { useNegociacion } from '@/modules/clientes/hooks'
+import { CuotasCreditoTab } from '@/modules/fuentes-pago/components/CuotasCreditoTab'
+import { esCreditoConstructora } from '@/shared/constants/fuentes-pago.constants'
 
 
 
@@ -371,6 +373,33 @@ export default function NegociacionDetalleClient({
                 )}
               </div>
             </div>
+
+            {/* Plan de crédito — Cierre Financiero */}
+            {fuentesPago
+              .filter((f: any) => esCreditoConstructora(f.tipo))
+              .map((fuente: any) => (
+                <div
+                  key={fuente.id}
+                  className="rounded-xl border bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800"
+                >
+                  <div className="mb-4 flex items-center gap-2">
+                    <DollarSign className="h-5 w-5 text-indigo-500" />
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                      Ajuste de Cierre Financiero
+                    </h3>
+                    <span className="ml-auto rounded-full bg-indigo-100 px-2.5 py-0.5 text-xs font-medium text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300">
+                      Crédito con la Constructora
+                    </span>
+                  </div>
+                  <CuotasCreditoTab
+                    fuentePagoId={fuente.id}
+                    negociacionId={negociacionId}
+                    montoFuente={fuente.monto_aprobado}
+                    onPagoCuotaRegistrado={() => { recargarNegociacion() }}
+                    readonly={!esActiva}
+                  />
+                </div>
+              ))}
 
             {/* Error */}
             {error && (

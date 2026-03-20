@@ -26,6 +26,7 @@ import { crearCredito } from '@/modules/fuentes-pago/services/creditos-construct
 import { crearCuotasCredito } from '@/modules/fuentes-pago/services/cuotas-credito.service'
 import type { ParametrosCredito } from '@/modules/fuentes-pago/types'
 import { calcularTablaAmortizacion } from '@/modules/fuentes-pago/utils/calculos-credito'
+import { calcularCierreFinanciero } from '@/shared/hooks/useCierreFinanciero'
 
 export interface FuentePago {
   id?: string
@@ -119,6 +120,7 @@ export function useConfigurarFuentesPago({
           id: f.id,
           tipo: f.tipo,
           monto_aprobado: f.monto_aprobado || 0,
+          capital_para_cierre: f.capital_para_cierre ?? undefined,
           entidad: f.entidad,
           numero_referencia: f.numero_referencia,
           carta_asignacion_url: f.carta_asignacion_url,
@@ -135,18 +137,17 @@ export function useConfigurarFuentesPago({
   /**
    * Calcular totales: monto total, porcentaje cubierto, diferencia
    *
-   * Para créditos usa capital_para_cierre (no monto_aprobado que incluye intereses).
-   * Evita que los intereses inflen el total por encima del valor de la vivienda.
+   * Uses shared calcularCierreFinanciero — capital_para_cierre is preferred
+   * over monto_aprobado to avoid interest inflating the total.
    */
   const calcularTotales = () => {
-    const total = fuentesPago.reduce(
-      (sum, f) => sum + (f.capital_para_cierre ?? f.monto_aprobado ?? 0),
-      0
-    )
-    const porcentaje = valorTotal > 0 ? (total / valorTotal) * 100 : 0
-    const diferencia = valorTotal - total
+    const cierre = calcularCierreFinanciero(fuentesPago, valorTotal)
 
-    setTotales({ total, porcentaje, diferencia })
+    setTotales({
+      total: cierre.totalParaCierre,
+      porcentaje: cierre.porcentajeCubierto,
+      diferencia: cierre.diferencia,
+    })
   }
 
   /**

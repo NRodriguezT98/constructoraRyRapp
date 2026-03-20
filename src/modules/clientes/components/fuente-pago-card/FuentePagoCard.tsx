@@ -30,6 +30,7 @@ import { memo, useState } from 'react'
 import type { TipoFuentePago } from '@/modules/clientes/types'
 import { obtenerMonto } from '@/modules/clientes/utils/fuentes-pago-campos.utils'
 import type { CampoConfig } from '@/modules/configuracion/types/campos-dinamicos.types'
+import { esCreditoHipotecario, esCuotaInicial, esSubsidioCajaCompensacion, esSubsidioMiCasaYa } from '@/shared/constants/fuentes-pago.constants'
 import type { FuentePagoConfig, FuentePagoErrores } from '../asignar-vivienda/types'
 
 import { CampoFormularioDinamico } from './CampoFormularioDinamico'
@@ -201,7 +202,7 @@ function FuentePagoCardComponent(props: FuentePagoCardProps) {
 
     // ✅ Solo validar CAMPOS (no documentos)
     const tieneEntidad = !tipoConfig.requiereEntidad || (config?.entidad && config.entidad.trim() !== '')
-    const tieneReferencia = tipo === 'Cuota Inicial' || (config?.numero_referencia && config.numero_referencia.trim() !== '')
+    const tieneReferencia = esCuotaInicial(tipo) || (config?.numero_referencia && config.numero_referencia.trim() !== '')
 
     // ✅ Si todos los campos requeridos están llenos → Badge verde "Configurado"
     if (tieneEntidad && tieneReferencia) {
@@ -338,13 +339,13 @@ function FuentePagoCardComponent(props: FuentePagoCardProps) {
                       <AlertCircle className="h-4 w-4 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
                       <div className="flex-1">
                         <p className="text-sm font-semibold text-blue-900 dark:text-blue-100">
-                          {tipo === 'Crédito Hipotecario' && '📄 Carta de Aprobación del Banco'}
-                          {tipo === 'Subsidio Mi Casa Ya' && '📄 Carta de Asignación del Subsidio'}
-                          {tipo === 'Subsidio Caja Compensación' && '📄 Carta de Asignación de la Caja'}
-                          {!['Crédito Hipotecario', 'Subsidio Mi Casa Ya', 'Subsidio Caja Compensación'].includes(tipo) && '📄 Documentación Requerida'}
+                          {esCreditoHipotecario(tipo) && '📄 Carta de Aprobación del Banco'}
+                          {esSubsidioMiCasaYa(tipo) && '📄 Carta de Asignación del Subsidio'}
+                          {esSubsidioCajaCompensacion(tipo) && '📄 Carta de Asignación de la Caja'}
+                          {!esCreditoHipotecario(tipo) && !esSubsidioMiCasaYa(tipo) && !esSubsidioCajaCompensacion(tipo) && '📄 Documentación Requerida'}
                         </p>
                         <p className="text-xs text-blue-700 dark:text-blue-300 mt-1">
-                          Una vez asignada la vivienda, ve a la pestaña <span className="font-semibold">"Documentos"</span> del cliente para subir {tipo === 'Crédito Hipotecario' ? 'la carta de aprobación del banco' : tipo === 'Subsidio Mi Casa Ya' ? 'la carta de asignación del subsidio' : tipo === 'Subsidio Caja Compensación' ? 'la carta de asignación de la caja de compensación' : 'la documentación requerida'}.
+                          Una vez asignada la vivienda, ve a la pestaña <span className="font-semibold">"Documentos"</span> del cliente para subir {esCreditoHipotecario(tipo) ? 'la carta de aprobación del banco' : esSubsidioMiCasaYa(tipo) ? 'la carta de asignación del subsidio' : esSubsidioCajaCompensacion(tipo) ? 'la carta de asignación de la caja de compensación' : 'la documentación requerida'}.
                         </p>
                       </div>
                     </div>
@@ -356,10 +357,10 @@ function FuentePagoCardComponent(props: FuentePagoCardProps) {
                       <div className="flex items-center gap-2">
                         <CheckCircle2 className="h-4 w-4 text-green-600" />
                         <span className="text-sm font-medium text-green-800 dark:text-green-200">
-                          {tipo === 'Crédito Hipotecario' && 'Carta del banco registrada'}
-                          {tipo === 'Subsidio Mi Casa Ya' && 'Carta del subsidio registrada'}
-                          {tipo === 'Subsidio Caja Compensación' && 'Carta de la caja registrada'}
-                          {!['Crédito Hipotecario', 'Subsidio Mi Casa Ya', 'Subsidio Caja Compensación'].includes(tipo) && 'Documento registrado'}
+                          {esCreditoHipotecario(tipo) && 'Carta del banco registrada'}
+                          {esSubsidioMiCasaYa(tipo) && 'Carta del subsidio registrada'}
+                          {esSubsidioCajaCompensacion(tipo) && 'Carta de la caja registrada'}
+                          {!esCreditoHipotecario(tipo) && !esSubsidioMiCasaYa(tipo) && !esSubsidioCajaCompensacion(tipo) && 'Documento registrado'}
                         </span>
                       </div>
                       <button

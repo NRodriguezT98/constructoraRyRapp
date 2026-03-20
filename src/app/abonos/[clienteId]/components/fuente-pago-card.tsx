@@ -19,11 +19,9 @@ import {
 import Link from 'next/link'
 import { useState } from 'react'
 
-import { getTodayDateString } from '@/lib/utils/date.utils'
-import { registrarAbono } from '@/modules/abonos/services/abonos.service'
 import type { FuentePagoConAbonos } from '@/modules/abonos/types'
 import { CuotasCreditoTab } from '@/modules/fuentes-pago/components/CuotasCreditoTab'
-import { marcarCuotaPagada } from '@/modules/fuentes-pago/services/cuotas-credito.service'
+import { esCreditoConstructora as checkCreditoConstructora, esCuotaInicial as checkCuotaInicial } from '@/shared/constants/fuentes-pago.constants'
 
 interface FuentePagoCardProps {
   fuente: FuentePagoConAbonos
@@ -112,8 +110,8 @@ export function FuentePagoCard({
 }: FuentePagoCardProps) {
   const completada = validacion?.estaCompletamentePagada ?? false
   const esDesembolsoUnico = fuente.permite_multiples_abonos === false
-  const esCuotaInicial = fuente.tipo === 'Cuota Inicial'
-  const esCreditoConstructora = fuente.tipo === 'Crédito con la Constructora'
+  const esCuotaInicial = checkCuotaInicial(fuente.tipo)
+  const esCreditoConstructora = checkCreditoConstructora(fuente.tipo)
   const yaDesembolsada = esDesembolsoUnico && fuente.monto_recibido > 0
   const docsPendientesObligatorios =
     validacion?.documentosObligatoriosPendientes ?? 0
@@ -129,24 +127,15 @@ export function FuentePagoCard({
 
   const [cuotasExpandidas, setCuotasExpandidas] = useState(false)
 
-  // Registra abono + marca cuota pagada (crédito interno)
-  const handlePagarCuota = async (cuotaId: string, monto: number, mora: number) => {
-    await registrarAbono({
-      negociacion_id: negociacionId,
-      fuente_pago_id: fuente.id,
-      monto,
-      mora_incluida: mora > 0 ? mora : undefined,
-      fecha_abono: getTodayDateString(),
-      metodo_pago: 'Transferencia',
-      notas: 'Pago de cuota — crédito con la constructora',
-    })
-    await marcarCuotaPagada(cuotaId, getTodayDateString())
-    onAbonoRegistrado?.()
-  }
-
   // Textos semánticos por tipo de fuente
-  const labelAprobado = esCuotaInicial ? 'Valor Pactado' : 'Aprobado'
+  const labelAprobado = esCuotaInicial ? 'Valor Pactado' : esCreditoConstructora ? 'Monto del Crédito' : 'Aprobado'
   const labelRecibido = esDesembolsoUnico ? 'Desembolsado' : 'Recibido'
+
+  // Desglose crédito: capital vs intereses
+  const capitalCredito = esCreditoConstructora ? (fuente.capital_para_cierre ?? fuente.monto_aprobado) : null
+  const interesesCredito = esCreditoConstructora && capitalCredito !== null
+    ? fuente.monto_aprobado - capitalCredito
+    : null
 
   return (
     <motion.div
@@ -203,22 +192,34 @@ export function FuentePagoCard({
           </div>
 
           {/* Badge completada / botón */}
-          <div className='flex-shrink-0'>
-            {/* Crédito constructora: toggle de plan de cuotas */}
+          <div className='flex shrink-0 items-center gap-2'>
+            {/* Crédito constructora: toggle plan + botón abono independiente */}
             {esCreditoConstructora ? (
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.96 }}
-                onClick={() => setCuotasExpandidas((p) => !p)}
-                className={`inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r px-3 py-1.5 ${colors.accent} text-xs font-semibold text-white shadow-md`}
-              >
-                {cuotasExpandidas ? (
-                  <ChevronUp className='h-3.5 w-3.5' />
-                ) : (
-                  <ChevronDown className='h-3.5 w-3.5' />
-                )}
-                {cuotasExpandidas ? 'Ocultar cuotas' : 'Ver cuotas'}
-              </motion.button>
+              <>
+                {puedeAbonar ? (
+                  <motion.button
+                    whileHover={{ scale: 1.05, boxShadow: `0 0 18px ${colors.glow}` }}
+                    whileTap={{ scale: 0.96 }}
+                    onClick={() => onRegistrarAbono(fuente)}
+                    className={`inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r px-3 py-1.5 ${colors.accent} text-xs font-semibold text-white shadow-md`}
+                  >
+                    <CreditCard className='h-3.5 w-3.5' />+ Abono
+                  </motion.button>
+                ) : null}
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.96 }}
+                  onClick={() => setCuotasExpandidas((p) => !p)}
+                  className='inline-flex items-center gap-1.5 rounded-xl border border-violet-500/40 bg-violet-500/15 px-3 py-1.5 text-xs font-semibold text-violet-300 hover:bg-violet-500/25 transition-colors'
+                >
+                  {cuotasExpandidas ? (
+                    <ChevronUp className='h-3.5 w-3.5' />
+                  ) : (
+                    <ChevronDown className='h-3.5 w-3.5' />
+                  )}
+                  {cuotasExpandidas ? 'Ocultar cuotas' : 'Ver cuotas'}
+                </motion.button>
+              </>
             ) : completada ? (
               <span className='inline-flex items-center gap-1.5 rounded-lg border border-emerald-500/30 bg-emerald-500/15 px-2.5 py-1 text-xs font-semibold text-emerald-300'>
                 <BadgeCheck className='h-3.5 w-3.5' />
@@ -235,6 +236,7 @@ export function FuentePagoCard({
               <div className='flex flex-col items-end gap-1'>
                 <button
                   disabled
+                  title={`Faltan ${docsPendientesObligatorios} documento${docsPendientesObligatorios > 1 ? 's' : ''} obligatorio${docsPendientesObligatorios > 1 ? 's' : ''} para habilitar`}
                   className='inline-flex cursor-not-allowed select-none items-center gap-1.5 rounded-xl border border-gray-300 bg-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-400 opacity-80 dark:border-gray-600/50 dark:bg-gray-700/60 dark:text-gray-500'
                 >
                   <Lock className='h-3.5 w-3.5' />
@@ -275,6 +277,17 @@ export function FuentePagoCard({
             ) : null}
           </div>
         </div>
+
+        {/* Desglose crédito: capital + intereses */}
+        {esCreditoConstructora && capitalCredito !== null && interesesCredito !== null && interesesCredito > 0 ? (
+          <div className='mb-2 flex items-center gap-2 rounded-lg border border-violet-200/60 bg-violet-50/50 px-3 py-1.5 text-[11px] dark:border-violet-800/30 dark:bg-violet-900/10'>
+            <span className='text-gray-500 dark:text-gray-400'>Capital:</span>
+            <span className='font-semibold text-gray-800 dark:text-white'>{formatCurrency(capitalCredito)}</span>
+            <span className='text-gray-300 dark:text-gray-600'>+</span>
+            <span className='text-gray-500 dark:text-gray-400'>Intereses:</span>
+            <span className='font-semibold text-violet-600 dark:text-violet-400'>{formatCurrency(interesesCredito)}</span>
+          </div>
+        ) : null}
 
         {/* Montos en 3 celdas */}
         <div className='mb-3 grid grid-cols-3 gap-2'>
@@ -386,10 +399,13 @@ export function FuentePagoCard({
         <div className='border-t border-violet-200 bg-violet-50/50 px-4 py-4 dark:border-violet-800/30 dark:bg-violet-900/5'>
           <CuotasCreditoTab
             fuentePagoId={fuente.id}
+            negociacionId={negociacionId}
             montoFuente={fuente.monto_aprobado}
-            onPagarCuota={handlePagarCuota}
+            onPagoCuotaRegistrado={onAbonoRegistrado}
+            readonly
           />
         </div>
-      ) : null}    </motion.div>
+      ) : null}
+    </motion.div>
   )
 }

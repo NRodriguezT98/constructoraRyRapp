@@ -35,6 +35,7 @@ import {
 } from 'lucide-react'
 
 import { CreditoConstructoraForm } from '@/modules/fuentes-pago/components/CreditoConstructoraForm'
+import { esCreditoHipotecario, esCuotaInicial, esSubsidioCajaCompensacion } from '@/shared/constants/fuentes-pago.constants'
 import { useConfigurarFuentesPago } from '../../hooks'
 import type { TipoFuentePagoCatalogo } from '../../services/tipos-fuentes-pago.service'
 
@@ -292,7 +293,7 @@ export function ConfigurarFuentesPago({
                       <div>
                         <label className="mb-2 flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
                           <DollarSign className="h-4 w-4 text-purple-500" />
-                          {fuente.tipo === 'Cuota Inicial' ? 'Monto' : 'Monto Aprobado'}{' '}
+                          {esCuotaInicial(fuente.tipo) ? 'Monto' : 'Monto Aprobado'}{' '}
                           <span className="text-red-500">*</span>
                         </label>
                         <div className="relative">
@@ -317,11 +318,11 @@ export function ConfigurarFuentesPago({
                             className="w-full rounded-lg border-2 border-gray-200 bg-white px-4 py-2 pl-8 text-gray-900 transition-all focus:border-purple-500 focus:outline-none focus:ring-4 focus:ring-purple-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
                           />
                         </div>
-                        {fuente.tipo === 'Cuota Inicial' && (
+                        {esCuotaInicial(fuente.tipo) ? (
                           <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                             Dinero que el cliente ya tiene disponible
                           </p>
-                        )}
+                        ) : null}
                       </div>
                       )}
 
@@ -338,10 +339,10 @@ export function ConfigurarFuentesPago({
                         <div>
                           <label className="mb-2 flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
                             <Building2 className="h-4 w-4 text-purple-500" />
-                            {fuente.tipo === 'Crédito Hipotecario' ? 'Banco' : 'Entidad'}{' '}
+                            {esCreditoHipotecario(fuente.tipo) ? 'Banco' : 'Entidad'}{' '}
                             {tipoConfig?.requiere_entidad && <span className="text-red-500">*</span>}
                           </label>
-                          {fuente.tipo === 'Crédito Hipotecario' ? (
+                          {esCreditoHipotecario(fuente.tipo) ? (
                             <select
                               value={fuente.entidad || ''}
                               onChange={(e) => actualizarFuente(index, 'entidad', e.target.value)}
@@ -356,7 +357,7 @@ export function ConfigurarFuentesPago({
                               <option value="Banco Caja Social">Banco Caja Social</option>
                               <option value="Banco Popular">Banco Popular</option>
                             </select>
-                          ) : fuente.tipo === 'Subsidio Caja Compensación' ? (
+                          ) : esSubsidioCajaCompensacion(fuente.tipo) ? (
                             <select
                               value={fuente.entidad || ''}
                               onChange={(e) => actualizarFuente(index, 'entidad', e.target.value)}

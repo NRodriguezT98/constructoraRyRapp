@@ -9,6 +9,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 
+import { esCreditoHipotecario, esCuotaInicial, esSubsidioCajaCompensacion, esSubsidioMiCasaYa } from '@/shared/constants/fuentes-pago.constants'
 import type { AsignarViviendaFormData } from '../schemas'
 import { asignarViviendaSchema } from '../schemas'
 
@@ -154,24 +155,24 @@ export function useAsignarViviendaForm({
         const montoValido = (f.monto_aprobado ?? 0) > 0
 
         // Cuota Inicial: solo requiere monto
-        if (f.tipo === 'Cuota Inicial') {
+        if (esCuotaInicial(f.tipo)) {
           return montoValido
         }
 
         // Subsidio Mi Casa Ya: requiere monto, entidad NO es obligatoria, numero_referencia es opcional
-        if (f.tipo === 'Subsidio Mi Casa Ya') {
+        if (esSubsidioMiCasaYa(f.tipo)) {
           return montoValido
         }
 
         // Crédito Hipotecario: requiere monto, entidad (banco), numero_referencia
-        if (f.tipo === 'Crédito Hipotecario') {
+        if (esCreditoHipotecario(f.tipo)) {
           const entidadValida = f.entidad && f.entidad.trim() !== ''
           const numeroValido = f.numero_referencia && f.numero_referencia.trim() !== ''
           return montoValido && entidadValida && numeroValido
         }
 
         // Subsidio Caja Compensación: requiere monto, entidad (caja), numero_referencia (acta), fecha_acta
-        if (f.tipo === 'Subsidio Caja Compensación') {
+        if (esSubsidioCajaCompensacion(f.tipo)) {
           const entidadValida = f.entidad && f.entidad.trim() !== ''
           const numeroValido = f.numero_referencia && f.numero_referencia.trim() !== ''
           const fechaActaValida = f.fecha_acta && f.fecha_acta.trim() !== ''

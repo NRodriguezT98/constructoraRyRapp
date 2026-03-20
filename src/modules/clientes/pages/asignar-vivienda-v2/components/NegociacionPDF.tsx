@@ -36,6 +36,7 @@ export interface NegociacionPDFProps {
   recargoEsquinera: number
   descuentoAplicado: number
   valorTotal: number
+  valorEscrituraPublica?: number
   aplicarDescuento: boolean
   fuentes: FuentePDFItem[]
   notas?: string
@@ -305,6 +306,7 @@ export function NegociacionPDF({
   recargoEsquinera,
   descuentoAplicado,
   valorTotal,
+  valorEscrituraPublica,
   aplicarDescuento,
   fuentes,
   notas,
@@ -393,6 +395,13 @@ export function NegociacionPDF({
             <Text style={s.totalLabel}>Total a Pagar</Text>
             <Text style={s.totalValue}>{formatCOP(valorTotal)}</Text>
           </View>
+
+          {valorEscrituraPublica && valorEscrituraPublica > 0 ? (
+            <View style={s.financialRow}>
+              <Text style={s.financialLabel}>Valor escritura pública</Text>
+              <Text style={s.financialValue}>{formatCOP(valorEscrituraPublica)}</Text>
+            </View>
+          ) : null}
         </View>
 
         {/* ── FUENTES DE PAGO ────────────────────── */}

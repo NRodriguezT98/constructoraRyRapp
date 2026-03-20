@@ -65,6 +65,7 @@ export interface FuentePago {
   monto_recibido: number;
   saldo_pendiente: number;
   porcentaje_completado: number;
+  capital_para_cierre?: number | null;
   entidad?: string;
   numero_referencia?: string;
   fecha_aprobacion?: string;

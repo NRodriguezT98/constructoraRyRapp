@@ -1,0 +1,1 @@
+SELECT tablename, policyname, cmd FROM pg_policies WHERE tablename IN ('creditos_constructora','cuotas_credito') ORDER BY tablename, cmd;

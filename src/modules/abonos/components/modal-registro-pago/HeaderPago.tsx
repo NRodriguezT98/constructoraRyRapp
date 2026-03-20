@@ -2,6 +2,7 @@
 
 import { Landmark, Wallet } from 'lucide-react'
 
+import { esCreditoConstructora as checkCreditoConstructora, esCuotaInicial as checkCuotaInicial } from '@/shared/constants/fuentes-pago.constants'
 import type { FuentePagoConAbonos, ModoRegistro } from '../../types'
 import { formatCurrency, type ColorScheme } from './ModalRegistroPago.styles'
 
@@ -11,6 +12,7 @@ interface HeaderPagoProps {
   fuentesPago: FuentePagoConAbonos[]
   colorScheme: ColorScheme
   onFuenteChange: (f: FuentePagoConAbonos) => void
+  valorCuota?: number
 }
 
 export function HeaderPago({
@@ -19,7 +21,9 @@ export function HeaderPago({
   fuentesPago,
   colorScheme,
   onFuenteChange,
+  valorCuota,
 }: HeaderPagoProps) {
+  const esCreditoConstructora = checkCreditoConstructora(fuenteSeleccionada.tipo)
   const esDesembolso = modo === 'desembolso'
 
   return (
@@ -68,12 +72,16 @@ export function HeaderPago({
         </div>
       ) : null}
 
-      {/* Info: monto aprobado + saldo */}
+      {/* Info: monto aprobado + valor cuota + saldo */}
       <div className="relative z-10 bg-white/10 backdrop-blur-xl rounded-xl px-4 py-3 border border-white/20 mt-3">
-        <div className="grid grid-cols-2 gap-4">
+        <div className={`grid gap-4 ${esCreditoConstructora && valorCuota ? 'grid-cols-3' : 'grid-cols-2'}`}>
           <div>
             <p className="text-white/70 text-[10px] font-medium uppercase tracking-wider mb-0.5">
-              {fuenteSeleccionada.tipo === 'Cuota Inicial' ? 'Monto pactado' : 'Monto aprobado'}
+              {checkCuotaInicial(fuenteSeleccionada.tipo)
+                ? 'Monto pactado'
+                : esCreditoConstructora
+                  ? 'Crédito total'
+                  : 'Monto aprobado'}
             </p>
             <p className="text-white font-bold text-base">
               {fuenteSeleccionada.monto_aprobado != null
@@ -81,6 +89,12 @@ export function HeaderPago({
                 : 'Por confirmar'}
             </p>
           </div>
+          {esCreditoConstructora && valorCuota ? (
+            <div>
+              <p className="text-white/70 text-[10px] font-medium uppercase tracking-wider mb-0.5">Valor cuota</p>
+              <p className="text-white font-bold text-base">{formatCurrency(valorCuota)}</p>
+            </div>
+          ) : null}
           <div>
             <p className="text-white/70 text-[10px] font-medium uppercase tracking-wider mb-0.5">Saldo pendiente</p>
             <p className="text-white font-bold text-base">

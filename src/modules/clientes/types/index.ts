@@ -512,6 +512,12 @@ export interface CrearNegociacionDTO {
 export interface CrearFuentePagoDTO {
   tipo: TipoFuentePago
   monto_aprobado: number
+  /**
+   * Para créditos internos (genera_cuotas=true): capital sin intereses.
+   * Es lo que cubre el precio de la vivienda. Los intereses son ganancia adicional.
+   * Para otras fuentes: undefined (se usa monto_aprobado directamente).
+   */
+  capital_para_cierre?: number
   entidad?: string
   numero_referencia?: string
   permite_multiples_abonos: boolean

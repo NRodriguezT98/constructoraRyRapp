@@ -116,6 +116,7 @@ export function AsignarViviendaV2Page({
   const aplicarDescuento = watch('aplicar_descuento') as boolean
   const tipoDescuento = (watch('tipo_descuento') as string) ?? ''
   const notas = (watch('notas') as string) ?? ''
+  const valorEscrituraPublica = (watch('valor_escritura_publica') as number) ?? 0
 
   return (
     <div className={s.page.wrapper}>
@@ -200,6 +201,7 @@ export function AsignarViviendaV2Page({
               recargoEsquinera={recargoEsquinera}
               descuentoAplicado={descuentoAplicado}
               valorTotal={valorTotal}
+              valorEscrituraPublica={valorEscrituraPublica}
               aplicarDescuento={aplicarDescuento}
               tipoDescuento={tipoDescuento}
               notas={notas}

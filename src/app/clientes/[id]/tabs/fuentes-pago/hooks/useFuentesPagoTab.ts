@@ -30,6 +30,8 @@ import type {
     TipoFuentePago
 } from '@/modules/clientes/types/fuentes-pago'
 import type { TipoFuentePago as TipoFuentePagoConfig } from '@/modules/configuracion/types/tipos-fuentes-pago.types'
+import { esCreditoHipotecario, esSubsidioMiCasaYa } from '@/shared/constants/fuentes-pago.constants'
+import { calcularCierreFinanciero } from '@/shared/hooks/useCierreFinanciero'
 import { formatCurrency } from '@/shared/utils/format'
 
 // Importar iconos para mapeo dinámico
@@ -539,19 +541,16 @@ export function useFuentesPagoTab({ cliente }: UseFuentesPagoTabProps) {
   }, [negociacion])
 
   const metricas = useMemo((): MetricasFuentesPago => {
-    const totalFuentesConfiguradas = fuentesPago.reduce(
-      (sum, fuente) => sum + fuente.monto_aprobado, 0
-    )
+    const cierre = calcularCierreFinanciero(fuentesPago, valorTotalVivienda)
+    const totalFuentesConfiguradas = cierre.totalParaCierre
 
-    const saldoPendiente = valorTotalVivienda - totalFuentesConfiguradas
+    const saldoPendiente = cierre.diferencia
 
-    const porcentajeCompletado = valorTotalVivienda > 0
-      ? Math.round((totalFuentesConfiguradas / valorTotalVivienda) * 100)
-      : 0
+    const porcentajeCompletado = cierre.porcentajeCubierto
 
     // Solo contar fuentes que requieren documentación (Crédito e Hipotecario y Subsidio Mi Casa Ya)
     const fuentesQueRequierenDoc = fuentesPago.filter(
-      f => f.tipo === 'Crédito Hipotecario' || f.tipo === 'Subsidio Mi Casa Ya'
+      f => esCreditoHipotecario(f.tipo) || esSubsidioMiCasaYa(f.tipo)
     )
 
     const fuentesConDocumentacion = 0 // Sistema nuevo: ver vista_documentos_pendientes_fuentes
@@ -574,7 +573,7 @@ export function useFuentesPagoTab({ cliente }: UseFuentesPagoTabProps) {
 
     // Solo verificar documentación en fuentes que la requieren
     const fuentesQueRequierenDoc = fuentesPago.filter(
-      f => f.tipo === 'Crédito Hipotecario' || f.tipo === 'Subsidio Mi Casa Ya'
+      f => esCreditoHipotecario(f.tipo) || esSubsidioMiCasaYa(f.tipo)
     )
 
     const todasConDocumentacion = true // Sistema nuevo: usa vista_documentos_pendientes_fuentes

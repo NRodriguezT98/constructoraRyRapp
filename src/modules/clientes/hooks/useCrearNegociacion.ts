@@ -99,8 +99,13 @@ export function useCrearNegociacion(): UseCrearNegociacionReturn {
 
     // ⭐ VALIDACIONES DE FUENTES DE PAGO (solo si se proporcionan)
     if (datos.fuentes_pago && datos.fuentes_pago.length > 0) {
-      // Validar que la suma de fuentes = valor total
-      const sumaFuentes = datos.fuentes_pago.reduce((sum, f) => sum + f.monto_aprobado, 0)
+      // Validar que la suma de fuentes = valor total.
+      // Para créditos internos usar capital_para_cierre (sin intereses), ya que los
+      // intereses no son parte del precio de la vivienda, son ganancia del prestamista.
+      const sumaFuentes = datos.fuentes_pago.reduce(
+        (sum, f) => sum + (f.capital_para_cierre ?? f.monto_aprobado),
+        0
+      )
       if (Math.abs(sumaFuentes - valorTotal) > 0.01) {
         // Tolerancia de 1 centavo por redondeo
         errores.push(

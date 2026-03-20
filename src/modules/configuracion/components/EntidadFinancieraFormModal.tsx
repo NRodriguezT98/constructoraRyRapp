@@ -30,6 +30,8 @@ import {
     Wallet,
     X,
 } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { useEntidadFinancieraFormModal } from '../hooks/useEntidadFinancieraFormModal'
 import type { EntidadFinanciera } from '../types/entidades-financieras.types'
 import { ENTIDAD_COLOR_VALUES, TIPO_ENTIDAD_VALUES } from '../types/entidades-financieras.types'
@@ -90,7 +92,12 @@ export function EntidadFinancieraFormModal({
     isSubmitting,
   } = useEntidadFinancieraFormModal({ entidad, onClose })
 
-  return (
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => { setMounted(true) }, [])
+
+  if (!mounted) return null
+
+  return createPortal(
     <AnimatePresence>
       {isOpen ? (
         <>
@@ -99,10 +106,11 @@ export function EntidadFinancieraFormModal({
             {...entidadFinancieraModalAnimations.backdrop}
             onClick={handleClose}
             className={styles.backdrop}
+            style={{ position: 'fixed', inset: 0, zIndex: 9998 }}
           />
 
           {/* Modal */}
-          <div className={styles.container}>
+          <div className={styles.container} style={{ position: 'fixed', inset: 0, zIndex: 9999 }}>
             <motion.div
               {...entidadFinancieraModalAnimations.modal}
               className={styles.modal}
@@ -340,6 +348,7 @@ export function EntidadFinancieraFormModal({
           </div>
         </>
       ) : null}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   )
 }

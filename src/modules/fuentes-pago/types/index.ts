@@ -74,39 +74,53 @@ export interface ParametrosCredito {
 // CUOTAS DE AMORTIZACIÓN
 // ============================================================
 
-export type EstadoCuota = 'Pendiente' | 'Pagada' | 'Reestructurada'
-export type EstadoEfectivoCuota = EstadoCuota | 'Vencida'
+// ─── Calendario de cuotas (tabla cuotas_credito) ─────────────────────────────
+// La tabla es ahora de solo lectura: fecha + monto de referencia por período.
+// No hay estado por cuota; el estado se calcula dinámicamente desde los abonos.
 
-export interface CuotaCredito {
+export interface CuotaCalendario {
   id: string
   fuente_pago_id: string
   numero_cuota: number
   fecha_vencimiento: string
   valor_cuota: number
-  mora_aplicada: number
-  total_a_cobrar: number
-  estado: EstadoCuota
-  fecha_pago: string | null
   version_plan: number
   notas: string | null
   created_at: string
   updated_at: string
 }
 
-export interface CuotaVigente extends CuotaCredito {
-  estado_efectivo: EstadoEfectivoCuota
-  esta_vencida: boolean
-  dias_mora: number
+/** @deprecated Alias de CuotaCalendario para compatibilidad con código legado */
+export type CuotaCredito = CuotaCalendario
+
+// ─── Estado calculado por período (vista_estado_periodos_credito) ─────────────
+
+export type EstadoPeriodo = 'Cubierto' | 'Atrasado' | 'En curso' | 'Futuro'
+
+export interface PeriodoCredito extends CuotaCalendario {
+  /** Total capital abonado a esta fuente (acumulado histórico) */
+  capital_total: number
+  /** Capital atribuido a ESTE período (relleno secuencial) */
+  capital_aplicado: number
+  /** Cuánto falta para cubrir el período (0 si cubierto) */
+  deficit: number
+  estado_periodo: EstadoPeriodo
+  /** Días desde el vencimiento (solo si Atrasado) */
+  dias_atraso: number
+  /** Interés de mora calculado sobre el déficit (solo si Atrasado) */
+  mora_sugerida: number
 }
+
+/** @deprecated Alias de PeriodoCredito para compatibilidad con código legado */
+export type CuotaVigente = PeriodoCredito
 
 export interface ResumenCuotas {
   total: number
-  pendientes: number
-  pagadas: number
-  vencidas: number
-  reestructuradas: number
-  montoPendiente: number
-  moraAcumulada: number
+  cubiertos: number
+  atrasados: number
+  pendientes: number    // En curso + Futuro
+  deficitTotal: number
+  moraTotal: number     // Suma de mora_sugerida en períodos Atrasados
 }
 
 export interface CuotaCalculo {
@@ -132,4 +146,30 @@ export interface ParametrosReestructuracion {
   nuevaTasaMensual: number
   nuevasNumCuotas: number
   nuevaFechaInicio: Date
+}
+
+// ============================================================
+// CÁLCULOS DERIVADOS (usados por useCuotasCredito)
+// ============================================================
+
+/** El período activo (En curso o Atrasado) para el panel de resumen */
+export interface ProximaCuota {
+  id: string
+  numero_cuota: number
+  fecha_vencimiento: string
+  valor_cuota: number
+  deficit: number          // Cuánto falta cubrir de este período
+  mora_sugerida: number    // Interés sugerido si está atrasado
+  estado: 'Atrasado' | 'En curso'
+  dias_atraso: number      // 0 si En curso
+}
+
+/** Progreso global del crédito */
+export interface ProgresoCredito {
+  totalCuotas: number
+  cuotasCubiertas: number
+  cuotasPendientes: number
+  montoTotal: number
+  montoCubierto: number    // Suma de valor_cuota de períodos Cubiertos
+  porcentaje: number       // 0-100
 }

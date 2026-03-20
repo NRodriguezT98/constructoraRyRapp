@@ -42,7 +42,7 @@ export function ClientesHeader({ onNuevoCliente, totalClientes }: ClientesHeader
           {/* Acciones del header (badge + botón) */}
           <div className="flex items-center gap-2">
             <span className={styles.header.badge}>
-              <Users className="w-4 h-4" />
+              <Users className="w-3.5 h-3.5" />
               {totalClientes} Cliente{totalClientes !== 1 ? 's' : ''}
             </span>
 

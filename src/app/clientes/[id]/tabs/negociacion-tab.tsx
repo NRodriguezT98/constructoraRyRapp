@@ -15,15 +15,23 @@ import { motion } from 'framer-motion'
 import {
     ArrowUpRight,
     Building2,
+    ChevronDown,
     DollarSign,
+    FileText,
     Home,
     Lock,
+    Percent,
     RefreshCw,
     SlidersHorizontal,
+    TrendingUp,
+    Wallet,
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import { useState } from 'react'
 
 import type { Cliente } from '@/modules/clientes/types'
+import { CuotasCreditoTab } from '@/modules/fuentes-pago/components/CuotasCreditoTab'
+import { esCreditoConstructora } from '@/shared/constants/fuentes-pago.constants'
 import { formatCurrency } from '@/shared/utils/format'
 
 import { AlertTriangle } from 'lucide-react'
@@ -74,8 +82,8 @@ function SinNegociacion({ onAsignar }: { onAsignar?: () => void }) {
           Sin vivienda asignada
         </h3>
         <p className="text-sm text-gray-500 dark:text-gray-400 max-w-xs">
-          Cuando el cliente tenga una vivienda asignada, aquí verás el cierre financiero y el
-          seguimiento de pagos.
+          Cuando el cliente tenga una vivienda asignada, aquí verás el plan de pagos y el
+          seguimiento de abonos.
         </p>
       </div>
     </div>
@@ -88,6 +96,11 @@ function SinNegociacion({ onAsignar }: { onAsignar?: () => void }) {
 
 export function NegociacionTab({ cliente }: NegociacionTabProps) {
   const router = useRouter()
+  const [cuotasExpandidas, setCuotasExpandidas] = useState<Record<string, boolean>>({})
+
+  const toggleCuotas = (fuenteId: string) => {
+    setCuotasExpandidas(prev => ({ ...prev, [fuenteId]: !prev[fuenteId] }))
+  }
 
   const {
     negociacion,
@@ -113,6 +126,7 @@ export function NegociacionTab({ cliente }: NegociacionTabProps) {
     pendientesCompartidos,
     totalDocsPendientes,
     totalDocsObligatoriosPendientes,
+    refetchFuentes,
   } = useNegociacionTab({ cliente })
 
   if (isLoading) return <Skeleton />
@@ -122,6 +136,16 @@ export function NegociacionTab({ cliente }: NegociacionTabProps) {
   const vivienda = (negociacion as any).vivienda
   const manzana = vivienda?.manzanas?.nombre
   const numero = vivienda?.numero
+  const valorEscrituraPublica = (negociacion as any).valor_escritura_publica ?? 0
+  const notasNegociacion = (negociacion as any).notas ?? ''
+
+  // Datos financieros del resumen
+  const valorNegociado = (negociacion as any).valor_negociado ?? 0
+  const descuentoAplicado = (negociacion as any).descuento_aplicado ?? 0
+  const tipoDescuento = (negociacion as any).tipo_descuento ?? ''
+  const porcentajeDescuento = (negociacion as any).porcentaje_descuento ?? 0
+  const saldoPendiente = (negociacion as any).saldo_pendiente ?? (valorVivienda - totalAbonado)
+  const porcentajePagado = (negociacion as any).porcentaje_pagado ?? (valorVivienda > 0 ? (totalAbonado / valorVivienda) * 100 : 0)
 
   return (
     <div className="space-y-4">
@@ -143,7 +167,7 @@ export function NegociacionTab({ cliente }: NegociacionTabProps) {
               </p>
               {(manzana || numero) && (
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                  {manzana ? `Mza. ${manzana}` : ''}{manzana && numero ? ' · ' : ''}
+                  {manzana ? `Manzana ${manzana}` : ''}{manzana && numero ? ' · ' : ''}
                   {numero ? `Casa ${numero}` : ''}
                 </p>
               )}
@@ -161,13 +185,23 @@ export function NegociacionTab({ cliente }: NegociacionTabProps) {
             </span>
           </div>
 
-          {/* Valor vivienda */}
-          <p className="text-xs text-gray-400 dark:text-gray-500 mt-1.5">
-            Valor:{' '}
-            <span className="font-semibold text-gray-700 dark:text-gray-300 tabular-nums">
-              {formatCurrency(valorVivienda)}
-            </span>
-          </p>
+          {/* Valor vivienda + escritura */}
+          <div className="flex items-center gap-3 mt-1.5 flex-wrap">
+            <p className="text-xs text-gray-400 dark:text-gray-500">
+              Valor:{' '}
+              <span className="font-semibold text-gray-700 dark:text-gray-300 tabular-nums">
+                {formatCurrency(valorVivienda)}
+              </span>
+            </p>
+            {valorEscrituraPublica > 0 && (
+              <p className="text-xs text-gray-400 dark:text-gray-500">
+                Escritura:{' '}
+                <span className="font-semibold text-gray-700 dark:text-gray-300 tabular-nums">
+                  {formatCurrency(valorEscrituraPublica)}
+                </span>
+              </p>
+            )}
+          </div>
         </div>
 
         {/* Link a módulo de abonos */}
@@ -180,11 +214,85 @@ export function NegociacionTab({ cliente }: NegociacionTabProps) {
         </button>
       </motion.div>
 
-      {/* ─── 2. CIERRE FINANCIERO ──────────────────────────────── */}
+      {/* ─── 2. RESUMEN EJECUTIVO FINANCIERO ─────────────────── */}
       <motion.div
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.25, delay: 0.05 }}
+        transition={{ duration: 0.25, delay: 0.03 }}
+        className="rounded-xl bg-white dark:bg-gray-800/40 border border-gray-200/80 dark:border-gray-700/50 overflow-hidden"
+      >
+        <div className="grid grid-cols-2 sm:grid-cols-4 divide-x divide-gray-100 dark:divide-gray-700/50">
+          {/* Valor total */}
+          <div className="px-4 py-3">
+            <div className="flex items-center gap-1.5 mb-1">
+              <DollarSign className="w-3.5 h-3.5 text-cyan-500" />
+              <p className="text-[10px] uppercase tracking-wider text-gray-400 dark:text-gray-500 font-semibold">
+                Valor total
+              </p>
+            </div>
+            <p className="text-sm font-bold text-gray-900 dark:text-white tabular-nums">
+              {formatCurrency(valorVivienda)}
+            </p>
+            {descuentoAplicado > 0 && (
+              <p className="text-[10px] text-amber-500 font-medium mt-0.5">
+                -{formatCurrency(descuentoAplicado)} dto.{porcentajeDescuento > 0 ? ` (${porcentajeDescuento}%)` : ''}
+              </p>
+            )}
+          </div>
+
+          {/* Total abonado */}
+          <div className="px-4 py-3">
+            <div className="flex items-center gap-1.5 mb-1">
+              <Wallet className="w-3.5 h-3.5 text-emerald-500" />
+              <p className="text-[10px] uppercase tracking-wider text-gray-400 dark:text-gray-500 font-semibold">
+                Abonado
+              </p>
+            </div>
+            <p className="text-sm font-bold text-emerald-600 dark:text-emerald-400 tabular-nums">
+              {formatCurrency(totalAbonado)}
+            </p>
+          </div>
+
+          {/* Saldo pendiente */}
+          <div className="px-4 py-3">
+            <div className="flex items-center gap-1.5 mb-1">
+              <TrendingUp className="w-3.5 h-3.5 text-amber-500" />
+              <p className="text-[10px] uppercase tracking-wider text-gray-400 dark:text-gray-500 font-semibold">
+                Saldo
+              </p>
+            </div>
+            <p className={`text-sm font-bold tabular-nums ${saldoPendiente <= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-gray-900 dark:text-white'}`}>
+              {formatCurrency(Math.max(saldoPendiente, 0))}
+            </p>
+          </div>
+
+          {/* Porcentaje pagado */}
+          <div className="px-4 py-3">
+            <div className="flex items-center gap-1.5 mb-1">
+              <Percent className="w-3.5 h-3.5 text-blue-500" />
+              <p className="text-[10px] uppercase tracking-wider text-gray-400 dark:text-gray-500 font-semibold">
+                Avance
+              </p>
+            </div>
+            <p className="text-sm font-bold text-gray-900 dark:text-white tabular-nums">
+              {Math.min(porcentajePagado, 100).toFixed(1)}%
+            </p>
+            {/* Mini progress bar */}
+            <div className="mt-1.5 h-1 rounded-full bg-gray-100 dark:bg-gray-700 overflow-hidden">
+              <div
+                className="h-full rounded-full bg-gradient-to-r from-cyan-500 to-blue-500 transition-all duration-500"
+                style={{ width: `${Math.min(porcentajePagado, 100)}%` }}
+              />
+            </div>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* ─── 3. PLAN DE PAGOS ──────────────────────────────────── */}
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.25, delay: 0.06 }}
         className="rounded-xl bg-white dark:bg-gray-800/40 border border-gray-200/80 dark:border-gray-700/50 overflow-hidden"
       >
         {/* Header sección */}
@@ -192,7 +300,7 @@ export function NegociacionTab({ cliente }: NegociacionTabProps) {
           <div className="flex items-center gap-2">
             <DollarSign className="w-4 h-4 text-gray-400 dark:text-gray-500" />
             <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
-              Cierre Financiero
+              Plan de Pagos
             </h3>
             <span className="text-xs text-gray-400 dark:text-gray-500">
               ({fuentesPago.length} fuente{fuentesPago.length !== 1 ? 's' : ''})
@@ -206,7 +314,7 @@ export function NegociacionTab({ cliente }: NegociacionTabProps) {
               className="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1.5 rounded-lg bg-cyan-50 dark:bg-cyan-900/20 text-cyan-700 dark:text-cyan-400 hover:bg-cyan-100 dark:hover:bg-cyan-900/30 transition-colors border border-cyan-200 dark:border-cyan-800/40"
             >
               <SlidersHorizontal className="w-3.5 h-3.5" />
-              Ajustar cierre
+              Redistribuir montos
             </button>
           )}
 
@@ -223,7 +331,7 @@ export function NegociacionTab({ cliente }: NegociacionTabProps) {
           {fuentesPago.length === 0 ? (
             <div className="py-6 text-center text-sm text-gray-400 dark:text-gray-500">
               {isAdmin
-                ? 'No hay fuentes configuradas. Usa "Ajustar cierre" para agregarlas.'
+                ? 'No hay fuentes configuradas. Usa "Redistribuir montos" para agregarlas.'
                 : 'No hay fuentes de pago configuradas.'}
             </div>
           ) : (
@@ -231,78 +339,7 @@ export function NegociacionTab({ cliente }: NegociacionTabProps) {
               {/* Barra visual proporcional */}
               <BarraFinanciera fuentesPago={fuentesPago} valorVivienda={valorVivienda} />
 
-              {/* Banner documentos pendientes */}
-              {totalDocsPendientes > 0 && (
-                <div className="space-y-2 px-3 py-2.5 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/40">
-                  <div className="flex items-start gap-2">
-                    <AlertTriangle className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400 mt-0.5 flex-shrink-0" />
-                    <div className="flex-1">
-                      <p className="text-xs font-semibold text-amber-800 dark:text-amber-300">
-                        {totalDocsPendientes} documento{totalDocsPendientes !== 1 ? 's' : ''} pendiente{totalDocsPendientes !== 1 ? 's' : ''}
-                        {totalDocsObligatoriosPendientes > 0 && (
-                          <span className="ml-1 text-red-600 dark:text-red-400">
-                            · {totalDocsObligatoriosPendientes} obligatorio{totalDocsObligatoriosPendientes !== 1 ? 's' : ''}
-                          </span>
-                        )}
-                      </p>
-                      <p className="text-[11px] text-amber-600 dark:text-amber-400 mt-0.5">
-                        Sube los documentos desde la pestaña <strong>Documentos</strong>
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Leyenda obligatorio / opcional */}
-                  <div className="flex items-center gap-3 pt-1 border-t border-amber-200/60 dark:border-amber-800/30">
-                    <span className="flex items-center gap-1 text-[11px] text-gray-500 dark:text-gray-400">
-                      <span className="w-1.5 h-1.5 rounded-full bg-red-400 dark:bg-red-500 flex-shrink-0" />
-                      Obligatorio
-                    </span>
-                    <span className="flex items-center gap-1 text-[11px] text-gray-500 dark:text-gray-400">
-                      <span className="w-1.5 h-1.5 rounded-full bg-gray-300 dark:bg-gray-600 flex-shrink-0" />
-                      Opcional
-                    </span>
-                  </div>
-
-                  {/* Docs compartidos del cliente (Boleta de Registro, etc.) */}
-                  {pendientesCompartidos.length > 0 && (
-                    <div className="pt-1 border-t border-amber-200/60 dark:border-amber-800/30">
-                      <p className="text-[10px] font-semibold text-amber-700 dark:text-amber-400 uppercase tracking-wide mb-1">
-                        Requisitos generales del proceso
-                      </p>
-                      {pendientesCompartidos.map((doc, i) => (
-                        <div key={i} className="flex items-center gap-1.5 text-[11px] py-0.5">
-                          {doc.obligatorio ? (
-                            <span className="w-1.5 h-1.5 rounded-full bg-red-400 dark:bg-red-500 flex-shrink-0" />
-                          ) : (
-                            <span className="w-1.5 h-1.5 rounded-full bg-gray-300 dark:bg-gray-600 flex-shrink-0" />
-                          )}
-                          <span className={doc.obligatorio ? 'text-gray-700 dark:text-gray-300' : 'text-gray-500 dark:text-gray-400'}>
-                            {doc.nombre}
-                          </span>
-                          <span className={`text-[10px] flex-shrink-0 ${doc.obligatorio ? 'text-red-400 dark:text-red-500' : 'text-gray-300 dark:text-gray-600'}`}>
-                            {doc.obligatorio ? 'obligatorio' : 'opcional'}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Cards por fuente */}
-              <div className="space-y-2">
-                {fuentesPago.map((fuente) => (
-                  <FuenteCardPlan
-                    key={fuente.id}
-                    fuente={fuente}
-                    valorVivienda={valorVivienda}
-                    docsPendientes={pendientesPorFuente[fuente.id]}
-                    colorToken={tiposFuentes.find((t) => t.nombre === fuente.tipo)?.color}
-                  />
-                ))}
-              </div>
-
-              {/* Indicador de balance */}
+              {/* Indicador de balance (arriba de las fuentes para visibilidad) */}
               <IndicadorBalance
                 valorVivienda={valorVivienda}
                 totalFuentes={totalFuentes}
@@ -315,21 +352,106 @@ export function NegociacionTab({ cliente }: NegociacionTabProps) {
                 <p className="text-xs text-center text-amber-600 dark:text-amber-400">
                   Usa{' '}
                   <button onClick={openRebalancear} className="underline font-semibold">
-                    Ajustar cierre
+                    Redistribuir montos
                   </button>{' '}
                   para corregir el balance.
                 </p>
               )}
+
+              {/* Banner documentos pendientes (compacto) */}
+              {totalDocsPendientes > 0 && (
+                <div className="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/40">
+                  <AlertTriangle className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400 flex-shrink-0" />
+                  <p className="text-xs text-amber-800 dark:text-amber-300 flex-1">
+                    <span className="font-semibold">{totalDocsPendientes}</span> documento{totalDocsPendientes !== 1 ? 's' : ''} pendiente{totalDocsPendientes !== 1 ? 's' : ''}
+                    {totalDocsObligatoriosPendientes > 0 && (
+                      <span className="ml-1 text-red-600 dark:text-red-400 font-semibold">
+                        ({totalDocsObligatoriosPendientes} obligatorio{totalDocsObligatoriosPendientes !== 1 ? 's' : ''})
+                      </span>
+                    )}
+                    <span className="text-amber-600 dark:text-amber-400"> — Ir a pestaña </span>
+                    <strong>Documentos</strong>
+                  </p>
+                </div>
+              )}
+
+              {/* Cards por fuente (con cuotas integradas para créditos) */}
+              <div className="space-y-2">
+                {fuentesPago.map((fuente) => {
+                  const esCredito = esCreditoConstructora(fuente.tipo)
+                  const expandido = cuotasExpandidas[fuente.id] ?? false
+
+                  return (
+                    <div key={fuente.id}>
+                      <FuenteCardPlan
+                        fuente={fuente}
+                        valorVivienda={valorVivienda}
+                        docsPendientes={pendientesPorFuente[fuente.id]}
+                        colorToken={tiposFuentes.find((t) => t.nombre === fuente.tipo)?.color}
+                      />
+
+                      {/* Plan de cuotas integrado para créditos con la constructora */}
+                      {esCredito ? (
+                        <div className="mt-1 rounded-xl border border-indigo-200/60 dark:border-indigo-800/40 overflow-hidden">
+                          <button
+                            type="button"
+                            onClick={() => toggleCuotas(fuente.id)}
+                            className="flex items-center justify-between w-full gap-2 px-4 py-2.5 bg-indigo-50/60 dark:bg-indigo-950/20 border-b border-indigo-200/40 dark:border-indigo-800/30 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 transition-colors"
+                          >
+                            <div className="flex items-center gap-2">
+                              <DollarSign className="w-3.5 h-3.5 text-indigo-500 dark:text-indigo-400" />
+                              <h4 className="text-xs font-semibold text-indigo-700 dark:text-indigo-300">
+                                Plan de cuotas
+                              </h4>
+                            </div>
+                            <ChevronDown
+                              className={`w-4 h-4 text-indigo-400 dark:text-indigo-500 transition-transform duration-200 ${
+                                expandido ? 'rotate-180' : ''
+                              }`}
+                            />
+                          </button>
+                          {expandido ? (
+                            <div className="p-3">
+                              <CuotasCreditoTab
+                                fuentePagoId={fuente.id}
+                                negociacionId={negociacion!.id}
+                                montoFuente={fuente.monto_aprobado}
+                                onPagoCuotaRegistrado={() => { refetchFuentes() }}
+                              />
+                            </div>
+                          ) : null}
+                        </div>
+                      ) : null}
+                    </div>
+                  )
+                })}
+              </div>
             </>
           )}
         </div>
       </motion.div>
 
-      {/* ─── 3. ABONOS RECIENTES ─────────────────────────────── */}
+      {/* ─── 4. NOTAS DE LA NEGOCIACIÓN ──────────────────────── */}
+      {notasNegociacion ? (
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.25, delay: 0.08 }}
+          className="flex items-start gap-3 px-4 py-3 rounded-xl bg-amber-50/60 dark:bg-amber-950/20 border border-amber-200/60 dark:border-amber-800/30"
+        >
+          <FileText className="w-4 h-4 text-amber-500 dark:text-amber-400 mt-0.5 flex-shrink-0" />
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-semibold text-amber-700 dark:text-amber-300 mb-0.5">Notas</p>
+            <p className="text-xs text-amber-800 dark:text-amber-200 whitespace-pre-wrap">{notasNegociacion}</p>
+          </div>
+        </motion.div>
+      ) : null}
+
+      {/* ─── 5. ABONOS RECIENTES ─────────────────────────────── */}
       <motion.div
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.25, delay: 0.1 }}
+        transition={{ duration: 0.25, delay: 0.12 }}
         className="rounded-xl bg-white dark:bg-gray-800/40 border border-gray-200/80 dark:border-gray-700/50 overflow-hidden"
       >
         <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-gray-700/50">
@@ -354,7 +476,7 @@ export function NegociacionTab({ cliente }: NegociacionTabProps) {
         </div>
       </motion.div>
 
-      {/* ─── MODAL ADMIN: Ajustar cierre financiero ─────────── */}
+      {/* ─── MODAL ADMIN: Redistribuir montos ─────────────── */}
       {isAdmin && (
         <RebalancearModal
           isOpen={modalRebalancearOpen}

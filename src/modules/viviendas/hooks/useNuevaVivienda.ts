@@ -31,28 +31,28 @@ const paso2Schema = z.object({
     .string()
     .min(5, 'Describe el lindero Norte (mínimo 5 caracteres)')
     .regex(
-      /^[a-zA-Z0-9\sáéíóúÁÉÍÓÚñÑ.,\-]+$/,
+      /^[a-zA-Z0-9\sáéíóúÁÉÍÓÚñÑ.,\-()]+$/,
       'Solo se permiten letras, números, espacios, puntos, comas y guiones'
     ),
   lindero_sur: z
     .string()
     .min(5, 'Describe el lindero Sur (mínimo 5 caracteres)')
     .regex(
-      /^[a-zA-Z0-9\sáéíóúÁÉÍÓÚñÑ.,\-]+$/,
+      /^[a-zA-Z0-9\sáéíóúÁÉÍÓÚñÑ.,\-()]+$/,
       'Solo se permiten letras, números, espacios, puntos, comas y guiones'
     ),
   lindero_oriente: z
     .string()
     .min(5, 'Describe el lindero Oriente (mínimo 5 caracteres)')
     .regex(
-      /^[a-zA-Z0-9\sáéíóúÁÉÍÓÚñÑ.,\-]+$/,
+      /^[a-zA-Z0-9\sáéíóúÁÉÍÓÚñÑ.,\-()]+$/,
       'Solo se permiten letras, números, espacios, puntos, comas y guiones'
     ),
   lindero_occidente: z
     .string()
     .min(5, 'Describe el lindero Occidente (mínimo 5 caracteres)')
     .regex(
-      /^[a-zA-Z0-9\sáéíóúÁÉÍÓÚñÑ.,\-]+$/,
+      /^[a-zA-Z0-9\sáéíóúÁÉÍÓÚñÑ.,\-()]+$/,
       'Solo se permiten letras, números, espacios, puntos, comas y guiones'
     ),
 })

@@ -4,12 +4,12 @@ import { useCallback, useState } from 'react'
 
 import { motion } from 'framer-motion'
 import {
-  Calendar,
-  CreditCard,
-  DollarSign,
-  Receipt,
-  Search,
-  TrendingUp,
+    Calendar,
+    CreditCard,
+    DollarSign,
+    Receipt,
+    Search,
+    TrendingUp,
 } from 'lucide-react'
 
 import { useRouter } from 'next/navigation'
@@ -19,6 +19,7 @@ import { formatNombreCompleto } from '@/lib/utils/string.utils'
 import { AbonoDetalleModal } from '@/modules/abonos/components/abono-detalle-modal/AbonoDetalleModal'
 import type { AbonoParaDetalle } from '@/modules/abonos/components/abono-detalle-modal/useAbonoDetalle'
 import { formatearNumeroRecibo } from '@/modules/abonos/utils/formato-recibo'
+import { EmptyState } from '@/shared/components/ui/EmptyState'
 
 import { useAbonosList } from '../hooks/useAbonosList'
 
@@ -70,9 +71,9 @@ export function AbonosListPage({
   // ─── LOADING ─────────────────────────────────────────
   if (isLoading) {
     return (
-      <div className='min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50 to-teal-50 dark:from-gray-950 dark:via-slate-900 dark:to-gray-900'>
-        <div className='mx-auto max-w-7xl space-y-4 px-4 py-6'>
-          <div className='h-28 animate-pulse rounded-2xl bg-emerald-200 dark:bg-emerald-900/30' />
+      <div className='min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-950 dark:via-slate-900 dark:to-gray-900'>
+        <div className='mx-auto max-w-7xl space-y-4 px-4 py-6 sm:px-6 lg:px-8'>
+          <div className='h-28 animate-pulse rounded-2xl bg-blue-200 dark:bg-blue-900/30' />
           <div className='grid grid-cols-2 gap-3 lg:grid-cols-4'>
             {[...Array(4)].map((_, i) => (
               <div
@@ -102,51 +103,46 @@ export function AbonosListPage({
 
   return (
     <>
-      <div className='min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50 to-teal-50 dark:from-gray-950 dark:via-slate-900 dark:to-gray-900'>
-        <div className='mx-auto max-w-7xl space-y-4 px-4 py-6'>
+      <div className='min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-950 dark:via-slate-900 dark:to-gray-900'>
+        <div className='mx-auto max-w-7xl space-y-4 px-4 py-6 sm:px-6 lg:px-8'>
           {/* ─── HEADER ─────────────────────────────────── */}
           <motion.div
-            initial={{ opacity: 0, y: -16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.2 }}
-            className='relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-600 via-emerald-600 to-teal-700 p-6 shadow-2xl shadow-emerald-500/20 dark:from-emerald-800 dark:via-emerald-900 dark:to-teal-900'
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.15 }}
+            className='relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 dark:from-blue-700 dark:via-indigo-700 dark:to-purple-800 p-6 shadow-2xl shadow-blue-500/20'
           >
-            <div className='bg-grid-white/10 absolute inset-0 [mask-image:linear-gradient(0deg,transparent,black,transparent)]' />
+            <div className='absolute inset-0 bg-grid-white/10 [mask-image:linear-gradient(0deg,transparent,black,transparent)]' />
             <div className='relative z-10'>
               <div className='flex items-center justify-between'>
                 <div className='flex items-center gap-3'>
-                  <div className='flex h-10 w-10 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm'>
-                    <CreditCard className='h-6 w-6 text-white' />
+                  <div className='w-10 h-10 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center'>
+                    <CreditCard className='w-6 h-6 text-white' />
                   </div>
                   <div className='space-y-0.5'>
                     <h1 className='text-2xl font-bold text-white'>Abonos</h1>
-                    <p className='text-xs text-emerald-100 dark:text-emerald-200'>
+                    <p className='text-xs text-blue-100 dark:text-blue-200'>
                       Registro global de recibos · RyR Constructora
                     </p>
                   </div>
                 </div>
-                {canCreate && (
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.97 }}
-                    onClick={() => router.push('/abonos/registrar')}
-                    className='rounded-lg border border-white/30 bg-white/20 px-3 py-1.5 text-sm font-medium text-white backdrop-blur-md transition-all hover:bg-white/30'
-                  >
-                    + Registrar
-                  </motion.button>
-                )}
-              </div>
-              <div className='mt-3 flex items-center justify-between border-t border-white/20 pt-3'>
-                <p className='text-sm font-semibold text-white'>
-                  Total sistema:{' '}
-                  <span className='text-base font-bold'>
-                    {formatCurrency(estadisticas.montoTotal)}
+                <div className='flex items-center gap-2'>
+                  <span className='inline-flex items-center gap-2 rounded-full border border-white/30 bg-white/20 px-3 py-1.5 text-xs font-medium text-white backdrop-blur-md'>
+                    <Receipt className='w-3.5 h-3.5' />
+                    {estadisticas.totalAbonos} {estadisticas.totalAbonos === 1 ? 'Recibo' : 'Recibos'}
                   </span>
-                </p>
-                <span className='inline-flex items-center gap-1.5 rounded-full border border-white/30 bg-white/20 px-3 py-1 text-xs font-medium text-white backdrop-blur-md'>
-                  <Receipt className='h-3.5 w-3.5' />
-                  {estadisticas.totalAbonos} recibos
-                </span>
+                  {canCreate && (
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => router.push('/abonos/registrar')}
+                      className='inline-flex items-center gap-2 rounded-lg border border-white/30 bg-white/20 px-3 py-1.5 text-sm font-medium text-white backdrop-blur-md transition-all hover:bg-white/30 shadow-lg'
+                    >
+                      <DollarSign className='w-4 h-4' />
+                      Registrar
+                    </motion.button>
+                  )}
+                </div>
               </div>
             </div>
           </motion.div>
@@ -188,13 +184,13 @@ export function AbonosListPage({
                 whileHover={{ scale: 1.02, y: -4 }}
                 className='group relative overflow-hidden rounded-xl border border-gray-200/50 bg-white/80 p-4 shadow-lg backdrop-blur-xl transition-all duration-300 hover:shadow-2xl dark:border-gray-700/50 dark:bg-gray-800/80'
               >
-                <div className='absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-teal-500/5 opacity-0 transition-opacity duration-300 group-hover:opacity-100' />
+                <div className='absolute inset-0 bg-gradient-to-br from-blue-500/5 to-indigo-500/5 opacity-0 transition-opacity duration-300 group-hover:opacity-100' />
                 <div className='relative z-10 flex items-center gap-3'>
-                  <div className='flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 shadow-lg shadow-emerald-500/30'>
+                  <div className='flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 shadow-lg shadow-blue-500/30'>
                     <Icon className='h-5 w-5 text-white' />
                   </div>
                   <div className='min-w-0 flex-1'>
-                    <p className='truncate bg-gradient-to-br from-emerald-600 to-teal-700 bg-clip-text text-xl font-bold text-transparent'>
+                    <p className='truncate bg-gradient-to-br from-blue-600 to-indigo-700 bg-clip-text text-xl font-bold text-transparent'>
                       {value}
                     </p>
                     <p className='mt-0.5 text-xs font-medium text-gray-600 dark:text-gray-400'>
@@ -207,7 +203,7 @@ export function AbonosListPage({
           </div>
 
           {/* ─── FILTROS STICKY ────────────────────────── */}
-          <div className='sticky top-4 z-40 rounded-xl border border-gray-200/50 bg-white/90 p-3 shadow-2xl shadow-emerald-500/10 backdrop-blur-xl dark:border-gray-700/50 dark:bg-gray-800/90'>
+          <div className='sticky top-4 z-40 rounded-xl border border-gray-200/50 bg-white/90 p-4 shadow-2xl shadow-blue-500/10 backdrop-blur-xl dark:border-gray-700/50 dark:bg-gray-800/90'>
             <div className='flex items-center gap-2'>
               {/* Búsqueda */}
               <div className='relative flex-1'>
@@ -223,7 +219,7 @@ export function AbonosListPage({
                     actualizarFiltros({ busqueda: e.target.value })
                   }
                   placeholder='Buscar por cliente, CC o RYR-...'
-                  className='w-full rounded-lg border-2 border-gray-200 bg-gray-50 py-2 pl-10 pr-3 text-sm transition-all placeholder:text-gray-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 dark:border-gray-700 dark:bg-gray-900/50'
+                  className='w-full rounded-lg border-2 border-gray-200 bg-gray-50 py-2.5 pl-10 pr-3 text-sm transition-all placeholder:text-gray-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 dark:border-gray-700 dark:bg-gray-900/50'
                 />
               </div>
               {/* Fuente */}
@@ -234,7 +230,7 @@ export function AbonosListPage({
                 id='filtro-fuente'
                 value={filtros.fuente}
                 onChange={e => actualizarFiltros({ fuente: e.target.value })}
-                className='min-w-[180px] rounded-lg border-2 border-gray-200 bg-gray-50 px-3 py-2 text-sm transition-all focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 dark:border-gray-700 dark:bg-gray-900/50'
+                className='min-w-[180px] rounded-lg border-2 border-gray-200 bg-gray-50 px-3 py-2.5 text-sm transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 dark:border-gray-700 dark:bg-gray-900/50'
               >
                 <option value='todas'>Todas las fuentes</option>
                 {fuentesUnicas.map(f => (
@@ -251,7 +247,7 @@ export function AbonosListPage({
                 id='filtro-mes'
                 value={filtros.mes}
                 onChange={e => actualizarFiltros({ mes: e.target.value })}
-                className='min-w-[160px] rounded-lg border-2 border-gray-200 bg-gray-50 px-3 py-2 text-sm transition-all focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 dark:border-gray-700 dark:bg-gray-900/50'
+                className='min-w-[160px] rounded-lg border-2 border-gray-200 bg-gray-50 px-3 py-2.5 text-sm transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 dark:border-gray-700 dark:bg-gray-900/50'
               >
                 <option value='todos'>Todos los meses</option>
                 {mesesDisponibles.map(m => (
@@ -261,29 +257,34 @@ export function AbonosListPage({
                 ))}
               </select>
             </div>
-            <div className='mt-2 flex items-center justify-between border-t border-gray-200 pt-2 dark:border-gray-700'>
+            <div className='mt-3 flex items-center justify-between border-t border-gray-200 pt-3 dark:border-gray-700'>
               <p className='text-xs font-medium text-gray-600 dark:text-gray-400'>
                 {abonos.length} resultados
               </p>
+              {(filtros.busqueda || filtros.fuente !== 'todas' || filtros.mes !== 'todos') && (
+                <button
+                  onClick={() => actualizarFiltros({ busqueda: '', fuente: 'todas', mes: 'todos' })}
+                  className='text-xs font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors'
+                >
+                  Limpiar filtros
+                </button>
+              )}
             </div>
           </div>
 
           {/* ─── TABLA ─────────────────────────────────── */}
           {abonos.length === 0 ? (
-            <div className='space-y-3 rounded-xl border border-gray-200 bg-white p-12 text-center dark:border-gray-700 dark:bg-gray-900'>
-              <Receipt className='mx-auto h-10 w-10 text-gray-300 dark:text-gray-600' />
-              <p className='text-sm font-medium text-gray-500 dark:text-gray-400'>
-                No hay abonos registrados
-              </p>
-              {canCreate && (
-                <button
-                  onClick={() => router.push('/abonos/registrar')}
-                  className='text-sm font-semibold text-emerald-600 hover:underline dark:text-emerald-400'
-                >
-                  Registrar primer abono →
-                </button>
-              )}
-            </div>
+            <EmptyState
+              icon={Receipt}
+              title="No hay abonos registrados"
+              description="Registra el primer abono para comenzar a llevar el control de pagos"
+              action={canCreate ? {
+                label: 'Registrar Primer Abono',
+                onClick: () => router.push('/abonos/registrar'),
+                icon: CreditCard,
+              } : undefined}
+              moduleName="abonos"
+            />
           ) : (
             <div className='overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900'>
               <table className='w-full text-sm'>
@@ -312,11 +313,11 @@ export function AbonosListPage({
                     <tr
                       key={abono.id}
                       onClick={() => handleAbonoClick(abono)}
-                      className='cursor-pointer border-b border-gray-100 transition-colors last:border-b-0 hover:bg-emerald-50/50 dark:border-gray-800 dark:hover:bg-emerald-950/20'
+                      className='cursor-pointer border-b border-gray-100 transition-colors last:border-b-0 hover:bg-blue-50/50 dark:border-gray-800 dark:hover:bg-blue-950/20'
                     >
                       {/* # Recibo */}
                       <td className='px-3 py-2.5'>
-                        <span className='inline-flex items-center rounded-full bg-emerald-100 px-2 py-0.5 font-mono text-xs font-bold text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300'>
+                        <span className='inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 font-mono text-xs font-bold text-blue-700 dark:bg-blue-900/40 dark:text-blue-300'>
                           {formatearNumeroRecibo(abono.numero_recibo)}
                         </span>
                       </td>
@@ -356,7 +357,7 @@ export function AbonosListPage({
                         {abono.metodo_pago}
                       </td>
                       {/* Monto */}
-                      <td className='whitespace-nowrap px-3 py-2.5 text-right font-bold tabular-nums text-emerald-700 dark:text-emerald-400'>
+                      <td className='whitespace-nowrap px-3 py-2.5 text-right font-bold tabular-nums text-blue-700 dark:text-blue-400'>
                         {formatCurrency(abono.monto)}
                       </td>
                     </tr>

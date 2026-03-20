@@ -19,6 +19,7 @@ import type { EstadoNegociacion, Negociacion } from '@/modules/clientes/types'
 import { crearCredito } from '@/modules/fuentes-pago/services/creditos-constructora.service'
 import { crearCuotasCredito } from '@/modules/fuentes-pago/services/cuotas-credito.service'
 import { calcularTablaAmortizacion, fechaCuotaParaBD } from '@/modules/fuentes-pago/utils/calculos-credito'
+import { esCuotaInicial } from '@/shared/constants/fuentes-pago.constants'
 
 // DTOs
 export interface CrearNegociacionDTO {
@@ -158,7 +159,7 @@ class NegociacionesService {
           entidad: fuente.entidad || null,
           numero_referencia: fuente.numero_referencia || null,
           carta_asignacion_url: fuente.carta_asignacion_url || null,
-          permite_multiples_abonos: fuente.permite_multiples_abonos ?? (fuente.tipo === 'Cuota Inicial'),
+          permite_multiples_abonos: fuente.permite_multiples_abonos ?? esCuotaInicial(fuente.tipo),
           estado: 'Activa',
           estado_fuente: 'activa',
         }))
@@ -555,6 +556,7 @@ class NegociacionesService {
       entidad?: string | null
       numero_referencia?: string | null
       detalles?: string | null
+      permite_multiples_abonos?: boolean
     }>,
     motivoCambio: string = 'Actualización de fuentes de pago'
   ): Promise<void> {
@@ -645,7 +647,7 @@ class NegociacionesService {
               monto_recibido: 0,
               entidad: fuente.entidad,
               numero_referencia: fuente.numero_referencia,
-              permite_multiples_abonos: fuente.permite_multiples_abonos ?? (fuente.tipo === 'Cuota Inicial'),
+              permite_multiples_abonos: fuente.permite_multiples_abonos ?? esCuotaInicial(fuente.tipo),
               estado: 'Pendiente',
               estado_fuente: 'activa', // ? Explícitamente marcar como activa
             } as any)

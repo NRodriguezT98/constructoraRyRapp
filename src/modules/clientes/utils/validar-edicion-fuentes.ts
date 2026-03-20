@@ -17,6 +17,7 @@
  *    - Siempre debe ser igual al valor total de la vivienda
  */
 
+import { esCuotaInicial } from '@/shared/constants/fuentes-pago.constants'
 import type { FuentePago, TipoFuentePago } from '../types'
 
 // ============================================
@@ -44,7 +45,7 @@ export interface ValidacionFuenteIndividual {
  */
 export function puedeEditarFuente(fuente: FuentePago): ValidacionFuenteIndividual {
   // CASO 1: Cuota Inicial (siempre editable con restricciones)
-  if (fuente.tipo === 'Cuota Inicial') {
+  if (esCuotaInicial(fuente.tipo)) {
     if (fuente.monto_recibido === 0) {
       return {
         editable: true,
@@ -145,13 +146,13 @@ export function validarSumaTotal(
   }
 
   // Validación: Debe tener al menos Cuota Inicial
-  const tieneCuotaInicial = fuentes.some((f) => f.tipo === 'Cuota Inicial')
+  const tieneCuotaInicial = fuentes.some((f) => esCuotaInicial(f.tipo))
   if (!tieneCuotaInicial) {
     errores.push('Debe existir al menos una Cuota Inicial')
   }
 
   // Advertencia: Cuota Inicial muy baja
-  const cuotaInicial = fuentes.find((f) => f.tipo === 'Cuota Inicial')
+  const cuotaInicial = fuentes.find((f) => esCuotaInicial(f.tipo))
   if (cuotaInicial) {
     const porcentajeCuota = (cuotaInicial.monto_aprobado / valorTotalVivienda) * 100
     if (porcentajeCuota < 5) {
@@ -193,7 +194,7 @@ export function validarConfiguracionFuentes(
       }
     } else if (validacion.tipo_restriccion === 'limitado') {
       // Cuota Inicial con restricción
-      const fuenteNueva = fuentesNuevas.find((fn) => fn.tipo === 'Cuota Inicial')
+      const fuenteNueva = fuentesNuevas.find((fn) => esCuotaInicial(fn.tipo))
 
       if (fuenteNueva) {
         const validacionCuota = validarNuevaCuotaInicial(fuenteActual, fuenteNueva.monto_aprobado)

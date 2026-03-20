@@ -3,20 +3,20 @@
 import { useMemo } from 'react'
 
 import {
-  AlertCircle,
-  Calendar,
-  CheckCircle2,
-  Download,
-  FileText,
-  Landmark,
-  Loader2,
+    AlertCircle,
+    Calendar,
+    CheckCircle2,
+    Download,
+    FileText,
+    Landmark,
+    Loader2,
 } from 'lucide-react'
 
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogTitle,
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogTitle,
 } from '@/components/ui/dialog'
 import { getTodayDateString } from '@/lib/utils/date.utils'
 
@@ -38,7 +38,11 @@ export interface ModalRegistroPagoProps {
   fechaMinima?: string
   fuentesPago: FuentePagoConAbonos[]
   fuenteInicial?: FuentePagoConAbonos
-  onSuccess: () => void
+  /** Pre-carga el monto del campo y lo bloquea (para pago de cuotas de crédito) */
+  montoPrecargado?: number
+  /** Mora incluida en montoPrecargado (se separa contablemente) */
+  moraIncluida?: number
+  onSuccess: (meta?: { fechaAbono?: string }) => void
   /** Contexto de la negoción para generar el recibo PDF en la pantalla de éxito */
   negociacionContext?: {
     cliente: {
@@ -82,6 +86,7 @@ export function ModalRegistroPago(props: ModalRegistroPagoProps) {
     handleClose,
     abonoRegistrado,
     handleCloseExito,
+    valorCuota,
   } = useModalRegistroPago(props)
 
   const styles = getModalStyles(colorScheme, modo)
@@ -258,6 +263,7 @@ export function ModalRegistroPago(props: ModalRegistroPagoProps) {
           fuentesPago={props.fuentesPago}
           colorScheme={colorScheme}
           onFuenteChange={setFuenteSeleccionada}
+          valorCuota={valorCuota}
         />
 
         <div className={styles.body}>

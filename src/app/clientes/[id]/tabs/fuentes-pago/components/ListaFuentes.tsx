@@ -22,6 +22,7 @@ import {
 import { useEffect, useState } from 'react'
 
 import type { FuentePago, TipoFuentePago } from '@/modules/clientes/types/fuentes-pago'
+import { esCuotaInicial } from '@/shared/constants/fuentes-pago.constants'
 import { formatCurrency } from '@/shared/utils/format'
 import { fuentesPagoTabStyles as styles } from '../../fuentes-pago-tab.styles'
 
@@ -347,7 +348,7 @@ export function ListaFuentes({
                   <div className="grid grid-cols-3 gap-2 text-xs">
                     <div className="space-y-0.5">
                       <p className="text-gray-500 dark:text-gray-400 font-medium">
-                        {fuente.tipo === 'Cuota Inicial' ? 'Pactado' : 'Aprobado'}
+                        {esCuotaInicial(fuente.tipo) ? 'Pactado' : 'Aprobado'}
                       </p>
                       <p className="text-sm font-bold bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent">
                         {formatCurrency(fuente.monto_aprobado)}
@@ -355,7 +356,7 @@ export function ListaFuentes({
                     </div>
                     <div className="space-y-0.5">
                       <p className="text-gray-500 dark:text-gray-400 font-medium">
-                        {fuente.tipo === 'Cuota Inicial' ? 'Pagado' : 'Desembolsado'}
+                        {esCuotaInicial(fuente.tipo) ? 'Pagado' : 'Desembolsado'}
                       </p>
                       <p className="text-sm font-semibold text-green-600 dark:text-green-400">
                         {formatCurrency(fuente.monto_recibido || 0)}
@@ -363,7 +364,7 @@ export function ListaFuentes({
                     </div>
                     <div className="space-y-0.5">
                       <p className="text-gray-500 dark:text-gray-400 font-medium">
-                        {fuente.tipo === 'Cuota Inicial' ? 'Por Pagar' : 'Pendiente'}
+                        {esCuotaInicial(fuente.tipo) ? 'Por Pagar' : 'Pendiente'}
                       </p>
                       <p className="text-sm font-semibold text-orange-600 dark:text-orange-400">
                         {formatCurrency(saldoPendiente)}

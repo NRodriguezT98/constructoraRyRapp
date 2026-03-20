@@ -65,9 +65,22 @@ export async function crearCredito(
     .select()
     .single()
 
+  if (error) return { data: null, error: new Error(error.message) }
+
+  // Sincronizar fuentes_pago con los valores calculados del plan:
+  // - monto_aprobado = deuda total (capital + todos los intereses)
+  // - capital_para_cierre = solo el capital (para cálculo de cierre financiero)
+  await supabase
+    .from('fuentes_pago')
+    .update({
+      monto_aprobado: dto.monto_total,
+      capital_para_cierre: dto.capital,
+    })
+    .eq('id', dto.fuente_pago_id)
+
   return {
     data: data as CreditoConstructora | null,
-    error: error ? new Error(error.message) : null,
+    error: null,
   }
 }
 

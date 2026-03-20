@@ -39,6 +39,14 @@ export const ENTIDAD_COLOR_VALUES = [
   'pink',
   'indigo',
   'gray',
+  'emerald',
+  'teal',
+  'amber',
+  'sky',
+  'violet',
+  'slate',
+  'lime',
+  'rose',
 ] as const
 
 export type EntidadColor = (typeof ENTIDAD_COLOR_VALUES)[number]

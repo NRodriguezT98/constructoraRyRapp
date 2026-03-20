@@ -81,15 +81,29 @@ export function useAbonosDetalle(clienteId: string) {
     handleCerrarModal()
   }
 
-  // Métricas calculadas
+  // Métricas calculadas — campos pre-computados por trigger en BD
+  // El trigger capea créditos a capital_para_cierre para que intereses
+  // no inflen el progreso por encima del valor de la vivienda.
   const metricas = useMemo(() => {
     if (!negociacion) return null
 
+    const fuentes = negociacion.fuentes_pago || []
+    const valorVivienda = negociacion.valor_total ?? 0
+    const totalAbonado = negociacion.total_abonado ?? 0
+    const porcentajePagado = negociacion.porcentaje_pagado ?? (valorVivienda > 0 ? (totalAbonado / valorVivienda) * 100 : 0)
+
+    // Total comprometido = suma real de lo que el cliente debe pagar (incluye intereses)
+    const totalComprometido = fuentes.reduce((sum, f) => sum + (f.monto_aprobado || 0), 0)
+    const interesesTotales = totalComprometido - valorVivienda
+    const saldoPendienteReal = totalComprometido - fuentes.reduce((sum, f) => sum + (f.monto_recibido || 0), 0)
+
     return {
-      valorTotal: negociacion.valor_total || 0,
-      totalAbonado: negociacion.total_abonado || 0,
-      saldoPendiente: negociacion.saldo_pendiente || 0,
-      porcentajePagado: negociacion.porcentaje_pagado || 0,
+      valorVivienda,
+      totalComprometido,
+      interesesTotales: interesesTotales > 0 ? interesesTotales : 0,
+      totalAbonado,
+      saldoPendiente: saldoPendienteReal,
+      porcentajePagado,
     }
   }, [negociacion])
 

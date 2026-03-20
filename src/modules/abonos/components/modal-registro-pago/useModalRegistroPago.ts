@@ -1,17 +1,19 @@
 import { useEffect, useRef, useState } from 'react'
 
 import { formatDateCompact, getTodayDateString } from '@/lib/utils/date.utils'
+import { getCreditoByFuente } from '@/modules/fuentes-pago/services/creditos-constructora.service'
+import { esCreditoConstructora } from '@/shared/constants/fuentes-pago.constants'
 
 import {
-  eliminarComprobante,
-  generarPathComprobante,
-  subirComprobante,
+    eliminarComprobante,
+    generarPathComprobante,
+    subirComprobante,
 } from '../../services/abonos-storage.service'
 import {
-  getModoRegistro,
-  type FuentePagoConAbonos,
-  type MetodoPago,
-  type ModoRegistro,
+    getModoRegistro,
+    type FuentePagoConAbonos,
+    type MetodoPago,
+    type ModoRegistro,
 } from '../../types'
 
 import { getColorScheme, type ColorScheme } from './ModalRegistroPago.styles'
@@ -24,17 +26,26 @@ export interface UseModalRegistroPagoProps {
   fuentesPago: FuentePagoConAbonos[]
   fuenteInicial?: FuentePagoConAbonos
   fechaMinima?: string
-  onSuccess: () => void
+  /** Pre-carga el monto y lo bloquea (útil para pago de cuotas de crédito) */
+  montoPrecargado?: number
+  /** Porción del montoPrecargado que corresponde a mora (para contabilidad) */
+  moraIncluida?: number
+  onSuccess: (meta?: { fechaAbono?: string }) => void
   onClose: () => void
 }
 
 function buildInitialState(
   fuenteInicial: FuentePagoConAbonos,
-  fechaMinima?: string
+  fechaMinima?: string,
+  montoPrecargado?: number
 ) {
   const modo: ModoRegistro = getModoRegistro(fuenteInicial)
   const montoInicial =
-    modo === 'desembolso' ? (fuenteInicial.monto_aprobado ?? 0).toString() : ''
+    modo === 'desembolso'
+      ? (fuenteInicial.monto_aprobado ?? 0).toString()
+      : montoPrecargado != null
+        ? montoPrecargado.toString()
+        : ''
   return {
     fuente: fuenteInicial,
     monto: montoInicial,
@@ -53,6 +64,8 @@ export function useModalRegistroPago({
   fuentesPago,
   fuenteInicial,
   fechaMinima,
+  montoPrecargado,
+  moraIncluida: moraIncluidaProp = 0,
   onSuccess,
   onClose,
 }: UseModalRegistroPagoProps) {
@@ -67,6 +80,17 @@ export function useModalRegistroPago({
   const [notas, setNotas] = useState('')
   const [comprobante, setComprobante] = useState<File | null>(null)
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const [valorCuota, setValorCuota] = useState<number | undefined>()
+
+  useEffect(() => {
+    if (!esCreditoConstructora(fuenteSeleccionada?.tipo)) {
+      setValorCuota(undefined)
+      return
+    }
+    getCreditoByFuente(fuenteSeleccionada.id).then(({ data }) => {
+      setValorCuota(data?.valor_cuota ?? undefined)
+    })
+  }, [fuenteSeleccionada?.id, fuenteSeleccionada?.tipo])
   const [faseLoading, setFaseLoading] = useState<FaseLoading>('idle')
   const [abonoRegistrado, setAbonoRegistrado] = useState<{
     id: string
@@ -86,7 +110,7 @@ export function useModalRegistroPago({
   useEffect(() => {
     if (!open) return
     const fuente = fuenteInicial ?? fuentesPago[0]
-    const initial = buildInitialState(fuente, fechaMinima)
+    const initial = buildInitialState(fuente, fechaMinima, montoPrecargado)
     setFuenteSeleccionadaState(fuente)
     setMonto(initial.monto)
     setFechaAbono(initial.fechaAbono)
@@ -109,14 +133,16 @@ export function useModalRegistroPago({
       // Si el método actual era Efectivo (no válido para desembolso), resetearlo
       setMetodoPago(prev => (prev === 'Efectivo' ? 'Transferencia' : prev))
     } else {
-      setMonto('')
+      setMonto(montoPrecargado != null ? montoPrecargado.toString() : '')
     }
     setErrors({})
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fuenteSeleccionada])
 
   // ── Valores derivados ───────────────────────────────────────────────────────
   const modo: ModoRegistro = getModoRegistro(fuenteSeleccionada)
   const esDesembolso = modo === 'desembolso'
+  const esCuotaPreCargada = montoPrecargado != null
   const colorScheme: ColorScheme = getColorScheme(fuenteSeleccionada.tipo)
   const saldoPendiente = fuenteSeleccionada.saldo_pendiente ?? 0
   const montoNum = parseFloat(monto) || 0
@@ -135,7 +161,7 @@ export function useModalRegistroPago({
   const validar = (): boolean => {
     const newErrors: Record<string, string> = {}
 
-    if (!esDesembolso) {
+    if (!esDesembolso && !esCuotaPreCargada) {
       if (!monto || isNaN(montoNum) || montoNum <= 0) {
         newErrors.monto = 'El monto debe ser mayor a cero'
       } else if (montoNum > saldoPendiente) {
@@ -203,6 +229,7 @@ export function useModalRegistroPago({
           monto: esDesembolso
             ? (fuenteSeleccionada.monto_aprobado ?? 0)
             : montoNum,
+          mora_incluida: moraIncluidaProp > 0 ? moraIncluidaProp : undefined,
           fecha_abono: fechaAbono,
           metodo_pago: metodoPago,
           numero_referencia: referencia || null,
@@ -236,8 +263,11 @@ export function useModalRegistroPago({
 
   // ── Cierra la pantalla de éxito: refresca datos y cierra modal ────────────
   const handleCloseExito = () => {
+    const fechaGuardada = abonoRegistrado?.fecha_abono
     setAbonoRegistrado(null)
-    onSuccess()
+    onSuccess({
+      fechaAbono: fechaGuardada ? fechaGuardada.slice(0, 10) : undefined,
+    })
     onClose()
   }
 
@@ -274,6 +304,11 @@ export function useModalRegistroPago({
     errors,
     // Éxito
     abonoRegistrado,
+    // Cuota pre-cargada
+    esCuotaPreCargada,
+    moraIncluidaProp,
+    // Crédito constructora
+    valorCuota,
     // Handlers
     handleSubmit,
     handleClose,

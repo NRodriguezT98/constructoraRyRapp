@@ -14,6 +14,7 @@ interface PaginationProps {
   itemsPerPage: number
   onPageChange: (page: number) => void
   onItemsPerPageChange?: (items: number) => void
+  itemsPerPageOptions?: number[]
   className?: string
 }
 
@@ -24,6 +25,7 @@ export function Pagination({
   itemsPerPage,
   onPageChange,
   onItemsPerPageChange,
+  itemsPerPageOptions = [9, 18, 36],
   className = '',
 }: PaginationProps) {
   // ✅ Si itemsPerPage >= totalItems, mostrar todos los items (sin paginación real)
@@ -60,9 +62,9 @@ export function Pagination({
               onChange={(e) => onItemsPerPageChange(Number(e.target.value))}
               className="text-xs font-semibold px-2 py-1 rounded-lg bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 hover:border-gray-400 dark:hover:border-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 dark:focus:border-orange-400 transition-all cursor-pointer"
             >
-              <option value={9}>9</option>
-              <option value={18}>18</option>
-              <option value={36}>36</option>
+              {itemsPerPageOptions.map((opt) => (
+                <option key={opt} value={opt}>{opt}</option>
+              ))}
               <option value={totalItems}>Todos</option>
             </select>
           </div>

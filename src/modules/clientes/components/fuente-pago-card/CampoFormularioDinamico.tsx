@@ -15,6 +15,8 @@ import { forwardRef } from 'react'
 import { useBancos, useCajas } from '@/modules/configuracion/hooks/useEntidadesFinancierasParaFuentes'
 import type { CampoConfig, ValorCampo } from '@/modules/configuracion/types/campos-dinamicos.types'
 
+import { EntidadCombobox } from './EntidadCombobox'
+
 // ============================================
 // PROPS
 // ============================================
@@ -172,43 +174,29 @@ export const CampoFormularioDinamico = forwardRef<HTMLInputElement, CampoFormula
         // ======== SELECT BANCO ========
         case 'select_banco':
           return (
-            <select
+            <EntidadCombobox
+              opciones={bancos}
               value={value as string || ''}
-              onChange={(e) => onChange(e.target.value)}
+              onChange={(v) => onChange(v)}
               disabled={disabled || cargandoBancos}
-              required={config.requerido}
-              className={baseInputClasses}
-            >
-              <option value="">
-                {cargandoBancos ? 'Cargando bancos...' : config.placeholder || 'Seleccionar...'}
-              </option>
-              {bancos.map((banco) => (
-                <option key={banco.value} value={banco.label}>
-                  {banco.label}
-                </option>
-              ))}
-            </select>
+              loading={cargandoBancos}
+              placeholder={config.placeholder || 'Buscar banco...'}
+              error={!!error}
+            />
           )
 
         // ======== SELECT CAJA ========
         case 'select_caja':
           return (
-            <select
+            <EntidadCombobox
+              opciones={cajas}
               value={value as string || ''}
-              onChange={(e) => onChange(e.target.value)}
+              onChange={(v) => onChange(v)}
               disabled={disabled || cargandoCajas}
-              required={config.requerido}
-              className={baseInputClasses}
-            >
-              <option value="">
-                {cargandoCajas ? 'Cargando cajas...' : config.placeholder || 'Seleccionar...'}
-              </option>
-              {cajas.map((caja) => (
-                <option key={caja.value} value={caja.label}>
-                  {caja.label}
-                </option>
-              ))}
-            </select>
+              loading={cargandoCajas}
+              placeholder={config.placeholder || 'Buscar caja de compensación...'}
+              error={!!error}
+            />
           )
 
         // ======== SELECT CUSTOM ========

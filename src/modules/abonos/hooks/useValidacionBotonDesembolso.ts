@@ -13,6 +13,7 @@ import { useMemo } from 'react'
 import { useDocumentosPendientesObligatorios } from '@/modules/clientes/hooks/useDocumentosPendientesObligatorios'
 import { filtrarPendientesPorFuente } from '@/modules/clientes/utils/documentos-pendientes.utils'
 
+import { esDesembolsoUnico as checkDesembolsoUnico } from '@/shared/constants/fuentes-pago.constants'
 import type { TipoFuentePago } from '../types'
 
 interface EstadoBoton {
@@ -39,10 +40,7 @@ export function useValidacionBotonDesembolso({
   tipoFuente,
   fuenteCompletada,
 }: UseValidacionBotonDesembolsoProps): EstadoBoton {
-  const esDesembolsoUnico =
-    tipoFuente === 'Crédito Hipotecario' ||
-    tipoFuente === 'Subsidio Mi Casa Ya' ||
-    tipoFuente === 'Subsidio Caja Compensación'
+  const esDesembolsoUnico = checkDesembolsoUnico(tipoFuente)
 
   const textoBoton = esDesembolsoUnico ? 'Registrar Desembolso' : 'Registrar Abono'
 

@@ -6,6 +6,7 @@
  * ✅ Sistema de descuentos con tipo/motivo
  */
 
+import { esCuotaInicial } from '@/shared/constants/fuentes-pago.constants'
 import { z } from 'zod'
 
 // ============================================
@@ -143,7 +144,7 @@ const fuentePagoConfigSchema = z.object({
 const fuentePagoValidadaSchema = fuentePagoConfigSchema.refine(
   (data) => {
     // Cuota Inicial: NO requiere entidad ni número de referencia
-    if (data.tipo === 'Cuota Inicial') {
+    if (esCuotaInicial(data.tipo)) {
       return true
     }
 
