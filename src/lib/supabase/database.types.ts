@@ -1482,6 +1482,7 @@ export type Database = {
           valor_escritura_publica: number | null
           valor_negociado: number
           valor_total: number | null
+          valor_total_pagar: number | null
           version_actual: number
           version_lock: number
           vivienda_id: string
@@ -1514,6 +1515,7 @@ export type Database = {
           valor_escritura_publica?: number | null
           valor_negociado: number
           valor_total?: number | null
+          valor_total_pagar?: number | null
           version_actual?: number
           version_lock?: number
           vivienda_id: string
@@ -1546,6 +1548,7 @@ export type Database = {
           valor_escritura_publica?: number | null
           valor_negociado?: number
           valor_total?: number | null
+          valor_total_pagar?: number | null
           version_actual?: number
           version_lock?: number
           vivienda_id?: string

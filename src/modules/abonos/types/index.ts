@@ -85,11 +85,12 @@ export interface Negociacion {
   estado: EstadoNegociacion;
   valor_negociado: number;
   descuento_aplicado?: number;
-  valor_total?: number;              // Campo calculado
+  valor_total?: number;              // Campo calculado: valor_negociado - descuento
+  valor_total_pagar?: number;        // Obligación real: incluye gastos + recargos
   total_fuentes_pago?: number;       // Campo calculado
   total_abonado?: number;            // Campo calculado
-  saldo_pendiente?: number;          // Campo calculado
-  porcentaje_pagado?: number;        // Campo calculado
+  saldo_pendiente?: number;          // Campo calculado (usa valor_total_pagar)
+  porcentaje_pagado?: number;        // Campo calculado (usa valor_total_pagar)
   fecha_negociacion?: string;
   fecha_completada?: string;
   notas?: string;

@@ -1,8 +1,7 @@
 'use client'
 
-import { PDFDownloadLink } from '@react-pdf/renderer'
-import { AlertCircle, AlertTriangle, ArrowRight, Banknote, Building2, Calculator, Download, Edit2, FileText, Home, Loader2, MapPin, TrendingUp, User } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { AlertCircle, AlertTriangle, Banknote, Building2, Calculator, Download, Edit2, FileText, Home, Loader2, MapPin, TrendingUp, User } from 'lucide-react'
+import { useCallback, useMemo, useState } from 'react'
 
 import { formatDateForDisplay, getTodayDateString } from '@/lib/utils/date.utils'
 import { formatCurrency } from '@/lib/utils/format.utils'
@@ -11,7 +10,6 @@ import { obtenerMontoParaCierre } from '@/modules/clientes/utils/fuentes-pago-ca
 import { useEntidadesFinancierasCombinadas } from '@/modules/configuracion/hooks/useEntidadesFinancierasParaFuentes'
 import type { TipoFuentePagoConCampos } from '@/modules/configuracion/types/campos-dinamicos.types'
 import { calcularTablaAmortizacion } from '@/modules/fuentes-pago/utils/calculos-credito'
-import { NegociacionPDF } from '../NegociacionPDF'
 
 import { styles as s } from '../../styles'
 
@@ -31,8 +29,6 @@ interface SeccionRevisionProps {
   fuentes: FuentePagoConfiguracion[]
   tiposConCampos: TipoFuentePagoConCampos[]
   errorApi: string | null
-  creando: boolean
-  onGuardar: () => void
   onEditarSeccion1: () => void
   onEditarSeccion2: () => void
 }
@@ -52,8 +48,6 @@ export function SeccionRevision({
   fuentes,
   tiposConCampos,
   errorApi,
-  creando,
-  onGuardar,
   onEditarSeccion1,
   onEditarSeccion2,
 }: SeccionRevisionProps) {
@@ -97,9 +91,52 @@ export function SeccionRevision({
       ? ((descuentoAplicado / valorBaseTotal) * 100).toFixed(1)
       : '0'
 
-  // Lazy PDF: solo montar PDFDownloadLink cuando el usuario lo solicita
-  // Previene el crash del reconciliador de react-pdf por renders intermedios
-  const [pdfSolicitado, setPdfSolicitado] = useState(false)
+  const [generandoPDF, setGenerandoPDF] = useState(false)
+
+  const handleDescargarPDF = useCallback(async () => {
+    setGenerandoPDF(true)
+    try {
+      const { pdf } = await import('@react-pdf/renderer')
+      const { createElement } = await import('react')
+      const { NegociacionPDF: PDFDoc } = await import('../NegociacionPDF')
+
+      const elemento = createElement(PDFDoc, {
+        clienteNombre,
+        proyectoNombre,
+        viviendaLabel,
+        valorBase,
+        gastosNotariales,
+        recargoEsquinera,
+        descuentoAplicado,
+        valorTotal,
+        valorEscrituraPublica,
+        aplicarDescuento,
+        fuentes: fuentesPDF,
+        notas,
+        fechaGeneracion,
+      })
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const blob = await pdf(elemento as any).toBlob()
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = nombreArchivo
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      setTimeout(() => URL.revokeObjectURL(url), 5000)
+    } catch (err) {
+      console.error('Error generando PDF:', err)
+    } finally {
+      setGenerandoPDF(false)
+    }
+  }, [
+    clienteNombre, proyectoNombre, viviendaLabel,
+    valorBase, gastosNotariales, recargoEsquinera,
+    descuentoAplicado, valorTotal, valorEscrituraPublica,
+    aplicarDescuento, fuentesPDF, notas, fechaGeneracion, nombreArchivo,
+  ])
 
   return (
     <div className='space-y-3'>
@@ -387,67 +424,19 @@ export function SeccionRevision({
         </button>
       </div>
 
-      {/* Acciones */}
+      {/* PDF */}
       <div>
-        <div className={s.revision.actionRow}>
-          <button
-            type='button'
-            onClick={onGuardar}
-            disabled={creando}
-            className={s.revision.submitBtn}
-          >
-            {creando ? (
-              <Loader2 className='h-4 w-4 animate-spin' />
-            ) : (
-              <>
-                Asignar Vivienda
-                <ArrowRight className='h-4 w-4' />
-              </>
-            )}
-          </button>
-        </div>
-
-        {pdfSolicitado ? (
-          <PDFDownloadLink
-            document={
-              <NegociacionPDF
-                clienteNombre={clienteNombre}
-                proyectoNombre={proyectoNombre}
-                viviendaLabel={viviendaLabel}
-                valorBase={valorBase}
-                gastosNotariales={gastosNotariales}
-                recargoEsquinera={recargoEsquinera}
-                descuentoAplicado={descuentoAplicado}
-                valorTotal={valorTotal}
-                valorEscrituraPublica={valorEscrituraPublica}
-                aplicarDescuento={aplicarDescuento}
-                fuentes={fuentesPDF}
-                notas={notas}
-                fechaGeneracion={fechaGeneracion}
-              />
-            }
-            fileName={nombreArchivo}
-            className={s.revision.pdfBtn}
-          >
-            {({ loading }) => (
-              <>
-                {loading
-                  ? <Loader2 className='h-3.5 w-3.5 animate-spin' />
-                  : <Download className='h-3.5 w-3.5' />}
-                {loading ? 'Generando PDF...' : 'Descargar PDF'}
-              </>
-            )}
-          </PDFDownloadLink>
-        ) : (
-          <button
-            type='button'
-            onClick={() => setPdfSolicitado(true)}
-            className={s.revision.pdfBtn}
-          >
-            <Download className='h-3.5 w-3.5' />
-            Descargar PDF
-          </button>
-        )}
+        <button
+          type='button'
+          onClick={handleDescargarPDF}
+          disabled={generandoPDF}
+          className={s.revision.pdfBtn}
+        >
+          {generandoPDF
+            ? <Loader2 className='h-3.5 w-3.5 animate-spin' />
+            : <Download className='h-3.5 w-3.5' />}
+          {generandoPDF ? 'Generando PDF...' : 'Descargar PDF'}
+        </button>
       </div>
     </div>
   )

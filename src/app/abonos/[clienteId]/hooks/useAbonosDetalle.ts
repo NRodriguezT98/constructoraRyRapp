@@ -88,7 +88,7 @@ export function useAbonosDetalle(clienteId: string) {
     if (!negociacion) return null
 
     const fuentes = negociacion.fuentes_pago || []
-    const valorVivienda = negociacion.valor_total ?? 0
+    const valorVivienda = negociacion.valor_total_pagar ?? negociacion.valor_total ?? 0
     const totalAbonado = negociacion.total_abonado ?? 0
     const porcentajePagado = negociacion.porcentaje_pagado ?? (valorVivienda > 0 ? (totalAbonado / valorVivienda) * 100 : 0)
 

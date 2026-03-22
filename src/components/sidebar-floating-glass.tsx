@@ -95,7 +95,9 @@ export function SidebarFloatingGlass() {
         return 'from-amber-500 via-yellow-500 to-orange-500' // Dorado para el rey 👑
       case 'Gerente':
         return 'from-blue-500 to-indigo-500'
-      case 'Vendedor':
+      case 'Contador':
+        return 'from-emerald-500 to-teal-500'
+      case 'Supervisor':
         return 'from-purple-500 to-pink-500'
       default:
         return 'from-gray-500 to-slate-500'
@@ -109,7 +111,9 @@ export function SidebarFloatingGlass() {
         return 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-lg shadow-amber-500/50'
       case 'Gerente':
         return 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
-      case 'Vendedor':
+      case 'Contador':
+        return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
+      case 'Supervisor':
         return 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400'
       default:
         return 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400'

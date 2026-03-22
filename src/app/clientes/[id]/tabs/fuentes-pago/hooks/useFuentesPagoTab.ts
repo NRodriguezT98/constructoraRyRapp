@@ -512,11 +512,14 @@ export function useFuentesPagoTab({ cliente }: UseFuentesPagoTabProps) {
       return 0
     }
 
-    // Prioridad: valor_total de negociación > valor_negociado > valor_base de vivienda
+    // Prioridad: valor_total_pagar > valor_total > valor_negociado > valor_base de vivienda
     let valor = 0
     let fuente = ''
 
-    if (negociacion.valor_total) {
+    if ((negociacion as any).valor_total_pagar) {
+      valor = Number((negociacion as any).valor_total_pagar)
+      fuente = 'valor_total_pagar de negociación'
+    } else if (negociacion.valor_total) {
       valor = Number(negociacion.valor_total)
       fuente = 'valor_total de negociación'
     } else if (negociacion.valor_negociado) {

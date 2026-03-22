@@ -194,6 +194,7 @@ class ClientesService {
           id,
           estado,
           valor_total,
+          valor_total_pagar,
           total_abonado,
           saldo_pendiente,
           porcentaje_pagado,

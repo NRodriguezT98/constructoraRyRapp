@@ -39,7 +39,7 @@ import { useRouter } from 'next/navigation'
 
 import { useAuth } from '@/contexts/auth-context'
 
-import { usePermissions } from '../hooks/usePermissions'
+import { usePermisosQuery } from '../hooks/usePermisosQuery'
 import type { Accion, Modulo } from '../types'
 
 interface ProtectedRouteProps {
@@ -76,7 +76,7 @@ export function ProtectedRoute({
 }: ProtectedRouteProps) {
   const router = useRouter()
   const { perfil, loading: authLoading } = useAuth()
-  const { puede, puedeAlguno, puedeTodos, permisosLoading } = usePermissions()
+  const { puede, puedeAlguno, puedeTodos, isLoading: permisosLoading } = usePermisosQuery()
 
   useEffect(() => {
     // Esperar a que cargue autenticación Y permisos

@@ -281,7 +281,7 @@ export default function NegociacionDetalleClient({
                 <DollarSign className="h-4 w-4" />
                 <span className="text-sm">Valor Total</span>
               </div>
-              <p className="mt-1 text-2xl font-bold">${negociacion.valor_total?.toLocaleString('es-CO')}</p>
+              <p className="mt-1 text-2xl font-bold">${(negociacion.valor_total_pagar ?? negociacion.valor_total)?.toLocaleString('es-CO')}</p>
             </div>
           </div>
         </motion.div>
@@ -313,7 +313,7 @@ export default function NegociacionDetalleClient({
                 <h3 className="mb-4 text-lg font-semibold">Configurar Fuentes de Pago</h3>
                 <ConfigurarFuentesPago
                   negociacionId={negociacionId}
-                  valorTotal={negociacion.valor_total}
+                  valorTotal={negociacion.valor_total_pagar ?? negociacion.valor_total}
                   onFuentesActualizadas={() => recargarNegociacion()}
                 />
               </div>

@@ -110,8 +110,8 @@ export function ClientesPageMain({
   // =====================================================
 
   const handleNuevoCliente = useCallback(() => {
-    abrirModalCrear()
-  }, [abrirModalCrear])
+    router.push('/clientes/nuevo')
+  }, [router])
 
   const handleVerCliente = useCallback(
     (cliente: ClienteResumen) => {

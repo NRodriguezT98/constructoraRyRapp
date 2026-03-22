@@ -10,16 +10,16 @@
 
 import { AnimatePresence, motion } from 'framer-motion'
 import {
-  Check,
-  CheckCircle,
-  ChevronLeft,
-  ChevronRight,
-  Compass,
-  DollarSign,
-  FileText,
-  Home,
-  Loader2,
-  MapPin
+    Check,
+    CheckCircle,
+    ChevronLeft,
+    ChevronRight,
+    Compass,
+    DollarSign,
+    FileText,
+    Home,
+    Loader2,
+    MapPin
 } from 'lucide-react'
 
 import { ConfirmarCambiosModal } from '@/shared/components/modulos/ConfirmarCambiosModal'
@@ -30,6 +30,7 @@ import { useEditarVivienda } from '../hooks/useEditarVivienda'
 import { nuevaViviendaStyles as styles } from '../styles/nueva-vivienda.styles'
 import type { Vivienda } from '../types'
 
+import { ImpactoFinancieroModal } from './ImpactoFinancieroModal'
 import { PasoFinancieroNuevo } from './paso-financiero-nuevo'
 import { PasoLegalNuevo } from './paso-legal-nuevo'
 import { PasoLinderosNuevo } from './paso-linderos-nuevo'
@@ -108,6 +109,16 @@ export function EditarViviendaModal({
     // Modal confirmación
     mostrarModalConfirmacion,
     setMostrarModalConfirmacion,
+
+    // Modal impacto financiero
+    mostrarModalImpacto,
+    setMostrarModalImpacto,
+    impactoFinanciero,
+    sincronizandoNegociacion,
+
+    // Protecciones por estado
+    esViviendaEntregada,
+    financieroBloqueado,
 
     // Acciones
     irSiguiente,
@@ -280,6 +291,8 @@ export function EditarViviendaModal({
                               setValue={setValue}
                               resumenFinanciero={resumenFinanciero}
                               configuracionRecargos={configuracionRecargos}
+                              bloqueado={financieroBloqueado}
+                              estadoVivienda={vivienda.estado}
                           />
                         )
                         default:
@@ -376,12 +389,24 @@ export function EditarViviendaModal({
           // Solo cerrar la modal de confirmación, NO la modal principal
           setMostrarModalConfirmacion(false)
         }}
-        onConfirm={confirmarYGuardar}
+        onConfirm={() => confirmarYGuardar(false)}
         cambios={cambiosDetectados}
         categoriasConfig={categoriasConfig}
         moduleName="viviendas"
         tituloEntidad={`Vivienda ${vivienda.numero}`}
         isLoading={submitting}
+      />
+    )}
+
+    {/* MODAL DE IMPACTO FINANCIERO */}
+    {mostrarModalImpacto && impactoFinanciero && (
+      <ImpactoFinancieroModal
+        isOpen={mostrarModalImpacto}
+        onClose={() => setMostrarModalImpacto(false)}
+        impacto={impactoFinanciero}
+        onConfirmarConSync={() => confirmarYGuardar(true)}
+        onConfirmarSinSync={() => confirmarYGuardar(false)}
+        isLoading={submitting || sincronizandoNegociacion}
       />
     )}
   </>

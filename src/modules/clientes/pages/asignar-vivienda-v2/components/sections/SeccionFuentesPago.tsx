@@ -11,7 +11,7 @@ import type {
 } from '@/modules/clientes/components/asignar-vivienda/types'
 import { CampoFormularioDinamico } from '@/modules/clientes/components/fuente-pago-card/CampoFormularioDinamico'
 import type { TipoFuentePago } from '@/modules/clientes/types'
-import { obtenerMonto, obtenerMontoParaCierre } from '@/modules/clientes/utils/fuentes-pago-campos.utils'
+import { obtenerMontoParaCierre } from '@/modules/clientes/utils/fuentes-pago-campos.utils'
 import type { CampoConfig, TipoFuentePagoConCampos, ValorCampo, ValoresCampos } from '@/modules/configuracion/types/campos-dinamicos.types'
 import { CreditoConstructoraForm } from '@/modules/fuentes-pago/components/CreditoConstructoraForm'
 import type { ParametrosCredito } from '@/modules/fuentes-pago/types'
@@ -167,11 +167,14 @@ export function SeccionFuentesPago({
                 {fuente.enabled && (
                   <motion.div
                     key={`content-${fuente.tipo}`}
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: 'auto', opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
+                    initial={{ height: 0, opacity: 0, overflow: 'hidden' }}
+                    animate={{
+                      height: 'auto',
+                      opacity: 1,
+                      transitionEnd: { overflow: 'visible' },
+                    }}
+                    exit={{ overflow: 'hidden', height: 0, opacity: 0 }}
                     transition={{ duration: 0.25, ease: 'easeInOut' }}
-                    style={{ overflow: 'hidden' }}
                   >
                     <FuenteExpandida
                       fuente={fuente}

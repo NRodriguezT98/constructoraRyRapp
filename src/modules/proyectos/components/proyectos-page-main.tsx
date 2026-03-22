@@ -157,8 +157,7 @@ export function ProyectosPage({
   const proyectoEliminando = proyectos.find(p => p.id === proyectoEliminar)
 
   const handleAbrirModal = () => {
-    setProyectoEditar(null) // ✅ Resetear al crear nuevo
-    setModalAbierto(true)
+    router.push('/proyectos/nuevo')
   }
 
   // ✅ Cerrar directo (sin confirmación)

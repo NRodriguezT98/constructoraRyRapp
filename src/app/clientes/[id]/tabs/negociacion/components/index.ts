@@ -1,5 +1,6 @@
 export { AbonosRecientes } from './AbonosRecientes'
 export { BarraFinanciera } from './BarraFinanciera'
 export { FuenteCardPlan } from './FuenteCardPlan'
+export { FuenteMiniCard } from './FuenteMiniCard'
 export { IndicadorBalance } from './IndicadorBalance'
 export { RebalancearModal } from './RebalancearModal'

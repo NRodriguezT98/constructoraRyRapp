@@ -111,9 +111,11 @@ class NegociacionesService {
         if (datos.motivo_descuento !== undefined) {
           datosNegociacion.motivo_descuento = datos.motivo_descuento
         }
-        if (datos.valor_escritura_publica !== undefined) {
-          datosNegociacion.valor_escritura_publica = datos.valor_escritura_publica
-        }
+      }
+
+      // valor_escritura_publica es independiente del descuento
+      if (datos.valor_escritura_publica !== undefined) {
+        datosNegociacion.valor_escritura_publica = datos.valor_escritura_publica
       }
 
 
@@ -316,7 +318,7 @@ class NegociacionesService {
       const { data, error} = await supabase
         .from('negociaciones')
         .select(`
-          id, cliente_id, vivienda_id, estado, valor_total, valor_negociado,
+          id, cliente_id, vivienda_id, estado, valor_total, valor_total_pagar, valor_negociado,
           total_abonado, saldo_pendiente, fecha_negociacion,
           fecha_creacion, usuario_creacion, descuento_aplicado
         `)
@@ -389,7 +391,7 @@ class NegociacionesService {
       const { data, error } = await supabase
         .from('negociaciones')
         .select(`
-          id, cliente_id, vivienda_id, estado, valor_total, valor_negociado,
+          id, cliente_id, vivienda_id, estado, valor_total, valor_total_pagar, valor_negociado,
           total_abonado, saldo_pendiente, fecha_creacion
         `)
         .eq('vivienda_id', viviendaId)

@@ -124,6 +124,7 @@ export interface Negociacion {
   valor_negociado: number
   descuento_aplicado: number
   valor_total: number // calculado: valor_negociado - descuento_aplicado
+  valor_total_pagar: number // obligación real: valor_total + gastos_notariales + recargo_esquinera
 
   // Totales (calculados por triggers)
   total_fuentes_pago: number

@@ -9,6 +9,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useQuery } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 
@@ -33,6 +34,28 @@ import {
     useManzanasDisponiblesQuery,
     useProyectosActivosQuery,
 } from './useViviendasQuery'
+
+// ==================== TIPOS DE IMPACTO ====================
+
+export interface NegociacionImpacto {
+  id: string
+  valor_negociado: number
+  descuento_aplicado: number
+  total_abonado: number
+  saldo_pendiente: number
+  estado: string
+  cliente_id: string
+  cliente_nombre: string
+}
+
+export interface ImpactoFinanciero {
+  negociacion: NegociacionImpacto
+  valorBaseAnterior: number
+  valorBaseNuevo: number
+  diferencia: number
+  bloqueado: boolean
+  motivoBloqueo: string | null
+}
 
 // ==================== SCHEMAS POR PASO ====================
 // ✅ Importados desde archivo compartido (DRY principle)
@@ -67,6 +90,21 @@ export function useEditarVivienda({ vivienda, onSuccess, onCancel }: UseEditarVi
   const [validandoMatricula, setValidandoMatricula] = useState(false)
   const [hayFormularioConCambios, setHayFormularioConCambios] = useState(false)
   const [mostrarModalConfirmacion, setMostrarModalConfirmacion] = useState(false)
+  const [mostrarModalImpacto, setMostrarModalImpacto] = useState(false)
+  const [sincronizandoNegociacion, setSincronizandoNegociacion] = useState(false)
+
+  // ============================================
+  // NEGOCIACIÓN ACTIVA (para detectar impacto)
+  // ============================================
+  const esViviendaAsignada = vivienda?.estado === 'Asignada'
+  const esViviendaEntregada = vivienda?.estado === 'Entregada'
+
+  const { data: negociacionActiva = null } = useQuery({
+    queryKey: ['negociacion-activa-vivienda', vivienda?.id],
+    queryFn: () => viviendasService.obtenerNegociacionActivaPorVivienda(vivienda!.id),
+    enabled: !!vivienda?.id && esViviendaAsignada,
+    staleTime: 60_000,
+  })
 
   // ============================================
   // REACT QUERY - DATOS DEL SERVIDOR
@@ -198,12 +236,48 @@ export function useEditarVivienda({ vivienda, onSuccess, onCancel }: UseEditarVi
   }, [formData, proyectos, manzanas, resumenFinanciero])
 
   // ============================================
+  // CAMPOS FINANCIEROS BLOQUEADOS (Entregada)
+  // ============================================
+  const financieroBloqueado = esViviendaEntregada
+
+  // ============================================
   // CAMBIOS DETECTADOS (para paso 5)
   // ============================================
   const cambiosDetectados = useMemo(() => {
     if (!vivienda) return []
     return detectarCambiosVivienda({ viviendaActual: vivienda, formData })
   }, [vivienda, formData])
+
+  // ============================================
+  // DETECCIÓN DE IMPACTO FINANCIERO
+  // ============================================
+  const impactoFinanciero = useMemo((): ImpactoFinanciero | null => {
+    if (!vivienda || !negociacionActiva || !esViviendaAsignada) return null
+
+    const valorBaseAnterior = vivienda.valor_base ?? 0
+    const valorBaseNuevo = formData.valor_base ?? 0
+
+    // Solo hay impacto si el valor base cambió
+    if (valorBaseAnterior === valorBaseNuevo) return null
+
+    const diferencia = valorBaseNuevo - valorBaseAnterior
+    const totalAbonado = negociacionActiva.total_abonado ?? 0
+
+    // Bloquear si el nuevo valor es menor a lo ya abonado
+    const bloqueado = valorBaseNuevo < totalAbonado
+    const motivoBloqueo = bloqueado
+      ? `El nuevo valor ($${valorBaseNuevo.toLocaleString('es-CO')}) es menor al total ya abonado ($${totalAbonado.toLocaleString('es-CO')})`
+      : null
+
+    return {
+      negociacion: negociacionActiva,
+      valorBaseAnterior,
+      valorBaseNuevo,
+      diferencia,
+      bloqueado,
+      motivoBloqueo,
+    }
+  }, [vivienda, negociacionActiva, esViviendaAsignada, formData.valor_base])
 
   // ============================================
   // CONFIGURACIÓN DEL PASO ACTUAL
@@ -323,50 +397,82 @@ export function useEditarVivienda({ vivienda, onSuccess, onCancel }: UseEditarVi
   // ============================================
   // SUBMIT
   // ============================================
-  // Mostrar modal de confirmación en lugar de guardar directamente
+  // Mostrar modal de confirmación o impacto según el caso
   const mostrarConfirmacion = useCallback(() => {
+    // Si hay impacto financiero (vivienda asignada con valor_base cambiado)
+    if (impactoFinanciero) {
+      setMostrarModalImpacto(true)
+      return
+    }
     setMostrarModalConfirmacion(true)
-  }, [])
+  }, [impactoFinanciero])
 
-  // Guardar cambios después de confirmar
+  // Guardar cambios después de confirmar (con o sin sincronización)
   const confirmarYGuardar = useCallback(
-    async () => {
+    async (sincronizarNeg = false) => {
       if (!vivienda) return
 
       const data = getValues()
 
-      try {
-        // Preparar datos para actualización
-        const updateData: Partial<ViviendaFormData> = {
-          lindero_norte: data.lindero_norte,
-          lindero_sur: data.lindero_sur,
-          lindero_oriente: data.lindero_oriente,
-          lindero_occidente: data.lindero_occidente,
-          matricula_inmobiliaria: data.matricula_inmobiliaria,
-          nomenclatura: data.nomenclatura,
-          area_lote: Number(data.area_lote),
-          area_construida: Number(data.area_construida),
-          tipo_vivienda: data.tipo_vivienda as any,
-          valor_base: data.valor_base,
-          es_esquinera: data.es_esquinera,
-          recargo_esquinera: data.recargo_esquinera,
-        }
+      // Si la vivienda está Entregada, NO permitir cambios financieros
+      const updateData: Partial<ViviendaFormData> = {
+        lindero_norte: data.lindero_norte,
+        lindero_sur: data.lindero_sur,
+        lindero_oriente: data.lindero_oriente,
+        lindero_occidente: data.lindero_occidente,
+        matricula_inmobiliaria: data.matricula_inmobiliaria,
+        nomenclatura: data.nomenclatura,
+        area_lote: Number(data.area_lote),
+        area_construida: Number(data.area_construida),
+        tipo_vivienda: data.tipo_vivienda as any,
+      }
 
-        // Ejecutar mutation
+      // Solo incluir campos financieros si NO está Entregada
+      if (!esViviendaEntregada) {
+        updateData.valor_base = data.valor_base
+        updateData.es_esquinera = data.es_esquinera
+        updateData.recargo_esquinera = data.recargo_esquinera
+      }
+
+      try {
+        // Ejecutar mutation de vivienda
         const viviendaActualizada = await actualizarMutation.mutateAsync({
           id: vivienda.id,
           data: updateData,
         })
 
+        // Sincronizar negociación si el admin lo solicitó
+        if (sincronizarNeg && impactoFinanciero && negociacionActiva) {
+          setSincronizandoNegociacion(true)
+          try {
+            await viviendasService.sincronizarNegociacionConVivienda(
+              negociacionActiva.id,
+              data.valor_base
+            )
+            toast.info('Valor de negociación actualizado. Recuerda redistribuir las fuentes de pago.', {
+              duration: 6000,
+            })
+          } catch {
+            toast.error('La vivienda se actualizó, pero hubo un error sincronizando la negociación.')
+          } finally {
+            setSincronizandoNegociacion(false)
+          }
+        } else if (impactoFinanciero && !sincronizarNeg) {
+          toast.warning('El valor de la vivienda cambió pero la negociación mantiene el valor anterior.', {
+            duration: 5000,
+          })
+        }
+
         // Éxito
         setHayFormularioConCambios(false)
         setMostrarModalConfirmacion(false)
+        setMostrarModalImpacto(false)
         onSuccess?.(viviendaActualizada)
       } catch (error) {
         console.error('Error en submit:', error)
       }
     },
-    [vivienda, actualizarMutation, onSuccess, getValues]
+    [vivienda, actualizarMutation, onSuccess, getValues, esViviendaEntregada, impactoFinanciero, negociacionActiva]
   )
 
   // ============================================
@@ -426,6 +532,18 @@ export function useEditarVivienda({ vivienda, onSuccess, onCancel }: UseEditarVi
     // Modal de confirmación
     mostrarModalConfirmacion,
     setMostrarModalConfirmacion,
+
+    // Modal de impacto financiero
+    mostrarModalImpacto,
+    setMostrarModalImpacto,
+    impactoFinanciero,
+    sincronizandoNegociacion,
+
+    // Protecciones por estado
+    esViviendaAsignada,
+    esViviendaEntregada,
+    financieroBloqueado,
+    negociacionActiva,
 
     // Acciones
     irSiguiente,

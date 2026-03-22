@@ -1,5 +1,7 @@
 'use client'
 
+import { formatCurrency } from '@/shared/utils/format'
+
 import { getFuenteColor } from '../hooks'
 
 interface Fuente {
@@ -8,75 +10,79 @@ interface Fuente {
   capital_para_cierre?: number | null
 }
 
+interface TipoFuente {
+  nombre: string
+  color?: string | null
+}
+
 interface BarraFinancieraProps {
   fuentesPago: Fuente[]
   valorVivienda: number
+  tiposFuentes?: TipoFuente[]
 }
 
-export function BarraFinanciera({ fuentesPago, valorVivienda }: BarraFinancieraProps) {
+export function BarraFinanciera({ fuentesPago, valorVivienda, tiposFuentes = [] }: BarraFinancieraProps) {
   if (!valorVivienda || fuentesPago.length === 0) return null
 
   const totalFuentes = fuentesPago.reduce((s, f) => s + (f.capital_para_cierre ?? f.monto_aprobado ?? 0), 0)
   const escala = Math.max(valorVivienda, totalFuentes)
 
+  const getColorToken = (tipo: string) =>
+    tiposFuentes.find((t) => t.nombre === tipo)?.color ?? undefined
+
   return (
-    <div className="space-y-2">
-      {/* Barra proporcional */}
-      <div className="flex h-6 w-full overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-700/60">
+    <div className="space-y-1.5">
+      {/* Barra proporcional — slim */}
+      <div className="flex h-3 w-full overflow-hidden rounded-full bg-gray-100 dark:bg-gray-700/60 shadow-inner">
         {fuentesPago.map((fuente, i) => {
           const montoCierre = fuente.capital_para_cierre ?? fuente.monto_aprobado
           const pct = escala > 0 ? (montoCierre / escala) * 100 : 0
-          const color = getFuenteColor(fuente.tipo)
+          const color = getFuenteColor(getColorToken(fuente.tipo))
           return (
             <div
               key={fuente.tipo + i}
-              title={`${fuente.tipo}: ${new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(fuente.monto_aprobado)}`}
-              className={`${color.barra} transition-all duration-500 first:rounded-l-lg`}
+              title={`${fuente.tipo}: ${formatCurrency(montoCierre)} (${pct.toFixed(1)}%)`}
+              className={`${color.barra} transition-all duration-500 first:rounded-l-full cursor-default`}
               style={{ width: `${pct}%` }}
             />
           )
         })}
-
-        {/* Segmento vacío si hay déficit */}
-        {totalFuentes < valorVivienda && (
+        {totalFuentes < valorVivienda ? (
           <div
             className="flex-1 bg-red-200/60 dark:bg-red-900/30"
-            title="Monto no cubierto"
-            style={{
-              width: `${((valorVivienda - totalFuentes) / escala) * 100}%`,
-            }}
+            title={`Faltante: ${formatCurrency(valorVivienda - totalFuentes)}`}
+            style={{ width: `${((valorVivienda - totalFuentes) / escala) * 100}%` }}
           />
-        )}
+        ) : null}
       </div>
 
-      {/* Leyenda */}
-      <div className="flex flex-wrap gap-x-4 gap-y-1">
+      {/* Leyenda compacta inline */}
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5">
         {fuentesPago.map((fuente, i) => {
-          const color = getFuenteColor(fuente.tipo)
+          const color = getFuenteColor(getColorToken(fuente.tipo))
           const montoCierre = fuente.capital_para_cierre ?? fuente.monto_aprobado
+          const pct = escala > 0 ? ((montoCierre / escala) * 100).toFixed(0) : '0'
           return (
-            <div key={fuente.tipo + i} className="flex items-center gap-1.5">
-              <span className={`w-2.5 h-2.5 rounded-sm flex-shrink-0 ${color.barra}`} />
-              <span className="text-xs text-gray-500 dark:text-gray-400">
-                {fuente.tipo}:{' '}
-                <span className="font-medium text-gray-700 dark:text-gray-300 tabular-nums">
-                  {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(montoCierre)}
-                </span>
+            <div key={fuente.tipo + i} className="flex items-center gap-1">
+              <span className={`w-2 h-2 rounded-full flex-shrink-0 ${color.barra}`} />
+              <span className="text-[11px] text-gray-500 dark:text-gray-400">
+                {fuente.tipo}{' '}
+                <span className="font-semibold text-gray-700 dark:text-gray-300 tabular-nums">{pct}%</span>
               </span>
             </div>
           )
         })}
-        {totalFuentes < valorVivienda && (
-          <div className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-sm bg-red-300 dark:bg-red-700 flex-shrink-0" />
-            <span className="text-xs text-red-500 dark:text-red-400">
-              Faltante:{' '}
-              <span className="font-medium tabular-nums">
-                {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(valorVivienda - totalFuentes)}
+        {totalFuentes < valorVivienda ? (
+          <div className="flex items-center gap-1">
+            <span className="w-2 h-2 rounded-full bg-red-300 dark:bg-red-700 flex-shrink-0" />
+            <span className="text-[11px] text-red-500 dark:text-red-400">
+              Faltante{' '}
+              <span className="font-semibold tabular-nums">
+                {((valorVivienda - totalFuentes) / escala * 100).toFixed(0)}%
               </span>
             </span>
           </div>
-        )}
+        ) : null}
       </div>
     </div>
   )

@@ -8,13 +8,13 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { AlertCircle, DollarSign, TrendingUp } from 'lucide-react'
+import { AlertCircle, DollarSign, Lock, TrendingUp } from 'lucide-react'
 import type { FieldErrors, UseFormRegister, UseFormSetValue, UseFormWatch } from 'react-hook-form'
 
 import { cn } from '@/shared/utils/helpers'
 
 import { nuevaViviendaStyles as styles } from '../styles/nueva-vivienda.styles'
-import type { ConfiguracionRecargo, ResumenFinanciero } from '../types'
+import type { ConfiguracionRecargo, ResumenFinanciero, ViviendaEstado } from '../types'
 import { formatCurrencyInput, parseCurrency } from '../utils'
 
 interface PasoFinancieroProps {
@@ -24,9 +24,11 @@ interface PasoFinancieroProps {
   setValue: UseFormSetValue<any>
   resumenFinanciero: ResumenFinanciero
   configuracionRecargos: ConfiguracionRecargo[]
+  bloqueado?: boolean
+  estadoVivienda?: ViviendaEstado | string
 }
 
-export function PasoFinancieroNuevo({ register, errors, watch, setValue, resumenFinanciero, configuracionRecargos }: PasoFinancieroProps) {
+export function PasoFinancieroNuevo({ register, errors, watch, setValue, resumenFinanciero, configuracionRecargos, bloqueado = false, estadoVivienda }: PasoFinancieroProps) {
   const valorBase = watch('valor_base') || 0
   const esEsquinera = watch('es_esquinera') || false
   const recargoEsquinera = watch('recargo_esquinera') || 0
@@ -63,6 +65,22 @@ export function PasoFinancieroNuevo({ register, errors, watch, setValue, resumen
         </p>
       </div>
 
+      {/* Banner de bloqueo para viviendas Entregadas */}
+      {bloqueado ? (
+        <div className="flex items-start gap-3 p-3 rounded-xl bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/40">
+          <Lock className="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+          <div>
+            <p className="text-sm font-bold text-amber-800 dark:text-amber-300">
+              Campos financieros bloqueados
+            </p>
+            <p className="text-xs text-amber-700 dark:text-amber-400 mt-0.5">
+              Esta vivienda está en estado <strong>{estadoVivienda}</strong>. Los valores financieros
+              no pueden modificarse una vez entregada.
+            </p>
+          </div>
+        </div>
+      ) : null}
+
       {/* Valor Base */}
       <div className={styles.field.container}>
         <label htmlFor="valor_base" className={styles.field.label}>
@@ -79,9 +97,11 @@ export function PasoFinancieroNuevo({ register, errors, watch, setValue, resumen
               setValue('valor_base', valor)
             }}
             placeholder="$ 50.000.000"
+            disabled={bloqueado}
             className={cn(
               styles.field.input,
-              errors.valor_base && styles.field.inputError
+              errors.valor_base && styles.field.inputError,
+              bloqueado && 'opacity-60 cursor-not-allowed bg-gray-100 dark:bg-gray-800'
             )}
           />
         </div>
@@ -107,7 +127,11 @@ export function PasoFinancieroNuevo({ register, errors, watch, setValue, resumen
             {...register('es_esquinera')}
             id="es_esquinera"
             type="checkbox"
-            className="w-5 h-5 rounded border-2 border-gray-300 dark:border-gray-600 text-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-colors"
+            disabled={bloqueado}
+            className={cn(
+              'w-5 h-5 rounded border-2 border-gray-300 dark:border-gray-600 text-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-colors',
+              bloqueado && 'opacity-60 cursor-not-allowed'
+            )}
           />
           <label htmlFor="es_esquinera" className="text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer">
             ¿Es vivienda esquinera?
@@ -130,9 +154,11 @@ export function PasoFinancieroNuevo({ register, errors, watch, setValue, resumen
               <select
                 {...register('recargo_esquinera', { valueAsNumber: true })}
                 id="recargo_esquinera"
+                disabled={bloqueado}
                 className={cn(
                   styles.field.input,
-                  errors.recargo_esquinera && styles.field.inputError
+                  errors.recargo_esquinera && styles.field.inputError,
+                  bloqueado && 'opacity-60 cursor-not-allowed bg-gray-100 dark:bg-gray-800'
                 )}
               >
                 <option value="0">Selecciona el recargo por esquinera</option>

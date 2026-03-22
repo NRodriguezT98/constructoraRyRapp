@@ -60,7 +60,7 @@ export const getServerUserProfile = cache(async (): Promise<Usuario | null> => {
   }
 
   const user = session.user
-  let rol = 'Vendedor'
+  let rol = 'Supervisor'
   let nombres = ''
   let email: string = user.email || ''
 
@@ -87,7 +87,7 @@ export const getServerUserProfile = cache(async (): Promise<Usuario | null> => {
         const payload = JSON.parse(jsonPayload)
 
         // Leer claims custom del payload
-        rol = payload.user_rol || 'Vendedor'
+        rol = payload.user_rol || 'Supervisor'
         nombres = payload.user_nombres || ''
         email = payload.user_email || user.email || ''
       }
@@ -127,7 +127,7 @@ export const getServerUserProfile = cache(async (): Promise<Usuario | null> => {
  * Verificar si el usuario tiene un rol específico
  */
 export async function hasRole(
-  rol: 'Administrador' | 'Contador' | 'Supervisor' | 'Gerencia'
+  rol: 'Administrador' | 'Contador' | 'Supervisor' | 'Gerente'
 ): Promise<boolean> {
   const perfil = await getServerUserProfile()
   return perfil?.rol === rol
@@ -153,13 +153,13 @@ export async function canAccessModule(modulo: string): Promise<boolean> {
 
   // Matriz de permisos: qué roles pueden acceder a qué módulos
   const modulePermissions: Record<string, string[]> = {
-    viviendas: ['Administrador', 'Contador', 'Supervisor', 'Gerencia'],
-    clientes: ['Administrador', 'Contador', 'Supervisor', 'Gerencia'],
-    proyectos: ['Administrador', 'Contador', 'Supervisor', 'Gerencia'],
-    abonos: ['Administrador', 'Contador', 'Gerencia'],
-    documentos: ['Administrador', 'Contador', 'Supervisor', 'Gerencia'],
-    negociaciones: ['Administrador', 'Contador', 'Gerencia'],
-    auditorias: ['Administrador', 'Gerencia'],
+    viviendas: ['Administrador', 'Contador', 'Supervisor', 'Gerente'],
+    clientes: ['Administrador', 'Contador', 'Supervisor', 'Gerente'],
+    proyectos: ['Administrador', 'Contador', 'Supervisor', 'Gerente'],
+    abonos: ['Administrador', 'Contador', 'Gerente'],
+    documentos: ['Administrador', 'Contador', 'Supervisor', 'Gerente'],
+    negociaciones: ['Administrador', 'Contador', 'Gerente'],
+    auditorias: ['Administrador', 'Gerente'],
     admin: ['Administrador'],
   }
 
@@ -176,8 +176,11 @@ export async function canAccessModule(modulo: string): Promise<boolean> {
 /**
  * Obtener permisos granulares del usuario
  * Para usar en Server Components
+ *
+ * @param modulo - Módulo específico (opcional). Si se pasa, consulta permisos_rol en DB.
+ *                 Si no se pasa, usa permisos genéricos por rol (backward compatible).
  */
-export async function getServerPermissions() {
+export async function getServerPermissions(modulo?: string) {
   const perfil = await getServerUserProfile()
 
   if (!perfil) {
@@ -192,13 +195,44 @@ export async function getServerPermissions() {
 
   const rol = perfil.rol
 
-  const permisos = {
-    canCreate: ['Administrador', 'Contador'].includes(rol),
-    canEdit: ['Administrador', 'Contador'].includes(rol),
-    canDelete: rol === 'Administrador',
-    canView: true, // Si llegó hasta aquí, tiene acceso
-    isAdmin: rol === 'Administrador',
+  // Administrador siempre tiene todos los permisos
+  if (rol === 'Administrador') {
+    return {
+      canCreate: true,
+      canEdit: true,
+      canDelete: true,
+      canView: true,
+      isAdmin: true,
+    }
   }
 
-  return permisos
+  // Si se especifica módulo, consultar permisos específicos desde DB
+  if (modulo) {
+    const supabase = await createServerSupabaseClient()
+    const { data: permisos } = await supabase
+      .from('permisos_rol')
+      .select('accion, permitido')
+      .eq('rol', rol)
+      .eq('modulo', modulo)
+      .eq('permitido', true)
+
+    const acciones = new Set((permisos ?? []).map(p => p.accion))
+
+    return {
+      canCreate: acciones.has('crear'),
+      canEdit: acciones.has('editar'),
+      canDelete: acciones.has('eliminar'),
+      canView: acciones.has('ver'),
+      isAdmin: false,
+    }
+  }
+
+  // Fallback genérico (backward compatible)
+  return {
+    canCreate: ['Administrador', 'Contador'].includes(rol),
+    canEdit: ['Administrador', 'Contador'].includes(rol),
+    canDelete: false,
+    canView: true,
+    isAdmin: false,
+  }
 }

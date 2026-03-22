@@ -514,8 +514,9 @@ export function useProyectosForm({
     handleSubmit: handleSubmit(onSubmitForm),
     control,
     errors,
-    touchedFields, // â† Exportar para validación progresiva
-
+    touchedFields,
+    trigger,
+    watch,
     // Field array
     fields,
     handleAgregarManzana,

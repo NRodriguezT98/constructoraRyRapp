@@ -82,6 +82,7 @@ export function useClienteCardActivo({ clienteId }: UseClienteCardActivoProps) {
           `
             id,
             valor_total,
+            valor_total_pagar,
             total_abonado,
             saldo_pendiente,
             porcentaje_pagado,
@@ -145,7 +146,7 @@ export function useClienteCardActivo({ clienteId }: UseClienteCardActivoProps) {
         ubicacion: negociacion.viviendas?.manzanas?.proyectos?.ubicacion || 'No especifica',
         manzana: negociacion.viviendas?.manzanas?.nombre || '-',
         numero: negociacion.viviendas?.numero || '-',
-        valorTotal: negociacion.valor_total || 0,
+        valorTotal: negociacion.valor_total_pagar || negociacion.valor_total || 0,
         valorPagado: negociacion.total_abonado || 0,
         saldoPendiente: negociacion.saldo_pendiente || 0,
         porcentaje: Math.round(negociacion.porcentaje_pagado || 0),

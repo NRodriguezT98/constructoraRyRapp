@@ -25,7 +25,7 @@ export interface Perfil {
   nombres: string
   apellidos: string
   email: string
-  rol: 'Administrador' | 'Gerente' | 'Vendedor'
+  rol: 'Administrador' | 'Contador' | 'Supervisor' | 'Gerente'
   estado: 'Activo' | 'Inactivo'
   debe_cambiar_password: boolean
   ultimo_acceso: string | null

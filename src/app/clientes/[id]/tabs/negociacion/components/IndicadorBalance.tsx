@@ -19,42 +19,31 @@ export function IndicadorBalance({
 }: IndicadorBalanceProps) {
   return (
     <div
-      className={`flex items-center gap-3 px-4 py-3 rounded-xl border ${
+      className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs ${
         estaBalanceado
-          ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800/60'
-          : 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800/60'
+          ? 'bg-emerald-50/80 dark:bg-emerald-900/15 text-emerald-700 dark:text-emerald-400'
+          : 'bg-red-50/80 dark:bg-red-900/15 text-red-600 dark:text-red-400'
       }`}
     >
       {estaBalanceado ? (
-        <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
+        <CheckCircle2 className="w-3.5 h-3.5 flex-shrink-0" />
       ) : (
-        <AlertTriangle className="w-5 h-5 text-red-500 dark:text-red-400 flex-shrink-0" />
+        <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0" />
       )}
 
-      <div className="flex-1 min-w-0">
-        {estaBalanceado ? (
-          <p className="text-sm font-semibold text-emerald-800 dark:text-emerald-200">
-            Valor cubierto —{' '}
-            <span className="font-bold tabular-nums">{formatCurrency(valorVivienda)}</span>
-          </p>
-        ) : diferencia > 0 ? (
-          <p className="text-sm font-semibold text-red-700 dark:text-red-300">
-            Faltan{' '}
-            <span className="font-bold tabular-nums">{formatCurrency(Math.abs(diferencia))}</span>
-            {' '}por asignar a fuentes de pago
-          </p>
-        ) : (
-          <p className="text-sm font-semibold text-red-700 dark:text-red-300">
-            Sobran{' '}
-            <span className="font-bold tabular-nums">{formatCurrency(Math.abs(diferencia))}</span>
-            {' '}— se asignó de más en las fuentes
-          </p>
-        )}
-
-        <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 tabular-nums">
-          Total asignado: {formatCurrency(totalFuentes)} · Precio vivienda: {formatCurrency(valorVivienda)}
-        </p>
-      </div>
+      {estaBalanceado ? (
+        <span className="font-medium">
+          Valor cubierto · <span className="tabular-nums">{formatCurrency(valorVivienda)}</span>
+        </span>
+      ) : diferencia > 0 ? (
+        <span className="font-medium">
+          Faltan <span className="font-bold tabular-nums">{formatCurrency(Math.abs(diferencia))}</span> por asignar
+        </span>
+      ) : (
+        <span className="font-medium">
+          Sobran <span className="font-bold tabular-nums">{formatCurrency(Math.abs(diferencia))}</span> — exceso en fuentes
+        </span>
+      )}
     </div>
   )
 }

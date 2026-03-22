@@ -112,7 +112,12 @@ export function RebalancearModal({
   const subtotal = useMemo(() => {
     const activas = ajustes.filter((a) => !a.paraEliminar).reduce((s, a) => {
       const r = restriccionesMap.get(a.id)
-      return s + (r?.montoParaCierre ?? a.montoEditable)
+      // Para fuentes bloqueadas (crédito con plan), usar capital_para_cierre
+      // Para fuentes editables, usar el valor que el usuario escribió
+      const monto = r && !r.puedeEditarMonto && a.capital_para_cierre !== null
+        ? a.capital_para_cierre
+        : a.montoEditable
+      return s + monto
     }, 0)
     const agregadas = nuevas.reduce((s, n) => s + n.monto, 0)
     return activas + agregadas

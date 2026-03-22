@@ -14,12 +14,87 @@
 // TIPOS
 // ============================================
 
-export type TipoDocumentoColombia = 'CC' | 'CE' | 'NIT' | 'Pasaporte'
+export type TipoDocumentoColombia = 'CC' | 'CE' | 'TI' | 'NIT' | 'PP' | 'PEP'
 
 export interface ResultadoValidacion {
   valido: boolean
   mensaje?: string
   detalles?: string
+}
+
+/**
+ * Reglas de formato por tipo de documento colombiano.
+ * Usadas tanto para validación server-side como para filtrado en UI.
+ *
+ * Fuentes:
+ *  - Registraduría Nacional del Estado Civil
+ *  - DIAN (para NIT)
+ *  - Migración Colombia (para CE, PEP)
+ *  - ICAO Doc 9303 (para Pasaporte)
+ */
+export const REGLAS_DOCUMENTO: Record<TipoDocumentoColombia, {
+  label: string
+  soloDigitos: boolean
+  minLength: number
+  maxLength: number
+  placeholder: string
+  inputMode: 'numeric' | 'text'
+  descripcion: string
+}> = {
+  CC: {
+    label: 'Cédula de Ciudadanía',
+    soloDigitos: true,
+    minLength: 6,
+    maxLength: 10,
+    placeholder: 'Ej: 1234567890',
+    inputMode: 'numeric',
+    descripcion: 'Solo números, entre 6 y 10 dígitos',
+  },
+  TI: {
+    label: 'Tarjeta de Identidad',
+    soloDigitos: true,
+    minLength: 10,
+    maxLength: 11,
+    placeholder: 'Ej: 1234567890',
+    inputMode: 'numeric',
+    descripcion: 'Solo números, 10 u 11 dígitos',
+  },
+  CE: {
+    label: 'Cédula de Extranjería',
+    soloDigitos: true,
+    minLength: 6,
+    maxLength: 10,
+    placeholder: 'Ej: 123456',
+    inputMode: 'numeric',
+    descripcion: 'Solo números, entre 6 y 10 dígitos',
+  },
+  NIT: {
+    label: 'NIT',
+    soloDigitos: false,
+    minLength: 9,
+    maxLength: 15,
+    placeholder: 'Ej: 900123456-7',
+    inputMode: 'text',
+    descripcion: 'Números y guión. Formato: XXXXXXXXX-X',
+  },
+  PP: {
+    label: 'Pasaporte',
+    soloDigitos: false,
+    minLength: 6,
+    maxLength: 15,
+    placeholder: 'Ej: AO123456',
+    inputMode: 'text',
+    descripcion: 'Letras mayúsculas y números, entre 6 y 15 caracteres',
+  },
+  PEP: {
+    label: 'PEP',
+    soloDigitos: true,
+    minLength: 6,
+    maxLength: 15,
+    placeholder: 'Ej: 123456789012345',
+    inputMode: 'numeric',
+    descripcion: 'Solo números, entre 6 y 15 dígitos',
+  },
 }
 
 // ============================================
@@ -59,12 +134,11 @@ export function validarFormatoCedula(cedula: string): ResultadoValidacion {
 
 /**
  * Valida cédula extranjera (CE)
- * Similar a CC pero puede tener prefijos especiales
+ * Emitida por Migración Colombia. Solo números, entre 6 y 10 dígitos.
  */
 export function validarFormatoCedulaExtranjera(ce: string): ResultadoValidacion {
   const ceLimpia = ce.trim()
 
-  // Verificar que solo contenga números
   if (!/^\d+$/.test(ceLimpia)) {
     return {
       valido: false,
@@ -72,11 +146,61 @@ export function validarFormatoCedulaExtranjera(ce: string): ResultadoValidacion 
     }
   }
 
-  // Verificar longitud (6-10 dígitos)
   if (ceLimpia.length < 6 || ceLimpia.length > 10) {
     return {
       valido: false,
-      mensaje: 'La cédula de extranjería debe tener entre 6 y 10 dígitos'
+      mensaje: 'La cédula de extranjería debe tener entre 6 y 10 dígitos',
+      detalles: `Actualmente tiene ${ceLimpia.length} dígitos`
+    }
+  }
+
+  return { valido: true }
+}
+
+/**
+ * Valida Tarjeta de Identidad (TI)
+ * Emitida por la Registraduría para menores. Solo números, 10 u 11 dígitos.
+ */
+export function validarTarjetaIdentidad(ti: string): ResultadoValidacion {
+  const tiLimpia = ti.trim()
+
+  if (!/^\d+$/.test(tiLimpia)) {
+    return {
+      valido: false,
+      mensaje: 'La tarjeta de identidad solo debe contener números'
+    }
+  }
+
+  if (tiLimpia.length < 10 || tiLimpia.length > 11) {
+    return {
+      valido: false,
+      mensaje: 'La tarjeta de identidad debe tener 10 u 11 dígitos',
+      detalles: `Actualmente tiene ${tiLimpia.length} dígitos`
+    }
+  }
+
+  return { valido: true }
+}
+
+/**
+ * Valida PEP (Permiso Especial de Permanencia)
+ * Emitido por Migración Colombia para venezolanos. Solo números, entre 6 y 15 dígitos.
+ */
+export function validarPEP(pep: string): ResultadoValidacion {
+  const pepLimpio = pep.trim()
+
+  if (!/^\d+$/.test(pepLimpio)) {
+    return {
+      valido: false,
+      mensaje: 'El PEP solo debe contener números'
+    }
+  }
+
+  if (pepLimpio.length < 6 || pepLimpio.length > 15) {
+    return {
+      valido: false,
+      mensaje: 'El PEP debe tener entre 6 y 15 dígitos',
+      detalles: `Actualmente tiene ${pepLimpio.length} dígitos`
     }
   }
 
@@ -286,20 +410,26 @@ export function validarDocumentoIdentidad(
     case 'CC':
       return validarFormatoCedula(numeroDocumento)
 
+    case 'TI':
+      return validarTarjetaIdentidad(numeroDocumento)
+
     case 'CE':
       return validarFormatoCedulaExtranjera(numeroDocumento)
 
     case 'NIT':
       return validarNIT(numeroDocumento)
 
-    case 'Pasaporte':
+    case 'PP':
       return validarPasaporte(numeroDocumento)
+
+    case 'PEP':
+      return validarPEP(numeroDocumento)
 
     default:
       return {
         valido: false,
         mensaje: 'Tipo de documento no soportado',
-        detalles: 'Tipos válidos: CC, CE, NIT, Pasaporte'
+        detalles: 'Tipos válidos: CC, TI, CE, NIT, PP, PEP'
       }
   }
 }

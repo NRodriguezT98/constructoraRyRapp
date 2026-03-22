@@ -2,16 +2,18 @@
 
 import { useMemo } from 'react'
 
+import { KeyRound } from 'lucide-react'
+
 import {
-    AccordionSection,
-    AsignarViviendaHeader,
-    SeccionFuentesPago,
-    SeccionRevision,
-    SeccionViviendaValores,
-    StatusBar,
-} from './components'
-import { useAsignarViviendaV2 } from './hooks'
-import { styles as s } from './styles'
+    AccordionWizardHero,
+    AccordionWizardLayout,
+    AccordionWizardNavigation,
+    AccordionWizardSection,
+    AccordionWizardSuccess,
+} from '@/shared/components/accordion-wizard'
+
+import { SeccionFuentesPago, SeccionRevision, SeccionViviendaValores } from './components'
+import { PASOS_ASIGNACION, useAsignarViviendaV2 } from './hooks'
 
 interface AsignarViviendaV2PageProps {
   clienteId: string
@@ -25,9 +27,17 @@ export function AsignarViviendaV2Page({
   clienteSlug,
 }: AsignarViviendaV2PageProps) {
   const {
-    // Navegación
-    pasoActivo,
-    pasosCompletados,
+    // Wizard
+    pasoActual,
+    getEstadoPaso,
+    progress,
+    summaryPaso1,
+    summaryPaso2,
+    showSuccess,
+    isValidating,
+    pasos,
+    irSiguiente,
+    irAtras,
     irAPaso,
     // RHF
     register,
@@ -62,56 +72,16 @@ export function AsignarViviendaV2Page({
     handleFuenteEnabledChange,
     handleFuenteConfigChange,
     // Guardado
-    handleContinuar,
-    handleCancelar,
+    handleSubmitFinal,
     creando,
     errorApi,
     clearErrorApi,
   } = useAsignarViviendaV2({ clienteId, clienteSlug })
 
-  // Nombre del proyecto seleccionado (para revisión)
   const proyectoNombre = useMemo(
     () => proyectos.find(p => p.id === proyectoSeleccionado)?.nombre ?? '',
-    [proyectos, proyectoSeleccionado]
+    [proyectos, proyectoSeleccionado],
   )
-
-  // Estado de cada acordeón
-  const estado1 =
-    pasoActivo === 1
-      ? 'active'
-      : pasosCompletados.includes(1)
-        ? 'completed'
-        : 'locked'
-  const estado2 =
-    pasoActivo === 2
-      ? 'active'
-      : pasosCompletados.includes(2)
-        ? 'completed'
-        : 'locked'
-  const estado3 = pasoActivo === 3 ? 'active' : 'locked'
-
-  // Resumen sección 1 (para estado "completado")
-  const resumen1 = useMemo(() => {
-    if (!viviendaSeleccionada) return ''
-    const base = [
-      viviendaSeleccionada.manzana_nombre,
-      `Casa ${viviendaSeleccionada.numero}`,
-      proyectoNombre,
-      `$${(valorTotal / 1_000_000).toFixed(1)}M`,
-    ]
-      .filter(Boolean)
-      .join(' · ')
-    return descuentoAplicado > 0
-      ? `${base} · -$${(descuentoAplicado / 1_000_000).toFixed(1)}M desc.`
-      : base
-  }, [viviendaSeleccionada, proyectoNombre, valorTotal, descuentoAplicado])
-
-  // Resumen sección 2 (para estado "completado")
-  const resumen2 = useMemo(() => {
-    const fuentesOn = fuentes.filter(f => f.enabled).map(f => f.tipo)
-    if (fuentesOn.length === 0) return ''
-    return `${fuentesOn.join(' · ')} — $${(totalFuentes / 1_000_000).toFixed(1)}M cubierto`
-  }, [fuentes, totalFuentes])
 
   const aplicarDescuento = watch('aplicar_descuento') as boolean
   const tipoDescuento = (watch('tipo_descuento') as string) ?? ''
@@ -119,113 +89,168 @@ export function AsignarViviendaV2Page({
   const valorEscrituraPublica = (watch('valor_escritura_publica') as number) ?? 0
 
   return (
-    <div className={s.page.wrapper}>
-      <div className={s.page.inner}>
-        {/* Header */}
-        <AsignarViviendaHeader
-          clienteId={clienteSlug ?? clienteId}
-          clienteNombre={clienteNombre}
-          pasoActivo={pasoActivo}
-        />
-
-        {/* Acordeones */}
-        <div className={s.page.accordionStack}>
-          {/* ① Vivienda & Valores */}
-          <AccordionSection
-            number='01'
-            title='Vivienda &amp; Valores'
-            state={estado1}
-            summary={resumen1}
-            onHeaderClick={() => irAPaso(1)}
-          >
-            <SeccionViviendaValores
-              clienteNombre={clienteNombre}
-              register={register}
-              errors={errors}
-              setValue={setValue}
-              watch={watch}
-              proyectos={proyectos}
-              viviendas={viviendas}
-              proyectoSeleccionado={proyectoSeleccionado}
-              viviendaId={viviendaId}
-              viviendaSeleccionada={viviendaSeleccionada}
-              cargandoProyectos={cargandoProyectos}
-              cargandoViviendas={cargandoViviendas}
-              setProyectoSeleccionado={setProyectoSeleccionado}
-              setViviendaId={setViviendaId}
-              valorBase={valorBase}
-              gastosNotariales={gastosNotariales}
-              recargoEsquinera={recargoEsquinera}
-              descuentoAplicado={descuentoAplicado}
-              valorTotal={valorTotal}
-              onClearErrorApi={clearErrorApi}
-            />
-          </AccordionSection>
-
-          {/* ② Fuentes de Pago */}
-          <AccordionSection
-            number='02'
-            title='Fuentes de Pago'
-            state={estado2}
-            summary={resumen2}
-            onHeaderClick={() => irAPaso(2)}
-          >
-            <SeccionFuentesPago
-              valorTotal={valorTotal}
-              cargandoTipos={cargandoTipos}
-              tiposConCampos={tiposConCampos}
-              fuentes={fuentes}
-              totalFuentes={totalFuentes}
-              diferencia={diferencia}
-              sumaCierra={sumaCierra}
-              erroresFuentes={erroresFuentes}
-              mostrarErroresFuentes={mostrarErroresFuentes}
-              handleFuenteEnabledChange={handleFuenteEnabledChange}
-              handleFuenteConfigChange={handleFuenteConfigChange}
-            />
-          </AccordionSection>
-
-          {/* ③ Revisión & Confirmación */}
-          <AccordionSection
-            number='03'
-            title='Revisión &amp; Confirmación'
-            state={estado3}
-            onHeaderClick={() => irAPaso(3)}
-          >
-            <SeccionRevision
-              clienteNombre={clienteNombre}
-              proyectoNombre={proyectoNombre}
-              viviendaSeleccionada={viviendaSeleccionada}
-              valorBase={valorBase}
-              gastosNotariales={gastosNotariales}
-              recargoEsquinera={recargoEsquinera}
-              descuentoAplicado={descuentoAplicado}
-              valorTotal={valorTotal}
-              valorEscrituraPublica={valorEscrituraPublica}
-              aplicarDescuento={aplicarDescuento}
-              tipoDescuento={tipoDescuento}
-              notas={notas}
-              fuentes={fuentes}
-              tiposConCampos={tiposConCampos}
-              errorApi={errorApi}
-              creando={creando}
-              onGuardar={handleContinuar}
-              onEditarSeccion1={() => irAPaso(1)}
-              onEditarSeccion2={() => irAPaso(2)}
-            />
-          </AccordionSection>
-        </div>
-      </div>
-
-      {/* Status Bar sticky */}
-      <StatusBar
-        paso={pasoActivo}
-        valorTotal={valorTotal}
-        totalCubierto={totalFuentes}
-        onContinuar={handleContinuar}
-        onCancelar={handleCancelar}
-        cargando={creando}
+    <AccordionWizardLayout
+      moduleName="clientes"
+      breadcrumbs={[
+        { label: 'Clientes', href: '/clientes' },
+        { label: clienteNombre, href: `/clientes/${clienteSlug ?? clienteId}` },
+        { label: 'Asignar Vivienda' },
+      ]}
+      isSubmitting={creando}
+      submitLoadingLabel="Asignando Vivienda..."
+    >
+      {/* Hero Header */}
+      <AccordionWizardHero
+        icon={KeyRound}
+        title="Asignar Vivienda"
+        subtitle={`Configura la vivienda y financiamiento para ${clienteNombre}. Completa cada sección en orden.`}
+        moduleName="clientes"
+        estimatedTime="~5 minutos"
+        totalSteps={PASOS_ASIGNACION.length}
       />
-    </div>
+
+      {/* ── Paso 1: Vivienda & Valores ────────────── */}
+      <AccordionWizardSection
+        status={getEstadoPaso(1)}
+        stepNumber={1}
+        title={pasos[0].title}
+        description={pasos[0].description}
+        icon={pasos[0].icon}
+        fieldCount={{ required: 2, optional: 3 }}
+        currentStep={pasoActual}
+        totalSteps={PASOS_ASIGNACION.length}
+        progress={pasoActual === 1 ? progress : undefined}
+        moduleName="clientes"
+        summaryItems={summaryPaso1}
+        onEdit={() => irAPaso(1)}
+      >
+        <SeccionViviendaValores
+          clienteNombre={clienteNombre}
+          register={register}
+          errors={errors}
+          setValue={setValue}
+          watch={watch}
+          proyectos={proyectos}
+          viviendas={viviendas}
+          proyectoSeleccionado={proyectoSeleccionado}
+          viviendaId={viviendaId}
+          viviendaSeleccionada={viviendaSeleccionada}
+          cargandoProyectos={cargandoProyectos}
+          cargandoViviendas={cargandoViviendas}
+          setProyectoSeleccionado={setProyectoSeleccionado}
+          setViviendaId={setViviendaId}
+          valorBase={valorBase}
+          gastosNotariales={gastosNotariales}
+          recargoEsquinera={recargoEsquinera}
+          descuentoAplicado={descuentoAplicado}
+          valorTotal={valorTotal}
+          onClearErrorApi={clearErrorApi}
+        />
+        <AccordionWizardNavigation
+          currentStep={1}
+          totalSteps={PASOS_ASIGNACION.length}
+          isFirst
+          isLast={false}
+          isValidating={pasoActual === 1 && isValidating}
+          moduleName="clientes"
+          onBack={irAtras}
+          onNext={irSiguiente}
+        />
+      </AccordionWizardSection>
+
+      {/* ── Paso 2: Fuentes de Pago ───────────────── */}
+      <AccordionWizardSection
+        status={getEstadoPaso(2)}
+        stepNumber={2}
+        title={pasos[1].title}
+        description={pasos[1].description}
+        icon={pasos[1].icon}
+        fieldCount={{ required: 1, optional: 0 }}
+        currentStep={pasoActual}
+        totalSteps={PASOS_ASIGNACION.length}
+        progress={pasoActual === 2 ? progress : undefined}
+        moduleName="clientes"
+        summaryItems={summaryPaso2}
+        onEdit={() => irAPaso(2)}
+      >
+        <SeccionFuentesPago
+          valorTotal={valorTotal}
+          cargandoTipos={cargandoTipos}
+          tiposConCampos={tiposConCampos}
+          fuentes={fuentes}
+          totalFuentes={totalFuentes}
+          diferencia={diferencia}
+          sumaCierra={sumaCierra}
+          erroresFuentes={erroresFuentes}
+          mostrarErroresFuentes={mostrarErroresFuentes}
+          handleFuenteEnabledChange={handleFuenteEnabledChange}
+          handleFuenteConfigChange={handleFuenteConfigChange}
+        />
+        <AccordionWizardNavigation
+          currentStep={2}
+          totalSteps={PASOS_ASIGNACION.length}
+          isFirst={false}
+          isLast={false}
+          isValidating={pasoActual === 2 && isValidating}
+          moduleName="clientes"
+          onBack={irAtras}
+          onNext={irSiguiente}
+        />
+      </AccordionWizardSection>
+
+      {/* ── Paso 3: Revisión & Confirmación ───────── */}
+      <AccordionWizardSection
+        status={getEstadoPaso(3)}
+        stepNumber={3}
+        title={pasos[2].title}
+        description={pasos[2].description}
+        icon={pasos[2].icon}
+        currentStep={pasoActual}
+        totalSteps={PASOS_ASIGNACION.length}
+        moduleName="clientes"
+        onEdit={() => irAPaso(3)}
+      >
+        <SeccionRevision
+          clienteNombre={clienteNombre}
+          proyectoNombre={proyectoNombre}
+          viviendaSeleccionada={viviendaSeleccionada}
+          valorBase={valorBase}
+          gastosNotariales={gastosNotariales}
+          recargoEsquinera={recargoEsquinera}
+          descuentoAplicado={descuentoAplicado}
+          valorTotal={valorTotal}
+          valorEscrituraPublica={valorEscrituraPublica}
+          aplicarDescuento={aplicarDescuento}
+          tipoDescuento={tipoDescuento}
+          notas={notas}
+          fuentes={fuentes}
+          tiposConCampos={tiposConCampos}
+          errorApi={errorApi}
+          onEditarSeccion1={() => irAPaso(1)}
+          onEditarSeccion2={() => irAPaso(2)}
+        />
+        <AccordionWizardNavigation
+          currentStep={3}
+          totalSteps={PASOS_ASIGNACION.length}
+          isFirst={false}
+          isLast
+          isSubmitting={creando}
+          isValidating={isValidating}
+          moduleName="clientes"
+          submitLabel="Asignar Vivienda"
+          onBack={irAtras}
+          onNext={irSiguiente}
+          onSubmit={handleSubmitFinal}
+        />
+      </AccordionWizardSection>
+
+      {/* Success celebration */}
+      <AccordionWizardSuccess
+        isVisible={showSuccess}
+        moduleName="clientes"
+        title="¡Vivienda asignada!"
+        subtitle="Redirigiendo al perfil del cliente..."
+      />
+    </AccordionWizardLayout>
   )
 }

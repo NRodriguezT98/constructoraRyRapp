@@ -73,8 +73,8 @@ export const VIVIENDA_LIMITES = {
 // ============================================
 
 export const REGEX_PATTERNS = {
-  // Linderos: letras, números, espacios, puntos, comas y guiones
-  LINDERO: /^[a-zA-Z0-9\sáéíóúÁÉÍÓÚñÑ.,\-]+$/,
+  // Linderos: letras, números, espacios, puntos, comas, guiones, paréntesis, #, °, /, comillas
+  LINDERO: /^[a-zA-Z0-9\sáéíóúÁÉÍÓÚñÑ.,\-()#°/"']+$/,
 
   // Matrícula: formato "050-123456" (solo números y guiones)
   MATRICULA: /^[0-9\-]+$/,

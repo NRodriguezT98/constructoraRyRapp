@@ -1,10 +1,10 @@
 /**
- * Vista dedicada: Nueva Vivienda
+ * Vista dedicada: Nueva Vivienda (Accordion Wizard)
  * Ruta: /viviendas/nueva
- * Formulario de 5 pasos con diseño espacioso
+ * Formulario de 5 pasos con diseño accordion
  */
 
-import { NuevaViviendaView } from '@/modules/viviendas/components/nueva-vivienda-view'
+import { NuevaViviendaAccordionView } from '@/modules/viviendas/components/NuevaViviendaAccordionView'
 
 export const metadata = {
   title: 'Nueva Vivienda | RyR Constructora',
@@ -12,5 +12,5 @@ export const metadata = {
 }
 
 export default function NuevaViviendaPage() {
-  return <NuevaViviendaView />
+  return <NuevaViviendaAccordionView />
 }

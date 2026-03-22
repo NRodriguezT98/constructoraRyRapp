@@ -99,7 +99,7 @@ export function GeneralTab({ cliente }: GeneralTabProps) {
       />
 
       {/* Resumen financiero de negociación - hero section */}
-      {negociacionActiva && negociacionActiva.valor_total > 0 && (
+      {negociacionActiva && (negociacionActiva.valor_total_pagar > 0 || negociacionActiva.valor_total > 0) && (
         <ResumenNegociacion negociacion={negociacionActiva} clienteId={cliente.id} />
       )}
 

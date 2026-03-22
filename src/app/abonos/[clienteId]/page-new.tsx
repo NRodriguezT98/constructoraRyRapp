@@ -121,7 +121,7 @@ export default function ClienteDetallePage() {
   const nombreCompleto = formatNombreCompleto(`${cliente.nombres} ${cliente.apellidos}`)
   const totalAbonado = negociacion.total_abonado || 0
   const saldoPendiente = negociacion.saldo_pendiente || 0
-  const valorTotal = negociacion.valor_total || 0
+  const valorTotal = negociacion.valor_total_pagar || negociacion.valor_total || 0
   const porcentajePagado = negociacion.porcentaje_pagado || 0
 
   return (

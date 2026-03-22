@@ -31,7 +31,7 @@ export function useManzanasEditables(): UseManzanasEditablesReturn {
 
   /**
    * Valida si cada manzana puede ser editada
-   * Consulta la cantidad de viviendas asociadas
+   * Consulta la cantidad de viviendas asociadas en un solo query batch
    */
   const validarManzanas = useCallback(async (manzanasIds: string[]) => {
     if (manzanasIds.length === 0) return
@@ -40,54 +40,64 @@ export function useManzanasEditables(): UseManzanasEditablesReturn {
     const newState = new Map<string, ManzanaEditableState>()
 
     try {
-      // Consultar viviendas por cada manzana
-      for (const manzanaId of manzanasIds) {
-        // Obtener datos de la manzana (maybeSingle permite 0 filas sin error)
-        const { data: manzana, error: manzanaError } = await supabase
-          .from('manzanas')
-          .select('id, nombre')
-          .eq('id', manzanaId)
-          .maybeSingle() // ← CAMBIO CRÍTICO: permite 0 resultados
+      // ✅ Query batch: obtener todas las manzanas de una vez
+      const { data: manzanas, error: manzanasError } = await supabase
+        .from('manzanas')
+        .select('id, nombre')
+        .in('id', manzanasIds)
 
-        if (manzanaError) {
-          console.error('Error obteniendo manzana:', manzanaId, manzanaError)
-          continue
-        }
+      if (manzanasError) {
+        console.error('Error obteniendo manzanas:', manzanasError)
+        setCargando(false)
+        return
+      }
 
-        // Si la manzana NO existe en DB, es una manzana nueva (aún no persistida)
-        if (!manzana) {
-          // Marcamos como editable porque no está en DB todavía
-          newState.set(manzanaId, {
-            id: manzanaId,
+      // Identificar manzanas nuevas (no en DB)
+      const manzanasEnDB = new Set((manzanas ?? []).map(m => m.id))
+      for (const id of manzanasIds) {
+        if (!manzanasEnDB.has(id)) {
+          newState.set(id, {
+            id,
             nombre: '(Nueva)',
             esEditable: true,
             cantidadViviendas: 0,
             cargando: false,
           })
-          continue
         }
+      }
 
-        // Contar viviendas asociadas
-        const { count, error: countError } = await supabase
+      // ✅ Query batch: contar viviendas agrupadas por manzana en un solo query
+      if (manzanas && manzanas.length > 0) {
+        const idsEnDB = manzanas.map(m => m.id)
+        const { data: conteos, error: conteosError } = await supabase
           .from('viviendas')
-          .select('*', { count: 'exact', head: true })
-          .eq('manzana_id', manzanaId)
+          .select('manzana_id')
+          .in('manzana_id', idsEnDB)
 
-        if (countError) {
-          console.error('Error contando viviendas para manzana:', manzana.nombre, countError)
-          continue
+        if (conteosError) {
+          console.error('Error contando viviendas:', conteosError)
+          setCargando(false)
+          return
         }
 
-        const cantidadViviendas = count || 0
-        const esEditable = cantidadViviendas === 0
+        // Agrupar conteo de viviendas por manzana_id
+        const conteosPorManzana = new Map<string, number>()
+        for (const row of conteos ?? []) {
+          const prev = conteosPorManzana.get(row.manzana_id) ?? 0
+          conteosPorManzana.set(row.manzana_id, prev + 1)
+        }
 
-        newState.set(manzanaId, {
-          id: manzanaId,
-          nombre: manzana.nombre,
-          esEditable,
-          cantidadViviendas,
-          cargando: false,
-        })
+        // Construir estado de cada manzana
+        for (const manzana of manzanas) {
+          const cantidadViviendas = conteosPorManzana.get(manzana.id) ?? 0
+          newState.set(manzana.id, {
+            id: manzana.id,
+            nombre: manzana.nombre,
+            esEditable: cantidadViviendas === 0,
+            cantidadViviendas,
+            cargando: false,
+          })
+        }
       }
 
       setManzanasState(newState)

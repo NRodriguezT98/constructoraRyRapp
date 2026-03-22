@@ -87,7 +87,9 @@ export function ManzanasTab({ proyecto }: ManzanasTabProps) {
                 <span>Progreso</span>
                 <span>
                   {Math.round(
-                    (manzana.viviendasVendidas / manzana.totalViviendas) * 100
+                    manzana.totalViviendas > 0
+                      ? (manzana.viviendasVendidas / manzana.totalViviendas) * 100
+                      : 0
                   )}
                   %
                 </span>
@@ -96,7 +98,7 @@ export function ManzanasTab({ proyecto }: ManzanasTabProps) {
                 <div
                   className='h-full bg-gradient-to-r from-green-500 to-emerald-600 transition-all duration-300'
                   style={{
-                    width: `${(manzana.viviendasVendidas / manzana.totalViviendas) * 100}%`,
+                    width: `${manzana.totalViviendas > 0 ? (manzana.viviendasVendidas / manzana.totalViviendas) * 100 : 0}%`,
                   }}
                 />
               </div>

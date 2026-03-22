@@ -18,7 +18,7 @@ import { useNegociacionesQuery } from '@/modules/clientes/hooks/useNegociaciones
 import type { FuentePago } from '@/modules/clientes/services/fuentes-pago.service'
 import { fuentesPagoService } from '@/modules/clientes/services/fuentes-pago.service'
 import type { Cliente } from '@/modules/clientes/types'
-import { usePermissions } from '@/modules/usuarios/hooks/usePermissions'
+import { usePermisosQuery } from '@/modules/usuarios/hooks/usePermisosQuery'
 import { useCierreFinanciero } from '@/shared/hooks/useCierreFinanciero'
 
 import { useDocumentosPendientesNeg } from './useDocumentosPendientesNeg'
@@ -88,7 +88,7 @@ interface UseNegociacionTabProps {
 }
 
 export function useNegociacionTab({ cliente }: UseNegociacionTabProps) {
-  const { permisosLoading, rol } = usePermissions()
+  const { isLoading: permisosLoading, rol } = usePermisosQuery()
   const isAdmin = !permisosLoading && rol === 'Administrador'
 
   // ─── Negociación activa ──────────────────────────────────────────────────
@@ -101,7 +101,12 @@ export function useNegociacionTab({ cliente }: UseNegociacionTabProps) {
     [negociaciones],
   )
 
-  const valorVivienda = negociacion?.valorFinal ?? 0
+  // Valor total a pagar — calculado por trigger en BD
+  // Incluye: (valor_negociado - descuento) + gastos_notariales + recargo_esquinera
+  const valorVivienda = useMemo(() => {
+    if (!negociacion) return 0
+    return (negociacion as any).valor_total_pagar ?? negociacion.valorFinal ?? 0
+  }, [negociacion])
 
   // ─── Fuentes de pago ────────────────────────────────────────────────────
   const {
