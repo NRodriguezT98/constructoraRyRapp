@@ -112,7 +112,6 @@ export function NuevaViviendaAccordionView() {
         fieldCount={{ required: 3, optional: 0 }}
         currentStep={pasoActual}
         totalSteps={PASOS_VIVIENDA.length}
-        progress={pasoActual === 1 ? progress : undefined}
         moduleName="viviendas"
         summaryItems={summaryPaso1}
         onEdit={() => irAPaso(1)}
@@ -145,7 +144,6 @@ export function NuevaViviendaAccordionView() {
         fieldCount={{ required: 0, optional: 4 }}
         currentStep={pasoActual}
         totalSteps={PASOS_VIVIENDA.length}
-        progress={pasoActual === 2 ? progress : undefined}
         moduleName="viviendas"
         summaryItems={summaryPaso2}
         onEdit={() => irAPaso(2)}
@@ -176,7 +174,6 @@ export function NuevaViviendaAccordionView() {
         fieldCount={{ required: 0, optional: 4 }}
         currentStep={pasoActual}
         totalSteps={PASOS_VIVIENDA.length}
-        progress={pasoActual === 3 ? progress : undefined}
         moduleName="viviendas"
         summaryItems={summaryPaso3}
         onEdit={() => irAPaso(3)}
@@ -207,7 +204,6 @@ export function NuevaViviendaAccordionView() {
         fieldCount={{ required: 1, optional: 1 }}
         currentStep={pasoActual}
         totalSteps={PASOS_VIVIENDA.length}
-        progress={pasoActual === 4 ? progress : undefined}
         moduleName="viviendas"
         summaryItems={summaryPaso4}
         onEdit={() => irAPaso(4)}

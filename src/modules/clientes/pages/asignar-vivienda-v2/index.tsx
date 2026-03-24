@@ -119,7 +119,6 @@ export function AsignarViviendaV2Page({
         fieldCount={{ required: 2, optional: 3 }}
         currentStep={pasoActual}
         totalSteps={PASOS_ASIGNACION.length}
-        progress={pasoActual === 1 ? progress : undefined}
         moduleName="clientes"
         summaryItems={summaryPaso1}
         onEdit={() => irAPaso(1)}
@@ -168,7 +167,6 @@ export function AsignarViviendaV2Page({
         fieldCount={{ required: 1, optional: 0 }}
         currentStep={pasoActual}
         totalSteps={PASOS_ASIGNACION.length}
-        progress={pasoActual === 2 ? progress : undefined}
         moduleName="clientes"
         summaryItems={summaryPaso2}
         onEdit={() => irAPaso(2)}

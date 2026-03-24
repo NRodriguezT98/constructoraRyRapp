@@ -16,14 +16,21 @@ export type Database = {
     Tables: {
       abonos_historial: {
         Row: {
+          anulado_por_id: string | null
+          anulado_por_nombre: string | null
           comprobante_url: string | null
+          estado: string
           fecha_abono: string
           fecha_actualizacion: string
+          fecha_anulacion: string | null
           fecha_creacion: string
           fuente_pago_id: string
           id: string
           metodo_pago: string
           monto: number
+          mora_incluida: number
+          motivo_categoria: string | null
+          motivo_detalle: string | null
           negociacion_id: string
           notas: string | null
           numero_recibo: number
@@ -31,14 +38,21 @@ export type Database = {
           usuario_registro: string | null
         }
         Insert: {
+          anulado_por_id?: string | null
+          anulado_por_nombre?: string | null
           comprobante_url?: string | null
+          estado?: string
           fecha_abono: string
           fecha_actualizacion?: string
+          fecha_anulacion?: string | null
           fecha_creacion?: string
           fuente_pago_id: string
           id?: string
           metodo_pago: string
           monto: number
+          mora_incluida?: number
+          motivo_categoria?: string | null
+          motivo_detalle?: string | null
           negociacion_id: string
           notas?: string | null
           numero_recibo?: number
@@ -46,14 +60,21 @@ export type Database = {
           usuario_registro?: string | null
         }
         Update: {
+          anulado_por_id?: string | null
+          anulado_por_nombre?: string | null
           comprobante_url?: string | null
+          estado?: string
           fecha_abono?: string
           fecha_actualizacion?: string
+          fecha_anulacion?: string | null
           fecha_creacion?: string
           fuente_pago_id?: string
           id?: string
           metodo_pago?: string
           monto?: number
+          mora_incluida?: number
+          motivo_categoria?: string | null
+          motivo_detalle?: string | null
           negociacion_id?: string
           notas?: string | null
           numero_recibo?: number
@@ -61,6 +82,20 @@ export type Database = {
           usuario_registro?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "abonos_historial_anulado_por_id_fkey"
+            columns: ["anulado_por_id"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "abonos_historial_anulado_por_id_fkey"
+            columns: ["anulado_por_id"]
+            isOneToOne: false
+            referencedRelation: "vista_usuarios_completos"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "abonos_historial_fuente_pago_id_fkey"
             columns: ["fuente_pago_id"]
@@ -327,6 +362,13 @@ export type Database = {
             foreignKeyName: "cliente_intereses_cliente_id_fkey"
             columns: ["cliente_id"]
             isOneToOne: false
+            referencedRelation: "vista_abonos_completos"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "cliente_intereses_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
             referencedRelation: "vista_clientes_resumen"
             referencedColumns: ["id"]
           },
@@ -520,6 +562,120 @@ export type Database = {
           valor?: number
         }
         Relationships: []
+      }
+      creditos_constructora: {
+        Row: {
+          capital: number
+          created_at: string
+          fecha_inicio: string
+          fuente_pago_id: string
+          id: string
+          interes_total: number
+          monto_total: number
+          num_cuotas: number
+          tasa_mensual: number
+          tasa_mora_diaria: number
+          updated_at: string
+          valor_cuota: number
+          version_actual: number
+        }
+        Insert: {
+          capital: number
+          created_at?: string
+          fecha_inicio: string
+          fuente_pago_id: string
+          id?: string
+          interes_total: number
+          monto_total: number
+          num_cuotas: number
+          tasa_mensual: number
+          tasa_mora_diaria?: number
+          updated_at?: string
+          valor_cuota: number
+          version_actual?: number
+        }
+        Update: {
+          capital?: number
+          created_at?: string
+          fecha_inicio?: string
+          fuente_pago_id?: string
+          id?: string
+          interes_total?: number
+          monto_total?: number
+          num_cuotas?: number
+          tasa_mensual?: number
+          tasa_mora_diaria?: number
+          updated_at?: string
+          valor_cuota?: number
+          version_actual?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "creditos_constructora_fuente_pago_id_fkey"
+            columns: ["fuente_pago_id"]
+            isOneToOne: true
+            referencedRelation: "fuentes_pago"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "creditos_constructora_fuente_pago_id_fkey"
+            columns: ["fuente_pago_id"]
+            isOneToOne: true
+            referencedRelation: "fuentes_pago_con_entidad"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cuotas_credito: {
+        Row: {
+          created_at: string
+          fecha_vencimiento: string
+          fuente_pago_id: string
+          id: string
+          notas: string | null
+          numero_cuota: number
+          updated_at: string
+          valor_cuota: number
+          version_plan: number
+        }
+        Insert: {
+          created_at?: string
+          fecha_vencimiento: string
+          fuente_pago_id: string
+          id?: string
+          notas?: string | null
+          numero_cuota: number
+          updated_at?: string
+          valor_cuota: number
+          version_plan?: number
+        }
+        Update: {
+          created_at?: string
+          fecha_vencimiento?: string
+          fuente_pago_id?: string
+          id?: string
+          notas?: string | null
+          numero_cuota?: number
+          updated_at?: string
+          valor_cuota?: number
+          version_plan?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cuotas_credito_fuente_pago_id_fkey"
+            columns: ["fuente_pago_id"]
+            isOneToOne: false
+            referencedRelation: "fuentes_pago"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cuotas_credito_fuente_pago_id_fkey"
+            columns: ["fuente_pago_id"]
+            isOneToOne: false
+            referencedRelation: "fuentes_pago_con_entidad"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       descuentos_negociacion: {
         Row: {
@@ -774,6 +930,13 @@ export type Database = {
             foreignKeyName: "documentos_cliente_cliente_id_fkey"
             columns: ["cliente_id"]
             isOneToOne: false
+            referencedRelation: "vista_abonos_completos"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "documentos_cliente_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
             referencedRelation: "vista_clientes_resumen"
             referencedColumns: ["id"]
           },
@@ -835,7 +998,6 @@ export type Database = {
           },
         ]
       }
-
       documentos_proyecto: {
         Row: {
           categoria_id: string | null
@@ -1222,6 +1384,7 @@ export type Database = {
       }
       fuentes_pago: {
         Row: {
+          capital_para_cierre: number | null
           carta_asignacion_url: string | null
           entidad: string | null
           entidad_financiera_id: string | null
@@ -1237,6 +1400,7 @@ export type Database = {
           id: string
           monto_aprobado: number
           monto_recibido: number | null
+          mora_total_recibida: number
           negociacion_id: string
           numero_referencia: string | null
           permite_multiples_abonos: boolean
@@ -1249,6 +1413,7 @@ export type Database = {
           version_negociacion: number
         }
         Insert: {
+          capital_para_cierre?: number | null
           carta_asignacion_url?: string | null
           entidad?: string | null
           entidad_financiera_id?: string | null
@@ -1264,6 +1429,7 @@ export type Database = {
           id?: string
           monto_aprobado: number
           monto_recibido?: number | null
+          mora_total_recibida?: number
           negociacion_id: string
           numero_referencia?: string | null
           permite_multiples_abonos?: boolean
@@ -1276,6 +1442,7 @@ export type Database = {
           version_negociacion?: number
         }
         Update: {
+          capital_para_cierre?: number | null
           carta_asignacion_url?: string | null
           entidad?: string | null
           entidad_financiera_id?: string | null
@@ -1291,6 +1458,7 @@ export type Database = {
           id?: string
           monto_aprobado?: number
           monto_recibido?: number | null
+          mora_total_recibida?: number
           negociacion_id?: string
           numero_referencia?: string | null
           permite_multiples_abonos?: boolean
@@ -1579,6 +1747,13 @@ export type Database = {
             foreignKeyName: "negociaciones_cliente_id_fkey"
             columns: ["cliente_id"]
             isOneToOne: false
+            referencedRelation: "vista_abonos_completos"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "negociaciones_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
             referencedRelation: "vista_clientes_resumen"
             referencedColumns: ["id"]
           },
@@ -1850,6 +2025,13 @@ export type Database = {
             foreignKeyName: "notas_historial_cliente_cliente_id_fkey"
             columns: ["cliente_id"]
             isOneToOne: false
+            referencedRelation: "vista_abonos_completos"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "notas_historial_cliente_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
             referencedRelation: "vista_clientes_resumen"
             referencedColumns: ["id"]
           },
@@ -1876,7 +2058,6 @@ export type Database = {
           },
         ]
       }
-
       permisos_rol: {
         Row: {
           accion: string
@@ -2436,6 +2617,7 @@ export type Database = {
           es_subsidio: boolean
           icono: string
           id: string
+          logica_negocio: Json | null
           nombre: string
           orden: number
           permite_multiples_abonos: boolean
@@ -2454,6 +2636,7 @@ export type Database = {
           es_subsidio?: boolean
           icono?: string
           id?: string
+          logica_negocio?: Json | null
           nombre: string
           orden?: number
           permite_multiples_abonos?: boolean
@@ -2472,6 +2655,7 @@ export type Database = {
           es_subsidio?: boolean
           icono?: string
           id?: string
+          logica_negocio?: Json | null
           nombre?: string
           orden?: number
           permite_multiples_abonos?: boolean
@@ -2891,143 +3075,11 @@ export type Database = {
           },
         ]
       }
-      creditos_constructora: {
-        Row: {
-          id: string
-          fuente_pago_id: string
-          capital: number
-          tasa_mensual: number
-          num_cuotas: number
-          fecha_inicio: string
-          valor_cuota: number
-          interes_total: number
-          monto_total: number
-          tasa_mora_diaria: number
-          version_actual: number
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          fuente_pago_id: string
-          capital: number
-          tasa_mensual: number
-          num_cuotas: number
-          fecha_inicio: string
-          valor_cuota: number
-          interes_total: number
-          monto_total: number
-          tasa_mora_diaria?: number
-          version_actual?: number
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          fuente_pago_id?: string
-          capital?: number
-          tasa_mensual?: number
-          num_cuotas?: number
-          fecha_inicio?: string
-          valor_cuota?: number
-          interes_total?: number
-          monto_total?: number
-          tasa_mora_diaria?: number
-          version_actual?: number
-          created_at?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "creditos_constructora_fuente_pago_id_fkey"
-            columns: ["fuente_pago_id"]
-            isOneToOne: true
-            referencedRelation: "fuentes_pago"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      cuotas_credito: {
-        Row: {
-          id: string
-          fuente_pago_id: string
-          numero_cuota: number
-          fecha_vencimiento: string
-          valor_cuota: number
-          mora_aplicada: number
-          total_a_cobrar: number
-          estado: string
-          fecha_pago: string | null
-          version_plan: number
-          notas: string | null
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          fuente_pago_id: string
-          numero_cuota: number
-          fecha_vencimiento: string
-          valor_cuota: number
-          mora_aplicada?: number
-          total_a_cobrar?: number
-          estado?: string
-          fecha_pago?: string | null
-          version_plan?: number
-          notas?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          fuente_pago_id?: string
-          numero_cuota?: number
-          fecha_vencimiento?: string
-          valor_cuota?: number
-          mora_aplicada?: number
-          total_a_cobrar?: number
-          estado?: string
-          fecha_pago?: string | null
-          version_plan?: number
-          notas?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "cuotas_credito_fuente_pago_id_fkey"
-            columns: ["fuente_pago_id"]
-            isOneToOne: false
-            referencedRelation: "fuentes_pago"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
     }
     Views: {
-      vista_cuotas_vigentes: {
-        Row: {
-          id: string | null
-          fuente_pago_id: string | null
-          numero_cuota: number | null
-          fecha_vencimiento: string | null
-          valor_cuota: number | null
-          mora_aplicada: number | null
-          total_a_cobrar: number | null
-          estado: string | null
-          fecha_pago: string | null
-          version_plan: number | null
-          notas: string | null
-          created_at: string | null
-          updated_at: string | null
-          estado_efectivo: string | null
-          esta_vencida: boolean | null
-          dias_mora: number | null
-        }
-        Relationships: []
-      }
       fuentes_pago_con_entidad: {
         Row: {
+          capital_para_cierre: number | null
           carta_asignacion_url: string | null
           entidad: string | null
           entidad_codigo: string | null
@@ -3055,9 +3107,17 @@ export type Database = {
           reemplazada_por: string | null
           saldo_pendiente: number | null
           tipo: string | null
+          tipo_fuente_id: string | null
           version_negociacion: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "fk_fuentes_pago_tipo_fuente"
+            columns: ["tipo_fuente_id"]
+            isOneToOne: false
+            referencedRelation: "tipos_fuentes_pago"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "fuentes_pago_entidad_financiera_id_fkey"
             columns: ["entidad_financiera_id"]
@@ -3170,6 +3230,13 @@ export type Database = {
             columns: ["cliente_id"]
             isOneToOne: false
             referencedRelation: "v_renuncias_pendientes"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "cliente_intereses_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "vista_abonos_completos"
             referencedColumns: ["cliente_id"]
           },
           {
@@ -3323,6 +3390,13 @@ export type Database = {
             foreignKeyName: "negociaciones_cliente_id_fkey"
             columns: ["cliente_id"]
             isOneToOne: false
+            referencedRelation: "vista_abonos_completos"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "negociaciones_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
             referencedRelation: "vista_clientes_resumen"
             referencedColumns: ["id"]
           },
@@ -3450,12 +3524,16 @@ export type Database = {
       }
       vista_abonos_completos: {
         Row: {
+          anulado_por_id: string | null
+          anulado_por_nombre: string | null
           cliente_apellidos: string | null
           cliente_id: string | null
           cliente_nombres: string | null
           cliente_numero_documento: string | null
+          estado: string | null
           fecha_abono: string | null
           fecha_actualizacion: string | null
+          fecha_anulacion: string | null
           fecha_creacion: string | null
           fuente_pago_id: string | null
           fuente_pago_tipo: string | null
@@ -3464,6 +3542,8 @@ export type Database = {
           manzana_nombre: string | null
           metodo_pago: string | null
           monto: number | null
+          motivo_categoria: string | null
+          motivo_detalle: string | null
           negociacion_estado: string | null
           negociacion_id: string | null
           notas: string | null
@@ -3476,6 +3556,20 @@ export type Database = {
           vivienda_numero: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "abonos_historial_anulado_por_id_fkey"
+            columns: ["anulado_por_id"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "abonos_historial_anulado_por_id_fkey"
+            columns: ["anulado_por_id"]
+            isOneToOne: false
+            referencedRelation: "vista_usuarios_completos"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "abonos_historial_fuente_pago_id_fkey"
             columns: ["fuente_pago_id"]
@@ -3517,41 +3611,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "vista_descuentos_aplicados"
             referencedColumns: ["negociacion_id"]
-          },
-          {
-            foreignKeyName: "negociaciones_cliente_id_fkey"
-            columns: ["cliente_id"]
-            isOneToOne: false
-            referencedRelation: "clientes"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "negociaciones_cliente_id_fkey"
-            columns: ["cliente_id"]
-            isOneToOne: false
-            referencedRelation: "v_negociaciones_completas"
-            referencedColumns: ["cliente_id"]
-          },
-          {
-            foreignKeyName: "negociaciones_cliente_id_fkey"
-            columns: ["cliente_id"]
-            isOneToOne: false
-            referencedRelation: "v_renuncias_pendientes"
-            referencedColumns: ["cliente_id"]
-          },
-          {
-            foreignKeyName: "negociaciones_cliente_id_fkey"
-            columns: ["cliente_id"]
-            isOneToOne: false
-            referencedRelation: "vista_clientes_resumen"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "negociaciones_cliente_id_fkey"
-            columns: ["cliente_id"]
-            isOneToOne: false
-            referencedRelation: "vista_viviendas_completas"
-            referencedColumns: ["cliente_id_data"]
           },
         ]
       }
@@ -3635,6 +3694,35 @@ export type Database = {
           total_negociaciones?: never
         }
         Relationships: []
+      }
+      vista_cuotas_calendario: {
+        Row: {
+          created_at: string | null
+          fecha_vencimiento: string | null
+          fuente_pago_id: string | null
+          id: string | null
+          notas: string | null
+          numero_cuota: number | null
+          updated_at: string | null
+          valor_cuota: number | null
+          version_plan: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cuotas_credito_fuente_pago_id_fkey"
+            columns: ["fuente_pago_id"]
+            isOneToOne: false
+            referencedRelation: "fuentes_pago"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cuotas_credito_fuente_pago_id_fkey"
+            columns: ["fuente_pago_id"]
+            isOneToOne: false
+            referencedRelation: "fuentes_pago_con_entidad"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       vista_descuentos_aplicados: {
         Row: {
@@ -3819,6 +3907,41 @@ export type Database = {
           tipos_fuentes_aplicables: string[] | null
         }
         Relationships: []
+      }
+      vista_estado_periodos_credito: {
+        Row: {
+          capital_aplicado: number | null
+          capital_total: number | null
+          created_at: string | null
+          deficit: number | null
+          dias_atraso: number | null
+          estado_periodo: string | null
+          fecha_vencimiento: string | null
+          fuente_pago_id: string | null
+          id: string | null
+          mora_sugerida: number | null
+          notas: string | null
+          numero_cuota: number | null
+          updated_at: string | null
+          valor_cuota: number | null
+          version_plan: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cuotas_credito_fuente_pago_id_fkey"
+            columns: ["fuente_pago_id"]
+            isOneToOne: false
+            referencedRelation: "fuentes_pago"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cuotas_credito_fuente_pago_id_fkey"
+            columns: ["fuente_pago_id"]
+            isOneToOne: false
+            referencedRelation: "fuentes_pago_con_entidad"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       vista_manzanas_disponibilidad: {
         Row: {
@@ -4086,15 +4209,6 @@ export type Database = {
         }
         Returns: string
       }
-      calcular_progreso_fuente_pago: {
-        Args: { p_fuente_id: string }
-        Returns: {
-          completados: number
-          pendientes: number
-          porcentaje: number
-          total_pasos: number
-        }[]
-      }
       categoria_aplica_a_modulo: {
         Args: { p_categoria_id: string; p_modulo: string }
         Returns: boolean
@@ -4309,6 +4423,7 @@ export type Database = {
         Args: { p_manzana_id: string }
         Returns: number
       }
+      rebalancear_plan_financiero: { Args: { p_payload: Json }; Returns: Json }
       regenerar_pendientes_fuente: {
         Args: { p_fuente_id: string }
         Returns: number
@@ -4353,19 +4468,6 @@ export type Database = {
       validar_password_admin: {
         Args: { p_password: string; p_user_id: string }
         Returns: boolean
-      }
-      validar_requisitos_desembolso: {
-        Args: { p_fuente_pago_id: string }
-        Returns: {
-          cumple_requisitos: boolean
-          documentos_completados: Json
-          documentos_faltantes: Json
-          obligatorios_faltantes: number
-          opcionales_faltantes: number
-          puede_continuar: boolean
-          requisitos_completados: number
-          total_requisitos: number
-        }[]
       }
       verificar_categorias_clientes: {
         Args: never

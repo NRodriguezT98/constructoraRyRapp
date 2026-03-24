@@ -95,8 +95,8 @@ export function getColorScheme(tipo: string): ColorScheme {
 
 export function getModalStyles(scheme: ColorScheme, modo: ModoRegistro) {
   return {
-    dialogContent: 'sm:max-w-[560px] p-0 gap-0 border-0 bg-white dark:bg-gray-900 overflow-hidden rounded-2xl',
-    body: 'px-5 py-4 space-y-4 max-h-[60vh] overflow-y-auto',
+    dialogContent: 'sm:max-w-[560px] max-h-[90vh] p-0 gap-0 border-0 bg-white dark:bg-gray-900 overflow-hidden rounded-2xl flex flex-col',
+    body: 'px-5 py-4 space-y-4 flex-1 min-h-0 overflow-y-auto',
     label: 'text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2 mb-1.5',
     input: 'w-full px-4 py-2.5 border-2 border-gray-200 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-800/80 text-gray-900 dark:text-white focus:border-emerald-500 dark:focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20 transition-all text-sm outline-none',
     inputError: 'w-full px-4 py-2.5 border-2 border-red-400 dark:border-red-600 rounded-xl bg-gray-50 dark:bg-gray-800/80 text-gray-900 dark:text-white focus:ring-2 focus:ring-red-400/20 transition-all text-sm outline-none',
@@ -109,7 +109,7 @@ export function getModalStyles(scheme: ColorScheme, modo: ModoRegistro) {
       selBtnInactive: 'text-xs px-2.5 py-1 rounded-lg bg-white/10 border border-white/20 text-white/70 hover:bg-white/20 hover:text-white transition-all',
     },
     footer: {
-      container: 'flex gap-3 px-5 py-4 border-t border-gray-200 dark:border-gray-700',
+      container: 'flex gap-3 px-5 py-4 border-t border-gray-200 dark:border-gray-700 flex-shrink-0',
       cancelButton: 'flex-1 h-11 border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-xl font-semibold text-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors',
       submitAbono: 'flex-1 h-11 inline-flex items-center justify-center gap-2 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-blue-600 via-cyan-600 to-teal-600 hover:from-blue-700 hover:via-cyan-700 hover:to-teal-700 shadow-lg disabled:opacity-60 disabled:cursor-not-allowed transition-all',
       submitDesembolso: 'flex-1 h-11 inline-flex items-center justify-center gap-2 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 hover:from-purple-700 hover:via-indigo-700 hover:to-blue-700 shadow-lg disabled:opacity-60 disabled:cursor-not-allowed transition-all',

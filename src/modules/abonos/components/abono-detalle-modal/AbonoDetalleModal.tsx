@@ -4,26 +4,25 @@ import { useEffect, useState } from 'react'
 
 import { AnimatePresence, motion } from 'framer-motion'
 import {
-  AlertTriangle,
-  Building2,
-  Calendar,
-  CreditCard,
-  Download,
-  FileText,
-  Home,
-  Loader2,
-  Lock,
-  Receipt,
-  StickyNote,
-  User,
-  X,
+    Ban,
+    Building2,
+    Calendar,
+    CreditCard,
+    Download,
+    FileText,
+    Home,
+    Receipt,
+    StickyNote,
+    User,
+    X,
 } from 'lucide-react'
 import { createPortal } from 'react-dom'
 
-import { formatDateForDisplay } from '@/lib/utils/date.utils'
+import { formatDateCompact, formatDateForDisplay } from '@/lib/utils/date.utils'
 import { formatNombreCompleto } from '@/lib/utils/string.utils'
 
 import { formatearNumeroRecibo } from '../../utils/formato-recibo'
+import { ModalAnularAbono } from '../modal-anular-abono'
 
 import { abonoDetalleStyles as s } from './AbonoDetalleModal.styles'
 import { type AbonoParaDetalle, useAbonoDetalle } from './useAbonoDetalle'
@@ -41,6 +40,8 @@ interface AbonoDetalleModalProps {
   isOpen: boolean
   onClose: () => void
   onAnulado?: () => void
+  /** Abrir modal de registro de nuevo abono (desde el éxito de anulación) */
+  onRegistrarNuevo?: () => void
 }
 
 export function AbonoDetalleModal({
@@ -48,6 +49,7 @@ export function AbonoDetalleModal({
   isOpen,
   onClose,
   onAnulado,
+  onRegistrarNuevo,
 }: AbonoDetalleModalProps) {
   // Evitar SSR crash: createPortal requiere document.body (solo existe en browser)
   const [mounted, setMounted] = useState(false)
@@ -60,14 +62,14 @@ export function AbonoDetalleModal({
     loadingComprobante,
     tieneComprobante,
     esNegociacionActiva,
+    estaAnulado,
     generandoRecibo,
-    anulandoAbono,
-    showConfirmAnular,
-    setShowConfirmAnular,
-    errorAnular,
+    showModalAnular,
+    setShowModalAnular,
+    esAdmin,
     handleDescargarComprobante,
     handleGenerarRecibo,
-    handleConfirmarAnular,
+    handleAbonoAnulado,
   } = useAbonoDetalle({
     abono,
     onAnulado: () => {
@@ -160,17 +162,17 @@ export function AbonoDetalleModal({
                   {generandoRecibo ? 'Generando...' : 'Generar Recibo'}
                 </button>
 
-                {/* Anular (solo si negociación activa) */}
-                {esNegociacionActiva && (
+                {/* Anular (solo Admin + negociación activa + no anulado ya) */}
+                {esAdmin && esNegociacionActiva && !estaAnulado ? (
                   <button
-                    onClick={() => setShowConfirmAnular(true)}
+                    onClick={() => setShowModalAnular(true)}
                     className={s.header.btnDanger}
                     title='Anular este abono'
                   >
-                    <Lock className='h-3.5 w-3.5' />
+                    <Ban className='h-3.5 w-3.5' />
                     Anular
                   </button>
-                )}
+                ) : null}
 
                 {/* Cerrar */}
                 <button onClick={onClose} className={s.header.btnClose}>
@@ -369,54 +371,67 @@ export function AbonoDetalleModal({
                     </div>
                   </>
                 ) : null}
-              </div>
+                {/* Sección ANULADO — solo si estado = Anulado */}
+                {estaAnulado ? (
+                  <>
+                    <div className={s.sidebar.divider} />
+                    <div className={s.sidebar.section}>
+                      <p className='flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-red-500 dark:text-red-400'>
+                        <Ban className='h-3 w-3' />
+                        Anulación
+                      </p>
+                      <div className='rounded-xl border border-red-200 dark:border-red-800/50 bg-red-50 dark:bg-red-950/30 px-4 py-3 space-y-2.5'>
+                        {abono.motivo_categoria ? (
+                          <div>
+                            <p className={s.sidebar.rowLabel}>Motivo</p>
+                            <p className='text-sm font-semibold text-red-900 dark:text-red-200'>{abono.motivo_categoria}</p>
+                          </div>
+                        ) : null}
+                        {abono.motivo_detalle ? (
+                          <div>
+                            <p className={s.sidebar.rowLabel}>Detalle</p>
+                            <p className='text-xs text-red-800 dark:text-red-300 italic'>{abono.motivo_detalle}</p>
+                          </div>
+                        ) : null}
+                        {abono.anulado_por_nombre ? (
+                          <div>
+                            <p className={s.sidebar.rowLabel}>Anulado por</p>
+                            <p className='text-xs font-semibold text-red-800 dark:text-red-200'>{abono.anulado_por_nombre}</p>
+                          </div>
+                        ) : null}
+                        {abono.fecha_anulacion ? (
+                          <div>
+                            <p className={s.sidebar.rowLabel}>Fecha de anulación</p>
+                            <p className='text-xs text-red-800 dark:text-red-300'>{formatDateCompact(abono.fecha_anulacion)}</p>
+                          </div>
+                        ) : null}
+                      </div>
+                    </div>
+                  </>
+                ) : null}              </div>
             </div>
 
-            {/* ─── Confirm Anular overlay ──────────────────────────────── */}
-            {showConfirmAnular ? (
-              <div className={s.confirmAnular.overlay}>
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  className={s.confirmAnular.card}
-                >
-                  <div className={s.confirmAnular.icon}>
-                    <AlertTriangle className='h-6 w-6 text-red-600 dark:text-red-400' />
-                  </div>
-                  <p className={s.confirmAnular.title}>¿Anular este abono?</p>
-                  <p className={s.confirmAnular.subtitle}>
-                    Se eliminará <strong>{formatCurrency(abono.monto)}</strong>{' '}
-                    registrado el {formatDateForDisplay(abono.fecha_abono)}.
-                    Esta acción no se puede deshacer.
-                  </p>
-                  {errorAnular ? (
-                    <p className={s.confirmAnular.error}>{errorAnular}</p>
-                  ) : null}
-                  <div className={s.confirmAnular.actions}>
-                    <button
-                      onClick={() => setShowConfirmAnular(false)}
-                      disabled={anulandoAbono}
-                      className={s.confirmAnular.btnCancel}
-                    >
-                      Cancelar
-                    </button>
-                    <button
-                      onClick={handleConfirmarAnular}
-                      disabled={anulandoAbono}
-                      className={s.confirmAnular.btnConfirm}
-                    >
-                      {anulandoAbono ? (
-                        <span className='flex items-center justify-center gap-1.5'>
-                          <Loader2 className='h-3.5 w-3.5 animate-spin' />
-                          Anulando...
-                        </span>
-                      ) : (
-                        'Sí, anular'
-                      )}
-                    </button>
-                  </div>
-                </motion.div>
-              </div>
+            {/* ─── Modal de Anulación ──────────────────────────────────── */}
+            {abono && showModalAnular ? (
+              <ModalAnularAbono
+                abono={{
+                  id: abono.id,
+                  numero_recibo: abono.numero_recibo,
+                  monto: abono.monto,
+                  fecha_abono: abono.fecha_abono,
+                  cliente_nombre: `${abono.cliente.nombres} ${abono.cliente.apellidos}`.trim(),
+                  vivienda_info: abono.vivienda.manzana.identificador
+                    ? `Mz.${abono.vivienda.manzana.identificador} Casa No. ${abono.vivienda.numero}`
+                    : `N°${abono.vivienda.numero}`,
+                  proyecto_nombre: abono.proyecto.nombre,
+                  fuente_tipo: abono.fuente_pago.tipo,
+                }}
+                onAnulacionExitosa={() => {
+                  setShowModalAnular(false)
+                  handleAbonoAnulado()
+                }}
+                onClose={() => setShowModalAnular(false)}
+              />
             ) : null}
           </motion.div>
         </>

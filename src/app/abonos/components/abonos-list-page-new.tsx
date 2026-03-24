@@ -4,13 +4,16 @@ import { useCallback, useState } from 'react'
 
 import { motion } from 'framer-motion'
 import {
-  Calendar,
-  CreditCard,
-  DollarSign,
-  Pencil,
-  Receipt,
-  Search,
-  TrendingUp,
+    Ban,
+    Calendar,
+    CreditCard,
+    DollarSign,
+    Eye,
+    EyeOff,
+    Pencil,
+    Receipt,
+    Search,
+    TrendingUp,
 } from 'lucide-react'
 
 import { useRouter } from 'next/navigation'
@@ -19,6 +22,7 @@ import { formatDateCompact } from '@/lib/utils/date.utils'
 import { formatNombreCompleto } from '@/lib/utils/string.utils'
 import { AbonoDetalleModal } from '@/modules/abonos/components/abono-detalle-modal/AbonoDetalleModal'
 import type { AbonoParaDetalle } from '@/modules/abonos/components/abono-detalle-modal/useAbonoDetalle'
+import { ModalAnularAbono } from '@/modules/abonos/components/modal-anular-abono'
 import { ModalEditarAbono } from '@/modules/abonos/components/modal-editar-abono'
 import type { AbonoParaEditar } from '@/modules/abonos/types/editar-abono.types'
 import { formatearNumeroRecibo } from '@/modules/abonos/utils/formato-recibo'
@@ -53,6 +57,9 @@ export function AbonosListPage({
   const [abonoEditando, setAbonoEditando] = useState<AbonoParaEditar | null>(
     null
   )
+  const [abonoAnulando, setAbonoAnulando] = useState<AbonoParaDetalle | null>(
+    null
+  )
 
   const handleAbonoClick = useCallback((abono: AbonoParaDetalle) => {
     setAbonoSeleccionado(abono)
@@ -71,8 +78,10 @@ export function AbonosListPage({
     mesesDisponibles,
     filtros,
     actualizarFiltros,
+    toggleMostrarAnulados,
     isLoading,
     error,
+    refetch,
   } = useAbonosList()
 
   // ─── LOADING ─────────────────────────────────────────
@@ -269,22 +278,41 @@ export function AbonosListPage({
               <p className='text-xs font-medium text-gray-600 dark:text-gray-400'>
                 {abonos.length} resultados
               </p>
-              {(filtros.busqueda ||
-                filtros.fuente !== 'todas' ||
-                filtros.mes !== 'todos') && (
-                <button
-                  onClick={() =>
-                    actualizarFiltros({
-                      busqueda: '',
-                      fuente: 'todas',
-                      mes: 'todos',
-                    })
-                  }
-                  className='text-xs font-medium text-blue-600 transition-colors hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300'
-                >
-                  Limpiar filtros
-                </button>
-              )}
+              <div className='flex items-center gap-2'>
+                {isAdmin && (
+                  <button
+                    onClick={toggleMostrarAnulados}
+                    className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-medium transition-colors ${
+                      filtros.mostrarAnulados
+                        ? 'bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-900/50'
+                        : 'bg-gray-100 text-gray-500 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700'
+                    }`}
+                  >
+                    {filtros.mostrarAnulados ? (
+                      <EyeOff className='h-3 w-3' />
+                    ) : (
+                      <Eye className='h-3 w-3' />
+                    )}
+                    {filtros.mostrarAnulados ? 'Ocultar anulados' : 'Mostrar anulados'}
+                  </button>
+                )}
+                {(filtros.busqueda ||
+                  filtros.fuente !== 'todas' ||
+                  filtros.mes !== 'todos') && (
+                  <button
+                    onClick={() =>
+                      actualizarFiltros({
+                        busqueda: '',
+                        fuente: 'todas',
+                        mes: 'todos',
+                      })
+                    }
+                    className='text-xs font-medium text-blue-600 transition-colors hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300'
+                  >
+                    Limpiar filtros
+                  </button>
+                )}
+              </div>
             </div>
           </div>
 
@@ -334,7 +362,11 @@ export function AbonosListPage({
                     <tr
                       key={abono.id}
                       onClick={() => handleAbonoClick(abono)}
-                      className='cursor-pointer border-b border-gray-100 transition-colors last:border-b-0 hover:bg-blue-50/50 dark:border-gray-800 dark:hover:bg-blue-950/20'
+                      className={`cursor-pointer border-b border-gray-100 transition-colors last:border-b-0 dark:border-gray-800 ${
+                        abono.estado === 'Anulado'
+                          ? 'bg-red-50/40 opacity-60 dark:bg-red-950/10'
+                          : 'hover:bg-blue-50/50 dark:hover:bg-blue-950/20'
+                      }`}
                     >
                       {/* # Recibo */}
                       <td className='px-3 py-2.5'>
@@ -378,37 +410,69 @@ export function AbonosListPage({
                         {abono.metodo_pago}
                       </td>
                       {/* Monto */}
-                      <td className='whitespace-nowrap px-3 py-2.5 text-right font-bold tabular-nums text-blue-700 dark:text-blue-400'>
-                        {formatCurrency(abono.monto)}
+                      <td className='whitespace-nowrap px-3 py-2.5 text-right tabular-nums'>
+                        {abono.estado === 'Anulado' ? (
+                          <>
+                            <span className='mb-0.5 block text-[9px] font-bold uppercase tracking-widest text-red-500 dark:text-red-400'>
+                              Anulado
+                            </span>
+                            <span className='font-bold text-gray-400 line-through dark:text-gray-600'>
+                              {formatCurrency(abono.monto)}
+                            </span>
+                          </>
+                        ) : (
+                          <span className='font-bold text-blue-700 dark:text-blue-400'>
+                            {formatCurrency(abono.monto)}
+                          </span>
+                        )}
                       </td>
-                      {/* Editar (solo admin) */}
+                      {/* Editar / Anular (solo admin) */}
                       {isAdmin ? (
                         <td className='px-3 py-2.5 text-right'>
-                          <button
-                            onClick={e => {
-                              e.stopPropagation()
-                              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                              const rawAbono = abono as any
-                              setAbonoEditando({
-                                id: abono.id,
-                                negociacion_id: rawAbono.negociacion_id,
-                                fuente_pago_id: rawAbono.fuente_pago_id,
-                                fuente_tipo: abono.fuente_pago.tipo,
-                                monto: abono.monto,
-                                fecha_abono: abono.fecha_abono,
-                                metodo_pago: rawAbono.metodo_pago ?? null,
-                                numero_referencia:
-                                  rawAbono.numero_referencia ?? null,
-                                notas: rawAbono.notas ?? null,
-                                comprobante_url:
-                                  rawAbono.comprobante_url ?? null,
-                              })
-                            }}
-                            className='inline-flex h-7 w-7 items-center justify-center rounded-lg bg-gray-100 text-gray-400 transition-colors hover:bg-blue-50 hover:text-blue-600 dark:bg-gray-700/50 dark:hover:bg-blue-900/30 dark:hover:text-blue-400'
-                            title='Editar abono'
-                          >
-                            <Pencil className='h-3.5 w-3.5' />
-                          </button>
+                          <div className='inline-flex items-center gap-1'>
+                            {/* Editar: solo si abono activo */}
+                            {abono.estado !== 'Anulado' ? (
+                              <button
+                                onClick={e => {
+                                  e.stopPropagation()
+                                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                  const rawAbono = abono as any
+                                  setAbonoEditando({
+                                    id: abono.id,
+                                    negociacion_id: rawAbono.negociacion_id,
+                                    fuente_pago_id: rawAbono.fuente_pago_id,
+                                    fuente_tipo: abono.fuente_pago.tipo,
+                                    monto: abono.monto,
+                                    fecha_abono: abono.fecha_abono,
+                                    metodo_pago: rawAbono.metodo_pago ?? null,
+                                    numero_referencia:
+                                      rawAbono.numero_referencia ?? null,
+                                    notas: rawAbono.notas ?? null,
+                                    comprobante_url:
+                                      rawAbono.comprobante_url ?? null,
+                                  })
+                                }}
+                                className='inline-flex h-7 w-7 items-center justify-center rounded-lg bg-gray-100 text-gray-400 transition-colors hover:bg-blue-50 hover:text-blue-600 dark:bg-gray-700/50 dark:hover:bg-blue-900/30 dark:hover:text-blue-400'
+                                title='Editar abono'
+                              >
+                                <Pencil className='h-3.5 w-3.5' />
+                              </button>
+                            ) : null}
+                            {/* Anular: solo si activo y negociación activa */}
+                            {abono.estado !== 'Anulado' &&
+                            abono.negociacion.estado === 'Activa' ? (
+                              <button
+                                onClick={e => {
+                                  e.stopPropagation()
+                                  setAbonoAnulando(abono)
+                                }}
+                                className='inline-flex h-7 w-7 items-center justify-center rounded-lg bg-gray-100 text-gray-400 transition-colors hover:bg-red-50 hover:text-red-600 dark:bg-gray-700/50 dark:hover:bg-red-900/30 dark:hover:text-red-400'
+                                title='Anular abono'
+                              >
+                                <Ban className='h-3.5 w-3.5' />
+                              </button>
+                            ) : null}
+                          </div>
                         </td>
                       ) : null}
                     </tr>
@@ -425,7 +489,7 @@ export function AbonosListPage({
         onClose={handleCerrarDetalle}
         onAnulado={() => {
           handleCerrarDetalle()
-          window.location.reload()
+          refetch()
         }}
       />
       {isAdmin && abonoEditando ? (
@@ -435,8 +499,29 @@ export function AbonosListPage({
           onClose={() => setAbonoEditando(null)}
           onSuccess={() => {
             setAbonoEditando(null)
-            window.location.reload()
+            refetch()
           }}
+        />
+      ) : null}
+      {isAdmin && abonoAnulando ? (
+        <ModalAnularAbono
+          abono={{
+            id: abonoAnulando.id,
+            numero_recibo: abonoAnulando.numero_recibo,
+            monto: abonoAnulando.monto,
+            fecha_abono: abonoAnulando.fecha_abono,
+            cliente_nombre: `${abonoAnulando.cliente.nombres} ${abonoAnulando.cliente.apellidos}`.trim(),
+            vivienda_info: abonoAnulando.vivienda.manzana.identificador
+              ? `Mz.${abonoAnulando.vivienda.manzana.identificador} Casa No. ${abonoAnulando.vivienda.numero}`
+              : `N°${abonoAnulando.vivienda.numero}`,
+            proyecto_nombre: abonoAnulando.proyecto.nombre,
+            fuente_tipo: abonoAnulando.fuente_pago.tipo,
+          }}
+          onAnulacionExitosa={() => {
+            setAbonoAnulando(null)
+            refetch()
+          }}
+          onClose={() => setAbonoAnulando(null)}
         />
       ) : null}
     </>

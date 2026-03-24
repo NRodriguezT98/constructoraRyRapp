@@ -6,16 +6,16 @@ import { formatDateCompact, formatDateForInput } from '@/lib/utils/date.utils'
 import { auditService } from '@/services/audit.service'
 import { formatCurrency } from '@/shared/utils/format'
 
+import { useEditarAbonoMutation } from '../../hooks/useAbonosQuery'
 import {
-  generarPathComprobante,
-  subirComprobante,
+    generarPathComprobante,
+    subirComprobante,
 } from '../../services/abonos-storage.service'
-import { editarAbonoService } from '../../services/editar-abono.service'
 import type { MetodoPago } from '../../types'
 import type {
-  AbonoParaEditar,
-  DiffCampo,
-  EditarAbonoPayload,
+    AbonoParaEditar,
+    DiffCampo,
+    EditarAbonoPayload,
 } from '../../types/editar-abono.types'
 
 const METODOS_ABONO: MetodoPago[] = ['Efectivo', 'Transferencia', 'Cheque']
@@ -31,6 +31,9 @@ export function useModalEditarAbono({
   onSuccess,
   onClose,
 }: UseModalEditarAbonoProps) {
+  // React Query mutation
+  const editarAbonoMutation = useEditarAbonoMutation()
+
   // ── Form state (pre-llenado con datos actuales) ──────────────────────────
   const [monto, setMonto] = useState(String(abonoInicial.monto))
   const [fechaAbono, setFechaAbono] = useState(
@@ -223,14 +226,8 @@ export function useModalEditarAbono({
         payload.eliminar_comprobante = true
       }
 
-      // 3. Llamar al servicio
-      const result = await editarAbonoService(payload)
-
-      if (!result.ok) {
-        setError(result.error ?? 'Error al editar el abono.')
-        setIsSubmitting(false)
-        return
-      }
+      // 3. Llamar al servicio via React Query mutation
+      const result = await editarAbonoMutation.mutateAsync(payload)
 
       // 4. Auditoría (fire-and-forget)
       const camposTexto = diff.map(d => d.label).join(', ')
@@ -246,7 +243,7 @@ export function useModalEditarAbono({
             notas: abonoInicial.notas,
             comprobante_url: abonoInicial.comprobante_url,
           } as any, // eslint-disable-line @typescript-eslint/no-explicit-any
-          result.abono as any, // eslint-disable-line @typescript-eslint/no-explicit-any
+          result as any, // eslint-disable-line @typescript-eslint/no-explicit-any
           { motivo: motivo.trim(), campos_modificados: camposTexto },
           'abonos'
         )
@@ -270,6 +267,7 @@ export function useModalEditarAbono({
     eliminarComprobante,
     abonoInicial,
     diff,
+    editarAbonoMutation,
     onSuccess,
   ])
 

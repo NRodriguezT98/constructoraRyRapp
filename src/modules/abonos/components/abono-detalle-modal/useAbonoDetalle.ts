@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react'
 
+import { useAuth } from '@/contexts/auth-context'
 import { supabase } from '@/lib/supabase/client'
 
 import { formatearNumeroRecibo } from '../../utils/formato-recibo'
@@ -17,6 +18,12 @@ export interface AbonoParaDetalle {
   comprobante_url: string | null
   notas: string | null
   fecha_creacion: string
+  // Campos de anulación (opcionales: datos previos a la migración no los tienen)
+  estado?: 'Activo' | 'Anulado'
+  motivo_categoria?: string | null
+  motivo_detalle?: string | null
+  anulado_por_nombre?: string | null
+  fecha_anulacion?: string | null
   negociacion: {
     id: string
     estado: 'Activa' | 'Suspendida' | 'Cerrada por Renuncia' | 'Completada'
@@ -51,9 +58,7 @@ export function useAbonoDetalle({ abono, onAnulado }: UseAbonoDetalleProps) {
   const [comprobanteUrl, setComprobanteUrl] = useState<string | null>(null)
   const [loadingComprobante, setLoadingComprobante] = useState(false)
   const [generandoRecibo, setGenerandoRecibo] = useState(false)
-  const [anulandoAbono, setAnulandoAbono] = useState(false)
-  const [showConfirmAnular, setShowConfirmAnular] = useState(false)
-  const [errorAnular, setErrorAnular] = useState<string | null>(null)
+  const [showModalAnular, setShowModalAnular] = useState(false)
   const [negociacionFinancials, setNegociacionFinancials] = useState<{
     valorTotal: number
     totalAbonado: number
@@ -128,32 +133,15 @@ export function useAbonoDetalle({ abono, onAnulado }: UseAbonoDetalleProps) {
     }
   }, [abono, negociacionFinancials])
 
-  // Confirmar y ejecutar anulación
-  const handleConfirmarAnular = useCallback(async () => {
-    if (!abono) return
-    setAnulandoAbono(true)
-    setErrorAnular(null)
-    try {
-      const res = await fetch('/api/abonos/anular', {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ abonoId: abono.id }),
-      })
-      if (!res.ok) {
-        const err = await res.json()
-        throw new Error(err.error || 'Error al anular el abono')
-      }
-      setShowConfirmAnular(false)
-      onAnulado?.()
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Error desconocido'
-      setErrorAnular(msg)
-    } finally {
-      setAnulandoAbono(false)
-    }
-  }, [abono, onAnulado])
+  // Callback invocado por ModalAnularAbono cuando los datos cambian
+  const handleAbonoAnulado = useCallback(() => {
+    onAnulado?.()
+  }, [onAnulado])
 
+  const { perfil } = useAuth()
+  const esAdmin = perfil?.rol === 'Administrador'
   const esNegociacionActiva = abono?.negociacion.estado === 'Activa'
+  const estaAnulado = abono?.estado === 'Anulado'
   const tieneComprobante = Boolean(abono?.comprobante_url)
 
   return {
@@ -161,13 +149,13 @@ export function useAbonoDetalle({ abono, onAnulado }: UseAbonoDetalleProps) {
     loadingComprobante,
     tieneComprobante,
     esNegociacionActiva,
+    estaAnulado,
     generandoRecibo,
-    anulandoAbono,
-    showConfirmAnular,
-    setShowConfirmAnular,
-    errorAnular,
+    showModalAnular,
+    setShowModalAnular,
+    esAdmin,
     handleDescargarComprobante,
     handleGenerarRecibo,
-    handleConfirmarAnular,
+    handleAbonoAnulado,
   }
 }

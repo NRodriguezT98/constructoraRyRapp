@@ -1,90 +1,15 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 
-import { supabase } from '@/lib/supabase/client'
+import { useAbonosQuery, type AbonoConInfo } from '@/modules/abonos/hooks/useAbonosQuery'
 
-/**
- * 🎯 TIPOS - Basados en vista_abonos_completos
- */
-
-// Tipo que viene directamente de la vista SQL
-interface AbonoCompletoRow {
-  // Datos del abono
-  id: string
-  numero_recibo: number
-  negociacion_id: string
-  fuente_pago_id: string
-  monto: number
-  fecha_abono: string
-  metodo_pago: string
-  numero_referencia: string | null
-  comprobante_url: string | null
-  notas: string | null
-  fecha_creacion: string
-  fecha_actualizacion: string
-  usuario_registro: string | null
-
-  // Datos relacionados (ya unidos por la vista)
-  cliente_id: string
-  cliente_nombres: string
-  cliente_apellidos: string
-  cliente_numero_documento: string
-  negociacion_estado: 'Activa' | 'Suspendida' | 'Cerrada por Renuncia' | 'Completada'
-  vivienda_id: string
-  vivienda_numero: string
-  manzana_id: string
-  manzana_nombre: string
-  proyecto_id: string
-  proyecto_nombre: string
-  fuente_pago_tipo: string
-}
-
-// Tipo transformado para el componente (estructura anidada)
-interface AbonoConInfo {
-  id: string
-  numero_recibo: number
-  negociacion_id: string
-  fuente_pago_id: string
-  monto: number
-  fecha_abono: string
-  metodo_pago: string
-  numero_referencia: string | null
-  comprobante_url: string | null
-  notas: string | null
-  fecha_creacion: string
-  fecha_actualizacion: string
-  usuario_registro: string | null
-
-  cliente: {
-    id: string
-    nombres: string
-    apellidos: string
-    numero_documento: string
-  }
-  negociacion: {
-    id: string
-    estado: 'Activa' | 'Suspendida' | 'Cerrada por Renuncia' | 'Completada'
-  }
-  vivienda: {
-    id: string
-    numero: string
-    manzana: {
-      identificador: string
-    }
-  }
-  proyecto: {
-    id: string
-    nombre: string
-  }
-  fuente_pago: {
-    id: string
-    tipo: string
-  }
-}
+// Re-export para consumidores existentes
+export type { AbonoConInfo }
 
 interface Filtros {
   busqueda: string
   fuente: string   // nombre de fuente o 'todas'
   mes: string      // 'YYYY-MM' o 'todos'
+  mostrarAnulados: boolean
 }
 
 interface Estadisticas {
@@ -95,120 +20,31 @@ interface Estadisticas {
 }
 
 /**
- * 🎣 HOOK: useAbonosList (OPTIMIZADO CON VISTA SQL)
+ * 🎣 HOOK: useAbonosList
  *
- * Obtiene TODOS los abonos del sistema con información completa
- * Usa vista_abonos_completos para máximo rendimiento
- *
- * ANTES: 7 queries en cascada = 1421ms
- * AHORA: 1 query optimizada = ~250ms
- *
- * @returns {Object} - Abonos, estadísticas, filtros y estado de carga
+ * Wrapper de presentación sobre useAbonosQuery (React Query).
+ * Agrega filtrado local, estadísticas y meses disponibles.
  */
 export function useAbonosList() {
-  const [abonos, setAbonos] = useState<AbonoConInfo[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const { abonos, cargando: isLoading, error: queryError, refrescar } = useAbonosQuery()
 
   const [filtros, setFiltros] = useState<Filtros>({
     busqueda: '',
     fuente: 'todas',
     mes: 'todos',
+    mostrarAnulados: false,
   })
-
-  /**
-   * 📊 Obtener todos los abonos usando la vista optimizada
-   * Una sola query en lugar de 7 queries en cascada
-   */
-  useEffect(() => {
-    async function fetchAbonos() {
-      try {
-        setIsLoading(true)
-        setError(null)
-
-        // ✅ UNA SOLA QUERY - vista_abonos_completos hace todos los JOINs
-        // @ts-ignore - vista existe pero tipos no están actualizados
-        const { data: abonosData, error: queryError } = await supabase
-          .from('vista_abonos_completos')
-          .select('*')
-
-        if (queryError) {
-          console.error('❌ Error fetching abonos:', {
-            message: queryError.message,
-            details: queryError.details,
-            hint: queryError.hint,
-            code: queryError.code
-          })
-          throw queryError
-        }
-
-        if (!abonosData || abonosData.length === 0) {
-          setAbonos([])
-          return
-        }
-
-        // Transformar datos planos de la vista a estructura anidada
-        const abonosTransformados: AbonoConInfo[] = abonosData.map((row: any) => ({
-          // Campos del abono
-          id: row.id,
-          numero_recibo: row.numero_recibo,
-          negociacion_id: row.negociacion_id,
-          fuente_pago_id: row.fuente_pago_id,
-          monto: row.monto,
-          fecha_abono: row.fecha_abono,
-          metodo_pago: row.metodo_pago,
-          numero_referencia: row.numero_referencia,
-          comprobante_url: row.comprobante_url,
-          notas: row.notas,
-          fecha_creacion: row.fecha_creacion,
-          fecha_actualizacion: row.fecha_actualizacion,
-          usuario_registro: row.usuario_registro,
-
-          // Datos relacionados (estructura anidada)
-          cliente: {
-            id: row.cliente_id || '',
-            nombres: row.cliente_nombres || 'N/A',
-            apellidos: row.cliente_apellidos || '',
-            numero_documento: row.cliente_numero_documento || ''
-          },
-          negociacion: {
-            id: row.negociacion_id || '',
-            estado: row.negociacion_estado || 'Activa'
-          },
-          vivienda: {
-            id: row.vivienda_id || '',
-            numero: row.vivienda_numero || 'N/A',
-            manzana: {
-              identificador: row.manzana_nombre || 'N/A'
-            }
-          },
-          proyecto: {
-            id: row.proyecto_id || '',
-            nombre: row.proyecto_nombre || 'N/A'
-          },
-          fuente_pago: {
-            id: row.fuente_pago_id || '',
-            tipo: row.fuente_pago_tipo || 'N/A'
-          }
-        }))
-
-        setAbonos(abonosTransformados)
-      } catch (err) {
-        console.error('❌ Error en useAbonosList:', err)
-        setError(err instanceof Error ? err.message : 'Error desconocido')
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    fetchAbonos()
-  }, [])
 
   /**
    * 🔍 Filtrar abonos según criterios
    */
   const abonosFiltrados = useMemo(() => {
     let resultado = [...abonos]
+
+    // Ocultar anulados por defecto (solo Admin puede verlos con toggle)
+    if (!filtros.mostrarAnulados) {
+      resultado = resultado.filter((a) => a.estado !== 'Anulado')
+    }
 
     // Filtro por búsqueda (cliente, CC o RYR-XXXX)
     if (filtros.busqueda.trim()) {
@@ -269,8 +105,12 @@ export function useAbonosList() {
   }
 
   const limpiarFiltros = () => {
-    setFiltros({ busqueda: '', fuente: 'todas', mes: 'todos' })
+    setFiltros({ busqueda: '', fuente: 'todas', mes: 'todos', mostrarAnulados: false })
   }
+
+  const toggleMostrarAnulados = useCallback(() => {
+    setFiltros((prev) => ({ ...prev, mostrarAnulados: !prev.mostrarAnulados }))
+  }, [])
 
   const fuentesUnicas = useMemo(() => {
     const set = new Set<string>()
@@ -299,7 +139,9 @@ export function useAbonosList() {
     filtros,
     actualizarFiltros,
     limpiarFiltros,
+    toggleMostrarAnulados,
     isLoading,
-    error,
+    error: queryError?.message ?? null,
+    refetch: refrescar,
   }
 }

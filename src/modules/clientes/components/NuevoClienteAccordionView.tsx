@@ -85,7 +85,6 @@ export function NuevoClienteAccordionView({ canCreate }: NuevoClienteAccordionVi
         fieldCount={{ required: 3, optional: 2 }}
         currentStep={pasoActual}
         totalSteps={PASOS_CLIENTE.length}
-        progress={pasoActual === 1 ? progress : undefined}
         moduleName="clientes"
         summaryItems={summaryPaso1}
         onEdit={() => irAPaso(1)}
@@ -113,7 +112,6 @@ export function NuevoClienteAccordionView({ canCreate }: NuevoClienteAccordionVi
         fieldCount={{ required: 2, optional: 4 }}
         currentStep={pasoActual}
         totalSteps={PASOS_CLIENTE.length}
-        progress={pasoActual === 2 ? progress : undefined}
         moduleName="clientes"
         summaryItems={summaryPaso2}
         onEdit={() => irAPaso(2)}
@@ -146,7 +144,6 @@ export function NuevoClienteAccordionView({ canCreate }: NuevoClienteAccordionVi
         fieldCount={{ required: 0, optional: 3 }}
         currentStep={pasoActual}
         totalSteps={PASOS_CLIENTE.length}
-        progress={pasoActual === 3 ? progress : undefined}
         moduleName="clientes"
         summaryItems={summaryPaso3}
         onEdit={() => irAPaso(3)}

@@ -27,7 +27,7 @@ export function HeaderPago({
   const esDesembolso = modo === 'desembolso'
 
   return (
-    <div className={`relative overflow-hidden bg-gradient-to-br ${colorScheme.gradient} px-5 py-4`}>
+    <div className={`relative overflow-hidden bg-gradient-to-br ${colorScheme.gradient} px-5 py-4 flex-shrink-0`}>
       {/* Efecto de luz */}
       <div className="absolute top-0 right-0 w-40 h-40 bg-white rounded-full blur-3xl opacity-10 pointer-events-none" />
       <div className="absolute bottom-0 left-0 w-24 h-24 bg-white rounded-full blur-3xl opacity-5 pointer-events-none" />

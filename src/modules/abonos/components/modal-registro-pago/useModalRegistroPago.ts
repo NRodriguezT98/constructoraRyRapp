@@ -4,16 +4,17 @@ import { formatDateCompact, getTodayDateString } from '@/lib/utils/date.utils'
 import { getCreditoByFuente } from '@/modules/fuentes-pago/services/creditos-constructora.service'
 import { esCreditoConstructora } from '@/shared/constants/fuentes-pago.constants'
 
+import { useRegistrarAbonoMutation } from '../../hooks/useAbonosQuery'
 import {
-  eliminarComprobante,
-  generarPathComprobante,
-  subirComprobante,
+    eliminarComprobante,
+    generarPathComprobante,
+    subirComprobante,
 } from '../../services/abonos-storage.service'
 import {
-  getModoRegistro,
-  type FuentePagoConAbonos,
-  type MetodoPago,
-  type ModoRegistro,
+    getModoRegistro,
+    type FuentePagoConAbonos,
+    type MetodoPago,
+    type ModoRegistro,
 } from '../../types'
 
 import { getColorScheme, type ColorScheme } from './ModalRegistroPago.styles'
@@ -105,6 +106,9 @@ export function useModalRegistroPago({
   } | null>(null)
 
   const cancelledRef = useRef(false)
+
+  // React Query mutation para registrar abono
+  const registrarAbonoMutation = useRegistrarAbonoMutation()
 
   // ── Reset de estado cuando el modal se abre ─────────────────────────────────
   useEffect(() => {
@@ -217,36 +221,26 @@ export function useModalRegistroPago({
       return
     }
 
-    // Fase 2: registrar en BD
+    // Fase 2: registrar en BD (via React Query mutation)
     setFaseLoading('guardando')
     try {
-      const response = await fetch('/api/abonos/registrar', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          negociacion_id: negociacionId,
-          fuente_pago_id: fuenteSeleccionada.id,
-          monto: esDesembolso
-            ? (fuenteSeleccionada.monto_aprobado ?? 0)
-            : montoNum,
-          mora_incluida: moraIncluidaProp > 0 ? moraIncluidaProp : undefined,
-          fecha_abono: fechaAbono,
-          metodo_pago: metodoPago,
-          numero_referencia: referencia || null,
-          notas: notas || null,
-          comprobante_path: uploadedPath,
-        }),
+      const respuestaJson = await registrarAbonoMutation.mutateAsync({
+        negociacion_id: negociacionId,
+        fuente_pago_id: fuenteSeleccionada.id,
+        monto: esDesembolso
+          ? (fuenteSeleccionada.monto_aprobado ?? 0)
+          : montoNum,
+        mora_incluida: moraIncluidaProp > 0 ? moraIncluidaProp : undefined,
+        fecha_abono: fechaAbono,
+        metodo_pago: metodoPago,
+        numero_referencia: referencia || null,
+        notas: notas || null,
+        comprobante_path: uploadedPath,
       })
 
-      if (!response.ok) {
-        const err = await response.json()
-        throw new Error(err.error || 'Error al registrar el pago')
-      }
-
       // Capturar datos del abono registrado para mostrar pantalla de éxito
-      const respuestaJson = await response.json()
       if (respuestaJson?.abono) {
-        setAbonoRegistrado(respuestaJson.abono)
+        setAbonoRegistrado(respuestaJson.abono as typeof abonoRegistrado)
       }
     } catch {
       setFaseLoading('idle')

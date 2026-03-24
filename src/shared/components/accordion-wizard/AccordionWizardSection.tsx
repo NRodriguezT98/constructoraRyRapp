@@ -126,8 +126,8 @@ export function AccordionWizardSection({
           </div>
         ) : null}
 
-        {/* Progress bar */}
-        {progress != null ? (
+        {/* Progress bar — solo visible cuando hay progreso real (> 0%) */}
+        {progress != null && progress > 0 ? (
           <div className={cn('mx-6', styles.progressBar.track)}>
             <motion.div
               className={styles.progressBar.fill}

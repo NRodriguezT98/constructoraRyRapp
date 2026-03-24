@@ -5,7 +5,7 @@
 // Hook principal para el módulo de abonos
 // =====================================================
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import {
     obtenerFuentesPagoConAbonos,
@@ -29,7 +29,9 @@ export function useAbonos() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [datosInicializados, setDatosInicializados] = useState(false); // Flag para evitar cargas duplicadas
+  const [datosInicializados, setDatosInicializados] = useState(false);
+  /** Solo Admin: muestra abonos anulados en la lista */
+  const [mostrarAnulados, setMostrarAnulados] = useState(false);
 
   // Cargar negociaciones activas al montar (solo si no están inicializados)
   useEffect(() => {
@@ -152,21 +154,37 @@ export function useAbonos() {
     }
   }, [negociacionSeleccionada, cargarNegociaciones, cargarDatosNegociacion]);
 
+  const toggleMostrarAnulados = useCallback(() => {
+    setMostrarAnulados((v) => !v);
+  }, []);
+
   // =====================================================
   // VALORES CALCULADOS
   // =====================================================
 
   const negociacionActual = negociaciones.find((n) => n.id === negociacionSeleccionada) || null;
 
+  /** Historial filtrado según toggle (anulados ocultos por defecto) */
+  const historialVisible = useMemo(
+    () => (mostrarAnulados ? historial : historial.filter((a) => !a.estado || a.estado === 'Activo')),
+    [historial, mostrarAnulados]
+  );
+
+  /** Abonos activos para cálculos financieros (siempre sin anulados) */
+  const historialActivo = useMemo(
+    () => historial.filter((a) => !a.estado || a.estado === 'Activo'),
+    [historial]
+  );
+
   const estadisticas = {
     totalNegociaciones: negociaciones.length,
-    totalAbonos: historial.length,
-    montoTotalAbonado: historial.reduce((sum, a) => sum + a.monto, 0),
+    totalAbonos: historialActivo.length,
+    montoTotalAbonado: historialActivo.reduce((sum, a) => sum + a.monto, 0),
     totalAbonado: negociaciones.reduce((sum, n) => sum + (n.total_abonado || 0), 0),
     totalVentas: negociaciones.reduce((sum, n) => sum + (n.valor_total || 0), 0),
     saldoPendiente: negociaciones.reduce((sum, n) => sum + (n.saldo_pendiente || 0), 0),
-    promedioAbono: historial.length > 0
-      ? historial.reduce((sum, a) => sum + a.monto, 0) / historial.length
+    promedioAbono: historialActivo.length > 0
+      ? historialActivo.reduce((sum, a) => sum + a.monto, 0) / historialActivo.length
       : 0,
   };
 
@@ -177,14 +195,17 @@ export function useAbonos() {
     negociacionActual,
     fuentesPago,
     historial,
+    historialVisible,
     isLoading,
     isSubmitting,
     error,
+    mostrarAnulados,
 
     // Funciones
     seleccionarNegociacion,
     crearAbono,
     refrescar,
+    toggleMostrarAnulados,
 
     // Valores calculados
     estadisticas,

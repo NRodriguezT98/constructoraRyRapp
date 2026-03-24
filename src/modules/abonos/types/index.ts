@@ -21,6 +21,11 @@ import type { TipoFuentePago } from '@/modules/clientes/types/fuentes-pago';
 export type { TipoFuentePago };
 
 /**
+ * Estado de un abono individual
+ */
+export type EstadoAbono = 'Activo' | 'Anulado';
+
+/**
  * Estados de negociación
  */
 export type EstadoNegociacion =
@@ -52,6 +57,13 @@ export interface AbonoHistorial {
   fecha_creacion: string;
   fecha_actualizacion: string;
   usuario_registro?: string;
+  // ── Campos de anulación (migración 023) ──────────────
+  estado: EstadoAbono;
+  motivo_categoria?: MotivoAnulacion | null;
+  motivo_detalle?: string | null;
+  anulado_por_id?: string | null;
+  anulado_por_nombre?: string | null;
+  fecha_anulacion?: string | null;
 }
 
 /**
@@ -275,6 +287,34 @@ export const METODOS_PAGO_OPTIONS: { value: MetodoPago; label: string }[] = [
   { value: 'Tarjeta de Crédito', label: 'Tarjeta de Crédito' },
   { value: 'Tarjeta de Débito', label: 'Tarjeta de Débito' },
 ];
+
+// =====================================================
+// ANULACIÓN DE ABONOS
+// =====================================================
+
+/**
+ * Motivos de anulación predefinidos. Sincronizado con CHECK constraint de BD.
+ */
+export const MOTIVOS_ANULACION = [
+  'Error en el monto',
+  'Pago duplicado',
+  'Comprobante inválido',
+  'Error en la fecha',
+  'Solicitud del cliente',
+  'Otro',
+] as const;
+
+export type MotivoAnulacion = typeof MOTIVOS_ANULACION[number];
+
+/**
+ * Payload para anular un abono. Enviado al endpoint PATCH /api/abonos/anular
+ */
+export interface AnularAbonoPayload {
+  abono_id: string;
+  motivo_categoria: MotivoAnulacion;
+  /** Detalle libre — obligatorio cuando motivo_categoria = 'Otro' */
+  motivo_detalle?: string;
+}
 
 /**
  * Labels legibles para tipos de fuente

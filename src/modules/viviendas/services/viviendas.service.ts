@@ -435,65 +435,6 @@ class ViviendasService {
   }
 
   /**
-   * Obtiene la negociación activa de una vivienda (si existe)
-   * Retorna datos financieros clave para validaciones de impacto
-   */
-  async obtenerNegociacionActivaPorVivienda(viviendaId: string) {
-    const { data, error } = await supabase
-      .from('negociaciones')
-      .select(`
-        id,
-        valor_negociado,
-        descuento_aplicado,
-        total_abonado,
-        saldo_pendiente,
-        estado,
-        cliente_id,
-        clientes!negociaciones_cliente_id_fkey ( nombre_completo )
-      `)
-      .eq('vivienda_id', viviendaId)
-      .eq('estado', 'Activa')
-      .maybeSingle()
-
-    if (error) {
-      console.error('Error obteniendo negociación activa:', error)
-      return null
-    }
-
-    if (!data) return null
-
-    return {
-      id: data.id,
-      valor_negociado: data.valor_negociado ?? 0,
-      descuento_aplicado: data.descuento_aplicado ?? 0,
-      total_abonado: data.total_abonado ?? 0,
-      saldo_pendiente: data.saldo_pendiente ?? 0,
-      estado: data.estado,
-      cliente_id: data.cliente_id,
-      cliente_nombre: (data.clientes as any)?.nombre_completo ?? 'Cliente',
-    }
-  }
-
-  /**
-   * Actualiza valor_negociado en la negociación cuando cambia valor_base de vivienda
-   * Mantiene el descuento, recalcula valor_total automáticamente (campo generado)
-   */
-  async sincronizarNegociacionConVivienda(
-    negociacionId: string,
-    nuevoValorNegociado: number
-  ) {
-    const { error } = await supabase
-      .from('negociaciones')
-      .update({ valor_negociado: nuevoValorNegociado })
-      .eq('id', negociacionId)
-
-    if (error) {
-      console.error('Error sincronizando negociación:', error)
-      throw new Error('No se pudo actualizar el valor de la negociación')
-    }
-  }
-
-  /**
    * Actualiza una vivienda existente
    */
   async actualizar(

@@ -83,7 +83,6 @@ export function NuevoProyectoView({ canCreate }: NuevoProyectoViewProps) {
         fieldCount={{ required: 1, optional: 2 }}
         currentStep={pasoActual}
         totalSteps={PASOS_PROYECTO.length}
-        progress={pasoActual === 1 ? progress : undefined}
         moduleName="proyectos"
         summaryItems={summaryPaso1}
         onEdit={() => irAPaso(1)}
@@ -111,7 +110,6 @@ export function NuevoProyectoView({ canCreate }: NuevoProyectoViewProps) {
         fieldCount={{ required: 1, optional: 2 }}
         currentStep={pasoActual}
         totalSteps={PASOS_PROYECTO.length}
-        progress={pasoActual === 2 ? progress : undefined}
         moduleName="proyectos"
         summaryItems={summaryPaso2}
         onEdit={() => irAPaso(2)}
@@ -143,7 +141,6 @@ export function NuevoProyectoView({ canCreate }: NuevoProyectoViewProps) {
         fieldCount={{ required: 1, optional: 0 }}
         currentStep={pasoActual}
         totalSteps={PASOS_PROYECTO.length}
-        progress={pasoActual === 3 ? progress : undefined}
         moduleName="proyectos"
         summaryItems={summaryPaso3}
         onEdit={() => irAPaso(3)}
