@@ -5,15 +5,15 @@ import { getCreditoByFuente } from '@/modules/fuentes-pago/services/creditos-con
 import { esCreditoConstructora } from '@/shared/constants/fuentes-pago.constants'
 
 import {
-    eliminarComprobante,
-    generarPathComprobante,
-    subirComprobante,
+  eliminarComprobante,
+  generarPathComprobante,
+  subirComprobante,
 } from '../../services/abonos-storage.service'
 import {
-    getModoRegistro,
-    type FuentePagoConAbonos,
-    type MetodoPago,
-    type ModoRegistro,
+  getModoRegistro,
+  type FuentePagoConAbonos,
+  type MetodoPago,
+  type ModoRegistro,
 } from '../../types'
 
 import { getColorScheme, type ColorScheme } from './ModalRegistroPago.styles'
@@ -136,7 +136,7 @@ export function useModalRegistroPago({
       setMonto(montoPrecargado != null ? montoPrecargado.toString() : '')
     }
     setErrors({})
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fuenteSeleccionada])
 
   // ── Valores derivados ───────────────────────────────────────────────────────
@@ -145,7 +145,7 @@ export function useModalRegistroPago({
   const esCuotaPreCargada = montoPrecargado != null
   const colorScheme: ColorScheme = getColorScheme(fuenteSeleccionada.tipo)
   const saldoPendiente = fuenteSeleccionada.saldo_pendiente ?? 0
-  const montoNum = parseFloat(monto) || 0
+  const montoNum = parseFloat(monto.replace(/[^0-9]/g, '')) || 0
   const isSubmitting = faseLoading !== 'idle'
 
   const metodosDisponibles: MetodoPago[] = esDesembolso

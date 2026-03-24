@@ -4,12 +4,13 @@ import { useCallback, useState } from 'react'
 
 import { motion } from 'framer-motion'
 import {
-    Calendar,
-    CreditCard,
-    DollarSign,
-    Receipt,
-    Search,
-    TrendingUp,
+  Calendar,
+  CreditCard,
+  DollarSign,
+  Pencil,
+  Receipt,
+  Search,
+  TrendingUp,
 } from 'lucide-react'
 
 import { useRouter } from 'next/navigation'
@@ -18,6 +19,8 @@ import { formatDateCompact } from '@/lib/utils/date.utils'
 import { formatNombreCompleto } from '@/lib/utils/string.utils'
 import { AbonoDetalleModal } from '@/modules/abonos/components/abono-detalle-modal/AbonoDetalleModal'
 import type { AbonoParaDetalle } from '@/modules/abonos/components/abono-detalle-modal/useAbonoDetalle'
+import { ModalEditarAbono } from '@/modules/abonos/components/modal-editar-abono'
+import type { AbonoParaEditar } from '@/modules/abonos/types/editar-abono.types'
 import { formatearNumeroRecibo } from '@/modules/abonos/utils/formato-recibo'
 import { EmptyState } from '@/shared/components/ui/EmptyState'
 
@@ -41,11 +44,15 @@ const formatCurrency = (value: number) =>
 
 export function AbonosListPage({
   canCreate = false,
+  isAdmin = false,
 }: AbonosListPageProps = {}) {
   const router = useRouter()
   const [abonoSeleccionado, setAbonoSeleccionado] =
     useState<AbonoParaDetalle | null>(null)
   const [modalDetalleOpen, setModalDetalleOpen] = useState(false)
+  const [abonoEditando, setAbonoEditando] = useState<AbonoParaEditar | null>(
+    null
+  )
 
   const handleAbonoClick = useCallback((abono: AbonoParaDetalle) => {
     setAbonoSeleccionado(abono)
@@ -110,14 +117,14 @@ export function AbonosListPage({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.15 }}
-            className='relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 dark:from-blue-700 dark:via-indigo-700 dark:to-purple-800 p-6 shadow-2xl shadow-blue-500/20'
+            className='relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 p-6 shadow-2xl shadow-blue-500/20 dark:from-blue-700 dark:via-indigo-700 dark:to-purple-800'
           >
-            <div className='absolute inset-0 bg-grid-white/10 [mask-image:linear-gradient(0deg,transparent,black,transparent)]' />
+            <div className='bg-grid-white/10 absolute inset-0 [mask-image:linear-gradient(0deg,transparent,black,transparent)]' />
             <div className='relative z-10'>
               <div className='flex items-center justify-between'>
                 <div className='flex items-center gap-3'>
-                  <div className='w-10 h-10 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center'>
-                    <CreditCard className='w-6 h-6 text-white' />
+                  <div className='flex h-10 w-10 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm'>
+                    <CreditCard className='h-6 w-6 text-white' />
                   </div>
                   <div className='space-y-0.5'>
                     <h1 className='text-2xl font-bold text-white'>Abonos</h1>
@@ -128,17 +135,18 @@ export function AbonosListPage({
                 </div>
                 <div className='flex items-center gap-2'>
                   <span className='inline-flex items-center gap-2 rounded-full border border-white/30 bg-white/20 px-3 py-1.5 text-xs font-medium text-white backdrop-blur-md'>
-                    <Receipt className='w-3.5 h-3.5' />
-                    {estadisticas.totalAbonos} {estadisticas.totalAbonos === 1 ? 'Recibo' : 'Recibos'}
+                    <Receipt className='h-3.5 w-3.5' />
+                    {estadisticas.totalAbonos}{' '}
+                    {estadisticas.totalAbonos === 1 ? 'Recibo' : 'Recibos'}
                   </span>
                   {canCreate && (
                     <motion.button
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                       onClick={() => router.push('/abonos/registrar')}
-                      className='inline-flex items-center gap-2 rounded-lg border border-white/30 bg-white/20 px-3 py-1.5 text-sm font-medium text-white backdrop-blur-md transition-all hover:bg-white/30 shadow-lg'
+                      className='inline-flex items-center gap-2 rounded-lg border border-white/30 bg-white/20 px-3 py-1.5 text-sm font-medium text-white shadow-lg backdrop-blur-md transition-all hover:bg-white/30'
                     >
-                      <DollarSign className='w-4 h-4' />
+                      <DollarSign className='h-4 w-4' />
                       Registrar
                     </motion.button>
                   )}
@@ -261,10 +269,18 @@ export function AbonosListPage({
               <p className='text-xs font-medium text-gray-600 dark:text-gray-400'>
                 {abonos.length} resultados
               </p>
-              {(filtros.busqueda || filtros.fuente !== 'todas' || filtros.mes !== 'todos') && (
+              {(filtros.busqueda ||
+                filtros.fuente !== 'todas' ||
+                filtros.mes !== 'todos') && (
                 <button
-                  onClick={() => actualizarFiltros({ busqueda: '', fuente: 'todas', mes: 'todos' })}
-                  className='text-xs font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors'
+                  onClick={() =>
+                    actualizarFiltros({
+                      busqueda: '',
+                      fuente: 'todas',
+                      mes: 'todos',
+                    })
+                  }
+                  className='text-xs font-medium text-blue-600 transition-colors hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300'
                 >
                   Limpiar filtros
                 </button>
@@ -276,14 +292,18 @@ export function AbonosListPage({
           {abonos.length === 0 ? (
             <EmptyState
               icon={Receipt}
-              title="No hay abonos registrados"
-              description="Registra el primer abono para comenzar a llevar el control de pagos"
-              action={canCreate ? {
-                label: 'Registrar Primer Abono',
-                onClick: () => router.push('/abonos/registrar'),
-                icon: CreditCard,
-              } : undefined}
-              moduleName="abonos"
+              title='No hay abonos registrados'
+              description='Registra el primer abono para comenzar a llevar el control de pagos'
+              action={
+                canCreate
+                  ? {
+                      label: 'Registrar Primer Abono',
+                      onClick: () => router.push('/abonos/registrar'),
+                      icon: CreditCard,
+                    }
+                  : undefined
+              }
+              moduleName='abonos'
             />
           ) : (
             <div className='overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900'>
@@ -298,9 +318,10 @@ export function AbonosListPage({
                       'Fuente de Pago',
                       'Método',
                       'Monto',
-                    ].map(col => (
+                      ...(isAdmin ? [''] : []),
+                    ].map((col, i) => (
                       <th
-                        key={col}
+                        key={`${col}-${i}`}
                         className='px-3 py-2.5 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400'
                       >
                         {col}
@@ -360,6 +381,36 @@ export function AbonosListPage({
                       <td className='whitespace-nowrap px-3 py-2.5 text-right font-bold tabular-nums text-blue-700 dark:text-blue-400'>
                         {formatCurrency(abono.monto)}
                       </td>
+                      {/* Editar (solo admin) */}
+                      {isAdmin ? (
+                        <td className='px-3 py-2.5 text-right'>
+                          <button
+                            onClick={e => {
+                              e.stopPropagation()
+                              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                              const rawAbono = abono as any
+                              setAbonoEditando({
+                                id: abono.id,
+                                negociacion_id: rawAbono.negociacion_id,
+                                fuente_pago_id: rawAbono.fuente_pago_id,
+                                fuente_tipo: abono.fuente_pago.tipo,
+                                monto: abono.monto,
+                                fecha_abono: abono.fecha_abono,
+                                metodo_pago: rawAbono.metodo_pago ?? null,
+                                numero_referencia:
+                                  rawAbono.numero_referencia ?? null,
+                                notas: rawAbono.notas ?? null,
+                                comprobante_url:
+                                  rawAbono.comprobante_url ?? null,
+                              })
+                            }}
+                            className='inline-flex h-7 w-7 items-center justify-center rounded-lg bg-gray-100 text-gray-400 transition-colors hover:bg-blue-50 hover:text-blue-600 dark:bg-gray-700/50 dark:hover:bg-blue-900/30 dark:hover:text-blue-400'
+                            title='Editar abono'
+                          >
+                            <Pencil className='h-3.5 w-3.5' />
+                          </button>
+                        </td>
+                      ) : null}
                     </tr>
                   ))}
                 </tbody>
@@ -377,6 +428,17 @@ export function AbonosListPage({
           window.location.reload()
         }}
       />
+      {isAdmin && abonoEditando ? (
+        <ModalEditarAbono
+          isOpen={!!abonoEditando}
+          abono={abonoEditando}
+          onClose={() => setAbonoEditando(null)}
+          onSuccess={() => {
+            setAbonoEditando(null)
+            window.location.reload()
+          }}
+        />
+      ) : null}
     </>
   )
 }

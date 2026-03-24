@@ -11,36 +11,44 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { Banknote, ClipboardCheck, Home } from 'lucide-react'
-import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 
+import { useRouter } from 'next/navigation'
+
+import { formatDateForDB } from '@/lib/utils/date.utils'
 import { formatCurrency } from '@/lib/utils/format.utils'
 import { useAsignarViviendaForm } from '@/modules/clientes/components/asignar-vivienda/hooks/useAsignarViviendaForm'
 import { useFuentesPago } from '@/modules/clientes/components/asignar-vivienda/hooks/useFuentesPago'
 import { useProyectosViviendas } from '@/modules/clientes/components/asignar-vivienda/hooks/useProyectosViviendas'
 import type {
-    FuentePagoConfig,
-    FuentePagoConfiguracion,
+  FuentePagoConfig,
+  FuentePagoConfiguracion,
 } from '@/modules/clientes/components/asignar-vivienda/types'
 import { useCrearNegociacion } from '@/modules/clientes/hooks/useCrearNegociacion'
 import type { CrearFuentePagoDTO } from '@/modules/clientes/types'
 import { obtenerMonto } from '@/modules/clientes/utils/fuentes-pago-campos.utils'
 import { useEntidadesFinancierasCombinadas } from '@/modules/configuracion/hooks/useEntidadesFinancierasParaFuentes'
 import { useTiposFuentesConCampos } from '@/modules/configuracion/hooks/useTiposFuentesConCampos'
-import type { SectionStatus, SummaryItem, WizardStepConfig } from '@/shared/components/accordion-wizard'
+import type {
+  SectionStatus,
+  SummaryItem,
+  WizardStepConfig,
+} from '@/shared/components/accordion-wizard'
 
 // ── Configuración de pasos ─────────────────────────────
 export const PASOS_ASIGNACION: WizardStepConfig[] = [
   {
     id: 1,
     title: 'Vivienda y Valores',
-    description: 'Selecciona el proyecto, la vivienda y configura descuentos si aplica.',
+    description:
+      'Selecciona el proyecto, la vivienda y configura descuentos si aplica.',
     icon: Home,
   },
   {
     id: 2,
     title: 'Fuentes de Pago',
-    description: 'Configura cómo se financiará la vivienda. Las fuentes deben cubrir el valor total.',
+    description:
+      'Configura cómo se financiará la vivienda. Las fuentes deben cubrir el valor total.',
     icon: Banknote,
   },
   {
@@ -64,7 +72,9 @@ export function useAsignarViviendaV2({
 
   // ─── Navegación ───────────────────────────────────────
   const [pasoActual, setPasoActual] = useState(1)
-  const [pasosCompletados, setPasosCompletados] = useState<Set<number>>(new Set())
+  const [pasosCompletados, setPasosCompletados] = useState<Set<number>>(
+    new Set()
+  )
   const [isValidating, setIsValidating] = useState(false)
   const [showSuccess, setShowSuccess] = useState(false)
 
@@ -83,10 +93,16 @@ export function useAsignarViviendaV2({
     setViviendaId,
   } = useProyectosViviendas()
 
-  const { data: tiposConCampos = [], isLoading: cargandoTiposConCampos } = useTiposFuentesConCampos()
+  const { data: tiposConCampos = [], isLoading: cargandoTiposConCampos } =
+    useTiposFuentesConCampos()
   const { entidades } = useEntidadesFinancierasCombinadas()
 
-  const { crearNegociacion, creando, error: errorNegociacion, limpiar: limpiarNegociacion } = useCrearNegociacion()
+  const {
+    crearNegociacion,
+    creando,
+    error: errorNegociacion,
+    limpiar: limpiarNegociacion,
+  } = useCrearNegociacion()
 
   // ─── Valores observados ────────────────────────────────
   const aplicarDescuento = watch('aplicar_descuento')
@@ -95,6 +111,7 @@ export function useAsignarViviendaV2({
   const motivoDescuento = watch('motivo_descuento')
   const valorEscrituraPublica = watch('valor_escritura_publica')
   const notas = watch('notas')
+  const fechaNegociacion = watch('fecha_negociacion')
 
   // ─── Vivienda seleccionada ─────────────────────────────
   const viviendaSeleccionada = useMemo(
@@ -134,7 +151,11 @@ export function useAsignarViviendaV2({
     sumaCierra,
     handleFuenteEnabledChange: _handleFuenteEnabledChange,
     handleFuenteConfigChange: _handleFuenteConfigChange,
-  } = useFuentesPago({ valorTotal, tiposConCampos, cargandoTipos: cargandoTiposConCampos })
+  } = useFuentesPago({
+    valorTotal,
+    tiposConCampos,
+    cargandoTipos: cargandoTiposConCampos,
+  })
 
   // Adaptadores de nombres al spec
   const handleFuenteEnabledChange = _handleFuenteEnabledChange
@@ -155,12 +176,23 @@ export function useAsignarViviendaV2({
         const tipoConCampos = tiposConCampos.find(t => t.nombre === f.tipo)
         const camposConfig = tipoConCampos?.configuracion_campos?.campos ?? []
         // Respetar el flag requerido del campo — si requerido:false no bloquear
-        const requiereEntidad = camposConfig.some(c => c.rol === 'entidad' && c.requerido)
-        const requiereReferencia = camposConfig.some(c => c.rol === 'referencia' && c.requerido)
+        const requiereEntidad = camposConfig.some(
+          c => c.rol === 'entidad' && c.requerido
+        )
+        const requiereReferencia = camposConfig.some(
+          c => c.rol === 'referencia' && c.requerido
+        )
 
-        if (requiereEntidad && (!f.config?.entidad || f.config.entidad.trim() === '')) {
+        if (
+          requiereEntidad &&
+          (!f.config?.entidad || f.config.entidad.trim() === '')
+        ) {
           errores[f.tipo] = 'Entidad requerida'
-        } else if (requiereReferencia && (!f.config?.numero_referencia || f.config.numero_referencia.trim() === '')) {
+        } else if (
+          requiereReferencia &&
+          (!f.config?.numero_referencia ||
+            f.config.numero_referencia.trim() === '')
+        ) {
           errores[f.tipo] = 'Número de referencia requerido'
         }
       })
@@ -175,13 +207,13 @@ export function useAsignarViviendaV2({
       if (paso === pasoActual) return 'active'
       return 'pending'
     },
-    [pasoActual, pasosCompletados],
+    [pasoActual, pasosCompletados]
   )
 
   // ─── Progreso general ────────────────────────────────
   const progress = useMemo(
     () => Math.round((pasosCompletados.size / PASOS_ASIGNACION.length) * 100),
-    [pasosCompletados],
+    [pasosCompletados]
   )
 
   // ─── Summaries por paso (estado completado) ──────────
@@ -189,7 +221,10 @@ export function useAsignarViviendaV2({
     if (!viviendaSeleccionada) return []
     const proyecto = proyectos.find(p => p.id === proyectoSeleccionado)
     return [
-      { label: 'Vivienda', value: `${viviendaSeleccionada.manzana_nombre} · Casa ${viviendaSeleccionada.numero}` },
+      {
+        label: 'Vivienda',
+        value: `${viviendaSeleccionada.manzana_nombre} · Casa ${viviendaSeleccionada.numero}`,
+      },
       { label: 'Proyecto', value: proyecto?.nombre },
       { label: 'Total', value: formatCurrency(valorTotal) },
     ]
@@ -278,7 +313,7 @@ export function useAsignarViviendaV2({
         setPasoActual(paso)
       }
     },
-    [pasosCompletados],
+    [pasosCompletados]
   )
 
   const handleCancelar = useCallback(() => {
@@ -298,15 +333,20 @@ export function useAsignarViviendaV2({
         const tipoConCampos = tiposConCampos.find(t => t.nombre === f.tipo)
         const camposConfig = tipoConCampos?.configuracion_campos?.campos ?? []
         const monto = obtenerMonto(f.config, camposConfig)
-        const generaCuotas = tipoConCampos?.logica_negocio?.genera_cuotas === true
+        const generaCuotas =
+          tipoConCampos?.logica_negocio?.genera_cuotas === true
         return {
           tipo: f.tipo,
           monto_aprobado: monto,
           capital_para_cierre: f.config.capital_para_cierre ?? undefined,
           parametrosCredito: f.config.parametrosCredito ?? undefined,
-          entidad: (entidades.find(e => e.value === f.config.entidad)?.label ?? f.config.entidad) || undefined,
+          entidad:
+            (entidades.find(e => e.value === f.config.entidad)?.label ??
+              f.config.entidad) ||
+            undefined,
           numero_referencia: f.config.numero_referencia || undefined,
-          permite_multiples_abonos: generaCuotas || (f.config.permite_multiples_abonos ?? false),
+          permite_multiples_abonos:
+            generaCuotas || (f.config.permite_multiples_abonos ?? false),
         }
       })
 
@@ -319,13 +359,17 @@ export function useAsignarViviendaV2({
       motivo_descuento: motivoDescuento || undefined,
       valor_escritura_publica: valorEscrituraPublica ?? undefined,
       notas: notas ?? '',
+      fecha_negociacion: fechaNegociacion
+        ? formatDateForDB(fechaNegociacion)
+        : undefined,
       fuentes_pago: fuentesDTO,
     })
 
     if (!result) return
 
     toast.success('¡Vivienda asignada exitosamente!', {
-      description: 'La negociación ha sido registrada y la vivienda asignada al cliente.',
+      description:
+        'La negociación ha sido registrada y la vivienda asignada al cliente.',
       duration: 5000,
     })
 
@@ -347,6 +391,7 @@ export function useAsignarViviendaV2({
     motivoDescuento,
     valorEscrituraPublica,
     notas,
+    fechaNegociacion,
     router,
   ])
 

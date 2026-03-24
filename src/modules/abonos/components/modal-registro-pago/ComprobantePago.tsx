@@ -2,11 +2,16 @@
 
 import { useEffect, useState } from 'react'
 
-import { FileText, Image, Upload, X } from 'lucide-react'
+import { Eye, FileText, Image, Upload, X } from 'lucide-react'
 
 import type { ModoRegistro } from '../../types'
 
-const MIME_ACEPTADOS = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf']
+const MIME_ACEPTADOS = [
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+  'application/pdf',
+]
 const TAMANO_MAX = 10 * 1024 * 1024 // 10 MB
 const INPUT_ID = 'comprobante-pago-input'
 
@@ -23,7 +28,12 @@ function formatBytes(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
 }
 
-export function ComprobantePago({ modo, archivo, onArchivoChange, error }: ComprobantePagoProps) {
+export function ComprobantePago({
+  modo,
+  archivo,
+  onArchivoChange,
+  error,
+}: ComprobantePagoProps) {
   const [dragOver, setDragOver] = useState(false)
   const [localError, setLocalError] = useState<string | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
@@ -42,8 +52,14 @@ export function ComprobantePago({ modo, archivo, onArchivoChange, error }: Compr
 
   const label =
     modo === 'desembolso'
-      ? { title: 'Comprobante de desembolso bancario', hint: 'Adjunta el comprobante emitido por la entidad (obligatorio)' }
-      : { title: 'Comprobante de pago', hint: 'Adjunta el recibo o comprobante (obligatorio)' }
+      ? {
+          title: 'Comprobante de desembolso bancario',
+          hint: 'Adjunta el comprobante emitido por la entidad (obligatorio)',
+        }
+      : {
+          title: 'Comprobante de pago',
+          hint: 'Adjunta el recibo o comprobante (obligatorio)',
+        }
 
   function validarYSeleccionar(file: File) {
     if (!MIME_ACEPTADOS.includes(file.type)) {
@@ -78,6 +94,16 @@ export function ComprobantePago({ modo, archivo, onArchivoChange, error }: Compr
     onArchivoChange(null)
   }
 
+  function handleVerArchivo(e: React.MouseEvent) {
+    e.preventDefault()
+    e.stopPropagation()
+    if (!archivo) return
+    const url = URL.createObjectURL(archivo)
+    window.open(url, '_blank', 'noopener,noreferrer')
+    // Revoke after enough time for the new tab to load
+    setTimeout(() => URL.revokeObjectURL(url), 15_000)
+  }
+
   const esImagen = archivo ? archivo.type.startsWith('image/') : false
   const esPDF = archivo?.type === 'application/pdf'
 
@@ -90,62 +116,77 @@ export function ComprobantePago({ modo, archivo, onArchivoChange, error }: Compr
         : 'border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900/50'
 
   const zonaContenido = (
-    <div className="relative">
+    <div className='relative'>
       {archivo ? (
         <button
-          type="button"
+          type='button'
           onClick={handleClear}
-          className="absolute top-2 right-2 z-10 w-6 h-6 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center hover:bg-red-100 dark:hover:bg-red-900/40 hover:text-red-600 dark:hover:text-red-400 transition-colors"
-          aria-label="Quitar archivo"
+          className='absolute right-2 top-2 z-10 flex h-6 w-6 items-center justify-center rounded-full bg-gray-200 transition-colors hover:bg-red-100 hover:text-red-600 dark:bg-gray-700 dark:hover:bg-red-900/40 dark:hover:text-red-400'
+          aria-label='Quitar archivo'
         >
-          <X className="w-3.5 h-3.5" />
+          <X className='h-3.5 w-3.5' />
         </button>
       ) : null}
 
-      <div className={`rounded-xl border-2 border-dashed p-4 transition-all duration-200 ${archivo ? '' : 'hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/20'} ${borderClass}`}>
+      <div
+        className={`rounded-xl border-2 border-dashed p-4 transition-all duration-200 ${archivo ? '' : 'hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/20'} ${borderClass}`}
+      >
         {!archivo ? (
-          <div className="flex flex-col items-center gap-2">
-            <div className="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center">
-              <Upload className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+          <div className='flex flex-col items-center gap-2'>
+            <div className='flex h-10 w-10 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-900/40'>
+              <Upload className='h-5 w-5 text-blue-600 dark:text-blue-400' />
             </div>
-            <div className="text-center">
-              <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            <div className='text-center'>
+              <p className='text-sm font-medium text-gray-700 dark:text-gray-300'>
                 Arrastra el comprobante o{' '}
-                <span className="text-blue-600 dark:text-blue-400 underline underline-offset-2">
+                <span className='text-blue-600 underline underline-offset-2 dark:text-blue-400'>
                   haz clic para seleccionar
                 </span>
               </p>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+              <p className='mt-0.5 text-xs text-gray-500 dark:text-gray-400'>
                 JPG, PNG, WEBP o PDF · máx 10 MB
               </p>
             </div>
           </div>
         ) : (
-          <div className="flex items-center gap-3 pr-8">
+          <div className='flex items-center gap-3 pr-8'>
             {esImagen ? (
               previewUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={previewUrl}
-                  alt="Vista previa del comprobante"
-                  className="w-12 h-12 rounded-lg object-cover border border-gray-200 dark:border-gray-700 flex-shrink-0"
+                  alt='Vista previa del comprobante'
+                  className='h-12 w-12 flex-shrink-0 rounded-lg border border-gray-200 object-cover dark:border-gray-700'
                 />
               ) : (
-                <div className="w-12 h-12 rounded-lg bg-blue-100 dark:bg-blue-900/40 flex-shrink-0 animate-pulse" />
+                <div className='h-12 w-12 flex-shrink-0 animate-pulse rounded-lg bg-blue-100 dark:bg-blue-900/40' />
               )
             ) : esPDF ? (
-              <div className="w-12 h-12 rounded-lg bg-red-100 dark:bg-red-900/40 flex items-center justify-center flex-shrink-0">
-                <FileText className="w-6 h-6 text-red-600 dark:text-red-400" />
+              <div className='flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg bg-red-100 dark:bg-red-900/40'>
+                <FileText className='h-6 w-6 text-red-600 dark:text-red-400' />
               </div>
             ) : (
-              <div className="w-12 h-12 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center flex-shrink-0">
-                <Image className="w-6 h-6 text-gray-500" />
+              <div className='flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-800'>
+                <Image className='h-6 w-6 text-gray-500' />
               </div>
             )}
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{archivo.name}</p>
-              <p className="text-xs text-gray-500 dark:text-gray-400">{formatBytes(archivo.size)}</p>
+            <div className='min-w-0 flex-1'>
+              <p className='truncate text-sm font-medium text-gray-900 dark:text-white'>
+                {archivo.name}
+              </p>
+              <p className='text-xs text-gray-500 dark:text-gray-400'>
+                {formatBytes(archivo.size)}
+              </p>
             </div>
+            <button
+              type='button'
+              onClick={handleVerArchivo}
+              className='inline-flex shrink-0 items-center gap-1 text-xs font-medium text-blue-600 hover:underline dark:text-blue-400'
+              title='Ver archivo en nueva pestaña'
+            >
+              <Eye className='h-3.5 w-3.5' />
+              Ver
+            </button>
           </div>
         )}
       </div>
@@ -153,11 +194,13 @@ export function ComprobantePago({ modo, archivo, onArchivoChange, error }: Compr
   )
 
   return (
-    <div className="space-y-1.5">
-      <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-        {label.title} <span className="text-red-500">*</span>
+    <div className='space-y-1.5'>
+      <p className='text-sm font-semibold text-gray-700 dark:text-gray-300'>
+        {label.title} <span className='text-red-500'>*</span>
       </p>
-      <p className="text-xs text-gray-500 dark:text-gray-400 -mt-1">{label.hint}</p>
+      <p className='-mt-1 text-xs text-gray-500 dark:text-gray-400'>
+        {label.hint}
+      </p>
 
       {/*
         Label htmlFor → abre el file picker nativamente.
@@ -167,8 +210,11 @@ export function ComprobantePago({ modo, archivo, onArchivoChange, error }: Compr
       {!archivo ? (
         <label
           htmlFor={INPUT_ID}
-          className="block cursor-pointer"
-          onDragOver={(e) => { e.preventDefault(); setDragOver(true) }}
+          className='block cursor-pointer'
+          onDragOver={e => {
+            e.preventDefault()
+            setDragOver(true)
+          }}
           onDragLeave={() => setDragOver(false)}
           onDrop={handleDrop}
         >
@@ -176,7 +222,10 @@ export function ComprobantePago({ modo, archivo, onArchivoChange, error }: Compr
         </label>
       ) : (
         <div
-          onDragOver={(e) => { e.preventDefault(); setDragOver(true) }}
+          onDragOver={e => {
+            e.preventDefault()
+            setDragOver(true)
+          }}
           onDragLeave={() => setDragOver(false)}
           onDrop={handleDrop}
         >
@@ -187,16 +236,16 @@ export function ComprobantePago({ modo, archivo, onArchivoChange, error }: Compr
       {/* Input real — tabIndex -1 para no interferir con el FocusTrap de Radix */}
       <input
         id={INPUT_ID}
-        type="file"
+        type='file'
         accept={MIME_ACEPTADOS.join(',')}
         onChange={handleChange}
         tabIndex={-1}
-        className="sr-only"
-        aria-hidden="true"
+        className='sr-only'
+        aria-hidden='true'
       />
 
       {errorMsg ? (
-        <p className="text-xs text-red-600 dark:text-red-400">{errorMsg}</p>
+        <p className='text-xs text-red-600 dark:text-red-400'>{errorMsg}</p>
       ) : null}
     </div>
   )

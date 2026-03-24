@@ -18,8 +18,13 @@ import { formatDateForDB, getTodayDateString } from '@/lib/utils/date.utils'
 import type { EstadoNegociacion, Negociacion } from '@/modules/clientes/types'
 import { crearCredito } from '@/modules/fuentes-pago/services/creditos-constructora.service'
 import { crearCuotasCredito } from '@/modules/fuentes-pago/services/cuotas-credito.service'
-import { calcularTablaAmortizacion, fechaCuotaParaBD } from '@/modules/fuentes-pago/utils/calculos-credito'
+import {
+  calcularTablaAmortizacion,
+  fechaCuotaParaBD,
+} from '@/modules/fuentes-pago/utils/calculos-credito'
 import { esCuotaInicial } from '@/shared/constants/fuentes-pago.constants'
+
+/* eslint-disable no-console, no-restricted-syntax, @typescript-eslint/no-explicit-any */
 
 // DTOs
 export interface CrearNegociacionDTO {
@@ -31,6 +36,9 @@ export interface CrearNegociacionDTO {
   motivo_descuento?: string
   valor_escritura_publica?: number
   notas?: string
+
+  /** Fecha real de la negociación (para migración de datos históricos). Si no se envía, usa NOW() en BD. */
+  fecha_negociacion?: string
 
   // ? NUEVO: Fuentes de pago (creación transaccional)
   fuentes_pago?: CrearFuentePagoDTO[]
@@ -47,10 +55,10 @@ export interface CrearFuentePagoDTO {
   /** Parámetros del préstamo — si presentes, crea creditos_constructora + cuotas_credito */
   parametrosCredito?: {
     capital: number
-    tasaMensual: number       // porcentaje: 1.5 = 1.5%
+    tasaMensual: number // porcentaje: 1.5 = 1.5%
     numCuotas: number
     fechaInicio: Date | string
-    tasaMoraDiaria?: number   // default 0.001 (0.1%/día)
+    tasaMoraDiaria?: number // default 0.001 (0.1%/día)
   }
   /** true para fuentes que permiten múltiples abonos parciales (Cuota Inicial, Crédito Constructora) */
   permite_multiples_abonos?: boolean
@@ -86,7 +94,8 @@ class NegociacionesService {
    */
   async crearNegociacion(datos: CrearNegociacionDTO): Promise<Negociacion> {
     try {
-      const tieneFuentesPago = datos.fuentes_pago && datos.fuentes_pago.length > 0
+      const tieneFuentesPago =
+        datos.fuentes_pago && datos.fuentes_pago.length > 0
 
       // ==========================================
       // PASO 1: Crear negociación en estado 'Activa'
@@ -100,6 +109,11 @@ class NegociacionesService {
         descuento_aplicado: datos.descuento_aplicado || 0,
         notas: datos.notas,
         estado: 'Activa', // ? SIEMPRE 'Activa' (simplificado)
+      }
+
+      // Fecha de negociación personalizada (migración de datos históricos)
+      if (datos.fecha_negociacion) {
+        datosNegociacion.fecha_negociacion = datos.fecha_negociacion
       }
 
       // Solo incluir campos de descuento si hay descuento aplicado
@@ -118,11 +132,12 @@ class NegociacionesService {
         datosNegociacion.valor_escritura_publica = datos.valor_escritura_publica
       }
 
-
       const { data: negociacion, error: errorNegociacion } = await supabase
         .from('negociaciones')
         .insert(datosNegociacion)
-        .select('id, cliente_id, vivienda_id, valor_negociado, descuento_aplicado, tipo_descuento, motivo_descuento, valor_escritura_publica, notas, estado, fecha_negociacion, fecha_completada, fecha_creacion, fecha_actualizacion')
+        .select(
+          'id, cliente_id, vivienda_id, valor_negociado, descuento_aplicado, tipo_descuento, motivo_descuento, valor_escritura_publica, notas, estado, fecha_negociacion, fecha_completada, fecha_creacion, fecha_actualizacion'
+        )
         .single()
 
       if (errorNegociacion) {
@@ -130,12 +145,10 @@ class NegociacionesService {
         throw errorNegociacion
       }
 
-
       // ==========================================
       // PASO 2: Crear fuentes de pago (OPCIONAL)
       // ==========================================
       if (datos.fuentes_pago && datos.fuentes_pago.length > 0) {
-
         // Resolver tipo_fuente_id en batch
         const tipoNombres = datos.fuentes_pago.map(f => f.tipo)
         const { data: tiposFuentes, error: errorTipos } = await supabase
@@ -145,7 +158,9 @@ class NegociacionesService {
 
         if (errorTipos) {
           await supabase.from('negociaciones').delete().eq('id', negociacion.id)
-          throw new Error(`Error resolviendo tipos de fuente: ${errorTipos.message}`)
+          throw new Error(
+            `Error resolviendo tipos de fuente: ${errorTipos.message}`
+          )
         }
 
         const tipoIdMap = Object.fromEntries(
@@ -161,14 +176,15 @@ class NegociacionesService {
           entidad: fuente.entidad || null,
           numero_referencia: fuente.numero_referencia || null,
           carta_asignacion_url: fuente.carta_asignacion_url || null,
-          permite_multiples_abonos: fuente.permite_multiples_abonos ?? esCuotaInicial(fuente.tipo),
+          permite_multiples_abonos:
+            fuente.permite_multiples_abonos ?? esCuotaInicial(fuente.tipo),
           estado: 'Activa',
           estado_fuente: 'activa',
         }))
 
         const { data: fuentesCreadas, error: errorFuentes } = await supabase
           .from('fuentes_pago')
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
           .insert(fuentesParaInsertar as any)
           .select('id, tipo, negociacion_id')
 
@@ -176,7 +192,9 @@ class NegociacionesService {
           console.error('❌ Error creando fuentes de pago:', errorFuentes)
           // ROLLBACK
           await supabase.from('negociaciones').delete().eq('id', negociacion.id)
-          throw new Error(`Error creando fuentes de pago: ${errorFuentes.message}`)
+          throw new Error(
+            `Error creando fuentes de pago: ${errorFuentes.message}`
+          )
         }
 
         // ==========================================
@@ -187,13 +205,16 @@ class NegociacionesService {
           for (const fuente of datos.fuentes_pago) {
             if (!fuente.parametrosCredito) continue
 
-            const fuenteCreada = (fuentesCreadas ?? []).find(fc => fc.tipo === fuente.tipo)
+            const fuenteCreada = (fuentesCreadas ?? []).find(
+              fc => fc.tipo === fuente.tipo
+            )
             if (!fuenteCreada) continue
 
             const p = fuente.parametrosCredito
-            const fechaDate = typeof p.fechaInicio === 'string'
-              ? new Date(p.fechaInicio + 'T12:00:00')
-              : p.fechaInicio
+            const fechaDate =
+              typeof p.fechaInicio === 'string'
+                ? new Date(p.fechaInicio + 'T12:00:00')
+                : p.fechaInicio
 
             const calculo = calcularTablaAmortizacion({
               capital: p.capital,
@@ -234,15 +255,23 @@ class NegociacionesService {
           console.error('❌ Error en Paso 2b (crédito/cuotas):', errorPaso2b)
           // ROLLBACK: eliminar créditos y cuotas creados en esta operación
           for (const fid of fuentesConCredito) {
-            await supabase.from('cuotas_credito').delete().eq('fuente_pago_id', fid)
-            await supabase.from('creditos_constructora').delete().eq('fuente_pago_id', fid)
+            await supabase
+              .from('cuotas_credito')
+              .delete()
+              .eq('fuente_pago_id', fid)
+            await supabase
+              .from('creditos_constructora')
+              .delete()
+              .eq('fuente_pago_id', fid)
           }
           // Continuar con rollback estándar
-          await supabase.from('fuentes_pago').delete().eq('negociacion_id', negociacion.id)
+          await supabase
+            .from('fuentes_pago')
+            .delete()
+            .eq('negociacion_id', negociacion.id)
           await supabase.from('negociaciones').delete().eq('id', negociacion.id)
           throw errorPaso2b
         }
-
       } // end if (datos.fuentes_pago)
 
       // ==========================================
@@ -262,12 +291,14 @@ class NegociacionesService {
         console.error('? Error actualizando vivienda:', errorVivienda)
         // ROLLBACK
         if (tieneFuentesPago) {
-          await supabase.from('fuentes_pago').delete().eq('negociacion_id', negociacion.id)
+          await supabase
+            .from('fuentes_pago')
+            .delete()
+            .eq('negociacion_id', negociacion.id)
         }
         await supabase.from('negociaciones').delete().eq('id', negociacion.id)
         throw new Error(`Error actualizando vivienda: ${errorVivienda.message}`)
       }
-
 
       // ==========================================
       // PASO 4: Actualizar cliente ? 'Activo'
@@ -281,18 +312,23 @@ class NegociacionesService {
         console.error('? Error actualizando cliente:', errorCliente)
         // ROLLBACK completo
         if (tieneFuentesPago) {
-          await supabase.from('fuentes_pago').delete().eq('negociacion_id', negociacion.id)
+          await supabase
+            .from('fuentes_pago')
+            .delete()
+            .eq('negociacion_id', negociacion.id)
         }
         await supabase.from('negociaciones').delete().eq('id', negociacion.id)
-        await supabase.from('viviendas').update({
-          estado: 'Disponible',
-          cliente_id: null,
-          negociacion_id: null,
-          fecha_asignacion: null,
-        }).eq('id', datos.vivienda_id)
+        await supabase
+          .from('viviendas')
+          .update({
+            estado: 'Disponible',
+            cliente_id: null,
+            negociacion_id: null,
+            fecha_asignacion: null,
+          })
+          .eq('id', datos.vivienda_id)
         throw new Error(`Error actualizando cliente: ${errorCliente.message}`)
       }
-
 
       // ==========================================
       // PASO 5: Sistema de procesos eliminado
@@ -300,11 +336,10 @@ class NegociacionesService {
       // ?? NOTA: El sistema de plantillas de proceso fue eliminado.
       // Se reemplazará con sistema de checklist en Fuentes de Pago.
 
-
       return negociacion as unknown as Negociacion
-
     } catch (error) {
-      const mensaje = error instanceof Error ? error.message : 'Error desconocido'
+      const mensaje =
+        error instanceof Error ? error.message : 'Error desconocido'
       console.error('? [CLIENTES] Error en crearNegociacion:', mensaje, error)
       throw error
     }
@@ -315,21 +350,28 @@ class NegociacionesService {
    */
   async obtenerNegociacion(id: string): Promise<Negociacion | null> {
     try {
-      const { data, error} = await supabase
+      const { data, error } = await supabase
         .from('negociaciones')
-        .select(`
+        .select(
+          `
           id, cliente_id, vivienda_id, estado, valor_total, valor_total_pagar, valor_negociado,
           total_abonado, saldo_pendiente, fecha_negociacion,
           fecha_creacion, usuario_creacion, descuento_aplicado
-        `)
+        `
+        )
         .eq('id', id)
         .single()
 
       if (error) throw error
       return data as unknown as Negociacion
     } catch (error) {
-      const mensaje = error instanceof Error ? error.message : 'Error desconocido'
-      console.error('? [CLIENTES] Error obteniendo negociación:', mensaje, error)
+      const mensaje =
+        error instanceof Error ? error.message : 'Error desconocido'
+      console.error(
+        '? [CLIENTES] Error obteniendo negociación:',
+        mensaje,
+        error
+      )
       return null
     }
   }
@@ -341,7 +383,8 @@ class NegociacionesService {
     try {
       const { data, error } = await supabase
         .from('negociaciones')
-        .select(`
+        .select(
+          `
           *,
           vivienda:viviendas!negociaciones_vivienda_id_fkey (
             id,
@@ -362,7 +405,8 @@ class NegociacionesService {
               )
             )
           )
-        `)
+        `
+        )
         .eq('cliente_id', clienteId)
         .order('fecha_creacion', { ascending: false })
         .limit(100) // ? Limitar a 100 negociaciones más recientes (performance)
@@ -370,15 +414,20 @@ class NegociacionesService {
       if (error) throw error
 
       // Mapear para tener proyecto en el nivel superior
-      const negociacionesConProyecto = (data || []).map((neg) => ({
+      const negociacionesConProyecto = (data || []).map(neg => ({
         ...neg,
-        proyecto: neg.vivienda?.manzanas?.proyecto || null
+        proyecto: neg.vivienda?.manzanas?.proyecto || null,
       }))
 
       return negociacionesConProyecto as Negociacion[]
     } catch (error) {
-      const mensaje = error instanceof Error ? error.message : 'Error desconocido'
-      console.error('? [CLIENTES] Error obteniendo negociaciones del cliente:', mensaje, error)
+      const mensaje =
+        error instanceof Error ? error.message : 'Error desconocido'
+      console.error(
+        '? [CLIENTES] Error obteniendo negociaciones del cliente:',
+        mensaje,
+        error
+      )
       return []
     }
   }
@@ -386,14 +435,18 @@ class NegociacionesService {
   /**
    * Obtener negociación activa de una vivienda
    */
-  async obtenerNegociacionVivienda(viviendaId: string): Promise<Negociacion | null> {
+  async obtenerNegociacionVivienda(
+    viviendaId: string
+  ): Promise<Negociacion | null> {
     try {
       const { data, error } = await supabase
         .from('negociaciones')
-        .select(`
+        .select(
+          `
           id, cliente_id, vivienda_id, estado, valor_total, valor_total_pagar, valor_negociado,
           total_abonado, saldo_pendiente, fecha_creacion
-        `)
+        `
+        )
         .eq('vivienda_id', viviendaId)
         .in('estado', ['Activa', 'Suspendida']) // ? ACTUALIZADO: Solo estados activos
         .order('fecha_creacion', { ascending: false })
@@ -403,8 +456,13 @@ class NegociacionesService {
       if (error && error.code !== 'PGRST116') throw error // Ignore "not found"
       return data as unknown as Negociacion | null
     } catch (error) {
-      const mensaje = error instanceof Error ? error.message : 'Error desconocido'
-      console.error('? [CLIENTES] Error obteniendo negociación de vivienda:', mensaje, error)
+      const mensaje =
+        error instanceof Error ? error.message : 'Error desconocido'
+      console.error(
+        '? [CLIENTES] Error obteniendo negociación de vivienda:',
+        mensaje,
+        error
+      )
       return null
     }
   }
@@ -417,7 +475,6 @@ class NegociacionesService {
     datos: ActualizarNegociacionDTO
   ): Promise<Negociacion> {
     try {
-
       const { data, error } = await supabase
         .from('negociaciones')
         .update(datos)
@@ -429,8 +486,13 @@ class NegociacionesService {
 
       return data as Negociacion
     } catch (error) {
-      const mensaje = error instanceof Error ? error.message : 'Error desconocido'
-      console.error('? [CLIENTES] Error actualizando negociación:', mensaje, error)
+      const mensaje =
+        error instanceof Error ? error.message : 'Error desconocido'
+      console.error(
+        '? [CLIENTES] Error actualizando negociación:',
+        mensaje,
+        error
+      )
       throw error
     }
   }
@@ -438,7 +500,10 @@ class NegociacionesService {
   /**
    * Suspender negociación (pausar temporalmente)
    */
-  async suspenderNegociacion(id: string, motivo?: string): Promise<Negociacion> {
+  async suspenderNegociacion(
+    id: string,
+    motivo?: string
+  ): Promise<Negociacion> {
     return this.actualizarNegociacion(id, {
       estado: 'Suspendida',
       notas: motivo ? `[SUSPENDIDA] ${motivo}` : undefined,
@@ -493,8 +558,13 @@ class NegociacionesService {
       if (error) throw error
       return (count ?? 0) > 0
     } catch (error) {
-      const mensaje = error instanceof Error ? error.message : 'Error desconocido'
-      console.error('? [CLIENTES] Error verificando negociación activa:', mensaje, error)
+      const mensaje =
+        error instanceof Error ? error.message : 'Error desconocido'
+      console.error(
+        '? [CLIENTES] Error verificando negociación activa:',
+        mensaje,
+        error
+      )
       return false
     }
   }
@@ -513,7 +583,9 @@ class NegociacionesService {
         .limit(1)
 
       if (abonos && abonos.length > 0) {
-        throw new Error('No se puede eliminar una negociación con abonos registrados')
+        throw new Error(
+          'No se puede eliminar una negociación con abonos registrados'
+        )
       }
 
       // Verificar que no tenga fuentes de pago
@@ -524,7 +596,9 @@ class NegociacionesService {
         .limit(1)
 
       if (fuentes && fuentes.length > 0) {
-        throw new Error('No se puede eliminar una negociación con fuentes de pago')
+        throw new Error(
+          'No se puede eliminar una negociación con fuentes de pago'
+        )
       }
 
       const { error } = await supabase
@@ -534,8 +608,13 @@ class NegociacionesService {
 
       if (error) throw error
     } catch (error) {
-      const mensaje = error instanceof Error ? error.message : 'Error desconocido'
-      console.error('? [CLIENTES] Error eliminando negociación:', mensaje, error)
+      const mensaje =
+        error instanceof Error ? error.message : 'Error desconocido'
+      console.error(
+        '? [CLIENTES] Error eliminando negociación:',
+        mensaje,
+        error
+      )
       throw error
     }
   }
@@ -560,7 +639,7 @@ class NegociacionesService {
       detalles?: string | null
       permite_multiples_abonos?: boolean
     }>,
-    motivoCambio: string = 'Actualización de fuentes de pago'
+    motivoCambio = 'Actualización de fuentes de pago'
   ): Promise<void> {
     try {
       // 1. Obtener fuentes actuales ACTIVAS para validar
@@ -574,30 +653,33 @@ class NegociacionesService {
 
       // 2. Validar que no se eliminen fuentes con abonos
       const idsNuevas = fuentes.map(f => f.id).filter(Boolean)
-      const fuentesAEliminar = fuentesActuales?.filter(
-        fa => !idsNuevas.includes(fa.id)
-      ) || []
+      const fuentesAEliminar =
+        fuentesActuales?.filter(fa => !idsNuevas.includes(fa.id)) || []
 
-      const fuentesConAbonos = fuentesAEliminar.filter(f => (f.monto_recibido ?? 0) > 0)
+      const fuentesConAbonos = fuentesAEliminar.filter(
+        f => (f.monto_recibido ?? 0) > 0
+      )
       if (fuentesConAbonos.length > 0) {
-        throw new Error('No puedes eliminar fuentes de pago que tienen abonos registrados')
+        throw new Error(
+          'No puedes eliminar fuentes de pago que tienen abonos registrados'
+        )
       }
 
       // 3. ? INACTIVAR fuentes viejas con UPDATE DIRECTO (sin triggers)
       if (fuentesAEliminar.length > 0) {
-
         const erroresInactivacion: Array<{ fuenteId: string; error: any }> = []
 
         for (const fuente of fuentesAEliminar) {
-          const { data, error: errorInactivar, count } = await supabase
+          const { error: errorInactivar } = await supabase
             .from('fuentes_pago')
             .update({
               estado_fuente: 'inactiva',
-              razon_inactivacion: 'Fuente eliminada/reemplazada por el usuario durante edición',
+              razon_inactivacion:
+                'Fuente eliminada/reemplazada por el usuario durante edición',
               fecha_inactivacion: new Date().toISOString(),
             })
             .eq('id', fuente.id)
-            // ? SIN .select().single() para evitar error 400
+          // ? SIN .select().single() para evitar error 400
 
           if (errorInactivar) {
             console.error(`? Error inactivando fuente ${fuente.id}:`, {
@@ -606,7 +688,10 @@ class NegociacionesService {
               details: errorInactivar.details,
               hint: errorInactivar.hint,
             })
-            erroresInactivacion.push({ fuenteId: fuente.id, error: errorInactivar })
+            erroresInactivacion.push({
+              fuenteId: fuente.id,
+              error: errorInactivar,
+            })
           } else {
           }
         }
@@ -614,10 +699,12 @@ class NegociacionesService {
         // ? CRÍTICO: Si hubo errores al inactivar, lanzar excepción
         if (erroresInactivacion.length > 0) {
           const mensajeError = `No se pudieron inactivar ${erroresInactivacion.length} fuente(s). Errores: ${JSON.stringify(erroresInactivacion, null, 2)}`
-          console.error('?? [CRÍTICO] Errores al inactivar fuentes:', mensajeError)
+          console.error(
+            '?? [CRÍTICO] Errores al inactivar fuentes:',
+            mensajeError
+          )
           throw new Error(mensajeError)
         }
-
       }
 
       // 4. Actualizar fuentes existentes y crear nuevas
@@ -641,7 +728,7 @@ class NegociacionesService {
           // Crear nueva
           const { data: nuevaFuente, error: errorInsert } = await supabase
             .from('fuentes_pago')
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
             .insert({
               negociacion_id: negociacionId,
               tipo: fuente.tipo,
@@ -649,7 +736,8 @@ class NegociacionesService {
               monto_recibido: 0,
               entidad: fuente.entidad,
               numero_referencia: fuente.numero_referencia,
-              permite_multiples_abonos: fuente.permite_multiples_abonos ?? esCuotaInicial(fuente.tipo),
+              permite_multiples_abonos:
+                fuente.permite_multiples_abonos ?? esCuotaInicial(fuente.tipo),
               estado: 'Pendiente',
               estado_fuente: 'activa', // ? Explícitamente marcar como activa
             } as any)
@@ -658,17 +746,21 @@ class NegociacionesService {
 
           if (errorInsert) throw errorInsert
           if (nuevaFuente) {
-            nuevasFuentesCreadas.push({ id: nuevaFuente.id, tipo: nuevaFuente.tipo })
+            nuevasFuentesCreadas.push({
+              id: nuevaFuente.id,
+              tipo: nuevaFuente.tipo,
+            })
           }
         }
       }
 
       // 5. ? Vincular fuentes nuevas con las inactivadas (si coinciden tipos)
       if (fuentesAEliminar.length > 0 && nuevasFuentesCreadas.length > 0) {
-
         for (const fuenteInactivada of fuentesAEliminar) {
           // Buscar en fuentes actuales el tipo que tenía
-          const fuenteActualData = fuentesActuales?.find(f => f.id === fuenteInactivada.id)
+          const fuenteActualData = fuentesActuales?.find(
+            f => f.id === fuenteInactivada.id
+          )
           if (!fuenteActualData) continue
 
           // Obtener el tipo de la fuente inactivada
@@ -694,7 +786,6 @@ class NegociacionesService {
                 razon_inactivacion: `Reemplazada por nueva fuente de tipo: ${fuenteReemplazo.tipo}`,
               })
               .eq('id', fuenteInactivada.id)
-
           }
         }
       }
@@ -711,9 +802,9 @@ class NegociacionesService {
           modificadas: fuentes.filter(f => f.id).length,
         }
       )
-
     } catch (error) {
-      const mensaje = error instanceof Error ? error.message : 'Error desconocido'
+      const mensaje =
+        error instanceof Error ? error.message : 'Error desconocido'
       console.error('? [CLIENTES] Error actualizando fuentes de pago:', {
         mensaje,
         error,
@@ -749,10 +840,12 @@ class NegociacionesService {
     // Obtener fuentes activas actuales para snapshot
     const { data: fuentesActivas } = await supabase
       .from('fuentes_pago')
-      .select(`
+      .select(
+        `
         id, negociacion_id, tipo, entidad, monto_aprobado, monto_recibido,
         estado, estado_fuente
-      `)
+      `
+      )
       .eq('negociacion_id', negociacionId)
       .eq('estado_fuente', 'activa')
 
@@ -763,36 +856,44 @@ class NegociacionesService {
     // Obtener datos de negociación
     const { data: datosNegociacion } = await supabase
       .from('negociaciones')
-      .select(`
+      .select(
+        `
         id, cliente_id, vivienda_id, estado, valor_total, valor_negociado,
         total_abonado, saldo_pendiente, fecha_negociacion, fecha_creacion
-      `)
+      `
+      )
       .eq('id', negociacionId)
       .single()
 
     // Construir razón del cambio
     const partes = []
     if (resumen.agregadas > 0) partes.push(`${resumen.agregadas} agregada(s)`)
-    if (resumen.eliminadas > 0) partes.push(`${resumen.eliminadas} eliminada(s)`)
-    if (resumen.modificadas > 0) partes.push(`${resumen.modificadas} modificada(s)`)
-    const razonCompleta = partes.length > 0
-      ? `${motivoCambio} | ${partes.join(', ')}`
-      : motivoCambio
+    if (resumen.eliminadas > 0)
+      partes.push(`${resumen.eliminadas} eliminada(s)`)
+    if (resumen.modificadas > 0)
+      partes.push(`${resumen.modificadas} modificada(s)`)
+    const razonCompleta =
+      partes.length > 0
+        ? `${motivoCambio} | ${partes.join(', ')}`
+        : motivoCambio
 
     // Construir detalles de cambios para mostrar en modal
     const cambiosDetallados = {
       motivo_usuario: motivoCambio,
       resumen,
-      fuentes_finales: fuentesActivas?.map(f => ({
-        tipo: f.tipo,
-        entidad: f.entidad,
-        monto_aprobado: f.monto_aprobado,
-        monto_recibido: f.monto_recibido,
-      })) || [],
+      fuentes_finales:
+        fuentesActivas?.map(f => ({
+          tipo: f.tipo,
+          entidad: f.entidad,
+          monto_aprobado: f.monto_aprobado,
+          monto_recibido: f.monto_recibido,
+        })) || [],
     }
 
     // Obtener datos del usuario actual para auditoría
-    const { data: { user } } = await supabase.auth.getUser()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
     const usuarioEmail = user?.email || null
 
     // Obtener nombre del usuario desde tabla usuarios
@@ -805,7 +906,8 @@ class NegociacionesService {
         .single()
 
       if (usuarioData) {
-        usuarioNombre = `${usuarioData.nombres} ${usuarioData.apellidos || ''}`.trim()
+        usuarioNombre =
+          `${usuarioData.nombres} ${usuarioData.apellidos || ''}`.trim()
       }
     }
 
@@ -833,7 +935,6 @@ class NegociacionesService {
         version_lock: (negociacion?.version_lock || 0) + 1,
       })
       .eq('id', negociacionId)
-
   }
 }
 

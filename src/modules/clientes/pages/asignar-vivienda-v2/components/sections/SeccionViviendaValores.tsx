@@ -1,15 +1,25 @@
 'use client'
 
-import { AnimatePresence, motion } from 'framer-motion'
-import { AlertCircle, Calculator, DollarSign, FileText, Tag, User } from 'lucide-react'
 import { useState } from 'react'
+
+import { AnimatePresence, motion } from 'framer-motion'
+import {
+  AlertCircle,
+  Calculator,
+  Calendar,
+  DollarSign,
+  FileText,
+  Tag,
+  User,
+} from 'lucide-react'
 import type {
-    FieldErrors,
-    UseFormRegister,
-    UseFormSetValue,
-    UseFormWatch,
+  FieldErrors,
+  UseFormRegister,
+  UseFormSetValue,
+  UseFormWatch,
 } from 'react-hook-form'
 
+import { getTodayDateString } from '@/lib/utils/date.utils'
 import { formatCurrency } from '@/lib/utils/format.utils'
 import { ViviendaCombobox } from '@/modules/clientes/components/asignar-vivienda/components'
 import type { AsignarViviendaFormData } from '@/modules/clientes/components/asignar-vivienda/schemas'
@@ -90,7 +100,9 @@ export function SeccionViviendaValores({
     descuentoActual > 0 ? descuentoActual.toLocaleString('es-CO') : ''
   )
   const [escrituraDisplay, setEscrituraDisplay] = useState(
-    valorEscrituraPublica > 0 ? valorEscrituraPublica.toLocaleString('es-CO') : ''
+    valorEscrituraPublica > 0
+      ? valorEscrituraPublica.toLocaleString('es-CO')
+      : ''
   )
 
   const handleDescuentoChange = (raw: string) => {
@@ -235,7 +247,9 @@ export function SeccionViviendaValores({
           </div>
           <div>
             <p className={s.discountToggle.title}>Aplicar descuento</p>
-            <p className={s.discountToggle.subtitle}>Reduce el total a cubrir</p>
+            <p className={s.discountToggle.subtitle}>
+              Reduce el total a cubrir
+            </p>
           </div>
         </div>
         <button
@@ -405,6 +419,37 @@ export function SeccionViviendaValores({
           {...register('notas')}
           onChange={e => setValue('notas', e.target.value)}
         />
+      </div>
+
+      {/* Fecha de negociación (migración de datos históricos) */}
+      <div className={s.field.divider}>
+        <div className='pt-1'>
+          <label className={s.field.label}>
+            <span className='flex items-center gap-1.5'>
+              <Calendar className='h-3.5 w-3.5' />
+              Fecha de negociación (opcional)
+              <span
+                className={`inline-flex items-center rounded bg-amber-100 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-amber-700 dark:bg-amber-900/30 dark:text-amber-400`}
+              >
+                Migración
+              </span>
+            </span>
+          </label>
+          <p className={s.field.hint}>
+            Solo usar al migrar datos históricos. Si se deja vacío, se usará la
+            fecha de hoy automáticamente.
+          </p>
+          <input
+            type='date'
+            className={`${s.field.input} mt-1`}
+            max={getTodayDateString()}
+            {...register('fecha_negociacion')}
+            onChange={e => {
+              setValue('fecha_negociacion', e.target.value)
+              onClearErrorApi?.()
+            }}
+          />
+        </div>
       </div>
     </div>
   )

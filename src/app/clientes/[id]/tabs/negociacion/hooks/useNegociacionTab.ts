@@ -10,8 +10,9 @@
  * Queries propias: negociación activa, fuentes, tipos, requisitos, abonos.
  */
 
-import { useQuery } from '@tanstack/react-query'
 import { useMemo } from 'react'
+
+import { useQuery } from '@tanstack/react-query'
 
 import { supabase } from '@/lib/supabase/client'
 import { useNegociacionesQuery } from '@/modules/clientes/hooks/useNegociacionesQuery'
@@ -97,14 +98,18 @@ export function useNegociacionTab({ cliente }: UseNegociacionTabProps) {
   })
 
   const negociacion = useMemo(
-    () => negociaciones.find((n) => n.estado === 'Activa') ?? negociaciones[0] ?? null,
-    [negociaciones],
+    () =>
+      negociaciones.find(n => n.estado === 'Activa') ??
+      negociaciones[0] ??
+      null,
+    [negociaciones]
   )
 
   // Valor total a pagar — calculado por trigger en BD
   // Incluye: (valor_negociado - descuento) + gastos_notariales + recargo_esquinera
   const valorVivienda = useMemo(() => {
     if (!negociacion) return 0
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return (negociacion as any).valor_total_pagar ?? negociacion.valorFinal ?? 0
   }, [negociacion])
 
@@ -115,7 +120,8 @@ export function useNegociacionTab({ cliente }: UseNegociacionTabProps) {
     refetch: refetchFuentes,
   } = useQuery({
     queryKey: ['fuentes-pago-neg-tab', negociacion?.id],
-    queryFn: () => fuentesPagoService.obtenerFuentesPagoNegociacion(negociacion!.id),
+    queryFn: () =>
+      fuentesPagoService.obtenerFuentesPagoNegociacion(negociacion?.id ?? ''),
     enabled: !!negociacion?.id,
     staleTime: 30_000,
   })
@@ -130,16 +136,19 @@ export function useNegociacionTab({ cliente }: UseNegociacionTabProps) {
         .eq('activo', true)
         .order('orden')
       return (data ?? []) as {
-        nombre: string; icono: string; color: string
-        descripcion: string; requiere_entidad: boolean
+        nombre: string
+        icono: string
+        color: string
+        descripcion: string
+        requiere_entidad: boolean
       }[]
     },
     staleTime: 5 * 60_000,
   })
 
   const tiposDisponibles = useMemo(() => {
-    const usados = new Set(fuentesPago.map((f) => f.tipo))
-    return tiposFuentes.filter((t) => !usados.has(t.nombre as any))
+    const usados = new Set(fuentesPago.map(f => f.tipo))
+    return tiposFuentes.filter(t => !usados.has(t.nombre as string))
   }, [tiposFuentes, fuentesPago])
 
   // ─── Requisitos obligatorios por tipo (para warnings del modal) ─────────
@@ -173,13 +182,19 @@ export function useNegociacionTab({ cliente }: UseNegociacionTabProps) {
   })
 
   // ─── Abonos recientes ──────────────────────────────────────────────────
-  const { data: abonos = [], isLoading: isLoadingAbonos } = useQuery({
+  const {
+    data: abonos = [],
+    isLoading: isLoadingAbonos,
+    refetch: refetchAbonos,
+  } = useQuery({
     queryKey: ['abonos-recientes-neg', negociacion?.id],
     queryFn: async () => {
       const { data } = await supabase
         .from('abonos_historial')
-        .select('id, monto, fecha_abono, metodo_pago, numero_referencia, fuente_pago_id')
-        .eq('negociacion_id', negociacion!.id)
+        .select(
+          'id, monto, fecha_abono, metodo_pago, numero_referencia, fuente_pago_id, notas, comprobante_url'
+        )
+        .eq('negociacion_id', negociacion?.id ?? '')
         .order('fecha_abono', { ascending: false })
         .limit(5)
       return data ?? []
@@ -188,15 +203,22 @@ export function useNegociacionTab({ cliente }: UseNegociacionTabProps) {
     staleTime: 30_000,
   })
 
-  const totalAbonado = useMemo(() => abonos.reduce((s, a) => s + (a.monto ?? 0), 0), [abonos])
+  const totalAbonado = useMemo(
+    () => abonos.reduce((s, a) => s + (a.monto ?? 0), 0),
+    [abonos]
+  )
 
   // ─── Balance (shared hook — single source of truth) ─────────────────────
-  const { totalParaCierre: totalFuentes, diferencia, estaBalanceado } =
-    useCierreFinanciero(fuentesPago, valorVivienda)
+  const {
+    totalParaCierre: totalFuentes,
+    diferencia,
+    estaBalanceado,
+  } = useCierreFinanciero(fuentesPago, valorVivienda)
 
   // ─── Ordenar fuentes según el orden definido en el admin ───────────────
   const fuentesOrdenadas = useMemo(() => {
-    if (!tiposFuentes.length || !fuentesPago.length) return fuentesPago as FuentePago[]
+    if (!tiposFuentes.length || !fuentesPago.length)
+      return fuentesPago as FuentePago[]
     const orderMap = new Map(tiposFuentes.map((t, i) => [t.nombre, i]))
     return [...fuentesPago].sort((a, b) => {
       const oa = orderMap.get(a.tipo) ?? 999
@@ -239,5 +261,6 @@ export function useNegociacionTab({ cliente }: UseNegociacionTabProps) {
 
     // Actions
     refetchFuentes,
+    refetchAbonos,
   }
 }

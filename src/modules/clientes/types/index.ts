@@ -13,7 +13,11 @@ export type TipoDocumento = 'CC' | 'CE' | 'TI' | 'NIT' | 'PP' | 'PEP'
  * ✅ VERIFICADO en: docs/DATABASE-SCHEMA-REFERENCE.md
  * Estado civil del cliente
  */
-export type EstadoCivil = 'Soltero(a)' | 'Casado(a)' | 'Unión libre' | 'Viudo(a)'
+export type EstadoCivil =
+  | 'Soltero(a)'
+  | 'Casado(a)'
+  | 'Unión libre'
+  | 'Viudo(a)'
 
 /**
  * ✅ VERIFICADO en: docs/DATABASE-SCHEMA-REFERENCE.md
@@ -63,7 +67,11 @@ export type TipoFuentePago = string
 
 export type EstadoFuentePago = 'Activa' | 'Inactiva'
 
-export type EstadoProceso = 'Pendiente' | 'En Proceso' | 'Completado' | 'Omitido'
+export type EstadoProceso =
+  | 'Pendiente'
+  | 'En Proceso'
+  | 'Completado'
+  | 'Omitido'
 
 // =====================================================
 // INTERFACES PRINCIPALES
@@ -356,10 +364,7 @@ export interface NegociacionCompleta extends Negociacion {
  * ✅ VERIFICADO en: docs/DATABASE-SCHEMA-REFERENCE.md
  * CHECK constraint: renuncias_estado_check (3 estados)
  */
-export type EstadoRenuncia =
-  | 'Pendiente Devolución'
-  | 'Cerrada'
-  | 'Cancelada'
+export type EstadoRenuncia = 'Pendiente Devolución' | 'Cerrada' | 'Cancelada'
 
 export interface Renuncia {
   id: string
@@ -379,10 +384,10 @@ export interface Renuncia {
   requiere_devolucion: boolean
 
   // Snapshot de datos al momento de la renuncia (JSON)
-  vivienda_datos_snapshot?: Record<string, any> // { numero, manzana, proyecto, valor }
-  cliente_datos_snapshot?: Record<string, any> // { nombre, documento, contacto }
-  negociacion_datos_snapshot?: Record<string, any> // { valor_total, pagos_realizados }
-  abonos_snapshot?: Record<string, any> // Lista de abonos realizados
+  vivienda_datos_snapshot?: Record<string, unknown> // { numero, manzana, proyecto, valor }
+  cliente_datos_snapshot?: Record<string, unknown> // { nombre, documento, contacto }
+  negociacion_datos_snapshot?: Record<string, unknown> // { valor_total, pagos_realizados }
+  abonos_snapshot?: Record<string, unknown> // Lista de abonos realizados
 
   // Seguimiento de resolución
   fecha_devolucion?: string // Cuando se hizo la devolución efectiva
@@ -502,6 +507,9 @@ export interface CrearNegociacionDTO {
   valor_escritura_publica?: number
   notas?: string
 
+  /** Fecha real de la negociación (para migración de datos históricos). Si no se envía, usa NOW() en BD. */
+  fecha_negociacion?: string
+
   // Fuentes de pago (se crean junto con la negociación) - OPCIONAL para retrocompatibilidad
   fuentes_pago?: CrearFuentePagoDTO[]
 
@@ -611,7 +619,7 @@ export const ESTADOS_CLIENTE: Record<EstadoCliente, string> = {
   Interesado: 'Interesado',
   Activo: 'Activo',
   'En Proceso de Renuncia': 'En Proceso de Renuncia',
-  'Renunció': 'Renunció', // ⭐ NUEVO (2025-12-11)
+  Renunció: 'Renunció', // ⭐ NUEVO (2025-12-11)
   Inactivo: 'Inactivo',
   Propietario: 'Propietario',
 }
