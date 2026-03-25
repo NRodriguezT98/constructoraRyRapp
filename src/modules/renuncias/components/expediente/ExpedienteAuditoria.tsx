@@ -2,7 +2,7 @@
 
 import { Calendar, CheckCircle, CreditCard, FileText, Home, Shield, User, UserX, XCircle } from 'lucide-react'
 
-import { formatDateCompact } from '@/lib/utils/date.utils'
+import { formatDateTimeWithSeconds } from '@/lib/utils/date.utils'
 import type { ExpedienteData } from '../../types'
 import { expedienteStyles as styles } from './ExpedienteRenunciaPage.styles'
 
@@ -10,11 +10,14 @@ interface ExpedienteAuditoriaProps {
   datos: ExpedienteData
 }
 
-function formatUsuarioRegistro(raw: string | null): string {
-  if (!raw) return 'Sistema'
-  // "usuario@email.com (UUID)" → "usuario@email.com"
-  const match = raw.match(/^(.+?)\s*\(/)
-  return match ? match[1] : raw
+/** Parsea strings en formato "Nombres Apellidos (Rol)" o UUID puro */
+function parseUsuarioLabel(raw: string | null): { nombre: string; rol: string | null } {
+  if (!raw) return { nombre: 'Sistema', rol: null }
+  const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+  if (uuidPattern.test(raw)) return { nombre: 'Usuario del sistema', rol: null }
+  const match = raw.match(/^(.+?)\s*\((.+?)\)$/)
+  if (match) return { nombre: match[1].trim(), rol: match[2].trim() }
+  return { nombre: raw, rol: null }
 }
 
 export function ExpedienteAuditoria({ datos }: ExpedienteAuditoriaProps) {
@@ -42,7 +45,10 @@ export function ExpedienteAuditoria({ datos }: ExpedienteAuditoriaProps) {
             </div>
             <div className={styles.auditoria.rowContent}>
               <p className={styles.auditoria.rowLabel}>Registrado por</p>
-              <p className={styles.auditoria.rowValue}>{formatUsuarioRegistro(renuncia.usuario_registro)}</p>
+              <p className={styles.auditoria.rowValue}>{parseUsuarioLabel(renuncia.usuario_registro).nombre}</p>
+              {parseUsuarioLabel(renuncia.usuario_registro).rol ? (
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{parseUsuarioLabel(renuncia.usuario_registro).rol}</p>
+              ) : null}
             </div>
           </div>
           <div className={styles.auditoria.row}>
@@ -51,7 +57,7 @@ export function ExpedienteAuditoria({ datos }: ExpedienteAuditoriaProps) {
             </div>
             <div className={styles.auditoria.rowContent}>
               <p className={styles.auditoria.rowLabel}>Fecha de renuncia</p>
-              <p className={styles.auditoria.rowValue}>{formatDateCompact(renuncia.fecha_renuncia)}</p>
+              <p className={styles.auditoria.rowValue}>{formatDateTimeWithSeconds(renuncia.fecha_renuncia)}</p>
             </div>
           </div>
           {renuncia.fecha_creacion ? (
@@ -61,7 +67,7 @@ export function ExpedienteAuditoria({ datos }: ExpedienteAuditoriaProps) {
               </div>
               <div className={styles.auditoria.rowContent}>
                 <p className={styles.auditoria.rowLabel}>Creado en sistema</p>
-                <p className={styles.auditoria.rowValueMuted}>{formatDateCompact(renuncia.fecha_creacion)}</p>
+                <p className={styles.auditoria.rowValueMuted}>{formatDateTimeWithSeconds(renuncia.fecha_creacion)}</p>
               </div>
             </div>
           ) : null}
@@ -81,10 +87,13 @@ export function ExpedienteAuditoria({ datos }: ExpedienteAuditoriaProps) {
                 <div className={`${styles.auditoria.rowIcon} bg-emerald-100 dark:bg-emerald-900/30`}>
                   <User className="w-4 h-4 text-emerald-600" />
                 </div>
-                <div className={styles.auditoria.rowContent}>
-                  <p className={styles.auditoria.rowLabel}>Cerrado por</p>
-                  <p className={styles.auditoria.rowValue}>{formatUsuarioRegistro(renuncia.usuario_cierre)}</p>
-                </div>
+            <div className={styles.auditoria.rowContent}>
+                <p className={styles.auditoria.rowLabel}>Cerrado por</p>
+                <p className={styles.auditoria.rowValue}>{parseUsuarioLabel(renuncia.usuario_cierre).nombre}</p>
+                {parseUsuarioLabel(renuncia.usuario_cierre).rol ? (
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{parseUsuarioLabel(renuncia.usuario_cierre).rol}</p>
+                ) : null}
+              </div>
               </div>
             ) : null}
             {renuncia.fecha_cierre ? (
@@ -94,7 +103,7 @@ export function ExpedienteAuditoria({ datos }: ExpedienteAuditoriaProps) {
                 </div>
                 <div className={styles.auditoria.rowContent}>
                   <p className={styles.auditoria.rowLabel}>Fecha de cierre</p>
-                  <p className={styles.auditoria.rowValue}>{formatDateCompact(renuncia.fecha_cierre)}</p>
+                  <p className={styles.auditoria.rowValue}>{formatDateTimeWithSeconds(renuncia.fecha_cierre)}</p>
                 </div>
               </div>
             ) : null}

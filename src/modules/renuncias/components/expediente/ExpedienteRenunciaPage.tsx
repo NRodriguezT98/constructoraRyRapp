@@ -21,8 +21,8 @@ interface ExpedienteRenunciaPageProps {
 }
 
 const TABS = [
-  { key: 'vivienda', label: 'Vivienda', icon: Home },
   { key: 'financiero', label: 'Financiero', icon: DollarSign },
+  { key: 'vivienda', label: 'Vivienda', icon: Home },
   { key: 'fuentes', label: 'Fuentes', icon: Landmark },
   { key: 'abonos', label: 'Abonos', icon: Receipt },
   { key: 'auditoria', label: 'Auditoría', icon: Shield },
@@ -32,7 +32,7 @@ type TabKey = (typeof TABS)[number]['key']
 
 export function ExpedienteRenunciaPage({ consecutivo }: ExpedienteRenunciaPageProps) {
   const { datos, cargando, error, recargar } = useExpedienteRenuncia(consecutivo)
-  const [tabActiva, setTabActiva] = useState<TabKey>('vivienda')
+  const [tabActiva, setTabActiva] = useState<TabKey>('financiero')
 
   // === LOADING ===
   if (cargando) {

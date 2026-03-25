@@ -212,6 +212,19 @@ export async function procesarDevolucion(renunciaId: string, dto: ProcesarDevolu
   const { data: session } = await supabase.auth.getSession()
   const userId = session?.session?.user?.id ?? null
 
+  // Resolver nombre + rol del usuario (mismo formato que registrar_renuncia_completa en DB)
+  let usuarioCierreLabel: string | null = userId
+  if (userId) {
+    const { data: perfil } = await supabase
+      .from('usuarios')
+      .select('nombres, apellidos, rol')
+      .eq('id', userId)
+      .single()
+    if (perfil) {
+      usuarioCierreLabel = `${perfil.nombres} ${perfil.apellidos} (${perfil.rol})`
+    }
+  }
+
   const { data, error } = await supabase
     .from('renuncias')
     .update({
@@ -222,7 +235,7 @@ export async function procesarDevolucion(renunciaId: string, dto: ProcesarDevolu
       comprobante_devolucion_url: dto.comprobante_devolucion_url || null,
       notas_cierre: dto.notas_cierre?.trim() || null,
       fecha_cierre: new Date().toISOString(),
-      usuario_cierre: userId,
+      usuario_cierre: usuarioCierreLabel,
     })
     .eq('id', renunciaId)
     .eq('estado', 'Pendiente Devolución')
@@ -243,22 +256,49 @@ export async function procesarDevolucion(renunciaId: string, dto: ProcesarDevolu
 
 export async function subirComprobante(file: File, renunciaId: string): Promise<string> {
   const ext = file.name.split('.').pop()
-  const fileName = `${renunciaId}/${Date.now()}.${ext}`
+  const filePath = `${renunciaId}/${Date.now()}.${ext}`
 
   const { error } = await supabase.storage
     .from('renuncias-comprobantes')
-    .upload(fileName, file, { upsert: false })
+    .upload(filePath, file, { upsert: false })
 
   if (error) {
     console.error('❌ Error subiendo comprobante:', error)
     throw new Error(`Error al subir comprobante: ${error.message}`)
   }
 
-  const { data: urlData } = supabase.storage
-    .from('renuncias-comprobantes')
-    .getPublicUrl(fileName)
+  // 🔒 Bucket privado: guardamos el PATH (no la URL pública).
+  // Para visualizar se usa generarUrlFirmadaComprobante(path).
+  return filePath
+}
 
-  return urlData.publicUrl
+/**
+ * Genera una URL firmada (expiración 1 hora) para ver un comprobante privado.
+ * El valor puede ser:
+ *   - Un path relativo: "uuid/1234567890.pdf"  (registros nuevos)
+ *   - Una URL pública completa (registros anteriores al bucket privado)
+ * En ambos casos se extrae el path correcto antes de llamar a createSignedUrl.
+ */
+export async function generarUrlFirmadaComprobante(pathOrUrl: string): Promise<string> {
+  // Normalizar: si viene una URL completa, extraer solo el path relativo al bucket
+  const BUCKET = 'renuncias-comprobantes'
+  let filePath = pathOrUrl
+  const marker = `/${BUCKET}/`
+  const idx = pathOrUrl.indexOf(marker)
+  if (idx !== -1) {
+    filePath = pathOrUrl.slice(idx + marker.length)
+  }
+
+  const { data, error } = await supabase.storage
+    .from(BUCKET)
+    .createSignedUrl(filePath, 3600) // 1 hora de expiración
+
+  if (error || !data?.signedUrl) {
+    console.error('❌ Error generando URL firmada:', error)
+    throw new Error('No se pudo generar el enlace al comprobante')
+  }
+
+  return data.signedUrl
 }
 
 // =====================================================

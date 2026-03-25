@@ -122,7 +122,7 @@ function AbonosTable({ abonos }: { abonos: AbonoExpediente[] }) {
               <td className={styles.abonos.td}>{abono.numero_referencia ?? '—'}</td>
               <td className={styles.abonos.td}>
                 <span className={abono.estado === 'Activo' ? styles.abonos.badgeActivo : styles.abonos.badgeAnulado}>
-                  {abono.estado}
+                  {abono.estado === 'Activo' ? 'Válido' : abono.estado}
                 </span>
               </td>
               <td className={styles.abonos.td}>
@@ -151,7 +151,7 @@ function AbonosMobile({ abonos }: { abonos: AbonoExpediente[] }) {
               #{abono.numero_recibo ?? '—'} • {formatDateCompact(abono.fecha_abono)}
             </span>
             <span className={abono.estado === 'Activo' ? styles.abonos.badgeActivo : styles.abonos.badgeAnulado}>
-              {abono.estado}
+              {abono.estado === 'Activo' ? 'Válido' : abono.estado}
             </span>
           </div>
           <div className={styles.abonos.mobileRow}>
