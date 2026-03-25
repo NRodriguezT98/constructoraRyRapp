@@ -300,76 +300,64 @@ export function ClientesTabla({
       },
     },
 
-    // 7. VALORES — Saldo + anillo de progreso SVG
+    // 7a. SALDO (texto: pendiente / total)
     {
       id: 'saldo',
-      header: 'Saldo / Progreso',
-      size: 190,
+      header: 'Saldo',
+      size: 155,
       cell: ({ row }) => {
         const cliente = row.original
-
         if (cliente.estado === 'Activo' && cliente.vivienda) {
-          const valorTotal = cliente.vivienda.valor_total || 0
+          const valorTotal = cliente.vivienda.valor_total_pagar || cliente.vivienda.valor_total || 0
+          const saldo = cliente.vivienda.saldo_pendiente || 0
+          const pagadoCompleto = saldo === 0 && valorTotal > 0
+          const fmt = (v: number) =>
+            new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0, maximumFractionDigits: 0 })
+              .format(v).replace(/\s/g, '')
+          return (
+            <div className="flex flex-col items-center gap-0.5 py-0.5">
+              <span className={`text-xs font-bold leading-tight ${
+                pagadoCompleto ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500 dark:text-red-400'
+              }`}>
+                {pagadoCompleto ? '✓ Pagado' : fmt(saldo)}
+              </span>
+              <span className="text-[10px] text-gray-400 dark:text-gray-500 leading-none">de {fmt(valorTotal)}</span>
+            </div>
+          )
+        }
+        return (
+          <div className={styles.cell.center}>
+            <span className="text-xs text-gray-400 dark:text-gray-500">—</span>
+          </div>
+        )
+      },
+    },
+
+    // 7b. PROGRESO (anillo circular SVG)
+    {
+      id: 'progreso',
+      header: 'Progreso',
+      size: 72,
+      cell: ({ row }) => {
+        const cliente = row.original
+        if (cliente.estado === 'Activo' && cliente.vivienda) {
+          const valorTotal = cliente.vivienda.valor_total_pagar || cliente.vivienda.valor_total || 0
           const totalAbonado = cliente.vivienda.total_abonado || 0
           const saldo = cliente.vivienda.saldo_pendiente || 0
-          const porcentaje = valorTotal > 0 ? Math.round((totalAbonado / valorTotal) * 100) : 0
+          const porcentaje = valorTotal > 0 ? Math.min(Math.round((totalAbonado / valorTotal) * 100), 100) : 0
           const pagadoCompleto = saldo === 0 && valorTotal > 0
-
-          const fmt = (v: number) =>
-            new Intl.NumberFormat('es-CO', {
-              style: 'currency',
-              currency: 'COP',
-              minimumFractionDigits: 0,
-              maximumFractionDigits: 0,
-            }).format(v).replace(/\s/g, '')
-
-          // Anillo SVG: circunferencia = 2π × r = 2π × 14 ≈ 87.96
           const CIRCUNFERENCIA = 87.96
-          const strokeDash = Math.min(porcentaje / 100, 1) * CIRCUNFERENCIA
-          const ringColor = pagadoCompleto
-            ? '#10b981'
-            : porcentaje >= 50
-            ? '#3b82f6'
-            : '#f59e0b'
-
+          const strokeDash = (porcentaje / 100) * CIRCUNFERENCIA
+          const ringColor = pagadoCompleto ? '#10b981' : porcentaje >= 50 ? '#3b82f6' : '#f59e0b'
           return (
-            <div className="flex items-center justify-between gap-2 py-1">
-              {/* Izquierda: saldo + total */}
-              <div className="flex flex-col min-w-0">
-                <span className={`text-xs font-bold leading-tight ${
-                  pagadoCompleto
-                    ? 'text-emerald-600 dark:text-emerald-400'
-                    : 'text-red-600 dark:text-red-400'
-                }`}>
-                  {pagadoCompleto ? '✓ Pagado' : fmt(saldo)}
-                </span>
-                <span className="text-[10px] text-gray-400 dark:text-gray-500 leading-tight">
-                  de {fmt(valorTotal)}
-                </span>
-              </div>
-
-              {/* Derecha: anillo SVG */}
-              <div className="relative flex-shrink-0 w-9 h-9">
+            <div className={styles.cell.center}>
+              <div className="relative w-9 h-9">
                 <svg width="36" height="36" viewBox="0 0 36 36" style={{ transform: 'rotate(-90deg)' }}>
-                  {/* Track */}
-                  <circle
-                    cx="18" cy="18" r="14"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                    className="text-gray-200 dark:text-gray-700"
-                  />
-                  {/* Progress */}
-                  <circle
-                    cx="18" cy="18" r="14"
-                    fill="none"
-                    stroke={ringColor}
-                    strokeWidth="4"
-                    strokeLinecap="round"
-                    strokeDasharray={`${strokeDash} ${CIRCUNFERENCIA}`}
-                  />
+                  <circle cx="18" cy="18" r="14" fill="none" stroke="currentColor" strokeWidth="4"
+                    className="text-gray-200 dark:text-gray-700" />
+                  <circle cx="18" cy="18" r="14" fill="none" stroke={ringColor} strokeWidth="4"
+                    strokeLinecap="round" strokeDasharray={`${strokeDash} ${CIRCUNFERENCIA}`} />
                 </svg>
-                {/* Porcentaje centrado */}
                 <div className="absolute inset-0 flex items-center justify-center">
                   <span className="text-[9px] font-bold text-gray-700 dark:text-gray-200 leading-none">
                     {pagadoCompleto ? '✓' : `${porcentaje}%`}
@@ -379,7 +367,6 @@ export function ClientesTabla({
             </div>
           )
         }
-
         return (
           <div className={styles.cell.center}>
             <span className="text-xs text-gray-400 dark:text-gray-500">—</span>

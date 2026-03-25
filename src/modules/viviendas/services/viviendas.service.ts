@@ -259,6 +259,7 @@ class ViviendasService {
           .from('abonos_historial' as any)
           .select('monto')
           .eq('negociacion_id', vivienda.negociacion_id)
+          .eq('estado', 'Activo')
 
         if (!abonosError && abonosData) {
           const totalAbonado = (abonosData as any[]).reduce((sum: number, abono: any) => sum + Number(abono.monto), 0)

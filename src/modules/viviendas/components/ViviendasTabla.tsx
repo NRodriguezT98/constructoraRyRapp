@@ -10,7 +10,7 @@
 'use client'
 
 import { type ColumnDef } from '@tanstack/react-table'
-import { Building2, CheckCircle2, Clock, Edit2, Eye, Home, Trash2 } from 'lucide-react'
+import { Building2, CheckCircle2, Clock, Edit2, Home, Trash2 } from 'lucide-react'
 
 import { DataTable } from '@/shared/components/table/DataTable'
 import { cn } from '@/shared/utils/helpers'
@@ -168,85 +168,81 @@ export function ViviendasTabla({
       },
     },
 
-    // Valor Total - COMPACTO
+    // Valor (valor total / saldo pendiente según estado)
     {
-      accessorKey: 'valor_total',
+      id: 'saldo',
       header: 'Valor',
-      size: 120,
+      size: 155,
+      accessorFn: (row) => row.saldo_pendiente || 0,
+      enableSorting: true,
       cell: ({ row }) => {
-        const valorFormateado = new Intl.NumberFormat('es-CO', {
-          style: 'currency',
-          currency: 'COP',
-          minimumFractionDigits: 0,
-        }).format(row.original.valor_total)
+        const estaAsignada = row.original.estado === 'Asignada' || row.original.estado === 'Entregada'
+        if (!estaAsignada) {
+          return (
+            <div className={styles.cell.center}>
+              <div className="flex flex-col items-center gap-0.5 py-0.5">
+                <span className="text-xs font-semibold text-gray-700 dark:text-gray-300">
+                  {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(row.original.valor_total || 0)}
+                </span>
+                <span className="text-[10px] text-gray-400 dark:text-gray-500">Valor total</span>
+              </div>
+            </div>
+          )
+        }
+        const valorTotal = row.original.valor_total || 0
+        const saldo = row.original.saldo_pendiente || 0
+        const pagadoCompleto = saldo === 0 && valorTotal > 0
+        const fmt = (v: number) =>
+          new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0, maximumFractionDigits: 0 })
+            .format(v).replace(/\s/g, '')
         return (
-          <div className={styles.cell.center}>
-            <span className={styles.valor.text}>{valorFormateado}</span>
+          <div className="flex flex-col items-center gap-0.5 py-0.5">
+            <span className={`text-xs font-bold leading-tight ${
+              pagadoCompleto ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500 dark:text-red-400'
+            }`}>
+              {pagadoCompleto ? '✓ Pagado' : fmt(saldo)}
+            </span>
+            <span className="text-[10px] text-gray-400 dark:text-gray-500 leading-none">de {fmt(valorTotal)}</span>
           </div>
         )
       },
     },
 
-    // Progreso de Pagos (con tooltip) - COMPACTO
+    // Progreso (anillo circular)
     {
-      id: 'progreso_pagos',
-      header: 'Pagos',
-      size: 100,
+      id: 'progreso',
+      header: 'Progreso',
+      size: 72,
       accessorFn: (row) => row.porcentaje_pagado || 0,
       enableSorting: true,
-      sortingFn: (rowA, rowB) => {
-        const porcentajeA = rowA.original.porcentaje_pagado || 0
-        const porcentajeB = rowB.original.porcentaje_pagado || 0
-        return porcentajeA - porcentajeB
-      },
+      sortingFn: (rowA, rowB) => (rowA.original.porcentaje_pagado || 0) - (rowB.original.porcentaje_pagado || 0),
       cell: ({ row }) => {
         const estaAsignada = row.original.estado === 'Asignada' || row.original.estado === 'Entregada'
-        const porcentajePagado = row.original.porcentaje_pagado || 0
-        const totalAbonadoFormateado = new Intl.NumberFormat('es-CO', {
-          style: 'currency',
-          currency: 'COP',
-          minimumFractionDigits: 0,
-        }).format(row.original.total_abonado || 0)
+        if (!estaAsignada) {
+          return <div className={styles.cell.center}><span className="text-xs text-gray-400 dark:text-gray-500">—</span></div>
+        }
+        const valorTotal = row.original.valor_total || 0
+        const saldo = row.original.saldo_pendiente || 0
+        const porcentaje = Math.min(row.original.porcentaje_pagado || 0, 100)
+        const pagadoCompleto = saldo === 0 && valorTotal > 0
+        const CIRCUNFERENCIA = 87.96
+        const strokeDash = (porcentaje / 100) * CIRCUNFERENCIA
+        const ringColor = pagadoCompleto ? '#10b981' : porcentaje >= 50 ? '#3b82f6' : '#f59e0b'
         return (
-          <div className={styles.progressBar.container}>
-            {estaAsignada ? (
-              // Vivienda asignada - mostrar progreso real
-              <div
-                className="relative group"
-                title={`Total abonado: ${totalAbonadoFormateado}`}
-              >
-                <div className={styles.progressBar.track}>
-                  <div
-                    className={styles.progressBar.fill}
-                    style={{ width: `${porcentajePagado}%` }}
-                  />
-                </div>
-                <span className={styles.progressBar.label}>{porcentajePagado}%</span>
-
-                {/* Tooltip al hover */}
-                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
-                  {totalAbonadoFormateado}
-                  <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-gray-900 dark:border-t-gray-700" />
-                </div>
+          <div className={styles.cell.center}>
+            <div className="relative w-9 h-9">
+              <svg width="36" height="36" viewBox="0 0 36 36" style={{ transform: 'rotate(-90deg)' }}>
+                <circle cx="18" cy="18" r="14" fill="none" stroke="currentColor" strokeWidth="4"
+                  className="text-gray-200 dark:text-gray-700" />
+                <circle cx="18" cy="18" r="14" fill="none" stroke={ringColor} strokeWidth="4"
+                  strokeLinecap="round" strokeDasharray={`${strokeDash} ${CIRCUNFERENCIA}`} />
+              </svg>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span className="text-[9px] font-bold text-gray-700 dark:text-gray-200 leading-none">
+                  {pagadoCompleto ? '✓' : `${porcentaje}%`}
+                </span>
               </div>
-            ) : (
-              // Vivienda NO asignada - barra oscura con mensaje
-              <div
-                className="relative group"
-                title="Vivienda no asignada"
-              >
-                <div className={styles.progressBar.trackDisabled}>
-                  <div className={styles.progressBar.fillDisabled} style={{ width: '0%' }} />
-                </div>
-                <span className={styles.progressBar.labelDisabled}>0%</span>
-
-                {/* Tooltip al hover */}
-                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
-                  Sin asignar
-                  <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-gray-900 dark:border-t-gray-700" />
-                </div>
-              </div>
-            )}
+            </div>
           </div>
         )
       },
@@ -256,22 +252,13 @@ export function ViviendasTabla({
     {
       id: 'acciones',
       header: 'Acciones',
-      size: 100,
+      size: 72,
       enableSorting: false,
       cell: ({ row }) => (
         <div className={styles.actions.container}>
-          {onView && (
-            <button
-              onClick={() => onView(row.original)}
-              className={cn(styles.actions.button.base, styles.actions.button.view)}
-              title="Ver detalles"
-            >
-              <Eye className={styles.actions.icon} />
-            </button>
-          )}
           {canEdit && onEdit && (
             <button
-              onClick={() => onEdit(row.original)}
+              onClick={(e) => { e.stopPropagation(); onEdit(row.original) }}
               className={cn(styles.actions.button.base, styles.actions.button.edit)}
               title="Editar"
             >
@@ -280,7 +267,7 @@ export function ViviendasTabla({
           )}
           {canDelete && onDelete && (
             <button
-              onClick={() => onDelete(row.original.id)}
+              onClick={(e) => { e.stopPropagation(); onDelete(row.original.id) }}
               className={cn(styles.actions.button.base, styles.actions.button.delete)}
               title="Eliminar"
             >
@@ -293,17 +280,41 @@ export function ViviendasTabla({
   ]
 
   return (
-    <DataTable
-      columns={columns}
-      data={viviendas}
-      gradientColor="orange"
-      pageSize={10}
-      initialSorting={[
-        {
-          id: 'identificador',
-          desc: false, // Ascendente (menor a mayor)
-        },
-      ]}
-    />
+    <div className="viviendas-tabla-wrapper w-full">
+      <style jsx>{`
+        .viviendas-tabla-wrapper :global(thead) {
+          background: linear-gradient(135deg, #ea580c 0%, #d97706 50%, #ca8a04 100%) !important;
+        }
+        .viviendas-tabla-wrapper :global(thead th) {
+          color: white !important;
+          font-weight: 600 !important;
+        }
+        .viviendas-tabla-wrapper :global(thead button) {
+          color: white !important;
+        }
+        .viviendas-tabla-wrapper :global(thead .opacity-40) {
+          opacity: 0.6 !important;
+        }
+        .viviendas-tabla-wrapper :global(tbody tr:hover) {
+          background: linear-gradient(90deg, rgba(234, 88, 12, 0.05) 0%, rgba(217, 119, 6, 0.05) 50%, rgba(202, 138, 4, 0.05) 100%) !important;
+        }
+        .viviendas-tabla-wrapper :global(tbody tr) {
+          transition: all 0.2s ease;
+        }
+      `}</style>
+      <DataTable
+        columns={columns}
+        data={viviendas}
+        gradientColor="orange"
+        pageSize={10}
+        initialSorting={[
+          {
+            id: 'identificador',
+            desc: false,
+          },
+        ]}
+        onRowClick={onView}
+      />
+    </div>
   )
 }

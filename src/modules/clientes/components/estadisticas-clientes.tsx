@@ -6,7 +6,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { UserCheck, UserPlus, Users, UserX } from 'lucide-react'
+import { UserCheck, UserMinus, UserPlus, Users, UserX } from 'lucide-react'
 
 import { metricasClientesColors, clientesListaStyles as styles } from '../styles/clientes-lista.styles'
 
@@ -15,12 +15,14 @@ interface EstadisticasClientesProps {
   interesados: number
   activos: number
   inactivos: number
+  renunciaron: number
 }
 
-const STATS_SECUNDARIAS = (interesados: number, activos: number, inactivos: number) => [
-  { label: 'Interesados', value: interesados, icon: UserPlus,  colors: metricasClientesColors.interesados },
-  { label: 'Activos',     value: activos,     icon: UserCheck, colors: metricasClientesColors.activos },
-  { label: 'Inactivos',  value: inactivos,   icon: UserX,     colors: metricasClientesColors.inactivos },
+const STATS_SECUNDARIAS = (interesados: number, activos: number, inactivos: number, renunciaron: number) => [
+  { label: 'Interesados', value: interesados, icon: UserPlus,    colors: metricasClientesColors.interesados },
+  { label: 'Activos',     value: activos,     icon: UserCheck,   colors: metricasClientesColors.activos },
+  { label: 'Renunciaron', value: renunciaron,  icon: UserMinus,   colors: metricasClientesColors.renunciaron },
+  { label: 'Inactivos',   value: inactivos,    icon: UserX,       colors: metricasClientesColors.inactivos },
 ]
 
 export function EstadisticasClientes({
@@ -28,15 +30,16 @@ export function EstadisticasClientes({
   interesados,
   activos,
   inactivos,
+  renunciaron,
 }: EstadisticasClientesProps) {
-  const secundarias = STATS_SECUNDARIAS(interesados, activos, inactivos)
+  const secundarias = STATS_SECUNDARIAS(interesados, activos, inactivos, renunciaron)
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.1 }}
-      className="grid grid-cols-4 gap-3"
+      className="grid grid-cols-5 gap-3"
     >
       {/* ⭐ MÉTRICA HÉROE: Total Clientes — más grande, más prominente */}
       <motion.div

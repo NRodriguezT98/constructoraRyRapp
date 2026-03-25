@@ -91,6 +91,18 @@ const THEME_COLORS = {
     focusBorder: 'focus:border-blue-500',
     focusRing: 'focus:ring-blue-500/20',
     hover: 'hover:from-blue-700 hover:via-indigo-700 hover:to-purple-700'
+  },
+  renuncias: {
+    gradient: 'from-red-600 via-rose-600 to-pink-600',
+    bg: 'bg-red-500',
+    text: 'text-red-600 dark:text-red-400',
+    border: 'border-red-200 dark:border-red-900/50',
+    bgLight: 'bg-red-50 dark:bg-red-900/20',
+    textDark: 'text-red-900 dark:text-red-300',
+    textMedium: 'text-red-800 dark:text-red-400',
+    focusBorder: 'focus:border-red-500',
+    focusRing: 'focus:ring-red-500/20',
+    hover: 'hover:from-red-700 hover:via-rose-700 hover:to-pink-700'
   }
 }
 

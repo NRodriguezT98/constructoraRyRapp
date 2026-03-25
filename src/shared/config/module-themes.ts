@@ -15,7 +15,7 @@
  * ```
  */
 
-export type ModuleName = 'proyectos' | 'clientes' | 'viviendas' | 'auditorias' | 'negociaciones' | 'abonos' | 'documentos'
+export type ModuleName = 'proyectos' | 'clientes' | 'viviendas' | 'auditorias' | 'negociaciones' | 'abonos' | 'documentos' | 'renuncias'
 
 export interface ModuleTheme {
   /** Nombre del módulo */
@@ -449,6 +449,60 @@ export const moduleThemes: Record<ModuleName, ModuleTheme> = {
   /** 📄 DOCUMENTOS - Rojo/Rosa/Pink */
   documentos: {
     name: 'Documentos',
+    colors: {
+      primary: 'red',
+      secondary: 'rose',
+      tertiary: 'pink',
+      light: 'red-50',
+      dark: 'red-900',
+    },
+    classes: {
+      gradient: {
+        primary: 'from-red-600 to-rose-600',
+        triple: 'from-red-600 via-rose-600 to-pink-600',
+        background: 'from-red-500 via-rose-500 to-pink-500',
+        backgroundDark: 'from-red-600 via-rose-600 to-pink-700',
+        hover: 'hover:from-red-700 hover:via-rose-700 hover:to-pink-700',
+      },
+      button: {
+        primary: 'bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white shadow-md hover:shadow-lg transition-all',
+        secondary: 'border border-red-300 bg-white text-red-700 hover:bg-red-50 dark:border-red-700 dark:bg-gray-700 dark:text-red-300 dark:hover:bg-gray-600',
+        hover: 'hover:bg-red-50 dark:hover:bg-red-900/20',
+      },
+      input: {
+        focusBorder: 'focus:border-red-500',
+        focusRing: 'focus:ring-2 focus:ring-red-500/20',
+      },
+      border: {
+        light: 'border-red-200 dark:border-red-800',
+        dark: 'border-red-800',
+        hover: 'hover:border-red-400 dark:hover:border-red-500',
+      },
+      bg: {
+        light: 'bg-red-50 dark:bg-red-900/20',
+        dark: 'bg-red-900/20',
+        hover: 'hover:bg-red-50 dark:hover:bg-red-900/30',
+      },
+      focus: {
+        ring: 'focus:ring-2 focus:ring-red-500 focus:border-transparent',
+        ringDark: 'dark:focus:ring-red-400',
+      },
+      text: {
+        primary: 'text-red-600 dark:text-red-400',
+        secondary: 'text-red-700 dark:text-red-300',
+        dark: 'dark:text-red-400',
+      },
+      badge: {
+        primary: 'bg-red-600',
+        secondary: 'bg-rose-600',
+      },
+      shadow: 'shadow-red-500/10',
+    },
+  },
+
+  /** 🚫 RENUNCIAS - Rojo/Rosa/Pink (degradado cálido) */
+  renuncias: {
+    name: 'Renuncias',
     colors: {
       primary: 'red',
       secondary: 'rose',

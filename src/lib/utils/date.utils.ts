@@ -156,6 +156,20 @@ export function formatDateTimeForDisplay(dateString: string): string {
   })
 }
 
+export function formatDateTimeWithSeconds(dateString: string): string {
+  if (!dateString) return ''
+
+  return new Date(dateString).toLocaleString('es-CO', {
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    timeZone: 'America/Bogota',
+  })
+}
+
 /**
  * Obtiene la fecha actual en formato YYYY-MM-DD (para inputs date)
  *

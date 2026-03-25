@@ -63,11 +63,9 @@ export function GeneralTab({ cliente }: GeneralTabProps) {
   // Extraer negociación activa (datos ya cargados en cliente.negociaciones)
   const negociacionActiva = useMemo(() => {
     if (!cliente.negociaciones?.length) return null
-    return (
-      cliente.negociaciones.find((n) => n.estado === 'Activa' || n.estado === 'Suspendida') ||
-      cliente.negociaciones[0] ||
-      null
-    )
+    // Solo considerar negociaciones realmente activas
+    const activa = cliente.negociaciones.find((n) => n.estado === 'Activa' || n.estado === 'Suspendida')
+    return activa || null
   }, [cliente.negociaciones])
 
   const handleIniciarAsignacion = () => {
@@ -91,12 +89,14 @@ export function GeneralTab({ cliente }: GeneralTabProps) {
 
   return (
     <motion.div key="info" {...styles.animations.fadeInUp} className="space-y-3">
-      {/* Banner de estado de documentación */}
-      <BannerDocumentacion
-        tieneDocumento={tieneDocumento}
-        cargandoValidacion={cargandoValidacion}
-        tieneNegociacionActiva={tieneNegociacionActiva}
-      />
+      {/* Banner de estado de documentación (oculto si renunció) */}
+      {cliente.estado !== 'Renunció' && (
+        <BannerDocumentacion
+          tieneDocumento={tieneDocumento}
+          cargandoValidacion={cargandoValidacion}
+          tieneNegociacionActiva={tieneNegociacionActiva}
+        />
+      )}
 
       {/* Resumen financiero de negociación - hero section */}
       {negociacionActiva && (negociacionActiva.valor_total_pagar > 0 || negociacionActiva.valor_total > 0) && (

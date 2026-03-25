@@ -425,6 +425,13 @@ export type Database = {
             foreignKeyName: "cliente_intereses_proyecto_id_fkey"
             columns: ["proyecto_id"]
             isOneToOne: false
+            referencedRelation: "v_renuncias_completas"
+            referencedColumns: ["proyecto_id"]
+          },
+          {
+            foreignKeyName: "cliente_intereses_proyecto_id_fkey"
+            columns: ["proyecto_id"]
+            isOneToOne: false
             referencedRelation: "vista_abonos_completos"
             referencedColumns: ["proyecto_id"]
           },
@@ -1116,6 +1123,13 @@ export type Database = {
             foreignKeyName: "documentos_proyecto_proyecto_id_fkey"
             columns: ["proyecto_id"]
             isOneToOne: false
+            referencedRelation: "v_renuncias_completas"
+            referencedColumns: ["proyecto_id"]
+          },
+          {
+            foreignKeyName: "documentos_proyecto_proyecto_id_fkey"
+            columns: ["proyecto_id"]
+            isOneToOne: false
             referencedRelation: "vista_abonos_completos"
             referencedColumns: ["proyecto_id"]
           },
@@ -1610,6 +1624,13 @@ export type Database = {
             columns: ["proyecto_id"]
             isOneToOne: false
             referencedRelation: "v_negociaciones_completas"
+            referencedColumns: ["proyecto_id"]
+          },
+          {
+            foreignKeyName: "manzanas_proyecto_id_fkey"
+            columns: ["proyecto_id"]
+            isOneToOne: false
+            referencedRelation: "v_renuncias_completas"
             referencedColumns: ["proyecto_id"]
           },
           {
@@ -2327,11 +2348,12 @@ export type Database = {
       renuncias: {
         Row: {
           abonos_snapshot: Json | null
+          cliente_datos_snapshot: Json | null
           cliente_id: string
           comprobante_devolucion_url: string | null
+          consecutivo: string
           estado: string
           fecha_actualizacion: string | null
-          fecha_cancelacion: string | null
           fecha_cierre: string | null
           fecha_creacion: string | null
           fecha_devolucion: string | null
@@ -2340,23 +2362,27 @@ export type Database = {
           metodo_devolucion: string | null
           monto_a_devolver: number
           motivo: string
-          motivo_cancelacion: string | null
+          negociacion_datos_snapshot: Json | null
           negociacion_id: string | null
+          notas_cierre: string | null
           numero_comprobante: string | null
           requiere_devolucion: boolean
-          usuario_cancelacion: string | null
+          retencion_monto: number
+          retencion_motivo: string | null
           usuario_cierre: string | null
           usuario_registro: string | null
+          vivienda_datos_snapshot: Json | null
           vivienda_id: string
           vivienda_valor_snapshot: number | null
         }
         Insert: {
           abonos_snapshot?: Json | null
+          cliente_datos_snapshot?: Json | null
           cliente_id: string
           comprobante_devolucion_url?: string | null
+          consecutivo: string
           estado?: string
           fecha_actualizacion?: string | null
-          fecha_cancelacion?: string | null
           fecha_cierre?: string | null
           fecha_creacion?: string | null
           fecha_devolucion?: string | null
@@ -2365,23 +2391,27 @@ export type Database = {
           metodo_devolucion?: string | null
           monto_a_devolver?: number
           motivo: string
-          motivo_cancelacion?: string | null
+          negociacion_datos_snapshot?: Json | null
           negociacion_id?: string | null
+          notas_cierre?: string | null
           numero_comprobante?: string | null
           requiere_devolucion?: boolean
-          usuario_cancelacion?: string | null
+          retencion_monto?: number
+          retencion_motivo?: string | null
           usuario_cierre?: string | null
           usuario_registro?: string | null
+          vivienda_datos_snapshot?: Json | null
           vivienda_id: string
           vivienda_valor_snapshot?: number | null
         }
         Update: {
           abonos_snapshot?: Json | null
+          cliente_datos_snapshot?: Json | null
           cliente_id?: string
           comprobante_devolucion_url?: string | null
+          consecutivo?: string
           estado?: string
           fecha_actualizacion?: string | null
-          fecha_cancelacion?: string | null
           fecha_cierre?: string | null
           fecha_creacion?: string | null
           fecha_devolucion?: string | null
@@ -2390,13 +2420,16 @@ export type Database = {
           metodo_devolucion?: string | null
           monto_a_devolver?: number
           motivo?: string
-          motivo_cancelacion?: string | null
+          negociacion_datos_snapshot?: Json | null
           negociacion_id?: string | null
+          notas_cierre?: string | null
           numero_comprobante?: string | null
           requiere_devolucion?: boolean
-          usuario_cancelacion?: string | null
+          retencion_monto?: number
+          retencion_motivo?: string | null
           usuario_cierre?: string | null
           usuario_registro?: string | null
+          vivienda_datos_snapshot?: Json | null
           vivienda_id?: string
           vivienda_valor_snapshot?: number | null
         }
@@ -2404,28 +2437,28 @@ export type Database = {
           {
             foreignKeyName: "renuncias_negociacion_id_fkey"
             columns: ["negociacion_id"]
-            isOneToOne: false
+            isOneToOne: true
             referencedRelation: "negociaciones"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "renuncias_negociacion_id_fkey"
             columns: ["negociacion_id"]
-            isOneToOne: false
+            isOneToOne: true
             referencedRelation: "negociaciones_con_version_actual"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "renuncias_negociacion_id_fkey"
             columns: ["negociacion_id"]
-            isOneToOne: false
+            isOneToOne: true
             referencedRelation: "v_negociaciones_completas"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "renuncias_negociacion_id_fkey"
             columns: ["negociacion_id"]
-            isOneToOne: false
+            isOneToOne: true
             referencedRelation: "vista_descuentos_aplicados"
             referencedColumns: ["negociacion_id"]
           },
@@ -3299,6 +3332,13 @@ export type Database = {
             foreignKeyName: "cliente_intereses_proyecto_id_fkey"
             columns: ["proyecto_id"]
             isOneToOne: false
+            referencedRelation: "v_renuncias_completas"
+            referencedColumns: ["proyecto_id"]
+          },
+          {
+            foreignKeyName: "cliente_intereses_proyecto_id_fkey"
+            columns: ["proyecto_id"]
+            isOneToOne: false
             referencedRelation: "vista_abonos_completos"
             referencedColumns: ["proyecto_id"]
           },
@@ -3470,6 +3510,7 @@ export type Database = {
           proyecto_nombre: string | null
           renuncia_id: string | null
           requiere_devolucion: boolean | null
+          retencion_monto: number | null
           saldo_pendiente: number | null
           valor_total: number | null
           vivienda_id: string | null
@@ -3505,19 +3546,124 @@ export type Database = {
           },
         ]
       }
+      v_renuncias_completas: {
+        Row: {
+          abonos_snapshot: Json | null
+          cliente_datos_snapshot: Json | null
+          cliente_documento: string | null
+          cliente_id: string | null
+          cliente_nombre: string | null
+          cliente_telefono: string | null
+          cliente_tipo_documento: string | null
+          comprobante_devolucion_url: string | null
+          consecutivo: string | null
+          dias_desde_renuncia: number | null
+          estado: string | null
+          fecha_actualizacion: string | null
+          fecha_cierre: string | null
+          fecha_creacion: string | null
+          fecha_devolucion: string | null
+          fecha_renuncia: string | null
+          id: string | null
+          manzana_nombre: string | null
+          metodo_devolucion: string | null
+          monto_a_devolver: number | null
+          motivo: string | null
+          negociacion_datos_snapshot: Json | null
+          negociacion_id: string | null
+          negociacion_valor_total: number | null
+          negociacion_valor_total_pagar: number | null
+          notas_cierre: string | null
+          numero_comprobante: string | null
+          proyecto_id: string | null
+          proyecto_nombre: string | null
+          requiere_devolucion: boolean | null
+          retencion_monto: number | null
+          retencion_motivo: string | null
+          usuario_cierre: string | null
+          usuario_registro: string | null
+          vivienda_datos_snapshot: Json | null
+          vivienda_id: string | null
+          vivienda_numero: string | null
+          vivienda_valor_snapshot: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "renuncias_negociacion_id_fkey"
+            columns: ["negociacion_id"]
+            isOneToOne: true
+            referencedRelation: "negociaciones"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "renuncias_negociacion_id_fkey"
+            columns: ["negociacion_id"]
+            isOneToOne: true
+            referencedRelation: "negociaciones_con_version_actual"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "renuncias_negociacion_id_fkey"
+            columns: ["negociacion_id"]
+            isOneToOne: true
+            referencedRelation: "v_negociaciones_completas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "renuncias_negociacion_id_fkey"
+            columns: ["negociacion_id"]
+            isOneToOne: true
+            referencedRelation: "vista_descuentos_aplicados"
+            referencedColumns: ["negociacion_id"]
+          },
+          {
+            foreignKeyName: "renuncias_vivienda_id_fkey"
+            columns: ["vivienda_id"]
+            isOneToOne: false
+            referencedRelation: "v_negociaciones_completas"
+            referencedColumns: ["vivienda_id"]
+          },
+          {
+            foreignKeyName: "renuncias_vivienda_id_fkey"
+            columns: ["vivienda_id"]
+            isOneToOne: false
+            referencedRelation: "vista_abonos_completos"
+            referencedColumns: ["vivienda_id"]
+          },
+          {
+            foreignKeyName: "renuncias_vivienda_id_fkey"
+            columns: ["vivienda_id"]
+            isOneToOne: false
+            referencedRelation: "vista_viviendas_completas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "renuncias_vivienda_id_fkey"
+            columns: ["vivienda_id"]
+            isOneToOne: false
+            referencedRelation: "viviendas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       v_renuncias_pendientes: {
         Row: {
           cliente_documento: string | null
           cliente_id: string | null
           cliente_nombre: string | null
           cliente_telefono: string | null
+          cliente_tipo_documento: string | null
           dias_pendiente: number | null
           fecha_renuncia: string | null
           id: string | null
           monto_a_devolver: number | null
           motivo: string | null
           negociacion_valor_total: number | null
+          negociacion_valor_total_pagar: number | null
           proyecto_nombre: string | null
+          requiere_devolucion: boolean | null
+          retencion_monto: number | null
+          retencion_motivo: string | null
           vivienda_numero: string | null
         }
         Relationships: []
@@ -3530,6 +3676,7 @@ export type Database = {
           cliente_id: string | null
           cliente_nombres: string | null
           cliente_numero_documento: string | null
+          comprobante_url: string | null
           estado: string | null
           fecha_abono: string | null
           fecha_actualizacion: string | null
@@ -3867,6 +4014,13 @@ export type Database = {
             foreignKeyName: "manzanas_proyecto_id_fkey"
             columns: ["proyecto_id"]
             isOneToOne: false
+            referencedRelation: "v_renuncias_completas"
+            referencedColumns: ["proyecto_id"]
+          },
+          {
+            foreignKeyName: "manzanas_proyecto_id_fkey"
+            columns: ["proyecto_id"]
+            isOneToOne: false
             referencedRelation: "vista_abonos_completos"
             referencedColumns: ["proyecto_id"]
           },
@@ -3966,6 +4120,13 @@ export type Database = {
             columns: ["proyecto_id"]
             isOneToOne: false
             referencedRelation: "v_negociaciones_completas"
+            referencedColumns: ["proyecto_id"]
+          },
+          {
+            foreignKeyName: "manzanas_proyecto_id_fkey"
+            columns: ["proyecto_id"]
+            isOneToOne: false
+            referencedRelation: "v_renuncias_completas"
             referencedColumns: ["proyecto_id"]
           },
           {
@@ -4134,6 +4295,13 @@ export type Database = {
             columns: ["proyecto_id"]
             isOneToOne: false
             referencedRelation: "v_negociaciones_completas"
+            referencedColumns: ["proyecto_id"]
+          },
+          {
+            foreignKeyName: "manzanas_proyecto_id_fkey"
+            columns: ["proyecto_id"]
+            isOneToOne: false
+            referencedRelation: "v_renuncias_completas"
             referencedColumns: ["proyecto_id"]
           },
           {
@@ -4437,6 +4605,17 @@ export type Database = {
         }
         Returns: string
       }
+      registrar_renuncia_completa: {
+        Args: {
+          p_motivo: string
+          p_negociacion_id: string
+          p_notas?: string
+          p_retencion_monto?: number
+          p_retencion_motivo?: string
+          p_usuario_id?: string
+        }
+        Returns: Json
+      }
       tiene_permiso: {
         Args: { p_accion: string; p_modulo: string; p_usuario_id: string }
         Returns: boolean
@@ -4454,15 +4633,6 @@ export type Database = {
           ejemplo_entidad: string
           tipo_fuente: string
           total_fuentes: number
-        }[]
-      }
-      validar_cancelacion_renuncia: {
-        Args: { p_renuncia_id: string }
-        Returns: {
-          mensaje_error: string
-          precio_igual: boolean
-          puede_cancelar: boolean
-          vivienda_disponible: boolean
         }[]
       }
       validar_password_admin: {

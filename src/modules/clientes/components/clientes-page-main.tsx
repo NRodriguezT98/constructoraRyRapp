@@ -176,6 +176,7 @@ export function ClientesPageMain({
           interesados={estadisticas.interesados}
           activos={estadisticas.activos}
           inactivos={estadisticas.inactivos}
+          renunciaron={estadisticas.renunciaron}
         />
 
         {/* 🔍 Filtros Premium con Toggle Vista */}

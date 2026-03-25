@@ -78,6 +78,7 @@ class ClientesService {
           cliente_id,
           estado,
           valor_total,
+          valor_total_pagar,
           total_abonado,
           saldo_pendiente,
           viviendas!negociaciones_vivienda_id_fkey (
@@ -127,6 +128,7 @@ class ClientesService {
           nombre_manzana: neg.viviendas?.manzanas?.nombre,
           numero_vivienda: neg.viviendas?.numero,
           valor_total: neg.valor_total,
+          valor_total_pagar: neg.valor_total_pagar,
           total_abonado: neg.total_abonado,
           saldo_pendiente: neg.saldo_pendiente,
         }
@@ -523,6 +525,7 @@ class ClientesService {
       interesados: data?.filter((c) => c.estado === 'Interesado').length || 0,
       activos: data?.filter((c) => c.estado === 'Activo').length || 0,
       inactivos: data?.filter((c) => c.estado === 'Inactivo').length || 0,
+      renunciaron: data?.filter((c) => c.estado === 'Renunció').length || 0,
     }
 
     return stats

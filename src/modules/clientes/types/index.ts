@@ -335,6 +335,7 @@ export interface ClienteResumen extends Cliente {
     nombre_manzana?: string
     numero_vivienda?: string
     valor_total?: number
+    valor_total_pagar?: number
     total_abonado?: number
     saldo_pendiente?: number
   }
@@ -361,10 +362,11 @@ export interface NegociacionCompleta extends Negociacion {
 // =====================================================
 
 /**
- * ✅ VERIFICADO en: docs/DATABASE-SCHEMA-REFERENCE.md
- * CHECK constraint: renuncias_estado_check (3 estados)
+ * ✅ ACTUALIZADO: Migración 024 eliminó 'Cancelada'.
+ * CHECK constraint: renuncias_estado_check (2 estados)
+ * Tipos canónicos: src/modules/renuncias/types/index.ts
  */
-export type EstadoRenuncia = 'Pendiente Devolución' | 'Cerrada' | 'Cancelada'
+export type EstadoRenuncia = 'Pendiente Devolución' | 'Cerrada'
 
 export interface Renuncia {
   id: string
@@ -389,16 +391,15 @@ export interface Renuncia {
   negociacion_datos_snapshot?: Record<string, unknown> // { valor_total, pagos_realizados }
   abonos_snapshot?: Record<string, unknown> // Lista de abonos realizados
 
-  // Seguimiento de resolución
-  fecha_devolucion?: string // Cuando se hizo la devolución efectiva
-  metodo_devolucion?: string // 'Transferencia', 'Cheque', 'Efectivo'
-  referencia_devolucion?: string // Número de transacción/cheque
-  comprobante_devolucion_url?: string // Documento de respaldo
+  // Retención (migración 024)
+  retencion_monto: number
+  retencion_motivo?: string
 
-  // Cancelación de renuncia
-  fecha_cancelacion?: string
-  motivo_cancelacion?: string // Requerido cuando estado='Cancelada'
-  usuario_cancelacion?: string
+  // Seguimiento de resolución
+  fecha_devolucion?: string
+  metodo_devolucion?: string
+  numero_comprobante?: string
+  comprobante_devolucion_url?: string
 
   // Cierre administrativo
   fecha_cierre?: string
@@ -428,7 +429,6 @@ export interface Renuncia {
 export const ESTADOS_RENUNCIA: Record<EstadoRenuncia, string> = {
   'Pendiente Devolución': 'Pendiente Devolución',
   Cerrada: 'Cerrada',
-  Cancelada: 'Cancelada',
 }
 
 export const METODOS_DEVOLUCION = [
@@ -551,27 +551,8 @@ export interface CompletarProcesoDTO {
   notas?: string
 }
 
-// DTOs para Renuncias
-export interface CrearRenunciaDTO {
-  negociacion_id: string
-  motivo: string
-  notas_cierre?: string
-}
-
-export interface ProcesarDevolucionDTO {
-  fecha_devolucion: string
-  metodo_devolucion: MetodoDevolucion
-  referencia_devolucion?: string
-  comprobante_devolucion_url?: string
-}
-
-export interface CancelarRenunciaDTO {
-  motivo_cancelacion: string
-}
-
-export interface CerrarRenunciaDTO {
-  notas_cierre?: string
-}
+// DTOs para Renuncias → Migrados a src/modules/renuncias/types/index.ts
+// Importar desde: import { RegistrarRenunciaDTO, ProcesarDevolucionDTO } from '@/modules/renuncias/types'
 
 // =====================================================
 // FILTROS Y BÚSQUEDA

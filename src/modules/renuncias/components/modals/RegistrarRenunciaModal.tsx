@@ -1,0 +1,565 @@
+'use client'
+
+import { AnimatePresence, motion } from 'framer-motion'
+import {
+    AlertTriangle,
+    ArrowLeft,
+    ArrowRight,
+    Ban,
+    CheckCircle,
+    DollarSign,
+    FileX,
+    Home,
+    Loader2,
+    Shield,
+    Sparkles,
+    User,
+    X
+} from 'lucide-react'
+import { createPortal } from 'react-dom'
+
+import { useModalRegistrarRenuncia } from '../../hooks/useModalRegistrarRenuncia'
+import { formatCOP } from '../../utils/renuncias.utils'
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Confetti
+// ─────────────────────────────────────────────────────────────────────────────
+const CONFETTI_PARTICLES = Array.from({ length: 12 }, (_, i) => ({
+  id: i,
+  x: Math.random() * 200 - 100,
+  y: -(Math.random() * 120 + 40),
+  rotate: Math.random() * 360,
+  scale: Math.random() * 0.5 + 0.5,
+  delay: Math.random() * 0.3,
+}))
+const CONFETTI_COLORS = ['#FFD700', '#FF6B6B', '#4ECDC4', '#A78BFA', '#F97316', '#06B6D4']
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Styles (inline para modal — componente self-contained)
+// ─────────────────────────────────────────────────────────────────────────────
+const s = {
+  overlay: 'fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4',
+  container: 'relative w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl bg-white dark:bg-gray-900 shadow-2xl border border-gray-200 dark:border-gray-700',
+  header: 'sticky top-0 z-10 flex items-center justify-between px-5 py-4 bg-gradient-to-r from-red-600 via-rose-600 to-pink-600 text-white rounded-t-2xl',
+  headerTitle: 'text-lg font-bold flex items-center gap-2',
+  closeBtn: 'p-1.5 rounded-lg hover:bg-white/20 transition-colors',
+  body: 'px-5 py-4 space-y-4',
+  footer: 'sticky bottom-0 px-5 py-3 bg-gray-50 dark:bg-gray-800/80 border-t border-gray-200 dark:border-gray-700 rounded-b-2xl flex items-center justify-between',
+  label: 'block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1',
+  input: 'w-full px-3 py-2 text-sm bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-lg focus:border-red-500 focus:ring-2 focus:ring-red-500/20 outline-none transition-all',
+  textarea: 'w-full px-3 py-2 text-sm bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-lg focus:border-red-500 focus:ring-2 focus:ring-red-500/20 outline-none transition-all resize-none',
+  charCount: 'text-right text-xs text-gray-400 mt-0.5',
+  errorBox: 'flex items-start gap-2 p-3 rounded-lg bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 text-sm text-red-700 dark:text-red-300',
+  warningBox: 'flex items-start gap-2 p-3 rounded-lg bg-yellow-50 dark:bg-yellow-950/30 border border-yellow-200 dark:border-yellow-800 text-sm text-yellow-700 dark:text-yellow-300',
+  infoRow: 'flex items-center gap-2 py-1.5',
+  infoIcon: 'w-4 h-4 text-gray-400 flex-shrink-0',
+  infoLabel: 'text-xs text-gray-500 dark:text-gray-400 min-w-[80px]',
+  infoValue: 'text-sm font-semibold text-gray-900 dark:text-white',
+  btnPrimary: 'inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-red-600 via-rose-600 to-pink-600 text-white text-sm font-semibold hover:from-red-700 hover:via-rose-700 hover:to-pink-700 transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-lg',
+  btnSecondary: 'inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-all',
+  stepIndicator: 'flex items-center gap-2 text-xs text-white/80',
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Props
+// ─────────────────────────────────────────────────────────────────────────────
+interface RegistrarRenunciaModalProps {
+  negociacionId: string
+  onClose: () => void
+  onExitosa?: () => void
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Component
+// ─────────────────────────────────────────────────────────────────────────────
+export function RegistrarRenunciaModal({
+  negociacionId,
+  onClose,
+  onExitosa,
+}: RegistrarRenunciaModalProps) {
+  const {
+    validacion,
+    validando,
+    puedeRegistrar,
+    paso,
+    irAPaso2,
+    volverAPaso1,
+    motivo,
+    handleMotivoChange,
+    motivoMaxChars,
+    retencionMonto,
+    handleRetencionMontoChange,
+    retencionMotivo,
+    handleRetencionMotivoChange,
+    notas,
+    handleNotasChange,
+    textoConfirmacion,
+    setTextoConfirmacion,
+    totalAbonado,
+    montoADevolver,
+    motivoValido,
+    retencionValida,
+    retencionEnRango,
+    paso1Valido,
+    paso2Valido,
+    registrando,
+    error,
+    exitoso,
+    handleConfirmar,
+  } = useModalRegistrarRenuncia({ negociacionId, onExitosa })
+
+  // ── Validando ──────────────────────────────────────────────────────────
+  if (validando) {
+    return typeof window !== 'undefined' ? createPortal(
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className={s.overlay}>
+        <motion.div
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          className={s.container}
+          onClick={(e) => e.stopPropagation()}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Validando renuncia"
+        >
+          <div className={s.header}>
+            <span className={s.headerTitle}>
+              <FileX className="w-5 h-5" /> Registrar Renuncia
+            </span>
+          </div>
+          <div className="flex flex-col items-center justify-center py-16 gap-4">
+            <Loader2 className="w-8 h-8 text-red-500 animate-spin" />
+            <p className="text-sm text-gray-600 dark:text-gray-400">Validando negociación...</p>
+          </div>
+        </motion.div>
+      </motion.div>,
+      document.body
+    ) : null
+  }
+
+  // ── No puede renunciar ─────────────────────────────────────────────────
+  if (!puedeRegistrar && validacion) {
+    return typeof window !== 'undefined' ? createPortal(
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className={s.overlay} onClick={onClose}>
+        <motion.div
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          className={s.container}
+          onClick={(e) => e.stopPropagation()}
+          role="dialog"
+          aria-modal="true"
+          aria-label="No se puede renunciar"
+        >
+          <div className={s.header}>
+            <span className={s.headerTitle}>
+              <Ban className="w-5 h-5" /> No se puede registrar
+            </span>
+            <button onClick={onClose} className={s.closeBtn}>
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+          <div className={s.body}>
+            <div className={s.errorBox}>
+              <AlertTriangle className="w-5 h-5 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="font-semibold">Renuncia bloqueada</p>
+                <p className="mt-1">{validacion.motivo_bloqueo}</p>
+              </div>
+            </div>
+            <div className="space-y-1 mt-3">
+              <div className={s.infoRow}>
+                <User className={s.infoIcon} />
+                <span className={s.infoLabel}>Cliente:</span>
+                <span className={s.infoValue}>{validacion.negociacion.cliente_nombre}</span>
+              </div>
+              <div className={s.infoRow}>
+                <Home className={s.infoIcon} />
+                <span className={s.infoLabel}>Vivienda:</span>
+                <span className={s.infoValue}>
+                  Mz. {validacion.negociacion.manzana_nombre} Casa {validacion.negociacion.vivienda_numero}
+                </span>
+              </div>
+            </div>
+          </div>
+          <div className={s.footer}>
+            <div />
+            <button onClick={onClose} className={s.btnSecondary}>Cerrar</button>
+          </div>
+        </motion.div>
+      </motion.div>,
+      document.body
+    ) : null
+  }
+
+  // ── Registrando (loading) ──────────────────────────────────────────────
+  if (registrando) {
+    return typeof window !== 'undefined' ? createPortal(
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className={s.overlay}>
+        <motion.div
+          initial={{ scale: 0.9 }} animate={{ scale: 1 }}
+          className={s.container}
+          onClick={(e) => e.stopPropagation()}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Registrando renuncia"
+        >
+          <div className={s.header}>
+            <span className={s.headerTitle}>
+              <FileX className="w-5 h-5" /> Registrando...
+            </span>
+          </div>
+          <div className="flex flex-col items-center justify-center py-16 gap-4">
+            <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1.2, ease: 'linear' }}>
+              <Loader2 className="w-10 h-10 text-red-500" />
+            </motion.div>
+            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              Procesando renuncia y cascada...
+            </p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              Esto puede tomar unos segundos
+            </p>
+          </div>
+        </motion.div>
+      </motion.div>,
+      document.body
+    ) : null
+  }
+
+  // ── Éxito ──────────────────────────────────────────────────────────────
+  if (exitoso) {
+    return typeof window !== 'undefined' ? createPortal(
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className={s.overlay}>
+        <motion.div
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+          className={s.container}
+          onClick={(e) => e.stopPropagation()}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Renuncia registrada"
+        >
+          <div className="relative flex flex-col items-center justify-center py-16 px-6 overflow-hidden">
+            {CONFETTI_PARTICLES.map((p) => (
+              <motion.div
+                key={p.id}
+                initial={{ x: 0, y: 0, opacity: 1, scale: 0 }}
+                animate={{ x: p.x, y: p.y, opacity: 0, scale: p.scale, rotate: p.rotate }}
+                transition={{ duration: 1.2, delay: p.delay, ease: 'easeOut' }}
+                className="absolute top-1/3 left-1/2 w-2 h-2 rounded-full"
+                style={{ backgroundColor: CONFETTI_COLORS[p.id % CONFETTI_COLORS.length] }}
+              />
+            ))}
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ type: 'spring', stiffness: 300, delay: 0.1 }}
+            >
+              <div className="w-20 h-20 rounded-full bg-gradient-to-br from-green-400 to-emerald-600 flex items-center justify-center shadow-xl shadow-green-500/30">
+                <CheckCircle className="w-10 h-10 text-white" />
+              </div>
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="text-center mt-6"
+            >
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1">
+                Renuncia Registrada
+              </h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                {montoADevolver > 0
+                  ? `Devolución pendiente: ${formatCOP(montoADevolver)}`
+                  : 'Sin devolución requerida — renuncia cerrada automáticamente.'
+                }
+              </p>
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.8 }}
+              className="flex items-center gap-1 mt-4 text-xs text-gray-400"
+            >
+              <Sparkles className="w-3 h-3" />
+              <span>Cerrando automáticamente...</span>
+            </motion.div>
+          </div>
+        </motion.div>
+      </motion.div>,
+      document.body
+    ) : null
+  }
+
+  // ── Wizard principal ───────────────────────────────────────────────────
+  const negInfo = validacion?.negociacion
+
+  return typeof window !== 'undefined' ? createPortal(
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className={s.overlay} onClick={onClose}>
+      <motion.div
+        initial={{ scale: 0.95, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+        className={s.container}
+        onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Registrar renuncia"
+      >
+        {/* Header */}
+        <div className={s.header}>
+          <span className={s.headerTitle}>
+            <FileX className="w-5 h-5" />
+            Registrar Renuncia
+          </span>
+          <div className="flex items-center gap-3">
+            <span className={s.stepIndicator}>
+              Paso {paso} de 2
+            </span>
+            <button onClick={onClose} className={s.closeBtn}>
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+
+        {/* Body */}
+        <AnimatePresence mode="wait">
+          {paso === 1 ? (
+            <motion.div
+              key="paso1"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className={s.body}
+            >
+              {/* Info negociación */}
+              <div className="p-3 rounded-lg bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 space-y-1">
+                <div className={s.infoRow}>
+                  <User className={s.infoIcon} />
+                  <span className={s.infoLabel}>Cliente:</span>
+                  <span className={s.infoValue}>{negInfo?.cliente_nombre}</span>
+                </div>
+                <div className={s.infoRow}>
+                  <Home className={s.infoIcon} />
+                  <span className={s.infoLabel}>Vivienda:</span>
+                  <span className={s.infoValue}>
+                    Mz. {negInfo?.manzana_nombre} Casa {negInfo?.vivienda_numero}
+                  </span>
+                </div>
+                <div className={s.infoRow}>
+                  <DollarSign className={s.infoIcon} />
+                  <span className={s.infoLabel}>Total Abonado:</span>
+                  <span className="text-sm font-bold text-green-600 dark:text-green-400">
+                    {formatCOP(totalAbonado)}
+                  </span>
+                </div>
+              </div>
+
+              {/* Motivo */}
+              <div>
+                <label className={s.label}>
+                  Motivo de renuncia <span className="text-red-500">*</span>
+                </label>
+                <textarea
+                  rows={3}
+                  className={s.textarea}
+                  placeholder="Describe el motivo de la renuncia (mín. 10 caracteres)..."
+                  value={motivo}
+                  onChange={(e) => handleMotivoChange(e.target.value)}
+                />
+                <p className={s.charCount}>{motivo.length}/{motivoMaxChars}</p>
+              </div>
+
+              {/* Retención */}
+              <div className="p-3 rounded-lg border-2 border-dashed border-gray-200 dark:border-gray-700 space-y-3">
+                <p className="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 flex items-center gap-1.5">
+                  <Shield className="w-3.5 h-3.5" />
+                  Retención (opcional)
+                </p>
+                <div>
+                  <label className={s.label}>Monto a retener</label>
+                  <input
+                    type="number"
+                    min={0}
+                    max={totalAbonado}
+                    className={s.input}
+                    value={retencionMonto || ''}
+                    onChange={(e) => handleRetencionMontoChange(Number(e.target.value))}
+                    placeholder="0"
+                  />
+                  {!retencionEnRango ? (
+                    <p className="text-xs text-red-500 mt-1">
+                      Máximo: {formatCOP(totalAbonado)}
+                    </p>
+                  ) : null}
+                </div>
+                {retencionMonto > 0 ? (
+                  <div>
+                    <label className={s.label}>
+                      Motivo de retención <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      className={s.input}
+                      value={retencionMotivo}
+                      onChange={(e) => handleRetencionMotivoChange(e.target.value)}
+                      placeholder="Justificación de la retención..."
+                    />
+                  </div>
+                ) : null}
+              </div>
+
+              {/* Notas */}
+              <div>
+                <label className={s.label}>
+                  Notas adicionales <span className="text-gray-400 font-normal normal-case">(opcional)</span>
+                </label>
+                <textarea
+                  rows={2}
+                  className={s.textarea}
+                  value={notas}
+                  onChange={(e) => handleNotasChange(e.target.value)}
+                  placeholder="Observaciones internas..."
+                />
+              </div>
+
+              {/* Resumen financiero */}
+              <div className="p-3 rounded-lg bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 space-y-1">
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600 dark:text-gray-400">Total Abonado a la fecha:</span>
+                  <span className="font-semibold text-gray-900 dark:text-white">{formatCOP(totalAbonado)}</span>
+                </div>
+                {retencionMonto > 0 ? (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-red-600 dark:text-red-400">Retención:</span>
+                    <span className="font-semibold text-red-600 dark:text-red-400">- {formatCOP(retencionMonto)}</span>
+                  </div>
+                ) : null}
+                <div className="flex justify-between text-sm font-bold border-t border-red-200 dark:border-red-800 pt-1 mt-1">
+                  <span className="text-gray-900 dark:text-white">A devolver:</span>
+                  <span className="text-red-700 dark:text-red-300">{formatCOP(montoADevolver)}</span>
+                </div>
+              </div>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="paso2"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+              className={s.body}
+            >
+              {/* Warning irreversible */}
+              <div className={s.warningBox}>
+                <AlertTriangle className="w-5 h-5 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-bold">Acción irreversible</p>
+                  <p className="mt-1">Una vez registrada, la renuncia NO se puede cancelar ni deshacer.</p>
+                </div>
+              </div>
+
+              {/* Efectos cascada */}
+              <div className="p-3 rounded-lg bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700">
+                <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                  Esta acción ejecutará automáticamente:
+                </p>
+                <ul className="space-y-1.5 text-xs text-gray-600 dark:text-gray-400">
+                  <li className="flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
+                    Negociación → <span className="font-semibold text-red-600 dark:text-red-400">Cerrada por Renuncia</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
+                    Vivienda → <span className="font-semibold text-green-600 dark:text-green-400">Disponible</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-gray-400" />
+                    Fuentes de pago → <span className="font-semibold">Inactivas</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+                    Snapshots guardados para auditoría
+                  </li>
+                </ul>
+              </div>
+
+              {/* Resumen */}
+              <div className="p-3 rounded-lg bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 space-y-1">
+                <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">Resumen financiero:</p>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600 dark:text-gray-400">Total Abonado:</span>
+                  <span className="font-semibold">{formatCOP(totalAbonado)}</span>
+                </div>
+                {retencionMonto > 0 ? (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-red-600 dark:text-red-400">Retención:</span>
+                    <span className="font-semibold text-red-600">- {formatCOP(retencionMonto)}</span>
+                  </div>
+                ) : null}
+                <div className="flex justify-between text-sm font-bold border-t border-red-200 dark:border-red-800 pt-1 mt-1">
+                  <span>Monto a devolver:</span>
+                  <span className="text-red-700 dark:text-red-300">{formatCOP(montoADevolver)}</span>
+                </div>
+              </div>
+
+              {/* Input CONFIRMAR */}
+              <div>
+                <label className={s.label}>
+                  Escribe <span className="font-bold text-red-600">CONFIRMAR</span> para continuar
+                </label>
+                <input
+                  type="text"
+                  className={s.input}
+                  value={textoConfirmacion}
+                  onChange={(e) => setTextoConfirmacion(e.target.value)}
+                  placeholder="CONFIRMAR"
+                  autoComplete="off"
+                />
+              </div>
+
+              {/* Error */}
+              {error ? (
+                <div className={s.errorBox}>
+                  <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                  <span>{error}</span>
+                </div>
+              ) : null}
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Footer */}
+        <div className={s.footer}>
+          {paso === 1 ? (
+            <>
+              <button onClick={onClose} className={s.btnSecondary}>Cancelar</button>
+              <button
+                onClick={irAPaso2}
+                disabled={!paso1Valido}
+                className={s.btnPrimary}
+              >
+                Siguiente
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            </>
+          ) : (
+            <>
+              <button onClick={volverAPaso1} className={s.btnSecondary}>
+                <ArrowLeft className="w-4 h-4" />
+                Atrás
+              </button>
+              <button
+                onClick={handleConfirmar}
+                disabled={!paso2Valido}
+                className={s.btnPrimary}
+              >
+                <FileX className="w-4 h-4" />
+                Registrar Renuncia
+              </button>
+            </>
+          )}
+        </div>
+      </motion.div>
+    </motion.div>,
+    document.body
+  ) : null
+}

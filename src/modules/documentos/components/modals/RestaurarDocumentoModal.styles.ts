@@ -57,6 +57,14 @@ const THEME_COLORS = {
     textDark: 'text-blue-900 dark:text-blue-300',
     hover: 'hover:from-blue-700 hover:via-indigo-700 hover:to-purple-700',
   },
+  renuncias: {
+    gradient: 'from-red-600 via-rose-600 to-pink-600',
+    bgLight: 'bg-red-50 dark:bg-red-900/20',
+    border: 'border-red-200 dark:border-red-900/50',
+    text: 'text-red-600 dark:text-red-400',
+    textDark: 'text-red-900 dark:text-red-300',
+    hover: 'hover:from-red-700 hover:via-rose-700 hover:to-pink-700',
+  },
 }
 
 export const getRestaurarDocumentoModalStyles = (moduleName: ModuleName = 'proyectos') => {

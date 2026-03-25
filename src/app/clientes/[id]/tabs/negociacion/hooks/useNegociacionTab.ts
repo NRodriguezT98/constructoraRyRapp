@@ -192,9 +192,10 @@ export function useNegociacionTab({ cliente }: UseNegociacionTabProps) {
       const { data } = await supabase
         .from('abonos_historial')
         .select(
-          'id, monto, fecha_abono, metodo_pago, numero_referencia, fuente_pago_id, notas, comprobante_url'
+          'id, monto, fecha_abono, metodo_pago, numero_referencia, fuente_pago_id, notas, comprobante_url, estado'
         )
         .eq('negociacion_id', negociacion?.id ?? '')
+        .eq('estado', 'Activo')
         .order('fecha_abono', { ascending: false })
         .limit(5)
       return data ?? []

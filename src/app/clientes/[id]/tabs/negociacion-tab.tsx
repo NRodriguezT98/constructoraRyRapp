@@ -13,23 +13,29 @@ import { useState } from 'react'
 
 import { motion } from 'framer-motion'
 import {
-  AlertTriangle,
-  ArrowUpRight,
-  CheckCircle2,
-  CreditCard,
-  DollarSign,
-  FileText,
-  Home,
-  Lock,
-  Percent,
-  RefreshCw,
-  SlidersHorizontal,
-  TrendingUp,
-  Wallet,
+    AlertTriangle,
+    ArrowUpRight,
+    CheckCircle2,
+    Clock,
+    CreditCard,
+    DollarSign,
+    ExternalLink,
+    FileText,
+    FileX,
+    Home,
+    Info,
+    Lock,
+    Percent,
+    RefreshCw,
+    Shield,
+    SlidersHorizontal,
+    TrendingUp,
+    Wallet,
 } from 'lucide-react'
 
 import { useRouter } from 'next/navigation'
 
+import { formatDateCompact } from '@/lib/utils/date.utils'
 import { ModalEditarAbono } from '@/modules/abonos/components/modal-editar-abono'
 import type { AbonoParaEditar } from '@/modules/abonos/types/editar-abono.types'
 import type { Cliente } from '@/modules/clientes/types'
@@ -37,11 +43,13 @@ import { CuotasCreditoTab } from '@/modules/fuentes-pago/components/CuotasCredit
 import { esCreditoConstructora } from '@/shared/constants/fuentes-pago.constants'
 import { formatCurrency } from '@/shared/utils/format'
 
+import { RegistrarRenunciaModal } from '@/modules/renuncias/components/modals/RegistrarRenunciaModal'
+
 import {
-  AbonosRecientes,
-  BarraFinanciera,
-  FuenteMiniCard,
-  RebalancearModal,
+    AbonosRecientes,
+    BarraFinanciera,
+    FuenteMiniCard,
+    RebalancearModal,
 } from './negociacion/components'
 import { useNegociacionTab } from './negociacion/hooks'
 
@@ -76,6 +84,102 @@ function SinNegociacion() {
   )
 }
 
+function NegociacionCerradaRenuncia({ fechaRenuncia }: { fechaRenuncia?: string | null }) {
+  const router = useRouter()
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      className='rounded-xl backdrop-blur-xl bg-gradient-to-br from-white/90 via-red-50/90 to-rose-50/90 dark:from-gray-800/90 dark:via-gray-800/80 dark:to-red-950/50 border border-gray-200/50 dark:border-gray-700/50 p-5 text-center shadow-xl space-y-4'
+    >
+      {/* Icono con gradiente */}
+      <div className='flex justify-center'>
+        <motion.div
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ type: 'spring', stiffness: 200 }}
+          className='w-16 h-16 rounded-xl bg-gradient-to-br from-red-500 via-rose-600 to-pink-600 flex items-center justify-center shadow-2xl shadow-red-500/30'
+        >
+          <FileX className='w-8 h-8 text-white' />
+        </motion.div>
+      </div>
+
+      {/* Título y descripción */}
+      <h3 className='text-xl font-bold bg-gradient-to-br from-gray-900 via-gray-800 to-red-900 dark:from-white dark:via-gray-100 dark:to-red-100 bg-clip-text text-transparent'>
+        Negociación Cerrada por Renuncia
+      </h3>
+      <p className='text-sm text-gray-600 dark:text-gray-400 max-w-md mx-auto leading-relaxed'>
+        Este cliente renunció a su negociación. La vivienda fue liberada y las fuentes de pago desactivadas.
+        Los detalles completos están disponibles en el módulo de Renuncias.
+      </p>
+
+      {/* Fecha de renuncia */}
+      {fechaRenuncia ? (
+        <div className='inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-red-100 dark:bg-red-900/30 border border-red-200 dark:border-red-800/50'>
+          <Clock className='w-3.5 h-3.5 text-red-500 dark:text-red-400' />
+          <span className='text-xs font-semibold text-red-700 dark:text-red-300'>
+            Renunció el {formatDateCompact(fechaRenuncia)}
+          </span>
+        </div>
+      ) : null}
+
+      {/* Info card */}
+      <div className='rounded-xl bg-white/60 dark:bg-gray-900/40 backdrop-blur-sm border border-gray-200/80 dark:border-gray-700/50 p-3 text-left shadow-lg'>
+        <div className='flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2.5 pb-2 border-b border-gray-200 dark:border-gray-700'>
+          <Shield className='w-4 h-4' />
+          Acciones realizadas automáticamente
+        </div>
+        <div className='space-y-2'>
+          <div className='flex items-center gap-3'>
+            <div className='w-5 h-5 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center flex-shrink-0'>
+              <FileX className='w-3 h-3 text-red-600 dark:text-red-400' />
+            </div>
+            <p className='text-sm text-gray-700 dark:text-gray-300'>Negociación cerrada permanentemente</p>
+          </div>
+          <div className='flex items-center gap-3'>
+            <div className='w-5 h-5 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center flex-shrink-0'>
+              <Home className='w-3 h-3 text-emerald-600 dark:text-emerald-400' />
+            </div>
+            <p className='text-sm text-gray-700 dark:text-gray-300'>Vivienda liberada y disponible</p>
+          </div>
+          <div className='flex items-center gap-3'>
+            <div className='w-5 h-5 rounded-full bg-gray-100 dark:bg-gray-700/50 flex items-center justify-center flex-shrink-0'>
+              <Wallet className='w-3 h-3 text-gray-600 dark:text-gray-400' />
+            </div>
+            <p className='text-sm text-gray-700 dark:text-gray-300'>Fuentes de pago inactivadas</p>
+          </div>
+        </div>
+      </div>
+
+      {/* CTA — Ir a módulo de Renuncias */}
+      <div className='rounded-xl bg-gradient-to-r from-red-50 via-rose-50 to-pink-50 dark:from-red-950/30 dark:via-rose-950/30 dark:to-pink-950/30 border border-red-200/50 dark:border-red-800/50 p-3 backdrop-blur-sm'>
+        <div className='flex items-start gap-4 text-left'>
+          <Info className='w-6 h-6 text-red-600 dark:text-red-400 flex-shrink-0 mt-1' />
+          <div className='flex-1'>
+            <h4 className='text-sm font-bold text-red-900 dark:text-red-100 mb-1'>
+              Consulta los detalles completos
+            </h4>
+            <p className='text-xs text-red-700 dark:text-red-300 leading-relaxed'>
+              En el módulo de Renuncias encontrarás el motivo, snapshots de datos,
+              estado de devolución y toda la información histórica de esta renuncia.
+            </p>
+          </div>
+        </div>
+
+        <button
+          onClick={() => router.push('/renuncias')}
+          className='mt-3 w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-gradient-to-r from-red-500 via-rose-600 to-pink-600 hover:from-red-600 hover:via-rose-700 hover:to-pink-700 text-white font-semibold text-sm shadow-lg shadow-red-500/30 hover:shadow-2xl hover:shadow-red-500/40 transform hover:scale-[1.02] active:scale-[0.98] transition-all duration-300'
+        >
+          <ExternalLink className='w-4 h-4' />
+          Ver en módulo de Renuncias
+        </button>
+      </div>
+    </motion.div>
+  )
+}
+
 export function NegociacionTab({ cliente }: NegociacionTabProps) {
   const router = useRouter()
   const [cuotasExpandidas, setCuotasExpandidas] = useState<
@@ -88,6 +192,9 @@ export function NegociacionTab({ cliente }: NegociacionTabProps) {
   const [abonoEditando, setAbonoEditando] = useState<AbonoParaEditar | null>(
     null
   )
+
+  // ── Estado para modal de renuncia ───────────────────────────────────────
+  const [modalRenunciaOpen, setModalRenunciaOpen] = useState(false)
 
   const {
     negociacion,
@@ -117,6 +224,7 @@ export function NegociacionTab({ cliente }: NegociacionTabProps) {
 
   if (isLoading) return <Skeleton />
   if (!negociacion) return <SinNegociacion />
+  if (negociacion.estado === 'Cerrada por Renuncia') return <NegociacionCerradaRenuncia fechaRenuncia={(negociacion as any).fecha_renuncia_efectiva} />
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const negAny = negociacion as any
@@ -132,12 +240,6 @@ export function NegociacionTab({ cliente }: NegociacionTabProps) {
     (valorVivienda > 0 ? (totalAbonado / valorVivienda) * 100 : 0)
   const descuento = negAny.descuento_aplicado ?? 0
   const pctDescuento = negAny.porcentaje_descuento ?? 0
-  const valorBaseLista = vivienda?.valor_base ?? 0
-  const valorNegociado = negAny.valor_negociado ?? 0
-  const hayDivergencia =
-    valorBaseLista > 0 &&
-    valorNegociado > 0 &&
-    Math.abs(valorBaseLista - valorNegociado) >= 1
 
   // Fuente con cuotas expandidas (para renderizar CuotasCreditoTab fuera del grid)
   const creditoExpandido = fuentesPago.find(
@@ -176,7 +278,9 @@ export function NegociacionTab({ cliente }: NegociacionTabProps) {
             className={`flex-shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold ${
               negociacion.estado === 'Activa'
                 ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
-                : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
+                : negociacion.estado === 'Cerrada por Renuncia'
+                  ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                  : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
             }`}
           >
             {negociacion.estado}
@@ -188,24 +292,25 @@ export function NegociacionTab({ cliente }: NegociacionTabProps) {
           >
             <ArrowUpRight className='h-4 w-4' />
           </button>
+          {isAdmin && (negociacion.estado === 'Activa' || negociacion.estado === 'Suspendida') ? (
+            <button
+              onClick={() => setModalRenunciaOpen(true)}
+              className='inline-flex flex-shrink-0 items-center gap-1.5 rounded-lg border border-red-200 bg-red-50 px-2.5 py-1 text-[11px] font-semibold text-red-700 transition-all hover:bg-red-100 hover:border-red-300 hover:shadow-sm dark:border-red-800 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/40'
+              title='Registrar Renuncia'
+            >
+              <FileX className='h-3.5 w-3.5' />
+              Renuncia
+            </button>
+          ) : null}
         </div>
 
-        {/* Badges row (solo divergencia y descuento si aplican) */}
-        {hayDivergencia || descuento > 0 ? (
+        {/* Badges row (solo descuento si aplica) */}
+        {descuento > 0 ? (
           <div className='flex flex-wrap items-center gap-2 border-b border-gray-100 px-4 py-1.5 dark:border-gray-700/40'>
-            {descuento > 0 ? (
-              <span className='rounded bg-amber-50 px-1.5 py-0.5 text-[10px] font-medium text-amber-600 dark:bg-amber-900/20 dark:text-amber-400'>
-                -{formatCurrency(descuento)}
-                {pctDescuento > 0 ? ` (${pctDescuento}%)` : ''} dto.
-              </span>
-            ) : null}
-            {hayDivergencia ? (
-              <span className='inline-flex items-center gap-1 rounded bg-amber-50 px-1.5 py-0.5 text-[10px] text-amber-600 dark:bg-amber-900/20 dark:text-amber-400'>
-                <AlertTriangle className='h-2.5 w-2.5' />
-                Lista: {formatCurrency(valorBaseLista)} · Negociado:{' '}
-                {formatCurrency(valorNegociado)}
-              </span>
-            ) : null}
+            <span className='rounded bg-amber-50 px-1.5 py-0.5 text-[10px] font-medium text-amber-600 dark:bg-amber-900/20 dark:text-amber-400'>
+              -{formatCurrency(descuento)}
+              {pctDescuento > 0 ? ` (${pctDescuento}%)` : ''} dto.
+            </span>
           </div>
         ) : null}
 
@@ -489,6 +594,18 @@ export function NegociacionTab({ cliente }: NegociacionTabProps) {
             setAbonoEditando(null)
             refetchAbonos()
             refetchFuentes()
+          }}
+        />
+      ) : null}
+
+      {/* Modal Admin: Registrar Renuncia */}
+      {isAdmin && modalRenunciaOpen ? (
+        <RegistrarRenunciaModal
+          negociacionId={negociacion.id}
+          onClose={() => setModalRenunciaOpen(false)}
+          onExitosa={() => {
+            setModalRenunciaOpen(false)
+            router.push('/renuncias')
           }}
         />
       ) : null}

@@ -9,7 +9,7 @@
  * - Este componente SOLO orquesta la UI
  */
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
 import { AnimatePresence, motion } from 'framer-motion'
 import {
@@ -22,6 +22,7 @@ import {
     History,
     Home,
     Lock,
+    RefreshCw,
     Trash2,
     User
 } from 'lucide-react'
@@ -32,6 +33,7 @@ import { construirURLCliente } from '@/lib/utils/slug.utils'
 import { formatNombreCompleto } from '@/lib/utils/string.utils'
 import { ModalRegistrarInteres } from '@/modules/clientes/components/modals'
 import { useAsignacionVivienda, useClienteDetalle } from '@/modules/clientes/hooks'
+import { clientesService } from '@/modules/clientes/services/clientes.service'
 import { Tooltip } from '@/shared/components/ui'
 
 import * as styles from './cliente-detalle.styles'
@@ -59,6 +61,11 @@ function EstadoBadge({ estado }: { estado: string }) {
       bg: 'bg-gray-100 dark:bg-gray-900/30',
       text: 'text-gray-700 dark:text-gray-300',
       dot: 'bg-gray-500',
+    },
+    'Renunció': {
+      bg: 'bg-red-100 dark:bg-red-900/30',
+      text: 'text-red-700 dark:text-red-300',
+      dot: 'bg-red-500',
     },
   }
 
@@ -111,6 +118,23 @@ export default function ClienteDetalleClient({ clienteId }: ClienteDetalleClient
 
   const handleRegistrarInteres = () => {
     abrirModalInteres()
+  }
+
+  // ── Reactivar cliente que renunció ──
+  const [reactivando, setReactivando] = useState(false)
+  const handleReactivarCliente = async () => {
+    if (!clienteUUID) return
+    if (!window.confirm('¿Reactivar este cliente? Su estado cambiará a "Interesado" y podrá asignársele una nueva vivienda.')) return
+    setReactivando(true)
+    try {
+      await clientesService.cambiarEstado(clienteUUID, 'Interesado')
+      recargarCliente()
+    } catch (err) {
+      console.error('Error reactivando cliente:', err)
+      alert('Error al reactivar el cliente')
+    } finally {
+      setReactivando(false)
+    }
   }
 
   // ✅ Hook de asignación de vivienda con validación centralizada
@@ -266,7 +290,7 @@ export default function ClienteDetalleClient({ clienteId }: ClienteDetalleClient
       id: 'negociacion' as const,
       label: 'Negociación',
       icon: Home,
-      count: (cliente as any).negociaciones?.length || 0,
+      count: ((cliente as any).negociaciones?.filter((n: any) => n.estado !== 'Cerrada por Renuncia') || []).length,
       badge: null,
     },
     {
@@ -400,6 +424,22 @@ export default function ClienteDetalleClient({ clienteId }: ClienteDetalleClient
                     </motion.button>
                   </Tooltip>
                 )}
+
+                {/* ✅ Botón Reactivar Cliente (solo visible para clientes que renunciaron) */}
+                {cliente.estado === 'Renunció' && (
+                  <motion.button
+                    onClick={handleReactivarCliente}
+                    disabled={reactivando}
+                    className='inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold bg-white/20 backdrop-blur-md border border-white/30 text-white hover:bg-white/30 hover:shadow-lg transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed'
+                    whileHover={!reactivando ? { scale: 1.05 } : {}}
+                    whileTap={!reactivando ? { scale: 0.95 } : {}}
+                  >
+                    <RefreshCw className={`h-4 w-4 ${reactivando ? 'animate-spin' : ''}`} />
+                    <span className="hidden sm:inline">{reactivando ? 'Reactivando...' : 'Reactivar Cliente'}</span>
+                    <span className="sm:hidden">{reactivando ? '...' : 'Reactivar'}</span>
+                  </motion.button>
+                )}
+
                 <button
                   className={styles.headerClasses.actionButton}
                   onClick={handleEditar}

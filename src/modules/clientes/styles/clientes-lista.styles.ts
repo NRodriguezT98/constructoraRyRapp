@@ -173,5 +173,10 @@ export const metricasClientesColors = {
     gradient: 'from-gray-500 to-slate-600',
     textGradient: 'from-gray-600 via-slate-600 to-zinc-600',
     glowColor: 'from-gray-500/20 to-slate-500/20'
+  },
+  renunciaron: {
+    gradient: 'from-red-500 to-rose-600',
+    textGradient: 'from-red-600 via-rose-600 to-pink-600',
+    glowColor: 'from-red-500/20 to-rose-500/20'
   }
 }
