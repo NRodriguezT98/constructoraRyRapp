@@ -1,11 +1,8 @@
 'use client'
 
-import { CheckCircle2, ExternalLink, Eye, FileText, Loader2, Percent, Receipt, Shield, X } from 'lucide-react'
-import { useCallback, useEffect, useState } from 'react'
-import { createPortal } from 'react-dom'
+import { CheckCircle2, ExternalLink, FileText, Percent, Receipt, Shield } from 'lucide-react'
 
 import { formatDateTimeWithSeconds } from '@/lib/utils/date.utils'
-import { generarUrlFirmadaComprobante } from '../../services/renuncias.service'
 import type { ExpedienteData } from '../../types'
 import { formatCOP } from '../../utils/renuncias.utils'
 import { expedienteStyles as styles } from './ExpedienteRenunciaPage.styles'
@@ -16,40 +13,6 @@ interface ExpedienteFinancieroProps {
 
 export function ExpedienteFinanciero({ datos }: ExpedienteFinancieroProps) {
   const { resumenFinanciero, negociacion, renuncia } = datos
-  const [abriendo, setAbriendo] = useState(false)
-  const [urlVisor, setUrlVisor] = useState<string | null>(null)
-  const [visorAbierto, setVisorAbierto] = useState(false)
-
-  // Detectar tipo por extensión del path guardado en BD
-  const esImagen = /\.(jpe?g|png|webp|gif)$/i.test(renuncia.comprobante_devolucion_url ?? '')
-  const esPDF = /\.pdf$/i.test(renuncia.comprobante_devolucion_url ?? '')
-
-  // Cerrar con Escape
-  useEffect(() => {
-    if (!visorAbierto) return
-    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') cerrarVisor() }
-    window.addEventListener('keydown', handler)
-    return () => window.removeEventListener('keydown', handler)
-  }, [visorAbierto])
-
-  const cerrarVisor = useCallback(() => {
-    setVisorAbierto(false)
-    setUrlVisor(null)
-  }, [])
-
-  const abrirComprobante = useCallback(async () => {
-    if (!renuncia.comprobante_devolucion_url || abriendo) return
-    setAbriendo(true)
-    try {
-      const url = await generarUrlFirmadaComprobante(renuncia.comprobante_devolucion_url)
-      setUrlVisor(url)
-      setVisorAbierto(true)
-    } catch {
-      alert('No se pudo abrir el comprobante. Intenta de nuevo.')
-    } finally {
-      setAbriendo(false)
-    }
-  }, [renuncia.comprobante_devolucion_url, abriendo])
 
   const metricas = [
     { label: 'Valor negociado', valor: formatCOP(resumenFinanciero.valorNegociado), bg: 'bg-blue-50 dark:bg-blue-950/20', color: 'text-blue-700 dark:text-blue-400' },
@@ -174,8 +137,8 @@ export function ExpedienteFinanciero({ datos }: ExpedienteFinancieroProps) {
         )
       })()}
 
-      {/* Documentos vinculados */}
-      {(negociacion.promesa_compraventa_url || negociacion.promesa_firmada_url || renuncia.comprobante_devolucion_url) ? (
+      {/* Documentos vinculados (promesas de la negociación) */}
+      {(negociacion.promesa_compraventa_url || negociacion.promesa_firmada_url) ? (
         <div>
           <p className={styles.financiero.sectionTitle}>
             <FileText className="w-4 h-4 text-gray-500" />
@@ -194,83 +157,10 @@ export function ExpedienteFinanciero({ datos }: ExpedienteFinancieroProps) {
                 Promesa firmada
               </a>
             ) : null}
-            {renuncia.comprobante_devolucion_url ? (
-              <button
-                type="button"
-                onClick={abrirComprobante}
-                disabled={abriendo}
-                className={`${styles.financiero.docLink} disabled:opacity-60 disabled:cursor-wait`}>
-                {abriendo ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Eye className="w-3.5 h-3.5" />}
-                Comprobante de devolución
-              </button>
-            ) : null}
           </div>
         </div>
       ) : null}
 
-      {/* ── Modal visor de comprobante ── */}
-      {visorAbierto && urlVisor && typeof document !== 'undefined' &&
-        createPortal(
-          <div
-            className="fixed inset-0 z-[9999] flex flex-col bg-black/80 backdrop-blur-sm"
-            onClick={cerrarVisor}
-          >
-            {/* Barra superior */}
-            <div
-              className="flex items-center justify-between px-4 py-2 bg-gray-900/90 shrink-0"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="flex items-center gap-2 text-white">
-                <FileText className="w-4 h-4 text-cyan-400" />
-                <span className="text-sm font-medium">Comprobante de devolución</span>
-              </div>
-              <button
-                onClick={cerrarVisor}
-                className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-colors"
-                aria-label="Cerrar visor"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* Contenido */}
-            <div
-              className="flex-1 overflow-auto flex items-center justify-center p-4"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {esPDF ? (
-                <iframe
-                  src={urlVisor}
-                  className="w-full h-full rounded-lg"
-                  style={{ minHeight: '80vh' }}
-                  title="Comprobante de devolución"
-                />
-              ) : esImagen ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={urlVisor}
-                  alt="Comprobante de devolución"
-                  className="max-w-full max-h-[85vh] rounded-lg shadow-2xl object-contain"
-                />
-              ) : (
-                // Fallback: intentar con iframe por si el navegador lo puede manejar
-                <iframe
-                  src={urlVisor}
-                  className="w-full rounded-lg"
-                  style={{ minHeight: '80vh' }}
-                  title="Comprobante de devolución"
-                />
-              )}
-            </div>
-
-            {/* Hint ESC */}
-            <p className="text-center text-xs text-gray-500 pb-2 shrink-0">
-              Presiona <kbd className="px-1.5 py-0.5 bg-gray-800 rounded text-gray-400">ESC</kbd> o haz clic fuera para cerrar
-            </p>
-          </div>,
-          document.body,
-        )
-      }
     </div>
   )
 }

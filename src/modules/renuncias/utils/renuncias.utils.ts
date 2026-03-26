@@ -22,6 +22,7 @@ export function transformarRenunciaRow(row: RenunciaCompletaRow): RenunciaConInf
     comprobante_devolucion_url: row.comprobante_devolucion_url,
     metodo_devolucion: row.metodo_devolucion,
     numero_comprobante: row.numero_comprobante,
+    formulario_renuncia_url: row.formulario_renuncia_url,
     vivienda_valor_snapshot: row.vivienda_valor_snapshot,
     vivienda_datos_snapshot: row.vivienda_datos_snapshot,
     cliente_datos_snapshot: row.cliente_datos_snapshot,

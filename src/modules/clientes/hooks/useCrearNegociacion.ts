@@ -22,6 +22,7 @@ import { useQueryClient } from '@tanstack/react-query'
 
 import { errorLog } from '@/lib/utils/logger'
 import { clientesKeys } from '@/modules/clientes/hooks/useClientesQuery'
+import { negociacionesQueryKeys } from '@/modules/clientes/hooks/useNegociacionesQuery'
 import { negociacionesService } from '@/modules/clientes/services/negociaciones.service'
 import type { CrearFuentePagoDTO, Negociacion } from '@/modules/clientes/types'
 
@@ -195,6 +196,10 @@ export function useCrearNegociacion(): UseCrearNegociacionReturn {
           queryKey: clientesKeys.detail(datos.cliente_id),
         })
         await queryClient.invalidateQueries({ queryKey: clientesKeys.lists() })
+        // ⭐ Invalidar caché de negociaciones del cliente para que el tab Negociación muestre la nueva
+        await queryClient.invalidateQueries({
+          queryKey: negociacionesQueryKeys.byCliente(datos.cliente_id),
+        })
         // Disparar evento para refrescar tab de negociaciones
         window.dispatchEvent(new Event('negociacion-creada'))
         setNegociacionCreada(negociacion)

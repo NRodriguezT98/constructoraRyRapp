@@ -45,8 +45,15 @@ export function useProyectosViviendas({
   useEffect(() => {
     if (viviendaId && !valorViviendaInicial) {
       const vivienda = viviendas.find((v) => v.id === viviendaId)
-      if (vivienda?.valor_total) {
-        setValorNegociado(vivienda.valor_total)
+      if (vivienda) {
+        // ✅ CRÍTICO: usar valor_base (precio sin gastos notariales ni recargos).
+        // El trigger calcular_valor_total_pagar en BD suma gastos+recargo automáticamente
+        // para obtener valor_total_pagar (obligación real del cliente).
+        // Si usamos valor_total aquí, el trigger los suma DOS VECES → doble conteo.
+        const precioBase = (vivienda.valor_base && vivienda.valor_base > 0)
+          ? vivienda.valor_base
+          : vivienda.valor_total
+        setValorNegociado(precioBase)
       }
     }
   }, [viviendaId, viviendas, valorViviendaInicial])

@@ -806,6 +806,7 @@ export type Database = {
       }
       documentos_cliente: {
         Row: {
+          anclado_at: string | null
           categoria_id: string | null
           cliente_id: string
           descripcion: string | null
@@ -839,6 +840,7 @@ export type Database = {
           version: number
         }
         Insert: {
+          anclado_at?: string | null
           categoria_id?: string | null
           cliente_id: string
           descripcion?: string | null
@@ -872,6 +874,7 @@ export type Database = {
           version?: number
         }
         Update: {
+          anclado_at?: string | null
           categoria_id?: string | null
           cliente_id?: string
           descripcion?: string | null
@@ -1007,6 +1010,7 @@ export type Database = {
       }
       documentos_proyecto: {
         Row: {
+          anclado_at: string | null
           categoria_id: string | null
           descripcion: string | null
           documento_padre_id: string | null
@@ -1035,6 +1039,7 @@ export type Database = {
           version_corrige_a: string | null
         }
         Insert: {
+          anclado_at?: string | null
           categoria_id?: string | null
           descripcion?: string | null
           documento_padre_id?: string | null
@@ -1063,6 +1068,7 @@ export type Database = {
           version_corrige_a?: string | null
         }
         Update: {
+          anclado_at?: string | null
           categoria_id?: string | null
           descripcion?: string | null
           documento_padre_id?: string | null
@@ -1158,6 +1164,7 @@ export type Database = {
       }
       documentos_vivienda: {
         Row: {
+          anclado_at: string | null
           categoria_id: string | null
           descripcion: string | null
           documento_padre_id: string | null
@@ -1187,6 +1194,7 @@ export type Database = {
           vivienda_id: string
         }
         Insert: {
+          anclado_at?: string | null
           categoria_id?: string | null
           descripcion?: string | null
           documento_padre_id?: string | null
@@ -1216,6 +1224,7 @@ export type Database = {
           vivienda_id: string
         }
         Update: {
+          anclado_at?: string | null
           categoria_id?: string | null
           descripcion?: string | null
           documento_padre_id?: string | null
@@ -2358,6 +2367,7 @@ export type Database = {
           fecha_creacion: string | null
           fecha_devolucion: string | null
           fecha_renuncia: string
+          formulario_renuncia_url: string | null
           id: string
           metodo_devolucion: string | null
           monto_a_devolver: number
@@ -2387,6 +2397,7 @@ export type Database = {
           fecha_creacion?: string | null
           fecha_devolucion?: string | null
           fecha_renuncia: string
+          formulario_renuncia_url?: string | null
           id?: string
           metodo_devolucion?: string | null
           monto_a_devolver?: number
@@ -2416,6 +2427,7 @@ export type Database = {
           fecha_creacion?: string | null
           fecha_devolucion?: string | null
           fecha_renuncia?: string
+          formulario_renuncia_url?: string | null
           id?: string
           metodo_devolucion?: string | null
           monto_a_devolver?: number

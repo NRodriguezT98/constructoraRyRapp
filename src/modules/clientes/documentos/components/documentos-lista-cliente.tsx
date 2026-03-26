@@ -32,6 +32,10 @@ export function DocumentosListaCliente({
     documentosFiltrados,
     categorias,
 
+    // Archivados
+    documentosArchivados,
+    cargandoArchivados,
+
     // Modales - Renombrar
     modalRenombrarAbierto,
     documentoRenombrar,
@@ -49,9 +53,11 @@ export function DocumentosListaCliente({
     handleDownload,
     handleToggleImportante,
     handleArchive,
+    handleRestore,
     handleDelete,
     handleRename,
     handleAsignarCategoria,
+    handleToggleAnclar,
 
     // Utilidades
     getCategoriaByDocumento,
@@ -126,21 +132,73 @@ export function DocumentosListaCliente({
           documentos={documentosFiltrados as any}
           categorias={categorias}
           onChangeVista={setVista}
+          currentVista={vista}
           moduleName="clientes"
+          initialVista="lista"
         />
       )}
 
       {/* Contenido según tab activa */}
       {vistaActual === 'archivados' ? (
-        <div className='flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 py-16 dark:border-gray-700 dark:bg-gray-800/50'>
-          <Archive className='mb-4 h-16 w-16 text-gray-400' />
-          <h3 className='mb-2 text-lg font-semibold text-gray-900 dark:text-white'>
-            Documentos archivados
-          </h3>
-          <p className='text-sm text-gray-500 dark:text-gray-400'>
-            Los documentos archivados aparecerán aquí
-          </p>
-        </div>
+        cargandoArchivados ? (
+          <div className='flex items-center justify-center py-20'>
+            <div className='h-8 w-8 animate-spin rounded-full border-4 border-amber-200 border-t-amber-500'></div>
+          </div>
+        ) : documentosArchivados.length === 0 ? (
+          <div className='flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 py-16 dark:border-gray-700 dark:bg-gray-800/50'>
+            <Archive className='mb-4 h-16 w-16 text-gray-400' />
+            <h3 className='mb-2 text-lg font-semibold text-gray-900 dark:text-white'>
+              Sin documentos archivados
+            </h3>
+            <p className='text-sm text-gray-500 dark:text-gray-400'>
+              Los documentos que archives aparecerán aquí para consulta
+            </p>
+          </div>
+        ) : (
+          <AnimatePresence mode='popLayout'>
+            <motion.div
+              key='archivados'
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className='space-y-3'
+            >
+              {documentosArchivados.map((documento, index) => {
+                const categoria = getCategoriaByDocumento(documento as any)
+                const CardComponent = DocumentoCardHorizontal as any
+                return (
+                  <motion.div
+                    key={documento.id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ delay: index * 0.04 }}
+                  >
+                    <div className='relative'>
+                      <CardComponent
+                        documento={documento as any}
+                        categoria={categoria}
+                        tipoEntidad='cliente'
+                        onView={handleView}
+                        onDownload={handleDownload}
+                        onArchive={() => handleRestore(documento as any)}
+                        onRefresh={refrescarDocumentos}
+                        moduleName='clientes'
+                      />
+                      {/* Badge archivado + botón restaurar */}
+                      <div className='absolute right-3 top-3 flex items-center gap-2'>
+                        <span className='inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-900/40 dark:text-amber-400'>
+                          <Archive className='h-3 w-3' />
+                          Archivado
+                        </span>
+                      </div>
+                    </div>
+                  </motion.div>
+                )
+              })}
+            </motion.div>
+          </AnimatePresence>
+        )
       ) : documentosFiltrados.length === 0 ? (
         <div className='flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 py-16 dark:border-gray-700 dark:bg-gray-800/50'>
           <FileX className='mb-4 h-16 w-16 text-gray-400' />
@@ -212,8 +270,7 @@ export function DocumentosListaCliente({
                     onToggleImportante={handleToggleImportante}
                     onArchive={handleArchive}
                     onDelete={handleDelete}
-                    onRename={handleRename}
-                    onRefresh={refrescarDocumentos}
+                    onRename={handleRename}                      onToggleAnclar={handleToggleAnclar}                    onRefresh={refrescarDocumentos}
                     moduleName="clientes"
                     // No permitir categorizar la cédula (ya tiene categoría fija)
                     onAsignarCategoria={documento.id === 'cedula-ciudadania' ? undefined : handleAsignarCategoria}

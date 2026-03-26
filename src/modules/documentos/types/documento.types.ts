@@ -127,6 +127,7 @@ export interface DocumentoProyecto {
   fecha_documento?: string
   fecha_vencimiento?: string
   es_importante: boolean
+  anclado_at?: string | null
   fecha_creacion: string
   fecha_actualizacion: string
   // Relaciones opcionales (cuando se cargan con join)

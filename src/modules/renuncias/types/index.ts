@@ -51,6 +51,7 @@ export interface RenunciaCompletaRow {
   fecha_cierre: string | null
   usuario_registro: string | null
   usuario_cierre: string | null
+  formulario_renuncia_url: string | null
   fecha_creacion: string | null
   fecha_actualizacion: string | null
   // Campos de la vista (joins)
@@ -90,6 +91,8 @@ export interface RenunciaConInfo {
   comprobante_devolucion_url: string | null
   metodo_devolucion: string | null
   numero_comprobante: string | null
+  // Formulario de renuncia
+  formulario_renuncia_url: string | null
   // Snapshots
   vivienda_valor_snapshot: number | null
   vivienda_datos_snapshot: Record<string, unknown> | null

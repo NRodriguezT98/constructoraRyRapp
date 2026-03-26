@@ -265,6 +265,7 @@ export function DocumentosTab({ cliente }: DocumentosTabProps) {
         entidadId={cliente.id}
         tipoEntidad="cliente"
         moduleName="clientes"
+        defaultVista="lista"
         onUploadClick={() => mostrarUpload(false)}
       />
 

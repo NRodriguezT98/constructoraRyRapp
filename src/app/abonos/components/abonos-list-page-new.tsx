@@ -6,10 +6,9 @@ import { motion } from 'framer-motion'
 import {
     Ban,
     Calendar,
+    Check,
     CreditCard,
     DollarSign,
-    Eye,
-    EyeOff,
     Pencil,
     Receipt,
     Search,
@@ -78,7 +77,9 @@ export function AbonosListPage({
     mesesDisponibles,
     filtros,
     actualizarFiltros,
+    toggleMostrarActivos,
     toggleMostrarAnulados,
+    toggleMostrarRenunciados,
     isLoading,
     error,
     refetch,
@@ -278,24 +279,43 @@ export function AbonosListPage({
               <p className='text-xs font-medium text-gray-600 dark:text-gray-400'>
                 {abonos.length} resultados
               </p>
-              <div className='flex items-center gap-2'>
-                {isAdmin && (
-                  <button
-                    onClick={toggleMostrarAnulados}
-                    className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-medium transition-colors ${
-                      filtros.mostrarAnulados
-                        ? 'bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-900/50'
-                        : 'bg-gray-100 text-gray-500 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700'
-                    }`}
-                  >
-                    {filtros.mostrarAnulados ? (
-                      <EyeOff className='h-3 w-3' />
-                    ) : (
-                      <Eye className='h-3 w-3' />
-                    )}
-                    {filtros.mostrarAnulados ? 'Ocultar anulados' : 'Mostrar anulados'}
-                  </button>
-                )}
+              <div className='flex items-center gap-1.5'>
+                {/* Pill checklist: categorías de abonos */}
+                <span className='mr-1 text-xs text-gray-400 dark:text-gray-500'>Mostrar:</span>
+                <button
+                  onClick={toggleMostrarActivos}
+                  className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium transition-all ${
+                    filtros.mostrarActivos
+                      ? 'bg-emerald-100 text-emerald-700 ring-1 ring-emerald-300 dark:bg-emerald-900/30 dark:text-emerald-400 dark:ring-emerald-700'
+                      : 'bg-gray-100 text-gray-400 dark:bg-gray-800 dark:text-gray-500'
+                  }`}
+                >
+                  {filtros.mostrarActivos ? <Check className='h-3 w-3' /> : <span className='inline-block h-3 w-3 rounded-sm border border-gray-300 dark:border-gray-600' />}
+                  Activos
+                </button>
+                <button
+                  onClick={toggleMostrarAnulados}
+                  className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium transition-all ${
+                    filtros.mostrarAnulados
+                      ? 'bg-red-100 text-red-700 ring-1 ring-red-300 dark:bg-red-900/30 dark:text-red-400 dark:ring-red-700'
+                      : 'bg-gray-100 text-gray-400 dark:bg-gray-800 dark:text-gray-500'
+                  }`}
+                >
+                  {filtros.mostrarAnulados ? <Check className='h-3 w-3' /> : <span className='inline-block h-3 w-3 rounded-sm border border-gray-300 dark:border-gray-600' />}
+                  Anulados
+                </button>
+                <button
+                  onClick={toggleMostrarRenunciados}
+                  className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium transition-all ${
+                    filtros.mostrarRenunciados
+                      ? 'bg-amber-100 text-amber-700 ring-1 ring-amber-300 dark:bg-amber-900/30 dark:text-amber-400 dark:ring-amber-700'
+                      : 'bg-gray-100 text-gray-400 dark:bg-gray-800 dark:text-gray-500'
+                  }`}
+                >
+                  {filtros.mostrarRenunciados ? <Check className='h-3 w-3' /> : <span className='inline-block h-3 w-3 rounded-sm border border-gray-300 dark:border-gray-600' />}
+                  Renunciados
+                </button>
+                <span className='mx-1 h-4 w-px bg-gray-200 dark:bg-gray-700' />
                 {(filtros.busqueda ||
                   filtros.fuente !== 'todas' ||
                   filtros.mes !== 'todos') && (
@@ -365,7 +385,9 @@ export function AbonosListPage({
                       className={`cursor-pointer border-b border-gray-100 transition-colors last:border-b-0 dark:border-gray-800 ${
                         abono.estado === 'Anulado'
                           ? 'bg-red-50/40 opacity-60 dark:bg-red-950/10'
-                          : 'hover:bg-blue-50/50 dark:hover:bg-blue-950/20'
+                          : abono.negociacion.estado === 'Cerrada por Renuncia'
+                            ? 'bg-amber-50/40 dark:bg-amber-950/10 hover:bg-amber-50/60 dark:hover:bg-amber-950/20'
+                            : 'hover:bg-blue-50/50 dark:hover:bg-blue-950/20'
                       }`}
                     >
                       {/* # Recibo */}
@@ -390,16 +412,17 @@ export function AbonosListPage({
                         </p>
                       </td>
                       {/* Vivienda / Proyecto */}
-                      <td className='px-3 py-2.5 text-gray-600 dark:text-gray-300'>
-                        {abono.vivienda.manzana.identificador
-                          ? `Mz.${abono.vivienda.manzana.identificador} Casa No. ${abono.vivienda.numero}`
-                          : `N°${abono.vivienda.numero}`}
-                        {abono.proyecto.nombre && (
-                          <span className='text-gray-400 dark:text-gray-500'>
-                            {' '}
-                            · {abono.proyecto.nombre}
-                          </span>
-                        )}
+                      <td className='px-3 py-2.5'>
+                        <p className='font-medium leading-tight text-gray-900 dark:text-gray-100'>
+                          {abono.vivienda.manzana.identificador
+                            ? `Mz.${abono.vivienda.manzana.identificador} Casa No. ${abono.vivienda.numero}`
+                            : `N°${abono.vivienda.numero}`}
+                        </p>
+                        {abono.proyecto.nombre ? (
+                          <p className='text-xs text-gray-500 dark:text-gray-400'>
+                            {abono.proyecto.nombre}
+                          </p>
+                        ) : null}
                       </td>
                       {/* Fuente */}
                       <td className='px-3 py-2.5 text-xs text-gray-500 dark:text-gray-400'>
@@ -410,13 +433,22 @@ export function AbonosListPage({
                         {abono.metodo_pago}
                       </td>
                       {/* Monto */}
-                      <td className='whitespace-nowrap px-3 py-2.5 text-right tabular-nums'>
+                      <td className='whitespace-nowrap px-3 py-2.5 tabular-nums'>
                         {abono.estado === 'Anulado' ? (
                           <>
                             <span className='mb-0.5 block text-[9px] font-bold uppercase tracking-widest text-red-500 dark:text-red-400'>
                               Anulado
                             </span>
                             <span className='font-bold text-gray-400 line-through dark:text-gray-600'>
+                              {formatCurrency(abono.monto)}
+                            </span>
+                          </>
+                        ) : abono.negociacion.estado === 'Cerrada por Renuncia' ? (
+                          <>
+                            <span className='mb-0.5 block text-[9px] font-bold uppercase tracking-widest text-amber-600 dark:text-amber-400'>
+                              Renunciada
+                            </span>
+                            <span className='font-bold text-gray-500 dark:text-gray-400'>
                               {formatCurrency(abono.monto)}
                             </span>
                           </>
@@ -428,7 +460,7 @@ export function AbonosListPage({
                       </td>
                       {/* Editar / Anular (solo admin) */}
                       {isAdmin ? (
-                        <td className='px-3 py-2.5 text-right'>
+                        <td className='px-3 py-2.5'>
                           <div className='inline-flex items-center gap-1'>
                             {/* Editar: solo si abono activo */}
                             {abono.estado !== 'Anulado' ? (
@@ -445,11 +477,9 @@ export function AbonosListPage({
                                     monto: abono.monto,
                                     fecha_abono: abono.fecha_abono,
                                     metodo_pago: rawAbono.metodo_pago ?? null,
-                                    numero_referencia:
-                                      rawAbono.numero_referencia ?? null,
+                                    numero_referencia: rawAbono.numero_referencia ?? null,
                                     notas: rawAbono.notas ?? null,
-                                    comprobante_url:
-                                      rawAbono.comprobante_url ?? null,
+                                    comprobante_url: rawAbono.comprobante_url ?? null,
                                   })
                                 }}
                                 className='inline-flex h-7 w-7 items-center justify-center rounded-lg bg-gray-100 text-gray-400 transition-colors hover:bg-blue-50 hover:text-blue-600 dark:bg-gray-700/50 dark:hover:bg-blue-900/30 dark:hover:text-blue-400'

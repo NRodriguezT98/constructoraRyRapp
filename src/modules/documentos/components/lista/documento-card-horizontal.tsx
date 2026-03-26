@@ -2,43 +2,44 @@
 
 import { motion } from 'framer-motion'
 import {
-  AlertCircle,
-  Archive,
-  Crown,
-  Download,
-  Edit,
-  Edit3,
-  Eye,
-  FileText,
-  FileUp,
-  FolderPlus,
-  History,
-  Lock,
-  MoreVertical,
-  RefreshCw,
-  Star,
-  Trash2,
+    AlertCircle,
+    Archive,
+    Crown,
+    Download,
+    Edit,
+    Edit3,
+    Eye,
+    FileText,
+    FileUp,
+    FolderPlus,
+    History,
+    Lock,
+    MoreVertical,
+    Pin,
+    RefreshCw,
+    Trash2,
 } from 'lucide-react'
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 
+import { supabase } from '@/lib/supabase/client'
 import { formatDateCompact } from '@/lib/utils/date.utils'
 import { ConfirmacionModal } from '@/shared/components/modals'
 import { type ModuleName } from '@/shared/config/module-themes'
 import {
-  CategoriaDocumento,
-  DocumentoProyecto,
-  formatFileSize,
-  getFileExtension,
+    CategoriaDocumento,
+    DocumentoProyecto,
+    formatFileSize,
+    getFileExtension,
 } from '../../../../types/documento.types'
 import { useDocumentoCard } from '../../hooks'
 import type { TipoEntidad } from '../../types/entidad.types'
 import { BadgeEstadoProceso } from '../badge-estado-proceso'
 import {
-  DocumentoEditarMetadatosModal,
-  DocumentoNuevaVersionModal,
-  DocumentoReemplazarArchivoModal,
-  DocumentoVersionesModal
+    DocumentoEditarMetadatosModal,
+    DocumentoNuevaVersionModal,
+    DocumentoReemplazarArchivoModal,
+    DocumentoVersionesModal
 } from '../modals'
 
 interface DocumentoCardHorizontalProps {
@@ -107,6 +108,18 @@ export function DocumentoCardHorizontal({
 
   const tieneVersiones = documento.version > 1
 
+  // Thumbnail para imágenes
+  const esImagen = documento.tipo_mime?.startsWith('image/')
+  const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!esImagen || !documento.url_storage) return
+    const config = { proyecto: 'documentos-proyectos', vivienda: 'documentos-viviendas', cliente: 'documentos-clientes' } as const
+    const bucket = config[tipoEntidad] || 'documentos-proyectos'
+    supabase.storage.from(bucket).createSignedUrl(documento.url_storage, 3600)
+      .then(({ data }) => { if (data?.signedUrl) setThumbnailUrl(data.signedUrl) })
+  }, [esImagen, documento.url_storage, tipoEntidad])
+
   const estaProximoAVencer = documento.fecha_vencimiento
     ? new Date(documento.fecha_vencimiento) <= new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
     : false
@@ -166,9 +179,18 @@ export function DocumentoCardHorizontal({
         />
       )}
 
-      {/* ICONO — con extensión como overlay */}
+      {/* ICONO / THUMBNAIL — preview para imágenes, icono para el resto */}
       <div className='relative flex-shrink-0'>
-        {categoria ? (
+        {esImagen && thumbnailUrl ? (
+          <div className='h-10 w-10 overflow-hidden rounded-lg shadow-sm'>
+            <img
+              src={thumbnailUrl}
+              alt={documento.titulo}
+              loading='lazy'
+              className='h-full w-full object-cover'
+            />
+          </div>
+        ) : categoria ? (
           <div
             className='flex h-10 w-10 items-center justify-center rounded-lg'
             style={{ background: `linear-gradient(135deg, ${categoria.color}25, ${categoria.color}45)` }}
@@ -182,15 +204,15 @@ export function DocumentoCardHorizontal({
             <FileText size={20} className='text-gray-400' />
           </div>
         )}
-        {/* Extensión superpuesta en la esquina — reemplaza la columna TIPO */}
+        {/* Extensión superpuesta en la esquina */}
         <span className='absolute -bottom-1 -right-1 rounded px-1 py-px font-mono text-[9px] font-bold uppercase leading-none tracking-wide text-white shadow-sm'
           style={{ backgroundColor: categoria?.color ?? '#94a3b8' }}
         >
           {getFileExtension(documento.nombre_archivo)}
         </span>
         {documento.es_importante && (
-          <div className='absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-yellow-400 shadow'>
-            <Star size={8} className='fill-white text-white' />
+          <div className='absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-cyan-500 shadow'>
+            <Pin size={8} className='fill-white text-white' />
           </div>
         )}
       </div>
@@ -204,6 +226,18 @@ export function DocumentoCardHorizontal({
           >
             {documento.titulo}
           </span>
+          {documento.es_importante && (
+            <span className='flex-shrink-0 flex items-center gap-1 rounded-full bg-cyan-100 px-2 py-0.5 text-[10px] font-bold text-cyan-700 dark:bg-cyan-900/40 dark:text-cyan-300'>
+              <Pin size={9} className='fill-cyan-600 dark:fill-cyan-400' />
+              Anclado
+            </span>
+          )}
+          {(documento as any).es_documento_identidad && (
+            <span className='flex-shrink-0 flex items-center gap-1 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 px-2 py-0.5 text-[10px] font-bold text-white shadow-sm'>
+              <Lock size={9} />
+              Documento de Identidad
+            </span>
+          )}
           {estaProtegido && (
             <span title='Documento protegido' className='flex-shrink-0'>
               <Lock size={13} className='text-emerald-500 dark:text-emerald-400' />
@@ -278,9 +312,10 @@ export function DocumentoCardHorizontal({
 
       {/* ACCIONES — aparecen en hover, siempre accesibles con teclado */}
       <div
-        className='flex flex-shrink-0 items-center gap-1 opacity-0 transition-opacity duration-150 group-hover:opacity-100 focus-within:opacity-100'
+        className='flex flex-shrink-0 items-center gap-1'
         onClick={(e) => e.stopPropagation()}
       >
+        <div className='flex items-center gap-1 opacity-0 transition-opacity duration-150 group-hover:opacity-100 focus-within:opacity-100'>
         <button
           onClick={() => onView(documento)}
           className='flex items-center justify-center rounded-lg p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white'
@@ -341,8 +376,8 @@ export function DocumentoCardHorizontal({
               onClick={(e) => { e.preventDefault(); e.stopPropagation(); onToggleImportante(documento); cerrarMenu() }}
               className='flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
             >
-              <Star size={15} className={documento.es_importante ? 'fill-yellow-500 text-yellow-500' : ''} />
-              {documento.es_importante ? 'Quitar importante' : 'Marcar importante'}
+              <Pin size={15} className={documento.es_importante ? 'fill-cyan-500 text-cyan-500' : ''} />
+              {documento.es_importante ? 'Quitar anclado' : 'Anclar documento'}
             </button>
 
             {onRename && (
@@ -455,7 +490,8 @@ export function DocumentoCardHorizontal({
           </div>,
           document.body
         )}
-      </div>
+        </div>{/* fin hover-actions */}
+      </div>{/* fin acciones */}
 
       {/* Modales */}
       <DocumentoVersionesModal

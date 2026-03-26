@@ -503,6 +503,30 @@ class ClientesService {
   }
 
   /**
+   * Verificar si un cliente tiene una renuncia pendiente de devolución
+   */
+  async verificarRenunciaPendiente(
+    clienteId: string
+  ): Promise<{ pendiente: boolean; renunciaId?: string; consecutivo?: string }> {
+    const { data, error } = await supabase
+      .from('renuncias')
+      .select('id, consecutivo')
+      .eq('cliente_id', clienteId)
+      .eq('estado', 'Pendiente Devolución')
+      .limit(1)
+      .maybeSingle()
+
+    if (error) {
+      console.error('Error verificando renuncia pendiente:', error)
+      return { pendiente: false }
+    }
+
+    return data
+      ? { pendiente: true, renunciaId: data.id, consecutivo: data.consecutivo }
+      : { pendiente: false }
+  }
+
+  /**
    * Cambiar estado de un cliente
    */
   async cambiarEstado(

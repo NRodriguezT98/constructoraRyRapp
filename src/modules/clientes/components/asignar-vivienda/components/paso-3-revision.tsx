@@ -174,7 +174,7 @@ export function Paso3Revision({
 
         <dl className="space-y-1.5">
           <div className="flex items-center justify-between py-1">
-            <dt className="text-xs text-gray-600 dark:text-gray-400">Valor Base + Gastos Notariales</dt>
+            <dt className="text-xs text-gray-600 dark:text-gray-400">Valor Negociado (Base)</dt>
             <dd className="text-sm font-medium text-gray-900 dark:text-white">
               ${valorNegociado.toLocaleString('es-CO')}
             </dd>

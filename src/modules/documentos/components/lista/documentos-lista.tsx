@@ -23,6 +23,7 @@ interface DocumentosListaProps {
   onViewDocumento?: (documento: DocumentoProyecto) => void
   onUploadClick?: () => void
   moduleName?: ModuleName // 🎨 Tema del módulo
+  defaultVista?: 'grid' | 'lista'
 }
 
 export function DocumentosLista({
@@ -31,6 +32,7 @@ export function DocumentosLista({
   onViewDocumento,
   onUploadClick,
   moduleName, // 🎨 Inferir desde tipoEntidad si no se pasa
+  defaultVista = 'grid',
 }: DocumentosListaProps) {
   // 🎨 Auto-inferir moduleName desde tipoEntidad si no se especifica
   const config = obtenerConfiguracionEntidad(tipoEntidad)
@@ -66,7 +68,7 @@ export function DocumentosLista({
     handleDelete,
     getCategoriaByDocumento,
     refrescar, // 🆕 Para refrescar después de editar/reemplazar
-  } = useDocumentosLista({ entidadId, tipoEntidad, onViewDocumento })
+  } = useDocumentosLista({ entidadId, tipoEntidad, onViewDocumento, defaultVista })
 
   // 🆕 Wrapper para refrescar (compatible con tipo void)
   const handleRefresh = async () => {
@@ -141,6 +143,8 @@ export function DocumentosLista({
           documentos={documentosMostrar}
           categorias={categorias}
           onChangeVista={setVista}
+          currentVista={vista}
+          initialVista={defaultVista}
           moduleName={themeModuleName}
         />
 

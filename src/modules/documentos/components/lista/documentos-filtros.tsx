@@ -8,9 +8,9 @@ import {
     Filter,
     Grid3x3,
     List as ListIcon,
+    Pin,
     Search,
     SlidersHorizontal,
-    Star,
     X
 } from 'lucide-react'
 
@@ -25,6 +25,8 @@ interface DocumentosFiltrosProps {
   categorias: CategoriaDocumento[]
   onChangeVista?: (vista: VistaDocumentos) => void
   moduleName?: ModuleName // 🎨 Tema del módulo
+  initialVista?: VistaDocumentos
+  currentVista?: VistaDocumentos // ← Controlado desde fuera (tiene precedencia)
 }
 
 export function DocumentosFiltros({
@@ -32,11 +34,16 @@ export function DocumentosFiltros({
   categorias = [],
   onChangeVista,
   moduleName = 'proyectos', // 🎨 Default a proyectos
+  initialVista = 'grid',
+  currentVista,
 }: DocumentosFiltrosProps) {
   // 🎨 Obtener tema dinámico
   const theme = moduleThemes[moduleName]
   const [mostrarFiltrosAvanzados, setMostrarFiltrosAvanzados] = useState(false)
-  const [vista, setVista] = useState<VistaDocumentos>('grid')
+  const [vistaInterna, setVistaInterna] = useState<VistaDocumentos>(initialVista)
+
+  // Si el padre pasa currentVista, úsalo (componente controlado); si no, usa estado interno
+  const vista = currentVista ?? vistaInterna
 
   const {
     categoriaFiltro,
@@ -86,7 +93,7 @@ export function DocumentosFiltros({
   }, [documentos])
 
   const handleChangeVista = (nuevaVista: VistaDocumentos) => {
-    setVista(nuevaVista)
+    setVistaInterna(nuevaVista)
     onChangeVista?.(nuevaVista)
   }
 
@@ -125,12 +132,12 @@ export function DocumentosFiltros({
           onClick={toggleSoloImportantes}
           className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-all whitespace-nowrap ${
             soloImportantes
-              ? 'bg-yellow-500 text-white shadow-lg'
+              ? 'bg-cyan-500 text-white shadow-lg'
               : 'border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
           }`}
         >
-          <Star size={16} className={soloImportantes ? 'fill-white' : ''} />
-          <span className='hidden sm:inline'>Importantes</span>
+          <Pin size={16} className={soloImportantes ? 'fill-white' : ''} />
+          <span className='hidden sm:inline'>Anclados</span>
         </button>
 
         {/* Toggle filtros avanzados */}
@@ -230,15 +237,15 @@ export function DocumentosFiltros({
             )}
 
             {soloImportantes && (
-              <span className='inline-flex items-center gap-1.5 rounded-lg bg-yellow-100 px-3 py-1 text-sm text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300'>
-                <Star
+              <span className='inline-flex items-center gap-1.5 rounded-lg bg-cyan-100 px-3 py-1 text-sm text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-300'>
+                <Pin
                   size={12}
-                  className='fill-yellow-700 dark:fill-yellow-300'
+                  className='fill-cyan-700 dark:fill-cyan-300'
                 />
-                Importantes
+                Anclados
                 <button
                   onClick={toggleSoloImportantes}
-                  className='rounded p-0.5 hover:bg-yellow-200 dark:hover:bg-yellow-800'
+                  className='rounded p-0.5 hover:bg-cyan-200 dark:hover:bg-cyan-800'
                 >
                   <X size={12} />
                 </button>
@@ -276,8 +283,8 @@ export function DocumentosFiltros({
           </div>
           {estadisticas.importantes > 0 && (
             <div className='flex items-center gap-2'>
-              <Star size={14} className='fill-yellow-500 text-yellow-500' />
-              <span>{estadisticas.importantes} importantes</span>
+              <Pin size={14} className='fill-cyan-500 text-cyan-500' />
+              <span>{estadisticas.importantes} anclados</span>
             </div>
           )}
           {estadisticas.porVencer > 0 && (

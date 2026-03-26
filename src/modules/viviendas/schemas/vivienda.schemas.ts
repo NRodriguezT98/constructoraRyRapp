@@ -60,23 +60,31 @@ export const paso3SchemaBase = z.object({
       'Solo letras, números, #, -, espacios, puntos, comas, paréntesis y grado (°)'
     ),
   area_lote: z
-    .string()
-    .refine((val) => {
-      const trimmed = val.trim()
-      return trimmed !== '' && trimmed !== '0'
-    }, 'El área del lote es obligatoria')
-    .refine((val) => /^\d+(\.\d+)?$/.test(val.trim()), 'Debe ser un número válido (ej: 120.5)')
-    .refine((val) => parseFloat(val) > 0, 'El área del lote debe ser mayor a 0')
-    .transform((val) => parseFloat(val)),
+    .preprocess(
+      (val) => (typeof val === 'number' ? String(val) : val),
+      z
+        .string()
+        .refine((val) => {
+          const trimmed = val.trim()
+          return trimmed !== '' && trimmed !== '0'
+        }, 'El área del lote es obligatoria')
+        .refine((val) => /^\d+(\.\d+)?$/.test(val.trim()), 'Debe ser un número válido (ej: 120.5)')
+        .refine((val) => parseFloat(val) > 0, 'El área del lote debe ser mayor a 0')
+        .transform((val) => parseFloat(val))
+    ),
   area_construida: z
-    .string()
-    .refine((val) => {
-      const trimmed = val.trim()
-      return trimmed !== '' && trimmed !== '0'
-    }, 'El área construida es obligatoria')
-    .refine((val) => /^\d+(\.\d+)?$/.test(val.trim()), 'Debe ser un número válido (ej: 80.0)')
-    .refine((val) => parseFloat(val) > 0, 'El área construida debe ser mayor a 0')
-    .transform((val) => parseFloat(val)),
+    .preprocess(
+      (val) => (typeof val === 'number' ? String(val) : val),
+      z
+        .string()
+        .refine((val) => {
+          const trimmed = val.trim()
+          return trimmed !== '' && trimmed !== '0'
+        }, 'El área construida es obligatoria')
+        .refine((val) => /^\d+(\.\d+)?$/.test(val.trim()), 'Debe ser un número válido (ej: 80.0)')
+        .refine((val) => parseFloat(val) > 0, 'El área construida debe ser mayor a 0')
+        .transform((val) => parseFloat(val))
+    ),
   tipo_vivienda: z.string().min(1, 'Selecciona un tipo de vivienda'),
 }).refine(
   (data) => {

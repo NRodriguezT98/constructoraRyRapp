@@ -18,6 +18,7 @@ import {
     procesarDevolucion,
     registrarRenuncia,
     subirComprobante,
+    subirFormularioRenuncia,
     validarPuedeRenunciar,
 } from '../services/renuncias.service'
 import type { ProcesarDevolucionDTO, RegistrarRenunciaDTO } from '../types'
@@ -91,10 +92,35 @@ export function useRegistrarRenuncia() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (dto: RegistrarRenunciaDTO) => registrarRenuncia(dto),
+    mutationFn: async ({
+      dto,
+      formularioRenuncia,
+    }: {
+      dto: RegistrarRenunciaDTO
+      formularioRenuncia?: File
+    }) => {
+      // 1. Registrar renuncia (RPC atómica)
+      const result = await registrarRenuncia(dto)
+      const rpcResult = result as Record<string, unknown> | null
+
+      // 2. Si hay formulario, subirlo post-RPC
+      const renunciaId = rpcResult?.renuncia_id as string | undefined
+      if (formularioRenuncia && renunciaId) {
+        try {
+          await subirFormularioRenuncia(formularioRenuncia, renunciaId)
+        } catch (err) {
+          console.warn('⚠️ Formulario no se pudo subir, renuncia ya registrada:', err)
+          toast.warning('Renuncia registrada, pero el formulario no se pudo adjuntar. Intente subirlo nuevamente.')
+        }
+      } else if (formularioRenuncia && !renunciaId) {
+        console.warn('⚠️ No se pudo extraer renuncia_id del RPC para subir formulario. Result:', result)
+        toast.warning('Renuncia registrada, pero el formulario no se pudo adjuntar.')
+      }
+
+      return result
+    },
     onSuccess: () => {
       toast.success('Renuncia registrada exitosamente')
-      // Invalidar caches relacionados
       queryClient.invalidateQueries({ queryKey: renunciasKeys.all })
       queryClient.invalidateQueries({ queryKey: ['clientes'] })
       queryClient.invalidateQueries({ queryKey: ['viviendas'] })

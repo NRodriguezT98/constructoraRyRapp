@@ -26,10 +26,17 @@ export const expedienteStyles = {
     clienteInfo: 'flex flex-wrap items-center gap-3 text-red-100 dark:text-red-200 text-sm',
     clienteInfoItem: 'inline-flex items-center gap-1.5',
     viviendaRow: 'flex items-center gap-2 text-white/90 text-sm',
-    motivoContainer: 'mt-2 px-4 py-3 rounded-xl bg-white/10 backdrop-blur-sm border border-white/20',
-    motivoLabel: 'text-xs font-semibold text-red-200 uppercase tracking-wider mb-1',
-    motivoText: 'text-sm text-white leading-relaxed',
     duracion: 'inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/15 backdrop-blur-sm border border-white/20 text-white text-xs font-medium',
+  },
+
+  // 📋 DETAIL CARDS (Motivo + Formulario + Duración)
+  detailCards: {
+    cardLabel: 'text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-2',
+    motivoCard: 'rounded-xl backdrop-blur-xl bg-white/80 dark:bg-gray-800/80 border border-gray-200/50 dark:border-gray-700/50 p-4 shadow-lg',
+    motivoText: 'text-sm text-gray-700 dark:text-gray-300 leading-relaxed',
+    formularioCard: 'rounded-xl backdrop-blur-xl bg-white/80 dark:bg-gray-800/80 border border-gray-200/50 dark:border-gray-700/50 p-4 shadow-lg flex flex-col',
+    duracionCard: 'rounded-xl backdrop-blur-xl bg-white/80 dark:bg-gray-800/80 border border-gray-200/50 dark:border-gray-700/50 p-4 shadow-lg',
+    uploadButton: 'w-full inline-flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-medium border-2 border-dashed border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:border-red-400 dark:hover:border-red-500 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50/50 dark:hover:bg-red-950/20 transition-all disabled:opacity-50',
   },
 
   // ⏱️ TIMELINE

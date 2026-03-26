@@ -34,15 +34,17 @@ interface UseDocumentosListaProps {
   entidadId: string
   tipoEntidad: TipoEntidad
   onViewDocumento?: (documento: DocumentoProyecto) => void
+  defaultVista?: 'grid' | 'lista'
 }
 
 export function useDocumentosLista({
   entidadId,
   tipoEntidad,
   onViewDocumento,
+  defaultVista = 'grid',
 }: UseDocumentosListaProps) {
   // Estado local UI
-  const [vista, setVista] = useState<'grid' | 'lista'>('grid')
+  const [vista, setVista] = useState<'grid' | 'lista'>(defaultVista)
   const [documentoSeleccionado, setDocumentoSeleccionado] =
     useState<DocumentoProyecto | null>(null)
   const [modalViewerAbierto, setModalViewerAbierto] = useState(false)
@@ -132,9 +134,16 @@ export function useDocumentosLista({
         return diasA - diasB
       }
 
-      // 3. Documentos importantes
+      // 3. Documentos anclados
       if (a.es_importante && !b.es_importante) return -1
       if (!a.es_importante && b.es_importante) return 1
+
+      // Entre anclados: ordenar por fecha de anclaje (el que se ancló primero queda primero)
+      if (a.es_importante && b.es_importante) {
+        const aAnclado = a.anclado_at ? new Date(a.anclado_at).getTime() : 0
+        const bAnclado = b.anclado_at ? new Date(b.anclado_at).getTime() : 0
+        return aAnclado - bAnclado
+      }
 
       // 4. Más recientes primero (por fecha de creación)
       return new Date(b.fecha_creacion).getTime() - new Date(a.fecha_creacion).getTime()

@@ -18,8 +18,8 @@ import {
     History,
     Lock,
     MoreVertical,
+    Pin,
     RefreshCw,
-    Star,
     Trash2,
     Upload,
     User,
@@ -239,7 +239,7 @@ export function DocumentoCard({
 
                 {/* Badge importante */}
                 {documento.es_importante && (
-                  <Star size={13} className='flex-shrink-0 fill-yellow-500 text-yellow-500' />
+                  <Pin size={13} className='flex-shrink-0 fill-cyan-500 text-cyan-500' />
                 )}
               </div>
 
@@ -303,17 +303,17 @@ export function DocumentoCard({
                   }}
                   className='flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
                 >
-                  <Star
+                  <Pin
                     size={16}
                     className={
                       documento.es_importante
-                        ? 'fill-yellow-500 text-yellow-500'
+                        ? 'fill-cyan-500 text-cyan-500'
                         : ''
                     }
                   />
                   {documento.es_importante
-                    ? 'Quitar importante'
-                    : 'Marcar importante'}
+                    ? 'Quitar anclado'
+                    : 'Anclar documento'}
                 </button>
 
                 {onRename && (

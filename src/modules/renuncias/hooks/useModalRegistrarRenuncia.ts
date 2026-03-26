@@ -5,7 +5,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { useRegistrarRenuncia, useValidarRenuncia } from './useRenunciasQuery'
 
 const MOTIVO_MAX_CHARS = 500
-const CELEBRATION_DELAY_MS = 2000
+const CELEBRATION_DELAY_MS = 3000
 
 export interface UseModalRegistrarRenunciaProps {
   negociacionId: string
@@ -24,8 +24,8 @@ export function useModalRegistrarRenuncia({ negociacionId, onExitosa }: UseModal
   const [motivo, setMotivo] = useState('')
   const [retencionMonto, setRetencionMonto] = useState(0)
   const [retencionMotivo, setRetencionMotivo] = useState('')
-  const [notas, setNotas] = useState('')
   const [textoConfirmacion, setTextoConfirmacion] = useState('')
+  const [formularioRenuncia, setFormularioRenuncia] = useState<File | null>(null)
 
   // ── Estado ─────────────────────────────────────────────────────────────
   const registrando = registrarMutation.isPending
@@ -77,8 +77,9 @@ export function useModalRegistrarRenuncia({ negociacionId, onExitosa }: UseModal
     setError(null)
   }, [])
 
-  const handleNotasChange = useCallback((valor: string) => {
-    if (valor.length <= 300) setNotas(valor)
+  const handleFormularioChange = useCallback((file: File | null) => {
+    setFormularioRenuncia(file)
+    setError(null)
   }, [])
 
   const irAPaso2 = useCallback(() => {
@@ -99,11 +100,13 @@ export function useModalRegistrarRenuncia({ negociacionId, onExitosa }: UseModal
 
     try {
       await registrarMutation.mutateAsync({
-        negociacion_id: negociacionId,
-        motivo: motivo.trim(),
-        retencion_monto: retencionMonto > 0 ? retencionMonto : undefined,
-        retencion_motivo: retencionMonto > 0 ? retencionMotivo.trim() : undefined,
-        notas: notas.trim() || undefined,
+        dto: {
+          negociacion_id: negociacionId,
+          motivo: motivo.trim(),
+          retencion_monto: retencionMonto > 0 ? retencionMonto : undefined,
+          retencion_motivo: retencionMonto > 0 ? retencionMotivo.trim() : undefined,
+        },
+        formularioRenuncia: formularioRenuncia ?? undefined,
       })
 
       setExitoso(true)
@@ -120,7 +123,7 @@ export function useModalRegistrarRenuncia({ negociacionId, onExitosa }: UseModal
     motivo,
     retencionMonto,
     retencionMotivo,
-    notas,
+    formularioRenuncia,
     registrarMutation,
     onExitosa,
   ])
@@ -142,8 +145,8 @@ export function useModalRegistrarRenuncia({ negociacionId, onExitosa }: UseModal
     handleRetencionMontoChange,
     retencionMotivo,
     handleRetencionMotivoChange,
-    notas,
-    handleNotasChange,
+    formularioRenuncia,
+    handleFormularioChange,
     textoConfirmacion,
     setTextoConfirmacion,
     // Calculados

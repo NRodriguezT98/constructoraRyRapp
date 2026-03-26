@@ -3,3 +3,4 @@
  */
 
 export * from './modal-registrar-interes';
+export * from './ReactivarClienteModal';

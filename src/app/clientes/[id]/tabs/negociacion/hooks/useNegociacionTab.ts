@@ -93,13 +93,17 @@ export function useNegociacionTab({ cliente }: UseNegociacionTabProps) {
   const isAdmin = !permisosLoading && rol === 'Administrador'
 
   // ─── Negociación activa ──────────────────────────────────────────────────
-  const { negociaciones, isLoading: isLoadingNeg } = useNegociacionesQuery({
+  const { negociaciones, isLoading: isLoadingNeg, refetch: refetchNegociaciones } = useNegociacionesQuery({
     clienteId: cliente.id,
   })
 
   const negociacion = useMemo(
     () =>
+      // 1. Priorizar negociación Activa
       negociaciones.find(n => n.estado === 'Activa') ??
+      // 2. Cualquier negociación que no sea Cerrada por Renuncia (ej: Completada, Suspendida)
+      negociaciones.find(n => n.estado !== 'Cerrada por Renuncia') ??
+      // 3. Si solo hay cierres por renuncia, mostrar la más reciente (la primera, ya ordenadas desc)
       negociaciones[0] ??
       null,
     [negociaciones]
@@ -263,5 +267,6 @@ export function useNegociacionTab({ cliente }: UseNegociacionTabProps) {
     // Actions
     refetchFuentes,
     refetchAbonos,
+    refetchNegociaciones,
   }
 }

@@ -8,14 +8,16 @@ import {
     Ban,
     CheckCircle,
     DollarSign,
+    FileText,
     FileX,
     Home,
     Loader2,
     Shield,
-    Sparkles,
+    Upload,
     User,
     X
 } from 'lucide-react'
+import { useRef } from 'react'
 import { createPortal } from 'react-dom'
 
 import { useModalRegistrarRenuncia } from '../../hooks/useModalRegistrarRenuncia'
@@ -58,6 +60,7 @@ const s = {
   btnPrimary: 'inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-red-600 via-rose-600 to-pink-600 text-white text-sm font-semibold hover:from-red-700 hover:via-rose-700 hover:to-pink-700 transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-lg',
   btnSecondary: 'inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-all',
   stepIndicator: 'flex items-center gap-2 text-xs text-white/80',
+  uploadZone: 'flex flex-col items-center justify-center p-4 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600 hover:border-red-400 dark:hover:border-red-500 transition-colors cursor-pointer bg-gray-50 dark:bg-gray-800/50',
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -77,6 +80,8 @@ export function RegistrarRenunciaModal({
   onClose,
   onExitosa,
 }: RegistrarRenunciaModalProps) {
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
   const {
     validacion,
     validando,
@@ -91,8 +96,8 @@ export function RegistrarRenunciaModal({
     handleRetencionMontoChange,
     retencionMotivo,
     handleRetencionMotivoChange,
-    notas,
-    handleNotasChange,
+    formularioRenuncia,
+    handleFormularioChange,
     textoConfirmacion,
     setTextoConfirmacion,
     totalAbonado,
@@ -212,11 +217,23 @@ export function RegistrarRenunciaModal({
               <Loader2 className="w-10 h-10 text-red-500" />
             </motion.div>
             <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
-              Procesando renuncia y cascada...
+              Se está registrando la renuncia del cliente...
             </p>
-            <p className="text-xs text-gray-500 dark:text-gray-400">
-              Esto puede tomar unos segundos
-            </p>
+            <div className="flex flex-col items-center gap-1">
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                Ejecutando cascada de actualizaciones
+              </p>
+              <div className="flex items-center gap-1.5 mt-1">
+                {[0, 1, 2].map((i) => (
+                  <motion.div
+                    key={i}
+                    className="w-1.5 h-1.5 rounded-full bg-red-400"
+                    animate={{ opacity: [0.3, 1, 0.3] }}
+                    transition={{ repeat: Infinity, duration: 1.2, delay: i * 0.2 }}
+                  />
+                ))}
+              </div>
+            </div>
           </div>
         </motion.div>
       </motion.div>,
@@ -265,7 +282,7 @@ export function RegistrarRenunciaModal({
               className="text-center mt-6"
             >
               <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1">
-                Renuncia Registrada
+                Renuncia Registrada Exitosamente
               </h3>
               <p className="text-sm text-gray-600 dark:text-gray-400">
                 {montoADevolver > 0
@@ -278,10 +295,14 @@ export function RegistrarRenunciaModal({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.8 }}
-              className="flex items-center gap-1 mt-4 text-xs text-gray-400"
+              className="flex items-center gap-2 mt-5 px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700"
             >
-              <Sparkles className="w-3 h-3" />
-              <span>Cerrando automáticamente...</span>
+              <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1.5, ease: 'linear' }}>
+                <Loader2 className="w-3.5 h-3.5 text-gray-400" />
+              </motion.div>
+              <span className="text-xs text-gray-500 dark:text-gray-400">
+                Redirigiendo al módulo de renuncias...
+              </span>
             </motion.div>
           </div>
         </motion.div>
@@ -408,18 +429,42 @@ export function RegistrarRenunciaModal({
                 ) : null}
               </div>
 
-              {/* Notas */}
+              {/* Formulario de renuncia (opcional) */}
               <div>
                 <label className={s.label}>
-                  Notas adicionales <span className="text-gray-400 font-normal normal-case">(opcional)</span>
+                  Formulario de renuncia <span className="text-gray-400 font-normal normal-case">(opcional)</span>
                 </label>
-                <textarea
-                  rows={2}
-                  className={s.textarea}
-                  value={notas}
-                  onChange={(e) => handleNotasChange(e.target.value)}
-                  placeholder="Observaciones internas..."
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".pdf,.png,.jpg,.jpeg"
+                  className="hidden"
+                  onChange={(e) => handleFormularioChange(e.target.files?.[0] ?? null)}
                 />
+                {formularioRenuncia ? (
+                  <div className="flex items-center gap-2 p-3 rounded-lg bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-800">
+                    <FileText className="w-4 h-4 text-rose-600 dark:text-rose-400 flex-shrink-0" />
+                    <span className="text-sm text-rose-700 dark:text-rose-300 truncate flex-1">{formularioRenuncia.name}</span>
+                    <button
+                      onClick={() => { handleFormularioChange(null); if (fileInputRef.current) fileInputRef.current.value = '' }}
+                      className="text-xs text-red-500 hover:text-red-700 font-medium"
+                    >
+                      Quitar
+                    </button>
+                  </div>
+                ) : (
+                  <div
+                    onClick={() => fileInputRef.current?.click()}
+                    className={s.uploadZone}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') fileInputRef.current?.click() }}
+                  >
+                    <Upload className="w-6 h-6 text-gray-400 mb-1" />
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Adjuntar formulario diligenciado</p>
+                    <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-0.5">PDF, PNG, JPG (máx 10 MB)</p>
+                  </div>
+                )}
               </div>
 
               {/* Resumen financiero */}

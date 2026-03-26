@@ -75,13 +75,7 @@ export function ExpedienteRenunciaPage({ consecutivo }: ExpedienteRenunciaPagePr
   return (
     <div className={styles.page.container}>
       <div className={styles.page.content}>
-        {/* Back link */}
-        <Link href="/renuncias" className={styles.page.backLink}>
-          <ArrowLeft className="w-4 h-4" />
-          Volver a renuncias
-        </Link>
-
-        {/* Hero */}
+        {/* Hero (includes back link + detail cards row) */}
         <ExpedienteHero datos={datos} />
 
         {/* Timeline */}

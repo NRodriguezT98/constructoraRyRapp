@@ -263,8 +263,10 @@ export function useToggleImportanteMutation(entidadId: string, tipoEntidad: Tipo
       }
 
       // Toggle importante
+      const nuevoValor = !documento.es_importante
       return DocumentosBaseService.actualizarDocumento(documentoId, {
-        es_importante: !documento.es_importante,
+        es_importante: nuevoValor,
+        anclado_at: nuevoValor ? new Date().toISOString() : null,
       }, tipoEntidad)
     },
     onSuccess: async () => {
@@ -279,7 +281,7 @@ export function useToggleImportanteMutation(entidadId: string, tipoEntidad: Tipo
         type: 'active',
       })
 
-      toast.success('Estado de importancia actualizado')
+      toast.success('Documento actualizado correctamente')
     },
     onError: (err) => {
       console.error('❌ [Toggle Importante] Error:', err)

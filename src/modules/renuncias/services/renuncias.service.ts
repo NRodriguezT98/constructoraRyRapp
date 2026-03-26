@@ -302,6 +302,41 @@ export async function generarUrlFirmadaComprobante(pathOrUrl: string): Promise<s
 }
 
 // =====================================================
+// SUBIR FORMULARIO DE RENUNCIA
+// =====================================================
+
+/**
+ * Sube el formulario de renuncia al bucket privado y actualiza la columna en la tabla.
+ * Se ejecuta DESPUÉS de registrar la renuncia exitosamente.
+ */
+export async function subirFormularioRenuncia(file: File, renunciaId: string): Promise<string> {
+  const ext = file.name.split('.').pop()
+  const filePath = `${renunciaId}/formulario-renuncia.${ext}`
+
+  const { error: uploadError } = await supabase.storage
+    .from('renuncias-comprobantes')
+    .upload(filePath, file, { upsert: true })
+
+  if (uploadError) {
+    console.error('❌ Error subiendo formulario de renuncia:', uploadError)
+    throw new Error(`Error al subir formulario: ${uploadError.message}`)
+  }
+
+  // Actualizar la columna en la tabla renuncias
+  const { error: updateError } = await supabase
+    .from('renuncias')
+    .update({ formulario_renuncia_url: filePath })
+    .eq('id', renunciaId)
+
+  if (updateError) {
+    console.error('❌ Error actualizando URL formulario:', updateError)
+    throw new Error(`Error al vincular formulario: ${updateError.message}`)
+  }
+
+  return filePath
+}
+
+// =====================================================
 // MÉTRICAS
 // =====================================================
 

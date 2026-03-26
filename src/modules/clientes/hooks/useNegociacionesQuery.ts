@@ -17,7 +17,7 @@
  */
 
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { useCallback, useMemo } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 
 import { obtenerFuentesPagoConAbonos } from '@/modules/abonos/services/abonos.service'
 import { negociacionesService } from '@/modules/clientes/services/negociaciones.service'
@@ -108,9 +108,26 @@ export function useNegociacionesQuery({ clienteId, enabled = true }: UseNegociac
       return data as NegociacionDetalle[]
     },
     enabled: enabled && !!clienteId,
-    staleTime: 1000 * 60 * 5, // 5 minutos
-    gcTime: 1000 * 60 * 10, // 10 minutos (antes cacheTime)
+    staleTime: 1000 * 30,       // 30 segundos — dato crítico, debe estar fresco
+    gcTime: 1000 * 60 * 10,    // 10 minutos de cache
+    refetchOnMount: true,       // Siempre refetch si stale al montar
+    refetchOnWindowFocus: true, // Refetch cuando el usuario vuelve a la ventana
   })
+
+  // =====================================================
+  // SUSCRIPCIÓN AL EVENTO DE NEGOCIACIÓN CREADA
+  // =====================================================
+  // Capa de seguridad: si por alguna razón la invalidación explícita
+  // de useCrearNegociacion no dispara el refetch, el evento lo garantiza.
+
+  useEffect(() => {
+    if (!clienteId) return
+    const handleNegociacionCreada = () => {
+      queryClient.invalidateQueries({ queryKey: negociacionesQueryKeys.byCliente(clienteId) })
+    }
+    window.addEventListener('negociacion-creada', handleNegociacionCreada)
+    return () => window.removeEventListener('negociacion-creada', handleNegociacionCreada)
+  }, [clienteId, queryClient])
 
   // =====================================================
   // CÁLCULOS COMPUTADOS

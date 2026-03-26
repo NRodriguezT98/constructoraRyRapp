@@ -19,8 +19,8 @@ import type { EstadoNegociacion, Negociacion } from '@/modules/clientes/types'
 import { crearCredito } from '@/modules/fuentes-pago/services/creditos-constructora.service'
 import { crearCuotasCredito } from '@/modules/fuentes-pago/services/cuotas-credito.service'
 import {
-  calcularTablaAmortizacion,
-  fechaCuotaParaBD,
+    calcularTablaAmortizacion,
+    fechaCuotaParaBD,
 } from '@/modules/fuentes-pago/utils/calculos-credito'
 import { esCuotaInicial } from '@/shared/constants/fuentes-pago.constants'
 
@@ -96,6 +96,23 @@ class NegociacionesService {
     try {
       const tieneFuentesPago =
         datos.fuentes_pago && datos.fuentes_pago.length > 0
+
+      // ==========================================
+      // VALIDACIÓN: No crear negociación si hay renuncia pendiente
+      // ==========================================
+      const { data: renunciaPendiente } = await supabase
+        .from('renuncias')
+        .select('id, consecutivo')
+        .eq('cliente_id', datos.cliente_id)
+        .eq('estado', 'Pendiente Devolución')
+        .limit(1)
+        .maybeSingle()
+
+      if (renunciaPendiente) {
+        throw new Error(
+          `No se puede crear negociación: el cliente tiene la renuncia ${renunciaPendiente.consecutivo} con devolución pendiente.`
+        )
+      }
 
       // ==========================================
       // PASO 1: Crear negociación en estado 'Activa'

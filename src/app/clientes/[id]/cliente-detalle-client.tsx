@@ -28,10 +28,11 @@ import {
 } from 'lucide-react'
 
 import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 
 import { construirURLCliente } from '@/lib/utils/slug.utils'
 import { formatNombreCompleto } from '@/lib/utils/string.utils'
-import { ModalRegistrarInteres } from '@/modules/clientes/components/modals'
+import { ModalRegistrarInteres, ReactivarClienteModal } from '@/modules/clientes/components/modals'
 import { useAsignacionVivienda, useClienteDetalle } from '@/modules/clientes/hooks'
 import { clientesService } from '@/modules/clientes/services/clientes.service'
 import { Tooltip } from '@/shared/components/ui'
@@ -121,20 +122,32 @@ export default function ClienteDetalleClient({ clienteId }: ClienteDetalleClient
   }
 
   // ── Reactivar cliente que renunció ──
-  const [reactivando, setReactivando] = useState(false)
+  const [modalReactivarAbierto, setModalReactivarAbierto] = useState(false)
+  const [verificandoRenuncia, setVerificandoRenuncia] = useState(false)
+
   const handleReactivarCliente = async () => {
     if (!clienteUUID) return
-    if (!window.confirm('¿Reactivar este cliente? Su estado cambiará a "Interesado" y podrá asignársele una nueva vivienda.')) return
-    setReactivando(true)
+    setVerificandoRenuncia(true)
     try {
-      await clientesService.cambiarEstado(clienteUUID, 'Interesado')
-      recargarCliente()
-    } catch (err) {
-      console.error('Error reactivando cliente:', err)
-      alert('Error al reactivar el cliente')
+      const resultado = await clientesService.verificarRenunciaPendiente(clienteUUID)
+      if (resultado.pendiente) {
+        toast.error(
+          `No se puede reactivar: la renuncia ${resultado.consecutivo} tiene devolución pendiente. Primero debe cerrarse la renuncia.`,
+          { duration: 6000 }
+        )
+        return
+      }
+      setModalReactivarAbierto(true)
+    } catch {
+      toast.error('Error al verificar el estado de la renuncia')
     } finally {
-      setReactivando(false)
+      setVerificandoRenuncia(false)
     }
+  }
+
+  const handleConfirmarReactivacion = async () => {
+    await clientesService.cambiarEstado(clienteUUID!, 'Interesado')
+    recargarCliente()
   }
 
   // ✅ Hook de asignación de vivienda con validación centralizada
@@ -397,8 +410,8 @@ export default function ClienteDetalleClient({ clienteId }: ClienteDetalleClient
 
               {/* Acciones */}
               <div className={styles.headerClasses.actionsContainer}>
-                {/* ✅ Botón Asignar Vivienda (solo visible para Interesados sin negociación) */}
-                {cliente.estado === 'Interesado' && !(cliente as any).negociaciones?.length && (
+                {/* ✅ Botón Asignar Vivienda (solo visible para Interesados sin negociación activa) */}
+                {cliente.estado === 'Interesado' && !((cliente as any).negociaciones?.filter((n: any) => n.estado !== 'Cerrada por Renuncia')?.length) && (
                   <Tooltip
                     content={mensajeValidacion}
                     side="bottom"
@@ -429,14 +442,14 @@ export default function ClienteDetalleClient({ clienteId }: ClienteDetalleClient
                 {cliente.estado === 'Renunció' && (
                   <motion.button
                     onClick={handleReactivarCliente}
-                    disabled={reactivando}
-                    className='inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold bg-white/20 backdrop-blur-md border border-white/30 text-white hover:bg-white/30 hover:shadow-lg transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed'
-                    whileHover={!reactivando ? { scale: 1.05 } : {}}
-                    whileTap={!reactivando ? { scale: 0.95 } : {}}
+                    disabled={verificandoRenuncia}
+                    className='inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold bg-white/20 backdrop-blur-md border border-white/30 text-white hover:bg-white/30 hover:shadow-lg transition-all duration-200 disabled:opacity-60 disabled:cursor-wait'
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                   >
-                    <RefreshCw className={`h-4 w-4 ${reactivando ? 'animate-spin' : ''}`} />
-                    <span className="hidden sm:inline">{reactivando ? 'Reactivando...' : 'Reactivar Cliente'}</span>
-                    <span className="sm:hidden">{reactivando ? '...' : 'Reactivar'}</span>
+                    <RefreshCw className={`h-4 w-4 ${verificandoRenuncia ? 'animate-spin' : ''}`} />
+                    <span className='hidden sm:inline'>{verificandoRenuncia ? 'Verificando...' : 'Reactivar Cliente'}</span>
+                    <span className='sm:hidden'>{verificandoRenuncia ? '...' : 'Reactivar'}</span>
                   </motion.button>
                 )}
 
@@ -519,6 +532,14 @@ export default function ClienteDetalleClient({ clienteId }: ClienteDetalleClient
           onClose={cerrarModalInteres}
           clienteId={clienteUUID}
           onSuccess={handleInteresRegistrado}
+        />
+
+        {/* Modal Reactivar Cliente */}
+        <ReactivarClienteModal
+          isOpen={modalReactivarAbierto}
+          nombreCliente={cliente?.nombre_completo || ''}
+          onClose={() => setModalReactivarAbierto(false)}
+          onConfirm={handleConfirmarReactivacion}
         />
       </motion.div>
     </AnimatePresence>

@@ -9,7 +9,9 @@ interface Filtros {
   busqueda: string
   fuente: string   // nombre de fuente o 'todas'
   mes: string      // 'YYYY-MM' o 'todos'
+  mostrarActivos: boolean
   mostrarAnulados: boolean
+  mostrarRenunciados: boolean
 }
 
 interface Estadisticas {
@@ -32,7 +34,9 @@ export function useAbonosList() {
     busqueda: '',
     fuente: 'todas',
     mes: 'todos',
+    mostrarActivos: true,
     mostrarAnulados: false,
+    mostrarRenunciados: false,
   })
 
   /**
@@ -41,10 +45,16 @@ export function useAbonosList() {
   const abonosFiltrados = useMemo(() => {
     let resultado = [...abonos]
 
-    // Ocultar anulados por defecto (solo Admin puede verlos con toggle)
-    if (!filtros.mostrarAnulados) {
-      resultado = resultado.filter((a) => a.estado !== 'Anulado')
-    }
+    // Filtrado por categoría (checklist): activos, anulados, renunciados
+    resultado = resultado.filter((a) => {
+      const esAnulado = a.estado === 'Anulado'
+      const esDeRenuncia = a.negociacion?.estado === 'Cerrada por Renuncia'
+
+      // Anulados tienen prioridad (un abono anulado de renuncia se clasifica como anulado)
+      if (esAnulado) return filtros.mostrarAnulados
+      if (esDeRenuncia) return filtros.mostrarRenunciados
+      return filtros.mostrarActivos
+    })
 
     // Filtro por búsqueda (cliente, CC o RYR-XXXX)
     if (filtros.busqueda.trim()) {
@@ -105,11 +115,19 @@ export function useAbonosList() {
   }
 
   const limpiarFiltros = () => {
-    setFiltros({ busqueda: '', fuente: 'todas', mes: 'todos', mostrarAnulados: false })
+    setFiltros({ busqueda: '', fuente: 'todas', mes: 'todos', mostrarActivos: true, mostrarAnulados: false, mostrarRenunciados: false })
   }
+
+  const toggleMostrarActivos = useCallback(() => {
+    setFiltros((prev) => ({ ...prev, mostrarActivos: !prev.mostrarActivos }))
+  }, [])
 
   const toggleMostrarAnulados = useCallback(() => {
     setFiltros((prev) => ({ ...prev, mostrarAnulados: !prev.mostrarAnulados }))
+  }, [])
+
+  const toggleMostrarRenunciados = useCallback(() => {
+    setFiltros((prev) => ({ ...prev, mostrarRenunciados: !prev.mostrarRenunciados }))
   }, [])
 
   const fuentesUnicas = useMemo(() => {
@@ -139,7 +157,9 @@ export function useAbonosList() {
     filtros,
     actualizarFiltros,
     limpiarFiltros,
+    toggleMostrarActivos,
     toggleMostrarAnulados,
+    toggleMostrarRenunciados,
     isLoading,
     error: queryError?.message ?? null,
     refetch: refrescar,

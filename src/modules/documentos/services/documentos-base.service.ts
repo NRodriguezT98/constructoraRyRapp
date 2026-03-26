@@ -338,6 +338,7 @@ export class DocumentosBaseService {
       fecha_vencimiento?: string
       categoria_id?: string
       es_importante?: boolean
+      anclado_at?: string | null
     },
     tipoEntidad: TipoEntidad
   ): Promise<void> {
