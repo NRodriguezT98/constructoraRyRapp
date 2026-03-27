@@ -86,7 +86,7 @@ export default function DocumentosEliminadosPage() {
                 </button>
 
                 <button
-                  onClick={() => window.location.reload()}
+                  onClick={() => router.refresh()}
                   className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/20 backdrop-blur-md border border-white/30 text-white text-sm font-medium hover:bg-white/30 transition-all shadow-lg"
                 >
                   <RefreshCw className="w-4 h-4" />

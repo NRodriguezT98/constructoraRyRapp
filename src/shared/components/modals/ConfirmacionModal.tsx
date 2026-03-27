@@ -87,12 +87,12 @@ export function ConfirmacionModal({
             exit={{ opacity: 0 }}
             transition={{ duration: 0.18 }}
             onClick={(e) => { e.stopPropagation(); if (!isLoading) onClose() }}
-            className='fixed inset-0 z-50 bg-black/70 backdrop-blur-[3px]'
+            className='fixed inset-0 z-[200] bg-black/70 backdrop-blur-[3px]'
           />
 
           {/* Modal — stopPropagation evita que clicks en el modal suban al componente padre */}
           <div
-            className='fixed inset-0 z-50 flex items-center justify-center p-4'
+            className='fixed inset-0 z-[200] flex items-center justify-center p-4'
             onClick={(e) => e.stopPropagation()}
           >
             <motion.div

@@ -75,7 +75,7 @@ export function useDocumentosEliminados() {
     error: errorProyectos,
   } = useQuery({
     queryKey: ['documentos-eliminados-proyectos'],
-    queryFn: () => DocumentosService.obtenerDocumentosEliminados(),
+    queryFn: () => DocumentosService.obtenerDocumentosEliminados('proyecto'),
     enabled: !!user && perfil?.rol === 'Administrador',
     staleTime: 30 * 1000,
     gcTime: 5 * 60 * 1000,

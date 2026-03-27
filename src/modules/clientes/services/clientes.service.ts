@@ -554,38 +554,6 @@ class ClientesService {
 
     return stats
   }
-
-  /**
-   * Subir documento de identidad
-   */
-  async subirDocumentoIdentidad(
-    clienteId: string,
-    archivo: File
-  ): Promise<string> {
-    const extension = archivo.name.split('.').pop()
-    const nombreArchivo = `${clienteId}/documento-identidad.${extension}`
-
-    const { data, error } = await supabase.storage
-      .from('documentos-clientes')
-      .upload(nombreArchivo, archivo, {
-        upsert: true,
-      })
-
-    if (error) throw error
-
-    const {
-      data: { publicUrl },
-    } = supabase.storage
-      .from('documentos-clientes')
-      .getPublicUrl(nombreArchivo)
-
-    // Actualizar URL en el cliente
-    await this.actualizarCliente(clienteId, {
-      documento_identidad_url: publicUrl,
-    })
-
-    return publicUrl
-  }
 }
 
 export const clientesService = new ClientesService()

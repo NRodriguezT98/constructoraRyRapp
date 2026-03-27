@@ -2,9 +2,7 @@
 
 import { useCallback, useMemo, useState } from 'react'
 
-import { useQueryClient } from '@tanstack/react-query'
 import { motion } from 'framer-motion'
-import { AlertCircle, Edit3, Plus } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
 import { construirURLProyecto } from '@/lib/utils/slug.utils'
@@ -12,25 +10,19 @@ import { useVistaPreference } from '@/shared/hooks/useVistaPreference'
 import { Modal } from '../../../shared/components/ui/Modal'
 import {
     useEstadisticasProyectosQuery,
-    useProyectoConValidacion,
     useProyectosFiltradosQuery,
     useProyectosQuery,
 } from '../hooks'
-import { useDetectarCambios } from '../hooks/useDetectarCambios'
-// ✅ REACT QUERY: Nuevos hooks con cache inteligente
 import { proyectosPageStyles as styles } from '../styles/proyectos-page.styles'
-import type { Proyecto, ProyectoFormData } from '../types'
+import type { Proyecto } from '../types'
 
 import { NoResults } from '@/shared/components/ui/NoResults'
 import { Pagination } from '@/shared/components/ui/Pagination'
-import { ConfirmarCambiosModal } from './confirmar-cambios-modal'
 
 import { ArchivarProyectoModal } from './modals/archivar-proyecto-modal'
 import { RestaurarProyectoModal } from './modals/restaurar-proyecto-modal'
-import { ProyectosBadgesResumen } from './proyectos-badges-resumen'
 import { ProyectosEmpty } from './proyectos-empty'
 import { ProyectosFiltrosPremium } from './proyectos-filtros-premium'
-import { ProyectosForm } from './proyectos-form'
 import { ProyectosHeaderPremium } from './proyectos-header-premium'
 import { ProyectosLista } from './proyectos-lista'
 import { ProyectosMetricasPremium } from './proyectos-metricas-premium'
@@ -73,55 +65,30 @@ export function ProyectosPage({
   //   isAdmin,
   // })
 
-  const [modalAbierto, setModalAbierto] = useState(false)
-  const [modalEditar, setModalEditar] = useState(false)
-  const [proyectoEditar, setProyectoEditar] = useState<Proyecto | null>(null)
   const [modalEliminar, setModalEliminar] = useState(false)
   const [proyectoEliminar, setProyectoEliminar] = useState<string | null>(null)
   const [modalArchivar, setModalArchivar] = useState(false)
   const [proyectoArchivar, setProyectoArchivar] = useState<Proyecto | null>(null)
   const [modalRestaurar, setModalRestaurar] = useState(false)
   const [proyectoRestaurar, setProyectoRestaurar] = useState<Proyecto | null>(null)
-  const [modalConfirmarCambios, setModalConfirmarCambios] = useState(false)
-  const [datosEdicion, setDatosEdicion] = useState<ProyectoFormData | null>(null)
-  const [datosConfirmacion, setDatosConfirmacion] = useState<{
-    proyectoId: string
-    data: ProyectoFormData
-  } | null>(null)
-  const [totalesProyecto, setTotalesProyecto] = useState({ totalManzanas: 0, totalViviendas: 0 }) // ✅ Estado para totales
 
-  // ✅ Query client para invalidar queries manualmente
-  const queryClient = useQueryClient()
   const router = useRouter()
 
-  // ✅ REACT QUERY: Hooks con cache inteligente (reemplazan Zustand)
+  // ✅ REACT QUERY: Hooks con cache inteligente
   const {
-    crearProyecto,
-    actualizarProyecto,
     eliminarProyecto,
     archivarProyecto,
     restaurarProyecto,
     cargando,
-    creando,
-    actualizando,
     eliminando,
     archivando,
     restaurando
   } = useProyectosQuery()
-  const { proyectos, filtros, actualizarFiltros, limpiarFiltros, totalProyectos } = useProyectosFiltradosQuery()
+  const { proyectos, filtros, actualizarFiltros, limpiarFiltros } = useProyectosFiltradosQuery()
   const estadisticas = useEstadisticasProyectosQuery()
-
-  // ✅ Hook optimizado: Carga proyecto con validación de manzanas (1 query con JOIN)
-  const {
-    data: proyectoConValidacion,
-    isLoading: cargandoValidacion,
-  } = useProyectoConValidacion(proyectoEditar?.id)
 
   // Detectar si hay filtros activos
   const hayFiltrosActivos = Boolean(filtros.busqueda || filtros.estado)
-
-  // Hook para detectar cambios
-  const cambiosDetectados = useDetectarCambios(proyectoEditar, datosEdicion)
 
   // Hook para preferencia de vista (cards vs tabla)
   const [vista, setVista] = useVistaPreference({ moduleName: 'proyectos' })
@@ -149,10 +116,6 @@ export function ProyectosPage({
     setPaginaActual(1)
   }, [])
 
-  // Estado para manejar cierre con confirmación
-  const [modalConfirmarDescarte, setModalConfirmarDescarte] = useState(false)
-  const [hayFormularioConCambios, setHayFormularioConCambios] = useState(false)
-
   // Proyecto que se va a eliminar (lookup por ID)
   const proyectoEliminando = proyectos.find(p => p.id === proyectoEliminar)
 
@@ -160,84 +123,8 @@ export function ProyectosPage({
     router.push('/proyectos/nuevo')
   }
 
-  // ✅ Cerrar directo (sin confirmación)
-  const handleCerrarModal = () => {
-    setModalAbierto(false)
-    setModalEditar(false)
-    // ❌ NO resetear proyectoEditar aquí - se mantiene para próxima edición
-    // setProyectoEditar(null)
-    setModalConfirmarCambios(false)
-    setDatosEdicion(null)
-    setDatosConfirmacion(null)
-    setModalConfirmarDescarte(false)
-    setHayFormularioConCambios(false)
-  }
-
-  // ✅ Intentar cerrar (con validación de cambios)
-  const handleIntentarCerrarModal = () => {
-    // Si hay cambios sin guardar, mostrar modal de confirmación
-    if (hayFormularioConCambios) {
-      setModalConfirmarDescarte(true)
-    } else {
-      // Sin cambios, cerrar directo
-      handleCerrarModal()
-    }
-  }
-
-  // ✅ Confirmar descarte de cambios
-  const confirmarDescartarCambios = () => {
-    setModalConfirmarDescarte(false)
-    handleCerrarModal()
-  }
-
-  const handleCrearProyecto = async (data: ProyectoFormData) => {
-    try {
-      await crearProyecto(data)
-      handleCerrarModal()
-    } catch (error) {
-      // Error ya manejado por React Query con toast
-    }
-  }
-
   const handleEditarProyecto = (proyecto: Proyecto) => {
-    setProyectoEditar(proyecto)
-    setModalEditar(true)
-  }
-
-  const handleActualizarProyecto = async (data: ProyectoFormData) => {
-    if (!proyectoEditar) return
-
-    // Guardar datos para confirmación
-    setDatosEdicion(data)
-    setDatosConfirmacion({
-      proyectoId: proyectoEditar.id,
-      data: data,
-    })
-
-    // Abrir modal de confirmación de cambios
-    setModalConfirmarCambios(true)
-  }
-
-  const confirmarActualizacion = async () => {
-    if (!datosConfirmacion) return
-
-    try {
-      const proyectoActualizado = await actualizarProyecto(datosConfirmacion.proyectoId, datosConfirmacion.data)
-
-      // ✅ Invalidar la query de validación para forzar recarga con datos frescos
-      await queryClient.invalidateQueries({
-        queryKey: ['proyecto-validacion', datosConfirmacion.proyectoId]
-      })
-
-      // ✅ Actualizar el proyecto en edición con los datos frescos
-      if (proyectoActualizado) {
-        setProyectoEditar(proyectoActualizado)
-      }
-
-      handleCerrarModal()
-    } catch (error) {
-      // Error ya manejado por React Query con toast
-    }
+    router.push(`${construirURLProyecto({ id: proyecto.id, nombre: proyecto.nombre })}/editar`)
   }
 
   const handleEliminarProyecto = async (id: string) => {
@@ -384,95 +271,6 @@ export function ProyectosPage({
         )}
       </motion.div>
 
-      {/* Modal Crear Proyecto */}
-      <Modal
-        isOpen={modalAbierto}
-        onClose={handleIntentarCerrarModal}
-        title='Nuevo Proyecto'
-        description='Completa la información del nuevo proyecto de construcción'
-        size='xl'
-        gradientColor='green'
-        icon={<Plus className="w-6 h-6 text-white" />}
-        closeOnBackdrop={!hayFormularioConCambios}
-        closeOnEscape={!hayFormularioConCambios}
-        headerExtra={<ProyectosBadgesResumen totalManzanas={totalesProyecto.totalManzanas} totalViviendas={totalesProyecto.totalViviendas} />}
-      >
-        <ProyectosForm
-          onSubmit={handleCrearProyecto}
-          onCancel={handleIntentarCerrarModal}
-          isLoading={creando}
-          onHasChanges={setHayFormularioConCambios}
-          onTotalsChange={setTotalesProyecto}
-        />
-      </Modal>
-
-      {/* Modal Editar Proyecto */}
-      <Modal
-        isOpen={modalEditar}
-        onClose={handleIntentarCerrarModal}
-        title='Editar Proyecto'
-        description='Actualiza la información del proyecto'
-        size='xl'
-        gradientColor='green'
-        icon={<Edit3 className="w-6 h-6 text-white" />}
-        closeOnEscape={!hayFormularioConCambios}
-        closeOnBackdrop={!hayFormularioConCambios}
-        headerExtra={<ProyectosBadgesResumen totalManzanas={totalesProyecto.totalManzanas} totalViviendas={totalesProyecto.totalViviendas} />}
-      >
-        {cargandoValidacion ? (
-          <div className="flex items-center justify-center p-12">
-            <div className="text-center space-y-3">
-              <div className="w-12 h-12 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto" />
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                Cargando datos del proyecto...
-              </p>
-            </div>
-          </div>
-        ) : proyectoConValidacion ? (
-          <ProyectosForm
-            onSubmit={handleActualizarProyecto}
-            onCancel={handleCerrarModal}
-            isLoading={actualizando}
-            initialData={{
-              id: proyectoConValidacion.id,
-              nombre: proyectoConValidacion.nombre,
-              descripcion: proyectoConValidacion.descripcion,
-              ubicacion: proyectoConValidacion.ubicacion,
-              fechaInicio: proyectoConValidacion.fechaInicio,
-              fechaFinEstimada: proyectoConValidacion.fechaFinEstimada,
-              presupuesto: proyectoConValidacion.presupuesto,
-              estado: proyectoConValidacion.estado,
-              responsable: proyectoConValidacion.responsable,
-              // ✅ Manzanas CON validación pre-cargada (sin queries adicionales)
-              manzanas: proyectoConValidacion.manzanas.map(m => ({
-                id: m.id,
-                nombre: m.nombre,
-                totalViviendas: m.totalViviendas,
-                precioBase: 0, // No está en DB pero se requiere en tipo
-                superficieTotal: 0,
-                ubicacion: '',
-                // ✅ Datos de validación (para el formulario)
-                cantidadViviendasCreadas: m.cantidadViviendasCreadas,
-                esEditable: m.esEditable,
-                motivoBloqueado: m.motivoBloqueado,
-              })),
-            }}
-            isEditing={true}
-            onHasChanges={setHayFormularioConCambios}
-            onTotalsChange={setTotalesProyecto}
-          />
-        ) : null}
-      </Modal>
-
-      {/* Modal Confirmar Cambios */}
-      <ConfirmarCambiosModal
-        isOpen={modalConfirmarCambios}
-        onClose={() => setModalConfirmarCambios(false)}
-        onConfirm={confirmarActualizacion}
-        cambios={cambiosDetectados}
-        isLoading={actualizando}
-      />
-
       {/* Modal Confirmar Eliminación */}
       <Modal
         isOpen={modalEliminar}
@@ -542,42 +340,6 @@ export function ProyectosPage({
                 </svg>
               )}
               {eliminando ? 'Eliminando...' : 'Eliminar'}
-            </button>
-          </div>
-        </div>
-      </Modal>
-
-      {/* Modal Confirmar Descarte de Cambios */}
-      <Modal
-        isOpen={modalConfirmarDescarte}
-        onClose={() => setModalConfirmarDescarte(false)}
-        title='¿Descartar cambios?'
-        description={modalEditar ? 'Las modificaciones no se guardarán' : 'El proyecto no se creará'}
-        size='sm'
-        gradientColor='orange'
-        icon={<AlertCircle className="w-6 h-6 text-white" />}
-        compact={true}
-      >
-        <div className='space-y-3'>
-          <p className='text-sm text-gray-600 dark:text-gray-400'>
-            {modalEditar
-              ? 'Hay cambios sin guardar en el proyecto.'
-              : 'Has comenzado a llenar el formulario de creación.'}
-          </p>
-          <div className='flex justify-end gap-2 pt-2'>
-            <button
-              type='button'
-              onClick={() => setModalConfirmarDescarte(false)}
-              className='px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors'
-            >
-              {modalEditar ? 'Continuar editando' : 'Continuar creando'}
-            </button>
-            <button
-              type='button'
-              onClick={confirmarDescartarCambios}
-              className='px-3 py-1.5 text-sm font-medium text-white bg-gradient-to-r from-red-600 to-red-700 rounded-lg hover:from-red-700 hover:to-red-800 transition-all'
-            >
-              Descartar
             </button>
           </div>
         </div>

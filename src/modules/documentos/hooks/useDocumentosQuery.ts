@@ -226,11 +226,13 @@ export function useEliminarDocumentoMutation(entidadId: string, tipoEntidad: Tip
   return useMutation({
     mutationFn: (documentoId: string) => DocumentosEliminacionService.eliminarDocumento(documentoId, tipoEntidad),
     onSuccess: async () => {
-      // 🔧 FIX: Usar refetchQueries para forzar recarga INMEDIATA en Papelera
+      // Fix: invalidar todas las keys de papelera para que se refresque
       await Promise.all([
         queryClient.refetchQueries({ queryKey: documentosKeys.list(entidadId, tipoEntidad) }),
-        queryClient.refetchQueries({ queryKey: ['documentos-eliminados'] }), // â† Papelera
-        queryClient.refetchQueries({ queryKey: ['versiones-eliminadas'] }), // â† Versiones en papelera
+        queryClient.refetchQueries({ queryKey: ['documentos-eliminados-proyectos'] }),
+        queryClient.refetchQueries({ queryKey: ['documentos-eliminados-viviendas'] }),
+        queryClient.refetchQueries({ queryKey: ['documentos-eliminados-clientes'] }),
+        queryClient.refetchQueries({ queryKey: ['versiones-eliminadas'] }),
       ])
       toast.success('Documento eliminado correctamente')
     },

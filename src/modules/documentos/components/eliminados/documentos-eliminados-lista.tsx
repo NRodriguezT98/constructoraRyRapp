@@ -295,82 +295,23 @@ export function DocumentosEliminadosLista() {
           animate={{ opacity: 1 }}
           className="space-y-4"
         >
-          {documentos.map((documento: any, index: number) => {
-            const config = MODULOS_CONFIG[documento.modulo as ModuloKey]
-            const IconoModulo = config?.icono || FileText
-
-            return (
-              <motion.div
-                key={documento.id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.03 }}
-                className="relative"
-              >
-                {/* Card mejorado con header integrado */}
-                <div className="bg-white dark:bg-gray-800 rounded-xl border-2 border-gray-200 dark:border-gray-700 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden">
-                  {/* Header con badge de módulo y metadata */}
-                  <div className={`px-4 py-3 border-b-2 ${config?.borderColor} bg-gradient-to-r ${config?.bgLight} dark:from-gray-800 dark:to-gray-800`}>
-                    <div className="flex items-center justify-between gap-3 flex-wrap">
-                      {/* Badge de módulo con label explícito */}
-                      <div className="flex items-center gap-3">
-                        <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${config?.color} flex items-center justify-center shadow-md`}>
-                          <IconoModulo className="w-4 h-4 text-white" />
-                        </div>
-                        <div className="flex flex-col">
-                          <div className="flex items-center gap-1.5">
-                            <span className="text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase">Módulo:</span>
-                            <span className={`text-xs font-bold ${config?.textColor}`}>
-                              {config?.label || documento.modulo}
-                            </span>
-                          </div>
-                          <span className="text-[10px] text-gray-600 dark:text-gray-400">
-                            {documento.entidad_nombre || 'Sin información'}
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Metadata adicional con labels explícitos */}
-                      <div className="flex flex-col gap-1 text-xs">
-                        {documento.usuario && (
-                          <div className="flex items-center gap-1.5 text-gray-600 dark:text-gray-400">
-                            <User className="w-3 h-3" />
-                            <span className="font-semibold text-[10px]">Eliminado por:</span>
-                            <span className="text-[10px]">{documento.usuario.nombres} {documento.usuario.apellidos}</span>
-                          </div>
-                        )}
-                        {documento.fecha_actualizacion && (
-                          <div className="flex items-center gap-1.5 text-red-600 dark:text-red-400">
-                            <Calendar className="w-3 h-3" />
-                            <span className="font-semibold text-[10px]">Fecha eliminación:</span>
-                            <span className="text-[10px] bg-white/50 dark:bg-gray-700/50 px-2 py-0.5 rounded">
-                              {new Date(documento.fecha_actualizacion).toLocaleDateString('es-ES', {
-                                day: '2-digit',
-                                month: 'short',
-                                year: 'numeric',
-                                hour: '2-digit',
-                                minute: '2-digit'
-                              })}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Card original (sin header duplicado) */}
-                  <DocumentoEliminadoCard
-                    documento={documento}
-                    modulo={documento.modulo as 'proyectos' | 'viviendas' | 'clientes'}
-                    onRestaurarTodo={(id, titulo) => handleRestaurar(id, titulo, documento.modulo)}
-                    onEliminarDefinitivo={(id, titulo) => handleEliminarDefinitivo(id, titulo, documento.modulo)}
-                    restaurando={restaurando === documento.id}
-                    eliminando={eliminando === documento.id}
-                  />
-                </div>
-              </motion.div>
-            )
-          })}
+          {documentos.map((documento: any, index: number) => (
+            <motion.div
+              key={documento.id}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.03 }}
+            >
+              <DocumentoEliminadoCard
+                documento={documento}
+                modulo={documento.modulo as 'proyectos' | 'viviendas' | 'clientes'}
+                onRestaurarTodo={(id, titulo) => handleRestaurar(id, titulo, documento.modulo)}
+                onEliminarDefinitivo={(id, titulo) => handleEliminarDefinitivo(id, titulo, documento.modulo)}
+                restaurando={restaurando === documento.id}
+                eliminando={eliminando === documento.id}
+              />
+            </motion.div>
+          ))}
         </motion.div>
       )}
 
@@ -382,17 +323,25 @@ export function DocumentosEliminadosLista() {
         onConfirm={confirmarRestaurar}
         variant="success"
         title="¿Restaurar documento?"
-        message={
-          <>
-            <p className="mb-2">
-              El documento <strong>{modalRestaurar.titulo}</strong> volverá a la lista de
-              documentos activos.
-            </p>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              Podrás encontrarlo en su proyecto correspondiente.
-            </p>
-          </>
-        }
+        message={(() => {
+          const MODULO_LABELS: Record<string, string> = {
+            proyectos: 'proyecto',
+            viviendas: 'vivienda',
+            clientes: 'cliente',
+          }
+          const moduloLabel = MODULO_LABELS[modalRestaurar.modulo ?? ''] ?? 'registro'
+          return (
+            <>
+              <p>
+                El documento <strong>{modalRestaurar.titulo}</strong> volverá a la lista de
+                documentos activos.
+              </p>
+              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                Podrás encontrarlo en el {moduloLabel} correspondiente.
+              </p>
+            </>
+          )
+        })()}
         confirmText="Sí, restaurar"
         isLoading={restaurando !== null}
         loadingText="Restaurando..."

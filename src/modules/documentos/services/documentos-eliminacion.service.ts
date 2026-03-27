@@ -92,7 +92,7 @@ export class DocumentosEliminacionService {
       .from(tabla as any)
       .select(`
         *,
-        usuario:usuarios (
+        usuario:usuarios!${config.fkSubidoPor} (
           nombres,
           apellidos,
           email
@@ -170,18 +170,19 @@ export class DocumentosEliminacionService {
   static async obtenerDocumentosEliminados(
     tipoEntidad?: TipoEntidad
   ): Promise<DocumentoProyecto[]> {
-    // Si se especifica tipo, usar tabla específica
+    // Siempre especificar tipoEntidad para usar la FK correcta (evitar join ambiguo)
     const config = tipoEntidad
       ? obtenerConfiguracionEntidad(tipoEntidad)
-      : null
+      : obtenerConfiguracionEntidad('proyecto') // Fallback explícito
 
-    const tabla = config?.tabla || 'documentos_proyecto' // Fallback para compatibilidad
+    const tabla = config.tabla
+    const fk = config.fkSubidoPor
 
     const { data, error } = await supabase
       .from(tabla as any)
       .select(`
         *,
-        usuarios(nombres, apellidos, email)
+        usuario:usuarios!${fk} (nombres, apellidos, email)
       `)
       .eq('estado', 'eliminado')
       .eq('es_version_actual', true)
@@ -217,7 +218,7 @@ export class DocumentosEliminacionService {
       .from(tabla as any)
       .select(`
         *,
-        usuario:usuarios (
+        usuario:usuarios!${config.fkSubidoPor} (
           nombres,
           apellidos,
           email

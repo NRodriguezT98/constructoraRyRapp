@@ -73,6 +73,8 @@ export interface AccordionWizardSectionProps {
   summaryItems?: SummaryItem[]
   /** Callback al hacer click en "Editar" (sección completada) */
   onEdit?: () => void
+  /** Cantidad de cambios detectados en este paso (solo edición) */
+  changeCount?: number
   /** Contenido del paso (solo se renderiza en estado activo) */
   children?: React.ReactNode
 }
@@ -95,6 +97,10 @@ export interface AccordionWizardNavigationProps {
   moduleName: ModuleName
   /** Texto del botón submit (ej: "Crear Proyecto") */
   submitLabel?: string
+  /** ¿Deshabilitar submit? (ej: sin cambios detectados en edición) */
+  disableSubmit?: boolean
+  /** Mensaje cuando submit está deshabilitado */
+  disableSubmitMessage?: string
   /** Callback atrás */
   onBack: () => void
   /** Callback siguiente */

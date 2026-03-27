@@ -20,6 +20,7 @@ interface PasoManzanasProps {
   totalViviendas: number
   onAgregar: () => void
   onEliminar: (index: number) => void
+  canAgregar?: boolean
 }
 
 /**
@@ -34,6 +35,7 @@ export function PasoManzanas({
   totalViviendas,
   onAgregar,
   onEliminar,
+  canAgregar = true,
 }: PasoManzanasProps) {
   const manzanasErrors = (errors.manzanas as any)
 
@@ -104,14 +106,26 @@ export function PasoManzanas({
       ) : null}
 
       {/* Agregar manzana */}
-      <button
-        type="button"
-        onClick={onAgregar}
-        className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl border-2 border-dashed border-green-300 dark:border-green-700 text-green-600 dark:text-green-400 text-sm font-medium hover:bg-green-50 dark:hover:bg-green-950/20 hover:border-green-400 dark:hover:border-green-600 transition-colors"
-      >
-        <Plus className="w-4 h-4" />
-        Agregar manzana
-      </button>
+      <div className="space-y-1.5">
+        <button
+          type="button"
+          onClick={onAgregar}
+          disabled={!canAgregar}
+          className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl border-2 border-dashed text-sm font-medium transition-colors ${
+            canAgregar
+              ? 'border-green-300 dark:border-green-700 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-950/20 hover:border-green-400 dark:hover:border-green-600'
+              : 'border-gray-200 dark:border-gray-700 text-gray-400 dark:text-gray-600 cursor-not-allowed opacity-60'
+          }`}
+        >
+          <Plus className="w-4 h-4" />
+          Agregar manzana
+        </button>
+        {!canAgregar ? (
+          <p className="text-center text-xs text-gray-400 dark:text-gray-500">
+            Límite de 20 manzanas alcanzado
+          </p>
+        ) : null}
+      </div>
     </div>
   )
 }

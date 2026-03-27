@@ -37,9 +37,11 @@ const supabase = createClient(
 
 const BUCKETS = [
   'documentos',
+  'documentos-clientes',
   'documentos-viviendas',
   'documentos-proyectos',
   'comprobantes-abonos',
+  'renuncias-comprobantes',
   'procesos',
 ]
 

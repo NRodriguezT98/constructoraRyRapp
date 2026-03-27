@@ -6,7 +6,7 @@
  */
 
 import { useQuery } from '@tanstack/react-query'
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import type { UseFormSetValue, UseFormWatch } from 'react-hook-form'
 
 import { proyectosService } from '@/modules/proyectos/services/proyectos.service'
@@ -70,19 +70,33 @@ export function usePasoUbicacion({ setValue, watch, enabled = true }: UsePasoUbi
     return todosNumeros.filter(num => !numerosUsados.includes(num))
   }, [manzanaSeleccionada, manzanas, viviendasManzana])
 
-  // ✅ Limpiar manzana y número cuando cambia el proyecto
+  // ✅ Refs para rastrear cambios del USUARIO (no limpiar al re-montar con valor existente)
+  const prevProyecto = useRef(proyectoSeleccionado)
+  const prevManzana = useRef(manzanaSeleccionada)
+
+  // ✅ Limpiar manzana y número cuando el USUARIO cambia el proyecto
   useEffect(() => {
-    if (proyectoSeleccionado) {
+    if (
+      proyectoSeleccionado &&
+      prevProyecto.current &&
+      prevProyecto.current !== proyectoSeleccionado
+    ) {
       setValue('manzana_id', '')
       setValue('numero', '')
     }
+    prevProyecto.current = proyectoSeleccionado
   }, [proyectoSeleccionado, setValue])
 
-  // ✅ Limpiar número cuando cambia la manzana
+  // ✅ Limpiar número cuando el USUARIO cambia la manzana
   useEffect(() => {
-    if (manzanaSeleccionada) {
+    if (
+      manzanaSeleccionada &&
+      prevManzana.current &&
+      prevManzana.current !== manzanaSeleccionada
+    ) {
       setValue('numero', '')
     }
+    prevManzana.current = manzanaSeleccionada
   }, [manzanaSeleccionada, setValue])
 
   // ✅ Información de la manzana seleccionada

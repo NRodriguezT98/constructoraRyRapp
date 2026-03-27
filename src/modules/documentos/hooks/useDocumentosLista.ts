@@ -54,8 +54,16 @@ export function useDocumentosLista({
   const [modalRestaurarAbierto, setModalRestaurarAbierto] = useState(false)
   const [documentoParaRestaurar, setDocumentoParaRestaurar] = useState<DocumentoProyecto | null>(null)
   const [procesandoRestaurar, setProcesandoRestaurar] = useState(false)
+  const [modalEliminarAbierto, setModalEliminarAbierto] = useState(false)
+  const [documentoParaEliminar, setDocumentoParaEliminar] = useState<DocumentoProyecto | null>(null)
+  const [datosModalEliminar, setDatosModalEliminar] = useState<{
+    title: string
+    message: string
+    confirmText: string
+  }>({ title: '', message: '', confirmText: 'Eliminar' })
+  const [procesandoEliminar, setProcesandoEliminar] = useState(false)
 
-  const { user } = useAuth()
+  const { user, perfil } = useAuth()
 
   // ✅ Convertir tipoEntidad a moduleName para categorías
   const modulosCategorias: Record<TipoEntidad, 'proyectos' | 'clientes' | 'viviendas'> = {
@@ -273,7 +281,7 @@ export function useDocumentosLista({
     async (documento: DocumentoProyecto) => {
       try {
         // 1. Verificar si el usuario es Administrador
-        const esAdmin = user?.role === 'Administrador'
+        const esAdmin = perfil?.rol === 'Administrador'
 
         // 2. Contar versiones activas del documento
         const { total, versiones = [] } = await DocumentosService.contarVersionesActivas(documento.id, tipoEntidad) as any
@@ -281,47 +289,58 @@ export function useDocumentosLista({
         // 3. Construir mensaje según cantidad de versiones y rol
         let title = '¿Eliminar documento?'
         let message = ''
+        let confirmText = 'Eliminar'
 
         if (total > 1) {
-          // Documento con múltiples versiones
-          title = `⚠️ Eliminar documento con ${total} versiones`
-          message = `Se eliminarán TODAS las versiones de "${documento.titulo}":\n\n`
-
-          versiones.forEach((v: any) => {
-            message += `• v${v.version}: ${v.titulo}\n`
-          })
+          title = `Eliminar documento con ${total} versiones`
+          const listaVersiones = (versiones as any[]).map((v: any) => `• v${v.version}: ${v.titulo}`).join('\n')
 
           if (esAdmin) {
-            message += `\n📋 Si deseas eliminar solo UNA versión específica, usa el botón "Ver Historial" en la card del documento.\n\n✅ Podrás recuperar este documento desde la Papelera.\n\n¿Continuar con la eliminación completa?`
+            message = `Se eliminarán TODAS las versiones de "${documento.titulo}":\n\n${listaVersiones}\n\nPodrás recuperar este documento desde la Papelera.`
           } else {
-            message += `\n⚠️ IMPORTANTE:\n• Los documentos eliminados solo pueden ser recuperados por un Administrador desde la Papelera.\n• Si deseas eliminar solo 1 versión específica, solicítalo a un Administrador (acción restringida).\n\n¿Continuar con la eliminación?`
+            message = `Se eliminarán TODAS las versiones de "${documento.titulo}":\n\n${listaVersiones}\n\nSolo un Administrador podrá recuperarlo desde la Papelera.`
           }
+          confirmText = `Eliminar ${total} versiones`
         } else {
-          // Documento sin versiones adicionales
           if (esAdmin) {
-            message = `Se eliminará "${documento.titulo}".\n\n✅ Podrás recuperarlo desde la Papelera.`
+            message = `Se eliminará "${documento.titulo}". Podrás recuperarlo desde la Papelera.`
           } else {
-            message = `Se eliminará "${documento.titulo}".\n\n⚠️ Solo un Administrador podrá recuperarlo desde la Papelera.\n\n¿Continuar?`
+            message = `Se eliminará "${documento.titulo}". Solo un Administrador podrá recuperarlo desde la Papelera.`
           }
         }
 
-        const confirmed = await confirm({
-          title,
-          message,
-          confirmText: total > 1 ? `Eliminar ${total} versiones` : 'Eliminar',
-          cancelText: 'Cancelar',
-          variant: 'danger'
-        } as any)
-
-        if (confirmed) {
-          await eliminarMutation.mutateAsync(documento.id)
-        }
+        // 4. Abrir modal de confirmación (reemplaza el confirm() nativo roto)
+        setDocumentoParaEliminar(documento)
+        setDatosModalEliminar({ title, message, confirmText })
+        setModalEliminarAbierto(true)
       } catch (error) {
-        console.error('Error al eliminar documento:', error)
+        console.error('Error al preparar eliminación:', error)
       }
     },
-    [eliminarMutation, confirm, user?.role]
+    [perfil?.rol, tipoEntidad]
   )
+
+  const confirmarEliminar = useCallback(
+    async () => {
+      if (!documentoParaEliminar) return
+      setProcesandoEliminar(true)
+      try {
+        await eliminarMutation.mutateAsync(documentoParaEliminar.id)
+        setModalEliminarAbierto(false)
+        setDocumentoParaEliminar(null)
+      } catch (error) {
+        console.error('Error al eliminar documento:', error)
+      } finally {
+        setProcesandoEliminar(false)
+      }
+    },
+    [eliminarMutation, documentoParaEliminar]
+  )
+
+  const cancelarEliminar = useCallback(() => {
+    setModalEliminarAbierto(false)
+    setDocumentoParaEliminar(null)
+  }, [])
 
   // Helpers
   const getCategoriaByDocumento = useCallback(
@@ -341,19 +360,26 @@ export function useDocumentosLista({
     modalViewerAbierto,
     urlPreview,
     modalArchivarAbierto,
-    setModalArchivarAbierto, // ✅ Exponer setter
+    setModalArchivarAbierto,
     documentoParaArchivar,
     modalRestaurarAbierto,
     setModalRestaurarAbierto,
     documentoParaRestaurar,
     procesandoRestaurar,
+    // Modal eliminar
+    modalEliminarAbierto,
+    documentoParaEliminar,
+    datosModalEliminar,
+    procesandoEliminar,
+    confirmarEliminar,
+    cancelarEliminar,
 
     // Datos
     documentosFiltrados,
     categorias,
     cargandoDocumentos,
     hasDocumentos,
-    tipoEntidad, // ✅ Exponer tipoEntidad para componentes hijos
+    tipoEntidad,
 
     // Handlers
     handleView,
@@ -366,7 +392,7 @@ export function useDocumentosLista({
     handleDelete,
     getCategoriaByDocumento,
 
-    // 🆕 Refrescar datos
+    // Refrescar datos
     refrescar,
   }
 }

@@ -62,9 +62,21 @@ export function useModalNegociacion({
     valorViviendaInicial: valorVivienda,
   })
 
+  // Vivienda seleccionada (objeto completo, para acceder a gastos/recargo)
+  const viviendaSeleccionada = useMemo(() => {
+    return proyectosViviendas.viviendas.find((v) => v.id === proyectosViviendas.viviendaId) ?? null
+  }, [proyectosViviendas.viviendas, proyectosViviendas.viviendaId])
+
+  // ⚠️ CRÍTICO: El target de fuentes DEBE ser la obligación real del cliente:
+  // valorNegociado (= valor_base) − descuento + gastos_notariales + recargo_esquinera.
+  // Esto coincide exactamente con valor_total_pagar que el trigger calculará en BD.
   const valorTotal = useMemo(() => {
-    return Math.max(0, proyectosViviendas.valorNegociado - descuentoAplicado)
-  }, [proyectosViviendas.valorNegociado, descuentoAplicado])
+    const gastos  = viviendaSeleccionada?.gastos_notariales ?? 0
+    const recargo = (viviendaSeleccionada?.es_esquinera && viviendaSeleccionada?.recargo_esquinera)
+      ? viviendaSeleccionada.recargo_esquinera
+      : 0
+    return Math.max(0, proyectosViviendas.valorNegociado - descuentoAplicado + gastos + recargo)
+  }, [proyectosViviendas.valorNegociado, descuentoAplicado, viviendaSeleccionada])
 
   const { data: tiposConCampos = [], isLoading: cargandoTipos } = useTiposFuentesConCampos()
 

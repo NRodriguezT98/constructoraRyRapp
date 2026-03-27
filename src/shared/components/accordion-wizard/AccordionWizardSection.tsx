@@ -27,6 +27,7 @@ export function AccordionWizardSection({
   moduleName,
   summaryItems,
   onEdit,
+  changeCount,
   children,
 }: AccordionWizardSectionProps) {
   const styles = getAccordionWizardStyles(moduleName)
@@ -64,6 +65,14 @@ export function AccordionWizardSection({
               <AccordionWizardSummary items={summaryItems} />
             ) : null}
           </div>
+
+          {/* Change count badge (edit mode) */}
+          {changeCount != null && changeCount > 0 ? (
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border border-amber-200 dark:border-amber-800/50">
+              <Pencil className="w-3 h-3" />
+              {changeCount} {changeCount === 1 ? 'cambio' : 'cambios'}
+            </span>
+          ) : null}
 
           {/* Edit button */}
           {onEdit ? (

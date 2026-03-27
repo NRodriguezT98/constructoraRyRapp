@@ -64,9 +64,22 @@ export function useCrearNegociacionPage({
     valorViviendaInicial: valorVivienda,
   })
 
+  // Vivienda seleccionada (objeto completo, para acceder a gastos/recargo)
+  const viviendaSeleccionada = useMemo(() => {
+    return proyectosViviendas.viviendas.find((v) => v.id === proyectosViviendas.viviendaId) ?? null
+  }, [proyectosViviendas.viviendas, proyectosViviendas.viviendaId])
+
+  // ⚠️ CRÍTICO: El target de fuentes DEBE ser la obligación real del cliente,
+  // que es valorNegociado (= valor_base) − descuento + gastos_notariales + recargo_esquinera.
+  // Esto coincide exactamente con lo que el trigger calcular_valor_total_pagar producirá
+  // en BD → el plan de pagos quedará SIEMPRE cuadrado al 100% al crear la negociación.
   const valorTotal = useMemo(() => {
-    return Math.max(0, proyectosViviendas.valorNegociado - descuentoAplicado)
-  }, [proyectosViviendas.valorNegociado, descuentoAplicado])
+    const gastos  = viviendaSeleccionada?.gastos_notariales ?? 0
+    const recargo = (viviendaSeleccionada?.es_esquinera && viviendaSeleccionada?.recargo_esquinera)
+      ? viviendaSeleccionada.recargo_esquinera
+      : 0
+    return Math.max(0, proyectosViviendas.valorNegociado - descuentoAplicado + gastos + recargo)
+  }, [proyectosViviendas.valorNegociado, descuentoAplicado, viviendaSeleccionada])
 
   const { data: tiposConCampos = [], isLoading: cargandoTipos } = useTiposFuentesConCampos()
 

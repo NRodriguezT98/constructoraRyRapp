@@ -26,7 +26,6 @@ import {
     useClientesQuery,
     useCrearClienteMutation,
     useEliminarClienteMutation,
-    useSubirDocumentoIdentidadMutation,
 } from './useClientesQuery'
 
 export function useClientes(filtros?: FiltrosClientes) {
@@ -53,7 +52,6 @@ export function useClientes(filtros?: FiltrosClientes) {
   const actualizarMutation = useActualizarClienteMutation()
   const eliminarMutation = useEliminarClienteMutation()
   const cambiarEstadoMutation = useCambiarEstadoClienteMutation()
-  const subirDocumentoMutation = useSubirDocumentoIdentidadMutation()
 
   // =====================================================
   // ACCIONES (Wrappers para mantener compatibilidad)
@@ -111,16 +109,6 @@ export function useClientes(filtros?: FiltrosClientes) {
     [cambiarEstadoMutation]
   )
 
-  /**
-   * Subir documento de identidad
-   */
-  const subirDocumentoIdentidad = useCallback(
-    async (clienteId: string, archivo: File) => {
-      return subirDocumentoMutation.mutateAsync({ clienteId, archivo })
-    },
-    [subirDocumentoMutation]
-  )
-
   // =====================================================
   // ESTADÍSTICAS COMPUTADAS
   // =====================================================
@@ -155,7 +143,6 @@ export function useClientes(filtros?: FiltrosClientes) {
     actualizarCliente,
     eliminarCliente,
     cambiarEstado,
-    subirDocumentoIdentidad,
 
     // Filtros (legacy - deprecado)
     filtros: filtros || {},

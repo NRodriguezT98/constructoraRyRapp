@@ -50,6 +50,16 @@ const STEP_NUMBER_ACTIVE: Record<string, string> = {
   auditorias: 'text-sm font-bold text-blue-600 dark:text-blue-400',
 }
 
+const FIELD_LABEL_VALID: Record<string, string> = {
+  proyectos: 'peer-valid:text-green-600 dark:peer-valid:text-green-400',
+  viviendas: 'peer-valid:text-orange-600 dark:peer-valid:text-orange-400',
+  clientes: 'peer-valid:text-cyan-600 dark:peer-valid:text-cyan-400',
+  negociaciones: 'peer-valid:text-pink-600 dark:peer-valid:text-pink-400',
+  abonos: 'peer-valid:text-blue-600 dark:peer-valid:text-blue-400',
+  documentos: 'peer-valid:text-red-600 dark:peer-valid:text-red-400',
+  auditorias: 'peer-valid:text-blue-600 dark:peer-valid:text-blue-400',
+}
+
 const FIELD_FOCUS: Record<string, string> = {
   proyectos: 'focus:border-green-500 focus:shadow-[0_0_0_3px] focus:shadow-green-500/15',
   viviendas: 'focus:border-orange-500 focus:shadow-[0_0_0_3px] focus:shadow-orange-500/15',
@@ -113,6 +123,7 @@ export const getAccordionWizardStyles = (moduleName: ModuleName) => {
       inputFocus: FIELD_FOCUS[moduleName] ?? FIELD_FOCUS[fallback],
       inputError: 'border-red-500 focus:border-red-500 focus:shadow-[0_0_0_3px] focus:shadow-red-500/15',
       labelFloated: theme.classes.text.primary,
+      labelValid: FIELD_LABEL_VALID[moduleName] ?? FIELD_LABEL_VALID[fallback],
     },
     navigation: {
       container: 'flex items-center justify-between mt-6 pt-4 border-t border-gray-100 dark:border-gray-800',

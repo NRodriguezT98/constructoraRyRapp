@@ -2,6 +2,7 @@ import { supabase } from '@/lib/supabase/client'
 import type { Database } from '@/lib/supabase/database.types'
 import { formatDateForDB, getTodayDateString } from '@/lib/utils/date.utils'
 import { auditService } from '@/services/audit.service'
+import { getDepartamentos, validarCiudadDepartamento } from '@/shared/data/colombia-locations'
 
 import type {
     EstadoManzana,
@@ -117,13 +118,27 @@ class ProyectosService {
     // 🧹 Sanitizar datos (strings vacíos → null)
     const formData = sanitizeProyectoFormData(proyectoData)
 
+    // ✅ VALIDACIÓN: Departamento y ciudad contra catálogo de Colombia
+    const departamentosValidos = getDepartamentos()
+    if (!departamentosValidos.includes(formData.departamento)) {
+      throw new Error(`Departamento inválido: "${formData.departamento}". Selecciona un departamento de Colombia válido.`)
+    }
+    if (!validarCiudadDepartamento(formData.ciudad, formData.departamento)) {
+      throw new Error(`La ciudad "${formData.ciudad}" no pertenece al departamento "${formData.departamento}".`)
+    }
+
+    // Combinar los 3 campos de ubicación en el formato del campo DB
+    const ubicacionCombinada = [formData.direccion, formData.ciudad, formData.departamento]
+      .filter(Boolean)
+      .join(', ')
+
     // 1. Crear el proyecto principal
     const { data: proyecto, error: errorProyecto } = await supabase
       .from('proyectos')
       .insert({
         nombre: formData.nombre,
         descripcion: formData.descripcion,
-        ubicacion: formData.ubicacion,
+        ubicacion: ubicacionCombinada,
         fecha_inicio: formData.fechaInicio,
         fecha_fin_estimada: formData.fechaFinEstimada,
         presupuesto: formData.presupuesto,
@@ -175,11 +190,15 @@ class ProyectosService {
     }
 
     // 3. Preparar objeto completo para retornar
+    const { departamento, ciudad, direccion } = this.parsearUbicacion(proyecto.ubicacion)
     const proyectoCompleto: Proyecto = {
       id: proyecto.id,
       nombre: proyecto.nombre,
       descripcion: proyecto.descripcion,
       ubicacion: proyecto.ubicacion,
+      departamento,
+      ciudad,
+      direccion,
       fechaInicio: proyecto.fecha_inicio,
       fechaFinEstimada: proyecto.fecha_fin_estimada,
       presupuesto: proyecto.presupuesto,
@@ -306,12 +325,36 @@ class ProyectosService {
     // 🧹 Sanitizar datos (strings vacíos → null)
     const dataSanitizada = sanitizeProyectoUpdate(data)
 
+    // ✅ VALIDACIÓN: Departamento y ciudad contra catálogo de Colombia (al actualizar ubicación)
+    const departamentosValidos = getDepartamentos()
+    if (dataSanitizada.departamento !== undefined) {
+      if (!departamentosValidos.includes(dataSanitizada.departamento)) {
+        throw new Error(`Departamento inválido: "${dataSanitizada.departamento}". Selecciona un departamento de Colombia válido.`)
+      }
+    }
+    if (dataSanitizada.ciudad !== undefined) {
+      const depActual = dataSanitizada.departamento ?? proyectoAnterior?.departamento ?? ''
+      if (depActual && !validarCiudadDepartamento(dataSanitizada.ciudad, depActual)) {
+        throw new Error(`La ciudad "${dataSanitizada.ciudad}" no pertenece al departamento "${depActual}".`)
+      }
+    }
+
     const updateData: Partial<Database['public']['Tables']['proyectos']['Update']> = {}
 
     // Mapear campos de la aplicación a campos de DB
     if (dataSanitizada.nombre !== undefined) updateData.nombre = dataSanitizada.nombre
     if (dataSanitizada.descripcion !== undefined) updateData.descripcion = dataSanitizada.descripcion
-    if (dataSanitizada.ubicacion !== undefined) updateData.ubicacion = dataSanitizada.ubicacion
+    // Reconstruir ubicacion combinada si alguno de los 3 campos cambió
+    if (
+      dataSanitizada.departamento !== undefined ||
+      dataSanitizada.ciudad !== undefined ||
+      dataSanitizada.direccion !== undefined
+    ) {
+      const dep = dataSanitizada.departamento ?? proyectoAnterior?.departamento ?? ''
+      const ciu = dataSanitizada.ciudad ?? proyectoAnterior?.ciudad ?? ''
+      const dir = dataSanitizada.direccion ?? proyectoAnterior?.direccion ?? ''
+      updateData.ubicacion = [dir, ciu, dep].filter(Boolean).join(', ')
+    }
     if (dataSanitizada.fechaInicio !== undefined) updateData.fecha_inicio = dataSanitizada.fechaInicio
     if (dataSanitizada.fechaFinEstimada !== undefined)
       updateData.fecha_fin_estimada = dataSanitizada.fechaFinEstimada
@@ -675,14 +718,32 @@ class ProyectosService {
   }
 
   // Métodos de transformación
+  private parsearUbicacion(ubicacion: string): { departamento: string; ciudad: string; direccion: string } {
+    const partes = ubicacion.split(', ')
+    if (partes.length >= 3) {
+      return {
+        departamento: partes[partes.length - 1],
+        ciudad: partes[partes.length - 2],
+        direccion: partes.slice(0, -2).join(', '),
+      }
+    } else if (partes.length === 2) {
+      return { departamento: partes[1], ciudad: partes[0], direccion: '' }
+    }
+    return { departamento: '', ciudad: '', direccion: ubicacion }
+  }
+
   private transformarProyectoDeDB(data: Database['public']['Tables']['proyectos']['Row'] & {
     manzanas?: Array<Database['public']['Tables']['manzanas']['Row']>
   }): Proyecto {
+    const { departamento, ciudad, direccion } = this.parsearUbicacion(data.ubicacion)
     return {
       id: data.id,
       nombre: data.nombre,
       descripcion: data.descripcion,
       ubicacion: data.ubicacion,
+      departamento,
+      ciudad,
+      direccion,
       fechaInicio: data.fecha_inicio,
       fechaFinEstimada: data.fecha_fin_estimada,
       presupuesto: data.presupuesto,

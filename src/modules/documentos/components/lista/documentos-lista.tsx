@@ -3,6 +3,7 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import { Archive, FileText, FileX } from 'lucide-react'
 
+import { ConfirmacionModal } from '@/shared/components/modals/ConfirmacionModal'
 import { type ModuleName } from '@/shared/config/module-themes'
 import { EmptyState } from '../../../../shared/components/ui/EmptyState'
 import { LoadingSpinner } from '../../../../shared/components/ui/Loading'
@@ -53,6 +54,12 @@ export function DocumentosLista({
     setModalRestaurarAbierto,
     documentoParaRestaurar,
     procesandoRestaurar,
+    modalEliminarAbierto,
+    documentoParaEliminar,
+    datosModalEliminar,
+    procesandoEliminar,
+    confirmarEliminar,
+    cancelarEliminar,
     documentosFiltrados, // Ya incluye filtro por estado según vistaActual
     categorias,
     cargandoDocumentos,
@@ -275,6 +282,20 @@ export function DocumentosLista({
         documentoTitulo={documentoParaRestaurar?.titulo || ''}
         moduleName={themeModuleName}
         procesando={procesandoRestaurar}
+      />
+
+      {/* Modal Eliminar con confirmación */}
+      <ConfirmacionModal
+        isOpen={modalEliminarAbierto}
+        onClose={cancelarEliminar}
+        onConfirm={confirmarEliminar}
+        variant='danger'
+        title={datosModalEliminar.title}
+        message={datosModalEliminar.message}
+        confirmText={datosModalEliminar.confirmText}
+        cancelText='Cancelar'
+        isLoading={procesandoEliminar}
+        loadingText='Eliminando...'
       />
     </div>
   )

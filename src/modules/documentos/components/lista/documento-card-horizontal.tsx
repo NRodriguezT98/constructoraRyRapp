@@ -2,22 +2,21 @@
 
 import { motion } from 'framer-motion'
 import {
-    AlertCircle,
-    Archive,
-    Crown,
-    Download,
-    Edit,
-    Edit3,
-    Eye,
-    FileText,
-    FileUp,
-    FolderPlus,
-    History,
-    Lock,
-    MoreVertical,
-    Pin,
-    RefreshCw,
-    Trash2,
+  AlertCircle,
+  Archive,
+  Crown,
+  Download,
+  Edit,
+  Edit3,
+  FileText,
+  FileUp,
+  FolderPlus,
+  History,
+  Lock,
+  MoreVertical,
+  Pin,
+  RefreshCw,
+  Trash2
 } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
@@ -27,19 +26,19 @@ import { formatDateCompact } from '@/lib/utils/date.utils'
 import { ConfirmacionModal } from '@/shared/components/modals'
 import { type ModuleName } from '@/shared/config/module-themes'
 import {
-    CategoriaDocumento,
-    DocumentoProyecto,
-    formatFileSize,
-    getFileExtension,
+  CategoriaDocumento,
+  DocumentoProyecto,
+  formatFileSize,
+  getFileExtension,
 } from '../../../../types/documento.types'
 import { useDocumentoCard } from '../../hooks'
 import type { TipoEntidad } from '../../types/entidad.types'
 import { BadgeEstadoProceso } from '../badge-estado-proceso'
 import {
-    DocumentoEditarMetadatosModal,
-    DocumentoNuevaVersionModal,
-    DocumentoReemplazarArchivoModal,
-    DocumentoVersionesModal
+  DocumentoEditarMetadatosModal,
+  DocumentoNuevaVersionModal,
+  DocumentoReemplazarArchivoModal,
+  DocumentoVersionesModal
 } from '../modals'
 
 interface DocumentoCardHorizontalProps {
@@ -264,7 +263,7 @@ export function DocumentoCardHorizontal({
         <div className='mt-1 flex flex-col gap-0.5'>
           {/* Fila 1: Categoría */}
           <div className='flex items-center gap-1 text-xs'>
-            <span className='flex-shrink-0 text-gray-400 dark:text-gray-500'>Categoría:</span>
+            <span className='flex-shrink-0 text-gray-400 dark:text-gray-500'>Categoría del documento:</span>
             {categoria ? (
               <span className='truncate font-medium' style={{ color: categoria.color }}>{categoria.nombre}</span>
             ) : (
@@ -316,15 +315,6 @@ export function DocumentoCardHorizontal({
         onClick={(e) => e.stopPropagation()}
       >
         <div className='flex items-center gap-1 opacity-0 transition-opacity duration-150 group-hover:opacity-100 focus-within:opacity-100'>
-        <button
-          onClick={() => onView(documento)}
-          className='flex items-center justify-center rounded-lg p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white'
-          title='Ver'
-          aria-label='Ver documento'
-        >
-          <Eye size={16} />
-        </button>
-
         <button
           onClick={() => onDownload(documento)}
           className='flex items-center justify-center rounded-lg p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white'

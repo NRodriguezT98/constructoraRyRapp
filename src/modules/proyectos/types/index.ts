@@ -4,6 +4,9 @@ export interface Proyecto {
   nombre: string
   descripcion: string
   ubicacion: string
+  departamento: string
+  ciudad: string
+  direccion: string
   fechaInicio: string | null
   fechaFinEstimada: string | null
   presupuesto: number
@@ -76,7 +79,9 @@ export interface ProyectoFormData {
   responsable?: string
   nombre: string
   descripcion: string
-  ubicacion: string
+  departamento: string
+  ciudad: string
+  direccion: string
   fechaInicio: string | null
   fechaFinEstimada: string | null
   presupuesto: number

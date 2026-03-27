@@ -83,12 +83,32 @@ export function useDetectarCambios(
       })
     }
 
-    if (proyectoOriginal.ubicacion !== nuevosDatos.ubicacion) {
+    if (proyectoOriginal.departamento !== nuevosDatos.departamento) {
       cambiosProyecto.push({
-        campo: 'ubicacion',
-        label: 'Ubicación',
-        valorAnterior: proyectoOriginal.ubicacion,
-        valorNuevo: nuevosDatos.ubicacion,
+        campo: 'departamento',
+        label: 'Departamento',
+        valorAnterior: proyectoOriginal.departamento || 'No especificado',
+        valorNuevo: nuevosDatos.departamento || 'No especificado',
+        tipo: 'texto',
+      })
+    }
+
+    if (proyectoOriginal.ciudad !== nuevosDatos.ciudad) {
+      cambiosProyecto.push({
+        campo: 'ciudad',
+        label: 'Ciudad',
+        valorAnterior: proyectoOriginal.ciudad || 'No especificado',
+        valorNuevo: nuevosDatos.ciudad || 'No especificado',
+        tipo: 'texto',
+      })
+    }
+
+    if (proyectoOriginal.direccion !== nuevosDatos.direccion) {
+      cambiosProyecto.push({
+        campo: 'direccion',
+        label: 'Dirección',
+        valorAnterior: proyectoOriginal.direccion || 'No especificado',
+        valorNuevo: nuevosDatos.direccion || 'No especificado',
         tipo: 'texto',
       })
     }

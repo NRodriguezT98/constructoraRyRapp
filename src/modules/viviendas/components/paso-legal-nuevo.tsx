@@ -6,7 +6,9 @@
 
 'use client'
 
-import { motion } from 'framer-motion'
+import { useCallback, useRef, useState } from 'react'
+
+import { AnimatePresence, motion } from 'framer-motion'
 import { AlertCircle, FileText, Hash, MapPin, Maximize } from 'lucide-react'
 import type { FieldErrors, UseFormRegister } from 'react-hook-form'
 
@@ -20,6 +22,65 @@ interface PasoLegalProps {
 }
 
 export function PasoLegalNuevo({ register, errors }: PasoLegalProps) {
+  const [areaHint, setAreaHint] = useState<string | null>(null)
+  const hintTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const showAreaHint = useCallback((message: string) => {
+    if (hintTimeoutRef.current) clearTimeout(hintTimeoutRef.current)
+    setAreaHint(message)
+    hintTimeoutRef.current = setTimeout(() => setAreaHint(null), 2500)
+  }, [])
+
+  // ✅ Prevenir teclas inválidas con retroalimentación visual
+  const handleDecimalKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+    const { key, ctrlKey, metaKey } = e
+    if (ctrlKey || metaKey || ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab', 'Home', 'End'].includes(key)) return
+
+    const input = e.currentTarget
+    const value = input.value
+    const selStart = input.selectionStart ?? value.length
+    const selEnd = input.selectionEnd ?? value.length
+    const hasSelection = selStart !== selEnd
+
+    if (!/[\d.]/.test(key)) {
+      e.preventDefault()
+      showAreaHint('Solo se permiten números y punto decimal')
+      return
+    }
+
+    if (key === '.' && value.includes('.') && !hasSelection) {
+      e.preventDefault()
+      showAreaHint('Solo se permite un punto decimal')
+      return
+    }
+
+    if (/\d/.test(key) && value.includes('.') && !hasSelection) {
+      const dotIndex = value.indexOf('.')
+      const decimals = value.slice(dotIndex + 1)
+      if (selStart > dotIndex && decimals.length >= 3) {
+        e.preventDefault()
+        showAreaHint('Máximo 3 decimales (Ej: 66.125)')
+        return
+      }
+    }
+  }, [showAreaHint])
+
+  // ✅ Filtrar input para operaciones de pegado (fallback)
+  const handleDecimalInput = useCallback((e: React.FormEvent<HTMLInputElement>) => {
+    const input = e.currentTarget
+    let cleaned = input.value.replace(/[^\d.]/g, '')
+    const parts = cleaned.split('.')
+    if (parts.length > 2) {
+      cleaned = parts[0] + '.' + parts.slice(1).join('')
+    }
+    if (parts.length === 2 && parts[1].length > 3) {
+      cleaned = parts[0] + '.' + parts[1].slice(0, 3)
+    }
+    if (input.value !== cleaned) {
+      input.value = cleaned
+      showAreaHint('Se ajustó el valor — solo números con hasta 3 decimales')
+    }
+  }, [showAreaHint])
 
   return (
     <motion.div
@@ -114,6 +175,8 @@ export function PasoLegalNuevo({ register, errors }: PasoLegalProps) {
               type="text"
               inputMode="decimal"
               placeholder="120.50"
+              onKeyDown={handleDecimalKeyDown}
+              onInput={handleDecimalInput}
               className={cn(
                 styles.field.input,
                 errors.area_lote && styles.field.inputError
@@ -145,6 +208,8 @@ export function PasoLegalNuevo({ register, errors }: PasoLegalProps) {
               type="text"
               inputMode="decimal"
               placeholder="80.00"
+              onKeyDown={handleDecimalKeyDown}
+              onInput={handleDecimalInput}
               className={cn(
                 styles.field.input,
                 errors.area_construida && styles.field.inputError
@@ -163,6 +228,22 @@ export function PasoLegalNuevo({ register, errors }: PasoLegalProps) {
           )}
         </div>
       </div>
+
+      {/* Hint dinámico para campos de área */}
+      <AnimatePresence>
+        {areaHint ? (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+            className={styles.field.error}
+          >
+            <AlertCircle className={styles.field.errorIcon} />
+            {areaHint}
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
 
       {/* Tipo de Vivienda */}
       <div className={styles.field.container}>

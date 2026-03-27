@@ -17,6 +17,7 @@ import type { ProyectoFormData } from '../types'
 
 import { toast } from 'sonner'
 
+import { getDepartamentos, validarCiudadDepartamento } from '@/shared/data/colombia-locations'
 import { useFormChanges } from '@/shared/hooks/useFormChanges'
 import { proyectosService } from '../services/proyectos.service'
 import { useManzanasEditables } from './useManzanasEditables'
@@ -63,20 +64,32 @@ const proyectoSchema = z.object({
       /^[a-zA-ZáéíóúÁÉÍÓÚñÃ‘0-9\s\-_.,;:()\n¿?¡!'"Â°%$]+$/,
       'Caracteres no permitidos en la descripción. Use solo letras, números y puntuación básica'
     ),
-  ubicacion: z
+  departamento: z
     .string()
-    .min(5, 'La ubicación debe tener al menos 5 caracteres')
-    .max(200, 'La ubicación no puede exceder 200 caracteres')
+    .min(1, 'Selecciona un departamento')
+    .refine(
+      (val) => !val || getDepartamentos().includes(val),
+      { message: 'El departamento seleccionado no es válido' }
+    ),
+  ciudad: z
+    .string()
+    .min(1, 'Selecciona una ciudad o municipio'),
+  direccion: z
+    .string()
+    .min(5, 'La dirección debe tener al menos 5 caracteres')
+    .max(200, 'La dirección no puede exceder 200 caracteres')
     .regex(
-      /^[a-zA-ZáéíóúÁÉÍÓÚñÃ‘0-9\s\-,#.Â°]+$/,
-      'Solo se permiten letras (con acentos), números, espacios, comas, guiones, # y puntos'
+      /^[a-zA-ZáéíóúÁÉÍÓÚñÃ'0-9\s\-,#.Â°]+$/,
+      'Solo se permiten letras, números, espacios, comas, guiones, # y puntos'
     ),
   estado: z.enum(['en_planificacion', 'en_proceso', 'en_construccion', 'completado', 'pausado'], {
     message: 'Selecciona un estado para el proyecto',
   }),
   fechaInicio: z.string().optional(),
   fechaFinEstimada: z.string().optional(),
-  manzanas: z.array(manzanaSchema).min(1, 'Debe agregar al menos una manzana'),
+  manzanas: z.array(manzanaSchema)
+    .min(1, 'Debe agregar al menos una manzana')
+    .max(20, 'Máximo 20 manzanas por proyecto'),
 }).refine(
   (data) => {
     // Solo validar si ambas fechas están presentes y no son strings vacías
@@ -116,6 +129,15 @@ const proyectoSchema = z.object({
   {
     message: 'Las fechas no son coherentes con el estado del proyecto',
     path: ['estado'],
+  }
+).refine(
+  (data) => {
+    if (!data.departamento || !data.ciudad) return true
+    return validarCiudadDepartamento(data.ciudad, data.departamento)
+  },
+  {
+    message: 'La ciudad seleccionada no corresponde al departamento elegido',
+    path: ['ciudad'],
   }
 )
 
@@ -170,18 +192,7 @@ const createProyectoSchema = (params: { initialData?: Partial<ProyectoFormData>,
     }
 
     // ✅ Validación síncrona: Verificar formato de ubicación (evitar genéricas)
-    if (data.ubicacion) {
-      const ubicacionNormalizada = data.ubicacion.trim().toLowerCase()
-      const ubicacionesGenericas = ['sin ubicación', 'n/a', 'na', 'sin definir', 'por definir', 'tbd']
-
-      if (ubicacionesGenericas.includes(ubicacionNormalizada)) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: 'La ubicación debe ser específica (ej: Calle 123 #45-67, Bogotá)',
-          path: ['ubicacion'],
-        })
-      }
-    }
+    // [removido: ahora se captura por campos departamento, ciudad, direccion separados]
   })
 }
 
@@ -235,6 +246,7 @@ export function useProyectosForm({
     setError,
     clearErrors,
     trigger,
+    setValue,
     formState: { errors, touchedFields, isValidating },
   } = useForm<ProyectoFormSchema>({
     resolver: zodResolver(proyectoSchema), // â† Schema básico SIN validación async
@@ -243,7 +255,9 @@ export function useProyectosForm({
     defaultValues: {
       nombre: initialData?.nombre || '',
       descripcion: initialData?.descripcion || '',
-      ubicacion: initialData?.ubicacion || '',
+      departamento: initialData?.departamento || '',
+      ciudad: initialData?.ciudad || '',
+      direccion: initialData?.direccion || '',
       estado: initialData?.estado || 'en_planificacion',
       fechaInicio: initialData?.fechaInicio?.split('T')[0] || '',
       fechaFinEstimada: initialData?.fechaFinEstimada?.split('T')[0] || '',
@@ -269,7 +283,9 @@ export function useProyectosForm({
     reset({
       nombre: initialData?.nombre || '',
       descripcion: initialData?.descripcion || '',
-      ubicacion: initialData?.ubicacion || '',
+      departamento: initialData?.departamento || '',
+      ciudad: initialData?.ciudad || '',
+      direccion: initialData?.direccion || '',
       estado: initialData?.estado || 'en_planificacion',
       fechaInicio: initialData?.fechaInicio?.split('T')[0] || '',
       fechaFinEstimada: initialData?.fechaFinEstimada?.split('T')[0] || '',
@@ -314,7 +330,9 @@ export function useProyectosForm({
   } = useFormChanges(
     {
       nombre: watch('nombre'),
-      ubicacion: watch('ubicacion'),
+      departamento: watch('departamento'),
+      ciudad: watch('ciudad'),
+      direccion: watch('direccion'),
       descripcion: watch('descripcion'),
       estado: watch('estado'),
       fechaInicio: watch('fechaInicio'),
@@ -324,7 +342,9 @@ export function useProyectosForm({
     },
     {
       nombre: initialData?.nombre || '',
-      ubicacion: initialData?.ubicacion || '',
+      departamento: initialData?.departamento || '',
+      ciudad: initialData?.ciudad || '',
+      direccion: initialData?.direccion || '',
       descripcion: initialData?.descripcion || '',
       estado: initialData?.estado || 'en_planificacion',
       fechaInicio: initialData?.fechaInicio?.split('T')[0] || '',
@@ -335,7 +355,9 @@ export function useProyectosForm({
     {
       fieldLabels: {
         nombre: 'Nombre del Proyecto',
-        ubicacion: 'Ubicación',
+        departamento: 'Departamento',
+        ciudad: 'Ciudad',
+        direccion: 'Dirección',
         descripcion: 'Descripción',
         estado: 'Estado',
         fechaInicio: 'Fecha de Inicio',
@@ -356,7 +378,14 @@ export function useProyectosForm({
   }, [hasChanges, onHasChanges])
 
   // ==================== HANDLERS ====================
+  const MAX_MANZANAS = 20
+  const canAgregarManzana = fields.length < MAX_MANZANAS
+
   const handleAgregarManzana = () => {
+    if (!canAgregarManzana) {
+      toast.warning(`Has alcanzado el límite de ${MAX_MANZANAS} manzanas por proyecto`)
+      return
+    }
     append({
       nombre: `${String.fromCharCode(65 + fields.length)}`,
       totalViviendas: 0,
@@ -517,6 +546,8 @@ export function useProyectosForm({
     touchedFields,
     trigger,
     watch,
+    setValue,
+    setError,
     // Field array
     fields,
     handleAgregarManzana,
@@ -526,6 +557,7 @@ export function useProyectosForm({
     totalManzanas,
     totalViviendas,
     manzanasWatch, // ✅ Exportar para acceder a valores reales
+    canAgregarManzana,
 
     // Detección de cambios
     hasChanges,

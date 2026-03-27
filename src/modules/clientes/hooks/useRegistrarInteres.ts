@@ -7,9 +7,11 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { useQueryClient } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
+import { toast } from 'sonner'
 
 import { supabase } from '@/lib/supabase/client'
 
+import { useDocumentoIdentidad } from '../documentos/hooks/useDocumentoIdentidad'
 import { interesesService } from '../services/intereses.service'
 import { interesesKeys } from './useInteresesQuery'
 
@@ -58,6 +60,9 @@ export function useRegistrarInteres({ clienteId, onSuccess, onClose }: UseRegist
   const [viviendas, setViviendas] = useState<Vivienda[]>([])
   const [busquedaVivienda, setBusquedaVivienda] = useState('')
   const [cargandoProyectos, setCargandoProyectos] = useState(false)
+
+  // ✅ Validación de cédula reactiva (React Query - caché compartido)
+  const { tieneCedula } = useDocumentoIdentidad({ clienteId })
   const [cargandoViviendas, setCargandoViviendas] = useState(false)
   const [guardando, setGuardando] = useState(false)
   const [errorNegociacionExistente, setErrorNegociacionExistente] = useState(false)
@@ -220,19 +225,12 @@ export function useRegistrarInteres({ clienteId, onSuccess, onClose }: UseRegist
     setErrorNegociacionExistente(false)
 
     try {
-      // ⚠️ PENDIENTE: Validación de cédula (TEMPORALMENTE DESHABILITADA)
-      // TODO: Rehabilitar cuando se ejecute migración SQL en Supabase
-      // Archivo: supabase/migrations/20250120_add_es_documento_identidad.sql
-      // Documentación: PENDIENTE-VALIDACION-CEDULA.md
-      /*
-      const tieneCedula = await DocumentosClienteService.tieneCedulaActiva(clienteId)
+      // ✅ Validar que el cliente tenga documento de identidad cargado
       if (!tieneCedula) {
-        toast.error('Debes subir la cédula del cliente antes de crear una negociación')
+        toast.error('El cliente debe tener su documento de identidad cargado antes de registrar un interés')
         setGuardando(false)
         return
       }
-      */
-      console.warn('⚠️ BYPASS TEMPORAL: Validación de cédula deshabilitada - Ver PENDIENTE-VALIDACION-CEDULA.md')
 
       // Verificar si ya existe un interés activo para esta vivienda
       const interesesExistentes = await interesesService.obtenerInteresesCliente(clienteId, true)

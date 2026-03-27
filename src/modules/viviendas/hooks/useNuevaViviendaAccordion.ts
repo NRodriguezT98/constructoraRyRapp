@@ -69,10 +69,12 @@ const viviendaFormSchema = z.object({
   area_lote: z
     .string()
     .min(1, 'El área del lote es obligatoria')
+    .regex(/^\d+(\.\d{0,3})?$/, 'Solo números y hasta 3 decimales (Ej: 66.125)')
     .refine((val) => !isNaN(Number(val)) && Number(val) > 0, 'Debe ser un número mayor a 0'),
   area_construida: z
     .string()
     .min(1, 'El área construida es obligatoria')
+    .regex(/^\d+(\.\d{0,3})?$/, 'Solo números y hasta 3 decimales (Ej: 80.500)')
     .refine((val) => !isNaN(Number(val)) && Number(val) > 0, 'Debe ser un número mayor a 0'),
   tipo_vivienda: z.enum(['Regular', 'Irregular']),
   // Paso 4

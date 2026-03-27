@@ -17,13 +17,13 @@ import { useProyectosForm } from './useProyectosForm'
 
 // ── Configuración de pasos ───────────────────────────────────────
 export const PASOS_PROYECTO: WizardStepConfig[] = [
-  { id: 1, title: 'Información General', description: 'Define el nombre, ubicación y una descripción del proyecto de construcción.', icon: Building2 },
+  { id: 1, title: 'Información General', description: 'Define el nombre, departamento, ciudad, dirección y una descripción del proyecto de construcción.', icon: Building2 },
   { id: 2, title: 'Estado y Fechas', description: 'Selecciona el estado actual del proyecto y las fechas de inicio y fin estimada.', icon: CalendarDays },
   { id: 3, title: 'Manzanas', description: 'Configura la distribución de manzanas y la cantidad de viviendas por cada una.', icon: LayoutGrid },
 ]
 
 // Campos por paso (para trigger de validación parcial)
-const FIELDS_PASO_1 = ['nombre', 'ubicacion', 'descripcion'] as const
+const FIELDS_PASO_1 = ['nombre', 'departamento', 'ciudad', 'direccion', 'descripcion'] as const
 const FIELDS_PASO_2 = ['estado', 'fechaInicio', 'fechaFinEstimada'] as const
 
 const ESTADO_LABELS: Record<string, string> = {
@@ -68,14 +68,15 @@ export function useNuevoProyecto() {
   })
 
   const {
-    register, control, errors, trigger, watch,
+    register, control, errors, trigger, watch, setValue, setError,
     fields, handleAgregarManzana, handleEliminarManzana,
-    totalManzanas, totalViviendas, manzanasWatch,
+    totalManzanas, totalViviendas, manzanasWatch, canAgregarManzana,
   } = form
 
   // ── Watch values para resúmenes ─────────────────────
   const watchedNombre = watch('nombre')
-  const watchedUbicacion = watch('ubicacion')
+  const watchedDepartamento = watch('departamento')
+  const watchedCiudad = watch('ciudad')
   const watchedEstado = watch('estado')
 
   // ── Estado de cada sección ──────────────────────────
@@ -88,8 +89,9 @@ export function useNuevoProyecto() {
   // ── Resumen de cada sección completada ──────────────
   const summaryPaso1: SummaryItem[] = useMemo(() => [
     { label: 'Nombre', value: watchedNombre },
-    { label: 'Ubicación', value: watchedUbicacion },
-  ], [watchedNombre, watchedUbicacion])
+    { label: 'Departamento', value: watchedDepartamento },
+    { label: 'Ciudad', value: watchedCiudad },
+  ], [watchedNombre, watchedDepartamento, watchedCiudad])
 
   const summaryPaso2: SummaryItem[] = useMemo(() => [
     { label: 'Estado', value: watchedEstado ? ESTADO_LABELS[watchedEstado] : undefined },
@@ -112,8 +114,35 @@ export function useNuevoProyecto() {
       switch (pasoActual) {
         case 1:
           return await trigger([...FIELDS_PASO_1])
-        case 2:
-          return await trigger([...FIELDS_PASO_2])
+        case 2: {
+          const paso2Valid = await trigger([...FIELDS_PASO_2])
+          if (!paso2Valid) return false
+
+          // Validación cruzada de fechas (no cubierta por trigger parcial)
+          const fechaInicio = watch('fechaInicio') as string | undefined
+          const fechaFin = watch('fechaFinEstimada') as string | undefined
+          const estado = watch('estado') as string | undefined
+
+          if (fechaInicio && fechaFin && fechaInicio.trim() !== '' && fechaFin.trim() !== '') {
+            const dateInicio = new Date(fechaInicio)
+            const dateFin = new Date(fechaFin)
+            const ahora = new Date()
+
+            if (dateFin <= dateInicio) {
+              setError('fechaFinEstimada', { type: 'manual', message: 'La fecha de fin debe ser posterior a la fecha de inicio' })
+              return false
+            }
+            if (estado === 'completado' && dateFin > ahora) {
+              setError('fechaFinEstimada', { type: 'manual', message: 'Un proyecto completado no puede tener fecha de fin futura' })
+              return false
+            }
+            if ((estado === 'en_proceso' || estado === 'en_construccion') && dateInicio > ahora) {
+              setError('fechaInicio', { type: 'manual', message: 'Un proyecto en proceso o en construcción no puede tener fecha de inicio futura' })
+              return false
+            }
+          }
+          return true
+        }
         case 3:
           return await trigger(['manzanas'])
         default:
@@ -122,7 +151,7 @@ export function useNuevoProyecto() {
     } finally {
       setIsValidating(false)
     }
-  }, [pasoActual, trigger])
+  }, [pasoActual, trigger, watch, setError])
 
   const irSiguiente = useCallback(async () => {
     const valido = await validarPasoActual()
@@ -181,12 +210,15 @@ export function useNuevoProyecto() {
     register,
     control,
     errors,
+    watch,
+    setValue,
     fields,
     handleAgregarManzana,
     handleEliminarManzana,
     manzanasWatch,
     totalManzanas,
     totalViviendas,
+    canAgregarManzana,
 
     // Submit
     handleSubmit,

@@ -10,8 +10,9 @@
 
 import { AnimatePresence, motion } from 'framer-motion'
 import { AlertCircle, Building2, Calendar, CheckCircle2, FileCheck, FileText, Home, Loader2, Lock, LockOpen, MapPin, Plus, Trash2 } from 'lucide-react'
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 
+import { getCiudadesPorDepartamento, getDepartamentos } from '@/shared/data/colombia-locations'
 import { cn } from '../../../shared/utils/helpers'
 import { useProyectosForm } from '../hooks/useProyectosForm'
 import { proyectosFormPremiumStyles as styles } from '../styles/proyectos-form-premium.styles'
@@ -62,7 +63,27 @@ export function ProyectosForm({
     validandoManzanas,
     validandoNombre,
     manzanasState,
+    watch,
+    setValue,
   } = useProyectosForm({ initialData, onSubmit, isEditing, onHasChanges })
+
+  // Datos de ubicación en cascada
+  const departamentos = useMemo(() => getDepartamentos(), [])
+  const departamentoSeleccionado = watch('departamento')
+  const ciudades = useMemo(() => {
+    if (!departamentoSeleccionado) return []
+    return getCiudadesPorDepartamento(departamentoSeleccionado)
+  }, [departamentoSeleccionado])
+
+  // Reset ciudad si el departamento cambia y la ciudad actual ya no aplica
+  useEffect(() => {
+    if (departamentoSeleccionado) {
+      const ciudadActual = watch('ciudad')
+      if (ciudadActual && !getCiudadesPorDepartamento(departamentoSeleccionado).includes(ciudadActual)) {
+        setValue('ciudad', '')
+      }
+    }
+  }, [departamentoSeleccionado, setValue, watch])
 
   // ✅ Notificar cambios en totales al padre
   useEffect(() => {
@@ -144,12 +165,106 @@ export function ProyectosForm({
               )}
             </div>
 
-            {/* Campo: Ubicación */}
+            {/* Campos: Departamento + Ciudad */}
+            <div className="grid grid-cols-2 gap-3">
+              {/* Departamento */}
+              <div className={styles.field.container}>
+                <label className={styles.field.label}>
+                  Departamento <span className={styles.field.required}>*</span>
+                  {isEditing && isFieldChanged('departamento') && (
+                    <span className="ml-2 text-xs text-orange-600 dark:text-orange-400 font-medium">
+                      ✏️ Modificado
+                    </span>
+                  )}
+                </label>
+                <div className={styles.field.inputWrapper}>
+                  <MapPin className={styles.field.inputIcon} />
+                  <select
+                    {...register('departamento')}
+                    className={cn(
+                      styles.field.input,
+                      errors.departamento && styles.field.inputError,
+                      touchedFields.departamento && !errors.departamento && 'border-green-300 dark:border-green-700 bg-green-50/50 dark:bg-green-950/20',
+                      isEditing && isFieldChanged('departamento') && !errors.departamento && 'border-orange-300 dark:border-orange-700 bg-orange-50/50 dark:bg-orange-950/20'
+                    )}
+                  >
+                    <option value="">Selecciona un departamento</option>
+                    {departamentos.map((d) => (
+                      <option key={d} value={d}>{d}</option>
+                    ))}
+                  </select>
+                  {touchedFields.departamento && (
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                      {errors.departamento ? (
+                        <AlertCircle className="w-5 h-5 text-red-500" />
+                      ) : (
+                        <CheckCircle2 className="w-5 h-5 text-green-500 animate-in fade-in zoom-in duration-200" />
+                      )}
+                    </div>
+                  )}
+                </div>
+                {errors.departamento && (
+                  <motion.div {...styles.animations.errorMessage} className={styles.field.error}>
+                    <AlertCircle className={styles.field.errorIcon} />
+                    {errors.departamento.message}
+                  </motion.div>
+                )}
+              </div>
+
+              {/* Ciudad */}
+              <div className={styles.field.container}>
+                <label className={styles.field.label}>
+                  Ciudad / Municipio <span className={styles.field.required}>*</span>
+                  {isEditing && isFieldChanged('ciudad') && (
+                    <span className="ml-2 text-xs text-orange-600 dark:text-orange-400 font-medium">
+                      ✏️ Modificado
+                    </span>
+                  )}
+                </label>
+                <div className={styles.field.inputWrapper}>
+                  <MapPin className={styles.field.inputIcon} />
+                  <select
+                    {...register('ciudad')}
+                    disabled={!departamentoSeleccionado}
+                    className={cn(
+                      styles.field.input,
+                      errors.ciudad && styles.field.inputError,
+                      touchedFields.ciudad && !errors.ciudad && 'border-green-300 dark:border-green-700 bg-green-50/50 dark:bg-green-950/20',
+                      isEditing && isFieldChanged('ciudad') && !errors.ciudad && 'border-orange-300 dark:border-orange-700 bg-orange-50/50 dark:bg-orange-950/20',
+                      !departamentoSeleccionado && 'opacity-50 cursor-not-allowed'
+                    )}
+                  >
+                    <option value="">
+                      {departamentoSeleccionado ? 'Selecciona una ciudad' : 'Primero selecciona un depto.'}
+                    </option>
+                    {ciudades.map((c) => (
+                      <option key={c} value={c}>{c}</option>
+                    ))}
+                  </select>
+                  {touchedFields.ciudad && (
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                      {errors.ciudad ? (
+                        <AlertCircle className="w-5 h-5 text-red-500" />
+                      ) : (
+                        <CheckCircle2 className="w-5 h-5 text-green-500 animate-in fade-in zoom-in duration-200" />
+                      )}
+                    </div>
+                  )}
+                </div>
+                {errors.ciudad && (
+                  <motion.div {...styles.animations.errorMessage} className={styles.field.error}>
+                    <AlertCircle className={styles.field.errorIcon} />
+                    {errors.ciudad.message}
+                  </motion.div>
+                )}
+              </div>
+            </div>
+
+            {/* Campo: Dirección */}
             <div className={styles.field.container}>
               <label className={styles.field.label}>
-                Ubicación <span className={styles.field.required}>*</span>
-                {/* Indicador de campo modificado */}
-                {isEditing && isFieldChanged('ubicacion') && (
+                Dirección <span className={styles.field.required}>*</span>
+                {isEditing && isFieldChanged('direccion') && (
                   <span className="ml-2 text-xs text-orange-600 dark:text-orange-400 font-medium">
                     ✏️ Modificado
                   </span>
@@ -158,21 +273,20 @@ export function ProyectosForm({
               <div className={styles.field.inputWrapper}>
                 <MapPin className={styles.field.inputIcon} />
                 <input
-                  {...register('ubicacion')}
+                  {...register('direccion')}
                   type='text'
-                  placeholder='Ej: Guacarí, Valle del Cauca'
+                  placeholder='Ej: Calle 48 Norte #4E-07'
                   maxLength={200}
                   className={cn(
                     styles.field.input,
-                    errors.ubicacion && styles.field.inputError,
-                    touchedFields.ubicacion && !errors.ubicacion && 'border-green-300 dark:border-green-700 bg-green-50/50 dark:bg-green-950/20',
-                    isEditing && isFieldChanged('ubicacion') && !errors.ubicacion && 'border-orange-300 dark:border-orange-700 bg-orange-50/50 dark:bg-orange-950/20'
+                    errors.direccion && styles.field.inputError,
+                    touchedFields.direccion && !errors.direccion && 'border-green-300 dark:border-green-700 bg-green-50/50 dark:bg-green-950/20',
+                    isEditing && isFieldChanged('direccion') && !errors.direccion && 'border-orange-300 dark:border-orange-700 bg-orange-50/50 dark:bg-orange-950/20'
                   )}
                 />
-                {/* Indicador de estado */}
-                {touchedFields.ubicacion && (
+                {touchedFields.direccion && (
                   <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                    {errors.ubicacion ? (
+                    {errors.direccion ? (
                       <AlertCircle className="w-5 h-5 text-red-500" />
                     ) : (
                       <CheckCircle2 className="w-5 h-5 text-green-500 animate-in fade-in zoom-in duration-200" />
@@ -180,15 +294,15 @@ export function ProyectosForm({
                   </div>
                 )}
               </div>
-              {errors.ubicacion && (
+              {errors.direccion && (
                 <motion.div {...styles.animations.errorMessage} className={styles.field.error}>
                   <AlertCircle className={styles.field.errorIcon} />
-                  {errors.ubicacion.message}
+                  {errors.direccion.message}
                 </motion.div>
               )}
-              {!errors.ubicacion && (
+              {!errors.direccion && (
                 <p className={styles.field.helper}>
-                  Estado, ciudad o dirección completa
+                  Dirección exacta del proyecto
                 </p>
               )}
             </div>

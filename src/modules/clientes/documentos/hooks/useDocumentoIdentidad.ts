@@ -10,6 +10,7 @@
  */
 
 import { useDocumentosQuery } from '@/modules/documentos/hooks/useDocumentosQuery'
+import type { DocumentoProyecto } from '@/modules/documentos/types'
 import { useMemo } from 'react'
 
 interface UseDocumentoIdentidadProps {
@@ -21,7 +22,7 @@ interface UseDocumentoIdentidadReturn {
   tieneCedula: boolean
 
   /** Documento de identidad actual (si existe) */
-  documentoIdentidad: any | null
+  documentoIdentidad: (DocumentoProyecto & { es_documento_identidad?: boolean }) | null
 
   /** Estado de carga */
   cargando: boolean
@@ -42,7 +43,9 @@ export function useDocumentoIdentidad({
 
   // ✅ Buscar documento de identidad
   const documentoIdentidad = useMemo(() => {
-    return documentos.find(doc => (doc as any).es_documento_identidad === true) || null
+    return (documentos as (DocumentoProyecto & { es_documento_identidad?: boolean })[]).find(
+      doc => doc.es_documento_identidad === true
+    ) || null
   }, [documentos])
 
   // ✅ Verificar si tiene cédula
@@ -54,7 +57,7 @@ export function useDocumentoIdentidad({
   const mensajeValidacion = useMemo(() => {
     if (cargando) return null
     if (!tieneCedula) {
-      return 'Debe subir el documento de identidad del cliente antes de asignarle viviendas.'
+      return 'El cliente debe tener su documento de identidad cargado antes de continuar.'
     }
     return null
   }, [tieneCedula, cargando])

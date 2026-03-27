@@ -3,6 +3,7 @@
 
 export { useDetectarCambios } from './useDetectarCambios'
 export { useDocumentoVersiones } from './useDocumentoVersiones'
+export { PASOS_PROYECTO_EDICION, useEditarProyecto } from './useEditarProyecto'
 export { useEstadosVersionProyecto } from './useEstadosVersionProyecto'
 export { useProyectoCard } from './useProyectoCard'
 export { useProyectosActions } from './useProyectosActions'

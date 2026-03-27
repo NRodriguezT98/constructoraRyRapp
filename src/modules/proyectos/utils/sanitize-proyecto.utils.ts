@@ -18,7 +18,9 @@ export function sanitizeProyectoFormData(datos: ProyectoFormData): ProyectoFormD
     // Campos obligatorios (strings)
     nombre: sanitizeString(datos.nombre) || '',
     descripcion: sanitizeString(datos.descripcion) || '',
-    ubicacion: sanitizeString(datos.ubicacion) || '',
+    departamento: sanitizeString(datos.departamento) || '',
+    ciudad: sanitizeString(datos.ciudad) || '',
+    direccion: sanitizeString(datos.direccion) || '',
 
     // Fechas opcionales
     fechaInicio: sanitizeDate(datos.fechaInicio),
@@ -63,7 +65,9 @@ export function sanitizeProyectoUpdate(
 
   if ('nombre' in datos) sanitized.nombre = sanitizeString(datos.nombre) || ''
   if ('descripcion' in datos) sanitized.descripcion = sanitizeString(datos.descripcion) || ''
-  if ('ubicacion' in datos) sanitized.ubicacion = sanitizeString(datos.ubicacion) || ''
+  if ('departamento' in datos) sanitized.departamento = sanitizeString(datos.departamento) || ''
+  if ('ciudad' in datos) sanitized.ciudad = sanitizeString(datos.ciudad) || ''
+  if ('direccion' in datos) sanitized.direccion = sanitizeString(datos.direccion) || ''
   if ('fechaInicio' in datos) sanitized.fechaInicio = sanitizeDate(datos.fechaInicio)
   if ('fechaFinEstimada' in datos) sanitized.fechaFinEstimada = sanitizeDate(datos.fechaFinEstimada)
   if ('presupuesto' in datos) sanitized.presupuesto = datos.presupuesto

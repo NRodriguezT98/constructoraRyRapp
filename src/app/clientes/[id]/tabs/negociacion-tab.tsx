@@ -24,6 +24,7 @@ import {
     FileX,
     Home,
     Info,
+    ListChecks,
     Lock,
     Percent,
     RefreshCw,
@@ -69,18 +70,93 @@ function Skeleton() {
 
 function SinNegociacion() {
   return (
-    <div className='flex flex-col items-center justify-center space-y-3 py-16 text-center'>
-      <div className='flex h-14 w-14 items-center justify-center rounded-2xl bg-gray-100 dark:bg-gray-700/50'>
-        <Home className='h-7 w-7 text-gray-400 dark:text-gray-500' />
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      className='rounded-xl backdrop-blur-xl bg-gradient-to-br from-white/90 via-indigo-50/90 to-violet-50/90 dark:from-gray-800/90 dark:via-gray-800/80 dark:to-indigo-950/50 border border-gray-200/50 dark:border-gray-700/50 p-5 text-center shadow-xl space-y-4'
+    >
+      {/* Icón con gradiente */}
+      <div className='flex justify-center'>
+        <motion.div
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ type: 'spring', stiffness: 200 }}
+          className='w-16 h-16 rounded-xl bg-gradient-to-br from-indigo-500 via-violet-600 to-purple-600 flex items-center justify-center shadow-2xl shadow-indigo-500/30'
+        >
+          <Home className='w-8 h-8 text-white' />
+        </motion.div>
       </div>
-      <h3 className='text-base font-semibold text-gray-900 dark:text-white'>
-        Sin vivienda asignada
+
+      {/* Título y descripción */}
+      <h3 className='text-xl font-bold bg-gradient-to-br from-gray-900 via-gray-800 to-indigo-900 dark:from-white dark:via-gray-100 dark:to-indigo-100 bg-clip-text text-transparent'>
+        Sin Vivienda Asignada
       </h3>
-      <p className='max-w-xs text-sm text-gray-500 dark:text-gray-400'>
-        Cuando el cliente tenga una vivienda asignada, aquí verás el plan de
-        pagos y el seguimiento de abonos.
+      <p className='text-sm text-gray-600 dark:text-gray-400 max-w-sm mx-auto leading-relaxed'>
+        Cuando este cliente tenga una vivienda asignada, aquí podrás gestionar su
+        plan de pagos, fuentes de financiación y seguimiento de abonos.
       </p>
-    </div>
+
+      {/* Checklist de beneficios */}
+      <div className='rounded-xl bg-white/60 dark:bg-gray-900/40 backdrop-blur-sm border border-gray-200/80 dark:border-gray-700/50 p-3 text-left shadow-lg'>
+        <div className='flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2.5 pb-2 border-b border-gray-200 dark:border-gray-700'>
+          <ListChecks className='w-4 h-4' />
+          ¿Qué desbloquea una vivienda asignada?
+        </div>
+        <div className='space-y-2'>
+          <div className='flex items-start gap-3'>
+            <div className='w-5 h-5 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center flex-shrink-0 mt-0.5'>
+              <DollarSign className='w-3 h-3 text-indigo-600 dark:text-indigo-400' />
+            </div>
+            <div className='flex-1 min-w-0'>
+              <p className='text-sm font-medium text-gray-700 dark:text-gray-300'>Plan de pagos y fuentes de financiación</p>
+              <p className='text-xs text-gray-500 dark:text-gray-400 mt-1'>Cuota inicial, crédito hipotecario, Mi Casa Ya y más</p>
+            </div>
+          </div>
+          <div className='flex items-start gap-3'>
+            <div className='w-5 h-5 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center flex-shrink-0 mt-0.5'>
+              <TrendingUp className='w-3 h-3 text-indigo-600 dark:text-indigo-400' />
+            </div>
+            <div className='flex-1 min-w-0'>
+              <p className='text-sm font-medium text-gray-700 dark:text-gray-300'>Seguimiento de abonos en tiempo real</p>
+              <p className='text-xs text-gray-500 dark:text-gray-400 mt-1'>Historial de pagos, saldo pendiente y porcentaje pagado</p>
+            </div>
+          </div>
+          <div className='flex items-start gap-3'>
+            <div className='w-5 h-5 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center flex-shrink-0 mt-0.5'>
+              <Wallet className='w-3 h-3 text-indigo-600 dark:text-indigo-400' />
+            </div>
+            <div className='flex-1 min-w-0'>
+              <p className='text-sm font-medium text-gray-700 dark:text-gray-300'>Control financiero completo</p>
+              <p className='text-xs text-gray-500 dark:text-gray-400 mt-1'>Barra de avance, descuentos aplicados y gastos notariales</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Call to Action */}
+      <div className='rounded-xl bg-gradient-to-r from-indigo-50 via-violet-50 to-purple-50 dark:from-indigo-950/30 dark:via-violet-950/30 dark:to-purple-950/30 border border-indigo-200/50 dark:border-indigo-800/50 p-3 backdrop-blur-sm'>
+        <div className='flex items-start gap-3 text-left'>
+          <Lock className='w-6 h-6 text-indigo-600 dark:text-indigo-400 flex-shrink-0 mt-1 animate-pulse' />
+          <div className='flex-1'>
+            <h4 className='text-sm font-bold text-indigo-900 dark:text-indigo-100 mb-1'>¿Cómo comenzar?</h4>
+            <p className='text-xs text-indigo-700 dark:text-indigo-300 leading-relaxed'>
+              Usa el botón <strong>&ldquo;Asignar Vivienda&rdquo;</strong> en la parte superior
+              de este perfil para vincular una vivienda disponible a este cliente e iniciar la negociación.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Footer informativo */}
+      <div className='flex items-start gap-3 text-left pt-3 border-t border-gray-200 dark:border-gray-700'>
+        <Info className='w-5 h-5 text-indigo-600 dark:text-indigo-400 flex-shrink-0 mt-0.5' />
+        <p className='text-xs text-gray-600 dark:text-gray-400 leading-relaxed'>
+          La negociación es el núcleo del proceso de venta. Registra todos los movimientos
+          financieros del cliente desde la asignación hasta la escrituración.
+        </p>
+      </div>
+    </motion.div>
   )
 }
 

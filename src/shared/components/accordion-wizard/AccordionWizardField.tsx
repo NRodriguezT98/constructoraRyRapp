@@ -88,6 +88,7 @@ export const AccordionWizardSelect = forwardRef<HTMLSelectElement, AccordionWiza
       >
         <select
           ref={ref}
+          required={required}
           className={cn(
             'peer appearance-none',
             styles.field.inputBase,
@@ -106,7 +107,10 @@ export const AccordionWizardSelect = forwardRef<HTMLSelectElement, AccordionWiza
           htmlFor={rest.id ?? rest.name}
           className={cn(
             'pointer-events-none absolute left-4 top-1.5 text-[11px] font-medium transition-all duration-200',
-            styles.field.labelFloated,
+            'text-gray-400 dark:text-gray-500',
+            // When the select has a real value (valid), show module color
+            // The select must have `required` attribute for :invalid/:valid to work
+            styles.field.labelValid,
           )}
         >
           {label}

@@ -20,6 +20,7 @@ export interface ConfiguracionEntidad {
   bucket: string
   moduleName: ModuleName
   nombreSingular: string // Para mensajes de UI (ej: 'proyecto', 'vivienda', 'cliente')
+  fkSubidoPor: string   // Nombre de FK constraint con usuarios (para joins sin ambigüedad)
 }
 
 /**
@@ -32,6 +33,7 @@ export const CONFIGURACION_ENTIDADES: Record<TipoEntidad, ConfiguracionEntidad> 
     bucket: 'documentos-proyectos',
     moduleName: 'proyectos',
     nombreSingular: 'proyecto',
+    fkSubidoPor: 'fk_documentos_proyecto_subido_por',
   },
   vivienda: {
     tabla: 'documentos_vivienda',
@@ -39,6 +41,7 @@ export const CONFIGURACION_ENTIDADES: Record<TipoEntidad, ConfiguracionEntidad> 
     bucket: 'documentos-viviendas',
     moduleName: 'viviendas',
     nombreSingular: 'vivienda',
+    fkSubidoPor: 'fk_documentos_vivienda_subido_por',
   },
   cliente: {
     tabla: 'documentos_cliente',
@@ -46,6 +49,7 @@ export const CONFIGURACION_ENTIDADES: Record<TipoEntidad, ConfiguracionEntidad> 
     bucket: 'documentos-clientes',
     moduleName: 'clientes',
     nombreSingular: 'cliente',
+    fkSubidoPor: 'fk_documentos_cliente_subido_por',
   },
 }
 

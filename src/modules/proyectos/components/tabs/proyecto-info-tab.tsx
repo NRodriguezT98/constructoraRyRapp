@@ -41,9 +41,23 @@ export function ProyectoInfoTab({ proyecto }: ProyectoInfoTabProps) {
 
         <div>
           <label className='mb-1.5 block text-xs font-medium text-gray-700 dark:text-gray-300'>
-            Ubicaci�n
+            Departamento
           </label>
-          <p className='text-sm text-gray-900 dark:text-white'>{proyecto.ubicacion}</p>
+          <p className='text-sm text-gray-900 dark:text-white'>{proyecto.departamento || '-'}</p>
+        </div>
+
+        <div>
+          <label className='mb-1.5 block text-xs font-medium text-gray-700 dark:text-gray-300'>
+            Ciudad / Municipio
+          </label>
+          <p className='text-sm text-gray-900 dark:text-white'>{proyecto.ciudad || '-'}</p>
+        </div>
+
+        <div className='md:col-span-2'>
+          <label className='mb-1.5 block text-xs font-medium text-gray-700 dark:text-gray-300'>
+            Direcci&#xF3;n
+          </label>
+          <p className='text-sm text-gray-900 dark:text-white'>{proyecto.direccion || '-'}</p>
         </div>
 
         <div className='md:col-span-2'>

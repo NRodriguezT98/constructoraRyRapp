@@ -26,7 +26,7 @@ export class ClientesDocumentosEliminacionService {
         cliente:clientes!documentos_cliente_cliente_id_fkey(nombres, apellidos),
         usuario:usuarios!fk_documentos_cliente_subido_por(nombres, apellidos, email)
       `)
-      .eq('estado', 'Eliminado')
+      .eq('estado', 'eliminado')
       .eq('es_version_actual', true)
       .order('fecha_actualizacion', { ascending: false })
 
@@ -40,16 +40,40 @@ export class ClientesDocumentosEliminacionService {
 
   /**
    * RESTAURAR DOCUMENTO ELIMINADO
-   * Cambia estado de 'Eliminado' a 'Activo'
+   * Restaura el documento Y todas sus versiones (cadena completa)
    */
   static async restaurarDocumentoEliminado(documentoId: string): Promise<void> {
+    // 1. Obtener el documento para conocer el padre
+    const { data: documento, error: getError } = await supabase
+      .from('documentos_cliente')
+      .select('id, documento_padre_id')
+      .eq('id', documentoId)
+      .single()
+
+    if (getError) throw getError
+    if (!documento) throw new Error('Documento no encontrado')
+
+    const documentoPadreId = documento.documento_padre_id || documentoId
+
+    // 2. Obtener todos los IDs de la cadena (padre + versiones)
+    const { data: versiones, error: versionesError } = await supabase
+      .from('documentos_cliente')
+      .select('id')
+      .or(`id.eq.${documentoPadreId},documento_padre_id.eq.${documentoPadreId}`)
+      .eq('estado', 'eliminado')
+
+    if (versionesError) throw versionesError
+
+    const idsARestaurar = versiones ? versiones.map((v) => v.id) : [documentoId]
+
+    // 3. Restaurar toda la cadena
     const { error } = await supabase
       .from('documentos_cliente')
       .update({
-        estado: 'Activo',
+        estado: 'activo',
         fecha_actualizacion: formatDateForDB(getTodayDateString())
       })
-      .eq('id', documentoId)
+      .in('id', idsARestaurar)
 
     if (error) {
       console.error('❌ Error al restaurar documento de cliente:', error)
@@ -127,7 +151,7 @@ export class ClientesDocumentosEliminacionService {
         usuario:usuarios!fk_documentos_cliente_subido_por(nombres, apellidos, email)
       `)
       .or(`id.eq.${documentoPadreId},documento_padre_id.eq.${documentoPadreId}`)
-      .eq('estado', 'Eliminado')
+      .eq('estado', 'eliminado')
       .order('version', { ascending: true })
 
     if (error) throw error
@@ -146,7 +170,7 @@ export class ClientesDocumentosEliminacionService {
     const { error } = await supabase
       .from('documentos_cliente')
       .update({
-        estado: 'Activo',
+        estado: 'activo',
         fecha_actualizacion: formatDateForDB(getTodayDateString())
       })
       .in('id', versionIds)

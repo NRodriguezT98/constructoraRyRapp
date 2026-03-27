@@ -37,7 +37,7 @@ DROP TRIGGER IF EXISTS trigger_sincronizar_cedula_update ON documentos_cliente;
 CREATE TRIGGER trigger_sincronizar_cedula_update
   AFTER UPDATE ON documentos_cliente
   FOR EACH ROW
-  WHEN (NEW.es_documento_identidad = true AND OLD.es_documento_identidad = false)
+  WHEN (NEW.es_documento_identidad = true)
   EXECUTE FUNCTION sincronizar_documento_identidad();
 
 -- TRIGGER: Limpiar documento_identidad_url cuando se elimina documento de identidad

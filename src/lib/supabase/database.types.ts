@@ -811,6 +811,8 @@ export type Database = {
           cliente_id: string
           descripcion: string | null
           documento_padre_id: string | null
+          eliminado_en: string | null
+          eliminado_por: string | null
           es_documento_identidad: boolean
           es_importante: boolean | null
           es_version_actual: boolean
@@ -845,6 +847,8 @@ export type Database = {
           cliente_id: string
           descripcion?: string | null
           documento_padre_id?: string | null
+          eliminado_en?: string | null
+          eliminado_por?: string | null
           es_documento_identidad?: boolean
           es_importante?: boolean | null
           es_version_actual?: boolean
@@ -879,6 +883,8 @@ export type Database = {
           cliente_id?: string
           descripcion?: string | null
           documento_padre_id?: string | null
+          eliminado_en?: string | null
+          eliminado_por?: string | null
           es_documento_identidad?: boolean
           es_importante?: boolean | null
           es_version_actual?: boolean
@@ -965,6 +971,20 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "documentos_cliente_eliminado_por_fkey"
+            columns: ["eliminado_por"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documentos_cliente_eliminado_por_fkey"
+            columns: ["eliminado_por"]
+            isOneToOne: false
+            referencedRelation: "vista_usuarios_completos"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "documentos_cliente_fuente_pago_relacionada_fkey"
             columns: ["fuente_pago_relacionada"]
             isOneToOne: false
@@ -1014,6 +1034,8 @@ export type Database = {
           categoria_id: string | null
           descripcion: string | null
           documento_padre_id: string | null
+          eliminado_en: string | null
+          eliminado_por: string | null
           es_importante: boolean | null
           es_version_actual: boolean
           estado: string
@@ -1043,6 +1065,8 @@ export type Database = {
           categoria_id?: string | null
           descripcion?: string | null
           documento_padre_id?: string | null
+          eliminado_en?: string | null
+          eliminado_por?: string | null
           es_importante?: boolean | null
           es_version_actual?: boolean
           estado?: string
@@ -1072,6 +1096,8 @@ export type Database = {
           categoria_id?: string | null
           descripcion?: string | null
           documento_padre_id?: string | null
+          eliminado_en?: string | null
+          eliminado_por?: string | null
           es_importante?: boolean | null
           es_version_actual?: boolean
           estado?: string
@@ -1109,6 +1135,20 @@ export type Database = {
             columns: ["documento_padre_id"]
             isOneToOne: false
             referencedRelation: "documentos_proyecto"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documentos_proyecto_eliminado_por_fkey"
+            columns: ["eliminado_por"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documentos_proyecto_eliminado_por_fkey"
+            columns: ["eliminado_por"]
+            isOneToOne: false
+            referencedRelation: "vista_usuarios_completos"
             referencedColumns: ["id"]
           },
           {
@@ -1168,6 +1208,8 @@ export type Database = {
           categoria_id: string | null
           descripcion: string | null
           documento_padre_id: string | null
+          eliminado_en: string | null
+          eliminado_por: string | null
           es_importante: boolean | null
           es_version_actual: boolean
           estado: string
@@ -1198,6 +1240,8 @@ export type Database = {
           categoria_id?: string | null
           descripcion?: string | null
           documento_padre_id?: string | null
+          eliminado_en?: string | null
+          eliminado_por?: string | null
           es_importante?: boolean | null
           es_version_actual?: boolean
           estado?: string
@@ -1228,6 +1272,8 @@ export type Database = {
           categoria_id?: string | null
           descripcion?: string | null
           documento_padre_id?: string | null
+          eliminado_en?: string | null
+          eliminado_por?: string | null
           es_importante?: boolean | null
           es_version_actual?: boolean
           estado?: string
@@ -1273,6 +1319,20 @@ export type Database = {
             columns: ["documento_padre_id"]
             isOneToOne: false
             referencedRelation: "vista_documentos_vivienda"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documentos_vivienda_eliminado_por_fkey"
+            columns: ["eliminado_por"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documentos_vivienda_eliminado_por_fkey"
+            columns: ["eliminado_por"]
+            isOneToOne: false
+            referencedRelation: "vista_usuarios_completos"
             referencedColumns: ["id"]
           },
           {
@@ -3576,6 +3636,7 @@ export type Database = {
           fecha_creacion: string | null
           fecha_devolucion: string | null
           fecha_renuncia: string | null
+          formulario_renuncia_url: string | null
           id: string | null
           manzana_nombre: string | null
           metodo_devolucion: string | null

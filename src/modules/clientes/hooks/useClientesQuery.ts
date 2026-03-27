@@ -16,7 +16,6 @@
  * - useActualizarClienteMutation() - Actualizar cliente existente
  * - useEliminarClienteMutation() - Eliminar cliente
  * - useCambiarEstadoClienteMutation() - Cambiar estado de cliente
- * - useSubirDocumentoIdentidadMutation() - Subir documento de identidad
  */
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
@@ -199,24 +198,6 @@ export function useCambiarEstadoClienteMutation() {
       // Invalidar listas
       queryClient.invalidateQueries({ queryKey: clientesKeys.lists() })
       queryClient.invalidateQueries({ queryKey: clientesKeys.estadisticas() })
-    },
-  })
-}
-
-/**
- * Mutation: Subir documento de identidad
- */
-export function useSubirDocumentoIdentidadMutation() {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationFn: ({ clienteId, archivo }: { clienteId: string; archivo: File }) =>
-      clientesService.subirDocumentoIdentidad(clienteId, archivo),
-    onSuccess: (_, variables) => {
-      // Invalidar detalle del cliente
-      queryClient.invalidateQueries({ queryKey: clientesKeys.detail(variables.clienteId) })
-      // Invalidar listas
-      queryClient.invalidateQueries({ queryKey: clientesKeys.lists() })
     },
   })
 }

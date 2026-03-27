@@ -112,7 +112,7 @@ export function AccordionWizardSubmitOverlay({
         <motion.div
           key="submit-overlay"
           {...overlayAnim}
-          className="absolute inset-0 z-50 flex items-center justify-center bg-white/60 dark:bg-gray-950/70 backdrop-blur-md rounded-2xl"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-white/60 dark:bg-gray-950/70 backdrop-blur-md"
         >
           <motion.div
             {...cardAnim}
