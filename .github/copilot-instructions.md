@@ -2,6 +2,58 @@ si por # RyR Constructora - Sistema de Gestión Administrativa
 
 ## 🎯 PRINCIPIOS FUNDAMENTALES (APLICAR SIEMPRE)
 
+### 🚨 REGLA CRÍTICA #-11: EDICIÓN EN PÁGINA PROPIA, NO EN MODAL (OBLIGATORIO)
+
+**⚠️ AL implementar o revisar flujos de EDICIÓN en CUALQUIER módulo:**
+
+1. **NUNCA** → Modal de edición (`editar-xxx-modal.tsx`) para datos complejos multi-paso
+2. **SIEMPRE** → Página dedicada `/[modulo]/[id]/editar/page.tsx` con `AccordionWizardLayout`
+3. **PATRÓN** → Idéntico a Crear pero con datos precargados vía `useQuery`
+4. **RECORDAR** → Si alguien menciona editar en modal en viviendas/clientes/proyectos, señalar inmediatamente esta regla
+
+**Estructura OBLIGATORIA para edición:**
+
+```
+src/app/[modulo]/[id]/editar/page.tsx          ← Server Component (permisos + slug resolver)
+src/modules/[modulo]/components/Editar[Modulo]AccordionView.tsx  ← Componente presentacional
+src/modules/[modulo]/hooks/useEditar[Modulo]Accordion.ts         ← Toda la lógica
+```
+
+**Módulos que YA usan la página propia (referencia):**
+
+- ✅ `proyectos` → `/proyectos/[id]/editar` → `EditarProyectoView` + `useEditarProyecto`
+
+**Módulos PENDIENTES de migrar (recordar siempre):**
+
+- ⚠️ `viviendas` → Tiene `editar-vivienda-modal.tsx` DEPRECADA → migrar a `/viviendas/[slug]/editar`
+- ⚠️ `clientes` → Aún sin flujo de edición propio → crear `/clientes/[id]/editar`
+
+**Navegación desde listas/detalle:**
+
+```typescript
+// ✅ CORRECTO: Navegar a página de edición
+const url = construirURLVivienda(vivienda, manzana, proyecto)
+router.push(`${url}/editar`)
+
+// ❌ INCORRECTO: Abrir modal de edición
+setModalEditar(true)
+setViviendaEditar(vivienda)
+```
+
+**Ventajas del patrón página propia:**
+
+- ✅ URL propia → el usuario puede compartir el link de edición
+- ✅ Browser back/forward funciona correctamente
+- ✅ No hay race conditions con React Query al cerrar modal
+- ✅ Más espacio para wizard multi-paso
+- ✅ Consistencia total entre módulos
+- ✅ La página de Crear y Editar comparten los mismos componentes de paso
+
+**⚡ ACCIÓN INMEDIATA si detectas `editar-*-modal` en PR/código nuevo:**
+Recordar al usuario: _"Recuerda: la política del proyecto es editar en página propia (`/editar`), no en modal. Ver REGLA #-11."_
+
+---
+
 ### 🚨 REGLA CRÍTICA #-10: FUENTES DE PAGO DINÁMICAS (OBLIGATORIO)
 
 **⚠️ AL trabajar con fuentes de pago en CUALQUIER módulo:**
@@ -13,6 +65,7 @@ si por # RyR Constructora - Sistema de Gestión Administrativa
 5. **RENDERIZAR DINÁMICO** → `fuentes.map()` sin array hardcodeado
 
 **Service correcto:**
+
 ```typescript
 import { cargarTiposFuentesPagoActivas } from '@/modules/clientes/services/tipos-fuentes-pago.service'
 
@@ -25,9 +78,12 @@ const fuentes = ['Cuota Inicial', 'Crédito Hipotecario', ...]
 ```
 
 **Hook con carga dinámica:**
+
 ```typescript
 const [cargandoTipos, setCargandoTipos] = useState(true)
-const [tiposFuentesDisponibles, setTiposFuentesDisponibles] = useState<string[]>([])
+const [tiposFuentesDisponibles, setTiposFuentesDisponibles] = useState<
+  string[]
+>([])
 const [fuentes, setFuentes] = useState<FuentePagoConfiguracion[]>([])
 
 useEffect(() => {
@@ -54,30 +110,36 @@ useEffect(() => {
 ```
 
 **UI con estado de carga:**
+
 ```tsx
-{cargandoTipos && (
-  <div className="...">
-    <div className="w-5 h-5 border-3 border-cyan-500 border-t-transparent rounded-full animate-spin" />
-    <p>Cargando fuentes de pago activas desde el sistema...</p>
-  </div>
-)}
+{
+  cargandoTipos && (
+    <div className='...'>
+      <div className='border-3 h-5 w-5 animate-spin rounded-full border-cyan-500 border-t-transparent' />
+      <p>Cargando fuentes de pago activas desde el sistema...</p>
+    </div>
+  )
+}
 
-{!cargandoTipos && fuentes.length === 0 && (
-  <div className="...">
-    ⚠️ No hay fuentes de pago activas configuradas.
-  </div>
-)}
+{
+  !cargandoTipos && fuentes.length === 0 && (
+    <div className='...'>⚠️ No hay fuentes de pago activas configuradas.</div>
+  )
+}
 
-{!cargandoTipos && fuentes.length > 0 && (
-  <div className="space-y-3">
-    {fuentes.map((fuente) => (
-      <FuentePagoCard key={fuente.tipo} {...props} />
-    ))}
-  </div>
-)}
+{
+  !cargandoTipos && fuentes.length > 0 && (
+    <div className='space-y-3'>
+      {fuentes.map(fuente => (
+        <FuentePagoCard key={fuente.tipo} {...props} />
+      ))}
+    </div>
+  )
+}
 ```
 
 **Ventajas del sistema:**
+
 - ✅ Configuración sin deploy (admin puede agregar/quitar fuentes)
 - ✅ Activar/desactivar fuentes en tiempo real
 - ✅ Escalable (ej: agregar "Crédito Constructor" sin código)
@@ -97,6 +159,7 @@ useEffect(() => {
 4. **NO HARDCODEAR** → Fuentes de pago siempre consultar desde `tipos_fuentes_pago`
 
 **Vista en tiempo real:**
+
 ```typescript
 // ✅ CORRECTO: Query a vista (calcula pendientes automáticamente)
 const { data: pendientes } = await supabase
@@ -105,10 +168,11 @@ const { data: pendientes } = await supabase
   .eq('cliente_id', clienteId)
 
 // ❌ INCORRECTO: Tabla obsoleta
-const { data } = await supabase.from('documentos_pendientes')  // ← NO USAR
+const { data } = await supabase.from('documentos_pendientes') // ← NO USAR
 ```
 
 **Estados válidos de fuentes:**
+
 ```typescript
 // ✅ CORRECTO (después de migración)
 type EstadoFuente = 'Activa' | 'Inactiva'
@@ -118,6 +182,7 @@ type EstadoFuenteViejo = 'Pendiente' | 'En Proceso' | 'Completada'
 ```
 
 **Alcance de documentos:**
+
 ```typescript
 // ✅ Documento específico: uno por cada fuente
 alcance: 'ESPECIFICO_FUENTE'
@@ -129,6 +194,7 @@ alcance: 'COMPARTIDO_CLIENTE'
 ```
 
 **Componente UI:**
+
 ```typescript
 import { SeccionDocumentosPendientes } from '@/modules/clientes/components/documentos-pendientes'
 
@@ -141,6 +207,7 @@ import { SeccionDocumentosPendientes } from '@/modules/clientes/components/docum
 ```
 
 **Ventajas del sistema:**
+
 - ✅ Datos siempre actualizados (vista calcula en tiempo real)
 - ✅ No hay "stale data" ni sincronización manual
 - ✅ Documentos compartidos aparecen solo UNA VEZ
@@ -160,17 +227,32 @@ import { SeccionDocumentosPendientes } from '@/modules/clientes/components/docum
 4. **NO** → Enviar strings vacíos `''` a campos opcionales (usar `null`)
 
 **Funciones disponibles:**
+
 ```typescript
 // Genéricas (src/lib/utils/sanitize.utils.ts)
-import { sanitizeString, sanitizeDate, sanitizeEnum } from '@/lib/utils/sanitize.utils'
+import {
+  sanitizeString,
+  sanitizeDate,
+  sanitizeEnum,
+} from '@/lib/utils/sanitize.utils'
 
 // Específicas por Módulo
-import { sanitizeCrearClienteDTO, sanitizeActualizarClienteDTO } from '@/modules/clientes/utils/sanitize-cliente.utils'
-import { sanitizeProyectoFormData, sanitizeProyectoUpdate } from '@/modules/proyectos/utils/sanitize-proyecto.utils'
-import { sanitizeViviendaFormData, sanitizeViviendaUpdate } from '@/modules/viviendas/utils/sanitize-vivienda.utils'
+import {
+  sanitizeCrearClienteDTO,
+  sanitizeActualizarClienteDTO,
+} from '@/modules/clientes/utils/sanitize-cliente.utils'
+import {
+  sanitizeProyectoFormData,
+  sanitizeProyectoUpdate,
+} from '@/modules/proyectos/utils/sanitize-proyecto.utils'
+import {
+  sanitizeViviendaFormData,
+  sanitizeViviendaUpdate,
+} from '@/modules/viviendas/utils/sanitize-vivienda.utils'
 ```
 
 **Ejemplo correcto:**
+
 ```typescript
 // ✅ ANTES de insertar/actualizar
 const datosSanitizados = sanitizeCrearClienteDTO(datos)
@@ -186,6 +268,7 @@ await supabase.from('viviendas').insert(viviendaSanitizada)
 ```
 
 **Errores CRÍTICOS que NO repetir:**
+
 - ❌ Enviar `estado_civil: ''` → ✅ Sanitizar: `estado_civil: null`
 - ❌ Enviar `fecha_nacimiento: ''` → ✅ Sanitizar: `fecha_nacimiento: null`
 - ❌ No validar enums → ✅ `sanitizeEnum(value, validValues)`
@@ -205,12 +288,14 @@ await supabase.from('viviendas').insert(viviendaSanitizada)
 4. **VERIFICAR** → Tipo de dato y si acepta NULL
 
 **Errores CRÍTICOS que NO repetir:**
+
 - ❌ Asumir que existe `url` → ✅ Verificar: es `url_storage`
 - ❌ Usar `ruta_archivo` → ✅ Correcto: `url_storage`
 - ❌ Asumir `entidad_id` → ✅ Verificar: es `cliente_id`
 - ❌ Inventar nombres "lógicos" → ✅ Consultar schema SIEMPRE
 
 **Regenerar schema actualizado:**
+
 ```bash
 node generar-schema-simple.js
 ```
@@ -230,19 +315,21 @@ node generar-schema-simple.js
 5. **HOY** → `getTodayDateString()` en lugar de `new Date().toISOString().split('T')[0]`
 
 **Funciones disponibles:**
+
 ```typescript
 import {
-  formatDateCompact,         // dd-MMM-yyyy (RECOMENDADO: "16-feb-2023")
-  formatDateShort,           // dd/MM/yyyy (legacy)
-  formatDateForDisplay,      // "23 de octubre de 2025"
-  formatDateForInput,        // YYYY-MM-DD para inputs
-  formatDateForDB,           // Guardar con T12:00:00
-  getTodayDateString,        // Fecha actual sin timezone shift
-  formatDateTimeForDisplay   // Fecha + hora
+  formatDateCompact, // dd-MMM-yyyy (RECOMENDADO: "16-feb-2023")
+  formatDateShort, // dd/MM/yyyy (legacy)
+  formatDateForDisplay, // "23 de octubre de 2025"
+  formatDateForInput, // YYYY-MM-DD para inputs
+  formatDateForDB, // Guardar con T12:00:00
+  getTodayDateString, // Fecha actual sin timezone shift
+  formatDateTimeForDisplay, // Fecha + hora
 } from '@/lib/utils/date.utils'
 ```
 
 **Ejemplos correctos:**
+
 ```typescript
 // ✅ Mostrar en card/tabla (ESTÁNDAR UNIFICADO)
 {formatDateCompact(documento.fecha_documento)}  // → "16-feb-2023"
@@ -260,6 +347,7 @@ const hoy = getTodayDateString()  // → "2025-10-26"
 ```
 
 **Errores CRÍTICOS que NO repetir:**
+
 - ❌ `new Date("2025-10-26")` causa timezone shift (muestra día anterior)
 - ❌ `format(new Date(fecha), "dd/MM/yyyy")` cambia fecha en UTC-5
 - ❌ `fecha.toISOString().split('T')[0]` suma/resta días por timezone
@@ -280,12 +368,14 @@ const hoy = getTodayDateString()  // → "2025-10-26"
 5. **AUDITAR** → Registrar vinculación automática en audit_log
 
 **Casos de uso:**
+
 - ✅ Agregar fuente de pago sin carta de aprobación
 - ✅ Crear negociación sin documentos del cliente
 - ✅ Asignar vivienda pendiente de escrituras
 - ✅ Registrar abono sin comprobante escaneado
 
 **Componentes disponibles:**
+
 ```typescript
 import { BannerDocumentosPendientes } from '@/modules/clientes/components/documentos-pendientes'
 
@@ -298,6 +388,7 @@ import { BannerDocumentosPendientes } from '@/modules/clientes/components/docume
 ```
 
 **Sistema automático:**
+
 1. Trigger crea `documentos_pendientes` al guardar sin documento
 2. Banner alerta en UI con prioridad visual
 3. Usuario sube documento normal
@@ -306,6 +397,7 @@ import { BannerDocumentosPendientes } from '@/modules/clientes/components/docume
 6. Auditoría registra vinculación
 
 **Ventajas:**
+
 - ✅ Flujo sin fricción (no bloquear)
 - ✅ Rastreabilidad completa
 - ✅ Vinculación inteligente
@@ -401,6 +493,7 @@ export function MiModal({ isOpen, moduleName = 'proyectos', onClose }: MiModalPr
 #### ✅ ELEMENTOS QUE DEBEN SER DINÁMICOS
 
 **OBLIGATORIO cambiar por tema:**
+
 - ✅ Gradientes de header/footer
 - ✅ Colores de bordes
 - ✅ Fondos de advertencias/alertas
@@ -411,6 +504,7 @@ export function MiModal({ isOpen, moduleName = 'proyectos', onClose }: MiModalPr
 - ✅ Links/hover states
 
 **NO cambiar (mantener neutral):**
+
 - ⚪ Textos en negro/gris (contenido)
 - ⚪ Fondos blancos/grises (contenedores)
 - ⚪ Botones secundarios (cancelar, cerrar)
@@ -421,22 +515,24 @@ export function MiModal({ isOpen, moduleName = 'proyectos', onClose }: MiModalPr
 #### 🚫 ERRORES COMUNES QUE NO REPETIR
 
 **❌ INCORRECTO: Objeto estático con colores hardcoded**
+
 ```typescript
 // ❌ NO HACER ESTO
 export const miModalStyles = {
-  header: 'bg-gradient-to-r from-orange-600 to-red-600',  // ← Hardcoded
-  icon: 'text-orange-600',  // ← No es reutilizable
+  header: 'bg-gradient-to-r from-orange-600 to-red-600', // ← Hardcoded
+  icon: 'text-orange-600', // ← No es reutilizable
 }
 ```
 
 **✅ CORRECTO: Función con theming dinámico**
+
 ```typescript
 // ✅ HACER ESTO
 export const getMiModalStyles = (moduleName: ModuleName) => {
   const colors = THEME_COLORS[moduleName]
   return {
-    header: `bg-gradient-to-r ${colors.gradient}`,  // ← Dinámico
-    icon: colors.text,  // ← Reutilizable
+    header: `bg-gradient-to-r ${colors.gradient}`, // ← Dinámico
+    icon: colors.text, // ← Reutilizable
   }
 }
 ```
@@ -486,6 +582,7 @@ const THEME_COLORS = {
 ```
 
 **Propiedades OBLIGATORIAS por módulo:**
+
 - `gradient`: Gradiente de 3 colores para headers/botones
 - `bg`: Color sólido de fondo
 - `text`: Color de texto (con dark mode)
@@ -516,12 +613,14 @@ Antes de aprobar un modal genérico:
 #### 📚 EJEMPLO COMPLETO DE REFERENCIA
 
 **Modal de Reemplazo de Archivos:**
+
 - Ubicación: `src/modules/documentos/components/modals/DocumentoReemplazarArchivoModal.tsx`
 - Estilos: `src/modules/documentos/components/modals/DocumentoReemplazarArchivoModal.styles.ts`
 - Guía: `docs/MODAL-REEMPLAZO-GENERICO-GUIA.md`
 - Refactor: `docs/REFACTOR-MODAL-REEMPLAZO-THEMING.md`
 
 **Beneficios logrados:**
+
 - ✅ Un componente → 7 módulos soportados
 - ✅ Reducción de código: 56% (800 → 350 líneas)
 - ✅ Theming automático por módulo
@@ -561,12 +660,14 @@ src/modules/auditorias/components/
 #### ✅ PROCESO PARA AGREGAR AUDITORÍA (15 min - 3 pasos)
 
 **Paso 1: Crear Renderer**
+
 ```bash
 # Ubicación
 src/modules/auditorias/components/renderers/[modulo]/[Accion][Modulo]Renderer.tsx
 ```
 
 **Plantilla OBLIGATORIA**:
+
 ```typescript
 'use client'
 
@@ -613,12 +714,14 @@ export function [Accion][Modulo]Renderer({ metadata, datosNuevos }: [Accion][Mod
 ```
 
 **Paso 2: Exportar**
+
 ```typescript
 // renderers/[modulo]/index.ts
 export { Creacion[Modulo]Renderer } from './Creacion[Modulo]Renderer'
 ```
 
 **Paso 3: Registrar en Factory**
+
 ```typescript
 // renderers/index.ts
 import { Creacion[Modulo]Renderer } from './[modulo]'
@@ -635,6 +738,7 @@ const RENDERERS_MAP = {
 #### 🎨 REGLAS DE DISEÑO UX (OBLIGATORIAS)
 
 **Labels Claros (como formulario)**:
+
 ```typescript
 // ✅ CORRECTO
 <p className="text-xs font-semibold text-gray-500 dark:text-gray-400">Nombre del Proyecto:</p>
@@ -645,12 +749,14 @@ const RENDERERS_MAP = {
 ```
 
 **Diseño Compacto Vertical**:
+
 - ✅ Padding: `px-4 py-3`
 - ✅ Spacing: `space-y-2`
 - ✅ Iconos: `w-4 h-4` a la izquierda
 - ✅ Sin scroll innecesario
 
 **Renderizado Condicional**:
+
 ```typescript
 // ✅ CORRECTO - Ternario con null
 {campo ? <div>...</div> : null}
@@ -660,16 +766,17 @@ const RENDERERS_MAP = {
 ```
 
 **Iconos por Tipo**:
+
 ```typescript
-Building2  // Nombre principal
-MapPin     // Ubicación
-FileText   // Descripción
+Building2 // Nombre principal
+MapPin // Ubicación
+FileText // Descripción
 TrendingUp // Estado
 DollarSign // Dinero
-User       // Persona
-Phone      // Teléfono
-Mail       // Email
-Home       // Viviendas
+User // Persona
+Phone // Teléfono
+Mail // Email
+Home // Viviendas
 ```
 
 ---
@@ -727,6 +834,7 @@ export function Actualizacion[Modulo]Renderer({ datosNuevos, datosAnteriores }) 
 #### 🚫 PROHIBIDO / ✅ REQUERIDO
 
 **PROHIBIDO:**
+
 - ❌ Omitir labels en campos
 - ❌ Usar && para renderizado condicional
 - ❌ Componentes pesados que generen scroll
@@ -735,6 +843,7 @@ export function Actualizacion[Modulo]Renderer({ datosNuevos, datosAnteriores }) 
 - ❌ Animaciones en renderers
 
 **REQUERIDO:**
+
 - ✅ Labels claros tipo formulario
 - ✅ Diseño compacto vertical (lista)
 - ✅ Dark mode en TODOS los elementos
@@ -786,6 +895,7 @@ npm run type-check
 ```
 
 **Ventajas del sistema:**
+
 - ✅ Tipos generados automáticamente desde schema real de Supabase
 - ✅ Detecta nombres exactos de tablas y columnas (no asumir)
 - ✅ Autocomplete completo en VS Code
@@ -793,6 +903,7 @@ npm run type-check
 - ✅ Sincronización BD ↔ TypeScript ↔ Código
 
 **Errores CRÍTICOS que NO repetir:**
+
 - ❌ Usar nombres incorrectos: `documentos` → ✅ Verificar: `documentos_proyecto`
 - ❌ Asumir `fecha_emision` → ✅ Consultar schema: `fecha_documento`
 - ❌ Olvidar regenerar tipos después de migración → ✅ `npm run types:generate`
@@ -801,6 +912,7 @@ npm run type-check
 **Documentación completa:** `docs/SISTEMA-SINCRONIZACION-SCHEMA-DB.md` ⭐
 
 **Scripts disponibles:**
+
 ```bash
 npm run types:generate     # Genera tipos desde Supabase
 npm run db:sync           # Genera tipos + valida TypeScript
@@ -820,6 +932,7 @@ npm run type-check        # Verifica errores de compilación
 5. **VALIDAR** → Con checklist de `docs/PLANTILLA-ESTANDAR-MODULOS.md`
 
 **Plantilla de referencia:**
+
 ```
 src/modules/proyectos/
 ├── proyectos-page-main.tsx      # ⭐ Orquestador (copiar estructura)
@@ -835,6 +948,7 @@ src/modules/proyectos/
 **Documentación completa:** `docs/PLANTILLA-ESTANDAR-MODULOS.md` ⭐
 
 **Errores comunes que NO repetir:**
+
 - ❌ Usar `p-8` en header → ✅ Usar `p-6` (estándar de Proyectos)
 - ❌ Título `text-3xl` → ✅ Título `text-2xl` (estándar compacto)
 - ❌ Grid layout en filtros → ✅ Flex horizontal (estándar sticky)
@@ -871,6 +985,7 @@ export function MiComponente({ moduleName = 'proyectos' }: MiComponenteProps) {
 ```
 
 **Uso en diferentes módulos:**
+
 ```tsx
 // En Proyectos (verde/esmeralda)
 <MiComponente moduleName="proyectos" />
@@ -883,6 +998,7 @@ export function MiComponente({ moduleName = 'proyectos' }: MiComponenteProps) {
 ```
 
 **Ventajas:**
+
 - ✅ Un componente, múltiples temas
 - ✅ Type-safe con TypeScript
 - ✅ Cambios centralizados
@@ -892,6 +1008,7 @@ export function MiComponente({ moduleName = 'proyectos' }: MiComponenteProps) {
 **Documentación completa:** `docs/SISTEMA-THEMING-MODULAR.md` ⭐
 
 **Errores comunes que NO repetir:**
+
 - ❌ `className="bg-green-500"` → ✅ `className={theme.classes.bg.light}`
 - ❌ Duplicar componente para cada módulo → ✅ Usar prop `moduleName`
 - ❌ Condicionales de color → ✅ Sistema de theming automático
@@ -921,6 +1038,7 @@ node ejecutar-sql.js supabase/migrations/mi-migracion.sql
 ```
 
 **Ventajas del script automatizado:**
+
 - ✅ Ejecución en 1 comando
 - ✅ Logs detallados con tiempo de ejecución
 - ✅ Manejo de errores robusto
@@ -929,6 +1047,7 @@ node ejecutar-sql.js supabase/migrations/mi-migracion.sql
 - ✅ Integrable en CI/CD
 
 **Casos de uso:**
+
 ```bash
 # Políticas RLS de Storage
 npm run db:exec supabase/storage/storage-documentos-viviendas.sql
@@ -946,6 +1065,7 @@ node ejecutar-sql.js supabase/verification/DIAGNOSTICO.sql
 **Documentación completa:** `docs/EJECUTAR-SQL-DIRECTAMENTE.md`
 
 **Error común que NO repetir:**
+
 - ❌ "Copia este SQL y pégalo en Supabase SQL Editor"
 - ✅ "Ejecuta: `npm run db:exec supabase/storage/mi-archivo.sql`"
 
@@ -962,11 +1082,13 @@ node ejecutar-sql.js supabase/verification/DIAGNOSTICO.sql
 5. **VALIDAR** → Después de crear, verificar que NO exista `app/` en raíz
 
 **Error común que NO repetir:**
+
 - ❌ `app/viviendas/nueva/page.tsx` → ✅ `src/app/viviendas/nueva/page.tsx`
 - ❌ Crear `app/` en raíz → ✅ Solo usar `src/app/`
 - ❌ Asumir ubicación sin verificar → ✅ Consultar PROYECTO-ESTRUCTURA.md
 
 **Comando de verificación obligatorio:**
+
 ```powershell
 # Antes de crear ruta, verificar que app/ NO existe en raíz
 if (Test-Path "app/") { Write-Host "ERROR: app/ existe en raíz" }
@@ -1122,16 +1244,17 @@ export class MiComponenteService {
 6. **NUNCA ASUMIR** → Siempre verificar, nunca inventar nombres
 
 **Workflow correcto:**
+
 ```typescript
 // 1. Regenerar tipos si es necesario
 // npm run types:generate
 
 // 2. Usar autocomplete de TypeScript
 const { data } = await supabase
-  .from('documentos_proyecto')  // ← TypeScript autocompleta nombre correcto
+  .from('documentos_proyecto') // ← TypeScript autocompleta nombre correcto
   .update({
-    fecha_documento: '2025-01-01',  // ← TypeScript sugiere campos reales
-    titulo: 'Nuevo título'
+    fecha_documento: '2025-01-01', // ← TypeScript sugiere campos reales
+    titulo: 'Nuevo título',
   })
 
 // 3. TypeScript detectará errores inmediatamente
@@ -1140,6 +1263,7 @@ const { data } = await supabase
 ```
 
 **Errores comunes que NO repetir:**
+
 - ❌ `from('documentos')` → ✅ `from('documentos_proyecto')` (verificar con autocomplete)
 - ❌ `fecha_emision` → ✅ `fecha_documento` (verificar en schema)
 - ❌ `estado = 'En Proceso'` → ✅ `estado = 'Activa'` (negociaciones)
@@ -1245,6 +1369,7 @@ const { data } = await supabase
 ```
 
 **Archivo de estilos** (`styles/[modulo].styles.ts`):
+
 ```typescript
 export const moduloStyles = {
   container: { page: '...', content: 'py-6 space-y-4' }, // Compacto
@@ -1255,6 +1380,7 @@ export const moduloStyles = {
 ```
 
 **Paleta de colores por módulo**:
+
 - **Viviendas**: Naranja/Ámbar (`from-orange-600 via-amber-600 to-yellow-600`) - ⭐ REFERENCIA COMPACTA
 - **Auditorías**: Azul/Índigo/Púrpura (`from-blue-600 via-indigo-600 to-purple-600`)
 - **Proyectos**: Verde/Esmeralda (`from-green-600 via-emerald-600 to-teal-600`)
@@ -1264,12 +1390,14 @@ export const moduloStyles = {
 - **Documentos**: Rojo/Rosa (`from-red-600 via-rose-600 to-pink-600`)
 
 **Dimensiones CRÍTICAS (estándar compacto)**:
+
 - Header: `p-6 rounded-2xl`, título `text-2xl`, icon `w-10 h-10`, badge `px-3 py-1.5`
 - Métricas: `p-4 rounded-xl gap-3`, icon `w-10 h-10`, valor `text-xl`
 - Filtros: `p-3 rounded-xl`, layout `flex gap-2`, inputs `py-2`, labels `sr-only`
 - Espaciado: `py-6 space-y-4` (30% menos espacio vertical)
 
 **Errores comunes que NO repetir:**
+
 - ❌ Usar dimensiones antiguas (p-8, text-3xl) → ✅ Usar estándar compacto
 - ❌ Grid de filtros → ✅ Flex horizontal con gap-2
 - ❌ Labels visibles en filtros → ✅ Labels sr-only (accesibilidad)
@@ -1317,7 +1445,9 @@ src/modules/[nombre-modulo]/
 ## ✅ Checklist OBLIGATORIO por Componente
 
 ### ANTES de empezar:
+
 ### ANTES de empezar:
+
 - [ ] **Ejecuté** `npm run types:generate` si hubo cambios en BD recientemente
 - [ ] **Consulté** `docs/DATABASE-SCHEMA-REFERENCE.md` para nombres de campos
 - [ ] **Verifiqué** nombres exactos de columnas y tablas con autocomplete TypeScript
@@ -1327,6 +1457,7 @@ src/modules/[nombre-modulo]/
 - [ ] **Revisé** checklist completo en `docs/DESARROLLO-CHECKLIST.md`
 
 ### Durante desarrollo:
+
 - [ ] **Usar ModuleContainer** como contenedor principal
 - [ ] **Usar ModuleHeader** para encabezado
 - [ ] **Usar Card** para secciones de contenido
@@ -1367,7 +1498,7 @@ src/modules/[nombre-modulo]/
 ❌ **Copiar nombres de otros archivos** sin validar en tipos generados
 ❌ **Inventar nombres "lógicos"** sin confirmar en schema
 ❌ **Crear componentes de UI sin usar los estandarizados** (ModuleContainer, Card, Button, etc.)
-❌ **Olvidar modo oscuro** (dark:* en elementos personalizados)
+❌ **Olvidar modo oscuro** (dark:\* en elementos personalizados)
 ❌ **No usar estados de UI** (LoadingState, EmptyState, ErrorState)
 ❌ **Usar `any` en TypeScript** (siempre tipar correctamente)
 
@@ -1405,6 +1536,7 @@ src/modules/[nombre-modulo]/
 ## 📚 Documentación Completa
 
 ### 🔴 CRÍTICA (consultar SIEMPRE):
+
 - **Sistema de sanitización**: `docs/SISTEMA-SANITIZACION-DATOS-CLIENTES.md` ⭐ **NO MÁS STRINGS VACÍOS**
 - **Manejo profesional de fechas**: `docs/GUIA-MANEJO-FECHAS-PROFESIONAL.md` ⭐ **NO MÁS TIMEZONE ISSUES**
 - **Sistema de documentos pendientes**: `docs/SISTEMA-DOCUMENTOS-PENDIENTES.md` ⭐ **VINCULACIÓN AUTOMÁTICA**
@@ -1420,6 +1552,7 @@ src/modules/[nombre-modulo]/
 - **Política de eliminación de versiones**: `docs/POLITICA-ELIMINACION-VERSIONES.md` ⭐ **INTEGRIDAD DE DATOS**
 
 ### 📘 Desarrollo:
+
 - **Demo visual theming**: `docs/THEMING-DEMO-VISUAL.md`
 - **Guía de diseño**: `docs/GUIA-DISENO-MODULOS.md`
 - **Template de módulo**: `docs/TEMPLATE-MODULO-ESTANDAR.md`

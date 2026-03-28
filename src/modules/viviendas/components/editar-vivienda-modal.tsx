@@ -10,16 +10,16 @@
 
 import { AnimatePresence, motion } from 'framer-motion'
 import {
-    Check,
-    CheckCircle,
-    ChevronLeft,
-    ChevronRight,
-    Compass,
-    DollarSign,
-    FileText,
-    Home,
-    Loader2,
-    MapPin
+  Check,
+  CheckCircle,
+  ChevronLeft,
+  ChevronRight,
+  Compass,
+  DollarSign,
+  FileText,
+  Home,
+  Loader2,
+  MapPin,
 } from 'lucide-react'
 
 import { ConfirmarCambiosModal } from '@/shared/components/modulos/ConfirmarCambiosModal'
@@ -83,21 +83,21 @@ export function EditarViviendaModal({
 
     // Estado del wizard
     pasoActual,
-    progreso,
+    progreso: _progreso,
     esPrimerPaso,
     esUltimoPaso,
     pasosCompletados,
     pasos,
 
     // Datos
-    previewData,
+    previewData: _previewData,
     resumenFinanciero,
     cambiosDetectados,
 
     // Datos del servidor (React Query)
-    proyectos,
-    manzanas,
-    gastosNotariales,
+    proyectos: _proyectos,
+    manzanas: _manzanas,
+    gastosNotariales: _gastosNotariales,
     configuracionRecargos,
 
     // Estados de carga
@@ -109,6 +109,8 @@ export function EditarViviendaModal({
     // Modal confirmación
     mostrarModalConfirmacion,
     setMostrarModalConfirmacion,
+    estadoModal,
+    setEstadoModal,
 
     // Modal impacto financiero
     mostrarModalImpacto,
@@ -117,7 +119,7 @@ export function EditarViviendaModal({
     sincronizandoNegociacion,
 
     // Protecciones por estado
-    esViviendaEntregada,
+    esViviendaEntregada: _esViviendaEntregada,
     financieroBloqueado,
 
     // Acciones
@@ -129,7 +131,7 @@ export function EditarViviendaModal({
     confirmarYGuardar,
   } = useEditarVivienda({
     vivienda,
-    onSuccess: (viviendaActualizada) => {
+    onSuccess: viviendaActualizada => {
       onSuccess?.(viviendaActualizada)
       onClose()
     },
@@ -148,8 +150,8 @@ export function EditarViviendaModal({
   if (!vivienda) return null
 
   // Nombres para el preview (usar datos pre-cargados de vivienda en modo edición)
-  const proyectoNombre = vivienda.manzanas?.proyectos?.nombre || ''
-  const manzanaNombre = vivienda.manzanas?.nombre || ''
+  const _proyectoNombre = vivienda.manzanas?.proyectos?.nombre || ''
+  const _manzanaNombre = vivienda.manzanas?.nombre || ''
 
   return (
     <>
@@ -158,257 +160,286 @@ export function EditarViviendaModal({
         onClose={handleCerrar}
         title={`Editando Mz. ${vivienda.manzanas?.nombre || ''} Casa #${vivienda.numero}`}
         description={vivienda.manzanas?.proyectos?.nombre || ''}
-        size="xl"
-        gradientColor="orange"
-        icon={<Home className="w-6 h-6 text-white" />}
+        size='xl'
+        gradientColor='orange'
+        icon={<Home className='h-6 w-6 text-white' />}
         closeOnEscape={!hayFormularioConCambios}
         closeOnBackdrop={!hayFormularioConCambios}
         noContentScroll={true}
       >
-      {cargandoProyectos ? (
-        <div className="flex items-center justify-center p-12">
-          <div className="text-center space-y-3">
-            <Loader2 className="w-12 h-12 text-orange-500 animate-spin mx-auto" />
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              Cargando datos de la vivienda...
-            </p>
-          </div>
-        </div>
-      ) : (
-        <form
-          onSubmit={(e) => {
-            // 🚨 PREVENIR AUTO-SUBMIT: No permitir submit con Enter
-            e.preventDefault()
-            e.stopPropagation()
-            return false
-          }}
-          className="flex flex-col h-full"
-        >
-          <div className="flex-1 space-y-4 overflow-y-auto custom-scrollbar px-6 py-3">
-            {/* STEPPER HORIZONTAL */}
-            <div className={styles.stepper.container}>
-              <div className={styles.stepper.list}>
-                {pasos.map((paso, index) => {
-                  const Icon = iconMap[paso.key as keyof typeof iconMap]
-                  const completado = pasosCompletados.includes(paso.id)
-                  const activo = paso.id === pasoActual
-                  const inactivo = !completado && !activo
-
-                  return (
-                    <div key={paso.id} className={styles.stepper.step.container}>
-                      {/* Conector (línea entre pasos) */}
-                      {index < pasos.length - 1 && (
-                        <div
-                          className={cn(
-                            styles.stepper.step.connector,
-                            completado || activo
-                              ? styles.stepper.step.connectorCompleted
-                              : styles.stepper.step.connectorInactive
-                          )}
-                        />
-                      )}
-
-                      {/* Icono */}
-                      <div className={styles.stepper.step.iconWrapper}>
-                        <button
-                          onClick={() => irAPaso(paso.id)}
-                          className={cn(
-                            styles.stepper.step.iconCircle,
-                            completado && styles.stepper.step.iconCircleCompleted,
-                            activo && styles.stepper.step.iconCircleActive,
-                            inactivo && styles.stepper.step.iconCircleInactive
-                          )}
-                          type="button"
-                          disabled={inactivo}
-                        >
-                          {completado ? (
-                            <Check className={styles.stepper.step.checkIcon} />
-                          ) : (
-                            <Icon className={styles.stepper.step.icon} />
-                          )}
-                        </button>
-                      </div>
-
-                      {/* Label */}
-                      <span
-                        className={cn(
-                          styles.stepper.step.label,
-                          completado && styles.stepper.step.labelCompleted,
-                          activo && styles.stepper.step.labelActive,
-                          inactivo && styles.stepper.step.labelInactive
-                        )}
-                      >
-                        {paso.titulo}
-                      </span>
-                    </div>
-                  )
-                })}
-              </div>
+        {cargandoProyectos ? (
+          <div className='flex items-center justify-center p-12'>
+            <div className='space-y-3 text-center'>
+              <Loader2 className='mx-auto h-12 w-12 animate-spin text-orange-500' />
+              <p className='text-sm text-gray-600 dark:text-gray-400'>
+                Cargando datos de la vivienda...
+              </p>
             </div>
+          </div>
+        ) : (
+          <form
+            onSubmit={e => {
+              // 🚨 PREVENIR AUTO-SUBMIT: No permitir submit con Enter
+              e.preventDefault()
+              e.stopPropagation()
+              return false
+            }}
+            className='flex h-full flex-col'
+          >
+            <div className='custom-scrollbar flex-1 space-y-4 overflow-y-auto px-6 py-3'>
+              {/* STEPPER HORIZONTAL */}
+              <div className={styles.stepper.container}>
+                <div className={styles.stepper.list}>
+                  {pasos.map((paso, index) => {
+                    const Icon = iconMap[paso.key as keyof typeof iconMap]
+                    const completado = pasosCompletados.includes(paso.id)
+                    const activo = paso.id === pasoActual
+                    const inactivo = !completado && !activo
 
-            {/* CONTENIDO DEL PASO ACTUAL */}
-            <motion.div
-              {...styles.animations.step}
-              key={pasoActual}
-              className={styles.content.container}
-            >
-              <div className="w-full max-w-4xl mx-auto">
-                <div className={styles.content.formColumn}>
-                  <AnimatePresence mode="wait">
-                    {(() => {
-                      switch (pasoActual) {
-                        case 1:
-                          return (
-                            <PasoUbicacionNuevo
-                              key="paso-1"
-                              register={register}
-                              errors={errors}
-                              setValue={setValue}
-                              watch={watch}
-                              mode="edit"
-                              viviendaActual={vivienda}
-                            />
-                          )
-                        case 2:
-                          return (
-                            <PasoLinderosNuevo key="paso-2" register={register} errors={errors} />
-                          )
-                        case 3:
-                          return (
-                            <PasoLegalNuevo
-                              key="paso-3"
-                            register={register}
-                            errors={errors}
+                    return (
+                      <div
+                        key={paso.id}
+                        className={styles.stepper.step.container}
+                      >
+                        {/* Conector (línea entre pasos) */}
+                        {index < pasos.length - 1 && (
+                          <div
+                            className={cn(
+                              styles.stepper.step.connector,
+                              completado || activo
+                                ? styles.stepper.step.connectorCompleted
+                                : styles.stepper.step.connectorInactive
+                            )}
                           />
-                          )
-                        case 4:
-                          return (
-                            <PasoFinancieroNuevo
-                              key="paso-4"
-                              register={register}
-                              errors={errors}
-                              watch={watch}
-                              setValue={setValue}
-                              resumenFinanciero={resumenFinanciero}
-                              configuracionRecargos={configuracionRecargos}
-                              bloqueado={financieroBloqueado}
-                              estadoVivienda={vivienda.estado}
-                          />
-                        )
-                        default:
-                          return null
-                      }
-                    })()}
-                  </AnimatePresence>
+                        )}
+
+                        {/* Icono */}
+                        <div className={styles.stepper.step.iconWrapper}>
+                          <button
+                            onClick={() => irAPaso(paso.id)}
+                            className={cn(
+                              styles.stepper.step.iconCircle,
+                              completado &&
+                                styles.stepper.step.iconCircleCompleted,
+                              activo && styles.stepper.step.iconCircleActive,
+                              inactivo && styles.stepper.step.iconCircleInactive
+                            )}
+                            type='button'
+                            disabled={inactivo}
+                          >
+                            {completado ? (
+                              <Check
+                                className={styles.stepper.step.checkIcon}
+                              />
+                            ) : (
+                              <Icon className={styles.stepper.step.icon} />
+                            )}
+                          </button>
+                        </div>
+
+                        {/* Label */}
+                        <span
+                          className={cn(
+                            styles.stepper.step.label,
+                            completado && styles.stepper.step.labelCompleted,
+                            activo && styles.stepper.step.labelActive,
+                            inactivo && styles.stepper.step.labelInactive
+                          )}
+                        >
+                          {paso.titulo}
+                        </span>
+                      </div>
+                    )
+                  })}
                 </div>
               </div>
-            </motion.div>
-          </div>
 
-          {/* BOTONES DE NAVEGACIÓN - FUERA DEL SCROLL, PEGADO AL FONDO */}
-          <div className="sticky bottom-0 z-40 backdrop-blur-xl bg-white/95 dark:bg-gray-800/95 border-t border-gray-200/50 dark:border-gray-700/50 px-6 py-3 shadow-2xl shadow-orange-500/10">
-            <div className={styles.navigation.content}>
-              {/* Botón Atrás */}
-              <button
-                onClick={irAtras}
-                disabled={esPrimerPaso || submitting}
-                className={styles.navigation.backButton}
-                type="button"
+              {/* CONTENIDO DEL PASO ACTUAL */}
+              <motion.div
+                {...styles.animations.step}
+                key={pasoActual}
+                className={styles.content.container}
               >
-                <ChevronLeft className={styles.navigation.backIcon} />
-                Atrás
-              </button>
+                <div className='mx-auto w-full max-w-4xl'>
+                  <div className={styles.content.formColumn}>
+                    <AnimatePresence mode='wait'>
+                      {(() => {
+                        switch (pasoActual) {
+                          case 1:
+                            return (
+                              <PasoUbicacionNuevo
+                                key='paso-1'
+                                register={register}
+                                errors={errors}
+                                setValue={setValue}
+                                watch={watch}
+                                mode='edit'
+                                viviendaActual={vivienda}
+                              />
+                            )
+                          case 2:
+                            return (
+                              <PasoLinderosNuevo
+                                key='paso-2'
+                                register={register}
+                                errors={errors}
+                              />
+                            )
+                          case 3:
+                            return (
+                              <PasoLegalNuevo
+                                key='paso-3'
+                                register={register}
+                                errors={errors}
+                              />
+                            )
+                          case 4:
+                            return (
+                              <PasoFinancieroNuevo
+                                key='paso-4'
+                                register={register}
+                                errors={errors}
+                                watch={watch}
+                                setValue={setValue}
+                                resumenFinanciero={resumenFinanciero}
+                                configuracionRecargos={configuracionRecargos}
+                                bloqueado={financieroBloqueado}
+                                estadoVivienda={vivienda.estado}
+                              />
+                            )
+                          default:
+                            return null
+                        }
+                      })()}
+                    </AnimatePresence>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
 
-              {/* Indicador de paso */}
-              <div className={styles.navigation.stepIndicator}>
-                Paso {pasoActual} de {pasos.length}
-              </div>
-
-              {/* Botones Siguiente / Submit */}
-              {!esUltimoPaso ? (
+            {/* BOTONES DE NAVEGACIÓN - FUERA DEL SCROLL, PEGADO AL FONDO */}
+            <div className='sticky bottom-0 z-40 border-t border-gray-200/50 bg-white/95 px-6 py-3 shadow-2xl shadow-orange-500/10 backdrop-blur-xl dark:border-gray-700/50 dark:bg-gray-800/95'>
+              <div className={styles.navigation.content}>
+                {/* Botón Atrás */}
                 <button
-                  onClick={irSiguiente}
-                  disabled={submitting || validandoMatricula}
-                  className={styles.navigation.nextButton}
-                  type="button"
+                  onClick={irAtras}
+                  disabled={esPrimerPaso || submitting}
+                  className={styles.navigation.backButton}
+                  type='button'
                 >
-                  {validandoMatricula ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      Validando...
-                    </>
-                  ) : (
-                    <>
-                      Siguiente
-                      <ChevronRight className={styles.navigation.nextIcon} />
-                    </>
-                  )}
+                  <ChevronLeft className={styles.navigation.backIcon} />
+                  Atrás
                 </button>
-              ) : (
-                <div className="relative group">
+
+                {/* Indicador de paso */}
+                <div className={styles.navigation.stepIndicator}>
+                  Paso {pasoActual} de {pasos.length}
+                </div>
+
+                {/* Botones Siguiente / Submit */}
+                {!esUltimoPaso ? (
                   <button
-                    onClick={mostrarConfirmacion}
-                    disabled={submitting || cambiosDetectados.length === 0}
-                    className={cn(
-                      styles.navigation.submitButton,
-                      cambiosDetectados.length === 0 && 'opacity-50 cursor-not-allowed'
-                    )}
-                    type="button"
+                    onClick={irSiguiente}
+                    disabled={submitting || validandoMatricula}
+                    className={styles.navigation.nextButton}
+                    type='button'
                   >
-                    {submitting ? (
+                    {validandoMatricula ? (
                       <>
-                        <Loader2 className={styles.navigation.submitIcon + ' animate-spin'} />
-                        Actualizando...
+                        <Loader2 className='h-4 w-4 animate-spin' />
+                        Validando...
                       </>
                     ) : (
                       <>
-                        <CheckCircle className={styles.navigation.submitIcon} />
-                        Guardar Cambios
+                        Siguiente
+                        <ChevronRight className={styles.navigation.nextIcon} />
                       </>
                     )}
                   </button>
-                  {cambiosDetectados.length === 0 && (
-                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
-                      No hay cambios para guardar
-                      <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-gray-900 dark:border-t-gray-700" />
-                    </div>
-                  )}
-                </div>
-              )}
+                ) : (
+                  <div className='group relative'>
+                    <button
+                      onClick={mostrarConfirmacion}
+                      disabled={submitting || cambiosDetectados.length === 0}
+                      className={cn(
+                        styles.navigation.submitButton,
+                        cambiosDetectados.length === 0 &&
+                          'cursor-not-allowed opacity-50'
+                      )}
+                      type='button'
+                    >
+                      {submitting ? (
+                        <>
+                          <Loader2
+                            className={
+                              styles.navigation.submitIcon + ' animate-spin'
+                            }
+                          />
+                          Actualizando...
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircle
+                            className={styles.navigation.submitIcon}
+                          />
+                          Guardar Cambios
+                        </>
+                      )}
+                    </button>
+                    {cambiosDetectados.length === 0 && (
+                      <div className='pointer-events-none absolute bottom-full left-1/2 mb-2 -translate-x-1/2 whitespace-nowrap rounded-lg bg-gray-900 px-3 py-2 text-xs text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100 dark:bg-gray-700'>
+                        No hay cambios para guardar
+                        <div className='absolute left-1/2 top-full -mt-1 -translate-x-1/2 border-4 border-transparent border-t-gray-900 dark:border-t-gray-700' />
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-        </form>
+          </form>
+        )}
+      </Modal>
+
+      {/* MODAL DE CONFIRMACIÓN DE CAMBIOS */}
+      {mostrarModalConfirmacion && (
+        <ConfirmarCambiosModal
+          isOpen={mostrarModalConfirmacion}
+          onClose={() => {
+            if (estadoModal === 'idle' || estadoModal === 'error') {
+              setMostrarModalConfirmacion(false)
+              setEstadoModal('idle')
+            }
+          }}
+          onConfirm={() => confirmarYGuardar(false)}
+          cambios={cambiosDetectados}
+          categoriasConfig={categoriasConfig}
+          moduleName='viviendas'
+          tituloEntidad={`Vivienda ${vivienda.numero}`}
+          estado={estadoModal}
+          mensajeLoading='Actualizando vivienda...'
+          mensajeExito='¡Vivienda actualizada!'
+          subtituloExito='Los cambios se guardaron correctamente'
+          onRetry={() => confirmarYGuardar(false)}
+        />
       )}
-    </Modal>
 
-    {/* MODAL DE CONFIRMACIÓN DE CAMBIOS */}
-    {mostrarModalConfirmacion && (
-      <ConfirmarCambiosModal
-        isOpen={mostrarModalConfirmacion}
-        onClose={() => {
-          // Solo cerrar la modal de confirmación, NO la modal principal
-          setMostrarModalConfirmacion(false)
-        }}
-        onConfirm={() => confirmarYGuardar(false)}
-        cambios={cambiosDetectados}
-        categoriasConfig={categoriasConfig}
-        moduleName="viviendas"
-        tituloEntidad={`Vivienda ${vivienda.numero}`}
-        isLoading={submitting}
-      />
-    )}
-
-    {/* MODAL DE IMPACTO FINANCIERO */}
-    {mostrarModalImpacto && impactoFinanciero && (
-      <ImpactoFinancieroModal
-        isOpen={mostrarModalImpacto}
-        onClose={() => setMostrarModalImpacto(false)}
-        impacto={impactoFinanciero}
-        onConfirmarConSync={() => confirmarYGuardar(true)}
-        onConfirmarSinSync={() => confirmarYGuardar(false)}
-        isLoading={submitting || sincronizandoNegociacion}
-      />
-    )}
-  </>
+      {/* MODAL DE IMPACTO FINANCIERO */}
+      {mostrarModalImpacto && impactoFinanciero && (
+        <ImpactoFinancieroModal
+          isOpen={mostrarModalImpacto}
+          onClose={() => {
+            if (estadoModal === 'idle' || estadoModal === 'error') {
+              setMostrarModalImpacto(false)
+            }
+          }}
+          impacto={impactoFinanciero}
+          onConfirmarConSync={() => confirmarYGuardar(true)}
+          onConfirmarSinSync={() => confirmarYGuardar(false)}
+          isLoading={submitting || sincronizandoNegociacion}
+          estado={estadoModal}
+          sincronizando={sincronizandoNegociacion}
+        />
+      )}
+    </>
   )
 }

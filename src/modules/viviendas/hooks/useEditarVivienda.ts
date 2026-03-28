@@ -10,29 +10,31 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useQuery } from '@tanstack/react-query'
-import { useForm } from 'react-hook-form'
+import { useForm, type Resolver } from 'react-hook-form'
 import { toast } from 'sonner'
 
 import { useRouter } from 'next/navigation'
 
+import { errorLog } from '@/lib/utils/logger'
+
 import {
-    paso1Schema,
-    paso2Schema,
-    paso3SchemaBase,
-    paso4Schema,
-    viviendaFullSchema,
-    type ViviendaSchemaType
+  paso1Schema,
+  paso2Schema,
+  paso3SchemaBase,
+  paso4Schema,
+  viviendaFullSchema,
+  type ViviendaSchemaType,
 } from '../schemas/vivienda.schemas'
 import { viviendasService } from '../services/viviendas.service'
 import type { ResumenFinanciero, Vivienda, ViviendaFormData } from '../types'
 import { calcularValorTotal, detectarCambiosVivienda } from '../utils'
 
 import {
-    useActualizarViviendaMutation,
-    useConfiguracionRecargosQuery,
-    useGastosNotarialesQuery,
-    useManzanasDisponiblesQuery,
-    useProyectosActivosQuery,
+  useActualizarViviendaMutation,
+  useConfiguracionRecargosQuery,
+  useGastosNotarialesQuery,
+  useManzanasDisponiblesQuery,
+  useProyectosActivosQuery,
 } from './useViviendasQuery'
 
 // ==================== TIPOS DE IMPACTO ====================
@@ -60,13 +62,23 @@ export interface ImpactoFinanciero {
 // ==================== SCHEMAS POR PASO ====================
 // ✅ Importados desde archivo compartido (DRY principle)
 
-type FormData = ViviendaSchemaType// ==================== PASOS ====================
+type FormData = ViviendaSchemaType // ==================== PASOS ====================
 
 const PASOS = [
-  { id: 1, key: 'ubicacion' as const, titulo: 'Ubicación', schema: paso1Schema },
+  {
+    id: 1,
+    key: 'ubicacion' as const,
+    titulo: 'Ubicación',
+    schema: paso1Schema,
+  },
   { id: 2, key: 'linderos' as const, titulo: 'Linderos', schema: paso2Schema },
   { id: 3, key: 'legal' as const, titulo: 'Legal', schema: paso3SchemaBase },
-  { id: 4, key: 'financiero' as const, titulo: 'Financiero', schema: paso4Schema },
+  {
+    id: 4,
+    key: 'financiero' as const,
+    titulo: 'Financiero',
+    schema: paso4Schema,
+  },
 ]
 
 // ==================== PROPS ====================
@@ -79,8 +91,12 @@ interface UseEditarViviendaProps {
 
 // ==================== HOOK ====================
 
-export function useEditarVivienda({ vivienda, onSuccess, onCancel }: UseEditarViviendaProps) {
-  const router = useRouter()
+export function useEditarVivienda({
+  vivienda,
+  onSuccess,
+  onCancel,
+}: UseEditarViviendaProps) {
+  const _router = useRouter()
 
   // ============================================
   // ESTADO DEL WIZARD
@@ -89,9 +105,18 @@ export function useEditarVivienda({ vivienda, onSuccess, onCancel }: UseEditarVi
   const [pasosCompletados, setPasosCompletados] = useState<number[]>([])
   const [validandoMatricula, setValidandoMatricula] = useState(false)
   const [hayFormularioConCambios, setHayFormularioConCambios] = useState(false)
-  const [mostrarModalConfirmacion, setMostrarModalConfirmacion] = useState(false)
+  const [mostrarModalConfirmacion, setMostrarModalConfirmacion] =
+    useState(false)
   const [mostrarModalImpacto, setMostrarModalImpacto] = useState(false)
-  const [sincronizandoNegociacion, setSincronizandoNegociacion] = useState(false)
+  const [sincronizandoNegociacion, setSincronizandoNegociacion] =
+    useState(false)
+  const [estadoModal, setEstadoModal] = useState<
+    'idle' | 'loading' | 'success' | 'error'
+  >('idle')
+  // Snapshot del impacto cuando se abre el modal, para que no desaparezca
+  // al invalidarse la caché tras la mutación exitosa
+  const [impactoFinancieroSnapshot, setImpactoFinancieroSnapshot] =
+    useState<ImpactoFinanciero | null>(null)
 
   // ============================================
   // NEGOCIACIÓN ACTIVA (para detectar impacto)
@@ -101,7 +126,8 @@ export function useEditarVivienda({ vivienda, onSuccess, onCancel }: UseEditarVi
 
   const { data: negociacionActiva = null } = useQuery({
     queryKey: ['negociacion-activa-vivienda', vivienda?.id],
-    queryFn: () => viviendasService.obtenerNegociacionActivaPorVivienda(vivienda!.id),
+    queryFn: () =>
+      viviendasService.obtenerNegociacionActivaPorVivienda(vivienda?.id ?? ''),
     enabled: !!vivienda?.id && esViviendaAsignada,
     staleTime: 60_000,
   })
@@ -109,13 +135,15 @@ export function useEditarVivienda({ vivienda, onSuccess, onCancel }: UseEditarVi
   // ============================================
   // REACT QUERY - DATOS DEL SERVIDOR
   // ============================================
-  const { data: proyectos = [], isLoading: cargandoProyectos } = useProyectosActivosQuery()
+  const { data: proyectos = [], isLoading: cargandoProyectos } =
+    useProyectosActivosQuery()
   const { data: gastosNotariales = 0 } = useGastosNotarialesQuery()
   const { data: configuracionRecargos = [] } = useConfiguracionRecargosQuery()
 
   // Cargar manzanas del proyecto (solo si hay proyecto_id)
   const proyectoId = vivienda?.manzanas?.proyecto_id
-  const { data: manzanas = [], isLoading: cargandoManzanas } = useManzanasDisponiblesQuery(proyectoId || '')
+  const { data: manzanas = [], isLoading: cargandoManzanas } =
+    useManzanasDisponiblesQuery(proyectoId || '')
 
   // Mutation para actualizar
   const actualizarMutation = useActualizarViviendaMutation()
@@ -125,7 +153,7 @@ export function useEditarVivienda({ vivienda, onSuccess, onCancel }: UseEditarVi
   // ============================================
   const {
     register,
-    handleSubmit,
+    handleSubmit: _handleSubmit,
     formState: { errors, isDirty },
     setValue,
     watch,
@@ -134,7 +162,7 @@ export function useEditarVivienda({ vivienda, onSuccess, onCancel }: UseEditarVi
     reset,
     setError,
   } = useForm<FormData>({
-    resolver: zodResolver(viviendaFullSchema) as any,
+    resolver: zodResolver(viviendaFullSchema) as Resolver<FormData>,
     mode: 'onChange',
     defaultValues: {
       proyecto_id: '',
@@ -202,7 +230,7 @@ export function useEditarVivienda({ vivienda, onSuccess, onCancel }: UseEditarVi
   // ============================================
   const manzanaSeleccionada = useMemo(() => {
     if (!formData.manzana_id) return null
-    return manzanas.find((m) => m.id === formData.manzana_id)
+    return manzanas.find(m => m.id === formData.manzana_id)
   }, [formData.manzana_id, manzanas])
 
   // ============================================
@@ -210,7 +238,11 @@ export function useEditarVivienda({ vivienda, onSuccess, onCancel }: UseEditarVi
   // ============================================
   const resumenFinanciero: ResumenFinanciero = useMemo(() => {
     const recargoFinal = esEsquinera ? recargoEsquinera || 0 : 0
-    const valorTotal = calcularValorTotal(valorBase || 0, gastosNotariales, recargoFinal)
+    const valorTotal = calcularValorTotal(
+      valorBase || 0,
+      gastosNotariales,
+      recargoFinal
+    )
 
     return {
       valor_base: valorBase || 0,
@@ -224,8 +256,8 @@ export function useEditarVivienda({ vivienda, onSuccess, onCancel }: UseEditarVi
   // PREVIEW DATA
   // ============================================
   const previewData = useMemo(() => {
-    const proyecto = proyectos.find((p) => p.id === formData.proyecto_id)
-    const manzana = manzanas.find((m) => m.id === formData.manzana_id)
+    const proyecto = proyectos.find(p => p.id === formData.proyecto_id)
+    const manzana = manzanas.find(m => m.id === formData.manzana_id)
 
     return {
       ...formData,
@@ -282,7 +314,7 @@ export function useEditarVivienda({ vivienda, onSuccess, onCancel }: UseEditarVi
   // ============================================
   // CONFIGURACIÓN DEL PASO ACTUAL
   // ============================================
-  const pasoActualConfig = PASOS.find((p) => p.id === pasoActual) || PASOS[0]
+  const pasoActualConfig = PASOS.find(p => p.id === pasoActual) || PASOS[0]
   const totalPasos = PASOS.length
   const progreso = (pasoActual / totalPasos) * 100
   const esPrimerPaso = pasoActual === 1
@@ -292,7 +324,7 @@ export function useEditarVivienda({ vivienda, onSuccess, onCancel }: UseEditarVi
   // VALIDACIÓN POR PASO
   // ============================================
   const validarPasoActual = useCallback(async (): Promise<boolean> => {
-    const pasoConfig = PASOS.find((p) => p.id === pasoActual)
+    const pasoConfig = PASOS.find(p => p.id === pasoActual)
     if (!pasoConfig) return true
 
     // ✅ PASO 1 en modo edición: Ya está validado (datos existentes, no modificables)
@@ -301,7 +333,9 @@ export function useEditarVivienda({ vivienda, onSuccess, onCancel }: UseEditarVi
     }
 
     // Validar con el schema del paso
-    const valido = await trigger(Object.keys(pasoConfig.schema.shape) as any)
+    const valido = await trigger(
+      Object.keys(pasoConfig.schema.shape) as Array<keyof FormData>
+    )
 
     // ✅ Validaciones adicionales para paso 3: Ejecutar en PARALELO
     if (pasoActual === 3 && valido) {
@@ -316,7 +350,7 @@ export function useEditarVivienda({ vivienda, onSuccess, onCancel }: UseEditarVi
       if (areaConstruida > areaLote) {
         erroresEncontrados.push({
           campo: 'area_construida',
-          mensaje: 'El área construida no puede ser mayor al área del lote'
+          mensaje: 'El área construida no puede ser mayor al área del lote',
         })
       }
 
@@ -324,17 +358,20 @@ export function useEditarVivienda({ vivienda, onSuccess, onCancel }: UseEditarVi
       if (matricula && matricula !== vivienda?.matricula_inmobiliaria) {
         setValidandoMatricula(true)
         try {
-          const resultado = await viviendasService.verificarMatriculaUnica(matricula, vivienda?.id)
+          const resultado = await viviendasService.verificarMatriculaUnica(
+            matricula,
+            vivienda?.id
+          )
           if (!resultado.esUnica && resultado.viviendaDuplicada) {
             erroresEncontrados.push({
               campo: 'matricula_inmobiliaria',
-              mensaje: `Esta matrícula ya está registrada en la Mz. ${resultado.viviendaDuplicada.manzana} Casa #${resultado.viviendaDuplicada.numero}`
+              mensaje: `Esta matrícula ya está registrada en la Mz. ${resultado.viviendaDuplicada.manzana} Casa #${resultado.viviendaDuplicada.numero}`,
             })
           }
-        } catch (error) {
+        } catch {
           erroresEncontrados.push({
             campo: 'matricula_inmobiliaria',
-            mensaje: 'Error al validar la matrícula. Intenta nuevamente.'
+            mensaje: 'Error al validar la matrícula. Intenta nuevamente.',
           })
         } finally {
           setValidandoMatricula(false)
@@ -343,10 +380,10 @@ export function useEditarVivienda({ vivienda, onSuccess, onCancel }: UseEditarVi
 
       // ✅ Setear TODOS los errores al mismo tiempo
       if (erroresEncontrados.length > 0) {
-        erroresEncontrados.forEach((error) => {
-          setError(error.campo as any, {
+        erroresEncontrados.forEach(err => {
+          setError(err.campo as keyof FormData, {
             type: 'manual',
-            message: error.mensaje
+            message: err.mensaje,
           })
         })
         return false
@@ -354,7 +391,7 @@ export function useEditarVivienda({ vivienda, onSuccess, onCancel }: UseEditarVi
     }
 
     return valido
-  }, [pasoActual, trigger, getValues, vivienda])
+  }, [pasoActual, trigger, getValues, vivienda, setError])
 
   // ============================================
   // NAVEGACIÓN
@@ -365,7 +402,7 @@ export function useEditarVivienda({ vivienda, onSuccess, onCancel }: UseEditarVi
 
     // Marcar paso como completado
     if (!pasosCompletados.includes(pasoActual)) {
-      setPasosCompletados((prev) => [...prev, pasoActual])
+      setPasosCompletados(prev => [...prev, pasoActual])
     }
 
     // Avanzar
@@ -380,19 +417,22 @@ export function useEditarVivienda({ vivienda, onSuccess, onCancel }: UseEditarVi
     }
   }, [pasoActual])
 
-  const irAPaso = useCallback((paso: number) => {
-    // ✅ Solo permitir ir a:
-    // 1. Pasos completados (hacia atrás o cualquier paso ya validado)
-    // 2. El paso actual
-    // ❌ NO permitir saltar hacia adelante sin validar
-    if (pasosCompletados.includes(paso) || paso === pasoActual) {
-      setPasoActual(paso)
-    } else {
-      toast.warning('Completa el paso actual', {
-        description: 'Debes completar el paso actual antes de avanzar'
-      })
-    }
-  }, [pasosCompletados, pasoActual])
+  const irAPaso = useCallback(
+    (paso: number) => {
+      // ✅ Solo permitir ir a:
+      // 1. Pasos completados (hacia atrás o cualquier paso ya validado)
+      // 2. El paso actual
+      // ❌ NO permitir saltar hacia adelante sin validar
+      if (pasosCompletados.includes(paso) || paso === pasoActual) {
+        setPasoActual(paso)
+      } else {
+        toast.warning('Completa el paso actual', {
+          description: 'Debes completar el paso actual antes de avanzar',
+        })
+      }
+    },
+    [pasosCompletados, pasoActual]
+  )
 
   // ============================================
   // SUBMIT
@@ -401,6 +441,7 @@ export function useEditarVivienda({ vivienda, onSuccess, onCancel }: UseEditarVi
   const mostrarConfirmacion = useCallback(() => {
     // Si hay impacto financiero (vivienda asignada con valor_base cambiado)
     if (impactoFinanciero) {
+      setImpactoFinancieroSnapshot(impactoFinanciero) // ← capturar antes de que la caché cambie
       setMostrarModalImpacto(true)
       return
     }
@@ -424,7 +465,7 @@ export function useEditarVivienda({ vivienda, onSuccess, onCancel }: UseEditarVi
         nomenclatura: data.nomenclatura,
         area_lote: Number(data.area_lote),
         area_construida: Number(data.area_construida),
-        tipo_vivienda: data.tipo_vivienda as any,
+        tipo_vivienda: data.tipo_vivienda as ViviendaFormData['tipo_vivienda'],
       }
 
       // Solo incluir campos financieros si NO está Entregada
@@ -433,6 +474,8 @@ export function useEditarVivienda({ vivienda, onSuccess, onCancel }: UseEditarVi
         updateData.es_esquinera = data.es_esquinera
         updateData.recargo_esquinera = data.recargo_esquinera
       }
+
+      setEstadoModal('loading')
 
       try {
         // Ejecutar mutation de vivienda
@@ -449,30 +492,55 @@ export function useEditarVivienda({ vivienda, onSuccess, onCancel }: UseEditarVi
               negociacionActiva.id,
               data.valor_base
             )
-            toast.info('Valor de negociación actualizado. Recuerda redistribuir las fuentes de pago.', {
-              duration: 6000,
-            })
+            toast.info(
+              'Valor de negociación actualizado. Recuerda redistribuir las fuentes de pago.',
+              {
+                duration: 6000,
+              }
+            )
           } catch {
-            toast.error('La vivienda se actualizó, pero hubo un error sincronizando la negociación.')
+            toast.error(
+              'La vivienda se actualizó, pero hubo un error sincronizando la negociación.'
+            )
           } finally {
             setSincronizandoNegociacion(false)
           }
         } else if (impactoFinanciero && !sincronizarNeg) {
-          toast.warning('El valor de la vivienda cambió pero la negociación mantiene el valor anterior.', {
-            duration: 5000,
-          })
+          toast.warning(
+            'El valor de la vivienda cambió pero la negociación mantiene el valor anterior.',
+            {
+              duration: 5000,
+            }
+          )
         }
 
-        // Éxito
+        // Éxito: mostrar estado success brevemente antes de cerrar
+        setEstadoModal('success')
         setHayFormularioConCambios(false)
-        setMostrarModalConfirmacion(false)
-        setMostrarModalImpacto(false)
-        onSuccess?.(viviendaActualizada)
-      } catch (error) {
-        console.error('Error en submit:', error)
+
+        setTimeout(() => {
+          setMostrarModalConfirmacion(false)
+          setMostrarModalImpacto(false)
+          setImpactoFinancieroSnapshot(null)
+          setEstadoModal('idle')
+          onSuccess?.(viviendaActualizada)
+        }, 1200)
+      } catch {
+        errorLog('useEditarVivienda.confirmarYGuardar', 'Error en submit')
+        setEstadoModal('error')
+        // La mutation onError ya muestra el toast.error; este estado
+        // permite al usuario reintentar desde el modal sin que desaparezca.
       }
     },
-    [vivienda, actualizarMutation, onSuccess, getValues, esViviendaEntregada, impactoFinanciero, negociacionActiva]
+    [
+      vivienda,
+      actualizarMutation,
+      onSuccess,
+      getValues,
+      esViviendaEntregada,
+      impactoFinanciero,
+      negociacionActiva,
+    ]
   )
 
   // ============================================
@@ -480,7 +548,10 @@ export function useEditarVivienda({ vivienda, onSuccess, onCancel }: UseEditarVi
   // ============================================
   const cancelar = useCallback(() => {
     if (hayFormularioConCambios) {
-      const confirmar = window.confirm('¿Estás seguro? Los cambios no guardados se perderán.')
+      // eslint-disable-next-line no-alert
+      const confirmar = window.confirm(
+        '¿Estás seguro? Los cambios no guardados se perderán.'
+      )
       if (!confirmar) return
     }
 
@@ -532,11 +603,13 @@ export function useEditarVivienda({ vivienda, onSuccess, onCancel }: UseEditarVi
     // Modal de confirmación
     mostrarModalConfirmacion,
     setMostrarModalConfirmacion,
+    estadoModal,
+    setEstadoModal,
 
     // Modal de impacto financiero
     mostrarModalImpacto,
     setMostrarModalImpacto,
-    impactoFinanciero,
+    impactoFinanciero: impactoFinancieroSnapshot ?? impactoFinanciero, // snapshot mientras está abierto
     sincronizandoNegociacion,
 
     // Protecciones por estado

@@ -1,7 +1,6 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { useState } from 'react'
 import { toast } from 'sonner'
 
 import { useRouter } from 'next/navigation'
@@ -9,14 +8,13 @@ import { useRouter } from 'next/navigation'
 import { construirURLVivienda } from '@/lib/utils/slug.utils'
 import { Modal } from '@/shared/components/ui/Modal'
 import { NoResults } from '@/shared/components/ui/NoResults'
-
 import { useVistaPreference } from '@/shared/hooks/useVistaPreference'
 
 import { useViviendasList } from '../hooks/useViviendasList'
 import { viviendasStyles as styles } from '../styles/viviendas.styles'
 import type { Vivienda } from '../types'
 
-import { EditarViviendaModal } from './editar-vivienda-modal'
+// EditarViviendaModal deprecated — edición en página propia /viviendas/[slug]/editar
 import { ViviendasEmpty } from './viviendas-empty'
 import { ViviendasHeader } from './viviendas-header'
 import { ViviendasLista } from './viviendas-lista'
@@ -28,7 +26,7 @@ import { ViviendasTabla } from './ViviendasTabla'
 /**
  * Permisos del usuario (pasados desde Server Component)
  */
-interface PermisosUsuario {
+interface _PermisosUsuario {
   canCreate: boolean
   canEdit: boolean
   canDelete: boolean
@@ -55,11 +53,11 @@ interface ViviendasPageMainProps {
  * - Solo maneja UI y lógica de negocio
  */
 export function ViviendasPageMain({
-  canCreate = false,
+  canCreate: _canCreate = false,
   canEdit = false,
   canDelete = false,
-  canView = true,
-  isAdmin = false,
+  canView: _canView = true,
+  isAdmin: _isAdmin = false,
 }: ViviendasPageMainProps = {}) {
   const router = useRouter()
   const {
@@ -74,7 +72,7 @@ export function ViviendasPageMain({
     filtros,
     actualizarFiltros,
     limpiarFiltros,
-    refrescar,
+    refrescar: _refrescar,
     estadisticas,
     totalFiltradas,
     proyectos,
@@ -89,14 +87,7 @@ export function ViviendasPageMain({
   // Hook para preferencia de vista (cards vs tabla)
   const [vista, setVista] = useVistaPreference({ moduleName: 'viviendas' })
 
-  // ============================================
-  // ESTADO MODAL EDITAR
-  // ============================================
-  const [modalEditar, setModalEditar] = useState(false)
-  const [viviendaEditar, setViviendaEditar] = useState<Vivienda | null>(null)
-
   const handleVerDetalle = (vivienda: Vivienda) => {
-
     // Validar que tenemos id y numero
     if (!vivienda?.id || !vivienda?.numero) {
       toast.error('Error: Datos de vivienda incompletos')
@@ -107,31 +98,30 @@ export function ViviendasPageMain({
     const url = construirURLVivienda(
       {
         id: vivienda.id,
-        numero: vivienda.numero
+        numero: vivienda.numero,
       },
       vivienda.manzanas?.nombre || undefined,
       vivienda.manzanas?.proyectos?.nombre || undefined
     )
-    router.push(url as any)
+    router.push(url as string)
   }
 
   // ============================================
-  // HANDLER: EDITAR VIVIENDA
+  // HANDLER: EDITAR VIVIENDA — navega a página propia
   // ============================================
   const handleEditarVivienda = (vivienda: Vivienda) => {
-    setViviendaEditar(vivienda)
-    setModalEditar(true)
-  }
-
-  const handleEditarSuccess = (_viviendaActualizada: Vivienda) => {
-    // Refrescar lista para mostrar cambios
-    refrescar()
-    setModalEditar(false)
-    setViviendaEditar(null)
+    const url = construirURLVivienda(
+      { id: vivienda.id, numero: vivienda.numero },
+      vivienda.manzanas?.nombre || undefined,
+      vivienda.manzanas?.proyectos?.nombre || undefined
+    )
+    router.push(`${url}/editar`)
   }
 
   // Buscar en viviendasFiltradas para que funcione en ambas vistas
-  const viviendaEliminando = viviendasFiltradas?.find(v => v.id === viviendaEliminar)
+  const viviendaEliminando = viviendasFiltradas?.find(
+    v => v.id === viviendaEliminar
+  )
 
   return (
     <div className={styles.container.page}>
@@ -143,9 +133,7 @@ export function ViviendasPageMain({
         className={styles.container.content}
       >
         {/* Header - Navegación a vista dedicada */}
-        <ViviendasHeader
-          totalViviendas={estadisticas.total}
-        />
+        <ViviendasHeader totalViviendas={estadisticas.total} />
 
         {/* Estadísticas */}
         <ViviendasStats
@@ -171,11 +159,14 @@ export function ViviendasPageMain({
         {cargando ? (
           <ViviendasSkeleton />
         ) : viviendas.length === 0 ? (
-          filtros.search || filtros.estado || filtros.proyecto_id || filtros.manzana_id ? (
+          filtros.search ||
+          filtros.estado ||
+          filtros.proyecto_id ||
+          filtros.manzana_id ? (
             <NoResults
-              moduleName="viviendas"
+              moduleName='viviendas'
               onLimpiarFiltros={limpiarFiltros}
-              mensaje="No se encontraron viviendas con los filtros aplicados"
+              mensaje='No se encontraron viviendas con los filtros aplicados'
             />
           ) : (
             <ViviendasEmpty onCrear={() => router.push('/viviendas/nueva')} />
@@ -184,16 +175,16 @@ export function ViviendasPageMain({
           <ViviendasLista
             viviendas={viviendas} // ← Viviendas paginadas (hook maneja paginación)
             onVerDetalle={handleVerDetalle}
-            onAsignarCliente={(vivienda) => {
+            onAsignarCliente={_vivienda => {
               // TODO: Implementar lógica de asignación
             }}
-            onVerAbonos={(vivienda) => {
+            onVerAbonos={_vivienda => {
               // TODO: Implementar vista de abonos
             }}
-            onRegistrarPago={(vivienda) => {
+            onRegistrarPago={_vivienda => {
               // TODO: Implementar registro de pago
             }}
-            onGenerarEscritura={(vivienda) => {
+            onGenerarEscritura={_vivienda => {
               // TODO: Implementar generación de escritura
             }}
             onEditar={canEdit ? handleEditarVivienda : undefined}
@@ -218,30 +209,19 @@ export function ViviendasPageMain({
         )}
       </motion.div>
 
-      {/* Modal Editar Vivienda */}
-      <EditarViviendaModal
-        isOpen={modalEditar}
-        vivienda={viviendaEditar}
-        onClose={() => {
-          setModalEditar(false)
-          setViviendaEditar(null)
-        }}
-        onSuccess={handleEditarSuccess}
-      />
-
       {/* Modal Confirmar Eliminación */}
       <Modal
         isOpen={modalEliminar}
         onClose={cancelarEliminar}
-        title="Eliminar Vivienda"
-        description="Esta acción no se puede deshacer"
-        size="sm"
+        title='Eliminar Vivienda'
+        description='Esta acción no se puede deshacer'
+        size='sm'
       >
-        <div className="space-y-4">
-          <p className="text-sm text-gray-600 dark:text-gray-400">
+        <div className='space-y-4'>
+          <p className='text-sm text-gray-600 dark:text-gray-400'>
             ¿Estás seguro de que deseas eliminar la vivienda{' '}
-            <span className="font-semibold text-gray-900 dark:text-gray-100">
-              "#{viviendaEliminando?.numero}"
+            <span className='font-semibold text-gray-900 dark:text-gray-100'>
+              &quot;#{viviendaEliminando?.numero}&quot;
             </span>
             ?
           </p>
@@ -257,7 +237,7 @@ export function ViviendasPageMain({
 
           <div className={styles.deleteModal.actions}>
             <button
-              type="button"
+              type='button'
               onClick={cancelarEliminar}
               disabled={cargando}
               className={styles.deleteModal.cancelButton}
@@ -265,7 +245,7 @@ export function ViviendasPageMain({
               Cancelar
             </button>
             <button
-              type="button"
+              type='button'
               onClick={confirmarEliminar}
               disabled={cargando}
               className={styles.deleteModal.deleteButton}
@@ -275,7 +255,6 @@ export function ViviendasPageMain({
           </div>
         </div>
       </Modal>
-
     </div>
   )
 }
