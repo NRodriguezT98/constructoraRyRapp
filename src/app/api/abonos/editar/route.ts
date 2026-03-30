@@ -196,8 +196,8 @@ export async function PATCH(request: NextRequest) {
     )
   }
 
-  // 10. Ejecutar UPDATE
-  const { data: abonoActualizado, error: updateError } = await supabase
+  // 10. Ejecutar UPDATE (usar supabaseAdmin para evitar restricción RLS en UPDATE)
+  const { data: abonoActualizado, error: updateError } = await supabaseAdmin
     .from('abonos_historial')
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     .update(actualizacion as any)

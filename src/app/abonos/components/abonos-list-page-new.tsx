@@ -4,15 +4,15 @@ import { useCallback, useState } from 'react'
 
 import { motion } from 'framer-motion'
 import {
-    Ban,
-    Calendar,
-    Check,
-    CreditCard,
-    DollarSign,
-    Pencil,
-    Receipt,
-    Search,
-    TrendingUp,
+  Ban,
+  Calendar,
+  Check,
+  CreditCard,
+  DollarSign,
+  Pencil,
+  Receipt,
+  Search,
+  TrendingUp,
 } from 'lucide-react'
 
 import { useRouter } from 'next/navigation'
@@ -88,9 +88,9 @@ export function AbonosListPage({
   // ─── LOADING ─────────────────────────────────────────
   if (isLoading) {
     return (
-      <div className='min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-950 dark:via-slate-900 dark:to-gray-900'>
+      <div className='min-h-screen bg-gradient-to-br from-slate-50 via-violet-50 to-purple-50 dark:from-gray-950 dark:via-slate-900 dark:to-gray-900'>
         <div className='mx-auto max-w-7xl space-y-4 px-4 py-6 sm:px-6 lg:px-8'>
-          <div className='h-28 animate-pulse rounded-2xl bg-blue-200 dark:bg-blue-900/30' />
+          <div className='h-28 animate-pulse rounded-2xl bg-violet-200 dark:bg-violet-900/30' />
           <div className='grid grid-cols-2 gap-3 lg:grid-cols-4'>
             {[...Array(4)].map((_, i) => (
               <div
@@ -120,14 +120,14 @@ export function AbonosListPage({
 
   return (
     <>
-      <div className='min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-950 dark:via-slate-900 dark:to-gray-900'>
+      <div className='min-h-screen bg-gradient-to-br from-slate-50 via-violet-50 to-purple-50 dark:from-gray-950 dark:via-slate-900 dark:to-gray-900'>
         <div className='mx-auto max-w-7xl space-y-4 px-4 py-6 sm:px-6 lg:px-8'>
           {/* ─── HEADER ─────────────────────────────────── */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.15 }}
-            className='relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 p-6 shadow-2xl shadow-blue-500/20 dark:from-blue-700 dark:via-indigo-700 dark:to-purple-800'
+            className='relative overflow-hidden rounded-2xl bg-gradient-to-br from-violet-600 via-purple-600 to-fuchsia-600 p-6 shadow-2xl shadow-violet-500/20 dark:from-violet-700 dark:via-purple-700 dark:to-fuchsia-800'
           >
             <div className='bg-grid-white/10 absolute inset-0 [mask-image:linear-gradient(0deg,transparent,black,transparent)]' />
             <div className='relative z-10'>
@@ -138,7 +138,7 @@ export function AbonosListPage({
                   </div>
                   <div className='space-y-0.5'>
                     <h1 className='text-2xl font-bold text-white'>Abonos</h1>
-                    <p className='text-xs text-blue-100 dark:text-blue-200'>
+                    <p className='text-xs text-violet-100 dark:text-violet-200'>
                       Registro global de recibos · RyR Constructora
                     </p>
                   </div>
@@ -202,13 +202,13 @@ export function AbonosListPage({
                 whileHover={{ scale: 1.02, y: -4 }}
                 className='group relative overflow-hidden rounded-xl border border-gray-200/50 bg-white/80 p-4 shadow-lg backdrop-blur-xl transition-all duration-300 hover:shadow-2xl dark:border-gray-700/50 dark:bg-gray-800/80'
               >
-                <div className='absolute inset-0 bg-gradient-to-br from-blue-500/5 to-indigo-500/5 opacity-0 transition-opacity duration-300 group-hover:opacity-100' />
+                <div className='absolute inset-0 bg-gradient-to-br from-violet-500/5 to-purple-500/5 opacity-0 transition-opacity duration-300 group-hover:opacity-100' />
                 <div className='relative z-10 flex items-center gap-3'>
-                  <div className='flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 shadow-lg shadow-blue-500/30'>
+                  <div className='flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-violet-500 to-purple-600 shadow-lg shadow-violet-500/30'>
                     <Icon className='h-5 w-5 text-white' />
                   </div>
                   <div className='min-w-0 flex-1'>
-                    <p className='truncate bg-gradient-to-br from-blue-600 to-indigo-700 bg-clip-text text-xl font-bold text-transparent'>
+                    <p className='truncate bg-gradient-to-br from-violet-600 to-purple-700 bg-clip-text text-xl font-bold text-transparent'>
                       {value}
                     </p>
                     <p className='mt-0.5 text-xs font-medium text-gray-600 dark:text-gray-400'>
@@ -221,7 +221,7 @@ export function AbonosListPage({
           </div>
 
           {/* ─── FILTROS STICKY ────────────────────────── */}
-          <div className='sticky top-4 z-40 rounded-xl border border-gray-200/50 bg-white/90 p-4 shadow-2xl shadow-blue-500/10 backdrop-blur-xl dark:border-gray-700/50 dark:bg-gray-800/90'>
+          <div className='sticky top-4 z-40 rounded-xl border border-gray-200/50 bg-white/90 p-4 shadow-2xl shadow-violet-500/10 backdrop-blur-xl dark:border-gray-700/50 dark:bg-gray-800/90'>
             <div className='flex items-center gap-2'>
               {/* Búsqueda */}
               <div className='relative flex-1'>
@@ -237,7 +237,7 @@ export function AbonosListPage({
                     actualizarFiltros({ busqueda: e.target.value })
                   }
                   placeholder='Buscar por cliente, CC o RYR-...'
-                  className='w-full rounded-lg border-2 border-gray-200 bg-gray-50 py-2.5 pl-10 pr-3 text-sm transition-all placeholder:text-gray-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 dark:border-gray-700 dark:bg-gray-900/50'
+                  className='w-full rounded-lg border-2 border-gray-200 bg-gray-50 py-2.5 pl-10 pr-3 text-sm transition-all placeholder:text-gray-400 focus:border-violet-500 focus:ring-4 focus:ring-violet-500/20 dark:border-gray-700 dark:bg-gray-900/50'
                 />
               </div>
               {/* Fuente */}
@@ -248,7 +248,7 @@ export function AbonosListPage({
                 id='filtro-fuente'
                 value={filtros.fuente}
                 onChange={e => actualizarFiltros({ fuente: e.target.value })}
-                className='min-w-[180px] rounded-lg border-2 border-gray-200 bg-gray-50 px-3 py-2.5 text-sm transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 dark:border-gray-700 dark:bg-gray-900/50'
+                className='min-w-[180px] rounded-lg border-2 border-gray-200 bg-gray-50 px-3 py-2.5 text-sm transition-all focus:border-violet-500 focus:ring-4 focus:ring-violet-500/20 dark:border-gray-700 dark:bg-gray-900/50'
               >
                 <option value='todas'>Todas las fuentes</option>
                 {fuentesUnicas.map(f => (
@@ -265,7 +265,7 @@ export function AbonosListPage({
                 id='filtro-mes'
                 value={filtros.mes}
                 onChange={e => actualizarFiltros({ mes: e.target.value })}
-                className='min-w-[160px] rounded-lg border-2 border-gray-200 bg-gray-50 px-3 py-2.5 text-sm transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 dark:border-gray-700 dark:bg-gray-900/50'
+                className='min-w-[160px] rounded-lg border-2 border-gray-200 bg-gray-50 px-3 py-2.5 text-sm transition-all focus:border-violet-500 focus:ring-4 focus:ring-violet-500/20 dark:border-gray-700 dark:bg-gray-900/50'
               >
                 <option value='todos'>Todos los meses</option>
                 {mesesDisponibles.map(m => (
@@ -281,7 +281,9 @@ export function AbonosListPage({
               </p>
               <div className='flex items-center gap-1.5'>
                 {/* Pill checklist: categorías de abonos */}
-                <span className='mr-1 text-xs text-gray-400 dark:text-gray-500'>Mostrar:</span>
+                <span className='mr-1 text-xs text-gray-400 dark:text-gray-500'>
+                  Mostrar:
+                </span>
                 <button
                   onClick={toggleMostrarActivos}
                   className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium transition-all ${
@@ -290,7 +292,11 @@ export function AbonosListPage({
                       : 'bg-gray-100 text-gray-400 dark:bg-gray-800 dark:text-gray-500'
                   }`}
                 >
-                  {filtros.mostrarActivos ? <Check className='h-3 w-3' /> : <span className='inline-block h-3 w-3 rounded-sm border border-gray-300 dark:border-gray-600' />}
+                  {filtros.mostrarActivos ? (
+                    <Check className='h-3 w-3' />
+                  ) : (
+                    <span className='inline-block h-3 w-3 rounded-sm border border-gray-300 dark:border-gray-600' />
+                  )}
                   Activos
                 </button>
                 <button
@@ -301,7 +307,11 @@ export function AbonosListPage({
                       : 'bg-gray-100 text-gray-400 dark:bg-gray-800 dark:text-gray-500'
                   }`}
                 >
-                  {filtros.mostrarAnulados ? <Check className='h-3 w-3' /> : <span className='inline-block h-3 w-3 rounded-sm border border-gray-300 dark:border-gray-600' />}
+                  {filtros.mostrarAnulados ? (
+                    <Check className='h-3 w-3' />
+                  ) : (
+                    <span className='inline-block h-3 w-3 rounded-sm border border-gray-300 dark:border-gray-600' />
+                  )}
                   Anulados
                 </button>
                 <button
@@ -312,7 +322,11 @@ export function AbonosListPage({
                       : 'bg-gray-100 text-gray-400 dark:bg-gray-800 dark:text-gray-500'
                   }`}
                 >
-                  {filtros.mostrarRenunciados ? <Check className='h-3 w-3' /> : <span className='inline-block h-3 w-3 rounded-sm border border-gray-300 dark:border-gray-600' />}
+                  {filtros.mostrarRenunciados ? (
+                    <Check className='h-3 w-3' />
+                  ) : (
+                    <span className='inline-block h-3 w-3 rounded-sm border border-gray-300 dark:border-gray-600' />
+                  )}
                   Renunciados
                 </button>
                 <span className='mx-1 h-4 w-px bg-gray-200 dark:bg-gray-700' />
@@ -327,7 +341,7 @@ export function AbonosListPage({
                         mes: 'todos',
                       })
                     }
-                    className='text-xs font-medium text-blue-600 transition-colors hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300'
+                    className='text-xs font-medium text-violet-600 transition-colors hover:text-violet-700 dark:text-violet-400 dark:hover:text-violet-300'
                   >
                     Limpiar filtros
                   </button>
@@ -386,13 +400,13 @@ export function AbonosListPage({
                         abono.estado === 'Anulado'
                           ? 'bg-red-50/40 opacity-60 dark:bg-red-950/10'
                           : abono.negociacion.estado === 'Cerrada por Renuncia'
-                            ? 'bg-amber-50/40 dark:bg-amber-950/10 hover:bg-amber-50/60 dark:hover:bg-amber-950/20'
-                            : 'hover:bg-blue-50/50 dark:hover:bg-blue-950/20'
+                            ? 'bg-amber-50/40 hover:bg-amber-50/60 dark:bg-amber-950/10 dark:hover:bg-amber-950/20'
+                            : 'hover:bg-violet-50/50 dark:hover:bg-violet-950/20'
                       }`}
                     >
                       {/* # Recibo */}
                       <td className='px-3 py-2.5'>
-                        <span className='inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 font-mono text-xs font-bold text-blue-700 dark:bg-blue-900/40 dark:text-blue-300'>
+                        <span className='inline-flex items-center rounded-full bg-violet-100 px-2 py-0.5 font-mono text-xs font-bold text-violet-700 dark:bg-violet-900/40 dark:text-violet-300'>
                           {formatearNumeroRecibo(abono.numero_recibo)}
                         </span>
                       </td>
@@ -443,7 +457,8 @@ export function AbonosListPage({
                               {formatCurrency(abono.monto)}
                             </span>
                           </>
-                        ) : abono.negociacion.estado === 'Cerrada por Renuncia' ? (
+                        ) : abono.negociacion.estado ===
+                          'Cerrada por Renuncia' ? (
                           <>
                             <span className='mb-0.5 block text-[9px] font-bold uppercase tracking-widest text-amber-600 dark:text-amber-400'>
                               Renunciada
@@ -453,7 +468,7 @@ export function AbonosListPage({
                             </span>
                           </>
                         ) : (
-                          <span className='font-bold text-blue-700 dark:text-blue-400'>
+                          <span className='font-bold text-violet-700 dark:text-violet-400'>
                             {formatCurrency(abono.monto)}
                           </span>
                         )}
@@ -477,9 +492,11 @@ export function AbonosListPage({
                                     monto: abono.monto,
                                     fecha_abono: abono.fecha_abono,
                                     metodo_pago: rawAbono.metodo_pago ?? null,
-                                    numero_referencia: rawAbono.numero_referencia ?? null,
+                                    numero_referencia:
+                                      rawAbono.numero_referencia ?? null,
                                     notas: rawAbono.notas ?? null,
-                                    comprobante_url: rawAbono.comprobante_url ?? null,
+                                    comprobante_url:
+                                      rawAbono.comprobante_url ?? null,
                                   })
                                 }}
                                 className='inline-flex h-7 w-7 items-center justify-center rounded-lg bg-gray-100 text-gray-400 transition-colors hover:bg-blue-50 hover:text-blue-600 dark:bg-gray-700/50 dark:hover:bg-blue-900/30 dark:hover:text-blue-400'
@@ -540,7 +557,8 @@ export function AbonosListPage({
             numero_recibo: abonoAnulando.numero_recibo,
             monto: abonoAnulando.monto,
             fecha_abono: abonoAnulando.fecha_abono,
-            cliente_nombre: `${abonoAnulando.cliente.nombres} ${abonoAnulando.cliente.apellidos}`.trim(),
+            cliente_nombre:
+              `${abonoAnulando.cliente.nombres} ${abonoAnulando.cliente.apellidos}`.trim(),
             vivienda_info: abonoAnulando.vivienda.manzana.identificador
               ? `Mz.${abonoAnulando.vivienda.manzana.identificador} Casa No. ${abonoAnulando.vivienda.numero}`
               : `N°${abonoAnulando.vivienda.numero}`,

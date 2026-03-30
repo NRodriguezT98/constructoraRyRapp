@@ -10,7 +10,8 @@ export const detalleModalStyles = {
   overlay: 'fixed inset-0 z-50 bg-black/60 backdrop-blur-sm',
 
   // Modal container
-  modalContainer: 'fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none',
+  modalContainer:
+    'fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none',
 
   modalContent: `
     w-full max-w-4xl max-h-[90vh] overflow-hidden rounded-2xl
@@ -23,8 +24,8 @@ export const detalleModalStyles = {
   header: {
     container: `
       relative overflow-hidden
-      bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600
-      dark:from-blue-700 dark:via-indigo-700 dark:to-purple-800
+      bg-gradient-to-r from-teal-600 via-cyan-600 to-sky-600
+      dark:from-teal-700 dark:via-cyan-700 dark:to-sky-800
       px-8 py-6
     `.trim(),
 
@@ -44,7 +45,7 @@ export const detalleModalStyles = {
     `.trim(),
 
     title: 'text-2xl font-bold text-white',
-    subtitle: 'text-blue-100 text-sm mt-0.5 capitalize',
+    subtitle: 'text-teal-100 text-sm mt-0.5 capitalize',
 
     closeButton: `
       w-10 h-10 rounded-xl
@@ -52,7 +53,7 @@ export const detalleModalStyles = {
       hover:bg-white/30 transition-colors
       flex items-center justify-center
       border border-white/30
-    `.trim()
+    `.trim(),
   },
 
   // Body
@@ -68,20 +69,23 @@ export const detalleModalStyles = {
     `.trim(),
 
     usuario: {
-      label: 'text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide',
-      email: 'text-xs font-bold text-gray-900 dark:text-white flex items-center gap-1.5 truncate',
+      label:
+        'text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide',
+      email:
+        'text-xs font-bold text-gray-900 dark:text-white flex items-center gap-1.5 truncate',
       rolBadge: `
         text-[10px] px-1.5 py-0.5 rounded-full
         bg-gray-200 dark:bg-gray-700
         text-gray-600 dark:text-gray-400
         font-medium capitalize flex-shrink-0
-      `.trim()
+      `.trim(),
     },
 
     fecha: {
-      label: 'text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide',
-      valor: 'text-xs text-gray-900 dark:text-white whitespace-nowrap'
-    }
+      label:
+        'text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide',
+      valor: 'text-xs text-gray-900 dark:text-white whitespace-nowrap',
+    },
   },
 
   // Footer
@@ -110,7 +114,7 @@ export const detalleModalStyles = {
       text-sm font-bold text-gray-900 dark:text-white
       flex items-center gap-2
       border-b border-gray-200 dark:border-gray-700 pb-2
-    `.trim()
+    `.trim(),
   },
 
   // Sección JSON colapsable
@@ -124,7 +128,8 @@ export const detalleModalStyles = {
       border border-gray-200 dark:border-gray-700
     `.trim(),
 
-    label: 'text-sm font-bold text-gray-900 dark:text-white flex items-center gap-2',
+    label:
+      'text-sm font-bold text-gray-900 dark:text-white flex items-center gap-2',
 
     content: 'space-y-3',
 
@@ -134,6 +139,6 @@ export const detalleModalStyles = {
       border border-gray-200 dark:border-gray-700
     `.trim(),
 
-    pre: 'text-xs text-gray-900 dark:text-gray-100 font-mono'
-  }
+    pre: 'text-xs text-gray-900 dark:text-gray-100 font-mono',
+  },
 }

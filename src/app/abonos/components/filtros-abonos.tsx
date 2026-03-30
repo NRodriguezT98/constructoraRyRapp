@@ -37,9 +37,8 @@ export function FiltrosAbonos({
   onFiltrosChange,
   onLimpiar,
   totalResultados,
-  totalAbonos
+  totalAbonos,
 }: FiltrosAbonosProps) {
-
   const handleBusquedaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     onFiltrosChange({ busqueda: e.target.value })
   }
@@ -49,7 +48,9 @@ export function FiltrosAbonos({
   }
 
   const handleProyectoChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    onFiltrosChange({ proyecto: e.target.value === 'todos' ? undefined : e.target.value })
+    onFiltrosChange({
+      proyecto: e.target.value === 'todos' ? undefined : e.target.value,
+    })
   }
 
   const limpiarBusqueda = () => {
@@ -82,17 +83,17 @@ export function FiltrosAbonos({
           <div className={s.inputWrapper}>
             <Search className={s.searchIcon} />
             <Input
-              type="text"
+              type='text'
               value={filtros.busqueda}
               onChange={handleBusquedaChange}
-              placeholder="Cliente, referencia, vivienda..."
+              placeholder='Cliente, referencia, vivienda...'
               className={s.input}
             />
             {filtros.busqueda && (
               <button
                 onClick={limpiarBusqueda}
                 className={s.clearButton}
-                aria-label="Limpiar búsqueda"
+                aria-label='Limpiar búsqueda'
               >
                 <X className={s.clearIcon} />
               </button>
@@ -134,23 +135,33 @@ export function FiltrosAbonos({
         {/* Proyecto - Select funcional */}
         <div className={s.inputGroup}>
           <label className={s.label}>Proyecto</label>
-          <div className="relative">
-            <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 z-10" />
+          <div className='relative'>
+            <Building2 className='absolute left-3 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-gray-400' />
             <select
               value={filtros.proyecto || 'todos'}
               onChange={handleProyectoChange}
-              className={`${s.input} pl-10 appearance-none cursor-pointer bg-white dark:bg-gray-800`}
+              className={`${s.input} cursor-pointer appearance-none bg-white pl-10 dark:bg-gray-800`}
             >
-              <option value="todos">Todos los proyectos</option>
-              {proyectos.map((proyecto) => (
+              <option value='todos'>Todos los proyectos</option>
+              {proyectos.map(proyecto => (
                 <option key={proyecto.id} value={proyecto.id}>
                   {proyecto.nombre}
                 </option>
               ))}
             </select>
-            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-              <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            <div className='pointer-events-none absolute right-3 top-1/2 -translate-y-1/2'>
+              <svg
+                className='h-4 w-4 text-gray-400'
+                fill='none'
+                stroke='currentColor'
+                viewBox='0 0 24 24'
+              >
+                <path
+                  strokeLinecap='round'
+                  strokeLinejoin='round'
+                  strokeWidth={2}
+                  d='M19 9l-7 7-7-7'
+                />
               </svg>
             </div>
           </div>
@@ -160,22 +171,22 @@ export function FiltrosAbonos({
       {/* 📊 FOOTER CON RESULTADOS */}
       <div className={s.footer}>
         <div className={s.resultados}>
-          <span className="font-bold text-blue-600 dark:text-blue-400">
+          <span className='font-bold text-violet-600 dark:text-violet-400'>
             {totalResultados}
           </span>
-          <span className="text-gray-500 dark:text-gray-400 mx-1">de</span>
-          <span className="font-semibold">{totalAbonos}</span>
-          <span className="text-gray-500 dark:text-gray-400 ml-1">abonos</span>
+          <span className='mx-1 text-gray-500 dark:text-gray-400'>de</span>
+          <span className='font-semibold'>{totalAbonos}</span>
+          <span className='ml-1 text-gray-500 dark:text-gray-400'>abonos</span>
         </div>
 
         {hayFiltrosActivos && (
           <Button
             onClick={onLimpiar}
-            variant="ghost"
-            size="sm"
+            variant='ghost'
+            size='sm'
             className={s.limpiarButton}
           >
-            <X className="w-3 h-3 mr-1" />
+            <X className='mr-1 h-3 w-3' />
             Limpiar Filtros
           </Button>
         )}

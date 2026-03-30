@@ -8,14 +8,14 @@ import { formatCurrency } from '@/shared/utils/format'
 
 import { useEditarAbonoMutation } from '../../hooks/useAbonosQuery'
 import {
-    generarPathComprobante,
-    subirComprobante,
+  generarPathComprobante,
+  subirComprobante,
 } from '../../services/abonos-storage.service'
 import type { MetodoPago } from '../../types'
 import type {
-    AbonoParaEditar,
-    DiffCampo,
-    EditarAbonoPayload,
+  AbonoParaEditar,
+  DiffCampo,
+  EditarAbonoPayload,
 } from '../../types/editar-abono.types'
 
 const METODOS_ABONO: MetodoPago[] = ['Efectivo', 'Transferencia', 'Cheque']
@@ -57,6 +57,7 @@ export function useModalEditarAbono({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [exito, setExito] = useState(false)
+  const [fase, setFase] = useState<'editar' | 'confirmar'>('editar')
 
   // ── Diff: qué campos cambiaron ───────────────────────────────────────────
   const diff = useMemo<DiffCampo[]>(() => {
@@ -106,9 +107,9 @@ export function useModalEditarAbono({
     if (notas !== notasOrig) {
       changes.push({
         campo: 'notas',
-        label: 'Notas',
-        anterior: notasOrig || 'Sin notas',
-        nuevo: notas || 'Sin notas',
+        label: 'Observaciones',
+        anterior: notasOrig || 'Sin observaciones',
+        nuevo: notas || 'Sin observaciones',
       })
     }
 
@@ -150,7 +151,11 @@ export function useModalEditarAbono({
   ])
 
   const hayCambios = diff.length > 0
-  const puedeGuardar = hayCambios && motivo.trim().length >= 5 && !isSubmitting
+  const puedeRevisar = hayCambios && !isSubmitting
+  const puedeConfirmar =
+    hayCambios && motivo.trim().length >= 5 && !isSubmitting
+  const irAConfirmar = () => setFase('confirmar')
+  const volverAEditar = () => setFase('editar')
 
   // ── Submit ───────────────────────────────────────────────────────────────
   const handleSubmit = useCallback(async () => {
@@ -273,6 +278,7 @@ export function useModalEditarAbono({
 
   const handleClose = useCallback(() => {
     if (isSubmitting) return
+    setFase('editar')
     onClose()
   }, [isSubmitting, onClose])
 
@@ -302,7 +308,11 @@ export function useModalEditarAbono({
     // Computed
     diff,
     hayCambios,
-    puedeGuardar,
+    fase,
+    puedeRevisar,
+    puedeConfirmar,
+    irAConfirmar,
+    volverAEditar,
 
     // State
     isSubmitting,

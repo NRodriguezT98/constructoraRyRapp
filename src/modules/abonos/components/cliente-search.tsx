@@ -5,9 +5,20 @@ import { ArrowUpDown, Building2, ChevronDown, Search, X } from 'lucide-react'
 import { seleccionClienteStyles as styles } from '../styles/seleccion-cliente.styles'
 
 const formatCOP = (v: number) =>
-  new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(v)
+  new Intl.NumberFormat('es-CO', {
+    style: 'currency',
+    currency: 'COP',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(v)
 
-type OrdenClientes = 'urgente' | 'mayor_pago' | 'nombre_az' | 'nombre_za' | 'vivienda_asc' | 'mayor_saldo'
+type OrdenClientes =
+  | 'urgente'
+  | 'mayor_pago'
+  | 'nombre_az'
+  | 'nombre_za'
+  | 'vivienda_asc'
+  | 'mayor_saldo'
 
 interface ClienteSearchProps {
   busqueda: string
@@ -39,7 +50,10 @@ export function ClienteSearch({
   promedioAvance,
   resumen,
 }: ClienteSearchProps) {
-  const hayFiltro = busqueda.trim().length > 0 || Boolean(proyectoFiltro) || ordenar !== 'urgente'
+  const hayFiltro =
+    busqueda.trim().length > 0 ||
+    Boolean(proyectoFiltro) ||
+    ordenar !== 'urgente'
 
   function limpiarFiltros() {
     onBusquedaChange('')
@@ -49,15 +63,14 @@ export function ClienteSearch({
 
   return (
     <div className={styles.search.container}>
-
       {/* Fila 1: input de búsqueda */}
       <div className={styles.search.inputWrapper}>
         <Search className={styles.search.iconLeft} />
         <input
-          type="text"
-          placeholder="Buscar por nombre, cédula, A1, Mz. A N°1..."
+          type='text'
+          placeholder='Buscar por nombre, cédula, A1, Mz. A N°1...'
           value={busqueda}
-          onChange={(e) => onBusquedaChange(e.target.value)}
+          onChange={e => onBusquedaChange(e.target.value)}
           className={styles.search.input}
           autoFocus
         />
@@ -65,7 +78,7 @@ export function ClienteSearch({
           <button
             onClick={() => onBusquedaChange('')}
             className={styles.search.clearButton}
-            aria-label="Limpiar búsqueda"
+            aria-label='Limpiar búsqueda'
           >
             <X className={styles.search.clearIcon} />
           </button>
@@ -74,7 +87,6 @@ export function ClienteSearch({
 
       {/* Fila 2: proyecto + ordenar */}
       <div className={styles.search.controlsRow}>
-
         {/* Filtro por proyecto */}
         {proyectos.length > 0 ? (
           <div className={styles.search.controlGroup}>
@@ -82,12 +94,14 @@ export function ClienteSearch({
             <div className={styles.search.selectWrapper}>
               <select
                 value={proyectoFiltro}
-                onChange={(e) => onProyectoFiltroChange?.(e.target.value)}
+                onChange={e => onProyectoFiltroChange?.(e.target.value)}
                 className={`${styles.search.select} ${proyectoFiltro ? styles.search.selectActive : ''}`}
               >
-                <option value="">Todos los proyectos</option>
+                <option value=''>Todos los proyectos</option>
                 {proyectos.map(p => (
-                  <option key={p} value={p}>{p}</option>
+                  <option key={p} value={p}>
+                    {p}
+                  </option>
                 ))}
               </select>
               <ChevronDown className={styles.search.selectIcon} />
@@ -95,7 +109,9 @@ export function ClienteSearch({
           </div>
         ) : null}
 
-        {proyectos.length > 0 ? <div className={styles.search.divider} /> : null}
+        {proyectos.length > 0 ? (
+          <div className={styles.search.divider} />
+        ) : null}
 
         {/* Ordenamiento */}
         <div className={styles.search.controlGroup}>
@@ -103,20 +119,19 @@ export function ClienteSearch({
           <div className={styles.search.selectWrapper}>
             <select
               value={ordenar}
-              onChange={(e) => onOrdenarChange?.(e.target.value as OrdenClientes)}
+              onChange={e => onOrdenarChange?.(e.target.value as OrdenClientes)}
               className={`${styles.search.select} ${ordenar !== 'urgente' ? styles.search.selectActive : ''}`}
             >
-              <option value="urgente">↑ Más urgente primero</option>
-              <option value="mayor_pago">↓ Más avanzado (mayor %)</option>
-              <option value="nombre_az">A → Z &nbsp; Nombre</option>
-              <option value="nombre_za">Z → A &nbsp; Nombre</option>
-              <option value="vivienda_asc">Vivienda: A1, A2, B1...</option>
-              <option value="mayor_saldo">Mayor saldo pendiente ($)</option>
+              <option value='urgente'>↑ Más urgente primero</option>
+              <option value='mayor_pago'>↓ Más avanzado (mayor %)</option>
+              <option value='nombre_az'>A → Z &nbsp; Nombre</option>
+              <option value='nombre_za'>Z → A &nbsp; Nombre</option>
+              <option value='vivienda_asc'>Vivienda: A1, A2, B1...</option>
+              <option value='mayor_saldo'>Mayor saldo pendiente ($)</option>
             </select>
             <ChevronDown className={styles.search.selectIcon} />
           </div>
         </div>
-
       </div>
 
       {/* Footer: conteo + resumen + limpiar */}
@@ -128,20 +143,34 @@ export function ClienteSearch({
         </span>
         {resumen ? (
           <span className={styles.search.resumenLine}>
-            <span className="text-gray-400 dark:text-gray-600">Ventas</span>{' '}
-            <span className="font-semibold text-gray-700 dark:text-gray-300">{formatCOP(resumen.totalVentas)}</span>
+            <span className='text-gray-400 dark:text-gray-600'>Ventas</span>{' '}
+            <span className='font-semibold text-gray-700 dark:text-gray-300'>
+              {formatCOP(resumen.totalVentas)}
+            </span>
             <span className={styles.search.resumenSep}>·</span>
-            <span className="text-gray-400 dark:text-gray-600">Pendiente</span>{' '}
-            <span className="font-semibold text-orange-500 dark:text-orange-400">{formatCOP(resumen.saldoPendiente)}</span>
+            <span className='text-gray-400 dark:text-gray-600'>
+              Pendiente
+            </span>{' '}
+            <span className='font-semibold text-orange-500 dark:text-orange-400'>
+              {formatCOP(resumen.saldoPendiente)}
+            </span>
             {typeof promedioAvance === 'number' ? (
               <>
                 <span className={styles.search.resumenSep}>·</span>
-                <span className="text-gray-400 dark:text-gray-600">Avance</span>{' '}
-                <span className={`font-semibold ${
-                  promedioAvance >= 80 ? 'text-emerald-600 dark:text-emerald-400' :
-                  promedioAvance >= 40 ? 'text-blue-600 dark:text-blue-400' :
-                  'text-amber-500 dark:text-amber-400'
-                }`}>{promedioAvance}%</span>
+                <span className='text-gray-400 dark:text-gray-600'>
+                  Avance
+                </span>{' '}
+                <span
+                  className={`font-semibold ${
+                    promedioAvance >= 80
+                      ? 'text-emerald-600 dark:text-emerald-400'
+                      : promedioAvance >= 40
+                        ? 'text-violet-600 dark:text-violet-400'
+                        : 'text-amber-500 dark:text-amber-400'
+                  }`}
+                >
+                  {promedioAvance}%
+                </span>
               </>
             ) : null}
           </span>
@@ -149,13 +178,12 @@ export function ClienteSearch({
         {hayFiltro ? (
           <button
             onClick={limpiarFiltros}
-            className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:underline flex-shrink-0"
+            className='flex-shrink-0 text-xs font-semibold text-violet-600 hover:underline dark:text-violet-400'
           >
             Limpiar filtros
           </button>
         ) : null}
       </div>
-
     </div>
   )
 }

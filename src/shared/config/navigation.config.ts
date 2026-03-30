@@ -16,16 +16,16 @@
 
 import type { LucideIcon } from 'lucide-react'
 import {
-    Activity,
-    BarChart3,
-    Building2,
-    CreditCard,
-    FileText,
-    FileX,
-    Home,
-    Shield,
-    Trash2,
-    Users
+  Activity,
+  BarChart3,
+  Building2,
+  CreditCard,
+  FileText,
+  FileX,
+  Home,
+  Shield,
+  Trash2,
+  Users,
 } from 'lucide-react'
 
 // ============================================
@@ -105,7 +105,7 @@ export const navigationGroups: NavigationGroup[] = [
         name: 'Abonos',
         href: '/abonos',
         icon: CreditCard,
-        color: 'from-purple-500 to-pink-500',
+        color: 'from-violet-500 to-purple-500',
         description: 'Gestión de pagos',
         requiredPermission: { modulo: 'abonos', accion: 'ver' },
       },

@@ -3,15 +3,24 @@
 import { useMemo, useState } from 'react'
 
 import { AnimatePresence, motion } from 'framer-motion'
-import { CreditCard, UserCircle2, Users } from 'lucide-react'
+import { CreditCard } from 'lucide-react'
 
-import { useAbonos } from '../hooks'
+import { useNegociacionesAbonos } from '../hooks'
 import { seleccionClienteStyles as styles } from '../styles/seleccion-cliente.styles'
 
+import { AbonosSkeleton } from './abonos-skeleton'
+import { AbonosHeaderPremium } from './AbonosHeaderPremium'
+import { AbonosMetricasPremium } from './AbonosMetricasPremium'
 import { ClienteCard } from './cliente-card'
 import { ClienteSearch } from './cliente-search'
 
-type OrdenClientes = 'urgente' | 'mayor_pago' | 'nombre_az' | 'nombre_za' | 'vivienda_asc' | 'mayor_saldo'
+type OrdenClientes =
+  | 'urgente'
+  | 'mayor_pago'
+  | 'nombre_az'
+  | 'nombre_za'
+  | 'vivienda_asc'
+  | 'mayor_saldo'
 
 /**
  * Componente principal del módulo de Abonos
@@ -19,7 +28,7 @@ type OrdenClientes = 'urgente' | 'mayor_pago' | 'nombre_az' | 'nombre_za' | 'viv
  * Filtrado por búsqueda en tiempo real
  */
 export function AbonosPageMain() {
-  const { negociaciones, isLoading, estadisticas } = useAbonos()
+  const { negociaciones, isLoading, estadisticas } = useNegociacionesAbonos()
   const [busqueda, setBusqueda] = useState('')
   const [proyectoFiltro, setProyectoFiltro] = useState('')
   const [ordenar, setOrdenar] = useState<OrdenClientes>('vivienda_asc')
@@ -35,7 +44,10 @@ export function AbonosPageMain() {
   // Promedio de avance del portafolio
   const promedioAvance = useMemo(() => {
     if (!negociaciones.length) return 0
-    const suma = negociaciones.reduce((acc, n) => acc + (n.porcentaje_pagado || 0), 0)
+    const suma = negociaciones.reduce(
+      (acc, n) => acc + (n.porcentaje_pagado || 0),
+      0
+    )
     return Math.round(suma / negociaciones.length)
   }, [negociaciones])
 
@@ -45,8 +57,9 @@ export function AbonosPageMain() {
 
     if (busqueda.trim()) {
       const termino = busqueda.toLowerCase().trim().replace(/\s/g, '')
-      result = result.filter((neg) => {
-        const nombre = `${neg.cliente.nombres} ${neg.cliente.apellidos}`.toLowerCase()
+      result = result.filter(neg => {
+        const nombre =
+          `${neg.cliente.nombres} ${neg.cliente.apellidos}`.toLowerCase()
         const documento = neg.cliente.numero_documento.toLowerCase()
         const proyectoNombre = neg.proyecto?.nombre?.toLowerCase() || ''
         const viviendaNumero = (neg.vivienda.numero || '').toLowerCase()
@@ -85,8 +98,10 @@ export function AbonosPageMain() {
           return nb.localeCompare(na, 'es')
         }
         case 'vivienda_asc': {
-          const ka = `${a.vivienda.manzana?.nombre || ''}${(a.vivienda.numero || '').padStart(5, '0')}`.toLowerCase()
-          const kb = `${b.vivienda.manzana?.nombre || ''}${(b.vivienda.numero || '').padStart(5, '0')}`.toLowerCase()
+          const ka =
+            `${a.vivienda.manzana?.nombre || ''}${(a.vivienda.numero || '').padStart(5, '0')}`.toLowerCase()
+          const kb =
+            `${b.vivienda.manzana?.nombre || ''}${(b.vivienda.numero || '').padStart(5, '0')}`.toLowerCase()
           return ka.localeCompare(kb, 'es')
         }
         case 'mayor_saldo': {
@@ -103,61 +118,24 @@ export function AbonosPageMain() {
 
   // Mostrar loading skeleton premium
   if (isLoading) {
-    return (
-      <div className={styles.container.page}>
-        <div className={styles.container.content}>
-          <div className={styles.loading.container}>
-            <div className={styles.loading.headerSkeleton}></div>
-            <div className={styles.loading.metricsGrid}>
-              {[...Array(4)].map((_, i) => (
-                <div key={i} className={styles.loading.metricSkeleton}></div>
-              ))}
-            </div>
-            <div className={styles.loading.searchSkeleton}></div>
-            <div className="space-y-4">
-              {[...Array(5)].map((_, i) => (
-                <div key={i} className={styles.loading.cardSkeleton}></div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    )
+    return <AbonosSkeleton />
   }
 
   return (
     <div className={styles.container.page}>
       <div className={styles.container.content}>
-        {/* 🎨 HEADER HERO */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.15 }}
-          className={styles.header.container}
-        >
-          <div className={styles.header.pattern} />
-          <div className={styles.header.content}>
-            <div className={styles.header.topRow}>
-              <div className={styles.header.titleGroup}>
-                <div className={styles.header.iconCircle}>
-                  <UserCircle2 className={styles.header.icon} />
-                </div>
-                <div className={styles.header.titleWrapper}>
-                  <h1 className={styles.header.title}>Seleccionar Cliente</h1>
-                  <p className={styles.header.subtitle}>
-                    Sistema de registro de abonos • Selección inteligente
-                  </p>
-                </div>
-              </div>
-              <span className={styles.header.badge}>
-                <Users className="w-4 h-4" />
-                {negociacionesFiltradas.length} Cliente{negociacionesFiltradas.length !== 1 ? 's' : ''}
-              </span>
-            </div>
-          </div>
-        </motion.div>
+        {/* 🎨 HEADER HERO PREMIUM */}
+        <AbonosHeaderPremium totalClientes={negociacionesFiltradas.length} />
 
-        {/* � BÚSQUEDA — PROTAGONISTA */}
+        {/* 📊 MÉTRICAS PREMIUM */}
+        <AbonosMetricasPremium
+          totalClientes={negociaciones.length}
+          totalAbonado={estadisticas.totalAbonado}
+          totalVentas={estadisticas.totalVentas}
+          saldoPendiente={estadisticas.saldoPendiente}
+        />
+
+        {/* 🔍 BÚSQUEDA — PROTAGONISTA */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
@@ -195,7 +173,9 @@ export function AbonosPageMain() {
               </div>
             </div>
             <h3 className={styles.empty.title}>
-              {busqueda ? 'No se encontraron resultados' : 'No hay clientes activos'}
+              {busqueda
+                ? 'No se encontraron resultados'
+                : 'No hay clientes activos'}
             </h3>
             <p className={styles.empty.description}>
               {busqueda
@@ -208,9 +188,9 @@ export function AbonosPageMain() {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-            className="rounded-2xl bg-white dark:bg-gray-800 border border-gray-200/50 dark:border-gray-700/50 shadow-lg overflow-hidden divide-y divide-gray-100 dark:divide-gray-700/50"
+            className='divide-y divide-gray-100 overflow-hidden rounded-2xl border border-gray-200/50 bg-white shadow-lg dark:divide-gray-700/50 dark:border-gray-700/50 dark:bg-gray-800'
           >
-            <AnimatePresence mode="popLayout">
+            <AnimatePresence mode='popLayout'>
               {negociacionesFiltradas.map((negociacion, index) => (
                 <motion.div
                   key={negociacion.id}

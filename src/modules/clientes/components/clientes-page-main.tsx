@@ -15,8 +15,9 @@
 
 'use client'
 
-import { motion } from 'framer-motion'
 import { useCallback, useEffect, useState } from 'react'
+
+import { motion } from 'framer-motion'
 
 import { useRouter } from 'next/navigation'
 
@@ -26,20 +27,20 @@ import { NoResults } from '@/shared/components/ui/NoResults'
 import { Pagination } from '@/shared/components/ui/Pagination'
 import { useVistaPreference } from '@/shared/hooks/useVistaPreference'
 
-import { ClientesEmpty } from './clientes-empty'
-import { ClientesSkeleton } from './clientes-skeleton'
-
 import {
-    ClientesHeader,
-    EstadisticasClientes,
-    FiltrosClientes,
+  ClientesHeader,
+  EstadisticasClientes,
+  FiltrosClientes,
 } from '../components'
 import { ClientesTabla } from '../components/ClientesTabla'
 import { FormularioClienteContainer } from '../containers/formulario-cliente-container'
 import { useClientesList } from '../hooks'
 import { clientesListaStyles } from '../styles/clientes-lista.styles'
 import type { ClienteResumen, EstadoCliente } from '../types'
+
 import { ClienteCardCompacta } from './cards/cliente-card-compacta'
+import { ClientesEmpty } from './clientes-empty'
+import { ClientesSkeleton } from './clientes-skeleton'
 
 /**
  * Permisos del usuario (pasados desde Server Component)
@@ -56,8 +57,8 @@ export function ClientesPageMain({
   canCreate = false,
   canEdit = false,
   canDelete = false,
-  canView = true,
-  isAdmin = false,
+  canView: _canView = true,
+  isAdmin: _isAdmin = false,
 }: ClientesPageMainProps = {}) {
   const router = useRouter()
 
@@ -73,13 +74,13 @@ export function ClientesPageMain({
     modalEliminar,
     clienteEditar,
     clienteEliminar,
-    abrirModalCrear,
-    abrirModalEditar,
+    abrirModalCrear: _abrirModalCrear,
+    abrirModalEditar: _abrirModalEditar,
     cerrarModal,
     abrirModalEliminar,
     confirmarEliminar,
     cancelarEliminar,
-    filtros,
+    filtros: _filtros,
     actualizarFiltros,
     // Paginación para vista cards
     paginaActual,
@@ -95,7 +96,9 @@ export function ClientesPageMain({
 
   // Estados para filtros locales (compatibilidad UI) - Para los selects de la interfaz
   const [busqueda, setBusqueda] = useState('')
-  const [estadoFiltro, setEstadoFiltro] = useState<EstadoCliente | 'Todos'>('Todos')
+  const [estadoFiltro, setEstadoFiltro] = useState<EstadoCliente | 'Todos'>(
+    'Todos'
+  )
 
   // ⭐ SINCRONIZAR FILTROS LOCALES CON EL HOOK
   useEffect(() => {
@@ -127,9 +130,9 @@ export function ClientesPageMain({
 
   const handleEditarCliente = useCallback(
     (cliente: ClienteResumen) => {
-      abrirModalEditar(cliente)
+      router.push(`/clientes/${cliente.id}/editar`)
     },
-    [abrirModalEditar]
+    [router]
   )
 
   const handleEliminarCliente = useCallback(
@@ -197,12 +200,12 @@ export function ClientesPageMain({
         ) : clientesFiltrados.length === 0 ? (
           busqueda || estadoFiltro !== 'Todos' ? (
             <NoResults
-              moduleName="clientes"
+              moduleName='clientes'
               onLimpiarFiltros={() => {
                 setBusqueda('')
                 setEstadoFiltro('Todos')
               }}
-              mensaje="No hay clientes que coincidan con los filtros aplicados"
+              mensaje='No hay clientes que coincidan con los filtros aplicados'
             />
           ) : (
             <ClientesEmpty
@@ -211,30 +214,34 @@ export function ClientesPageMain({
           )
         ) : vista === 'cards' ? (
           // Vista de Cards con Paginación
-          <div className="space-y-4">
+          <div className='space-y-4'>
             <>
-                {/* Indicador sutil de recarga */}
-                {isFetching && clientes.length > 0 && (
-                  <div className="flex items-center justify-center gap-2 py-2 backdrop-blur-xl bg-cyan-50/80 dark:bg-cyan-950/20 rounded-lg border border-cyan-200 dark:border-cyan-800">
-                    <div className="w-4 h-4 border-2 border-cyan-600 border-t-transparent rounded-full animate-spin" />
-                    <span className="text-xs font-medium text-cyan-700 dark:text-cyan-400">Actualizando datos...</span>
-                  </div>
-                )}
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {clientes.map((cliente) => (
-                    <ClienteCardCompacta
-                      key={cliente.id}
-                      cliente={cliente}
-                      vista="grid"
-                      tieneCedula={false}
-                      onVer={handleVerCliente}
-                      onEditar={canEdit ? handleEditarCliente : undefined}
-                      onEliminar={canDelete ? handleEliminarCliente : undefined}
-                      onIniciarAsignacion={canCreate ? handleIniciarAsignacion : undefined}
-                    />
-                  ))}
+              {/* Indicador sutil de recarga */}
+              {isFetching && clientes.length > 0 && (
+                <div className='flex items-center justify-center gap-2 rounded-lg border border-cyan-200 bg-cyan-50/80 py-2 backdrop-blur-xl dark:border-cyan-800 dark:bg-cyan-950/20'>
+                  <div className='h-4 w-4 animate-spin rounded-full border-2 border-cyan-600 border-t-transparent' />
+                  <span className='text-xs font-medium text-cyan-700 dark:text-cyan-400'>
+                    Actualizando datos...
+                  </span>
                 </div>
+              )}
+
+              <div className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3'>
+                {clientes.map(cliente => (
+                  <ClienteCardCompacta
+                    key={cliente.id}
+                    cliente={cliente}
+                    vista='grid'
+                    tieneCedula={false}
+                    onVer={handleVerCliente}
+                    onEditar={canEdit ? handleEditarCliente : undefined}
+                    onEliminar={canDelete ? handleEliminarCliente : undefined}
+                    onIniciarAsignacion={
+                      canCreate ? handleIniciarAsignacion : undefined
+                    }
+                  />
+                ))}
+              </div>
             </>
 
             {/* Paginación */}
@@ -255,21 +262,26 @@ export function ClientesPageMain({
           <>
             {isLoading && clientesFiltrados.length === 0 ? (
               // Loading skeleton solo si NO HAY datos previos
-              <div className="backdrop-blur-xl bg-white/80 dark:bg-gray-800/80 rounded-2xl border border-gray-200/50 dark:border-gray-700/50 shadow-lg overflow-hidden">
-                <div className="h-12 bg-gradient-to-r from-cyan-500 via-indigo-600 to-purple-600 animate-pulse" />
-                <div className="p-4 space-y-3">
+              <div className='overflow-hidden rounded-2xl border border-gray-200/50 bg-white/80 shadow-lg backdrop-blur-xl dark:border-gray-700/50 dark:bg-gray-800/80'>
+                <div className='h-12 animate-pulse bg-gradient-to-r from-cyan-500 via-indigo-600 to-purple-600' />
+                <div className='space-y-3 p-4'>
                   {[...Array(5)].map((_, i) => (
-                    <div key={i} className="h-16 bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 dark:from-gray-700 dark:via-gray-600 dark:to-gray-700 rounded-lg animate-pulse" />
+                    <div
+                      key={i}
+                      className='h-16 animate-pulse rounded-lg bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 dark:from-gray-700 dark:via-gray-600 dark:to-gray-700'
+                    />
                   ))}
                 </div>
               </div>
             ) : (
-              <div className="relative">
+              <div className='relative'>
                 {/* Indicador sutil de recarga en tabla */}
                 {isFetching && clientesFiltrados.length > 0 && (
-                  <div className="absolute -top-10 left-0 right-0 flex items-center justify-center gap-2 py-2 backdrop-blur-xl bg-cyan-50/80 dark:bg-cyan-950/20 rounded-lg border border-cyan-200 dark:border-cyan-800 z-10">
-                    <div className="w-4 h-4 border-2 border-cyan-600 border-t-transparent rounded-full animate-spin" />
-                    <span className="text-xs font-medium text-cyan-700 dark:text-cyan-400">Actualizando datos...</span>
+                  <div className='absolute -top-10 left-0 right-0 z-10 flex items-center justify-center gap-2 rounded-lg border border-cyan-200 bg-cyan-50/80 py-2 backdrop-blur-xl dark:border-cyan-800 dark:bg-cyan-950/20'>
+                    <div className='h-4 w-4 animate-spin rounded-full border-2 border-cyan-600 border-t-transparent' />
+                    <span className='text-xs font-medium text-cyan-700 dark:text-cyan-400'>
+                      Actualizando datos...
+                    </span>
                   </div>
                 )}
 
@@ -303,60 +315,75 @@ export function ClientesPageMain({
         isOpen={modalEliminar}
         onClose={cancelarEliminar}
         onConfirm={confirmarEliminar}
-        title="Eliminar Cliente"
+        title='Eliminar Cliente'
         message={
           clienteEliminar ? (
-            <div className="space-y-4">
+            <div className='space-y-4'>
               {/* Pregunta principal */}
-              <p className="text-base">
+              <p className='text-base'>
                 ¿Estás seguro de eliminar al cliente{' '}
-                <span className="font-bold text-gray-900 dark:text-white">
-                  {clientesFiltrados.find((c) => c.id === clienteEliminar)?.nombre_completo}
+                <span className='font-bold text-gray-900 dark:text-white'>
+                  {
+                    clientesFiltrados.find(c => c.id === clienteEliminar)
+                      ?.nombre_completo
+                  }
                 </span>
                 ?
               </p>
 
               {/* Advertencia de restricciones */}
-              <div className="rounded-xl bg-amber-50 border-2 border-amber-200 p-4 dark:bg-amber-900/20 dark:border-amber-700">
-                <div className="flex items-center gap-2 mb-3">
-                  <span className="text-xl">⚠️</span>
-                  <h4 className="font-bold text-amber-900 dark:text-amber-100">
+              <div className='rounded-xl border-2 border-amber-200 bg-amber-50 p-4 dark:border-amber-700 dark:bg-amber-900/20'>
+                <div className='mb-3 flex items-center gap-2'>
+                  <span className='text-xl'>⚠️</span>
+                  <h4 className='font-bold text-amber-900 dark:text-amber-100'>
                     Restricciones
                   </h4>
                 </div>
 
-                <ul className="space-y-2 text-sm text-amber-900 dark:text-amber-100">
-                  <li className="flex items-start gap-2">
-                    <span className="text-amber-600 dark:text-amber-400 mt-0.5">▸</span>
-                    <span>Solo clientes en estado <strong>"Interesado"</strong></span>
+                <ul className='space-y-2 text-sm text-amber-900 dark:text-amber-100'>
+                  <li className='flex items-start gap-2'>
+                    <span className='mt-0.5 text-amber-600 dark:text-amber-400'>
+                      ▸
+                    </span>
+                    <span>
+                      Solo clientes en estado{' '}
+                      <strong>&quot;Interesado&quot;</strong>
+                    </span>
                   </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-amber-600 dark:text-amber-400 mt-0.5">▸</span>
+                  <li className='flex items-start gap-2'>
+                    <span className='mt-0.5 text-amber-600 dark:text-amber-400'>
+                      ▸
+                    </span>
                     <span>Sin viviendas asignadas</span>
                   </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-amber-600 dark:text-amber-400 mt-0.5">▸</span>
+                  <li className='flex items-start gap-2'>
+                    <span className='mt-0.5 text-amber-600 dark:text-amber-400'>
+                      ▸
+                    </span>
                     <span>Sin historial de negociaciones</span>
                   </li>
                 </ul>
               </div>
 
               {/* Recomendación */}
-              <div className="rounded-xl bg-blue-50 border-2 border-blue-200 p-3 dark:bg-blue-900/20 dark:border-blue-700">
-                <div className="flex items-start gap-2">
-                  <span className="text-lg">💡</span>
-                  <p className="text-sm text-blue-900 dark:text-blue-100">
-                    <strong>Alternativa:</strong> Usa el estado <strong>"Inactivo"</strong> para
-                    mantener la trazabilidad en lugar de eliminar.
+              <div className='rounded-xl border-2 border-blue-200 bg-blue-50 p-3 dark:border-blue-700 dark:bg-blue-900/20'>
+                <div className='flex items-start gap-2'>
+                  <span className='text-lg'>💡</span>
+                  <p className='text-sm text-blue-900 dark:text-blue-100'>
+                    <strong>Alternativa:</strong> Usa el estado{' '}
+                    <strong>&quot;Inactivo&quot;</strong> para mantener la
+                    trazabilidad en lugar de eliminar.
                   </p>
                 </div>
               </div>
             </div>
-          ) : ''
+          ) : (
+            ''
+          )
         }
-        confirmText="Eliminar Cliente"
-        cancelText="Cancelar"
-        variant="danger"
+        confirmText='Eliminar Cliente'
+        cancelText='Cancelar'
+        variant='danger'
       />
     </div>
   )

@@ -1,0 +1,602 @@
+/**
+ * useEditarClienteAccordion — Hook de edición de cliente
+ * con Accordion Wizard (3 pasos: Personal, Contacto, Notas).
+ *
+ * ✅ Carga datos existentes con useClienteQuery
+ * ✅ Zod + async validation (documento duplicado)
+ * ✅ Detección de cambios en tiempo real
+ * ✅ Modal de confirmación + submit
+ * ✅ Sanitización antes de guardar
+ */
+
+import { useCallback, useEffect, useMemo, useState } from 'react'
+
+import { zodResolver } from '@hookform/resolvers/zod'
+import { Building2, FileText, Mail, MapPin, Phone, User } from 'lucide-react'
+import { useForm } from 'react-hook-form'
+import { z } from 'zod'
+
+import { useRouter } from 'next/navigation'
+
+import type {
+  SectionStatus,
+  SummaryItem,
+  WizardStepConfig,
+} from '@/shared/components/accordion-wizard'
+import type {
+  CambioDetectado,
+  CategoriaConfig,
+} from '@/shared/components/modulos/ConfirmarCambiosModal'
+
+import { clientesService } from '../services/clientes.service'
+import type { ActualizarClienteDTO, EstadoCivil, TipoDocumento } from '../types'
+import { sanitizeActualizarClienteDTO } from '../utils/sanitize-cliente.utils'
+import type { TipoDocumentoColombia } from '../utils/validacion-documentos-colombia'
+import { validarDocumentoIdentidad } from '../utils/validacion-documentos-colombia'
+
+import {
+  useActualizarClienteMutation,
+  useClienteQuery,
+} from './useClientesQuery'
+
+// ── Configuración de pasos ─────────────────────────────
+export const PASOS_CLIENTE_EDICION: WizardStepConfig[] = [
+  {
+    id: 1,
+    title: 'Datos Personales',
+    description: 'Nombres, documento e información básica',
+  },
+  {
+    id: 2,
+    title: 'Contacto y Ubicación',
+    description: 'Teléfono, email y dirección',
+  },
+  {
+    id: 3,
+    title: 'Notas Adicionales',
+    description: 'Observaciones opcionales',
+  },
+]
+
+// ── Helpers de validación ──────────────────────────────
+const REGEX_SOLO_LETRAS = /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s'-]+$/
+const REGEX_TELEFONO = /^[0-9+\-\s()]+$/
+
+// ── Schema del formulario ─────────────────────────────
+const editarClienteSchema = z.object({
+  // Paso 1: Datos Personales
+  nombres: z
+    .string()
+    .min(2, 'Mínimo 2 caracteres')
+    .max(80, 'Máximo 80 caracteres')
+    .regex(REGEX_SOLO_LETRAS, 'Solo letras, espacios y tildes'),
+  apellidos: z
+    .string()
+    .min(2, 'Mínimo 2 caracteres')
+    .max(80, 'Máximo 80 caracteres')
+    .regex(REGEX_SOLO_LETRAS, 'Solo letras, espacios y tildes'),
+  tipo_documento: z.string().min(1, 'El tipo de documento es requerido'),
+  numero_documento: z
+    .string()
+    .min(5, 'Mínimo 5 caracteres')
+    .max(20, 'Máximo 20 caracteres'),
+  fecha_nacimiento: z.string().optional(),
+  estado_civil: z.string().optional(),
+  // Paso 2: Contacto
+  telefono: z
+    .string()
+    .regex(REGEX_TELEFONO, 'Solo números, +, -, (, ) y espacios')
+    .min(7, 'Mínimo 7 dígitos')
+    .max(15, 'Máximo 15 caracteres')
+    .or(z.literal('')),
+  telefono_alternativo: z
+    .string()
+    .regex(REGEX_TELEFONO, 'Solo números, +, -, (, ) y espacios')
+    .min(7, 'Mínimo 7 dígitos')
+    .max(15, 'Máximo 15 caracteres')
+    .or(z.literal('')),
+  email: z
+    .string()
+    .email('Correo electrónico inválido')
+    .max(100, 'Máximo 100 caracteres')
+    .or(z.literal('')),
+  direccion: z
+    .string()
+    .min(5, 'Mínimo 5 caracteres')
+    .max(200, 'Máximo 200 caracteres')
+    .or(z.literal('')),
+  departamento: z.string().min(1, 'El departamento es obligatorio'),
+  ciudad: z.string().min(1, 'La ciudad es obligatoria'),
+  // Paso 3: Notas
+  notas: z.string().max(500, 'Máximo 500 caracteres').optional(),
+})
+
+type EditarClienteFormValues = z.input<typeof editarClienteSchema>
+
+// Campos por paso para validación
+const FIELDS_PASO_1 = [
+  'nombres',
+  'apellidos',
+  'tipo_documento',
+  'numero_documento',
+] as const
+const FIELDS_PASO_2 = ['departamento', 'ciudad'] as const
+
+// ── Categorías para modal de confirmación ─────────────
+const CATEGORIAS_CAMBIOS_CLIENTE: Record<string, CategoriaConfig> = {
+  personal: { titulo: 'Datos Personales', icono: User },
+  contacto: { titulo: 'Contacto y Ubicación', icono: Phone },
+  notas: { titulo: 'Notas', icono: FileText },
+}
+
+// ── Hook principal ────────────────────────────────────
+export function useEditarClienteAccordion(clienteId: string) {
+  const router = useRouter()
+  const actualizarMutation = useActualizarClienteMutation()
+
+  // Cargar datos del cliente
+  const { data: cliente, isLoading, isError } = useClienteQuery(clienteId)
+
+  const [pasoActual, setPasoActual] = useState(1)
+  const [pasosCompletados, setPasosCompletados] = useState<Set<number>>(
+    new Set()
+  )
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isValidating, setIsValidating] = useState(false)
+  const [showSuccess, setShowSuccess] = useState(false)
+  const [mostrarConfirmacion, setMostrarConfirmacion] = useState(false)
+  const [datosOriginales, setDatosOriginales] =
+    useState<EditarClienteFormValues | null>(null)
+
+  // ── Formulario ──────────────────────────────────────
+  const {
+    register,
+    watch,
+    setValue,
+    trigger,
+    setError,
+    getValues,
+    reset,
+    formState: { errors },
+  } = useForm<EditarClienteFormValues>({
+    resolver: zodResolver(editarClienteSchema) as any, // eslint-disable-line @typescript-eslint/no-explicit-any
+    mode: 'onChange',
+    defaultValues: {
+      nombres: '',
+      apellidos: '',
+      tipo_documento: 'CC',
+      numero_documento: '',
+      fecha_nacimiento: '',
+      estado_civil: '',
+      telefono: '',
+      telefono_alternativo: '',
+      email: '',
+      direccion: '',
+      departamento: '',
+      ciudad: '',
+      notas: '',
+    },
+  })
+
+  // ── Inicializar formulario con datos del cliente ────
+  useEffect(() => {
+    if (cliente && !datosOriginales) {
+      const valores: EditarClienteFormValues = {
+        nombres: cliente.nombres || '',
+        apellidos: cliente.apellidos || '',
+        tipo_documento: cliente.tipo_documento || 'CC',
+        numero_documento: cliente.numero_documento || '',
+        fecha_nacimiento: cliente.fecha_nacimiento || '',
+        estado_civil: cliente.estado_civil || '',
+        telefono: cliente.telefono || '',
+        telefono_alternativo: cliente.telefono_alternativo || '',
+        email: cliente.email || '',
+        direccion: cliente.direccion || '',
+        departamento: cliente.departamento || '',
+        ciudad: cliente.ciudad || '',
+        notas: cliente.notas || '',
+      }
+      reset(valores)
+      setDatosOriginales(valores)
+    }
+  }, [cliente, datosOriginales, reset])
+
+  const formData = watch()
+
+  // ── Detección de cambios ────────────────────────────
+  const cambiosDetectados = useMemo((): CambioDetectado[] => {
+    if (!datosOriginales) return []
+
+    const cambios: CambioDetectado[] = []
+
+    const detectar = (
+      campo: keyof EditarClienteFormValues,
+      label: string,
+      icono: unknown,
+      categoria: string
+    ) => {
+      const anterior = datosOriginales[campo] || ''
+      const nuevo = formData[campo] || ''
+      if (anterior !== nuevo) {
+        cambios.push({
+          campo,
+          label,
+          valorAnterior: anterior,
+          valorNuevo: nuevo,
+          icono,
+          categoria,
+        })
+      }
+    }
+
+    // Paso 1: Personal
+    detectar('nombres', 'Nombres', User, 'personal')
+    detectar('apellidos', 'Apellidos', User, 'personal')
+    detectar('tipo_documento', 'Tipo Documento', Building2, 'personal')
+    detectar('numero_documento', 'Número Documento', Building2, 'personal')
+    detectar('fecha_nacimiento', 'Fecha Nacimiento', User, 'personal')
+    detectar('estado_civil', 'Estado Civil', User, 'personal')
+
+    // Paso 2: Contacto
+    detectar('telefono', 'Teléfono', Phone, 'contacto')
+    detectar('telefono_alternativo', 'Teléfono Alternativo', Phone, 'contacto')
+    detectar('email', 'Correo Electrónico', Mail, 'contacto')
+    detectar('direccion', 'Dirección', MapPin, 'contacto')
+    detectar('departamento', 'Departamento', MapPin, 'contacto')
+    detectar('ciudad', 'Ciudad', MapPin, 'contacto')
+
+    // Paso 3: Notas
+    detectar('notas', 'Notas', FileText, 'notas')
+
+    return cambios
+  }, [formData, datosOriginales])
+
+  const hayCambios = cambiosDetectados.length > 0
+
+  const cambiosPorPaso = useMemo(
+    () => ({
+      paso1: cambiosDetectados.filter(c => c.categoria === 'personal').length,
+      paso2: cambiosDetectados.filter(c => c.categoria === 'contacto').length,
+      paso3: cambiosDetectados.filter(c => c.categoria === 'notas').length,
+    }),
+    [cambiosDetectados]
+  )
+
+  // ── Estado de sección ───────────────────────────────
+  const getEstadoPaso = useCallback(
+    (paso: number): SectionStatus => {
+      if (pasosCompletados.has(paso)) return 'completed'
+      if (paso === pasoActual) return 'active'
+      return 'pending'
+    },
+    [pasoActual, pasosCompletados]
+  )
+
+  // ── Resúmenes ───────────────────────────────────────
+  const summaryPaso1: SummaryItem[] = useMemo(
+    () => [
+      {
+        label: 'Nombre',
+        value:
+          formData.nombres && formData.apellidos
+            ? `${formData.nombres} ${formData.apellidos}`
+            : undefined,
+      },
+      {
+        label: 'Documento',
+        value: formData.numero_documento
+          ? `${formData.tipo_documento} ${formData.numero_documento}`
+          : undefined,
+      },
+    ],
+    [
+      formData.nombres,
+      formData.apellidos,
+      formData.tipo_documento,
+      formData.numero_documento,
+    ]
+  )
+
+  const summaryPaso2: SummaryItem[] = useMemo(() => {
+    const contacto = formData.telefono || formData.email
+    return [
+      { label: 'Contacto', value: contacto || undefined },
+      {
+        label: 'Ubicación',
+        value:
+          formData.ciudad && formData.departamento
+            ? `${formData.ciudad}, ${formData.departamento}`
+            : undefined,
+      },
+    ]
+  }, [
+    formData.telefono,
+    formData.email,
+    formData.ciudad,
+    formData.departamento,
+  ])
+
+  const summaryPaso3: SummaryItem[] = useMemo(
+    () => [
+      {
+        label: 'Notas',
+        value: formData.notas ? 'Con observaciones' : 'Sin notas',
+      },
+    ],
+    [formData.notas]
+  )
+
+  // ── Progreso ────────────────────────────────────────
+  const progress = useMemo(() => {
+    return Math.round(
+      (pasosCompletados.size / PASOS_CLIENTE_EDICION.length) * 100
+    )
+  }, [pasosCompletados.size])
+
+  // ── Validación por paso ─────────────────────────────
+  const validarPasoActual = useCallback(async (): Promise<boolean> => {
+    setIsValidating(true)
+    try {
+      switch (pasoActual) {
+        case 1: {
+          const syncValid = await trigger([...FIELDS_PASO_1])
+          if (!syncValid) return false
+
+          const erroresEncontrados: Array<{ campo: string; mensaje: string }> =
+            []
+
+          // Validar formato del documento según tipo
+          const tipoDoc = getValues('tipo_documento') as TipoDocumentoColombia
+          const numDoc = getValues('numero_documento').trim()
+
+          const resultado = validarDocumentoIdentidad(tipoDoc, numDoc)
+          if (!resultado.valido) {
+            erroresEncontrados.push({
+              campo: 'numero_documento',
+              mensaje: resultado.mensaje || 'Documento inválido',
+            })
+          }
+
+          // Validar fecha de nacimiento si se proporcionó
+          const fechaNac = getValues('fecha_nacimiento')
+          if (fechaNac) {
+            const hoy = new Date()
+            const fecha = new Date(fechaNac + 'T12:00:00')
+            if (fecha > hoy) {
+              erroresEncontrados.push({
+                campo: 'fecha_nacimiento',
+                mensaje: 'La fecha no puede ser futura',
+              })
+            }
+            const edadMaxima = new Date()
+            edadMaxima.setFullYear(edadMaxima.getFullYear() - 120)
+            if (fecha < edadMaxima) {
+              erroresEncontrados.push({
+                campo: 'fecha_nacimiento',
+                mensaje: 'Fecha fuera de rango válido',
+              })
+            }
+          }
+
+          // Async: verificar duplicados solo si cambió el documento
+          const docCambio =
+            datosOriginales &&
+            (numDoc !== datosOriginales.numero_documento ||
+              tipoDoc !== datosOriginales.tipo_documento)
+
+          if (
+            erroresEncontrados.length === 0 &&
+            numDoc.length >= 5 &&
+            docCambio
+          ) {
+            try {
+              const existente = await clientesService.buscarPorDocumento(
+                tipoDoc,
+                numDoc
+              )
+              if (existente && existente.id !== clienteId) {
+                erroresEncontrados.push({
+                  campo: 'numero_documento',
+                  mensaje: `Ya existe: ${existente.nombres} ${existente.apellidos}`,
+                })
+              }
+            } catch {
+              // No bloquear si falla la red
+            }
+          }
+
+          if (erroresEncontrados.length > 0) {
+            erroresEncontrados.forEach(e => {
+              setError(e.campo as Parameters<typeof setError>[0], {
+                type: 'manual',
+                message: e.mensaje,
+              })
+            })
+            return false
+          }
+          return true
+        }
+        case 2: {
+          const syncValid = await trigger([...FIELDS_PASO_2])
+          if (!syncValid) return false
+
+          // Cross-field: al menos teléfono o email
+          const tel = getValues('telefono')?.trim()
+          const email = getValues('email')?.trim()
+
+          if (!tel && !email) {
+            setError('telefono', {
+              type: 'manual',
+              message: 'Requerido: teléfono o email',
+            })
+            setError('email', {
+              type: 'manual',
+              message: 'Requerido: teléfono o email',
+            })
+            return false
+          }
+
+          if (tel) {
+            const telValid = await trigger('telefono')
+            if (!telValid) return false
+          }
+
+          if (email) {
+            const emailValid = await trigger('email')
+            if (!emailValid) return false
+          }
+
+          const telAlt = getValues('telefono_alternativo')?.trim()
+          if (telAlt) {
+            const telAltValid = await trigger('telefono_alternativo')
+            if (!telAltValid) return false
+          }
+
+          const dir = getValues('direccion')?.trim()
+          if (dir) {
+            const dirValid = await trigger('direccion')
+            if (!dirValid) return false
+          }
+
+          return true
+        }
+        case 3: {
+          const notas = getValues('notas')?.trim()
+          if (notas) {
+            const notasValid = await trigger('notas')
+            if (!notasValid) return false
+          }
+          return true
+        }
+        default:
+          return true
+      }
+    } finally {
+      setIsValidating(false)
+    }
+  }, [pasoActual, trigger, getValues, setError, datosOriginales, clienteId])
+
+  // ── Navegación ──────────────────────────────────────
+  const irSiguiente = useCallback(async () => {
+    const valido = await validarPasoActual()
+    if (!valido) return
+    setPasosCompletados(prev => new Set(prev).add(pasoActual))
+    setPasoActual(prev => Math.min(prev + 1, PASOS_CLIENTE_EDICION.length))
+  }, [pasoActual, validarPasoActual])
+
+  const irAtras = useCallback(() => {
+    setPasoActual(prev => Math.max(prev - 1, 1))
+  }, [])
+
+  const irAPaso = useCallback(
+    (paso: number) => {
+      if (pasosCompletados.has(paso)) {
+        setPasosCompletados(prev => {
+          const next = new Set(prev)
+          for (let i = paso; i <= PASOS_CLIENTE_EDICION.length; i++)
+            next.delete(i)
+          return next
+        })
+        setPasoActual(paso)
+      }
+    },
+    [pasosCompletados]
+  )
+
+  // ── Submit: interceptar para mostrar modal ──────────
+  const handleSubmit = useCallback(async () => {
+    const valido = await validarPasoActual()
+    if (!valido) return
+    setPasosCompletados(prev => new Set(prev).add(pasoActual))
+    setMostrarConfirmacion(true)
+  }, [pasoActual, validarPasoActual])
+
+  // ── Confirmar actualización ─────────────────────────
+  const confirmarActualizacion = useCallback(async () => {
+    setMostrarConfirmacion(false)
+    setIsSubmitting(true)
+    try {
+      const values = getValues()
+
+      const dto: ActualizarClienteDTO = {
+        nombres: values.nombres,
+        apellidos: values.apellidos,
+        tipo_documento: values.tipo_documento as TipoDocumento,
+        numero_documento: values.numero_documento,
+        fecha_nacimiento: values.fecha_nacimiento || undefined,
+        estado_civil: (values.estado_civil || undefined) as
+          | EstadoCivil
+          | undefined,
+        telefono: values.telefono || undefined,
+        telefono_alternativo: values.telefono_alternativo || undefined,
+        email: values.email || undefined,
+        direccion: values.direccion || undefined,
+        departamento: values.departamento,
+        ciudad: values.ciudad,
+        notas: values.notas || undefined,
+      }
+
+      const sanitized = sanitizeActualizarClienteDTO(dto)
+      await actualizarMutation.mutateAsync({ id: clienteId, datos: sanitized })
+
+      setShowSuccess(true)
+      setTimeout(() => router.push('/clientes'), 1800)
+    } catch (error) {
+      if (error instanceof Error && error.message.includes('documento')) {
+        setError('numero_documento', { type: 'manual', message: error.message })
+        setPasoActual(1)
+        setPasosCompletados(new Set())
+      }
+    } finally {
+      setIsSubmitting(false)
+    }
+  }, [getValues, actualizarMutation, clienteId, router, setError])
+
+  const cancelarConfirmacion = useCallback(() => {
+    setMostrarConfirmacion(false)
+  }, [])
+
+  return {
+    // Loading state
+    isLoading,
+    isError,
+    clienteNombre: cliente?.nombre_completo || '',
+
+    // Pasos
+    pasos: PASOS_CLIENTE_EDICION,
+    pasoActual,
+    getEstadoPaso,
+    progress,
+
+    // Navegación
+    irSiguiente,
+    irAtras,
+    irAPaso,
+
+    // Resúmenes
+    summaryPaso1,
+    summaryPaso2,
+    summaryPaso3,
+
+    // Form
+    register,
+    errors,
+    setValue,
+    watch,
+
+    // Submit
+    handleSubmit,
+    isSubmitting,
+    isValidating,
+    showSuccess,
+
+    // Confirmación modal
+    mostrarConfirmacion,
+    cambiosGenericos: cambiosDetectados,
+    categoriasConfig: CATEGORIAS_CAMBIOS_CLIENTE,
+    confirmarActualizacion,
+    cancelarConfirmacion,
+    hayCambios,
+    cambiosPorPaso,
+  }
+}

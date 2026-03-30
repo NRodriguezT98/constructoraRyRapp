@@ -15,7 +15,15 @@
  * ```
  */
 
-export type ModuleName = 'proyectos' | 'clientes' | 'viviendas' | 'auditorias' | 'negociaciones' | 'abonos' | 'documentos' | 'renuncias'
+export type ModuleName =
+  | 'proyectos'
+  | 'clientes'
+  | 'viviendas'
+  | 'auditorias'
+  | 'negociaciones'
+  | 'abonos'
+  | 'documentos'
+  | 'renuncias'
 
 export interface ModuleTheme {
   /** Nombre del módulo */
@@ -141,8 +149,10 @@ export const moduleThemes: Record<ModuleName, ModuleTheme> = {
         hover: 'hover:from-green-700 hover:via-emerald-700 hover:to-teal-700',
       },
       button: {
-        primary: 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-md hover:shadow-lg transition-all',
-        secondary: 'border border-green-300 bg-white text-green-700 hover:bg-green-50 dark:border-green-700 dark:bg-gray-700 dark:text-green-300 dark:hover:bg-gray-600',
+        primary:
+          'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-md hover:shadow-lg transition-all',
+        secondary:
+          'border border-green-300 bg-white text-green-700 hover:bg-green-50 dark:border-green-700 dark:bg-gray-700 dark:text-green-300 dark:hover:bg-gray-600',
         hover: 'hover:bg-green-50 dark:hover:bg-green-900/20',
       },
       input: {
@@ -195,8 +205,10 @@ export const moduleThemes: Record<ModuleName, ModuleTheme> = {
         hover: 'hover:from-cyan-700 hover:via-blue-700 hover:to-indigo-700',
       },
       button: {
-        primary: 'bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white shadow-md hover:shadow-lg transition-all',
-        secondary: 'border border-cyan-300 bg-white text-cyan-700 hover:bg-cyan-50 dark:border-cyan-700 dark:bg-gray-700 dark:text-cyan-300 dark:hover:bg-gray-600',
+        primary:
+          'bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white shadow-md hover:shadow-lg transition-all',
+        secondary:
+          'border border-cyan-300 bg-white text-cyan-700 hover:bg-cyan-50 dark:border-cyan-700 dark:bg-gray-700 dark:text-cyan-300 dark:hover:bg-gray-600',
         hover: 'hover:bg-cyan-50 dark:hover:bg-cyan-900/20',
       },
       input: {
@@ -249,8 +261,10 @@ export const moduleThemes: Record<ModuleName, ModuleTheme> = {
         hover: 'hover:from-orange-700 hover:via-amber-700 hover:to-yellow-700',
       },
       button: {
-        primary: 'bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white shadow-md hover:shadow-lg transition-all',
-        secondary: 'border border-orange-300 bg-white text-orange-700 hover:bg-orange-50 dark:border-orange-700 dark:bg-gray-700 dark:text-orange-300 dark:hover:bg-gray-600',
+        primary:
+          'bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white shadow-md hover:shadow-lg transition-all',
+        secondary:
+          'border border-orange-300 bg-white text-orange-700 hover:bg-orange-50 dark:border-orange-700 dark:bg-gray-700 dark:text-orange-300 dark:hover:bg-gray-600',
         hover: 'hover:bg-orange-50 dark:hover:bg-orange-900/20',
       },
       input: {
@@ -284,57 +298,59 @@ export const moduleThemes: Record<ModuleName, ModuleTheme> = {
     },
   },
 
-  /** 📊 AUDITORÍAS - Azul/Índigo/Púrpura */
+  /** 📊 AUDITORÍAS - Teal/Cyan/Sky */
   auditorias: {
     name: 'Auditorías',
     colors: {
-      primary: 'blue',
-      secondary: 'indigo',
-      tertiary: 'purple',
-      light: 'blue-50',
-      dark: 'blue-900',
+      primary: 'teal',
+      secondary: 'cyan',
+      tertiary: 'sky',
+      light: 'teal-50',
+      dark: 'teal-900',
     },
     classes: {
       gradient: {
-        primary: 'from-blue-600 to-indigo-600',
-        triple: 'from-blue-600 via-indigo-600 to-purple-600',
-        background: 'from-blue-500 via-indigo-500 to-purple-500',
-        backgroundDark: 'from-blue-600 via-indigo-600 to-purple-700',
-        hover: 'hover:from-blue-700 hover:via-indigo-700 hover:to-purple-700',
+        primary: 'from-teal-600 to-cyan-600',
+        triple: 'from-teal-600 via-cyan-600 to-sky-600',
+        background: 'from-teal-500 via-cyan-500 to-sky-500',
+        backgroundDark: 'from-teal-600 via-cyan-600 to-sky-700',
+        hover: 'hover:from-teal-700 hover:via-cyan-700 hover:to-sky-700',
       },
       button: {
-        primary: 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-md hover:shadow-lg transition-all',
-        secondary: 'border border-blue-300 bg-white text-blue-700 hover:bg-blue-50 dark:border-blue-700 dark:bg-gray-700 dark:text-blue-300 dark:hover:bg-gray-600',
-        hover: 'hover:bg-blue-50 dark:hover:bg-blue-900/20',
+        primary:
+          'bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-700 hover:to-cyan-700 text-white shadow-md hover:shadow-lg transition-all',
+        secondary:
+          'border border-teal-300 bg-white text-teal-700 hover:bg-teal-50 dark:border-teal-700 dark:bg-gray-700 dark:text-teal-300 dark:hover:bg-gray-600',
+        hover: 'hover:bg-teal-50 dark:hover:bg-teal-900/20',
       },
       input: {
-        focusBorder: 'focus:border-blue-500',
-        focusRing: 'focus:ring-2 focus:ring-blue-500/20',
+        focusBorder: 'focus:border-teal-500',
+        focusRing: 'focus:ring-2 focus:ring-teal-500/20',
       },
       border: {
-        light: 'border-blue-200 dark:border-blue-800',
-        dark: 'border-blue-800',
-        hover: 'hover:border-blue-400 dark:hover:border-blue-500',
+        light: 'border-teal-200 dark:border-teal-800',
+        dark: 'border-teal-800',
+        hover: 'hover:border-teal-400 dark:hover:border-teal-500',
       },
       bg: {
-        light: 'bg-blue-50 dark:bg-blue-900/20',
-        dark: 'bg-blue-900/20',
-        hover: 'hover:bg-blue-50 dark:hover:bg-blue-900/30',
+        light: 'bg-teal-50 dark:bg-teal-900/20',
+        dark: 'bg-teal-900/20',
+        hover: 'hover:bg-teal-50 dark:hover:bg-teal-900/30',
       },
       focus: {
-        ring: 'focus:ring-2 focus:ring-blue-500 focus:border-transparent',
-        ringDark: 'dark:focus:ring-blue-400',
+        ring: 'focus:ring-2 focus:ring-teal-500 focus:border-transparent',
+        ringDark: 'dark:focus:ring-teal-400',
       },
       text: {
-        primary: 'text-blue-600 dark:text-blue-400',
-        secondary: 'text-blue-700 dark:text-blue-300',
-        dark: 'dark:text-blue-400',
+        primary: 'text-teal-600 dark:text-teal-400',
+        secondary: 'text-teal-700 dark:text-teal-300',
+        dark: 'dark:text-teal-400',
       },
       badge: {
-        primary: 'bg-blue-600',
-        secondary: 'bg-indigo-600',
+        primary: 'bg-teal-600',
+        secondary: 'bg-cyan-600',
       },
-      shadow: 'shadow-blue-500/10',
+      shadow: 'shadow-teal-500/10',
     },
   },
 
@@ -357,8 +373,10 @@ export const moduleThemes: Record<ModuleName, ModuleTheme> = {
         hover: 'hover:from-pink-700 hover:via-purple-700 hover:to-indigo-700',
       },
       button: {
-        primary: 'bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white shadow-md hover:shadow-lg transition-all',
-        secondary: 'border border-pink-300 bg-white text-pink-700 hover:bg-pink-50 dark:border-pink-700 dark:bg-gray-700 dark:text-pink-300 dark:hover:bg-gray-600',
+        primary:
+          'bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white shadow-md hover:shadow-lg transition-all',
+        secondary:
+          'border border-pink-300 bg-white text-pink-700 hover:bg-pink-50 dark:border-pink-700 dark:bg-gray-700 dark:text-pink-300 dark:hover:bg-gray-600',
         hover: 'hover:bg-pink-50 dark:hover:bg-pink-900/20',
       },
       input: {
@@ -392,57 +410,60 @@ export const moduleThemes: Record<ModuleName, ModuleTheme> = {
     },
   },
 
-  /** 💳 ABONOS - Azul/Índigo */
+  /** 💳 ABONOS - Violet/Púrpura/Fuchsia */
   abonos: {
     name: 'Abonos',
     colors: {
-      primary: 'blue',
-      secondary: 'indigo',
-      tertiary: 'purple',
-      light: 'blue-50',
-      dark: 'blue-900',
+      primary: 'violet',
+      secondary: 'purple',
+      tertiary: 'fuchsia',
+      light: 'violet-50',
+      dark: 'violet-900',
     },
     classes: {
       gradient: {
-        primary: 'from-blue-600 to-indigo-600',
-        triple: 'from-blue-600 via-indigo-600 to-purple-600',
-        background: 'from-blue-500 via-indigo-500 to-purple-500',
-        backgroundDark: 'from-blue-600 via-indigo-600 to-purple-700',
-        hover: 'hover:from-blue-700 hover:via-indigo-700 hover:to-purple-700',
+        primary: 'from-violet-600 to-purple-600',
+        triple: 'from-violet-600 via-purple-600 to-fuchsia-600',
+        background: 'from-violet-500 via-purple-500 to-fuchsia-500',
+        backgroundDark: 'from-violet-600 via-purple-600 to-fuchsia-700',
+        hover:
+          'hover:from-violet-700 hover:via-purple-700 hover:to-fuchsia-700',
       },
       button: {
-        primary: 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-md hover:shadow-lg transition-all',
-        secondary: 'border border-blue-300 bg-white text-blue-700 hover:bg-blue-50 dark:border-blue-700 dark:bg-gray-700 dark:text-blue-300 dark:hover:bg-gray-600',
-        hover: 'hover:bg-blue-50 dark:hover:bg-blue-900/20',
+        primary:
+          'bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white shadow-md hover:shadow-lg transition-all',
+        secondary:
+          'border border-violet-300 bg-white text-violet-700 hover:bg-violet-50 dark:border-violet-700 dark:bg-gray-700 dark:text-violet-300 dark:hover:bg-gray-600',
+        hover: 'hover:bg-violet-50 dark:hover:bg-violet-900/20',
       },
       input: {
-        focusBorder: 'focus:border-blue-500',
-        focusRing: 'focus:ring-2 focus:ring-blue-500/20',
+        focusBorder: 'focus:border-violet-500',
+        focusRing: 'focus:ring-2 focus:ring-violet-500/20',
       },
       border: {
-        light: 'border-blue-200 dark:border-blue-800',
-        dark: 'border-blue-800',
-        hover: 'hover:border-blue-400 dark:hover:border-blue-500',
+        light: 'border-violet-200 dark:border-violet-800',
+        dark: 'border-violet-800',
+        hover: 'hover:border-violet-400 dark:hover:border-violet-500',
       },
       bg: {
-        light: 'bg-blue-50 dark:bg-blue-900/20',
-        dark: 'bg-blue-900/20',
-        hover: 'hover:bg-blue-50 dark:hover:bg-blue-900/30',
+        light: 'bg-violet-50 dark:bg-violet-900/20',
+        dark: 'bg-violet-900/20',
+        hover: 'hover:bg-violet-50 dark:hover:bg-violet-900/30',
       },
       focus: {
-        ring: 'focus:ring-2 focus:ring-blue-500 focus:border-transparent',
-        ringDark: 'dark:focus:ring-blue-400',
+        ring: 'focus:ring-2 focus:ring-violet-500 focus:border-transparent',
+        ringDark: 'dark:focus:ring-violet-400',
       },
       text: {
-        primary: 'text-blue-600 dark:text-blue-400',
-        secondary: 'text-blue-700 dark:text-blue-300',
-        dark: 'dark:text-blue-400',
+        primary: 'text-violet-600 dark:text-violet-400',
+        secondary: 'text-violet-700 dark:text-violet-300',
+        dark: 'dark:text-violet-400',
       },
       badge: {
-        primary: 'bg-blue-600',
-        secondary: 'bg-indigo-600',
+        primary: 'bg-violet-600',
+        secondary: 'bg-purple-600',
       },
-      shadow: 'shadow-blue-500/10',
+      shadow: 'shadow-violet-500/10',
     },
   },
 
@@ -465,8 +486,10 @@ export const moduleThemes: Record<ModuleName, ModuleTheme> = {
         hover: 'hover:from-red-700 hover:via-rose-700 hover:to-pink-700',
       },
       button: {
-        primary: 'bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white shadow-md hover:shadow-lg transition-all',
-        secondary: 'border border-red-300 bg-white text-red-700 hover:bg-red-50 dark:border-red-700 dark:bg-gray-700 dark:text-red-300 dark:hover:bg-gray-600',
+        primary:
+          'bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white shadow-md hover:shadow-lg transition-all',
+        secondary:
+          'border border-red-300 bg-white text-red-700 hover:bg-red-50 dark:border-red-700 dark:bg-gray-700 dark:text-red-300 dark:hover:bg-gray-600',
         hover: 'hover:bg-red-50 dark:hover:bg-red-900/20',
       },
       input: {
@@ -519,8 +542,10 @@ export const moduleThemes: Record<ModuleName, ModuleTheme> = {
         hover: 'hover:from-red-700 hover:via-rose-700 hover:to-pink-700',
       },
       button: {
-        primary: 'bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white shadow-md hover:shadow-lg transition-all',
-        secondary: 'border border-red-300 bg-white text-red-700 hover:bg-red-50 dark:border-red-700 dark:bg-gray-700 dark:text-red-300 dark:hover:bg-gray-600',
+        primary:
+          'bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white shadow-md hover:shadow-lg transition-all',
+        secondary:
+          'border border-red-300 bg-white text-red-700 hover:bg-red-50 dark:border-red-700 dark:bg-gray-700 dark:text-red-300 dark:hover:bg-gray-600',
         hover: 'hover:bg-red-50 dark:hover:bg-red-900/20',
       },
       input: {
@@ -565,8 +590,11 @@ export function getModuleTheme(module: ModuleName): ModuleTheme {
 /**
  * Helper para construir clases dinámicamente con el tema
  */
-export function buildThemeClass(module: ModuleName, ...classKeys: string[]): string {
-  const theme = getModuleTheme(module)
+export function buildThemeClass(
+  module: ModuleName,
+  ...classKeys: string[]
+): string {
   // Aquí podrías implementar lógica para acceder a clases anidadas si lo necesitas
+  void getModuleTheme(module)
   return classKeys.join(' ')
 }

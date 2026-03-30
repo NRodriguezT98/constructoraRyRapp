@@ -13,27 +13,33 @@ import { useEffect, useState } from 'react'
 
 import { AnimatePresence, motion } from 'framer-motion'
 import {
-    ArrowLeft,
-    Building2,
-    ChevronRight,
-    Edit2,
-    FileText,
-    Heart,
-    History,
-    Home,
-    Lock,
-    RefreshCw,
-    Trash2,
-    User
+  ArrowLeft,
+  Building2,
+  ChevronRight,
+  Edit2,
+  FileText,
+  Heart,
+  History,
+  Home,
+  Lock,
+  RefreshCw,
+  Trash2,
+  User,
 } from 'lucide-react'
+import { toast } from 'sonner'
 
 import { useRouter } from 'next/navigation'
-import { toast } from 'sonner'
 
 import { construirURLCliente } from '@/lib/utils/slug.utils'
 import { formatNombreCompleto } from '@/lib/utils/string.utils'
-import { ModalRegistrarInteres, ReactivarClienteModal } from '@/modules/clientes/components/modals'
-import { useAsignacionVivienda, useClienteDetalle } from '@/modules/clientes/hooks'
+import {
+  ModalRegistrarInteres,
+  ReactivarClienteModal,
+} from '@/modules/clientes/components/modals'
+import {
+  useAsignacionVivienda,
+  useClienteDetalle,
+} from '@/modules/clientes/hooks'
 import { clientesService } from '@/modules/clientes/services/clientes.service'
 import { Tooltip } from '@/shared/components/ui'
 
@@ -42,7 +48,7 @@ import { DocumentosTab, GeneralTab, InteresesTab, NegociacionTab } from './tabs'
 import { HistorialTab } from './tabs/historial-tab'
 
 interface ClienteDetalleClientProps {
-  clienteId: string  // Puede ser slug o UUID
+  clienteId: string // Puede ser slug o UUID
 }
 
 // Badge de estado
@@ -63,14 +69,15 @@ function EstadoBadge({ estado }: { estado: string }) {
       text: 'text-gray-700 dark:text-gray-300',
       dot: 'bg-gray-500',
     },
-    'Renunció': {
+    Renunció: {
       bg: 'bg-red-100 dark:bg-red-900/30',
       text: 'text-red-700 dark:text-red-300',
       dot: 'bg-red-500',
     },
   }
 
-  const { bg, text, dot} = config[estado as keyof typeof config] || config.Interesado
+  const { bg, text, dot } =
+    config[estado as keyof typeof config] || config.Interesado
 
   return (
     <span className={`${bg} ${text} ${styles.headerClasses.statusBadge}`}>
@@ -80,7 +87,9 @@ function EstadoBadge({ estado }: { estado: string }) {
   )
 }
 
-export default function ClienteDetalleClient({ clienteId }: ClienteDetalleClientProps) {
+export default function ClienteDetalleClient({
+  clienteId,
+}: ClienteDetalleClientProps) {
   const router = useRouter()
 
   // ✅ Hook consolidado con TODA la lógica
@@ -88,27 +97,28 @@ export default function ClienteDetalleClient({ clienteId }: ClienteDetalleClient
     clienteUUID,
     cliente,
     loading,
-    error,
+    error: _error,
     activeTab,
     modalInteresAbierto,
     tieneCedula,
-    cargandoValidacion,
+    cargandoValidacion: _cargandoValidacion,
     totalDocumentos,
-    modalSubirAbierto,
+    modalSubirAbierto: _modalSubirAbierto,
     cambiarTab,
     abrirModalInteres,
     cerrarModalInteres,
-    cerrarModalSubir,
+    cerrarModalSubir: _cerrarModalSubir,
     recargarCliente,
-    irATabDocumentos,
+    irATabDocumentos: _irATabDocumentos,
   } = useClienteDetalle({ clienteIdSlug: clienteId })
 
   const handleEditar = () => {
-    // TODO: Abrir modal de edición o navegar a página de edición
+    router.push(`/clientes/${clienteId}/editar`)
   }
 
   const handleEliminar = () => {
     if (
+      // eslint-disable-next-line no-alert
       window.confirm(
         `¿Estás seguro de eliminar al cliente ${cliente?.nombre_completo}? Esta acción no se puede deshacer.`
       )
@@ -129,7 +139,8 @@ export default function ClienteDetalleClient({ clienteId }: ClienteDetalleClient
     if (!clienteUUID) return
     setVerificandoRenuncia(true)
     try {
-      const resultado = await clientesService.verificarRenunciaPendiente(clienteUUID)
+      const resultado =
+        await clientesService.verificarRenunciaPendiente(clienteUUID)
       if (resultado.pendiente) {
         toast.error(
           `No se puede reactivar: la renuncia ${resultado.consecutivo} tiene devolución pendiente. Primero debe cerrarse la renuncia.`,
@@ -146,27 +157,31 @@ export default function ClienteDetalleClient({ clienteId }: ClienteDetalleClient
   }
 
   const handleConfirmarReactivacion = async () => {
-    await clientesService.cambiarEstado(clienteUUID!, 'Interesado')
+    await clientesService.cambiarEstado(clienteUUID ?? '', 'Interesado')
     recargarCliente()
   }
 
   // ✅ Hook de asignación de vivienda con validación centralizada
-  const clienteSlug = cliente ? construirURLCliente({
-    id: clienteUUID!,
-    nombres: cliente.nombres,
-    apellidos: cliente.apellidos,
-  }).split('/').pop() : ''
+  const clienteSlug = cliente
+    ? construirURLCliente({
+        id: clienteUUID ?? '',
+        nombres: cliente.nombres,
+        apellidos: cliente.apellidos,
+      })
+        .split('/')
+        .pop()
+    : ''
 
   const {
     tieneCedula: tieneCedulaAsignacion,
     puedeAsignar,
     cargando: cargandoAsignacion,
     handleIniciarAsignacion,
-    mensajeValidacion
+    mensajeValidacion,
   } = useAsignacionVivienda({
     clienteId: clienteUUID || '',
     clienteNombre: cliente?.nombre_completo || '',
-    clienteSlug: clienteSlug || ''
+    clienteSlug: clienteSlug || '',
   })
 
   // ✅ Detectar query param "action=crear-negociacion" y usar hook de asignación
@@ -189,7 +204,13 @@ export default function ClienteDetalleClient({ clienteId }: ClienteDetalleClient
         handleIniciarAsignacion()
       }
     }
-  }, [cliente, clienteUUID, tieneCedulaAsignacion, handleIniciarAsignacion, cambiarTab])
+  }, [
+    cliente,
+    clienteUUID,
+    tieneCedulaAsignacion,
+    handleIniciarAsignacion,
+    cambiarTab,
+  ])
 
   const handleInteresRegistrado = async () => {
     cerrarModalInteres()
@@ -200,15 +221,15 @@ export default function ClienteDetalleClient({ clienteId }: ClienteDetalleClient
   // Mostrar loading mientras se resuelve el slug O mientras se carga el cliente
   if (!clienteUUID || loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-gray-50 via-white to-cyan-50/30 dark:from-gray-900 dark:via-gray-900 dark:to-cyan-950/20">
+      <div className='flex min-h-screen items-center justify-center bg-gradient-to-br from-gray-50 via-white to-cyan-50/30 dark:from-gray-900 dark:via-gray-900 dark:to-cyan-950/20'>
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.3 }}
-          className="text-center"
+          className='text-center'
         >
           <motion.div
-            className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-500 to-blue-600 shadow-2xl shadow-cyan-500/30"
+            className='mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-500 to-blue-600 shadow-2xl shadow-cyan-500/30'
             animate={{
               scale: [1, 1.05, 1],
               rotate: [0, 5, -5, 0],
@@ -219,11 +240,11 @@ export default function ClienteDetalleClient({ clienteId }: ClienteDetalleClient
               ease: 'easeInOut',
             }}
           >
-            <User className="h-10 w-10 text-white" />
+            <User className='h-10 w-10 text-white' />
           </motion.div>
 
           <motion.p
-            className="text-lg font-medium text-gray-700 dark:text-gray-300"
+            className='text-lg font-medium text-gray-700 dark:text-gray-300'
             animate={{
               opacity: [0.5, 1, 0.5],
             }}
@@ -236,11 +257,11 @@ export default function ClienteDetalleClient({ clienteId }: ClienteDetalleClient
             Cargando cliente...
           </motion.p>
 
-          <div className="mt-4 flex items-center justify-center gap-2">
-            {[0, 1, 2].map((i) => (
+          <div className='mt-4 flex items-center justify-center gap-2'>
+            {[0, 1, 2].map(i => (
               <motion.div
                 key={i}
-                className="h-2 w-2 rounded-full bg-cyan-500"
+                className='h-2 w-2 rounded-full bg-cyan-500'
                 animate={{
                   scale: [1, 1.5, 1],
                   opacity: [0.3, 1, 0.3],
@@ -269,7 +290,7 @@ export default function ClienteDetalleClient({ clienteId }: ClienteDetalleClient
           transition={{ duration: 0.4 }}
           className='text-center'
         >
-          <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-gray-100 dark:bg-gray-800">
+          <div className='mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-gray-100 dark:bg-gray-800'>
             <User className='h-10 w-10 text-gray-400' />
           </div>
           <h2 className='mb-2 text-2xl font-bold text-gray-900 dark:text-gray-100'>
@@ -280,7 +301,7 @@ export default function ClienteDetalleClient({ clienteId }: ClienteDetalleClient
           </p>
           <button
             onClick={() => router.push('/clientes')}
-            className='inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-cyan-600 to-blue-600 px-4 py-2 text-sm font-medium text-white hover:from-cyan-700 hover:to-blue-700 shadow-lg shadow-cyan-500/30'
+            className='inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-cyan-600 to-blue-600 px-4 py-2 text-sm font-medium text-white shadow-lg shadow-cyan-500/30 hover:from-cyan-700 hover:to-blue-700'
           >
             <ArrowLeft className='h-4 w-4' />
             Volver a clientes
@@ -291,7 +312,13 @@ export default function ClienteDetalleClient({ clienteId }: ClienteDetalleClient
   }
 
   const tabs = [
-    { id: 'general' as const, label: 'Información General', icon: User, count: null, badge: null },
+    {
+      id: 'general' as const,
+      label: 'Información General',
+      icon: User,
+      count: null,
+      badge: null,
+    },
     {
       id: 'intereses' as const,
       label: 'Intereses',
@@ -303,7 +330,11 @@ export default function ClienteDetalleClient({ clienteId }: ClienteDetalleClient
       id: 'negociacion' as const,
       label: 'Negociación',
       icon: Home,
-      count: ((cliente as any).negociaciones?.filter((n: any) => n.estado !== 'Cerrada por Renuncia') || []).length,
+      count: (
+        (cliente as any).negociaciones?.filter(
+          (n: any) => n.estado !== 'Cerrada por Renuncia'
+        ) || []
+      ).length, // eslint-disable-line @typescript-eslint/no-explicit-any
       badge: null,
     },
     {
@@ -311,15 +342,23 @@ export default function ClienteDetalleClient({ clienteId }: ClienteDetalleClient
       label: 'Documentos',
       icon: FileText,
       count: totalDocumentos,
-      badge: !tieneCedula ? { text: '⚠️ Requerido', color: 'orange', pulse: true } : null,
+      badge: !tieneCedula
+        ? { text: '⚠️ Requerido', color: 'orange', pulse: true }
+        : null,
     },
-    { id: 'historial' as const, label: 'Historial', icon: History, count: null, badge: null },
+    {
+      id: 'historial' as const,
+      label: 'Historial',
+      icon: History,
+      count: null,
+      badge: null,
+    },
   ]
 
   return (
-    <AnimatePresence mode="wait">
+    <AnimatePresence mode='wait'>
       <motion.div
-        key="content"
+        key='content'
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
@@ -331,7 +370,7 @@ export default function ClienteDetalleClient({ clienteId }: ClienteDetalleClient
           <motion.div {...styles.animations.fadeInUp}>
             <button
               onClick={() => router.back()}
-              aria-label="Volver a la lista de clientes"
+              aria-label='Volver a la lista de clientes'
               className='group inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800'
             >
               <ArrowLeft className='h-4 w-4 transition-transform group-hover:-translate-x-1' />
@@ -345,12 +384,13 @@ export default function ClienteDetalleClient({ clienteId }: ClienteDetalleClient
             transition={{ delay: 0.1 }}
             className={styles.headerClasses.container}
             style={{
-              background: 'linear-gradient(135deg, #0891b2 0%, #2563eb 50%, #1e40af 100%)',
+              background:
+                'linear-gradient(135deg, #0891b2 0%, #2563eb 50%, #1e40af 100%)',
             }}
           >
             {/* Patrón de fondo */}
             <div className={styles.headerClasses.backgroundPattern}>
-              <div className='absolute inset-0 bg-grid-white/10 [mask-image:linear-gradient(0deg,transparent,black,transparent)]' />
+              <div className='bg-grid-white/10 absolute inset-0 [mask-image:linear-gradient(0deg,transparent,black,transparent)]' />
             </div>
 
             {/* Breadcrumb */}
@@ -376,7 +416,7 @@ export default function ClienteDetalleClient({ clienteId }: ClienteDetalleClient
 
                 <div className={styles.headerClasses.titleSection}>
                   {/* Nombre + Estado (lo más importante primero) */}
-                  <div className="flex items-center gap-3 flex-wrap">
+                  <div className='flex flex-wrap items-center gap-3'>
                     <h1 className={styles.headerClasses.title}>
                       {formatNombreCompleto(cliente.nombre_completo)}
                     </h1>
@@ -384,72 +424,99 @@ export default function ClienteDetalleClient({ clienteId }: ClienteDetalleClient
                   </div>
 
                   {/* Documento pegado al nombre (sin ícono, compacto) */}
-                  <p className="text-sm text-white/80 dark:text-white/70 font-medium mt-0.5 mb-2">
+                  <p className='mb-2 mt-0.5 text-sm font-medium text-white/80 dark:text-white/70'>
                     {cliente.tipo_documento} {cliente.numero_documento}
                   </p>
 
                   {/* Chip compacto de vivienda asignada */}
-                  {cliente.estado === 'Activo' && (cliente as any).negociaciones?.[0] && (() => {
-                    const neg = (cliente as any).negociaciones[0]
-                    const proyecto = neg?.viviendas?.manzanas?.proyectos?.nombre || 'Sin proyecto'
-                    const manzana = neg?.viviendas?.manzanas?.nombre || 'N/A'
-                    const numero = neg?.viviendas?.numero || 'N/A'
+                  {cliente.estado === 'Activo' &&
+                    (cliente as any).negociaciones?.[0] &&
+                    (() => {
+                      // eslint-disable-line @typescript-eslint/no-explicit-any
+                      const neg = (cliente as any).negociaciones[0] // eslint-disable-line @typescript-eslint/no-explicit-any
+                      const proyecto =
+                        neg?.viviendas?.manzanas?.proyectos?.nombre ||
+                        'Sin proyecto'
+                      const manzana = neg?.viviendas?.manzanas?.nombre || 'N/A'
+                      const numero = neg?.viviendas?.numero || 'N/A'
 
-                    return (
-                      <div className="mt-2 inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/15 backdrop-blur-md border border-white/25 text-white/95">
-                        <Home className="w-3.5 h-3.5 text-emerald-300 flex-shrink-0" />
-                        <span className="text-xs font-semibold">Mza. {manzana} · Casa {numero}</span>
-                        <span className="w-px h-3 bg-white/30" />
-                        <Building2 className="w-3.5 h-3.5 text-blue-300 flex-shrink-0" />
-                        <span className="text-xs text-white/80">{proyecto}</span>
-                      </div>
-                    )
-                  })()}
+                      return (
+                        <div className='mt-2 inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/15 px-3 py-1.5 text-white/95 backdrop-blur-md'>
+                          <Home className='h-3.5 w-3.5 flex-shrink-0 text-emerald-300' />
+                          <span className='text-xs font-semibold'>
+                            Mza. {manzana} · Casa {numero}
+                          </span>
+                          <span className='h-3 w-px bg-white/30' />
+                          <Building2 className='h-3.5 w-3.5 flex-shrink-0 text-blue-300' />
+                          <span className='text-xs text-white/80'>
+                            {proyecto}
+                          </span>
+                        </div>
+                      )
+                    })()}
                 </div>
               </div>
 
               {/* Acciones */}
               <div className={styles.headerClasses.actionsContainer}>
                 {/* ✅ Botón Asignar Vivienda (solo visible para Interesados sin negociación activa) */}
-                {cliente.estado === 'Interesado' && !((cliente as any).negociaciones?.filter((n: any) => n.estado !== 'Cerrada por Renuncia')?.length) && (
-                  <Tooltip
-                    content={mensajeValidacion}
-                    side="bottom"
-                  >
-                    <motion.button
-                      onClick={handleIniciarAsignacion}
-                      disabled={!puedeAsignar || cargandoAsignacion}
-                      className={`inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold transition-all duration-200 ${
-                        puedeAsignar && !cargandoAsignacion
-                          ? 'bg-white/20 backdrop-blur-md border border-white/30 text-white hover:bg-white/30 hover:shadow-lg hover:shadow-white/20'
-                          : 'bg-gray-400/20 border border-gray-400/30 text-gray-300 cursor-not-allowed opacity-60'
-                      }`}
-                      whileHover={puedeAsignar && !cargandoAsignacion ? { scale: 1.05 } : {}}
-                      whileTap={puedeAsignar && !cargandoAsignacion ? { scale: 0.95 } : {}}
-                    >
-                      {puedeAsignar && !cargandoAsignacion ? (
-                        <Home className='h-4 w-4' />
-                      ) : (
-                        <Lock className='h-4 w-4' />
-                      )}
-                      <span className="hidden sm:inline">Asignar Vivienda</span>
-                      <span className="sm:hidden">Asignar</span>
-                    </motion.button>
-                  </Tooltip>
-                )}
+                {cliente.estado === 'Interesado' &&
+                  !(cliente as any).negociaciones?.filter(
+                    (n: any) => n.estado !== 'Cerrada por Renuncia'
+                  )?.length && ( // eslint-disable-line @typescript-eslint/no-explicit-any
+                    <Tooltip content={mensajeValidacion} side='bottom'>
+                      <motion.button
+                        onClick={handleIniciarAsignacion}
+                        disabled={!puedeAsignar || cargandoAsignacion}
+                        className={`inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold transition-all duration-200 ${
+                          puedeAsignar && !cargandoAsignacion
+                            ? 'border border-white/30 bg-white/20 text-white backdrop-blur-md hover:bg-white/30 hover:shadow-lg hover:shadow-white/20'
+                            : 'cursor-not-allowed border border-gray-400/30 bg-gray-400/20 text-gray-300 opacity-60'
+                        }`}
+                        whileHover={
+                          puedeAsignar && !cargandoAsignacion
+                            ? { scale: 1.05 }
+                            : {}
+                        }
+                        whileTap={
+                          puedeAsignar && !cargandoAsignacion
+                            ? { scale: 0.95 }
+                            : {}
+                        }
+                      >
+                        {puedeAsignar && !cargandoAsignacion ? (
+                          <Home className='h-4 w-4' />
+                        ) : (
+                          <Lock className='h-4 w-4' />
+                        )}
+                        <span className='hidden sm:inline'>
+                          Asignar Vivienda
+                        </span>
+                        <span className='sm:hidden'>Asignar</span>
+                      </motion.button>
+                    </Tooltip>
+                  )}
 
                 {/* ✅ Botón Reactivar Cliente (solo visible para clientes que renunciaron) */}
                 {cliente.estado === 'Renunció' && (
                   <motion.button
                     onClick={handleReactivarCliente}
                     disabled={verificandoRenuncia}
-                    className='inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold bg-white/20 backdrop-blur-md border border-white/30 text-white hover:bg-white/30 hover:shadow-lg transition-all duration-200 disabled:opacity-60 disabled:cursor-wait'
+                    className='inline-flex items-center gap-2 rounded-lg border border-white/30 bg-white/20 px-4 py-2.5 text-sm font-semibold text-white backdrop-blur-md transition-all duration-200 hover:bg-white/30 hover:shadow-lg disabled:cursor-wait disabled:opacity-60'
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                   >
-                    <RefreshCw className={`h-4 w-4 ${verificandoRenuncia ? 'animate-spin' : ''}`} />
-                    <span className='hidden sm:inline'>{verificandoRenuncia ? 'Verificando...' : 'Reactivar Cliente'}</span>
-                    <span className='sm:hidden'>{verificandoRenuncia ? '...' : 'Reactivar'}</span>
+                    <RefreshCw
+                      className={`h-4 w-4 ${verificandoRenuncia ? 'animate-spin' : ''}`}
+                    />
+                    <span className='hidden sm:inline'>
+                      {verificandoRenuncia
+                        ? 'Verificando...'
+                        : 'Reactivar Cliente'}
+                    </span>
+                    <span className='sm:hidden'>
+                      {verificandoRenuncia ? '...' : 'Reactivar'}
+                    </span>
                   </motion.button>
                 )}
 
@@ -475,11 +542,15 @@ export default function ClienteDetalleClient({ clienteId }: ClienteDetalleClient
             transition={{ delay: 0.2 }}
             className={styles.tabsClasses.container}
           >
-            <nav role="tablist" aria-label="Secciones del cliente" className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-              {tabs.map((tab) => (
+            <nav
+              role='tablist'
+              aria-label='Secciones del cliente'
+              className='scrollbar-hide flex gap-2 overflow-x-auto pb-1'
+            >
+              {tabs.map(tab => (
                 <motion.button
                   key={tab.id}
-                  role="tab"
+                  role='tab'
                   aria-selected={activeTab === tab.id}
                   aria-controls={`panel-${tab.id}`}
                   data-tab={tab.id}
@@ -494,7 +565,7 @@ export default function ClienteDetalleClient({ clienteId }: ClienteDetalleClient
                 >
                   <div className={styles.tabsClasses.tabContent}>
                     <tab.icon className={styles.tabsClasses.tabIcon} />
-                    <span className="whitespace-nowrap">{tab.label}</span>
+                    <span className='whitespace-nowrap'>{tab.label}</span>
                     {tab.count !== null && tab.count > 0 && (
                       <span className={styles.tabsClasses.tabBadge}>
                         {tab.count}
@@ -507,7 +578,11 @@ export default function ClienteDetalleClient({ clienteId }: ClienteDetalleClient
           </motion.div>
 
           {/* Contenido de Tabs - Componentes Modulares */}
-          <div role="tabpanel" id={`panel-${activeTab}`} aria-labelledby={activeTab}>
+          <div
+            role='tabpanel'
+            id={`panel-${activeTab}`}
+            aria-labelledby={activeTab}
+          >
             {activeTab === 'general' && <GeneralTab cliente={cliente} />}
             {activeTab === 'intereses' && (
               <InteresesTab
@@ -515,7 +590,12 @@ export default function ClienteDetalleClient({ clienteId }: ClienteDetalleClient
                 onRegistrarInteres={handleRegistrarInteres}
               />
             )}
-            {activeTab === 'negociacion' && <NegociacionTab cliente={cliente} />}
+            {activeTab === 'negociacion' && (
+              <NegociacionTab
+                cliente={cliente}
+                onIrADocumentos={() => cambiarTab('documentos')}
+              />
+            )}
             {activeTab === 'documentos' && <DocumentosTab cliente={cliente} />}
             {activeTab === 'historial' && (
               <HistorialTab

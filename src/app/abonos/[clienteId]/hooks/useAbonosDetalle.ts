@@ -1,8 +1,11 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 
-import { useAbonos } from '@/modules/abonos/hooks'
-import { obtenerHistorialAbonos } from '@/modules/abonos/services/abonos.service'
-import type { AbonoHistorial, FuentePagoConAbonos } from '@/modules/abonos/types'
+import {
+  useHistorialAbonosQuery,
+  useInvalidateNegociacionDetalle,
+  useNegociacionesAbonos,
+} from '@/modules/abonos/hooks'
+import type { FuentePagoConAbonos } from '@/modules/abonos/types'
 import { useDocumentosPendientesObligatorios } from '@/modules/clientes/hooks/useDocumentosPendientesObligatorios'
 import { filtrarPendientesPorFuente } from '@/modules/clientes/utils/documentos-pendientes.utils'
 
@@ -11,56 +14,31 @@ import { filtrarPendientesPorFuente } from '@/modules/clientes/utils/documentos-
  * Maneja: carga de datos, estado del modal, recargas, selección de fuente
  */
 export function useAbonosDetalle(clienteId: string) {
-  const { negociaciones, isLoading, refrescar } = useAbonos()
+  const { negociaciones, isLoading } = useNegociacionesAbonos()
+  const invalidateDetalle = useInvalidateNegociacionDetalle()
 
-  // Estado local
+  // Estado local (UI)
   const [modalAbonoOpen, setModalAbonoOpen] = useState(false)
-  const [fuenteSeleccionada, setFuenteSeleccionada] = useState<FuentePagoConAbonos | null>(null)
-  const [abonos, setAbonos] = useState<AbonoHistorial[]>([])
-  const [loadingAbonos, setLoadingAbonos] = useState(false)
+  const [fuenteSeleccionada, setFuenteSeleccionada] =
+    useState<FuentePagoConAbonos | null>(null)
 
   // Documentos obligatorios pendientes — cache compartido vía React Query
-  const { data: pendientesObligatorios = [] } = useDocumentosPendientesObligatorios(clienteId)
+  const { data: pendientesObligatorios = [] } =
+    useDocumentosPendientesObligatorios(clienteId)
 
   // Buscar la negociación del cliente
   const negociacion = useMemo(
-    () => negociaciones.find((n) => n.cliente.id === clienteId),
+    () => negociaciones.find(n => n.cliente.id === clienteId),
     [negociaciones, clienteId]
   )
 
-  // Cargar historial de abonos cuando se obtiene la negociación
-  useEffect(() => {
-    async function cargarAbonos() {
-      if (!negociacion?.id) return
+  // Historial de abonos con React Query (reemplaza useEffect manual)
+  const { data: abonos = [], isLoading: loadingAbonos } =
+    useHistorialAbonosQuery(negociacion?.id ?? null)
 
-      setLoadingAbonos(true)
-      try {
-        const historial = await obtenerHistorialAbonos({ negociacion_id: negociacion.id })
-        setAbonos(historial)
-      } catch (error) {
-        console.error('Error cargando abonos:', error)
-      } finally {
-        setLoadingAbonos(false)
-      }
-    }
-
-    cargarAbonos()
-  }, [negociacion?.id])
-
-  // Función para recargar todos los datos
-  const recargarDatos = async () => {
-    await refrescar()
-    if (negociacion?.id) {
-      setLoadingAbonos(true)
-      try {
-        const historial = await obtenerHistorialAbonos({ negociacion_id: negociacion.id })
-        setAbonos(historial)
-      } catch (error) {
-        console.error('Error recargando abonos:', error)
-      } finally {
-        setLoadingAbonos(false)
-      }
-    }
+  // Función para recargar todos los datos (invalida caché React Query)
+  const recargarDatos = () => {
+    invalidateDetalle(negociacion?.id)
   }
 
   // Handler para abrir modal con fuente específica
@@ -76,8 +54,8 @@ export function useAbonosDetalle(clienteId: string) {
   }
 
   // Handler para éxito al registrar abono
-  const handleAbonoRegistrado = async () => {
-    await recargarDatos()
+  const handleAbonoRegistrado = () => {
+    recargarDatos()
     handleCerrarModal()
   }
 
@@ -88,14 +66,22 @@ export function useAbonosDetalle(clienteId: string) {
     if (!negociacion) return null
 
     const fuentes = negociacion.fuentes_pago || []
-    const valorVivienda = negociacion.valor_total_pagar ?? negociacion.valor_total ?? 0
+    const valorVivienda =
+      negociacion.valor_total_pagar ?? negociacion.valor_total ?? 0
     const totalAbonado = negociacion.total_abonado ?? 0
-    const porcentajePagado = negociacion.porcentaje_pagado ?? (valorVivienda > 0 ? (totalAbonado / valorVivienda) * 100 : 0)
+    const porcentajePagado =
+      negociacion.porcentaje_pagado ??
+      (valorVivienda > 0 ? (totalAbonado / valorVivienda) * 100 : 0)
 
     // Total comprometido = suma real de lo que el cliente debe pagar (incluye intereses)
-    const totalComprometido = fuentes.reduce((sum, f) => sum + (f.monto_aprobado || 0), 0)
+    const totalComprometido = fuentes.reduce(
+      (sum, f) => sum + (f.monto_aprobado || 0),
+      0
+    )
     const interesesTotales = totalComprometido - valorVivienda
-    const saldoPendienteReal = totalComprometido - fuentes.reduce((sum, f) => sum + (f.monto_recibido || 0), 0)
+    const saldoPendienteReal =
+      totalComprometido -
+      fuentes.reduce((sum, f) => sum + (f.monto_recibido || 0), 0)
 
     return {
       valorVivienda,
@@ -111,27 +97,42 @@ export function useAbonosDetalle(clienteId: string) {
   const validarFuentePago = useMemo(() => {
     if (!negociacion?.fuentes_pago) return {}
 
-    const validaciones: Record<string, {
-      puedeRegistrarAbono: boolean
-      estaCompletamentePagada: boolean
-      razonBloqueo?: string
-      documentosObligatoriosPendientes: number
-      documentosPendientesNombres: string[]
-    }> = {}
+    const validaciones: Record<
+      string,
+      {
+        puedeRegistrarAbono: boolean
+        estaCompletamentePagada: boolean
+        razonBloqueo?: string
+        documentosObligatoriosPendientes: number
+        documentosPendientesNombres: string[]
+      }
+    > = {}
 
-    negociacion.fuentes_pago.forEach((fuente) => {
+    negociacion.fuentes_pago.forEach(fuente => {
       const saldoPendiente = fuente.saldo_pendiente || 0
       const estaCompletamentePagada = saldoPendiente === 0
 
       // Función pura: única fuente de verdad del filtro de pendientes por fuente
-      const pendientesFuente = filtrarPendientesPorFuente(pendientesObligatorios, fuente.id, fuente.tipo)
+      const pendientesFuente = filtrarPendientesPorFuente(
+        pendientesObligatorios,
+        fuente.id,
+        fuente.tipo
+      )
       const documentosObligatoriosPendientes = pendientesFuente.length
       const documentosPendientesNombres = [...pendientesFuente]
         .sort((a, b) => {
           // Cartas de aprobación/asignación (ESPECIFICO_FUENTE) van primero
           // Boleta de Registro y docs compartidos (COMPARTIDO_CLIENTE) van al final
-          if (a.alcance === 'ESPECIFICO_FUENTE' && b.alcance !== 'ESPECIFICO_FUENTE') return -1
-          if (a.alcance !== 'ESPECIFICO_FUENTE' && b.alcance === 'ESPECIFICO_FUENTE') return 1
+          if (
+            a.alcance === 'ESPECIFICO_FUENTE' &&
+            b.alcance !== 'ESPECIFICO_FUENTE'
+          )
+            return -1
+          if (
+            a.alcance !== 'ESPECIFICO_FUENTE' &&
+            b.alcance === 'ESPECIFICO_FUENTE'
+          )
+            return 1
           return 0
         })
         .map(d => d.tipo_documento || d.tipo_documento_sistema || '')
@@ -144,8 +145,7 @@ export function useAbonosDetalle(clienteId: string) {
       // 1. Documentos obligatorios pendientes (máxima prioridad de bloqueo)
       if (documentosObligatoriosPendientes > 0) {
         puedeRegistrarAbono = false
-        razonBloqueo =
-          `Tiene ${documentosObligatoriosPendientes} documento${documentosObligatoriosPendientes > 1 ? 's' : ''} obligatorio${documentosObligatoriosPendientes > 1 ? 's' : ''} pendiente${documentosObligatoriosPendientes > 1 ? 's' : ''} de aportar`
+        razonBloqueo = `Tiene ${documentosObligatoriosPendientes} documento${documentosObligatoriosPendientes > 1 ? 's' : ''} obligatorio${documentosObligatoriosPendientes > 1 ? 's' : ''} pendiente${documentosObligatoriosPendientes > 1 ? 's' : ''} de aportar`
       }
       // 2. Fuente completamente pagada
       else if (estaCompletamentePagada) {
@@ -156,8 +156,7 @@ export function useAbonosDetalle(clienteId: string) {
       else if (negociacion.estado === 'Cancelada') {
         puedeRegistrarAbono = false
         razonBloqueo = 'Negociación cancelada'
-      }
-      else if (negociacion.estado === 'Renuncia') {
+      } else if (negociacion.estado === 'Renuncia') {
         puedeRegistrarAbono = false
         razonBloqueo = 'Cliente en proceso de renuncia'
       }

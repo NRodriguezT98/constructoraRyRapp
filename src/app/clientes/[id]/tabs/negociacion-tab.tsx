@@ -13,25 +13,25 @@ import { useState } from 'react'
 
 import { motion } from 'framer-motion'
 import {
-    AlertTriangle,
-    ArrowUpRight,
-    CheckCircle2,
-    Clock,
-    CreditCard,
-    DollarSign,
-    ExternalLink,
-    FileText,
-    FileX,
-    Home,
-    Info,
-    ListChecks,
-    Lock,
-    Percent,
-    RefreshCw,
-    Shield,
-    SlidersHorizontal,
-    TrendingUp,
-    Wallet,
+  AlertTriangle,
+  ArrowUpRight,
+  CheckCircle2,
+  Clock,
+  CreditCard,
+  DollarSign,
+  ExternalLink,
+  FileText,
+  FileX,
+  Home,
+  Info,
+  ListChecks,
+  Lock,
+  Percent,
+  RefreshCw,
+  Shield,
+  SlidersHorizontal,
+  TrendingUp,
+  Wallet,
 } from 'lucide-react'
 
 import { useRouter } from 'next/navigation'
@@ -41,21 +41,20 @@ import { ModalEditarAbono } from '@/modules/abonos/components/modal-editar-abono
 import type { AbonoParaEditar } from '@/modules/abonos/types/editar-abono.types'
 import type { Cliente } from '@/modules/clientes/types'
 import { CuotasCreditoTab } from '@/modules/fuentes-pago/components/CuotasCreditoTab'
+import { RegistrarRenunciaModal } from '@/modules/renuncias/components/modals/RegistrarRenunciaModal'
 import { esCreditoConstructora } from '@/shared/constants/fuentes-pago.constants'
 import { formatCurrency } from '@/shared/utils/format'
 
-import { RegistrarRenunciaModal } from '@/modules/renuncias/components/modals/RegistrarRenunciaModal'
-
 import {
-    AbonosRecientes,
-    BarraFinanciera,
-    FuenteMiniCard,
-    RebalancearModal,
+  AbonosRecientes,
+  FuenteMiniCard,
+  RebalancearModal,
 } from './negociacion/components'
 import { useNegociacionTab } from './negociacion/hooks'
 
 interface NegociacionTabProps {
   cliente: Cliente
+  onIrADocumentos?: () => void
 }
 
 function Skeleton() {
@@ -74,7 +73,7 @@ function SinNegociacion() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
-      className='rounded-xl backdrop-blur-xl bg-gradient-to-br from-white/90 via-indigo-50/90 to-violet-50/90 dark:from-gray-800/90 dark:via-gray-800/80 dark:to-indigo-950/50 border border-gray-200/50 dark:border-gray-700/50 p-5 text-center shadow-xl space-y-4'
+      className='space-y-4 rounded-xl border border-gray-200/50 bg-gradient-to-br from-white/90 via-indigo-50/90 to-violet-50/90 p-5 text-center shadow-xl backdrop-blur-xl dark:border-gray-700/50 dark:from-gray-800/90 dark:via-gray-800/80 dark:to-indigo-950/50'
     >
       {/* Icón con gradiente */}
       <div className='flex justify-center'>
@@ -82,85 +81,105 @@ function SinNegociacion() {
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
           transition={{ type: 'spring', stiffness: 200 }}
-          className='w-16 h-16 rounded-xl bg-gradient-to-br from-indigo-500 via-violet-600 to-purple-600 flex items-center justify-center shadow-2xl shadow-indigo-500/30'
+          className='flex h-16 w-16 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 via-violet-600 to-purple-600 shadow-2xl shadow-indigo-500/30'
         >
-          <Home className='w-8 h-8 text-white' />
+          <Home className='h-8 w-8 text-white' />
         </motion.div>
       </div>
 
       {/* Título y descripción */}
-      <h3 className='text-xl font-bold bg-gradient-to-br from-gray-900 via-gray-800 to-indigo-900 dark:from-white dark:via-gray-100 dark:to-indigo-100 bg-clip-text text-transparent'>
+      <h3 className='bg-gradient-to-br from-gray-900 via-gray-800 to-indigo-900 bg-clip-text text-xl font-bold text-transparent dark:from-white dark:via-gray-100 dark:to-indigo-100'>
         Sin Vivienda Asignada
       </h3>
-      <p className='text-sm text-gray-600 dark:text-gray-400 max-w-sm mx-auto leading-relaxed'>
-        Cuando este cliente tenga una vivienda asignada, aquí podrás gestionar su
-        plan de pagos, fuentes de financiación y seguimiento de abonos.
+      <p className='mx-auto max-w-sm text-sm leading-relaxed text-gray-600 dark:text-gray-400'>
+        Cuando este cliente tenga una vivienda asignada, aquí podrás gestionar
+        su plan de pagos, fuentes de financiación y seguimiento de abonos.
       </p>
 
       {/* Checklist de beneficios */}
-      <div className='rounded-xl bg-white/60 dark:bg-gray-900/40 backdrop-blur-sm border border-gray-200/80 dark:border-gray-700/50 p-3 text-left shadow-lg'>
-        <div className='flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2.5 pb-2 border-b border-gray-200 dark:border-gray-700'>
-          <ListChecks className='w-4 h-4' />
+      <div className='rounded-xl border border-gray-200/80 bg-white/60 p-3 text-left shadow-lg backdrop-blur-sm dark:border-gray-700/50 dark:bg-gray-900/40'>
+        <div className='mb-2.5 flex items-center gap-2 border-b border-gray-200 pb-2 text-sm font-semibold text-gray-700 dark:border-gray-700 dark:text-gray-300'>
+          <ListChecks className='h-4 w-4' />
           ¿Qué desbloquea una vivienda asignada?
         </div>
         <div className='space-y-2'>
           <div className='flex items-start gap-3'>
-            <div className='w-5 h-5 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center flex-shrink-0 mt-0.5'>
-              <DollarSign className='w-3 h-3 text-indigo-600 dark:text-indigo-400' />
+            <div className='mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-indigo-100 dark:bg-indigo-900/30'>
+              <DollarSign className='h-3 w-3 text-indigo-600 dark:text-indigo-400' />
             </div>
-            <div className='flex-1 min-w-0'>
-              <p className='text-sm font-medium text-gray-700 dark:text-gray-300'>Plan de pagos y fuentes de financiación</p>
-              <p className='text-xs text-gray-500 dark:text-gray-400 mt-1'>Cuota inicial, crédito hipotecario, Mi Casa Ya y más</p>
-            </div>
-          </div>
-          <div className='flex items-start gap-3'>
-            <div className='w-5 h-5 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center flex-shrink-0 mt-0.5'>
-              <TrendingUp className='w-3 h-3 text-indigo-600 dark:text-indigo-400' />
-            </div>
-            <div className='flex-1 min-w-0'>
-              <p className='text-sm font-medium text-gray-700 dark:text-gray-300'>Seguimiento de abonos en tiempo real</p>
-              <p className='text-xs text-gray-500 dark:text-gray-400 mt-1'>Historial de pagos, saldo pendiente y porcentaje pagado</p>
+            <div className='min-w-0 flex-1'>
+              <p className='text-sm font-medium text-gray-700 dark:text-gray-300'>
+                Plan de pagos y fuentes de financiación
+              </p>
+              <p className='mt-1 text-xs text-gray-500 dark:text-gray-400'>
+                Cuota inicial, crédito hipotecario, Mi Casa Ya y más
+              </p>
             </div>
           </div>
           <div className='flex items-start gap-3'>
-            <div className='w-5 h-5 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center flex-shrink-0 mt-0.5'>
-              <Wallet className='w-3 h-3 text-indigo-600 dark:text-indigo-400' />
+            <div className='mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-indigo-100 dark:bg-indigo-900/30'>
+              <TrendingUp className='h-3 w-3 text-indigo-600 dark:text-indigo-400' />
             </div>
-            <div className='flex-1 min-w-0'>
-              <p className='text-sm font-medium text-gray-700 dark:text-gray-300'>Control financiero completo</p>
-              <p className='text-xs text-gray-500 dark:text-gray-400 mt-1'>Barra de avance, descuentos aplicados y gastos notariales</p>
+            <div className='min-w-0 flex-1'>
+              <p className='text-sm font-medium text-gray-700 dark:text-gray-300'>
+                Seguimiento de abonos en tiempo real
+              </p>
+              <p className='mt-1 text-xs text-gray-500 dark:text-gray-400'>
+                Historial de pagos, saldo pendiente y porcentaje pagado
+              </p>
+            </div>
+          </div>
+          <div className='flex items-start gap-3'>
+            <div className='mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-indigo-100 dark:bg-indigo-900/30'>
+              <Wallet className='h-3 w-3 text-indigo-600 dark:text-indigo-400' />
+            </div>
+            <div className='min-w-0 flex-1'>
+              <p className='text-sm font-medium text-gray-700 dark:text-gray-300'>
+                Control financiero completo
+              </p>
+              <p className='mt-1 text-xs text-gray-500 dark:text-gray-400'>
+                Barra de avance, descuentos aplicados y gastos notariales
+              </p>
             </div>
           </div>
         </div>
       </div>
 
       {/* Call to Action */}
-      <div className='rounded-xl bg-gradient-to-r from-indigo-50 via-violet-50 to-purple-50 dark:from-indigo-950/30 dark:via-violet-950/30 dark:to-purple-950/30 border border-indigo-200/50 dark:border-indigo-800/50 p-3 backdrop-blur-sm'>
+      <div className='rounded-xl border border-indigo-200/50 bg-gradient-to-r from-indigo-50 via-violet-50 to-purple-50 p-3 backdrop-blur-sm dark:border-indigo-800/50 dark:from-indigo-950/30 dark:via-violet-950/30 dark:to-purple-950/30'>
         <div className='flex items-start gap-3 text-left'>
-          <Lock className='w-6 h-6 text-indigo-600 dark:text-indigo-400 flex-shrink-0 mt-1 animate-pulse' />
+          <Lock className='mt-1 h-6 w-6 flex-shrink-0 animate-pulse text-indigo-600 dark:text-indigo-400' />
           <div className='flex-1'>
-            <h4 className='text-sm font-bold text-indigo-900 dark:text-indigo-100 mb-1'>¿Cómo comenzar?</h4>
-            <p className='text-xs text-indigo-700 dark:text-indigo-300 leading-relaxed'>
-              Usa el botón <strong>&ldquo;Asignar Vivienda&rdquo;</strong> en la parte superior
-              de este perfil para vincular una vivienda disponible a este cliente e iniciar la negociación.
+            <h4 className='mb-1 text-sm font-bold text-indigo-900 dark:text-indigo-100'>
+              ¿Cómo comenzar?
+            </h4>
+            <p className='text-xs leading-relaxed text-indigo-700 dark:text-indigo-300'>
+              Usa el botón <strong>&ldquo;Asignar Vivienda&rdquo;</strong> en la
+              parte superior de este perfil para vincular una vivienda
+              disponible a este cliente e iniciar la negociación.
             </p>
           </div>
         </div>
       </div>
 
       {/* Footer informativo */}
-      <div className='flex items-start gap-3 text-left pt-3 border-t border-gray-200 dark:border-gray-700'>
-        <Info className='w-5 h-5 text-indigo-600 dark:text-indigo-400 flex-shrink-0 mt-0.5' />
-        <p className='text-xs text-gray-600 dark:text-gray-400 leading-relaxed'>
-          La negociación es el núcleo del proceso de venta. Registra todos los movimientos
-          financieros del cliente desde la asignación hasta la escrituración.
+      <div className='flex items-start gap-3 border-t border-gray-200 pt-3 text-left dark:border-gray-700'>
+        <Info className='mt-0.5 h-5 w-5 flex-shrink-0 text-indigo-600 dark:text-indigo-400' />
+        <p className='text-xs leading-relaxed text-gray-600 dark:text-gray-400'>
+          La negociación es el núcleo del proceso de venta. Registra todos los
+          movimientos financieros del cliente desde la asignación hasta la
+          escrituración.
         </p>
       </div>
     </motion.div>
   )
 }
 
-function NegociacionCerradaRenuncia({ fechaRenuncia }: { fechaRenuncia?: string | null }) {
+function NegociacionCerradaRenuncia({
+  fechaRenuncia,
+}: {
+  fechaRenuncia?: string | null
+}) {
   const router = useRouter()
 
   return (
@@ -168,7 +187,7 @@ function NegociacionCerradaRenuncia({ fechaRenuncia }: { fechaRenuncia?: string 
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
-      className='rounded-xl backdrop-blur-xl bg-gradient-to-br from-white/90 via-red-50/90 to-rose-50/90 dark:from-gray-800/90 dark:via-gray-800/80 dark:to-red-950/50 border border-gray-200/50 dark:border-gray-700/50 p-5 text-center shadow-xl space-y-4'
+      className='space-y-4 rounded-xl border border-gray-200/50 bg-gradient-to-br from-white/90 via-red-50/90 to-rose-50/90 p-5 text-center shadow-xl backdrop-blur-xl dark:border-gray-700/50 dark:from-gray-800/90 dark:via-gray-800/80 dark:to-red-950/50'
     >
       {/* Icono con gradiente */}
       <div className='flex justify-center'>
@@ -176,25 +195,26 @@ function NegociacionCerradaRenuncia({ fechaRenuncia }: { fechaRenuncia?: string 
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
           transition={{ type: 'spring', stiffness: 200 }}
-          className='w-16 h-16 rounded-xl bg-gradient-to-br from-red-500 via-rose-600 to-pink-600 flex items-center justify-center shadow-2xl shadow-red-500/30'
+          className='flex h-16 w-16 items-center justify-center rounded-xl bg-gradient-to-br from-red-500 via-rose-600 to-pink-600 shadow-2xl shadow-red-500/30'
         >
-          <FileX className='w-8 h-8 text-white' />
+          <FileX className='h-8 w-8 text-white' />
         </motion.div>
       </div>
 
       {/* Título y descripción */}
-      <h3 className='text-xl font-bold bg-gradient-to-br from-gray-900 via-gray-800 to-red-900 dark:from-white dark:via-gray-100 dark:to-red-100 bg-clip-text text-transparent'>
+      <h3 className='bg-gradient-to-br from-gray-900 via-gray-800 to-red-900 bg-clip-text text-xl font-bold text-transparent dark:from-white dark:via-gray-100 dark:to-red-100'>
         Negociación Cerrada por Renuncia
       </h3>
-      <p className='text-sm text-gray-600 dark:text-gray-400 max-w-md mx-auto leading-relaxed'>
-        Este cliente renunció a su negociación. La vivienda fue liberada y las fuentes de pago desactivadas.
-        Los detalles completos están disponibles en el módulo de Renuncias.
+      <p className='mx-auto max-w-md text-sm leading-relaxed text-gray-600 dark:text-gray-400'>
+        Este cliente renunció a su negociación. La vivienda fue liberada y las
+        fuentes de pago desactivadas. Los detalles completos están disponibles
+        en el módulo de Renuncias.
       </p>
 
       {/* Fecha de renuncia */}
       {fechaRenuncia ? (
-        <div className='inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-red-100 dark:bg-red-900/30 border border-red-200 dark:border-red-800/50'>
-          <Clock className='w-3.5 h-3.5 text-red-500 dark:text-red-400' />
+        <div className='inline-flex items-center gap-2 rounded-full border border-red-200 bg-red-100 px-3 py-1.5 dark:border-red-800/50 dark:bg-red-900/30'>
+          <Clock className='h-3.5 w-3.5 text-red-500 dark:text-red-400' />
           <span className='text-xs font-semibold text-red-700 dark:text-red-300'>
             Renunció el {formatDateCompact(fechaRenuncia)}
           </span>
@@ -202,53 +222,60 @@ function NegociacionCerradaRenuncia({ fechaRenuncia }: { fechaRenuncia?: string 
       ) : null}
 
       {/* Info card */}
-      <div className='rounded-xl bg-white/60 dark:bg-gray-900/40 backdrop-blur-sm border border-gray-200/80 dark:border-gray-700/50 p-3 text-left shadow-lg'>
-        <div className='flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2.5 pb-2 border-b border-gray-200 dark:border-gray-700'>
-          <Shield className='w-4 h-4' />
+      <div className='rounded-xl border border-gray-200/80 bg-white/60 p-3 text-left shadow-lg backdrop-blur-sm dark:border-gray-700/50 dark:bg-gray-900/40'>
+        <div className='mb-2.5 flex items-center gap-2 border-b border-gray-200 pb-2 text-sm font-semibold text-gray-700 dark:border-gray-700 dark:text-gray-300'>
+          <Shield className='h-4 w-4' />
           Acciones realizadas automáticamente
         </div>
         <div className='space-y-2'>
           <div className='flex items-center gap-3'>
-            <div className='w-5 h-5 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center flex-shrink-0'>
-              <FileX className='w-3 h-3 text-red-600 dark:text-red-400' />
+            <div className='flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/30'>
+              <FileX className='h-3 w-3 text-red-600 dark:text-red-400' />
             </div>
-            <p className='text-sm text-gray-700 dark:text-gray-300'>Negociación cerrada permanentemente</p>
+            <p className='text-sm text-gray-700 dark:text-gray-300'>
+              Negociación cerrada permanentemente
+            </p>
           </div>
           <div className='flex items-center gap-3'>
-            <div className='w-5 h-5 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center flex-shrink-0'>
-              <Home className='w-3 h-3 text-emerald-600 dark:text-emerald-400' />
+            <div className='flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900/30'>
+              <Home className='h-3 w-3 text-emerald-600 dark:text-emerald-400' />
             </div>
-            <p className='text-sm text-gray-700 dark:text-gray-300'>Vivienda liberada y disponible</p>
+            <p className='text-sm text-gray-700 dark:text-gray-300'>
+              Vivienda liberada y disponible
+            </p>
           </div>
           <div className='flex items-center gap-3'>
-            <div className='w-5 h-5 rounded-full bg-gray-100 dark:bg-gray-700/50 flex items-center justify-center flex-shrink-0'>
-              <Wallet className='w-3 h-3 text-gray-600 dark:text-gray-400' />
+            <div className='flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700/50'>
+              <Wallet className='h-3 w-3 text-gray-600 dark:text-gray-400' />
             </div>
-            <p className='text-sm text-gray-700 dark:text-gray-300'>Fuentes de pago inactivadas</p>
+            <p className='text-sm text-gray-700 dark:text-gray-300'>
+              Fuentes de pago inactivadas
+            </p>
           </div>
         </div>
       </div>
 
       {/* CTA — Ir a módulo de Renuncias */}
-      <div className='rounded-xl bg-gradient-to-r from-red-50 via-rose-50 to-pink-50 dark:from-red-950/30 dark:via-rose-950/30 dark:to-pink-950/30 border border-red-200/50 dark:border-red-800/50 p-3 backdrop-blur-sm'>
+      <div className='rounded-xl border border-red-200/50 bg-gradient-to-r from-red-50 via-rose-50 to-pink-50 p-3 backdrop-blur-sm dark:border-red-800/50 dark:from-red-950/30 dark:via-rose-950/30 dark:to-pink-950/30'>
         <div className='flex items-start gap-4 text-left'>
-          <Info className='w-6 h-6 text-red-600 dark:text-red-400 flex-shrink-0 mt-1' />
+          <Info className='mt-1 h-6 w-6 flex-shrink-0 text-red-600 dark:text-red-400' />
           <div className='flex-1'>
-            <h4 className='text-sm font-bold text-red-900 dark:text-red-100 mb-1'>
+            <h4 className='mb-1 text-sm font-bold text-red-900 dark:text-red-100'>
               Consulta los detalles completos
             </h4>
-            <p className='text-xs text-red-700 dark:text-red-300 leading-relaxed'>
-              En el módulo de Renuncias encontrarás el motivo, snapshots de datos,
-              estado de devolución y toda la información histórica de esta renuncia.
+            <p className='text-xs leading-relaxed text-red-700 dark:text-red-300'>
+              En el módulo de Renuncias encontrarás el motivo, snapshots de
+              datos, estado de devolución y toda la información histórica de
+              esta renuncia.
             </p>
           </div>
         </div>
 
         <button
           onClick={() => router.push('/renuncias')}
-          className='mt-3 w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-gradient-to-r from-red-500 via-rose-600 to-pink-600 hover:from-red-600 hover:via-rose-700 hover:to-pink-700 text-white font-semibold text-sm shadow-lg shadow-red-500/30 hover:shadow-2xl hover:shadow-red-500/40 transform hover:scale-[1.02] active:scale-[0.98] transition-all duration-300'
+          className='mt-3 inline-flex w-full transform items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-red-500 via-rose-600 to-pink-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-red-500/30 transition-all duration-300 hover:scale-[1.02] hover:from-red-600 hover:via-rose-700 hover:to-pink-700 hover:shadow-2xl hover:shadow-red-500/40 active:scale-[0.98]'
         >
-          <ExternalLink className='w-4 h-4' />
+          <ExternalLink className='h-4 w-4' />
           Ver en módulo de Renuncias
         </button>
       </div>
@@ -256,7 +283,10 @@ function NegociacionCerradaRenuncia({ fechaRenuncia }: { fechaRenuncia?: string 
   )
 }
 
-export function NegociacionTab({ cliente }: NegociacionTabProps) {
+export function NegociacionTab({
+  cliente,
+  onIrADocumentos,
+}: NegociacionTabProps) {
   const router = useRouter()
   const [cuotasExpandidas, setCuotasExpandidas] = useState<
     Record<string, boolean>
@@ -300,7 +330,13 @@ export function NegociacionTab({ cliente }: NegociacionTabProps) {
 
   if (isLoading) return <Skeleton />
   if (!negociacion) return <SinNegociacion />
-  if (negociacion.estado === 'Cerrada por Renuncia') return <NegociacionCerradaRenuncia fechaRenuncia={(negociacion as any).fecha_renuncia_efectiva} />
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  if (negociacion.estado === 'Cerrada por Renuncia')
+    return (
+      <NegociacionCerradaRenuncia
+        fechaRenuncia={(negociacion as any).fecha_renuncia_efectiva}
+      />
+    )
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const negAny = negociacion as any
@@ -368,10 +404,12 @@ export function NegociacionTab({ cliente }: NegociacionTabProps) {
           >
             <ArrowUpRight className='h-4 w-4' />
           </button>
-          {isAdmin && (negociacion.estado === 'Activa' || negociacion.estado === 'Suspendida') ? (
+          {isAdmin &&
+          (negociacion.estado === 'Activa' ||
+            negociacion.estado === 'Suspendida') ? (
             <button
               onClick={() => setModalRenunciaOpen(true)}
-              className='inline-flex flex-shrink-0 items-center gap-1.5 rounded-lg border border-red-200 bg-red-50 px-2.5 py-1 text-[11px] font-semibold text-red-700 transition-all hover:bg-red-100 hover:border-red-300 hover:shadow-sm dark:border-red-800 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/40'
+              className='inline-flex flex-shrink-0 items-center gap-1.5 rounded-lg border border-red-200 bg-red-50 px-2.5 py-1 text-[11px] font-semibold text-red-700 transition-all hover:border-red-300 hover:bg-red-100 hover:shadow-sm dark:border-red-800 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/40'
               title='Registrar Renuncia'
             >
               <FileX className='h-3.5 w-3.5' />
@@ -483,7 +521,9 @@ export function NegociacionTab({ cliente }: NegociacionTabProps) {
                 className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium ${
                   estaBalanceado
                     ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400'
-                    : 'bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400'
+                    : diferencia > 0
+                      ? 'bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400'
+                      : 'bg-amber-50 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400'
                 }`}
               >
                 {estaBalanceado ? (
@@ -491,9 +531,14 @@ export function NegociacionTab({ cliente }: NegociacionTabProps) {
                     <CheckCircle2 className='h-3 w-3' />{' '}
                     {formatCurrency(valorVivienda)} cubierto
                   </>
-                ) : (
+                ) : diferencia > 0 ? (
                   <>
                     <AlertTriangle className='h-3 w-3' /> Faltan{' '}
+                    {formatCurrency(diferencia)}
+                  </>
+                ) : (
+                  <>
+                    <AlertTriangle className='h-3 w-3' /> Sobran{' '}
                     {formatCurrency(Math.abs(diferencia))}
                   </>
                 )}
@@ -525,18 +570,15 @@ export function NegociacionTab({ cliente }: NegociacionTabProps) {
             </p>
           ) : (
             <>
-              {/* Barra visual proporcional */}
-              <BarraFinanciera
-                fuentesPago={fuentesPago}
-                valorVivienda={valorVivienda}
-                tiposFuentes={tiposFuentes}
-              />
-
-              {/* Docs pendientes banner (compacto) */}
+              {/* Docs pendientes banner (compacto + clickeable) */}
               {totalDocsPendientes > 0 ? (
-                <div className='flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-1.5 dark:border-amber-800/40 dark:bg-amber-950/30'>
+                <button
+                  type='button'
+                  onClick={onIrADocumentos}
+                  className='flex w-full items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-1.5 text-left transition-colors hover:bg-amber-100 dark:border-amber-800/40 dark:bg-amber-950/30 dark:hover:bg-amber-950/50'
+                >
                   <AlertTriangle className='h-3 w-3 flex-shrink-0 text-amber-500' />
-                  <p className='text-[10px] text-amber-800 dark:text-amber-300'>
+                  <p className='flex-1 text-[10px] text-amber-800 dark:text-amber-300'>
                     <span className='font-semibold'>{totalDocsPendientes}</span>{' '}
                     doc{totalDocsPendientes !== 1 ? 's' : ''} pendiente
                     {totalDocsPendientes !== 1 ? 's' : ''}
@@ -545,13 +587,18 @@ export function NegociacionTab({ cliente }: NegociacionTabProps) {
                         ({totalDocsObligatoriosPendientes} oblig.)
                       </span>
                     ) : null}
-                    <span className='text-amber-600 dark:text-amber-400'>
-                      {' '}
-                      — Ir a <strong>Documentos</strong>
+                    <span className='ml-1 text-amber-600 underline dark:text-amber-400'>
+                      Ir a <strong>Documentos</strong>
                     </span>
                   </p>
-                </div>
+                  <ArrowUpRight className='h-3 w-3 flex-shrink-0 text-amber-500' />
+                </button>
               ) : null}
+
+              {/* Título de sección */}
+              <p className='text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500'>
+                Distribución por Fuente
+              </p>
 
               {/* Grid de fuentes */}
               <div className='grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3'>

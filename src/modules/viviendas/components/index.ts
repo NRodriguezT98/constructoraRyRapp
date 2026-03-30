@@ -1,5 +1,4 @@
 // Barrel exports para componentes de viviendas
-export { EditarViviendaModal } from './editar-vivienda-modal'
 export { NuevaViviendaView } from './nueva-vivienda-view'
 export { PasoFinanciero } from './paso-financiero'
 export { PasoLegal } from './paso-legal'

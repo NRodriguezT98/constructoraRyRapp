@@ -30,6 +30,12 @@ export type ColorScheme = {
   headerBadgeDesembolso: string
   /** Clase de fondo para el ícono del método seleccionado */
   metodoBg: string
+  /** Focus border del input (color dinámico según fuente) */
+  inputFocusBorder: string
+  /** Focus ring del input */
+  inputFocusRing: string
+  /** Focus-within para wrapper del campo monto */
+  inputFocusWithin: string
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -43,10 +49,16 @@ const COLOR_SCHEMES: Record<string, ColorScheme> = {
     bgLight: 'bg-blue-500/10 dark:bg-blue-500/10',
     borderSelected: 'border-blue-500',
     textAccent: 'text-blue-600 dark:text-blue-400',
-    desembolsoCard: 'bg-blue-50 dark:bg-blue-900/20 border-blue-300 dark:border-blue-700',
+    desembolsoCard:
+      'bg-blue-50 dark:bg-blue-900/20 border-blue-300 dark:border-blue-700',
     headerBadgeAbono: 'bg-white/20 border border-white/30 text-white',
-    headerBadgeDesembolso: 'bg-purple-900/40 border border-purple-400/40 text-white/90',
+    headerBadgeDesembolso:
+      'bg-purple-900/40 border border-purple-400/40 text-white/90',
     metodoBg: 'bg-blue-500',
+    inputFocusBorder: 'focus:border-blue-500 dark:focus:border-blue-400',
+    inputFocusRing: 'focus:ring-2 focus:ring-blue-500/20',
+    inputFocusWithin:
+      'focus-within:border-blue-500 dark:focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-500/20',
   },
   'Crédito Hipotecario': {
     gradient: 'from-purple-600 via-pink-600 to-rose-600',
@@ -54,32 +66,52 @@ const COLOR_SCHEMES: Record<string, ColorScheme> = {
     bgLight: 'bg-purple-500/10 dark:bg-purple-500/10',
     borderSelected: 'border-purple-500',
     textAccent: 'text-purple-600 dark:text-purple-400',
-    desembolsoCard: 'bg-purple-50 dark:bg-purple-900/20 border-purple-300 dark:border-purple-700',
+    desembolsoCard:
+      'bg-purple-50 dark:bg-purple-900/20 border-purple-300 dark:border-purple-700',
     headerBadgeAbono: 'bg-white/20 border border-white/30 text-white',
-    headerBadgeDesembolso: 'bg-purple-900/40 border border-purple-400/40 text-white/90',
+    headerBadgeDesembolso:
+      'bg-purple-900/40 border border-purple-400/40 text-white/90',
     metodoBg: 'bg-purple-500',
+    inputFocusBorder: 'focus:border-purple-500 dark:focus:border-purple-400',
+    inputFocusRing: 'focus:ring-2 focus:ring-purple-500/20',
+    inputFocusWithin:
+      'focus-within:border-purple-500 dark:focus-within:border-purple-400 focus-within:ring-2 focus-within:ring-purple-500/20',
   },
   'Subsidio Mi Casa Ya': {
     gradient: 'from-green-600 via-emerald-600 to-teal-600',
-    gradientHover: 'hover:from-green-700 hover:via-emerald-700 hover:to-teal-700',
+    gradientHover:
+      'hover:from-green-700 hover:via-emerald-700 hover:to-teal-700',
     bgLight: 'bg-green-500/10 dark:bg-green-500/10',
     borderSelected: 'border-green-500',
     textAccent: 'text-green-600 dark:text-green-400',
-    desembolsoCard: 'bg-green-50 dark:bg-green-900/20 border-green-300 dark:border-green-700',
+    desembolsoCard:
+      'bg-green-50 dark:bg-green-900/20 border-green-300 dark:border-green-700',
     headerBadgeAbono: 'bg-white/20 border border-white/30 text-white',
-    headerBadgeDesembolso: 'bg-green-900/40 border border-green-400/40 text-white/90',
+    headerBadgeDesembolso:
+      'bg-green-900/40 border border-green-400/40 text-white/90',
     metodoBg: 'bg-green-500',
+    inputFocusBorder: 'focus:border-green-500 dark:focus:border-green-400',
+    inputFocusRing: 'focus:ring-2 focus:ring-green-500/20',
+    inputFocusWithin:
+      'focus-within:border-green-500 dark:focus-within:border-green-400 focus-within:ring-2 focus-within:ring-green-500/20',
   },
   'Subsidio Caja Compensación': {
     gradient: 'from-orange-600 via-amber-600 to-yellow-600',
-    gradientHover: 'hover:from-orange-700 hover:via-amber-700 hover:to-yellow-700',
+    gradientHover:
+      'hover:from-orange-700 hover:via-amber-700 hover:to-yellow-700',
     bgLight: 'bg-orange-500/10 dark:bg-orange-500/10',
     borderSelected: 'border-orange-500',
     textAccent: 'text-orange-600 dark:text-orange-400',
-    desembolsoCard: 'bg-orange-50 dark:bg-orange-900/20 border-orange-300 dark:border-orange-700',
+    desembolsoCard:
+      'bg-orange-50 dark:bg-orange-900/20 border-orange-300 dark:border-orange-700',
     headerBadgeAbono: 'bg-white/20 border border-white/30 text-white',
-    headerBadgeDesembolso: 'bg-orange-900/40 border border-orange-400/40 text-white/90',
+    headerBadgeDesembolso:
+      'bg-orange-900/40 border border-orange-400/40 text-white/90',
     metodoBg: 'bg-orange-500',
+    inputFocusBorder: 'focus:border-orange-500 dark:focus:border-orange-400',
+    inputFocusRing: 'focus:ring-2 focus:ring-orange-500/20',
+    inputFocusWithin:
+      'focus-within:border-orange-500 dark:focus-within:border-orange-400 focus-within:ring-2 focus-within:ring-orange-500/20',
   },
 }
 
@@ -95,24 +127,34 @@ export function getColorScheme(tipo: string): ColorScheme {
 
 export function getModalStyles(scheme: ColorScheme, modo: ModoRegistro) {
   return {
-    dialogContent: 'sm:max-w-[560px] max-h-[90vh] p-0 gap-0 border-0 bg-white dark:bg-gray-900 overflow-hidden rounded-2xl flex flex-col',
+    dialogContent:
+      'sm:max-w-[560px] max-h-[90vh] p-0 gap-0 border-0 bg-white dark:bg-gray-900 overflow-hidden rounded-2xl flex flex-col',
     body: 'px-5 py-4 space-y-4 flex-1 min-h-0 overflow-y-auto',
-    label: 'text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2 mb-1.5',
-    input: 'w-full px-4 py-2.5 border-2 border-gray-200 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-800/80 text-gray-900 dark:text-white focus:border-emerald-500 dark:focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20 transition-all text-sm outline-none',
-    inputError: 'w-full px-4 py-2.5 border-2 border-red-400 dark:border-red-600 rounded-xl bg-gray-50 dark:bg-gray-800/80 text-gray-900 dark:text-white focus:ring-2 focus:ring-red-400/20 transition-all text-sm outline-none',
+    label:
+      'text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2 mb-1.5',
+    input: `w-full px-4 py-2.5 border-2 border-gray-200 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-800/80 text-gray-900 dark:text-white ${scheme.inputFocusBorder} ${scheme.inputFocusRing} transition-all text-sm outline-none`,
+    inputError:
+      'w-full px-4 py-2.5 border-2 border-red-400 dark:border-red-600 rounded-xl bg-gray-50 dark:bg-gray-800/80 text-gray-900 dark:text-white focus:ring-2 focus:ring-red-400/20 transition-all text-sm outline-none',
     header: {
       container: `relative overflow-hidden bg-gradient-to-br ${scheme.gradient} px-5 py-4`,
       badge: `text-[10px] font-semibold px-2 py-0.5 rounded-full ${modo === 'desembolso' ? scheme.headerBadgeDesembolso : scheme.headerBadgeAbono}`,
-      iconWrapper: 'w-10 h-10 rounded-xl bg-white/20 backdrop-blur-xl flex items-center justify-center flex-shrink-0',
-      infoCard: 'bg-white/10 backdrop-blur-xl rounded-xl px-4 py-3 border border-white/20 mt-3',
-      selBtnActive: 'text-xs px-2.5 py-1 rounded-lg bg-white/30 border border-white/60 text-white font-semibold',
-      selBtnInactive: 'text-xs px-2.5 py-1 rounded-lg bg-white/10 border border-white/20 text-white/70 hover:bg-white/20 hover:text-white transition-all',
+      iconWrapper:
+        'w-10 h-10 rounded-xl bg-white/20 backdrop-blur-xl flex items-center justify-center flex-shrink-0',
+      infoCard:
+        'bg-white/10 backdrop-blur-xl rounded-xl px-4 py-3 border border-white/20 mt-3',
+      selBtnActive:
+        'text-xs px-2.5 py-1 rounded-lg bg-white/30 border border-white/60 text-white font-semibold',
+      selBtnInactive:
+        'text-xs px-2.5 py-1 rounded-lg bg-white/10 border border-white/20 text-white/70 hover:bg-white/20 hover:text-white transition-all',
     },
     footer: {
-      container: 'flex gap-3 px-5 py-4 border-t border-gray-200 dark:border-gray-700 flex-shrink-0',
-      cancelButton: 'flex-1 h-11 border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-xl font-semibold text-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors',
-      submitAbono: 'flex-1 h-11 inline-flex items-center justify-center gap-2 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-blue-600 via-cyan-600 to-teal-600 hover:from-blue-700 hover:via-cyan-700 hover:to-teal-700 shadow-lg disabled:opacity-60 disabled:cursor-not-allowed transition-all',
-      submitDesembolso: 'flex-1 h-11 inline-flex items-center justify-center gap-2 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 hover:from-purple-700 hover:via-indigo-700 hover:to-blue-700 shadow-lg disabled:opacity-60 disabled:cursor-not-allowed transition-all',
+      container:
+        'flex gap-3 px-5 py-4 border-t border-gray-200 dark:border-gray-700 flex-shrink-0',
+      cancelButton:
+        'flex-1 h-11 border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-xl font-semibold text-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors',
+      submitAbono: `flex-1 h-11 inline-flex items-center justify-center gap-2 rounded-xl text-sm font-semibold text-white bg-gradient-to-r ${scheme.gradient} ${scheme.gradientHover} shadow-lg disabled:opacity-60 disabled:cursor-not-allowed transition-all`,
+      submitDesembolso:
+        'flex-1 h-11 inline-flex items-center justify-center gap-2 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 hover:from-purple-700 hover:via-indigo-700 hover:to-blue-700 shadow-lg disabled:opacity-60 disabled:cursor-not-allowed transition-all',
     },
   }
 }

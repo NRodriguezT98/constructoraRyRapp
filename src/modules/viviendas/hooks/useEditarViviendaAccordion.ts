@@ -112,7 +112,8 @@ export function useEditarViviendaAccordion({ viviendaId }: Props) {
   } = useViviendaQuery(viviendaId)
 
   // ── Estado del accordion ─────────────────────────────────────────────────
-  const [pasoActual, setPasoActual] = useState(1)
+  // En edición, iniciamos sin ningún paso activo (pasoActual=0 = todos colapsados)
+  const [pasoActual, setPasoActual] = useState(0)
   const [pasosCompletados, setPasosCompletados] = useState<Set<number>>(
     new Set()
   )
@@ -206,8 +207,9 @@ export function useEditarViviendaAccordion({ viviendaId }: Props) {
       recargo_esquinera: vivienda.recargo_esquinera || 0,
     })
 
-    // En edición, el paso 1 (Ubicación) siempre está completado
-    setPasosCompletados(new Set([1]))
+    // En edición, todos los pasos parten completados (data ya validada en BD)
+    // El usuario puede abrir cualquier paso directamente sin secuencia obligatoria
+    setPasosCompletados(new Set([1, 2, 3, 4]))
   }, [vivienda, reset])
 
   // ── Watch valores del formulario ─────────────────────────────────────────
@@ -282,10 +284,12 @@ export function useEditarViviendaAccordion({ viviendaId }: Props) {
     impactoFinancieroSnapshot ?? impactoFinancieroCalculado
 
   // ── Estado de sección ────────────────────────────────────────────────────
+  // En modo edición: 'active' tiene precedencia sobre 'completed' para que el
+  // usuario pueda abrir cualquier paso directamente aunque ya esté completado.
   const getEstadoPaso = useCallback(
     (paso: number): SectionStatus => {
+      if (paso === pasoActual) return 'active' // activo siempre gana
       if (pasosCompletados.has(paso)) return 'completed'
-      if (paso === pasoActual) return 'active'
       return 'pending'
     },
     [pasoActual, pasosCompletados]
@@ -434,27 +438,48 @@ export function useEditarViviendaAccordion({ viviendaId }: Props) {
     setPasoActual(prev => Math.max(prev - 1, 1))
   }, [])
 
-  const irAPaso = useCallback(
-    (paso: number) => {
-      if (pasosCompletados.has(paso)) {
-        setPasosCompletados(prev => {
-          const next = new Set(prev)
-          for (let i = paso; i <= PASOS_VIVIENDA_EDICION.length; i++)
-            next.delete(i)
-          return next
+  // En modo edición: abrir cualquier paso sin afectar el estado de los demás.
+  // No se hace cascade-delete de pasos posteriores; cada paso se valida
+  // de forma independiente al hacer clic en "Siguiente".
+  const irAPaso = useCallback((paso: number) => {
+    setPasoActual(paso)
+  }, [])
+
+  // ── Validación completa de todos los pasos antes de guardar ───────────────
+  // Garantiza integridad aunque el usuario haya saltado directamente al último paso.
+  const validarFormCompleto = useCallback(async (): Promise<boolean> => {
+    setIsValidating(true)
+    try {
+      const paso2OK = await trigger([...FIELDS_PASO_2])
+      const paso3OK = await trigger([...FIELDS_PASO_3])
+      const paso4OK = await trigger([...FIELDS_PASO_4])
+
+      if (!paso2OK || !paso3OK || !paso4OK) return false
+
+      // Validación adicional: área construida <= área del lote
+      const areaLote = Number(getValues('area_lote'))
+      const areaConstruida = Number(getValues('area_construida'))
+      if (areaConstruida > areaLote) {
+        setError('area_construida', {
+          type: 'manual',
+          message: 'El área construida no puede ser mayor al área del lote',
         })
-        setPasoActual(paso)
+        return false
       }
-    },
-    [pasosCompletados]
-  )
+
+      return true
+    } finally {
+      setIsValidating(false)
+    }
+  }, [trigger, getValues, setError])
 
   // ── Mostrar confirmación o modal de impacto ──────────────────────────────
   const mostrarConfirmacion = useCallback(async () => {
-    const valido = await validarPasoActual()
+    // Validar TODOS los pasos, no solo el activo, para garantizar integridad
+    const valido = await validarFormCompleto()
     if (!valido) return
 
-    setPasosCompletados(prev => new Set(prev).add(pasoActual))
+    setPasosCompletados(new Set([1, 2, 3, 4]))
 
     if (impactoFinancieroCalculado) {
       // Capturar snapshot antes de abrir modal → evita race condition
@@ -464,7 +489,7 @@ export function useEditarViviendaAccordion({ viviendaId }: Props) {
     }
 
     setMostrarModalConfirmacion(true)
-  }, [pasoActual, validarPasoActual, impactoFinancieroCalculado])
+  }, [validarFormCompleto, impactoFinancieroCalculado])
 
   // ── Guardar cambios ──────────────────────────────────────────────────────
   const confirmarYGuardar = useCallback(
