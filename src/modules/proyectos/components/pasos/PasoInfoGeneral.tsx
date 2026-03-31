@@ -2,10 +2,11 @@
 
 import { useEffect, useMemo, useRef } from 'react'
 
-import { AccordionWizardField, AccordionWizardSelect, AccordionWizardTextarea, fieldStaggerAnim } from '@/shared/components/accordion-wizard'
-import { getCiudadesPorDepartamento, getDepartamentos } from '@/shared/data/colombia-locations'
 import { motion } from 'framer-motion'
 import type { FieldErrors, UseFormRegister, UseFormSetValue, UseFormWatch } from 'react-hook-form'
+
+import { AccordionWizardField, AccordionWizardSelect, AccordionWizardTextarea, fieldStaggerAnim } from '@/shared/components/accordion-wizard'
+import { getCiudadesPorDepartamento, getDepartamentos } from '@/shared/data/colombia-locations'
 
 interface PasoInfoGeneralProps {
   register: UseFormRegister<any>

@@ -8,6 +8,7 @@
 import { useQuery } from '@tanstack/react-query'
 
 import { createClient } from '@/lib/supabase/client'
+import { logger } from '@/lib/utils/logger'
 
 interface CategoriaSistema {
   id: string
@@ -107,7 +108,7 @@ async function seedCategoriasSistema(supabase: any, userId: string) {
     .insert(categorias)
 
   if (error) {
-    console.error('❌ Error al crear categorías del sistema:', error)
+    logger.error('❌ Error al crear categorías del sistema:', error)
     throw new Error(`Error al crear categorías: ${error.message}`)
   }
 
@@ -132,19 +133,19 @@ export function useCategoriasSistemaViviendas() {
         .order('orden', { ascending: true })
 
       if (error) {
-        console.error('❌ Error al cargar categorías de sistema:', error)
+        logger.error('❌ Error al cargar categorías de sistema:', error)
         throw new Error(`Error al cargar categorías: ${error.message}`)
       }
 
       // 2. Si NO hay categorías, crear las predefinidas
       if (!data || data.length === 0) {
-        console.warn('⚠️ No se encontraron categorías del sistema. Creando automáticamente...')
+        logger.warn('⚠️ No se encontraron categorías del sistema. Creando automáticamente...')
 
         // Obtener usuario actual (necesario para user_id)
         const { data: { user } } = await supabase.auth.getUser()
 
         if (!user) {
-          console.error('❌ No hay usuario autenticado para crear categorías')
+          logger.error('❌ No hay usuario autenticado para crear categorías')
           return []
         }
 
@@ -160,7 +161,7 @@ export function useCategoriasSistemaViviendas() {
           .order('orden', { ascending: true })
 
         if (refetchError) {
-          console.error('❌ Error al recargar categorías:', refetchError)
+          logger.error('❌ Error al recargar categorías:', refetchError)
           return []
         }
 

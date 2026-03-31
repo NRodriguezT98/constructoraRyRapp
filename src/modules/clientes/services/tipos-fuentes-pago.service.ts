@@ -6,6 +6,7 @@
  */
 
 import { supabase } from '@/lib/supabase/client'
+import { logger } from '@/lib/utils/logger'
 
 /**
  * Feature flags de lógica de negocio del tipo de fuente
@@ -56,13 +57,13 @@ export async function cargarTiposFuentesPagoActivas(): Promise<ConsultaTiposFuen
       .order('orden', { ascending: true })
 
     if (error) {
-      console.error('❌ Error al cargar tipos de fuentes de pago:', error)
+      logger.error('❌ Error al cargar tipos de fuentes de pago:', error)
       return { data: null, error: new Error(error.message) }
     }
 
     return { data: data as unknown as TipoFuentePagoCatalogo[], error: null }
   } catch (err) {
-    console.error('❌ Error inesperado al cargar tipos de fuentes:', err)
+    logger.error('❌ Error inesperado al cargar tipos de fuentes:', err)
     return { data: null, error: err as Error }
   }
 }
@@ -80,13 +81,13 @@ export async function cargarTodosTiposFuentesPago(): Promise<ConsultaTiposFuente
       .order('orden', { ascending: true })
 
     if (error) {
-      console.error('❌ Error al cargar todos los tipos de fuentes:', error)
+      logger.error('❌ Error al cargar todos los tipos de fuentes:', error)
       return { data: null, error: new Error(error.message) }
     }
 
     return { data: data as unknown as TipoFuentePagoCatalogo[], error: null }
   } catch (err) {
-    console.error('❌ Error inesperado al cargar tipos de fuentes:', err)
+    logger.error('❌ Error inesperado al cargar tipos de fuentes:', err)
     return { data: null, error: err as Error }
   }
 }
@@ -109,13 +110,13 @@ export async function obtenerTipoFuentePorNombre(
       .single()
 
     if (error) {
-      console.error(`❌ Error al buscar fuente "${nombre}":`, error)
+      logger.error(`❌ Error al buscar fuente "${nombre}":`, error)
       return null
     }
 
     return data as unknown as TipoFuentePagoCatalogo
   } catch (err) {
-    console.error(`❌ Error inesperado al buscar fuente "${nombre}":`, err)
+    logger.error(`❌ Error inesperado al buscar fuente "${nombre}":`, err)
     return null
   }
 }

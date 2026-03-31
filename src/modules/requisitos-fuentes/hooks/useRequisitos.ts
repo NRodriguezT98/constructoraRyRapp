@@ -11,10 +11,14 @@
 
 'use client'
 
-import { createClient } from '@/lib/supabase/client'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useMemo } from 'react'
+
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
+
+import { createClient } from '@/lib/supabase/client'
+import { logger } from '@/lib/utils/logger'
+
 import { requisitosService } from '../services/requisitos.service'
 import type { ActualizarRequisitoDTO, CrearRequisitoDTO } from '../types'
 
@@ -61,7 +65,7 @@ export function useRequisitos(tipoFuenteSeleccionado: string) {
       toast.success(`${resultados.length} requisito${plural ? 's' : ''} creado${plural ? 's' : ''} exitosamente`)
     },
     onError: (error: Error) => {
-      console.error('Error al crear requisito:', error)
+      logger.error('Error al crear requisito:', error)
       toast.error('Error al crear requisito')
     },
   })
@@ -80,7 +84,7 @@ export function useRequisitos(tipoFuenteSeleccionado: string) {
       toast.success('Requisito actualizado')
     },
     onError: (error: Error) => {
-      console.error('Error al actualizar requisito:', error)
+      logger.error('Error al actualizar requisito:', error)
       toast.error('Error al actualizar requisito')
     },
   })
@@ -93,7 +97,7 @@ export function useRequisitos(tipoFuenteSeleccionado: string) {
       toast.success('Requisito eliminado')
     },
     onError: (error: Error) => {
-      console.error('Error al eliminar requisito:', error)
+      logger.error('Error al eliminar requisito:', error)
       toast.error('Error al eliminar requisito')
     },
   })
@@ -107,7 +111,7 @@ export function useRequisitos(tipoFuenteSeleccionado: string) {
       toast.success('Orden actualizado')
     },
     onError: (error: Error) => {
-      console.error('Error al reordenar:', error)
+      logger.error('Error al reordenar:', error)
       toast.error('Error al reordenar requisitos')
     },
   })

@@ -3,6 +3,7 @@
  */
 
 import type { CampoConfig, RolCampo, ValorCampo } from '@/modules/configuracion/types/campos-dinamicos.types'
+
 import type { FuentePagoConfig } from '../components/asignar-vivienda/types'
 
 /**

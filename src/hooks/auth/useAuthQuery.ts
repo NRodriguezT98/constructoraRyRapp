@@ -13,6 +13,7 @@ import type { User } from '@supabase/supabase-js'
 import { useQuery } from '@tanstack/react-query'
 
 import { createClient } from '@/lib/supabase/client'
+import { logger } from '@/lib/utils/logger'
 
 const supabase = createClient()
 
@@ -114,7 +115,7 @@ export function useAuthPerfilQuery(userId?: string) {
         .single()
 
       if (error) {
-        console.error('Error obteniendo perfil:', error)
+        logger.error('Error obteniendo perfil:', error)
         throw error
       }
 

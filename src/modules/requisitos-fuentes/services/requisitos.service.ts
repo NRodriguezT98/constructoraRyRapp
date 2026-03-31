@@ -10,6 +10,9 @@
  */
 
 import type { SupabaseClient } from '@supabase/supabase-js'
+
+import { logger } from '@/lib/utils/logger'
+
 import type {
     ActualizarRequisitoDTO,
     CrearRequisitoDTO,
@@ -178,12 +181,12 @@ export class RequisitosService {
       .order('orden', { ascending: true })
 
     if (errorCatalogo) {
-      console.error('Error al obtener catálogo de tipos de fuentes:', errorCatalogo)
+      logger.error('Error al obtener catálogo de tipos de fuentes:', errorCatalogo)
       throw errorCatalogo
     }
 
     if (!tiposCatalogo || tiposCatalogo.length === 0) {
-      console.warn('No hay tipos de fuentes activos en el catálogo')
+      logger.warn('No hay tipos de fuentes activos en el catálogo')
       return []
     }
 
@@ -194,7 +197,7 @@ export class RequisitosService {
       .eq('activo', true)
 
     if (errorRequisitos) {
-      console.error('Error al contar requisitos:', errorRequisitos)
+      logger.error('Error al contar requisitos:', errorRequisitos)
     }
 
     // 3. Crear mapa de conteo

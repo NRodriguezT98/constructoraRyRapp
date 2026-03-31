@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 
 import { useAuth } from '@/contexts/auth-context'
+import { logger } from '@/lib/utils/logger'
 import type { DocumentoFormData } from '@/modules/documentos/schemas/documento.schema'
 import { documentoConArchivoSchema, documentoFormSchema } from '@/modules/documentos/schemas/documento.schema'
 
@@ -66,8 +67,9 @@ export function useDocumentoUpload({
     try {
       documentoConArchivoSchema.shape.archivo.parse(file)
       return true
-    } catch (error: any) {
-      const mensajeError = error.errors?.[0]?.message || 'Archivo no válido'
+    } catch (error: unknown) {
+      const zodError = error as { errors?: Array<{ message: string }> }
+      const mensajeError = zodError.errors?.[0]?.message || 'Archivo no válido'
       setErrorArchivo(mensajeError)
       return false
     }
@@ -147,7 +149,7 @@ export function useDocumentoUpload({
       }
 
       if (!user) {
-        console.error('Usuario no autenticado')
+        logger.error('Usuario no autenticado')
         return
       }
 
@@ -168,7 +170,7 @@ export function useDocumentoUpload({
         limpiarArchivo()
         onSuccess?.()
       } catch (error) {
-        console.error('Error al subir documento:', error)
+        logger.error('Error al subir documento:', error)
       }
     },
     [archivoSeleccionado, user, subirDocumento, reset, limpiarArchivo, onSuccess]

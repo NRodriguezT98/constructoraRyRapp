@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 
 import { getServerPermissions } from '@/lib/auth/server'
 import { createRouteClient } from '@/lib/supabase/server-route'
+import { logger } from '@/lib/utils/logger'
 
 // Seed data con IDs fijos (actualizado para usar createRouteClient)
 const FUENTES_OFICIALES = [
@@ -122,7 +123,7 @@ export async function POST() {
       fuentes: fuentesFinales,
     })
   } catch (error) {
-    console.error('Error en seed de tipos de fuentes:', error)
+    logger.error('Error en seed de tipos de fuentes:', error)
     return NextResponse.json(
       {
         error: 'Error al ejecutar seed',

@@ -17,6 +17,7 @@
 import { useMemo } from 'react'
 
 import { useAuth } from '@/contexts/auth-context'
+import { logger } from '@/lib/utils/logger'
 
 import type { Accion, Modulo, Rol } from '../types'
 import {
@@ -106,7 +107,7 @@ export function usePermissions() {
 
     // ⚠️ Validación adicional: verificar que el rol existe en PERMISOS_POR_ROL
     if (!PERMISOS_POR_ROL[rol]) {
-      console.error(`❌ [PERMISOS] Rol "${rol}" no reconocido en sistema de permisos`)
+      logger.error(`❌ [PERMISOS] Rol "${rol}" no reconocido en sistema de permisos`)
       return []
     }
 
@@ -159,7 +160,7 @@ export function usePermissions() {
 
     // ⚠️ Validación: verificar que el rol existe en PERMISOS_POR_ROL
     if (!PERMISOS_POR_ROL[rol]) {
-      console.error(`❌ [PERMISOS] Rol "${rol}" no tiene permisos definidos`)
+      logger.error(`❌ [PERMISOS] Rol "${rol}" no tiene permisos definidos`)
       return []
     }
 

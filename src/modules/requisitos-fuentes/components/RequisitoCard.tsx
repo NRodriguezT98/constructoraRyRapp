@@ -22,6 +22,7 @@ import {
     Target,
     Trash2,
 } from 'lucide-react'
+
 import { requisitosConfigStyles as styles } from '../styles/requisitos-config.styles'
 import type { RequisitoFuenteConfig } from '../types'
 

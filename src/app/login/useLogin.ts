@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { useQueryClient } from '@tanstack/react-query'
+
 import { useRouter, useSearchParams } from 'next/navigation'
 
 import { showLoginSuccessToast } from '@/components/toasts/custom-toasts'
 import { createClient } from '@/lib/supabase/client'
-
 import { debugLog, errorLog, successLog } from '@/lib/utils/logger'
 import { traducirErrorSupabase } from '@/lib/utils/traducir-errores'
 import { auditLogService } from '@/services/audit-log.service'
@@ -203,7 +203,6 @@ export function useLogin(): UseLoginReturn {
 
       } catch (err) {
         const error = err instanceof Error ? err : new Error(String(err))
-        console.error('Login error:', error)
         errorLog('login-submit', error, { email })
 
         // Calcular intentos restantes DESPUÉS de este fallo

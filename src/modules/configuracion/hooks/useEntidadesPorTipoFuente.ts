@@ -18,10 +18,14 @@
 
 'use client'
 
-import { supabase } from '@/lib/supabase/client'
-import type { EntidadFinanciera } from '@/modules/configuracion/types/entidades-financieras.types'
-import { useQuery, type UseQueryOptions } from '@tanstack/react-query'
 import { useMemo } from 'react'
+
+import { useQuery, type UseQueryOptions } from '@tanstack/react-query'
+
+import { supabase } from '@/lib/supabase/client'
+import { logger } from '@/lib/utils/logger'
+import type { EntidadFinanciera } from '@/modules/configuracion/types/entidades-financieras.types'
+
 
 // =====================================================
 // QUERY KEYS
@@ -77,7 +81,7 @@ export function useEntidadesPorTipoFuente(
         .order('nombre', { ascending: true })
 
       if (error) {
-        console.error('[useEntidadesPorTipoFuente] Error:', error)
+        logger.error('[useEntidadesPorTipoFuente] Error:', error)
         throw new Error(`Error al cargar entidades: ${error.message}`)
       }
 

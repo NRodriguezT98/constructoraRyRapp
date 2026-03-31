@@ -21,13 +21,16 @@ import {
     TrendingUp,
     User,
 } from 'lucide-react'
-import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
+
+import { useRouter } from 'next/navigation'
 
 import type { SectionStatus, SummaryItem, WizardStepConfig } from '@/shared/components/accordion-wizard'
 import type { CambioDetectado, CategoriaConfig } from '@/shared/components/modulos/ConfirmarCambiosModal'
+
 import { proyectosService } from '../services/proyectos.service'
 import type { Proyecto, ProyectoFormData } from '../types'
+
 import { useDetectarCambios, type CambioManzana, type ResumenCambios } from './useDetectarCambios'
 import { useProyectoConValidacion } from './useProyectoConValidacion'
 import { useProyectosForm } from './useProyectosForm'
@@ -66,7 +69,7 @@ const ESTADO_LABELS: Record<string, string> = {
 }
 
 // ── Iconos por campo para la modal de confirmación ───────────────
-const CAMPO_ICONO: Record<string, any> = {
+const CAMPO_ICONO: Record<string, unknown> = {
   nombre: Building2,
   departamento: MapPin,
   ciudad: MapPin,

@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion'
 import { ArrowLeft, Wallet } from 'lucide-react'
+
 import Link from 'next/link'
 
 import { TiposFuentesPagoCard } from '@/modules/admin/components/TiposFuentesPagoCard'

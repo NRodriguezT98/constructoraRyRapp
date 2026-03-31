@@ -1,9 +1,11 @@
 'use client'
 
+import { useEffect, useState } from 'react'
+
 import { motion } from 'framer-motion'
 import { Clock, Info, LogIn, ShieldAlert } from 'lucide-react'
+
 import Image from 'next/image'
-import { useEffect, useState } from 'react'
 
 export function SessionClosedByInactivity() {
   const [timestamp, setTimestamp] = useState<string>('')
@@ -157,7 +159,7 @@ export function SessionClosedByInactivity() {
 
                   <li className="flex items-start gap-2">
                     <span className="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-red-600 dark:bg-red-400 mt-1.5 flex-shrink-0" />
-                    <span className="leading-tight">Clic en <strong className="font-semibold">"Mantener sesión activa"</strong> reinicia el contador</span>
+                    <span className="leading-tight">Clic en <strong className="font-semibold">&quot;Mantener sesión activa&quot;</strong> reinicia el contador</span>
                   </li>
                 </ul>
               </div>

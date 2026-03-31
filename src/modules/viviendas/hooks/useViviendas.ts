@@ -1,10 +1,10 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback } from 'react'
 
 import type { Tables } from '@/lib/supabase/database.types'
 
 import type { FiltrosViviendas } from '../types'
 
-import { useViviendasQuery, useCrearViviendaMutation, useActualizarViviendaMutation, useEliminarViviendaMutation } from './useViviendasQuery'
+import { useActualizarViviendaMutation, useCrearViviendaMutation, useEliminarViviendaMutation, useViviendasQuery } from './useViviendasQuery'
 
 type Vivienda = Tables<'viviendas'>
 

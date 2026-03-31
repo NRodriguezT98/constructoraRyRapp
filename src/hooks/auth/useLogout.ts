@@ -19,10 +19,12 @@
 
 'use client'
 
-import { useQueryClient } from '@tanstack/react-query'
-import { useRouter } from 'next/navigation'
 import { useCallback, useState } from 'react'
+
+import { useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
+
+import { useRouter } from 'next/navigation'
 
 import {
   showLoggingOutToast,
@@ -30,6 +32,7 @@ import {
   showLogoutToast
 } from '@/components/toasts/custom-toasts'
 import { debugLog, errorLog, successLog } from '@/lib/utils/logger'
+
 import { useLogoutMutation } from './useAuthMutations'
 
 // ============================================

@@ -8,6 +8,8 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
+import { logger } from '@/lib/utils/logger'
+
 import { notasHistorialService } from '../services/notas-historial.service'
 import type { ActualizarNotaDTO, CrearNotaDTO } from '../types/notas-historial.types'
 
@@ -33,7 +35,7 @@ export function useNotasHistorial(clienteId: string) {
       }
     },
     onError: (error: Error) => {
-      console.error('Error creando nota:', error)
+      logger.error('Error creando nota:', error)
       toast.error('Error al crear nota')
     },
   })
@@ -58,7 +60,7 @@ export function useNotasHistorial(clienteId: string) {
       }
     },
     onError: (error: Error) => {
-      console.error('Error actualizando nota:', error)
+      logger.error('Error actualizando nota:', error)
       toast.error('Error al actualizar nota')
     },
   })
@@ -82,7 +84,7 @@ export function useNotasHistorial(clienteId: string) {
       }
     },
     onError: (error: Error) => {
-      console.error('Error eliminando nota:', error)
+      logger.error('Error eliminando nota:', error)
       toast.error('Error al eliminar nota')
     },
   })

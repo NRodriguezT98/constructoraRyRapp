@@ -4,6 +4,7 @@ import { Building2, DollarSign, Home, Layers, MapPin, Maximize, Ruler, ScrollTex
 
 import type { ExpedienteData } from '../../types'
 import { formatCOP } from '../../utils/renuncias.utils'
+
 import { expedienteStyles as styles } from './ExpedienteRenunciaPage.styles'
 
 interface ExpedienteViviendaProps {
@@ -12,7 +13,14 @@ interface ExpedienteViviendaProps {
 
 export function ExpedienteVivienda({ datos }: ExpedienteViviendaProps) {
   const { renuncia, viviendaDetalle } = datos
-  const snap = renuncia.vivienda_datos_snapshot as Record<string, any> | null
+  const snap = renuncia.vivienda_datos_snapshot as Partial<{
+    valor_total: number
+    matricula_inmobiliaria: string
+    tipo_vivienda: string
+    area_lote: number
+    area_construida: number
+    es_esquinera: boolean
+  }> | null
   const valorVivienda = renuncia.vivienda_valor_snapshot ?? snap?.valor_total ?? 0
 
   // Fallback: snapshot → viviendaDetalle (consulta en vivo)

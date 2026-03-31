@@ -12,7 +12,6 @@
  * @version 2.0.0 - 2025-12-02 (React-PDF Premium)
  */
 
-import { getTodayDateString } from '@/lib/utils/date.utils'
 import {
   Document,
   Image,
@@ -22,6 +21,9 @@ import {
   Text,
   View
 } from '@react-pdf/renderer'
+
+import { getTodayDateString } from '@/lib/utils/date.utils'
+import { logger } from '@/lib/utils/logger'
 
 // ============================================
 // TYPES
@@ -563,7 +565,7 @@ export async function generarPDFPreview(datos: DatosPreviewPDF): Promise<void> {
     URL.revokeObjectURL(url)
 
   } catch (error) {
-    console.error('❌ [PDF] Error al generar preview:', error)
+    logger.error('❌ [PDF] Error al generar preview:', error)
     throw error
   }
 }

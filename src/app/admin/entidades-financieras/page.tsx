@@ -1,5 +1,7 @@
-import { getServerPermissions } from '@/lib/auth/server'
 import { redirect } from 'next/navigation'
+
+import { getServerPermissions } from '@/lib/auth/server'
+
 import { EntidadesFinancierasAdminContent } from './entidades-financieras-admin-content'
 
 export const metadata = {

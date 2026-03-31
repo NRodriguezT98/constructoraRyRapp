@@ -3,6 +3,8 @@
  * Mapea módulo + acción → Renderer específico
  */
 
+import { logger } from '@/lib/utils/logger'
+
 import { ActualizacionProyectoRenderer, CreacionProyectoRenderer } from './proyectos'
 import { RendererGenerico } from './shared/RendererGenerico'
 
@@ -33,14 +35,14 @@ export function getAuditoriaRenderer(modulo: string, accion: string): RendererCo
   const moduloRenderers = RENDERERS_MAP[modulo]
 
   if (!moduloRenderers) {
-    console.warn(`No hay renderers definidos para el módulo: ${modulo}. Usando renderer genérico.`)
+    logger.warn(`No hay renderers definidos para el módulo: ${modulo}. Usando renderer genérico.`)
     return RendererGenerico
   }
 
   const renderer = moduloRenderers[accion]
 
   if (!renderer) {
-    console.warn(`No hay renderer definido para ${modulo}/${accion}. Usando renderer genérico.`)
+    logger.warn(`No hay renderer definido para ${modulo}/${accion}. Usando renderer genérico.`)
     return RendererGenerico
   }
 

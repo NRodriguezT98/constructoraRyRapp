@@ -5,11 +5,11 @@
  * Flujo: Confirmar → Loading (doble anillo) → Éxito (con animación)
  */
 
-import { RefreshCw, UserCheck, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
-import { createPortal } from 'react-dom'
 
 import { motion } from 'framer-motion'
+import { RefreshCw, UserCheck, X } from 'lucide-react'
+import { createPortal } from 'react-dom'
 
 type ModalState = 'confirm' | 'loading' | 'success'
 
@@ -250,7 +250,7 @@ export function ReactivarClienteModal({
               El estado de{' '}
               <span className="font-semibold text-cyan-600 dark:text-cyan-400">{nombreCliente}</span>{' '}
               cambiará a{' '}
-              <span className="font-semibold text-emerald-600 dark:text-emerald-400">"Interesado"</span>{' '}
+              <span className="font-semibold text-emerald-600 dark:text-emerald-400">&quot;Interesado&quot;</span>{' '}
               y podrá asignársele una nueva vivienda.
             </p>
           </div>

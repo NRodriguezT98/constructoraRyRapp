@@ -18,6 +18,7 @@
 import { useCallback, useState } from 'react'
 
 import { createClient } from '@/lib/supabase/client'
+import { logger } from '@/lib/utils/logger'
 
 import { CATEGORIAS_SISTEMA_CLIENTES } from '../constants/categorias-sistema-clientes.constants'
 
@@ -56,7 +57,7 @@ export function useCategoriasSistemaClientes(): UseCategoriasSistemaClientesRetu
       const { data: { user }, error: userError } = await supabase.auth.getUser()
 
       if (userError || !user) {
-        console.warn('⚠️ Usuario no autenticado, omitiendo verificación de categorías')
+        logger.warn('⚠️ Usuario no autenticado, omitiendo verificación de categorías')
         return
       }
 
@@ -110,7 +111,7 @@ export function useCategoriasSistemaClientes(): UseCategoriasSistemaClientesRetu
 
     } catch (err) {
       const mensaje = err instanceof Error ? err.message : 'Error desconocido'
-      console.error('❌ Error en verificación de categorías:', mensaje)
+      logger.error('❌ Error en verificación de categorías:', mensaje)
       setError(mensaje)
     } finally {
       setCargando(false)

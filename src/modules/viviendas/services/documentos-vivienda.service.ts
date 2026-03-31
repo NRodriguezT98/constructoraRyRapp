@@ -28,11 +28,11 @@ class DocumentosViviendaService {
     return []
   }
 
-  async subirDocumento(_params: SubirDocumentoParams): Promise<any> {
+  async subirDocumento(_params: SubirDocumentoParams): Promise<unknown> {
     throw new Error('Not implemented')
   }
 
-  async actualizarDocumento(_params: ActualizarDocumentoParams): Promise<any> {
+  async actualizarDocumento(_params: ActualizarDocumentoParams): Promise<unknown> {
     throw new Error('Not implemented')
   }
 
@@ -72,7 +72,7 @@ class DocumentosViviendaService {
     throw new Error('Not implemented')
   }
 
-  async obtenerEstadisticas(_viviendaId: string): Promise<any> {
+  async obtenerEstadisticas(_viviendaId: string): Promise<unknown> {
     return {}
   }
 }

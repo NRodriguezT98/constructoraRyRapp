@@ -26,6 +26,8 @@
 
 import { useCallback, useState } from 'react'
 
+import { logger } from '@/lib/utils/logger'
+
 interface UseModalConfirmacionOptions {
   /** Función a ejecutar al confirmar */
   onConfirm: () => void | Promise<void>
@@ -63,7 +65,7 @@ export function useModalConfirmacion({
       onSuccess?.()
       setModalAbierto(false)
     } catch (error) {
-      console.error('Error en confirmación:', error)
+      logger.error('Error en confirmación:', error)
       onError?.(error)
     } finally {
       setIsLoading(false)

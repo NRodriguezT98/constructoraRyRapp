@@ -15,6 +15,8 @@
 
 'use client'
 
+import { useState } from 'react'
+
 import { motion } from 'framer-motion'
 import {
     AlertCircle,
@@ -38,13 +40,14 @@ import {
     Wallet,
     X
 } from 'lucide-react'
-import { useState } from 'react'
+
 import {
     useEliminarTipoFuentePago,
     useReactivarTipoFuentePago,
     useTiposFuentesPago,
 } from '../hooks'
 import type { TipoFuenteIcono, TipoFuentePago } from '../types'
+
 import { TipoFuentePagoFormModal } from './TipoFuentePagoFormModal'
 
 // =====================================================
@@ -476,7 +479,7 @@ export function TiposFuentesPagoLista() {
           </p>
           {busqueda && (
             <p className="text-xs text-gray-500 dark:text-gray-400">
-              Filtrando por: <span className="font-medium">"{busqueda}"</span>
+              Filtrando por: <span className="font-medium">&quot;{busqueda}&quot;</span>
             </p>
           )}
         </div>

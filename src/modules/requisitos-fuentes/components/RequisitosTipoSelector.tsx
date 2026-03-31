@@ -12,6 +12,7 @@
 
 import { motion } from 'framer-motion'
 import { Share2 } from 'lucide-react'
+
 import { requisitosConfigStyles as styles } from '../styles/requisitos-config.styles'
 
 export const COMPARTIDOS_TAB = '__COMPARTIDOS__'

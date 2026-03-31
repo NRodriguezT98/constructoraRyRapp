@@ -2,14 +2,17 @@
 
 import { motion } from 'framer-motion'
 import { Building2, DollarSign, Download, Edit2, FileText, Info, User } from 'lucide-react'
+import { toast } from 'sonner'
 
+import { logger } from '@/lib/utils/logger'
 import { formatNombreCompleto } from '@/lib/utils/string.utils'
+import { pageStyles as s } from '@/modules/clientes/pages/asignar-vivienda/styles'
+import { generarPDFPreview } from '@/modules/clientes/services/pdf-preview-react.service'
 import type { TipoFuentePago } from '@/modules/clientes/types'
 import { obtenerMonto } from '@/modules/clientes/utils/fuentes-pago-campos.utils'
 import { useTiposFuentesConCampos } from '@/modules/configuracion/hooks/useTiposFuentesConCampos'
 
-import { pageStyles as s } from '@/modules/clientes/pages/asignar-vivienda/styles'
-import { generarPDFPreview } from '@/modules/clientes/services/pdf-preview-react.service'
+
 import type { FuentePagoConfig, ViviendaDetalle } from '../types'
 
 interface FuenteConfiguracion {
@@ -120,8 +123,8 @@ export function Paso3Revision({
         notas: notas,
       })
     } catch (error) {
-      console.error('❌ Error al generar PDF preview:', error)
-      alert('⚠️ Error al generar el PDF. Por favor, intenta nuevamente.')
+      logger.error('❌ Error al generar PDF preview:', error)
+      toast.info('⚠️ Error al generar el PDF. Por favor, intenta nuevamente.')
     }
   }
 

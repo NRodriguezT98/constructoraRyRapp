@@ -12,9 +12,11 @@ import { Archive, ArchiveRestore, Building2, CheckCircle2, Clock, Edit2, Eye, Ma
 
 import { DataTable } from '@/shared/components/table/DataTable'
 import { cn } from '@/shared/utils/helpers'
+
 import { useProyectoTabla } from '../hooks/useProyectoTabla'
 import type { Proyecto } from '../types'
 import { formatearEstadoProyecto } from '../utils/estado.utils'
+
 import { proyectosTablaStyles as styles } from './proyectos-tabla.styles'
 
 interface ProyectosTablaProps {

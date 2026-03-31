@@ -8,9 +8,10 @@
 
 import { useEffect, useState } from 'react'
 
-import type { ModuleName } from '@/shared/config/module-themes'
 import { AnimatePresence, motion } from 'framer-motion'
 import { CheckCircle2, PartyPopper, Sparkles } from 'lucide-react'
+
+import type { ModuleName } from '@/shared/config/module-themes'
 
 const SUCCESS_BG: Record<string, string> = {
   proyectos: 'from-green-500 to-emerald-500',

@@ -7,11 +7,13 @@
 
 'use client'
 
-import { EntidadesFinancierasLista } from '@/modules/configuracion/components/EntidadesFinancierasLista'
-import { useEntidadesFinancierasStats } from '@/modules/configuracion/hooks/useEntidadesFinancieras'
 import { motion } from 'framer-motion'
 import { ArrowLeft, Building2, Landmark } from 'lucide-react'
+
 import Link from 'next/link'
+
+import { EntidadesFinancierasLista } from '@/modules/configuracion/components/EntidadesFinancierasLista'
+import { useEntidadesFinancierasStats } from '@/modules/configuracion/hooks/useEntidadesFinancieras'
 
 export function EntidadesFinancierasAdminContent() {
   const { data: stats } = useEntidadesFinancierasStats()

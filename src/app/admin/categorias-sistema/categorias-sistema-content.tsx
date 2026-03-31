@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion'
 import { ArrowLeft, Database } from 'lucide-react'
+
 import Link from 'next/link'
 
 import { CategoriasSistemaCard } from '@/modules/admin/components/CategoriasSistemaCard'

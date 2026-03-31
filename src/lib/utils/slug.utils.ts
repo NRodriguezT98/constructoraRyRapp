@@ -10,6 +10,7 @@
  */
 
 import { createClient } from '@/lib/supabase/client'
+import { logger } from '@/lib/utils/logger'
 
 // ===================================
 // GENERACIÓN DE SLUGS
@@ -34,7 +35,7 @@ function normalizarTexto(texto: string): string {
  */
 function extraerShortId(uuid: string): string {
   if (!uuid) {
-    console.error('extraerShortId: UUID es undefined o vacío')
+    logger.error('extraerShortId: UUID es undefined o vacío')
     return 'no-id'
   }
   return uuid.split('-')[0]
@@ -162,12 +163,12 @@ export async function resolverSlugAUUID(
       .select('id')
 
     if (error) {
-      console.error(`❌ Error al buscar en ${tabla}:`, error)
+      logger.error(`❌ Error al buscar en ${tabla}:`, error)
       return null
     }
 
     if (!data || data.length === 0) {
-      console.error(`❌ No hay registros en tabla: ${tabla}`)
+      logger.error(`❌ No hay registros en tabla: ${tabla}`)
       return null
     }
 
@@ -177,13 +178,13 @@ export async function resolverSlugAUUID(
     )
 
     if (!registro) {
-      console.error(`❌ No se encontró registro con short ID: ${shortId} en tabla: ${tabla}`)
+      logger.error(`❌ No se encontró registro con short ID: ${shortId} en tabla: ${tabla}`)
       return null
     }
 
     return registro.id
   } catch (error) {
-    console.error('❌ Error al resolver slug:', error)
+    logger.error('❌ Error al resolver slug:', error)
     return null
   }
 }

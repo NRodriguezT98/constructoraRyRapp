@@ -11,6 +11,7 @@ import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { AlertCircle, FileEdit, Loader2, Save, Star, X } from 'lucide-react'
 
+import { logger } from '@/lib/utils/logger'
 import { useNotaPorId } from '@/modules/clientes/hooks/useNotaPorId'
 import { useNotasHistorial } from '@/modules/clientes/hooks/useNotasHistorial'
 
@@ -91,7 +92,7 @@ export function NotaModal({ isOpen, onClose, clienteId, clienteNombre, notaId }:
       }
     } catch (error) {
       // Error ya manejado por el hook (toast.error)
-      console.error('Error en handleSubmit:', error)
+      logger.error('Error en handleSubmit:', error)
     }
   }
 

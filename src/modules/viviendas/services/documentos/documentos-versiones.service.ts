@@ -3,6 +3,8 @@
 // ============================================
 
 import { supabase } from '@/lib/supabase/client'
+import { logger } from '@/lib/utils/logger'
+
 import type { DocumentoVivienda } from '../../types/documento-vivienda.types'
 
 const BUCKET_NAME = 'documentos-viviendas'
@@ -190,7 +192,7 @@ export class DocumentosVersionesService {
       .download(versionAnterior.url_storage)
 
     if (downloadError) {
-      console.error('❌ Error al descargar archivo:', downloadError)
+      logger.error('❌ Error al descargar archivo:', downloadError)
       throw new Error('No se pudo descargar el archivo de la versión anterior')
     }
 

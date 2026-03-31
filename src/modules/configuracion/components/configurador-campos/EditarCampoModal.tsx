@@ -13,6 +13,7 @@ import { motion } from 'framer-motion'
 import { AlertCircle, Plus, Save, X } from 'lucide-react'
 
 import type { CampoConfig } from '../../types/campos-dinamicos.types'
+
 import { TIPOS_DISPONIBLES } from './constants/campos-disponibles'
 import { s } from './EditarCampoModal.styles'
 import { useEditarCampoModal } from './hooks/useEditarCampoModal'

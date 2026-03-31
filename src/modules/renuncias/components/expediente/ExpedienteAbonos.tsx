@@ -1,11 +1,14 @@
 'use client'
 
-import { ChevronDown, ChevronUp, ExternalLink, Receipt, XCircle } from 'lucide-react'
 import { useState } from 'react'
 
+import { ChevronDown, ChevronUp, ExternalLink, Receipt, XCircle } from 'lucide-react'
+
 import { formatDateCompact } from '@/lib/utils/date.utils'
+
 import type { AbonoExpediente } from '../../types'
 import { formatCOP } from '../../utils/renuncias.utils'
+
 import { expedienteStyles as styles } from './ExpedienteRenunciaPage.styles'
 
 interface ExpedienteAbonosProps {

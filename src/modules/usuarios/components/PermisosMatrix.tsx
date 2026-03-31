@@ -15,9 +15,12 @@
 
 'use client'
 
+import { useState } from 'react'
+
 import { motion } from 'framer-motion'
 import { Check, Loader2, Lock, Shield, X } from 'lucide-react'
-import { useState } from 'react'
+
+import { logger } from '@/lib/utils/logger'
 
 import {
     useActualizarPermisoMutation,
@@ -91,7 +94,7 @@ export function PermisosMatrix() {
         permitido: !permitidoActual,
       })
     } catch (error) {
-      console.error('Error actualizando permiso:', error)
+      logger.error('Error actualizando permiso:', error)
     }
   }
 

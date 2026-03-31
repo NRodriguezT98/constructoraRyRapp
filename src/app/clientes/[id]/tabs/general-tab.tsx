@@ -22,15 +22,16 @@ import { useMemo } from 'react'
 
 import { motion } from 'framer-motion'
 import { Clock } from 'lucide-react'
+
 import { useRouter } from 'next/navigation'
 
 import { formatDateCompact } from '@/lib/utils/date.utils'
-
 import { construirURLCliente } from '@/lib/utils/slug.utils'
 import { useDocumentoIdentidad } from '@/modules/clientes/documentos/hooks/useDocumentoIdentidad'
 import type { Cliente } from '@/modules/clientes/types'
 
 import * as styles from '../cliente-detalle.styles'
+
 import {
     BannerDocumentacion,
     ContactoUbicacionCard,

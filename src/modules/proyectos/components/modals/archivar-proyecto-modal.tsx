@@ -7,9 +7,10 @@
 
 'use client'
 
+import { useState } from 'react'
+
 import { AnimatePresence, motion } from 'framer-motion'
 import { AlertCircle, Archive, Loader2, X } from 'lucide-react'
-import { useState } from 'react'
 
 import { cn } from '@/shared/utils/helpers'
 

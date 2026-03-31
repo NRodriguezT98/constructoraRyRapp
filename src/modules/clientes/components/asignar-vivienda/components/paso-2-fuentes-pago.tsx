@@ -1,15 +1,16 @@
 'use client'
 
-import { motion } from 'framer-motion'
-import { AlertCircle, CheckCircle2, DollarSign, Info } from 'lucide-react'
 import { useCallback, useMemo } from 'react'
 
+import { motion } from 'framer-motion'
+import { AlertCircle, CheckCircle2, DollarSign, Info } from 'lucide-react'
+
 import { FuentePagoCard } from '@/modules/clientes/components/fuente-pago-card'
+import { pageStyles as s } from '@/modules/clientes/pages/asignar-vivienda/styles'
 import type { TipoFuentePago } from '@/modules/clientes/types'
 import { obtenerMonto } from '@/modules/clientes/utils/fuentes-pago-campos.utils'
 import { useTiposFuentesConCampos } from '@/modules/configuracion/hooks/useTiposFuentesConCampos'
 
-import { pageStyles as s } from '@/modules/clientes/pages/asignar-vivienda/styles'
 import type { FuentePagoConfig, FuentePagoConfiguracion, FuentePagoErrores } from '../types'
 
 interface Paso2FuentesPagoProps {

@@ -1,6 +1,7 @@
 import { supabase } from '@/lib/supabase/client'
 import type { Database } from '@/lib/supabase/database.types'
 import { formatDateForDB, getTodayDateString } from '@/lib/utils/date.utils'
+import { logger } from '@/lib/utils/logger'
 import { auditService } from '@/services/audit.service'
 import { getDepartamentos, validarCiudadDepartamento } from '@/shared/data/colombia-locations'
 
@@ -53,7 +54,7 @@ class ProyectosService {
     const { data, error } = await query.order('fecha_creacion', { ascending: false })
 
     if (error) {
-      console.error('Error al obtener proyectos:', error)
+      logger.error('Error al obtener proyectos:', error)
       throw new Error(`Error al obtener proyectos: ${error.message}`)
     }
 
@@ -69,7 +70,7 @@ class ProyectosService {
    * @example
    * ```ts
    * const proyecto = await proyectosService.obtenerProyecto('uuid-123')
-   * if (proyecto) console.log(proyecto.nombre)
+   * if (proyecto) logger.info(proyecto.nombre)
    * ```
    */
   async obtenerProyecto(id: string): Promise<Proyecto | null> {
@@ -92,7 +93,7 @@ class ProyectosService {
       if (error.code === 'PGRST116') {
         return null // No encontrado
       }
-      console.error('Error al obtener proyecto:', error)
+      logger.error('Error al obtener proyecto:', error)
       throw new Error(`Error al obtener proyecto: ${error.message}`)
     }
 
@@ -149,7 +150,7 @@ class ProyectosService {
       .single()
 
     if (errorProyecto) {
-      console.error('Error al crear proyecto:', errorProyecto)
+      logger.error('Error al crear proyecto:', errorProyecto)
       throw new Error(`Error al crear proyecto: ${errorProyecto.message}`)
     }
 
@@ -168,7 +169,7 @@ class ProyectosService {
         .select()
 
       if (errorManzanas) {
-        console.error('Error al crear manzanas:', errorManzanas)
+        logger.error('Error al crear manzanas:', errorManzanas)
         // No lanzamos error aquí, el proyecto ya fue creado
       } else {
         manzanas = (manzanasCreadas || []).map(m => ({
@@ -217,7 +218,7 @@ class ProyectosService {
     try {
       await auditService.auditarCreacionProyecto(proyectoCompleto, manzanas)
     } catch (auditError) {
-      console.error('Error al auditar creación de proyecto:', auditError)
+      logger.error('Error al auditar creación de proyecto:', auditError)
       // No lanzamos error, la auditoría es secundaria
     }
 
@@ -254,9 +255,9 @@ class ProyectosService {
       proyectoAnterior = await this.obtenerProyecto(id)
     } catch (error) {
       if (error instanceof Error) {
-        console.error('[PROYECTOS] Error al obtener proyecto para auditoría:', error.message)
+        logger.error('[PROYECTOS] Error al obtener proyecto para auditoría:', error.message)
       } else {
-        console.error('[PROYECTOS] Error desconocido al obtener proyecto:', String(error))
+        logger.error('[PROYECTOS] Error desconocido al obtener proyecto:', String(error))
       }
     }
 
@@ -277,7 +278,7 @@ class ProyectosService {
           .in('manzana_id', manzanasIds)
 
         if (viviendasVendidas && viviendasVendidas > 0) {
-          console.warn(
+          logger.warn(
             `⚠️ ADVERTENCIA: Cambiando nombre de proyecto de "${proyectoAnterior.nombre}" a "${data.nombre}". ` +
             `El proyecto tiene ${viviendasVendidas} vivienda(s) vendida(s). ` +
             `Verificar que no afecte documentos legales o contratos.`
@@ -314,7 +315,7 @@ class ProyectosService {
 
       // Advertencia al pausar proyecto con negociaciones activas
       if (data.estado === 'pausado') {
-        console.warn(
+        logger.warn(
           `⚠️ ADVERTENCIA: Pausando proyecto "${proyectoAnterior.nombre}". ` +
           `Verificar que no haya negociaciones activas o compromisos pendientes.`
         )
@@ -380,7 +381,7 @@ class ProyectosService {
       .single()
 
     if (error) {
-      console.error('Error al actualizar proyecto:', error)
+      logger.error('Error al actualizar proyecto:', error)
       throw new Error(`Error al actualizar proyecto: ${error.message}`)
     }
 
@@ -405,7 +406,7 @@ class ProyectosService {
             .eq('id', manzana.id)
 
           if (updateError) {
-            console.error('Error al actualizar manzana:', updateError)
+            logger.error('Error al actualizar manzana:', updateError)
           }
         }
         // Si NO tiene ID o NO existe en DB → Crear nueva
@@ -415,7 +416,7 @@ class ProyectosService {
             .insert(manzanaData)
 
           if (insertError) {
-            console.error('Error al crear manzana:', insertError)
+            logger.error('Error al crear manzana:', insertError)
           }
         }
       }
@@ -444,7 +445,7 @@ class ProyectosService {
             .eq('id', manzanaId)
 
           if (deleteError) {
-            console.error('Error al eliminar manzana:', deleteError)
+            logger.error('Error al eliminar manzana:', deleteError)
           }
         }
       }
@@ -466,7 +467,7 @@ class ProyectosService {
           'proyectos'
         )
       } catch (auditError) {
-        console.error('Error al auditar actualización de proyecto:', auditError)
+        logger.error('Error al auditar actualización de proyecto:', auditError)
       }
     }
 
@@ -489,9 +490,9 @@ class ProyectosService {
       proyectoEliminado = await this.obtenerProyecto(id)
     } catch (error) {
       if (error instanceof Error) {
-        console.error('[PROYECTOS] Error al obtener proyecto para auditoría:', error.message)
+        logger.error('[PROYECTOS] Error al obtener proyecto para auditoría:', error.message)
       } else {
-        console.error('[PROYECTOS] Error desconocido al obtener proyecto:', String(error))
+        logger.error('[PROYECTOS] Error desconocido al obtener proyecto:', String(error))
       }
     }
 
@@ -535,7 +536,7 @@ class ProyectosService {
     const { error } = await supabase.from('proyectos').delete().eq('id', id)
 
     if (error) {
-      console.error('Error al eliminar proyecto:', error)
+      logger.error('Error al eliminar proyecto:', error)
       throw new Error(`Error al eliminar proyecto: ${error.message}`)
     }
 
@@ -554,7 +555,7 @@ class ProyectosService {
           'proyectos'
         )
       } catch (auditError) {
-        console.error('Error al auditar eliminación de proyecto:', auditError)
+        logger.error('Error al auditar eliminación de proyecto:', auditError)
       }
     }
   }
@@ -580,9 +581,9 @@ class ProyectosService {
       proyectoArchivado = await this.obtenerProyecto(id)
     } catch (error) {
       if (error instanceof Error) {
-        console.error('[PROYECTOS] Error al obtener proyecto para auditoría:', error.message)
+        logger.error('[PROYECTOS] Error al obtener proyecto para auditoría:', error.message)
       } else {
-        console.error('[PROYECTOS] Error desconocido al obtener proyecto:', String(error))
+        logger.error('[PROYECTOS] Error desconocido al obtener proyecto:', String(error))
       }
     }
 
@@ -597,7 +598,7 @@ class ProyectosService {
       .eq('id', id)
 
     if (error) {
-      console.error('Error al archivar proyecto:', error)
+      logger.error('Error al archivar proyecto:', error)
       throw new Error(`Error al archivar proyecto: ${error.message}`)
     }
 
@@ -618,7 +619,7 @@ class ProyectosService {
           'proyectos'
         )
       } catch (auditError) {
-        console.error('Error al auditar archivado de proyecto:', auditError)
+        logger.error('Error al auditar archivado de proyecto:', auditError)
       }
     }
   }
@@ -642,9 +643,9 @@ class ProyectosService {
       proyectoRestaurado = await this.obtenerProyecto(id)
     } catch (error) {
       if (error instanceof Error) {
-        console.error('[PROYECTOS] Error al obtener proyecto para auditoría:', error.message)
+        logger.error('[PROYECTOS] Error al obtener proyecto para auditoría:', error.message)
       } else {
-        console.error('[PROYECTOS] Error desconocido al obtener proyecto:', String(error))
+        logger.error('[PROYECTOS] Error desconocido al obtener proyecto:', String(error))
       }
     }
 
@@ -659,7 +660,7 @@ class ProyectosService {
       .eq('id', id)
 
     if (error) {
-      console.error('Error al restaurar proyecto:', error)
+      logger.error('Error al restaurar proyecto:', error)
       throw new Error(`Error al restaurar proyecto: ${error.message}`)
     }
 
@@ -678,7 +679,7 @@ class ProyectosService {
           'proyectos'
         )
       } catch (auditError) {
-        console.error('Error al auditar restauración de proyecto:', auditError)
+        logger.error('Error al auditar restauración de proyecto:', auditError)
       }
     }
   }
@@ -785,7 +786,7 @@ class ProyectosService {
       .ilike('nombre', nombre) // Case-insensitive comparison
 
     if (error) {
-      console.error('Error al verificar nombre duplicado:', error)
+      logger.error('Error al verificar nombre duplicado:', error)
       throw new Error(`Error al verificar nombre: ${error.message}`)
     }
 

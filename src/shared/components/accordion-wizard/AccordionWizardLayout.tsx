@@ -2,7 +2,9 @@
 
 import { motion } from 'framer-motion'
 import { ChevronRight } from 'lucide-react'
+
 import Link from 'next/link'
+
 import { pageEnterAnim } from './accordion-wizard.animations'
 import { getAccordionWizardStyles } from './accordion-wizard.styles'
 import type { AccordionWizardLayoutProps } from './accordion-wizard.types'

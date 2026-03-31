@@ -18,11 +18,12 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
+import { logger } from '@/lib/utils/logger'
+
 import { CategoriasService } from '../services'
 import DocumentosBaseService from '../services/documentos-base.service'
 import { DocumentosEliminacionService } from '../services/documentos-eliminacion.service'
 import type { DocumentoProyecto } from '../types'
-
 import type { TipoEntidad } from '../types'
 
 // ============================================
@@ -135,7 +136,7 @@ export function useSubirDocumentoMutation(entidadId: string, tipoEntidad: TipoEn
       esImportante?: boolean
       esDocumentoIdentidad?: boolean
       userId: string
-      metadata?: Record<string, any> // ✅ Para vincular con requisito (requisito_config_id, fuente_pago_id, etc.)
+      metadata?: Record<string, unknown> // ✅ Para vincular con requisito (requisito_config_id, fuente_pago_id, etc.)
     }) =>
       DocumentosBaseService.subirDocumento(
         {
@@ -260,7 +261,7 @@ export function useToggleImportanteMutation(entidadId: string, tipoEntidad: Tipo
       const documento = documentos?.find((d) => d.id === documentoId)
 
       if (!documento) {
-        console.error('❌ [Toggle Importante] Documento no encontrado en cache')
+        logger.error('❌ [Toggle Importante] Documento no encontrado en cache')
         throw new Error('Documento no encontrado')
       }
 
@@ -286,7 +287,7 @@ export function useToggleImportanteMutation(entidadId: string, tipoEntidad: Tipo
       toast.success('Documento actualizado correctamente')
     },
     onError: (err) => {
-      console.error('❌ [Toggle Importante] Error:', err)
+      logger.error('❌ [Toggle Importante] Error:', err)
       toast.error('Error al actualizar documento')
     },
   })

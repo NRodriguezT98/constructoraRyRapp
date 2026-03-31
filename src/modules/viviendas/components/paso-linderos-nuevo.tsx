@@ -73,8 +73,8 @@ export function PasoLinderosNuevo({ register, errors }: PasoLinderosProps) {
             Consejo
           </p>
           <p className="text-xs text-amber-700 dark:text-amber-300">
-            Describe claramente cada límite de la vivienda. Por ejemplo: "Por el Norte con la Calle 123",
-            "Por el Sur con el lote 45", etc.
+            Describe claramente cada límite de la vivienda. Por ejemplo: &quot;Por el Norte con la Calle 123&quot;,
+            &quot;Por el Sur con el lote 45&quot;, etc.
           </p>
         </div>
       </div>

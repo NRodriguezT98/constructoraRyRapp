@@ -1,8 +1,9 @@
 'use client'
 
-import { AccordionWizardField, AccordionWizardSelect, fieldStaggerAnim } from '@/shared/components/accordion-wizard'
 import { motion } from 'framer-motion'
 import type { FieldErrors, UseFormRegister } from 'react-hook-form'
+
+import { AccordionWizardField, AccordionWizardSelect, fieldStaggerAnim } from '@/shared/components/accordion-wizard'
 
 interface PasoEstadoFechasProps {
   register: UseFormRegister<any>

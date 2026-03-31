@@ -1,4 +1,3 @@
-import { formatNombreCompleto } from '@/lib/utils/string.utils'
 import { motion } from 'framer-motion'
 import {
     Ban,
@@ -16,6 +15,7 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { formatDateForDisplay } from '@/lib/utils/date.utils'
 import { construirURLCliente } from '@/lib/utils/slug.utils'
+import { formatNombreCompleto } from '@/lib/utils/string.utils'
 
 
 import { abonosListStyles, infoIconColors } from './abonos-list.styles'

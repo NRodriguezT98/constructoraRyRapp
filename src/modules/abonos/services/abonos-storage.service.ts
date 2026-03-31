@@ -3,6 +3,7 @@
 // ============================================================
 
 import { supabase } from '@/lib/supabase/client'
+import { logger } from '@/lib/utils/logger'
 
 const BUCKET = 'comprobantes-abonos'
 
@@ -52,6 +53,6 @@ export async function eliminarComprobante(path: string): Promise<void> {
   try {
     await supabase.storage.from(BUCKET).remove([path])
   } catch (err) {
-    console.warn('[abonos-storage] No se pudo eliminar comprobante:', path, err)
+    logger.warn('[abonos-storage] No se pudo eliminar comprobante:', path, err)
   }
 }

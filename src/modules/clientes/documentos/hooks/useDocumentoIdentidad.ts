@@ -9,9 +9,10 @@
  * RESPONSABILIDAD: Solo lógica de negocio, sin UI
  */
 
+import { useMemo } from 'react'
+
 import { useDocumentosQuery } from '@/modules/documentos/hooks/useDocumentosQuery'
 import type { DocumentoProyecto } from '@/modules/documentos/types'
-import { useMemo } from 'react'
 
 interface UseDocumentoIdentidadProps {
   clienteId: string

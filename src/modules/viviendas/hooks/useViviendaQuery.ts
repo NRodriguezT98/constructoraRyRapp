@@ -3,9 +3,10 @@
  * Separación de responsabilidades: Solo lógica de data fetching
  */
 
+import { useQuery } from '@tanstack/react-query'
+
 import { viviendasService } from '@/modules/viviendas/services/viviendas.service'
 import type { Vivienda } from '@/modules/viviendas/types'
-import { useQuery } from '@tanstack/react-query'
 
 export function useViviendaQuery(viviendaId: string) {
   const {

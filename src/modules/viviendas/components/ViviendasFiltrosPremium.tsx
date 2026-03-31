@@ -10,13 +10,16 @@
 
 'use client'
 
+import { useEffect, useState } from 'react'
+
 import { AnimatePresence, motion } from 'framer-motion'
 import { LayoutGrid, Search, Table, X } from 'lucide-react'
-import { useEffect, useState } from 'react'
 
 import type { TipoVista } from '@/shared/hooks/useVistaPreference'
 import { cn } from '@/shared/utils/helpers'
+
 import type { FiltrosViviendas } from '../types'
+
 import { viviendasFiltrosStyles as styles } from './ViviendasFiltrosPremium.styles'
 
 interface ViviendasFiltrosPremiumProps {

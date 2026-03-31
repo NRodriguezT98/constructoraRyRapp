@@ -18,6 +18,7 @@ import { AnimatePresence } from 'framer-motion'
 import { Clock, Filter, X } from 'lucide-react'
 import { toast } from 'sonner'
 
+import { logger } from '@/lib/utils/logger'
 import { useHistorialCliente } from '@/modules/clientes/hooks/useHistorialCliente'
 import { useNotasHistorial } from '@/modules/clientes/hooks/useNotasHistorial'
 import { usePermisosNotasHistorial } from '@/modules/clientes/hooks/usePermisosNotasHistorial'
@@ -87,7 +88,7 @@ export function HistorialTab({ clienteId, clienteNombre }: HistorialTabProps) {
       setNotaIdSeleccionado(notaId)
       setMostrarModalNota(true)
     } catch (error) {
-      console.error('Error cargando nota:', error)
+      logger.error('Error cargando nota:', error)
       toast.error('Error al cargar la nota')
     }
   }
@@ -105,7 +106,7 @@ export function HistorialTab({ clienteId, clienteNombre }: HistorialTabProps) {
       try {
         await eliminarNota(notaId)
       } catch (error) {
-        console.error('Error eliminando nota:', error)
+        logger.error('Error eliminando nota:', error)
       }
     }
   }

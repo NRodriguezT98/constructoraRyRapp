@@ -18,6 +18,7 @@
 
 import { useMutation, useQuery, useQueryClient, type UseMutationOptions, type UseQueryOptions } from '@tanstack/react-query'
 import { toast } from 'sonner'
+
 import {
     TiposFuentesPagoService
 } from '../services'
@@ -219,7 +220,7 @@ export function useCrearTipoFuentePago(
 
       return result.data
     },
-    onSuccess: (data, variables) => {
+    onSuccess: (data, _variables) => {
       // Invalidar todas las listas
       queryClient.invalidateQueries({ queryKey: tiposFuentesPagoKeys.lists() })
       queryClient.invalidateQueries({ queryKey: tiposFuentesPagoKeys.options() })

@@ -7,10 +7,11 @@
  * Toda la lógica está en: useMarcarEstadoVersion hook
  */
 
-import { useMarcarEstadoVersion } from '@/modules/documentos/hooks/useMarcarEstadoVersion'
 import { AnimatePresence, motion } from 'framer-motion'
 import { CheckCircle, Loader2 } from 'lucide-react'
 import { createPortal } from 'react-dom'
+
+import { useMarcarEstadoVersion } from '@/modules/documentos/hooks/useMarcarEstadoVersion'
 
 // ============================================================================
 // TYPES
@@ -209,7 +210,7 @@ export function MarcarEstadoVersionModal({
                       ¿Confirmar restauración?
                     </h4>
                     <p className="text-xs text-green-700 dark:text-green-300 mt-1">
-                      La versión volverá a estado "Válida" y se eliminarán las
+                      La versión volverá a estado &quot;Válida&quot; y se eliminarán las
                       marcas de error u obsolescencia
                     </p>
                   </div>

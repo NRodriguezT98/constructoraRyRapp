@@ -9,10 +9,13 @@
 
 'use client'
 
-import { cn } from '@/shared/utils/helpers'
+import { useState } from 'react'
+
 import { AnimatePresence, motion } from 'framer-motion'
 import { ChevronDown, ChevronUp, Edit3, Info } from 'lucide-react'
-import { useState } from 'react'
+
+import { cn } from '@/shared/utils/helpers'
+
 
 // ============================================================================
 // TIPOS

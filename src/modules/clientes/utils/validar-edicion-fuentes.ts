@@ -18,6 +18,7 @@
  */
 
 import { esCuotaInicial } from '@/shared/constants/fuentes-pago.constants'
+
 import type { FuentePago, TipoFuentePago } from '../types'
 
 // ============================================

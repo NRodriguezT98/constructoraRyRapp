@@ -7,7 +7,9 @@
 'use client'
 
 import { motion } from 'framer-motion'
+
 import type { SnapshotVersion } from '../../../hooks/useHistorialVersiones'
+
 import { VersionCardContent } from './VersionCardContent'
 import { VersionCardHeader } from './VersionCardHeader'
 

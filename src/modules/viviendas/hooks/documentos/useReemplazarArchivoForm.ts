@@ -1,7 +1,11 @@
 'use client'
 
 import { useState } from 'react'
+
 import { toast } from 'sonner'
+
+import { logger } from '@/lib/utils/logger'
+
 import { DocumentosViviendaService } from '../../services/documentos'
 
 interface UseReemplazarArchivoFormProps {
@@ -163,7 +167,7 @@ export function useReemplazarArchivoForm({
       toast.error('Error al reemplazar archivo', {
         description: errorMsg
       })
-      console.error('Error en reemplazo:', error)
+      logger.error('Error en reemplazo:', error)
     } finally {
       setReemplazando(false)
       setProgreso({

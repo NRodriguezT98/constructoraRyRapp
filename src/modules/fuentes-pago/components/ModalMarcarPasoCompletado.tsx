@@ -28,6 +28,7 @@ import { AlertCircle, CheckCircle, Upload, X } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { getTodayDateString } from '@/lib/utils/date.utils'
+import { logger } from '@/lib/utils/logger'
 
 import { NivelValidacion } from '../types'
 
@@ -99,7 +100,7 @@ export function ModalMarcarPasoCompletado({
       toast.success('Paso marcado como completado')
       handleClose()
     } catch (error) {
-      console.error('Error marcando paso:', error)
+      logger.error('Error marcando paso:', error)
       toast.error('Error al marcar paso como completado')
     } finally {
       setIsSubmitting(false)

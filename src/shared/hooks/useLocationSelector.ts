@@ -8,6 +8,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+
 import { getCiudadesPorDepartamento, getDepartamentos } from '../data/colombia-locations'
 
 interface UseLocationSelectorParams {

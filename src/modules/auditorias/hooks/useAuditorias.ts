@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useState } from 'react'
 
+import { logger } from '@/lib/utils/logger'
+
 import { auditoriasService } from '../services/auditorias.service'
 import type {
     AuditoriaRegistro,
@@ -65,7 +67,7 @@ export function useAuditorias() {
       const mensaje =
         err instanceof Error ? err.message : 'Error al cargar auditorías'
       setError(mensaje)
-      console.error('[Auditorías] Error al cargar:', err)
+      logger.error('[Auditorías] Error al cargar:', err)
     } finally {
       setCargando(false)
     }
@@ -98,7 +100,7 @@ export function useAuditorias() {
       const mensaje =
         err instanceof Error ? err.message : 'Error al buscar auditorías'
       setError(mensaje)
-      console.error('Error al buscar:', err)
+      logger.error('Error al buscar:', err)
     } finally {
       setCargando(false)
     }
@@ -114,7 +116,7 @@ export function useAuditorias() {
     } catch (err) {
       // Ignorar error si el componente se desmontó
       if (err instanceof Error && err.name !== 'AbortError') {
-        console.error('Error al cargar resumen de módulos:', err)
+        logger.error('Error al cargar resumen de módulos:', err)
       }
     }
   }, [])
@@ -130,7 +132,7 @@ export function useAuditorias() {
     } catch (err) {
       // Ignorar error si el componente se desmontó
       if (err instanceof Error && err.name !== 'AbortError') {
-        console.error('Error al cargar eliminaciones masivas:', err)
+        logger.error('Error al cargar eliminaciones masivas:', err)
       }
     }
   }, [])
@@ -145,7 +147,7 @@ export function useAuditorias() {
     } catch (err) {
       // Ignorar error si el componente se desmontó
       if (err instanceof Error && err.name !== 'AbortError') {
-        console.error('[Auditorías] Error al cargar estadísticas:', err)
+        logger.error('[Auditorías] Error al cargar estadísticas:', err)
       }
     }
   }, [])
@@ -170,7 +172,7 @@ export function useAuditorias() {
         const mensaje =
           err instanceof Error ? err.message : 'Error al cargar historial'
         setError(mensaje)
-        console.error('Error al cargar historial:', err)
+        logger.error('Error al cargar historial:', err)
       } finally {
         setCargando(false)
       }
@@ -252,7 +254,7 @@ export function useAuditorias() {
 
         const mensaje = err instanceof Error ? err.message : 'Error al cargar auditorías'
         setError(mensaje)
-        console.error('[Auditorías] Error en carga inicial:', err)
+        logger.error('[Auditorías] Error en carga inicial:', err)
       } finally {
         if (!cancelado) {
           setCargando(false)

@@ -8,6 +8,7 @@
  */
 
 import { supabase } from '@/lib/supabase/client'
+import { logger } from '@/lib/utils/logger'
 
 import type {
     ActualizarUsuarioData,
@@ -89,13 +90,13 @@ class UsuariosService {
       const { data, error } = await query
 
       if (error) {
-        console.error('Error obteniendo usuarios:', error)
+        logger.error('Error obteniendo usuarios:', error)
         throw new Error(`Error al obtener usuarios: ${error.message}`)
       }
 
       return (data || []) as unknown as UsuarioCompleto[]
     } catch (error) {
-      console.error('Excepción en obtenerUsuarios:', error)
+      logger.error('Excepción en obtenerUsuarios:', error)
       throw error
     }
   }
@@ -113,13 +114,13 @@ class UsuariosService {
 
       if (error) {
         if (error.code === 'PGRST116') return null // Not found
-        console.error('Error obteniendo usuario:', error)
+        logger.error('Error obteniendo usuario:', error)
         throw new Error(`Error al obtener usuario: ${error.message}`)
       }
 
       return data as unknown as UsuarioCompleto
     } catch (error) {
-      console.error('Excepción en obtenerUsuarioPorId:', error)
+      logger.error('Excepción en obtenerUsuarioPorId:', error)
       throw error
     }
   }
@@ -173,7 +174,7 @@ class UsuariosService {
       })
 
       if (authError) {
-        console.error('Error creando usuario en auth:', authError)
+        logger.error('Error creando usuario en auth:', authError)
         throw new Error(`Error al crear usuario: ${authError.message}`)
       }
 
@@ -196,7 +197,7 @@ class UsuariosService {
         .eq('id', authData.user.id)
 
       if (updateError) {
-        console.error('Error actualizando perfil de usuario:', updateError)
+        logger.error('Error actualizando perfil de usuario:', updateError)
         // No lanzar error aquí, el usuario se creó correctamente
       }
 
@@ -213,7 +214,7 @@ class UsuariosService {
         invitacion_enviada: datos.enviar_invitacion || false,
       }
     } catch (error) {
-      console.error('Excepción en crearUsuario:', error)
+      logger.error('Excepción en crearUsuario:', error)
       throw error
     }
   }
@@ -225,19 +226,19 @@ class UsuariosService {
     try {
       const { data, error } = await supabase
         .from('usuarios')
-        .update(datos)
+        .update(datos as any)
         .eq('id', id)
         .select()
         .single()
 
       if (error) {
-        console.error('Error actualizando usuario:', error)
+        logger.error('Error actualizando usuario:', error)
         throw new Error(`Error al actualizar usuario: ${error.message}`)
       }
 
       return data as unknown as Usuario
     } catch (error) {
-      console.error('Excepción en actualizarUsuario:', error)
+      logger.error('Excepción en actualizarUsuario:', error)
       throw error
     }
   }
@@ -249,7 +250,7 @@ class UsuariosService {
     try {
       await this.actualizarUsuario(id, { estado: nuevoEstado })
     } catch (error) {
-      console.error('Excepción en cambiarEstado:', error)
+      logger.error('Excepción en cambiarEstado:', error)
       throw error
     }
   }
@@ -261,7 +262,7 @@ class UsuariosService {
     try {
       await this.actualizarUsuario(id, { rol: nuevoRol })
     } catch (error) {
-      console.error('Excepción en cambiarRol:', error)
+      logger.error('Excepción en cambiarRol:', error)
       throw error
     }
   }
@@ -275,7 +276,7 @@ class UsuariosService {
         estado: 'Activo',
       })
     } catch (error) {
-      console.error('Excepción en resetearIntentosFallidos:', error)
+      logger.error('Excepción en resetearIntentosFallidos:', error)
       throw error
     }
   }
@@ -288,7 +289,7 @@ class UsuariosService {
       // En lugar de eliminar, marcar como Inactivo
       await this.cambiarEstado(id, 'Inactivo')
     } catch (error) {
-      console.error('Excepción en eliminarUsuario:', error)
+      logger.error('Excepción en eliminarUsuario:', error)
       throw error
     }
   }
@@ -340,7 +341,7 @@ class UsuariosService {
 
       return stats
     } catch (error) {
-      console.error('Excepción en obtenerEstadisticas:', error)
+      logger.error('Excepción en obtenerEstadisticas:', error)
       throw error
     }
   }
@@ -361,7 +362,7 @@ class UsuariosService {
         .update({ ultimo_acceso: new Date().toISOString() })
         .eq('id', user.id)
     } catch (error) {
-      console.error('Excepción en actualizarUltimoAcceso:', error)
+      logger.error('Excepción en actualizarUltimoAcceso:', error)
       // No lanzar error, es solo tracking
     }
   }

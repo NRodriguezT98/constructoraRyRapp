@@ -17,6 +17,8 @@
 
 import { useCallback, useState } from 'react'
 
+import { logger } from '@/lib/utils/logger'
+
 import type { ActualizarClienteDTO, CrearClienteDTO, FiltrosClientes } from '../types'
 
 import {
@@ -148,10 +150,10 @@ export function useClientes(filtros?: FiltrosClientes) {
     filtros: filtros || {},
     busqueda: filtros?.busqueda || '',
     aplicarFiltros: () => {
-      console.warn('useClientes.aplicarFiltros() está deprecado. Usar useClientesList()')
+      logger.warn('useClientes.aplicarFiltros() está deprecado. Usar useClientesList()')
     },
     aplicarBusqueda: () => {
-      console.warn('useClientes.aplicarBusqueda() está deprecado. Usar useClientesList()')
+      logger.warn('useClientes.aplicarBusqueda() está deprecado. Usar useClientesList()')
     },
   }
 }

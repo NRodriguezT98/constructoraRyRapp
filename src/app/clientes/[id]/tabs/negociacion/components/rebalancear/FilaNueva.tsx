@@ -1,12 +1,14 @@
 'use client'
 
-import { Info, X } from 'lucide-react'
 import { useState } from 'react'
+
+import { Info, X } from 'lucide-react'
 
 import { esCreditoConstructora } from '@/shared/constants/fuentes-pago.constants'
 
 import type { FuAlteNueva } from '../../hooks'
 import { getFuenteColor } from '../../hooks'
+
 import { getEntidadesParaTipo } from './entidades'
 import { formatMontoInput } from './helpers'
 

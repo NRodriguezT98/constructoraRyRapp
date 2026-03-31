@@ -1,7 +1,8 @@
 'use client'
 
-import { Loader2, TrendingUp } from 'lucide-react'
 import { useState } from 'react'
+
+import { Loader2, TrendingUp } from 'lucide-react'
 
 import { getTodayDateString } from '@/lib/utils/date.utils'
 import type { ParametrosCredito } from '@/modules/fuentes-pago/types'

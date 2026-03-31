@@ -3,6 +3,7 @@
 // ============================================
 
 import { supabase } from '@/lib/supabase/client'
+import { logger } from '@/lib/utils/logger'
 import { auditService } from '@/services/audit.service'
 
 /**
@@ -26,7 +27,7 @@ export class DocumentosEstadosService {
       .single()
 
     if (fetchError || !documento) {
-      console.error('❌ Error al buscar documento:', {
+      logger.error('❌ Error al buscar documento:', {
         documentoId,
         error: fetchError
       })
@@ -60,7 +61,7 @@ export class DocumentosEstadosService {
       .eq('id', documentoId)
 
     if (updateError) {
-      console.error('❌ Error al marcar versión como errónea:', updateError)
+      logger.error('❌ Error al marcar versión como errónea:', updateError)
       throw new Error(`Error al actualizar estado: ${updateError.message}`)
     }
 
@@ -77,7 +78,7 @@ export class DocumentosEstadosService {
         .eq('id', versionCorrectaId)
 
       if (linkError) {
-        console.warn('⚠️ No se pudo vincular versión correcta:', linkError)
+        logger.warn('⚠️ No se pudo vincular versión correcta:', linkError)
       }
     }
 
@@ -141,7 +142,7 @@ export class DocumentosEstadosService {
       })
 
     } catch (auditError) {
-      console.error('❌ Error al registrar auditoría:', auditError)
+      logger.error('❌ Error al registrar auditoría:', auditError)
     }
   }
 
@@ -161,7 +162,7 @@ export class DocumentosEstadosService {
       .single()
 
     if (fetchError || !documento) {
-      console.error('❌ Error al buscar documento:', {
+      logger.error('❌ Error al buscar documento:', {
         documentoId,
         error: fetchError
       })
@@ -179,7 +180,7 @@ export class DocumentosEstadosService {
       .eq('id', documentoId)
 
     if (updateError) {
-      console.error('❌ Error al marcar versión como obsoleta:', updateError)
+      logger.error('❌ Error al marcar versión como obsoleta:', updateError)
       throw new Error(`Error al actualizar estado: ${updateError.message}`)
     }
 
@@ -235,7 +236,7 @@ export class DocumentosEstadosService {
       })
 
     } catch (auditError) {
-      console.error('⚠️ Error al registrar auditoría:', auditError)
+      logger.error('⚠️ Error al registrar auditoría:', auditError)
     }
   }
 
@@ -252,7 +253,7 @@ export class DocumentosEstadosService {
       .single()
 
     if (fetchError || !documento) {
-      console.error('❌ Error al buscar documento:', {
+      logger.error('❌ Error al buscar documento:', {
         documentoId,
         error: fetchError
       })
@@ -271,7 +272,7 @@ export class DocumentosEstadosService {
       .eq('id', documentoId)
 
     if (updateError) {
-      console.error('❌ Error al restaurar estado:', updateError)
+      logger.error('❌ Error al restaurar estado:', updateError)
       throw new Error(`Error al restaurar estado: ${updateError.message}`)
     }
 
@@ -333,7 +334,7 @@ export class DocumentosEstadosService {
       })
 
     } catch (auditError) {
-      console.error('⚠️ Error al registrar auditoría:', auditError)
+      logger.error('⚠️ Error al registrar auditoría:', auditError)
     }
   }
 }

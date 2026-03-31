@@ -13,9 +13,13 @@
  * @version 1.0.0 - 2025-12-11
  */
 
-import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 
+import { toast } from 'sonner'
+
+import { useRouter } from 'next/navigation'
+
+import { logger } from '@/lib/utils/logger'
 import { construirURLCliente } from '@/lib/utils/slug.utils'
 import { useDocumentoIdentidad } from '@/modules/clientes/documentos/hooks/useDocumentoIdentidad'
 import {
@@ -148,7 +152,7 @@ export function useViviendaAsignadaTab({ cliente }: UseViviendaAsignadaTabProps)
         totales,
       })
     } catch (error) {
-      console.error('Error generando PDF:', error)
+      logger.error('Error generando PDF:', error)
     }
   }
 
@@ -207,12 +211,12 @@ export function useViviendaAsignadaTab({ cliente }: UseViviendaAsignadaTabProps)
   const handleConfirmarPaso = async (datos: { fecha_completado: string; documento_id?: string; observaciones?: string }) => {
     try {
       // TODO: Llamar mutation para marcar paso
-      alert('✅ Paso marcado como completado')
+      toast.info('✅ Paso marcado como completado')
       cerrarModalMarcarPaso()
       invalidarNegociaciones()
     } catch (error) {
-      console.error('Error marcando paso:', error)
-      alert('❌ Error al marcar paso')
+      logger.error('Error marcando paso:', error)
+      toast.info('❌ Error al marcar paso')
     }
   }
 

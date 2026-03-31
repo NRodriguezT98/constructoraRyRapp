@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
+import { logger } from '@/lib/utils/logger'
+
 import { MENSAJES, PASOS_FORMULARIO, VIVIENDA_DEFAULTS } from '../constants'
 import { viviendasService } from '../services/viviendas.service'
 import type {
@@ -74,7 +76,7 @@ export function useViviendaForm() {
       const data = await viviendasService.obtenerProyectos()
       setProyectos(data)
     } catch (error) {
-      console.error('Error cargando proyectos:', error)
+      logger.error('Error cargando proyectos:', error)
     } finally {
       setLoadingProyectos(false)
     }
@@ -89,7 +91,7 @@ export function useViviendaForm() {
       setConfiguracionRecargos(recargos)
       setGastosNotariales(gastosNot)
     } catch (error) {
-      console.error('Error cargando configuración:', error)
+      logger.error('Error cargando configuración:', error)
     }
   }, [])
 
@@ -112,7 +114,7 @@ export function useViviendaForm() {
         const data = await viviendasService.obtenerManzanasDisponibles(proyectoId)
         setManzanas(data)
       } catch (error) {
-        console.error('Error cargando manzanas:', error)
+        logger.error('Error cargando manzanas:', error)
       } finally {
         setLoadingManzanas(false)
       }
@@ -156,7 +158,7 @@ export function useViviendaForm() {
           }))
         }
       } catch (error) {
-        console.error('Error cargando números disponibles:', error)
+        logger.error('Error cargando números disponibles:', error)
       }
     },
     [manzanas]
@@ -279,7 +281,7 @@ export function useViviendaForm() {
             'Esta matrícula inmobiliaria ya existe. Cada vivienda debe tener una matrícula única.'
         }
       } catch (error) {
-        console.error('Error validando matrícula:', error)
+        logger.error('Error validando matrícula:', error)
         newErrors.matricula_inmobiliaria = 'Error al validar la matrícula. Intente nuevamente.'
       } finally {
         setValidandoMatricula(false)
@@ -400,9 +402,9 @@ export function useViviendaForm() {
       resetFormulario()
 
       return { success: true, mensaje: MENSAJES.EXITO_CREAR }
-    } catch (error: any) {
-      console.error('Error creando vivienda:', error)
-      return { success: false, mensaje: error.message || MENSAJES.ERROR_CREAR }
+    } catch (error: unknown) {
+      logger.error('Error creando vivienda:', error)
+      return { success: false, mensaje: error instanceof Error ? error.message : MENSAJES.ERROR_CREAR }
     } finally {
       setLoading(false)
     }

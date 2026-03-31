@@ -3,6 +3,7 @@
 // ============================================
 
 import { supabase } from '@/lib/supabase/client'
+import { logger } from '@/lib/utils/logger'
 import { auditService } from '@/services/audit.service'
 
 /**
@@ -59,7 +60,7 @@ export class DocumentosEstadosService {
         modulo: 'documentos',
       })
     } catch (err) {
-      console.warn('⚠️ Error al registrar auditoría:', err)
+      logger.warn('⚠️ Error al registrar auditoría:', err)
     }
 
   }
@@ -113,7 +114,7 @@ export class DocumentosEstadosService {
         modulo: 'documentos',
       })
     } catch (err) {
-      console.warn('⚠️ Error al registrar auditoría:', err)
+      logger.warn('⚠️ Error al registrar auditoría:', err)
     }
 
   }
@@ -171,7 +172,7 @@ export class DocumentosEstadosService {
         modulo: 'documentos',
       })
     } catch (err) {
-      console.warn('⚠️ Error al registrar auditoría:', err)
+      logger.warn('⚠️ Error al registrar auditoría:', err)
     }
 
   }

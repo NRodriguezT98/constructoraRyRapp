@@ -21,7 +21,7 @@ interface SubirDocumentoParams {
   fecha_documento?: string
   fecha_vencimiento?: string
   es_importante?: boolean
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
 }
 
 /**

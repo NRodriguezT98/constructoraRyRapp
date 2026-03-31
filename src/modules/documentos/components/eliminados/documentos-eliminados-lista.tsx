@@ -17,7 +17,9 @@ import { AlertTriangle, Calendar, FileText, Filter, Home, RefreshCw, Search, Tra
 import { EmptyState } from '@/shared/components/layout/EmptyState'
 import { LoadingState } from '@/shared/components/layout/LoadingState'
 import { ConfirmacionModal } from '@/shared/components/modals'
+
 import { useDocumentosEliminados } from '../../hooks'
+
 import { DocumentoEliminadoCard } from './documento-eliminado-card'
 
 // Configuración visual por módulo

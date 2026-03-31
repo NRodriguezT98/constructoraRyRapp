@@ -49,7 +49,7 @@ const categoriasConfig = {
   },
 }
 
-export function PasoConfirmarCambios({ cambiosDetectados, viviendaActual }: PasoConfirmarCambiosProps) {
+export function PasoConfirmarCambios({ cambiosDetectados, viviendaActual: _viviendaActual }: PasoConfirmarCambiosProps) {
   // Agrupar cambios por categoría
   const cambiosPorCategoria = cambiosDetectados.reduce((acc, cambio) => {
     if (!acc[cambio.categoria]) {

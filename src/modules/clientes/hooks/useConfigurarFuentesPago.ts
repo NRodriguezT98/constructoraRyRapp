@@ -15,7 +15,10 @@
 
 import { useEffect, useState } from 'react'
 
+import { toast } from 'sonner'
+
 import { supabase } from '@/lib/supabase/client'
+import { logger } from '@/lib/utils/logger'
 import { fuentesPagoService } from '@/modules/clientes/services/fuentes-pago.service'
 import {
     cargarTiposFuentesPagoActivas,
@@ -126,9 +129,9 @@ export function useConfigurarFuentesPago({
           carta_asignacion_url: f.carta_asignacion_url,
         }))
       )
-    } catch (err: any) {
-      console.error('Error cargando fuentes:', err)
-      setError(`Error cargando fuentes de pago: ${err.message}`)
+    } catch (err: unknown) {
+      logger.error('Error cargando fuentes:', err)
+      setError(`Error cargando fuentes de pago: ${err instanceof Error ? err.message : String(err)}`)
     } finally {
       setCargando(false)
     }
@@ -199,15 +202,16 @@ export function useConfigurarFuentesPago({
           fuente.id,
           'Fuente eliminada por el usuario'
         )
-      } catch (err: any) {
+      } catch (err: unknown) {
         // Mostrar error amigable
-        if (err.message.includes('ya ha recibido')) {
+        const errMsg = err instanceof Error ? err.message : String(err)
+        if (errMsg.includes('ya ha recibido')) {
           setError(
             `⚠️ No se puede eliminar esta fuente porque ya ha recibido dinero. ` +
             `Para mantener la integridad del historial de abonos, esta fuente debe permanecer activa.`
           )
         } else {
-          setError(`Error eliminando fuente: ${err.message}`)
+          setError(`Error eliminando fuente: ${errMsg}`)
         }
         return
       }
@@ -300,10 +304,10 @@ export function useConfigurarFuentesPago({
       // Notificar actualización
       onFuentesActualizadas?.()
 
-      alert('✅ Fuentes de pago guardadas correctamente')
-    } catch (err: any) {
-      console.error('Error guardando fuentes:', err)
-      setError(`Error guardando fuentes: ${err.message}`)
+      toast.info('✅ Fuentes de pago guardadas correctamente')
+    } catch (err: unknown) {
+      logger.error('Error guardando fuentes:', err)
+      setError(`Error guardando fuentes: ${err instanceof Error ? err.message : String(err)}`)
     } finally {
       setGuardando(false)
     }

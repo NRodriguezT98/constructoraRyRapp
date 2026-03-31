@@ -7,6 +7,8 @@
  * información detallada y acciones contextuales.
  */
 
+import { useEffect, useState } from 'react'
+
 import { motion } from 'framer-motion'
 import {
     AlertCircle,
@@ -19,11 +21,12 @@ import {
     Plus,
     Trash2
 } from 'lucide-react'
-import { useEffect, useState } from 'react'
 
+import { logger } from '@/lib/utils/logger'
 import type { FuentePago, TipoFuentePago } from '@/modules/clientes/types/fuentes-pago'
 import { esCuotaInicial } from '@/shared/constants/fuentes-pago.constants'
 import { formatCurrency } from '@/shared/utils/format'
+
 import { fuentesPagoTabStyles as styles } from '../../fuentes-pago-tab.styles'
 
 interface ListaFuentesProps {
@@ -310,7 +313,7 @@ export function ListaFuentes({
                           {/* Navegación contextual a Documentos */}
                           {getDocumentacionEstado(fuente).estado === 'pendiente' && (
                             <button
-                              onClick={() => console.log('Navegar a documentos para:', fuente.id)}
+                              onClick={() => logger.info('Navegar a documentos para:', fuente.id)}
                               className="w-full text-left px-2 py-1.5 text-xs text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md flex items-center gap-1.5"
                             >
                               <FileText className="w-3 h-3" />
@@ -320,7 +323,7 @@ export function ListaFuentes({
 
                           {getDocumentacionEstado(fuente).estado === 'completo' && (
                             <button
-                              onClick={() => console.log('Ver documentos de:', fuente.id)}
+                              onClick={() => logger.info('Ver documentos de:', fuente.id)}
                               className="w-full text-left px-2 py-1.5 text-xs text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-md flex items-center gap-1.5"
                             >
                               <FileText className="w-3 h-3" />

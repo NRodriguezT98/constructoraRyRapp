@@ -17,9 +17,11 @@
  * - Cálculos de valores con descuento
  */
 
-import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
+import { useRouter } from 'next/navigation'
+
+import { logger } from '@/lib/utils/logger'
 import { construirURLCliente } from '@/lib/utils/slug.utils'
 import { obtenerFuentesPagoConAbonos } from '@/modules/abonos/services/abonos.service'
 import { negociacionesService } from '@/modules/clientes/services/negociaciones.service'
@@ -91,7 +93,7 @@ export function useNegociacionesTab({ clienteId, cliente }: UseNegociacionesTabP
       const data = await negociacionesService.obtenerNegociacionesCliente(clienteId)
       setNegociaciones(data)
     } catch (err) {
-      console.error('❌ [useNegociacionesTab] Error cargando negociaciones:', err)
+      logger.error('❌ [useNegociacionesTab] Error cargando negociaciones:', err)
       setNegociaciones([])
     } finally {
       setLoading(false)
@@ -116,7 +118,7 @@ export function useNegociacionesTab({ clienteId, cliente }: UseNegociacionesTabP
       )
       setAbonos(todosAbonos)
     } catch (err) {
-      console.error('❌ [useNegociacionesTab] Error cargando datos de negociación:', err)
+      logger.error('❌ [useNegociacionesTab] Error cargando datos de negociación:', err)
       setFuentesPago([])
       setAbonos([])
     } finally {

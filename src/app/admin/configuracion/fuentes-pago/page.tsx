@@ -11,6 +11,8 @@
 
 'use client'
 
+import { useState } from 'react'
+
 import { AnimatePresence, motion } from 'framer-motion'
 import {
     AlertCircle,
@@ -27,19 +29,18 @@ import {
     Sparkles,
     Wallet,
 } from 'lucide-react'
-import { useState } from 'react'
 
+import { configuradorStyles as s } from '@/modules/configuracion/components/configurador-campos/configurador-campos.styles'
+import { ConfiguradorCamposModal } from '@/modules/configuracion/components/configurador-campos/ConfiguradorCamposModal'
 import { useTiposFuentesConCampos } from '@/modules/configuracion/hooks/useTiposFuentesConCampos'
 import type { TipoFuentePagoConCampos } from '@/modules/configuracion/types/campos-dinamicos.types'
 
-import { ConfiguradorCamposModal } from '@/modules/configuracion/components/configurador-campos/ConfiguradorCamposModal'
-import { configuradorStyles as s } from '@/modules/configuracion/components/configurador-campos/configurador-campos.styles'
 
 // ============================================
 // ICONOS DINÁMICOS (TODOS LOS DISPONIBLES)
 // ============================================
 
-const ICONOS_MAP: Record<string, any> = {
+const ICONOS_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
   Wallet,
   Building2,
   Home,

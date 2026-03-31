@@ -10,6 +10,7 @@
 import { supabase } from '@/lib/supabase/client'
 import type { Database } from '@/lib/supabase/database.types'
 import { formatDateForDB, getTodayDateString } from '@/lib/utils/date.utils'
+import { logger } from '@/lib/utils/logger'
 
 type DocumentoCliente = Database['public']['Tables']['documentos_cliente']['Row']
 
@@ -31,7 +32,7 @@ export class ClientesDocumentosEliminacionService {
       .order('fecha_actualizacion', { ascending: false })
 
     if (error) {
-      console.error('❌ Error al obtener documentos eliminados de clientes:', error)
+      logger.error('❌ Error al obtener documentos eliminados de clientes:', error)
       throw error
     }
 
@@ -76,7 +77,7 @@ export class ClientesDocumentosEliminacionService {
       .in('id', idsARestaurar)
 
     if (error) {
-      console.error('❌ Error al restaurar documento de cliente:', error)
+      logger.error('❌ Error al restaurar documento de cliente:', error)
       throw error
     }
   }
@@ -96,7 +97,7 @@ export class ClientesDocumentosEliminacionService {
       .single()
 
     if (getError) {
-      console.error('❌ Error al obtener documento de cliente:', getError)
+      logger.error('❌ Error al obtener documento de cliente:', getError)
       throw getError
     }
 
@@ -111,7 +112,7 @@ export class ClientesDocumentosEliminacionService {
         .remove([documento.url_storage])
 
       if (storageError) {
-        console.warn('⚠️ Error al eliminar archivo de storage (puede no existir):', storageError)
+        logger.warn('⚠️ Error al eliminar archivo de storage (puede no existir):', storageError)
         // No lanzar error, continuar con eliminación de BD
       }
     }
@@ -123,7 +124,7 @@ export class ClientesDocumentosEliminacionService {
       .eq('id', documentoId)
 
     if (deleteError) {
-      console.error('❌ Error al eliminar documento de BD:', deleteError)
+      logger.error('❌ Error al eliminar documento de BD:', deleteError)
       throw deleteError
     }
   }

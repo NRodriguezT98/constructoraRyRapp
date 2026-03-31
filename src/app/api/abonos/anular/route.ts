@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { isAdmin } from '@/lib/auth/server'
 import { supabaseAdmin } from '@/lib/supabase/admin'
 import { createRouteClient } from '@/lib/supabase/server-route'
+import { logger } from '@/lib/utils/logger'
 
 // Motivos válidos — sincronizado con CHECK constraint de BD
 const MOTIVOS_VALIDOS = [
@@ -158,7 +159,7 @@ export async function PATCH(request: NextRequest) {
       modulo: 'abonos',
     })
     .then(({ error: auditError }) => {
-      if (auditError) console.error('⚠️ audit_log insert failed (non-blocking):', auditError.message)
+      if (auditError) logger.error('⚠️ audit_log insert failed (non-blocking):', auditError.message)
     })
 
   return NextResponse.json({

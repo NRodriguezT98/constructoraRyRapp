@@ -6,6 +6,7 @@
 import { useCallback, useEffect, useState } from 'react'
 
 import { supabase } from '@/lib/supabase/client'
+import { logger } from '@/lib/utils/logger'
 
 interface Proyecto {
   id: string
@@ -49,7 +50,7 @@ export function useInteresFormulario() {
       if (error) throw error
       setProyectos(data || [])
     } catch (error) {
-      console.error('Error cargando proyectos:', error)
+      logger.error('Error cargando proyectos:', error)
     } finally {
       setCargandoProyectos(false)
     }
@@ -102,7 +103,7 @@ export function useInteresFormulario() {
 
       setViviendas(viviendasFormateadas)
     } catch (error) {
-      console.error('Error cargando viviendas:', error)
+      logger.error('Error cargando viviendas:', error)
       setViviendas([])
     } finally {
       setCargandoViviendas(false)

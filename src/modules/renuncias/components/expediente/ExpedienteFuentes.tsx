@@ -4,6 +4,7 @@ import { Building2, Landmark } from 'lucide-react'
 
 import type { FuenteExpediente } from '../../types'
 import { formatCOP } from '../../utils/renuncias.utils'
+
 import { expedienteStyles as styles } from './ExpedienteRenunciaPage.styles'
 
 interface ExpedienteFuentesProps {

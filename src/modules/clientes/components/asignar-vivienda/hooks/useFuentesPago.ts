@@ -8,7 +8,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import type { CrearFuentePagoDTO, TipoFuentePago } from '@/modules/clientes/types'
-import { obtenerMonto, obtenerMontoParaCierre } from '@/modules/clientes/utils/fuentes-pago-campos.utils'
+import { obtenerMontoParaCierre } from '@/modules/clientes/utils/fuentes-pago-campos.utils'
 import type { TipoFuentePagoConCampos } from '@/modules/configuracion/types/campos-dinamicos.types'
 
 import type { FuentePagoConfig, FuentePagoConfiguracion, FuentePagoErrores } from '../types'

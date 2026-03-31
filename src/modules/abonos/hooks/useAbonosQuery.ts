@@ -15,6 +15,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
 import { supabase } from '@/lib/supabase/client'
+import { logger } from '@/lib/utils/logger'
 
 import { anularAbono } from '../services/anular-abono.service'
 import { editarAbonoService } from '../services/editar-abono.service'
@@ -176,7 +177,7 @@ async function fetchAbonos(): Promise<AbonoConInfo[]> {
     .select('*')
 
   if (error) {
-    console.error('❌ Error fetching abonos:', error)
+    logger.error('❌ Error fetching abonos:', error)
     throw new Error(error.message)
   }
 
@@ -230,7 +231,7 @@ export function useAnularAbonoMutation() {
       })
     },
     onError: (error: Error) => {
-      console.error('❌ Error anulando abono:', error.message)
+      logger.error('❌ Error anulando abono:', error.message)
     },
   })
 }
@@ -270,7 +271,7 @@ export function useRegistrarAbonoMutation() {
       })
     },
     onError: (error: Error) => {
-      console.error('❌ Error registrando abono:', error.message)
+      logger.error('❌ Error registrando abono:', error.message)
     },
   })
 }

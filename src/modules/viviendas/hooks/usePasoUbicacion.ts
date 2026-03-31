@@ -5,11 +5,13 @@
  * ✅ Sin lógica en el componente
  */
 
-import { useQuery } from '@tanstack/react-query'
 import { useEffect, useMemo, useRef } from 'react'
+
+import { useQuery } from '@tanstack/react-query'
 import type { UseFormSetValue, UseFormWatch } from 'react-hook-form'
 
 import { proyectosService } from '@/modules/proyectos/services/proyectos.service'
+
 import { viviendasService } from '../services/viviendas.service'
 
 interface UsePasoUbicacionProps {

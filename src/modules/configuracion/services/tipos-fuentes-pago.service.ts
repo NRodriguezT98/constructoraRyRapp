@@ -13,8 +13,10 @@
  * Patrón: Repository + Service Pattern
  */
 
-import { createClient } from '@/lib/supabase/client';
 import type { SupabaseClient } from '@supabase/supabase-js';
+
+import { createClient } from '@/lib/supabase/client';
+
 import type {
     ActualizarTipoFuentePagoDTO,
     CrearTipoFuentePagoDTO,

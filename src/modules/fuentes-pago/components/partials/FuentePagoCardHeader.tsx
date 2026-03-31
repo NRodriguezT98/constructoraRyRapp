@@ -11,9 +11,10 @@
  * - Botón de expansión
  */
 
+import { memo } from 'react'
+
 import type { LucideIcon } from 'lucide-react'
 import { ChevronDown } from 'lucide-react'
-import { memo } from 'react'
 
 interface FuentePagoCardHeaderProps {
   tipo: string

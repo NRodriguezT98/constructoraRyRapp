@@ -16,6 +16,7 @@ import { useDocumentosPapeleraV2 } from '@/modules/viviendas/hooks/useDocumentos
 import { EmptyState } from '@/shared/components/layout/EmptyState'
 import { LoadingState } from '@/shared/components/layout/LoadingState'
 import { type ModuleName } from '@/shared/config/module-themes'
+
 import { TipoEntidad } from '../../types'
 
 interface DocumentosPapeleraContextualProps {

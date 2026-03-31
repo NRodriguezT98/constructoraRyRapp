@@ -1,5 +1,7 @@
 'use client'
 
+import { useEffect, useMemo, useState } from 'react'
+
 import { AnimatePresence, motion } from 'framer-motion'
 import {
     AlertCircle,
@@ -10,7 +12,6 @@ import {
     Trash2,
     X
 } from 'lucide-react'
-import { useEffect, useMemo, useState } from 'react'
 
 interface FuentePago {
   id?: string

@@ -10,9 +10,13 @@
  * ADAPTADO DESDE: src/modules/documentos/hooks/useVersionesEliminadasCard.ts
  */
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useMemo, useState } from 'react'
+
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
+
+import { logger } from '@/lib/utils/logger'
+
 import { DocumentosViviendaService } from '../../services/documentos'
 
 interface UseVersionesEliminadasCardProps {
@@ -71,7 +75,7 @@ export function useVersionesEliminadasCard({
       // ❌ NO cerrar el card: setIsExpanded(false) - Mantener abierto para ver qué quedó
     },
     onError: (error: Error) => {
-      console.error('Error al restaurar versiones:', error)
+      logger.error('Error al restaurar versiones:', error)
       toast.error(`Error al restaurar: ${error.message}`)
     },
   })

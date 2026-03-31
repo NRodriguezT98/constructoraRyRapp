@@ -14,6 +14,8 @@ import { z } from 'zod'
 
 import { useRouter } from 'next/navigation'
 
+import { logger } from '@/lib/utils/logger'
+
 import { viviendasService } from '../services/viviendas.service'
 import type { ResumenFinanciero, ViviendaFormData } from '../types'
 import { calcularValorTotal } from '../utils'
@@ -138,7 +140,7 @@ const createPaso3Schema = (viviendaId?: string) => {
               path: ['matricula_inmobiliaria'],
             })
           }
-        } catch (error) {
+        } catch (_error) {
           // No bloqueamos el submit si falla la validación async
         }
       }
@@ -253,7 +255,7 @@ export function useNuevaVivienda({ onSubmit, viviendaId }: UseNuevaViviendaParam
 
         setGastosNotariales(gastos)
         setConfiguracionRecargos(recargos)
-      } catch (error) {
+      } catch (_error) {
       }
     }
     cargarConfiguracion()
@@ -348,7 +350,7 @@ export function useNuevaVivienda({ onSubmit, viviendaId }: UseNuevaViviendaParam
 
         // 🔍 DEBUG: Ver errores de validación
         if (!esValidoSync) {
-          console.error('❌ [PASO 3] Campos con error:', JSON.stringify(errors, null, 2))
+          logger.error('❌ [PASO 3] Campos con error:', JSON.stringify(errors, null, 2))
           return false
         }
 
@@ -383,7 +385,7 @@ export function useNuevaVivienda({ onSubmit, viviendaId }: UseNuevaViviendaParam
               })
             }
           } catch (error) {
-            console.error('❌ [PASO 3] Error al verificar matrícula:', error)
+            logger.error('❌ [PASO 3] Error al verificar matrícula:', error)
             // Continuamos si falla la verificación de red
           }
         }
@@ -410,7 +412,7 @@ export function useNuevaVivienda({ onSubmit, viviendaId }: UseNuevaViviendaParam
         return false
       }
       return true
-    } catch (error) {
+    } catch (_error) {
       return false
     }
   }, [pasoActual, trigger, watch, setError, errors, PASOS_CONFIG])
@@ -428,7 +430,7 @@ export function useNuevaVivienda({ onSubmit, viviendaId }: UseNuevaViviendaParam
         if (!esValido) {
           return false
         }
-      } catch (error) {
+      } catch (_error) {
         return false
       }
     }
@@ -534,7 +536,7 @@ export function useNuevaVivienda({ onSubmit, viviendaId }: UseNuevaViviendaParam
       // React Query ya garantizó que el refetch se completó en el onSuccess
       router.push('/viviendas')
     } catch (error) {
-      console.error('❌ Error en handleFormSubmit:', error)
+      logger.error('❌ Error en handleFormSubmit:', error)
 
       // Si es error de matrícula duplicada, mostrar en el campo correspondiente
       if (error instanceof Error && error.message.includes('matrícula inmobiliaria')) {

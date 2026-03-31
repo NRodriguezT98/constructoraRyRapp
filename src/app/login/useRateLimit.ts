@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 
+import { logger } from '@/lib/utils/logger'
+
 /**
  * Configuración de Rate Limiting
  */
@@ -92,7 +94,7 @@ export function useRateLimit(email: string): UseRateLimitReturn {
         }
       }
     } catch (error) {
-      console.error('Error al limpiar emails antiguos:', error)
+      logger.error('Error al limpiar emails antiguos:', error)
     }
   }
 
@@ -131,7 +133,7 @@ export function useRateLimit(email: string): UseRateLimitReturn {
         }
       }
     } catch (error) {
-      console.error('Error al cargar rate limit:', error)
+      logger.error('Error al cargar rate limit:', error)
     }
   }, [email])
 
@@ -193,7 +195,7 @@ export function useRateLimit(email: string): UseRateLimitReturn {
         }
       }
     } catch (error) {
-      console.error('Error al limpiar bloqueo:', error)
+      logger.error('Error al limpiar bloqueo:', error)
     }
   }
 
@@ -239,10 +241,10 @@ export function useRateLimit(email: string): UseRateLimitReturn {
         bloqueoPorEmail[email] = tiempoBloqueo
         localStorage.setItem(STORAGE_KEY_BLOQUEO, JSON.stringify(bloqueoPorEmail))
 
-        console.warn(`🚨 Email ${email} bloqueado por ${TIEMPO_BLOQUEO / 60000} minutos`)
+        logger.warn(`🚨 Email ${email} bloqueado por ${TIEMPO_BLOQUEO / 60000} minutos`)
       }
     } catch (error) {
-      console.error('Error al registrar intento fallido:', error)
+      logger.error('Error al registrar intento fallido:', error)
     }
   }
 
@@ -267,7 +269,7 @@ export function useRateLimit(email: string): UseRateLimitReturn {
         }
       }
     } catch (error) {
-      console.error('Error al resetear intentos:', error)
+      logger.error('Error al resetear intentos:', error)
     }
 
     // Si estaba bloqueado, limpiar también el bloqueo

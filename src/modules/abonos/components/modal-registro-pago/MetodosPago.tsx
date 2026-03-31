@@ -3,6 +3,7 @@
 import { ArrowRightLeft, Banknote, Check, FileCheck, Info } from 'lucide-react'
 
 import type { MetodoPago, ModoRegistro } from '../../types'
+
 import { METODO_PAGO_GRADIENTE, type ColorScheme } from './ModalRegistroPago.styles'
 
 interface MetodosPagoProps {

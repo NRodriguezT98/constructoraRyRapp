@@ -16,7 +16,10 @@
 
 import { useCallback, useState } from 'react'
 
+import { logger } from '@/lib/utils/logger'
+
 import type { ClienteInteres } from '../types'
+
 import { useInteresesQuery } from './useInteresesQuery'
 
 interface UseInteresesTabProps {
@@ -67,7 +70,7 @@ export function useInteresesTab({ clienteId }: UseInteresesTabProps) {
       try {
         await descartarInteres(interesADescartar.id, motivo || 'Cliente ya no está interesado')
       } catch (error) {
-        console.error('❌ [useInteresesTab] Error al descartar:', error)
+        logger.error('❌ [useInteresesTab] Error al descartar:', error)
       } finally {
         setDescartandoId(null)
       }

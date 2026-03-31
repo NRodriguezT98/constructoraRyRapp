@@ -16,8 +16,9 @@
  * @version 2.0.0 - 2025-01-26 (Migrado a React Query)
  */
 
-import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useCallback, useEffect, useMemo } from 'react'
+
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { obtenerFuentesPagoConAbonos } from '@/modules/abonos/services/abonos.service'
 import { negociacionesService } from '@/modules/clientes/services/negociaciones.service'

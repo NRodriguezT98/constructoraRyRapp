@@ -81,7 +81,7 @@ function deepEqual(obj1: any, obj2: any): boolean {
 /**
  * Detecta cambios entre valores iniciales y actuales del formulario
  */
-export function useFormChanges<T extends Record<string, any>>(
+export function useFormChanges<T extends Record<string, unknown>>(
   currentValues: T,
   initialValues: T,
   options: UseFormChangesOptions = {}

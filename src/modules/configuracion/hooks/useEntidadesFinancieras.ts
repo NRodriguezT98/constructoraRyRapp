@@ -7,9 +7,12 @@
 
 'use client'
 
-import { showEntitySuccessToast } from '@/components/toasts/custom-toasts'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
+
+import { showEntitySuccessToast } from '@/components/toasts/custom-toasts'
+import { logger } from '@/lib/utils/logger'
+
 import { entidadesFinancierasService } from '../services/entidades-financieras.service'
 import type {
     ActualizarEntidadFinancieraDTO,
@@ -180,7 +183,7 @@ export function useCrearEntidadFinanciera() {
       showEntitySuccessToast({ entityName: data.nombre, action: 'created' })
     },
     onError: (error: Error) => {
-      console.error('Error al crear entidad financiera:', error)
+      logger.error('Error al crear entidad financiera:', error)
       toast.error('Error al crear entidad', {
         description: error.message,
       })
@@ -232,7 +235,7 @@ export function useActualizarEntidadFinanciera() {
         )
       }
 
-      console.error('Error al actualizar entidad financiera:', error)
+      logger.error('Error al actualizar entidad financiera:', error)
       toast.error('Error al actualizar entidad', {
         description: error.message,
       })
@@ -270,7 +273,7 @@ export function useEliminarEntidadFinanciera() {
       })
     },
     onError: (error: Error) => {
-      console.error('Error al desactivar entidad financiera:', error)
+      logger.error('Error al desactivar entidad financiera:', error)
       toast.error('Error al desactivar entidad', {
         description: error.message,
       })
@@ -302,7 +305,7 @@ export function useReactivarEntidadFinanciera() {
       })
     },
     onError: (error: Error) => {
-      console.error('Error al reactivar entidad financiera:', error)
+      logger.error('Error al reactivar entidad financiera:', error)
       toast.error('Error al reactivar entidad', {
         description: error.message,
       })
@@ -334,7 +337,7 @@ export function useReordenarEntidadesFinancieras() {
       })
     },
     onError: (error: Error) => {
-      console.error('Error al reordenar entidades:', error)
+      logger.error('Error al reordenar entidades:', error)
       toast.error('Error al reordenar', {
         description: error.message,
       })

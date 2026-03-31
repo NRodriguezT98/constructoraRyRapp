@@ -217,7 +217,7 @@ export function useUpdatePerfilMutation(userId: string) {
       if (context?.previousPerfil) {
         queryClient.setQueryData(authKeys.perfil(userId), context.previousPerfil)
       }
-      console.error('❌ Error actualizando perfil:', err)
+      errorLog('update-perfil', err instanceof Error ? err : new Error(String(err)))
     },
     onSuccess: () => {
       // Invalidar para refetch
@@ -247,7 +247,7 @@ export function useRefreshSessionMutation() {
       queryClient.setQueryData(authKeys.session(), session)
     },
     onError: (error: Error) => {
-      console.error('❌ Error refrescando sesión:', error.message)
+      errorLog('refresh-session', new Error(error.message))
     },
   })
 }

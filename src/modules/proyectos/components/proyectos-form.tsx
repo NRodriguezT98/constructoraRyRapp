@@ -8,11 +8,13 @@
 
 'use client'
 
-import { AnimatePresence, motion } from 'framer-motion'
-import { AlertCircle, Building2, Calendar, CheckCircle2, FileCheck, FileText, Home, Loader2, Lock, LockOpen, MapPin, Plus, Trash2 } from 'lucide-react'
 import { useEffect, useMemo } from 'react'
 
+import { AnimatePresence, motion } from 'framer-motion'
+import { AlertCircle, Building2, Calendar, CheckCircle2, FileCheck, FileText, Home, Loader2, Lock, LockOpen, MapPin, Plus, Trash2 } from 'lucide-react'
+
 import { getCiudadesPorDepartamento, getDepartamentos } from '@/shared/data/colombia-locations'
+
 import { cn } from '../../../shared/utils/helpers'
 import { useProyectosForm } from '../hooks/useProyectosForm'
 import { proyectosFormPremiumStyles as styles } from '../styles/proyectos-form-premium.styles'
@@ -568,7 +570,7 @@ export function ProyectosForm({
                   No hay manzanas agregadas
                 </p>
                 <p className={styles.manzanasSection.emptySubtitle}>
-                  Haz clic en "Agregar" para comenzar
+                  Haz clic en &quot;Agregar&quot; para comenzar
                 </p>
               </div>
             ) : (

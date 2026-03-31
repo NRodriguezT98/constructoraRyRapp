@@ -6,10 +6,13 @@
 
 'use client'
 
-import { formatDateCompact } from '@/lib/utils/date.utils'
 import { ChevronDown, ChevronUp, Clock, Plus, RefreshCw, Trash2 } from 'lucide-react'
+
+import { formatDateCompact } from '@/lib/utils/date.utils'
+
 import type { SnapshotVersion } from '../../../hooks/useHistorialVersiones'
 import { getTipoCambioLabel } from '../historial-helpers'
+
 import { TipoCambioIcon } from './TipoCambioIcon'
 
 interface VersionCardHeaderProps {
@@ -55,7 +58,7 @@ export function VersionCardHeader({ version, isLatest, isExpanded, onToggle }: V
           <div className="mt-2">
             <p className="text-xs font-semibold text-gray-500 dark:text-gray-400">Motivo:</p>
             <p className="text-xs text-gray-600 dark:text-gray-400 italic">
-              "{version.datos_nuevos?.motivo_usuario || version.razon_cambio}"
+              &quot;{version.datos_nuevos?.motivo_usuario || version.razon_cambio}&quot;
             </p>
           </div>
 

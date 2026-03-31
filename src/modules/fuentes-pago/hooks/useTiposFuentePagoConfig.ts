@@ -5,8 +5,10 @@
  * la configuración de colores e iconos desde el panel de administración
  */
 
-import { createClient } from '@/lib/supabase/client'
 import { useEffect, useState } from 'react'
+
+import { createClient } from '@/lib/supabase/client'
+import { logger } from '@/lib/utils/logger'
 
 interface TipoFuenteConfig {
   icono: string
@@ -80,7 +82,7 @@ export function useTiposFuentePagoConfig() {
           .order('orden')
 
         if (error) {
-          console.error('Error al obtener tipos de fuente:', error)
+          logger.error('Error al obtener tipos de fuente:', error)
           setError(error.message)
           return
         }
@@ -102,7 +104,7 @@ export function useTiposFuentePagoConfig() {
           setTiposConfig(configMap)
         }
       } catch (err) {
-        console.error('Error al cargar configuración de tipos de fuente:', err)
+        logger.error('Error al cargar configuración de tipos de fuente:', err)
         setError('Error al cargar configuración')
       } finally {
         setIsLoading(false)

@@ -9,6 +9,8 @@
 
 import { useCallback, useEffect, useState } from 'react'
 
+import { logger } from '@/lib/utils/logger'
+
 import { usuariosService } from '../services/usuarios.service'
 import type {
     ActualizarUsuarioData,
@@ -38,7 +40,7 @@ export function useUsuarios() {
       const data = await usuariosService.obtenerUsuarios(filtros)
       setUsuarios(data)
     } catch (err) {
-      console.error('Error cargando usuarios:', err)
+      logger.error('Error cargando usuarios:', err)
       setError(err instanceof Error ? err.message : 'Error desconocido')
     } finally {
       setCargando(false)
@@ -53,7 +55,7 @@ export function useUsuarios() {
       const stats = await usuariosService.obtenerEstadisticas()
       setEstadisticas(stats)
     } catch (err) {
-      console.error('Error cargando estadísticas:', err)
+      logger.error('Error cargando estadísticas:', err)
     }
   }, [])
 
@@ -74,7 +76,7 @@ export function useUsuarios() {
 
         return resultado
       } catch (err) {
-        console.error('Error creando usuario:', err)
+        logger.error('Error creando usuario:', err)
         const mensaje = err instanceof Error ? err.message : 'Error desconocido'
         setError(mensaje)
         throw err
@@ -100,7 +102,7 @@ export function useUsuarios() {
         await cargarUsuarios()
         await cargarEstadisticas()
       } catch (err) {
-        console.error('Error actualizando usuario:', err)
+        logger.error('Error actualizando usuario:', err)
         const mensaje = err instanceof Error ? err.message : 'Error desconocido'
         setError(mensaje)
         throw err
@@ -126,7 +128,7 @@ export function useUsuarios() {
         await cargarUsuarios()
         await cargarEstadisticas()
       } catch (err) {
-        console.error('Error cambiando rol:', err)
+        logger.error('Error cambiando rol:', err)
         const mensaje = err instanceof Error ? err.message : 'Error desconocido'
         setError(mensaje)
         throw err
@@ -152,7 +154,7 @@ export function useUsuarios() {
         await cargarUsuarios()
         await cargarEstadisticas()
       } catch (err) {
-        console.error('Error cambiando estado:', err)
+        logger.error('Error cambiando estado:', err)
         const mensaje = err instanceof Error ? err.message : 'Error desconocido'
         setError(mensaje)
         throw err
@@ -177,7 +179,7 @@ export function useUsuarios() {
         // Recargar lista
         await cargarUsuarios()
       } catch (err) {
-        console.error('Error reseteando intentos:', err)
+        logger.error('Error reseteando intentos:', err)
         const mensaje = err instanceof Error ? err.message : 'Error desconocido'
         setError(mensaje)
         throw err
@@ -203,7 +205,7 @@ export function useUsuarios() {
         await cargarUsuarios()
         await cargarEstadisticas()
       } catch (err) {
-        console.error('Error eliminando usuario:', err)
+        logger.error('Error eliminando usuario:', err)
         const mensaje = err instanceof Error ? err.message : 'Error desconocido'
         setError(mensaje)
         throw err
@@ -244,7 +246,7 @@ export function useUsuarios() {
         await Promise.all([cargarUsuarios(), cargarEstadisticas()])
       } catch (error) {
         if (!cancelado) {
-          console.error('[USUARIOS] Error en carga inicial:', error)
+          logger.error('[USUARIOS] Error en carga inicial:', error)
         }
       }
     }

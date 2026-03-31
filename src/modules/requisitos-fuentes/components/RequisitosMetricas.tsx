@@ -10,6 +10,7 @@
 
 import { motion } from 'framer-motion'
 import { AlertTriangle, CheckCircle, FileText, Target } from 'lucide-react'
+
 import { requisitosConfigStyles as styles } from '../styles/requisitos-config.styles'
 import type { RequisitoFuenteConfig } from '../types'
 

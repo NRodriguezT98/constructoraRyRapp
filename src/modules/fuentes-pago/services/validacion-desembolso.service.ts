@@ -9,6 +9,8 @@
 
 import type { SupabaseClient } from '@supabase/supabase-js'
 
+import { logger } from '@/lib/utils/logger'
+
 export interface ResultadoValidacion {
   puede_desembolsar: boolean
   razon: string
@@ -33,7 +35,7 @@ export class ValidacionDesembolsoService {
     })
 
     if (error) {
-      console.error('Error al verificar desembolso:', error)
+      logger.error('Error al verificar desembolso:', error)
       throw error
     }
 

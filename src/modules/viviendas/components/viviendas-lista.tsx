@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion'
 
 import { Pagination } from '@/shared/components/ui/Pagination'
+
 import { staggerContainer, staggerItem } from '../../../shared/styles/animations'
 import { viviendasListStyles as styles } from '../styles/viviendasList.styles'
 import type { Vivienda } from '../types'

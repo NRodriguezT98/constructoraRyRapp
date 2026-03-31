@@ -1,8 +1,10 @@
 'use client'
 
-import { cn } from '@/lib/utils'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Check, Pencil } from 'lucide-react'
+
+import { cn } from '@/lib/utils'
+
 import { checkAppearAnim, progressBarTransition, sectionExpandAnim } from './accordion-wizard.animations'
 import { getAccordionWizardStyles } from './accordion-wizard.styles'
 import type { AccordionWizardSectionProps } from './accordion-wizard.types'

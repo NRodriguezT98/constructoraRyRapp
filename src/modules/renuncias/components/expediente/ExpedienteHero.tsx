@@ -1,16 +1,20 @@
 'use client'
 
+import { useEffect, useRef, useState } from 'react'
+
 import { motion } from 'framer-motion'
 import { ArrowLeft, Building2, Clock, ExternalLink, FileText, FileX, Home, Loader2, Mail, MapPin, Phone, Receipt, Upload, User } from 'lucide-react'
-import Link from 'next/link'
-import { useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 
-import { formatDateCompact } from '@/lib/utils/date.utils'
-import { generarUrlFirmadaComprobante, subirFormularioRenuncia } from '../../services/renuncias.service'
+import Link from 'next/link'
 
+import { formatDateCompact } from '@/lib/utils/date.utils'
+import { logger } from '@/lib/utils/logger'
+
+import { generarUrlFirmadaComprobante, subirFormularioRenuncia } from '../../services/renuncias.service'
 import type { ExpedienteData } from '../../types'
 import { getTipoDocumentoLabel } from '../../utils/renuncias.utils'
+
 import { expedienteStyles as styles } from './ExpedienteRenunciaPage.styles'
 
 interface ExpedienteHeroProps {
@@ -22,8 +26,8 @@ export function ExpedienteHero({ datos }: ExpedienteHeroProps) {
   const esPendiente = renuncia.estado === 'Pendiente Devolución'
   const badgeClass = esPendiente ? styles.hero.estadoBadge.pendiente : styles.hero.estadoBadge.cerrada
 
-  const clienteSnap = renuncia.cliente_datos_snapshot as Record<string, any> | null
-  const email = clienteSnap?.email ?? null
+  const clienteSnap = renuncia.cliente_datos_snapshot as Record<string, unknown> | null
+  const email = typeof clienteSnap?.email === 'string' ? clienteSnap.email : null
 
   const fechaInicio = datos.negociacion.fecha_negociacion
   const fechaFin = renuncia.fecha_renuncia
@@ -62,7 +66,7 @@ export function ExpedienteHero({ datos }: ExpedienteHeroProps) {
       setFormularioPath(path)
       toast.success('Formulario de renuncia adjuntado exitosamente')
     } catch (err) {
-      console.error('Error subiendo formulario:', err)
+      logger.error('Error subiendo formulario:', err)
       toast.error('Error al subir el formulario de renuncia')
     } finally {
       setSubiendoFormulario(false)

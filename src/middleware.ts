@@ -258,7 +258,7 @@ export async function middleware(req: NextRequest) {
     res.headers.set('x-user-nombres', encodeURIComponent(nombres))
 
     return res
-  } catch (error) {
+  } catch (_error) {
     // Si hay cualquier error, redirigir a login
     const redirectUrl = req.nextUrl.clone()
     redirectUrl.pathname = '/login'

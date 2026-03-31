@@ -1,10 +1,13 @@
 'use client'
 
+import { CheckCircle2, Info, Link2 } from 'lucide-react'
+
 import { DocumentoFormBase } from '@/shared/components/forms/documento'
 import { type ModuleName } from '@/shared/config/module-themes'
-import { CheckCircle2, Info, Link2 } from 'lucide-react'
+
 import { useDocumentoUpload } from '../../hooks'
 import { type TipoEntidad, obtenerConfiguracionEntidad } from '../../types'
+
 import { CheckboxDocumentoIdentidad } from './CheckboxDocumentoIdentidad'
 
 interface DocumentoUploadProps {
@@ -13,7 +16,7 @@ interface DocumentoUploadProps {
   onSuccess?: () => void
   onCancel?: () => void
   moduleName?: ModuleName // 🎨 Tema del módulo
-  metadata?: Record<string, any> | null // ✅ NUEVO: Metadata para vincular documento pendiente
+  metadata?: Record<string, unknown> | null // ✅ NUEVO: Metadata para vincular documento pendiente
 }
 
 export function DocumentoUpload({
@@ -71,7 +74,7 @@ export function DocumentoUpload({
                 🔗 Vinculación automática activada
               </h4>
               <p className="text-xs text-blue-700 dark:text-blue-300">
-                Este documento se vinculará automáticamente al requisito <strong>"{infoTipoDocumento.titulo}"</strong>
+                Este documento se vinculará automáticamente al requisito <strong>&quot;{infoTipoDocumento.titulo}&quot;</strong>
                 {' '}y completará el paso de validación para permitir el desembolso.
               </p>
               {fuentePagoId && (
@@ -95,7 +98,7 @@ export function DocumentoUpload({
             onChange={(checked) => setValue('es_documento_identidad', checked)}
             disabled={checkboxDeshabilitado || metadata?.auto_check_identidad === true}
           />
-          {metadata?.auto_check_identidad && esDocumentoIdentidad && (
+          {metadata?.auto_check_identidad === true && esDocumentoIdentidad && (
             <p className="mt-2 text-xs text-green-600 dark:text-green-400 flex items-center gap-1.5">
               <CheckCircle2 className="w-3.5 h-3.5" />
               Documento marcado automáticamente como identificación oficial

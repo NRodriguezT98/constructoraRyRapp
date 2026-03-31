@@ -32,7 +32,7 @@ import { toast } from 'sonner'
  */
 export function showLoginSuccessToast() {
   toast.custom(
-    (t) => (
+    (_t) => (
       <motion.div
         initial={{ opacity: 0, x: 100 }}
         animate={{ opacity: 1, x: 0 }}
@@ -185,7 +185,7 @@ export function showSessionClosedToast() {
   toast.dismiss(toastId)
 
   toast.custom(
-    (t) => (
+    (_t) => (
       <motion.div
         initial={{ opacity: 0, y: -20, scale: 0.95 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -256,7 +256,7 @@ export function showSessionClosedToast() {
 
 export function showSessionKeptAliveToast() {
   toast.custom(
-    (t) => (
+    (_t) => (
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -305,7 +305,7 @@ export function showSessionKeptAliveToast() {
  */
 export function showLoggingOutToast() {
   return toast.custom(
-    (t) => (
+    (_t) => (
       <motion.div
         initial={{ opacity: 0, y: -20, scale: 0.9 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -411,7 +411,7 @@ export function showLoggingOutToast() {
  */
 export function showLogoutToast() {
   toast.custom(
-    (t) => (
+    (_t) => (
       <motion.div
         initial={{ opacity: 0, y: 20, scale: 0.95 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -490,7 +490,7 @@ export function showLogoutToast() {
  */
 export function showLogoutErrorToast() {
   toast.custom(
-    (t) => (
+    (_t) => (
       <motion.div
         initial={{ opacity: 0, y: 20, scale: 0.95 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -549,7 +549,7 @@ export function showEntitySuccessToast({ entityName, action }: ShowEntitySuccess
   const isCreated = action === 'created'
 
   toast.custom(
-    (t) => (
+    (_t) => (
       <motion.div
         initial={{ opacity: 0, x: 100 }}
         animate={{ opacity: 1, x: 0 }}

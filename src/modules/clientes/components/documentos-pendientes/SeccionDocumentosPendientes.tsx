@@ -14,6 +14,8 @@
  * @version 2.0.0 - 2025-12-17
  */
 
+import { useMemo, useState } from 'react'
+
 import { AnimatePresence, motion } from 'framer-motion'
 import {
     AlertTriangle,
@@ -25,7 +27,6 @@ import {
     Home,
     Upload
 } from 'lucide-react'
-import { useMemo, useState } from 'react'
 
 import { useDocumentosPendientes } from '@/modules/clientes/hooks/useDocumentosPendientes'
 

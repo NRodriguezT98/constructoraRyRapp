@@ -5,6 +5,7 @@
  */
 
 import { supabase } from '@/lib/supabase/client'
+import { logger } from '@/lib/utils/logger'
 
 export interface ConfiguracionRecargo {
   id: string
@@ -44,7 +45,7 @@ class ConfiguracionService {
       .order('valor', { ascending: false })
 
     if (error) {
-      console.error('Error obteniendo configuraciones:', error)
+      logger.error('Error obteniendo configuraciones:', error)
       throw new Error('Error al obtener configuraciones')
     }
 
@@ -63,7 +64,7 @@ class ConfiguracionService {
       .order('valor', { ascending: false })
 
     if (error) {
-      console.error('Error obteniendo configuraciones activas:', error)
+      logger.error('Error obteniendo configuraciones activas:', error)
       throw new Error('Error al obtener configuraciones activas')
     }
 
@@ -81,7 +82,7 @@ class ConfiguracionService {
       .single()
 
     if (error) {
-      console.error('Error obteniendo configuración:', error)
+      logger.error('Error obteniendo configuración:', error)
       return null
     }
 
@@ -105,7 +106,7 @@ class ConfiguracionService {
       .single()
 
     if (error) {
-      console.error('Error creando configuración:', error)
+      logger.error('Error creando configuración:', error)
       throw new Error('Error al crear configuración')
     }
 
@@ -127,7 +128,7 @@ class ConfiguracionService {
       .single()
 
     if (error) {
-      console.error('Error actualizando configuración:', error)
+      logger.error('Error actualizando configuración:', error)
       throw new Error('Error al actualizar configuración')
     }
 
@@ -144,7 +145,7 @@ class ConfiguracionService {
       .eq('id', id)
 
     if (error) {
-      console.error('Error eliminando configuración:', error)
+      logger.error('Error eliminando configuración:', error)
       throw new Error('Error al eliminar configuración')
     }
   }

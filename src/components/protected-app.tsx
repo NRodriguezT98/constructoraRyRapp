@@ -10,6 +10,7 @@
 'use client'
 
 import { useAuth } from '@/contexts/auth-context'
+import { logger } from '@/lib/utils/logger'
 import { InvalidRoleError } from '@/shared/components/errors'
 
 const ROLES_VALIDOS = ['Administrador', 'Contador', 'Supervisor', 'Gerente'] as const
@@ -44,7 +45,7 @@ export function ProtectedApp({ children }: ProtectedAppProps) {
         userAgent: typeof window !== 'undefined' ? window.navigator.userAgent : 'unknown',
       }
 
-      console.error(`❌ [PROTECTED APP] ACCESO BLOQUEADO - Rol inválido`, errorLog)
+      logger.error(`❌ [PROTECTED APP] ACCESO BLOQUEADO - Rol inválido`, errorLog)
 
       // TODO: Enviar a servicio de logging/alertas (Sentry, LogRocket, etc.)
       // await fetch('/api/security/invalid-role', { method: 'POST', body: JSON.stringify(errorLog) })

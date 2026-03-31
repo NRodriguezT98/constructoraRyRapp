@@ -45,7 +45,7 @@ export function BannerDocumentoRequerido({
               Documento de identidad pendiente
             </h4>
             <p className="text-xs text-amber-800 dark:text-amber-300 leading-relaxed">
-              El expediente de este cliente está incompleto. Sube la cédula o pasaporte usando el botón <strong>"Subir Cédula/Pasaporte"</strong> en la esquina superior para mantener el registro actualizado.
+              El expediente de este cliente está incompleto. Sube la cédula o pasaporte usando el botón <strong>&quot;Subir Cédula/Pasaporte&quot;</strong> en la esquina superior para mantener el registro actualizado.
             </p>
           </div>
         </div>
@@ -92,7 +92,7 @@ export function BannerDocumentoRequerido({
             <div className="flex items-start gap-2">
               <span className="flex-shrink-0 w-5 h-5 rounded-full bg-white text-orange-600 text-[10px] font-bold flex items-center justify-center">2</span>
               <p className="text-xs text-white font-medium flex-1">
-                Selecciona el archivo escaneado, completa el formulario y presiona <strong>"Subir documento"</strong>
+                Selecciona el archivo escaneado, completa el formulario y presiona <strong>&quot;Subir documento&quot;</strong>
               </p>
             </div>
 
@@ -100,7 +100,7 @@ export function BannerDocumentoRequerido({
             <div className="flex items-start gap-2">
               <span className="flex-shrink-0 w-5 h-5 rounded-full bg-emerald-500 text-white text-[10px] font-bold flex items-center justify-center">✓</span>
               <p className="text-xs text-white font-medium flex-1">
-                ¡Listo! El botón <strong>"Asignar Vivienda"</strong> del header se habilitará automáticamente
+                ¡Listo! El botón <strong>&quot;Asignar Vivienda&quot;</strong> del header se habilitará automáticamente
               </p>
             </div>
           </div>

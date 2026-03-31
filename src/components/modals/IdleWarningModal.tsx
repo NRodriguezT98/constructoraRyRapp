@@ -1,9 +1,11 @@
 'use client'
 
+import { useEffect, useState } from 'react'
+
 import { AnimatePresence, motion } from 'framer-motion'
 import { AlertTriangle, Clock, LogOut, MousePointer2 } from 'lucide-react'
+
 import Image from 'next/image'
-import { useEffect, useState } from 'react'
 
 interface IdleWarningModalProps {
   isOpen: boolean

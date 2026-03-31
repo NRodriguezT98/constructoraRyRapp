@@ -3,7 +3,9 @@
 // ============================================
 
 import { supabase } from '@/lib/supabase/client'
+import { logger } from '@/lib/utils/logger'
 import { auditService } from '@/services/audit.service'
+
 import { type TipoEntidad, obtenerConfiguracionEntidad } from '../types/entidad.types'
 
 /**
@@ -63,7 +65,7 @@ export class DocumentosReemplazoService {
       )
 
       if (passwordError) {
-        console.error('❌ [REEMPLAZO] Error validando contraseña:', passwordError)
+        logger.error('❌ [REEMPLAZO] Error validando contraseña:', passwordError)
         throw new Error('Error al validar contraseña de administrador')
       }
 
@@ -207,13 +209,13 @@ export class DocumentosReemplazoService {
 
 
     } catch (error) {
-      console.error('💥 [REEMPLAZO] Error en el proceso:', error)
+      logger.error('💥 [REEMPLAZO] Error en el proceso:', error)
 
       // ============================================
       // ROLLBACK AUTOMÁTICO
       // ============================================
       if (archivoReemplazado && backupPath) {
-        console.warn('⚠️ [ROLLBACK] Intentando restaurar archivo original...')
+        logger.warn('⚠️ [ROLLBACK] Intentando restaurar archivo original...')
         try {
           // Descargar backup
           const { data: backupData } = await supabase.storage
@@ -231,8 +233,8 @@ export class DocumentosReemplazoService {
 
           }
         } catch (rollbackError) {
-          console.error('💥 [ROLLBACK] Error crítico al restaurar archivo:', rollbackError)
-          console.error(`⚠️ ACCIÓN MANUAL REQUERIDA: Restaurar desde backup: ${backupPath}`)
+          logger.error('💥 [ROLLBACK] Error crítico al restaurar archivo:', rollbackError)
+          logger.error(`⚠️ ACCIÓN MANUAL REQUERIDA: Restaurar desde backup: ${backupPath}`)
         }
       }
 
@@ -336,7 +338,7 @@ export class DocumentosReemplazoService {
       })
 
     } catch (auditError) {
-      console.error('⚠️ [AUDITORÍA] Error al registrar (no crítico):', auditError)
+      logger.error('⚠️ [AUDITORÍA] Error al registrar (no crítico):', auditError)
     }
   }
 }

@@ -16,9 +16,10 @@
 
 import { useCallback, useState } from 'react'
 
+import { useQueryClient } from '@tanstack/react-query'
+
 import { useRouter } from 'next/navigation'
 
-import { useQueryClient } from '@tanstack/react-query'
 
 import { useDocumentoIdentidad } from '@/modules/clientes/documentos/hooks/useDocumentoIdentidad'
 import { documentosPendientesKeys } from '@/modules/clientes/types/documentos-pendientes.types'
@@ -39,7 +40,7 @@ export function useDocumentosTab({ clienteId }: UseDocumentosTabProps) {
 
   const [vistaActual, setVistaActual] = useState<Vista>('documentos')
   const [uploadTipoCedula, setUploadTipoCedula] = useState(false)
-  const [metadataPendiente, setMetadataPendiente] = useState<Record<string, any> | null>(null)
+  const [metadataPendiente, setMetadataPendiente] = useState<Record<string, unknown> | null>(null)
 
   // ✅ Hook de validación de documento de identidad
   const { tieneCedula, cargando: cargandoValidacion } = useDocumentoIdentidad({ clienteId })
@@ -53,7 +54,7 @@ export function useDocumentosTab({ clienteId }: UseDocumentosTabProps) {
    * @param esCedula - Si es un documento de cédula
    * @param metadata - Metadata para vincular con documento pendiente
    */
-  const mostrarUpload = useCallback((esCedula: boolean = false, metadata?: Record<string, any>) => {
+  const mostrarUpload = useCallback((esCedula: boolean = false, metadata?: Record<string, unknown>) => {
     setUploadTipoCedula(esCedula)
     // ✅ Si es cédula, agregar flag para pre-marcar checkbox
     const metadataConFlag = esCedula

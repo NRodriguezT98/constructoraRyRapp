@@ -20,6 +20,7 @@
 import { useQuery } from '@tanstack/react-query'
 
 import { supabase } from '@/lib/supabase/client'
+import { logger } from '@/lib/utils/logger'
 
 // ============================================
 // TIPOS
@@ -78,12 +79,12 @@ export function useProyectoConValidacion(proyectoId?: string) {
         .single()
 
       if (error) {
-        console.error('❌ [VALIDACION] Error cargando proyecto:', error)
+        logger.error('❌ [VALIDACION] Error cargando proyecto:', error)
         throw error
       }
 
       if (!data) {
-        console.warn('⚠️ [VALIDACION] Proyecto no encontrado:', proyectoId)
+        logger.warn('⚠️ [VALIDACION] Proyecto no encontrado:', proyectoId)
         return null
       }
 

@@ -16,6 +16,8 @@
  * ❌ SISTEMA VIEJO: pasos_fuente_pago (eliminado)
  */
 
+import { useCallback, useMemo } from 'react'
+
 import { useQuery } from '@tanstack/react-query'
 import type { LucideIcon } from 'lucide-react'
 import {
@@ -28,7 +30,6 @@ import {
     Home,
     Wallet
 } from 'lucide-react'
-import { useCallback, useMemo } from 'react'
 
 import { supabase } from '@/lib/supabase/client'
 

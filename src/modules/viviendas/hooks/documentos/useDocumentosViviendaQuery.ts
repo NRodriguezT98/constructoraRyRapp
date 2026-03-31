@@ -18,7 +18,9 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
+import { logger } from '@/lib/utils/logger'
 import { CategoriasService } from '@/modules/documentos/services'
+
 import { DocumentosViviendaService } from '../../services/documentos'
 import type { DocumentoVivienda } from '../../types/documento-vivienda.types'
 
@@ -226,7 +228,7 @@ export function useToggleImportanteViviendaMutation(viviendaId: string) {
       const documento = documentos?.find((d) => d.id === documentoId)
 
       if (!documento) {
-        console.error('❌ [Toggle Importante] Documento no encontrado en cache')
+        logger.error('❌ [Toggle Importante] Documento no encontrado en cache')
         throw new Error('Documento no encontrado')
       }
 
@@ -250,7 +252,7 @@ export function useToggleImportanteViviendaMutation(viviendaId: string) {
       toast.success('✅ Documento actualizado')
     },
     onError: (err) => {
-      console.error('❌ [Toggle Importante] Error:', err)
+      logger.error('❌ [Toggle Importante] Error:', err)
       toast.error('Error al actualizar documento')
     },
   })

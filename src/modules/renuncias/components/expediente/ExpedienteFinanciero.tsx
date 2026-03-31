@@ -3,8 +3,10 @@
 import { CheckCircle2, ExternalLink, FileText, Percent, Receipt, Shield } from 'lucide-react'
 
 import { formatDateTimeWithSeconds } from '@/lib/utils/date.utils'
+
 import type { ExpedienteData } from '../../types'
 import { formatCOP } from '../../utils/renuncias.utils'
+
 import { expedienteStyles as styles } from './ExpedienteRenunciaPage.styles'
 
 interface ExpedienteFinancieroProps {

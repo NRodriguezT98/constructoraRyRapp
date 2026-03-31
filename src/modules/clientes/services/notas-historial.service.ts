@@ -4,6 +4,8 @@
  */
 
 import { supabase } from '@/lib/supabase/client'
+import { logger } from '@/lib/utils/logger'
+
 import type {
     ActualizarNotaDTO,
     CrearNotaDTO,
@@ -43,7 +45,7 @@ class NotasHistorialService {
         },
       } as NotaHistorialConUsuario
     } catch (error) {
-      console.error('❌ [NOTAS] Error obteniendo nota:', error)
+      logger.error('❌ [NOTAS] Error obteniendo nota:', error)
       return null
     }
   }
@@ -113,7 +115,7 @@ class NotasHistorialService {
         } as NotaHistorialConUsuario
       })
     } catch (error) {
-      console.error('❌ [NOTAS] Error obteniendo notas del cliente:', error)
+      logger.error('❌ [NOTAS] Error obteniendo notas del cliente:', error)
       return []
     }
   }
@@ -167,7 +169,7 @@ class NotasHistorialService {
       }
     } catch (error) {
       const mensaje = error instanceof Error ? error.message : 'Error desconocido'
-      console.error('❌ [NOTAS] Error creando nota:', error)
+      logger.error('❌ [NOTAS] Error creando nota:', error)
       return { success: false, error: mensaje }
     }
   }
@@ -206,7 +208,7 @@ class NotasHistorialService {
       return { success: true }
     } catch (error) {
       const mensaje = error instanceof Error ? error.message : 'Error desconocido'
-      console.error('❌ [NOTAS] Error actualizando nota:', error)
+      logger.error('❌ [NOTAS] Error actualizando nota:', error)
       return { success: false, error: mensaje }
     }
   }
@@ -223,7 +225,7 @@ class NotasHistorialService {
       return { success: true }
     } catch (error) {
       const mensaje = error instanceof Error ? error.message : 'Error desconocido'
-      console.error('❌ [NOTAS] Error eliminando nota:', error)
+      logger.error('❌ [NOTAS] Error eliminando nota:', error)
       return { success: false, error: mensaje }
     }
   }
@@ -253,7 +255,7 @@ class NotasHistorialService {
       // Es Admin o es el creador
       return usuario.rol === 'Administrador' || nota.creado_por === user.id
     } catch (error) {
-      console.error('❌ [NOTAS] Error verificando permisos:', error)
+      logger.error('❌ [NOTAS] Error verificando permisos:', error)
       return false
     }
   }

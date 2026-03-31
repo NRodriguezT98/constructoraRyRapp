@@ -24,10 +24,12 @@
 
 'use client'
 
-import { cn } from '@/lib/utils'
-import { AlertCircle, CheckCircle2, Info, Loader2 } from 'lucide-react'
 import { useState, type HTMLInputTypeAttribute } from 'react'
+
+import { AlertCircle, CheckCircle2, Info, Loader2 } from 'lucide-react'
 import { type FieldError, type UseFormRegisterReturn } from 'react-hook-form'
+
+import { cn } from '@/lib/utils'
 
 // ============================================================================
 // TIPOS

@@ -56,7 +56,7 @@ export interface SubirDocumentoClienteParams {
   fecha_vencimiento?: string
   es_importante?: boolean
   es_documento_identidad?: boolean // ⭐ NUEVO: Marca si es documento de identidad
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
 }
 
 /**

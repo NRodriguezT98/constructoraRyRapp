@@ -1,10 +1,12 @@
 'use client'
 
-import { AlertCircle, AlertTriangle, Banknote, Building2, Calculator, Download, Edit2, FileText, Home, Loader2, MapPin, TrendingUp, User } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
+
+import { AlertCircle, AlertTriangle, Banknote, Building2, Calculator, Download, Edit2, FileText, Home, Loader2, MapPin, TrendingUp, User } from 'lucide-react'
 
 import { formatDateForDisplay, getTodayDateString } from '@/lib/utils/date.utils'
 import { formatCurrency } from '@/lib/utils/format.utils'
+import { logger } from '@/lib/utils/logger'
 import type { FuentePagoConfiguracion, ViviendaDetalle } from '@/modules/clientes/components/asignar-vivienda/types'
 import { obtenerMontoParaCierre } from '@/modules/clientes/utils/fuentes-pago-campos.utils'
 import { useEntidadesFinancierasCombinadas } from '@/modules/configuracion/hooks/useEntidadesFinancierasParaFuentes'
@@ -127,7 +129,7 @@ export function SeccionRevision({
       document.body.removeChild(link)
       setTimeout(() => URL.revokeObjectURL(url), 5000)
     } catch (err) {
-      console.error('Error generando PDF:', err)
+      logger.error('Error generando PDF:', err)
     } finally {
       setGenerandoPDF(false)
     }

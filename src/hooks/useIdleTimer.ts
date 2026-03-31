@@ -16,9 +16,10 @@
 
 'use client'
 
+import { useCallback, useEffect, useRef } from 'react'
+
 import { useAuth } from '@/contexts/auth-context'
 import { useLogoutMutation } from '@/hooks/auth'
-import { useCallback, useEffect, useRef } from 'react'
 
 export type IdleWarningLevel = 'info' | 'warning' | 'critical'
 

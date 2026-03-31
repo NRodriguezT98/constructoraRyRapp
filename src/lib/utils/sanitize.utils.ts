@@ -62,7 +62,7 @@ export function sanitizeEnum<T extends string>(
  * @param obj - Objeto a sanitizar
  * @returns Objeto con valores sanitizados
  */
-export function sanitizeObject<T extends Record<string, any>>(obj: T): T {
+export function sanitizeObject<T extends Record<string, unknown>>(obj: T): T {
   const result: any = {}
 
   for (const [key, value] of Object.entries(obj)) {
@@ -71,7 +71,7 @@ export function sanitizeObject<T extends Record<string, any>>(obj: T): T {
     } else if (typeof value === 'string') {
       result[key] = sanitizeString(value)
     } else if (typeof value === 'object' && !Array.isArray(value)) {
-      result[key] = sanitizeObject(value)
+      result[key] = sanitizeObject(value as Record<string, unknown>)
     } else {
       result[key] = value
     }
@@ -133,7 +133,7 @@ export function formatNombrePropio(value: string | null | undefined): string | n
  * @param obj - Objeto a limpiar
  * @returns Objeto sin campos null/undefined
  */
-export function removeNullish<T extends Record<string, any>>(obj: T): Partial<T> {
+export function removeNullish<T extends Record<string, unknown>>(obj: T): Partial<T> {
   const result: any = {}
 
   for (const [key, value] of Object.entries(obj)) {

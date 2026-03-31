@@ -14,7 +14,9 @@ import { Building2, CheckCircle2, Clock, Edit2, Home, Trash2 } from 'lucide-reac
 
 import { DataTable } from '@/shared/components/table/DataTable'
 import { cn } from '@/shared/utils/helpers'
+
 import type { Vivienda } from '../types'
+
 import { viviendasTablaStyles as styles } from './ViviendasTabla.styles'
 
 interface ViviendasTablaProps {

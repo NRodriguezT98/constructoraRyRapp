@@ -54,7 +54,7 @@ export function humanizarEvento(
     descripcion,
     fecha: evento.fecha_evento,
     usuario: {
-      id: evento.metadata?.usuario_id,
+      id: evento.metadata?.usuario_id as string | undefined,
       email: evento.usuario_email,
       nombres: evento.usuario_nombres,
       rol: evento.usuario_rol,
@@ -72,7 +72,7 @@ export function humanizarEvento(
  * Analiza tabla + acción + metadata para determinar tipo exacto
  */
 function detectarTipoEvento(evento: EventoHistorialCliente): TipoEventoHistorial {
-  const { tabla, accion, cambios_especificos, metadata } = evento
+  const { tabla, accion, cambios_especificos, metadata: _metadata } = evento
 
   // ========== CLIENTE ==========
   if (tabla === 'clientes') {

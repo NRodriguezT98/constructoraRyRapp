@@ -3,6 +3,7 @@
 // ============================================
 
 import { supabase } from '@/lib/supabase/client'
+
 import { type TipoEntidad, obtenerConfiguracionEntidad } from '../types/entidad.types'
 
 // Default bucket for backward-compatible methods

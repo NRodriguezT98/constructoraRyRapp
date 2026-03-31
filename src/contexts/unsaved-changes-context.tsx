@@ -11,6 +11,7 @@ import { createContext, useCallback, useContext, useEffect, useRef, useState } f
 
 import { usePathname } from 'next/navigation'
 
+import { logger } from '@/lib/utils/logger'
 import { useModal } from '@/shared/components/modals'
 
 interface UnsavedChangesContextType {
@@ -90,7 +91,7 @@ export function UnsavedChangesProvider({ children }: { children: React.ReactNode
             try {
               await discardCallback()
             } catch (error) {
-              console.error('Error al ejecutar onDiscard:', error)
+              logger.error('Error al ejecutar onDiscard:', error)
             }
           }
 

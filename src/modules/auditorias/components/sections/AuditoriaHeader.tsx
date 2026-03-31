@@ -5,8 +5,9 @@
 
 'use client'
 
-import { formatDateTimeForDisplay } from '@/lib/utils/date.utils'
 import { Archive, ArchiveRestore, CheckCircle2, Edit3, Trash2 } from 'lucide-react'
+
+import { formatDateTimeForDisplay } from '@/lib/utils/date.utils'
 
 interface AuditoriaHeaderProps {
   accion: 'CREATE' | 'UPDATE' | 'DELETE' | 'archivado' | 'restaurado'

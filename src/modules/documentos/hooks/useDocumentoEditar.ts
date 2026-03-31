@@ -1,9 +1,13 @@
 'use client'
 
+import { useState } from 'react'
+
+import { toast } from 'sonner'
+
 import { supabase } from '@/lib/supabase/client'
 import { formatDateForDB } from '@/lib/utils/date.utils'
-import { useState } from 'react'
-import { toast } from 'sonner'
+import { logger } from '@/lib/utils/logger'
+
 import { type TipoEntidad, obtenerConfiguracionEntidad } from '../types/entidad.types'
 
 interface EditarMetadatosData {
@@ -66,7 +70,7 @@ export function useDocumentoEditar() {
         .eq('id', documentoId)
 
       if (updateError) {
-        console.error('Error al actualizar metadatos:', updateError)
+        logger.error('Error al actualizar metadatos:', updateError)
         throw new Error('No se pudo actualizar el documento')
       }
 

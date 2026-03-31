@@ -11,18 +11,19 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useRouter } from 'next/navigation'
+import { ClipboardCheck, DollarSign, MapPin, Ruler, Scale } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
 
-import { ClipboardCheck, DollarSign, MapPin, Ruler, Scale } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 
 import type { SectionStatus, SummaryItem, WizardStepConfig } from '@/shared/components/accordion-wizard'
 
 import { viviendasService } from '../services/viviendas.service'
 import type { ResumenFinanciero, ViviendaFormData } from '../types'
 import { calcularValorTotal } from '../utils'
+
 import { useCrearViviendaMutation } from './useViviendasQuery'
 
 // ── Configuración de pasos ───────────────────────────────────────

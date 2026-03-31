@@ -10,6 +10,7 @@
 
 import type { AuditLogRecord } from '../../types'
 import { DocumentosAuditoriaDetalle } from '../detalles/DocumentosAuditoriaDetalle'
+
 import { GenericoDetalleRender } from './GenericoDetalleRender'
 
 interface DocumentoDetalleRenderProps {

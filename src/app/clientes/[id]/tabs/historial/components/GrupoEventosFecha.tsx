@@ -11,6 +11,7 @@ import { Calendar } from 'lucide-react'
 import type { EventoHistorialHumanizado } from '@/modules/clientes/types/historial.types'
 
 import { historialStyles } from '../historial-tab.styles'
+
 import { EventoCard } from './EventoCard'
 
 interface GrupoEventosFechaProps {

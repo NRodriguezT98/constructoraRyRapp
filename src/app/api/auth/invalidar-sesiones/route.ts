@@ -13,6 +13,7 @@
 
 import { NextResponse } from 'next/server'
 
+import { logger } from '@/lib/utils/logger'
 import { invalidarSesionPorCambioPermisos } from '@/modules/usuarios/services/permisos-jwt.service'
 import type { Rol } from '@/modules/usuarios/types'
 
@@ -35,7 +36,7 @@ export async function POST(request: Request) {
       message: `Sesiones invalidadas para rol: ${rol}`,
     })
   } catch (error) {
-    console.error('❌ [API] Error invalidando sesiones:', error)
+    logger.error('❌ [API] Error invalidando sesiones:', error)
 
     return NextResponse.json(
       {

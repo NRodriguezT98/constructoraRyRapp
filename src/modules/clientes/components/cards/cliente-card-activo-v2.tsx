@@ -29,7 +29,9 @@ import {
 
 import { formatDateShort } from '@/lib/utils/date.utils'
 import { formatNombreCompleto } from '@/lib/utils/string.utils'
+
 import type { ClienteResumen } from '../../types'
+
 import { clienteCardThemes } from './cliente-card-base.styles'
 
 interface ClienteCardActivoProps {

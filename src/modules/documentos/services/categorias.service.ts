@@ -3,6 +3,7 @@
 // ============================================
 
 import { supabase } from '@/lib/supabase/client'
+import { logger } from '@/lib/utils/logger'
 
 import type {
     CategoriaDocumento,
@@ -47,7 +48,7 @@ export class CategoriasService {
       .order('nombre', { ascending: true })
 
     if (error) {
-      console.error('❌ Error al obtener categorías:', error)
+      logger.error('❌ Error al obtener categorías:', error)
       throw error
     }
 
@@ -91,7 +92,7 @@ export class CategoriasService {
       .single()
 
     if (error) {
-      console.error('❌ Error al crear categoría:', error)
+      logger.error('❌ Error al crear categoría:', error)
       throw error
     }
 
@@ -255,7 +256,7 @@ export class CategoriasService {
     })
 
     if (error) {
-      console.error('Error al crear categorías por defecto para proyectos:', error)
+      logger.error('Error al crear categorías por defecto para proyectos:', error)
       throw error
     }
   }
@@ -270,7 +271,7 @@ export class CategoriasService {
     })
 
     if (error) {
-      console.error('Error al crear categorías por defecto para viviendas:', error)
+      logger.error('Error al crear categorías por defecto para viviendas:', error)
       throw error
     }
   }

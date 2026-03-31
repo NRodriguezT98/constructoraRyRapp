@@ -15,6 +15,7 @@ import {
 } from 'lucide-react'
 
 import { moduleThemes, type ModuleName } from '@/shared/config/module-themes'
+
 import { useDocumentosStore } from '../../store/documentos.store'
 import type { CategoriaDocumento, DocumentoProyecto } from '../../types'
 
@@ -254,7 +255,7 @@ export function DocumentosFiltros({
 
             {busqueda && (
               <span className='inline-flex items-center gap-1.5 rounded-lg bg-gray-100 px-3 py-1 text-sm text-gray-700 dark:bg-gray-700 dark:text-gray-300'>
-                Búsqueda: "{busqueda}"
+                Búsqueda: &quot;{busqueda}&quot;
                 <button
                   onClick={() => setBusqueda('')}
                   className='rounded p-0.5 hover:bg-gray-200 dark:hover:bg-gray-600'

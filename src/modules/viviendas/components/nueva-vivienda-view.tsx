@@ -9,7 +9,6 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { toast } from 'sonner'
 
 import { AnimatePresence, motion } from 'framer-motion'
 import {
@@ -24,9 +23,12 @@ import {
     MapPin,
     X
 } from 'lucide-react'
+import { toast } from 'sonner'
+
 
 import Link from 'next/link'
 
+import { logger } from '@/lib/utils/logger'
 import { cn } from '@/shared/utils/helpers'
 
 
@@ -100,7 +102,7 @@ export function NuevaViviendaView() {
         // Retornar la vivienda creada para que el hook sepa que todo sali\u00f3 bien
         return void nuevaVivienda
       } catch (error) {
-        console.error('? Error al crear vivienda:', error)
+        logger.error('? Error al crear vivienda:', error)
         toast.error('Error al crear vivienda', {
           description: error instanceof Error ? error.message : 'Ocurri� un error inesperado',
           duration: 5000,

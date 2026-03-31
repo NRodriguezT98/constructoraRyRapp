@@ -16,7 +16,6 @@ import { cn } from '@/shared/utils/helpers'
 
 import { usePasoUbicacion } from '../hooks/usePasoUbicacion'
 import { nuevaViviendaStyles as styles } from '../styles/nueva-vivienda.styles'
-
 import type { Vivienda } from '../types'
 
 interface PasoUbicacionProps {

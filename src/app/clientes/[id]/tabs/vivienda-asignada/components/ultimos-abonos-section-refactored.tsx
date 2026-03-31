@@ -11,9 +11,10 @@
 
 'use client'
 
-import { formatDateCompact } from '@/lib/utils/date.utils'
 import { motion } from 'framer-motion'
 import { Calendar, CreditCard, DollarSign, FileText } from 'lucide-react'
+
+import { formatDateCompact } from '@/lib/utils/date.utils'
 
 interface Abono {
   id: string

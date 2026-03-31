@@ -3,7 +3,9 @@
 import { Calendar, CheckCircle, CreditCard, FileText, Home, Shield, User, UserX, XCircle } from 'lucide-react'
 
 import { formatDateTimeWithSeconds } from '@/lib/utils/date.utils'
+
 import type { ExpedienteData } from '../../types'
+
 import { expedienteStyles as styles } from './ExpedienteRenunciaPage.styles'
 
 interface ExpedienteAuditoriaProps {

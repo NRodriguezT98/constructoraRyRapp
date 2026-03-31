@@ -10,8 +10,10 @@
  * - Caja Compensación: "CARTA CAJA DE COMPENSACIÓN A1 - PEPE PEREZ"
  */
 
+import { logger } from '@/lib/utils/logger'
 import type { TipoFuentePago } from '@/modules/clientes/types'
 import { DocumentosBaseService } from '@/modules/documentos/services/documentos-base.service'
+
 import type { FuentePagoConfig } from '../types'
 
 // â­ ID de la categoría (verificado en DB)
@@ -116,7 +118,7 @@ export async function subirDocumentosFuentesPago(
 
         urls[fuente.tipo] = url
       } catch (error) {
-        console.error(`❌ Error subiendo documento de ${fuente.tipo}:`, error)
+        logger.error(`❌ Error subiendo documento de ${fuente.tipo}:`, error)
         throw new Error(`Error al subir documento de ${fuente.tipo}`)
       }
     }

@@ -3,6 +3,8 @@
 // ============================================
 
 import { supabase } from '@/lib/supabase/client'
+import { logger } from '@/lib/utils/logger'
+
 import type { DocumentoProyecto } from '../types/documento.types'
 import { type TipoEntidad, obtenerConfiguracionEntidad } from '../types/entidad.types'
 
@@ -371,7 +373,7 @@ export class DocumentosEliminacionService {
             try {
               await supabase.storage.from(bucket).remove([version.url_storage])
             } catch (err) {
-              console.warn('⚠️ Error al eliminar archivo de Storage:', err)
+              logger.warn('⚠️ Error al eliminar archivo de Storage:', err)
             }
           }
 
@@ -391,7 +393,7 @@ export class DocumentosEliminacionService {
           try {
             await supabase.storage.from(bucket).remove([version.url_storage])
           } catch (err) {
-            console.warn('⚠️ Error al eliminar archivo de Storage:', err)
+            logger.warn('⚠️ Error al eliminar archivo de Storage:', err)
           }
         }
 

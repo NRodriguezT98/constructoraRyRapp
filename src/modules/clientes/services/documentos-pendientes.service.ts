@@ -11,6 +11,7 @@
  */
 
 import { supabase } from '@/lib/supabase/client'
+import { logger } from '@/lib/utils/logger'
 import type {
     DocumentoPendienteEnriquecido
 } from '@/modules/clientes/types/documentos-pendientes.types'
@@ -36,7 +37,7 @@ export async function fetchDocumentosPendientesPorCliente(
       .order('orden', { ascending: false })
 
     if (error) {
-      console.error('❌ Error al obtener pendientes desde vista:', error)
+      logger.error('❌ Error al obtener pendientes desde vista:', error)
       throw error
     }
 
@@ -80,7 +81,7 @@ export async function fetchDocumentosPendientesPorCliente(
 
     return documentosEnriquecidos as unknown as DocumentoPendienteEnriquecido[]
   } catch (error) {
-    console.error('❌ Error en fetchDocumentosPendientesPorCliente:', error)
+    logger.error('❌ Error en fetchDocumentosPendientesPorCliente:', error)
     throw error
   }
 }

@@ -5,6 +5,7 @@
 
 import { supabase } from '@/lib/supabase/client'
 import { formatDateForDB, getTodayDateString } from '@/lib/utils/date.utils'
+import { logger } from '@/lib/utils/logger'
 import { auditService } from '@/services/audit.service'
 
 import type {
@@ -235,7 +236,7 @@ class ClientesService {
       .order('fecha_interes', { ascending: false })
 
     if (interesesError) {
-      console.error('Error cargando intereses:', interesesError)
+      logger.error('Error cargando intereses:', interesesError)
       // No lanzamos error, continuamos sin intereses
     }
 
@@ -299,7 +300,7 @@ class ClientesService {
     if (error) {
       // Si es error de "no encontrado", está bien (no hay duplicado)
       // Si es otro error, lanzarlo
-      console.error('Error buscando cliente por documento:', error)
+      logger.error('Error buscando cliente por documento:', error)
       throw error
     }
 
@@ -322,7 +323,7 @@ class ClientesService {
 
     if (clienteExistente) {
       const error = `Ya existe un cliente registrado con ${datos.tipo_documento} ${datos.numero_documento}.\n\nCliente existente: ${clienteExistente.nombres} ${clienteExistente.apellidos}`
-      console.error('❌ Cliente duplicado:', error)
+      logger.error('❌ Cliente duplicado:', error)
       throw new Error(error)
     }
 
@@ -349,7 +350,7 @@ class ClientesService {
       .single()
 
     if (error) {
-      console.error('❌ Error insertando en DB:', error)
+      logger.error('❌ Error insertando en DB:', error)
       throw error
     }
 
@@ -358,7 +359,7 @@ class ClientesService {
     try {
       await auditService.auditarCreacionCliente(data)
     } catch (auditError) {
-      console.error('⚠️ Error auditando creación de cliente:', auditError)
+      logger.error('⚠️ Error auditando creación de cliente:', auditError)
       // No bloqueamos la operación si falla la auditoría
     }
 
@@ -410,7 +411,7 @@ class ClientesService {
           'clientes'
         )
       } catch (auditError) {
-        console.error('⚠️ Error auditando actualización:', auditError)
+        logger.error('⚠️ Error auditando actualización:', auditError)
       }
     }
 
@@ -497,7 +498,7 @@ class ClientesService {
           'clientes'
         )
       } catch (auditError) {
-        console.error('⚠️ Error auditando eliminación:', auditError)
+        logger.error('⚠️ Error auditando eliminación:', auditError)
       }
     }
   }
@@ -517,7 +518,7 @@ class ClientesService {
       .maybeSingle()
 
     if (error) {
-      console.error('Error verificando renuncia pendiente:', error)
+      logger.error('Error verificando renuncia pendiente:', error)
       return { pendiente: false }
     }
 

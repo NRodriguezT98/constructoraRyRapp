@@ -1,7 +1,9 @@
 'use client'
 
-import { cn } from '@/lib/utils'
 import { AlertCircle, ArrowLeft, ArrowRight, Check, Loader2 } from 'lucide-react'
+
+import { cn } from '@/lib/utils'
+
 import { getAccordionWizardStyles } from './accordion-wizard.styles'
 import type { AccordionWizardNavigationProps } from './accordion-wizard.types'
 

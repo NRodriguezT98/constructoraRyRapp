@@ -25,6 +25,8 @@
 
 import type { ReactNode } from 'react'
 
+import { logger } from '@/lib/utils/logger'
+
 import { usePermisosQuery } from '../hooks/usePermisosQuery'
 import type { Accion, Modulo } from '../types'
 
@@ -65,7 +67,7 @@ export function ProtectedAction({
 
   // Validación: no puede usar accion y acciones juntos
   if (accion && acciones) {
-    console.error('ProtectedAction: No uses "accion" y "acciones" al mismo tiempo')
+    logger.error('ProtectedAction: No uses "accion" y "acciones" al mismo tiempo')
     return <>{fallback}</>
   }
 
@@ -88,7 +90,7 @@ export function ProtectedAction({
       tienePermiso = puedeAlguno(modulo, acciones)
     }
   } else {
-    console.error('ProtectedAction: Debes proporcionar "accion" o "acciones"')
+    logger.error('ProtectedAction: Debes proporcionar "accion" o "acciones"')
     return <>{fallback}</>
   }
 

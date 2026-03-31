@@ -17,6 +17,8 @@
 
 'use client'
 
+import { useMemo, useState } from 'react'
+
 import { AnimatePresence, motion } from 'framer-motion'
 import {
     AlertCircle,
@@ -30,7 +32,6 @@ import {
     Send,
     Upload,
 } from 'lucide-react'
-import { useMemo, useState } from 'react'
 
 import { useEstadoDocumentacionFuente } from '@/modules/fuentes-pago/hooks/useEstadoDocumentacionFuente'
 import type { RequisitoDocumento } from '@/modules/fuentes-pago/services/requisitos.service'

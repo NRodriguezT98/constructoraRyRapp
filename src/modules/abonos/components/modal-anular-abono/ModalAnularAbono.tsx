@@ -1,10 +1,12 @@
 'use client'
 
-import { motion } from 'framer-motion'
-import { AlertTriangle, Ban, CheckCircle, ChevronDown, Home, Loader2, PartyPopper, Sparkles, Tag, User, X } from 'lucide-react'
 import { memo, useState } from 'react'
 
+import { motion } from 'framer-motion'
+import { AlertTriangle, Ban, CheckCircle, ChevronDown, Home, Loader2, PartyPopper, Sparkles, Tag, User, X } from 'lucide-react'
+
 import { formatDateCompact } from '@/lib/utils/date.utils'
+
 import { formatearNumeroRecibo } from '../../utils/formato-recibo'
 
 const formatCurrency = (v: number) =>
@@ -16,6 +18,7 @@ const formatCurrency = (v: number) =>
   }).format(v)
 
 import type { MotivoAnulacion } from '../../types'
+
 import { modalAnularAbonoStyles as s } from './ModalAnularAbono.styles'
 import { useModalAnularAbono } from './useModalAnularAbono'
 

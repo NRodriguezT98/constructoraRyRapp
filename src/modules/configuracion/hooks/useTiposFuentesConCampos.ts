@@ -68,7 +68,7 @@ export function useActualizarConfiguracionCampos() {
       configuracion: ConfiguracionCampos
     }) => actualizarConfiguracionCampos(tipoId, configuracion),
 
-    onSuccess: (data) => {
+    onSuccess: (_data) => {
       // Invalidar caché
       queryClient.invalidateQueries({
         queryKey: TIPOS_FUENTES_CAMPOS_KEYS.all,

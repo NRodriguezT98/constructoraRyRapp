@@ -1,6 +1,7 @@
 'use client'
 
 import { ChevronDown } from 'lucide-react'
+
 import { formatCurrency } from '../../hooks/useHistorialVersionesModal'
 import type { SnapshotVersion } from '../../types/historial'
 import { historialVersionesModalStyles as styles } from '../modals/HistorialVersionesModal.styles'

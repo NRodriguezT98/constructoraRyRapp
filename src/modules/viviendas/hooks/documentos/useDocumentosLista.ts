@@ -13,7 +13,9 @@ import { useCallback, useMemo, useState } from 'react'
 
 import { useAuth } from '@/contexts/auth-context'
 import { supabase } from '@/lib/supabase/client'
+import { logger } from '@/lib/utils/logger'
 import { useModal } from '@/shared/components/modals'
+
 import { DocumentosViviendaService } from '../../services/documentos'
 import type { DocumentoVivienda } from '../../types/documento-vivienda.types'
 
@@ -141,7 +143,7 @@ export function useDocumentosLista({
 
           setUrlPreview(data.signedUrl)
         } catch (error) {
-          console.error('Error al obtener URL de preview:', error)
+          logger.error('Error al obtener URL de preview:', error)
           setUrlPreview(undefined)
         }
       } else {
@@ -166,7 +168,7 @@ export function useDocumentosLista({
       )
       window.open(url, '_blank')
     } catch (error) {
-      console.error('Error al descargar documento:', error)
+      logger.error('Error al descargar documento:', error)
     }
   }, [])
 
@@ -175,7 +177,7 @@ export function useDocumentosLista({
       try {
         await toggleImportanteMutation.mutateAsync(documento.id)
       } catch (error) {
-        console.error('Error al actualizar documento:', error)
+        logger.error('Error al actualizar documento:', error)
       }
     },
     [toggleImportanteMutation]
@@ -196,7 +198,7 @@ export function useDocumentosLista({
           try {
             await restaurarMutation.mutateAsync(documento.id)
           } catch (error) {
-            console.error('Error al restaurar documento:', error)
+            logger.error('Error al restaurar documento:', error)
           }
         }
         return
@@ -268,7 +270,7 @@ export function useDocumentosLista({
           await eliminarMutation.mutateAsync(documento.id)
         }
       } catch (error) {
-        console.error('Error al eliminar documento:', error)
+        logger.error('Error al eliminar documento:', error)
       }
     },
     [eliminarMutation, confirm, user?.role]

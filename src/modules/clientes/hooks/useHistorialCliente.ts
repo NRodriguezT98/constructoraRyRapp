@@ -5,20 +5,22 @@
 
 'use client'
 
-import { useQuery } from '@tanstack/react-query'
 import { useMemo, useState } from 'react'
+
+import { useQuery } from '@tanstack/react-query'
+
+import { formatDateForDisplay } from '@/lib/utils/date.utils'
 
 import { historialClienteService } from '../services/historial-cliente.service'
 import { notasHistorialService } from '../services/notas-historial.service'
-import { humanizarEventos } from '../utils/humanizador-eventos'
-import { convertirNotasAEventos } from '../utils/notas-a-eventos.utils'
-
-import { formatDateForDisplay } from '@/lib/utils/date.utils'
 import type {
     EventoHistorialHumanizado,
     FiltrosHistorial,
     GrupoEventosPorFecha,
 } from '../types/historial.types'
+import { humanizarEventos } from '../utils/humanizador-eventos'
+import { convertirNotasAEventos } from '../utils/notas-a-eventos.utils'
+
 
 interface UseHistorialClienteProps {
   clienteId: string

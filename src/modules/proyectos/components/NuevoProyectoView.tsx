@@ -9,7 +9,9 @@ import {
     AccordionWizardSection,
     AccordionWizardSuccess,
 } from '@/shared/components/accordion-wizard'
+
 import { PASOS_PROYECTO, useNuevoProyecto } from '../hooks/useNuevoProyecto'
+
 import { PasoEstadoFechas, PasoInfoGeneral, PasoManzanas } from './pasos'
 
 interface NuevoProyectoViewProps {

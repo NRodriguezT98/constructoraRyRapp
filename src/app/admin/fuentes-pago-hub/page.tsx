@@ -1,5 +1,7 @@
-import { getServerPermissions } from '@/lib/auth/server'
 import { redirect } from 'next/navigation'
+
+import { getServerPermissions } from '@/lib/auth/server'
+
 import { FuentesPagoHubContent } from './fuentes-pago-hub-content'
 
 export const metadata = {

@@ -15,6 +15,8 @@ import { useEffect, useState } from 'react'
 
 import { AlertCircle } from 'lucide-react'
 
+import { logger } from '@/lib/utils/logger'
+
 import { ESTADOS_USUARIO, ROLES, type ActualizarUsuarioData, type EstadoUsuario, type Rol, type UsuarioCompleto } from '../types'
 
 import { Modal } from './Modal'
@@ -93,7 +95,7 @@ export function ModalEditarUsuario({ isOpen, onClose, usuario, onActualizar }: M
       await onActualizar(usuario.id, formulario)
       handleCerrar()
     } catch (error) {
-      console.error('Error actualizando usuario:', error)
+      logger.error('Error actualizando usuario:', error)
       setErrores({
         general: error instanceof Error ? error.message : 'Error al actualizar usuario',
       })

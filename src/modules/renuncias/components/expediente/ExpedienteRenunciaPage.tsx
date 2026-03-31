@@ -1,12 +1,16 @@
 'use client'
 
-import { AnimatePresence, motion } from 'framer-motion'
-import { AlertCircle, ArrowLeft, Camera, DollarSign, Home, Landmark, Receipt, Shield } from 'lucide-react'
-import Link from 'next/link'
 import { useState } from 'react'
 
+import { AnimatePresence, motion } from 'framer-motion'
+import { AlertCircle, ArrowLeft, Camera, DollarSign, Home, Landmark, Receipt, Shield } from 'lucide-react'
+
+import Link from 'next/link'
+
 import { formatDateCompact } from '@/lib/utils/date.utils'
+
 import { useExpedienteRenuncia } from '../../hooks/useExpedienteRenuncia'
+
 import { ExpedienteAbonos } from './ExpedienteAbonos'
 import { ExpedienteAuditoria } from './ExpedienteAuditoria'
 import { ExpedienteFinanciero } from './ExpedienteFinanciero'
@@ -31,7 +35,7 @@ const TABS = [
 type TabKey = (typeof TABS)[number]['key']
 
 export function ExpedienteRenunciaPage({ consecutivo }: ExpedienteRenunciaPageProps) {
-  const { datos, cargando, error, recargar } = useExpedienteRenuncia(consecutivo)
+  const { datos, cargando, error, recargar: _recargar } = useExpedienteRenuncia(consecutivo)
   const [tabActiva, setTabActiva] = useState<TabKey>('financiero')
 
   // === LOADING ===

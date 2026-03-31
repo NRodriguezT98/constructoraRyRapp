@@ -1,7 +1,10 @@
 'use client'
 
-import { AlertTriangle, Home, RefreshCw } from 'lucide-react'
 import { useEffect } from 'react'
+
+import { AlertTriangle, Home, RefreshCw } from 'lucide-react'
+
+import { logger } from '@/lib/utils/logger'
 
 export default function Error({
   error,
@@ -12,7 +15,7 @@ export default function Error({
 }) {
   useEffect(() => {
     // Log completo del error
-    console.error('🔴 ERROR EN DETALLE DE VIVIENDA:', {
+    logger.error('🔴 ERROR EN DETALLE DE VIVIENDA:', {
       message: error.message,
       stack: error.stack,
       digest: error.digest,
@@ -28,7 +31,7 @@ export default function Error({
         timestamp: new Date().toISOString(),
       }))
     } catch (e) {
-      console.error('No se pudo guardar error en sessionStorage:', e)
+      logger.error('No se pudo guardar error en sessionStorage:', e)
     }
   }, [error])
 

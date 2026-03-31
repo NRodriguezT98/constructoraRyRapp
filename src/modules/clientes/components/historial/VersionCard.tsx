@@ -2,6 +2,7 @@
 
 import { AnimatePresence, motion } from 'framer-motion'
 import { CheckCircle2, ChevronDown, DollarSign } from 'lucide-react'
+
 import {
     formatCurrency,
     formatDateTime,
@@ -10,6 +11,7 @@ import {
 } from '../../hooks/useHistorialVersionesModal'
 import type { SnapshotVersion } from '../../types/historial'
 import { historialVersionesModalStyles as styles } from '../modals/HistorialVersionesModal.styles'
+
 import { CambioVisual } from './CambioVisual'
 import { ResumenCambios } from './ResumenCambios'
 

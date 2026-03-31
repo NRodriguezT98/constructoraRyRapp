@@ -8,8 +8,10 @@
  * - Restaurar versiones seleccionadas
  */
 
-import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useMemo, useState } from 'react'
+
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+
 import { DocumentosService } from '../services/documentos.service'
 import type { TipoEntidad } from '../types/entidad.types'
 

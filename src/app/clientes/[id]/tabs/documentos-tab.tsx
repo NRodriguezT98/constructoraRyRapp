@@ -9,9 +9,10 @@
  * - Este componente SOLO renderiza UI
  */
 
+import { useEffect, useState } from 'react'
+
 import { AnimatePresence } from 'framer-motion'
 import { ArrowLeft, FileText, FolderCog, IdCard, Upload } from 'lucide-react'
-import { useEffect, useState } from 'react'
 
 import { useRouter } from 'next/navigation'
 

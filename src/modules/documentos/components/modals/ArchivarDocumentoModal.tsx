@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { AlertCircle, Archive, X } from 'lucide-react'
 
 import { type ModuleName } from '@/shared/config/module-themes'
+
 import { MOTIVOS_ARCHIVADO } from '../../constants/archivado.constants'
 import { useArchivarDocumentoModal } from '../../hooks/useArchivarDocumentoModal'
 
@@ -156,7 +157,7 @@ export function ArchivarDocumentoModal({
               <div className={styles.content.alert.wrapper}>
                 <AlertCircle className={styles.content.alert.icon} />
                 <p className={styles.content.alert.text}>
-                  Podrás restaurar este documento desde la pestaña "Archivados" con todo su historial de versiones.
+                  Podrás restaurar este documento desde la pestaña &quot;Archivados&quot; con todo su historial de versiones.
                 </p>
               </div>
             </div>

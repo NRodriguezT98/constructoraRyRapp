@@ -15,9 +15,12 @@
 
 'use client'
 
+import { useMemo, useState } from 'react'
+
 import { motion } from 'framer-motion'
 import { AlertCircle, CheckSquare, Info, Search, Shield, Square } from 'lucide-react'
-import { useMemo, useState } from 'react'
+
+import { logger } from '@/lib/utils/logger'
 
 import { useActualizarPermisoMutation, useTodosLosPermisosQuery } from '../hooks'
 import type { Rol } from '../types'
@@ -85,7 +88,7 @@ export function PermisosMatrixCompact() {
         permitido: !permitidoActual,
       })
     } catch (error) {
-      console.error('Error actualizando permiso:', error)
+      logger.error('Error actualizando permiso:', error)
     }
   }
 

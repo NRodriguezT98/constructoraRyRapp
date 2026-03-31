@@ -1,8 +1,9 @@
 'use client'
 
+import { useEffect, useMemo, useRef, useState } from 'react'
+
 import { AnimatePresence, motion } from 'framer-motion'
 import { Building2, Check, ChevronDown, Search, X } from 'lucide-react'
-import { useEffect, useMemo, useRef, useState } from 'react'
 
 interface EntidadOption {
   value: string

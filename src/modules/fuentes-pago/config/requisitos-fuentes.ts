@@ -1,3 +1,4 @@
+import { logger } from '@/lib/utils/logger'
 /**
  * ============================================
  * CONFIGURACIÓN: Requisitos por Tipo de Fuente de Pago
@@ -197,7 +198,7 @@ export function obtenerRequisitosParaTipoFuente(tipoFuente: string): RequisitoPa
   const requisitos = REQUISITOS_POR_TIPO[tipoFuente as TipoFuentePago]
 
   if (!requisitos) {
-    console.warn(`⚠️ No hay requisitos configurados para tipo de fuente: "${tipoFuente}"`)
+    logger.warn(`⚠️ No hay requisitos configurados para tipo de fuente: "${tipoFuente}"`)
     return []
   }
 

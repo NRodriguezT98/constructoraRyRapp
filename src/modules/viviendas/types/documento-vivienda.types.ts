@@ -13,6 +13,8 @@ import {
     type LucideIcon,
 } from 'lucide-react'
 
+import { logger } from '@/lib/utils/logger'
+
 export type EstadoDocumento = 'activo' | 'archivado' | 'eliminado'
 export type EstadoVersion = 'valida' | 'erronea' | 'obsoleta'
 
@@ -123,7 +125,7 @@ export interface DocumentoVivienda {
   es_version_actual: boolean
   documento_padre_id?: string
   estado: EstadoDocumento
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
   subido_por: string
   fecha_documento?: string
   fecha_vencimiento?: string
@@ -157,7 +159,7 @@ export interface DocumentoFormData {
   fecha_documento?: string
   fecha_vencimiento?: string
   es_importante?: boolean
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
 }
 
 // Tipos MIME permitidos
@@ -187,7 +189,7 @@ export const MAX_FILE_SIZE = 50 * 1024 * 1024
 export function formatFileSize(bytes: number | null | undefined): string {
   // 🔍 DEBUG: Log para identificar valores problemáticos
   if (bytes != null && bytes < 0) {
-    console.error('❌ [formatFileSize VIVIENDAS] Valor negativo detectado:', bytes)
+    logger.error('❌ [formatFileSize VIVIENDAS] Valor negativo detectado:', bytes)
     console.trace('Stack trace del valor negativo:')
   }
 

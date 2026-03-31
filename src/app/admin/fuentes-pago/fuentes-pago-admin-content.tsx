@@ -7,10 +7,12 @@
 
 'use client'
 
-import { TiposFuentesPagoLista } from '@/modules/configuracion/components'
 import { motion } from 'framer-motion'
 import { ArrowLeft, Shield, Sparkles } from 'lucide-react'
+
 import Link from 'next/link'
+
+import { TiposFuentesPagoLista } from '@/modules/configuracion/components'
 
 export function FuentesPagoAdminContent() {
   return (

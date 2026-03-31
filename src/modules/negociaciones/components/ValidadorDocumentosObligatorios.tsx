@@ -15,10 +15,13 @@
  * - Bloquea desembolso si hay pendientes
  */
 
-import { supabase } from '@/lib/supabase/client'
+import { useEffect, useState } from 'react'
+
 import { motion } from 'framer-motion'
 import { AlertTriangle, CheckCircle, FileText, Upload } from 'lucide-react'
-import { useEffect, useState } from 'react'
+
+import { supabase } from '@/lib/supabase/client'
+import { logger } from '@/lib/utils/logger'
 
 interface ValidadorDocumentosProps {
   negociacionId: string
@@ -65,7 +68,7 @@ export function ValidadorDocumentosObligatorios({
       setPendientes((data || []) as unknown as DocumentoPendiente[])
       onValidacionCompleta((data || []).length === 0)
     } catch (error) {
-      console.error('Error cargando documentos pendientes:', error)
+      logger.error('Error cargando documentos pendientes:', error)
     } finally {
       setCargando(false)
     }

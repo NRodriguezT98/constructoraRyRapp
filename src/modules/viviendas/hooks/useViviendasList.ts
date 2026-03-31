@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { supabase } from '@/lib/supabase/client'
 import { usePagination } from '@/shared/hooks/usePagination'
+
 import type { FiltrosViviendas } from '../types'
 
 import { useEliminarViviendaMutation, useViviendasQuery } from './useViviendasQuery'

@@ -13,6 +13,7 @@
 
 import { NextResponse } from 'next/server'
 
+import { logger } from '@/lib/utils/logger'
 import { sincronizarPermisosAlJWT } from '@/modules/usuarios/services/permisos-jwt.service'
 import type { Rol } from '@/modules/usuarios/types'
 
@@ -35,7 +36,7 @@ export async function POST(request: Request) {
       message: 'Permisos sincronizados exitosamente',
     })
   } catch (error) {
-    console.error('❌ [API] Error sincronizando permisos:', error)
+    logger.error('❌ [API] Error sincronizando permisos:', error)
 
     return NextResponse.json(
       {

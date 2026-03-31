@@ -1,14 +1,17 @@
 'use client'
 
+import { useEffect, useState } from 'react'
+
 import { AnimatePresence, motion } from 'framer-motion'
 import { AlertCircle, Calendar, FileText, Folder, Loader2, Save, X } from 'lucide-react'
-import { useEffect, useState } from 'react'
 
 import { formatDateForInput } from '@/lib/utils/date.utils'
 import { cn } from '@/shared/utils/helpers'
+
 import { useDocumentoEditar } from '../../hooks'
 import { useDetectarCambiosDocumento } from '../../hooks/useDetectarCambiosDocumento'
 import type { CategoriaDocumento, DocumentoProyecto, TipoEntidad } from '../../types'
+
 // COMENTADO: Funcionalidad de etiquetas eliminada
 // import { EtiquetasInput } from '../shared/etiquetas-input'
 import { ConfirmarCambiosDocumentoModal } from './ConfirmarCambiosDocumentoModal'
@@ -338,7 +341,7 @@ export function DocumentoEditarMetadatosModal({
                     Archivo actual: {documento.titulo}.pdf
                   </p>
                   <p className='mt-1 text-xs'>
-                    Para cambiar el archivo, usa "Nueva Versión" (versionado) o "Reemplazar Archivo" (admin).
+                    Para cambiar el archivo, usa &quot;Nueva Versión&quot; (versionado) o &quot;Reemplazar Archivo&quot; (admin).
                   </p>
                 </div>
               </div>

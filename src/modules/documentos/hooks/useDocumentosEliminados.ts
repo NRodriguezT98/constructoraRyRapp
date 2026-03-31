@@ -13,8 +13,10 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
 import { useAuth } from '@/contexts/auth-context'
+import { logger } from '@/lib/utils/logger'
 import { ClientesDocumentosEliminacionService } from '@/modules/clientes/services/documentos-eliminacion.service'
 import { DocumentosEliminacionService as ViviendaEliminacionService } from '@/modules/viviendas/services/documentos/documentos-eliminacion.service'
+
 import { DocumentosService } from '../services/documentos.service'
 
 // Tipo unificado para documentos eliminados de cualquier módulo
@@ -184,7 +186,7 @@ export function useDocumentosEliminados() {
       ])
     },
     onError: (error: unknown) => {
-      console.error('Error al restaurar documento:', error)
+      logger.error('Error al restaurar documento:', error)
       const msg = error instanceof Error ? error.message : 'Error al restaurar el documento'
       toast.error(msg)
     },
@@ -207,7 +209,7 @@ export function useDocumentosEliminados() {
       queryClient.invalidateQueries({ queryKey: ['papelera-count-clientes'] })
     },
     onError: (error: unknown) => {
-      console.error('Error al eliminar definitivamente:', error)
+      logger.error('Error al eliminar definitivamente:', error)
       const msg = error instanceof Error ? error.message : 'Error al eliminar el documento'
       toast.error(msg)
     },

@@ -3,6 +3,7 @@
 // ============================================
 
 import { supabase } from '@/lib/supabase/client'
+
 import type { DocumentoVivienda } from '../../types/documento-vivienda.types'
 
 const BUCKET_NAME = 'documentos-viviendas'
@@ -16,7 +17,7 @@ interface SubirDocumentoParams {
   fecha_documento?: string
   fecha_vencimiento?: string
   es_importante?: boolean
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
 }
 
 /**
@@ -174,7 +175,7 @@ export class DocumentosBaseService {
         fecha_documento: fecha_documento || null,
         fecha_vencimiento: fecha_vencimiento || null,
         es_importante: es_importante || false,
-        metadata: metadata || {},
+        metadata: (metadata || {}) as any,
         version: 1,
         es_version_actual: true,
         estado: 'activo',

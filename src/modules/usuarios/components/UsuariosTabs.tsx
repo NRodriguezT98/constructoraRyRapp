@@ -10,11 +10,13 @@
 
 'use client'
 
-import { motion } from 'framer-motion'
-import { Settings, Shield, Users } from 'lucide-react'
 import { useState } from 'react'
 
+import { motion } from 'framer-motion'
+import { Settings, Shield, Users } from 'lucide-react'
+
 import { usePermisosQuery } from '../hooks'
+
 import { PermisosMatrixCompact } from './PermisosMatrixCompact'; // ⭐ NUEVO: Vista compacta
 
 type TabType = 'usuarios' | 'permisos' | 'configuracion'

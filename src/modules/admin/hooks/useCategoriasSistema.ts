@@ -1,4 +1,7 @@
 import { useState } from 'react'
+
+import { logger } from '@/lib/utils/logger'
+
 import { obtenerEstadoCategoriasPorModulo, verificarCategoriasPorModulo } from '../services/categorias-sistema.service'
 
 export type Modulo = 'clientes' | 'proyectos' | 'viviendas'
@@ -77,7 +80,7 @@ export function useCategoriasSistema() {
         }))
       }
     } catch (error) {
-      console.error(`Error al verificar categorías de ${modulo}:`, error)
+      logger.error(`Error al verificar categorías de ${modulo}:`, error)
       setResultados((prev) => ({
         ...prev,
         [modulo]: {

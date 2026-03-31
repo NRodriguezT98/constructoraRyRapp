@@ -5,6 +5,8 @@
  */
 
 import { supabase } from '@/lib/supabase/client'
+import { logger } from '@/lib/utils/logger'
+
 import type { EventoHistorialCliente } from '../types/historial.types'
 
 class HistorialClienteService {
@@ -135,7 +137,7 @@ class HistorialClienteService {
       }) as unknown as EventoHistorialCliente[]
     } catch (error) {
       const mensaje = error instanceof Error ? error.message : 'Error desconocido'
-      console.error('❌ [CLIENTES] Error obteniendo historial del cliente:', mensaje, error)
+      logger.error('❌ [CLIENTES] Error obteniendo historial del cliente:', mensaje, error)
       return []
     }
   }
@@ -200,7 +202,7 @@ class HistorialClienteService {
       }) as unknown as EventoHistorialCliente[]
     } catch (error) {
       const mensaje = error instanceof Error ? error.message : 'Error desconocido'
-      console.error('❌ [CLIENTES] Error obteniendo eventos por tipo:', mensaje, error)
+      logger.error('❌ [CLIENTES] Error obteniendo eventos por tipo:', mensaje, error)
       return []
     }
   }
@@ -239,7 +241,7 @@ class HistorialClienteService {
       return stats
     } catch (error) {
       const mensaje = error instanceof Error ? error.message : 'Error desconocido'
-      console.error('❌ [CLIENTES] Error obteniendo estadísticas:', mensaje, error)
+      logger.error('❌ [CLIENTES] Error obteniendo estadísticas:', mensaje, error)
       return null
     }
   }
@@ -273,7 +275,7 @@ class HistorialClienteService {
       })
     } catch (error) {
       const mensaje = error instanceof Error ? error.message : 'Error desconocido'
-      console.error('❌ [CLIENTES] Error buscando eventos:', mensaje, error)
+      logger.error('❌ [CLIENTES] Error buscando eventos:', mensaje, error)
       return []
     }
   }

@@ -20,7 +20,7 @@ export interface EventoHistorialCliente {
   datos_anteriores: any | null
   datos_nuevos: any | null
   cambios_especificos: Record<string, { antes: any; despues: any }> | null
-  metadata: Record<string, any>
+  metadata: Record<string, unknown>
   modulo: string | null
 }
 
@@ -44,7 +44,7 @@ export interface EventoHistorialHumanizado {
   icono: LucideIcon
   color: ColorEvento
   detalles?: DetalleEvento[]
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
   modulo?: string // Módulo al que pertenece el evento
 }
 

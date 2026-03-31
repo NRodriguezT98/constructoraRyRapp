@@ -1,9 +1,12 @@
 'use client'
 
-import { supabase } from '@/lib/supabase/client'
-import { auditService } from '@/services/audit.service'
 import { useState } from 'react'
+
 import { toast } from 'sonner'
+
+import { supabase } from '@/lib/supabase/client'
+import { logger } from '@/lib/utils/logger'
+import { auditService } from '@/services/audit.service'
 
 interface ReemplazarArchivoData {
   nuevoArchivo: File
@@ -86,7 +89,7 @@ export function useDocumentoReemplazarArchivo() {
       )
 
       if (passwordError) {
-        console.error('Error validando password:', passwordError)
+        logger.error('Error validando password:', passwordError)
         throw new Error('Error al validar contraseña')
       }
 
@@ -103,7 +106,7 @@ export function useDocumentoReemplazarArchivo() {
         const ipData = await ipResponse.json()
         ipOrigen = ipData.ip
       } catch (e) {
-        console.warn('No se pudo obtener IP:', e)
+        logger.warn('No se pudo obtener IP:', e)
       }
 
       setProgreso(40)
@@ -129,7 +132,7 @@ export function useDocumentoReemplazarArchivo() {
         })
 
       if (auditoriaError) {
-        console.error('Error registrando auditoría:', auditoriaError)
+        logger.error('Error registrando auditoría:', auditoriaError)
         throw new Error('No se pudo registrar la auditoría del reemplazo')
       }
 
@@ -141,7 +144,7 @@ export function useDocumentoReemplazarArchivo() {
         .remove([documento.url_storage])
 
       if (deleteError) {
-        console.error('Error eliminando archivo viejo:', deleteError)
+        logger.error('Error eliminando archivo viejo:', deleteError)
         // No lanzamos error aquí porque el archivo podría no existir
         toast.warning('Archivo anterior no encontrado', {
           description: 'Se continuará con la subida del nuevo archivo'
@@ -170,7 +173,7 @@ export function useDocumentoReemplazarArchivo() {
         })
 
       if (uploadError) {
-        console.error('Error subiendo archivo nuevo:', uploadError)
+        logger.error('Error subiendo archivo nuevo:', uploadError)
         throw new Error('No se pudo subir el nuevo archivo')
       }
 
@@ -191,7 +194,7 @@ export function useDocumentoReemplazarArchivo() {
         .eq('id', documento.id)
 
       if (updateError) {
-        console.error('Error actualizando documento:', updateError)
+        logger.error('Error actualizando documento:', updateError)
 
         // Intentar eliminar el archivo nuevo que subimos
         await supabase.storage
@@ -216,7 +219,7 @@ export function useDocumentoReemplazarArchivo() {
           urlActual = actualUrlData.signedUrl
         }
       } catch (urlError) {
-        console.warn('⚠️ No se pudo generar URL firmada:', urlError)
+        logger.warn('⚠️ No se pudo generar URL firmada:', urlError)
         // No bloqueamos el proceso, solo no tendremos URL
       }
 
@@ -264,7 +267,7 @@ export function useDocumentoReemplazarArchivo() {
         })
       } catch (auditLogError) {
         // No bloqueamos el proceso si falla la auditoría detallada
-        console.error('⚠️ Error registrando auditoría detallada:', auditLogError)
+        logger.error('⚠️ Error registrando auditoría detallada:', auditLogError)
       }
 
       setProgreso(100)

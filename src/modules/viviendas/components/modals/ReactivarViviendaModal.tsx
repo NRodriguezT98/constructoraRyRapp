@@ -13,6 +13,7 @@
 
 import { AnimatePresence, motion } from 'framer-motion'
 import { CheckCircle2, RefreshCw, X, XCircle } from 'lucide-react'
+
 import { useReactivarViviendaModal } from '../../hooks/useReactivarViviendaModal'
 
 // ============================================================
@@ -204,7 +205,7 @@ export function ReactivarViviendaModal({
                     />
                     <span className="text-sm text-green-900 dark:text-green-100">
                       Confirmo que deseo reactivar la Vivienda #{viviendaNumero}. Su estado
-                      cambiará a "Disponible" y volverá a estar visible en el listado principal.
+                      cambiará a &quot;Disponible&quot; y volverá a estar visible en el listado principal.
                     </span>
                   </label>
                 </div>

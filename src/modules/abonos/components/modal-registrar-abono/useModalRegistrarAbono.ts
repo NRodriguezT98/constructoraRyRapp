@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 
 import { formatDateCompact, getTodayDateString } from '@/lib/utils/date.utils'
+import { logger } from '@/lib/utils/logger'
 import { esDesembolsoUnico } from '@/shared/constants/fuentes-pago.constants'
+
 import {
     eliminarComprobante,
     generarPathComprobante,
@@ -136,7 +138,7 @@ export function useModalRegistrarAbono({
       }
     } catch (error: unknown) {
       const msg = error instanceof Error ? error.message : 'Error desconocido'
-      console.error('Error guardando abono:', msg)
+      logger.error('Error guardando abono:', msg)
       setFaseLoading('idle')
       setErrors({
         submit: 'El abono no pudo guardarse. El comprobante puede haber quedado sin registrar — intenta de nuevo.',

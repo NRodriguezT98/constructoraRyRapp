@@ -7,6 +7,7 @@
 'use client'
 
 import { AnimatePresence, motion } from 'framer-motion'
+
 import { DiffFuentesPago } from './DiffFuentesPago'
 
 interface VersionCardContentProps {

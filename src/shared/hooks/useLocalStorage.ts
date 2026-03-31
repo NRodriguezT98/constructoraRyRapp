@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react'
 
+import { logger } from '@/lib/utils/logger'
+
 /**
  * Hook para persistir estado en localStorage
  * @param key - Clave en localStorage
@@ -20,7 +22,7 @@ export function useLocalStorage<T>(
       const item = window.localStorage.getItem(key)
       return item ? JSON.parse(item) : initialValue
     } catch (error) {
-      console.error(`Error loading localStorage key "${key}":`, error)
+      logger.error(`Error loading localStorage key "${key}":`, error)
       return initialValue
     }
   })
@@ -38,7 +40,7 @@ export function useLocalStorage<T>(
         window.localStorage.setItem(key, JSON.stringify(valueToStore))
       }
     } catch (error) {
-      console.error(`Error setting localStorage key "${key}":`, error)
+      logger.error(`Error setting localStorage key "${key}":`, error)
     }
   }
 
@@ -49,7 +51,7 @@ export function useLocalStorage<T>(
         try {
           setStoredValue(JSON.parse(e.newValue))
         } catch (error) {
-          console.error(
+          logger.error(
             `Error parsing localStorage change for key "${key}":`,
             error
           )

@@ -178,7 +178,7 @@ export default function ResetPasswordPage() {
 
           await Promise.race([signOutPromise, timeoutPromise])
             .then(() => console.log('✅ SignOut exitoso'))
-            .catch((err) => {
+            .catch((_err) => {
 
               // Limpiar cookies manualmente
               document.cookie.split(";").forEach((c) => {

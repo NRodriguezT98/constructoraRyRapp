@@ -1,5 +1,10 @@
 ﻿import { supabase } from '@/lib/supabase/client'
 import type { TipoFuentePago } from '@/modules/clientes/types'
+import {
+    sanitizeActualizarFuentePagoServiceDTO,
+    sanitizeCrearFuentePagoServiceDTO,
+    sanitizeMontoRecibido,
+} from '@/modules/clientes/utils/sanitize-fuente-pago.utils'
 export type { TipoFuentePago }
 
 // ============================================================
@@ -53,6 +58,10 @@ export interface FuentePago {
   fecha_actualizacion: string
 }
 
+type FuentePagoConEntidadRow = Omit<FuentePago, 'entidad'> & {
+  entidad_display?: string | null
+}
+
 // ============================================================
 // COLUMNS SELECCIONADAS (tabla base, sin vista)
 // ============================================================
@@ -72,24 +81,26 @@ class FuentesPagoService {
 
   /** Crear fuente de pago */
   async crearFuentePago(datos: CrearFuentePagoDTO): Promise<FuentePago> {
+    const datosSanitizados = sanitizeCrearFuentePagoServiceDTO(datos)
+
     // Resolver tipo_fuente_id (FK NOT NULL)
     const { data: tipoFuente, error: tipoError } = await supabase
       .from('tipos_fuentes_pago')
       .select('id, permite_multiples_abonos')
-      .eq('nombre', datos.tipo)
+      .eq('nombre', datosSanitizados.tipo)
       .single()
 
     if (tipoError || !tipoFuente) {
-      throw new Error(`Tipo de fuente de pago no encontrado: ${datos.tipo}`)
+      throw new Error(`Tipo de fuente de pago no encontrado: ${datosSanitizados.tipo}`)
     }
 
     // Resolver entidad_financiera_id si no viene del caller pero sí el nombre
-    let entidadFinancieraId = datos.entidad_financiera_id ?? null
-    if (!entidadFinancieraId && datos.entidad) {
+    let entidadFinancieraId = datosSanitizados.entidad_financiera_id ?? null
+    if (!entidadFinancieraId && datosSanitizados.entidad) {
       const { data: ef } = await supabase
         .from('entidades_financieras')
         .select('id')
-        .eq('nombre', datos.entidad)
+        .eq('nombre', datosSanitizados.entidad)
         .maybeSingle()
       entidadFinancieraId = ef?.id ?? null
     }
@@ -97,16 +108,16 @@ class FuentesPagoService {
     const { data, error } = await supabase
       .from('fuentes_pago')
       .insert({
-        negociacion_id: datos.negociacion_id,
-        tipo: datos.tipo,
+        negociacion_id: datosSanitizados.negociacion_id,
+        tipo: datosSanitizados.tipo,
         tipo_fuente_id: tipoFuente.id,
-        monto_aprobado: datos.monto_aprobado,
+        monto_aprobado: datosSanitizados.monto_aprobado,
         monto_recibido: 0,
-        entidad: datos.entidad ?? null,
+        entidad: datosSanitizados.entidad ?? null,
         entidad_financiera_id: entidadFinancieraId,
-        numero_referencia: datos.numero_referencia ?? null,
-        permite_multiples_abonos: datos.permite_multiples_abonos ?? tipoFuente.permite_multiples_abonos ?? false,
-        capital_para_cierre: datos.capital_para_cierre ?? null,
+        numero_referencia: datosSanitizados.numero_referencia ?? null,
+        permite_multiples_abonos: datosSanitizados.permite_multiples_abonos ?? tipoFuente.permite_multiples_abonos ?? false,
+        capital_para_cierre: datosSanitizados.capital_para_cierre ?? null,
         estado: 'Activa',
         estado_fuente: 'activa',
       })
@@ -137,7 +148,7 @@ class FuentesPagoService {
 
     if (error) throw error
 
-    return (data ?? []).map((row: any) => ({
+    return ((data ?? []) as FuentePagoConEntidadRow[]).map((row) => ({
       ...row,
       entidad: row.entidad_display ?? undefined,
     })) as FuentePago[]
@@ -159,14 +170,17 @@ class FuentesPagoService {
     if (error) throw error
     if (!data) return null
 
-    return { ...(data as any), entidad: (data as any).entidad_display ?? undefined } as FuentePago
+    const row = data as FuentePagoConEntidadRow
+    return { ...row, entidad: row.entidad_display ?? undefined } as FuentePago
   }
 
   /** Actualizar fuente de pago */
   async actualizarFuentePago(id: string, datos: ActualizarFuentePagoDTO): Promise<FuentePago> {
+    const datosSanitizados = sanitizeActualizarFuentePagoServiceDTO(datos)
+
     const { data, error } = await supabase
       .from('fuentes_pago')
-      .update(datos)
+      .update(datosSanitizados)
       .eq('id', id)
       .select(BASE_COLUMNS)
       .single()
@@ -180,7 +194,8 @@ class FuentesPagoService {
     const fuente = await this.obtenerFuentePago(id)
     if (!fuente) throw new Error('Fuente de pago no encontrada')
 
-    const nuevoTotal = fuente.monto_recibido + monto
+    const montoSanitizado = sanitizeMontoRecibido(monto)
+    const nuevoTotal = fuente.monto_recibido + montoSanitizado
 
     if (nuevoTotal > fuente.monto_aprobado) {
       throw new Error('El monto recibido excede el monto aprobado')

@@ -23,9 +23,12 @@ import {
 } from 'lucide-react'
 
 import { formatDateShort } from '@/lib/utils/date.utils'
+import { logger } from '@/lib/utils/logger'
 import { formatNombreCompleto } from '@/lib/utils/string.utils'
+
 import { useClienteIntereses } from '../../hooks/useClienteIntereses'
 import type { ClienteResumen } from '../../types'
+
 import { clienteCardThemes } from './cliente-card-base.styles'
 
 interface ClienteCardInteresadoProps {
@@ -246,7 +249,7 @@ export function ClienteCardInteresado({
         {/* === ACTION BUTTON === */}
         {interesActual && (
           <motion.button
-            onClick={() => console.log('Ver interés:', cliente.id)}
+            onClick={() => logger.info('Ver interés:', cliente.id)}
             className="w-full px-4 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-white text-sm font-bold shadow-lg shadow-cyan-500/30 hover:shadow-xl hover:shadow-cyan-500/40 transition-all"
             whileHover={{ scale: 1.01 }}
             whileTap={{ scale: 0.99 }}

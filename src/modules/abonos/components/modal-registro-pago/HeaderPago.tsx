@@ -3,7 +3,9 @@
 import { Landmark, Wallet } from 'lucide-react'
 
 import { esCreditoConstructora as checkCreditoConstructora, esCuotaInicial as checkCuotaInicial } from '@/shared/constants/fuentes-pago.constants'
+
 import type { FuentePagoConAbonos, ModoRegistro } from '../../types'
+
 import { formatCurrency, type ColorScheme } from './ModalRegistroPago.styles'
 
 interface HeaderPagoProps {

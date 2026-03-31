@@ -12,6 +12,11 @@
 
 import { useCallback, useState } from 'react'
 
+import { logger } from '@/lib/utils/logger'
+
+import { interesesService } from '../services/intereses.service'
+import type { ActualizarClienteDTO, ClienteResumen, CrearClienteDTO } from '../types'
+
 import {
     useActualizarClienteMutation,
     useClienteQuery,
@@ -20,8 +25,7 @@ import {
     useFormularioCliente,
     useInteresFormulario,
 } from '.'
-import { interesesService } from '../services/intereses.service'
-import type { ActualizarClienteDTO, ClienteResumen, CrearClienteDTO } from '../types'
+
 
 interface UseFormularioClienteContainerProps {
   clienteId?: string | null
@@ -109,7 +113,7 @@ export function useFormularioClienteContainer({
               notas: interesData.notas_interes,
             })
           } catch (error) {
-            console.error('Error al registrar interés inicial:', error)
+            logger.error('Error al registrar interés inicial:', error)
           }
         }
         resetInteres()

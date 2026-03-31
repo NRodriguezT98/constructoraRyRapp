@@ -22,6 +22,7 @@ import {
 import { formatDateShort } from '@/lib/utils/date.utils'
 
 import type { ClienteResumen } from '../../types'
+
 import {
     clienteCardThemes,
     clienteCardBaseStyles as styles,

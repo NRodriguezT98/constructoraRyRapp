@@ -15,14 +15,18 @@
 
 'use client'
 
-import { useAuth } from '@/contexts/auth-context'
 import { useCallback, useEffect, useState } from 'react'
+
+import { useAuth } from '@/contexts/auth-context'
+import { logger } from '@/lib/utils/logger'
+
 import {
     ViviendaValidacionService,
     type CampoVivienda,
     type EstadoBloqueoVivienda,
     type ValidacionCampo,
 } from '../services/viviendas-validacion.service'
+
 
 // ============================================================
 // TIPOS
@@ -65,7 +69,7 @@ export function useViviendaBloqueo(viviendaId: string | null): UseViviendaBloque
     } catch (err) {
       const mensaje = err instanceof Error ? err.message : 'Error al cargar estado de bloqueo'
       setError(mensaje)
-      console.error('? Error en useViviendaBloqueo:', err)
+      logger.error('? Error en useViviendaBloqueo:', err)
     } finally {
       setCargando(false)
     }

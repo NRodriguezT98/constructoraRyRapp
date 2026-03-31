@@ -5,6 +5,7 @@
 
 import { supabase } from '@/lib/supabase/client'
 import type { Database } from '@/lib/supabase/database.types'
+import { logger } from '@/lib/utils/logger'
 
 type NegociacionVersion = Database['public']['Tables']['negociaciones_versiones']['Row']
 type DescuentoNegociacion = Database['public']['Tables']['descuentos_negociacion']['Row']
@@ -89,7 +90,7 @@ export class NegociacionesVersionesService {
     })
 
     if (error) {
-      console.error('Error al crear versión:', error)
+      logger.error('Error al crear versión:', error)
       throw new Error(error.message || 'Error al crear nueva versión')
     }
 

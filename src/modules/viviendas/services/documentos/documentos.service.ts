@@ -5,10 +5,11 @@
 // compatibilidad con el código existente. Delega a servicios especializados.
 // ============================================
 
+import { DocumentosReemplazoService as DocumentosReemplazoServiceGenerico } from '@/modules/documentos/services/documentos-reemplazo.service'
+
 import { DocumentosBaseService } from './documentos-base.service'
 import { DocumentosEliminacionService } from './documentos-eliminacion.service'
 import { DocumentosEstadosService } from './documentos-estados.service'
-import { DocumentosReemplazoService as DocumentosReemplazoServiceGenerico } from '@/modules/documentos/services/documentos-reemplazo.service'
 import { DocumentosStorageService } from './documentos-storage.service'
 import { DocumentosVersionesService } from './documentos-versiones.service'
 
@@ -21,7 +22,7 @@ interface SubirDocumentoParams {
   fecha_documento?: string
   fecha_vencimiento?: string
   es_importante?: boolean
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
 }
 
 /**

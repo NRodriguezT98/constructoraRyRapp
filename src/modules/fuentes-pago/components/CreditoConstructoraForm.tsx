@@ -19,8 +19,9 @@
 
 'use client'
 
-import { AlertCircle, Calendar, ChevronDown, ChevronUp, DollarSign, Info, Percent, TrendingUp } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
+
+import { AlertCircle, Calendar, ChevronDown, ChevronUp, DollarSign, Info, Percent, TrendingUp } from 'lucide-react'
 
 import { formatDateCompact, getTodayDateString } from '@/lib/utils/date.utils'
 import type { ParametrosCredito, ResumenCredito } from '@/modules/fuentes-pago/types'

@@ -2,7 +2,7 @@
 
 import { Building2, Plus } from 'lucide-react'
 
-import { EmptyState } from '../../../shared/components/ui/EmptyState'
+import { EmptyState } from '@/shared/components/ui/EmptyState'
 
 interface ProyectosEmptyProps {
   onCrear?: () => void

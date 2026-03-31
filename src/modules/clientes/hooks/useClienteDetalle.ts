@@ -22,6 +22,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 
 import { useAuth } from '@/contexts/auth-context'
+import { logger } from '@/lib/utils/logger'
 import { resolverSlugCliente } from '@/lib/utils/slug.utils'
 import { useDocumentoIdentidad } from '@/modules/clientes/documentos/hooks/useDocumentoIdentidad'
 import { useClienteQuery } from '@/modules/clientes/hooks'
@@ -72,7 +73,7 @@ export function useClienteDetalle({ clienteIdSlug }: UseClienteDetalleProps) {
     try {
       await CategoriasService.obtenerCategoriasPorModulo(user.id, 'clientes')
     } catch (error) {
-      console.error('Error cargando categorías:', error)
+      logger.error('Error cargando categorías:', error)
     }
   }, [user?.id])
 
@@ -103,7 +104,7 @@ export function useClienteDetalle({ clienteIdSlug }: UseClienteDetalleProps) {
       if (uuid) {
         setClienteUUID(uuid)
       } else {
-        console.error('❌ [useClienteDetalle] No se pudo resolver el cliente')
+        logger.error('❌ [useClienteDetalle] No se pudo resolver el cliente')
         router.push('/clientes')
       }
     }

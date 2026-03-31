@@ -1,6 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
+
 import { summaryAppearAnim } from './accordion-wizard.animations'
 import type { SummaryItem } from './accordion-wizard.types'
 

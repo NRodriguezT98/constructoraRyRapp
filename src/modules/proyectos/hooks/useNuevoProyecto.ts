@@ -7,12 +7,15 @@ import { useCallback, useMemo, useState } from 'react'
 
 import { useQueryClient } from '@tanstack/react-query'
 import { Building2, CalendarDays, LayoutGrid } from 'lucide-react'
-import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 
+import { useRouter } from 'next/navigation'
+
 import type { SectionStatus, SummaryItem, WizardStepConfig } from '@/shared/components/accordion-wizard'
+
 import { proyectosService } from '../services/proyectos.service'
 import type { ProyectoFormData } from '../types'
+
 import { useProyectosForm } from './useProyectosForm'
 
 // ── Configuración de pasos ───────────────────────────────────────

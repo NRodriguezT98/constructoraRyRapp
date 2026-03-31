@@ -1,8 +1,11 @@
 'use client'
 
-import { cn } from '@/lib/utils'
-import { motion } from 'framer-motion'
 import { forwardRef } from 'react'
+
+import { motion } from 'framer-motion'
+
+import { cn } from '@/lib/utils'
+
 import { errorShakeAnim } from './accordion-wizard.animations'
 import { getAccordionWizardStyles } from './accordion-wizard.styles'
 import type {

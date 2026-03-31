@@ -8,10 +8,12 @@
 
 'use client'
 
-import { Loader2 } from 'lucide-react'
 import { useMemo, useState } from 'react'
 
+import { Loader2 } from 'lucide-react'
+
 import { useCuotasCredito } from '../hooks/useCuotasCredito'
+
 import { ConfigurarPlanCredito } from './ConfigurarPlanCredito'
 import { PanelResumenCredito } from './PanelResumenCredito'
 import { ReestructurarCreditoModal } from './ReestructurarCreditoModal'

@@ -17,6 +17,7 @@ import {
     User,
     XCircle
 } from 'lucide-react'
+import { toast } from 'sonner'
 
 import { useRouter } from 'next/navigation'
 
@@ -159,7 +160,7 @@ export default function NegociacionDetalleClient({
 
   const handleRenuncia = async () => {
     if (!motivoCancelacion.trim()) {
-      alert('Debes especificar el motivo de la renuncia')
+      toast.info('Debes especificar el motivo de la renuncia')
       return
     }
     const ok = await registrarRenuncia(motivoCancelacion)

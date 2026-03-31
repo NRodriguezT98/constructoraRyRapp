@@ -9,8 +9,9 @@
  * - Reemplazo de archivo
  */
 
-import { formatDateCompact } from '@/lib/utils/date.utils'
 import { AlertTriangle, Clock, Download, FileQuestion, FileText, Package, RefreshCw, RotateCcw, User } from 'lucide-react'
+
+import { formatDateCompact } from '@/lib/utils/date.utils'
 
 interface DocumentosAuditoriaDetalleProps {
   metadata: any
@@ -274,7 +275,7 @@ function RestaurarEstadoDetalle({ metadata, usuarioEmail, usuarioNombres, fechaE
           {restauracion?.motivo_original && (
             <div>
               <p className="text-sm text-blue-700 dark:text-blue-300 mb-1">Motivo original:</p>
-              <p className="text-sm text-blue-800 dark:text-blue-200 italic">"{restauracion.motivo_original}"</p>
+              <p className="text-sm text-blue-800 dark:text-blue-200 italic">&quot;{restauracion.motivo_original}&quot;</p>
             </div>
           )}
         </div>
@@ -487,7 +488,7 @@ function ReemplazoArchivoDetalle({ metadata, usuarioEmail, usuarioNombres, fecha
 // 📋 FALLBACK GENÉRICO
 // ============================================================================
 
-function DetalleGenerico({ metadata, datosAnteriores, datosNuevos }: any) {
+function DetalleGenerico({ metadata, _datosAnteriores, _datosNuevos }: any) {
   return (
     <div className="space-y-4">
       <div className="bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-lg p-4">

@@ -11,6 +11,7 @@
  */
 
 import { supabase } from '@/lib/supabase/client'
+import { logger } from '@/lib/utils/logger'
 
 // ============================================================
 // TIPOS
@@ -132,7 +133,7 @@ export class ViviendaInactivacionService {
         },
       }
     } catch (error) {
-      console.error('❌ Error al validar eliminación:', error)
+      logger.error('❌ Error al validar eliminación:', error)
       throw error
     }
   }
@@ -207,7 +208,7 @@ export class ViviendaInactivacionService {
       if (historialError) throw historialError
 
     } catch (error) {
-      console.error('❌ Error al marcar como inactiva:', error)
+      logger.error('❌ Error al marcar como inactiva:', error)
       throw error
     }
   }
@@ -283,7 +284,7 @@ export class ViviendaInactivacionService {
         puedeReactivar: true,
       }
     } catch (error) {
-      console.error('❌ Error al validar reactivación:', error)
+      logger.error('❌ Error al validar reactivación:', error)
       throw error
     }
   }
@@ -344,7 +345,7 @@ export class ViviendaInactivacionService {
       if (historialError) throw historialError
 
     } catch (error) {
-      console.error('❌ Error al reactivar vivienda:', error)
+      logger.error('❌ Error al reactivar vivienda:', error)
       throw error
     }
   }

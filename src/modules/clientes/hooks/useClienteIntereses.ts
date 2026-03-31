@@ -8,6 +8,7 @@
 import { useEffect, useState } from 'react'
 
 import { supabase } from '@/lib/supabase/client'
+import { logger } from '@/lib/utils/logger'
 
 interface InteresCliente {
   id: string
@@ -76,9 +77,9 @@ export function useClienteIntereses(clienteId: string): UseClienteInteresesRetur
         }))
 
         setIntereses(interesesMapeados)
-      } catch (err: any) {
-        console.error('❌ Error cargando intereses del cliente:', err)
-        setError(err.message || 'Error cargando intereses')
+      } catch (err: unknown) {
+        logger.error('❌ Error cargando intereses del cliente:', err)
+        setError(err instanceof Error ? err.message : 'Error cargando intereses')
         setIntereses([])
       } finally {
         setIsLoading(false)

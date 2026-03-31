@@ -3,8 +3,10 @@
  * No requiere llamadas async - usa datos ya disponibles en eventos
  */
 
-import { useAuth } from '@/contexts/auth-context'
 import { useMemo } from 'react'
+
+import { useAuth } from '@/contexts/auth-context'
+
 import type { EventoHistorialHumanizado } from '../types/historial.types'
 
 /**

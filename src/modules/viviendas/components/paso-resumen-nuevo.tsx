@@ -182,7 +182,7 @@ export function PasoResumenNuevo({ formData, proyectoNombre, manzanaNombre, gast
             ¡Todo listo!
           </p>
           <p className="text-xs text-green-700 dark:text-green-300">
-            Haz clic en "Guardar Vivienda" para registrar esta vivienda en el sistema.
+            Haz clic en &quot;Guardar Vivienda&quot; para registrar esta vivienda en el sistema.
           </p>
         </div>
       </div>

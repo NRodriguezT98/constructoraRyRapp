@@ -16,7 +16,15 @@
 import { supabase } from '@/lib/supabase/client'
 import { formatDateForDB, getTodayDateString } from '@/lib/utils/date.utils'
 import { logger } from '@/lib/utils/logger'
-import type { EstadoNegociacion, Negociacion } from '@/modules/clientes/types'
+import type { Negociacion } from '@/modules/clientes/types'
+import {
+  sanitizeActualizarFuentePagoDTO,
+  sanitizeActualizarNegociacionDTO,
+  sanitizeCrearNegociacionDTO,
+  type ActualizarFuentePagoDTO,
+  type ActualizarNegociacionDTO,
+  type CrearNegociacionDTO,
+} from '@/modules/clientes/utils/sanitize-negociacion.utils'
 import { crearCredito } from '@/modules/fuentes-pago/services/creditos-constructora.service'
 import { crearCuotasCredito } from '@/modules/fuentes-pago/services/cuotas-credito.service'
 import {
@@ -27,53 +35,13 @@ import { esCuotaInicial } from '@/shared/constants/fuentes-pago.constants'
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-// DTOs
-export interface CrearNegociacionDTO {
-  cliente_id: string
-  vivienda_id: string
-  valor_negociado: number
-  descuento_aplicado?: number
-  tipo_descuento?: string
-  motivo_descuento?: string
-  valor_escritura_publica?: number
-  notas?: string
-
-  /** Fecha real de la negociación (para migración de datos históricos). Si no se envía, usa NOW() en BD. */
-  fecha_negociacion?: string
-
-  // ? NUEVO: Fuentes de pago (creación transaccional)
-  fuentes_pago?: CrearFuentePagoDTO[]
-}
-
-export interface CrearFuentePagoDTO {
-  tipo: string // 'Cuota Inicial' | 'Crédito Hipotecario' | 'Subsidio Mi Casa Ya' | 'Subsidio Caja Compensación'
-  monto_aprobado: number
-  entidad?: string
-  numero_referencia?: string
-  carta_asignacion_url?: string
-  /** Solo para fuentes con genera_cuotas=true (Crédito con la Constructora) */
-  capital_para_cierre?: number
-  /** Parámetros del préstamo — si presentes, crea creditos_constructora + cuotas_credito */
-  parametrosCredito?: {
-    capital: number
-    tasaMensual: number // porcentaje: 1.5 = 1.5%
-    numCuotas: number
-    fechaInicio: Date | string
-    tasaMoraDiaria?: number // default 0.001 (0.1%/día)
-  }
-  /** true para fuentes que permiten múltiples abonos parciales (Cuota Inicial, Crédito Constructora) */
-  permite_multiples_abonos?: boolean
-}
-
-export interface ActualizarNegociacionDTO {
-  estado?: EstadoNegociacion
-  valor_negociado?: number
-  descuento_aplicado?: number
-  fecha_completada?: string // ? Requerida cuando estado='Completada'
-  notas?: string
-}
-
 // Re-export Negociacion del index
+export type {
+  ActualizarFuentePagoDTO,
+  ActualizarNegociacionDTO,
+  CrearFuentePagoDTO,
+  CrearNegociacionDTO
+} from '@/modules/clientes/utils/sanitize-negociacion.utils'
 export type { Negociacion }
 
 class NegociacionesService {
@@ -95,8 +63,9 @@ class NegociacionesService {
    */
   async crearNegociacion(datos: CrearNegociacionDTO): Promise<Negociacion> {
     try {
+      const datosSanitizados = sanitizeCrearNegociacionDTO(datos)
       const tieneFuentesPago =
-        datos.fuentes_pago && datos.fuentes_pago.length > 0
+        Boolean(datosSanitizados.fuentes_pago?.length)
 
       // ==========================================
       // VALIDACIÓN: No crear negociación si hay renuncia pendiente
@@ -104,7 +73,7 @@ class NegociacionesService {
       const { data: renunciaPendiente } = await supabase
         .from('renuncias')
         .select('id, consecutivo')
-        .eq('cliente_id', datos.cliente_id)
+        .eq('cliente_id', datosSanitizados.cliente_id)
         .eq('estado', 'Pendiente Devolución')
         .limit(1)
         .maybeSingle()
@@ -121,33 +90,37 @@ class NegociacionesService {
 
       // Construir objeto con campos condicionales
       const datosNegociacion: any = {
-        cliente_id: datos.cliente_id,
-        vivienda_id: datos.vivienda_id,
-        valor_negociado: datos.valor_negociado,
-        descuento_aplicado: datos.descuento_aplicado || 0,
-        notas: datos.notas,
+        cliente_id: datosSanitizados.cliente_id,
+        vivienda_id: datosSanitizados.vivienda_id,
+        valor_negociado: datosSanitizados.valor_negociado,
+        descuento_aplicado: datosSanitizados.descuento_aplicado || 0,
+        notas: datosSanitizados.notas,
         estado: 'Activa', // ? SIEMPRE 'Activa' (simplificado)
       }
 
       // Fecha de negociación personalizada (migración de datos históricos)
-      if (datos.fecha_negociacion) {
-        datosNegociacion.fecha_negociacion = datos.fecha_negociacion
+      if (datosSanitizados.fecha_negociacion) {
+        datosNegociacion.fecha_negociacion = datosSanitizados.fecha_negociacion
       }
 
       // Solo incluir campos de descuento si hay descuento aplicado
-      if (datos.descuento_aplicado && datos.descuento_aplicado > 0) {
+      if (
+        datosSanitizados.descuento_aplicado &&
+        datosSanitizados.descuento_aplicado > 0
+      ) {
         // Solo agregar campos si tienen valor (no undefined)
-        if (datos.tipo_descuento !== undefined) {
-          datosNegociacion.tipo_descuento = datos.tipo_descuento
+        if (datosSanitizados.tipo_descuento !== undefined) {
+          datosNegociacion.tipo_descuento = datosSanitizados.tipo_descuento
         }
-        if (datos.motivo_descuento !== undefined) {
-          datosNegociacion.motivo_descuento = datos.motivo_descuento
+        if (datosSanitizados.motivo_descuento !== undefined) {
+          datosNegociacion.motivo_descuento = datosSanitizados.motivo_descuento
         }
       }
 
       // valor_escritura_publica es independiente del descuento
-      if (datos.valor_escritura_publica !== undefined) {
-        datosNegociacion.valor_escritura_publica = datos.valor_escritura_publica
+      if (datosSanitizados.valor_escritura_publica !== undefined) {
+        datosNegociacion.valor_escritura_publica =
+          datosSanitizados.valor_escritura_publica
       }
 
       const { data: negociacion, error: errorNegociacion } = await supabase
@@ -166,9 +139,9 @@ class NegociacionesService {
       // ==========================================
       // PASO 2: Crear fuentes de pago (OPCIONAL)
       // ==========================================
-      if (datos.fuentes_pago && datos.fuentes_pago.length > 0) {
+      if (datosSanitizados.fuentes_pago && datosSanitizados.fuentes_pago.length > 0) {
         // Resolver tipo_fuente_id en batch
-        const tipoNombres = datos.fuentes_pago.map(f => f.tipo)
+        const tipoNombres = datosSanitizados.fuentes_pago.map(f => f.tipo)
         const { data: tiposFuentes, error: errorTipos } = await supabase
           .from('tipos_fuentes_pago')
           .select('id, nombre')
@@ -185,7 +158,7 @@ class NegociacionesService {
           (tiposFuentes || []).map(t => [t.nombre, t.id])
         )
 
-        const fuentesParaInsertar = datos.fuentes_pago.map(fuente => ({
+        const fuentesParaInsertar = datosSanitizados.fuentes_pago.map(fuente => ({
           negociacion_id: negociacion.id,
           tipo: fuente.tipo,
           tipo_fuente_id: tipoIdMap[fuente.tipo] || null,
@@ -220,7 +193,7 @@ class NegociacionesService {
         // ==========================================
         const fuentesConCredito: string[] = [] // acumular IDs para rollback
         try {
-          for (const fuente of datos.fuentes_pago) {
+          for (const fuente of datosSanitizados.fuentes_pago) {
             if (!fuente.parametrosCredito) continue
 
             const fuenteCreada = (fuentesCreadas ?? []).find(
@@ -290,7 +263,7 @@ class NegociacionesService {
           await supabase.from('negociaciones').delete().eq('id', negociacion.id)
           throw errorPaso2b
         }
-      } // end if (datos.fuentes_pago)
+      } // end if (datosSanitizados.fuentes_pago)
 
       // ==========================================
       // PASO 3: Actualizar vivienda → 'Asignada'
@@ -299,11 +272,11 @@ class NegociacionesService {
         .from('viviendas')
         .update({
           estado: 'Asignada',
-          cliente_id: datos.cliente_id,
+          cliente_id: datosSanitizados.cliente_id,
           negociacion_id: negociacion.id, // ? NUEVO campo
           fecha_asignacion: formatDateForDB(getTodayDateString()),
         })
-        .eq('id', datos.vivienda_id)
+        .eq('id', datosSanitizados.vivienda_id)
 
       if (errorVivienda) {
         logger.error('? Error actualizando vivienda:', errorVivienda)
@@ -324,7 +297,7 @@ class NegociacionesService {
       const { error: errorCliente } = await supabase
         .from('clientes')
         .update({ estado: 'Activo' })
-        .eq('id', datos.cliente_id)
+        .eq('id', datosSanitizados.cliente_id)
 
       if (errorCliente) {
         logger.error('? Error actualizando cliente:', errorCliente)
@@ -344,7 +317,7 @@ class NegociacionesService {
             negociacion_id: null,
             fecha_asignacion: null,
           })
-          .eq('id', datos.vivienda_id)
+          .eq('id', datosSanitizados.vivienda_id)
         throw new Error(`Error actualizando cliente: ${errorCliente.message}`)
       }
 
@@ -489,9 +462,10 @@ class NegociacionesService {
     datos: ActualizarNegociacionDTO
   ): Promise<Negociacion> {
     try {
+      const datosSanitizados = sanitizeActualizarNegociacionDTO(datos)
       const { data, error } = await supabase
         .from('negociaciones')
-        .update(datos)
+        .update(datosSanitizados)
         .eq('id', id)
         .select()
         .single()
@@ -640,17 +614,11 @@ class NegociacionesService {
    */
   async actualizarFuentesPago(
     negociacionId: string,
-    fuentes: Array<{
-      id?: string
-      tipo: string
-      monto_aprobado: number
-      entidad?: string | null
-      numero_referencia?: string | null
-      detalles?: string | null
-      permite_multiples_abonos?: boolean
-    }>,
+    fuentes: ActualizarFuentePagoDTO[],
     motivoCambio = 'Actualización de fuentes de pago'
   ): Promise<void> {
+    const fuentesSanitizadas = fuentes.map(sanitizeActualizarFuentePagoDTO)
+
     try {
       // 1. Obtener fuentes actuales ACTIVAS para validar
       const { data: fuentesActuales, error: errorFetch } = await supabase
@@ -662,7 +630,7 @@ class NegociacionesService {
       if (errorFetch) throw errorFetch
 
       // 2. Validar que no se eliminen fuentes con abonos
-      const idsNuevas = fuentes.map(f => f.id).filter(Boolean)
+      const idsNuevas = fuentesSanitizadas.map(f => f.id).filter(Boolean)
       const fuentesAEliminar =
         fuentesActuales?.filter(fa => !idsNuevas.includes(fa.id)) || []
 
@@ -720,7 +688,7 @@ class NegociacionesService {
       // 4. Actualizar fuentes existentes y crear nuevas
       const nuevasFuentesCreadas: { id: string; tipo: string }[] = []
 
-      for (const fuente of fuentes) {
+      for (const fuente of fuentesSanitizadas) {
         if (fuente.id) {
           // Actualizar existente
           const { error: errorUpdate } = await supabase
@@ -805,11 +773,11 @@ class NegociacionesService {
         negociacionId,
         motivoCambio,
         fuentesActuales || [],
-        fuentes,
+        fuentesSanitizadas,
         {
           agregadas: nuevasFuentesCreadas.length,
           eliminadas: fuentesAEliminar.length,
-          modificadas: fuentes.filter(f => f.id).length,
+          modificadas: fuentesSanitizadas.filter(f => f.id).length,
         }
       )
     } catch (error) {
@@ -819,7 +787,7 @@ class NegociacionesService {
         mensaje,
         error,
         negociacionId,
-        fuentesEnviadas: fuentes.length,
+        fuentesEnviadas: fuentesSanitizadas.length,
         motivoCambio,
       })
 

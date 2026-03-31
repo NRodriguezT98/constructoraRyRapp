@@ -6,6 +6,7 @@
  */
 
 import { supabase } from '@/lib/supabase/client';
+import { logger } from '@/lib/utils/logger'
 
 // ============================================================================
 // VALIDACIONES DE DUPLICADOS
@@ -34,7 +35,7 @@ export async function validarMatriculaDuplicada(
     }
 
     if (error) {
-      console.error('Error validando matrícula:', error)
+      logger.error('Error validando matrícula:', error)
       throw new Error('Error al validar matrícula')
     }
 
@@ -58,7 +59,7 @@ export async function validarMatriculaDuplicada(
 
     return { exists: false }
   } catch (error) {
-    console.error('Error en validación de matrícula:', error)
+    logger.error('Error en validación de matrícula:', error)
     throw error
   }
 }
@@ -86,7 +87,7 @@ export async function validarNumeroCasaDuplicado(
     const { data, error } = await query
 
     if (error) {
-      console.error('Error validando número de casa:', error)
+      logger.error('Error validando número de casa:', error)
       throw new Error('Error al validar número de casa')
     }
 
@@ -99,7 +100,7 @@ export async function validarNumeroCasaDuplicado(
 
     return { exists: false }
   } catch (error) {
-    console.error('Error en validación de número de casa:', error)
+    logger.error('Error en validación de número de casa:', error)
     throw error
   }
 }
@@ -129,7 +130,7 @@ export async function validarProyectoExiste(
     }
 
     if (error) {
-      console.error('Error validando proyecto:', error)
+      logger.error('Error validando proyecto:', error)
       throw new Error('Error al validar proyecto')
     }
 
@@ -145,7 +146,7 @@ export async function validarProyectoExiste(
       nombre: data.nombre,
     }
   } catch (error) {
-    console.error('Error en validación de proyecto:', error)
+    logger.error('Error en validación de proyecto:', error)
     throw error
   }
 }
@@ -172,7 +173,7 @@ export async function validarManzanaExiste(
     }
 
     if (error) {
-      console.error('Error validando manzana:', error)
+      logger.error('Error validando manzana:', error)
       throw new Error('Error al validar manzana')
     }
 
@@ -188,7 +189,7 @@ export async function validarManzanaExiste(
       nombre: data.nombre,
     }
   } catch (error) {
-    console.error('Error en validación de manzana:', error)
+    logger.error('Error en validación de manzana:', error)
     throw error
   }
 }
@@ -310,7 +311,7 @@ export async function validarViviendaCompleta(
       errores,
     }
   } catch (error) {
-    console.error('Error en validación completa:', error)
+    logger.error('Error en validación completa:', error)
     throw error
   }
 }

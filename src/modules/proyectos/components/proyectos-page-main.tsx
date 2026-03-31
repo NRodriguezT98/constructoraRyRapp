@@ -3,11 +3,15 @@
 import { useCallback, useMemo, useState } from 'react'
 
 import { motion } from 'framer-motion'
+
 import { useRouter } from 'next/navigation'
 
 import { construirURLProyecto } from '@/lib/utils/slug.utils'
+import { Modal } from '@/shared/components/ui/Modal'
+import { NoResults } from '@/shared/components/ui/NoResults'
+import { Pagination } from '@/shared/components/ui/Pagination'
 import { useVistaPreference } from '@/shared/hooks/useVistaPreference'
-import { Modal } from '../../../shared/components/ui/Modal'
+
 import {
     useEstadisticasProyectosQuery,
     useProyectosFiltradosQuery,
@@ -16,8 +20,6 @@ import {
 import { proyectosPageStyles as styles } from '../styles/proyectos-page.styles'
 import type { Proyecto } from '../types'
 
-import { NoResults } from '@/shared/components/ui/NoResults'
-import { Pagination } from '@/shared/components/ui/Pagination'
 
 import { ArchivarProyectoModal } from './modals/archivar-proyecto-modal'
 import { RestaurarProyectoModal } from './modals/restaurar-proyecto-modal'
@@ -139,7 +141,7 @@ export function ProyectosPage({
       await eliminarProyecto(proyectoEliminar)
       setModalEliminar(false)
       setProyectoEliminar(null)
-    } catch (error) {
+    } catch (_error) {
       // Error ya manejado por React Query con toast
     }
   }
@@ -159,7 +161,7 @@ export function ProyectosPage({
       await archivarProyecto(proyectoArchivar.id, motivo)
       setModalArchivar(false)
       setProyectoArchivar(null)
-    } catch (error) {
+    } catch (_error) {
       // Error ya manejado por React Query con toast
     }
   }
@@ -179,7 +181,7 @@ export function ProyectosPage({
       await restaurarProyecto(proyectoRestaurar.id)
       setModalRestaurar(false)
       setProyectoRestaurar(null)
-    } catch (error) {
+    } catch (_error) {
       // Error ya manejado por React Query con toast
     }
   }
@@ -288,7 +290,7 @@ export function ProyectosPage({
           <p className='text-sm text-gray-600 dark:text-gray-400'>
             ¿Estas seguro de eliminar{' '}
             <span className='font-semibold text-gray-900 dark:text-gray-100'>
-              "{proyectoEliminando?.nombre}"
+              &quot;{proyectoEliminando?.nombre}&quot;
             </span>
             ?
           </p>

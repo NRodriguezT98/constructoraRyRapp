@@ -14,6 +14,7 @@ import { CSS } from '@dnd-kit/utilities'
 import { Edit2, GripVertical, Trash2 } from 'lucide-react'
 
 import type { CampoConfig } from '../../types/campos-dinamicos.types'
+
 import { configuradorStyles as s } from './configurador-campos.styles'
 
 interface CampoItemProps {
@@ -91,7 +92,7 @@ export function CampoItem({ campo, onEditar, onEliminar }: CampoItemProps) {
             {campo.placeholder && (
               <>
                 <span>•</span>
-                <span className="italic">"{campo.placeholder}"</span>
+                <span className="italic">&quot;{campo.placeholder}&quot;</span>
               </>
             )}
           </div>

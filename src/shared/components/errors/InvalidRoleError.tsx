@@ -15,7 +15,9 @@
 
 import { motion } from 'framer-motion'
 import { AlertTriangle, LogOut, Mail, RefreshCw, ShieldAlert } from 'lucide-react'
+
 import Image from 'next/image'
+
 import { useInvalidRoleError } from './useInvalidRoleError'
 
 interface InvalidRoleErrorProps {

@@ -3,6 +3,8 @@
 // ============================================
 
 import { supabase } from '@/lib/supabase/client'
+import { logger } from '@/lib/utils/logger'
+
 import type { DocumentoVivienda } from '../../types/documento-vivienda.types'
 
 const BUCKET_NAME = 'documentos-viviendas'
@@ -156,7 +158,7 @@ export class DocumentosEliminacionService {
         .order('fecha_actualizacion', { ascending: false })
 
       if (errorDocs) {
-        console.error('❌ Error obteniendo documentos eliminados:', errorDocs)
+        logger.error('❌ Error obteniendo documentos eliminados:', errorDocs)
         throw errorDocs
       }
 
@@ -175,7 +177,7 @@ export class DocumentosEliminacionService {
         .in('id', viviendaIds)
 
       if (errorViviendas) {
-        console.warn('⚠️ Error obteniendo viviendas:', errorViviendas)
+        logger.warn('⚠️ Error obteniendo viviendas:', errorViviendas)
         // Continuar sin datos de viviendas
       }
 
@@ -190,7 +192,7 @@ export class DocumentosEliminacionService {
           .in('id', manzanaIds)
 
         if (errorManzanas) {
-          console.warn('⚠️ Error obteniendo manzanas:', errorManzanas)
+          logger.warn('⚠️ Error obteniendo manzanas:', errorManzanas)
         } else {
           manzanas = dataManzanas || []
         }
@@ -203,7 +205,7 @@ export class DocumentosEliminacionService {
         .in('id', usuarioIds)
 
       if (errorUsuarios) {
-        console.warn('⚠️ Error obteniendo usuarios:', errorUsuarios)
+        logger.warn('⚠️ Error obteniendo usuarios:', errorUsuarios)
       }
 
       // 6. Crear mapas para lookup rápido
@@ -228,7 +230,7 @@ export class DocumentosEliminacionService {
 
       return documentosEnriquecidos as unknown as DocumentoVivienda[]
     } catch (error) {
-      console.error('❌ Error crítico en obtenerDocumentosEliminados:', error)
+      logger.error('❌ Error crítico en obtenerDocumentosEliminados:', error)
       // Retornar array vacío en lugar de throw para evitar crashes
       return []
     }
@@ -240,7 +242,7 @@ export class DocumentosEliminacionService {
    */
   static async obtenerDocumentosEliminadosSimple(): Promise<DocumentoVivienda[]> {
     // Fallback: Sin JOINs (solo documentos básicos)
-    console.warn('⚠️ JOINs fallaron, usando query simple')
+    logger.warn('⚠️ JOINs fallaron, usando query simple')
     const { data, error } = await supabase
       .from('documentos_vivienda')
       .select('*')
@@ -249,7 +251,7 @@ export class DocumentosEliminacionService {
       .order('fecha_actualizacion', { ascending: false })
 
     if (error) {
-      console.error('❌ Error al obtener documentos eliminados de viviendas:', error)
+      logger.error('❌ Error al obtener documentos eliminados de viviendas:', error)
       throw error
     }
 
@@ -407,7 +409,7 @@ export class DocumentosEliminacionService {
             try {
               await supabase.storage.from(BUCKET_NAME).remove([version.url_storage])
             } catch (err) {
-              console.warn('⚠️ Error al eliminar archivo de Storage:', err)
+              logger.warn('⚠️ Error al eliminar archivo de Storage:', err)
             }
           }
 
@@ -427,7 +429,7 @@ export class DocumentosEliminacionService {
           try {
             await supabase.storage.from(BUCKET_NAME).remove([version.url_storage])
           } catch (err) {
-            console.warn('⚠️ Error al eliminar archivo de Storage:', err)
+            logger.warn('⚠️ Error al eliminar archivo de Storage:', err)
           }
         }
 

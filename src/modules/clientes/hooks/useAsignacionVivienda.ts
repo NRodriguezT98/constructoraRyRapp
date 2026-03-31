@@ -10,6 +10,9 @@
  */
 
 import { useRouter } from 'next/navigation'
+
+import { logger } from '@/lib/utils/logger'
+
 import { useDocumentoIdentidad } from '../documentos/hooks/useDocumentoIdentidad'
 
 interface UseAsignacionViviendaProps {
@@ -59,7 +62,7 @@ export function useAsignacionVivienda({
   const handleIniciarAsignacion = () => {
     // Validación: debe tener documento
     if (!tieneCedula) {
-      console.warn('❌ No se puede asignar vivienda: documento de identidad faltante')
+      logger.warn('❌ No se puede asignar vivienda: documento de identidad faltante')
       return
     }
 

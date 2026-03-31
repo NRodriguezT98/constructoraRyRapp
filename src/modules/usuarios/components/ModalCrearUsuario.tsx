@@ -15,6 +15,8 @@ import { useState } from 'react'
 
 import { AlertCircle, Check, Copy, Eye, EyeOff } from 'lucide-react'
 
+import { logger } from '@/lib/utils/logger'
+
 import { ROLES, type CrearUsuarioData, type CrearUsuarioRespuesta } from '../types'
 
 import { Modal } from './Modal'
@@ -96,7 +98,7 @@ export function ModalCrearUsuario({ isOpen, onClose, onCrear }: ModalCrearUsuari
         handleCerrar()
       }
     } catch (error) {
-      console.error('Error creando usuario:', error)
+      logger.error('Error creando usuario:', error)
       setErrores({
         general: error instanceof Error ? error.message : 'Error al crear usuario',
       })
@@ -116,7 +118,7 @@ export function ModalCrearUsuario({ isOpen, onClose, onCrear }: ModalCrearUsuari
       setPasswordCopiado(true)
       setTimeout(() => setPasswordCopiado(false), 2000)
     } catch (error) {
-      console.error('Error copiando password:', error)
+      logger.error('Error copiando password:', error)
     }
   }
 

@@ -26,6 +26,7 @@ import { formatDateShort } from '@/lib/utils/date.utils'
 
 import { useClienteIntereses } from '../../hooks/useClienteIntereses'
 import type { ClienteResumen } from '../../types'
+
 import {
   clienteCardThemes,
   clienteCardBaseStyles as styles

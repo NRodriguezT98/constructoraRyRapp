@@ -1,5 +1,7 @@
 'use client'
 
+import { useRef } from 'react'
+
 import { motion } from 'framer-motion'
 import {
     AlertTriangle,
@@ -11,7 +13,6 @@ import {
     User,
     X
 } from 'lucide-react'
-import { useRef } from 'react'
 
 
 import { useModalProcesarDevolucion } from '../../hooks/useModalProcesarDevolucion'

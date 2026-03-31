@@ -1,8 +1,9 @@
 'use client'
 
+import { ReactNode, RefObject } from 'react'
+
 import { AnimatePresence, motion } from 'framer-motion'
 import { FileCheck, Info, Loader2 } from 'lucide-react'
-import { ReactNode, RefObject } from 'react'
 import { FieldErrors, UseFormRegister, UseFormSetValue, UseFormWatch } from 'react-hook-form'
 
 import { moduleThemes, type ModuleName } from '@/shared/config/module-themes'

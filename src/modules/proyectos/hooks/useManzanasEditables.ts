@@ -7,6 +7,7 @@
 import { useCallback, useState } from 'react'
 
 import { supabase } from '@/lib/supabase/client'
+import { logger } from '@/lib/utils/logger'
 
 interface ManzanaEditableState {
   id: string
@@ -47,7 +48,7 @@ export function useManzanasEditables(): UseManzanasEditablesReturn {
         .in('id', manzanasIds)
 
       if (manzanasError) {
-        console.error('Error obteniendo manzanas:', manzanasError)
+        logger.error('Error obteniendo manzanas:', manzanasError)
         setCargando(false)
         return
       }
@@ -75,7 +76,7 @@ export function useManzanasEditables(): UseManzanasEditablesReturn {
           .in('manzana_id', idsEnDB)
 
         if (conteosError) {
-          console.error('Error contando viviendas:', conteosError)
+          logger.error('Error contando viviendas:', conteosError)
           setCargando(false)
           return
         }
@@ -102,7 +103,7 @@ export function useManzanasEditables(): UseManzanasEditablesReturn {
 
       setManzanasState(newState)
     } catch (error) {
-      console.error('Error validando manzanas:', error)
+      logger.error('Error validando manzanas:', error)
     } finally {
       setCargando(false)
     }

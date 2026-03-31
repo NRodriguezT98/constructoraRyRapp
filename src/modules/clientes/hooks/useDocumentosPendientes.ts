@@ -13,15 +13,16 @@
  */
 
 import {
+    useQuery,
+    useQueryClient
+} from '@tanstack/react-query'
+
+import {
     fetchDocumentosPendientesPorCliente
 } from '@/modules/clientes/services/documentos-pendientes.service'
 import {
     documentosPendientesKeys
 } from '@/modules/clientes/types/documentos-pendientes.types'
-import {
-    useQuery,
-    useQueryClient
-} from '@tanstack/react-query'
 
 // ============================================
 // QUERY HOOK

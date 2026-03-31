@@ -1,8 +1,10 @@
 'use client'
 
-import { type ModuleName } from '@/shared/config/module-themes'
 import { AnimatePresence, motion } from 'framer-motion'
 import { AlertCircle, RefreshCw, X } from 'lucide-react'
+
+import { type ModuleName } from '@/shared/config/module-themes'
+
 import { getRestaurarDocumentoModalStyles } from './RestaurarDocumentoModal.styles'
 
 interface RestaurarDocumentoModalProps {
@@ -86,7 +88,7 @@ export function RestaurarDocumentoModal({
                 <div className="flex items-start gap-2">
                   <div className={styles.content.checkIcon}>✅</div>
                   <p className={styles.content.infoText}>
-                    El documento volverá a estar <strong>activo</strong> y visible en la pestaña "Activos"
+                    El documento volverá a estar <strong>activo</strong> y visible en la pestaña &quot;Activos&quot;
                   </p>
                 </div>
                 <div className="flex items-start gap-2">

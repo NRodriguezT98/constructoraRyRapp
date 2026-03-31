@@ -4,6 +4,7 @@
 // =====================================================
 
 import { supabase } from '@/lib/supabase/client'
+import { logger } from '@/lib/utils/logger'
 
 import type {
     AbonoExpediente,
@@ -25,7 +26,7 @@ export async function obtenerRenuncias(): Promise<RenunciaCompletaRow[]> {
     .select('*')
 
   if (error) {
-    console.error('❌ Error obteniendo renuncias:', error)
+    logger.error('❌ Error obteniendo renuncias:', error)
     throw new Error(`Error al obtener renuncias: ${error.message}`)
   }
 
@@ -45,7 +46,7 @@ export async function obtenerRenuncia(id: string): Promise<RenunciaCompletaRow> 
     .single()
 
   if (error) {
-    console.error('❌ Error obteniendo renuncia:', error)
+    logger.error('❌ Error obteniendo renuncia:', error)
     throw new Error(`Error al obtener renuncia: ${error.message}`)
   }
 
@@ -197,7 +198,7 @@ export async function registrarRenuncia(dto: RegistrarRenunciaDTO) {
   })
 
   if (error) {
-    console.error('❌ Error registrando renuncia:', error)
+    logger.error('❌ Error registrando renuncia:', error)
     throw new Error(error.message)
   }
 
@@ -243,7 +244,7 @@ export async function procesarDevolucion(renunciaId: string, dto: ProcesarDevolu
     .single()
 
   if (error) {
-    console.error('❌ Error procesando devolución:', error)
+    logger.error('❌ Error procesando devolución:', error)
     throw new Error(error.message)
   }
 
@@ -263,7 +264,7 @@ export async function subirComprobante(file: File, renunciaId: string): Promise<
     .upload(filePath, file, { upsert: false })
 
   if (error) {
-    console.error('❌ Error subiendo comprobante:', error)
+    logger.error('❌ Error subiendo comprobante:', error)
     throw new Error(`Error al subir comprobante: ${error.message}`)
   }
 
@@ -294,7 +295,7 @@ export async function generarUrlFirmadaComprobante(pathOrUrl: string): Promise<s
     .createSignedUrl(filePath, 3600) // 1 hora de expiración
 
   if (error || !data?.signedUrl) {
-    console.error('❌ Error generando URL firmada:', error)
+    logger.error('❌ Error generando URL firmada:', error)
     throw new Error('No se pudo generar el enlace al comprobante')
   }
 
@@ -318,7 +319,7 @@ export async function subirFormularioRenuncia(file: File, renunciaId: string): P
     .upload(filePath, file, { upsert: true })
 
   if (uploadError) {
-    console.error('❌ Error subiendo formulario de renuncia:', uploadError)
+    logger.error('❌ Error subiendo formulario de renuncia:', uploadError)
     throw new Error(`Error al subir formulario: ${uploadError.message}`)
   }
 
@@ -329,7 +330,7 @@ export async function subirFormularioRenuncia(file: File, renunciaId: string): P
     .eq('id', renunciaId)
 
   if (updateError) {
-    console.error('❌ Error actualizando URL formulario:', updateError)
+    logger.error('❌ Error actualizando URL formulario:', updateError)
     throw new Error(`Error al vincular formulario: ${updateError.message}`)
   }
 
@@ -347,7 +348,7 @@ export async function obtenerMetricas(): Promise<MetricasRenuncias> {
     .select('estado, monto_a_devolver, retencion_monto')
 
   if (error) {
-    console.error('❌ Error obteniendo métricas:', error)
+    logger.error('❌ Error obteniendo métricas:', error)
     throw new Error(error.message)
   }
 
@@ -381,7 +382,7 @@ export async function obtenerRenunciaPorConsecutivo(consecutivo: string): Promis
     .single()
 
   if (error) {
-    console.error('❌ Error obteniendo renuncia por consecutivo:', error)
+    logger.error('❌ Error obteniendo renuncia por consecutivo:', error)
     throw new Error(`Renuncia ${consecutivo} no encontrada`)
   }
 
@@ -400,7 +401,7 @@ export async function obtenerAbonosNegociacion(negociacionId: string): Promise<A
     .order('fecha_abono', { ascending: true })
 
   if (error) {
-    console.error('❌ Error obteniendo abonos:', error)
+    logger.error('❌ Error obteniendo abonos:', error)
     return []
   }
 
@@ -441,7 +442,7 @@ export async function obtenerNegociacionExpediente(negociacionId: string) {
     .single()
 
   if (error) {
-    console.error('❌ Error obteniendo negociación:', error)
+    logger.error('❌ Error obteniendo negociación:', error)
     return null
   }
 
@@ -460,7 +461,7 @@ export async function obtenerViviendaExpediente(viviendaId: string) {
     .single()
 
   if (error) {
-    console.error('❌ Error obteniendo vivienda:', error)
+    logger.error('❌ Error obteniendo vivienda:', error)
     return null
   }
 

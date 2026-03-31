@@ -16,6 +16,7 @@ import {
 } from '@/shared/components/accordion-wizard'
 
 import { PASOS_CLIENTE, useNuevoClienteAccordion } from '../hooks/useNuevoClienteAccordion'
+
 import { PasoContacto, PasoInteres, PasoNotas, PasoPersonal } from './pasos-accordion'
 
 interface NuevoClienteAccordionViewProps {

@@ -11,9 +11,11 @@
 
 'use client'
 
+import { useState } from 'react'
+
 import { AnimatePresence, motion } from 'framer-motion'
 import { AlertTriangle, CheckCircle2, ChevronDown, ChevronUp, Lock, XCircle } from 'lucide-react'
-import { useState } from 'react'
+
 import type { EstadoBloqueoVivienda } from '../../services/viviendas-validacion.service'
 
 // ============================================================

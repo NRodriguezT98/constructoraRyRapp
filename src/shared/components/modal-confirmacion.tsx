@@ -23,6 +23,8 @@ import { ReactNode, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { AlertTriangle, CheckCircle, Info, Trash2, X } from 'lucide-react'
 
+import { logger } from '@/lib/utils/logger'
+
 export interface ModalConfirmacionProps {
   /** Control de apertura del modal */
   isOpen: boolean
@@ -111,7 +113,7 @@ export function ModalConfirmacion({
       await onConfirm()
       onClose()
     } catch (error) {
-      console.error('Error en confirmación:', error)
+      logger.error('Error en confirmación:', error)
     } finally {
       setIsLoadingInternal(false)
     }

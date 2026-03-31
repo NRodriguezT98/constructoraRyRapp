@@ -16,6 +16,8 @@
 import { useCallback, useMemo, useState } from 'react'
 
 import { supabase } from '@/lib/supabase/client'
+import { logger } from '@/lib/utils/logger'
+
 import { useAuth } from '../../../contexts/auth-context'
 import { DocumentosService } from '../services'
 import { useDocumentosStore } from '../store/documentos.store'
@@ -180,13 +182,13 @@ export function useDocumentosLista({
             .createSignedUrl(storagePath, 3600) // 3600 segundos = 1 hora
 
           if (error) {
-            console.error('❌ Error al crear URL firmada:', error)
+            logger.error('❌ Error al crear URL firmada:', error)
             setUrlPreview(undefined)
           } else if (data?.signedUrl) {
             setUrlPreview(data.signedUrl)
           }
         } catch (error) {
-          console.error('Error al obtener URL de preview:', error)
+          logger.error('Error al obtener URL de preview:', error)
           setUrlPreview(undefined)
         }
       } else {
@@ -212,7 +214,7 @@ export function useDocumentosLista({
       )
       window.open(url, '_blank')
     } catch (error) {
-      console.error('Error al descargar documento:', error)
+      logger.error('Error al descargar documento:', error)
     }
   }, [tipoEntidad])
 
@@ -221,7 +223,7 @@ export function useDocumentosLista({
       try {
         await toggleImportanteMutation.mutateAsync(documento.id)
       } catch (error) {
-        console.error('Error al actualizar documento:', error)
+        logger.error('Error al actualizar documento:', error)
       }
     },
     [toggleImportanteMutation]
@@ -269,7 +271,7 @@ export function useDocumentosLista({
         setModalRestaurarAbierto(false)
         setDocumentoParaRestaurar(null)
       } catch (error) {
-        console.error('Error al restaurar documento:', error)
+        logger.error('Error al restaurar documento:', error)
       } finally {
         setProcesandoRestaurar(false)
       }
@@ -314,7 +316,7 @@ export function useDocumentosLista({
         setDatosModalEliminar({ title, message, confirmText })
         setModalEliminarAbierto(true)
       } catch (error) {
-        console.error('Error al preparar eliminación:', error)
+        logger.error('Error al preparar eliminación:', error)
       }
     },
     [perfil?.rol, tipoEntidad]
@@ -329,7 +331,7 @@ export function useDocumentosLista({
         setModalEliminarAbierto(false)
         setDocumentoParaEliminar(null)
       } catch (error) {
-        console.error('Error al eliminar documento:', error)
+        logger.error('Error al eliminar documento:', error)
       } finally {
         setProcesandoEliminar(false)
       }

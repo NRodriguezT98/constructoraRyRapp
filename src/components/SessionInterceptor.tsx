@@ -1,7 +1,8 @@
 'use client'
 
-import { SessionClosedByInactivity } from '@/components/auth/SessionClosedByInactivity'
 import { useEffect, useState } from 'react'
+
+import { SessionClosedByInactivity } from '@/components/auth/SessionClosedByInactivity'
 
 interface SessionInterceptorProps {
   children: React.ReactNode

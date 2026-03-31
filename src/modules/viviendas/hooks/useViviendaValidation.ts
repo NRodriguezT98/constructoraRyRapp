@@ -5,8 +5,10 @@
  * Gestiona validaciones asíncronas con cache y debouncing
  */
 
-import { useQuery } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
+
+import { useQuery } from '@tanstack/react-query'
+
 import {
   validarManzanaExiste,
   validarMatriculaDuplicada,

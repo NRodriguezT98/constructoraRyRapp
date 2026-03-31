@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { getTodayDateString } from '@/lib/utils/date.utils'
 
 import { METODOS_DEVOLUCION, type MetodoDevolucion } from '../types'
+
 import { useProcesarDevolucion } from './useRenunciasQuery'
 
 const CELEBRATION_DELAY_MS = 2000

@@ -21,6 +21,7 @@
 'use client'
 
 import { AlertCircle, ArrowUp, Building2, CheckCircle2, Home, IdCard, XCircle } from 'lucide-react'
+import { toast } from 'sonner'
 
 import { HistorialVersionesModal } from '@/modules/clientes/components'
 import { SubirCartaModal } from '@/modules/clientes/components/fuentes-pago'
@@ -30,7 +31,6 @@ import {
     ModalMarcarPasoCompletado
 } from '@/modules/fuentes-pago/components'
 
-import { viviendaAsignadaTabStyles as styles } from './vivienda-asignada-tab.styles'
 import {
     AccionesSection,
     EditarFuentesPagoModal,
@@ -39,6 +39,7 @@ import {
     UltimosAbonosSection,
 } from './vivienda-asignada/components'
 import { useViviendaAsignadaTab } from './vivienda-asignada/hooks'
+import { viviendaAsignadaTabStyles as styles } from './vivienda-asignada-tab.styles'
 
 // ============================================
 // TYPES
@@ -176,7 +177,7 @@ export function ViviendaAsignadaTab({ cliente }: ViviendaAsignadaTabProps) {
               <AccionesSection
                 estado={viviendaActiva.estado}
                 onRegistrarAbono={() => navegarARegistrarAbono(viviendaActiva.id)}
-                onRenunciar={() => alert('❌ Modal de Renuncia en desarrollo')}
+                onRenunciar={() => toast.info('❌ Modal de Renuncia en desarrollo')}
                 onGenerarPDF={handleGenerarPDF}
                 disabled={isGenerating}
               />
@@ -263,7 +264,7 @@ export function ViviendaAsignadaTab({ cliente }: ViviendaAsignadaTabProps) {
                         clienteId={cliente.id}
                         onMarcarPaso={(pasoId, paso) => abrirModalMarcarPaso(paso)}
                         onVerDocumento={documentoId => {
-                          alert(`Ver documento ${documentoId}`)
+                          toast.info(`Ver documento ${documentoId}`)
                         }}
                       />
                       {/* Comentado temporalmente - FuentePagoCard ya muestra toda la info */}
@@ -288,7 +289,7 @@ export function ViviendaAsignadaTab({ cliente }: ViviendaAsignadaTabProps) {
                 observaciones: abono.observaciones,
               }))}
               onVerTodos={() => {
-                alert(
+                toast.info(
                   `📊 Vista completa: ${abonos.length} abonos - Total: $${totales.totalAbonado.toLocaleString('es-CO')}`
                 )
               }}
@@ -427,7 +428,7 @@ export function ViviendaAsignadaTab({ cliente }: ViviendaAsignadaTabProps) {
                   <li className="flex items-start gap-2">
                     <span className="flex-shrink-0 w-5 h-5 rounded-full bg-emerald-500 text-white text-[10px] font-bold flex items-center justify-center mt-0.5">✓</span>
                     <div>
-                      <strong className="text-emerald-600 dark:text-emerald-400">¡Listo!</strong> El botón "Asignar Vivienda" del header se habilitará automáticamente
+                      <strong className="text-emerald-600 dark:text-emerald-400">¡Listo!</strong> El botón &quot;Asignar Vivienda&quot; del header se habilitará automáticamente
                     </div>
                   </li>
                 </ol>
@@ -453,7 +454,7 @@ export function ViviendaAsignadaTab({ cliente }: ViviendaAsignadaTabProps) {
                   ✅ ¡Todo listo! Usa el botón en el encabezado
                 </p>
                 <p className={styles.empty.ctaDescription}>
-                  El botón "Asignar Vivienda" en el header superior te permitirá seleccionar una vivienda disponible de cualquier proyecto activo.
+                  El botón &quot;Asignar Vivienda&quot; en el header superior te permitirá seleccionar una vivienda disponible de cualquier proyecto activo.
                 </p>
               </div>
             </div>

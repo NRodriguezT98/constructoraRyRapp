@@ -11,6 +11,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
+import { logger } from '@/lib/utils/logger'
+
 import {
     obtenerMetricas,
     obtenerRenuncia,
@@ -109,11 +111,11 @@ export function useRegistrarRenuncia() {
         try {
           await subirFormularioRenuncia(formularioRenuncia, renunciaId)
         } catch (err) {
-          console.warn('⚠️ Formulario no se pudo subir, renuncia ya registrada:', err)
+          logger.warn('⚠️ Formulario no se pudo subir, renuncia ya registrada:', err)
           toast.warning('Renuncia registrada, pero el formulario no se pudo adjuntar. Intente subirlo nuevamente.')
         }
       } else if (formularioRenuncia && !renunciaId) {
-        console.warn('⚠️ No se pudo extraer renuncia_id del RPC para subir formulario. Result:', result)
+        logger.warn('⚠️ No se pudo extraer renuncia_id del RPC para subir formulario. Result:', result)
         toast.warning('Renuncia registrada, pero el formulario no se pudo adjuntar.')
       }
 
@@ -128,7 +130,7 @@ export function useRegistrarRenuncia() {
       queryClient.invalidateQueries({ queryKey: ['abonos'] })
     },
     onError: (error: Error) => {
-      console.error('❌ Error registrando renuncia:', error)
+      logger.error('❌ Error registrando renuncia:', error)
       toast.error(error.message || 'Error al registrar renuncia')
     },
   })
@@ -164,7 +166,7 @@ export function useProcesarDevolucion() {
       queryClient.invalidateQueries({ queryKey: renunciasKeys.all })
     },
     onError: (error: Error) => {
-      console.error('❌ Error procesando devolución:', error)
+      logger.error('❌ Error procesando devolución:', error)
       toast.error(error.message || 'Error al procesar devolución')
     },
   })

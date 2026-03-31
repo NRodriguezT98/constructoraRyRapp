@@ -22,9 +22,12 @@
 
 'use client'
 
-import { useAuth } from '@/contexts/auth-context'
-import { useRouter } from 'next/navigation'
 import { useCallback, useState } from 'react'
+
+import { useRouter } from 'next/navigation'
+
+import { useAuth } from '@/contexts/auth-context'
+
 import {
     ViviendaInactivacionService,
     type ValidacionEliminacion,

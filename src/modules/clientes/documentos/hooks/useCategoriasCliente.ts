@@ -5,6 +5,7 @@
 
 import { useCallback, useEffect, useState } from 'react'
 
+import { logger } from '@/lib/utils/logger'
 import { CategoriasService } from '@/modules/documentos/services/categorias.service'
 import type { CategoriaDocumento, CategoriaFormData } from '@/modules/documentos/types/documento.types'
 
@@ -64,7 +65,7 @@ export function useCategoriasCliente({ userId }: UseCategoriasClienteProps) {
         handleVolverALista()
       } catch (error) {
         const mensaje = error instanceof Error ? error.message : 'Error desconocido'
-        console.error('[CLIENTES] Error al crear categoría:', mensaje, error)
+        logger.error('[CLIENTES] Error al crear categoría:', mensaje, error)
         throw error
       }
     },
@@ -81,7 +82,7 @@ export function useCategoriasCliente({ userId }: UseCategoriasClienteProps) {
         handleVolverALista()
       } catch (error) {
         const mensaje = error instanceof Error ? error.message : 'Error desconocido'
-        console.error('[CLIENTES] Error al actualizar categoría:', mensaje, error)
+        logger.error('[CLIENTES] Error al actualizar categoría:', mensaje, error)
         throw error
       }
     },
@@ -98,7 +99,7 @@ export function useCategoriasCliente({ userId }: UseCategoriasClienteProps) {
         await cargarCategorias(userId)
       } catch (error) {
         const mensaje = error instanceof Error ? error.message : 'Error desconocido'
-        console.error('[CLIENTES] Error al eliminar categoría:', mensaje, error)
+        logger.error('[CLIENTES] Error al eliminar categoría:', mensaje, error)
       } finally {
         setEliminando(null)
       }
@@ -112,7 +113,7 @@ export function useCategoriasCliente({ userId }: UseCategoriasClienteProps) {
       await cargarCategorias(userId)
     } catch (error) {
       const mensaje = error instanceof Error ? error.message : 'Error desconocido'
-      console.error('[CLIENTES] Error al inicializar categorías:', mensaje, error)
+      logger.error('[CLIENTES] Error al inicializar categorías:', mensaje, error)
     }
   }, [userId, cargarCategorias])
 

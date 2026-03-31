@@ -6,10 +6,13 @@
 
 'use client'
 
+import { useState } from 'react'
+
 import { AnimatePresence, motion } from 'framer-motion'
 import { AlertCircle, History, X } from 'lucide-react'
-import { useState } from 'react'
+
 import { useHistorialVersiones } from '../../hooks/useHistorialVersiones'
+
 import { VersionCard } from './components/VersionCard'
 
 interface HistorialVersionesModalProps {

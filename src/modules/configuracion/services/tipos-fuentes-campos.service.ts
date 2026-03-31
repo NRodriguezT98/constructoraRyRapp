@@ -6,6 +6,8 @@
  */
 
 import { supabase } from '@/lib/supabase/client'
+import { logger } from '@/lib/utils/logger'
+
 import type { ConfiguracionCampos, TipoFuentePagoConCampos } from '../types/campos-dinamicos.types'
 
 // ============================================
@@ -23,7 +25,7 @@ export async function cargarTiposFuentesConCampos() {
     .order('orden', { ascending: true })
 
   if (error) {
-    console.error('❌ Error al cargar tipos de fuentes con campos:', error)
+    logger.error('❌ Error al cargar tipos de fuentes con campos:', error)
     throw new Error(`Error al cargar configuración: ${error.message}`)
   }
 
@@ -45,7 +47,7 @@ export async function cargarTipoFuenteConCampos(tipoId: string) {
     .single()
 
   if (error) {
-    console.error(`❌ Error al cargar tipo ${tipoId}:`, error)
+    logger.error(`❌ Error al cargar tipo ${tipoId}:`, error)
     throw new Error(`Error al cargar tipo: ${error.message}`)
   }
 
@@ -78,7 +80,7 @@ export async function actualizarConfiguracionCampos(
     .single()
 
   if (error) {
-    console.error('❌ Error al actualizar configuración:', error)
+    logger.error('❌ Error al actualizar configuración:', error)
     throw new Error(`Error al guardar configuración: ${error.message}`)
   }
 

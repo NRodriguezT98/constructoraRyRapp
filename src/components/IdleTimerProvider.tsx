@@ -14,9 +14,11 @@
 
 'use client'
 
-import { useRouter } from 'next/navigation'
 import { useState } from 'react'
+
 import { toast } from 'sonner'
+
+import { useRouter } from 'next/navigation'
 
 import { IdleWarningModal } from '@/components/modals/IdleWarningModal'
 import { useAuth } from '@/contexts/auth-context'
@@ -43,7 +45,7 @@ export function IdleTimerProvider() {
 
 
   // Inicializar hook PRIMERO (antes de los callbacks)
-  const { keepAlive, getRemainingTime } = useIdleTimer({
+  const { keepAlive, getRemainingTime: _getRemainingTime } = useIdleTimer({
     // ✅ PRODUCCIÓN: 60 minutos (1 hora)
     timeoutMinutes: 60,
     modalIsOpen: modalState.isOpen,  // ← Comunicar estado de modal al hook

@@ -16,9 +16,11 @@
  */
 
 import { useCallback, useState } from 'react'
+
 import { toast } from 'sonner'
 
 import { formatDateShort } from '@/lib/utils/date.utils'
+import { logger } from '@/lib/utils/logger'
 import type { Cliente } from '@/modules/clientes/types'
 
 import { generarReportePDF, type DatosReportePDF } from '../services/pdf-negociacion.service'
@@ -146,7 +148,7 @@ export function useGenerarReportePDF() {
           description: 'El PDF se ha descargado automáticamente',
         })
       } catch (error) {
-        console.error('❌ Error generando reporte PDF:', error)
+        logger.error('❌ Error generando reporte PDF:', error)
         toast.error('Error al generar reporte', {
           description: 'Ocurrió un error al crear el archivo PDF',
         })

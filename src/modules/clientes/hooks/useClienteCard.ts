@@ -5,13 +5,14 @@
  * ✅ Cálculos y transformaciones
  */
 
+import { useMemo } from 'react'
+
 import {
     Home,
     UserCheck,
     UserPlus,
     UserX,
 } from 'lucide-react'
-import { useMemo } from 'react'
 
 import type { ClienteResumen } from '../types'
 

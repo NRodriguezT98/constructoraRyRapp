@@ -3,6 +3,7 @@
  */
 
 import { supabase } from '@/lib/supabase/client'
+import { logger } from '@/lib/utils/logger'
 
 export interface CategoriasSistemaResult {
   categoria_id: string
@@ -24,7 +25,7 @@ export async function verificarCategoriasPorModulo(modulo: 'clientes' | 'proyect
     const { data, error } = await supabase.rpc(functionName as any)
 
     if (error) {
-      console.error(`❌ Error verificando categorías de ${modulo}:`, error)
+      logger.error(`❌ Error verificando categorías de ${modulo}:`, error)
       return {
         success: false,
         categorias: [],
@@ -40,7 +41,7 @@ export async function verificarCategoriasPorModulo(modulo: 'clientes' | 'proyect
     }
   } catch (error) {
     const mensaje = error instanceof Error ? error.message : 'Error desconocido'
-    console.error(`❌ Error en verificarCategoriasPorModulo(${modulo}):`, mensaje)
+    logger.error(`❌ Error en verificarCategoriasPorModulo(${modulo}):`, mensaje)
     return {
       success: false,
       categorias: [],
@@ -64,7 +65,7 @@ export async function obtenerEstadoCategoriasPorModulo(modulo: 'clientes' | 'pro
       .contains('modulos_permitidos', [modulo])
 
     if (error) {
-      console.error(`❌ Error obteniendo categorías de ${modulo}:`, error)
+      logger.error(`❌ Error obteniendo categorías de ${modulo}:`, error)
       return { total: 0, activas: 0 }
     }
 
@@ -73,7 +74,7 @@ export async function obtenerEstadoCategoriasPorModulo(modulo: 'clientes' | 'pro
       activas: data?.length || 0,
     }
   } catch (error) {
-    console.error(`❌ Error en obtenerEstadoCategoriasPorModulo(${modulo}):`, error)
+    logger.error(`❌ Error en obtenerEstadoCategoriasPorModulo(${modulo}):`, error)
     return { total: 0, activas: 0 }
   }
 }

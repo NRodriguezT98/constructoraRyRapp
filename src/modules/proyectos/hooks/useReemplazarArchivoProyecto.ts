@@ -3,9 +3,11 @@
  * Implementa validación de ventana de 48 horas y creación de backups
  */
 
-import { DocumentosService } from '@/modules/documentos/services/documentos.service'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
+
+import { logger } from '@/lib/utils/logger'
+import { DocumentosService } from '@/modules/documentos/services/documentos.service'
 
 // ============================================================================
 // TYPES
@@ -60,7 +62,7 @@ export function useReemplazarArchivoProyecto(proyectoId?: string) {
       })
     },
     onError: (error: Error) => {
-      console.error('❌ Error al reemplazar archivo:', error)
+      logger.error('❌ Error al reemplazar archivo:', error)
       toast.error('Error al reemplazar archivo', {
         description: error.message,
       })

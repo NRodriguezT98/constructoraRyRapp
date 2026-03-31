@@ -16,9 +16,11 @@
  * @version 1.0.0 - 2025-01-27 (Nuevo sistema de reportes)
  */
 
-import { getTodayDateString } from '@/lib/utils/date.utils'
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
+
+import { getTodayDateString } from '@/lib/utils/date.utils'
+import { logger } from '@/lib/utils/logger'
 
 // ============================================
 // TYPES
@@ -206,7 +208,7 @@ export async function generarReportePDF(datos: DatosReportePDF): Promise<void> {
     doc.addImage(LOGO_RYR_BASE64, 'PNG', 15, 10, 35, 15)
   } catch (error) {
     const mensaje = error instanceof Error ? error.message : 'Error desconocido'
-    console.warn('⚠️ [CLIENTES] No se pudo cargar el logo:', mensaje, error)
+    logger.warn('⚠️ [CLIENTES] No se pudo cargar el logo:', mensaje, error)
   }
 
   setFont(doc, 'title')
@@ -551,7 +553,7 @@ export async function generarPDFPreview(datos: DatosPreviewPDF): Promise<void> {
   try {
     doc.addImage(LOGO_RYR_BASE64, 'PNG', 15, 10, 35, 15)
   } catch (error) {
-    console.warn('⚠️ [PDF Preview] No se pudo cargar el logo')
+    logger.warn('⚠️ [PDF Preview] No se pudo cargar el logo')
   }
 
   setFont(doc, 'title')

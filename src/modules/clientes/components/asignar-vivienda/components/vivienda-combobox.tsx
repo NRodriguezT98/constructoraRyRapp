@@ -9,11 +9,13 @@
 
 'use client'
 
-import { AnimatePresence, motion } from 'framer-motion'
-import { Check, ChevronDown, Home, Search, X } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 
+import { AnimatePresence, motion } from 'framer-motion'
+import { Check, ChevronDown, Home, Search, X } from 'lucide-react'
+
 import { pageStyles as s } from '@/modules/clientes/pages/asignar-vivienda/styles'
+
 import type { ViviendaDetalle } from '../types'
 
 interface ViviendaComboboxProps {

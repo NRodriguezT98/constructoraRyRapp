@@ -18,6 +18,7 @@
 
 import { motion } from 'framer-motion'
 import { AlertCircle, Award, CheckCircle2, FileCheck, FileSignature, FileText, Loader2, Send } from 'lucide-react'
+
 import { usePlantillasRequisitos } from '../hooks/usePlantillasRequisitos'
 
 // ============================================

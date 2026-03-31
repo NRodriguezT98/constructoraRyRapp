@@ -7,9 +7,10 @@
  * Sub-componentes extraídos en ./rebalancear/
  */
 
+import { useEffect, useMemo, useState } from 'react'
+
 import { AnimatePresence, motion } from 'framer-motion'
 import { AlertTriangle, CheckCircle2, Lock, Plus, X } from 'lucide-react'
-import { useEffect, useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
 
 import type { FuentePago } from '@/modules/clientes/services/fuentes-pago.service'
@@ -19,8 +20,10 @@ import {
     calcularRestriccionesFuente,
     validarRebalanceo,
 } from '@/shared/utils/reglas-cierre-financiero'
+
 import type { AjusteLocal, DatosRebalanceo, FuAlteNueva } from '../hooks'
 import { MOTIVOS_AJUSTE, getFuenteColor } from '../hooks'
+
 import type { CambioEnriquecido, NuevaEnriquecida } from './rebalancear'
 import { AdvertenciaDocumentos, FilaFuente, FilaNueva } from './rebalancear'
 

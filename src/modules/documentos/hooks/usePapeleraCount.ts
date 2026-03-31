@@ -12,7 +12,9 @@
 
 import { useQuery } from '@tanstack/react-query'
 
+import { logger } from '@/lib/utils/logger'
 import { DocumentosEliminacionService as ViviendaEliminacionService } from '@/modules/viviendas/services/documentos/documentos-eliminacion.service'
+
 import { DocumentosService } from '../services/documentos.service'
 
 export function usePapeleraCount() {
@@ -24,7 +26,7 @@ export function usePapeleraCount() {
         const docs = await DocumentosService.obtenerDocumentosEliminados()
         return docs.length
       } catch (error) {
-        console.error('Error contando papelera proyectos:', error)
+        logger.error('Error contando papelera proyectos:', error)
         return 0
       }
     },
@@ -40,7 +42,7 @@ export function usePapeleraCount() {
         const docs = await ViviendaEliminacionService.obtenerDocumentosEliminados()
         return docs.length
       } catch (error) {
-        console.error('Error contando papelera viviendas:', error)
+        logger.error('Error contando papelera viviendas:', error)
         return 0
       }
     },

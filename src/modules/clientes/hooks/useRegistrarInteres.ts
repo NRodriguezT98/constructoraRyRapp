@@ -10,9 +10,11 @@ import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 
 import { supabase } from '@/lib/supabase/client'
+import { logger } from '@/lib/utils/logger'
 
 import { useDocumentoIdentidad } from '../documentos/hooks/useDocumentoIdentidad'
 import { interesesService } from '../services/intereses.service'
+
 import { interesesKeys } from './useInteresesQuery'
 
 // Orden natural: manzana alphabético → número de vivienda numérico
@@ -97,13 +99,13 @@ export function useRegistrarInteres({ clienteId, onSuccess, onClose }: UseRegist
         .order('nombre')
 
       if (error) {
-        console.error('Error en query de proyectos:', error)
+        logger.error('Error en query de proyectos:', error)
         throw error
       }
 
       setProyectos(data || [])
     } catch (error) {
-      console.error('❌ Error al cargar proyectos:', error)
+      logger.error('❌ Error al cargar proyectos:', error)
       setProyectos([])
     } finally {
       setCargandoProyectos(false)
@@ -126,7 +128,7 @@ export function useRegistrarInteres({ clienteId, onSuccess, onClose }: UseRegist
         .eq('proyecto_id', proyectoId)
 
       if (manzanasError) {
-        console.error('❌ Error al cargar manzanas:', manzanasError)
+        logger.error('❌ Error al cargar manzanas:', manzanasError)
         throw manzanasError
       }
 
@@ -156,7 +158,7 @@ export function useRegistrarInteres({ clienteId, onSuccess, onClose }: UseRegist
         .order('numero')
 
       if (error) {
-        console.error('❌ Error en query de viviendas:', error)
+        logger.error('❌ Error en query de viviendas:', error)
         throw error
       }
 
@@ -172,7 +174,7 @@ export function useRegistrarInteres({ clienteId, onSuccess, onClose }: UseRegist
 
       setViviendas(sortViviendasNatural(viviendasMapeadas))
     } catch (error) {
-      console.error('Error al cargar viviendas:', error)
+      logger.error('Error al cargar viviendas:', error)
       setViviendas([])
     } finally {
       setCargandoViviendas(false)
@@ -256,8 +258,8 @@ export function useRegistrarInteres({ clienteId, onSuccess, onClose }: UseRegist
       reset()
       onSuccess()
     } catch (error) {
-      console.error('Error al registrar interés:', error)
-      alert('Error al registrar el interés. Por favor intenta nuevamente.')
+      logger.error('Error al registrar interés:', error)
+      toast.info('Error al registrar el interés. Por favor intenta nuevamente.')
     } finally {
       setGuardando(false)
     }

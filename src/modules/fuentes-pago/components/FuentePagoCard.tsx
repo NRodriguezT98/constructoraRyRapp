@@ -29,10 +29,12 @@
 
 'use client'
 
+import React, { useCallback, useState } from 'react'
+
+import { AnimatePresence, motion } from 'framer-motion'
+
 import { DocumentoUpload } from '@/modules/documentos/components/upload/documento-upload'
 import { Modal } from '@/shared/components/ui/Modal'
-import { AnimatePresence, motion } from 'framer-motion'
-import React, { useCallback, useState } from 'react'
 
 // Hooks y tipos
 import { useFuentePagoCard, type FuentePagoData } from '../hooks/useFuentePagoCard'

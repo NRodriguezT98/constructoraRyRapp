@@ -10,7 +10,9 @@ import {
     AccordionWizardSuccess,
 } from '@/shared/components/accordion-wizard'
 import { ConfirmarCambiosModal } from '@/shared/components/modulos/ConfirmarCambiosModal'
+
 import { PASOS_PROYECTO_EDICION, useEditarProyecto } from '../hooks/useEditarProyecto'
+
 import { PasoEstadoFechas, PasoInfoGeneral, PasoManzanas } from './pasos'
 
 interface EditarProyectoViewProps {

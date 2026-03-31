@@ -3,6 +3,7 @@ import { useCallback, useMemo, useState } from 'react'
 import { useAuth } from '@/contexts/auth-context'
 import { usePermisosQuery } from '@/modules/usuarios/hooks/usePermisosQuery'
 import { useClickOutside } from '@/shared/hooks'
+
 import type { DocumentoVivienda } from '../../types/documento-vivienda.types'
 
 interface UseDocumentoCardProps {

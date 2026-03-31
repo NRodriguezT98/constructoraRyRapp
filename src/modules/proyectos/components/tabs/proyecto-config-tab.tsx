@@ -12,7 +12,7 @@ interface ProyectoConfigTabProps {
  * Tab de configuración del proyecto
  * Componente de presentación puro
  */
-export function ProyectoConfigTab({ proyecto }: ProyectoConfigTabProps) {
+export function ProyectoConfigTab({ proyecto: _proyecto }: ProyectoConfigTabProps) {
   return (
     <div className='rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800'>
       <div className='mb-6 flex items-center gap-3'>

@@ -12,6 +12,8 @@ import { useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { AlertTriangle, X } from 'lucide-react'
 
+import { logger } from '@/lib/utils/logger'
+
 interface DocumentoEliminarVersionModalProps {
   isOpen: boolean
   version: number
@@ -40,7 +42,7 @@ export function DocumentoEliminarVersionModal({
       await onConfirmar(motivo.trim())
       handleCerrar()
     } catch (error) {
-      console.error('Error al eliminar versión:', error)
+      logger.error('Error al eliminar versión:', error)
     } finally {
       setConfirmando(false)
     }

@@ -6,6 +6,8 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { Check, Edit3, Loader2, X } from 'lucide-react'
 import { toast } from 'sonner'
 
+import { logger } from '@/lib/utils/logger'
+
 interface DocumentoRenombrarModalProps {
   isOpen: boolean
   tituloActual: string
@@ -66,10 +68,11 @@ export function DocumentoRenombrarModal({
         esCedula ? 'Cédula renombrada exitosamente' : 'Documento renombrado exitosamente'
       )
       onClose()
-    } catch (err: any) {
-      console.error('Error al renombrar:', err)
-      toast.error(err.message || 'Error al renombrar el documento')
-      setError(err.message || 'Error al renombrar')
+    } catch (err: unknown) {
+      const errMsg = err instanceof Error ? err.message : 'Error al renombrar el documento'
+      logger.error('Error al renombrar:', err)
+      toast.error(errMsg)
+      setError(errMsg)
     } finally {
       setRenombrando(false)
     }

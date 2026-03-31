@@ -25,10 +25,13 @@
 
 'use client'
 
-import { Button } from '@/components/ui/button'
+import { useState } from 'react'
+
 import { AnimatePresence, motion } from 'framer-motion'
 import { Loader2, MessageSquare, X } from 'lucide-react'
-import { useState } from 'react'
+
+import { Button } from '@/components/ui/button'
+
 
 interface PromptModalProps {
   isOpen: boolean

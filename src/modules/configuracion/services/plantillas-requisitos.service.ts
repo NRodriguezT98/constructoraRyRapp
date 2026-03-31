@@ -10,6 +10,7 @@
  */
 
 import { supabase } from '@/lib/supabase/client'
+import { logger } from '@/lib/utils/logger'
 
 // ============================================
 // TYPES
@@ -55,13 +56,13 @@ export class PlantillasRequisitosService {
         .order('orden', { ascending: true })
 
       if (error) {
-        console.error('❌ Error obteniendo plantillas:', error)
+        logger.error('❌ Error obteniendo plantillas:', error)
         throw new Error(`Error al obtener plantillas: ${error.message}`)
       }
 
       return (data || []) as PlantillaRequisito[]
     } catch (error) {
-      console.error('❌ Error en obtenerPlantillas:', error)
+      logger.error('❌ Error en obtenerPlantillas:', error)
       throw error
     }
   }
@@ -78,13 +79,13 @@ export class PlantillasRequisitosService {
         .order('orden', { ascending: true })
 
       if (error) {
-        console.error('❌ Error obteniendo requisitos:', error)
+        logger.error('❌ Error obteniendo requisitos:', error)
         throw new Error(`Error al obtener requisitos: ${error.message}`)
       }
 
       return (data || []) as RequisitoTipoFuente[]
     } catch (error) {
-      console.error('❌ Error en obtenerRequisitosPorTipo:', error)
+      logger.error('❌ Error en obtenerRequisitosPorTipo:', error)
       throw error
     }
   }
@@ -104,7 +105,7 @@ export class PlantillasRequisitosService {
         .eq('tipo_fuente', tipoFuente)
 
       if (deleteError) {
-        console.error('❌ Error eliminando requisitos previos:', deleteError)
+        logger.error('❌ Error eliminando requisitos previos:', deleteError)
         throw new Error(`Error al eliminar requisitos: ${deleteError.message}`)
       }
 
@@ -120,7 +121,7 @@ export class PlantillasRequisitosService {
         .in('id', plantillasSeleccionadas)
 
       if (plantillasError) {
-        console.error('❌ Error obteniendo plantillas:', plantillasError)
+        logger.error('❌ Error obteniendo plantillas:', plantillasError)
         throw new Error(`Error al obtener plantillas: ${plantillasError.message}`)
       }
 
@@ -144,11 +145,11 @@ export class PlantillasRequisitosService {
         .insert(requisitos)
 
       if (insertError) {
-        console.error('❌ Error insertando requisitos:', insertError)
+        logger.error('❌ Error insertando requisitos:', insertError)
         throw new Error(`Error al insertar requisitos: ${insertError.message}`)
       }
     } catch (error) {
-      console.error('❌ Error en configurarRequisitos:', error)
+      logger.error('❌ Error en configurarRequisitos:', error)
       throw error
     }
   }
@@ -174,13 +175,13 @@ export class PlantillasRequisitosService {
         .in('tipo_documento', tiposDocumento)
 
       if (error) {
-        console.error('❌ Error obteniendo plantillas configuradas:', error)
+        logger.error('❌ Error obteniendo plantillas configuradas:', error)
         return []
       }
 
       return plantillas?.map((p) => p.id) || []
     } catch (error) {
-      console.error('❌ Error en obtenerPlantillasConfiguradas:', error)
+      logger.error('❌ Error en obtenerPlantillasConfiguradas:', error)
       return []
     }
   }

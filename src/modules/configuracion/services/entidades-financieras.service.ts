@@ -6,6 +6,8 @@
  */
 
 import { createClient } from '@/lib/supabase/client'
+import { logger } from '@/lib/utils/logger'
+
 import type {
     ActualizarEntidadFinancieraDTO,
     CrearEntidadFinancieraDTO,
@@ -64,7 +66,7 @@ export class EntidadesFinancierasService {
 
       return { success: true, data: data as EntidadFinanciera[] }
     } catch (error) {
-      console.error('Error al obtener entidades financieras:', error)
+      logger.error('Error al obtener entidades financieras:', error)
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Error desconocido',
@@ -87,7 +89,7 @@ export class EntidadesFinancierasService {
 
       return { success: true, data: data as EntidadFinanciera }
     } catch (error) {
-      console.error('Error al obtener entidad financiera:', error)
+      logger.error('Error al obtener entidad financiera:', error)
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Error desconocido',
@@ -115,7 +117,7 @@ export class EntidadesFinancierasService {
 
       return { success: true, data: data as EntidadFinanciera }
     } catch (error) {
-      console.error('Error al obtener entidad por código:', error)
+      logger.error('Error al obtener entidad por código:', error)
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Error desconocido',
@@ -147,7 +149,7 @@ export class EntidadesFinancierasService {
 
       return { success: true, data: data as EntidadFinanciera[] }
     } catch (error) {
-      console.error('Error al obtener entidades por tipo de fuente:', error)
+      logger.error('Error al obtener entidades por tipo de fuente:', error)
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Error desconocido',
@@ -180,7 +182,7 @@ export class EntidadesFinancierasService {
 
       return { success: true, data: stats }
     } catch (error) {
-      console.error('Error al obtener estadísticas:', error)
+      logger.error('Error al obtener estadísticas:', error)
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Error desconocido',
@@ -241,7 +243,7 @@ export class EntidadesFinancierasService {
 
       return { success: true, data: data as EntidadFinanciera }
     } catch (error) {
-      console.error('Error al crear entidad financiera:', error)
+      logger.error('Error al crear entidad financiera:', error)
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Error desconocido',
@@ -276,7 +278,7 @@ export class EntidadesFinancierasService {
       // Obtener user ID
       const { data: { user } } = await this.supabase.auth.getUser()
 
-      const updateData: Record<string, any> = {}
+      const updateData: Record<string, unknown> = {}
 
       if (dto.nombre !== undefined) updateData.nombre = dto.nombre.trim()
       if (dto.codigo !== undefined) updateData.codigo = dto.codigo.trim().toLowerCase()
@@ -310,7 +312,7 @@ export class EntidadesFinancierasService {
 
       return { success: true, data: data as EntidadFinanciera }
     } catch (error) {
-      console.error('Error al actualizar entidad financiera:', error)
+      logger.error('Error al actualizar entidad financiera:', error)
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Error desconocido',
@@ -355,7 +357,7 @@ export class EntidadesFinancierasService {
 
       return { success: true, data: true }
     } catch (error) {
-      console.error('Error al reordenar entidades:', error)
+      logger.error('Error al reordenar entidades:', error)
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Error desconocido',
@@ -384,7 +386,7 @@ export class EntidadesFinancierasService {
 
       return !!data
     } catch (error) {
-      console.error('Error al validar nombre:', error)
+      logger.error('Error al validar nombre:', error)
       return false
     }
   }
@@ -406,7 +408,7 @@ export class EntidadesFinancierasService {
 
       return !!data
     } catch (error) {
-      console.error('Error al validar código:', error)
+      logger.error('Error al validar código:', error)
       return false
     }
   }

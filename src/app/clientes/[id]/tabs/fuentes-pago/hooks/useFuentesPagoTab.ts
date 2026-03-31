@@ -17,24 +17,9 @@
  * @version 1.0.0 - 2025-12-17 - Implementación inicial con React Query
  */
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useCallback, useMemo, useState } from 'react'
-import { toast } from 'sonner'
 
-import { supabase } from '@/lib/supabase/client'
-import { fuentesPagoService } from '@/modules/clientes/services/fuentes-pago.service'
-import type { Cliente } from '@/modules/clientes/types'
-import type {
-    ActualizarFuentePagoDTO,
-    FuentePago,
-    TipoFuentePago
-} from '@/modules/clientes/types/fuentes-pago'
-import type { TipoFuentePago as TipoFuentePagoConfig } from '@/modules/configuracion/types/tipos-fuentes-pago.types'
-import { esCreditoHipotecario, esSubsidioMiCasaYa } from '@/shared/constants/fuentes-pago.constants'
-import { calcularCierreFinanciero } from '@/shared/hooks/useCierreFinanciero'
-import { formatCurrency } from '@/shared/utils/format'
-
-// Importar iconos para mapeo dinámico
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
     BadgeDollarSign,
     Banknote,
@@ -49,6 +34,23 @@ import {
     Shield,
     Wallet
 } from 'lucide-react'
+import { toast } from 'sonner'
+
+import { supabase } from '@/lib/supabase/client'
+import { logger } from '@/lib/utils/logger'
+import { fuentesPagoService } from '@/modules/clientes/services/fuentes-pago.service'
+import type { Cliente } from '@/modules/clientes/types'
+import type {
+    ActualizarFuentePagoDTO,
+    FuentePago,
+    TipoFuentePago
+} from '@/modules/clientes/types/fuentes-pago'
+import type { TipoFuentePago as TipoFuentePagoConfig } from '@/modules/configuracion/types/tipos-fuentes-pago.types'
+import { esCreditoHipotecario, esSubsidioMiCasaYa } from '@/shared/constants/fuentes-pago.constants'
+import { calcularCierreFinanciero } from '@/shared/hooks/useCierreFinanciero'
+import { formatCurrency } from '@/shared/utils/format'
+
+// Importar iconos para mapeo dinámico
 
 // ============================================
 // INTERFACES
@@ -123,7 +125,7 @@ export function useFuentesPagoTab({ cliente }: UseFuentesPagoTabProps) {
         .maybeSingle() // ✅ Cambiado de .single() a .maybeSingle() para evitar error cuando no hay datos
 
       if (error) {
-        console.warn('Error obteniendo negociación:', error)
+        logger.warn('Error obteniendo negociación:', error)
         return null
       }
 
@@ -179,7 +181,7 @@ export function useFuentesPagoTab({ cliente }: UseFuentesPagoTabProps) {
         .order('orden')
 
       if (error) {
-        console.error('Error obteniendo tipos de fuentes:', error)
+        logger.error('Error obteniendo tipos de fuentes:', error)
         return []
       }
 
@@ -205,7 +207,7 @@ export function useFuentesPagoTab({ cliente }: UseFuentesPagoTabProps) {
         .order('orden')
 
       if (error) {
-        console.error('Error obteniendo requisitos:', error)
+        logger.error('Error obteniendo requisitos:', error)
         return []
       }
 
@@ -229,7 +231,7 @@ export function useFuentesPagoTab({ cliente }: UseFuentesPagoTabProps) {
       toast.success('Fuente de pago actualizada correctamente')
     },
     onError: (error) => {
-      console.error('Error actualizando fuente de pago:', error)
+      logger.error('Error actualizando fuente de pago:', error)
       toast.error('Error al actualizar la fuente de pago')
     }
   })
@@ -247,7 +249,7 @@ export function useFuentesPagoTab({ cliente }: UseFuentesPagoTabProps) {
       toast.success('Fuente de pago agregada correctamente')
     },
     onError: (error) => {
-      console.error('Error creando fuente de pago:', error)
+      logger.error('Error creando fuente de pago:', error)
       toast.error('Error al agregar la fuente de pago')
     }
   })
@@ -260,7 +262,7 @@ export function useFuentesPagoTab({ cliente }: UseFuentesPagoTabProps) {
       toast.success('Fuente de pago eliminada correctamente')
     },
     onError: (error) => {
-      console.error('Error eliminando fuente de pago:', error)
+      logger.error('Error eliminando fuente de pago:', error)
       toast.error('Error al eliminar la fuente de pago')
     }
   })
@@ -279,7 +281,7 @@ export function useFuentesPagoTab({ cliente }: UseFuentesPagoTabProps) {
         .order('fecha_creacion', { ascending: false })
 
       if (error) {
-        console.error('Error obteniendo documentos del cliente:', error)
+        logger.error('Error obteniendo documentos del cliente:', error)
         return []
       }
 
@@ -532,7 +534,7 @@ export function useFuentesPagoTab({ cliente }: UseFuentesPagoTabProps) {
 
     if (valor > 0) {
     } else {
-      console.warn('❌ No se pudo obtener valor de vivienda:', {
+      logger.warn('❌ No se pudo obtener valor de vivienda:', {
         negociacion,
         valor_total: negociacion.valor_total,
         valor_negociado: negociacion.valor_negociado,

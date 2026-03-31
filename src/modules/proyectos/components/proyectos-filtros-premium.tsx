@@ -8,12 +8,14 @@
 
 'use client'
 
+import { useEffect, useState } from 'react'
+
 import { AnimatePresence, motion } from 'framer-motion'
 import { Filter, LayoutGrid, Search, Table, X } from 'lucide-react'
-import { useEffect, useState } from 'react'
 
 import type { TipoVista } from '@/shared/hooks/useVistaPreference'
 import { cn } from '@/shared/utils/helpers'
+
 import { ESTADOS_PROYECTO } from '../constants'
 import { proyectosPageStyles as styles } from '../styles/proyectos-page.styles'
 import type { FiltroProyecto } from '../types'

@@ -16,12 +16,16 @@
 
 'use client'
 
+import { useState } from 'react'
+
 import { AnimatePresence, motion } from 'framer-motion'
 import { ChevronDown, Save, X } from 'lucide-react'
-import { useState } from 'react'
+import { toast } from 'sonner'
+
 import { requisitosConfigStyles as styles } from '../styles/requisitos-config.styles'
 import type { CrearRequisitoDTO, RequisitoFuenteConfig } from '../types'
 import { CATEGORIAS_DOCUMENTO, NIVELES_VALIDACION } from '../types'
+
 
 interface RequisitoFormProps {
   tipoFuente: string
@@ -126,7 +130,7 @@ export function RequisitoForm({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (!formData.paso_identificador || !formData.titulo || !formData.nivel_validacion) {
-      alert('Los campos marcados con * son obligatorios')
+      toast.info('Los campos marcados con * son obligatorios')
       return
     }
     // tipo_documento_sugerido siempre sincronizado con titulo

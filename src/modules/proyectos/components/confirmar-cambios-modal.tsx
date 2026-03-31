@@ -51,7 +51,7 @@ export function ConfirmarCambiosModal({
       <motion.div
         {...styles.animations.overlay}
         className={styles.overlayBg}
-        onClick={(e) => {
+        onClick={(_e) => {
           if (!isLoading) {
             onClose()
           }

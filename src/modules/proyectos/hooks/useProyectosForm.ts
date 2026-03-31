@@ -11,16 +11,18 @@ import { useEffect, useMemo, useState } from 'react'
 
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useFieldArray, useForm } from 'react-hook-form'
+import { toast } from 'sonner'
 import { z } from 'zod'
 
-import type { ProyectoFormData } from '../types'
-
-import { toast } from 'sonner'
-
+import { logger } from '@/lib/utils/logger'
 import { getDepartamentos, validarCiudadDepartamento } from '@/shared/data/colombia-locations'
 import { useFormChanges } from '@/shared/hooks/useFormChanges'
+
 import { proyectosService } from '../services/proyectos.service'
+import type { ProyectoFormData } from '../types'
+
 import { useManzanasEditables } from './useManzanasEditables'
+
 
 // ==================== SCHEMAS ====================
 const manzanaSchema = z.object({
@@ -165,7 +167,7 @@ const createProyectoSchema = (params: { initialData?: Partial<ProyectoFormData>,
           })
         }
       } catch (error) {
-        console.error('Error al validar nombre duplicado:', error)
+        logger.error('Error al validar nombre duplicado:', error)
         // No bloqueamos el submit si falla la validación async
       }
     }
@@ -422,7 +424,7 @@ export function useProyectosForm({
           return // Detener envío
         }
       } catch (error) {
-        console.error('Error validando nombre:', error)
+        logger.error('Error validando nombre:', error)
         setError('nombre', {
           type: 'manual',
           message: 'Error al validar el nombre. Intenta de nuevo.'

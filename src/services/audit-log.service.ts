@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase/client'
+import { logger } from '@/lib/utils/logger'
 
 export type TipoEventoSeguridad =
   | 'login_exitoso'
@@ -13,7 +14,7 @@ export type TipoEventoSeguridad =
 interface LogSecurityEventParams {
   tipo: TipoEventoSeguridad
   usuarioEmail: string
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
 }
 
 /**
@@ -60,12 +61,12 @@ class AuditLogService {
         .insert(logData)
 
       if (error) {
-        console.error('❌ Error registrando evento de auditoría:', error)
+        logger.error('❌ Error registrando evento de auditoría:', error)
         // No lanzar error para no interrumpir el flujo principal
       }
       // Registro exitoso silencioso (sin logs en desarrollo)
     } catch (error) {
-      console.error('❌ Excepción en logSecurityEvent:', error)
+      logger.error('❌ Excepción en logSecurityEvent:', error)
       // Fallar silenciosamente para no afectar la experiencia del usuario
     }
   }
@@ -73,7 +74,7 @@ class AuditLogService {
   /**
    * Registra un login exitoso
    */
-  async logLoginExitoso(usuarioEmail: string, metadata?: Record<string, any>): Promise<void> {
+  async logLoginExitoso(usuarioEmail: string, metadata?: Record<string, unknown>): Promise<void> {
     await this.logSecurityEvent({
       tipo: 'login_exitoso',
       usuarioEmail,
@@ -152,7 +153,7 @@ class AuditLogService {
       .limit(limit)
 
     if (error) {
-      console.error('Error obteniendo historial:', error)
+      logger.error('Error obteniendo historial:', error)
       return []
     }
 
@@ -169,7 +170,7 @@ class AuditLogService {
       })
 
     if (error) {
-      console.error('Error obteniendo resumen de seguridad:', error)
+      logger.error('Error obteniendo resumen de seguridad:', error)
       return null
     }
 

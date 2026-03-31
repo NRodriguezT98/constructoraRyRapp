@@ -5,6 +5,8 @@
 
 import { useCallback, useEffect, useState } from 'react'
 
+import { logger } from '@/lib/utils/logger'
+
 import { clientesService } from '../services/clientes.service'
 import type {
     ActualizarClienteDTO,
@@ -155,12 +157,12 @@ export function useFormularioCliente({
 
           if (clienteExistente) {
             nuevosErrores.numero_documento = `Ya existe un cliente con este documento: ${clienteExistente.nombres} ${clienteExistente.apellidos}`
-            console.error('❌ Cliente duplicado encontrado en Step 0')
+            logger.error('❌ Cliente duplicado encontrado en Step 0')
           } else {
           }
         } catch (error) {
           const mensaje = error instanceof Error ? error.message : 'Error desconocido'
-          console.error('[CLIENTES] Error verificando duplicados:', mensaje, error)
+          logger.error('[CLIENTES] Error verificando duplicados:', mensaje, error)
           nuevosErrores.numero_documento = 'Error al verificar duplicados. Intenta de nuevo.'
         }
       }
@@ -333,7 +335,7 @@ export function useFormularioCliente({
       try {
         await onSubmit(formData)
       } catch (error) {
-        console.error('Error al guardar cliente:', error)
+        logger.error('Error al guardar cliente:', error)
         // El error ya se maneja en el componente padre
       } finally {
         setIsSubmitting(false)

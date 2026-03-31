@@ -10,7 +10,7 @@
  */
 
 import { supabase } from '@/lib/supabase/client'
-import type { Vivienda } from '@/modules/viviendas/types'
+import { logger } from '@/lib/utils/logger'
 
 // ============================================================
 // TIPOS
@@ -152,7 +152,7 @@ export class ViviendaValidacionService {
         camposBloqueados: [],
       }
     } catch (error) {
-      console.error('❌ Error al verificar estado de bloqueo:', error)
+      logger.error('❌ Error al verificar estado de bloqueo:', error)
       throw error
     }
   }
@@ -244,7 +244,7 @@ export class ViviendaValidacionService {
 
       return historial || []
     } catch (error) {
-      console.error('❌ Error al obtener historial de estados:', error)
+      logger.error('❌ Error al obtener historial de estados:', error)
       throw error
     }
   }
@@ -280,7 +280,7 @@ export class ViviendaValidacionService {
 
       return historial || []
     } catch (error) {
-      console.error('❌ Error al obtener historial de matrículas:', error)
+      logger.error('❌ Error al obtener historial de matrículas:', error)
       throw error
     }
   }

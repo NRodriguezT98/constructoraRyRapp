@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase/client'
+import { logger } from '@/lib/utils/logger'
 
 import type {
     ActividadUsuario,
@@ -57,7 +58,7 @@ class AuditoriasService {
     const { data, error, count } = await query
 
     if (error) {
-      console.error('Error al obtener auditorías:', error)
+      logger.error('Error al obtener auditorías:', error)
       throw new Error(`Error al obtener auditorías: ${error.message}`)
     }
 
@@ -88,7 +89,7 @@ class AuditoriasService {
     })
 
     if (error) {
-      console.error('Error al obtener historial:', error)
+      logger.error('Error al obtener historial:', error)
       throw new Error(`Error al obtener historial: ${error.message}`)
     }
 
@@ -126,7 +127,7 @@ class AuditoriasService {
     })
 
     if (error) {
-      console.error('Error al obtener actividad de usuario:', error)
+      logger.error('Error al obtener actividad de usuario:', error)
       throw new Error(
         `Error al obtener actividad de usuario: ${error.message}`
       )
@@ -159,7 +160,7 @@ class AuditoriasService {
     )
 
     if (error) {
-      console.error('Error al detectar eliminaciones masivas:', error)
+      logger.error('Error al detectar eliminaciones masivas:', error)
       throw new Error(
         `Error al detectar eliminaciones masivas: ${error.message}`
       )
@@ -183,7 +184,7 @@ class AuditoriasService {
       .order('total_eventos', { ascending: false })
 
     if (error) {
-      console.error('Error al obtener resumen por módulos:', error)
+      logger.error('Error al obtener resumen por módulos:', error)
       throw new Error(`Error al obtener resumen de seguridad: ${error.message}`)
     }
 
@@ -302,7 +303,7 @@ class AuditoriasService {
       .limit(limite)
 
     if (error) {
-      console.error('Error al buscar auditorías:', error)
+      logger.error('Error al buscar auditorías:', error)
       throw new Error(`Error al buscar auditorías: ${error.message}`)
     }
 

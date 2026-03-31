@@ -19,6 +19,7 @@
 
 import { useCallback, useEffect, useState } from 'react'
 
+import { logger } from '@/lib/utils/logger'
 import { interesesService } from '@/modules/clientes/services/intereses.service'
 import type { ClienteInteres } from '@/modules/clientes/types'
 
@@ -56,7 +57,7 @@ export function useListaIntereses(clienteId: string): UseListaInteresesReturn {
    */
   const cargarIntereses = useCallback(async () => {
     if (!clienteId) {
-      console.warn('⚠️ useListaIntereses: clienteId no proporcionado')
+      logger.warn('⚠️ useListaIntereses: clienteId no proporcionado')
       return
     }
 
@@ -71,7 +72,7 @@ export function useListaIntereses(clienteId: string): UseListaInteresesReturn {
       setInteresesFiltrados(data) // Inicialmente sin filtro
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'Error al cargar intereses'
-      console.error('❌ Error cargando intereses:', err)
+      logger.error('❌ Error cargando intereses:', err)
       setError(errorMsg)
       setIntereses([])
       setInteresesFiltrados([])
@@ -91,7 +92,7 @@ export function useListaIntereses(clienteId: string): UseListaInteresesReturn {
       // Recargar lista
       await cargarIntereses()
     } catch (err) {
-      console.error('❌ Error descartando interés:', err)
+      logger.error('❌ Error descartando interés:', err)
       throw err
     }
   }, [cargarIntereses])

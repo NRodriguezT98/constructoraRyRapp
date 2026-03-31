@@ -8,8 +8,8 @@
  */
 
 import { supabase } from '@/lib/supabase/client'
-
 import type { Database } from '@/lib/supabase/database.types'
+import { logger } from '@/lib/utils/logger'
 
 type PermisoRol = Database['public']['Tables']['permisos_rol']['Row']
 type PermisoRolInsert = Database['public']['Tables']['permisos_rol']['Insert']
@@ -28,7 +28,7 @@ export async function obtenerPermisosPorRol(rol: string): Promise<PermisoRol[]> 
     .order('accion', { ascending: true })
 
   if (error) {
-    console.error('❌ [SERVICE] Error obteniendo permisos:', error)
+    logger.error('❌ [SERVICE] Error obteniendo permisos:', error)
     throw new Error(`Error al obtener permisos: ${error.message}`)
   }
 
@@ -48,7 +48,7 @@ export async function obtenerTodosLosPermisos(): Promise<PermisoRol[]> {
     .order('accion', { ascending: true })
 
   if (error) {
-    console.error('❌ [SERVICE] Error obteniendo permisos:', error)
+    logger.error('❌ [SERVICE] Error obteniendo permisos:', error)
     throw new Error(`Error al obtener permisos: ${error.message}`)
   }
 
@@ -84,7 +84,7 @@ export async function verificarPermiso(
       // Not found - permiso no existe
       return false
     }
-    console.error('❌ [SERVICE] Error verificando permiso:', error)
+    logger.error('❌ [SERVICE] Error verificando permiso:', error)
     return false
   }
 
@@ -110,7 +110,7 @@ export async function actualizarPermiso(
     .single()
 
   if (error) {
-    console.error('❌ [SERVICE] Error actualizando permiso:', error)
+    logger.error('❌ [SERVICE] Error actualizando permiso:', error)
     throw new Error(`Error al actualizar permiso: ${error.message}`)
   }
 
@@ -137,7 +137,7 @@ export async function actualizarPermisosEnLote(
 
   const errores = resultados.filter(r => r.error)
   if (errores.length > 0) {
-    console.error('❌ [SERVICE] Errores en actualización en lote:', errores)
+    logger.error('❌ [SERVICE] Errores en actualización en lote:', errores)
     throw new Error(`${errores.length} permisos fallaron al actualizar`)
   }
 
@@ -153,7 +153,7 @@ export async function obtenerModulos(): Promise<string[]> {
     .limit(1000)
 
   if (error) {
-    console.error('❌ [SERVICE] Error obteniendo módulos:', error)
+    logger.error('❌ [SERVICE] Error obteniendo módulos:', error)
     return []
   }
 
@@ -171,7 +171,7 @@ export async function obtenerAcciones(): Promise<string[]> {
     .limit(1000)
 
   if (error) {
-    console.error('❌ [SERVICE] Error obteniendo acciones:', error)
+    logger.error('❌ [SERVICE] Error obteniendo acciones:', error)
     return []
   }
 

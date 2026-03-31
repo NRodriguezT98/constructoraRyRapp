@@ -7,6 +7,8 @@
 
 'use client'
 
+import { useState } from 'react'
+
 import { motion } from 'framer-motion'
 import {
     AlertCircle,
@@ -21,7 +23,7 @@ import {
     Search,
     Trash2,
 } from 'lucide-react'
-import { useState } from 'react'
+
 import {
     useEliminarEntidadFinanciera,
     useEntidadesFinancieras,
@@ -33,6 +35,7 @@ import type {
     TipoEntidadFinanciera,
 } from '../types/entidades-financieras.types'
 import { TIPO_ENTIDAD_VALUES } from '../types/entidades-financieras.types'
+
 import { EntidadFinancieraFormModal } from './EntidadFinancieraFormModal'
 
 // =====================================================

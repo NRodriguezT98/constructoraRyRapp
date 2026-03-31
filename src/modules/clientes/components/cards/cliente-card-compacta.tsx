@@ -14,6 +14,7 @@
 'use client'
 
 import type { ClienteResumen } from '../../types'
+
 import { ClienteCardActivo } from './cliente-card-activo-v2'
 import { ClienteCardInactivo } from './cliente-card-inactivo'
 import { ClienteCardInteresado } from './cliente-card-interesado-v2'

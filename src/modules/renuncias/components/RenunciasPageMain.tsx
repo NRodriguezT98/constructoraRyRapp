@@ -1,18 +1,19 @@
 'use client'
 
+import { useState } from 'react'
+
 import { motion } from 'framer-motion'
 import { FileX } from 'lucide-react'
-import { useState } from 'react'
 
 import { useRenunciasList } from '../hooks/useRenunciasList'
 import { renunciasStyles as styles } from '../styles/renuncias.styles'
 import type { RenunciaConInfo } from '../types'
 
+import { ProcesarDevolucionModal } from './modals/ProcesarDevolucionModal'
 import { RenunciaCard } from './RenunciaCard'
 import { RenunciasFiltrosPremium } from './RenunciasFiltrosPremium'
 import { RenunciasHeaderPremium } from './RenunciasHeaderPremium'
 import { RenunciasMetricasPremium } from './RenunciasMetricasPremium'
-import { ProcesarDevolucionModal } from './modals/ProcesarDevolucionModal'
 
 interface RenunciasPageMainProps {
   canCreate?: boolean

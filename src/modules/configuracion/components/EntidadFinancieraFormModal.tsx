@@ -7,6 +7,8 @@
 
 'use client'
 
+import { useEffect, useState } from 'react'
+
 import { AnimatePresence, motion } from 'framer-motion'
 import {
     ArrowUpDown,
@@ -30,12 +32,13 @@ import {
     Wallet,
     X,
 } from 'lucide-react'
-import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
+
 import { useEntidadFinancieraFormModal } from '../hooks/useEntidadFinancieraFormModal'
 import type { EntidadFinanciera } from '../types/entidades-financieras.types'
 import { ENTIDAD_COLOR_VALUES, TIPO_ENTIDAD_VALUES } from '../types/entidades-financieras.types'
 import type { TipoFuenteIcono } from '../types/tipos-fuentes-pago.types'
+
 import {
     colorClasses,
     entidadFinancieraModalAnimations,
@@ -188,7 +191,7 @@ export function EntidadFinancieraFormModal({
                       </div>
                     ) : fuentesDisponibles.length === 0 ? (
                       <div className={styles.fuentesAplicables.emptyBox}>
-                        No hay fuentes de pago que requieran entidad. Crea primero tipos de fuentes con "Requiere Entidad" activado.
+                        No hay fuentes de pago que requieran entidad. Crea primero tipos de fuentes con &quot;Requiere Entidad&quot; activado.
                       </div>
                     ) : (
                       <div className={styles.fuentesAplicables.listContainer}>

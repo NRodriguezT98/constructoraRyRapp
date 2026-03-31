@@ -16,9 +16,10 @@
  * @version 1.0.0 - 2025-11-29
  */
 
+import { useState } from 'react'
+
 import { AnimatePresence, motion } from 'framer-motion'
 import { AlertCircle, Building2, CheckCircle2, ChevronDown, ChevronUp, FileText, Gift, Home, Upload } from 'lucide-react'
-import { useState } from 'react'
 
 import { useBannerDocumentosPendientes } from './useBannerDocumentosPendientes'
 
@@ -61,7 +62,7 @@ export function BannerDocumentosPendientes({
   clienteId,
   onSubirDocumento,
 }: BannerDocumentosPendientesProps) {
-  const { documentosPendientes, loading, refetch } = useBannerDocumentosPendientes(clienteId)
+  const { documentosPendientes, loading, refetch: _refetch } = useBannerDocumentosPendientes(clienteId)
   const [expandido, setExpandido] = useState(true)
 
   if (loading || documentosPendientes.length === 0) {
@@ -229,7 +230,7 @@ export function BannerDocumentosPendientes({
                              dark:from-orange-950/40 dark:to-amber-950/40">
                 <p className="text-xs text-gray-600 dark:text-gray-400 flex items-center gap-2">
                   <CheckCircle2 className="h-3.5 w-3.5 text-green-600 dark:text-green-400 flex-shrink-0" />
-                  Los documentos se vincularán automáticamente al subirlos en la categoría "Cartas de Aprobación"
+                  Los documentos se vincularán automáticamente al subirlos en la categoría &quot;Cartas de Aprobación&quot;
                 </p>
               </div>
             </motion.div>

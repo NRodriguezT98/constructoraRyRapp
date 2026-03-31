@@ -23,14 +23,16 @@
 
 'use client'
 
+import { memo, useState } from 'react'
+
 import { AnimatePresence, motion } from 'framer-motion'
 import { AlertCircle, Building2, CheckCircle2, DollarSign, Gift, Home, X } from 'lucide-react'
-import { memo, useState } from 'react'
 
 import type { TipoFuentePago } from '@/modules/clientes/types'
 import { obtenerMonto } from '@/modules/clientes/utils/fuentes-pago-campos.utils'
 import type { CampoConfig } from '@/modules/configuracion/types/campos-dinamicos.types'
 import { esCreditoHipotecario, esCuotaInicial, esSubsidioCajaCompensacion, esSubsidioMiCasaYa } from '@/shared/constants/fuentes-pago.constants'
+
 import type { FuentePagoConfig, FuentePagoErrores } from '../asignar-vivienda/types'
 
 import { CampoFormularioDinamico } from './CampoFormularioDinamico'
@@ -167,7 +169,7 @@ export interface FuentePagoCardProps {
 
 function FuentePagoCardComponent(props: FuentePagoCardProps) {
   const {
-    tipo, config, camposConfig, valorTotal, errores, onChange,
+    tipo, config, camposConfig, valorTotal, errores: _errores, onChange,
     enabled = false,
     onEnabledChange
   } = props
@@ -345,7 +347,7 @@ function FuentePagoCardComponent(props: FuentePagoCardProps) {
                           {!esCreditoHipotecario(tipo) && !esSubsidioMiCasaYa(tipo) && !esSubsidioCajaCompensacion(tipo) && '📄 Documentación Requerida'}
                         </p>
                         <p className="text-xs text-blue-700 dark:text-blue-300 mt-1">
-                          Una vez asignada la vivienda, ve a la pestaña <span className="font-semibold">"Documentos"</span> del cliente para subir {esCreditoHipotecario(tipo) ? 'la carta de aprobación del banco' : esSubsidioMiCasaYa(tipo) ? 'la carta de asignación del subsidio' : esSubsidioCajaCompensacion(tipo) ? 'la carta de asignación de la caja de compensación' : 'la documentación requerida'}.
+                          Una vez asignada la vivienda, ve a la pestaña <span className="font-semibold">&quot;Documentos&quot;</span> del cliente para subir {esCreditoHipotecario(tipo) ? 'la carta de aprobación del banco' : esSubsidioMiCasaYa(tipo) ? 'la carta de asignación del subsidio' : esSubsidioCajaCompensacion(tipo) ? 'la carta de asignación de la caja de compensación' : 'la documentación requerida'}.
                         </p>
                       </div>
                     </div>

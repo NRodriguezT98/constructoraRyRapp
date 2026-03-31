@@ -12,8 +12,8 @@ import { useMemo } from 'react'
 
 import { useDocumentosPendientesObligatorios } from '@/modules/clientes/hooks/useDocumentosPendientesObligatorios'
 import { filtrarPendientesPorFuente } from '@/modules/clientes/utils/documentos-pendientes.utils'
-
 import { esDesembolsoUnico as checkDesembolsoUnico } from '@/shared/constants/fuentes-pago.constants'
+
 import type { TipoFuentePago } from '../types'
 
 interface EstadoBoton {

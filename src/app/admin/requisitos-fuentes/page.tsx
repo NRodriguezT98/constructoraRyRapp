@@ -15,16 +15,8 @@
 
 'use client'
 
-import {
-    RequisitoCard,
-    RequisitoForm,
-    RequisitosMetricas,
-    RequisitosTipoSelector,
-} from '@/modules/requisitos-fuentes/components'
-import { COMPARTIDOS_TAB } from '@/modules/requisitos-fuentes/components/RequisitosTipoSelector'
-import { useRequisitos, useRequisitosCompartidos, useTiposFuente } from '@/modules/requisitos-fuentes/hooks'
-import { requisitosConfigStyles as styles } from '@/modules/requisitos-fuentes/styles/requisitos-config.styles'
-import type { CrearRequisitoDTO } from '@/modules/requisitos-fuentes/types'
+import { useMemo, useState } from 'react'
+
 import {
     closestCenter,
     DndContext,
@@ -42,7 +34,18 @@ import {
 } from '@dnd-kit/sortable'
 import { motion } from 'framer-motion'
 import { AlertCircle, Plus, Settings, Share2 } from 'lucide-react'
-import { useMemo, useState } from 'react'
+
+import {
+    RequisitoCard,
+    RequisitoForm,
+    RequisitosMetricas,
+    RequisitosTipoSelector,
+} from '@/modules/requisitos-fuentes/components'
+import { COMPARTIDOS_TAB } from '@/modules/requisitos-fuentes/components/RequisitosTipoSelector'
+import { useRequisitos, useRequisitosCompartidos, useTiposFuente } from '@/modules/requisitos-fuentes/hooks'
+import { requisitosConfigStyles as styles } from '@/modules/requisitos-fuentes/styles/requisitos-config.styles'
+import type { CrearRequisitoDTO } from '@/modules/requisitos-fuentes/types'
+
 
 export default function ConfiguracionRequisitosPage() {
   // ============================================

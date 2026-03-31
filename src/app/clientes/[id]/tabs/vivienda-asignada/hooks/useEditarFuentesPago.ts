@@ -15,12 +15,15 @@
  * @version 1.0.0 - 2025-11-28
  */
 
-import { useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
+
+import { useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
+import { logger } from '@/lib/utils/logger'
 import { negociacionesQueryKeys } from '@/modules/clientes/hooks/useNegociacionesQuery'
 import { negociacionesService } from '@/modules/clientes/services/negociaciones.service'
+
 import type { FuentePagoEditable } from '../components/EditarFuentesPagoModal'
 
 // ============================================
@@ -82,7 +85,7 @@ export function useEditarFuentesPago({ negociacionId }: UseEditarFuentesPagoProp
 
       toast.success('Fuentes de pago actualizadas correctamente')
     } catch (error) {
-      console.error('Error al actualizar fuentes:', error)
+      logger.error('Error al actualizar fuentes:', error)
       toast.error('Error al guardar las fuentes de pago')
       throw error
     }

@@ -9,13 +9,15 @@
  */
 
 import { useState, useMemo } from 'react'
-import type { SnapshotVersion } from '../types/historial'
+
 import {
   Plus,
   Trash2,
   RefreshCw,
   FileText,
 } from 'lucide-react'
+
+import type { SnapshotVersion } from '../types/historial'
 
 interface UseHistorialVersionesModalProps {
   versiones: SnapshotVersion[]

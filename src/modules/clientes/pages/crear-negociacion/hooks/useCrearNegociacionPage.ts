@@ -9,6 +9,7 @@ import { useCallback, useMemo, useState } from 'react'
 
 import { useRouter } from 'next/navigation'
 
+import { logger } from '@/lib/utils/logger'
 import {
     useFuentesPago,
     useProyectosViviendas,
@@ -347,7 +348,7 @@ export function useCrearNegociacionPage({
       limpiarHook()
       router.push(`/clientes/${clienteId}?tab=vivienda-asignada&highlight=${negociacion.id}` as any)
     } catch (err) {
-      console.error('? Error creando negociaci�n:', err)
+      logger.error('? Error creando negociaci�n:', err)
       setError(err instanceof Error ? err.message : 'Error al crear negociaci�n')
     } finally {
       setCreando(false)

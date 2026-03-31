@@ -4,8 +4,9 @@
  * ============================================
  */
 
-import { getServerPermissions } from '@/lib/auth/server'
 import { redirect } from 'next/navigation'
+
+import { getServerPermissions } from '@/lib/auth/server'
 
 import CategoriasSistemaContent from './categorias-sistema-content'
 

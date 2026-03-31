@@ -16,6 +16,7 @@ import {
 } from 'lucide-react'
 
 import { formatCurrency } from '@/shared/utils/format'
+
 import { fuentesPagoTabStyles as styles } from '../../fuentes-pago-tab.styles'
 import type { MetricasFuentesPago } from '../hooks/useFuentesPagoTab'
 

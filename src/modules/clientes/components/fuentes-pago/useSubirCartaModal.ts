@@ -16,17 +16,20 @@
  * @version 1.0.0 - 2025-12-01
  */
 
-import { useQueryClient } from '@tanstack/react-query'
 import { DragEvent, useEffect, useMemo, useRef, useState } from 'react'
 
+import { useQueryClient } from '@tanstack/react-query'
+import { toast } from 'sonner'
+
 import { useAuth } from '@/contexts/auth-context'
+import { logger } from '@/lib/utils/logger'
 import { formatNombreCompleto } from '@/lib/utils/string.utils'
 import { negociacionesQueryKeys } from '@/modules/clientes/hooks/useNegociacionesQuery'
 import { documentosPendientesKeys } from '@/modules/clientes/types/documentos-pendientes.types'
 import { DocumentosBaseService } from '@/modules/documentos/services/documentos-base.service'
-import { toast } from 'sonner'
 
 import type { DatosFuente } from './SubirCartaModal'
+
 
 // ============================================
 // TYPES
@@ -237,7 +240,7 @@ export function useSubirCartaModal({
       onSuccess?.()
       onClose()
     } catch (error) {
-      console.error('Error subiendo carta:', error)
+      logger.error('Error subiendo carta:', error)
       toast.error('Error al subir la carta', {
         description: error instanceof Error ? error.message : 'Intenta nuevamente o contacta al soporte',
       })

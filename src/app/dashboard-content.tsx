@@ -129,7 +129,7 @@ const stats = [
   { label: 'Este Mes', value: '$2.4M', icon: TrendingUp },
 ]
 
-export default function DashboardContent(props: DashboardContentProps) {
+export default function DashboardContent(_props: DashboardContentProps) {
   // Component initialization - logs removed for cleaner console
 
   return (

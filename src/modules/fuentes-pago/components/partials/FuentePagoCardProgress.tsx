@@ -10,8 +10,10 @@
  * - Estados de validación
  */
 
-import { AlertCircle, CheckCircle, Eye, Upload } from 'lucide-react'
 import { memo } from 'react'
+
+import { AlertCircle, CheckCircle, Eye, Upload } from 'lucide-react'
+
 import type { NivelValidacion } from '../../types'
 
 interface Paso {

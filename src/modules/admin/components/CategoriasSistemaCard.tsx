@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion'
 import { AlertCircle, Building2, CheckCircle2, Home, Loader2, Shield, Users } from 'lucide-react'
+
 import { useCategoriasSistema, type Modulo } from '../hooks'
 
 const MODULOS_CONFIG = {

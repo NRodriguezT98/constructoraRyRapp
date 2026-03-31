@@ -9,10 +9,14 @@
 
 'use client'
 
-import { useAuth } from '@/contexts/auth-context'
-import { useTheme } from 'next-themes'
-import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
+
+import { useTheme } from 'next-themes'
+
+import { useRouter } from 'next/navigation'
+
+import { useAuth } from '@/contexts/auth-context'
+import { logger } from '@/lib/utils/logger'
 
 export function useInvalidRoleError() {
   const router = useRouter()
@@ -29,7 +33,7 @@ export function useInvalidRoleError() {
       await signOut()
       router.push('/login')
     } catch (error) {
-      console.error('Error al cerrar sesión:', error)
+      logger.error('Error al cerrar sesión:', error)
     }
   }
 

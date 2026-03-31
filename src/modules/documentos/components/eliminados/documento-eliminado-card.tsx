@@ -5,12 +5,15 @@
 
 'use client'
 
+import { AnimatePresence, motion } from 'framer-motion'
+import { ChevronDown, ChevronUp, Clock, FileText, Home, RotateCcw, Trash2, User } from 'lucide-react'
+
 import { formatDateCompact } from '@/lib/utils/date.utils'
 import type { DocumentoProyecto } from '@/modules/documentos/types/documento.types'
 import type { TipoEntidad } from '@/modules/documentos/types/entidad.types'
-import { AnimatePresence, motion } from 'framer-motion'
-import { ChevronDown, ChevronUp, Clock, FileText, Home, RotateCcw, Trash2, User } from 'lucide-react'
+
 import { useVersionesEliminadasCard } from '../../hooks/useVersionesEliminadasCard'
+
 import { VersionesList } from './components'
 
 type DocumentoConUsuario = DocumentoProyecto & {

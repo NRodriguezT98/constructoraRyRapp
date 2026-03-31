@@ -20,9 +20,11 @@
  * - manzana_nombre
  */
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useMemo, useState } from 'react'
 
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+
+import { logger } from '@/lib/utils/logger'
 import { interesesService } from '@/modules/clientes/services/intereses.service'
 import type { ClienteInteres } from '@/modules/clientes/types'
 
@@ -106,7 +108,7 @@ export function useInteresesQuery({
       queryClient.invalidateQueries({ queryKey: interesesKeys.byCliente(clienteId) })
     },
     onError: (error) => {
-      console.error('❌ Error descartando interés:', error)
+      logger.error('❌ Error descartando interés:', error)
     },
   })
 

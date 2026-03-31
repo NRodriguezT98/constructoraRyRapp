@@ -6,6 +6,8 @@
 
 import { useCallback, useEffect, useState } from 'react'
 
+import { logger } from '@/lib/utils/logger'
+
 import { configuracionService, type ActualizarConfiguracionDTO, type ConfiguracionRecargo, type CrearConfiguracionDTO } from '../services/configuracion.service'
 
 export function useConfiguracion() {
@@ -23,7 +25,7 @@ export function useConfiguracion() {
       const data = await configuracionService.obtenerTodas()
       setConfiguraciones(data)
     } catch (err) {
-      console.error('Error cargando configuraciones:', err)
+      logger.error('Error cargando configuraciones:', err)
       setError('Error al cargar configuraciones')
     } finally {
       setLoading(false)
@@ -37,7 +39,7 @@ export function useConfiguracion() {
       await cargarConfiguraciones()
       return true
     } catch (err) {
-      console.error('Error creando configuración:', err)
+      logger.error('Error creando configuración:', err)
       setError('Error al crear configuración')
       return false
     }
@@ -50,7 +52,7 @@ export function useConfiguracion() {
       await cargarConfiguraciones()
       return true
     } catch (err) {
-      console.error('Error actualizando configuración:', err)
+      logger.error('Error actualizando configuración:', err)
       setError('Error al actualizar configuración')
       return false
     }
@@ -63,7 +65,7 @@ export function useConfiguracion() {
       await cargarConfiguraciones()
       return true
     } catch (err) {
-      console.error('Error eliminando configuración:', err)
+      logger.error('Error eliminando configuración:', err)
       setError('Error al eliminar configuración')
       return false
     }
@@ -76,7 +78,7 @@ export function useConfiguracion() {
       await cargarConfiguraciones()
       return true
     } catch (err) {
-      console.error('Error cambiando estado:', err)
+      logger.error('Error cambiando estado:', err)
       setError('Error al cambiar estado')
       return false
     }

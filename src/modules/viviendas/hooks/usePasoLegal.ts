@@ -5,6 +5,7 @@
  */
 
 import { useRef, useState } from 'react'
+
 import type { UseFormSetValue } from 'react-hook-form'
 
 export function usePasoLegal({ setValue }: { setValue: UseFormSetValue<any> }) {

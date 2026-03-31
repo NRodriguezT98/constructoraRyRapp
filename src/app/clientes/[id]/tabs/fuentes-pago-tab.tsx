@@ -40,7 +40,7 @@ import {
 } from 'lucide-react'
 
 import type { Cliente } from '@/modules/clientes/types'
-import { fuentesPagoTabStyles as styles } from './fuentes-pago-tab.styles'
+
 import {
     AccionesRapidas,
     EstadoValidacionComponent,
@@ -48,6 +48,7 @@ import {
     MetricasDashboard
 } from './fuentes-pago/components'
 import { useFuentesPagoTab } from './fuentes-pago/hooks/useFuentesPagoTab'
+import { fuentesPagoTabStyles as styles } from './fuentes-pago-tab.styles'
 
 // ============================================
 // INTERFACES
@@ -233,7 +234,7 @@ export function FuentesPagoTab({ cliente }: FuentesPagoTabProps) {
                 ¿Cómo continuar?
               </h4>
               <p className={styles.emptyState.ctaDescription}>
-                Ve a la pestaña "Vivienda Asignada" para ver las instrucciones completas
+                Ve a la pestaña &quot;Vivienda Asignada&quot; para ver las instrucciones completas
                 sobre cómo asignar una vivienda a este cliente.
               </p>
             </div>

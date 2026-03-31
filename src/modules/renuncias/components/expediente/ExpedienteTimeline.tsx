@@ -6,6 +6,7 @@ import { Banknote, CheckCircle, DollarSign, FileX, Handshake, TrendingUp } from 
 import { formatDateCompact } from '@/lib/utils/date.utils'
 
 import type { TimelineHito } from '../../types'
+
 import { expedienteStyles as styles } from './ExpedienteRenunciaPage.styles'
 
 const ICON_MAP: Record<string, React.ElementType> = {

@@ -14,8 +14,9 @@
  * ⚠️ Integrado con Supabase y tablas: negociaciones, viviendas, manzanas, proyectos, abonos_historial, fuentes_pago
  */
 
-import { errorLog, warnLog } from '@/lib/utils/logger'
 import { useEffect, useState } from 'react'
+
+import { errorLog, warnLog } from '@/lib/utils/logger'
 
 export interface FuentePagoCard {
   id: string
@@ -138,7 +139,7 @@ export function useClienteCardActivo({ clienteId }: UseClienteCardActivoProps) {
         .order('fecha_creacion', { ascending: true })
 
       if (errorFuentes) {
-        console.error('⚠️ Error cargando fuentes de pago:', errorFuentes)
+        warnLog('Error cargando fuentes de pago: ' + JSON.stringify(errorFuentes))
       }
 
       setDatosVivienda({
@@ -155,7 +156,7 @@ export function useClienteCardActivo({ clienteId }: UseClienteCardActivoProps) {
         fuentesPago: (fuentes as FuentePagoCard[]) || [],
       })
     } catch (err) {
-      console.error('Error cargando datos de negociación:', err)
+      errorLog('load-negociacion', err instanceof Error ? err : new Error(String(err)))
       setDatosVivienda(null)
     } finally {
       setCargando(false)

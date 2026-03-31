@@ -8,6 +8,7 @@
 
 import { motion } from 'framer-motion'
 import { ArrowRight, DollarSign, Layers, Settings, Shield } from 'lucide-react'
+
 import Link from 'next/link'
 
 interface AdminContentProps {

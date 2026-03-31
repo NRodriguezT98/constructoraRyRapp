@@ -12,6 +12,9 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
+
+import { logger } from '@/lib/utils/logger'
+
 import { useViviendaInactivacion } from './useViviendaInactivacion'
 
 // ============================================================
@@ -74,7 +77,7 @@ export function useReactivarViviendaModal({
     if (isOpen && viviendaId) {
       validarReactivacion(viviendaId)
         .then((result) => setValidacion(result))
-        .catch((err) => console.error('Error al validar:', err))
+        .catch((err) => logger.error('Error al validar:', err))
     }
   }, [isOpen, viviendaId, validarReactivacion])
 

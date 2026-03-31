@@ -14,6 +14,7 @@
 
 import { AnimatePresence, motion } from 'framer-motion'
 import { AlertTriangle, CheckCircle2, DollarSign, FileText, Users, X, XCircle } from 'lucide-react'
+
 import { useDesactivarViviendaModal } from '../../hooks/useDesactivarViviendaModal'
 
 // ============================================================
@@ -214,7 +215,7 @@ export function DesactivarViviendaModal({
                     />
                     <span className="text-sm text-orange-900 dark:text-orange-100">
                       Confirmo que deseo desactivar la Vivienda #{viviendaNumero}. Esta acción
-                      cambiará su estado a "Inactiva" y podrá ser reactivada posteriormente si es
+                      cambiará su estado a &quot;Inactiva&quot; y podrá ser reactivada posteriormente si es
                       necesario.
                     </span>
                   </label>

@@ -4,6 +4,7 @@
  */
 
 import { useQuery } from '@tanstack/react-query'
+
 import { notasHistorialService } from '../services/notas-historial.service'
 
 /**

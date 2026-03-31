@@ -1,5 +1,7 @@
 'use client'
 
+import { useState } from 'react'
+
 import { motion } from 'framer-motion'
 import {
     AlertTriangle,
@@ -17,7 +19,6 @@ import {
 } from 'lucide-react'
 
 import Link from 'next/link'
-import { useState } from 'react'
 
 import type { FuentePagoConAbonos } from '@/modules/abonos/types'
 import { CuotasCreditoTab } from '@/modules/fuentes-pago/components/CuotasCreditoTab'

@@ -5,11 +5,13 @@
  * ✅ Sistema touchedFields (no mostrar errores hasta interacción)
  */
 
-import { zodResolver } from '@hookform/resolvers/zod'
 import { useEffect } from 'react'
+
+import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 
 import { esCreditoHipotecario, esCuotaInicial, esSubsidioCajaCompensacion, esSubsidioMiCasaYa } from '@/shared/constants/fuentes-pago.constants'
+
 import type { AsignarViviendaFormData } from '../schemas'
 import { asignarViviendaSchema } from '../schemas'
 

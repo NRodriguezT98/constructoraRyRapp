@@ -14,6 +14,7 @@
 
 import { useCallback, useEffect, useState } from 'react'
 
+import { logger } from '@/lib/utils/logger'
 import { fuentesPagoService } from '@/modules/clientes/services/fuentes-pago.service'
 import { negociacionesService } from '@/modules/clientes/services/negociaciones.service'
 
@@ -69,9 +70,9 @@ export function useNegociacion(negociacionId: string): UseNegociacionReturn {
       // Cargar fuentes de pago
       const fuentesData = await fuentesPagoService.obtenerFuentesPagoNegociacion(negociacionId)
       setFuentesPago(fuentesData)
-    } catch (err: any) {
-      console.error('Error cargando negociación:', err)
-      setError(`Error cargando negociación: ${err.message}`)
+    } catch (err: unknown) {
+      logger.error('Error cargando negociación:', err)
+      setError(`Error cargando negociación: ${err instanceof Error ? err.message : String(err)}`)
     } finally {
       setCargando(false)
     }
@@ -148,9 +149,9 @@ export function useNegociacion(negociacionId: string): UseNegociacionReturn {
       await negociacionesService.completarNegociacion(negociacionId)
       await cargarDatos()
       return true
-    } catch (err: any) {
-      console.error('Error completando negociación:', err)
-      setError(`Error: ${err.message}`)
+    } catch (err: unknown) {
+      logger.error('Error completando negociación:', err)
+      setError(`Error: ${err instanceof Error ? err.message : String(err)}`)
       return false
     }
   }, [negociacionId, puedeCompletarse, cargarDatos])
@@ -173,9 +174,9 @@ export function useNegociacion(negociacionId: string): UseNegociacionReturn {
         await negociacionesService.cerrarPorRenuncia(negociacionId)
         await cargarDatos()
         return true
-      } catch (err: any) {
-        console.error('Error registrando renuncia:', err)
-        setError(`Error: ${err.message}`)
+      } catch (err: unknown) {
+        logger.error('Error registrando renuncia:', err)
+        setError(`Error: ${err instanceof Error ? err.message : String(err)}`)
         return false
       }
     },
@@ -192,9 +193,9 @@ export function useNegociacion(negociacionId: string): UseNegociacionReturn {
         await negociacionesService.actualizarNegociacion(negociacionId, datos)
         await cargarDatos()
         return true
-      } catch (err: any) {
-        console.error('Error actualizando negociación:', err)
-        setError(`Error: ${err.message}`)
+      } catch (err: unknown) {
+        logger.error('Error actualizando negociación:', err)
+        setError(`Error: ${err instanceof Error ? err.message : String(err)}`)
         return false
       }
     },

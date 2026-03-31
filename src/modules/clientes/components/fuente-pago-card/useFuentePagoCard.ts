@@ -16,6 +16,7 @@ import { useCallback, useEffect, useState } from 'react'
 
 import type { TipoFuentePago } from '@/modules/clientes/types'
 import type { CampoConfig, ErroresCampos, ValorCampo, ValoresCampos } from '@/modules/configuracion/types/campos-dinamicos.types'
+
 import type { FuentePagoConfig } from '../asignar-vivienda/types'
 
 interface UseFuentePagoCardProps {

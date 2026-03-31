@@ -6,6 +6,7 @@
 import { useState } from 'react'
 
 import { createClient } from '@/lib/supabase/client'
+import { logger } from '@/lib/utils/logger'
 import { FUENTES_PAGO_CODIGOS } from '@/modules/clientes/types/fuentes-pago'
 
 interface TipoFuente {
@@ -67,7 +68,7 @@ export function useTiposFuentesPago() {
         })
       }
     } catch (error) {
-      console.error('Error al verificar:', error)
+      logger.error('Error al verificar:', error)
       setResultado({
         tipo: 'error',
         mensaje: '❌ Error al verificar fuentes',
@@ -146,7 +147,7 @@ export function useTiposFuentesPago() {
         fuentes: data.fuentes || [],
       })
     } catch (error) {
-      console.error('Error al crear fuentes predeterminadas:', error)
+      logger.error('Error al crear fuentes predeterminadas:', error)
       setResultado({
         tipo: 'error',
         mensaje: '❌ Error al crear las fuentes de pago',

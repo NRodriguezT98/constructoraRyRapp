@@ -5,9 +5,9 @@ import { Edit2, GripVertical, Plus, Trash2, X } from 'lucide-react'
 
 import { useAuth } from '@/contexts/auth-context'
 import { ModalConfirmacion } from '@/shared'
+import { EmptyState } from '@/shared/components/ui/EmptyState'
+import { LoadingSpinner } from '@/shared/components/ui/Loading'
 
-import { EmptyState } from '../../../../shared/components/ui/EmptyState'
-import { LoadingSpinner } from '../../../../shared/components/ui/Loading'
 import { useCategoriasManager } from '../../hooks'
 import { CategoriaIcon } from '../shared/categoria-icon'
 

@@ -15,10 +15,12 @@
 
 'use client'
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useCallback, useMemo } from 'react'
 
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+
 import { useAuth } from '@/contexts/auth-context'
+import { logger } from '@/lib/utils/logger'
 
 import {
     actualizarPermiso,
@@ -215,7 +217,7 @@ export function useActualizarPermisoMutation() {
             body: JSON.stringify({ rol }),
           })
         } catch (error) {
-          console.warn('⚠️ [MUTATION] Error invalidando sesiones (no crítico):', error)
+          logger.warn('⚠️ [MUTATION] Error invalidando sesiones (no crítico):', error)
         }
       }
 
@@ -229,7 +231,7 @@ export function useActualizarPermisoMutation() {
     },
 
     onError: error => {
-      console.error('❌ [MUTATION] Error actualizando permiso:', error)
+      logger.error('❌ [MUTATION] Error actualizando permiso:', error)
     },
   })
 }
@@ -260,7 +262,7 @@ export function useActualizarPermisosEnLoteMutation() {
             body: JSON.stringify({ rol }),
           })
         } catch (error) {
-          console.warn('⚠️ [MUTATION] Error invalidando sesiones (no crítico):', error)
+          logger.warn('⚠️ [MUTATION] Error invalidando sesiones (no crítico):', error)
         }
       }
 
@@ -274,7 +276,7 @@ export function useActualizarPermisosEnLoteMutation() {
     },
 
     onError: error => {
-      console.error('❌ [MUTATION] Error actualizando permisos en lote:', error)
+      logger.error('❌ [MUTATION] Error actualizando permisos en lote:', error)
     },
   })
 }

@@ -14,6 +14,7 @@
 
 import { supabaseAdmin } from '@/lib/supabase/admin'
 import { supabase } from '@/lib/supabase/client'
+import { logger } from '@/lib/utils/logger'
 
 import type { Rol } from '../types'
 
@@ -40,7 +41,7 @@ export async function obtenerPermisosParaJWT(rol: Rol): Promise<PermisoCompacto[
     .eq('permitido', true)
 
   if (error) {
-    console.error('❌ [JWT] Error obteniendo permisos:', error)
+    logger.error('❌ [JWT] Error obteniendo permisos:', error)
     throw error
   }
 
@@ -72,12 +73,12 @@ export async function sincronizarPermisosAlJWT(
     })
 
     if (error) {
-      console.error('❌ [JWT] Error actualizando metadata:', error)
+      logger.error('❌ [JWT] Error actualizando metadata:', error)
       throw error
     }
 
   } catch (error) {
-    console.error('❌ [JWT] Error en sincronización:', error)
+    logger.error('❌ [JWT] Error en sincronización:', error)
     throw error
   }
 }
@@ -117,7 +118,7 @@ export async function invalidarSesionPorCambioPermisos(
       .eq('estado', 'Activo')
 
     if (errorUsuarios) {
-      console.error('❌ [JWT] Error obteniendo usuarios:', errorUsuarios)
+      logger.error('❌ [JWT] Error obteniendo usuarios:', errorUsuarios)
       throw errorUsuarios
     }
 
@@ -128,14 +129,14 @@ export async function invalidarSesionPorCambioPermisos(
         try {
           await supabaseAdmin.auth.admin.signOut(usuario.id, 'global')
         } catch (error) {
-          console.error(`⚠️ [JWT] Error invalidando sesión de ${usuario.id}:`, error)
+          logger.error(`⚠️ [JWT] Error invalidando sesión de ${usuario.id}:`, error)
           // Continuar con los demás usuarios
         }
       }
     }
 
   } catch (error) {
-    console.error('❌ [JWT] Error en invalidación de sesiones:', error)
+    logger.error('❌ [JWT] Error en invalidación de sesiones:', error)
     throw error
   }
 }
@@ -152,6 +153,6 @@ export async function sincronizarPermisosPostLogin(
     await sincronizarPermisosAlJWT(userId, rol)
   } catch (error) {
     // No bloquear login si falla la sincronización
-    console.error('⚠️ [JWT] Sincronización falló pero login continúa:', error)
+    logger.error('⚠️ [JWT] Sincronización falló pero login continúa:', error)
   }
 }

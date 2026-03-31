@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
+import { logger } from '@/lib/utils/logger'
+
 import { obtenerAbonosNegociacion, obtenerNegociacionExpediente, obtenerRenunciaPorConsecutivo, obtenerViviendaExpediente } from '../services/renuncias.service'
 import type {
     AbonoExpediente,
@@ -42,21 +44,21 @@ export function useExpedienteRenuncia(consecutivo: string): UseExpedienteRenunci
       // 2. Abonos + negociación + vivienda en paralelo
       const negId = row.negociacion_id
       const vivId = row.vivienda_id
-      const promises: Promise<any>[] = [
+      const promises: Promise<unknown>[] = [
         obtenerViviendaExpediente(vivId),
       ]
       if (negId) {
         promises.push(obtenerAbonosNegociacion(negId), obtenerNegociacionExpediente(negId))
       }
       const results = await Promise.all(promises)
-      setViviendaDetalle(results[0] ?? null)
+      setViviendaDetalle((results[0] ?? null) as ViviendaDetalle | null)
       if (negId) {
-        setAbonos(results[1] ?? [])
-        setNegociacion(results[2] ?? null)
+        setAbonos((results[1] ?? []) as AbonoExpediente[])
+        setNegociacion((results[2] ?? null) as any)
       }
-    } catch (err: any) {
-      console.error('Error cargando expediente:', err)
-      setError(err.message ?? 'Error al cargar expediente')
+    } catch (err: unknown) {
+      logger.error('Error cargando expediente:', err)
+      setError(err instanceof Error ? err.message : 'Error al cargar expediente')
     } finally {
       setCargando(false)
     }

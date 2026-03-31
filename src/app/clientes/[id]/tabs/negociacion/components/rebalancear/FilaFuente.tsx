@@ -1,12 +1,14 @@
 'use client'
 
-import { AlertTriangle, Lock, Minus, Plus } from 'lucide-react'
 import { useEffect, useState } from 'react'
+
+import { AlertTriangle, Lock, Minus, Plus } from 'lucide-react'
 
 import type { RestriccionesFuente } from '@/shared/utils/reglas-cierre-financiero'
 
 import type { AjusteLocal } from '../../hooks'
 import { getFuenteColor } from '../../hooks'
+
 import { getEntidadesParaTipo } from './entidades'
 import { formatMontoInput } from './helpers'
 

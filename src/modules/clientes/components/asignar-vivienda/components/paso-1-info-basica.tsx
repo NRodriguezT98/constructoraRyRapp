@@ -13,7 +13,9 @@ import {
 } from 'lucide-react'
 
 import { pageStyles as s } from '@/modules/clientes/pages/asignar-vivienda/styles'
+
 import type { ProyectoBasico, ViviendaDetalle } from '../types'
+
 import { ViviendaCombobox } from './vivienda-combobox'
 
 interface Paso1InfoBasicaProps {

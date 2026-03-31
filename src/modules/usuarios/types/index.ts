@@ -1,3 +1,4 @@
+import { logger } from '@/lib/utils/logger'
 /**
  * ============================================
  * TIPOS DEL MÓDULO DE USUARIOS
@@ -27,7 +28,7 @@ export interface Usuario {
   rol: Rol
   estado: EstadoUsuario
   avatar_url: string | null
-  preferencias: Record<string, any>
+  preferencias: Record<string, unknown>
   creado_por: string | null
   ultimo_acceso: string | null
   fecha_creacion: string
@@ -69,7 +70,7 @@ export interface ActualizarUsuarioData {
   rol?: Rol
   estado?: EstadoUsuario
   avatar_url?: string
-  preferencias?: Record<string, any>
+  preferencias?: Record<string, unknown>
 }
 
 /**
@@ -460,7 +461,7 @@ export function obtenerModulosConAcceso(rol: Rol): Modulo[] {
   // ⚠️ Validación: si el rol no existe en PERMISOS_POR_ROL, retornar array vacío
   const permisos = PERMISOS_POR_ROL[rol]
   if (!permisos) {
-    console.warn(`⚠️ [PERMISOS] Rol "${rol}" no tiene permisos definidos. Retornando array vacío.`)
+    logger.warn(`⚠️ [PERMISOS] Rol "${rol}" no tiene permisos definidos. Retornando array vacío.`)
     return []
   }
 

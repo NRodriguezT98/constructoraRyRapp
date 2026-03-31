@@ -8,7 +8,9 @@
 'use client'
 
 import { useMemo } from 'react'
+
 import type { TipoEntidadFinanciera } from '../types/entidades-financieras.types'
+
 import { useEntidadesFinancierasActivas } from './useEntidadesFinancieras'
 
 interface EntidadOption {

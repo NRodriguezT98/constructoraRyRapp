@@ -14,7 +14,7 @@ interface HeaderClienteProps {
   canCreate?: boolean
 }
 
-export function HeaderCliente({ negociacion, onVolver, onRegistrarAbono, canCreate }: HeaderClienteProps) {
+export function HeaderCliente({ negociacion, onVolver, onRegistrarAbono: _onRegistrarAbono, canCreate: _canCreate }: HeaderClienteProps) {
   const { cliente, vivienda, proyecto } = negociacion
   const nombreCompleto = formatNombreCompleto(`${cliente.nombres} ${cliente.apellidos}`)
   const iniciales = `${cliente.nombres[0] || ''}${cliente.apellidos[0] || ''}`.toUpperCase()

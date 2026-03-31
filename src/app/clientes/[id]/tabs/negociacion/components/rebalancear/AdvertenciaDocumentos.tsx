@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { FileWarning } from 'lucide-react'
 
 import { formatCurrency } from '@/shared/utils/format'
+
 import type { CambioEnriquecido, NuevaEnriquecida } from './types'
 
 interface AdvertenciaDocumentosProps {

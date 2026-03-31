@@ -1,5 +1,7 @@
 'use client'
 
+import { useRef, useState } from 'react'
+
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { motion } from 'framer-motion'
@@ -24,7 +26,6 @@ import {
     Upload,
     User,
 } from 'lucide-react'
-import { useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 
 import {
@@ -32,6 +33,7 @@ import {
 } from '@/lib/utils/date.utils'
 import { ConfirmacionModal } from '@/shared/components/modals'
 import { moduleThemes, type ModuleName } from '@/shared/config/module-themes'
+
 import { MOTIVOS_ARCHIVADO } from '../../constants/archivado.constants'
 import { useDocumentoCard } from '../../hooks'
 import type { CategoriaDocumento, TipoEntidad } from '../../types'

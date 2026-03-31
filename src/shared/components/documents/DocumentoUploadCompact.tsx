@@ -17,8 +17,10 @@ import { useCallback, useState } from 'react'
 
 import { useMutation } from '@tanstack/react-query'
 import { AlertCircle, CheckCircle2, Upload, X } from 'lucide-react'
+import { toast } from 'sonner'
 
 import { useAuth } from '@/contexts/auth-context'
+import { logger } from '@/lib/utils/logger'
 import { DocumentosBaseService } from '@/modules/documentos/services/documentos-base.service'
 import type { TipoEntidad } from '@/modules/documentos/types'
 
@@ -44,7 +46,7 @@ interface DocumentoUploadCompactProps {
   onUploadError?: (error: string) => void
 
   // Metadata opcional
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
   descripcion?: string
 
   // Validaciones previas al upload
@@ -170,7 +172,7 @@ export function DocumentoUploadCompact({
       setTimeout(() => setProgress(0), 500)
     },
     onError: (error: Error) => {
-      console.error('❌ [DocumentoUploadCompact] Error:', error)
+      logger.error('❌ [DocumentoUploadCompact] Error:', error)
       onUploadError?.(error.message)
       setProgress(0)
     },
@@ -189,14 +191,14 @@ export function DocumentoUploadCompact({
       // Validar archivo
       const validacion = validarArchivo(file)
       if (!validacion.valid) {
-        alert(`❌ ${validacion.error}`)
+        toast.info(`❌ ${validacion.error}`)
         e.target.value = ''
         return
       }
 
       // Validar condiciones previas
       if (!validacionesOk) {
-        alert(`❌ ${mensajeValidacion}`)
+        toast.info(`❌ ${mensajeValidacion}`)
         e.target.value = ''
         return
       }

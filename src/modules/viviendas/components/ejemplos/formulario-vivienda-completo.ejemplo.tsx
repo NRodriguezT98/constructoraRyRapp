@@ -11,10 +11,14 @@
 // @ts-nocheck — Example file with unimplemented stubs
 'use client'
 
+import { useState } from 'react'
+
 import { zodResolver } from '@hookform/resolvers/zod'
 import { AlertCircle, CheckCircle2, Loader2, XCircle } from 'lucide-react'
-import { useState } from 'react'
 import { useForm } from 'react-hook-form'
+
+import { logger } from '@/lib/utils/logger'
+
 import { useViviendaValidationStatus } from '../hooks/useViviendaValidation'
 import { viviendaFormSchema, type ViviendaFormData } from '../schemas/vivienda-form.schema'
 import { validarViviendaCompleta } from '../services/vivienda-validation.service'
@@ -78,7 +82,7 @@ export function FormularioViviendaEjemplo() {
       // await viviendaService.create(data)
 
     } catch (error) {
-      console.error('Error al validar/guardar:', error)
+      logger.error('Error al validar/guardar:', error)
     } finally {
       setIsSubmitting(false)
     }

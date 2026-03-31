@@ -7,8 +7,9 @@
  * Datos desde vista_documentos_pendientes_fuentes (tiempo real).
  */
 
-import { useQuery } from '@tanstack/react-query'
 import { useMemo } from 'react'
+
+import { useQuery } from '@tanstack/react-query'
 
 import { supabase } from '@/lib/supabase/client'
 

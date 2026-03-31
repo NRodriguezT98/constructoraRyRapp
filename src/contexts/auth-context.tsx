@@ -20,8 +20,6 @@ import { createContext, useContext } from 'react'
 
 import type { User } from '@supabase/supabase-js'
 
-import { debugLog, errorLog, successLog } from '@/lib/utils/logger'
-
 import {
     useAuthPerfilQuery,
     useAuthSessionQuery,
@@ -30,6 +28,8 @@ import {
     useLogoutMutation,
     type Perfil,
 } from '@/hooks/auth'
+import { debugLog, errorLog, successLog } from '@/lib/utils/logger'
+
 
 // ============================================
 // TYPES

@@ -6,6 +6,7 @@
  */
 
 import { useMemo } from 'react'
+
 import type { Proyecto } from '../types'
 
 export function useProyectoTabla(proyecto: Proyecto) {

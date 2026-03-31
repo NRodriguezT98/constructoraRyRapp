@@ -46,7 +46,7 @@ export function RenunciasMetricasPremium({ metricas }: RenunciasMetricasPremiumP
       transition={{ duration: 0.3, delay: 0.1 }}
       className={styles.metricas.grid}
     >
-      {items.map((item, i) => (
+      {items.map((item, _i) => (
         <motion.div
           key={item.label}
           whileHover={{ scale: 1.02, y: -4 }}

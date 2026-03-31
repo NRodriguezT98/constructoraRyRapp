@@ -3,9 +3,13 @@
  * ✅ ACTUALIZADO: Usa tabla negociaciones_historial (nuevo sistema)
  */
 
-import { supabase } from '@/lib/supabase/client'
 import { useQuery } from '@tanstack/react-query'
+
+import { supabase } from '@/lib/supabase/client'
+import { logger } from '@/lib/utils/logger'
+
 import { NegociacionesVersionesService } from '../services/negociaciones-versiones.service'
+
 
 export interface SnapshotVersion {
   id: string
@@ -40,7 +44,7 @@ export function useHistorialVersiones(negociacionId: string) {
         .order('version', { ascending: false })
 
       if (error) {
-        console.error('❌ [useHistorialVersiones] Error:', error)
+        logger.error('❌ [useHistorialVersiones] Error:', error)
         throw error
       }
 

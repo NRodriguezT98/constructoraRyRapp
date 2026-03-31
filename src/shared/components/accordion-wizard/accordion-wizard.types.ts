@@ -3,8 +3,9 @@
  * Usado por todos los módulos de creación (Proyectos, Viviendas, Clientes)
  */
 
-import type { ModuleName } from '@/shared/config/module-themes'
 import type { LucideIcon } from 'lucide-react'
+
+import type { ModuleName } from '@/shared/config/module-themes'
 
 /** Configuración de un paso del wizard */
 export interface WizardStepConfig {

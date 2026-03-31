@@ -1,5 +1,7 @@
 'use client'
 
+import { useRef } from 'react'
+
 import { AnimatePresence, motion } from 'framer-motion'
 import {
     AlertTriangle,
@@ -17,7 +19,6 @@ import {
     User,
     X
 } from 'lucide-react'
-import { useRef } from 'react'
 import { createPortal } from 'react-dom'
 
 import { useModalRegistrarRenuncia } from '../../hooks/useModalRegistrarRenuncia'

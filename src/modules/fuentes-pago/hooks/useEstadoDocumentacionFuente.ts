@@ -16,8 +16,9 @@
 
 'use client'
 
-import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect } from 'react'
+
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { supabase } from '@/lib/supabase/client'
 import {
@@ -95,7 +96,7 @@ export function useEstadoDocumentacionFuente(
           table: 'documentos_cliente',
           filter: `metadata->>fuente_pago_id=eq.${fuentePagoId}`,
         },
-        (payload) => {
+        (_payload) => {
           // Invalidar y refetch
           queryClient.invalidateQueries({
             queryKey: QUERY_KEYS.estadoDocumentacion(fuentePagoId),

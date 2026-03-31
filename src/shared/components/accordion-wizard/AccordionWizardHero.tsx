@@ -6,9 +6,10 @@
 
 'use client'
 
-import type { ModuleName } from '@/shared/config/module-themes'
 import { motion } from 'framer-motion'
 import { Clock, type LucideIcon } from 'lucide-react'
+
+import type { ModuleName } from '@/shared/config/module-themes'
 
 // ── Gradientes JIT-safe por módulo ───────────────────────
 const HERO_BG: Record<string, string> = {

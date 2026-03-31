@@ -10,6 +10,8 @@
 
 'use client'
 
+import { useEffect, useState } from 'react'
+
 import {
     Building2,
     Calendar,
@@ -24,12 +26,11 @@ import {
     User,
     Users,
 } from 'lucide-react'
-import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 
+import type { DetalleEvento } from '@/modules/clientes/types/historial.types'
 import { Modal } from '@/shared/components/ui/Modal'
 
-import type { DetalleEvento } from '@/modules/clientes/types/historial.types'
 
 interface DetalleEventoModalProps {
   isOpen: boolean
@@ -169,7 +170,7 @@ interface SeccionDetalles {
 
 // ========== MAPEO DE ICONOS POR CAMPO ==========
 function obtenerIconoCampo(campo: string) {
-  const iconos: Record<string, any> = {
+  const iconos: Record<string, React.ComponentType<{ className?: string }>> = {
     // Información personal
     nombres: User,
     apellidos: User,

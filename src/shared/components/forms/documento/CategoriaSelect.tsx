@@ -1,8 +1,9 @@
 'use client'
 
+import { useEffect, useRef, useState } from 'react'
+
 import { AnimatePresence, motion } from 'framer-motion'
 import { AlertCircle, ChevronDown, Folder } from 'lucide-react'
-import { useEffect, useRef, useState } from 'react'
 import { FieldErrors } from 'react-hook-form'
 
 import { moduleThemes, type ModuleName } from '@/shared/config/module-themes'

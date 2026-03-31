@@ -7,8 +7,10 @@
  * Solo accesible para usuarios con permisos de admin.
  */
 
-import { getServerPermissions } from '@/lib/auth/server'
 import { redirect } from 'next/navigation'
+
+import { getServerPermissions } from '@/lib/auth/server'
+
 import { FuentesPagoAdminContent } from './fuentes-pago-admin-content'
 
 export const metadata = {

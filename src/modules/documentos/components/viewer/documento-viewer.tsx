@@ -17,6 +17,7 @@ import { createPortal } from 'react-dom'
 
 import { formatDateCompact } from '@/lib/utils/date.utils'
 import { moduleThemes, type ModuleName } from '@/shared/config/module-themes'
+
 import { DocumentoProyecto, formatFileSize, getFileIcon } from '../../types/documento.types'
 import { formatearEntidad } from '../../utils/formatear-entidad'
 import { CategoriaIcon } from '../shared/categoria-icon'

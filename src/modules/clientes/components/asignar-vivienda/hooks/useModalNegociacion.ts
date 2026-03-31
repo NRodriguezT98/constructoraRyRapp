@@ -5,6 +5,7 @@
 
 import { useCallback, useMemo, useState } from 'react'
 
+import { logger } from '@/lib/utils/logger'
 import { useCrearNegociacion } from '@/modules/clientes/hooks'
 import { validarSumaTotal } from '@/modules/clientes/utils/validar-edicion-fuentes'
 import { useTiposFuentesConCampos } from '@/modules/configuracion/hooks/useTiposFuentesConCampos'
@@ -167,7 +168,7 @@ export function useModalNegociacion({
       onSuccess(negociacion.id)
       handleClose()
     } catch (err) {
-      console.error('❌ Error creando negociación:', err)
+      logger.error('❌ Error creando negociación:', err)
       setError(err instanceof Error ? err.message : 'Error al crear negociación')
     } finally {
       setCreando(false)

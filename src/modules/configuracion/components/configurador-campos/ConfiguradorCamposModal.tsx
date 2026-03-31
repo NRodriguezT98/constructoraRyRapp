@@ -146,7 +146,7 @@ export function ConfiguradorCamposModal({
                   <p className={s.modal.body.emptyText}>
                     No hay campos configurados aún.
                     <br />
-                    Presiona <strong>"Agregar Campo"</strong> para comenzar.
+                    Presiona <strong>&quot;Agregar Campo&quot;</strong> para comenzar.
                   </p>
                 </div>
               )}

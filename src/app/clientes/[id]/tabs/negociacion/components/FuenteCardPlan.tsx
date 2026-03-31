@@ -5,6 +5,7 @@ import { AlertCircle, Building2, CheckCircle2, DollarSign, Percent } from 'lucid
 import type { FuentePago } from '@/modules/clientes/services/fuentes-pago.service'
 import { esCreditoConstructora } from '@/shared/constants/fuentes-pago.constants'
 import { formatCurrency } from '@/shared/utils/format'
+
 import { getFuenteColor } from '../hooks'
 
 interface DocPendienteInfo {

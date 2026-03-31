@@ -10,6 +10,8 @@
 'use client'
 
 import { useAuth } from '@/contexts/auth-context'
+import { logger } from '@/lib/utils/logger'
+
 import { InvalidRoleError } from './InvalidRoleError'
 
 const ROLES_VALIDOS = ['Administrador', 'Contador', 'Supervisor', 'Gerente'] as const
@@ -47,7 +49,7 @@ export function RoleValidator({ children, requireAuth = true }: RoleValidatorPro
     const esRolInvalido = !ROLES_VALIDOS.includes(rolActual as any)
 
     if (esRolInvalido) {
-      console.error(`❌ [ROLE VALIDATOR] Rol inválido: "${rolActual}"`)
+      logger.error(`❌ [ROLE VALIDATOR] Rol inválido: "${rolActual}"`)
       // ⚠️ NO pasamos información sensible del sistema
       return (
         <InvalidRoleError

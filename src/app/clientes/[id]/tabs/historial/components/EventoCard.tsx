@@ -31,7 +31,7 @@ const ICONOS_TIPO = {
   DELETE: Trash2,
 }
 
-export function EventoCard({ evento, isLast, onEditarNota, onEliminarNota, notasEditables }: EventoCardProps) {
+export function EventoCard({ evento, isLast: _isLast, onEditarNota, onEliminarNota, notasEditables }: EventoCardProps) {
   const Icono = evento.icono
   const colores = coloresEvento[evento.color] || coloresEvento.gray
 

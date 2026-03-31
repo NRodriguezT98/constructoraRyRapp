@@ -2,10 +2,10 @@
 
 import { DollarSign, Info, MapPin } from 'lucide-react'
 
+import * as styles from '@/app/viviendas/[slug]/vivienda-detalle.styles'
 import type { Vivienda } from '@/modules/viviendas/types'
 import { formatArea, formatCurrency } from '@/shared/utils'
 
-import * as styles from '@/app/viviendas/[slug]/vivienda-detalle.styles'
 
 interface InfoTabProps {
   vivienda: Vivienda

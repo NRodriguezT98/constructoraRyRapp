@@ -14,6 +14,8 @@ import { useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
 import { useAuth } from '@/contexts/auth-context'
+import { logger } from '@/lib/utils/logger'
+
 import { DocumentosViviendaService } from '../services/documentos'
 import type { DocumentoVivienda } from '../types/documento-vivienda.types'
 
@@ -46,7 +48,7 @@ export function useDocumentoVersiones({
       const data = await DocumentosViviendaService.obtenerVersiones(documentoId)
       setVersiones(data)
     } catch (error) {
-      console.error('❌ Error al cargar versiones:', error)
+      logger.error('❌ Error al cargar versiones:', error)
       toast.error('Error al cargar historial de versiones')
     } finally {
       setCargando(false)
@@ -64,7 +66,7 @@ export function useDocumentoVersiones({
       const url = await DocumentosViviendaService.obtenerUrlDescarga(documento.url_storage)
       window.open(url, '_blank')
     } catch (error) {
-      console.error('Error al ver documento:', error)
+      logger.error('Error al ver documento:', error)
       toast.error('Error al abrir el documento')
     }
   }
@@ -84,7 +86,7 @@ export function useDocumentoVersiones({
       document.body.removeChild(a)
       toast.success('Descarga iniciada')
     } catch (error) {
-      console.error('Error al descargar:', error)
+      logger.error('Error al descargar:', error)
       toast.error('Error al descargar el documento')
     }
   }
@@ -133,7 +135,7 @@ export function useDocumentoVersiones({
       setVersionARestaurar(null)
       setMotivoRestauracion('')
     } catch (error) {
-      console.error('Error al restaurar versión:', error)
+      logger.error('Error al restaurar versión:', error)
       toast.error('Error al restaurar la versión')
     } finally {
       setRestaurando(null)
@@ -184,9 +186,9 @@ export function useDocumentoVersiones({
       }
 
       await cargarVersiones()
-    } catch (error: any) {
-      console.error('Error al eliminar versión:', error)
-      toast.error(error?.message || 'Error al eliminar la versión')
+    } catch (error: unknown) {
+      logger.error('Error al eliminar versión:', error)
+      toast.error(error instanceof Error ? error.message : 'Error al eliminar la versión')
     } finally {
       setEliminando(null)
     }

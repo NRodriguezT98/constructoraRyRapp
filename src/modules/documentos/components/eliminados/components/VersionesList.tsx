@@ -1,12 +1,18 @@
+import { useState } from 'react'
+
+import { Calendar, Eye, HardDrive, Loader2, Upload, User } from 'lucide-react'
+import { toast } from 'sonner'
+
 import { Badge } from '@/components/ui/badge'
 import { formatDateCompact } from '@/lib/utils/date.utils'
 import { formatFileSize } from '@/lib/utils/format.utils'
+import { logger } from '@/lib/utils/logger'
 import { DocumentosService } from '@/modules/documentos/services/documentos.service'
 import type { DocumentoProyecto } from '@/modules/documentos/types/documento.types'
-import { Calendar, Eye, HardDrive, Loader2, Upload, User } from 'lucide-react'
-import { useState } from 'react'
-import { toast } from 'sonner'
+
+
 import { DocumentoViewer } from '../../viewer/documento-viewer'
+
 
 // Tipo extendido con relación usuario (FK join)
 type DocumentoConUsuario = DocumentoProyecto & {
@@ -79,7 +85,7 @@ export function VersionesList({
           Versiones eliminadas ({versiones.length})
         </h4>
         <p className="text-xs text-gray-500 dark:text-gray-400">
-          Solo lectura • Use "Restaurar todo" para recuperar todas las versiones
+          Solo lectura • Use &quot;Restaurar todo&quot; para recuperar todas las versiones
         </p>
       </div>
 
@@ -122,7 +128,7 @@ export function VersionesList({
                         setUrlPreview(url)
                         setDocumentoSeleccionado(version)
                       } catch (error) {
-                        console.error('Error al obtener URL del documento:', error)
+                        logger.error('Error al obtener URL del documento:', error)
                         toast.error('❌ Error al cargar el documento')
                       }
                     }}

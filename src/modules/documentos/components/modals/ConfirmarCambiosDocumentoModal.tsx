@@ -12,6 +12,7 @@ import { motion } from 'framer-motion'
 import { AlertTriangle, ArrowRight, Calendar, CheckCircle2, FileText, Folder, Loader2, Pencil, X } from 'lucide-react'
 
 import { formatDateCompact } from '@/lib/utils/date.utils'
+
 import type { ResumenCambiosDocumento } from '../../hooks/useDetectarCambiosDocumento'
 
 interface ConfirmarCambiosDocumentoModalProps {

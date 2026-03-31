@@ -1,8 +1,9 @@
 'use client'
 
+import { useCallback, useRef, useState } from 'react'
+
 import { AnimatePresence, motion } from 'framer-motion'
 import { AlertCircle, Banknote, Building2, Check, CircleDollarSign, Home, Wallet } from 'lucide-react'
-import { useCallback, useRef, useState } from 'react'
 
 import { formatCurrency } from '@/lib/utils/format.utils'
 import type {

@@ -1,9 +1,10 @@
 'use client'
 
-import { AccordionWizardField, fieldStaggerAnim } from '@/shared/components/accordion-wizard'
 import { motion } from 'framer-motion'
 import { Home, Plus, Trash2 } from 'lucide-react'
 import type { FieldArrayWithId, FieldErrors, UseFormRegister } from 'react-hook-form'
+
+import { AccordionWizardField, fieldStaggerAnim } from '@/shared/components/accordion-wizard'
 
 interface ManzanaFormValues {
   id?: string

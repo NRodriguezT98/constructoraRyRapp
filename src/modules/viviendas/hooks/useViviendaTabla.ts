@@ -6,6 +6,7 @@
  */
 
 import { useMemo } from 'react'
+
 import type { Vivienda } from '../types'
 
 export function useViviendaTabla(vivienda: Vivienda) {

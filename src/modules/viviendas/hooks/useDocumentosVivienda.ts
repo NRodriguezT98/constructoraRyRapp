@@ -8,7 +8,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
 import { useAuth } from '@/contexts/auth-context'
-import { documentosViviendaService, type SubirDocumentoParams, type ActualizarDocumentoParams } from '@/modules/viviendas/services/documentos-vivienda.service'
+import { documentosViviendaService, type ActualizarDocumentoParams, type SubirDocumentoParams } from '@/modules/viviendas/services/documentos-vivienda.service'
 
 /**
  * DEPRECATED: Usar hooks de documentos/useDocumentosViviendaQuery.ts
@@ -43,8 +43,8 @@ export function useDocumentosVivienda(viviendaId: string) {
     onMutate: () => {
       toast.loading('Subiendo documento...', { id: 'upload-doc' })
     },
-    onSuccess: (data) => {
-      // Invalidar queries relacionadas
+    onSuccess: (data: unknown) => {
+      const doc = data as { titulo?: string }
       queryClient.invalidateQueries({
         queryKey: ['documentos-vivienda', viviendaId],
       })
@@ -52,7 +52,7 @@ export function useDocumentosVivienda(viviendaId: string) {
         queryKey: ['estadisticas-documentos-vivienda', viviendaId],
       })
 
-      toast.success(`Documento "${data.titulo}" subido correctamente`, {
+      toast.success(`Documento "${doc.titulo ?? ''}" subido correctamente`, {
         id: 'upload-doc',
       })
     },
@@ -70,12 +70,13 @@ export function useDocumentosVivienda(viviendaId: string) {
     onMutate: () => {
       toast.loading('Actualizando documento...', { id: 'update-doc' })
     },
-    onSuccess: (data) => {
+    onSuccess: (data: unknown) => {
+      const doc = data as { titulo?: string }
       queryClient.invalidateQueries({
         queryKey: ['documentos-vivienda', viviendaId],
       })
 
-      toast.success(`Documento "${data.titulo}" actualizado`, {
+      toast.success(`Documento "${doc.titulo ?? ''}" actualizado`, {
         id: 'update-doc',
       })
     },

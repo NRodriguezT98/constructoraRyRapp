@@ -1,5 +1,7 @@
 'use client'
 
+import { useState } from 'react'
+
 import { motion } from 'framer-motion'
 import {
     Building2,
@@ -14,7 +16,6 @@ import {
     User,
     X,
 } from 'lucide-react'
-import { useState } from 'react'
 
 import { formatDateCompact, formatDateTimeWithSeconds } from '@/lib/utils/date.utils'
 

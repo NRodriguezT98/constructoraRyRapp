@@ -3,6 +3,7 @@
 // ============================================
 
 import { supabase } from '@/lib/supabase/client'
+
 import type { DocumentoProyecto } from '../types/documento.types'
 import { type TipoEntidad, obtenerConfiguracionEntidad } from '../types/entidad.types'
 
@@ -52,7 +53,7 @@ interface SubirDocumentoParams {
   es_importante?: boolean
   es_documento_identidad?: boolean // ✅ Para clientes
   tipo_documento?: string // ✅ NUEVO: Para validación automática
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
 }
 
 // ⚠️ LEGACY: Para compatibilidad con código existente
@@ -65,7 +66,7 @@ interface SubirDocumentoProyectoParams {
   fecha_documento?: string
   fecha_vencimiento?: string
   es_importante?: boolean
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
 }
 
 /**
@@ -269,19 +270,19 @@ export class DocumentosBaseService {
       fecha_vencimiento: fecha_vencimiento || null,
       es_importante: es_importante || false,
       // ✅ CONDICIONAL: es_documento_identidad solo existe en documentos_cliente
-      ...(tipoEntidad === 'cliente' && { es_documento_identidad: es_documento_identidad || false }),
+      ...(tipoEntidad === 'cliente' ? { es_documento_identidad: es_documento_identidad || false } : {}),
       // ✅ tipo_documento para match con vista_documentos_pendientes_fuentes
-      ...(tipoEntidad === 'cliente' && (params.tipo_documento || metadata?.tipo_documento_sistema) && {
-        tipo_documento: params.tipo_documento || String(metadata!.tipo_documento_sistema)
-      }),
+      ...(tipoEntidad === 'cliente' && (params.tipo_documento || metadata?.tipo_documento_sistema)
+        ? { tipo_documento: params.tipo_documento || String(metadata!.tipo_documento_sistema) }
+        : {}),
       // ✅ Vinculación automática: relaciona el doc con la fuente de pago
-      ...(tipoEntidad === 'cliente' && metadata?.fuente_pago_id && {
-        fuente_pago_relacionada: String(metadata.fuente_pago_id)
-      }),
+      ...(tipoEntidad === 'cliente' && metadata?.fuente_pago_id
+        ? { fuente_pago_relacionada: String(metadata.fuente_pago_id) }
+        : {}),
       // ✅ FK al requisito exacto — la vista usa este campo para detectar doc subido
-      ...(tipoEntidad === 'cliente' && metadata?.requisito_config_id && {
-        requisito_config_id: String(metadata.requisito_config_id)
-      }),
+      ...(tipoEntidad === 'cliente' && metadata?.requisito_config_id
+        ? { requisito_config_id: String(metadata.requisito_config_id) }
+        : {}),
       metadata: metadata || {},
       version: 1,
       es_version_actual: true,

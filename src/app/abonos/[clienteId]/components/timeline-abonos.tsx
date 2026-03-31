@@ -94,7 +94,7 @@ export function TimelineAbonos({ abonos, loading }: TimelineAbonosProps) {
                         <span>·</span>
                         <span className="flex items-center gap-1">
                           <MessageSquare className="w-3 h-3" />
-                          <em className="text-gray-300 dark:text-white/25 not-italic">"{abono.notas}"</em>
+                          <em className="text-gray-300 dark:text-white/25 not-italic">&quot;{abono.notas}&quot;</em>
                         </span>
                       </>
                     )}

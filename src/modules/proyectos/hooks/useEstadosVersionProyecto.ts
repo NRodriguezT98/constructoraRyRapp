@@ -3,9 +3,11 @@
  * Implementa sistema de marcado de versiones erróneas, obsoletas y restauración
  */
 
-import { DocumentosService } from '@/modules/documentos/services/documentos.service'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
+
+import { logger } from '@/lib/utils/logger'
+import { DocumentosService } from '@/modules/documentos/services/documentos.service'
 
 // ============================================================================
 // TYPES
@@ -77,7 +79,7 @@ export function useEstadosVersionProyecto(proyectoId?: string) {
       })
     },
     onError: (error: Error) => {
-      console.error('❌ Error al marcar versión como errónea:', error)
+      logger.error('❌ Error al marcar versión como errónea:', error)
       toast.error('Error al marcar versión', {
         description: error.message,
       })
@@ -117,7 +119,7 @@ export function useEstadosVersionProyecto(proyectoId?: string) {
       })
     },
     onError: (error: Error) => {
-      console.error('❌ Error al marcar versión como obsoleta:', error)
+      logger.error('❌ Error al marcar versión como obsoleta:', error)
       toast.error('Error al marcar versión', {
         description: error.message,
       })
@@ -157,7 +159,7 @@ export function useEstadosVersionProyecto(proyectoId?: string) {
       })
     },
     onError: (error: Error) => {
-      console.error('❌ Error al restaurar estado:', error)
+      logger.error('❌ Error al restaurar estado:', error)
       toast.error('Error al restaurar estado', {
         description: error.message,
       })

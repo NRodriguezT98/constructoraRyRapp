@@ -13,6 +13,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
 import { useAuth } from '@/contexts/auth-context'
+import { logger } from '@/lib/utils/logger'
 import { documentosViviendaService } from '@/modules/viviendas/services/documentos-vivienda.service'
 
 
@@ -111,7 +112,7 @@ export function useDocumentosPapelera({ viviendaId }: UseDocumentosPapeleraParam
       try {
         await restaurarMutation.mutateAsync(id)
       } catch (error) {
-        console.error('❌ Error al restaurar documento:', error)
+        logger.error('❌ Error al restaurar documento:', error)
       }
     },
     [restaurarMutation]
@@ -171,7 +172,7 @@ export function useDocumentosPapelera({ viviendaId }: UseDocumentosPapeleraParam
           soloEstaVersion
         })
       } catch (error) {
-        console.error('❌ Error al eliminar permanentemente:', error)
+        logger.error('❌ Error al eliminar permanentemente:', error)
       }
     },
     [eliminarPermanenteMutation]

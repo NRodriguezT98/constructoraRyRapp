@@ -11,9 +11,12 @@
 
 'use client'
 
+import { useState } from 'react'
+
 import { AnimatePresence, motion } from 'framer-motion'
 import { DollarSign, Plus, Trash2, X } from 'lucide-react'
-import { useState } from 'react'
+
+import { logger } from '@/lib/utils/logger'
 
 export interface FuentePagoEditable {
   id?: string
@@ -76,7 +79,7 @@ export function EditarFuentesPagoModal({
       await onGuardar(fuentes)
       onClose()
     } catch (error) {
-      console.error('Error al guardar fuentes:', error)
+      logger.error('Error al guardar fuentes:', error)
     } finally {
       setGuardando(false)
     }

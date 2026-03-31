@@ -1,5 +1,6 @@
-import { Button } from '@/components/ui/button'
 import { RotateCcw, Trash2 } from 'lucide-react'
+
+import { Button } from '@/components/ui/button'
 
 interface DocumentoEliminadoActionsProps {
   onRestore: () => void

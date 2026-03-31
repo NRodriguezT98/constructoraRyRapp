@@ -7,6 +7,7 @@
 'use client'
 
 import { CheckCircle2, Plus, RefreshCw, Trash2 } from 'lucide-react'
+
 import { detectarCambiosFuentes, filtrarCambiosReales, formatCurrency } from '../historial-helpers'
 
 interface DiffFuentesPagoProps {
