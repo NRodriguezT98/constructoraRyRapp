@@ -3,17 +3,56 @@
 // ============================================
 
 import {
-    File,
-    FileArchive,
-    FileCode,
-    FileImage,
-    FileSpreadsheet,
-    FileText,
-    FileVideo,
-    type LucideIcon,
+  File,
+  FileArchive,
+  FileCode,
+  FileImage,
+  FileSpreadsheet,
+  FileText,
+  FileVideo,
+  type LucideIcon,
 } from 'lucide-react'
 
 export type EstadoDocumento = 'activo' | 'archivado' | 'eliminado'
+
+// ============================================
+// Sistema de Estados de Versión - PROFESIONAL
+// ============================================
+
+/**
+ * Estados posibles de una versión de documento
+ * - valida: Versión correcta y confiable (por defecto)
+ * - erronea: Versión incorrecta que debe corregirse
+ * - obsoleta: Versión antigua ya no aplicable
+ * - supersedida: Reemplazada por nueva versión
+ */
+export type EstadoVersion = 'valida' | 'erronea' | 'obsoleta' | 'supersedida'
+
+/**
+ * Motivos predefinidos para marcar versión como errónea
+ */
+export const MOTIVOS_VERSION_ERRONEA = {
+  DOCUMENTO_INCORRECTO: 'Se subió el documento equivocado',
+  DATOS_ERRONEOS: 'El documento contiene datos incorrectos',
+  VERSION_DESACTUALIZADA: 'Información desactualizada o desfasada',
+  ARCHIVO_CORRUPTO: 'Archivo dañado o ilegible',
+  FORMATO_INVALIDO: 'Formato de archivo incorrecto',
+  DUPLICADO_ACCIDENTAL: 'Versión duplicada por error',
+  OTRO: 'Otro motivo (especificar en descripción)',
+} as const
+
+/**
+ * Motivos predefinidos para marcar versión como obsoleta
+ */
+export const MOTIVOS_VERSION_OBSOLETA = {
+  CAMBIO_NORMATIVA: 'Cambio en normativa o regulación',
+  ACTUALIZACION_PROCESO: 'Actualización de proceso interno',
+  REVISION_TECNICA: 'Revisión técnica obligatoria',
+  VENCIMIENTO: 'Documento vencido',
+  SUSTITUIDO: 'Sustituido por versión más reciente',
+  YA_NO_APLICA: 'Ya no es aplicable al proyecto',
+  OTRO: 'Otro motivo (especificar en descripción)',
+} as const
 
 // ============================================
 // Categorías Personalizadas - Sistema Flexible Multi-Módulo
@@ -122,7 +161,7 @@ export interface DocumentoProyecto {
   es_version_actual: boolean
   documento_padre_id?: string
   estado: EstadoDocumento
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
   subido_por: string
   fecha_documento?: string
   fecha_vencimiento?: string
@@ -130,6 +169,16 @@ export interface DocumentoProyecto {
   anclado_at?: string | null
   fecha_creacion: string
   fecha_actualizacion: string
+
+  // Motivo de archivado
+  motivo_categoria?: string
+  motivo_detalle?: string
+
+  // Sistema de Estados de Versión
+  estado_version?: EstadoVersion
+  motivo_estado?: string
+  version_corrige_a?: string
+
   // Relaciones opcionales (cuando se cargan con join)
   categoria?: CategoriaDocumento
   usuario?: {
@@ -150,7 +199,7 @@ export interface DocumentoFormData {
   fecha_documento?: string
   fecha_vencimiento?: string
   es_importante?: boolean
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
 }
 
 // Tipos MIME permitidos
@@ -179,13 +228,18 @@ export const MAX_FILE_SIZE = 50 * 1024 * 1024
 // Helper para formatear tamaño de archivo
 export function formatFileSize(bytes: number): string {
   // Validación robusta para evitar crash con String.repeat(-1)
-  if (bytes == null || bytes <= 0 || isNaN(bytes) || !isFinite(bytes)) return '0 Bytes'
+  if (bytes == null || bytes <= 0 || isNaN(bytes) || !isFinite(bytes))
+    return '0 Bytes'
 
   const k = 1024
   const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB']
   const i = Math.floor(Math.log(bytes) / Math.log(k))
   const sizeIndex = Math.max(0, Math.min(i, sizes.length - 1))
-  return Math.round((bytes / Math.pow(k, sizeIndex)) * 100) / 100 + ' ' + sizes[sizeIndex]
+  return (
+    Math.round((bytes / Math.pow(k, sizeIndex)) * 100) / 100 +
+    ' ' +
+    sizes[sizeIndex]
+  )
 }
 
 // Helper para obtener extensión de archivo
@@ -195,20 +249,33 @@ export function getFileExtension(filename: string): string {
 
 // Helper para validar tipo de archivo
 export function isValidFileType(type: string): boolean {
-  return MIME_TYPES_PERMITIDOS.includes(type as (typeof MIME_TYPES_PERMITIDOS)[number])
+  return MIME_TYPES_PERMITIDOS.includes(
+    type as (typeof MIME_TYPES_PERMITIDOS)[number]
+  )
 }
 
-// Helper para obtener ícono según tipo MIME
-export function getFileIcon(mimeType: string): LucideIcon {
-  if (mimeType.includes('pdf')) return FileText
-  if (mimeType.startsWith('image/')) return FileImage
-  if (mimeType.startsWith('video/')) return FileVideo
-  if (mimeType.includes('zip') || mimeType.includes('rar')) return FileArchive
-  if (mimeType.includes('spreadsheet') || mimeType.includes('excel'))
-    return FileSpreadsheet
-  if (mimeType.includes('word') || mimeType.includes('document'))
-    return FileText
-  if (mimeType.includes('text/')) return FileCode
+// Mapa de tipos MIME → ícono de Lucide
+const FILE_ICON_MAP: Array<{
+  test: (mime: string) => boolean
+  icon: LucideIcon
+}> = [
+  {
+    test: m =>
+      m.includes('pdf') || m.includes('word') || m.includes('document'),
+    icon: FileText,
+  },
+  { test: m => m.startsWith('image/'), icon: FileImage },
+  { test: m => m.startsWith('video/'), icon: FileVideo },
+  { test: m => m.includes('zip') || m.includes('rar'), icon: FileArchive },
+  {
+    test: m => m.includes('spreadsheet') || m.includes('excel'),
+    icon: FileSpreadsheet,
+  },
+  { test: m => m.includes('text/'), icon: FileCode },
+]
 
-  return File // Default
+// Helper para obtener ícono según tipo MIME o extensión de archivo
+export function getFileIcon(mimeTypeOrExtension: string): LucideIcon {
+  const normalized = mimeTypeOrExtension.toLowerCase()
+  return FILE_ICON_MAP.find(entry => entry.test(normalized))?.icon ?? File
 }

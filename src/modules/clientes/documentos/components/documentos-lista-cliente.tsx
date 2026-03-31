@@ -166,10 +166,7 @@ export function DocumentosListaCliente({
               className='space-y-3'
             >
               {documentosArchivados.map((documento, index) => {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const categoria = getCategoriaByDocumento(documento as any)
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const CardComponent = DocumentoCardHorizontal as any
+                const categoria = getCategoriaByDocumento(documento)
                 return (
                   <motion.div
                     key={documento.id}
@@ -179,17 +176,18 @@ export function DocumentosListaCliente({
                     transition={{ delay: index * 0.04 }}
                   >
                     <div className='relative'>
-                      <CardComponent
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        documento={documento as any}
+                      <DocumentoCardHorizontal
+                        documento={documento}
                         categoria={categoria}
                         tipoEntidad='cliente'
                         onView={handleView}
                         onDownload={handleDownload}
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        onArchive={() => handleRestore(documento as any)}
+                        onToggleImportante={handleToggleImportante}
+                        onArchive={() => handleRestore(documento)}
+                        onDelete={handleDelete}
                         onRefresh={refrescarDocumentos}
                         moduleName='clientes'
+                        esArchivado
                       />
                       {/* Badge archivado + botón restaurar */}
                       <div className='absolute right-3 top-3 flex items-center gap-2'>
@@ -265,13 +263,10 @@ export function DocumentosListaCliente({
             >
               {documentosFiltrados.map((documento, _index) => {
                 const categoria = getCategoriaByDocumento(documento)
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const CardComponent = DocumentoCardHorizontal as any
                 return (
-                  <CardComponent
+                  <DocumentoCardHorizontal
                     key={documento.id}
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    documento={documento as any}
+                    documento={documento}
                     categoria={categoria}
                     tipoEntidad='cliente'
                     onView={handleView}
@@ -280,7 +275,6 @@ export function DocumentosListaCliente({
                     onArchive={handleArchive}
                     onDelete={handleDelete}
                     onRename={handleRename}
-                    onToggleAnclar={undefined}
                     onRefresh={refrescarDocumentos}
                     moduleName='clientes'
                     // No permitir categorizar la cédula (ya tiene categoría fija)

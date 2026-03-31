@@ -5,8 +5,9 @@
  * Muestra indicadores visuales de: Válida, Errónea, Obsoleta, Supersedida
  */
 
-import type { EstadoVersion } from '@/types/documento.types'
 import { AlertTriangle, CheckCircle, Package, XCircle } from 'lucide-react'
+
+import type { EstadoVersion } from '@/modules/documentos/types/documento.types'
 
 // ============================================================================
 // BADGE COMPONENT
@@ -80,7 +81,7 @@ export function EstadoVersionBadge({
 
   return (
     <span
-      className={`inline-flex items-center ${sizeClasses[size]} rounded-full font-bold border-2 ${config.className}`}
+      className={`inline-flex items-center ${sizeClasses[size]} rounded-full border-2 font-bold ${config.className}`}
     >
       {showIcon && <Icon size={iconSizes[size]} />}
       {config.label}
@@ -113,7 +114,8 @@ export function EstadoVersionAlert({
       case 'erronea':
         return {
           title: '⚠️ Versión Errónea',
-          description: 'Esta versión contiene información incorrecta y no debe ser utilizada.',
+          description:
+            'Esta versión contiene información incorrecta y no debe ser utilizada.',
           icon: XCircle,
           className:
             'bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-800',
@@ -133,7 +135,8 @@ export function EstadoVersionAlert({
       case 'supersedida':
         return {
           title: '🔄 Versión Supersedida',
-          description: 'Esta versión ha sido reemplazada por una versión más reciente.',
+          description:
+            'Esta versión ha sido reemplazada por una versión más reciente.',
           icon: AlertTriangle,
           className:
             'bg-yellow-50 border-yellow-200 dark:bg-yellow-900/20 dark:border-yellow-800',
@@ -152,19 +155,19 @@ export function EstadoVersionAlert({
 
   return (
     <div className={`rounded-lg border-2 p-4 ${config.className}`}>
-      <div className="flex gap-3">
-        <Icon className={`w-5 h-5 ${config.iconColor} flex-shrink-0 mt-0.5`} />
-        <div className="flex-1">
-          <h4 className={`font-semibold text-sm ${config.textColor}`}>
+      <div className='flex gap-3'>
+        <Icon className={`h-5 w-5 ${config.iconColor} mt-0.5 flex-shrink-0`} />
+        <div className='flex-1'>
+          <h4 className={`text-sm font-semibold ${config.textColor}`}>
             {config.title}
           </h4>
-          <p className={`text-xs ${config.textColor} opacity-90 mt-1`}>
+          <p className={`text-xs ${config.textColor} mt-1 opacity-90`}>
             {config.description}
           </p>
 
           {/* Motivo */}
           {motivo && (
-            <div className="mt-2 pt-2 border-t border-current opacity-20">
+            <div className='mt-2 border-t border-current pt-2 opacity-20'>
               <p className={`text-xs ${config.textColor} opacity-80`}>
                 <strong>Motivo:</strong> {motivo}
               </p>
@@ -175,7 +178,7 @@ export function EstadoVersionAlert({
           {versionCorrectaId && onVerVersionCorrecta && (
             <button
               onClick={onVerVersionCorrecta}
-              className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-white dark:bg-gray-800 border-2 border-current opacity-60 hover:opacity-100 transition-opacity"
+              className='mt-3 inline-flex items-center gap-1.5 rounded-lg border-2 border-current bg-white px-3 py-1.5 text-xs font-medium opacity-60 transition-opacity hover:opacity-100 dark:bg-gray-800'
             >
               <CheckCircle size={14} />
               Ver versión correcta

@@ -15,16 +15,17 @@
 
 import { supabase } from '@/lib/supabase/client'
 import { formatDateForDB, getTodayDateString } from '@/lib/utils/date.utils'
+import { logger } from '@/lib/utils/logger'
 import type { EstadoNegociacion, Negociacion } from '@/modules/clientes/types'
 import { crearCredito } from '@/modules/fuentes-pago/services/creditos-constructora.service'
 import { crearCuotasCredito } from '@/modules/fuentes-pago/services/cuotas-credito.service'
 import {
-    calcularTablaAmortizacion,
-    fechaCuotaParaBD,
+  calcularTablaAmortizacion,
+  fechaCuotaParaBD,
 } from '@/modules/fuentes-pago/utils/calculos-credito'
 import { esCuotaInicial } from '@/shared/constants/fuentes-pago.constants'
 
-/* eslint-disable no-console, no-restricted-syntax, @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 // DTOs
 export interface CrearNegociacionDTO {
@@ -158,7 +159,7 @@ class NegociacionesService {
         .single()
 
       if (errorNegociacion) {
-        console.error('? Error creando negociación:', errorNegociacion)
+        logger.error('? Error creando negociación:', errorNegociacion)
         throw errorNegociacion
       }
 
@@ -206,7 +207,7 @@ class NegociacionesService {
           .select('id, tipo, negociacion_id')
 
         if (errorFuentes) {
-          console.error('❌ Error creando fuentes de pago:', errorFuentes)
+          logger.error('❌ Error creando fuentes de pago:', errorFuentes)
           // ROLLBACK
           await supabase.from('negociaciones').delete().eq('id', negociacion.id)
           throw new Error(
@@ -269,7 +270,7 @@ class NegociacionesService {
             }
           }
         } catch (errorPaso2b) {
-          console.error('❌ Error en Paso 2b (crédito/cuotas):', errorPaso2b)
+          logger.error('❌ Error en Paso 2b (crédito/cuotas):', errorPaso2b)
           // ROLLBACK: eliminar créditos y cuotas creados en esta operación
           for (const fid of fuentesConCredito) {
             await supabase
@@ -305,7 +306,7 @@ class NegociacionesService {
         .eq('id', datos.vivienda_id)
 
       if (errorVivienda) {
-        console.error('? Error actualizando vivienda:', errorVivienda)
+        logger.error('? Error actualizando vivienda:', errorVivienda)
         // ROLLBACK
         if (tieneFuentesPago) {
           await supabase
@@ -326,7 +327,7 @@ class NegociacionesService {
         .eq('id', datos.cliente_id)
 
       if (errorCliente) {
-        console.error('? Error actualizando cliente:', errorCliente)
+        logger.error('? Error actualizando cliente:', errorCliente)
         // ROLLBACK completo
         if (tieneFuentesPago) {
           await supabase
@@ -357,7 +358,7 @@ class NegociacionesService {
     } catch (error) {
       const mensaje =
         error instanceof Error ? error.message : 'Error desconocido'
-      console.error('? [CLIENTES] Error en crearNegociacion:', mensaje, error)
+      logger.error('? [CLIENTES] Error en crearNegociacion:', mensaje, error)
       throw error
     }
   }
@@ -384,11 +385,7 @@ class NegociacionesService {
     } catch (error) {
       const mensaje =
         error instanceof Error ? error.message : 'Error desconocido'
-      console.error(
-        '? [CLIENTES] Error obteniendo negociación:',
-        mensaje,
-        error
-      )
+      logger.error('? [CLIENTES] Error obteniendo negociación:', mensaje, error)
       return null
     }
   }
@@ -440,7 +437,7 @@ class NegociacionesService {
     } catch (error) {
       const mensaje =
         error instanceof Error ? error.message : 'Error desconocido'
-      console.error(
+      logger.error(
         '? [CLIENTES] Error obteniendo negociaciones del cliente:',
         mensaje,
         error
@@ -475,7 +472,7 @@ class NegociacionesService {
     } catch (error) {
       const mensaje =
         error instanceof Error ? error.message : 'Error desconocido'
-      console.error(
+      logger.error(
         '? [CLIENTES] Error obteniendo negociación de vivienda:',
         mensaje,
         error
@@ -505,7 +502,7 @@ class NegociacionesService {
     } catch (error) {
       const mensaje =
         error instanceof Error ? error.message : 'Error desconocido'
-      console.error(
+      logger.error(
         '? [CLIENTES] Error actualizando negociación:',
         mensaje,
         error
@@ -577,7 +574,7 @@ class NegociacionesService {
     } catch (error) {
       const mensaje =
         error instanceof Error ? error.message : 'Error desconocido'
-      console.error(
+      logger.error(
         '? [CLIENTES] Error verificando negociación activa:',
         mensaje,
         error
@@ -627,11 +624,7 @@ class NegociacionesService {
     } catch (error) {
       const mensaje =
         error instanceof Error ? error.message : 'Error desconocido'
-      console.error(
-        '? [CLIENTES] Error eliminando negociación:',
-        mensaje,
-        error
-      )
+      logger.error('? [CLIENTES] Error eliminando negociación:', mensaje, error)
       throw error
     }
   }
@@ -699,7 +692,7 @@ class NegociacionesService {
           // ? SIN .select().single() para evitar error 400
 
           if (errorInactivar) {
-            console.error(`? Error inactivando fuente ${fuente.id}:`, {
+            logger.error(`? Error inactivando fuente ${fuente.id}:`, {
               message: errorInactivar.message,
               code: errorInactivar.code,
               details: errorInactivar.details,
@@ -716,7 +709,7 @@ class NegociacionesService {
         // ? CRÍTICO: Si hubo errores al inactivar, lanzar excepción
         if (erroresInactivacion.length > 0) {
           const mensajeError = `No se pudieron inactivar ${erroresInactivacion.length} fuente(s). Errores: ${JSON.stringify(erroresInactivacion, null, 2)}`
-          console.error(
+          logger.error(
             '?? [CRÍTICO] Errores al inactivar fuentes:',
             mensajeError
           )
@@ -822,7 +815,7 @@ class NegociacionesService {
     } catch (error) {
       const mensaje =
         error instanceof Error ? error.message : 'Error desconocido'
-      console.error('? [CLIENTES] Error actualizando fuentes de pago:', {
+      logger.error('? [CLIENTES] Error actualizando fuentes de pago:', {
         mensaje,
         error,
         negociacionId,

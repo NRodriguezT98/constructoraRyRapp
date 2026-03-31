@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 
 import { supabaseAdmin } from '@/lib/supabase/admin'
 import { createRouteClient } from '@/lib/supabase/server-route'
+import { logger } from '@/lib/utils/logger'
 
 /**
  * GET /api/abonos/comprobante?path=...
@@ -18,7 +19,10 @@ import { createRouteClient } from '@/lib/supabase/server-route'
 export async function GET(request: NextRequest) {
   // 1. Verificar sesión
   const supabase = await createRouteClient()
-  const { data: { user }, error: authError } = await supabase.auth.getUser()
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser()
 
   if (authError || !user) {
     return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
@@ -27,16 +31,19 @@ export async function GET(request: NextRequest) {
   // 2. Leer parámetro ?path=
   const path = request.nextUrl.searchParams.get('path')
   if (!path) {
-    return NextResponse.json({ error: 'Falta el parámetro path' }, { status: 400 })
+    return NextResponse.json(
+      { error: 'Falta el parámetro path' },
+      { status: 400 }
+    )
   }
 
   // 3. Verificar que el path existe en la BD (sin filtro de estado → acceso histórico)
   const { data: abono, error: dbError } = await supabase
-    .from('abonos_historial' as any)
+    .from('abonos_historial')
     .select('id')
     .eq('comprobante_url', path)
     .limit(1)
-    .maybeSingle() as { data: any; error: any }
+    .maybeSingle()
 
   if (dbError || !abono) {
     return NextResponse.json(
@@ -51,7 +58,7 @@ export async function GET(request: NextRequest) {
     .createSignedUrl(path, 3600)
 
   if (signError || !signedData?.signedUrl) {
-    console.error('[comprobante] Error generando signed URL:', signError)
+    logger.error('[comprobante] Error generando signed URL:', signError)
     return NextResponse.json(
       { error: 'No se pudo generar el enlace de descarga' },
       { status: 500 }

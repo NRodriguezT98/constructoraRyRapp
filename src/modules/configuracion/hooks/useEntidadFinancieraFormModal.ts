@@ -21,6 +21,8 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
+import { logger } from '@/lib/utils/logger'
+
 import type {
   EntidadColor,
   EntidadFinanciera,
@@ -280,8 +282,7 @@ export function useEntidadFinancieraFormModal({
       onClose()
     } catch (error) {
       // Error handled by mutation
-      // eslint-disable-next-line no-console, no-restricted-syntax
-      console.error('Error en submit:', error)
+      logger.error('Error en submit:', error)
     }
   }
 

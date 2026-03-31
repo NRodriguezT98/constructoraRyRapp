@@ -1478,6 +1478,247 @@ src/modules/[nombre-modulo]/
 
 ---
 
+### 🚨 REGLA CRÍTICA #3: CLIENTE SUPABASE — IMPORT ÚNICO (OBLIGATORIO)
+
+**⚠️ AL importar el cliente de Supabase en CUALQUIER archivo:**
+
+1. **SIEMPRE** → `import { supabase } from '@/lib/supabase/client'`
+2. **NUNCA** → `import { createClient } from '@supabase/supabase-js'` (rompe SSR)
+3. **NUNCA** → Crear instancias nuevas de supabase en código de negocio
+4. **SERVER** → Para Server Components/API Routes usar `createServerClient` de `@/lib/supabase/server`
+
+**Correcto:**
+
+```typescript
+// ✅ Client-side (services, hooks, componentes 'use client')
+import { supabase } from '@/lib/supabase/client'
+
+// ✅ Server-side (Server Components, API Routes, middleware)
+import { createServerClient } from '@/lib/supabase/server'
+```
+
+**Incorrecto:**
+
+```typescript
+// ❌ NUNCA importar directo del paquete
+import { createClient } from '@supabase/supabase-js'
+const supabase = createClient(url, key) // ← NO HACER
+
+// ❌ NUNCA crear instancias sueltas
+const client = createBrowserClient(url, key) // ← NO HACER
+```
+
+---
+
+### 🚨 REGLA CRÍTICA #4: MANEJO DE ERRORES — PATRÓN SERVICE → HOOK → TOAST (OBLIGATORIO)
+
+**⚠️ AL implementar error handling en CUALQUIER flujo:**
+
+#### 📐 Flujo ESTÁNDAR de errores (3 capas):
+
+```
+Service (.service.ts)  →  Hook (use*.ts)  →  UI (.tsx)
+   logger.error()         try/catch           toast.error()
+   throw Error            mutación RQ         mensaje al usuario
+```
+
+#### 1. SERVICE: Loguear + Lanzar
+
+```typescript
+// ✅ CORRECTO: Service loguea y lanza
+async function crearCliente(datos: CrearClienteDTO) {
+  const { data, error } = await supabase
+    .from('clientes')
+    .insert(datos)
+    .select()
+    .single()
+
+  if (error) {
+    logger.error('❌ Error creando cliente:', error)
+    throw new Error(`Error al crear cliente: ${error.message}`)
+  }
+
+  return data
+}
+```
+
+**Reglas del Service:**
+
+- ✅ Loguear con `logger.error()` ANTES de lanzar (para debugging)
+- ✅ `throw new Error()` con mensaje descriptivo (para el usuario)
+- ❌ NO mostrar toast (no es responsabilidad del service)
+- ❌ NO retornar `null` silenciosamente (oculta errores)
+
+#### 2. HOOK: Capturar con React Query
+
+```typescript
+// ✅ CORRECTO: Hook maneja con useMutation
+const crearMutation = useMutation({
+  mutationFn: (datos: CrearClienteDTO) => clienteService.crearCliente(datos),
+  onSuccess: () => {
+    toast.success('Cliente creado exitosamente')
+    queryClient.invalidateQueries({ queryKey: clientesKeys.lists() })
+  },
+  onError: (error: Error) => {
+    toast.error('Error al crear cliente', {
+      description: error.message,
+    })
+  },
+})
+```
+
+**Reglas del Hook:**
+
+- ✅ `onSuccess` → `toast.success()` + invalidar cache
+- ✅ `onError` → `toast.error()` con `error.message`
+- ❌ NO hacer try/catch manual alrededor de `mutateAsync` (React Query lo maneja)
+- ❌ NO duplicar `logger.error()` (el service ya logueó)
+
+#### 3. UI: Solo llamar al hook
+
+```typescript
+// ✅ CORRECTO: Componente solo invoca
+<Button onClick={() => crearMutation.mutate(datos)}>
+  Crear
+</Button>
+```
+
+**Toast library:** `import { toast } from 'sonner'` (ÚNICA librería de notificaciones)
+
+#### ⚠️ Excepción: Funciones que NO deben bloquear
+
+```typescript
+// ✅ Para queries que retornan datos o null (no bloquean flujo)
+async function obtenerCliente(id: string): Promise<Cliente | null> {
+  try {
+    const { data, error } = await supabase
+      .from('clientes')
+      .select('*')
+      .eq('id', id)
+      .single()
+    if (error) throw error
+    return data as Cliente
+  } catch (error) {
+    logger.error('Error obteniendo cliente:', error)
+    return null // ← OK en queries de lectura
+  }
+}
+```
+
+---
+
+### 🚨 REGLA CRÍTICA #5: REACT QUERY — CONVENCIONES (OBLIGATORIO)
+
+**⚠️ AL trabajar con React Query (TanStack Query) en CUALQUIER módulo:**
+
+#### 1. Query Keys — Factory Pattern OBLIGATORIO
+
+```typescript
+// ✅ CORRECTO: Factory en useXxxQuery.ts
+export const clientesKeys = {
+  all: ['clientes'] as const,
+  lists: () => [...clientesKeys.all, 'list'] as const,
+  list: (filtros?: Record<string, unknown>) =>
+    [...clientesKeys.lists(), { filtros }] as const,
+  details: () => [...clientesKeys.all, 'detail'] as const,
+  detail: (id: string) => [...clientesKeys.details(), id] as const,
+}
+
+// ❌ INCORRECTO: Strings sueltos
+queryKey: ['clientes']
+queryKey: ['clientes-lista']
+queryKey: `clientes-${id}`
+```
+
+#### 2. Ubicación — Archivo separado `use[Modulo]Query.ts`
+
+```
+src/modules/[modulo]/hooks/
+├── use[Modulo]Query.ts       # ← Queries + Mutations + Keys (React Query)
+├── use[Modulo]List.ts        # ← Lógica UI de lista (filtros, modales, selección)
+├── use[Modulo]Detail.ts      # ← Lógica UI de detalle
+└── index.ts                  # ← Barrel export
+```
+
+**Reglas:**
+
+- ✅ `use[Modulo]Query.ts` → SOLO `useQuery`, `useMutation`, query keys
+- ✅ `use[Modulo]List.ts` → Lógica de UI que CONSUME los queries
+- ❌ NO mezclar queries con lógica de UI (modales, filtros, estados)
+
+#### 3. Invalidación de Cache
+
+```typescript
+// ✅ CORRECTO: Invalidar con factory keys
+onSuccess: () => {
+  queryClient.invalidateQueries({ queryKey: clientesKeys.lists() })
+  // Si afecta otro módulo:
+  queryClient.invalidateQueries({ queryKey: viviendasKeys.lists() })
+}
+
+// ❌ INCORRECTO: Strings hardcodeados
+queryClient.invalidateQueries({ queryKey: ['clientes'] })
+queryClient.invalidateQueries(['lista-clientes'])
+```
+
+#### 4. Módulos con factory keys ya definidas (referencia)
+
+```typescript
+// Ya existen — USAR estos:
+import { abonosKeys } from '@/modules/abonos/hooks/useAbonosQuery'
+import { clientesKeys } from '@/modules/clientes/hooks/useClientesQuery'
+import { documentosKeys } from '@/modules/documentos/hooks/useDocumentosQuery'
+import { proyectosKeys } from '@/modules/proyectos/hooks/useProyectosQuery'
+import { viviendasKeys } from '@/modules/viviendas/hooks/useViviendasQuery'
+import { renunciasKeys } from '@/modules/renuncias/hooks/useRenunciasQuery'
+```
+
+---
+
+### 🚨 REGLA CRÍTICA #6: `eslint-disable` — POLÍTICA DE USO (OBLIGATORIO)
+
+**⚠️ AL considerar usar `eslint-disable` en CUALQUIER archivo:**
+
+#### ✅ PERMITIDO (infraestructura):
+
+```typescript
+// ✅ Archivos de logger (necesitan console.* por definición)
+// src/lib/utils/logger.ts
+/* eslint-disable no-console, no-restricted-syntax */
+
+// ✅ Scripts de Node.js (ya excluidos por ESLint config)
+// scripts/**/*
+```
+
+#### ❌ PROHIBIDO (código de negocio):
+
+```typescript
+// ❌ NUNCA en services
+/* eslint-disable @typescript-eslint/no-explicit-any */ // ← TIPAR CORRECTAMENTE
+
+// ❌ NUNCA en hooks
+// eslint-disable-next-line no-console
+console.error('Error:', error) // ← USAR logger.error()
+
+// ❌ NUNCA en componentes
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const data = result as any // ← CREAR TYPE CORRECTO
+```
+
+#### 🔧 Alternativas en vez de `eslint-disable`:
+
+| En vez de esto...                | Hacer esto                                            |
+| -------------------------------- | ----------------------------------------------------- |
+| `eslint-disable no-console`      | `import { logger } from '@/lib/utils/logger'`         |
+| `eslint-disable no-explicit-any` | Crear interface/type correcto                         |
+| `as any` en supabase.rpc         | `npm run types:generate` (regenerar tipos)            |
+| `as any` en .insert()            | Crear tipo `InsertData` separado de campos computados |
+| `as any` en joins                | Usar `satisfies` o type assertion específica          |
+
+**Regla de oro:** Si necesitas `eslint-disable` en código de negocio, el problema está en el código, no en ESLint.
+
+---
+
 ## 🚫 PROHIBIDO
 
 ❌ **USAR `new Date()` DIRECTO** para parsear/formatear fechas (usar funciones de `date.utils.ts`)
@@ -1501,12 +1742,26 @@ src/modules/[nombre-modulo]/
 ❌ **Olvidar modo oscuro** (dark:\* en elementos personalizados)
 ❌ **No usar estados de UI** (LoadingState, EmptyState, ErrorState)
 ❌ **Usar `any` en TypeScript** (siempre tipar correctamente)
+❌ **Usar `console.log/error/warn` directo** → usar `import { logger } from '@/lib/utils/logger'`
+❌ **Importar supabase de `@supabase/supabase-js` directo** → usar `@/lib/supabase/client`
+❌ **Crear instancias nuevas de supabase** en código de negocio
+❌ **Mostrar toast desde services** → toast solo en hooks (onError/onSuccess de React Query)
+❌ **Retornar null silenciosamente** en services que modifican datos (throw Error)
+❌ **Query keys como strings sueltos** → usar factory pattern (`clientesKeys.detail(id)`)
+❌ **Mezclar queries React Query con lógica UI** en el mismo hook
+❌ **`eslint-disable` en código de negocio** → corregir el código, no silenciar el linter
 
 ---
 
 ## ✅ REQUERIDO
 
 ✅ **SANITIZACIÓN DE DATOS** → `sanitize*.utils.ts` antes de insert/update (strings vacíos → null)
+✅ **LOGGER CENTRALIZADO** → `import { logger } from '@/lib/utils/logger'` — NUNCA `console.*` directo (ESLint lo bloquea). Usar `logger.error()`, `logger.warn()`, `logger.info()`, `logger.debug()`. Para auth/middleware usar `errorLog()`, `debugLog()` del mismo archivo.
+✅ **SUPABASE CLIENT** → `import { supabase } from '@/lib/supabase/client'` (client-side) o `createServerClient` de `@/lib/supabase/server` (server-side)
+✅ **ERROR HANDLING** → Service: `logger.error()` + `throw` → Hook: `onError: toast.error()` → UI: solo llama al hook
+✅ **TOAST** → `import { toast } from 'sonner'` (única librería de notificaciones, solo en hooks/callbacks de React Query)
+✅ **REACT QUERY KEYS** → Factory pattern en `use[Modulo]Query.ts` (ej: `clientesKeys.detail(id)`)
+✅ **REACT QUERY FILES** → Queries en `use[Modulo]Query.ts` separado de lógica UI en `use[Modulo]List.ts`
 ✅ **FUNCIONES DE FECHAS** → Importar de `@/lib/utils/date.utils` (formatDateShort, formatDateForInput, formatDateForDB, getTodayDateString)
 ✅ **MOSTRAR FECHAS** → `formatDateShort(fecha)` para dd/MM/yyyy
 ✅ **CARGAR EN INPUTS** → `formatDateForInput(fecha)` para <input type="date" />

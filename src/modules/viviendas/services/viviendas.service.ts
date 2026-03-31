@@ -376,8 +376,7 @@ class ViviendasService {
 
     const { data, error } = await supabase
       .from('viviendas')
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .insert(viviendaData as any) // Cast temporal hasta regenerar types
+      .insert(viviendaData)
       .select(
         `
         *,
@@ -445,15 +444,14 @@ class ViviendasService {
             version: 1,
             es_version_actual: true,
             estado: 'activo',
-            subido_por: user?.id || null,
+            subido_por: user?.id ?? '',
             es_importante: true,
             metadata: {
               origen: 'creacion_vivienda',
               matricula: formData.matricula_inmobiliaria,
               nomenclatura: formData.nomenclatura,
             },
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          } as any)
+          })
 
         if (docError) {
           errorLog('[VIVIENDAS] Error al crear registro de documento', docError)

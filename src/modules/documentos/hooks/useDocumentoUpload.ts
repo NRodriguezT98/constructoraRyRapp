@@ -10,6 +10,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 
 import { useAuth } from '@/contexts/auth-context'
+import { logger } from '@/lib/utils/logger'
 
 import { useDocumentoIdentidad } from '../../clientes/documentos/hooks/useDocumentoIdentidad'
 import type { DocumentoFormData } from '../schemas/documento.schema'
@@ -243,8 +244,7 @@ export function useDocumentoUpload({
       }
 
       if (!user) {
-        // eslint-disable-next-line no-console, no-restricted-syntax
-        console.error('Usuario no autenticado')
+        logger.error('Usuario no autenticado')
         return
       }
 
@@ -288,8 +288,7 @@ export function useDocumentoUpload({
         limpiarArchivo()
         onSuccess?.()
       } catch (error) {
-        // eslint-disable-next-line no-console, no-restricted-syntax
-        console.error('Error al subir documento:', error)
+        logger.error('Error al subir documento:', error)
       }
     },
     [

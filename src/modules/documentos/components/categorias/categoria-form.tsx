@@ -6,13 +6,15 @@ import { motion } from 'framer-motion'
 import { useForm } from 'react-hook-form'
 
 import {
-    COLORES_CATEGORIA,
-    type CategoriaFormData,
-} from '../../../../types/documento.types'
+  COLORES_CATEGORIA,
+  type CategoriaDocumento,
+  type CategoriaFormData,
+} from '@/modules/documentos/types/documento.types'
+
 import { CategoriaIcon } from '../shared/categoria-icon'
 
 interface CategoriaFormProps {
-  categoria?: any // Para edición
+  categoria?: CategoriaDocumento // Para edición
   onSubmit: (data: CategoriaFormData) => Promise<void>
   onCancel: () => void
 }
@@ -205,7 +207,7 @@ export function CategoriaForm({
         <label className='mb-3 block text-sm font-medium text-gray-700 dark:text-gray-300'>
           Ícono
         </label>
-        <div className='grid grid-cols-5 sm:grid-cols-6 lg:grid-cols-8 gap-3 max-h-80 overflow-y-auto p-2 rounded-xl bg-gray-50 dark:bg-gray-800/50'>
+        <div className='grid max-h-80 grid-cols-5 gap-3 overflow-y-auto rounded-xl bg-gray-50 p-2 dark:bg-gray-800/50 sm:grid-cols-6 lg:grid-cols-8'>
           {ICONOS_DISPONIBLES.map(({ nombre, icono, label }) => (
             <motion.button
               key={nombre}

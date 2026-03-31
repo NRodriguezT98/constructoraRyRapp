@@ -13,9 +13,8 @@
  *
  * @version 1.0.0 - 2025-12-12
  */
-/* eslint-disable no-console, no-restricted-syntax */
-
 import { supabase } from '@/lib/supabase/client'
+import { logger } from '@/lib/utils/logger'
 
 // ============================================
 // TYPES
@@ -95,7 +94,7 @@ export class FuentesPagoRequisitosService {
       )
 
       if (error) {
-        console.error('❌ Error validando requisitos:', error)
+        logger.error('❌ Error validando requisitos:', error)
         throw new Error(`Error al validar requisitos: ${error.message}`)
       }
 
@@ -110,7 +109,7 @@ export class FuentesPagoRequisitosService {
           []) as unknown as DocumentoCompletado[],
       }
     } catch (error) {
-      console.error('❌ Error en validarRequisitosDesembolso:', error)
+      logger.error('❌ Error en validarRequisitosDesembolso:', error)
       throw error
     }
   }
@@ -130,7 +129,7 @@ export class FuentesPagoRequisitosService {
       )
 
       if (error) {
-        console.error('❌ Error obteniendo estado:', error)
+        logger.error('❌ Error obteniendo estado:', error)
         throw new Error(`Error al obtener estado: ${error.message}`)
       }
 
@@ -152,7 +151,7 @@ export class FuentesPagoRequisitosService {
         validacion: resultado.validacion as unknown as ValidacionRequisitos,
       }
     } catch (error) {
-      console.error('❌ Error en obtenerEstadoDocumentacionFuente:', error)
+      logger.error('❌ Error en obtenerEstadoDocumentacionFuente:', error)
       throw error
     }
   }
@@ -171,13 +170,13 @@ export class FuentesPagoRequisitosService {
         .order('orden', { ascending: true })
 
       if (error) {
-        console.error('❌ Error obteniendo configuración:', error)
+        logger.error('❌ Error obteniendo configuración:', error)
         throw new Error(`Error al obtener configuración: ${error.message}`)
       }
 
       return (data || []) as unknown as RequisitoConfig[]
     } catch (error) {
-      console.error('❌ Error en obtenerRequisitosConfig:', error)
+      logger.error('❌ Error en obtenerRequisitosConfig:', error)
       throw error
     }
   }
@@ -194,13 +193,13 @@ export class FuentesPagoRequisitosService {
         .order('orden', { ascending: true })
 
       if (error) {
-        console.error('❌ Error obteniendo requisitos:', error)
+        logger.error('❌ Error obteniendo requisitos:', error)
         throw new Error(`Error al obtener requisitos: ${error.message}`)
       }
 
       return (data || []) as unknown as RequisitoConfig[]
     } catch (error) {
-      console.error('❌ Error en obtenerTodosLosRequisitos:', error)
+      logger.error('❌ Error en obtenerTodosLosRequisitos:', error)
       throw error
     }
   }
@@ -223,7 +222,7 @@ export class FuentesPagoRequisitosService {
         if (resultado.status === 'fulfilled') {
           mapa.set(fuenteId, resultado.value)
         } else {
-          console.warn(
+          logger.warn(
             `⚠️ Error validando fuente ${fuenteId}:`,
             resultado.reason
           )
@@ -234,7 +233,7 @@ export class FuentesPagoRequisitosService {
 
       return mapa
     } catch (error) {
-      console.error('❌ Error en validarMultiplesFuentes:', error)
+      logger.error('❌ Error en validarMultiplesFuentes:', error)
       throw error
     }
   }

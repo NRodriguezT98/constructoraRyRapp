@@ -13,6 +13,8 @@
 
 import { useCallback, useMemo, useState } from 'react'
 
+import { logger } from '@/lib/utils/logger'
+
 import type { ClienteResumen, FiltrosClientes } from '../types'
 
 import {
@@ -215,8 +217,7 @@ export function useClientesList() {
       setClienteEliminar(null)
     } catch (error) {
       // Error ya manejado por mutation
-      // eslint-disable-next-line no-console, no-restricted-syntax
-      console.error('Error eliminando cliente:', error)
+      logger.error('Error eliminando cliente:', error)
     }
   }, [clienteEliminar, eliminarMutation])
 

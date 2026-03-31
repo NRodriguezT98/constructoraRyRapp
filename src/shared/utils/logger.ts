@@ -5,6 +5,8 @@
  * Usar SIEMPRE en lugar de console.log directo.
  */
 
+/* eslint-disable no-console, no-restricted-syntax */
+
 import { APP_CONFIG } from '@/shared/constants/app-config'
 
 // =============================================================================
@@ -16,7 +18,7 @@ export interface LogContext {
   userId?: string
   action?: string
   module?: string
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
   timestamp?: Date
 }
 
@@ -78,10 +80,10 @@ class Logger {
 
     const timestamp = new Date().toISOString()
     const emoji = LOG_EMOJIS[level]
-    const module = context?.module ? `[${context.module}]` : ''
+    const moduleTag = context?.module ? `[${context.module}]` : ''
 
     // Formato del mensaje
-    const logMessage = `${emoji} ${module} ${message}`
+    const logMessage = `${emoji} ${moduleTag} ${message}`
 
     // Información adicional
     const logData = {
@@ -126,7 +128,7 @@ class Logger {
   /**
    * Enviar errores críticos a servicio de monitoreo
    */
-  private sendToMonitoring(logData: any): void {
+  private sendToMonitoring(_logData: Record<string, unknown>): void {
     if (!this.isDevelopment) {
       // Aquí integrar con Sentry, LogRocket, etc.
       // TODO: Implementar cuando tengas servicio de monitoreo
@@ -191,7 +193,7 @@ class Logger {
    * Logs específicos de API
    */
   api = {
-    request: (url: string, method: string, data?: any) => {
+    request: (url: string, method: string, data?: unknown) => {
       this.debug(`API Request: ${method} ${url}`, {
         module: LOG_MODULES.API,
         action: 'request',
@@ -340,7 +342,7 @@ export async function measureTimeAsync<T>(
  */
 export function trackUserEvent(
   event: string,
-  properties?: Record<string, any>
+  properties?: Record<string, unknown>
 ): void {
   logger.info(`📊 User Event: ${event}`, {
     module: 'ANALYTICS',

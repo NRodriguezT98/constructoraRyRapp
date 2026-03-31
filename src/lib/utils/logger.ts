@@ -5,7 +5,18 @@
  *
  * Logging condicional basado en variables de entorno.
  * Solo logea en desarrollo o cuando DEBUG está habilitado.
+ *
+ * USO RÁPIDO (recomendado para services/hooks/componentes):
+ *   import { logger } from '@/lib/utils/logger'
+ *   logger.error('Mensaje', error)
+ *   logger.warn('Advertencia', data)
+ *
+ * USO DETALLADO (para auth/middleware):
+ *   import { errorLog, debugLog } from '@/lib/utils/logger'
+ *   errorLog('contexto', error, { extra: 'data' })
  */
+
+/* eslint-disable no-console, no-restricted-syntax */
 
 const IS_DEV = process.env.NODE_ENV === 'development'
 const DEBUG_AUTH = process.env.NEXT_PUBLIC_DEBUG_AUTH === 'true'
@@ -15,7 +26,7 @@ const DEBUG_AUTH = process.env.NEXT_PUBLIC_DEBUG_AUTH === 'true'
  * @param message - Mensaje a mostrar
  * @param data - Datos opcionales a mostrar
  */
-export function debugLog(message: string, data?: any) {
+export function debugLog(message: string, data?: unknown) {
   if (IS_DEV && DEBUG_AUTH) {
     if (data !== undefined) {
       console.log(message, data)
@@ -31,12 +42,17 @@ export function debugLog(message: string, data?: any) {
  * @param error - Error capturado
  * @param additionalData - Datos adicionales opcionales
  */
-export function errorLog(context: string, error: any, additionalData?: Record<string, any>) {
+export function errorLog(
+  context: string,
+  error: unknown,
+  additionalData?: Record<string, unknown>
+) {
+  const err = error as Record<string, unknown> | null | undefined
   const errorInfo = {
     timestamp: new Date().toISOString(),
     context,
-    message: error?.message || 'Error desconocido',
-    stack: IS_DEV ? error?.stack : error?.stack?.substring(0, 200), // Stack completo solo en dev
+    message: (err?.message as string) || 'Error desconocido',
+    stack: IS_DEV ? err?.stack : (err?.stack as string)?.substring(0, 200), // Stack completo solo en dev
     ...additionalData,
   }
 
@@ -72,6 +88,32 @@ export function successLog(message: string) {
  * Log de advertencia (siempre se muestra)
  * @param message - Mensaje de advertencia
  */
-export function warnLog(message: string, data?: any) {
+export function warnLog(message: string, data?: unknown) {
   console.warn(`⚠️ [RYR WARNING]`, message, data || '')
+}
+
+// ============================================
+// LOGGER SIMPLE (API compatible con console.*)
+// ============================================
+
+/**
+ * Logger simple drop-in para reemplazar console.* en toda la app.
+ * - error: siempre se muestra (necesario para debugging en producción)
+ * - warn: solo en desarrollo
+ * - info: solo en desarrollo
+ * - debug: solo en desarrollo con DEBUG_AUTH=true
+ */
+export const logger = {
+  error: (...args: unknown[]) => {
+    console.error(...args)
+  },
+  warn: (...args: unknown[]) => {
+    if (IS_DEV) console.warn(...args)
+  },
+  info: (...args: unknown[]) => {
+    if (IS_DEV) console.info(...args)
+  },
+  debug: (...args: unknown[]) => {
+    if (IS_DEV && DEBUG_AUTH) console.log(...args)
+  },
 }

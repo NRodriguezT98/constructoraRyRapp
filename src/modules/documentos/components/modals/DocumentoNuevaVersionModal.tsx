@@ -18,11 +18,16 @@ import { createPortal } from 'react-dom'
 import { toast } from 'sonner'
 
 import { useAuth } from '@/contexts/auth-context'
-import { formatDateForDB, formatDateForInput, getTodayDateString } from '@/lib/utils/date.utils'
+import {
+  formatDateForDB,
+  formatDateForInput,
+  getTodayDateString,
+} from '@/lib/utils/date.utils'
+import { logger } from '@/lib/utils/logger'
 import { documentosKeys } from '@/modules/documentos/hooks/useDocumentosQuery'
 import { DocumentosService } from '@/modules/documentos/services/documentos.service'
+import type { DocumentoProyecto } from '@/modules/documentos/types/documento.types'
 import type { TipoEntidad } from '@/modules/documentos/types/entidad.types'
-import type { DocumentoProyecto } from '@/types/documento.types'
 
 interface DocumentoNuevaVersionModalProps {
   isOpen: boolean
@@ -46,10 +51,14 @@ export function DocumentoNuevaVersionModal({
   const [archivo, setArchivo] = useState<File | null>(null)
   const [titulo, setTitulo] = useState(documento.titulo)
   const [fechaDocumento, setFechaDocumento] = useState(
-    documento.fecha_documento ? formatDateForInput(documento.fecha_documento) : getTodayDateString()
+    documento.fecha_documento
+      ? formatDateForInput(documento.fecha_documento)
+      : getTodayDateString()
   )
   const [fechaVencimiento, setFechaVencimiento] = useState(
-    documento.fecha_vencimiento ? formatDateForInput(documento.fecha_vencimiento) : ''
+    documento.fecha_vencimiento
+      ? formatDateForInput(documento.fecha_vencimiento)
+      : ''
   )
   const [cambios, setCambios] = useState('')
   const [subiendo, setSubiendo] = useState(false)
@@ -69,7 +78,7 @@ export function DocumentoNuevaVersionModal({
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
       'application/msword',
       'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-      'application/vnd.ms-excel'
+      'application/vnd.ms-excel',
     ]
 
     if (!allowedTypes.includes(file.type)) {
@@ -111,7 +120,9 @@ export function DocumentoNuevaVersionModal({
       const fechaVenc = new Date(fechaVencimiento)
 
       if (fechaVenc < fechaDoc) {
-        setError('La fecha de vencimiento no puede ser anterior a la fecha del documento')
+        setError(
+          'La fecha de vencimiento no puede ser anterior a la fecha del documento'
+        )
         toast.error('Fecha de vencimiento inválida')
         return
       }
@@ -138,22 +149,28 @@ export function DocumentoNuevaVersionModal({
       )
 
       // ✅ Invalidar caché de React Query - GENÉRICO según tipoEntidad
-      const entidadId = tipoEntidad === 'proyecto'
-        ? documento.proyecto_id
-        : tipoEntidad === 'vivienda'
-        ? (documento as any).vivienda_id
-        : (documento as any).cliente_id
+      const docRecord = documento as unknown as Record<string, unknown>
+      const entidadId =
+        tipoEntidad === 'proyecto'
+          ? documento.proyecto_id
+          : tipoEntidad === 'vivienda'
+            ? (docRecord.vivienda_id as string | undefined)
+            : (docRecord.cliente_id as string | undefined)
 
       queryClient.invalidateQueries({
-        queryKey: documentosKeys.list(entidadId!, tipoEntidad),
+        queryKey: documentosKeys.list(entidadId ?? '', tipoEntidad),
       })
 
       toast.success('Nueva versión creada exitosamente')
       onSuccess?.()
       handleClose()
-    } catch (error: any) {
-      console.error('Error al crear nueva versión:', error)
-      setError(error?.message || 'Error al subir la nueva versión')
+    } catch (error: unknown) {
+      logger.error('Error al crear nueva versión:', error)
+      setError(
+        error instanceof Error
+          ? error.message
+          : 'Error al subir la nueva versión'
+      )
       toast.error('Error al crear nueva versión')
     } finally {
       setSubiendo(false)
@@ -164,8 +181,16 @@ export function DocumentoNuevaVersionModal({
     if (subiendo) return
     setArchivo(null)
     setTitulo(documento.titulo)
-    setFechaDocumento(documento.fecha_documento ? formatDateForInput(documento.fecha_documento) : getTodayDateString())
-    setFechaVencimiento(documento.fecha_vencimiento ? formatDateForInput(documento.fecha_vencimiento) : '')
+    setFechaDocumento(
+      documento.fecha_documento
+        ? formatDateForInput(documento.fecha_documento)
+        : getTodayDateString()
+    )
+    setFechaVencimiento(
+      documento.fecha_vencimiento
+        ? formatDateForInput(documento.fecha_vencimiento)
+        : ''
+    )
     setCambios('')
     setError(null)
     onClose()
@@ -174,9 +199,12 @@ export function DocumentoNuevaVersionModal({
   if (!isOpen) return null
 
   // ✅ Advertencia si fecha nueva es anterior a la actual
-  const fechaActual = documento.fecha_documento ? new Date(documento.fecha_documento) : null
+  const fechaActual = documento.fecha_documento
+    ? new Date(documento.fecha_documento)
+    : null
   const fechaNueva = fechaDocumento ? new Date(fechaDocumento) : null
-  const mostrarAdvertenciaFecha = fechaActual && fechaNueva && fechaNueva < fechaActual
+  const mostrarAdvertenciaFecha =
+    fechaActual && fechaNueva && fechaNueva < fechaActual
 
   // ✅ Validación en tiempo real: Fecha de vencimiento vs Fecha de documento
   const fechaDoc = fechaDocumento ? new Date(fechaDocumento) : null
@@ -185,48 +213,48 @@ export function DocumentoNuevaVersionModal({
 
   const modalContent = (
     <AnimatePresence>
-      <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+      <div className='fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm'>
         <motion.div
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
-          className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-white dark:bg-gray-800 rounded-2xl shadow-2xl"
+          className='relative max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white shadow-2xl dark:bg-gray-800'
         >
           {/* Header - Verde/Esmeralda (tema Proyectos) */}
-          <div className="sticky top-0 z-10 bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 px-6 py-4 rounded-t-2xl">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                  <Upload className="w-5 h-5 text-white" />
+          <div className='sticky top-0 z-10 rounded-t-2xl bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 px-6 py-4'>
+            <div className='flex items-center justify-between'>
+              <div className='flex items-center gap-3'>
+                <div className='flex h-10 w-10 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm'>
+                  <Upload className='h-5 w-5 text-white' />
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold text-white">
+                  <h2 className='text-xl font-bold text-white'>
                     Subir Nueva Versión
                   </h2>
-                  <p className="text-sm text-white/90 mt-0.5">
+                  <p className='mt-0.5 text-sm text-white/90'>
                     {documento.titulo}
                   </p>
                 </div>
               </div>
               <button
-                type="button"
+                type='button'
                 onClick={handleClose}
                 disabled={subiendo}
-                className="p-2 rounded-lg text-white/80 hover:text-white hover:bg-white/10 transition-colors disabled:opacity-50"
+                className='rounded-lg p-2 text-white/80 transition-colors hover:bg-white/10 hover:text-white disabled:opacity-50'
               >
-                <X className="w-5 h-5" />
+                <X className='h-5 w-5' />
               </button>
             </div>
           </div>
 
           {/* Content */}
-          <form onSubmit={handleSubmit} className="p-6 space-y-5">
+          <form onSubmit={handleSubmit} className='space-y-5 p-6'>
             {/* Error */}
             {error && (
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="rounded-lg border-2 border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400"
+                className='rounded-lg border-2 border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400'
               >
                 ⚠️ {error}
               </motion.div>
@@ -234,62 +262,57 @@ export function DocumentoNuevaVersionModal({
 
             {/* Archivo */}
             <div>
-              <label className="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300">
+              <label className='mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300'>
                 Nuevo archivo *
               </label>
               {!archivo ? (
                 <label
-                  htmlFor="file-upload-version"
-                  className="
-                    group flex cursor-pointer flex-col items-center justify-center gap-3
-                    rounded-xl border-2 border-dashed border-green-300 bg-green-50 p-6
-                    transition-all hover:border-green-500 hover:bg-green-100
-                    dark:border-green-700 dark:bg-green-950/30 dark:hover:border-green-600
-                  "
+                  htmlFor='file-upload-version'
+                  className='group flex cursor-pointer flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed border-green-300 bg-green-50 p-6 transition-all hover:border-green-500 hover:bg-green-100 dark:border-green-700 dark:bg-green-950/30 dark:hover:border-green-600'
                 >
-                  <div className="rounded-full bg-green-100 p-3 group-hover:bg-green-200 dark:bg-green-900/30">
-                    <Upload className="h-6 w-6 text-green-600 dark:text-green-400" />
+                  <div className='rounded-full bg-green-100 p-3 group-hover:bg-green-200 dark:bg-green-900/30'>
+                    <Upload className='h-6 w-6 text-green-600 dark:text-green-400' />
                   </div>
-                  <div className="text-center">
-                    <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                  <div className='text-center'>
+                    <p className='text-sm font-semibold text-gray-700 dark:text-gray-300'>
                       Seleccionar archivo
                     </p>
-                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                    <p className='mt-1 text-xs text-gray-500 dark:text-gray-400'>
                       PDF, Imágenes, Word, Excel • Máx. 50MB
                     </p>
                   </div>
                   <input
-                    id="file-upload-version"
-                    type="file"
+                    id='file-upload-version'
+                    type='file'
                     onChange={handleFileSelect}
-                    accept=".pdf,.jpg,.jpeg,.png,.webp,.doc,.docx,.xls,.xlsx"
-                    className="hidden"
+                    accept='.pdf,.jpg,.jpeg,.png,.webp,.doc,.docx,.xls,.xlsx'
+                    className='hidden'
                     disabled={subiendo}
                   />
                 </label>
               ) : (
-                <div className="flex items-center gap-3 rounded-xl border-2 border-green-200 bg-green-50 p-3 dark:border-green-800 dark:bg-green-950/30">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-600 text-white">
-                    <FileText className="h-5 w-5" />
+                <div className='flex items-center gap-3 rounded-xl border-2 border-green-200 bg-green-50 p-3 dark:border-green-800 dark:bg-green-950/30'>
+                  <div className='flex h-10 w-10 items-center justify-center rounded-lg bg-green-600 text-white'>
+                    <FileText className='h-5 w-5' />
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="truncate text-sm font-semibold text-gray-900 dark:text-white">
+                  <div className='min-w-0 flex-1'>
+                    <p className='truncate text-sm font-semibold text-gray-900 dark:text-white'>
                       {archivo.name}
                     </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                    <p className='text-xs text-gray-500 dark:text-gray-400'>
                       {(archivo.size / 1024 / 1024).toFixed(2)} MB
                     </p>
                   </div>
                   <button
-                    type="button"
+                    type='button'
                     onClick={() => {
                       setArchivo(null)
                       setTitulo(documento.titulo) // Restaurar título original
                     }}
-                    className="p-1 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors"
+                    className='rounded-lg p-1 transition-colors hover:bg-red-100 dark:hover:bg-red-900/30'
                     disabled={subiendo}
                   >
-                    <X className="h-4 w-4 text-red-600 dark:text-red-400" />
+                    <X className='h-4 w-4 text-red-600 dark:text-red-400' />
                   </button>
                 </div>
               )}
@@ -299,54 +322,63 @@ export function DocumentoNuevaVersionModal({
             {archivo && (
               <>
                 <div>
-                  <label htmlFor="titulo" className="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300">
+                  <label
+                    htmlFor='titulo'
+                    className='mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300'
+                  >
                     Título del documento *
                   </label>
                   <input
-                    id="titulo"
-                    type="text"
+                    id='titulo'
+                    type='text'
                     value={titulo}
-                    onChange={(e) => setTitulo(e.target.value)}
-                    placeholder="Ej: Certificado de Tradición Actualizado"
-                    className="w-full rounded-lg border-2 border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-900 transition-all focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500/20 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:bg-gray-900/50 dark:text-white dark:focus:border-green-600"
+                    onChange={e => setTitulo(e.target.value)}
+                    placeholder='Ej: Certificado de Tradición Actualizado'
+                    className='w-full rounded-lg border-2 border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-900 transition-all focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500/20 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:bg-gray-900/50 dark:text-white dark:focus:border-green-600'
                     disabled={subiendo}
                     required
                   />
-                  <p className="mt-1.5 text-xs text-gray-500 dark:text-gray-400">
+                  <p className='mt-1.5 text-xs text-gray-500 dark:text-gray-400'>
                     💡 Puedes editar el título para hacerlo más descriptivo
                   </p>
                 </div>
 
                 {/* Grid de fechas */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
                   {/* Fecha del documento */}
                   <div>
-                    <label htmlFor="fecha-documento" className="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300">
-                      <Calendar className="inline w-3.5 h-3.5 mr-1" />
+                    <label
+                      htmlFor='fecha-documento'
+                      className='mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300'
+                    >
+                      <Calendar className='mr-1 inline h-3.5 w-3.5' />
                       Fecha del documento
                     </label>
                     <input
-                      id="fecha-documento"
-                      type="date"
+                      id='fecha-documento'
+                      type='date'
                       value={fechaDocumento}
-                      onChange={(e) => setFechaDocumento(e.target.value)}
-                      className="w-full rounded-lg border-2 border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-900 transition-all focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500/20 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:bg-gray-900/50 dark:text-white dark:focus:border-green-600"
+                      onChange={e => setFechaDocumento(e.target.value)}
+                      className='w-full rounded-lg border-2 border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-900 transition-all focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500/20 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:bg-gray-900/50 dark:text-white dark:focus:border-green-600'
                       disabled={subiendo}
                     />
                   </div>
 
                   {/* Fecha de vencimiento */}
                   <div>
-                    <label htmlFor="fecha-vencimiento" className="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300">
-                      <Calendar className="inline w-3.5 h-3.5 mr-1" />
+                    <label
+                      htmlFor='fecha-vencimiento'
+                      className='mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300'
+                    >
+                      <Calendar className='mr-1 inline h-3.5 w-3.5' />
                       Fecha de vencimiento (opcional)
                     </label>
                     <input
-                      id="fecha-vencimiento"
-                      type="date"
+                      id='fecha-vencimiento'
+                      type='date'
                       value={fechaVencimiento}
-                      onChange={(e) => setFechaVencimiento(e.target.value)}
-                      className="w-full rounded-lg border-2 border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-900 transition-all focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500/20 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:bg-gray-900/50 dark:text-white dark:focus:border-green-600"
+                      onChange={e => setFechaVencimiento(e.target.value)}
+                      className='w-full rounded-lg border-2 border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-900 transition-all focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500/20 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:bg-gray-900/50 dark:text-white dark:focus:border-green-600'
                       disabled={subiendo}
                     />
                   </div>
@@ -357,12 +389,14 @@ export function DocumentoNuevaVersionModal({
                   <motion.div
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="rounded-lg bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 p-3"
+                    className='rounded-lg border border-yellow-200 bg-yellow-50 p-3 dark:border-yellow-800 dark:bg-yellow-900/20'
                   >
-                    <div className="flex items-center gap-2">
-                      <AlertTriangle className="w-4 h-4 text-yellow-600 dark:text-yellow-500" />
-                      <p className="text-xs text-yellow-700 dark:text-yellow-300">
-                        <strong>Advertencia:</strong> La fecha del nuevo documento es anterior a la versión actual. ¿Estás seguro de continuar?
+                    <div className='flex items-center gap-2'>
+                      <AlertTriangle className='h-4 w-4 text-yellow-600 dark:text-yellow-500' />
+                      <p className='text-xs text-yellow-700 dark:text-yellow-300'>
+                        <strong>Advertencia:</strong> La fecha del nuevo
+                        documento es anterior a la versión actual. ¿Estás seguro
+                        de continuar?
                       </p>
                     </div>
                   </motion.div>
@@ -373,12 +407,13 @@ export function DocumentoNuevaVersionModal({
                   <motion.div
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-3"
+                    className='rounded-lg border border-red-200 bg-red-50 p-3 dark:border-red-800 dark:bg-red-900/20'
                   >
-                    <div className="flex items-center gap-2">
-                      <AlertTriangle className="w-4 h-4 text-red-600 dark:text-red-500" />
-                      <p className="text-xs text-red-700 dark:text-red-300">
-                        <strong>Error:</strong> La fecha de vencimiento no puede ser anterior a la fecha del documento.
+                    <div className='flex items-center gap-2'>
+                      <AlertTriangle className='h-4 w-4 text-red-600 dark:text-red-500' />
+                      <p className='text-xs text-red-700 dark:text-red-300'>
+                        <strong>Error:</strong> La fecha de vencimiento no puede
+                        ser anterior a la fecha del documento.
                       </p>
                     </div>
                   </motion.div>
@@ -386,19 +421,22 @@ export function DocumentoNuevaVersionModal({
 
                 {/* Descripción de cambios */}
                 <div>
-                  <label htmlFor="cambios" className="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300">
+                  <label
+                    htmlFor='cambios'
+                    className='mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300'
+                  >
                     Descripción de cambios (opcional)
                   </label>
                   <textarea
-                    id="cambios"
+                    id='cambios'
                     value={cambios}
-                    onChange={(e) => setCambios(e.target.value)}
-                    placeholder="Ej: Actualización con información más reciente del cliente"
+                    onChange={e => setCambios(e.target.value)}
+                    placeholder='Ej: Actualización con información más reciente del cliente'
                     rows={3}
-                    className="w-full rounded-lg border-2 border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-900 transition-all focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500/20 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:bg-gray-900/50 dark:text-white dark:focus:border-green-600"
+                    className='w-full rounded-lg border-2 border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-900 transition-all focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500/20 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:bg-gray-900/50 dark:text-white dark:focus:border-green-600'
                     disabled={subiendo}
                   />
-                  <p className="mt-1.5 text-xs text-gray-500 dark:text-gray-400">
+                  <p className='mt-1.5 text-xs text-gray-500 dark:text-gray-400'>
                     Explica brevemente qué cambió en esta versión
                   </p>
                 </div>
@@ -406,23 +444,28 @@ export function DocumentoNuevaVersionModal({
             )}
 
             {/* Botones */}
-            <div className="flex gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+            <div className='flex gap-3 border-t border-gray-200 pt-4 dark:border-gray-700'>
               <button
-                type="button"
+                type='button'
                 onClick={handleClose}
                 disabled={subiendo}
-                className="flex-1 rounded-lg border-2 border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+                className='flex-1 rounded-lg border-2 border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
               >
                 Cancelar
               </button>
               <button
-                type="submit"
-                disabled={!archivo || !titulo.trim() || subiendo || !!fechaVencimientoInvalida}
-                className="flex-1 rounded-lg bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 px-4 py-2.5 text-sm font-medium text-white transition-all hover:from-green-700 hover:via-emerald-700 hover:to-teal-700 disabled:cursor-not-allowed disabled:opacity-50 shadow-lg shadow-green-500/20"
+                type='submit'
+                disabled={
+                  !archivo ||
+                  !titulo.trim() ||
+                  subiendo ||
+                  !!fechaVencimientoInvalida
+                }
+                className='flex-1 rounded-lg bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 px-4 py-2.5 text-sm font-medium text-white shadow-lg shadow-green-500/20 transition-all hover:from-green-700 hover:via-emerald-700 hover:to-teal-700 disabled:cursor-not-allowed disabled:opacity-50'
               >
                 {subiendo ? (
-                  <div className="flex items-center justify-center gap-2">
-                    <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  <div className='flex items-center justify-center gap-2'>
+                    <div className='h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white' />
                     <span>Subiendo...</span>
                   </div>
                 ) : (
@@ -437,5 +480,7 @@ export function DocumentoNuevaVersionModal({
   )
 
   // Renderizar en Portal para garantizar z-index
-  return typeof window !== 'undefined' ? createPortal(modalContent, document.body) : null
+  return typeof window !== 'undefined'
+    ? createPortal(modalContent, document.body)
+    : null
 }

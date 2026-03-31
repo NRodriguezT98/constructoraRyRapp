@@ -6,13 +6,18 @@
  * reales via vista_estado_periodos_credito.
  */
 
-import { supabase } from '@/lib/supabase/client';
+import { supabase } from '@/lib/supabase/client'
 
-import type { CuotaCalculo, CuotaCalendario, PeriodoCredito, ResumenCuotas } from '../types';
-import { fechaCuotaParaBD } from '../utils/calculos-credito';
+import type {
+  CuotaCalculo,
+  CuotaCalendario,
+  PeriodoCredito,
+  ResumenCuotas,
+} from '../types'
+import { fechaCuotaParaBD } from '../utils/calculos-credito'
 
 // Alias deprecado para compatibilidad
-export type { CuotaCalendario as CuotaCredito };
+export type { CuotaCalendario as CuotaCredito }
 
 // ============================================================
 // LEER PERÍODOS (vista calculada)
@@ -26,7 +31,7 @@ export async function getPeriodosCredito(
   fuentePagoId: string
 ): Promise<{ data: PeriodoCredito[] | null; error: Error | null }> {
   const { data, error } = await supabase
-    .from('vista_estado_periodos_credito' as any)
+    .from('vista_estado_periodos_credito')
     .select('*')
     .eq('fuente_pago_id', fuentePagoId)
     .order('numero_cuota', { ascending: true })
@@ -50,12 +55,16 @@ export async function getCuotasVigentes(
 // RESUMEN
 // ============================================================
 
-export function calcularResumenCuotas(periodos: PeriodoCredito[]): ResumenCuotas {
+export function calcularResumenCuotas(
+  periodos: PeriodoCredito[]
+): ResumenCuotas {
   return {
     total: periodos.length,
     cubiertos: periodos.filter(p => p.estado_periodo === 'Cubierto').length,
     atrasados: periodos.filter(p => p.estado_periodo === 'Atrasado').length,
-    pendientes: periodos.filter(p => p.estado_periodo === 'En curso' || p.estado_periodo === 'Futuro').length,
+    pendientes: periodos.filter(
+      p => p.estado_periodo === 'En curso' || p.estado_periodo === 'Futuro'
+    ).length,
     deficitTotal: periodos.reduce((s, p) => s + (p.deficit ?? 0), 0),
     moraTotal: periodos.reduce((s, p) => s + (p.mora_sugerida ?? 0), 0),
   }
@@ -68,7 +77,7 @@ export function calcularResumenCuotas(periodos: PeriodoCredito[]): ResumenCuotas
 export async function crearCuotasCredito(
   fuentePagoId: string,
   cuotas: CuotaCalculo[],
-  versionPlan: number = 1
+  versionPlan = 1
 ): Promise<{ error: Error | null }> {
   const rows = cuotas.map(c => ({
     fuente_pago_id: fuentePagoId,
@@ -108,7 +117,8 @@ export async function reestructurarCredito(
     .eq('fuente_pago_id', fuentePagoId)
     .lt('version_plan', nuevaVersion)
 
-  if (e1) return { error: new Error(`Error eliminando plan anterior: ${e1.message}`) }
+  if (e1)
+    return { error: new Error(`Error eliminando plan anterior: ${e1.message}`) }
 
   // Sincronizar fuentes_pago con los nuevos parámetros del crédito:
   // - monto_aprobado = deuda total (capital + intereses) → saldo_pendiente real
@@ -121,7 +131,10 @@ export async function reestructurarCredito(
     })
     .eq('id', fuentePagoId)
 
-  if (e2) return { error: new Error(`Error actualizando monto del crédito: ${e2.message}`) }
+  if (e2)
+    return {
+      error: new Error(`Error actualizando monto del crédito: ${e2.message}`),
+    }
 
   return crearCuotasCredito(fuentePagoId, nuevasCuotas, nuevaVersion)
 }

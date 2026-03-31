@@ -11,6 +11,8 @@
  */
 
 import { supabase } from '@/lib/supabase/client'
+import type { Json } from '@/lib/supabase/database.types'
+import { logger } from '@/lib/utils/logger'
 import type { Vivienda } from '@/modules/viviendas/types'
 
 // ============================================================
@@ -50,11 +52,10 @@ export interface ValidacionMatricula {
 export interface NuevosDatosVivienda {
   numero: string
   matricula_inmobiliaria?: string
-  direccion?: string
+  nomenclatura?: string
   area_lote?: number
   area_construida?: number
   valor_base?: number
-  descripcion?: string
 }
 
 // ============================================================
@@ -86,12 +87,11 @@ export class ViviendaConflictosService {
         .eq('numero', numero)
         .eq('estado', 'Inactiva')
         .maybeSingle()
-      const vivienda = viviendaRaw as any
 
       if (error) throw error
 
       // No existe vivienda inactiva con ese número
-      if (!vivienda) {
+      if (!viviendaRaw) {
         return {
           existeInactiva: false,
           puedeReutilizar: false,
@@ -102,17 +102,32 @@ export class ViviendaConflictosService {
       const { count: negociacionesCount } = await supabase
         .from('negociaciones')
         .select('*', { count: 'exact', head: true })
-        .eq('vivienda_id', vivienda.id)
+        .eq('vivienda_id', viviendaRaw.id)
 
-      const { count: abonosCount } = await supabase
-        .from('abonos' as any)
-        .select('*', { count: 'exact', head: true })
-        .eq('vivienda_id', vivienda.id)
+      // Verificar abonos a través de negociaciones (abonos_historial usa negociacion_id)
+      let abonosCount = 0
+      if ((negociacionesCount || 0) > 0) {
+        const { data: negs } = await supabase
+          .from('negociaciones')
+          .select('id')
+          .eq('vivienda_id', viviendaRaw.id)
+
+        if (negs && negs.length > 0) {
+          const { count } = await supabase
+            .from('abonos_historial')
+            .select('*', { count: 'exact', head: true })
+            .in(
+              'negociacion_id',
+              negs.map(n => n.id)
+            )
+          abonosCount = count || 0
+        }
+      }
 
       const { count: documentosCount } = await supabase
-        .from('documentos_vivienda' as any)
+        .from('documentos_vivienda')
         .select('*', { count: 'exact', head: true })
-        .eq('vivienda_id', vivienda.id)
+        .eq('vivienda_id', viviendaRaw.id)
         .eq('estado', 'activo')
 
       const tieneNegociaciones = (negociacionesCount || 0) > 0
@@ -125,13 +140,13 @@ export class ViviendaConflictosService {
           existeInactiva: true,
           puedeReutilizar: false,
           vivienda: {
-            id: vivienda.id,
-            numero: vivienda.numero,
-            matricula_inmobiliaria: vivienda.matricula_inmobiliaria,
-            direccion: vivienda.direccion,
-            estado: vivienda.estado,
-            fecha_inactivacion: vivienda.fecha_inactivacion,
-            motivo_inactivacion: vivienda.motivo_inactivacion,
+            id: viviendaRaw.id,
+            numero: viviendaRaw.numero,
+            matricula_inmobiliaria: viviendaRaw.matricula_inmobiliaria,
+            direccion: viviendaRaw.nomenclatura,
+            estado: viviendaRaw.estado,
+            fecha_inactivacion: viviendaRaw.fecha_inactivacion,
+            motivo_inactivacion: viviendaRaw.motivo_inactivacion,
           },
           razon: `La vivienda #${numero} inactiva tiene ${
             negociacionesCount || 0
@@ -149,13 +164,13 @@ export class ViviendaConflictosService {
         existeInactiva: true,
         puedeReutilizar: true,
         vivienda: {
-          id: vivienda.id,
-          numero: vivienda.numero,
-          matricula_inmobiliaria: vivienda.matricula_inmobiliaria,
-          direccion: vivienda.direccion,
-          estado: vivienda.estado,
-          fecha_inactivacion: vivienda.fecha_inactivacion,
-          motivo_inactivacion: vivienda.motivo_inactivacion,
+          id: viviendaRaw.id,
+          numero: viviendaRaw.numero,
+          matricula_inmobiliaria: viviendaRaw.matricula_inmobiliaria,
+          direccion: viviendaRaw.nomenclatura,
+          estado: viviendaRaw.estado,
+          fecha_inactivacion: viviendaRaw.fecha_inactivacion,
+          motivo_inactivacion: viviendaRaw.motivo_inactivacion,
         },
         detalles: {
           tieneNegociaciones: false,
@@ -164,7 +179,10 @@ export class ViviendaConflictosService {
         },
       }
     } catch (error) {
-      console.error('❌ Error al verificar vivienda inactiva reutilizable:', error)
+      logger.error(
+        '❌ Error al verificar vivienda inactiva reutilizable:',
+        error
+      )
       throw error
     }
   }
@@ -196,39 +214,44 @@ export class ViviendaConflictosService {
         .eq('id', viviendaId)
         .eq('estado', 'Inactiva')
         .single()
-      const vivienda = viviendaInactivaRaw as any
 
       if (viviendaError) throw viviendaError
 
-      if (!vivienda) {
+      if (!viviendaInactivaRaw) {
         throw new Error('La vivienda no existe o no está inactiva')
       }
 
       // Actualizar con nuevos datos
-      const { data: viviendaActualizadaRaw, error: updateError } = await supabase
-        .from('viviendas')
-        .update({
-          numero: nuevosDatos.numero,
-          matricula_inmobiliaria: nuevosDatos.matricula_inmobiliaria || vivienda.matricula_inmobiliaria,
-          direccion: nuevosDatos.direccion || vivienda.direccion,
-          area_lote: nuevosDatos.area_lote || vivienda.area_lote,
-          area_construida: nuevosDatos.area_construida || vivienda.area_construida,
-          valor_base: nuevosDatos.valor_base || vivienda.valor_base,
-          descripcion: nuevosDatos.descripcion || vivienda.descripcion,
-          estado: 'Disponible', // â† Reactivar automáticamente
-          fecha_reactivacion: new Date().toISOString(),
-          motivo_reactivacion: 'Reactivada automáticamente al sobrescribir datos desde conflicto de creación',
-          reactivada_por: userId,
-        } as any)
-        .eq('id', viviendaId)
-        .select()
-        .single()
-      const viviendaActualizada = viviendaActualizadaRaw as any
+      const { data: viviendaActualizadaRaw, error: updateError } =
+        await supabase
+          .from('viviendas')
+          .update({
+            numero: nuevosDatos.numero,
+            matricula_inmobiliaria:
+              nuevosDatos.matricula_inmobiliaria ||
+              viviendaInactivaRaw.matricula_inmobiliaria,
+            nomenclatura:
+              nuevosDatos.nomenclatura || viviendaInactivaRaw.nomenclatura,
+            area_lote: nuevosDatos.area_lote || viviendaInactivaRaw.area_lote,
+            area_construida:
+              nuevosDatos.area_construida ||
+              viviendaInactivaRaw.area_construida,
+            valor_base:
+              nuevosDatos.valor_base || viviendaInactivaRaw.valor_base,
+            estado: 'Disponible',
+            fecha_reactivacion: new Date().toISOString(),
+            motivo_reactivacion:
+              'Reactivada automáticamente al sobrescribir datos desde conflicto de creación',
+            reactivada_por: userId,
+          })
+          .eq('id', viviendaId)
+          .select()
+          .single()
 
       if (updateError) throw updateError
 
       // Registrar en historial (opcional)
-      await supabase.from('viviendas_historial_estados' as any).insert({
+      await supabase.from('viviendas_historial_estados').insert({
         vivienda_id: viviendaId,
         estado_anterior: 'Inactiva',
         estado_nuevo: 'Disponible',
@@ -237,18 +260,17 @@ export class ViviendaConflictosService {
         metadata: {
           tipo_operacion: 'sobrescritura',
           datos_anteriores: {
-            numero: vivienda.numero,
-            matricula: vivienda.matricula_inmobiliaria,
-            direccion: vivienda.direccion,
+            numero: viviendaInactivaRaw.numero,
+            matricula: viviendaInactivaRaw.matricula_inmobiliaria,
+            nomenclatura: viviendaInactivaRaw.nomenclatura,
           },
-          datos_nuevos: nuevosDatos,
+          datos_nuevos: nuevosDatos as unknown as Json,
         },
       })
 
-
-      return viviendaActualizada as unknown as Vivienda
+      return viviendaActualizadaRaw as unknown as Vivienda
     } catch (error) {
-      console.error('❌ Error al sobrescribir vivienda inactiva:', error)
+      logger.error('❌ Error al sobrescribir vivienda inactiva:', error)
       throw error
     }
   }
@@ -310,7 +332,7 @@ export class ViviendaConflictosService {
         },
       }
     } catch (error) {
-      console.error('❌ Error al validar matrícula única:', error)
+      logger.error('❌ Error al validar matrícula única:', error)
       throw error
     }
   }
@@ -329,6 +351,10 @@ export class ViviendaConflictosService {
     manzanaId: string,
     numero: string
   ): Promise<ConflictoViviendaInactiva> {
-    return this.verificarViviendaInactivaReutilizable(proyectoId, manzanaId, numero)
+    return this.verificarViviendaInactivaReutilizable(
+      proyectoId,
+      manzanaId,
+      numero
+    )
   }
 }

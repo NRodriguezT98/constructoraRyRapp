@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 
 import { createRouteClient } from '@/lib/supabase/server-route'
 import { formatDateForDB } from '@/lib/utils/date.utils'
+import { logger } from '@/lib/utils/logger'
 
 /**
  * API Route: POST /api/abonos/registrar
@@ -26,10 +27,17 @@ export async function POST(request: NextRequest) {
     } = body
 
     // mora_incluida: porción del monto que corresponde a mora (no se descuenta del saldo)
-    const moraIncluida = typeof mora_incluida === 'number' && mora_incluida > 0 ? mora_incluida : 0
+    const moraIncluida =
+      typeof mora_incluida === 'number' && mora_incluida > 0 ? mora_incluida : 0
 
     // Validaciones
-    if (!negociacion_id || !fuente_pago_id || !monto || !fecha_abono || !metodo_pago) {
+    if (
+      !negociacion_id ||
+      !fuente_pago_id ||
+      !monto ||
+      !fecha_abono ||
+      !metodo_pago
+    ) {
       return NextResponse.json(
         { error: 'Faltan campos obligatorios' },
         { status: 400 }
@@ -53,7 +61,9 @@ export async function POST(request: NextRequest) {
     // 1. Verificar que la fuente de pago existe y tiene saldo disponible
     const { data: fuente, error: fuenteError } = await supabase
       .from('fuentes_pago')
-      .select('id, monto_aprobado, monto_recibido, saldo_pendiente, negociacion_id')
+      .select(
+        'id, monto_aprobado, monto_recibido, saldo_pendiente, negociacion_id'
+      )
       .eq('id', fuente_pago_id)
       .single()
 
@@ -75,7 +85,9 @@ export async function POST(request: NextRequest) {
     const montoSinMora = monto - moraIncluida
     if (montoSinMora > saldoDisponible) {
       return NextResponse.json(
-        { error: `El monto principal ($${montoSinMora}) excede el saldo disponible ($${saldoDisponible})` },
+        {
+          error: `El monto principal ($${montoSinMora}) excede el saldo disponible ($${saldoDisponible})`,
+        },
         { status: 400 }
       )
     }
@@ -88,10 +100,12 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (!negError && negociacion?.fecha_negociacion) {
-      const fechaNeg = negociacion.fecha_negociacion.slice(0, 10)  // YYYY-MM-DD
+      const fechaNeg = negociacion.fecha_negociacion.slice(0, 10) // YYYY-MM-DD
       if (fecha_abono < fechaNeg) {
         return NextResponse.json(
-          { error: `La fecha del abono no puede ser anterior al inicio de la negociación (${fechaNeg})` },
+          {
+            error: `La fecha del abono no puede ser anterior al inicio de la negociación (${fechaNeg})`,
+          },
           { status: 400 }
         )
       }
@@ -102,7 +116,7 @@ export async function POST(request: NextRequest) {
 
     // 3. Registrar el abono (numero_recibo se asigna automáticamente por secuencia BD)
     const { data: nuevoAbono, error: abonoError } = await supabase
-      .from('abonos_historial' as any)
+      .from('abonos_historial')
       .insert({
         negociacion_id,
         fuente_pago_id,
@@ -115,10 +129,10 @@ export async function POST(request: NextRequest) {
         notas: notas || null,
       })
       .select()
-      .single() as { data: any; error: any }
+      .single()
 
     if (abonoError) {
-      console.error('Error insertando abono:', abonoError)
+      logger.error('Error insertando abono:', abonoError)
       return NextResponse.json(
         { error: 'Error al registrar el abono: ' + abonoError.message },
         { status: 500 }
@@ -137,11 +151,10 @@ export async function POST(request: NextRequest) {
       abono: nuevoAbono,
       message: 'Abono registrado exitosamente',
     })
-  } catch (error: any) {
-    console.error('❌ Error en POST /api/abonos/registrar:', error?.message ?? error)
-    return NextResponse.json(
-      { error: error?.message || 'Error interno del servidor' },
-      { status: 500 }
-    )
+  } catch (error: unknown) {
+    const message =
+      error instanceof Error ? error.message : 'Error interno del servidor'
+    logger.error('❌ Error en POST /api/abonos/registrar:', message)
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }

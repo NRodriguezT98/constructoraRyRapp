@@ -38,6 +38,7 @@ import { useEffect, type ReactNode } from 'react'
 import { useRouter } from 'next/navigation'
 
 import { useAuth } from '@/contexts/auth-context'
+import { logger } from '@/lib/utils/logger'
 
 import { usePermisosQuery } from '../hooks/usePermisosQuery'
 import { usePermissions } from '../hooks/usePermissions'
@@ -98,8 +99,7 @@ export function ProtectedRoute({
 
     // Validación: no puede usar accion y acciones juntos
     if (accion && acciones) {
-      // eslint-disable-next-line no-console, no-restricted-syntax
-      console.error(
+      logger.error(
         'ProtectedRoute: No uses "accion" y "acciones" al mismo tiempo'
       )
       router.push(redirectTo)
@@ -120,8 +120,7 @@ export function ProtectedRoute({
         tienePermiso = puedeAlguno(modulo, acciones)
       }
     } else {
-      // eslint-disable-next-line no-console, no-restricted-syntax
-      console.error('ProtectedRoute: Debes proporcionar "accion" o "acciones"')
+      logger.error('ProtectedRoute: Debes proporcionar "accion" o "acciones"')
       router.push(redirectTo)
       return
     }

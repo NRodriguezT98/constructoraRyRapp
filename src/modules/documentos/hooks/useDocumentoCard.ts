@@ -1,10 +1,13 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { useAuth } from '@/contexts/auth-context'
+import { logger } from '@/lib/utils/logger'
+import type { DocumentoProyecto } from '@/modules/documentos/types/documento.types'
 import { usePermisosQuery } from '@/modules/usuarios/hooks/usePermisosQuery'
-import type { DocumentoProyecto } from '@/types/documento.types'
-import { useClickOutside } from '../../../shared/hooks'
+import { useClickOutside } from '@/shared/hooks'
+
 import type { TipoEntidad } from '../types/entidad.types'
+
 import { useEliminarDocumento } from './useEliminarDocumento'
 // ❌ ELIMINADO: DocumentosClienteService (servicio legacy eliminado)
 // TODO: Migrar métodos obtenerEstadoProceso y esDocumentoDeProceso a servicio genérico
@@ -14,7 +17,10 @@ interface UseDocumentoCardProps {
   esDocumentoProyecto?: boolean
 }
 
-export function useDocumentoCard({ documento, esDocumentoProyecto = true }: UseDocumentoCardProps) {
+export function useDocumentoCard({
+  documento,
+  esDocumentoProyecto = true,
+}: UseDocumentoCardProps) {
   // 🔐 Auth y Permisos
   const { perfil } = useAuth()
   const { puede } = usePermisosQuery()
@@ -24,13 +30,18 @@ export function useDocumentoCard({ documento, esDocumentoProyecto = true }: UseD
   // �️ Confirmación de eliminación inteligente
   const {
     abrirConfirmacion,
-    cerrarConfirmacion,    ejecutarEliminacion,    confirmacion: confirmacionEliminar,
+    cerrarConfirmacion,
+    ejecutarEliminacion,
+    confirmacion: confirmacionEliminar,
     eliminando,
   } = useEliminarDocumento()
 
-  const abrirConfirmacionEliminar = useCallback((doc: DocumentoProyecto, tipoEntidad: TipoEntidad = 'cliente') => {
-    abrirConfirmacion(doc, tipoEntidad)
-  }, [abrirConfirmacion])
+  const abrirConfirmacionEliminar = useCallback(
+    (doc: DocumentoProyecto, tipoEntidad: TipoEntidad = 'cliente') => {
+      abrirConfirmacion(doc, tipoEntidad)
+    },
+    [abrirConfirmacion]
+  )
 
   const cerrarConfirmacionEliminar = useCallback(() => {
     cerrarConfirmacion()
@@ -41,7 +52,8 @@ export function useDocumentoCard({ documento, esDocumentoProyecto = true }: UseD
   const [modalEditarAbierto, setModalEditarAbierto] = useState(false)
   const [modalReemplazarAbierto, setModalReemplazarAbierto] = useState(false)
   const [modalVersionesAbierto, setModalVersionesAbierto] = useState(false)
-  const [modalNuevaVersionAbierto, setModalNuevaVersionAbierto] = useState(false)
+  const [modalNuevaVersionAbierto, setModalNuevaVersionAbierto] =
+    useState(false)
 
   // 🔒 Estados de protección (solo para documentos de clientes)
   const [estaProtegido, setEstaProtegido] = useState(false)
@@ -113,7 +125,8 @@ export function useDocumentoCard({ documento, esDocumentoProyecto = true }: UseD
 
     // Validar que documentoId sea un UUID válido
     // UUIDs tienen formato: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+    const uuidRegex =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
     if (!uuidRegex.test(documentoId)) {
       // Si no es un UUID válido (ej: "cedula-ciudadania"), no hacer verificación
       setEstaProtegido(false)
@@ -142,7 +155,7 @@ export function useDocumentoCard({ documento, esDocumentoProyecto = true }: UseD
       setProcesoInfo(null)
       setEstadoProceso({ esDeProceso: false })
     } catch (error) {
-      console.error('Error al verificar protección:', error)
+      logger.error('Error al verificar protección:', error)
       setEstaProtegido(false)
       setProcesoInfo(null)
       setEstadoProceso({ esDeProceso: false })

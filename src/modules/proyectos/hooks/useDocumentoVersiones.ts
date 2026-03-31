@@ -14,9 +14,10 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
 import { useAuth } from '@/contexts/auth-context'
+import { logger } from '@/lib/utils/logger'
 import { documentosKeys } from '@/modules/documentos/hooks/useDocumentosQuery'
 import { DocumentosService } from '@/modules/documentos/services/documentos.service'
-import type { DocumentoProyecto } from '@/types/documento.types'
+import type { DocumentoProyecto } from '@/modules/documentos/types/documento.types'
 
 interface UseDocumentoVersionesProps {
   documentoId: string
@@ -31,7 +32,7 @@ export function useDocumentoVersiones({
   isOpen,
   onVersionRestaurada,
   onClose,
-  tipoEntidad = 'proyecto' // 🆕 Default a proyecto para mantener compatibilidad
+  tipoEntidad = 'proyecto', // 🆕 Default a proyecto para mantener compatibilidad
 }: UseDocumentoVersionesProps) {
   const { user, perfil } = useAuth()
   const queryClient = useQueryClient()
@@ -40,7 +41,10 @@ export function useDocumentoVersiones({
 
   // Estado del modal de confirmación de restauración
   const [mostrarModalMotivo, setMostrarModalMotivo] = useState(false)
-  const [versionARestaurar, setVersionARestaurar] = useState<{ id: string; numero: number } | null>(null)
+  const [versionARestaurar, setVersionARestaurar] = useState<{
+    id: string
+    numero: number
+  } | null>(null)
   const [motivoRestauracion, setMotivoRestauracion] = useState('')
 
   // Estado del modal de confirmación de eliminación
@@ -62,7 +66,10 @@ export function useDocumentoVersiones({
       if (!documentoId) {
         return []
       }
-      const data = await DocumentosService.obtenerVersiones(documentoId, tipoEntidad)
+      const data = await DocumentosService.obtenerVersiones(
+        documentoId,
+        tipoEntidad
+      )
       return data
     },
     enabled: isOpen && !!documentoId, // Solo cargar cuando modal está abierto
@@ -71,17 +78,23 @@ export function useDocumentoVersiones({
 
   const handleVerDocumento = async (documento: DocumentoProyecto) => {
     try {
-      const url = await DocumentosService.obtenerUrlDescarga(documento.url_storage, tipoEntidad)
+      const url = await DocumentosService.obtenerUrlDescarga(
+        documento.url_storage,
+        tipoEntidad
+      )
       window.open(url, '_blank')
     } catch (error) {
-      console.error('Error al ver documento:', error)
+      logger.error('Error al ver documento:', error)
       toast.error('Error al abrir el documento')
     }
   }
 
   const handleDescargar = async (documento: DocumentoProyecto) => {
     try {
-      const url = await DocumentosService.obtenerUrlDescarga(documento.url_storage, tipoEntidad)
+      const url = await DocumentosService.obtenerUrlDescarga(
+        documento.url_storage,
+        tipoEntidad
+      )
       const response = await fetch(url)
       const blob = await response.blob()
       const downloadUrl = window.URL.createObjectURL(blob)
@@ -94,7 +107,7 @@ export function useDocumentoVersiones({
       document.body.removeChild(a)
       toast.success('Descarga iniciada')
     } catch (error) {
-      console.error('Error al descargar:', error)
+      logger.error('Error al descargar:', error)
       toast.error('Error al descargar el documento')
     }
   }
@@ -124,7 +137,12 @@ export function useDocumentoVersiones({
 
     setRestaurando(versionId)
     try {
-      await DocumentosService.restaurarVersion(versionId, user.id, tipoEntidad, motivoRestauracion.trim())
+      await DocumentosService.restaurarVersion(
+        versionId,
+        user.id,
+        tipoEntidad,
+        motivoRestauracion.trim()
+      )
       toast.success('Versión restaurada correctamente')
 
       // ✅ Invalidar caché de React Query para actualizar la lista
@@ -146,7 +164,7 @@ export function useDocumentoVersiones({
       setVersionARestaurar(null)
       setMotivoRestauracion('')
     } catch (error) {
-      console.error('Error al restaurar versión:', error)
+      logger.error('Error al restaurar versión:', error)
       toast.error('Error al restaurar la versión')
     } finally {
       setRestaurando(null)
@@ -197,7 +215,9 @@ export function useDocumentoVersiones({
       const docActual = versiones.find(v => v.id === versionAEliminar.id)
       if (docActual) {
         await Promise.all([
-          queryClient.refetchQueries({ queryKey: documentosKeys.list(docActual.proyecto_id, tipoEntidad) }),
+          queryClient.refetchQueries({
+            queryKey: documentosKeys.list(docActual.proyecto_id, tipoEntidad),
+          }),
           queryClient.refetchQueries({ queryKey: ['documentos-eliminados'] }), // ← Papelera
           queryClient.refetchQueries({ queryKey: ['versiones-eliminadas'] }), // ← Versiones en papelera
         ])
@@ -210,16 +230,21 @@ export function useDocumentoVersiones({
       await cargarVersiones()
 
       // ✅ Si solo queda 1 versión después de eliminar, cerrar el modal automáticamente
-      const versionesActualizadas = await DocumentosService.obtenerVersiones(documentoId, tipoEntidad)
+      const versionesActualizadas = await DocumentosService.obtenerVersiones(
+        documentoId,
+        tipoEntidad
+      )
       if (versionesActualizadas.length <= 1 && onClose) {
         setTimeout(() => {
           onClose()
           toast.info('Ya no hay más versiones en el historial')
         }, 500)
       }
-    } catch (error: any) {
-      console.error('Error al eliminar versión:', error)
-      toast.error(error?.message || 'Error al eliminar la versión')
+    } catch (error: unknown) {
+      logger.error('Error al eliminar versión:', error)
+      const msg =
+        error instanceof Error ? error.message : 'Error al eliminar la versión'
+      toast.error(msg)
     } finally {
       setEliminando(null)
     }

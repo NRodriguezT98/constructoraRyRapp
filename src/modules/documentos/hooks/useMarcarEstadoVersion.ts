@@ -3,10 +3,23 @@
  * Separa la lógica del componente presentacional
  */
 
-import { useEstadosVersionProyecto } from '@/modules/proyectos/hooks/useEstadosVersionProyecto'
-import { MOTIVOS_VERSION_ERRONEA, MOTIVOS_VERSION_OBSOLETA } from '@/types/documento.types'
-import { CheckCircle, Package, RotateCcw, XCircle, type LucideIcon } from 'lucide-react'
 import { useMemo, useState } from 'react'
+
+import {
+  CheckCircle,
+  Package,
+  RotateCcw,
+  XCircle,
+  type LucideIcon,
+} from 'lucide-react'
+
+import { logger } from '@/lib/utils/logger'
+import {
+  MOTIVOS_VERSION_ERRONEA,
+  MOTIVOS_VERSION_OBSOLETA,
+} from '@/modules/documentos/types/documento.types'
+import { useEstadosVersionProyecto } from '@/modules/proyectos/hooks/useEstadosVersionProyecto'
+
 import type { AccionEstado } from '../components/modals/MarcarEstadoVersionModal'
 
 // ============================================================================
@@ -109,7 +122,11 @@ export function useMarcarEstadoVersion({
       marcarComoErronea.isPending ||
       marcarComoObsoleta.isPending ||
       restaurarEstado.isPending,
-    [marcarComoErronea.isPending, marcarComoObsoleta.isPending, restaurarEstado.isPending]
+    [
+      marcarComoErronea.isPending,
+      marcarComoObsoleta.isPending,
+      restaurarEstado.isPending,
+    ]
   )
 
   const isValid = useMemo(() => {
@@ -146,7 +163,7 @@ export function useMarcarEstadoVersion({
       onSuccess?.()
       handleClose()
     } catch (error) {
-      console.error('Error al marcar estado:', error)
+      logger.error('Error al marcar estado:', error)
     }
   }
 

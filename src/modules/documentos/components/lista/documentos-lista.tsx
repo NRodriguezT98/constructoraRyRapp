@@ -3,11 +3,12 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import { Archive, FileText, FileX } from 'lucide-react'
 
+import { DocumentoProyecto } from '@/modules/documentos/types/documento.types'
 import { ConfirmacionModal } from '@/shared/components/modals/ConfirmacionModal'
+import { EmptyState } from '@/shared/components/ui/EmptyState'
+import { LoadingSpinner } from '@/shared/components/ui/Loading'
 import { type ModuleName } from '@/shared/config/module-themes'
-import { EmptyState } from '../../../../shared/components/ui/EmptyState'
-import { LoadingSpinner } from '../../../../shared/components/ui/Loading'
-import { DocumentoProyecto } from '../../../../types/documento.types'
+
 import { useDocumentosLista } from '../../hooks'
 import { useDocumentosStore } from '../../store/documentos.store'
 import { type TipoEntidad, obtenerConfiguracionEntidad } from '../../types'
@@ -38,8 +39,8 @@ export function DocumentosLista({
   // 🎨 Auto-inferir moduleName desde tipoEntidad si no se especifica
   const config = obtenerConfiguracionEntidad(tipoEntidad)
   const themeModuleName = moduleName || config.moduleName
-  const vistaActual = useDocumentosStore((state) => state.vistaActual)
-  const setVistaActual = useDocumentosStore((state) => state.setVistaActual)
+  const vistaActual = useDocumentosStore(state => state.vistaActual)
+  const setVistaActual = useDocumentosStore(state => state.setVistaActual)
 
   const {
     vista,
@@ -55,7 +56,7 @@ export function DocumentosLista({
     documentoParaRestaurar,
     procesandoRestaurar,
     modalEliminarAbierto,
-    documentoParaEliminar,
+    documentoParaEliminar: _documentoParaEliminar,
     datosModalEliminar,
     procesandoEliminar,
     confirmarEliminar,
@@ -75,7 +76,12 @@ export function DocumentosLista({
     handleDelete,
     getCategoriaByDocumento,
     refrescar, // 🆕 Para refrescar después de editar/reemplazar
-  } = useDocumentosLista({ entidadId, tipoEntidad, onViewDocumento, defaultVista })
+  } = useDocumentosLista({
+    entidadId,
+    tipoEntidad,
+    onViewDocumento,
+    defaultVista,
+  })
 
   // 🆕 Wrapper para refrescar (compatible con tipo void)
   const handleRefresh = async () => {
@@ -100,43 +106,43 @@ export function DocumentosLista({
   return (
     <div className='space-y-6'>
       {/* 📑 TABS: Activos / Archivados (Papelera ahora es módulo independiente admin-only) */}
-      <div className="flex items-center gap-2 border-b border-gray-200 dark:border-gray-700">
+      <div className='flex items-center gap-2 border-b border-gray-200 dark:border-gray-700'>
         <button
           onClick={() => setVistaActual('activos')}
-          className={`relative px-4 py-3 font-medium text-sm transition-all duration-200 ${
+          className={`relative px-4 py-3 text-sm font-medium transition-all duration-200 ${
             vistaActual === 'activos'
               ? 'text-gray-900 dark:text-white'
-              : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+              : 'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'
           }`}
         >
-          <div className="flex items-center gap-2">
-            <FileText className="w-4 h-4" />
+          <div className='flex items-center gap-2'>
+            <FileText className='h-4 w-4' />
             <span>Activos</span>
           </div>
           {vistaActual === 'activos' && (
             <motion.div
-              layoutId="activeTab"
-              className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-green-500 to-emerald-500"
+              layoutId='activeTab'
+              className='absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-green-500 to-emerald-500'
             />
           )}
         </button>
 
         <button
           onClick={() => setVistaActual('archivados')}
-          className={`relative px-4 py-3 font-medium text-sm transition-all duration-200 ${
+          className={`relative px-4 py-3 text-sm font-medium transition-all duration-200 ${
             vistaActual === 'archivados'
               ? 'text-gray-900 dark:text-white'
-              : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+              : 'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'
           }`}
         >
-          <div className="flex items-center gap-2">
-            <Archive className="w-4 h-4" />
+          <div className='flex items-center gap-2'>
+            <Archive className='h-4 w-4' />
             <span>Archivados</span>
           </div>
           {vistaActual === 'archivados' && (
             <motion.div
-              layoutId="activeTab"
-              className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-amber-500 to-orange-500"
+              layoutId='activeTab'
+              className='absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-amber-500 to-orange-500'
             />
           )}
         </button>
@@ -159,13 +165,17 @@ export function DocumentosLista({
         {documentosMostrar.length === 0 ? (
           <EmptyState
             icon={vistaActual === 'archivados' ? Archive : FileX}
-            title={vistaActual === 'archivados' ? 'No hay documentos archivados' : 'No se encontraron documentos'}
+            title={
+              vistaActual === 'archivados'
+                ? 'No hay documentos archivados'
+                : 'No se encontraron documentos'
+            }
             description={
               vistaActual === 'archivados'
                 ? 'Los documentos que archives aparecerán aquí'
                 : !hasDocumentos
-                ? `Aún no has subido ningún documento a este ${config.nombreSingular}`
-                : 'No hay documentos que coincidan con los filtros aplicados'
+                  ? `Aún no has subido ningún documento a este ${config.nombreSingular}`
+                  : 'No hay documentos que coincidan con los filtros aplicados'
             }
             action={
               !hasDocumentos && onUploadClick && vistaActual === 'activos'
@@ -178,79 +188,79 @@ export function DocumentosLista({
             moduleName={themeModuleName}
           />
         ) : (
-        <AnimatePresence mode='popLayout'>
-          {vista === 'grid' ? (
-            <motion.div
-              key='grid'
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className='grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3'
-            >
-              {documentosMostrar.map((documento, index) => {
-                const categoria = getCategoriaByDocumento(documento)
-                return (
-                  <motion.div
-                    key={documento.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                    transition={{ delay: index * 0.05 }}
-                  >
-                    <DocumentoCard
-                      documento={documento}
-                      categoria={categoria}
-                      categorias={categorias} // 🆕 Para modal de editar
-                      tipoEntidad={tipoEntidadFromHook} // ✅ Pasar tipoEntidad
-                      onView={handleView}
-                      onDownload={handleDownload}
-                      onToggleImportante={handleToggleImportante}
-                      onArchive={handleArchive}
-                      onDelete={handleDelete}
-                      onRefresh={handleRefresh} // 🆕 Pasar callback de refresh
-                      moduleName={themeModuleName}
-                      esArchivado={vistaActual === 'archivados'} // 🆕 Indicar si está en vista archivados
-                    />
-                  </motion.div>
-                )
-              })}
-            </motion.div>
-          ) : (
-            <motion.div
-              key='lista'
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className='space-y-1.5'
-            >
-              {documentosMostrar.map((documento, index) => {
-                const categoria = getCategoriaByDocumento(documento)
-                return (
-                  <motion.div
-                    key={documento.id}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: 20 }}
-                    transition={{ delay: index * 0.03 }}
-                  >
-                    <DocumentoCardHorizontal
-                      documento={documento}
-                      categoria={categoria}
-                      categorias={categorias}
-                      tipoEntidad={tipoEntidadFromHook}
-                      onView={handleView}
-                      onDownload={handleDownload}
-                      onToggleImportante={handleToggleImportante}
-                      onArchive={handleArchive}
-                      onDelete={handleDelete}
-                      onRefresh={handleRefresh}
-                    />
-                  </motion.div>
-                )
-              })}
-            </motion.div>
-          )}
-        </AnimatePresence>
+          <AnimatePresence mode='popLayout'>
+            {vista === 'grid' ? (
+              <motion.div
+                key='grid'
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className='grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3'
+              >
+                {documentosMostrar.map((documento, index) => {
+                  const categoria = getCategoriaByDocumento(documento)
+                  return (
+                    <motion.div
+                      key={documento.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -20 }}
+                      transition={{ delay: index * 0.05 }}
+                    >
+                      <DocumentoCard
+                        documento={documento}
+                        categoria={categoria}
+                        categorias={categorias} // 🆕 Para modal de editar
+                        tipoEntidad={tipoEntidadFromHook} // ✅ Pasar tipoEntidad
+                        onView={handleView}
+                        onDownload={handleDownload}
+                        onToggleImportante={handleToggleImportante}
+                        onArchive={handleArchive}
+                        onDelete={handleDelete}
+                        onRefresh={handleRefresh} // 🆕 Pasar callback de refresh
+                        moduleName={themeModuleName}
+                        esArchivado={vistaActual === 'archivados'} // 🆕 Indicar si está en vista archivados
+                      />
+                    </motion.div>
+                  )
+                })}
+              </motion.div>
+            ) : (
+              <motion.div
+                key='lista'
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className='space-y-1.5'
+              >
+                {documentosMostrar.map((documento, index) => {
+                  const categoria = getCategoriaByDocumento(documento)
+                  return (
+                    <motion.div
+                      key={documento.id}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: 20 }}
+                      transition={{ delay: index * 0.03 }}
+                    >
+                      <DocumentoCardHorizontal
+                        documento={documento}
+                        categoria={categoria}
+                        categorias={categorias}
+                        tipoEntidad={tipoEntidadFromHook}
+                        onView={handleView}
+                        onDownload={handleDownload}
+                        onToggleImportante={handleToggleImportante}
+                        onArchive={handleArchive}
+                        onDelete={handleDelete}
+                        onRefresh={handleRefresh}
+                      />
+                    </motion.div>
+                  )
+                })}
+              </motion.div>
+            )}
+          </AnimatePresence>
         )}
       </>
 

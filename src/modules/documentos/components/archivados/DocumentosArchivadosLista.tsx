@@ -12,13 +12,14 @@
 import { AnimatePresence } from 'framer-motion'
 import { Archive, PackageOpen, RefreshCw } from 'lucide-react'
 
+import type { DocumentoProyecto } from '@/modules/documentos/types/documento.types'
 import { EmptyState } from '@/shared/components/ui/EmptyState'
 import { LoadingSpinner } from '@/shared/components/ui/Loading'
 import { type ModuleName } from '@/shared/config/module-themes'
-import type { DocumentoProyecto } from '@/types/documento.types'
+
 import {
-    useDocumentosArchivadosQuery,
-    useRestaurarDocumentoMutation,
+  useDocumentosArchivadosQuery,
+  useRestaurarDocumentoMutation,
 } from '../../hooks/useDocumentosQuery'
 import { type TipoEntidad } from '../../types/entidad.types'
 
@@ -37,8 +38,14 @@ export function DocumentosArchivadosLista({
   moduleName = 'proyectos',
   onViewDocumento,
 }: DocumentosArchivadosListaProps) {
-  const { documentos, cargando, refrescar } = useDocumentosArchivadosQuery(entidadId, tipoEntidad)
-  const restaurarMutation = useRestaurarDocumentoMutation(entidadId, tipoEntidad)
+  const { documentos, cargando, refrescar } = useDocumentosArchivadosQuery(
+    entidadId,
+    tipoEntidad
+  )
+  const restaurarMutation = useRestaurarDocumentoMutation(
+    entidadId,
+    tipoEntidad
+  )
 
   const handleRestaurar = async (documento: DocumentoProyecto) => {
     await restaurarMutation.mutateAsync(documento.id)
@@ -52,46 +59,49 @@ export function DocumentosArchivadosLista({
     return (
       <EmptyState
         icon={PackageOpen}
-        title="No hay documentos archivados"
-        description="Los documentos que archives aparecerán aquí"
+        title='No hay documentos archivados'
+        description='Los documentos que archives aparecerán aquí'
       />
     )
   }
 
   return (
-    <div className="space-y-4">
+    <div className='space-y-4'>
       {/* Header con contador */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Archive className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+      <div className='flex items-center justify-between'>
+        <div className='flex items-center gap-3'>
+          <Archive className='h-5 w-5 text-gray-600 dark:text-gray-400' />
           <div>
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+            <h3 className='text-lg font-semibold text-gray-900 dark:text-white'>
               Documentos Archivados
             </h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              {documentos.length} {documentos.length === 1 ? 'documento' : 'documentos'}
+            <p className='text-sm text-gray-600 dark:text-gray-400'>
+              {documentos.length}{' '}
+              {documentos.length === 1 ? 'documento' : 'documentos'}
             </p>
           </div>
         </div>
 
         <button
           onClick={() => refrescar()}
-          className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+          className='inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
         >
-          <RefreshCw className="w-4 h-4" />
+          <RefreshCw className='h-4 w-4' />
           Actualizar
         </button>
       </div>
 
       {/* Lista de documentos archivados */}
-      <div className="grid grid-cols-1 gap-3">
-        <AnimatePresence mode="popLayout">
-          {documentos.map((documento) => (
+      <div className='grid grid-cols-1 gap-3'>
+        <AnimatePresence mode='popLayout'>
+          {documentos.map(documento => (
             <DocumentoCardArchivado
               key={documento.id}
               documento={documento}
               onRestaurar={() => handleRestaurar(documento)}
-              onView={onViewDocumento ? () => onViewDocumento(documento) : undefined}
+              onView={
+                onViewDocumento ? () => onViewDocumento(documento) : undefined
+              }
               moduleName={moduleName}
             />
           ))}

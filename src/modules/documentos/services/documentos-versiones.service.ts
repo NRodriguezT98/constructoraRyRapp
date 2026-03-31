@@ -4,6 +4,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { supabase } from '@/lib/supabase/client'
+import { logger } from '@/lib/utils/logger'
 
 import type { DocumentoProyecto } from '../types/documento.types'
 import {
@@ -266,8 +267,7 @@ export class DocumentosVersionesService {
       .download(versionAnterior.url_storage)
 
     if (downloadError) {
-      // eslint-disable-next-line no-console, no-restricted-syntax
-      console.error('❌ Error al descargar archivo:', downloadError)
+      logger.error('❌ Error al descargar archivo:', downloadError)
       throw new Error('No se pudo descargar el archivo de la versión anterior')
     }
 

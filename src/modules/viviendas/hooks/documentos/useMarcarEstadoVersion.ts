@@ -5,9 +5,22 @@
  * ✅ ALINEADO CON MÓDULO DE PROYECTOS
  */
 
-import { MOTIVOS_VERSION_ERRONEA, MOTIVOS_VERSION_OBSOLETA } from '@/types/documento.types'
-import { CheckCircle, Package, RotateCcw, XCircle, type LucideIcon } from 'lucide-react'
 import { useMemo, useState } from 'react'
+
+import {
+  CheckCircle,
+  Package,
+  RotateCcw,
+  XCircle,
+  type LucideIcon,
+} from 'lucide-react'
+
+import { logger } from '@/lib/utils/logger'
+import {
+  MOTIVOS_VERSION_ERRONEA,
+  MOTIVOS_VERSION_OBSOLETA,
+} from '@/modules/documentos/types/documento.types'
+
 import { useEstadosVersionVivienda } from './useEstadosVersionVivienda'
 
 // ============================================================================
@@ -28,7 +41,7 @@ interface UseMarcarEstadoVersionParams {
 interface ConfigEstado {
   titulo: string
   descripcion: string
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   icon: LucideIcon
   color: string
   motivosPredef: string[]
@@ -113,7 +126,11 @@ export function useMarcarEstadoVersion({
       marcarComoErronea.isPending ||
       marcarComoObsoleta.isPending ||
       restaurarEstado.isPending,
-    [marcarComoErronea.isPending, marcarComoObsoleta.isPending, restaurarEstado.isPending]
+    [
+      marcarComoErronea.isPending,
+      marcarComoObsoleta.isPending,
+      restaurarEstado.isPending,
+    ]
   )
 
   const isValid = useMemo(() => {
@@ -150,8 +167,7 @@ export function useMarcarEstadoVersion({
       onSuccess?.()
       handleClose()
     } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error('Error al marcar estado:', error)
+      logger.error('Error al marcar estado:', error)
     }
   }
 

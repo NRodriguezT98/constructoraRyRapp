@@ -1,12 +1,16 @@
 'use client'
 
-import { motion } from 'framer-motion'
-import { AlertCircle, FileText, Upload, X } from 'lucide-react'
 import { RefObject } from 'react'
 
+import { motion } from 'framer-motion'
+import { AlertCircle, FileText, Upload, X } from 'lucide-react'
+
+import {
+  formatFileSize,
+  getFileExtension,
+} from '@/modules/documentos/types/documento.types'
 import { moduleThemes, type ModuleName } from '@/shared/config/module-themes'
 import { cn } from '@/shared/utils/helpers'
-import { formatFileSize, getFileExtension } from '@/types/documento.types'
 
 interface ArchivoSelectorProps {
   moduleName?: ModuleName
@@ -43,14 +47,14 @@ export function ArchivoSelector({
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ type: 'spring', stiffness: 300, damping: 25 }}
         className={cn(
-          'relative overflow-hidden rounded-2xl p-5 backdrop-blur-xl border shadow-xl group',
+          'group relative overflow-hidden rounded-2xl border p-5 shadow-xl backdrop-blur-xl',
           theme.classes.bg.light,
           theme.classes.border.light
         )}
       >
         {/* Patrón de fondo decorativo */}
         <div
-          className="absolute inset-0 opacity-[0.03] dark:opacity-[0.05]"
+          className='absolute inset-0 opacity-[0.03] dark:opacity-[0.05]'
           style={{
             backgroundImage: `radial-gradient(circle at 2px 2px, currentColor 1px, transparent 0)`,
             backgroundSize: '24px 24px',
@@ -61,18 +65,18 @@ export function ArchivoSelector({
         {/* Glow decorativo */}
         <div
           className={cn(
-            'absolute -top-20 -right-20 w-40 h-40 rounded-full blur-3xl opacity-10 group-hover:opacity-20 transition-opacity',
+            'absolute -right-20 -top-20 h-40 w-40 rounded-full opacity-10 blur-3xl transition-opacity group-hover:opacity-20',
             theme.classes.bg.light
           )}
         />
 
-        <div className="relative z-10 flex items-center gap-4">
+        <div className='relative z-10 flex items-center gap-4'>
           {/* Icono con glassmorphism */}
-          <div className="relative flex-shrink-0">
+          <div className='relative flex-shrink-0'>
             {/* Glow del icono */}
             <div
               className={cn(
-                'absolute inset-0 rounded-xl blur-lg opacity-50',
+                'absolute inset-0 rounded-xl opacity-50 blur-lg',
                 'bg-gradient-to-br',
                 theme.classes.gradient.primary
               )}
@@ -81,24 +85,24 @@ export function ArchivoSelector({
             {/* Icono */}
             <div
               className={cn(
-                'relative w-14 h-14 rounded-xl flex items-center justify-center backdrop-blur-md border border-white/30 shadow-xl',
+                'relative flex h-14 w-14 items-center justify-center rounded-xl border border-white/30 shadow-xl backdrop-blur-md',
                 'bg-gradient-to-br',
                 theme.classes.gradient.primary
               )}
             >
-              <FileText size={24} className="text-white drop-shadow-lg" />
+              <FileText size={24} className='text-white drop-shadow-lg' />
             </div>
           </div>
 
           {/* Info del archivo */}
-          <div className="flex-1 min-w-0">
-            <h4 className="text-base font-bold text-gray-900 dark:text-white truncate mb-1">
+          <div className='min-w-0 flex-1'>
+            <h4 className='mb-1 truncate text-base font-bold text-gray-900 dark:text-white'>
               {archivoSeleccionado.name}
             </h4>
-            <div className="flex items-center gap-3 text-xs">
+            <div className='flex items-center gap-3 text-xs'>
               <span
                 className={cn(
-                  'px-2.5 py-1 rounded-lg font-semibold backdrop-blur-md border border-white/20 shadow-sm',
+                  'rounded-lg border border-white/20 px-2.5 py-1 font-semibold shadow-sm backdrop-blur-md',
                   theme.classes.bg.light,
                   theme.classes.text.primary
                 )}
@@ -107,7 +111,7 @@ export function ArchivoSelector({
               </span>
               <span
                 className={cn(
-                  'px-2.5 py-1 rounded-lg font-semibold uppercase backdrop-blur-md border border-white/20 shadow-sm',
+                  'rounded-lg border border-white/20 px-2.5 py-1 font-semibold uppercase shadow-sm backdrop-blur-md',
                   theme.classes.bg.light,
                   theme.classes.text.primary
                 )}
@@ -119,13 +123,13 @@ export function ArchivoSelector({
 
           {/* Botón eliminar */}
           <motion.button
-            type="button"
+            type='button'
             onClick={onLimpiarArchivo}
             whileHover={{ scale: 1.1, rotate: 90 }}
             whileTap={{ scale: 0.9 }}
-            className="flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-xl bg-red-100 dark:bg-red-900/30 hover:bg-red-200 dark:hover:bg-red-900/50 border border-red-200 dark:border-red-800 transition-all shadow-lg"
+            className='flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl border border-red-200 bg-red-100 shadow-lg transition-all hover:bg-red-200 dark:border-red-800 dark:bg-red-900/30 dark:hover:bg-red-900/50'
           >
-            <X size={18} className="text-red-600 dark:text-red-400" />
+            <X size={18} className='text-red-600 dark:text-red-400' />
           </motion.button>
         </div>
 
@@ -154,13 +158,14 @@ export function ArchivoSelector({
       whileHover={{ scale: 1.01 }}
       whileTap={{ scale: 0.99 }}
       className={cn(
-        'group relative overflow-hidden rounded-2xl p-10 text-center cursor-pointer transition-all duration-500',
-        'backdrop-blur-xl border-2 border-dashed',
+        'group relative cursor-pointer overflow-hidden rounded-2xl p-10 text-center transition-all duration-500',
+        'border-2 border-dashed backdrop-blur-xl',
         'bg-white/80 dark:bg-gray-800/80',
         isDragging
           ? cn('border-opacity-100 shadow-2xl', theme.classes.border.light)
-          : 'border-gray-300 dark:border-gray-600 hover:border-opacity-60 shadow-lg hover:shadow-xl',
-        errorArchivo && 'border-red-500 dark:border-red-400 bg-red-50 dark:bg-red-900/20'
+          : 'border-gray-300 shadow-lg hover:border-opacity-60 hover:shadow-xl dark:border-gray-600',
+        errorArchivo &&
+          'border-red-500 bg-red-50 dark:border-red-400 dark:bg-red-900/20'
       )}
     >
       {/* Gradiente de fondo cuando está dragging */}
@@ -176,7 +181,7 @@ export function ArchivoSelector({
 
       {/* Patrón de fondo decorativo */}
       <div
-        className="absolute inset-0 opacity-[0.03] dark:opacity-[0.05]"
+        className='absolute inset-0 opacity-[0.03] dark:opacity-[0.05]'
         style={{
           backgroundImage: `radial-gradient(circle at 2px 2px, currentColor 1px, transparent 0)`,
           backgroundSize: '32px 32px',
@@ -187,7 +192,7 @@ export function ArchivoSelector({
       {/* Glow effect al hacer hover */}
       <div
         className={cn(
-          'absolute inset-0 opacity-0 group-hover:opacity-10 dark:group-hover:opacity-20 transition-opacity duration-500',
+          'absolute inset-0 opacity-0 transition-opacity duration-500 group-hover:opacity-10 dark:group-hover:opacity-20',
           isDragging && 'opacity-10 dark:opacity-20',
           'bg-gradient-to-br',
           theme.classes.gradient.primary
@@ -196,27 +201,27 @@ export function ArchivoSelector({
 
       <input
         ref={fileInputRef}
-        type="file"
+        type='file'
         onChange={onFileInputChange}
-        className="hidden"
-        accept=".pdf,.jpg,.jpeg,.png,.webp,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.dwg,.dxf,.zip,.rar,.txt"
+        className='hidden'
+        accept='.pdf,.jpg,.jpeg,.png,.webp,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.dwg,.dxf,.zip,.rar,.txt'
       />
 
       <motion.div
         animate={isDragging ? { scale: 1.08, y: -8 } : { scale: 1, y: 0 }}
         transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-        className="relative z-10 space-y-4"
+        className='relative z-10 space-y-4'
       >
         {/* Icono con efecto glassmorphism */}
         <motion.div
           animate={isDragging ? { rotate: [0, -10, 10, 0] } : {}}
           transition={{ duration: 0.5 }}
-          className="relative mx-auto w-20 h-20"
+          className='relative mx-auto h-20 w-20'
         >
           {/* Glow del icono */}
           <div
             className={cn(
-              'absolute inset-0 rounded-2xl blur-xl opacity-40 group-hover:opacity-60 transition-opacity',
+              'absolute inset-0 rounded-2xl opacity-40 blur-xl transition-opacity group-hover:opacity-60',
               'bg-gradient-to-br',
               theme.classes.gradient.primary
             )}
@@ -225,42 +230,39 @@ export function ArchivoSelector({
           {/* Icono */}
           <div
             className={cn(
-              'relative w-20 h-20 rounded-2xl flex items-center justify-center',
-              'backdrop-blur-md shadow-2xl',
-              'group-hover:scale-110 transition-transform duration-300',
+              'relative flex h-20 w-20 items-center justify-center rounded-2xl',
+              'shadow-2xl backdrop-blur-md',
+              'transition-transform duration-300 group-hover:scale-110',
               'bg-gradient-to-br',
               theme.classes.gradient.primary
             )}
           >
-            <Upload size={36} className="text-white drop-shadow-lg" />
+            <Upload size={36} className='text-white drop-shadow-lg' />
           </div>
         </motion.div>
 
         {/* Texto */}
-        <div className="space-y-2">
-          <h3
-            className={cn(
-              'text-lg font-bold',
-              theme.classes.text.primary
-            )}
-          >
-            {isDragging ? '¡Suelta el archivo aquí!' : 'Arrastra un archivo o haz clic'}
+        <div className='space-y-2'>
+          <h3 className={cn('text-lg font-bold', theme.classes.text.primary)}>
+            {isDragging
+              ? '¡Suelta el archivo aquí!'
+              : 'Arrastra un archivo o haz clic'}
           </h3>
-          <p className="text-sm text-gray-600 dark:text-gray-300 font-medium">
+          <p className='text-sm font-medium text-gray-600 dark:text-gray-300'>
             PDF, imágenes, Office, CAD
           </p>
-          <p className="text-xs text-gray-500 dark:text-gray-400">
+          <p className='text-xs text-gray-500 dark:text-gray-400'>
             Tamaño máximo: 50 MB
           </p>
         </div>
 
         {/* Badge decorativo */}
-        <div className="flex items-center justify-center gap-2 flex-wrap">
-          {['PDF', 'IMG', 'DOC', 'CAD'].map((type) => (
+        <div className='flex flex-wrap items-center justify-center gap-2'>
+          {['PDF', 'IMG', 'DOC', 'CAD'].map(type => (
             <span
               key={type}
               className={cn(
-                'px-3 py-1 text-[10px] font-bold rounded-full shadow-sm',
+                'rounded-full px-3 py-1 text-[10px] font-bold shadow-sm',
                 theme.classes.bg.light,
                 theme.classes.text.primary,
                 'border',
@@ -278,10 +280,12 @@ export function ArchivoSelector({
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="relative z-10 mt-4 flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800"
+          className='relative z-10 mt-4 flex items-center justify-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-2 dark:border-red-800 dark:bg-red-900/20'
         >
-          <AlertCircle size={16} className="text-red-600 dark:text-red-400" />
-          <span className="text-sm font-medium text-red-600 dark:text-red-400">{errorArchivo}</span>
+          <AlertCircle size={16} className='text-red-600 dark:text-red-400' />
+          <span className='text-sm font-medium text-red-600 dark:text-red-400'>
+            {errorArchivo}
+          </span>
         </motion.div>
       )}
     </motion.div>

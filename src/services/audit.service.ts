@@ -13,6 +13,13 @@
  */
 
 import { supabase } from '@/lib/supabase/client'
+import type { Json } from '@/lib/supabase/database.types'
+import { logger } from '@/lib/utils/logger'
+
+// Tipo para entidades arbitrarias pasadas al sistema de auditoría.
+// Estas funciones extraen propiedades opcionales de objetos con estructura variable.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type EntidadAuditable = Record<string, any>
 
 // =====================================================
 // TIPOS
@@ -60,13 +67,13 @@ export type ModuloAplicacion =
 /**
  * Parámetros para registrar una acción en audit_log
  */
-export interface AuditLogParams<T = any> {
+export interface AuditLogParams<T = unknown> {
   tabla: TablaAuditable
   accion: AccionAuditoria
   registroId: string
   datosAnteriores?: T | null
   datosNuevos?: T | null
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
   modulo?: ModuloAplicacion
 }
 
@@ -85,10 +92,13 @@ export interface AuditLogRecord {
   fecha_evento: string
   ip_address: string | null
   user_agent: string | null
-  datos_anteriores: any | null
-  datos_nuevos: any | null
-  cambios_especificos: Record<string, { antes: any; despues: any }> | null
-  metadata: Record<string, any>
+  datos_anteriores: Json | null
+  datos_nuevos: Json | null
+  cambios_especificos: Record<
+    string,
+    { antes: unknown; despues: unknown }
+  > | null
+  metadata: Record<string, unknown>
   modulo: ModuloAplicacion | null
 }
 
@@ -102,7 +112,7 @@ export interface ActividadUsuario {
   fecha_evento: string
   registro_id: string
   modulo: ModuloAplicacion | null
-  metadata: Record<string, any>
+  metadata: Record<string, unknown>
 }
 
 /**
@@ -140,21 +150,23 @@ class AuditService {
    * })
    * ```
    */
-  async registrarAccion<T = any>({
+  async registrarAccion<T = unknown>({
     tabla,
     accion,
     registroId,
     datosAnteriores = null,
     datosNuevos = null,
     metadata = {},
-    modulo
+    modulo,
   }: AuditLogParams<T>): Promise<void> {
     try {
       // Obtener usuario actual
-      const { data: { user } } = await supabase.auth.getUser()
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
 
       if (!user) {
-        console.warn('⚠️ No se pudo obtener usuario para auditoría')
+        logger.warn('⚠️ No se pudo obtener usuario para auditoría')
         // No bloqueamos la operación si no hay usuario
         return
       }
@@ -178,32 +190,31 @@ class AuditService {
         accion,
         registro_id: registroId,
         usuario_id: user.id,
-        usuario_email: user.email!,
+        usuario_email: user.email ?? '',
         usuario_nombres: perfil?.nombres || null,
         usuario_rol: perfil?.rol || null,
-        datos_anteriores: datosAnteriores,
-        datos_nuevos: datosNuevos,
-        cambios_especificos: cambiosEspecificos,
-        user_agent: typeof window !== 'undefined' ? window.navigator.userAgent : null,
+        datos_anteriores: (datosAnteriores as unknown as Json) ?? undefined,
+        datos_nuevos: (datosNuevos as unknown as Json) ?? undefined,
+        cambios_especificos: (cambiosEspecificos as Json) ?? undefined,
+        user_agent:
+          typeof window !== 'undefined' ? window.navigator.userAgent : null,
         metadata: {
           ...metadata,
           timestamp_cliente: new Date().toISOString(),
-          url: typeof window !== 'undefined' ? window.location.href : null
-        },
-        modulo: modulo || this.inferirModulo(tabla)
+          url: typeof window !== 'undefined' ? window.location.href : null,
+        } as Json,
+        modulo: modulo || this.inferirModulo(tabla),
       }
 
       // Insertar en la base de datos
-      const { error } = await (supabase as any)
-        .from('audit_log')
-        .insert(auditData)
+      const { error } = await supabase.from('audit_log').insert(auditData)
 
       if (error) {
-        console.error('Error registrando auditoría:', error)
+        logger.error('Error registrando auditoría:', error)
         // No lanzamos error para no interrumpir el flujo principal
       }
     } catch (error) {
-      console.error('Excepción en auditoría:', error)
+      logger.error('Excepción en auditoría:', error)
       // Fallar silenciosamente para no interrumpir el flujo de la aplicación
     }
   }
@@ -224,7 +235,7 @@ class AuditService {
     tabla: TablaAuditable,
     registroId: string,
     datos: T,
-    metadata?: Record<string, any>,
+    metadata?: Record<string, unknown>,
     modulo?: ModuloAplicacion
   ): Promise<void> {
     return this.registrarAccion({
@@ -233,7 +244,7 @@ class AuditService {
       registroId,
       datosNuevos: datos,
       metadata,
-      modulo
+      modulo,
     })
   }
 
@@ -247,13 +258,16 @@ class AuditService {
    * ```
    */
   async auditarCreacionProyecto(
-    proyecto: any,
-    manzanas: any[] = []
+    proyecto: EntidadAuditable,
+    manzanas: EntidadAuditable[] = []
   ): Promise<void> {
-    const totalViviendas = manzanas.reduce((sum, m) => sum + (m.totalViviendas || m.numero_viviendas || 0), 0)
+    const totalViviendas = manzanas.reduce(
+      (sum, m) => sum + (m.totalViviendas || m.numero_viviendas || 0),
+      0
+    )
 
     // 🔍 Solo incluir campos que realmente tienen valores significativos
-    const metadataDetallada: Record<string, any> = {
+    const metadataDetallada: Record<string, unknown> = {
       // Información BÁSICA del proyecto (siempre se captura)
       proyecto_nombre: proyecto.nombre,
       proyecto_ubicacion: proyecto.ubicacion,
@@ -273,7 +287,7 @@ class AuditService {
       nombres_manzanas: manzanas.map(m => m.nombre).join(', '),
 
       // Timestamp
-      timestamp_creacion: new Date().toISOString()
+      timestamp_creacion: new Date().toISOString(),
     }
 
     // 📊 Campos OPCIONALES: Solo agregar si tienen valor real (no por defecto)
@@ -299,11 +313,13 @@ class AuditService {
     }
 
     if (proyecto.fechaInicio || proyecto.fecha_inicio) {
-      metadataDetallada.proyecto_fecha_inicio = proyecto.fechaInicio || proyecto.fecha_inicio
+      metadataDetallada.proyecto_fecha_inicio =
+        proyecto.fechaInicio || proyecto.fecha_inicio
     }
 
     if (proyecto.fechaFinEstimada || proyecto.fecha_fin_estimada) {
-      metadataDetallada.proyecto_fecha_fin_estimada = proyecto.fechaFinEstimada || proyecto.fecha_fin_estimada
+      metadataDetallada.proyecto_fecha_fin_estimada =
+        proyecto.fechaFinEstimada || proyecto.fecha_fin_estimada
     }
 
     return this.registrarAccion({
@@ -312,7 +328,7 @@ class AuditService {
       registroId: proyecto.id,
       datosNuevos: proyecto,
       metadata: metadataDetallada,
-      modulo: 'proyectos'
+      modulo: 'proyectos',
     })
   }
 
@@ -326,9 +342,9 @@ class AuditService {
    * ```
    */
   async auditarCreacionVivienda(
-    vivienda: any,
-    proyecto?: any,
-    manzana?: any
+    vivienda: EntidadAuditable,
+    proyecto?: EntidadAuditable,
+    manzana?: EntidadAuditable
   ): Promise<void> {
     const metadataDetallada = {
       // Información de la vivienda
@@ -351,7 +367,7 @@ class AuditService {
       manzana_nombre: manzana?.nombre,
 
       // Timestamp
-      timestamp_creacion: new Date().toISOString()
+      timestamp_creacion: new Date().toISOString(),
     }
 
     return this.registrarAccion({
@@ -360,7 +376,7 @@ class AuditService {
       registroId: vivienda.id,
       datosNuevos: vivienda,
       metadata: metadataDetallada,
-      modulo: 'viviendas'
+      modulo: 'viviendas',
     })
   }
 
@@ -372,12 +388,13 @@ class AuditService {
    * await auditService.auditarCreacionCliente(cliente)
    * ```
    */
-  async auditarCreacionCliente(cliente: any): Promise<void> {
+  async auditarCreacionCliente(cliente: EntidadAuditable): Promise<void> {
     const metadataDetallada = {
       // Información del cliente
       cliente_nombre_completo: `${cliente.nombres} ${cliente.apellidos}`,
       cliente_tipo_documento: cliente.tipo_documento || cliente.tipoDocumento,
-      cliente_numero_documento: cliente.numero_documento || cliente.numeroDocumento,
+      cliente_numero_documento:
+        cliente.numero_documento || cliente.numeroDocumento,
       cliente_telefono: cliente.telefono,
       cliente_email: cliente.email,
       cliente_ciudad: cliente.ciudad,
@@ -387,7 +404,7 @@ class AuditService {
       cliente_referido_por: cliente.referido_por || cliente.referidoPor,
 
       // Timestamp
-      timestamp_creacion: new Date().toISOString()
+      timestamp_creacion: new Date().toISOString(),
     }
 
     return this.registrarAccion({
@@ -396,7 +413,7 @@ class AuditService {
       registroId: cliente.id,
       datosNuevos: cliente,
       metadata: metadataDetallada,
-      modulo: 'clientes'
+      modulo: 'clientes',
     })
   }
 
@@ -409,23 +426,28 @@ class AuditService {
    * ```
    */
   async auditarCreacionNegociacion(
-    negociacion: any,
-    cliente?: any,
-    vivienda?: any,
-    proyecto?: any
+    negociacion: EntidadAuditable,
+    cliente?: EntidadAuditable,
+    vivienda?: EntidadAuditable,
+    proyecto?: EntidadAuditable
   ): Promise<void> {
     const metadataDetallada = {
       // Información de la negociación
       negociacion_estado: negociacion.estado,
-      negociacion_valor_total: negociacion.valor_total || negociacion.valorTotal,
+      negociacion_valor_total:
+        negociacion.valor_total || negociacion.valorTotal,
       negociacion_valor_formateado: `$${(negociacion.valor_total || negociacion.valorTotal)?.toLocaleString('es-CO')}`,
-      negociacion_cuota_inicial: negociacion.cuota_inicial || negociacion.cuotaInicial,
-      negociacion_saldo_pendiente: negociacion.saldo_pendiente || negociacion.saldoPendiente,
+      negociacion_cuota_inicial:
+        negociacion.cuota_inicial || negociacion.cuotaInicial,
+      negociacion_saldo_pendiente:
+        negociacion.saldo_pendiente || negociacion.saldoPendiente,
       negociacion_tipo_pago: negociacion.tipo_pago || negociacion.tipoPago,
 
       // Información del cliente
       cliente_id: cliente?.id || negociacion.cliente_id,
-      cliente_nombre: cliente ? `${cliente.nombres} ${cliente.apellidos}` : null,
+      cliente_nombre: cliente
+        ? `${cliente.nombres} ${cliente.apellidos}`
+        : null,
       cliente_documento: cliente?.numero_documento,
 
       // Información de la vivienda
@@ -438,7 +460,7 @@ class AuditService {
       proyecto_nombre: proyecto?.nombre,
 
       // Timestamp
-      timestamp_creacion: new Date().toISOString()
+      timestamp_creacion: new Date().toISOString(),
     }
 
     return this.registrarAccion({
@@ -447,7 +469,7 @@ class AuditService {
       registroId: negociacion.id,
       datosNuevos: negociacion,
       metadata: metadataDetallada,
-      modulo: 'negociaciones'
+      modulo: 'negociaciones',
     })
   }
 
@@ -472,7 +494,7 @@ class AuditService {
     registroId: string,
     datosAnteriores: T,
     datosNuevos: T,
-    metadata?: Record<string, any>,
+    metadata?: Record<string, unknown>,
     modulo?: ModuloAplicacion
   ): Promise<void> {
     return this.registrarAccion({
@@ -482,7 +504,7 @@ class AuditService {
       datosAnteriores,
       datosNuevos,
       metadata,
-      modulo
+      modulo,
     })
   }
 
@@ -502,7 +524,7 @@ class AuditService {
     tabla: TablaAuditable,
     registroId: string,
     datos: T,
-    metadata?: Record<string, any>,
+    metadata?: Record<string, unknown>,
     modulo?: ModuloAplicacion
   ): Promise<void> {
     return this.registrarAccion({
@@ -511,7 +533,7 @@ class AuditService {
       registroId,
       datosAnteriores: datos,
       metadata,
-      modulo
+      modulo,
     })
   }
 
@@ -529,7 +551,7 @@ class AuditService {
     limit = 100
   ): Promise<AuditLogRecord[]> {
     try {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('audit_log')
         .select('*')
         .eq('tabla', tabla)
@@ -538,13 +560,13 @@ class AuditService {
         .limit(limit)
 
       if (error) {
-        console.error('❌ Error obteniendo historial:', error)
+        logger.error('❌ Error obteniendo historial:', error)
         return []
       }
 
       return data as AuditLogRecord[]
     } catch (error) {
-      console.error('❌ Excepción obteniendo historial:', error)
+      logger.error('❌ Excepción obteniendo historial:', error)
       return []
     }
   }
@@ -563,20 +585,20 @@ class AuditService {
     limit = 100
   ): Promise<ActividadUsuario[]> {
     try {
-      const { data, error } = await (supabase as any).rpc('obtener_actividad_usuario', {
+      const { data, error } = await supabase.rpc('obtener_actividad_usuario', {
         p_usuario_id: usuarioId,
         p_dias: dias,
-        p_limit: limit
+        p_limit: limit,
       })
 
       if (error) {
-        console.error('❌ Error obteniendo actividad:', error)
+        logger.error('❌ Error obteniendo actividad:', error)
         return []
       }
 
       return data as ActividadUsuario[]
     } catch (error) {
-      console.error('❌ Excepción obteniendo actividad:', error)
+      logger.error('❌ Excepción obteniendo actividad:', error)
       return []
     }
   }
@@ -592,20 +614,20 @@ class AuditService {
    */
   async obtenerCambiosRecientes(limit = 100): Promise<AuditLogRecord[]> {
     try {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('audit_log')
         .select('*')
         .order('fecha_evento', { ascending: false })
         .limit(limit)
 
       if (error) {
-        console.error('❌ Error obteniendo cambios recientes:', error)
+        logger.error('❌ Error obteniendo cambios recientes:', error)
         return []
       }
 
       return data as AuditLogRecord[]
     } catch (error) {
-      console.error('❌ Excepción obteniendo cambios recientes:', error)
+      logger.error('❌ Excepción obteniendo cambios recientes:', error)
       return []
     }
   }
@@ -620,19 +642,19 @@ class AuditService {
    */
   async obtenerResumenPorModulo(): Promise<ResumenPorModulo[]> {
     try {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('v_auditoria_por_modulo')
         .select('*')
         .order('total_eventos', { ascending: false })
 
       if (error) {
-        console.error('❌ Error obteniendo resumen:', error)
+        logger.error('❌ Error obteniendo resumen:', error)
         return []
       }
 
       return data as ResumenPorModulo[]
     } catch (error) {
-      console.error('❌ Excepción obteniendo resumen:', error)
+      logger.error('❌ Excepción obteniendo resumen:', error)
       return []
     }
   }
@@ -647,19 +669,22 @@ class AuditService {
    */
   async detectarEliminacionesMasivas(dias = 7, umbral = 5) {
     try {
-      const { data, error } = await (supabase as any).rpc('detectar_eliminaciones_masivas', {
-        p_dias: dias,
-        p_umbral: umbral
-      })
+      const { data, error } = await supabase.rpc(
+        'detectar_eliminaciones_masivas',
+        {
+          p_dias: dias,
+          p_umbral: umbral,
+        }
+      )
 
       if (error) {
-        console.error('❌ Error detectando eliminaciones masivas:', error)
+        logger.error('❌ Error detectando eliminaciones masivas:', error)
         return []
       }
 
       return data
     } catch (error) {
-      console.error('❌ Excepción detectando eliminaciones masivas:', error)
+      logger.error('❌ Excepción detectando eliminaciones masivas:', error)
       return []
     }
   }
@@ -674,8 +699,11 @@ class AuditService {
    *
    * @private
    */
-  private calcularCambios(antes: any, despues: any): Record<string, { antes: any; despues: any }> {
-    const cambios: Record<string, { antes: any; despues: any }> = {}
+  private calcularCambios(
+    antes: Record<string, unknown>,
+    despues: Record<string, unknown>
+  ): Record<string, { antes: unknown; despues: unknown }> {
+    const cambios: Record<string, { antes: unknown; despues: unknown }> = {}
 
     // Obtener todas las claves del objeto nuevo
     const claves = Object.keys(despues)
@@ -688,7 +716,7 @@ class AuditService {
       if (JSON.stringify(valorAntes) !== JSON.stringify(valorDespues)) {
         cambios[clave] = {
           antes: valorAntes,
-          despues: valorDespues
+          despues: valorDespues,
         }
       }
     }
@@ -716,7 +744,7 @@ class AuditService {
       documentos_proyecto: 'documentos',
       documentos_vivienda: 'documentos',
       documentos_cliente: 'documentos',
-      categorias_documento: 'documentos'
+      categorias_documento: 'documentos',
     }
 
     return mapa[tabla] || 'admin'

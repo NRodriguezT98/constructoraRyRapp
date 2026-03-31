@@ -8,8 +8,9 @@
  * que TODO se ejecuta o NADA se persiste.
  */
 
-import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useCallback, useState } from 'react'
+
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
 import { supabase } from '@/lib/supabase/client'
@@ -37,7 +38,9 @@ export function useRebalanceoMutation({
   const rebalancearMutation = useMutation({
     mutationFn: async ({ ajustes, nuevas, motivo, notas }: DatosRebalanceo) => {
       // Obtener usuario actual
-      const { data: { user } } = await supabase.auth.getUser()
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
 
       const payload = {
         negociacion_id: negociacionId,
@@ -46,7 +49,7 @@ export function useRebalanceoMutation({
         notas: notas || null,
         valor_vivienda: valorVivienda,
         cliente_id: clienteId,
-        ajustes: ajustes.map((a) => ({
+        ajustes: ajustes.map(a => ({
           id: a.id,
           tipo: a.tipo,
           montoOriginal: a.montoOriginal,
@@ -55,7 +58,7 @@ export function useRebalanceoMutation({
           entidadEditable: a.entidadEditable,
           paraEliminar: a.paraEliminar,
         })),
-        nuevas: nuevas.map((n) => ({
+        nuevas: nuevas.map(n => ({
           tipo: n.tipo,
           monto: n.monto,
           entidad: n.entidad || '',
@@ -63,21 +66,28 @@ export function useRebalanceoMutation({
       }
 
       const { data, error } = await supabase.rpc(
-        'rebalancear_plan_financiero' as any,
-        { p_payload: payload },
+        'rebalancear_plan_financiero',
+        { p_payload: payload }
       )
 
       if (error) throw error
 
       const result = data as { success: boolean; error?: string } | null
-      if (result && !result.success) throw new Error(result.error || 'Error en rebalanceo')
+      if (result && !result.success)
+        throw new Error(result.error || 'Error en rebalanceo')
 
       return data
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['fuentes-pago-neg-tab', negociacionId] })
-      queryClient.invalidateQueries({ queryKey: documentosPendientesKeys.byCliente(clienteId) })
-      queryClient.invalidateQueries({ queryKey: ['docs-pendientes-neg-tab', clienteId] })
+      queryClient.invalidateQueries({
+        queryKey: ['fuentes-pago-neg-tab', negociacionId],
+      })
+      queryClient.invalidateQueries({
+        queryKey: documentosPendientesKeys.byCliente(clienteId),
+      })
+      queryClient.invalidateQueries({
+        queryKey: ['docs-pendientes-neg-tab', clienteId],
+      })
       toast.success('Plan financiero actualizado correctamente')
       closeRebalancear()
     },
