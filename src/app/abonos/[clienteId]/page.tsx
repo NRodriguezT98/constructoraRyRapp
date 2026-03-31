@@ -12,10 +12,10 @@ import { resolverSlugCliente } from '@/lib/utils/slug.utils'
 import { ModalRegistroPago } from '@/modules/abonos/components/modal-registro-pago'
 
 import {
-    FuentePagoCard,
-    HeaderCliente,
-    MetricasCards,
-    TimelineAbonos,
+  FuentePagoCard,
+  HeaderCliente,
+  MetricasCards,
+  TimelineAbonos,
 } from './components'
 import { useAbonosDetalle } from './hooks/useAbonosDetalle'
 
@@ -86,7 +86,7 @@ export default function AbonosDetallePage({ params }: PageProps) {
 
       <div className='relative z-10 mx-auto max-w-5xl space-y-5 px-4 py-6'>
         {/* Header (sticky al hacer scroll) */}
-        <div className="sticky top-0 z-20">
+        <div className='sticky top-0 z-20'>
           <HeaderCliente
             negociacion={negociacion}
             onVolver={handleVolver}
@@ -177,7 +177,7 @@ export default function AbonosDetallePage({ params }: PageProps) {
                         : undefined,
                     },
                     proyecto: negociacion.proyecto,
-                    valorVivienda: metricas?.valorTotal,
+                    valorVivienda: metricas?.valorVivienda,
                     totalAbonadoAntes: metricas?.totalAbonado,
                   }
                 : undefined

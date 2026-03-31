@@ -16,9 +16,9 @@ import { useCallback, useMemo, useState } from 'react'
 import type { ClienteResumen, FiltrosClientes } from '../types'
 
 import {
-    useClientesQuery,
-    useEliminarClienteMutation,
-    useEstadisticasClientesQuery,
+  useClientesQuery,
+  useEliminarClienteMutation,
+  useEstadisticasClientesQuery,
 } from './useClientesQuery'
 
 export function useClientesList() {
@@ -29,7 +29,9 @@ export function useClientesList() {
   const [modalCrear, setModalCrear] = useState(false)
   const [modalEditar, setModalEditar] = useState(false)
   const [modalEliminar, setModalEliminar] = useState(false)
-  const [clienteEditar, setClienteEditar] = useState<ClienteResumen | null>(null) // ✅ Objeto completo
+  const [clienteEditar, setClienteEditar] = useState<ClienteResumen | null>(
+    null
+  ) // ✅ Objeto completo
   const [clienteEliminar, setClienteEliminar] = useState<string | null>(null)
 
   const [filtros, setFiltros] = useState<FiltrosClientes>({
@@ -70,33 +72,39 @@ export function useClientesList() {
     // Búsqueda local adicional (por si no está en filtros del servidor)
     if (filtros.busqueda) {
       const terminoBusqueda = filtros.busqueda.toLowerCase().trim()
-      resultado = resultado.filter(
-        (cliente) => {
-          // Búsqueda en campos básicos
-          const matchBasico =
-            cliente.nombre_completo.toLowerCase().includes(terminoBusqueda) ||
-            cliente.numero_documento.toLowerCase().includes(terminoBusqueda) ||
-            cliente.telefono?.toLowerCase().includes(terminoBusqueda) ||
-            cliente.email?.toLowerCase().includes(terminoBusqueda)
+      resultado = resultado.filter(cliente => {
+        // Búsqueda en campos básicos
+        const matchBasico =
+          cliente.nombre_completo.toLowerCase().includes(terminoBusqueda) ||
+          cliente.numero_documento.toLowerCase().includes(terminoBusqueda) ||
+          cliente.telefono?.toLowerCase().includes(terminoBusqueda) ||
+          cliente.email?.toLowerCase().includes(terminoBusqueda)
 
-          // Búsqueda en vivienda (A-1, A-2, etc.)
-          const matchVivienda = cliente.vivienda
-            ? `${cliente.vivienda.nombre_manzana}-${cliente.vivienda.numero_vivienda}`.toLowerCase().includes(terminoBusqueda)
-            : false
+        // Búsqueda en vivienda (A-1, A-2, etc.)
+        const matchVivienda = cliente.vivienda
+          ? `${cliente.vivienda.nombre_manzana}-${cliente.vivienda.numero_vivienda}`
+              .toLowerCase()
+              .includes(terminoBusqueda)
+          : false
 
-          // Búsqueda en interés (A-1, A-2, etc.)
-          const matchInteres = cliente.interes
-            ? `${cliente.interes.nombre_manzana}-${cliente.interes.numero_vivienda}`.toLowerCase().includes(terminoBusqueda)
-            : false
+        // Búsqueda en interés (A-1, A-2, etc.)
+        const matchInteres = cliente.interes
+          ? `${cliente.interes.nombre_manzana}-${cliente.interes.numero_vivienda}`
+              .toLowerCase()
+              .includes(terminoBusqueda)
+          : false
 
-          // Búsqueda en proyecto
-          const matchProyecto =
-            cliente.vivienda?.nombre_proyecto?.toLowerCase().includes(terminoBusqueda) ||
-            cliente.interes?.nombre_proyecto?.toLowerCase().includes(terminoBusqueda)
+        // Búsqueda en proyecto
+        const matchProyecto =
+          cliente.vivienda?.nombre_proyecto
+            ?.toLowerCase()
+            .includes(terminoBusqueda) ||
+          cliente.interes?.nombre_proyecto
+            ?.toLowerCase()
+            .includes(terminoBusqueda)
 
-          return matchBasico || matchVivienda || matchInteres || matchProyecto
-        }
-      )
+        return matchBasico || matchVivienda || matchInteres || matchProyecto
+      })
     }
 
     // ⭐ ORDENAR POR VIVIENDA (orden base natural)
@@ -164,9 +172,10 @@ export function useClientesList() {
     // Fallback: calcular desde clientes cargados
     return {
       total: clientes.length,
-      interesados: clientes.filter((c) => c.estado === 'Interesado').length,
-      activos: clientes.filter((c) => c.estado === 'Activo').length,
-      inactivos: clientes.filter((c) => c.estado === 'Inactivo').length,
+      interesados: clientes.filter(c => c.estado === 'Interesado').length,
+      activos: clientes.filter(c => c.estado === 'Activo').length,
+      inactivos: clientes.filter(c => c.estado === 'Inactivo').length,
+      renunciaron: clientes.filter(c => c.estado === 'Renunci\u00f3').length,
     }
   }, [clientes, estadisticas])
 
@@ -206,6 +215,7 @@ export function useClientesList() {
       setClienteEliminar(null)
     } catch (error) {
       // Error ya manejado por mutation
+      // eslint-disable-next-line no-console, no-restricted-syntax
       console.error('Error eliminando cliente:', error)
     }
   }, [clienteEliminar, eliminarMutation])
@@ -219,9 +229,12 @@ export function useClientesList() {
   // ACCIONES DE FILTROS
   // =====================================================
 
-  const actualizarFiltros = useCallback((nuevosFiltros: Partial<FiltrosClientes>) => {
-    setFiltros((prev) => ({ ...prev, ...nuevosFiltros }))
-  }, [])
+  const actualizarFiltros = useCallback(
+    (nuevosFiltros: Partial<FiltrosClientes>) => {
+      setFiltros(prev => ({ ...prev, ...nuevosFiltros }))
+    },
+    []
+  )
 
   const limpiarFiltros = useCallback(() => {
     setFiltros({
@@ -231,7 +244,7 @@ export function useClientesList() {
   }, [])
 
   const aplicarBusqueda = useCallback((termino: string) => {
-    setFiltros((prev) => ({ ...prev, busqueda: termino }))
+    setFiltros(prev => ({ ...prev, busqueda: termino }))
   }, [])
 
   // =====================================================

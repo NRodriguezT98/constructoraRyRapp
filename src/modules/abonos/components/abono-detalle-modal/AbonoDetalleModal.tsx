@@ -4,17 +4,18 @@ import { useEffect, useState } from 'react'
 
 import { AnimatePresence, motion } from 'framer-motion'
 import {
-    Ban,
-    Building2,
-    Calendar,
-    CreditCard,
-    Download,
-    FileText,
-    Home,
-    Receipt,
-    StickyNote,
-    User,
-    X,
+  Ban,
+  Building2,
+  Calendar,
+  CreditCard,
+  Download,
+  FileText,
+  Home,
+  Loader2,
+  Receipt,
+  StickyNote,
+  User,
+  X,
 } from 'lucide-react'
 import { createPortal } from 'react-dom'
 
@@ -49,7 +50,7 @@ export function AbonoDetalleModal({
   isOpen,
   onClose,
   onAnulado,
-  onRegistrarNuevo,
+  onRegistrarNuevo: _onRegistrarNuevo,
 }: AbonoDetalleModalProps) {
   // Evitar SSR crash: createPortal requiere document.body (solo existe en browser)
   const [mounted, setMounted] = useState(false)
@@ -305,9 +306,7 @@ export function AbonoDetalleModal({
                     </div>
                   </div>
                 </div>
-
                 <div className={s.sidebar.divider} />
-
                 {/* Cliente */}
                 <div className={s.sidebar.section}>
                   <p className={s.sidebar.sectionTitle}>
@@ -331,9 +330,7 @@ export function AbonoDetalleModal({
                     </div>
                   </div>
                 </div>
-
                 <div className={s.sidebar.divider} />
-
                 {/* Propiedad */}
                 <div className={s.sidebar.section}>
                   <p className={s.sidebar.sectionTitle}>
@@ -353,7 +350,6 @@ export function AbonoDetalleModal({
                     </div>
                   </div>
                 </div>
-
                 {/* Notas (si existen) */}
                 {abono.notas ? (
                   <>
@@ -380,35 +376,46 @@ export function AbonoDetalleModal({
                         <Ban className='h-3 w-3' />
                         Anulación
                       </p>
-                      <div className='rounded-xl border border-red-200 dark:border-red-800/50 bg-red-50 dark:bg-red-950/30 px-4 py-3 space-y-2.5'>
+                      <div className='space-y-2.5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 dark:border-red-800/50 dark:bg-red-950/30'>
                         {abono.motivo_categoria ? (
                           <div>
                             <p className={s.sidebar.rowLabel}>Motivo</p>
-                            <p className='text-sm font-semibold text-red-900 dark:text-red-200'>{abono.motivo_categoria}</p>
+                            <p className='text-sm font-semibold text-red-900 dark:text-red-200'>
+                              {abono.motivo_categoria}
+                            </p>
                           </div>
                         ) : null}
                         {abono.motivo_detalle ? (
                           <div>
                             <p className={s.sidebar.rowLabel}>Detalle</p>
-                            <p className='text-xs text-red-800 dark:text-red-300 italic'>{abono.motivo_detalle}</p>
+                            <p className='text-xs italic text-red-800 dark:text-red-300'>
+                              {abono.motivo_detalle}
+                            </p>
                           </div>
                         ) : null}
                         {abono.anulado_por_nombre ? (
                           <div>
                             <p className={s.sidebar.rowLabel}>Anulado por</p>
-                            <p className='text-xs font-semibold text-red-800 dark:text-red-200'>{abono.anulado_por_nombre}</p>
+                            <p className='text-xs font-semibold text-red-800 dark:text-red-200'>
+                              {abono.anulado_por_nombre}
+                            </p>
                           </div>
                         ) : null}
                         {abono.fecha_anulacion ? (
                           <div>
-                            <p className={s.sidebar.rowLabel}>Fecha de anulación</p>
-                            <p className='text-xs text-red-800 dark:text-red-300'>{formatDateCompact(abono.fecha_anulacion)}</p>
+                            <p className={s.sidebar.rowLabel}>
+                              Fecha de anulación
+                            </p>
+                            <p className='text-xs text-red-800 dark:text-red-300'>
+                              {formatDateCompact(abono.fecha_anulacion)}
+                            </p>
                           </div>
                         ) : null}
                       </div>
                     </div>
                   </>
-                ) : null}              </div>
+                ) : null}{' '}
+              </div>
             </div>
 
             {/* ─── Modal de Anulación ──────────────────────────────────── */}
@@ -419,7 +426,8 @@ export function AbonoDetalleModal({
                   numero_recibo: abono.numero_recibo,
                   monto: abono.monto,
                   fecha_abono: abono.fecha_abono,
-                  cliente_nombre: `${abono.cliente.nombres} ${abono.cliente.apellidos}`.trim(),
+                  cliente_nombre:
+                    `${abono.cliente.nombres} ${abono.cliente.apellidos}`.trim(),
                   vivienda_info: abono.vivienda.manzana.identificador
                     ? `Mz.${abono.vivienda.manzana.identificador} Casa No. ${abono.vivienda.numero}`
                     : `N°${abono.vivienda.numero}`,

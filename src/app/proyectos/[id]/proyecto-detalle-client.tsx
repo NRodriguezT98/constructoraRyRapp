@@ -4,15 +4,15 @@ import { useState } from 'react'
 
 import { AnimatePresence, motion } from 'framer-motion'
 import {
-    ArrowLeft,
-    Building2,
-    ChevronRight,
-    Edit2,
-    FileText,
-    Home,
-    Info,
-    MapPin,
-    Trash2
+  ArrowLeft,
+  Building2,
+  ChevronRight,
+  Edit2,
+  FileText,
+  Home,
+  Info,
+  MapPin,
+  Trash2,
 } from 'lucide-react'
 
 import { useRouter } from 'next/navigation'
@@ -22,15 +22,15 @@ import { useAuth } from '@/contexts/auth-context'
 import { ConfirmarCambiosModal } from '@/modules/proyectos/components/confirmar-cambios-modal'
 import { ProyectosBadgesResumen } from '@/modules/proyectos/components/proyectos-badges-resumen'
 import { ProyectosForm } from '@/modules/proyectos/components/proyectos-form'
-import { useProyectoConValidacion, useProyectosQuery } from '@/modules/proyectos/hooks'
+import {
+  useProyectoConValidacion,
+  useProyectoQuery,
+  useProyectosQuery,
+} from '@/modules/proyectos/hooks'
 import { useDetectarCambios } from '@/modules/proyectos/hooks/useDetectarCambios'
-import { Modal } from '@/shared/components/ui/Modal'
-// ✅ REACT QUERY: Hooks con cache inteligente (reemplazan Zustand)
-import { useProyectoQuery } from '@/modules/proyectos/hooks'
 import type { Proyecto, ProyectoFormData } from '@/modules/proyectos/types'
 import { formatearEstadoProyecto } from '@/modules/proyectos/utils/estado.utils'
-
-
+import { Modal } from '@/shared/components/ui/Modal'
 
 import * as styles from './proyecto-detalle.styles'
 import { DocumentosTab, GeneralTab } from './tabs'
@@ -48,35 +48,41 @@ const estadoColors = {
     'bg-teal-100 text-teal-800 dark:bg-teal-900/30 dark:text-teal-300 border border-teal-200 dark:border-teal-700',
   completado:
     'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 border border-green-200 dark:border-green-700',
-  pausado: 'bg-gray-100 text-gray-700 dark:bg-gray-800/50 dark:text-gray-300 border border-gray-300 dark:border-gray-600',
+  pausado:
+    'bg-gray-100 text-gray-700 dark:bg-gray-800/50 dark:text-gray-300 border border-gray-300 dark:border-gray-600',
 }
 
 export default function ProyectoDetalleClient({
   proyectoId,
 }: ProyectoDetalleClientProps) {
   const router = useRouter()
-  const { user } = useAuth()
+  const { user: _user } = useAuth()
 
   // ✅ REACT QUERY: Hook de detalle con cache (reemplaza useEffect + service)
   const { proyecto, cargando: loading, error } = useProyectoQuery(proyectoId)
-  const { actualizarProyecto, eliminarProyecto, actualizando } = useProyectosQuery()
+  const { actualizarProyecto, eliminarProyecto, actualizando } =
+    useProyectosQuery()
 
   // Estados para modales
   const [activeTab, setActiveTab] = useState<TabType>('info')
   const [modalEditar, setModalEditar] = useState(false)
   const [modalEliminar, setModalEliminar] = useState(false)
   const [modalConfirmarCambios, setModalConfirmarCambios] = useState(false)
-  const [totalesProyecto, setTotalesProyecto] = useState({ totalManzanas: 0, totalViviendas: 0 })
-  const [datosEdicion, setDatosEdicion] = useState<ProyectoFormData | null>(null)
+  const [totalesProyecto, setTotalesProyecto] = useState({
+    totalManzanas: 0,
+    totalViviendas: 0,
+  })
+  const [datosEdicion, setDatosEdicion] = useState<ProyectoFormData | null>(
+    null
+  )
   const [datosConfirmacion, setDatosConfirmacion] = useState<{
     proyectoId: string
     data: ProyectoFormData
   } | null>(null)
 
   // ✅ Hook optimizado: Carga proyecto con validación de manzanas
-  const { data: proyectoConValidacion, isLoading: cargandoValidacion } = useProyectoConValidacion(
-    modalEditar ? proyectoId : undefined
-  )
+  const { data: proyectoConValidacion, isLoading: cargandoValidacion } =
+    useProyectoConValidacion(modalEditar ? proyectoId : undefined)
 
   // Hook para detectar cambios
   const proyectoEditar: Proyecto | null = proyecto || null
@@ -102,12 +108,15 @@ export default function ProyectoDetalleClient({
     if (!datosConfirmacion) return
 
     try {
-      await actualizarProyecto(datosConfirmacion.proyectoId, datosConfirmacion.data)
+      await actualizarProyecto(
+        datosConfirmacion.proyectoId,
+        datosConfirmacion.data
+      )
       setModalConfirmarCambios(false)
       setModalEditar(false)
       setDatosEdicion(null)
       setDatosConfirmacion(null)
-    } catch (error) {
+    } catch {
       // Error ya manejado por React Query con toast
     }
   }
@@ -121,7 +130,7 @@ export default function ProyectoDetalleClient({
       await eliminarProyecto(proyectoId)
       setModalEliminar(false)
       router.push('/proyectos')
-    } catch (error) {
+    } catch {
       // Error ya manejado por React Query con toast
       setModalEliminar(false)
     }
@@ -151,12 +160,12 @@ export default function ProyectoDetalleClient({
   // Mostrar loader mientras carga
   if (loading || !proyecto) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-gray-50 via-white to-blue-50/30 dark:from-gray-900 dark:via-gray-900 dark:to-blue-950/20">
+      <div className='flex min-h-screen items-center justify-center bg-gradient-to-br from-gray-50 via-white to-blue-50/30 dark:from-gray-900 dark:via-gray-900 dark:to-blue-950/20'>
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.3 }}
-          className="text-center"
+          className='text-center'
         >
           <motion.div
             animate={{
@@ -169,11 +178,14 @@ export default function ProyectoDetalleClient({
               ease: 'easeInOut',
             }}
           >
-            <Building2 className="mx-auto mb-4 h-16 w-16 text-green-500" strokeWidth={2} />
+            <Building2
+              className='mx-auto mb-4 h-16 w-16 text-green-500'
+              strokeWidth={2}
+            />
           </motion.div>
 
           <motion.p
-            className="text-lg font-medium text-gray-700 dark:text-gray-300"
+            className='text-lg font-medium text-gray-700 dark:text-gray-300'
             animate={{
               opacity: [0.5, 1, 0.5],
             }}
@@ -186,11 +198,11 @@ export default function ProyectoDetalleClient({
             Cargando proyecto...
           </motion.p>
 
-          <div className="mt-4 flex items-center justify-center gap-2">
-            {[0, 1, 2].map((i) => (
+          <div className='mt-4 flex items-center justify-center gap-2'>
+            {[0, 1, 2].map(i => (
               <motion.div
                 key={i}
-                className="h-2 w-2 rounded-full bg-green-500"
+                className='h-2 w-2 rounded-full bg-green-500'
                 animate={{
                   scale: [1, 1.5, 1],
                   opacity: [0.3, 1, 0.3],
@@ -220,9 +232,9 @@ export default function ProyectoDetalleClient({
   ]
 
   return (
-    <AnimatePresence mode="wait">
+    <AnimatePresence mode='wait'>
       <motion.div
-        key="content"
+        key='content'
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
@@ -230,231 +242,241 @@ export default function ProyectoDetalleClient({
         className='min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50/30 p-4 dark:from-gray-900 dark:via-gray-900 dark:to-blue-950/20'
       >
         <div className='mx-auto max-w-7xl space-y-4'>
-        {/* Botón Volver */}
-        <motion.div {...styles.animations.fadeInUp}>
-          <Button
-            variant='ghost'
-            onClick={() => router.back()}
-            className='group'
+          {/* Botón Volver */}
+          <motion.div {...styles.animations.fadeInUp}>
+            <Button
+              variant='ghost'
+              onClick={() => router.back()}
+              className='group'
+            >
+              <ArrowLeft className='mr-2 h-4 w-4 transition-transform group-hover:-translate-x-1' />
+              Volver
+            </Button>
+          </motion.div>
+
+          {/* Header Mejorado con Glassmorphism */}
+          <motion.div
+            {...styles.animations.fadeInUp}
+            transition={{ delay: 0.1 }}
+            className={styles.headerClasses.container}
           >
-            <ArrowLeft className='mr-2 h-4 w-4 transition-transform group-hover:-translate-x-1' />
-            Volver
-          </Button>
-        </motion.div>
-
-        {/* Header Mejorado con Glassmorphism */}
-        <motion.div
-          {...styles.animations.fadeInUp}
-          transition={{ delay: 0.1 }}
-          className={styles.headerClasses.container}
-        >
-          {/* Patrón de fondo */}
-          <div className={styles.headerClasses.backgroundPattern}>
-            <div className='absolute left-10 top-10 h-32 w-32 animate-pulse rounded-full bg-white/10'></div>
-            <div className='absolute bottom-10 right-10 h-24 w-24 animate-pulse rounded-full bg-white/10'></div>
-          </div>
-
-          {/* Breadcrumb */}
-          <div className={styles.headerClasses.breadcrumb}>
-            <Home className={styles.headerClasses.breadcrumbIcon} />
-            <ChevronRight className={styles.headerClasses.breadcrumbIcon} />
-            <span>Proyectos</span>
-            <ChevronRight className={styles.headerClasses.breadcrumbIcon} />
-            <span className={styles.headerClasses.breadcrumbCurrent}>
-              {proyecto.nombre}
-            </span>
-          </div>
-
-          {/* Contenido Principal */}
-          <div className={styles.headerClasses.contentWrapper}>
-            <div className={styles.headerClasses.leftSection}>
-              <motion.div
-                className={styles.headerClasses.iconContainer}
-                {...styles.animations.hoverScale}
-              >
-                <Building2 className={styles.headerClasses.icon} />
-              </motion.div>
-
-              <div className={styles.headerClasses.titleSection}>
-                <div className="flex items-center gap-3">
-                  <h1 className={styles.headerClasses.title}>
-                    {proyecto.nombre}
-                  </h1>
-                  <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
-                    estadoColors[proyecto.estado as keyof typeof estadoColors] || estadoColors.pausado
-                  }`}>
-                    {formatearEstadoProyecto(proyecto.estado)}
-                  </span>
-                </div>
-                <div className={styles.headerClasses.location}>
-                  <MapPin className={styles.headerClasses.locationIcon} />
-                  <span>{proyecto.ubicacion}</span>
-                </div>
-              </div>
+            {/* Patrón de fondo */}
+            <div className={styles.headerClasses.backgroundPattern}>
+              <div className='absolute left-10 top-10 h-32 w-32 animate-pulse rounded-full bg-white/10'></div>
+              <div className='absolute bottom-10 right-10 h-24 w-24 animate-pulse rounded-full bg-white/10'></div>
             </div>
 
-            {/* Acciones */}
-            <div className={styles.headerClasses.actionsContainer}>
-              <Button
-                className={styles.headerClasses.actionButton}
-                onClick={handleEdit}
-              >
-                <Edit2 className='h-4 w-4' />
-              </Button>
-              <Button
-                className={styles.headerClasses.deleteButton}
-                onClick={handleEliminar}
-              >
-                <Trash2 className='h-4 w-4' />
-              </Button>
+            {/* Breadcrumb */}
+            <div className={styles.headerClasses.breadcrumb}>
+              <Home className={styles.headerClasses.breadcrumbIcon} />
+              <ChevronRight className={styles.headerClasses.breadcrumbIcon} />
+              <span>Proyectos</span>
+              <ChevronRight className={styles.headerClasses.breadcrumbIcon} />
+              <span className={styles.headerClasses.breadcrumbCurrent}>
+                {proyecto.nombre}
+              </span>
             </div>
-          </div>
-        </motion.div>
 
-        {/* Tabs Mejorados - MOVIDOS ARRIBA (antes de stats) */}
-        <motion.div
-          {...styles.animations.fadeInUp}
-          transition={{ delay: 0.2 }}
-          className={styles.tabsClasses.container}
-        >
-          <nav className={styles.tabsClasses.nav}>
-            {tabs.map((tab) => (
-              <motion.button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`${styles.tabsClasses.tab} ${
-                  activeTab === tab.id
-                    ? styles.tabsClasses.tabActive
-                    : styles.tabsClasses.tabInactive
-                }`}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                <div className={styles.tabsClasses.tabContent}>
-                  <tab.icon className={styles.tabsClasses.tabIcon} />
-                  <span>{tab.label}</span>
-                  {tab.count !== null && (
-                    <span className={styles.tabsClasses.tabBadge}>
-                      {tab.count}
+            {/* Contenido Principal */}
+            <div className={styles.headerClasses.contentWrapper}>
+              <div className={styles.headerClasses.leftSection}>
+                <motion.div
+                  className={styles.headerClasses.iconContainer}
+                  {...styles.animations.hoverScale}
+                >
+                  <Building2 className={styles.headerClasses.icon} />
+                </motion.div>
+
+                <div className={styles.headerClasses.titleSection}>
+                  <div className='flex items-center gap-3'>
+                    <h1 className={styles.headerClasses.title}>
+                      {proyecto.nombre}
+                    </h1>
+                    <span
+                      className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ${
+                        estadoColors[
+                          proyecto.estado as keyof typeof estadoColors
+                        ] || estadoColors.pausado
+                      }`}
+                    >
+                      {formatearEstadoProyecto(proyecto.estado)}
                     </span>
-                  )}
+                  </div>
+                  <div className={styles.headerClasses.location}>
+                    <MapPin className={styles.headerClasses.locationIcon} />
+                    <span>{proyecto.ubicacion}</span>
+                  </div>
                 </div>
-              </motion.button>
-            ))}
-          </nav>
-        </motion.div>
+              </div>
 
-        {/* Contenido de Tabs - Componentes Modulares */}
-        {activeTab === 'info' && <GeneralTab proyecto={proyecto} />}
-
-        {activeTab === 'documentos' && <DocumentosTab proyecto={proyecto} />}
-      </div>
-
-      {/* Modal de Edición */}
-      <Modal
-        isOpen={modalEditar}
-        onClose={() => setModalEditar(false)}
-        title="Editar Proyecto"
-        description="Actualiza la información del proyecto"
-        size="xl"
-        gradientColor="green"
-        icon={<Edit2 className="w-6 h-6 text-white" />}
-        headerExtra={<ProyectosBadgesResumen totalManzanas={totalesProyecto.totalManzanas} totalViviendas={totalesProyecto.totalViviendas} />}
-      >
-        {cargandoValidacion ? (
-          <div className="flex items-center justify-center p-12">
-            <div className="text-center space-y-3">
-              <div className="w-12 h-12 border-4 border-green-500 border-t-transparent rounded-full animate-spin mx-auto" />
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                Cargando datos del proyecto...
-              </p>
+              {/* Acciones */}
+              <div className={styles.headerClasses.actionsContainer}>
+                <Button
+                  className={styles.headerClasses.actionButton}
+                  onClick={handleEdit}
+                >
+                  <Edit2 className='h-4 w-4' />
+                </Button>
+                <Button
+                  className={styles.headerClasses.deleteButton}
+                  onClick={handleEliminar}
+                >
+                  <Trash2 className='h-4 w-4' />
+                </Button>
+              </div>
             </div>
-          </div>
-        ) : proyectoConValidacion ? (
-          <ProyectosForm
-            onSubmit={handleActualizarProyecto}
-            onCancel={() => setModalEditar(false)}
-            isLoading={false}
-            initialData={{
-              id: proyectoConValidacion.id,
-              nombre: proyectoConValidacion.nombre,
-              descripcion: proyectoConValidacion.descripcion,
-              ubicacion: proyectoConValidacion.ubicacion,
-              fechaInicio: proyectoConValidacion.fechaInicio,
-              fechaFinEstimada: proyectoConValidacion.fechaFinEstimada,
-              presupuesto: proyectoConValidacion.presupuesto,
-              estado: proyectoConValidacion.estado,
-              // ✅ Manzanas CON validación pre-cargada (sin queries adicionales)
-              manzanas: proyectoConValidacion.manzanas.map(m => ({
-                id: m.id,
-                nombre: m.nombre,
-                totalViviendas: m.totalViviendas,
-                precioBase: 0,
-                superficieTotal: 0,
-                ubicacion: '',
-                // ✅ Datos de validación (para el formulario)
-                cantidadViviendasCreadas: m.cantidadViviendasCreadas,
-                esEditable: m.esEditable,
-                motivoBloqueado: m.motivoBloqueado,
-              })),
-            }}
-            isEditing={true}
-            onTotalsChange={setTotalesProyecto}
-          />
-        ) : null}
-      </Modal>
+          </motion.div>
 
-      {/* Modal Confirmar Cambios */}
-      <ConfirmarCambiosModal
-        isOpen={modalConfirmarCambios}
-        onClose={() => setModalConfirmarCambios(false)}
-        onConfirm={confirmarActualizacion}
-        cambios={cambiosDetectados}
-        isLoading={actualizando}
-      />
+          {/* Tabs Mejorados - MOVIDOS ARRIBA (antes de stats) */}
+          <motion.div
+            {...styles.animations.fadeInUp}
+            transition={{ delay: 0.2 }}
+            className={styles.tabsClasses.container}
+          >
+            <nav className={styles.tabsClasses.nav}>
+              {tabs.map(tab => (
+                <motion.button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`${styles.tabsClasses.tab} ${
+                    activeTab === tab.id
+                      ? styles.tabsClasses.tabActive
+                      : styles.tabsClasses.tabInactive
+                  }`}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <div className={styles.tabsClasses.tabContent}>
+                    <tab.icon className={styles.tabsClasses.tabIcon} />
+                    <span>{tab.label}</span>
+                    {tab.count !== null && (
+                      <span className={styles.tabsClasses.tabBadge}>
+                        {tab.count}
+                      </span>
+                    )}
+                  </div>
+                </motion.button>
+              ))}
+            </nav>
+          </motion.div>
 
-      {/* Modal de Confirmación de Eliminación */}
-      <Modal
-        isOpen={modalEliminar}
-        onClose={() => setModalEliminar(false)}
-        title="Eliminar Proyecto"
-        icon={<Trash2 className="w-6 h-6" />}
-        gradientColor="orange"
-      >
-        <div className="space-y-4">
-          <div className="rounded-lg border-2 border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-950/30 p-4">
-            <div className="flex items-start gap-3">
-              <Trash2 className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
-              <div className="space-y-1">
-                <p className="text-sm font-semibold text-red-900 dark:text-red-100">
-                  ⚠️ Esta acción no se puede deshacer
-                </p>
-                <p className="text-xs text-red-700 dark:text-red-300">
-                  Se eliminará el proyecto <strong>"{proyecto.nombre}"</strong> y toda su información asociada (manzanas, documentos, etc.).
+          {/* Contenido de Tabs - Componentes Modulares */}
+          {activeTab === 'info' && <GeneralTab proyecto={proyecto} />}
+
+          {activeTab === 'documentos' && <DocumentosTab proyecto={proyecto} />}
+        </div>
+
+        {/* Modal de Edición */}
+        <Modal
+          isOpen={modalEditar}
+          onClose={() => setModalEditar(false)}
+          title='Editar Proyecto'
+          description='Actualiza la información del proyecto'
+          size='xl'
+          gradientColor='green'
+          icon={<Edit2 className='h-6 w-6 text-white' />}
+          headerExtra={
+            <ProyectosBadgesResumen
+              totalManzanas={totalesProyecto.totalManzanas}
+              totalViviendas={totalesProyecto.totalViviendas}
+            />
+          }
+        >
+          {cargandoValidacion ? (
+            <div className='flex items-center justify-center p-12'>
+              <div className='space-y-3 text-center'>
+                <div className='mx-auto h-12 w-12 animate-spin rounded-full border-4 border-green-500 border-t-transparent' />
+                <p className='text-sm text-gray-600 dark:text-gray-400'>
+                  Cargando datos del proyecto...
                 </p>
               </div>
             </div>
-          </div>
+          ) : proyectoConValidacion ? (
+            <ProyectosForm
+              onSubmit={handleActualizarProyecto}
+              onCancel={() => setModalEditar(false)}
+              isLoading={false}
+              initialData={{
+                id: proyectoConValidacion.id,
+                nombre: proyectoConValidacion.nombre,
+                descripcion: proyectoConValidacion.descripcion,
+                fechaInicio: proyectoConValidacion.fechaInicio,
+                fechaFinEstimada: proyectoConValidacion.fechaFinEstimada,
+                presupuesto: proyectoConValidacion.presupuesto,
+                estado: proyectoConValidacion.estado,
+                // ✅ Manzanas CON validación pre-cargada (sin queries adicionales)
+                manzanas: proyectoConValidacion.manzanas.map(m => ({
+                  id: m.id,
+                  nombre: m.nombre,
+                  totalViviendas: m.totalViviendas,
+                  precioBase: 0,
+                  superficieTotal: 0,
+                  ubicacion: '',
+                  // ✅ Datos de validación (para el formulario)
+                  cantidadViviendasCreadas: m.cantidadViviendasCreadas,
+                  esEditable: m.esEditable,
+                  motivoBloqueado: m.motivoBloqueado,
+                })),
+              }}
+              isEditing={true}
+              onTotalsChange={setTotalesProyecto}
+            />
+          ) : null}
+        </Modal>
 
-          <div className="flex items-center justify-end gap-3 pt-2">
-            <Button
-              variant="outline"
-              onClick={() => setModalEliminar(false)}
-              className="border-gray-300 dark:border-gray-600"
-            >
-              Cancelar
-            </Button>
-            <Button
-              onClick={confirmarEliminar}
-              className="bg-gradient-to-r from-red-500 to-red-600 text-white hover:from-red-600 hover:to-red-700"
-            >
-              <Trash2 className="w-4 h-4 mr-2" />
-              Eliminar Proyecto
-            </Button>
+        {/* Modal Confirmar Cambios */}
+        <ConfirmarCambiosModal
+          isOpen={modalConfirmarCambios}
+          onClose={() => setModalConfirmarCambios(false)}
+          onConfirm={confirmarActualizacion}
+          cambios={cambiosDetectados}
+          isLoading={actualizando}
+        />
+
+        {/* Modal de Confirmación de Eliminación */}
+        <Modal
+          isOpen={modalEliminar}
+          onClose={() => setModalEliminar(false)}
+          title='Eliminar Proyecto'
+          icon={<Trash2 className='h-6 w-6' />}
+          gradientColor='orange'
+        >
+          <div className='space-y-4'>
+            <div className='rounded-lg border-2 border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-950/30'>
+              <div className='flex items-start gap-3'>
+                <Trash2 className='mt-0.5 h-5 w-5 flex-shrink-0 text-red-600 dark:text-red-400' />
+                <div className='space-y-1'>
+                  <p className='text-sm font-semibold text-red-900 dark:text-red-100'>
+                    ⚠️ Esta acción no se puede deshacer
+                  </p>
+                  <p className='text-xs text-red-700 dark:text-red-300'>
+                    Se eliminará el proyecto{' '}
+                    <strong>&ldquo;{proyecto.nombre}&rdquo;</strong> y toda su
+                    información asociada (manzanas, documentos, etc.).
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className='flex items-center justify-end gap-3 pt-2'>
+              <Button
+                variant='outline'
+                onClick={() => setModalEliminar(false)}
+                className='border-gray-300 dark:border-gray-600'
+              >
+                Cancelar
+              </Button>
+              <Button
+                onClick={confirmarEliminar}
+                className='bg-gradient-to-r from-red-500 to-red-600 text-white hover:from-red-600 hover:to-red-700'
+              >
+                <Trash2 className='mr-2 h-4 w-4' />
+                Eliminar Proyecto
+              </Button>
+            </div>
           </div>
-        </div>
-      </Modal>
-    </motion.div>
+        </Modal>
+      </motion.div>
     </AnimatePresence>
   )
 }

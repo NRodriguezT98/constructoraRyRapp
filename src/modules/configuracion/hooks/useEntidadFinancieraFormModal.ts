@@ -15,17 +15,23 @@
 
 'use client'
 
-import { zodResolver } from '@hookform/resolvers/zod'
 import { useEffect, useState } from 'react'
+
+import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
+
 import type {
-    EntidadColor,
-    EntidadFinanciera,
-    TipoEntidadFinanciera,
+  EntidadColor,
+  EntidadFinanciera,
+  TipoEntidadFinanciera,
 } from '../types/entidades-financieras.types'
 import { ENTIDAD_FINANCIERA_LIMITS } from '../types/entidades-financieras.types'
-import { useActualizarEntidadFinanciera, useCrearEntidadFinanciera } from './useEntidadesFinancieras'
+
+import {
+  useActualizarEntidadFinanciera,
+  useCrearEntidadFinanciera,
+} from './useEntidadesFinancieras'
 import { useTiposFuentesPago } from './useTiposFuentesPago'
 
 // =====================================================
@@ -36,53 +42,110 @@ const entidadFinancieraSchema = z.object({
   nombre: z
     .string()
     .min(1, 'El nombre es requerido')
-    .max(ENTIDAD_FINANCIERA_LIMITS.nombre.max, `Máximo ${ENTIDAD_FINANCIERA_LIMITS.nombre.max} caracteres`),
+    .max(
+      ENTIDAD_FINANCIERA_LIMITS.nombre.max,
+      `Máximo ${ENTIDAD_FINANCIERA_LIMITS.nombre.max} caracteres`
+    ),
   codigo: z
     .string()
     .min(1, 'El código es requerido')
-    .max(ENTIDAD_FINANCIERA_LIMITS.codigo.max, `Máximo ${ENTIDAD_FINANCIERA_LIMITS.codigo.max} caracteres`)
-    .regex(/^[a-z0-9_-]+$/, 'Solo minúsculas, números, guiones y guiones bajos'),
-  tipo: z.enum(['Banco', 'Caja de Compensación', 'Cooperativa', 'Otro'] as const),
+    .max(
+      ENTIDAD_FINANCIERA_LIMITS.codigo.max,
+      `Máximo ${ENTIDAD_FINANCIERA_LIMITS.codigo.max} caracteres`
+    )
+    .regex(
+      /^[a-z0-9_-]+$/,
+      'Solo minúsculas, números, guiones y guiones bajos'
+    ),
+  tipo: z.enum([
+    'Banco',
+    'Caja de Compensación',
+    'Cooperativa',
+    'Otro',
+  ] as const),
   tipos_fuentes_aplicables: z.array(z.string()).default([]),
   nit: z
     .string()
-    .max(ENTIDAD_FINANCIERA_LIMITS.nit.max, `Máximo ${ENTIDAD_FINANCIERA_LIMITS.nit.max} caracteres`)
+    .max(
+      ENTIDAD_FINANCIERA_LIMITS.nit.max,
+      `Máximo ${ENTIDAD_FINANCIERA_LIMITS.nit.max} caracteres`
+    )
     .optional()
     .or(z.literal('')),
   razon_social: z
     .string()
-    .max(ENTIDAD_FINANCIERA_LIMITS.razon_social.max, `Máximo ${ENTIDAD_FINANCIERA_LIMITS.razon_social.max} caracteres`)
+    .max(
+      ENTIDAD_FINANCIERA_LIMITS.razon_social.max,
+      `Máximo ${ENTIDAD_FINANCIERA_LIMITS.razon_social.max} caracteres`
+    )
     .optional()
     .or(z.literal('')),
   telefono: z
     .string()
-    .max(ENTIDAD_FINANCIERA_LIMITS.telefono.max, `Máximo ${ENTIDAD_FINANCIERA_LIMITS.telefono.max} caracteres`)
+    .max(
+      ENTIDAD_FINANCIERA_LIMITS.telefono.max,
+      `Máximo ${ENTIDAD_FINANCIERA_LIMITS.telefono.max} caracteres`
+    )
     .optional()
     .or(z.literal('')),
   email_contacto: z
     .string()
     .email('Email inválido')
-    .max(ENTIDAD_FINANCIERA_LIMITS.email_contacto.max, `Máximo ${ENTIDAD_FINANCIERA_LIMITS.email_contacto.max} caracteres`)
+    .max(
+      ENTIDAD_FINANCIERA_LIMITS.email_contacto.max,
+      `Máximo ${ENTIDAD_FINANCIERA_LIMITS.email_contacto.max} caracteres`
+    )
     .optional()
     .or(z.literal('')),
   sitio_web: z
     .string()
     .url('URL inválida')
-    .max(ENTIDAD_FINANCIERA_LIMITS.sitio_web.max, `Máximo ${ENTIDAD_FINANCIERA_LIMITS.sitio_web.max} caracteres`)
+    .max(
+      ENTIDAD_FINANCIERA_LIMITS.sitio_web.max,
+      `Máximo ${ENTIDAD_FINANCIERA_LIMITS.sitio_web.max} caracteres`
+    )
     .optional()
     .or(z.literal('')),
   direccion: z.string().optional().or(z.literal('')),
   codigo_superintendencia: z
     .string()
-    .max(ENTIDAD_FINANCIERA_LIMITS.codigo_superintendencia.max, `Máximo ${ENTIDAD_FINANCIERA_LIMITS.codigo_superintendencia.max} caracteres`)
+    .max(
+      ENTIDAD_FINANCIERA_LIMITS.codigo_superintendencia.max,
+      `Máximo ${ENTIDAD_FINANCIERA_LIMITS.codigo_superintendencia.max} caracteres`
+    )
     .optional()
     .or(z.literal('')),
   notas: z.string().optional().or(z.literal('')),
-  color: z.enum(['blue', 'green', 'orange', 'purple', 'red', 'yellow', 'cyan', 'pink', 'indigo', 'gray'] as const),
+  color: z.enum([
+    'blue',
+    'green',
+    'orange',
+    'purple',
+    'red',
+    'yellow',
+    'cyan',
+    'pink',
+    'indigo',
+    'gray',
+    'emerald',
+    'teal',
+    'amber',
+    'sky',
+    'violet',
+    'slate',
+    'lime',
+    'rose',
+  ] as const),
   orden: z
     .number()
-    .min(ENTIDAD_FINANCIERA_LIMITS.orden.min, `Mínimo ${ENTIDAD_FINANCIERA_LIMITS.orden.min}`)
-    .max(ENTIDAD_FINANCIERA_LIMITS.orden.max, `Máximo ${ENTIDAD_FINANCIERA_LIMITS.orden.max}`),
+    .min(
+      ENTIDAD_FINANCIERA_LIMITS.orden.min,
+      `Mínimo ${ENTIDAD_FINANCIERA_LIMITS.orden.min}`
+    )
+    .max(
+      ENTIDAD_FINANCIERA_LIMITS.orden.max,
+      `Máximo ${ENTIDAD_FINANCIERA_LIMITS.orden.max}`
+    ),
   activo: z.boolean(),
 })
 
@@ -110,17 +173,19 @@ export function useEntidadFinancieraFormModal({
   const actualizarMutation = useActualizarEntidadFinanciera()
 
   // Cargar tipos de fuentes que requieren entidad
-  const { data: fuentesDisponibles = [], isLoading: loadingFuentes } = useTiposFuentesPago(
-    { requiere_entidad: true, activo: true },
-    'orden',
-    'asc'
-  )
+  const { data: fuentesDisponibles = [], isLoading: loadingFuentes } =
+    useTiposFuentesPago(
+      { requiere_entidad: true, activo: true },
+      'orden',
+      'asc'
+    )
 
   // Estado para fuentes seleccionadas
   const [fuentesSeleccionadas, setFuentesSeleccionadas] = useState<string[]>([])
 
   // React Hook Form
   const form = useForm<FormData>({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     resolver: zodResolver(entidadFinancieraSchema) as any, // Fix para Zod .default() con TypeScript
     defaultValues: {
       nombre: '',
@@ -141,7 +206,14 @@ export function useEntidadFinancieraFormModal({
     },
   })
 
-  const { register, handleSubmit, formState: { errors }, reset, watch, setValue } = form
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+    watch,
+    setValue,
+  } = form
 
   // Watch color para preview
   const selectedColor = watch('color')
@@ -149,7 +221,6 @@ export function useEntidadFinancieraFormModal({
   // Cargar datos al editar
   useEffect(() => {
     if (isEdit && entidad) {
-
       setFuentesSeleccionadas(entidad.tipos_fuentes_aplicables || [])
       reset({
         nombre: entidad.nombre,
@@ -209,6 +280,7 @@ export function useEntidadFinancieraFormModal({
       onClose()
     } catch (error) {
       // Error handled by mutation
+      // eslint-disable-next-line no-console, no-restricted-syntax
       console.error('Error en submit:', error)
     }
   }
@@ -222,8 +294,10 @@ export function useEntidadFinancieraFormModal({
 
   // Toggle fuente seleccionada
   const toggleFuente = (fuenteId: string) => {
-    setFuentesSeleccionadas((prev) =>
-      prev.includes(fuenteId) ? prev.filter((id) => id !== fuenteId) : [...prev, fuenteId]
+    setFuentesSeleccionadas(prev =>
+      prev.includes(fuenteId)
+        ? prev.filter(id => id !== fuenteId)
+        : [...prev, fuenteId]
     )
   }
 

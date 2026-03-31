@@ -19,10 +19,12 @@ interface DocumentosListaClienteProps {
 }
 
 export function DocumentosListaCliente({
-  clienteId
+  clienteId,
 }: DocumentosListaClienteProps) {
   // ⭐ REFACTORIZADO: Usa hook useDocumentosListaCliente para toda la lógica
-  const [vistaActual, setVistaActual] = useState<'activos' | 'archivados'>('activos')
+  const [vistaActual, setVistaActual] = useState<'activos' | 'archivados'>(
+    'activos'
+  )
 
   const {
     // Estado
@@ -57,7 +59,6 @@ export function DocumentosListaCliente({
     handleDelete,
     handleRename,
     handleAsignarCategoria,
-    handleToggleAnclar,
 
     // Utilidades
     getCategoriaByDocumento,
@@ -70,7 +71,7 @@ export function DocumentosListaCliente({
     categoriaFiltro,
     soloImportantes,
   } = useDocumentosListaCliente({
-    clienteId
+    clienteId,
   })
 
   if (cargandoDocumentos) {
@@ -84,43 +85,43 @@ export function DocumentosListaCliente({
   return (
     <div className='space-y-6'>
       {/* 📑 TABS: Activos / Archivados (consistente con proyectos) */}
-      <div className="flex items-center gap-2 border-b border-gray-200 dark:border-gray-700">
+      <div className='flex items-center gap-2 border-b border-gray-200 dark:border-gray-700'>
         <button
           onClick={() => setVistaActual('activos')}
-          className={`relative px-4 py-3 font-medium text-sm transition-all duration-200 ${
+          className={`relative px-4 py-3 text-sm font-medium transition-all duration-200 ${
             vistaActual === 'activos'
               ? 'text-gray-900 dark:text-white'
-              : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+              : 'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'
           }`}
         >
-          <div className="flex items-center gap-2">
-            <FileText className="w-4 h-4" />
+          <div className='flex items-center gap-2'>
+            <FileText className='h-4 w-4' />
             <span>Activos</span>
           </div>
           {vistaActual === 'activos' && (
             <motion.div
-              layoutId="activeTabCliente"
-              className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-cyan-500 to-blue-500"
+              layoutId='activeTabCliente'
+              className='absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-cyan-500 to-blue-500'
             />
           )}
         </button>
 
         <button
           onClick={() => setVistaActual('archivados')}
-          className={`relative px-4 py-3 font-medium text-sm transition-all duration-200 ${
+          className={`relative px-4 py-3 text-sm font-medium transition-all duration-200 ${
             vistaActual === 'archivados'
               ? 'text-gray-900 dark:text-white'
-              : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+              : 'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'
           }`}
         >
-          <div className="flex items-center gap-2">
-            <Archive className="w-4 h-4" />
+          <div className='flex items-center gap-2'>
+            <Archive className='h-4 w-4' />
             <span>Archivados</span>
           </div>
           {vistaActual === 'archivados' && (
             <motion.div
-              layoutId="activeTabCliente"
-              className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-amber-500 to-orange-500"
+              layoutId='activeTabCliente'
+              className='absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-amber-500 to-orange-500'
             />
           )}
         </button>
@@ -129,12 +130,13 @@ export function DocumentosListaCliente({
       {/* Filtros compactos con estadísticas (SOLO en vista activos) */}
       {vistaActual === 'activos' && (
         <DocumentosFiltros
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           documentos={documentosFiltrados as any}
           categorias={categorias}
           onChangeVista={setVista}
           currentVista={vista}
-          moduleName="clientes"
-          initialVista="lista"
+          moduleName='clientes'
+          initialVista='lista'
         />
       )}
 
@@ -164,7 +166,9 @@ export function DocumentosListaCliente({
               className='space-y-3'
             >
               {documentosArchivados.map((documento, index) => {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const categoria = getCategoriaByDocumento(documento as any)
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const CardComponent = DocumentoCardHorizontal as any
                 return (
                   <motion.div
@@ -176,11 +180,13 @@ export function DocumentosListaCliente({
                   >
                     <div className='relative'>
                       <CardComponent
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         documento={documento as any}
                         categoria={categoria}
                         tipoEntidad='cliente'
                         onView={handleView}
                         onDownload={handleDownload}
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         onArchive={() => handleRestore(documento as any)}
                         onRefresh={refrescarDocumentos}
                         moduleName='clientes'
@@ -232,9 +238,10 @@ export function DocumentosListaCliente({
                     transition={{ delay: index * 0.05 }}
                   >
                     <DocumentoCard
+                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
                       documento={documento as any}
                       categoria={categoria}
-                      tipoEntidad="cliente"
+                      tipoEntidad='cliente'
                       onView={handleView}
                       onDownload={handleDownload}
                       onToggleImportante={handleToggleImportante}
@@ -242,7 +249,7 @@ export function DocumentosListaCliente({
                       onDelete={handleDelete}
                       onRename={handleRename}
                       onRefresh={refrescarDocumentos}
-                      moduleName="clientes"
+                      moduleName='clientes'
                     />
                   </motion.div>
                 )
@@ -256,24 +263,32 @@ export function DocumentosListaCliente({
               exit={{ opacity: 0 }}
               className='space-y-3'
             >
-              {documentosFiltrados.map((documento, index) => {
+              {documentosFiltrados.map((documento, _index) => {
                 const categoria = getCategoriaByDocumento(documento)
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const CardComponent = DocumentoCardHorizontal as any
                 return (
                   <CardComponent
                     key={documento.id}
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     documento={documento as any}
                     categoria={categoria}
-                    tipoEntidad="cliente"
+                    tipoEntidad='cliente'
                     onView={handleView}
                     onDownload={handleDownload}
                     onToggleImportante={handleToggleImportante}
                     onArchive={handleArchive}
                     onDelete={handleDelete}
-                    onRename={handleRename}                      onToggleAnclar={handleToggleAnclar}                    onRefresh={refrescarDocumentos}
-                    moduleName="clientes"
+                    onRename={handleRename}
+                    onToggleAnclar={undefined}
+                    onRefresh={refrescarDocumentos}
+                    moduleName='clientes'
                     // No permitir categorizar la cédula (ya tiene categoría fija)
-                    onAsignarCategoria={documento.id === 'cedula-ciudadania' ? undefined : handleAsignarCategoria}
+                    onAsignarCategoria={
+                      documento.id === 'cedula-ciudadania'
+                        ? undefined
+                        : handleAsignarCategoria
+                    }
                   />
                 )
               })}

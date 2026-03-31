@@ -16,10 +16,12 @@ export const entidadFinancieraModalStyles = {
   backdrop: 'fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm',
 
   // Container principal
-  container: 'fixed inset-0 z-[60] flex items-center justify-center p-4 overflow-y-auto',
+  container:
+    'fixed inset-0 z-[60] flex items-center justify-center p-4 overflow-y-auto',
 
   // Modal card
-  modal: 'relative w-full max-w-3xl bg-white dark:bg-gray-800 rounded-2xl shadow-2xl',
+  modal:
+    'relative w-full max-w-3xl bg-white dark:bg-gray-800 rounded-2xl shadow-2xl',
 
   // Header
   header: {
@@ -93,12 +95,14 @@ export const entidadFinancieraModalStyles = {
       'max-h-32 overflow-y-auto border border-gray-300 dark:border-gray-600 rounded-lg p-2 grid grid-cols-2 gap-1.5',
     listItem:
       'flex items-center gap-2 p-2 hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer rounded-md border border-transparent hover:border-blue-200 dark:hover:border-blue-800 transition-all',
-    checkboxInput: 'w-3.5 h-3.5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 flex-shrink-0',
+    checkboxInput:
+      'w-3.5 h-3.5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 flex-shrink-0',
     itemContent: 'flex-1 min-w-0',
     itemTitle: 'text-xs font-medium text-gray-900 dark:text-white truncate',
     itemSubtitle: 'text-[10px] text-gray-500 dark:text-gray-400 truncate',
     checkIcon: 'w-4 h-4 text-green-500 flex-shrink-0',
-    counterSuccess: 'text-xs text-green-600 dark:text-green-400 mt-2 font-medium',
+    counterSuccess:
+      'text-xs text-green-600 dark:text-green-400 mt-2 font-medium',
     counterEmpty: 'text-xs text-gray-500 dark:text-gray-400 mt-2',
   },
 
@@ -128,6 +132,14 @@ export const colorClasses: Record<EntidadColor, string> = {
   pink: 'bg-pink-500',
   indigo: 'bg-indigo-500',
   gray: 'bg-gray-500',
+  emerald: 'bg-emerald-500',
+  teal: 'bg-teal-500',
+  amber: 'bg-amber-500',
+  sky: 'bg-sky-500',
+  violet: 'bg-violet-500',
+  slate: 'bg-slate-500',
+  lime: 'bg-lime-500',
+  rose: 'bg-rose-500',
 }
 
 // =====================================================

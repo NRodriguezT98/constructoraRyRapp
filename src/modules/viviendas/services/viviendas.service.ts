@@ -376,7 +376,8 @@ class ViviendasService {
 
     const { data, error } = await supabase
       .from('viviendas')
-      .insert(viviendaData as unknown as Record<string, unknown>) // Cast temporal hasta regenerar types
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .insert(viviendaData as any) // Cast temporal hasta regenerar types
       .select(
         `
         *,
@@ -451,7 +452,8 @@ class ViviendasService {
               matricula: formData.matricula_inmobiliaria,
               nomenclatura: formData.nomenclatura,
             },
-          } as unknown as Record<string, unknown>)
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          } as any)
 
         if (docError) {
           errorLog('[VIVIENDAS] Error al crear registro de documento', docError)
@@ -583,25 +585,20 @@ class ViviendasService {
    */
   async listar(filtros?: FiltrosViviendas): Promise<Vivienda[]> {
     // Query a la vista optimizada
-    // @ts-expect-error vista_viviendas_completas not in generated types
     const queryBuilder = supabase.from('vista_viviendas_completas').select('*')
 
     // Aplicar filtros si existen
-    // @ts-expect-error vista query builder
     let query = queryBuilder
 
     if (filtros?.proyecto_id) {
-      // @ts-expect-error vista query builder
       query = query.eq('proyecto_id', filtros.proyecto_id)
     }
 
     if (filtros?.manzana_id) {
-      // @ts-expect-error vista query builder
       query = query.eq('manzana_id', filtros.manzana_id)
     }
 
     if (filtros?.estado) {
-      // @ts-expect-error vista query builder
       query = query.eq('estado', filtros.estado)
     }
 

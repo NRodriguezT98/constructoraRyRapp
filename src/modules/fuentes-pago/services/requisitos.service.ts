@@ -13,6 +13,7 @@
  *
  * @version 1.0.0 - 2025-12-12
  */
+/* eslint-disable no-console, no-restricted-syntax */
 
 import { supabase } from '@/lib/supabase/client'
 
@@ -85,9 +86,13 @@ export class FuentesPagoRequisitosService {
     fuentePagoId: string
   ): Promise<ValidacionRequisitos> {
     try {
-      const { data, error } = await supabase.rpc('validar_requisitos_desembolso', {
-        p_fuente_pago_id: fuentePagoId,
-      })
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data, error } = await (supabase.rpc as any)(
+        'validar_requisitos_desembolso',
+        {
+          p_fuente_pago_id: fuentePagoId,
+        }
+      )
 
       if (error) {
         console.error('❌ Error validando requisitos:', error)
@@ -99,8 +104,10 @@ export class FuentesPagoRequisitosService {
 
       return {
         ...resultado,
-        documentos_faltantes: (resultado.documentos_faltantes || []) as unknown as RequisitoDocumento[],
-        documentos_completados: (resultado.documentos_completados || []) as unknown as DocumentoCompletado[],
+        documentos_faltantes: (resultado.documentos_faltantes ||
+          []) as unknown as RequisitoDocumento[],
+        documentos_completados: (resultado.documentos_completados ||
+          []) as unknown as DocumentoCompletado[],
       }
     } catch (error) {
       console.error('❌ Error en validarRequisitosDesembolso:', error)
@@ -115,9 +122,12 @@ export class FuentesPagoRequisitosService {
     fuentePagoId: string
   ): Promise<EstadoDocumentacionFuente> {
     try {
-      const { data, error } = await supabase.rpc('obtener_estado_documentacion_fuente', {
-        p_fuente_pago_id: fuentePagoId,
-      })
+      const { data, error } = await supabase.rpc(
+        'obtener_estado_documentacion_fuente',
+        {
+          p_fuente_pago_id: fuentePagoId,
+        }
+      )
 
       if (error) {
         console.error('❌ Error obteniendo estado:', error)
@@ -134,7 +144,10 @@ export class FuentesPagoRequisitosService {
         fuente_pago_id: resultado.fuente_pago_id,
         tipo_fuente: resultado.tipo_fuente,
         entidad: resultado.entidad,
-        estado_general: resultado.estado_general as 'completo' | 'advertencia' | 'bloqueado',
+        estado_general: resultado.estado_general as
+          | 'completo'
+          | 'advertencia'
+          | 'bloqueado',
         progreso_porcentaje: resultado.progreso_porcentaje,
         validacion: resultado.validacion as unknown as ValidacionRequisitos,
       }
@@ -147,7 +160,9 @@ export class FuentesPagoRequisitosService {
   /**
    * Obtiene la configuración de requisitos por tipo de fuente
    */
-  static async obtenerRequisitosConfig(tipoFuente: string): Promise<RequisitoConfig[]> {
+  static async obtenerRequisitosConfig(
+    tipoFuente: string
+  ): Promise<RequisitoConfig[]> {
     try {
       const { data, error } = await supabase
         .from('fuentes_pago_requisitos_config')
@@ -198,7 +213,7 @@ export class FuentesPagoRequisitosService {
   ): Promise<Map<string, EstadoDocumentacionFuente>> {
     try {
       const resultados = await Promise.allSettled(
-        fuentesIds.map((id) => this.obtenerEstadoDocumentacionFuente(id))
+        fuentesIds.map(id => this.obtenerEstadoDocumentacionFuente(id))
       )
 
       const mapa = new Map<string, EstadoDocumentacionFuente>()
@@ -208,7 +223,10 @@ export class FuentesPagoRequisitosService {
         if (resultado.status === 'fulfilled') {
           mapa.set(fuenteId, resultado.value)
         } else {
-          console.warn(`⚠️ Error validando fuente ${fuenteId}:`, resultado.reason)
+          console.warn(
+            `⚠️ Error validando fuente ${fuenteId}:`,
+            resultado.reason
+          )
           // Agregar estado por defecto en caso de error
           mapa.set(fuenteId, this.getDefaultEstado(fuenteId))
         }
@@ -238,7 +256,9 @@ export class FuentesPagoRequisitosService {
     }
   }
 
-  private static getDefaultEstado(fuentePagoId: string): EstadoDocumentacionFuente {
+  private static getDefaultEstado(
+    fuentePagoId: string
+  ): EstadoDocumentacionFuente {
     return {
       fuente_pago_id: fuentePagoId,
       tipo_fuente: 'Desconocido',

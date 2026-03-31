@@ -1,29 +1,43 @@
-import React, { DragEvent, useCallback, useEffect, useRef, useState } from 'react'
+import React, {
+  DragEvent,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from 'react'
 
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 
-import { useAuth } from '../../../contexts/auth-context'
+import { useAuth } from '@/contexts/auth-context'
+
 import { useDocumentoIdentidad } from '../../clientes/documentos/hooks/useDocumentoIdentidad'
 import type { DocumentoFormData } from '../schemas/documento.schema'
-import { documentoConArchivoSchema, documentoFormSchema } from '../schemas/documento.schema'
+import {
+  documentoConArchivoSchema,
+  documentoFormSchema,
+} from '../schemas/documento.schema'
 import type { TipoEntidad } from '../types'
 import type { TipoDocumentoValidacion } from '../types/tipos-documento'
 import { obtenerInfoTipoDocumento } from '../types/tipos-documento'
 
-import { useCategoriasQuery, useSubirDocumentoMutation } from './useDocumentosQuery'
+import {
+  useCategoriasQuery,
+  useSubirDocumentoMutation,
+} from './useDocumentosQuery'
 
 interface UseDocumentoUploadProps {
   entidadId: string
   tipoEntidad: TipoEntidad
-  metadata?: Record<string, any> | null  // ✅ NUEVO: Metadata para vincular con requisitos
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  metadata?: Record<string, any> | null // ✅ NUEVO: Metadata para vincular con requisitos
   onSuccess?: () => void
 }
 
 export function useDocumentoUpload({
   entidadId,
   tipoEntidad,
-  metadata,  // ✅ NUEVO
+  metadata, // ✅ NUEVO
   onSuccess,
 }: UseDocumentoUploadProps) {
   // Estado local
@@ -35,7 +49,8 @@ export function useDocumentoUpload({
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   // ✅ NUEVO: Extraer tipo_documento y fuente_pago_id de metadata
-  const tipoDocumento = (metadata?.tipo_documento as TipoDocumentoValidacion | undefined) || null
+  const tipoDocumento =
+    (metadata?.tipo_documento as TipoDocumentoValidacion | undefined) || null
   const fuentePagoId = metadata?.fuente_pago_id as string | undefined
   const infoTipoDocumento = obtenerInfoTipoDocumento(tipoDocumento)
 
@@ -43,7 +58,10 @@ export function useDocumentoUpload({
   const { user } = useAuth()
 
   // ✅ Convertir tipoEntidad a moduleName para categorías
-  const modulosCategorias: Record<TipoEntidad, 'proyectos' | 'clientes' | 'viviendas'> = {
+  const modulosCategorias: Record<
+    TipoEntidad,
+    'proyectos' | 'clientes' | 'viviendas'
+  > = {
     proyecto: 'proyectos',
     vivienda: 'viviendas',
     cliente: 'clientes',
@@ -61,7 +79,8 @@ export function useDocumentoUpload({
   })
 
   // Mutation para subir documento (GENÉRICO)
-  const { mutateAsync: subirDocumento, isPending: subiendoDocumento } = useSubirDocumentoMutation(entidadId, tipoEntidad)
+  const { mutateAsync: subirDocumento, isPending: subiendoDocumento } =
+    useSubirDocumentoMutation(entidadId, tipoEntidad)
 
   // ✅ Detectar si viene desde contexto de cédula
   const autoCheckIdentidad = metadata?.auto_check_identidad === true
@@ -90,16 +109,17 @@ export function useDocumentoUpload({
     mode: 'onChange', // Validar mientras el usuario escribe
   })
 
-  const esImportante = watch('es_importante')
+  const _esImportante = watch('es_importante')
   const esDocumentoIdentidad = watch('es_documento_identidad')
   const categoriaSeleccionada = watch('categoria_id')
 
   // ✅ Buscar categoría "Documentos de Identidad" automáticamente
-  const categoriaIdentidad = categorias.find(c =>
-    c.nombre === 'Documentos de Identidad' ||
-    c.nombre.toLowerCase().includes('identidad') ||
-    c.nombre.toLowerCase().includes('cédula') ||
-    c.nombre.toLowerCase().includes('cedula')
+  const categoriaIdentidad = categorias.find(
+    c =>
+      c.nombre === 'Documentos de Identidad' ||
+      c.nombre.toLowerCase().includes('identidad') ||
+      c.nombre.toLowerCase().includes('cédula') ||
+      c.nombre.toLowerCase().includes('cedula')
   )
 
   // ✅ Auto-seleccionar categoría cuando marca como documento de identidad
@@ -108,13 +128,20 @@ export function useDocumentoUpload({
     if (esDocumentoIdentidad && categoriaIdentidad && !categoriaSeleccionada) {
       setValue('categoria_id', categoriaIdentidad.id)
     }
-  }, [esDocumentoIdentidad, categoriaIdentidad, categoriaSeleccionada, setValue])
+  }, [
+    esDocumentoIdentidad,
+    categoriaIdentidad,
+    categoriaSeleccionada,
+    setValue,
+  ])
 
   // ✅ NUEVO: Auto-seleccionar categoría sugerida desde metadata
   useEffect(() => {
     if (infoTipoDocumento?.categoria_sugerida) {
       // Verificar que la categoría existe en la lista
-      const categoriaExiste = categorias.some(c => c.id === infoTipoDocumento.categoria_sugerida)
+      const categoriaExiste = categorias.some(
+        c => c.id === infoTipoDocumento.categoria_sugerida
+      )
 
       if (categoriaExiste) {
         setValue('categoria_id', infoTipoDocumento.categoria_sugerida)
@@ -123,7 +150,8 @@ export function useDocumentoUpload({
   }, [infoTipoDocumento, categorias, setValue])
 
   // ✅ Deshabilitar checkbox si ya existe documento de identidad (solo clientes)
-  const checkboxDeshabilitado = tipoEntidad === 'cliente' && yaExisteDocumentoIdentidad
+  const checkboxDeshabilitado =
+    tipoEntidad === 'cliente' && yaExisteDocumentoIdentidad
 
   // Validación de archivo
   const validarArchivo = useCallback((file: File): boolean => {
@@ -132,8 +160,10 @@ export function useDocumentoUpload({
     try {
       documentoConArchivoSchema.shape.archivo.parse(file)
       return true
-    } catch (error: any) {
-      const mensajeError = error.errors?.[0]?.message || 'Archivo no válido'
+    } catch (e: unknown) {
+      const mensajeError =
+        (e as { errors?: Array<{ message: string }> })?.errors?.[0]?.message ||
+        'Archivo no válido'
       setErrorArchivo(mensajeError)
       return false
     }
@@ -213,13 +243,20 @@ export function useDocumentoUpload({
       }
 
       if (!user) {
+        // eslint-disable-next-line no-console, no-restricted-syntax
         console.error('Usuario no autenticado')
         return
       }
 
       // ✅ VALIDACIÓN CRÍTICA: Bloquear si intenta subir documento de identidad cuando ya existe uno
-      if (tipoEntidad === 'cliente' && data.es_documento_identidad && yaExisteDocumentoIdentidad) {
-        setErrorArchivo('Ya existe un documento de identidad para este cliente. Elimina el anterior antes de subir uno nuevo.')
+      if (
+        tipoEntidad === 'cliente' &&
+        data.es_documento_identidad &&
+        yaExisteDocumentoIdentidad
+      ) {
+        setErrorArchivo(
+          'Ya existe un documento de identidad para este cliente. Elimina el anterior antes de subir uno nuevo.'
+        )
         return
       }
 
@@ -235,14 +272,15 @@ export function useDocumentoUpload({
           esDocumentoIdentidad: data.es_documento_identidad,
           userId: user.id,
           // ✅ Metadata completa: incluye requisito_config_id, fuente_pago_id, tipo_documento, etc.
-          ...(metadata ? {
-            metadata: {
-              ...metadata,
-              tipo_documento: tipoDocumento,
-              fuente_pago_id: fuentePagoId,
-            }
-          } : {}),
-          tipoDocumento: tipoDocumento ?? undefined,  // ✅ Campo directo en BD
+          ...(metadata
+            ? {
+                metadata: {
+                  ...metadata,
+                  tipo_documento: tipoDocumento,
+                  fuente_pago_id: fuentePagoId,
+                },
+              }
+            : {}),
         })
 
         // Reset form
@@ -250,10 +288,21 @@ export function useDocumentoUpload({
         limpiarArchivo()
         onSuccess?.()
       } catch (error) {
+        // eslint-disable-next-line no-console, no-restricted-syntax
         console.error('Error al subir documento:', error)
       }
     },
-    [archivoSeleccionado, user, subirDocumento, reset, limpiarArchivo, onSuccess, getValues, tipoEntidad, yaExisteDocumentoIdentidad]
+    [
+      archivoSeleccionado,
+      user,
+      subirDocumento,
+      reset,
+      limpiarArchivo,
+      onSuccess,
+      getValues,
+      tipoEntidad,
+      yaExisteDocumentoIdentidad,
+    ]
   )
 
   // Helpers - ninguno por ahora
