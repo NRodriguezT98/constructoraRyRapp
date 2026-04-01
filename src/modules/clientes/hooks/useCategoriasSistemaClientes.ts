@@ -17,7 +17,7 @@
 
 import { useCallback, useState } from 'react'
 
-import { createClient } from '@/lib/supabase/client'
+import { supabase } from '@/lib/supabase/client'
 import { logger } from '@/lib/utils/logger'
 
 import { CATEGORIAS_SISTEMA_CLIENTES } from '../constants/categorias-sistema-clientes.constants'
@@ -51,8 +51,6 @@ export function useCategoriasSistemaClientes(): UseCategoriasSistemaClientesRetu
     setError(null)
 
     try {
-      const supabase = createClient()
-
       // Obtener user_id actual
       const { data: { user }, error: userError } = await supabase.auth.getUser()
 
@@ -105,9 +103,6 @@ export function useCategoriasSistemaClientes(): UseCategoriasSistemaClientesRetu
         }
         throw new Error(`Error al crear categorías: ${insertError.message}`)
       }
-
-      categoriasFaltantes.forEach(cat => {
-      })
 
     } catch (err) {
       const mensaje = err instanceof Error ? err.message : 'Error desconocido'

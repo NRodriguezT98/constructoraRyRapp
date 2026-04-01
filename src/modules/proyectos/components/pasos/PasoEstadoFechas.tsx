@@ -5,8 +5,10 @@ import type { FieldErrors, UseFormRegister } from 'react-hook-form'
 
 import { AccordionWizardField, AccordionWizardSelect, fieldStaggerAnim } from '@/shared/components/accordion-wizard'
 
+import type { ProyectoFormSchema } from '../../hooks/useProyectosForm'
+
 interface PasoEstadoFechasProps {
-  register: UseFormRegister<any>
+  register: UseFormRegister<ProyectoFormSchema>
   errors: FieldErrors
   estadoLabels: Record<string, string>
 }

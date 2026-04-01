@@ -13,6 +13,8 @@ interface ProyectoInfoTabProps {
  * Componente de presentaci�n puro
  */
 export function ProyectoInfoTab({ proyecto }: ProyectoInfoTabProps) {
+  // Campos opcionales que pueden no existir en el tipo base
+  const extra = proyecto as unknown as Record<string, unknown>
   return (
     <div className='rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800'>
       <div className='mb-4 flex items-center gap-2.5'>
@@ -74,7 +76,7 @@ export function ProyectoInfoTab({ proyecto }: ProyectoInfoTabProps) {
             Responsable
           </label>
           <p className='text-sm text-gray-900 dark:text-white'>
-            {(proyecto as any).responsable || '-'}
+            {String(extra.responsable || '-')}
           </p>
         </div>
 
@@ -91,14 +93,14 @@ export function ProyectoInfoTab({ proyecto }: ProyectoInfoTabProps) {
           <label className='mb-1.5 block text-xs font-medium text-gray-700 dark:text-gray-300'>
             Tel�fono
           </label>
-          <p className='text-sm text-gray-900 dark:text-white'>{(proyecto as any).telefono || '-'}</p>
+          <p className='text-sm text-gray-900 dark:text-white'>{String(extra.telefono || '-')}</p>
         </div>
 
         <div>
           <label className='mb-1.5 block text-xs font-medium text-gray-700 dark:text-gray-300'>
             Email
           </label>
-          <p className='text-sm text-gray-900 dark:text-white'>{(proyecto as any).email || '-'}</p>
+          <p className='text-sm text-gray-900 dark:text-white'>{String(extra.email || '-')}</p>
         </div>
       </div>
     </div>

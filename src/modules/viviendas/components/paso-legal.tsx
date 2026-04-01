@@ -21,7 +21,7 @@ interface PasoLegalProps {
   tipoVivienda: TipoVivienda | undefined
   certificadoFile: File | undefined
   errores: Record<string, string>
-  onChange: (campo: string, valor: any) => void
+  onChange: (campo: string, valor: string | number | boolean | File | undefined) => void
 }
 
 /**

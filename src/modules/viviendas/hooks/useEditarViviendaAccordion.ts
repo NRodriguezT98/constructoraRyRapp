@@ -237,7 +237,7 @@ export function useEditarViviendaAccordion({ viviendaId }: Props) {
   // ── Cambios detectados (para ConfirmarCambiosModal y badges) ──────────────
   const cambiosDetectados = useMemo(() => {
     if (!vivienda) return []
-    return detectarCambiosVivienda({ viviendaActual: vivienda, formData })
+    return detectarCambiosVivienda({ viviendaActual: vivienda, formData: formData as unknown as import('../types').Vivienda })
   }, [vivienda, formData])
 
   const hayCambios = cambiosDetectados.length > 0

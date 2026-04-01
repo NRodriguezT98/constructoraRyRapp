@@ -212,7 +212,7 @@ export function useEditarClienteAccordion(clienteId: string) {
     const detectar = (
       campo: keyof EditarClienteFormValues,
       label: string,
-      icono: unknown,
+      icono: import('lucide-react').LucideIcon,
       categoria: string
     ) => {
       const anterior = datosOriginales[campo] || ''

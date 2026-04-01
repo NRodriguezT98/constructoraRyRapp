@@ -31,6 +31,8 @@ export default [
       '**/coverage/**',
       '**/.git/**',
       '**/build/**',
+      'src/lib/supabase/database.types.ts',
+      'src/types/database.types.ts',
     ],
   },
 

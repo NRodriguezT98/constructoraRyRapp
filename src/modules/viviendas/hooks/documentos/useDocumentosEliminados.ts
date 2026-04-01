@@ -111,7 +111,7 @@ export function useDocumentosEliminados() {
         (doc) =>
           doc.titulo?.toLowerCase().includes(termino) ||
           doc.categoria?.nombre?.toLowerCase().includes(termino) ||
-          (doc as any).viviendas?.codigo?.toLowerCase().includes(termino)
+          (doc as { viviendas?: { codigo?: string } }).viviendas?.codigo?.toLowerCase().includes(termino)
       )
     }
 

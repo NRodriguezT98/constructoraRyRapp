@@ -18,7 +18,7 @@ import { cn } from '@/shared/utils/helpers'
 
 import { ESTADOS_PROYECTO } from '../constants'
 import { proyectosPageStyles as styles } from '../styles/proyectos-page.styles'
-import type { FiltroProyecto } from '../types'
+import type { EstadoProyecto, FiltroProyecto } from '../types'
 
 interface ProyectosFiltrosPremiumProps {
   totalResultados?: number
@@ -54,7 +54,7 @@ export function ProyectosFiltrosPremium({
 
   const handleToggleEstado = (estado: string | undefined) => {
     onActualizarFiltros({
-      estado: estado as any,
+      estado: estado as EstadoProyecto | undefined,
     })
   }
 

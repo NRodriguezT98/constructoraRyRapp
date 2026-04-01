@@ -183,7 +183,7 @@ export class DocumentosEliminacionService {
 
       // 4. Fetch manzanas en paralelo
       const manzanaIds = [...new Set(viviendas?.map(v => v.manzana_id).filter(Boolean) || [])]
-      let manzanas: any[] = []
+      let manzanas: Array<{ id: string; nombre: string }> = []
 
       if (manzanaIds.length > 0) {
         const { data: dataManzanas, error: errorManzanas } = await supabase

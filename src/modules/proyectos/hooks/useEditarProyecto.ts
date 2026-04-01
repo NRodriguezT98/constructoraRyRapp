@@ -29,7 +29,7 @@ import type { SectionStatus, SummaryItem, WizardStepConfig } from '@/shared/comp
 import type { CambioDetectado, CategoriaConfig } from '@/shared/components/modulos/ConfirmarCambiosModal'
 
 import { proyectosService } from '../services/proyectos.service'
-import type { Proyecto, ProyectoFormData } from '../types'
+import type { EstadoProyecto, Proyecto, ProyectoFormData } from '../types'
 
 import { useDetectarCambios, type CambioManzana, type ResumenCambios } from './useDetectarCambios'
 import { useProyectoConValidacion } from './useProyectoConValidacion'
@@ -69,7 +69,7 @@ const ESTADO_LABELS: Record<string, string> = {
 }
 
 // ── Iconos por campo para la modal de confirmación ───────────────
-const CAMPO_ICONO: Record<string, unknown> = {
+const CAMPO_ICONO: Record<string, import('lucide-react').LucideIcon> = {
   nombre: Building2,
   departamento: MapPin,
   ciudad: MapPin,
@@ -187,7 +187,7 @@ export function useEditarProyecto(proyectoId: string) {
       fechaInicio: proyectoConValidacion.fechaInicio,
       fechaFinEstimada: proyectoConValidacion.fechaFinEstimada,
       presupuesto: proyectoConValidacion.presupuesto,
-      estado: proyectoConValidacion.estado,
+      estado: proyectoConValidacion.estado as EstadoProyecto,
       responsable: proyectoConValidacion.responsable,
       manzanas: proyectoConValidacion.manzanas.map(m => ({
         id: m.id,
@@ -220,7 +220,7 @@ export function useEditarProyecto(proyectoId: string) {
       fechaInicio: proyectoConValidacion.fechaInicio,
       fechaFinEstimada: proyectoConValidacion.fechaFinEstimada,
       presupuesto: proyectoConValidacion.presupuesto,
-      estado: proyectoConValidacion.estado,
+      estado: proyectoConValidacion.estado as EstadoProyecto,
       manzanas: proyectoConValidacion.manzanas.map(m => ({
         id: m.id,
         nombre: m.nombre,

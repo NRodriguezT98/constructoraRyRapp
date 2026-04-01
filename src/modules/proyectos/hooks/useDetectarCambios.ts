@@ -23,8 +23,8 @@ function normalizarFecha(fecha: string | null | undefined): string {
 export interface CambioDetectado {
   campo: string
   label: string
-  valorAnterior: any
-  valorNuevo: any
+  valorAnterior: string | number | null
+  valorNuevo: string | number | null
   tipo: 'texto' | 'numero' | 'lista'
 }
 
@@ -153,11 +153,12 @@ export function useDetectarCambios(
     }
 
     // 🆕 Comparar responsable del proyecto
-    if ((proyectoOriginal as any).responsable !== nuevosDatos.responsable) {
+    const originalExtra = proyectoOriginal as unknown as Record<string, unknown>
+    if (originalExtra.responsable !== nuevosDatos.responsable) {
       cambiosProyecto.push({
         campo: 'responsable',
         label: 'Responsable del Proyecto',
-        valorAnterior: (proyectoOriginal as any).responsable || 'No asignado',
+        valorAnterior: String(originalExtra.responsable || 'No asignado'),
         valorNuevo: nuevosDatos.responsable || 'No asignado',
         tipo: 'texto',
       })

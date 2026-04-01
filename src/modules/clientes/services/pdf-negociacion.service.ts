@@ -16,7 +16,7 @@
  * @version 1.0.0 - 2025-01-27 (Nuevo sistema de reportes)
  */
 
-import jsPDF from 'jspdf'
+import jsPDF, { GState } from 'jspdf'
 import autoTable from 'jspdf-autotable'
 
 import { getTodayDateString } from '@/lib/utils/date.utils'
@@ -717,8 +717,7 @@ export async function generarPDFPreview(datos: DatosPreviewPDF): Promise<void> {
 
     // Marca de agua diagonal
     doc.saveGraphicsState()
-    // @ts-ignore — GState constructor not typed in jspdf types
-    doc.setGState(new doc.GState({ opacity: 0.1 }))
+    doc.setGState(new GState({ opacity: 0.1 }))
     doc.setTextColor(...COLORES.warning)
     doc.setFontSize(60)
     doc.setFont('helvetica', 'bold')

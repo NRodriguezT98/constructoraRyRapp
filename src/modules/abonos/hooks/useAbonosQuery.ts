@@ -171,7 +171,6 @@ function transformarFila(row: AbonoCompletoRow): AbonoConInfo {
 
 /** Obtiene todos los abonos desde la vista optimizada */
 async function fetchAbonos(): Promise<AbonoConInfo[]> {
-  // @ts-ignore - vista existe pero tipos no están actualizados
   const { data, error } = await supabase
     .from('vista_abonos_completos')
     .select('*')

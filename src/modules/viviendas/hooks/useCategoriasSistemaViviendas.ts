@@ -5,9 +5,10 @@
  * @module viviendas/hooks
  */
 
+import { type SupabaseClient } from '@supabase/supabase-js'
 import { useQuery } from '@tanstack/react-query'
 
-import { createClient } from '@/lib/supabase/client'
+import { supabase } from '@/lib/supabase/client'
 import { logger } from '@/lib/utils/logger'
 
 interface CategoriaSistema {
@@ -89,7 +90,7 @@ const CATEGORIAS_SISTEMA_VIVIENDAS = [
 /**
  * Función para crear las categorías del sistema si no existen
  */
-async function seedCategoriasSistema(supabase: any, userId: string) {
+async function seedCategoriasSistema(supabaseClient: SupabaseClient, userId: string) {
 
   const categorias = CATEGORIAS_SISTEMA_VIVIENDAS.map((cat) => ({
     user_id: userId,
@@ -103,7 +104,7 @@ async function seedCategoriasSistema(supabase: any, userId: string) {
     modulos_permitidos: ['viviendas'],
   }))
 
-  const { error } = await supabase
+  const { error } = await supabaseClient
     .from('categorias_documento')
     .insert(categorias)
 
@@ -119,7 +120,6 @@ async function seedCategoriasSistema(supabase: any, userId: string) {
  * ✅ AUTO-SEED: Crea automáticamente las categorías si no existen
  */
 export function useCategoriasSistemaViviendas() {
-  const supabase = createClient()
 
   const { data: categorias = [], isLoading } = useQuery({
     queryKey: ['categorias-sistema-viviendas'],

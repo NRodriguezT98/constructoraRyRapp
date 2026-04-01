@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation';
 
+import { logger } from '@/lib/utils/logger';
 import { resolverSlugAUUID } from '@/lib/utils/slug.utils';
 
 import ViviendaDetalleClient from './vivienda-detalle-client-new'; // ✅ Estructura de proyectos
@@ -25,7 +26,7 @@ export default async function ViviendaDetallePage({ params }: PageProps) {
 
     return <ViviendaDetalleClient viviendaId={viviendaId} />
   } catch (error) {
-    console.error('❌ Error crítico en ViviendaDetallePage:', error)
+    logger.error('Error crítico en ViviendaDetallePage:', error)
     throw error
   }
 }

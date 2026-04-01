@@ -7,7 +7,7 @@
 
 import { useEffect, useState } from 'react'
 
-import { createClient } from '@/lib/supabase/client'
+import { supabase } from '@/lib/supabase/client'
 import { logger } from '@/lib/utils/logger'
 
 interface TipoFuenteConfig {
@@ -65,6 +65,13 @@ const COLOR_MAP: Record<string, { from: string; to: string }> = {
   emerald: { from: 'rgb(16, 185, 129)', to: 'rgb(5, 150, 105)' },
 }
 
+interface TipoDesdeBD {
+  nombre: string
+  icono: string
+  color: string
+  requiere_entidad: boolean
+}
+
 export function useTiposFuentePagoConfig() {
   const [tiposConfig, setTiposConfig] = useState<TiposFuenteConfigMap>(FALLBACK_CONFIG)
   const [isLoading, setIsLoading] = useState(true)
@@ -73,8 +80,6 @@ export function useTiposFuentePagoConfig() {
   useEffect(() => {
     const fetchTiposConfig = async () => {
       try {
-        const supabase = createClient()
-
         const { data, error } = await supabase
           .from('tipos_fuentes_pago')
           .select('nombre, icono, color, requiere_entidad')
@@ -90,7 +95,7 @@ export function useTiposFuentePagoConfig() {
         if (data && data.length > 0) {
           const configMap: TiposFuenteConfigMap = {}
 
-          data.forEach((tipo: any) => {
+          data.forEach((tipo: TipoDesdeBD) => {
             const colorInfo = COLOR_MAP[tipo.color] || COLOR_MAP.blue
             configMap[tipo.nombre] = {
               icono: tipo.icono,

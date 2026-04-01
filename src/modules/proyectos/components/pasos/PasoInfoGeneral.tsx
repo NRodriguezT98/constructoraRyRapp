@@ -8,11 +8,13 @@ import type { FieldErrors, UseFormRegister, UseFormSetValue, UseFormWatch } from
 import { AccordionWizardField, AccordionWizardSelect, AccordionWizardTextarea, fieldStaggerAnim } from '@/shared/components/accordion-wizard'
 import { getCiudadesPorDepartamento, getDepartamentos } from '@/shared/data/colombia-locations'
 
+import type { ProyectoFormSchema } from '../../hooks/useProyectosForm'
+
 interface PasoInfoGeneralProps {
-  register: UseFormRegister<any>
+  register: UseFormRegister<ProyectoFormSchema>
   errors: FieldErrors
-  watch: UseFormWatch<any>
-  setValue: UseFormSetValue<any>
+  watch: UseFormWatch<ProyectoFormSchema>
+  setValue: UseFormSetValue<ProyectoFormSchema>
 }
 
 /**

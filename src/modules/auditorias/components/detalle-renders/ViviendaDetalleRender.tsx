@@ -11,10 +11,13 @@ import { Building2, DollarSign, Home } from 'lucide-react'
 import { formatearDinero } from '../../utils/formatters'
 
 interface ViviendaDetalleRenderProps {
-  metadata: Record<string, any>
+  metadata: Record<string, unknown>
 }
 
 export function ViviendaDetalleRender({ metadata }: ViviendaDetalleRenderProps) {
+  const get = (key: string, fallback = 'N/A'): string =>
+    metadata[key] != null ? String(metadata[key]) : fallback
+
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -24,7 +27,7 @@ export function ViviendaDetalleRender({ metadata }: ViviendaDetalleRenderProps) 
           </label>
           <div className="flex items-center gap-2 text-base font-bold text-gray-900 dark:text-white">
             <Home className="w-5 h-5 text-orange-600 dark:text-orange-400" />
-            {metadata.vivienda_nombre || 'N/A'}
+            {get('vivienda_nombre')}
           </div>
         </div>
 
@@ -33,7 +36,7 @@ export function ViviendaDetalleRender({ metadata }: ViviendaDetalleRenderProps) 
             Número
           </label>
           <div className="text-base font-bold text-gray-900 dark:text-white">
-            #{metadata.vivienda_numero || 'N/A'}
+            #{get('vivienda_numero')}
           </div>
         </div>
 
@@ -43,7 +46,9 @@ export function ViviendaDetalleRender({ metadata }: ViviendaDetalleRenderProps) 
           </label>
           <div className="flex items-center gap-2 text-base font-bold text-green-600 dark:text-green-400">
             <DollarSign className="w-5 h-5" />
-            {metadata.vivienda_valor_formateado || formatearDinero(metadata.vivienda_valor_base || 0)}
+            {metadata.vivienda_valor_formateado != null
+              ? get('vivienda_valor_formateado')
+              : formatearDinero(Number(metadata.vivienda_valor_base ?? 0))}
           </div>
         </div>
 
@@ -52,7 +57,7 @@ export function ViviendaDetalleRender({ metadata }: ViviendaDetalleRenderProps) 
             Estado
           </label>
           <span className="inline-flex items-center px-3 py-1 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-sm font-bold capitalize">
-            {metadata.vivienda_estado || 'N/A'}
+            {get('vivienda_estado')}
           </span>
         </div>
 
@@ -61,7 +66,7 @@ export function ViviendaDetalleRender({ metadata }: ViviendaDetalleRenderProps) 
             Área
           </label>
           <div className="text-base text-gray-900 dark:text-white">
-            {metadata.vivienda_area || 'N/A'} m²
+            {get('vivienda_area')} m²
           </div>
         </div>
 
@@ -70,29 +75,29 @@ export function ViviendaDetalleRender({ metadata }: ViviendaDetalleRenderProps) 
             Habitaciones / Baños
           </label>
           <div className="text-base text-gray-900 dark:text-white">
-            {metadata.vivienda_habitaciones || 0} hab. / {metadata.vivienda_banos || 0} baños
+            {get('vivienda_habitaciones', '0')} hab. / {get('vivienda_banos', '0')} baños
           </div>
         </div>
 
-        {metadata.proyecto_nombre && (
+        {metadata.proyecto_nombre != null && (
           <div className="space-y-1">
             <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
               Proyecto
             </label>
             <div className="flex items-center gap-2 text-base text-gray-900 dark:text-white">
               <Building2 className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-              {metadata.proyecto_nombre}
+              {get('proyecto_nombre')}
             </div>
           </div>
         )}
 
-        {metadata.manzana_nombre && (
+        {metadata.manzana_nombre != null && (
           <div className="space-y-1">
             <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
               Manzana
             </label>
             <div className="text-base text-gray-900 dark:text-white">
-              Manzana {metadata.manzana_nombre}
+              Manzana {get('manzana_nombre')}
             </div>
           </div>
         )}

@@ -16,7 +16,7 @@ interface PasoFinancieroProps {
   resumen: ResumenFinanciero
   configuracionRecargos: ConfiguracionRecargo[]
   errores: Record<string, string>
-  onChange: (campo: string, valor: any) => void
+  onChange: (campo: string, valor: string | number | boolean) => void
   onToggleEsquinera: (checked: boolean) => void
 }
 

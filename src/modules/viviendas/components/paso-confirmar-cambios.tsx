@@ -17,18 +17,13 @@ import {
     FileText
 } from 'lucide-react'
 
-interface CambioDetectado {
-  campo: string
-  label: string
-  valorAnterior: string | number
-  valorNuevo: string | number
-  icono: any
-  categoria: 'linderos' | 'legal' | 'financiero'
-}
+import type { CambioDetectado } from '@/shared/components/modulos/ConfirmarCambiosModal'
+
+import type { Vivienda } from '../types'
 
 interface PasoConfirmarCambiosProps {
   cambiosDetectados: CambioDetectado[]
-  viviendaActual: any
+  viviendaActual: Vivienda
 }
 
 const categoriasConfig = {

@@ -89,10 +89,10 @@ export class ViviendaInactivacionService {
 
       // Contar abonos
       const { data: abonosRaw, error: abonosError } = await supabase
-        .from('abonos' as any)
+        .from('abonos' as unknown as Parameters<typeof supabase.from>[0])
         .select('monto_abono')
         .eq('vivienda_id', viviendaId)
-      const abonos = abonosRaw as any[] | null
+      const abonos = abonosRaw as Array<{ monto_abono: number }> | null
 
       if (abonosError) throw abonosError
 
@@ -238,7 +238,12 @@ export class ViviendaInactivacionService {
         )
         .eq('id', viviendaId)
         .single()
-      const vivienda = viviendaRaw as any
+      const vivienda = viviendaRaw as unknown as {
+        numero: string
+        manzana_id: string
+        proyecto_id: string | null
+        proyectos: { estado: string; archivado: boolean } | null
+      }
 
       if (viviendaError) throw viviendaError
 

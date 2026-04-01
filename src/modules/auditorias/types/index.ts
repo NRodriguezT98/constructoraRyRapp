@@ -17,10 +17,10 @@ export interface AuditoriaRegistro {
   fechaEvento: string
   ipAddress: string | null
   userAgent: string | null
-  datosAnteriores: Record<string, any> | null
-  datosNuevos: Record<string, any> | null
+  datosAnteriores: Record<string, unknown> | null
+  datosNuevos: Record<string, unknown> | null
   cambiosEspecificos: Record<string, CambioDetalle> | null
-  metadata: Record<string, any>
+  metadata: Record<string, unknown>
   modulo: string | null
 }
 
@@ -33,8 +33,17 @@ export type AuditLogRecord = AuditoriaRegistro
  * Detalle de un cambio específico en un campo
  */
 export interface CambioDetalle {
-  antes: any
-  despues: any
+  antes: unknown
+  despues: unknown
+}
+
+/**
+ * Props comunes para todos los renderers de auditoría
+ */
+export interface RendererAuditoriaProps {
+  metadata?: Record<string, unknown>
+  datosNuevos?: Record<string, unknown> | null
+  datosAnteriores?: Record<string, unknown> | null
 }
 
 /**
@@ -97,7 +106,7 @@ export interface ActividadUsuario {
   fechaEvento: string
   registroId: string
   modulo: string | null
-  metadata: Record<string, any>
+  metadata: Record<string, unknown>
 }
 
 /**

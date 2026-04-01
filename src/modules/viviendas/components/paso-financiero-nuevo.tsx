@@ -13,15 +13,16 @@ import type { FieldErrors, UseFormRegister, UseFormSetValue, UseFormWatch } from
 
 import { cn } from '@/shared/utils/helpers'
 
+import type { ViviendaSchemaType } from '../schemas/vivienda.schemas'
 import { nuevaViviendaStyles as styles } from '../styles/nueva-vivienda.styles'
 import type { ConfiguracionRecargo, ResumenFinanciero, ViviendaEstado } from '../types'
 import { formatCurrencyInput, parseCurrency } from '../utils'
 
 interface PasoFinancieroProps {
-  register: UseFormRegister<any>
-  errors: FieldErrors<any>
-  watch: UseFormWatch<any>
-  setValue: UseFormSetValue<any>
+  register: UseFormRegister<ViviendaSchemaType>
+  errors: FieldErrors<ViviendaSchemaType>
+  watch: UseFormWatch<ViviendaSchemaType>
+  setValue: UseFormSetValue<ViviendaSchemaType>
   resumenFinanciero: ResumenFinanciero
   configuracionRecargos: ConfiguracionRecargo[]
   bloqueado?: boolean

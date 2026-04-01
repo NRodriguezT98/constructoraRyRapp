@@ -14,18 +14,29 @@ import { getTipoOperacionLabel } from '../../utils/formatters'
 import { InfoCard } from '../shared'
 
 interface DocumentoReemplazoDetalleRenderProps {
-  metadata: Record<string, any>
+  metadata: Record<string, unknown>
+}
+
+interface ArchivoInfo {
+  nombre?: string
+  tamano_formateado?: string
+  url_backup?: string
+  url_actual?: string
+  ruta?: string
 }
 
 export function DocumentoReemplazoDetalleRender({ metadata }: DocumentoReemplazoDetalleRenderProps) {
-  const tipoOperacion = metadata.tipo_operacion || 'N/A'
+  const get = (key: string, fallback = 'N/A'): string =>
+    metadata[key] != null ? String(metadata[key]) : fallback
+
+  const tipoOperacion = String(metadata.tipo_operacion ?? 'N/A')
   const tipoOperacionLabel = getTipoOperacionLabel(tipoOperacion)
-  const justificacion = metadata.justificacion || 'Sin justificación registrada'
-  const versionAfectada = metadata.version_afectada || 'N/A'
-  const archivoAnterior = metadata.archivo_anterior || {}
-  const archivoNuevo = metadata.archivo_nuevo || {}
-  const adminVerificado = metadata.admin_verificado || false
-  const cambioCritico = metadata.cambio_critico || false
+  const justificacion = get('justificacion', 'Sin justificación registrada')
+  const versionAfectada = get('version_afectada')
+  const archivoAnterior = (metadata.archivo_anterior ?? {}) as ArchivoInfo
+  const archivoNuevo = (metadata.archivo_nuevo ?? {}) as ArchivoInfo
+  const adminVerificado = Boolean(metadata.admin_verificado)
+  const cambioCritico = Boolean(metadata.cambio_critico)
 
   return (
     <div className="space-y-4">
@@ -195,20 +206,20 @@ export function DocumentoReemplazoDetalleRender({ metadata }: DocumentoReemplazo
       </div>
 
       {/* Información técnica adicional */}
-      {(metadata.ip_origen || metadata.user_agent) && (
+      {(metadata.ip_origen != null || metadata.user_agent != null) && (
         <div className="rounded-lg bg-gray-50 p-3 dark:bg-gray-900/50">
           <h4 className="text-xs font-semibold text-gray-900 dark:text-white mb-2">
             Información Técnica
           </h4>
           <div className="space-y-1">
-            {metadata.ip_origen && (
+            {metadata.ip_origen != null && (
               <p className="text-xs text-gray-700 dark:text-gray-300">
-                <strong>IP:</strong> {metadata.ip_origen}
+                <strong>IP:</strong> {get('ip_origen')}
               </p>
             )}
-            {metadata.user_agent && (
+            {metadata.user_agent != null && (
               <p className="text-xs text-gray-700 dark:text-gray-300 font-mono break-all">
-                <strong>User Agent:</strong> {metadata.user_agent}
+                <strong>User Agent:</strong> {get('user_agent')}
               </p>
             )}
           </div>

@@ -7,27 +7,29 @@
 
 'use client'
 
-import { Building2, DollarSign, FileText, Home, Mail, MapPin, Phone, TrendingUp, User } from 'lucide-react'
+import { Building2, DollarSign, FileText, Home, Mail, MapPin, Phone, TrendingUp, User } from 'lucide-react';
 
-interface CreacionProyectoRendererProps {
-  metadata: any
-  datosNuevos?: any
-}
+import type { RendererAuditoriaProps } from '@/modules/auditorias/types';
 
-export function CreacionProyectoRenderer({ metadata, datosNuevos }: CreacionProyectoRendererProps) {
+export function CreacionProyectoRenderer({ metadata = {}, datosNuevos }: RendererAuditoriaProps) {
+  type ManzanaRow = { nombre: string; numero_viviendas?: number }
+
+  const str = (val: unknown, fallback = ''): string =>
+    val != null ? String(val) : fallback
+
   const proyecto = {
-    nombre: metadata.proyecto_nombre || datosNuevos?.nombre,
-    ubicacion: metadata.proyecto_ubicacion || datosNuevos?.ubicacion,
-    descripcion: metadata.proyecto_descripcion || datosNuevos?.descripcion,
-    estado: metadata.proyecto_estado || datosNuevos?.estado,
-    presupuesto: metadata.proyecto_presupuesto || datosNuevos?.presupuesto,
-    responsable: metadata.proyecto_responsable || datosNuevos?.responsable,
-    telefono: metadata.proyecto_telefono || datosNuevos?.telefono,
-    email: metadata.proyecto_email || datosNuevos?.email,
+    nombre: str(metadata.proyecto_nombre ?? datosNuevos?.nombre),
+    ubicacion: str(metadata.proyecto_ubicacion ?? datosNuevos?.ubicacion),
+    descripcion: str(metadata.proyecto_descripcion ?? datosNuevos?.descripcion),
+    estado: str(metadata.proyecto_estado ?? datosNuevos?.estado),
+    presupuesto: Number(metadata.proyecto_presupuesto ?? datosNuevos?.presupuesto ?? 0),
+    responsable: str(metadata.proyecto_responsable ?? datosNuevos?.responsable),
+    telefono: str(metadata.proyecto_telefono ?? datosNuevos?.telefono),
+    email: str(metadata.proyecto_email ?? datosNuevos?.email),
   }
 
-  const manzanas = metadata.manzanas_detalle || datosNuevos?.manzanas || []
-  const totalViviendas = metadata.total_viviendas_planificadas || 0
+  const manzanas = (metadata.manzanas_detalle ?? datosNuevos?.manzanas ?? []) as ManzanaRow[]
+  const totalViviendas = Number(metadata.total_viviendas_planificadas ?? 0)
 
   // Helper para formatear estado
   const formatEstado = (estado: string) => {
@@ -155,7 +157,7 @@ export function CreacionProyectoRenderer({ metadata, datosNuevos }: CreacionProy
           </div>
 
           <div className="grid grid-cols-2 gap-2">
-            {manzanas.slice(0, 4).map((manzana: any, index: number) => (
+            {manzanas.slice(0, 4).map((manzana, index: number) => (
               <div
                 key={index}
                 className="flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-950/20 dark:to-teal-950/20 border border-emerald-200 dark:border-emerald-800"

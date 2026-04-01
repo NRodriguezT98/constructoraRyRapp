@@ -6,6 +6,8 @@ import type { FieldArrayWithId, FieldErrors, UseFormRegister } from 'react-hook-
 
 import { AccordionWizardField, fieldStaggerAnim } from '@/shared/components/accordion-wizard'
 
+import type { ProyectoFormSchema } from '../../hooks/useProyectosForm'
+
 interface ManzanaFormValues {
   id?: string
   nombre: string
@@ -13,7 +15,7 @@ interface ManzanaFormValues {
 }
 
 interface PasoManzanasProps {
-  register: UseFormRegister<any>
+  register: UseFormRegister<ProyectoFormSchema>
   errors: FieldErrors
   fields: FieldArrayWithId[]
   manzanasWatch: ManzanaFormValues[]
@@ -31,14 +33,16 @@ export function PasoManzanas({
   register,
   errors,
   fields,
-  manzanasWatch,
+  manzanasWatch: _manzanasWatch,
   totalManzanas,
   totalViviendas,
   onAgregar,
   onEliminar,
   canAgregar = true,
 }: PasoManzanasProps) {
-  const manzanasErrors = (errors.manzanas as any)
+  const manzanasErrors = errors.manzanas as
+    | (Record<string, { message?: string }>[] & { message?: string })
+    | undefined
 
   return (
     <div className="space-y-4 pt-4">

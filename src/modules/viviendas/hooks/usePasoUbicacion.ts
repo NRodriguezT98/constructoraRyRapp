@@ -14,9 +14,11 @@ import { proyectosService } from '@/modules/proyectos/services/proyectos.service
 
 import { viviendasService } from '../services/viviendas.service'
 
+import type { ViviendaSchemaType } from '../schemas/vivienda.schemas'
+
 interface UsePasoUbicacionProps {
-  setValue: UseFormSetValue<any>
-  watch: UseFormWatch<any>
+  setValue: UseFormSetValue<ViviendaSchemaType>
+  watch: UseFormWatch<ViviendaSchemaType>
   enabled?: boolean // ← Nuevo: permitir desactivar queries
 }
 

@@ -68,24 +68,6 @@ export default function RootLayout({
 }) {
   return (
     <html lang='es' suppressHydrationWarning>
-      <head>
-        {/* Suprimir warning de Supabase en desarrollo */}
-        {process.env.NODE_ENV === 'development' && (
-          <script
-            dangerouslySetInnerHTML={{
-              __html: `
-                const originalWarn = console.warn;
-                console.warn = function(...args) {
-                  if (args[0]?.includes?.('Multiple GoTrueClient instances')) {
-                    return; // Ignorar este warning específico
-                  }
-                  originalWarn.apply(console, args);
-                };
-              `,
-            }}
-          />
-        )}
-      </head>
       <body
         className={`${inter.className} ${jakarta.variable} ${dmMono.variable}`}
         suppressHydrationWarning

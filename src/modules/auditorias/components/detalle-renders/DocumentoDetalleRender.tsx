@@ -28,12 +28,12 @@ export function DocumentoDetalleRender({ registro }: DocumentoDetalleRenderProps
     'REEMPLAZO_ARCHIVO'
   ]
 
-  if (metadata?.tipo_operacion && operacionesVersiones.includes(metadata.tipo_operacion)) {
+  if (metadata?.tipo_operacion && operacionesVersiones.includes(String(metadata.tipo_operacion))) {
     return (
       <DocumentosAuditoriaDetalle
         metadata={metadata}
-        datosAnteriores={registro.datosAnteriores}
-        datosNuevos={registro.datosNuevos}
+        datosAnteriores={registro.datosAnteriores ?? undefined}
+        datosNuevos={registro.datosNuevos ?? undefined}
         usuarioEmail={registro.usuarioEmail}
         usuarioNombres={registro.usuarioNombres ?? undefined}
         fechaEvento={registro.fechaEvento}

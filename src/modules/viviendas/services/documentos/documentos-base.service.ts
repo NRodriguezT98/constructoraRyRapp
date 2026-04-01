@@ -175,7 +175,7 @@ export class DocumentosBaseService {
         fecha_documento: fecha_documento || null,
         fecha_vencimiento: fecha_vencimiento || null,
         es_importante: es_importante || false,
-        metadata: (metadata || {}) as any,
+        metadata: (metadata || {}) as unknown as import('@/lib/supabase/database.types').Json,
         version: 1,
         es_version_actual: true,
         estado: 'activo',

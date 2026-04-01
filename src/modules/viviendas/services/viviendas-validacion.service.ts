@@ -79,7 +79,12 @@ export class ViviendaValidacionService {
         .eq('vivienda_id', viviendaId)
         .in('estado', ['Activa', 'Escriturada', 'Entregada', 'Finalizada'])
         .order('created_at', { ascending: false })
-      const negociaciones = negociacionesRaw as any[]
+      const negociaciones = negociacionesRaw as Array<{
+        id: string
+        estado: string
+        fecha_firma_minuta: string | null
+        clientes: { nombres: string; apellidos: string } | null
+      }> | null
 
       if (error) throw error
 

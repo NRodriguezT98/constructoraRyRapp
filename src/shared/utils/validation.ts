@@ -56,12 +56,12 @@ export const hasValidLength = (
 }
 
 // Validar que sea un número
-export const isNumeric = (value: any): boolean => {
-  return !isNaN(parseFloat(value)) && isFinite(value)
+export const isNumeric = (value: unknown): boolean => {
+  return !isNaN(parseFloat(String(value))) && isFinite(Number(value))
 }
 
 // Validar que sea un entero
-export const isInteger = (value: any): boolean => {
+export const isInteger = (value: unknown): boolean => {
   return Number.isInteger(Number(value))
 }
 

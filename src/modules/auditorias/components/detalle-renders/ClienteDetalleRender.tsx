@@ -9,10 +9,13 @@
 import { MapPin, Phone, User, Users } from 'lucide-react'
 
 interface ClienteDetalleRenderProps {
-  metadata: Record<string, any>
+  metadata: Record<string, unknown>
 }
 
 export function ClienteDetalleRender({ metadata }: ClienteDetalleRenderProps) {
+  const get = (key: string, fallback = 'N/A'): string =>
+    metadata[key] != null ? String(metadata[key]) : fallback
+
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -22,7 +25,7 @@ export function ClienteDetalleRender({ metadata }: ClienteDetalleRenderProps) {
           </label>
           <div className="flex items-center gap-2 text-base font-bold text-gray-900 dark:text-white">
             <User className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-            {metadata.cliente_nombre_completo || 'N/A'}
+            {get('cliente_nombre_completo')}
           </div>
         </div>
 
@@ -31,7 +34,7 @@ export function ClienteDetalleRender({ metadata }: ClienteDetalleRenderProps) {
             Documento
           </label>
           <div className="text-base text-gray-900 dark:text-white">
-            {metadata.cliente_tipo_documento || 'CC'} {metadata.cliente_numero_documento || 'N/A'}
+            {get('cliente_tipo_documento', 'CC')} {get('cliente_numero_documento')}
           </div>
         </div>
 
@@ -41,7 +44,7 @@ export function ClienteDetalleRender({ metadata }: ClienteDetalleRenderProps) {
           </label>
           <div className="flex items-center gap-2 text-base text-gray-900 dark:text-white">
             <Phone className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
-            {metadata.cliente_telefono || 'N/A'}
+            {get('cliente_telefono')}
           </div>
         </div>
 
@@ -50,7 +53,7 @@ export function ClienteDetalleRender({ metadata }: ClienteDetalleRenderProps) {
             Email
           </label>
           <div className="text-base text-gray-900 dark:text-white">
-            {metadata.cliente_email || 'N/A'}
+            {get('cliente_email')}
           </div>
         </div>
 
@@ -60,7 +63,7 @@ export function ClienteDetalleRender({ metadata }: ClienteDetalleRenderProps) {
           </label>
           <div className="flex items-center gap-2 text-base text-gray-900 dark:text-white">
             <MapPin className="w-5 h-5 text-red-600 dark:text-red-400" />
-            {metadata.cliente_ciudad || 'N/A'}, {metadata.cliente_departamento || 'N/A'}
+            {get('cliente_ciudad')}, {get('cliente_departamento')}
           </div>
         </div>
 
@@ -69,29 +72,29 @@ export function ClienteDetalleRender({ metadata }: ClienteDetalleRenderProps) {
             Estado
           </label>
           <span className="inline-flex items-center px-3 py-1 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-sm font-bold capitalize">
-            {metadata.cliente_estado || 'N/A'}
+            {get('cliente_estado')}
           </span>
         </div>
 
-        {metadata.cliente_origen && (
+        {metadata.cliente_origen != null && (
           <div className="space-y-1">
             <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
               Origen
             </label>
             <div className="text-base text-gray-900 dark:text-white">
-              {metadata.cliente_origen}
+              {get('cliente_origen')}
             </div>
           </div>
         )}
 
-        {metadata.cliente_referido_por && (
+        {metadata.cliente_referido_por != null && (
           <div className="space-y-1">
             <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
               Referido por
             </label>
             <div className="flex items-center gap-2 text-base text-gray-900 dark:text-white">
               <Users className="w-5 h-5 text-gray-400" />
-              {metadata.cliente_referido_por}
+              {get('cliente_referido_por')}
             </div>
           </div>
         )}

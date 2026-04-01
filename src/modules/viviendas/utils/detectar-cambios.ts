@@ -12,7 +12,7 @@ import type { Vivienda } from '../types'
 
 interface DetectarCambiosParams {
   viviendaActual: Vivienda
-  formData: any
+  formData: Partial<Vivienda>
 }
 
 export function detectarCambiosVivienda({ viviendaActual, formData }: DetectarCambiosParams): CambioDetectado[] {

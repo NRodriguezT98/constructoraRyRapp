@@ -15,19 +15,28 @@ import { formatearDinero } from '../../utils/formatters'
 import { InfoCard } from '../shared'
 
 interface ProyectoDetalleRenderProps {
-  metadata: Record<string, any>
+  metadata: Record<string, unknown>
+}
+
+interface ManzanaMeta {
+  nombre?: string
+  cantidad_viviendas?: number
+  numero_viviendas?: number
 }
 
 export function ProyectoDetalleRender({ metadata }: ProyectoDetalleRenderProps) {
-  const manzanas = metadata.manzanas_detalle || []
+  const get = (key: string, fallback = 'N/A'): string =>
+    metadata[key] != null ? String(metadata[key]) : fallback
+
+  const manzanas = (metadata.manzanas_detalle ?? []) as ManzanaMeta[]
 
   // Verificar si hay información adicional
   const hasAdditionalInfo =
-    (metadata.proyecto_estado && metadata.proyecto_estado !== 'en_planificacion') ||
-    (metadata.proyecto_presupuesto && metadata.proyecto_presupuesto > 0) ||
-    (metadata.proyecto_responsable && metadata.proyecto_responsable !== 'RyR Constructora') ||
-    (metadata.proyecto_telefono && metadata.proyecto_telefono !== '+57 300 000 0000') ||
-    (metadata.proyecto_email && metadata.proyecto_email !== 'info@ryrconstrucora.com')
+    (metadata.proyecto_estado != null && metadata.proyecto_estado !== 'en_planificacion') ||
+    (metadata.proyecto_presupuesto != null && Number(metadata.proyecto_presupuesto) > 0) ||
+    (metadata.proyecto_responsable != null && metadata.proyecto_responsable !== 'RyR Constructora') ||
+    (metadata.proyecto_telefono != null && metadata.proyecto_telefono !== '+57 300 000 0000') ||
+    (metadata.proyecto_email != null && metadata.proyecto_email !== 'info@ryrconstrucora.com')
 
   return (
     <div className="space-y-3">
@@ -44,7 +53,7 @@ export function ProyectoDetalleRender({ metadata }: ProyectoDetalleRenderProps) 
                 Proyecto
               </label>
               <h3 className="text-base font-bold text-gray-900 dark:text-white truncate">
-                {metadata.proyecto_nombre || 'N/A'}
+                {get('proyecto_nombre')}
               </h3>
             </div>
           </div>
@@ -57,7 +66,7 @@ export function ProyectoDetalleRender({ metadata }: ProyectoDetalleRenderProps) 
                 Ubicación
               </label>
               <p className="text-xs font-medium text-gray-900 dark:text-white truncate">
-                {metadata.proyecto_ubicacion || 'N/A'}
+                {get('proyecto_ubicacion')}
               </p>
             </div>
           </div>
@@ -65,13 +74,13 @@ export function ProyectoDetalleRender({ metadata }: ProyectoDetalleRenderProps) 
       </div>
 
       {/* Descripción */}
-      {metadata.proyecto_descripcion && (
+      {metadata.proyecto_descripcion != null && (
         <div className="space-y-1">
           <label className="text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
             Descripción
           </label>
           <p className="text-xs text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-900/50 p-2 rounded-lg border border-gray-200 dark:border-gray-700 leading-snug line-clamp-2">
-            {metadata.proyecto_descripcion}
+            {get('proyecto_descripcion')}
           </p>
         </div>
       )}
@@ -83,7 +92,7 @@ export function ProyectoDetalleRender({ metadata }: ProyectoDetalleRenderProps) 
             Información Adicional
           </label>
           <div className="grid grid-cols-2 gap-2">
-            {metadata.proyecto_estado && metadata.proyecto_estado !== 'en_planificacion' && (
+            {metadata.proyecto_estado != null && metadata.proyecto_estado !== 'en_planificacion' && (
               <div className="flex items-center gap-2 p-2 rounded-lg bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700">
                 <div className="w-7 h-7 rounded-md bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0">
                   <span className="text-sm">📊</span>
@@ -91,40 +100,40 @@ export function ProyectoDetalleRender({ metadata }: ProyectoDetalleRenderProps) 
                 <div className="flex-1 min-w-0">
                   <label className="text-[10px] text-gray-500 dark:text-gray-400 block">Estado</label>
                   <span className="text-xs font-bold text-gray-900 dark:text-white capitalize truncate block">
-                    {metadata.proyecto_estado}
+                    {get('proyecto_estado')}
                   </span>
                 </div>
               </div>
             )}
 
-            {metadata.proyecto_presupuesto && metadata.proyecto_presupuesto > 0 && (
+            {metadata.proyecto_presupuesto != null && Number(metadata.proyecto_presupuesto) > 0 && (
               <InfoCard
                 icon={DollarSign}
                 label="Presupuesto"
-                value={metadata.proyecto_presupuesto_formateado || formatearDinero(metadata.proyecto_presupuesto)}
+                value={metadata.proyecto_presupuesto_formateado != null ? get('proyecto_presupuesto_formateado') : formatearDinero(Number(metadata.proyecto_presupuesto))}
                 color="green"
               />
             )}
 
-            {metadata.proyecto_responsable && metadata.proyecto_responsable !== 'RyR Constructora' && (
+            {metadata.proyecto_responsable != null && metadata.proyecto_responsable !== 'RyR Constructora' && (
               <InfoCard
                 icon={User}
                 label="Responsable"
-                value={metadata.proyecto_responsable}
+                value={get('proyecto_responsable')}
                 color="purple"
               />
             )}
 
-            {metadata.proyecto_telefono && metadata.proyecto_telefono !== '+57 300 000 0000' && (
+            {metadata.proyecto_telefono != null && metadata.proyecto_telefono !== '+57 300 000 0000' && (
               <InfoCard
                 icon={Phone}
                 label="Teléfono"
-                value={metadata.proyecto_telefono}
+                value={get('proyecto_telefono')}
                 color="cyan"
               />
             )}
 
-            {metadata.proyecto_email && metadata.proyecto_email !== 'info@ryrconstrucora.com' && (
+            {metadata.proyecto_email != null && metadata.proyecto_email !== 'info@ryrconstrucora.com' && (
               <div className="flex items-center gap-2 p-2 rounded-lg bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 col-span-2">
                 <div className="w-7 h-7 rounded-md bg-gray-100 dark:bg-gray-900/50 flex items-center justify-center flex-shrink-0">
                   <span className="text-sm">✉️</span>
@@ -132,7 +141,7 @@ export function ProyectoDetalleRender({ metadata }: ProyectoDetalleRenderProps) 
                 <div className="flex-1 min-w-0">
                   <label className="text-[10px] text-gray-500 dark:text-gray-400 block">Email</label>
                   <span className="text-xs font-bold text-gray-900 dark:text-white truncate block">
-                    {metadata.proyecto_email}
+                    {get('proyecto_email')}
                   </span>
                 </div>
               </div>
@@ -151,17 +160,17 @@ export function ProyectoDetalleRender({ metadata }: ProyectoDetalleRenderProps) 
             <div className="flex items-center gap-1.5">
               <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-[10px] font-bold">
                 <Building2 className="w-3 h-3" />
-                {metadata.total_manzanas || manzanas.length}
+                {metadata.total_manzanas != null ? String(metadata.total_manzanas) : manzanas.length}
               </span>
               <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 text-[10px] font-bold">
                 <Home className="w-3 h-3" />
-                {metadata.total_viviendas_planificadas || 0}
+                {metadata.total_viviendas_planificadas != null ? String(metadata.total_viviendas_planificadas) : 0}
               </span>
             </div>
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-            {manzanas.map((manzana: any, index: number) => (
+            {manzanas.map((manzana, index: number) => (
               <motion.div
                 key={index}
                 initial={{ opacity: 0, scale: 0.95 }}
@@ -173,7 +182,7 @@ export function ProyectoDetalleRender({ metadata }: ProyectoDetalleRenderProps) 
                 <div className="relative z-10">
                   <div className="flex items-center justify-between mb-1.5">
                     <h4 className="font-bold text-sm text-gray-900 dark:text-white truncate">
-                      Mz. {manzana.nombre}
+                      Mz. {String(manzana.nombre ?? '')}
                     </h4>
                     <span className="text-base flex-shrink-0">🏘️</span>
                   </div>

@@ -11,16 +11,18 @@
 import { useQuery } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
-import { createClient } from '@/lib/supabase/client'
+import { supabase } from '@/lib/supabase/client'
 
 import { validacionDesembolsoService } from '../services/validacion-desembolso.service'
 
 export function useValidacionDesembolso(fuentePagoId: string | null) {
-  const supabase = createClient()
 
   const { data: validacion, isLoading } = useQuery({
     queryKey: ['validacion-desembolso', fuentePagoId],
-    queryFn: () => validacionDesembolsoService.puedeRegistrarDesembolso(supabase, fuentePagoId!),
+    queryFn: () => {
+      if (!fuentePagoId) throw new Error('fuentePagoId es requerido')
+      return validacionDesembolsoService.puedeRegistrarDesembolso(supabase, fuentePagoId)
+    },
     enabled: !!fuentePagoId,
     refetchInterval: 5000, // Actualizar cada 5 segundos
   })

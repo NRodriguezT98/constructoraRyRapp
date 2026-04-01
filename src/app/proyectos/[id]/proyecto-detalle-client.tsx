@@ -4,15 +4,15 @@ import { useState } from 'react'
 
 import { AnimatePresence, motion } from 'framer-motion'
 import {
-  ArrowLeft,
-  Building2,
-  ChevronRight,
-  Edit2,
-  FileText,
-  Home,
-  Info,
-  MapPin,
-  Trash2,
+    ArrowLeft,
+    Building2,
+    ChevronRight,
+    Edit2,
+    FileText,
+    Home,
+    Info,
+    MapPin,
+    Trash2,
 } from 'lucide-react'
 
 import { useRouter } from 'next/navigation'
@@ -23,12 +23,12 @@ import { ConfirmarCambiosModal } from '@/modules/proyectos/components/confirmar-
 import { ProyectosBadgesResumen } from '@/modules/proyectos/components/proyectos-badges-resumen'
 import { ProyectosForm } from '@/modules/proyectos/components/proyectos-form'
 import {
-  useProyectoConValidacion,
-  useProyectoQuery,
-  useProyectosQuery,
+    useProyectoConValidacion,
+    useProyectoQuery,
+    useProyectosQuery,
 } from '@/modules/proyectos/hooks'
 import { useDetectarCambios } from '@/modules/proyectos/hooks/useDetectarCambios'
-import type { Proyecto, ProyectoFormData } from '@/modules/proyectos/types'
+import type { EstadoProyecto, Proyecto, ProyectoFormData } from '@/modules/proyectos/types'
 import { formatearEstadoProyecto } from '@/modules/proyectos/utils/estado.utils'
 import { Modal } from '@/shared/components/ui/Modal'
 
@@ -403,7 +403,7 @@ export default function ProyectoDetalleClient({
                 fechaInicio: proyectoConValidacion.fechaInicio,
                 fechaFinEstimada: proyectoConValidacion.fechaFinEstimada,
                 presupuesto: proyectoConValidacion.presupuesto,
-                estado: proyectoConValidacion.estado,
+                estado: proyectoConValidacion.estado as EstadoProyecto,
                 // ✅ Manzanas CON validación pre-cargada (sin queries adicionales)
                 manzanas: proyectoConValidacion.manzanas.map(m => ({
                   id: m.id,

@@ -5,7 +5,7 @@
  * Implementa Repository + Service Pattern con Result Pattern.
  */
 
-import { createClient } from '@/lib/supabase/client'
+import { supabase as supabaseSingleton } from '@/lib/supabase/client'
 import { logger } from '@/lib/utils/logger'
 
 import type {
@@ -20,7 +20,7 @@ import type {
 } from '../types/entidades-financieras.types'
 
 export class EntidadesFinancierasService {
-  private supabase = createClient()
+  private supabase = supabaseSingleton
 
   // =====================================================
   // READ OPERATIONS

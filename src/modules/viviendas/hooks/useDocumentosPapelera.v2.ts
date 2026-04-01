@@ -26,7 +26,7 @@ export interface DocumentoEliminadoJerarquico {
   titulo: string
   version: number
   documento_padre_id: string | null
-  metadata: any
+  metadata: Record<string, unknown>
   fecha_creacion: string
   versiones: DocumentoEliminadoJerarquico[] // Versiones hijas
   total_versiones: number // Total incluyendo hijas

@@ -8,7 +8,9 @@ import { useRef, useState } from 'react'
 
 import type { UseFormSetValue } from 'react-hook-form'
 
-export function usePasoLegal({ setValue }: { setValue: UseFormSetValue<any> }) {
+import type { ViviendaSchemaType } from '../schemas/vivienda.schemas'
+
+export function usePasoLegal({ setValue }: { setValue: UseFormSetValue<ViviendaSchemaType> }) {
   const [certificadoFile, setCertificadoFile] = useState<File | null>(null)
   const [fileError, setFileError] = useState<string>('')
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -31,12 +33,11 @@ export function usePasoLegal({ setValue }: { setValue: UseFormSetValue<any> }) {
 
     setFileError('')
     setCertificadoFile(file)
-    setValue('certificado_tradicion_file', file)
+    // Nota: el archivo se gestiona vía estado local (certificadoFile), no en el form
   }
 
   const removeFile = () => {
     setCertificadoFile(null)
-    setValue('certificado_tradicion_file', undefined)
     if (fileInputRef.current) {
       fileInputRef.current.value = ''
     }

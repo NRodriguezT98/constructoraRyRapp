@@ -14,11 +14,12 @@ import type { FieldErrors, UseFormRegister } from 'react-hook-form'
 
 import { cn } from '@/shared/utils/helpers'
 
+import type { ViviendaSchemaType } from '../schemas/vivienda.schemas'
 import { nuevaViviendaStyles as styles } from '../styles/nueva-vivienda.styles'
 
 interface PasoLegalProps {
-  register: UseFormRegister<any>
-  errors: FieldErrors<any>
+  register: UseFormRegister<ViviendaSchemaType>
+  errors: FieldErrors<ViviendaSchemaType>
 }
 
 export function PasoLegalNuevo({ register, errors }: PasoLegalProps) {

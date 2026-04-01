@@ -14,12 +14,40 @@ import { AlertTriangle, Clock, Download, FileQuestion, FileText, Package, Refres
 import { formatDateCompact } from '@/lib/utils/date.utils'
 
 interface DocumentosAuditoriaDetalleProps {
-  metadata: any
-  datosAnteriores?: any
-  datosNuevos?: any
+  metadata: Record<string, unknown>
+  datosAnteriores?: Record<string, unknown>
+  datosNuevos?: Record<string, unknown>
   usuarioEmail: string
   usuarioNombres?: string
   fechaEvento: string
+}
+
+interface DetalleSubProps {
+  metadata: Record<string, unknown>
+  usuarioEmail: string
+  usuarioNombres?: string
+  fechaEvento: string
+}
+
+interface DetalleGenericoSubProps {
+  metadata: Record<string, unknown>
+  datosAnteriores?: Record<string, unknown>
+  datosNuevos?: Record<string, unknown>
+}
+
+/** Safely extract a string from Record<string, unknown> */
+function str(obj: Record<string, unknown> | unknown, key: string, fallback = ''): string {
+  if (obj != null && typeof obj === 'object' && key in (obj as Record<string, unknown>)) {
+    const val = (obj as Record<string, unknown>)[key]
+    return val != null ? String(val) : fallback
+  }
+  return fallback
+}
+
+/** Safely extract nested object from metadata */
+function nested(meta: Record<string, unknown>, key: string): Record<string, unknown> {
+  const val = meta[key]
+  return (val != null && typeof val === 'object' && !Array.isArray(val)) ? val as Record<string, unknown> : {}
 }
 
 export function DocumentosAuditoriaDetalle({
@@ -57,9 +85,10 @@ export function DocumentosAuditoriaDetalle({
 // 🚨 VERSIÓN MARCADA COMO ERRÓNEA
 // ============================================================================
 
-function VersionErroneaDetalle({ metadata, usuarioEmail, usuarioNombres, fechaEvento }: any) {
-  const doc = metadata?.documento
-  const versionCorrecta = metadata?.version_correcta
+function VersionErroneaDetalle({ metadata, usuarioEmail, usuarioNombres, fechaEvento }: DetalleSubProps) {
+  const doc = nested(metadata, 'documento')
+  const versionCorrecta = nested(metadata, 'version_correcta')
+  const hasVersionCorrecta = metadata.version_correcta != null
 
   return (
     <div className="space-y-4">
@@ -87,20 +116,20 @@ function VersionErroneaDetalle({ metadata, usuarioEmail, usuarioNombres, fechaEv
         <div className="grid grid-cols-2 gap-3">
           <div>
             <p className="text-xs text-gray-500 dark:text-gray-400">Título</p>
-            <p className="font-medium text-gray-900 dark:text-white">{doc?.titulo || 'Sin título'}</p>
+            <p className="font-medium text-gray-900 dark:text-white">{str(doc, 'titulo', 'Sin título')}</p>
           </div>
           <div>
             <p className="text-xs text-gray-500 dark:text-gray-400">Versión</p>
-            <p className="font-medium text-gray-900 dark:text-white">Versión {doc?.version}</p>
+            <p className="font-medium text-gray-900 dark:text-white">Versión {str(doc, 'version')}</p>
           </div>
           <div>
             <p className="text-xs text-gray-500 dark:text-gray-400">Categoría</p>
-            <p className="font-medium text-gray-900 dark:text-white">{doc?.categoria}</p>
+            <p className="font-medium text-gray-900 dark:text-white">{str(doc, 'categoria')}</p>
           </div>
           <div>
             <p className="text-xs text-gray-500 dark:text-gray-400">Estado Anterior</p>
             <span className="inline-flex items-center px-2 py-1 rounded-md bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs font-medium">
-              {doc?.estado_anterior || 'Válida'}
+              {str(doc, 'estado_anterior', 'Válida')}
             </span>
           </div>
         </div>
@@ -112,18 +141,18 @@ function VersionErroneaDetalle({ metadata, usuarioEmail, usuarioNombres, fechaEv
           <FileQuestion className="w-4 h-4 text-amber-600 dark:text-amber-500" />
           <h4 className="font-semibold text-amber-900 dark:text-amber-100">Motivo del Marcado</h4>
         </div>
-        <p className="text-amber-800 dark:text-amber-200">{metadata?.motivo_cambio}</p>
+        <p className="text-amber-800 dark:text-amber-200">{str(metadata, 'motivo_cambio')}</p>
       </div>
 
       {/* Versión correcta (si existe) */}
-      {versionCorrecta && (
+      {hasVersionCorrecta && (
         <div className="bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
           <div className="flex items-center gap-2 mb-2">
             <FileText className="w-4 h-4 text-green-600 dark:text-green-500" />
             <h4 className="font-semibold text-green-900 dark:text-green-100">Versión Correcta</h4>
           </div>
           <p className="text-sm text-green-800 dark:text-green-200">
-            La versión correcta que reemplaza este error está identificada con ID: <code className="px-1.5 py-0.5 bg-green-100 dark:bg-green-900/30 rounded text-xs">{versionCorrecta.id}</code>
+            La versión correcta que reemplaza este error está identificada con ID: <code className="px-1.5 py-0.5 bg-green-100 dark:bg-green-900/30 rounded text-xs">{str(versionCorrecta, 'id')}</code>
           </p>
         </div>
       )}
@@ -157,8 +186,8 @@ function VersionErroneaDetalle({ metadata, usuarioEmail, usuarioNombres, fechaEv
 // 📦 VERSIÓN MARCADA COMO OBSOLETA
 // ============================================================================
 
-function VersionObsoletaDetalle({ metadata, usuarioEmail, usuarioNombres, fechaEvento }: any) {
-  const doc = metadata?.documento
+function VersionObsoletaDetalle({ metadata, usuarioEmail, usuarioNombres, fechaEvento }: DetalleSubProps) {
+  const doc = nested(metadata, 'documento')
 
   return (
     <div className="space-y-4">
@@ -184,18 +213,18 @@ function VersionObsoletaDetalle({ metadata, usuarioEmail, usuarioNombres, fechaE
         <div className="grid grid-cols-2 gap-3">
           <div>
             <p className="text-xs text-gray-500 dark:text-gray-400">Título</p>
-            <p className="font-medium text-gray-900 dark:text-white">{doc?.titulo}</p>
+            <p className="font-medium text-gray-900 dark:text-white">{str(doc, 'titulo')}</p>
           </div>
           <div>
             <p className="text-xs text-gray-500 dark:text-gray-400">Versión</p>
-            <p className="font-medium text-gray-900 dark:text-white">Versión {doc?.version}</p>
+            <p className="font-medium text-gray-900 dark:text-white">Versión {str(doc, 'version')}</p>
           </div>
         </div>
       </div>
 
       <div className="bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
         <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Razón de Obsolescencia</h4>
-        <p className="text-gray-700 dark:text-gray-300">{metadata?.razon_obsolescencia}</p>
+        <p className="text-gray-700 dark:text-gray-300">{str(metadata, 'razon_obsolescencia')}</p>
       </div>
 
       <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-700">
@@ -226,9 +255,10 @@ function VersionObsoletaDetalle({ metadata, usuarioEmail, usuarioNombres, fechaE
 // ♻️ RESTAURAR ESTADO DE VERSIÓN
 // ============================================================================
 
-function RestaurarEstadoDetalle({ metadata, usuarioEmail, usuarioNombres, fechaEvento }: any) {
-  const doc = metadata?.documento
-  const restauracion = metadata?.restauracion
+function RestaurarEstadoDetalle({ metadata, usuarioEmail, usuarioNombres, fechaEvento }: DetalleSubProps) {
+  const doc = nested(metadata, 'documento')
+  const restauracion = nested(metadata, 'restauracion')
+  const hasMotivoOriginal = restauracion.motivo_original != null
 
   return (
     <div className="space-y-4">
@@ -254,11 +284,11 @@ function RestaurarEstadoDetalle({ metadata, usuarioEmail, usuarioNombres, fechaE
         <div className="grid grid-cols-2 gap-3">
           <div>
             <p className="text-xs text-gray-500 dark:text-gray-400">Título</p>
-            <p className="font-medium text-gray-900 dark:text-white">{doc?.titulo}</p>
+            <p className="font-medium text-gray-900 dark:text-white">{str(doc, 'titulo')}</p>
           </div>
           <div>
             <p className="text-xs text-gray-500 dark:text-gray-400">Versión</p>
-            <p className="font-medium text-gray-900 dark:text-white">Versión {doc?.version}</p>
+            <p className="font-medium text-gray-900 dark:text-white">Versión {str(doc, 'version')}</p>
           </div>
         </div>
       </div>
@@ -269,13 +299,13 @@ function RestaurarEstadoDetalle({ metadata, usuarioEmail, usuarioNombres, fechaE
           <div className="flex items-center justify-between">
             <span className="text-sm text-blue-700 dark:text-blue-300">Estado anterior:</span>
             <span className="inline-flex items-center px-2 py-1 rounded-md bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 text-xs font-medium capitalize">
-              {restauracion?.desde_estado}
+              {str(restauracion, 'desde_estado')}
             </span>
           </div>
-          {restauracion?.motivo_original && (
+          {hasMotivoOriginal && (
             <div>
               <p className="text-sm text-blue-700 dark:text-blue-300 mb-1">Motivo original:</p>
-              <p className="text-sm text-blue-800 dark:text-blue-200 italic">&quot;{restauracion.motivo_original}&quot;</p>
+              <p className="text-sm text-blue-800 dark:text-blue-200 italic">&quot;{str(restauracion, 'motivo_original')}&quot;</p>
             </div>
           )}
         </div>
@@ -309,12 +339,17 @@ function RestaurarEstadoDetalle({ metadata, usuarioEmail, usuarioNombres, fechaE
 // 🔄 REEMPLAZO DE ARCHIVO
 // ============================================================================
 
-function ReemplazoArchivoDetalle({ metadata, usuarioEmail, usuarioNombres, fechaEvento }: any) {
-  const archivoOriginal = metadata?.archivo_original
-  const archivoNuevo = metadata?.archivo_nuevo
-  const comparacion = metadata?.comparacion
-  const tiempo = metadata?.tiempo
-  const contexto = metadata?.contexto
+function ReemplazoArchivoDetalle({ metadata, usuarioEmail, usuarioNombres, fechaEvento }: DetalleSubProps) {
+  const archivoOriginal = nested(metadata, 'archivo_original')
+  const archivoNuevo = nested(metadata, 'archivo_nuevo')
+  const comparacion = nested(metadata, 'comparacion')
+  const tiempo = nested(metadata, 'tiempo')
+  const contexto = nested(metadata, 'contexto')
+  const hasContexto = metadata.contexto != null
+  const hasComparacion = metadata.comparacion != null
+  const urlBackup = str(archivoOriginal, 'url_backup')
+  const urlActual = str(archivoNuevo, 'url_actual')
+  const nombreOriginal = str(archivoOriginal, 'nombre')
 
   return (
     <div className="space-y-4">
@@ -333,7 +368,7 @@ function ReemplazoArchivoDetalle({ metadata, usuarioEmail, usuarioNombres, fecha
       </div>
 
       {/* Información del documento */}
-      {contexto && (
+      {hasContexto && (
         <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
           <div className="flex items-center gap-2 mb-3">
             <FileText className="w-4 h-4 text-gray-500" />
@@ -342,11 +377,11 @@ function ReemplazoArchivoDetalle({ metadata, usuarioEmail, usuarioNombres, fecha
           <div className="grid grid-cols-2 gap-3">
             <div>
               <p className="text-xs text-gray-500 dark:text-gray-400">Título</p>
-              <p className="font-medium text-gray-900 dark:text-white">{contexto.titulo}</p>
+              <p className="font-medium text-gray-900 dark:text-white">{str(contexto, 'titulo')}</p>
             </div>
             <div>
               <p className="text-xs text-gray-500 dark:text-gray-400">Versión</p>
-              <p className="font-medium text-gray-900 dark:text-white">Versión {contexto.version}</p>
+              <p className="font-medium text-gray-900 dark:text-white">Versión {str(contexto, 'version')}</p>
             </div>
           </div>
         </div>
@@ -355,7 +390,7 @@ function ReemplazoArchivoDetalle({ metadata, usuarioEmail, usuarioNombres, fecha
       {/* Motivo del reemplazo */}
       <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
         <h4 className="font-semibold text-amber-900 dark:text-amber-100 mb-2">Justificación</h4>
-        <p className="text-amber-800 dark:text-amber-200">{metadata?.motivo_reemplazo}</p>
+        <p className="text-amber-800 dark:text-amber-200">{str(metadata, 'motivo_reemplazo')}</p>
       </div>
 
       {/* Comparación de archivos */}
@@ -371,23 +406,23 @@ function ReemplazoArchivoDetalle({ metadata, usuarioEmail, usuarioNombres, fecha
           <div className="space-y-3">
             <div>
               <p className="text-xs text-red-600 dark:text-red-400 mb-1 font-medium">Documento</p>
-              <p className="font-semibold text-red-900 dark:text-red-100 text-base">{contexto?.titulo || 'Sin título'}</p>
+              <p className="font-semibold text-red-900 dark:text-red-100 text-base">{str(contexto, 'titulo', 'Sin título')}</p>
             </div>
             <div className="flex items-center gap-3">
               <div className="flex-1">
                 <p className="text-xs text-red-600 dark:text-red-400 mb-1">Tamaño</p>
-                <p className="font-medium text-red-900 dark:text-red-100">{archivoOriginal?.tamano_mb} MB</p>
+                <p className="font-medium text-red-900 dark:text-red-100">{str(archivoOriginal, 'tamano_mb')} MB</p>
               </div>
               <div className="flex-1">
                 <p className="text-xs text-red-600 dark:text-red-400 mb-1">Formato</p>
                 <p className="font-medium text-red-900 dark:text-red-100 uppercase text-xs">
-                  {archivoOriginal?.nombre?.split('.').pop() || 'N/A'}
+                  {nombreOriginal.split('.').pop() || 'N/A'}
                 </p>
               </div>
             </div>
-            {archivoOriginal?.url_backup && (
+            {urlBackup && (
               <a
-                href={archivoOriginal.url_backup}
+                href={urlBackup}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-red-600 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-600 text-white font-medium text-sm transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
@@ -410,23 +445,23 @@ function ReemplazoArchivoDetalle({ metadata, usuarioEmail, usuarioNombres, fecha
           <div className="space-y-3">
             <div>
               <p className="text-xs text-green-600 dark:text-green-400 mb-1 font-medium">Documento</p>
-              <p className="font-semibold text-green-900 dark:text-green-100 text-base">{contexto?.titulo || 'Sin título'}</p>
+              <p className="font-semibold text-green-900 dark:text-green-100 text-base">{str(contexto, 'titulo', 'Sin título')}</p>
             </div>
             <div className="flex items-center gap-3">
               <div className="flex-1">
                 <p className="text-xs text-green-600 dark:text-green-400 mb-1">Tamaño</p>
-                <p className="font-medium text-green-900 dark:text-green-100">{archivoNuevo?.tamano_mb} MB</p>
+                <p className="font-medium text-green-900 dark:text-green-100">{str(archivoNuevo, 'tamano_mb')} MB</p>
               </div>
               <div className="flex-1">
                 <p className="text-xs text-green-600 dark:text-green-400 mb-1">Formato</p>
                 <p className="font-medium text-green-900 dark:text-green-100 uppercase text-xs">
-                  {archivoNuevo?.nombre?.split('.').pop() || 'N/A'}
+                  {str(archivoNuevo, 'nombre').split('.').pop() || 'N/A'}
                 </p>
               </div>
             </div>
-            {archivoNuevo?.url_actual && (
+            {urlActual && (
               <a
-                href={archivoNuevo.url_actual}
+                href={urlActual}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-600 text-white font-medium text-sm transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
@@ -440,21 +475,21 @@ function ReemplazoArchivoDetalle({ metadata, usuarioEmail, usuarioNombres, fecha
       </div>
 
       {/* Estadísticas */}
-      {comparacion && (
+      {hasComparacion && (
         <div className="bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
           <h4 className="font-semibold text-gray-900 dark:text-white mb-3">Comparación</h4>
           <div className="grid grid-cols-3 gap-4">
             <div>
               <p className="text-xs text-gray-500 dark:text-gray-400">Diferencia</p>
-              <p className="font-medium text-gray-900 dark:text-white">{comparacion.diferencia_mb} MB</p>
+              <p className="font-medium text-gray-900 dark:text-white">{str(comparacion, 'diferencia_mb')} MB</p>
             </div>
             <div>
               <p className="text-xs text-gray-500 dark:text-gray-400">Cambio</p>
-              <p className="font-medium text-gray-900 dark:text-white">{comparacion.porcentaje_cambio}%</p>
+              <p className="font-medium text-gray-900 dark:text-white">{str(comparacion, 'porcentaje_cambio')}%</p>
             </div>
             <div>
               <p className="text-xs text-gray-500 dark:text-gray-400">Horas transcurridas</p>
-              <p className="font-medium text-gray-900 dark:text-white">{tiempo?.horas_transcurridas}h</p>
+              <p className="font-medium text-gray-900 dark:text-white">{str(tiempo, 'horas_transcurridas')}h</p>
             </div>
           </div>
         </div>
@@ -488,7 +523,7 @@ function ReemplazoArchivoDetalle({ metadata, usuarioEmail, usuarioNombres, fecha
 // 📋 FALLBACK GENÉRICO
 // ============================================================================
 
-function DetalleGenerico({ metadata, _datosAnteriores, _datosNuevos }: any) {
+function DetalleGenerico({ metadata }: DetalleGenericoSubProps) {
   return (
     <div className="space-y-4">
       <div className="bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-lg p-4">

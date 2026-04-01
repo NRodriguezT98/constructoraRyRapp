@@ -44,7 +44,7 @@ export function useDocumentoEditar() {
       }
 
       // Preparar datos para actualizar (solo campos que cambiaron)
-      const updateData: any = {
+      const updateData: Record<string, string | string[] | null> = {
         fecha_actualizacion: new Date().toISOString()
       }
 

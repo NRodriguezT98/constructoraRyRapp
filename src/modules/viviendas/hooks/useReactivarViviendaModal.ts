@@ -15,6 +15,7 @@ import { useCallback, useEffect, useState } from 'react'
 
 import { logger } from '@/lib/utils/logger'
 
+import type { ValidacionReactivacion } from '../services/viviendas-inactivacion.service'
 import { useViviendaInactivacion } from './useViviendaInactivacion'
 
 // ============================================================
@@ -32,7 +33,7 @@ interface UseReactivarViviendaModalReturn {
   // Estado
   motivo: string
   confirmado: boolean
-  validacion: any
+  validacion: ValidacionReactivacion | null
   validando: boolean
   procesando: boolean
   error: string | null
@@ -65,12 +66,12 @@ export function useReactivarViviendaModal({
 
   const [motivo, setMotivo] = useState('')
   const [confirmado, setConfirmado] = useState(false)
-  const [validacion, setValidacion] = useState<any>(null)
+  const [validacion, setValidacion] = useState<ValidacionReactivacion | null>(null)
 
   // Calcular validaciones
   const caracteresRestantes = MOTIVO_MINIMO - motivo.length
   const motivoValido = motivo.trim().length >= MOTIVO_MINIMO
-  const puedeReactivar = motivoValido && confirmado && !procesando && validacion?.puedeReactivar
+  const puedeReactivar = !!(motivoValido && confirmado && !procesando && validacion?.puedeReactivar)
 
   // Validar al abrir modal
   useEffect(() => {

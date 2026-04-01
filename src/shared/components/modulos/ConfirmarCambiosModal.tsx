@@ -15,6 +15,7 @@ import {
     ArrowRight,
     CheckCircle2,
     Loader2,
+    type LucideIcon,
     RefreshCcw,
     Sparkles,
     X,
@@ -49,13 +50,13 @@ export interface CambioDetectado {
   label: string
   valorAnterior: string | number
   valorNuevo: string | number
-  icono: any
+  icono: LucideIcon
   categoria: string
 }
 
 export interface CategoriaConfig {
   titulo: string
-  icono: any
+  icono: LucideIcon
 }
 
 interface ConfirmarCambiosModalProps {

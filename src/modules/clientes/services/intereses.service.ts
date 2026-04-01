@@ -26,7 +26,6 @@ class InteresesService {
     soloActivos = false
   ): Promise<ClienteInteres[]> {
     try {
-      // @ts-ignore - Tabla cliente_intereses no existe aún en database.types (ejecutar SQL primero)
       let query = supabase
         .from('intereses_completos')
         .select(`

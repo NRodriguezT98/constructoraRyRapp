@@ -5,7 +5,7 @@
 
 import { useState } from 'react'
 
-import { createClient } from '@/lib/supabase/client'
+import { supabase } from '@/lib/supabase/client'
 import { logger } from '@/lib/utils/logger'
 import { FUENTES_PAGO_CODIGOS } from '@/modules/clientes/types/fuentes-pago'
 
@@ -37,8 +37,6 @@ export function useTiposFuentesPago() {
     try {
       setLoading(true)
       setResultado(null)
-
-      const supabase = createClient()
 
       const { data: fuentesActuales, error: errorConsulta } = await supabase
         .from('tipos_fuentes_pago')
@@ -85,7 +83,6 @@ export function useTiposFuentesPago() {
       setResultado(null)
 
       // 1. Primero verificar estado actual
-      const supabase = createClient()
       const { data: fuentesActuales, error: errorConsulta } = await supabase
         .from('tipos_fuentes_pago')
         .select('id,nombre,codigo,descripcion,requiere_entidad,permite_multiples_abonos,es_subsidio,color,icono,orden,activo,created_at,updated_at,created_by,updated_by')

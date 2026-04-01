@@ -21,7 +21,8 @@ import { useRouter } from 'next/navigation'
 import type { SectionStatus, SummaryItem, WizardStepConfig } from '@/shared/components/accordion-wizard'
 
 import { viviendasService } from '../services/viviendas.service'
-import type { ResumenFinanciero, ViviendaFormData } from '../types'
+import type { ViviendaSchemaType } from '../schemas/vivienda.schemas'
+import type { ConfiguracionRecargo, ResumenFinanciero, ViviendaFormData } from '../types'
 import { calcularValorTotal } from '../utils'
 
 import { useCrearViviendaMutation } from './useViviendasQuery'
@@ -84,7 +85,7 @@ const viviendaFormSchema = z.object({
   recargo_esquinera: z.coerce.number().min(0).default(0),
 })
 
-type ViviendaFormValues = z.input<typeof viviendaFormSchema>
+export type ViviendaFormValues = ViviendaSchemaType
 
 // Campos por paso (para trigger de validación parcial)
 const FIELDS_PASO_1 = ['proyecto_id', 'manzana_id', 'numero'] as const
@@ -102,7 +103,7 @@ export function useNuevaViviendaAccordion() {
   const [isValidating, setIsValidating] = useState(false)
   const [showSuccess, setShowSuccess] = useState(false)
   const [gastosNotariales, setGastosNotariales] = useState(5_000_000)
-  const [configuracionRecargos, setConfiguracionRecargos] = useState<any[]>([])
+  const [configuracionRecargos, setConfiguracionRecargos] = useState<ConfiguracionRecargo[]>([])
 
   // ── Cargar configuración financiera ─────────────────
   useEffect(() => {
@@ -130,8 +131,8 @@ export function useNuevaViviendaAccordion() {
     setError,
     getValues,
     formState: { errors },
-  } = useForm<ViviendaFormValues>({
-    resolver: zodResolver(viviendaFormSchema) as any,
+  } = useForm<ViviendaSchemaType>({
+    resolver: zodResolver(viviendaFormSchema) as unknown as import('react-hook-form').Resolver<ViviendaSchemaType>,
     mode: 'onChange',
     defaultValues: {
       proyecto_id: '',
@@ -143,8 +144,8 @@ export function useNuevaViviendaAccordion() {
       lindero_occidente: '',
       matricula_inmobiliaria: '',
       nomenclatura: '',
-      area_lote: '' as any,
-      area_construida: '' as any,
+      area_lote: '' as unknown as number,
+      area_construida: '' as unknown as number,
       tipo_vivienda: 'Regular',
       valor_base: 0,
       es_esquinera: false,
@@ -253,7 +254,7 @@ export function useNuevaViviendaAccordion() {
 
           if (erroresEncontrados.length > 0) {
             erroresEncontrados.forEach((e) => {
-              setError(e.campo as any, { type: 'manual', message: e.mensaje })
+              setError(e.campo as keyof ViviendaFormValues, { type: 'manual', message: e.mensaje })
             })
             return false
           }

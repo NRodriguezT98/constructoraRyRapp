@@ -14,6 +14,11 @@ import type {
 } from '../types'
 import { sanitizeProyectoFormData, sanitizeProyectoUpdate } from '../utils/sanitize-proyecto.utils'
 
+/** Tipo para resultado de query con JOIN de manzanas */
+type ProyectoConManzanasDB = Database['public']['Tables']['proyectos']['Row'] & {
+  manzanas: Array<Database['public']['Tables']['manzanas']['Row']>
+}
+
 /**
  * Servicio para gestionar proyectos usando Supabase
  * Incluye auditoría completa de todas las operaciones CRUD
@@ -59,7 +64,7 @@ class ProyectosService {
     }
 
     // Transformar datos de Supabase a formato de la aplicación
-    return (data || []).map(d => this.transformarProyectoDeDB(d as any))
+    return (data || []).map(d => this.transformarProyectoDeDB(d as unknown as ProyectoConManzanasDB))
   }
 
   /**
@@ -97,7 +102,7 @@ class ProyectosService {
       throw new Error(`Error al obtener proyecto: ${error.message}`)
     }
 
-    return this.transformarProyectoDeDB(data as any)
+    return this.transformarProyectoDeDB(data as unknown as ProyectoConManzanasDB)
   }
 
   /**
@@ -203,7 +208,7 @@ class ProyectosService {
       fechaInicio: proyecto.fecha_inicio,
       fechaFinEstimada: proyecto.fecha_fin_estimada,
       presupuesto: proyecto.presupuesto,
-      estado: proyecto.estado as any, // Type assertion para evitar error de tipos con Supabase
+      estado: proyecto.estado as EstadoProyecto,
       progreso: proyecto.progreso,
       manzanas,
       fechaCreacion: proyecto.fecha_creacion ?? '',
@@ -451,7 +456,7 @@ class ProyectosService {
       }
     }
 
-    const proyectoActualizado = this.transformarProyectoDeDB(proyecto as any)
+    const proyectoActualizado = this.transformarProyectoDeDB(proyecto as unknown as ProyectoConManzanasDB)
 
     // 7. 🔍 AUDITORÍA: Registrar actualización
     if (proyectoAnterior) {

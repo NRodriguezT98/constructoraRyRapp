@@ -43,7 +43,7 @@ export interface ProyectoConValidacion {
   fechaInicio: string
   fechaFinEstimada: string
   presupuesto: number
-  estado: any // Tipo flexible para compatibilidad
+  estado: string
   responsable: string
   telefono: string
   email: string
@@ -117,11 +117,11 @@ export function useProyectoConValidacion(proyectoId?: string) {
         fechaInicio: data.fecha_inicio ?? '',
         fechaFinEstimada: data.fecha_fin_estimada ?? '',
         presupuesto: data.presupuesto,
-        estado: data.estado as any,
-        responsable: (data as any).responsable ?? '',
-        telefono: (data as any).telefono ?? '',
-        email: (data as any).email ?? '',
-        progreso: (data as any).progreso,
+        estado: data.estado,
+        responsable: '',
+        telefono: '',
+        email: '',
+        progreso: data.progreso,
         fechaCreacion: data.fecha_creacion ?? '',
         fechaActualizacion: data.fecha_actualizacion ?? '',
         manzanas: manzanasConValidacion,

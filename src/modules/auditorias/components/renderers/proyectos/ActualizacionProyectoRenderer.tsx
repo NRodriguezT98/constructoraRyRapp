@@ -11,22 +11,19 @@
 
 import { ArrowRight, Building, FileText, MapPin, TrendingUp } from 'lucide-react'
 
+import type { RendererAuditoriaProps } from '@/modules/auditorias/types'
+
 import { AuditoriaEstado } from '../../sections/AuditoriaEstado'
 
-interface ActualizacionProyectoRendererProps {
-  metadata?: any
-  datosNuevos?: any
-  datosAnteriores?: any
-}
+type ProyectoDiff = { nombre?: string; ubicacion?: string; descripcion?: string; estado?: string }
+type ManzanaChange = { nombre: string; cantidad_viviendas?: number }
 
 export function ActualizacionProyectoRenderer({
-  metadata,
   datosNuevos,
   datosAnteriores,
-}: ActualizacionProyectoRendererProps) {
-  // Datos del proyecto
-  const proyectoNuevo = datosNuevos?.proyecto || {}
-  const proyectoAnterior = datosAnteriores?.proyecto || {}
+}: RendererAuditoriaProps) {
+  const proyectoNuevo = (datosNuevos?.proyecto ?? {}) as ProyectoDiff
+  const proyectoAnterior = (datosAnteriores?.proyecto ?? {}) as ProyectoDiff
 
   // Detectar campos modificados
   const camposModificados = []
@@ -69,13 +66,13 @@ export function ActualizacionProyectoRenderer({
   }
 
   // Manzanas modificadas
-  const manzanasNuevas = datosNuevos?.manzanas || []
-  const manzanasAnteriores = datosAnteriores?.manzanas || []
+  const manzanasNuevas = (datosNuevos?.manzanas ?? []) as ManzanaChange[]
+  const manzanasAnteriores = (datosAnteriores?.manzanas ?? []) as ManzanaChange[]
   const manzanasAgregadas = manzanasNuevas.filter(
-    (m: any) => !manzanasAnteriores.find((a: any) => a.nombre === m.nombre)
+    (m) => !manzanasAnteriores.find((a) => a.nombre === m.nombre)
   )
   const manzanasEliminadas = manzanasAnteriores.filter(
-    (m: any) => !manzanasNuevas.find((n: any) => n.nombre === m.nombre)
+    (m) => !manzanasNuevas.find((n) => n.nombre === m.nombre)
   )
 
   return (
@@ -112,12 +109,12 @@ export function ActualizacionProyectoRenderer({
                   <div className="flex items-center gap-3">
                     <div className="flex-1">
                       <p className="text-xs text-gray-500 dark:text-gray-400 mb-1.5 font-medium">Estado anterior</p>
-                      <AuditoriaEstado estado={cambio.anterior} />
+                      <AuditoriaEstado estado={cambio.anterior ?? ''} />
                     </div>
                     <ArrowRight className="w-5 h-5 text-gray-400 flex-shrink-0" />
                     <div className="flex-1">
                       <p className="text-xs text-gray-500 dark:text-gray-400 mb-1.5 font-medium">Estado nuevo</p>
-                      <AuditoriaEstado estado={cambio.nuevo} />
+                      <AuditoriaEstado estado={cambio.nuevo ?? ''} />
                     </div>
                   </div>
                 </div>
@@ -140,7 +137,7 @@ export function ActualizacionProyectoRenderer({
                     <div className="px-2 py-1 rounded bg-red-100 dark:bg-red-950/50 border border-red-300 dark:border-red-800 flex-1">
                       <p className="text-xs text-red-600 dark:text-red-400 font-medium mb-0.5">Anterior:</p>
                       <p className="text-sm text-red-900 dark:text-red-100 line-through">
-                        {cambio.anterior || '(vacío)'}
+                        {cambio.anterior ?? '(vacío)'}
                       </p>
                     </div>
                   </div>
@@ -151,7 +148,7 @@ export function ActualizacionProyectoRenderer({
                     <div className="px-2 py-1 rounded bg-green-100 dark:bg-green-950/50 border border-green-300 dark:border-green-800 flex-1">
                       <p className="text-xs text-green-600 dark:text-green-400 font-medium mb-0.5">Nuevo:</p>
                       <p className="text-sm text-green-900 dark:text-green-100 font-semibold">
-                        {cambio.nuevo || '(vacío)'}
+                        {cambio.nuevo ?? '(vacío)'}
                       </p>
                     </div>
                   </div>
@@ -172,7 +169,7 @@ export function ActualizacionProyectoRenderer({
             <p className="text-sm font-semibold text-green-900 dark:text-green-100">Manzanas agregadas</p>
           </div>
           <div className="grid grid-cols-2 gap-2">
-            {manzanasAgregadas.map((manzana: any, idx: number) => (
+            {manzanasAgregadas.map((manzana, idx: number) => (
               <div
                 key={idx}
                 className="px-3 py-2 rounded-lg bg-green-100 dark:bg-green-900/50 border border-green-300 dark:border-green-700"
@@ -197,7 +194,7 @@ export function ActualizacionProyectoRenderer({
             <p className="text-sm font-semibold text-red-900 dark:text-red-100">Manzanas eliminadas</p>
           </div>
           <div className="grid grid-cols-2 gap-2">
-            {manzanasEliminadas.map((manzana: any, idx: number) => (
+            {manzanasEliminadas.map((manzana, idx: number) => (
               <div
                 key={idx}
                 className="px-3 py-2 rounded-lg bg-red-100 dark:bg-red-900/50 border border-red-300 dark:border-red-700 line-through"

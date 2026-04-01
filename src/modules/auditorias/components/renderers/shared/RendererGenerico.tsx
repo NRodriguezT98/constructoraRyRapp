@@ -7,13 +7,9 @@
 
 import { AlertCircle } from 'lucide-react'
 
-interface RendererGenericoProps {
-  metadata?: any
-  datosNuevos?: any
-  datosAnteriores?: any
-}
+import type { RendererAuditoriaProps } from '@/modules/auditorias/types'
 
-export function RendererGenerico({ metadata, datosNuevos, datosAnteriores }: RendererGenericoProps) {
+export function RendererGenerico({ metadata, datosNuevos, datosAnteriores }: RendererAuditoriaProps) {
   return (
     <div className="space-y-4 p-6">
       {/* Mensaje informativo */}

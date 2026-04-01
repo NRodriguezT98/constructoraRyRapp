@@ -1,9 +1,12 @@
 import { supabase } from '@/lib/supabase/client'
+import type { Database } from '@/lib/supabase/database.types'
 import { logger } from '@/lib/utils/logger'
 
 import type {
+    AccionAuditoria,
     ActividadUsuario,
     AuditoriaRegistro,
+    CambioDetalle,
     ConsultaAuditoriaParams,
     EliminacionMasiva,
     EstadisticasAuditoria,
@@ -22,7 +25,7 @@ class AuditoriasService {
   async obtenerAuditorias(
     params: ConsultaAuditoriaParams = {}
   ): Promise<ResultadoPaginado<AuditoriaRegistro>> {
-    let query = (supabase as any)
+    let query = supabase
       .from('audit_log')
       .select('*', { count: 'exact' })
       .order('fecha_evento', { ascending: false })
@@ -82,7 +85,7 @@ class AuditoriasService {
     registroId: string,
     limite = 100
   ): Promise<AuditoriaRegistro[]> {
-    const { data, error } = await (supabase as any).rpc('obtener_historial_registro', {
+    const { data, error } = await supabase.rpc('obtener_historial_registro', {
       p_tabla: tabla,
       p_registro_id: registroId,
       p_limit: limite,
@@ -93,21 +96,22 @@ class AuditoriasService {
       throw new Error(`Error al obtener historial: ${error.message}`)
     }
 
-    return (data || []).map((item: any) => ({
+    return (data || []).map((item) => ({
       id: item.id,
       tabla,
-      accion: item.accion,
+      accion: item.accion as AccionAuditoria,
       registroId,
       usuarioId: null,
       usuarioEmail: item.usuario_email,
-      usuarioRol: item.usuario_rol,
+      usuarioRol: item.usuario_rol ?? null,
+      usuarioNombres: null,
       fechaEvento: item.fecha_evento,
       ipAddress: null,
       userAgent: null,
       datosAnteriores: null,
       datosNuevos: null,
-      cambiosEspecificos: item.cambios_especificos,
-      metadata: item.metadata || {},
+      cambiosEspecificos: (item.cambios_especificos ?? null) as Record<string, CambioDetalle> | null,
+      metadata: ((item.metadata ?? {}) as Record<string, unknown>),
       modulo: null,
     }))
   }
@@ -133,14 +137,14 @@ class AuditoriasService {
       )
     }
 
-    return (data || []).map((item: any) => ({
+    return (data || []).map((item) => ({
       id: item.id,
       tabla: item.tabla,
-      accion: item.accion,
+      accion: item.accion as AccionAuditoria,
       fechaEvento: item.fecha_evento,
       registroId: item.registro_id,
-      modulo: item.modulo,
-      metadata: item.metadata || {},
+      modulo: item.modulo ?? null,
+      metadata: ((item.metadata ?? {}) as Record<string, unknown>),
     }))
   }
 
@@ -166,11 +170,11 @@ class AuditoriasService {
       )
     }
 
-    return (data || []).map((item: any) => ({
-      fecha: item.fecha,
-      usuarioEmail: item.usuario_email,
-      tabla: item.tabla,
-      totalEliminaciones: item.total_eliminaciones,
+    return (data || []).map((item) => ({
+      fecha: item.fecha ?? '',
+      usuarioEmail: item.usuario_email ?? '',
+      tabla: item.tabla ?? '',
+      totalEliminaciones: item.total_eliminaciones ?? 0,
     }))
   }
 
@@ -188,15 +192,15 @@ class AuditoriasService {
       throw new Error(`Error al obtener resumen de seguridad: ${error.message}`)
     }
 
-    return (data || []).map((item: any) => ({
-      modulo: item.modulo,
-      totalEventos: item.total_eventos,
-      usuariosActivos: item.usuarios_activos,
-      totalCreaciones: item.total_creaciones,
-      totalActualizaciones: item.total_actualizaciones,
-      totalEliminaciones: item.total_eliminaciones,
-      ultimoEvento: item.ultimo_evento,
-      primerEvento: item.primer_evento,
+    return (data || []).map((item) => ({
+      modulo: item.modulo ?? '',
+      totalEventos: item.total_eventos ?? 0,
+      usuariosActivos: item.usuarios_activos ?? 0,
+      totalCreaciones: item.total_creaciones ?? 0,
+      totalActualizaciones: item.total_actualizaciones ?? 0,
+      totalEliminaciones: item.total_eliminaciones ?? 0,
+      ultimoEvento: item.ultimo_evento ?? '',
+      primerEvento: item.primer_evento ?? '',
     }))
   }
 
@@ -242,7 +246,7 @@ class AuditoriasService {
       .not('usuario_id', 'is', null)
 
     const usuariosUnicos = new Set(
-      usuariosData?.map((u: any) => u.usuario_id) || []
+      usuariosData?.map((u) => u.usuario_id) || []
     )
 
     // Módulo más activo
@@ -256,17 +260,17 @@ class AuditoriasService {
       .select('accion')
 
     const conteoaccion = acciones?.reduce(
-      (acc: any, item: any) => {
+      (acc: Record<string, number>, item) => {
         acc[item.accion] = (acc[item.accion] || 0) + 1
         return acc
       },
       {} as Record<string, number>
     )
 
-    const accionMasComun =
+    const accionMasComun: AccionAuditoria =
       (Object.entries(conteoaccion || {}).sort(
         ([, a], [, b]) => (b as number) - (a as number)
-      )[0]?.[0] as any) || 'CREATE'
+      )[0]?.[0] as AccionAuditoria) || 'CREATE'
 
     // Total de eliminaciones
     const { count: eliminacionesTotales } = await supabase
@@ -313,23 +317,23 @@ class AuditoriasService {
   /**
    * Transformar datos de DB a formato de aplicación
    */
-  private transformarAuditoriaDeDB(data: any): AuditoriaRegistro {
+  private transformarAuditoriaDeDB(data: Database['public']['Tables']['audit_log']['Row']): AuditoriaRegistro {
     return {
       id: data.id,
       tabla: data.tabla,
-      accion: data.accion,
+      accion: data.accion as AccionAuditoria,
       registroId: data.registro_id,
       usuarioId: data.usuario_id,
       usuarioEmail: data.usuario_email,
-      usuarioNombres: data.usuario_nombres || '',
+      usuarioNombres: data.usuario_nombres ?? null,
       usuarioRol: data.usuario_rol,
       fechaEvento: data.fecha_evento,
-      ipAddress: data.ip_address,
+      ipAddress: (data.ip_address as string | null) ?? null,
       userAgent: data.user_agent,
-      datosAnteriores: data.datos_anteriores,
-      datosNuevos: data.datos_nuevos,
-      cambiosEspecificos: data.cambios_especificos,
-      metadata: data.metadata || {},
+      datosAnteriores: (data.datos_anteriores ?? null) as Record<string, unknown> | null,
+      datosNuevos: (data.datos_nuevos ?? null) as Record<string, unknown> | null,
+      cambiosEspecificos: (data.cambios_especificos ?? null) as Record<string, CambioDetalle> | null,
+      metadata: ((data.metadata ?? {}) as Record<string, unknown>),
       modulo: data.modulo,
     }
   }

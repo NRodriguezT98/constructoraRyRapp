@@ -5,10 +5,16 @@ desde el esquema real de Supabase
 
 import subprocess
 import re
+import os
 from datetime import datetime
 
-# Configuración de la base de datos
-DB_URL = "postgresql://postgres:Wx8EwiZFhsPcHzAr@db.swyjhwgvkfcfdtemkyad.supabase.co:5432/postgres"
+# Configuración de la base de datos (NUNCA hardcodear credenciales)
+DB_URL = os.environ.get("DATABASE_URL")
+if not DB_URL:
+    raise EnvironmentError(
+        "La variable de entorno DATABASE_URL no está definida.\n"
+        "Ejemplo: set DATABASE_URL=postgresql://postgres:<password>@db.<project>.supabase.co:5432/postgres"
+    )
 
 def ejecutar_query(query):
     """Ejecuta una query y retorna el resultado"""

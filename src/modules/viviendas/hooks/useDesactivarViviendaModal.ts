@@ -15,6 +15,7 @@ import { useCallback, useEffect, useState } from 'react'
 
 import { logger } from '@/lib/utils/logger'
 
+import type { ValidacionEliminacion } from '../services/viviendas-inactivacion.service'
 import { useViviendaInactivacion } from './useViviendaInactivacion'
 
 // ============================================================
@@ -32,7 +33,7 @@ interface UseDesactivarViviendaModalReturn {
   // Estado
   motivo: string
   confirmado: boolean
-  validacion: any
+  validacion: ValidacionEliminacion | null
   validando: boolean
   procesando: boolean
   error: string | null
@@ -65,12 +66,12 @@ export function useDesactivarViviendaModal({
 
   const [motivo, setMotivo] = useState('')
   const [confirmado, setConfirmado] = useState(false)
-  const [validacion, setValidacion] = useState<any>(null)
+  const [validacion, setValidacion] = useState<ValidacionEliminacion | null>(null)
 
   // Calcular validaciones
   const caracteresRestantes = MOTIVO_MINIMO - motivo.length
   const motivoValido = motivo.trim().length >= MOTIVO_MINIMO
-  const puedeDesactivar = motivoValido && confirmado && !procesando && validacion?.puedeEliminar
+  const puedeDesactivar = !!(motivoValido && confirmado && !procesando && validacion?.puedeEliminar)
 
   // Validar al abrir modal
   useEffect(() => {

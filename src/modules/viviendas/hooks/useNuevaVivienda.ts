@@ -17,7 +17,8 @@ import { useRouter } from 'next/navigation'
 import { logger } from '@/lib/utils/logger'
 
 import { viviendasService } from '../services/viviendas.service'
-import type { ResumenFinanciero, ViviendaFormData } from '../types'
+import type { ViviendaSchemaType } from '../schemas/vivienda.schemas'
+import type { ConfiguracionRecargo, ResumenFinanciero, ViviendaFormData } from '../types'
 import { calcularValorTotal } from '../utils'
 
 // ==================== SCHEMAS POR PASO ====================
@@ -105,20 +106,10 @@ const paso3SchemaBase = z.object({
 )
 
 const paso4Schema = z.object({
-  // ✅ SOLUCIÓN PROFESIONAL: Acepta string O number, transforma a number
-  valor_base: z.union([
-    z.string().min(1, 'El valor base es obligatorio'),
-    z.number()
-  ]).pipe(
-    z.coerce.number().min(1, 'El valor base debe ser mayor a 0') as any
-  ),
+  // ✅ Zod v4 compatible: z.coerce.number() acepta string, number, etc.
+  valor_base: z.coerce.number().min(1, 'El valor base debe ser mayor a 0'),
   es_esquinera: z.boolean(),
-  recargo_esquinera: z.union([
-    z.string(),
-    z.number()
-  ]).pipe(
-    z.coerce.number().min(0, 'El recargo debe ser mayor o igual a 0') as any
-  ).optional().default(0),
+  recargo_esquinera: z.coerce.number().min(0, 'El recargo debe ser mayor o igual a 0').optional().default(0),
 })
 
 // ✅ Schema factory: permite validación async de matrícula duplicada
@@ -167,7 +158,7 @@ const createViviendaSchema = (viviendaId?: string) => {
 // Schema para tipo (sin validación async)
 const viviendaSchema = viviendaSchemaBase
 
-type ViviendaFormSchema = z.infer<typeof viviendaSchema>
+export type ViviendaFormSchema = ViviendaSchemaType
 
 // ==================== CONFIGURACIÓN DE PASOS ====================
 
@@ -222,7 +213,7 @@ export function useNuevaVivienda({ onSubmit, viviendaId }: UseNuevaViviendaParam
   const [pasoActual, setPasoActual] = useState(1)
   const [submitting, setSubmitting] = useState(false)
   const [gastosNotariales, setGastosNotariales] = useState(5_000_000) // Default: 5M
-  const [configuracionRecargos, setConfiguracionRecargos] = useState<any[]>([])
+  const [configuracionRecargos, setConfiguracionRecargos] = useState<ConfiguracionRecargo[]>([])
 
   // ✅ Crear configuración de pasos con validación async
   const PASOS_CONFIG = useMemo(() => createPasosConfig(viviendaId), [viviendaId])
@@ -272,8 +263,8 @@ export function useNuevaVivienda({ onSubmit, viviendaId }: UseNuevaViviendaParam
     setError,
     getValues,
     formState: { errors, isValidating },
-  } = useForm<ViviendaFormSchema>({
-    resolver: zodResolver(viviendaSchema) as any, // ← Schema base sin validación async
+  } = useForm<ViviendaSchemaType>({
+    resolver: zodResolver(viviendaSchema) as unknown as import('react-hook-form').Resolver<ViviendaSchemaType>,
     mode: 'onChange',
     defaultValues: {
       proyecto_id: '',
@@ -285,8 +276,8 @@ export function useNuevaVivienda({ onSubmit, viviendaId }: UseNuevaViviendaParam
       lindero_occidente: '',
       matricula_inmobiliaria: '',
       nomenclatura: '',
-      area_lote: '' as any,
-      area_construida: '' as any,
+      area_lote: '' as unknown as number,
+      area_construida: '' as unknown as number,
       tipo_vivienda: 'Regular' as const,
       valor_base: 0,
       es_esquinera: false,
@@ -343,10 +334,10 @@ export function useNuevaVivienda({ onSubmit, viviendaId }: UseNuevaViviendaParam
     try {
       // ✅ PASO 3: Validación sync + async manual de matrícula
       if (pasoActual === 3) {
-        const camposDelPaso = Object.keys(config.schema.shape)
+        const camposDelPaso = Object.keys(config.schema.shape) as (keyof ViviendaFormSchema)[]
 
         // 1. Validar campos normales (sync)
-        const esValidoSync = await trigger(camposDelPaso as any)
+        const esValidoSync = await trigger(camposDelPaso)
 
         // 🔍 DEBUG: Ver errores de validación
         if (!esValidoSync) {
@@ -393,7 +384,7 @@ export function useNuevaVivienda({ onSubmit, viviendaId }: UseNuevaViviendaParam
         // ✅ Setear TODOS los errores a la vez
         if (erroresEncontrados.length > 0) {
           erroresEncontrados.forEach((error) => {
-            setError(error.campo as any, {
+            setError(error.campo as keyof ViviendaFormSchema, {
               type: 'manual',
               message: error.mensaje,
             })
@@ -405,8 +396,8 @@ export function useNuevaVivienda({ onSubmit, viviendaId }: UseNuevaViviendaParam
       }
 
       // Para otros pasos, validación normal
-      const camposDelPaso = Object.keys(config.schema.shape)
-      const esValido = await trigger(camposDelPaso as any)
+      const camposDelPaso = Object.keys(config.schema.shape) as (keyof ViviendaFormSchema)[]
+      const esValido = await trigger(camposDelPaso)
 
       if (!esValido) {
         return false
@@ -424,8 +415,8 @@ export function useNuevaVivienda({ onSubmit, viviendaId }: UseNuevaViviendaParam
       if (!config || i === 5) continue // Paso 5 no requiere validación
 
       try {
-        const camposDelPaso = Object.keys(config.schema.shape)
-        const esValido = await trigger(camposDelPaso as any)
+        const camposDelPaso = Object.keys(config.schema.shape) as (keyof ViviendaFormSchema)[]
+        const esValido = await trigger(camposDelPaso)
 
         if (!esValido) {
           return false
@@ -502,7 +493,7 @@ export function useNuevaVivienda({ onSubmit, viviendaId }: UseNuevaViviendaParam
 
   // ==================== SUBMIT ====================
 
-  const onSubmitForm = async (data: ViviendaFormSchema) => {
+  const onSubmitForm = async (data: ViviendaSchemaType) => {
         console.trace('SUBMIT FORM TRACE')
 
     // 🔒 GUARDIA CRÍTICA #1: Verificar que el usuario autorizó el submit
@@ -596,7 +587,7 @@ export function useNuevaVivienda({ onSubmit, viviendaId }: UseNuevaViviendaParam
   return {
     // Form state
     register,
-    handleSubmit: handleSubmit(onSubmitForm as any),
+    handleSubmit: handleSubmit(onSubmitForm),
     errors,
     isValidating, // ← Exponer estado de validación async
     setValue,

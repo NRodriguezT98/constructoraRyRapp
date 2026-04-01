@@ -20,7 +20,6 @@ import type {
 // =====================================================
 
 export async function obtenerRenuncias(): Promise<RenunciaCompletaRow[]> {
-  // @ts-ignore - vista existe en BD pero puede no estar en tipos generados
   const { data, error } = await supabase
     .from('v_renuncias_completas')
     .select('*')
@@ -38,7 +37,6 @@ export async function obtenerRenuncias(): Promise<RenunciaCompletaRow[]> {
 // =====================================================
 
 export async function obtenerRenuncia(id: string): Promise<RenunciaCompletaRow> {
-  // @ts-ignore - vista existe en BD
   const { data, error } = await supabase
     .from('v_renuncias_completas')
     .select('*')
@@ -155,12 +153,11 @@ export async function validarPuedeRenunciar(negociacionId: string): Promise<Vali
     .eq('negociacion_id', negociacionId)
 
   const fuentesConDesembolso = (fuentes ?? [])
-    .filter((f: any) => {
-      // Solo fuentes externas (no Cuota Inicial): si tienen monto_recibido > 0 implica desembolso
+    .filter((f: { id: string; tipo: string | null; estado: string; monto_recibido: number | null }) => {
       const esExterna = !['Cuota Inicial'].includes(f.tipo ?? '')
       return esExterna && (f.monto_recibido ?? 0) > 0
     })
-    .map((f: any) => f.tipo ?? 'Desconocida')
+    .map((f: { tipo: string | null }) => f.tipo ?? 'Desconocida')
 
   if (fuentesConDesembolso.length > 0) {
     return {
@@ -342,7 +339,6 @@ export async function subirFormularioRenuncia(file: File, renunciaId: string): P
 // =====================================================
 
 export async function obtenerMetricas(): Promise<MetricasRenuncias> {
-  // @ts-ignore - vista existe en BD
   const { data, error } = await supabase
     .from('v_renuncias_completas')
     .select('estado, monto_a_devolver, retencion_monto')
@@ -374,7 +370,6 @@ export async function obtenerMetricas(): Promise<MetricasRenuncias> {
 // =====================================================
 
 export async function obtenerRenunciaPorConsecutivo(consecutivo: string): Promise<RenunciaCompletaRow> {
-  // @ts-ignore - vista existe en BD
   const { data, error } = await supabase
     .from('v_renuncias_completas')
     .select('*')
@@ -411,10 +406,10 @@ export async function obtenerAbonosNegociacion(negociacionId: string): Promise<A
     .select('id, tipo, entidad')
     .eq('negociacion_id', negociacionId)
 
-  const fuentesMap = new Map((fuentes ?? []).map((f: any) => [f.id, f]))
+  const fuentesMap = new Map((fuentes ?? []).map((f: { id: string; tipo: string | null; entidad: string | null }) => [f.id, f]))
 
-  return (data ?? []).map((a: any) => {
-    const fuente = fuentesMap.get(a.fuente_pago_id)
+  return (data ?? []).map((a) => {
+    const fuente = fuentesMap.get(a.fuente_pago_id ?? '')
     return {
       id: a.id,
       numero_recibo: a.numero_recibo,

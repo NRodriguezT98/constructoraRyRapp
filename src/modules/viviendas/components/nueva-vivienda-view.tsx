@@ -295,17 +295,14 @@ export function NuevaViviendaView() {
                             errors={errors}
                           />
                         )
-                      case 3: {
-                        const PasoLegal = PasoLegalNuevo as any
+                      case 3:
                         return (
-                          <PasoLegal
+                          <PasoLegalNuevo
                             key="paso-3"
                             register={register}
                             errors={errors}
-                            setValue={setValue}
                           />
                         )
-                      }
                       case 4:
                         return (
                           <PasoFinancieroNuevo

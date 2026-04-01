@@ -253,8 +253,7 @@ export function useProyectosFiltrados() {
         proyecto =>
           proyecto.nombre.toLowerCase().includes(termino) ||
           proyecto.ubicacion.toLowerCase().includes(termino) ||
-          proyecto.descripcion.toLowerCase().includes(termino) ||
-          (proyecto as any).responsable?.toLowerCase().includes(termino)
+          proyecto.descripcion.toLowerCase().includes(termino)
       )
     }
 

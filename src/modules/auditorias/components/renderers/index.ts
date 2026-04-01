@@ -4,12 +4,13 @@
  */
 
 import { logger } from '@/lib/utils/logger'
+import type { RendererAuditoriaProps } from '@/modules/auditorias/types'
 
 import { ActualizacionProyectoRenderer, CreacionProyectoRenderer } from './proyectos'
 import { RendererGenerico } from './shared/RendererGenerico'
 
 // Tipo para los renderers
-type RendererComponent = React.ComponentType<any>
+type RendererComponent = React.ComponentType<RendererAuditoriaProps>
 
 // Mapa de renderers por módulo y acción
 const RENDERERS_MAP: Record<string, Record<string, RendererComponent>> = {

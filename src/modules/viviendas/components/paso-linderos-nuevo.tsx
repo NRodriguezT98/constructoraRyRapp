@@ -8,15 +8,16 @@
 
 import { motion } from 'framer-motion'
 import { AlertCircle, Compass, Lightbulb } from 'lucide-react'
-import type { FieldErrors, UseFormRegister } from 'react-hook-form'
+import type { FieldErrors, Path, UseFormRegister } from 'react-hook-form'
 
 import { cn } from '@/shared/utils/helpers'
 
+import type { ViviendaSchemaType } from '../schemas/vivienda.schemas'
 import { nuevaViviendaStyles as styles } from '../styles/nueva-vivienda.styles'
 
 interface PasoLinderosProps {
-  register: UseFormRegister<any>
-  errors: FieldErrors<any>
+  register: UseFormRegister<ViviendaSchemaType>
+  errors: FieldErrors<ViviendaSchemaType>
 }
 
 export function PasoLinderosNuevo({ register, errors }: PasoLinderosProps) {
@@ -89,24 +90,24 @@ export function PasoLinderosNuevo({ register, errors }: PasoLinderosProps) {
             <div className={styles.field.inputWrapper}>
               <Compass className={styles.field.inputIcon} />
               <textarea
-                {...register(lindero.id)}
+                {...register(lindero.id as Path<ViviendaSchemaType>)}
                 id={lindero.id}
                 rows={2}
                 placeholder={lindero.placeholder}
                 className={cn(
                   styles.field.textarea,
-                  errors[lindero.id] && styles.field.inputError
+                  errors[lindero.id as keyof ViviendaSchemaType] && styles.field.inputError
                 )}
               />
             </div>
-            {errors[lindero.id] && (
+            {errors[lindero.id as keyof ViviendaSchemaType] && (
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 className={styles.field.error}
               >
                 <AlertCircle className={styles.field.errorIcon} />
-                {errors[lindero.id]?.message as string}
+                {errors[lindero.id as keyof ViviendaSchemaType]?.message as string}
               </motion.div>
             )}
           </div>

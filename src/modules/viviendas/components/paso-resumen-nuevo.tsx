@@ -18,8 +18,10 @@ import {
     Maximize,
 } from 'lucide-react'
 
+import type { ViviendaSchemaType } from '../schemas/vivienda.schemas'
+
 interface PasoResumenProps {
-  formData: any
+  formData: Partial<ViviendaSchemaType>
   proyectoNombre?: string | null
   manzanaNombre?: string | null
   gastosNotariales?: number
@@ -74,10 +76,10 @@ export function PasoResumenNuevo({ formData, proyectoNombre, manzanaNombre, gast
       icon: DollarSign,
       color: 'orange',
       items: [
-        { label: 'Valor Base', value: formatCurrency(formData.valor_base), icon: DollarSign },
+        { label: 'Valor Base', value: formatCurrency(formData.valor_base ?? 0), icon: DollarSign },
         { label: 'Gastos Notariales', value: formatCurrency(gastosNotariales), icon: FileText },
         { label: 'Es Esquinera', value: formData.es_esquinera ? 'Sí' : 'No', icon: CheckCircle },
-        ...(formData.es_esquinera ? [{ label: 'Recargo Esquinera', value: formatCurrency(formData.recargo_esquinera), icon: DollarSign }] : []),
+        ...(formData.es_esquinera ? [{ label: 'Recargo Esquinera', value: formatCurrency(formData.recargo_esquinera ?? 0), icon: DollarSign }] : []),
         {
           label: 'Valor Total',
           value: formatCurrency((formData.valor_base || 0) + gastosNotariales + (formData.recargo_esquinera || 0)),

@@ -198,7 +198,7 @@ const createProyectoSchema = (params: { initialData?: Partial<ProyectoFormData>,
   })
 }
 
-type ProyectoFormSchema = z.infer<typeof proyectoSchema>
+export type ProyectoFormSchema = z.infer<typeof proyectoSchema>
 
 // ==================== TIPOS ====================
 interface UseProyectosFormParams {

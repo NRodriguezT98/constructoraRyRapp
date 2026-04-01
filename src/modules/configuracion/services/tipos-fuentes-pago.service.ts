@@ -15,12 +15,14 @@
 
 import type { SupabaseClient } from '@supabase/supabase-js';
 
-import { createClient } from '@/lib/supabase/client';
+import { supabase as supabaseSingleton } from '@/lib/supabase/client';
 
 import type {
     ActualizarTipoFuentePagoDTO,
     CrearTipoFuentePagoDTO,
     OrderDirection,
+    TipoFuenteColor,
+    TipoFuenteIcono,
     TipoFuentePago,
     TipoFuentePagoError,
     TipoFuentePagoFilters,
@@ -56,7 +58,7 @@ export class TiposFuentesPagoService {
   private supabase: SupabaseClient
 
   constructor(supabaseClient?: SupabaseClient) {
-    this.supabase = supabaseClient || createClient()
+    this.supabase = supabaseClient || supabaseSingleton
   }
 
   // =====================================================
@@ -150,8 +152,8 @@ export class TiposFuentesPagoService {
         codigo: item.codigo,
         requiere_entidad: item.requiere_entidad,
         permite_multiples_abonos: item.permite_multiples_abonos,
-        icono: item.icono as any,
-        color: item.color as any,
+        icono: item.icono as TipoFuenteIcono,
+        color: item.color as TipoFuenteColor,
       }))
 
       return { success: true, data: options }
@@ -350,7 +352,7 @@ export class TiposFuentesPagoService {
       }
 
       // Construir objeto de actualización (solo campos definidos)
-      const updateData: any = {}
+      const updateData: Record<string, unknown> = {}
       if (dto.nombre !== undefined) updateData.nombre = dto.nombre.trim()
       if (dto.codigo !== undefined) updateData.codigo = dto.codigo.trim()
       if (dto.descripcion !== undefined) updateData.descripcion = dto.descripcion?.trim() || null

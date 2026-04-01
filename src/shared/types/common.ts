@@ -3,14 +3,14 @@
  */
 
 // Tipos de respuesta API
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   data?: T
   error?: string
   message?: string
   success: boolean
 }
 
-export interface PaginatedResponse<T = any> {
+export interface PaginatedResponse<T = unknown> {
   data: T[]
   total: number
   page: number
@@ -21,7 +21,7 @@ export interface PaginatedResponse<T = any> {
 // Tipos de estado
 export type LoadingState = 'idle' | 'loading' | 'success' | 'error'
 
-export interface AsyncState<T = any> {
+export interface AsyncState<T = unknown> {
   data?: T
   loading: boolean
   error?: string
@@ -38,7 +38,7 @@ export interface SortConfig {
 // Tipos de filtro
 export interface FilterConfig {
   field: string
-  value: any
+  value: unknown
   operator?: 'eq' | 'ne' | 'gt' | 'gte' | 'lt' | 'lte' | 'contains' | 'in'
 }
 

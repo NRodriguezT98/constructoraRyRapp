@@ -135,40 +135,42 @@ export function deepMerge<T extends object>(
 }
 
 // Verificar si es un objeto
-function isObject(item: any): item is object {
-  return item && typeof item === 'object' && !Array.isArray(item)
+function isObject(item: unknown): item is object {
+  return item !== null && typeof item === 'object' && !Array.isArray(item)
 }
 
 // Obtener valor anidado de un objeto
-export function getNestedValue<T = any>(
-  obj: any,
+export function getNestedValue<T = unknown>(
+  obj: Record<string, unknown>,
   path: string,
   defaultValue?: T
 ): T {
   const keys = path.split('.')
-  let result = obj
+  let result: unknown = obj
 
   for (const key of keys) {
-    if (result?.[key] === undefined) {
+    const record = result as Record<string, unknown>
+    if (record?.[key] === undefined) {
       return defaultValue as T
     }
-    result = result[key]
+    result = record[key]
   }
 
   return result as T
 }
 
 // Establecer valor anidado en un objeto
-export function setNestedValue(obj: any, path: string, value: any): void {
+export function setNestedValue(obj: Record<string, unknown>, path: string, value: unknown): void {
   const keys = path.split('.')
-  const lastKey = keys.pop()!
-  let current = obj
+  const lastKey = keys.pop()
+  if (lastKey === undefined) return
+  let current: Record<string, unknown> = obj
 
   for (const key of keys) {
     if (!current[key]) {
       current[key] = {}
     }
-    current = current[key]
+    current = current[key] as Record<string, unknown>
   }
 
   current[lastKey] = value

@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react'
 
 import type { CategoriaFormData } from '@/modules/documentos/schemas/documento.schema'
+import type { CategoriaDocumento } from '@/modules/documentos/types/documento.types'
 
 import {
     useActualizarCategoriaMutation,
@@ -19,7 +20,7 @@ interface UseCategoriasManagerProps {
 export function useCategoriasManager({ userId, modulo = 'viviendas' }: UseCategoriasManagerProps) {
   // Estado local
   const [modo, setModo] = useState<Modo>('lista')
-  const [categoriaEditando, setCategoriaEditando] = useState<any>(null)
+  const [categoriaEditando, setCategoriaEditando] = useState<CategoriaDocumento | null>(null)
   const [eliminando, setEliminando] = useState<string | null>(null)
 
   // Estado para modal de confirmación de eliminación
@@ -101,7 +102,7 @@ export function useCategoriasManager({ userId, modulo = 'viviendas' }: UseCatego
     setModo('crear')
   }, [])
 
-  const handleIrAEditar = useCallback((categoria: any) => {
+  const handleIrAEditar = useCallback((categoria: CategoriaDocumento) => {
     setCategoriaEditando(categoria)
     setModo('editar')
   }, [])

@@ -277,7 +277,7 @@ export function useEditarVivienda({
   // ============================================
   const cambiosDetectados = useMemo(() => {
     if (!vivienda) return []
-    return detectarCambiosVivienda({ viviendaActual: vivienda, formData })
+    return detectarCambiosVivienda({ viviendaActual: vivienda, formData: formData as unknown as import('../types').Vivienda })
   }, [vivienda, formData])
 
   // ============================================

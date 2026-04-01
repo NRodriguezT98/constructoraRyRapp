@@ -11,12 +11,10 @@
 
 'use client'
 
-import { useMemo } from 'react'
-
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
-import { createClient } from '@/lib/supabase/client'
+import { supabase } from '@/lib/supabase/client'
 import { logger } from '@/lib/utils/logger'
 
 import { requisitosService } from '../services/requisitos.service'
@@ -24,7 +22,6 @@ import type { ActualizarRequisitoDTO, CrearRequisitoDTO } from '../types'
 
 export function useRequisitos(tipoFuenteSeleccionado: string) {
   const queryClient = useQueryClient()
-  const supabase = useMemo(() => createClient(), [])
 
   // Query: Obtener requisitos por tipo
   const {
@@ -146,7 +143,6 @@ export function useRequisitos(tipoFuenteSeleccionado: string) {
  * y se solicitan UNA sola vez (no por fuente individual).
  */
 export function useRequisitosCompartidos() {
-  const supabase = useMemo(() => createClient(), [])
   const queryClient = useQueryClient()
 
   const {
@@ -241,7 +237,6 @@ export function useRequisitosCompartidos() {
  * Hook para obtener tipos de fuente dinámicos desde BD
  */
 export function useTiposFuente() {
-  const supabase = useMemo(() => createClient(), [])
 
   const {
     data: tiposFuente = [],

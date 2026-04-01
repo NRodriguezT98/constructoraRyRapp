@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 
+import { type Session } from '@supabase/supabase-js'
 import { motion } from 'framer-motion'
 import { Eye, EyeOff, Lock, Shield } from 'lucide-react'
 
@@ -9,6 +10,7 @@ import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 
 import { supabase } from '@/lib/supabase/client'
+import { logger } from '@/lib/utils/logger'
 import { traducirErrorSupabase } from '@/lib/utils/traducir-errores'
 
 
@@ -21,20 +23,20 @@ export default function ResetPasswordPage() {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
   const [validToken, setValidToken] = useState<boolean | null>(null)
-  const [currentSession, setCurrentSession] = useState<any>(null) // Guardar sesión detectada
+  const [currentSession, setCurrentSession] = useState<Session | null>(null)
   const router = useRouter()
 
   useEffect(() => {
 
     const urlParams = new URLSearchParams(window.location.search)
-    const code = urlParams.get('code')
+    const _code = urlParams.get('code')
     const error = urlParams.get('error')
     const errorCode = urlParams.get('error_code')
     const errorDescription = urlParams.get('error_description')
 
 
     if (error) {
-      console.error('❌ ERROR EN URL:', error, errorCode, errorDescription)
+      logger.error('Error en URL de reset:', { error, errorCode, errorDescription })
       setError(errorDescription || 'El enlace es inválido o ha expirado')
       setValidToken(false)
       return
@@ -53,7 +55,7 @@ export default function ResetPasswordPage() {
           setCurrentSession(session) // GUARDAR SESIÓN
           setValidToken(true)
         } else {
-          console.warn('⚠️ Evento detectado pero sin sesión o componente desmontado')
+        logger.warn('⚠️ Evento detectado pero sin sesión o componente desmontado')
         }
       } else if (event === 'SIGNED_OUT') {
       } else if (event === 'TOKEN_REFRESHED') {
@@ -65,7 +67,7 @@ export default function ResetPasswordPage() {
     supabase.auth.getSession().then(({ data: { session }, error }) => {
 
       if (error) {
-        console.error('❌ Error al obtener sesión:', error)
+        logger.error('Error al obtener sesión:', error)
       }
 
       if (session && mounted && !sessionDetected) {
@@ -76,22 +78,13 @@ export default function ResetPasswordPage() {
       } else if (sessionDetected) {
       }
     }).catch((err) => {
-      console.error('====================================================')
-      console.error('❌❌❌ EXCEPCIÓN EN getSession() ❌❌❌')
-      console.error('Error:', err)
-      console.error('Message:', err.message)
-      console.error('Stack:', err.stack)
-      console.error('====================================================')
+      logger.error('Excepción en getSession():', err)
     })
 
     // Timeout de seguridad
     const timeout = setTimeout(() => {
       if (!sessionDetected && mounted) {
-        console.error('====================================================')
-        console.error('â±ï¸â±ï¸â±ï¸ TIMEOUT ALCANZADO â±ï¸â±ï¸â±ï¸')
-        console.error('Han pasado 15 segundos sin detectar sesión')
-        console.error('El enlace puede ser inválido o haber expirado')
-        console.error('====================================================')
+        logger.error('Timeout alcanzado sin detectar sesión: el enlace puede ser inválido o haber expirado')
         setValidToken(false)
         setError('El enlace ha expirado o es inválido. Por favor, solicita uno nuevo.')
       }
@@ -111,17 +104,14 @@ export default function ResetPasswordPage() {
 
 
     if (password !== confirmPassword) {
-      console.error('❌ Las contraseñas no coinciden')
-      setError('Las contraseñas no coinciden')
-      return
-    }
+        setError('Las contraseñas no coinciden')
+        return
+      }
 
-    if (password.length < 6) {
-      console.error('❌ Contraseña muy corta')
-      setError('La contraseña debe tener al menos 6 caracteres')
-      return
-    }
-
+      if (password.length < 6) {
+        setError('La contraseña debe tener al menos 6 caracteres')
+        return
+      }
 
     setLoading(true)
 
@@ -140,7 +130,7 @@ export default function ResetPasswordPage() {
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${currentSession.access_token}`,
-            'apikey': process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+            'apikey': process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? ''
           },
           body: JSON.stringify({
             password: password
@@ -153,10 +143,7 @@ export default function ResetPasswordPage() {
 
       if (!response.ok) {
         const errorMsg = result.msg || result.message || result.error_description || 'Error al actualizar contraseña'
-        console.error('❌❌❌ ERROR AL ACTUALIZAR ❌❌❌')
-        console.error('Status:', response.status)
-        console.error('Error:', errorMsg)
-        console.error('Body completo:', result)
+        logger.error('Error al actualizar contraseña:', { status: response.status, error: errorMsg, body: result })
 
         const mensajeTraducido = traducirErrorSupabase(errorMsg)
         setError(mensajeTraducido)
@@ -177,7 +164,7 @@ export default function ResetPasswordPage() {
           )
 
           await Promise.race([signOutPromise, timeoutPromise])
-            .then(() => console.log('✅ SignOut exitoso'))
+            .then(() => logger.info('SignOut exitoso'))
             .catch((_err) => {
 
               // Limpiar cookies manualmente
@@ -189,7 +176,7 @@ export default function ResetPasswordPage() {
 
             })
         } catch (error) {
-          console.error('❌ Error inesperado:', error)
+          logger.error('Error inesperado en signOut:', error)
         }
 
         window.location.href = '/login'
@@ -197,13 +184,7 @@ export default function ResetPasswordPage() {
 
     } catch (err) {
       const error = err instanceof Error ? err : new Error(String(err))
-      console.error('====================================================')
-      console.error('❌❌❌ EXCEPCIÓN GENERAL ❌❌❌')
-      console.error('====================================================')
-      console.error('Error:', error)
-      console.error('Message:', error.message)
-      console.error('Stack:', error.stack)
-      console.error('====================================================')
+      logger.error('Excepción general en handleSubmit:', error)
 
       const mensajeTraducido = traducirErrorSupabase(error.message || 'Error al actualizar contraseña')
       setError(mensajeTraducido)

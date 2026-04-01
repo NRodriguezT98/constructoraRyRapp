@@ -24,7 +24,7 @@ export type ActualizarDocumentoParams = {
 }
 
 class DocumentosViviendaService {
-  async obtenerDocumentos(_viviendaId: string): Promise<any[]> {
+  async obtenerDocumentos(_viviendaId: string): Promise<unknown[]> {
     return []
   }
 
@@ -40,7 +40,14 @@ class DocumentosViviendaService {
     throw new Error('Not implemented')
   }
 
-  async obtenerDocumentosEliminados(_viviendaId: string): Promise<any[]> {
+  async obtenerDocumentosEliminados(_viviendaId: string): Promise<Array<{
+    id: string
+    titulo: string
+    version: number
+    documento_padre_id: string | null
+    metadata: Record<string, unknown>
+    fecha_creacion: string
+  }>> {
     return []
   }
 
