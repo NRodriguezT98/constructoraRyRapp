@@ -14,6 +14,7 @@
  */
 
 import { supabase } from '@/lib/supabase/client'
+import type { TablesInsert } from '@/lib/supabase/database.types'
 import { formatDateForDB, getTodayDateString } from '@/lib/utils/date.utils'
 import { logger } from '@/lib/utils/logger'
 import type { Negociacion } from '@/modules/clientes/types'
@@ -33,14 +34,12 @@ import {
 } from '@/modules/fuentes-pago/utils/calculos-credito'
 import { esCuotaInicial } from '@/shared/constants/fuentes-pago.constants'
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 // Re-export Negociacion del index
 export type {
   ActualizarFuentePagoDTO,
   ActualizarNegociacionDTO,
   CrearFuentePagoDTO,
-  CrearNegociacionDTO
+  CrearNegociacionDTO,
 } from '@/modules/clientes/utils/sanitize-negociacion.utils'
 export type { Negociacion }
 
@@ -64,8 +63,7 @@ class NegociacionesService {
   async crearNegociacion(datos: CrearNegociacionDTO): Promise<Negociacion> {
     try {
       const datosSanitizados = sanitizeCrearNegociacionDTO(datos)
-      const tieneFuentesPago =
-        Boolean(datosSanitizados.fuentes_pago?.length)
+      const tieneFuentesPago = Boolean(datosSanitizados.fuentes_pago?.length)
 
       // ==========================================
       // VALIDACIÓN: No crear negociación si hay renuncia pendiente
@@ -88,8 +86,21 @@ class NegociacionesService {
       // PASO 1: Crear negociación en estado 'Activa'
       // ==========================================
 
+      type NegociacionInsertData = {
+        cliente_id: string
+        vivienda_id: string
+        valor_negociado: number
+        descuento_aplicado: number
+        notas?: string | null
+        estado: 'Activa'
+        fecha_negociacion?: string
+        tipo_descuento?: string
+        motivo_descuento?: string
+        valor_escritura_publica?: number
+      }
+
       // Construir objeto con campos condicionales
-      const datosNegociacion: any = {
+      const datosNegociacion: NegociacionInsertData = {
         cliente_id: datosSanitizados.cliente_id,
         vivienda_id: datosSanitizados.vivienda_id,
         valor_negociado: datosSanitizados.valor_negociado,
@@ -139,7 +150,10 @@ class NegociacionesService {
       // ==========================================
       // PASO 2: Crear fuentes de pago (OPCIONAL)
       // ==========================================
-      if (datosSanitizados.fuentes_pago && datosSanitizados.fuentes_pago.length > 0) {
+      if (
+        datosSanitizados.fuentes_pago &&
+        datosSanitizados.fuentes_pago.length > 0
+      ) {
         // Resolver tipo_fuente_id en batch
         const tipoNombres = datosSanitizados.fuentes_pago.map(f => f.tipo)
         const { data: tiposFuentes, error: errorTipos } = await supabase
@@ -158,25 +172,29 @@ class NegociacionesService {
           (tiposFuentes || []).map(t => [t.nombre, t.id])
         )
 
-        const fuentesParaInsertar = datosSanitizados.fuentes_pago.map(fuente => ({
-          negociacion_id: negociacion.id,
-          tipo: fuente.tipo,
-          tipo_fuente_id: tipoIdMap[fuente.tipo] || null,
-          monto_aprobado: fuente.monto_aprobado,
-          capital_para_cierre: fuente.capital_para_cierre ?? null,
-          entidad: fuente.entidad || null,
-          numero_referencia: fuente.numero_referencia || null,
-          carta_asignacion_url: fuente.carta_asignacion_url || null,
-          permite_multiples_abonos:
-            fuente.permite_multiples_abonos ?? esCuotaInicial(fuente.tipo),
-          estado: 'Activa',
-          estado_fuente: 'activa',
-        }))
+        const fuentesParaInsertar = datosSanitizados.fuentes_pago.map(
+          fuente => ({
+            negociacion_id: negociacion.id,
+            tipo: fuente.tipo,
+            tipo_fuente_id: tipoIdMap[fuente.tipo] || null,
+            monto_aprobado: fuente.monto_aprobado,
+            capital_para_cierre: fuente.capital_para_cierre ?? null,
+            entidad: fuente.entidad || null,
+            numero_referencia: fuente.numero_referencia || null,
+            carta_asignacion_url: fuente.carta_asignacion_url || null,
+            permite_multiples_abonos:
+              fuente.permite_multiples_abonos ?? esCuotaInicial(fuente.tipo),
+            estado: 'Activa',
+            estado_fuente: 'activa',
+          })
+        )
 
         const { data: fuentesCreadas, error: errorFuentes } = await supabase
           .from('fuentes_pago')
 
-          .insert(fuentesParaInsertar as any)
+          .insert(
+            fuentesParaInsertar as unknown as TablesInsert<'fuentes_pago'>[]
+          )
           .select('id, tipo, negociacion_id')
 
         if (errorFuentes) {
@@ -645,7 +663,8 @@ class NegociacionesService {
 
       // 3. ? INACTIVAR fuentes viejas con UPDATE DIRECTO (sin triggers)
       if (fuentesAEliminar.length > 0) {
-        const erroresInactivacion: Array<{ fuenteId: string; error: any }> = []
+        const erroresInactivacion: Array<{ fuenteId: string; error: unknown }> =
+          []
 
         for (const fuente of fuentesAEliminar) {
           const { error: errorInactivar } = await supabase
@@ -718,7 +737,7 @@ class NegociacionesService {
                 fuente.permite_multiples_abonos ?? esCuotaInicial(fuente.tipo),
               estado: 'Pendiente',
               estado_fuente: 'activa', // ? Explícitamente marcar como activa
-            } as any)
+            } as unknown as TablesInsert<'fuentes_pago'>)
             .select('id, tipo')
             .single()
 
@@ -802,8 +821,8 @@ class NegociacionesService {
   private async crearSnapshotCambioFuentes(
     negociacionId: string,
     motivoCambio: string,
-    fuentesAnteriores: any[],
-    fuentesNuevas: any[],
+    fuentesAnteriores: { id?: string; monto_recibido?: number | null }[],
+    fuentesNuevas: { tipo?: string; monto_aprobado?: number }[],
     resumen: { agregadas: number; eliminadas: number; modificadas: number }
   ): Promise<void> {
     // Obtener versión actual
@@ -829,7 +848,7 @@ class NegociacionesService {
 
     // ? Documentos se obtienen por proyecto_id, no por negociacion_id
     // Omitimos por ahora para evitar error 400
-    const documentos: any[] = []
+    const documentos: never[] = []
 
     // Obtener datos de negociación
     const { data: datosNegociacion } = await supabase

@@ -240,7 +240,7 @@ export function useCrearNegociacion(): UseCrearNegociacionReturn {
         setCreando(false)
       }
     },
-    [validarDatos]
+    [validarDatos, queryClient]
   )
 
   /**

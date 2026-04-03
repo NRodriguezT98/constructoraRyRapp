@@ -247,12 +247,14 @@ export function useModalEditarAbono({
             numero_referencia: abonoInicial.numero_referencia,
             notas: abonoInicial.notas,
             comprobante_url: abonoInicial.comprobante_url,
-          } as any, // eslint-disable-line @typescript-eslint/no-explicit-any
-          result as any, // eslint-disable-line @typescript-eslint/no-explicit-any
+          } as Record<string, unknown>,
+          result as unknown as Record<string, unknown>,
           { motivo: motivo.trim(), campos_modificados: camposTexto },
           'abonos'
         )
-        .catch(() => {})
+        .catch(_e => {
+          /* best-effort: audit log no debe bloquear el flujo principal */
+        })
 
       setExito(true)
       onSuccess()

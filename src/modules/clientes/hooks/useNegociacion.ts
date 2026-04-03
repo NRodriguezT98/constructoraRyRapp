@@ -15,13 +15,18 @@
 import { useCallback, useEffect, useState } from 'react'
 
 import { logger } from '@/lib/utils/logger'
+import type { FuentePago } from '@/modules/clientes/services/fuentes-pago.service'
 import { fuentesPagoService } from '@/modules/clientes/services/fuentes-pago.service'
 import { negociacionesService } from '@/modules/clientes/services/negociaciones.service'
+import type {
+  ActualizarNegociacionDTO,
+  Negociacion,
+} from '@/modules/clientes/types'
 
 interface UseNegociacionReturn {
   // Estado
-  negociacion: any | null
-  fuentesPago: any[]
+  negociacion: Negociacion | null
+  fuentesPago: FuentePago[]
   totales: {
     valorTotal: number
     totalFuentes: number
@@ -36,7 +41,7 @@ interface UseNegociacionReturn {
   registrarRenuncia: (motivo: string) => Promise<boolean>
 
   // Operaciones CRUD
-  actualizarNegociacion: (datos: any) => Promise<boolean>
+  actualizarNegociacion: (datos: ActualizarNegociacionDTO) => Promise<boolean>
   recargarNegociacion: () => Promise<void>
 
   // Helpers
@@ -50,8 +55,8 @@ interface UseNegociacionReturn {
 
 export function useNegociacion(negociacionId: string): UseNegociacionReturn {
   // Estado
-  const [negociacion, setNegociacion] = useState<any | null>(null)
-  const [fuentesPago, setFuentesPago] = useState<any[]>([])
+  const [negociacion, setNegociacion] = useState<Negociacion | null>(null)
+  const [fuentesPago, setFuentesPago] = useState<FuentePago[]>([])
   const [cargando, setCargando] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -64,15 +69,19 @@ export function useNegociacion(negociacionId: string): UseNegociacionReturn {
       setError(null)
 
       // Cargar negociación
-      const negData = await negociacionesService.obtenerNegociacion(negociacionId)
+      const negData =
+        await negociacionesService.obtenerNegociacion(negociacionId)
       setNegociacion(negData)
 
       // Cargar fuentes de pago
-      const fuentesData = await fuentesPagoService.obtenerFuentesPagoNegociacion(negociacionId)
+      const fuentesData =
+        await fuentesPagoService.obtenerFuentesPagoNegociacion(negociacionId)
       setFuentesPago(fuentesData)
     } catch (err: unknown) {
       logger.error('Error cargando negociación:', err)
-      setError(`Error cargando negociación: ${err instanceof Error ? err.message : String(err)}`)
+      setError(
+        `Error cargando negociación: ${err instanceof Error ? err.message : String(err)}`
+      )
     } finally {
       setCargando(false)
     }
@@ -95,10 +104,11 @@ export function useNegociacion(negociacionId: string): UseNegociacionReturn {
     // Para el resto, monto_aprobado es el valor correcto.
     const valorTotal = negociacion?.valor_total || 0
     const totalFuentes = fuentesPago.reduce(
-      (sum, f: any) => sum + (f.capital_para_cierre ?? f.monto_aprobado ?? 0),
+      (sum, f) => sum + (f.capital_para_cierre ?? f.monto_aprobado ?? 0),
       0
     )
-    const porcentajeCubierto = valorTotal > 0 ? (totalFuentes / valorTotal) * 100 : 0
+    const porcentajeCubierto =
+      valorTotal > 0 ? (totalFuentes / valorTotal) * 100 : 0
     const diferencia = valorTotal - totalFuentes
 
     return {
@@ -142,7 +152,9 @@ export function useNegociacion(negociacionId: string): UseNegociacionReturn {
       setError(null)
 
       if (!puedeCompletarse) {
-        setError('La negociación solo puede completarse si está activa y el pago está completo')
+        setError(
+          'La negociación solo puede completarse si está activa y el pago está completo'
+        )
         return false
       }
 
@@ -187,7 +199,7 @@ export function useNegociacion(negociacionId: string): UseNegociacionReturn {
    * Actualizar campos de la negociación
    */
   const actualizarNegociacion = useCallback(
-    async (datos: any): Promise<boolean> => {
+    async (datos: ActualizarNegociacionDTO): Promise<boolean> => {
       try {
         setError(null)
         await negociacionesService.actualizarNegociacion(negociacionId, datos)

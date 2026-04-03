@@ -14,14 +14,14 @@ import { toast } from 'sonner'
 import { logger } from '@/lib/utils/logger'
 
 import {
-    obtenerMetricas,
-    obtenerRenuncia,
-    obtenerRenuncias,
-    procesarDevolucion,
-    registrarRenuncia,
-    subirComprobante,
-    subirFormularioRenuncia,
-    validarPuedeRenunciar,
+  obtenerMetricas,
+  obtenerRenuncia,
+  obtenerRenuncias,
+  procesarDevolucion,
+  registrarRenuncia,
+  subirComprobante,
+  subirFormularioRenuncia,
+  validarPuedeRenunciar,
 } from '../services/renuncias.service'
 import type { ProcesarDevolucionDTO, RegistrarRenunciaDTO } from '../types'
 import { transformarRenunciaRow } from '../utils/renuncias.utils'
@@ -33,11 +33,13 @@ import { transformarRenunciaRow } from '../utils/renuncias.utils'
 export const renunciasKeys = {
   all: ['renuncias'] as const,
   lists: () => [...renunciasKeys.all, 'list'] as const,
-  list: (filtros?: Record<string, unknown>) => [...renunciasKeys.lists(), { filtros }] as const,
+  list: (filtros?: Record<string, unknown>) =>
+    [...renunciasKeys.lists(), { filtros }] as const,
   details: () => [...renunciasKeys.all, 'detail'] as const,
   detail: (id: string) => [...renunciasKeys.details(), id] as const,
   metricas: () => [...renunciasKeys.all, 'metricas'] as const,
-  validacion: (negociacionId: string) => [...renunciasKeys.all, 'validacion', negociacionId] as const,
+  validacion: (negociacionId: string) =>
+    [...renunciasKeys.all, 'validacion', negociacionId] as const,
 }
 
 // ============================================
@@ -78,10 +80,18 @@ export function useRenunciasMetricas() {
 
 /** Hook para validar si una negociación puede renunciar */
 export function useValidarRenuncia(negociacionId: string | null) {
+  const idSeguro = negociacionId ?? null
+
   return useQuery({
-    queryKey: renunciasKeys.validacion(negociacionId ?? ''),
-    queryFn: () => validarPuedeRenunciar(negociacionId!),
-    enabled: !!negociacionId,
+    queryKey: renunciasKeys.validacion(idSeguro ?? ''),
+    queryFn: () => {
+      if (!idSeguro) {
+        throw new Error('Negociación ID requerido')
+      }
+
+      return validarPuedeRenunciar(idSeguro)
+    },
+    enabled: !!idSeguro,
   })
 }
 
@@ -111,12 +121,22 @@ export function useRegistrarRenuncia() {
         try {
           await subirFormularioRenuncia(formularioRenuncia, renunciaId)
         } catch (err) {
-          logger.warn('⚠️ Formulario no se pudo subir, renuncia ya registrada:', err)
-          toast.warning('Renuncia registrada, pero el formulario no se pudo adjuntar. Intente subirlo nuevamente.')
+          logger.warn(
+            '⚠️ Formulario no se pudo subir, renuncia ya registrada:',
+            err
+          )
+          toast.warning(
+            'Renuncia registrada, pero el formulario no se pudo adjuntar. Intente subirlo nuevamente.'
+          )
         }
       } else if (formularioRenuncia && !renunciaId) {
-        logger.warn('⚠️ No se pudo extraer renuncia_id del RPC para subir formulario. Result:', result)
-        toast.warning('Renuncia registrada, pero el formulario no se pudo adjuntar.')
+        logger.warn(
+          '⚠️ No se pudo extraer renuncia_id del RPC para subir formulario. Result:',
+          result
+        )
+        toast.warning(
+          'Renuncia registrada, pero el formulario no se pudo adjuntar.'
+        )
       }
 
       return result
@@ -158,7 +178,8 @@ export function useProcesarDevolucion() {
 
       return procesarDevolucion(renunciaId, {
         ...dto,
-        comprobante_devolucion_url: comprobanteUrl ?? dto.comprobante_devolucion_url,
+        comprobante_devolucion_url:
+          comprobanteUrl ?? dto.comprobante_devolucion_url,
       })
     },
     onSuccess: () => {

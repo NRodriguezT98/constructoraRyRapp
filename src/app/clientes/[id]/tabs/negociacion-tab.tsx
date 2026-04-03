@@ -330,35 +330,43 @@ export function NegociacionTab({
 
   if (isLoading) return <Skeleton />
   if (!negociacion) return <SinNegociacion />
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   if (negociacion.estado === 'Cerrada por Renuncia')
     return (
       <NegociacionCerradaRenuncia
-        fechaRenuncia={(negociacion as any).fecha_renuncia_efectiva}
+        fechaRenuncia={negociacion.fecha_renuncia_efectiva}
       />
     )
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const negAny = negociacion as any
-  const proyecto = negAny.proyecto?.nombre ?? '—'
-  const vivienda = negAny.vivienda
+  const proyecto = negociacion.proyecto?.nombre ?? '—'
+  const vivienda = negociacion.vivienda
   const manzana = vivienda?.manzanas?.nombre
   const numero = vivienda?.numero
-  const valorEscritura = negAny.valor_escritura_publica ?? 0
-  const notasNeg = negAny.notas ?? ''
-  const saldo = negAny.saldo_pendiente ?? valorVivienda - totalAbonado
+  const valorEscritura = negociacion.valor_escritura_publica ?? 0
+  const notasNeg = negociacion.notas ?? ''
+  const saldo = negociacion.saldo_pendiente ?? valorVivienda - totalAbonado
   const pctPagado =
-    negAny.porcentaje_pagado ??
+    negociacion.porcentaje_pagado ??
     (valorVivienda > 0 ? (totalAbonado / valorVivienda) * 100 : 0)
-  const descuento = negAny.descuento_aplicado ?? 0
-  const pctDescuento = negAny.porcentaje_descuento ?? 0
+  const descuento = negociacion.descuento_aplicado ?? 0
+  const pctDescuento = negociacion.porcentaje_descuento ?? 0
 
   // Fuente con cuotas expandidas (para renderizar CuotasCreditoTab fuera del grid)
   const creditoExpandido = fuentesPago.find(
     f => esCreditoConstructora(f.tipo) && cuotasExpandidas[f.id]
   )
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const abonosParaUI = abonos as any
+
+  const abonosParaUI = abonos as Array<{
+    id: string
+    negociacion_id?: string
+    fuente_pago_id?: string
+    monto: number
+    fecha_abono: string
+    metodo_pago?: string | null
+    numero_referencia?: string | null
+    notas?: string | null
+    comprobante_url?: string | null
+  }>
 
   return (
     <div className='space-y-3'>

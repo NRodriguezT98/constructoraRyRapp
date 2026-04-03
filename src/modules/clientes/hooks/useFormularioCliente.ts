@@ -8,13 +8,11 @@ import { useCallback, useEffect, useState } from 'react'
 import { logger } from '@/lib/utils/logger'
 
 import { clientesService } from '../services/clientes.service'
-import type {
-    ActualizarClienteDTO,
-    CrearClienteDTO,
-    OrigenCliente,
-    TipoDocumento,
-} from '../types'
-import { validarDocumentoIdentidad } from '../utils/validacion-documentos-colombia'
+import type { ActualizarClienteDTO, CrearClienteDTO } from '../types'
+import {
+  validarDocumentoIdentidad,
+  type TipoDocumentoColombia,
+} from '../utils/validacion-documentos-colombia'
 
 interface FormularioClienteHookProps {
   clienteInicial?: ActualizarClienteDTO & { id?: string }
@@ -53,7 +51,7 @@ export function useFormularioCliente({
   useEffect(() => {
     if (clienteInicial) {
       // ✅ Solo actualizar si realmente hay un cambio (evitar re-renders innecesarios)
-      setFormData((prev) => {
+      setFormData(prev => {
         // Si ya tiene los datos correctos, no actualizar
         if (
           prev.nombres === (clienteInicial.nombres || '') &&
@@ -138,12 +136,13 @@ export function useFormularioCliente({
     } else {
       // ✅ VALIDACIÓN DE ALGORITMO (CC, CE, NIT, Pasaporte)
       const resultadoValidacion = validarDocumentoIdentidad(
-        formData.tipo_documento as any,
+        formData.tipo_documento as TipoDocumentoColombia,
         formData.numero_documento
       )
 
       if (!resultadoValidacion.valido) {
-        nuevosErrores.numero_documento = resultadoValidacion.mensaje || 'Documento inválido'
+        nuevosErrores.numero_documento =
+          resultadoValidacion.mensaje || 'Documento inválido'
         if (resultadoValidacion.detalles) {
           nuevosErrores.numero_documento += ` (${resultadoValidacion.detalles})`
         }
@@ -161,9 +160,15 @@ export function useFormularioCliente({
           } else {
           }
         } catch (error) {
-          const mensaje = error instanceof Error ? error.message : 'Error desconocido'
-          logger.error('[CLIENTES] Error verificando duplicados:', mensaje, error)
-          nuevosErrores.numero_documento = 'Error al verificar duplicados. Intenta de nuevo.'
+          const mensaje =
+            error instanceof Error ? error.message : 'Error desconocido'
+          logger.error(
+            '[CLIENTES] Error verificando duplicados:',
+            mensaje,
+            error
+          )
+          nuevosErrores.numero_documento =
+            'Error al verificar duplicados. Intenta de nuevo.'
         }
       }
     }
@@ -186,12 +191,20 @@ export function useFormularioCliente({
     const tieneEmail = formData.email && formData.email.trim() !== ''
 
     // Validar formato de teléfono si existe
-    if (tieneTelefono && !/^[0-9+\-\s()]+$/.test(formData.telefono!)) {
+    if (
+      tieneTelefono &&
+      formData.telefono &&
+      !/^[0-9+\-\s()]+$/.test(formData.telefono)
+    ) {
       nuevosErrores.telefono = 'Teléfono inválido'
     }
 
     // Validar formato de email si existe
-    if (tieneEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email!)) {
+    if (
+      tieneEmail &&
+      formData.email &&
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)
+    ) {
       nuevosErrores.email = 'Email inválido'
     }
 
@@ -225,7 +238,10 @@ export function useFormularioCliente({
     const nuevosErrores: Record<string, string> = {}
 
     // Si tiene vivienda pero no proyecto
-    if (formData.interes_inicial?.vivienda_id && !formData.interes_inicial?.proyecto_id) {
+    if (
+      formData.interes_inicial?.vivienda_id &&
+      !formData.interes_inicial?.proyecto_id
+    ) {
       nuevosErrores.proyecto_interes = 'Debe seleccionar un proyecto primero'
     }
 
@@ -269,7 +285,8 @@ export function useFormularioCliente({
     if (!formData.numero_documento.trim()) {
       nuevosErrores.numero_documento = 'El número de documento es requerido'
     } else if (!/^[A-Za-z0-9]+$/.test(formData.numero_documento.trim())) {
-      nuevosErrores.numero_documento = 'El documento solo puede contener letras y números'
+      nuevosErrores.numero_documento =
+        'El documento solo puede contener letras y números'
     }
 
     // Contacto: Al menos teléfono o email
@@ -308,11 +325,14 @@ export function useFormularioCliente({
   // =====================================================
 
   const handleChange = useCallback(
-    (campo: keyof CrearClienteDTO, valor: string | TipoDocumento | OrigenCliente) => {
-      setFormData((prev) => ({ ...prev, [campo]: valor }))
+    (
+      campo: keyof CrearClienteDTO,
+      valor: CrearClienteDTO[keyof CrearClienteDTO]
+    ) => {
+      setFormData(prev => ({ ...prev, [campo]: valor }))
       // Limpiar error del campo al escribir
       if (errors[campo]) {
-        setErrors((prev) => {
+        setErrors(prev => {
           const nuevos = { ...prev }
           delete nuevos[campo]
           return nuevos

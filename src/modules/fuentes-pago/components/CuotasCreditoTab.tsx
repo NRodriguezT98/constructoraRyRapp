@@ -39,9 +39,17 @@ export function CuotasCreditoTab({
   readonly = false,
 }: CuotasCreditoTabProps) {
   const {
-    credito, periodos, resumen, cargando, procesando, error, recargar,
-    reestructurar, crearPlan,
-    proximaCuota, progresoCredito,
+    credito,
+    periodos,
+    resumen,
+    cargando,
+    procesando,
+    error,
+    recargar,
+    reestructurar,
+    crearPlan,
+    proximaCuota,
+    progresoCredito,
   } = useCuotasCredito({ fuentePagoId, negociacionId })
 
   const [mostrarReestructurar, setMostrarReestructurar] = useState(false)
@@ -49,7 +57,10 @@ export function CuotasCreditoTab({
   // Capital pendiente real: capital original - capital efectivamente aplicado (desde períodos)
   const capitalPendienteReal = useMemo(() => {
     if (!credito || periodos.length === 0) return 0
-    const capitalAplicado = periodos.reduce((s, p) => s + (p.capital_aplicado ?? 0), 0)
+    const capitalAplicado = periodos.reduce(
+      (s, p) => s + (p.capital_aplicado ?? 0),
+      0
+    )
     return Math.max(0, Math.round(credito.capital - capitalAplicado))
   }, [credito, periodos])
 
@@ -60,19 +71,23 @@ export function CuotasCreditoTab({
 
   if (cargando) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <Loader2 className="h-6 w-6 animate-spin text-indigo-600" />
-        <span className="ml-2 text-sm text-gray-500 dark:text-gray-400">Cargando cuotas...</span>
+      <div className='flex items-center justify-center py-12'>
+        <Loader2 className='h-6 w-6 animate-spin text-indigo-600' />
+        <span className='ml-2 text-sm text-gray-500 dark:text-gray-400'>
+          Cargando cuotas...
+        </span>
       </div>
     )
   }
 
-  if (!credito || periodos.length === 0) {
+  if (!credito || !resumen || periodos.length === 0) {
     if (readonly) {
       return (
-        <div className="rounded-xl border-2 border-dashed border-indigo-200 p-6 text-center dark:border-indigo-700/50">
-          <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Plan de cuotas no configurado</p>
-          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+        <div className='rounded-xl border-2 border-dashed border-indigo-200 p-6 text-center dark:border-indigo-700/50'>
+          <p className='text-sm font-medium text-gray-700 dark:text-gray-300'>
+            Plan de cuotas no configurado
+          </p>
+          <p className='mt-1 text-xs text-gray-500 dark:text-gray-400'>
             Ve al detalle de la negociación para configurar el plan de pagos.
           </p>
         </div>
@@ -91,21 +106,23 @@ export function CuotasCreditoTab({
 
   if (error) {
     return (
-      <div className="rounded-xl bg-red-50 p-4 text-sm text-red-700 dark:bg-red-900/20 dark:text-red-300">
+      <div className='rounded-xl bg-red-50 p-4 text-sm text-red-700 dark:bg-red-900/20 dark:text-red-300'>
         {error}
       </div>
     )
   }
 
   return (
-    <div className="space-y-4">
+    <div className='space-y-4'>
       <PanelResumenCredito
         credito={credito}
-        resumen={resumen!}
+        resumen={resumen}
         proximaCuota={proximaCuota}
         progresoCredito={progresoCredito}
         procesando={procesando}
-        onReestructurar={readonly ? undefined : () => setMostrarReestructurar(true)}
+        onReestructurar={
+          readonly ? undefined : () => setMostrarReestructurar(true)
+        }
       />
 
       <TablaAmortizacion periodos={periodos} />
@@ -117,7 +134,7 @@ export function CuotasCreditoTab({
           capitalPendiente={capitalPendienteReal}
           cuotasPendientes={cuotasNoCubiertas}
           procesando={procesando}
-          onConfirmar={async (params) => {
+          onConfirmar={async params => {
             const ok = await reestructurar(params)
             if (ok) {
               setMostrarReestructurar(false)

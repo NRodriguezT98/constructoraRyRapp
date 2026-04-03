@@ -12,7 +12,9 @@
  * @param value - Valor a sanitizar
  * @returns String limpio o null
  */
-export function sanitizeString(value: string | null | undefined): string | null {
+export function sanitizeString(
+  value: string | null | undefined
+): string | null {
   if (value === null || value === undefined) return null
   const trimmed = value.trim()
   return trimmed === '' ? null : trimmed
@@ -63,7 +65,7 @@ export function sanitizeEnum<T extends string>(
  * @returns Objeto con valores sanitizados
  */
 export function sanitizeObject<T extends Record<string, unknown>>(obj: T): T {
-  const result: any = {}
+  const result: Record<string, unknown> = {}
 
   for (const [key, value] of Object.entries(obj)) {
     if (value === null || value === undefined) {
@@ -85,15 +87,33 @@ export function sanitizeObject<T extends Record<string, unknown>>(obj: T): T {
  * (excepto si son la primera palabra)
  */
 const PALABRAS_MINUSCULAS_ES = new Set([
-  'de', 'del', 'la', 'las', 'los', 'el', 'y', 'e', 'o', 'u',
-  'a', 'al', 'con', 'en', 'por', 'para', 'sin', 'sobre',
+  'de',
+  'del',
+  'la',
+  'las',
+  'los',
+  'el',
+  'y',
+  'e',
+  'o',
+  'u',
+  'a',
+  'al',
+  'con',
+  'en',
+  'por',
+  'para',
+  'sin',
+  'sobre',
 ])
 
 function capitalizarPalabra(word: string): string {
   // Maneja palabras con guion: "Ana-Maria" → "Ana-Maria"
   return word
     .split('-')
-    .map((part) => (part.length > 0 ? part.charAt(0).toUpperCase() + part.slice(1) : part))
+    .map(part =>
+      part.length > 0 ? part.charAt(0).toUpperCase() + part.slice(1) : part
+    )
     .join('-')
 }
 
@@ -111,12 +131,17 @@ function capitalizarPalabra(word: string): string {
  * @param value - Nombre a formatear
  * @returns Nombre formateado o null si está vacío
  */
-export function formatNombrePropio(value: string | null | undefined): string | null {
+export function formatNombrePropio(
+  value: string | null | undefined
+): string | null {
   if (value === null || value === undefined) return null
   const trimmed = value.trim()
   if (trimmed === '') return null
 
-  const palabras = trimmed.toLowerCase().split(/\s+/).filter((w) => w.length > 0)
+  const palabras = trimmed
+    .toLowerCase()
+    .split(/\s+/)
+    .filter(w => w.length > 0)
 
   return palabras
     .map((word, index) => {
@@ -133,8 +158,10 @@ export function formatNombrePropio(value: string | null | undefined): string | n
  * @param obj - Objeto a limpiar
  * @returns Objeto sin campos null/undefined
  */
-export function removeNullish<T extends Record<string, unknown>>(obj: T): Partial<T> {
-  const result: any = {}
+export function removeNullish<T extends Record<string, unknown>>(
+  obj: T
+): Partial<T> {
+  const result: Record<string, unknown> = {}
 
   for (const [key, value] of Object.entries(obj)) {
     if (value !== null && value !== undefined) {
@@ -142,5 +169,5 @@ export function removeNullish<T extends Record<string, unknown>>(obj: T): Partia
     }
   }
 
-  return result
+  return result as Partial<T>
 }

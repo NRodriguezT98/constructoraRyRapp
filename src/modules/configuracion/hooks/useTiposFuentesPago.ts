@@ -16,20 +16,24 @@
 
 'use client'
 
-import { useMutation, useQuery, useQueryClient, type UseMutationOptions, type UseQueryOptions } from '@tanstack/react-query'
+import {
+  useMutation,
+  useQuery,
+  useQueryClient,
+  type UseMutationOptions,
+  type UseQueryOptions,
+} from '@tanstack/react-query'
 import { toast } from 'sonner'
 
-import {
-    TiposFuentesPagoService
-} from '../services'
+import { TiposFuentesPagoService } from '../services'
 import type {
-    ActualizarTipoFuentePagoDTO,
-    CrearTipoFuentePagoDTO,
-    OrderDirection,
-    TipoFuentePago,
-    TipoFuentePagoFilters,
-    TipoFuentePagoOption,
-    TipoFuentePagoOrderBy
+  ActualizarTipoFuentePagoDTO,
+  CrearTipoFuentePagoDTO,
+  OrderDirection,
+  TipoFuentePago,
+  TipoFuentePagoFilters,
+  TipoFuentePagoOption,
+  TipoFuentePagoOrderBy,
 } from '../types'
 
 // =====================================================
@@ -39,12 +43,17 @@ import type {
 export const tiposFuentesPagoKeys = {
   all: ['tipos-fuentes-pago'] as const,
   lists: () => [...tiposFuentesPagoKeys.all, 'list'] as const,
-  list: (filters: TipoFuentePagoFilters, orderBy: TipoFuentePagoOrderBy, direction: OrderDirection) =>
+  list: (
+    filters: TipoFuentePagoFilters,
+    orderBy: TipoFuentePagoOrderBy,
+    direction: OrderDirection
+  ) =>
     [...tiposFuentesPagoKeys.lists(), { filters, orderBy, direction }] as const,
   options: () => [...tiposFuentesPagoKeys.all, 'options'] as const,
   details: () => [...tiposFuentesPagoKeys.all, 'detail'] as const,
   detail: (id: string) => [...tiposFuentesPagoKeys.details(), id] as const,
-  detailByCodigo: (codigo: string) => [...tiposFuentesPagoKeys.all, 'codigo', codigo] as const,
+  detailByCodigo: (codigo: string) =>
+    [...tiposFuentesPagoKeys.all, 'codigo', codigo] as const,
 }
 
 // =====================================================
@@ -66,7 +75,10 @@ export function useTiposFuentesPago(
   filters: TipoFuentePagoFilters = {},
   orderBy: TipoFuentePagoOrderBy = 'orden',
   direction: OrderDirection = 'asc',
-  options?: Omit<UseQueryOptions<TipoFuentePago[], Error>, 'queryKey' | 'queryFn'>
+  options?: Omit<
+    UseQueryOptions<TipoFuentePago[], Error>,
+    'queryKey' | 'queryFn'
+  >
 ) {
   const service = new TiposFuentesPagoService()
 
@@ -76,7 +88,7 @@ export function useTiposFuentesPago(
       const result = await service.getAll(filters, orderBy, direction)
 
       if (!result.success) {
-        throw new Error((result as any).error?.mensaje ?? String((result as any).error))
+        throw new Error(result.error.mensaje)
       }
 
       return result.data
@@ -102,7 +114,10 @@ export function useTiposFuentesPago(
  * ```
  */
 export function useTiposFuentesPagoOptions(
-  options?: Omit<UseQueryOptions<TipoFuentePagoOption[], Error>, 'queryKey' | 'queryFn'>
+  options?: Omit<
+    UseQueryOptions<TipoFuentePagoOption[], Error>,
+    'queryKey' | 'queryFn'
+  >
 ) {
   const service = new TiposFuentesPagoService()
 
@@ -112,7 +127,7 @@ export function useTiposFuentesPagoOptions(
       const result = await service.getOptionsActivas()
 
       if (!result.success) {
-        throw new Error((result as any).error?.mensaje ?? String((result as any).error))
+        throw new Error(result.error.mensaje)
       }
 
       return result.data
@@ -136,19 +151,24 @@ export function useTipoFuentePago(
   options?: Omit<UseQueryOptions<TipoFuentePago, Error>, 'queryKey' | 'queryFn'>
 ) {
   const service = new TiposFuentesPagoService()
+  const tipoId = id ?? null
 
   return useQuery({
-    queryKey: tiposFuentesPagoKeys.detail(id!),
+    queryKey: tiposFuentesPagoKeys.detail(tipoId ?? 'sin-id'),
     queryFn: async () => {
-      const result = await service.getById(id!)
+      if (!tipoId) {
+        throw new Error('ID requerido')
+      }
+
+      const result = await service.getById(tipoId)
 
       if (!result.success) {
-        throw new Error((result as any).error?.mensaje ?? String((result as any).error))
+        throw new Error(result.error.mensaje)
       }
 
       return result.data
     },
-    enabled: !!id, // Solo ejecutar si hay ID
+    enabled: !!tipoId, // Solo ejecutar si hay ID
     staleTime: 5 * 60 * 1000,
     ...options,
   })
@@ -167,19 +187,24 @@ export function useTipoFuentePagoByCodigo(
   options?: Omit<UseQueryOptions<TipoFuentePago, Error>, 'queryKey' | 'queryFn'>
 ) {
   const service = new TiposFuentesPagoService()
+  const codigoSeguro = codigo ?? null
 
   return useQuery({
-    queryKey: tiposFuentesPagoKeys.detailByCodigo(codigo!),
+    queryKey: tiposFuentesPagoKeys.detailByCodigo(codigoSeguro ?? 'sin-codigo'),
     queryFn: async () => {
-      const result = await service.getByCodigo(codigo!)
+      if (!codigoSeguro) {
+        throw new Error('Código requerido')
+      }
+
+      const result = await service.getByCodigo(codigoSeguro)
 
       if (!result.success) {
-        throw new Error((result as any).error?.mensaje ?? String((result as any).error))
+        throw new Error(result.error.mensaje)
       }
 
       return result.data
     },
-    enabled: !!codigo,
+    enabled: !!codigoSeguro,
     staleTime: 5 * 60 * 1000,
     ...options,
   })
@@ -205,7 +230,10 @@ export function useTipoFuentePagoByCodigo(
  * ```
  */
 export function useCrearTipoFuentePago(
-  options?: Omit<UseMutationOptions<TipoFuentePago, Error, CrearTipoFuentePagoDTO>, 'mutationFn'>
+  options?: Omit<
+    UseMutationOptions<TipoFuentePago, Error, CrearTipoFuentePagoDTO>,
+    'mutationFn'
+  >
 ) {
   const queryClient = useQueryClient()
   const service = new TiposFuentesPagoService()
@@ -215,7 +243,7 @@ export function useCrearTipoFuentePago(
       const result = await service.create(dto)
 
       if (!result.success) {
-        throw new Error((result as any).error?.mensaje ?? String((result as any).error))
+        throw new Error(result.error.mensaje)
       }
 
       return result.data
@@ -223,14 +251,16 @@ export function useCrearTipoFuentePago(
     onSuccess: (data, _variables) => {
       // Invalidar todas las listas
       queryClient.invalidateQueries({ queryKey: tiposFuentesPagoKeys.lists() })
-      queryClient.invalidateQueries({ queryKey: tiposFuentesPagoKeys.options() })
+      queryClient.invalidateQueries({
+        queryKey: tiposFuentesPagoKeys.options(),
+      })
 
       // Toast de éxito
       toast.success('Tipo de fuente creado', {
         description: `"${data.nombre}" se ha creado correctamente`,
       })
     },
-    onError: (error) => {
+    onError: error => {
       toast.error('Error al crear tipo de fuente', {
         description: error.message,
       })
@@ -254,7 +284,11 @@ export function useCrearTipoFuentePago(
  */
 export function useActualizarTipoFuentePago(
   options?: Omit<
-    UseMutationOptions<TipoFuentePago, Error, { id: string; dto: ActualizarTipoFuentePagoDTO }>,
+    UseMutationOptions<
+      TipoFuentePago,
+      Error,
+      { id: string; dto: ActualizarTipoFuentePagoDTO }
+    >,
     'mutationFn'
   >
 ) {
@@ -266,7 +300,7 @@ export function useActualizarTipoFuentePago(
       const result = await service.update(id, dto)
 
       if (!result.success) {
-        throw new Error((result as any).error?.mensaje ?? String((result as any).error))
+        throw new Error(result.error.mensaje)
       }
 
       return result.data
@@ -274,8 +308,12 @@ export function useActualizarTipoFuentePago(
     onSuccess: (data, { id }) => {
       // Invalidar listas y detalle específico
       queryClient.invalidateQueries({ queryKey: tiposFuentesPagoKeys.lists() })
-      queryClient.invalidateQueries({ queryKey: tiposFuentesPagoKeys.options() })
-      queryClient.invalidateQueries({ queryKey: tiposFuentesPagoKeys.detail(id) })
+      queryClient.invalidateQueries({
+        queryKey: tiposFuentesPagoKeys.options(),
+      })
+      queryClient.invalidateQueries({
+        queryKey: tiposFuentesPagoKeys.detail(id),
+      })
 
       // Optimistic update del cache
       queryClient.setQueryData(tiposFuentesPagoKeys.detail(id), data)
@@ -284,7 +322,7 @@ export function useActualizarTipoFuentePago(
         description: `"${data.nombre}" se ha actualizado correctamente`,
       })
     },
-    onError: (error) => {
+    onError: error => {
       toast.error('Error al actualizar tipo de fuente', {
         description: error.message,
       })
@@ -304,7 +342,10 @@ export function useActualizarTipoFuentePago(
  * ```
  */
 export function useEliminarTipoFuentePago(
-  options?: Omit<UseMutationOptions<TipoFuentePago, Error, string>, 'mutationFn'>
+  options?: Omit<
+    UseMutationOptions<TipoFuentePago, Error, string>,
+    'mutationFn'
+  >
 ) {
   const queryClient = useQueryClient()
   const service = new TiposFuentesPagoService()
@@ -314,7 +355,7 @@ export function useEliminarTipoFuentePago(
       const result = await service.softDelete(id)
 
       if (!result.success) {
-        throw new Error((result as any).error?.mensaje ?? String((result as any).error))
+        throw new Error(result.error.mensaje)
       }
 
       return result.data
@@ -322,14 +363,18 @@ export function useEliminarTipoFuentePago(
     onSuccess: (data, id) => {
       // Invalidar cache
       queryClient.invalidateQueries({ queryKey: tiposFuentesPagoKeys.lists() })
-      queryClient.invalidateQueries({ queryKey: tiposFuentesPagoKeys.options() })
-      queryClient.invalidateQueries({ queryKey: tiposFuentesPagoKeys.detail(id) })
+      queryClient.invalidateQueries({
+        queryKey: tiposFuentesPagoKeys.options(),
+      })
+      queryClient.invalidateQueries({
+        queryKey: tiposFuentesPagoKeys.detail(id),
+      })
 
       toast.success('Tipo de fuente eliminado', {
         description: `"${data.nombre}" se ha desactivado correctamente`,
       })
     },
-    onError: (error) => {
+    onError: error => {
       toast.error('Error al eliminar tipo de fuente', {
         description: error.message,
       })
@@ -349,7 +394,10 @@ export function useEliminarTipoFuentePago(
  * ```
  */
 export function useReactivarTipoFuentePago(
-  options?: Omit<UseMutationOptions<TipoFuentePago, Error, string>, 'mutationFn'>
+  options?: Omit<
+    UseMutationOptions<TipoFuentePago, Error, string>,
+    'mutationFn'
+  >
 ) {
   const queryClient = useQueryClient()
   const service = new TiposFuentesPagoService()
@@ -359,21 +407,25 @@ export function useReactivarTipoFuentePago(
       const result = await service.reactivar(id)
 
       if (!result.success) {
-        throw new Error((result as any).error?.mensaje ?? String((result as any).error))
+        throw new Error(result.error.mensaje)
       }
 
       return result.data
     },
     onSuccess: (data, id) => {
       queryClient.invalidateQueries({ queryKey: tiposFuentesPagoKeys.lists() })
-      queryClient.invalidateQueries({ queryKey: tiposFuentesPagoKeys.options() })
-      queryClient.invalidateQueries({ queryKey: tiposFuentesPagoKeys.detail(id) })
+      queryClient.invalidateQueries({
+        queryKey: tiposFuentesPagoKeys.options(),
+      })
+      queryClient.invalidateQueries({
+        queryKey: tiposFuentesPagoKeys.detail(id),
+      })
 
       toast.success('Tipo de fuente reactivado', {
         description: `"${data.nombre}" se ha activado correctamente`,
       })
     },
-    onError: (error) => {
+    onError: error => {
       toast.error('Error al reactivar tipo de fuente', {
         description: error.message,
       })
@@ -405,23 +457,25 @@ export function useReordenarTiposFuentesPago(
   const service = new TiposFuentesPagoService()
 
   return useMutation({
-    mutationFn: async (reordenamientos) => {
+    mutationFn: async reordenamientos => {
       const result = await service.reordenar(reordenamientos)
 
       if (!result.success) {
-        throw new Error((result as any).error?.mensaje ?? String((result as any).error))
+        throw new Error(result.error.mensaje)
       }
     },
     onSuccess: () => {
       // Invalidar todas las listas (el orden cambió)
       queryClient.invalidateQueries({ queryKey: tiposFuentesPagoKeys.lists() })
-      queryClient.invalidateQueries({ queryKey: tiposFuentesPagoKeys.options() })
+      queryClient.invalidateQueries({
+        queryKey: tiposFuentesPagoKeys.options(),
+      })
 
       toast.success('Orden actualizado', {
         description: 'El orden de las fuentes de pago se ha actualizado',
       })
     },
-    onError: (error) => {
+    onError: error => {
       toast.error('Error al reordenar', {
         description: error.message,
       })
@@ -476,7 +530,7 @@ export function usePrefetchTiposFuentesPago() {
       queryKey: tiposFuentesPagoKeys.list({ activo: true }, 'orden', 'asc'),
       queryFn: async () => {
         const result = await service.getAll({ activo: true }, 'orden', 'asc')
-        if (!result.success) throw new Error((result as any).error?.mensaje ?? String((result as any).error))
+        if (!result.success) throw new Error(result.error.mensaje)
         return result.data
       },
       staleTime: 5 * 60 * 1000,

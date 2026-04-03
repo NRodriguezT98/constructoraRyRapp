@@ -29,9 +29,12 @@ import { negociacionesService } from '@/modules/clientes/services/negociaciones.
 
 export const negociacionesQueryKeys = {
   all: ['negociaciones'] as const,
-  byCliente: (clienteId: string) => [...negociacionesQueryKeys.all, 'cliente', clienteId] as const,
-  detalle: (negociacionId: string) => [...negociacionesQueryKeys.all, 'detalle', negociacionId] as const,
-  fuentesPago: (negociacionId: string) => ['fuentesPago', negociacionId] as const,
+  byCliente: (clienteId: string) =>
+    [...negociacionesQueryKeys.all, 'cliente', clienteId] as const,
+  detalle: (negociacionId: string) =>
+    [...negociacionesQueryKeys.all, 'detalle', negociacionId] as const,
+  fuentesPago: (negociacionId: string) =>
+    ['fuentesPago', negociacionId] as const,
 }
 
 // ============================================
@@ -43,12 +46,45 @@ export interface NegociacionDetalle {
   estado: string
   valor_negociado: number
   descuento_aplicado: number
-  proyecto?: { nombre: string; id: string }
+
+  // Valores financieros (vienen de select(*) en obtenerNegociacionesCliente)
+  valor_total?: number
+  valor_total_pagar?: number
+  total_abonado?: number
+  saldo_pendiente?: number
+  porcentaje_pagado?: number
+  porcentaje_descuento?: number
+  valor_escritura_publica?: number
+  total_fuentes_pago?: number
+
+  // Estado extendido
+  fecha_renuncia_efectiva?: string
+  notas?: string
+  vivienda_id?: string
+  cliente_id?: string
+
+  // Relaciones JOIN
+  proyecto?: { nombre: string; id: string; estado?: string; ubicacion?: string }
   vivienda?: {
     id: string
     numero: string
-    manzanas?: { nombre: string; id: string }
+    valor_base?: number
+    recargo_esquinera?: number
+    gastos_notariales?: number
+    es_esquinera?: boolean
+    estado?: string
+    manzanas?: {
+      nombre: string
+      id: string
+      proyecto?: {
+        nombre: string
+        id?: string
+        ubicacion?: string
+        estado?: string
+      }
+    }
   }
+
   fecha_negociacion: string
   fecha_creacion?: string
   fecha_completada?: string
@@ -68,7 +104,7 @@ interface FuentePago {
   numero_referencia?: string
   detalles?: string // ✅ Cambiar de observaciones a detalles
   monto_recibido: number
-  abonos?: any[]
+  abonos?: Abono[]
 }
 
 interface Abono {
@@ -90,7 +126,10 @@ interface UseNegociacionesQueryProps {
   enabled?: boolean
 }
 
-export function useNegociacionesQuery({ clienteId, enabled = true }: UseNegociacionesQueryProps) {
+export function useNegociacionesQuery({
+  clienteId,
+  enabled = true,
+}: UseNegociacionesQueryProps) {
   const queryClient = useQueryClient()
 
   // =====================================================
@@ -105,13 +144,14 @@ export function useNegociacionesQuery({ clienteId, enabled = true }: UseNegociac
   } = useQuery({
     queryKey: negociacionesQueryKeys.byCliente(clienteId),
     queryFn: async () => {
-      const data = await negociacionesService.obtenerNegociacionesCliente(clienteId)
+      const data =
+        await negociacionesService.obtenerNegociacionesCliente(clienteId)
       return data as NegociacionDetalle[]
     },
     enabled: enabled && !!clienteId,
-    staleTime: 1000 * 30,       // 30 segundos — dato crítico, debe estar fresco
-    gcTime: 1000 * 60 * 10,    // 10 minutos de cache
-    refetchOnMount: true,       // Siempre refetch si stale al montar
+    staleTime: 1000 * 30, // 30 segundos — dato crítico, debe estar fresco
+    gcTime: 1000 * 60 * 10, // 10 minutos de cache
+    refetchOnMount: true, // Siempre refetch si stale al montar
     refetchOnWindowFocus: true, // Refetch cuando el usuario vuelve a la ventana
   })
 
@@ -124,10 +164,13 @@ export function useNegociacionesQuery({ clienteId, enabled = true }: UseNegociac
   useEffect(() => {
     if (!clienteId) return
     const handleNegociacionCreada = () => {
-      queryClient.invalidateQueries({ queryKey: negociacionesQueryKeys.byCliente(clienteId) })
+      queryClient.invalidateQueries({
+        queryKey: negociacionesQueryKeys.byCliente(clienteId),
+      })
     }
     window.addEventListener('negociacion-creada', handleNegociacionCreada)
-    return () => window.removeEventListener('negociacion-creada', handleNegociacionCreada)
+    return () =>
+      window.removeEventListener('negociacion-creada', handleNegociacionCreada)
   }, [clienteId, queryClient])
 
   // =====================================================
@@ -138,7 +181,7 @@ export function useNegociacionesQuery({ clienteId, enabled = true }: UseNegociac
    * Negociaciones con valores calculados (memoizado)
    */
   const negociacionesConValores = useMemo((): NegociacionConValores[] => {
-    return negociaciones.map((neg) => {
+    return negociaciones.map(neg => {
       const valorBase = neg.valor_negociado || 0
       const descuento = neg.descuento_aplicado || 0
       const valorFinal = valorBase - descuento
@@ -156,9 +199,15 @@ export function useNegociacionesQuery({ clienteId, enabled = true }: UseNegociac
    * Estadísticas rápidas (para header)
    */
   const stats = useMemo(() => {
-    const activas = negociacionesConValores.filter((n) => n.estado === 'Activa').length
-    const completadas = negociacionesConValores.filter((n) => n.estado === 'Completada').length
-    const suspendidas = negociacionesConValores.filter((n) => n.estado === 'Suspendida').length
+    const activas = negociacionesConValores.filter(
+      n => n.estado === 'Activa'
+    ).length
+    const completadas = negociacionesConValores.filter(
+      n => n.estado === 'Completada'
+    ).length
+    const suspendidas = negociacionesConValores.filter(
+      n => n.estado === 'Suspendida'
+    ).length
 
     return {
       total: negociacionesConValores.length,
@@ -176,7 +225,9 @@ export function useNegociacionesQuery({ clienteId, enabled = true }: UseNegociac
    * Invalidar cache de negociaciones (forzar refetch)
    */
   const invalidarNegociaciones = useCallback(() => {
-    queryClient.invalidateQueries({ queryKey: negociacionesQueryKeys.byCliente(clienteId) })
+    queryClient.invalidateQueries({
+      queryKey: negociacionesQueryKeys.byCliente(clienteId),
+    })
   }, [clienteId, queryClient])
 
   /**
@@ -215,7 +266,10 @@ interface UseNegociacionDetalleProps {
   enabled?: boolean
 }
 
-export function useNegociacionDetalle({ negociacionId, enabled = true }: UseNegociacionDetalleProps) {
+export function useNegociacionDetalle({
+  negociacionId,
+  enabled = true,
+}: UseNegociacionDetalleProps) {
   // =====================================================
   // QUERY: Fuentes de pago con abonos
   // =====================================================
@@ -244,11 +298,12 @@ export function useNegociacionDetalle({ negociacionId, enabled = true }: UseNego
    * Todos los abonos de todas las fuentes (ordenados)
    */
   const abonos = useMemo((): Abono[] => {
-    const todosAbonos = fuentesPago.flatMap((fuente) => fuente.abonos || [])
+    const todosAbonos = fuentesPago.flatMap(fuente => fuente.abonos || [])
 
     // Ordenar por fecha descendente
     return todosAbonos.sort(
-      (a: any, b: any) => new Date(b.fecha_abono).getTime() - new Date(a.fecha_abono).getTime()
+      (a, b) =>
+        new Date(b.fecha_abono).getTime() - new Date(a.fecha_abono).getTime()
     )
   }, [fuentesPago])
 
@@ -256,14 +311,21 @@ export function useNegociacionDetalle({ negociacionId, enabled = true }: UseNego
    * Totales calculados
    */
   const totales = useMemo(() => {
-    const totalFuentesPago = fuentesPago.reduce((sum, fuente) => sum + (fuente.monto || 0), 0)
-    const totalAbonado = abonos.reduce((sum, abono) => sum + (abono.monto || 0), 0)
+    const totalFuentesPago = fuentesPago.reduce(
+      (sum, fuente) => sum + (fuente.monto || 0),
+      0
+    )
+    const totalAbonado = abonos.reduce(
+      (sum, abono) => sum + (abono.monto || 0),
+      0
+    )
 
     return {
       totalFuentesPago,
       totalAbonado,
       saldoPendiente: totalFuentesPago - totalAbonado,
-      porcentajePagado: totalFuentesPago > 0 ? (totalAbonado / totalFuentesPago) * 100 : 0,
+      porcentajePagado:
+        totalFuentesPago > 0 ? (totalAbonado / totalFuentesPago) * 100 : 0,
     }
   }, [fuentesPago, abonos])
 
@@ -271,7 +333,7 @@ export function useNegociacionDetalle({ negociacionId, enabled = true }: UseNego
    * Fuentes transformadas (formato UI)
    */
   const fuentesTransformadas = useMemo(() => {
-    return fuentesPago.map((fuente) => ({
+    return fuentesPago.map(fuente => ({
       id: fuente.id, // ✅ Incluir id para edición
       tipo: fuente.tipo,
       monto: fuente.monto || 0, // ✅ Ya viene como 'monto' desde el service

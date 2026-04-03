@@ -16,7 +16,7 @@
 
 'use client'
 
-import { useCallback, useEffect, useRef } from 'react'
+import { useCallback, useEffect, useMemo, useRef } from 'react'
 
 import { useAuth } from '@/contexts/auth-context'
 import { useLogoutMutation } from '@/hooks/auth'
@@ -31,7 +31,11 @@ export interface IdleTimerConfig {
   /** Si hay una modal de advertencia abierta (default: false) */
   modalIsOpen?: boolean
   /** Callbacks de notificación */
-  onWarning?: (level: IdleWarningLevel, remainingMinutes: number, remainingSeconds: number) => void
+  onWarning?: (
+    level: IdleWarningLevel,
+    remainingMinutes: number,
+    remainingSeconds: number
+  ) => void
   onTimeout?: () => void
 }
 
@@ -79,11 +83,14 @@ export function useIdleTimer(config: IdleTimerConfig = {}) {
 
   // Niveles de advertencia (porcentajes del tiempo total)
   // ✅ PRODUCCIÓN: Niveles de advertencia para 60 minutos
-  const WARNING_LEVELS = {
-    info: 0.833,     // 83.3% del tiempo (50 min en 60 min)
-    warning: 0.917,  // 91.7% del tiempo (55 min en 60 min)
-    critical: 0.967, // 96.7% del tiempo (58 min en 60 min)
-  }
+  const WARNING_LEVELS = useMemo(
+    () => ({
+      info: 0.833, // 83.3% del tiempo (50 min en 60 min)
+      warning: 0.917, // 91.7% del tiempo (55 min en 60 min)
+      critical: 0.967, // 96.7% del tiempo (58 min en 60 min)
+    }),
+    []
+  )
 
   /**
    * Ejecutar logout con logging detallado
@@ -94,8 +101,6 @@ export function useIdleTimer(config: IdleTimerConfig = {}) {
     if (state.logoutExecuted) {
       return
     }
-
-
 
     state.logoutExecuted = true
 
@@ -126,8 +131,6 @@ export function useIdleTimer(config: IdleTimerConfig = {}) {
     const remainingSeconds = Math.floor(remainingMs / 1000)
     const remainingMinutes = Math.ceil(remainingMs / 1000 / 60)
 
-
-
     // Verificar si se superó el tiempo límite
     if (progress >= 1.0) {
       executeLogout()
@@ -135,24 +138,24 @@ export function useIdleTimer(config: IdleTimerConfig = {}) {
     }
 
     // Determinar nivel actual
-    let currentLevel: IdleWarningLevel | null = null
 
     if (progress >= WARNING_LEVELS.critical) {
-      currentLevel = 'critical'
       if (!state.warningShown.critical) {
         state.warningShown.critical = true
         onWarning?.('critical', remainingMinutes, remainingSeconds)
       }
     } else if (progress >= WARNING_LEVELS.warning) {
-      currentLevel = 'warning'
       if (!state.warningShown.warning) {
         state.warningShown.warning = true
         onWarning?.('warning', remainingMinutes, remainingSeconds)
       }
     } else if (progress >= WARNING_LEVELS.info) {
-      currentLevel = 'info'
       // 🚨 NO mostrar advertencia INFO si ya se mostró WARNING o CRITICAL
-      if (!state.warningShown.info && !state.warningShown.warning && !state.warningShown.critical) {
+      if (
+        !state.warningShown.info &&
+        !state.warningShown.warning &&
+        !state.warningShown.critical
+      ) {
         state.warningShown.info = true
         onWarning?.('info', remainingMinutes, remainingSeconds)
       }
@@ -191,7 +194,11 @@ export function useIdleTimer(config: IdleTimerConfig = {}) {
 
     // 🚨 Si ya se mostró warning/critical O hay modal abierta, ignorar actividad automática
     // Solo el botón "Mantener sesión activa" puede resetear el timer
-    if (state.warningShown.warning || state.warningShown.critical || modalIsOpen) {
+    if (
+      state.warningShown.warning ||
+      state.warningShown.critical ||
+      modalIsOpen
+    ) {
       return
     }
 
@@ -231,7 +238,6 @@ export function useIdleTimer(config: IdleTimerConfig = {}) {
    */
   useEffect(() => {
     if (!user || !enabled) {
-
       // Resetear estado al cerrar sesión
       stateRef.current = {
         lastActivity: Date.now(),
@@ -243,11 +249,13 @@ export function useIdleTimer(config: IdleTimerConfig = {}) {
       return
     }
 
-
-
     // Resetear estado al iniciar sesión
     stateRef.current.logoutExecuted = false
-    stateRef.current.warningShown = { info: false, warning: false, critical: false }
+    stateRef.current.warningShown = {
+      info: false,
+      warning: false,
+      critical: false,
+    }
 
     // Iniciar timers
     resetActivity()
@@ -267,7 +275,6 @@ export function useIdleTimer(config: IdleTimerConfig = {}) {
 
     // Cleanup
     return () => {
-
       if (timeoutRef.current) clearTimeout(timeoutRef.current)
       if (checkIntervalRef.current) clearInterval(checkIntervalRef.current)
 
@@ -277,7 +284,15 @@ export function useIdleTimer(config: IdleTimerConfig = {}) {
 
       document.removeEventListener('visibilitychange', handleVisibilityChange)
     }
-  }, [user, enabled, timeoutMinutes, modalIsOpen, handleUserActivity, resetActivity, WARNING_LEVELS])
+  }, [
+    user,
+    enabled,
+    timeoutMinutes,
+    modalIsOpen,
+    handleUserActivity,
+    resetActivity,
+    WARNING_LEVELS,
+  ])
 
   return {
     keepAlive,

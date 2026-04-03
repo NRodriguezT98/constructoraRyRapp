@@ -20,23 +20,32 @@
 
 'use client'
 
-import { AlertCircle, ArrowUp, Building2, CheckCircle2, Home, IdCard, XCircle } from 'lucide-react'
+import {
+  AlertCircle,
+  ArrowUp,
+  Building2,
+  CheckCircle2,
+  Home,
+  IdCard,
+  XCircle,
+} from 'lucide-react'
 import { toast } from 'sonner'
 
 import { HistorialVersionesModal } from '@/modules/clientes/components'
 import { SubirCartaModal } from '@/modules/clientes/components/fuentes-pago'
 import type { Cliente } from '@/modules/clientes/types'
 import {
-    FuentePagoCard,
-    ModalMarcarPasoCompletado
+  FuentePagoCard,
+  ModalMarcarPasoCompletado,
 } from '@/modules/fuentes-pago/components'
+import type { PasoInfo } from '@/modules/fuentes-pago/components/ModalMarcarPasoCompletado'
 
 import {
-    AccionesSection,
-    EditarFuentesPagoModal,
-    MetricasDashboard,
-    ProgressBarProminente,
-    UltimosAbonosSection,
+  AccionesSection,
+  EditarFuentesPagoModal,
+  MetricasDashboard,
+  ProgressBarProminente,
+  UltimosAbonosSection,
 } from './vivienda-asignada/components'
 import { useViviendaAsignadaTab } from './vivienda-asignada/hooks'
 import { viviendaAsignadaTabStyles as styles } from './vivienda-asignada-tab.styles'
@@ -61,7 +70,6 @@ export function ViviendaAsignadaTab({ cliente }: ViviendaAsignadaTabProps) {
     viviendaActiva,
     isLoading,
     isLoadingDetalle,
-    stats,
     fuentesPago,
     abonos,
     totales,
@@ -83,12 +91,8 @@ export function ViviendaAsignadaTab({ cliente }: ViviendaAsignadaTabProps) {
 
     // Handlers
     verDetalleVivienda,
-    volverALista,
-    navegarAAsignarVivienda,
     navegarARegistrarAbono,
-    abrirHistorial,
     cerrarHistorial,
-    abrirModalSubirCarta,
     cerrarModalSubirCarta,
     handleSuccessSubirCarta,
     abrirModalMarcarPaso,
@@ -98,7 +102,7 @@ export function ViviendaAsignadaTab({ cliente }: ViviendaAsignadaTabProps) {
     abrirEditarFuentes,
     cerrarEditarFuentes,
     guardarFuentes,
-  } = useViviendaAsignadaTab({ cliente }) as any
+  } = useViviendaAsignadaTab({ cliente })
 
   // =====================================================
   // RENDER: Loading State
@@ -106,10 +110,10 @@ export function ViviendaAsignadaTab({ cliente }: ViviendaAsignadaTabProps) {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <div className="text-center space-y-3">
-          <div className="w-12 h-12 border-4 border-cyan-600 border-t-transparent rounded-full animate-spin mx-auto" />
-          <p className="text-sm text-gray-600 dark:text-gray-400">
+      <div className='flex items-center justify-center py-12'>
+        <div className='space-y-3 text-center'>
+          <div className='mx-auto h-12 w-12 animate-spin rounded-full border-4 border-cyan-600 border-t-transparent' />
+          <p className='text-sm text-gray-600 dark:text-gray-400'>
             Cargando información de vivienda...
           </p>
         </div>
@@ -152,8 +156,8 @@ export function ViviendaAsignadaTab({ cliente }: ViviendaAsignadaTabProps) {
               <span
                 className={`${styles.detalle.estadoBadge} ${
                   viviendaActiva.estado === 'Activa'
-                    ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300'
-                    : 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300'
+                    ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300'
+                    : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300'
                 }`}
               >
                 {viviendaActiva.estado}
@@ -164,20 +168,24 @@ export function ViviendaAsignadaTab({ cliente }: ViviendaAsignadaTabProps) {
 
         {/* Loading detalle */}
         {isLoadingDetalle ? (
-          <div className="flex items-center justify-center py-8">
-            <div className="text-center space-y-2">
-              <div className="w-8 h-8 border-4 border-cyan-600 border-t-transparent rounded-full animate-spin mx-auto" />
-              <p className="text-xs text-gray-500">Cargando detalles...</p>
+          <div className='flex items-center justify-center py-8'>
+            <div className='space-y-2 text-center'>
+              <div className='mx-auto h-8 w-8 animate-spin rounded-full border-4 border-cyan-600 border-t-transparent' />
+              <p className='text-xs text-gray-500'>Cargando detalles...</p>
             </div>
           </div>
         ) : (
-          <div className="space-y-2.5">
+          <div className='space-y-2.5'>
             {/* Acciones STICKY */}
-            <div className="sticky top-0 z-20 -mx-1 px-1 pt-2 pb-3 bg-gray-50/95 dark:bg-gray-900/95 backdrop-blur-sm">
+            <div className='sticky top-0 z-20 -mx-1 bg-gray-50/95 px-1 pb-3 pt-2 backdrop-blur-sm dark:bg-gray-900/95'>
               <AccionesSection
                 estado={viviendaActiva.estado}
-                onRegistrarAbono={() => navegarARegistrarAbono(viviendaActiva.id)}
-                onRenunciar={() => toast.info('❌ Modal de Renuncia en desarrollo')}
+                onRegistrarAbono={() =>
+                  navegarARegistrarAbono(viviendaActiva.id)
+                }
+                onRenunciar={() =>
+                  toast.info('❌ Modal de Renuncia en desarrollo')
+                }
                 onGenerarPDF={handleGenerarPDF}
                 disabled={isGenerating}
               />
@@ -186,11 +194,11 @@ export function ViviendaAsignadaTab({ cliente }: ViviendaAsignadaTabProps) {
             {/* Dashboard de Métricas Reorganizado */}
             <MetricasDashboard
               valorVivienda={
-                (viviendaActiva.vivienda as any)?.valor_base ||
+                viviendaActiva.vivienda?.valor_base ||
                 (viviendaActiva.valor_negociado || 0) - 5000000
               }
               gastosNotariales={5000000}
-              recargoEsquinera={(viviendaActiva.vivienda as any)?.recargo_esquinera || 0}
+              recargoEsquinera={viviendaActiva.vivienda?.recargo_esquinera || 0}
               descuento={viviendaActiva.descuento_aplicado || 0}
               valorFinal={valorFinal}
               totalPagado={totales.totalAbonado}
@@ -201,16 +209,17 @@ export function ViviendaAsignadaTab({ cliente }: ViviendaAsignadaTabProps) {
 
             {/* Alert: Sin pagos recientes */}
             {diasDesdeUltimoAbono !== null && diasDesdeUltimoAbono > 30 ? (
-              <div className="p-3 rounded-lg bg-rose-50 dark:bg-rose-900/20 border-2 border-rose-300 dark:border-rose-700">
-                <div className="flex items-start gap-2">
-                  <AlertCircle className="w-5 h-5 text-rose-600 dark:text-rose-400 flex-shrink-0 mt-0.5" />
-                  <div className="flex-1">
-                    <p className="text-sm font-semibold text-rose-900 dark:text-rose-100">
+              <div className='rounded-lg border-2 border-rose-300 bg-rose-50 p-3 dark:border-rose-700 dark:bg-rose-900/20'>
+                <div className='flex items-start gap-2'>
+                  <AlertCircle className='mt-0.5 h-5 w-5 flex-shrink-0 text-rose-600 dark:text-rose-400' />
+                  <div className='flex-1'>
+                    <p className='text-sm font-semibold text-rose-900 dark:text-rose-100'>
                       ⚠️ Sin pagos recientes
                     </p>
-                    <p className="text-xs text-rose-700 dark:text-rose-300 mt-1">
-                      Hace <strong>{diasDesdeUltimoAbono} días</strong> que no se registra un
-                      abono. Considera hacer seguimiento con el cliente.
+                    <p className='mt-1 text-xs text-rose-700 dark:text-rose-300'>
+                      Hace <strong>{diasDesdeUltimoAbono} días</strong> que no
+                      se registra un abono. Considera hacer seguimiento con el
+                      cliente.
                     </p>
                   </div>
                 </div>
@@ -226,32 +235,32 @@ export function ViviendaAsignadaTab({ cliente }: ViviendaAsignadaTabProps) {
             />
 
             {/* Fuentes de Pago con Sistema de Validación */}
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                  <Building2 className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
+            <div className='space-y-4'>
+              <div className='flex items-center justify-between'>
+                <h3 className='flex items-center gap-2 text-lg font-semibold text-gray-900 dark:text-white'>
+                  <Building2 className='h-5 w-5 text-cyan-600 dark:text-cyan-400' />
                   Fuentes de Pago ({fuentesPago.length})
                 </h3>
                 <button
                   onClick={abrirEditarFuentes}
-                  className="px-3 py-1.5 text-sm font-medium text-cyan-600 dark:text-cyan-400 hover:bg-cyan-50 dark:hover:bg-cyan-900/20 rounded-lg transition-colors"
+                  className='rounded-lg px-3 py-1.5 text-sm font-medium text-cyan-600 transition-colors hover:bg-cyan-50 dark:text-cyan-400 dark:hover:bg-cyan-900/20'
                 >
                   Editar Fuentes
                 </button>
               </div>
 
               {isLoadingDetalle ? (
-                <div className="flex items-center justify-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-cyan-600" />
+                <div className='flex items-center justify-center py-8'>
+                  <div className='h-8 w-8 animate-spin rounded-full border-b-2 border-cyan-600' />
                 </div>
               ) : fuentesPago.length === 0 ? (
-                <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                <div className='py-8 text-center text-gray-500 dark:text-gray-400'>
                   No hay fuentes de pago configuradas
                 </div>
               ) : (
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                  {fuentesPago.map((fuente: any) => (
-                    <div key={fuente.id} className="space-y-2">
+                <div className='grid grid-cols-1 gap-4 lg:grid-cols-2'>
+                  {fuentesPago.map(fuente => (
+                    <div key={fuente.id} className='space-y-2'>
                       <FuentePagoCard
                         fuente={{
                           id: fuente.id,
@@ -262,7 +271,9 @@ export function ViviendaAsignadaTab({ cliente }: ViviendaAsignadaTabProps) {
                           numero_referencia: fuente.numero_referencia,
                         }}
                         clienteId={cliente.id}
-                        onMarcarPaso={(pasoId, paso) => abrirModalMarcarPaso(paso)}
+                        onMarcarPaso={(pasoId, paso) =>
+                          abrirModalMarcarPaso(paso)
+                        }
                         onVerDocumento={documentoId => {
                           toast.info(`Ver documento ${documentoId}`)
                         }}
@@ -280,13 +291,13 @@ export function ViviendaAsignadaTab({ cliente }: ViviendaAsignadaTabProps) {
 
             {/* Últimos Abonos */}
             <UltimosAbonosSection
-              abonos={abonos.map((abono: any) => ({
+              abonos={abonos.map(abono => ({
                 id: abono.id,
                 monto: abono.monto,
                 fecha_abono: abono.fecha_abono,
-                metodo_pago: abono.metodo_pago,
-                numero_recibo: abono.numero_recibo,
-                observaciones: abono.observaciones,
+                metodo_pago: abono.metodo_pago ?? '',
+                numero_recibo: abono.numero_recibo ?? null,
+                observaciones: abono.observaciones ?? null,
               }))}
               onVerTodos={() => {
                 toast.info(
@@ -303,7 +314,7 @@ export function ViviendaAsignadaTab({ cliente }: ViviendaAsignadaTabProps) {
           onClose={cerrarEditarFuentes}
           fuentesActuales={fuentesPago}
           valorFinal={viviendaActiva?.valorFinal || 0}
-          onGuardar={guardarFuentes as any}
+          onGuardar={fuentes => guardarFuentes(fuentes, 'Actualización manual')}
           viviendaNumero={
             viviendaActiva?.vivienda
               ? `${viviendaActiva.vivienda.manzanas?.nombre || ''}${viviendaActiva.vivienda.numero}`
@@ -320,8 +331,8 @@ export function ViviendaAsignadaTab({ cliente }: ViviendaAsignadaTabProps) {
   // =====================================================
 
   // ✅ Validar requisitos para asignar vivienda
-  const tieneNumeroCedula = cliente.numero_documento && cliente.numero_documento.trim() !== ''
-  const documentoCompleto = tieneNumeroCedula && tieneDocumentoFisico
+  const tieneNumeroCedula =
+    cliente.numero_documento && cliente.numero_documento.trim() !== ''
 
   return (
     <div className={styles.container.base}>
@@ -335,14 +346,15 @@ export function ViviendaAsignadaTab({ cliente }: ViviendaAsignadaTabProps) {
         {/* Título y descripción */}
         <h3 className={styles.empty.title}>Sin vivienda asignada</h3>
         <p className={styles.empty.description}>
-          Este cliente aún no tiene una vivienda asignada. Para poder asignar una vivienda
-          y gestionar el proceso de compra, asegúrate de completar los requisitos necesarios.
+          Este cliente aún no tiene una vivienda asignada. Para poder asignar
+          una vivienda y gestionar el proceso de compra, asegúrate de completar
+          los requisitos necesarios.
         </p>
 
         {/* Checklist de requisitos */}
         <div className={styles.empty.checklistContainer}>
           <div className={styles.empty.checklistHeader}>
-            <IdCard className="w-4 h-4" />
+            <IdCard className='h-4 w-4' />
             <span>Requisitos para asignar vivienda</span>
           </div>
 
@@ -354,13 +366,20 @@ export function ViviendaAsignadaTab({ cliente }: ViviendaAsignadaTabProps) {
               ) : (
                 <XCircle className={styles.empty.checklistIconPending} />
               )}
-              <div className="flex-1">
-                <p className={tieneNumeroCedula ? styles.empty.checklistTextSuccess : styles.empty.checklistTextPending}>
+              <div className='flex-1'>
+                <p
+                  className={
+                    tieneNumeroCedula
+                      ? styles.empty.checklistTextSuccess
+                      : styles.empty.checklistTextPending
+                  }
+                >
                   Número de documento registrado
                 </p>
                 {!tieneNumeroCedula && (
                   <p className={styles.empty.checklistSubtext}>
-                    Edita la información del cliente (tab Información General) y agrega su cédula/pasaporte
+                    Edita la información del cliente (tab Información General) y
+                    agrega su cédula/pasaporte
                   </p>
                 )}
               </div>
@@ -369,19 +388,26 @@ export function ViviendaAsignadaTab({ cliente }: ViviendaAsignadaTabProps) {
             {/* Requisito 2: Documento físico escaneado */}
             <div className={styles.empty.checklistItem}>
               {cargandoDoc ? (
-                <div className="w-5 h-5 border-2 border-cyan-600 border-t-transparent rounded-full animate-spin flex-shrink-0" />
+                <div className='h-5 w-5 flex-shrink-0 animate-spin rounded-full border-2 border-cyan-600 border-t-transparent' />
               ) : tieneDocumentoFisico ? (
                 <CheckCircle2 className={styles.empty.checklistIconSuccess} />
               ) : (
                 <XCircle className={styles.empty.checklistIconPending} />
               )}
-              <div className="flex-1">
-                <p className={tieneDocumentoFisico ? styles.empty.checklistTextSuccess : styles.empty.checklistTextPending}>
+              <div className='flex-1'>
+                <p
+                  className={
+                    tieneDocumentoFisico
+                      ? styles.empty.checklistTextSuccess
+                      : styles.empty.checklistTextPending
+                  }
+                >
                   Documento de identidad escaneado (archivo físico)
                 </p>
                 {!tieneDocumentoFisico && !cargandoDoc && (
                   <p className={styles.empty.checklistSubtext}>
-                    Debes subir el archivo escaneado de la cédula/pasaporte en la pestaña <strong>Documentos</strong>
+                    Debes subir el archivo escaneado de la cédula/pasaporte en
+                    la pestaña <strong>Documentos</strong>
                   </p>
                 )}
               </div>
@@ -393,42 +419,75 @@ export function ViviendaAsignadaTab({ cliente }: ViviendaAsignadaTabProps) {
         {!tieneDocumentoFisico ? (
           <div className={styles.empty.ctaContainer}>
             <div className={styles.empty.ctaInfo}>
-              <AlertCircle className="w-6 h-6 text-orange-600 dark:text-orange-400 flex-shrink-0 mt-1" />
-              <div className="flex-1">
+              <AlertCircle className='mt-1 h-6 w-6 flex-shrink-0 text-orange-600 dark:text-orange-400' />
+              <div className='flex-1'>
                 <p className={styles.empty.ctaTitle}>
                   📋 Sigue estos pasos para habilitar la asignación
                 </p>
-                <ol className="text-xs text-gray-700 dark:text-gray-300 leading-relaxed mt-3 space-y-2 list-none">
+                <ol className='mt-3 list-none space-y-2 text-xs leading-relaxed text-gray-700 dark:text-gray-300'>
                   {!tieneNumeroCedula && (
-                    <li className="flex items-start gap-2">
-                      <span className="flex-shrink-0 w-5 h-5 rounded-full bg-orange-500 text-white text-[10px] font-bold flex items-center justify-center mt-0.5">1</span>
+                    <li className='flex items-start gap-2'>
+                      <span className='mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-orange-500 text-[10px] font-bold text-white'>
+                        1
+                      </span>
                       <div>
-                        <strong className="text-orange-600 dark:text-orange-400">Edita el cliente</strong> y registra su número de cédula/pasaporte en Información General
+                        <strong className='text-orange-600 dark:text-orange-400'>
+                          Edita el cliente
+                        </strong>{' '}
+                        y registra su número de cédula/pasaporte en Información
+                        General
                       </div>
                     </li>
                   )}
-                  <li className="flex items-start gap-2">
-                    <span className="flex-shrink-0 w-5 h-5 rounded-full bg-orange-500 text-white text-[10px] font-bold flex items-center justify-center mt-0.5">{!tieneNumeroCedula ? '2' : '1'}</span>
+                  <li className='flex items-start gap-2'>
+                    <span className='mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-orange-500 text-[10px] font-bold text-white'>
+                      {!tieneNumeroCedula ? '2' : '1'}
+                    </span>
                     <div>
-                      <strong className="text-orange-600 dark:text-orange-400">Haz clic en el botón naranja</strong> de abajo o ve a la pestaña <span className="px-1.5 py-0.5 rounded bg-cyan-100 dark:bg-cyan-900/50 text-cyan-700 dark:text-cyan-300 font-semibold">Documentos</span>
+                      <strong className='text-orange-600 dark:text-orange-400'>
+                        Haz clic en el botón naranja
+                      </strong>{' '}
+                      de abajo o ve a la pestaña{' '}
+                      <span className='rounded bg-cyan-100 px-1.5 py-0.5 font-semibold text-cyan-700 dark:bg-cyan-900/50 dark:text-cyan-300'>
+                        Documentos
+                      </span>
                     </div>
                   </li>
-                  <li className="flex items-start gap-2">
-                    <span className="flex-shrink-0 w-5 h-5 rounded-full bg-orange-500 text-white text-[10px] font-bold flex items-center justify-center mt-0.5">{!tieneNumeroCedula ? '3' : '2'}</span>
+                  <li className='flex items-start gap-2'>
+                    <span className='mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-orange-500 text-[10px] font-bold text-white'>
+                      {!tieneNumeroCedula ? '3' : '2'}
+                    </span>
                     <div>
-                      <strong className="text-orange-600 dark:text-orange-400">Presiona el botón naranja</strong> <span className="px-1.5 py-0.5 rounded bg-orange-500 text-white font-bold text-[10px]">📄 Subir Cédula/Pasaporte</span> en la esquina superior derecha
+                      <strong className='text-orange-600 dark:text-orange-400'>
+                        Presiona el botón naranja
+                      </strong>{' '}
+                      <span className='rounded bg-orange-500 px-1.5 py-0.5 text-[10px] font-bold text-white'>
+                        📄 Subir Cédula/Pasaporte
+                      </span>{' '}
+                      en la esquina superior derecha
                     </div>
                   </li>
-                  <li className="flex items-start gap-2">
-                    <span className="flex-shrink-0 w-5 h-5 rounded-full bg-orange-500 text-white text-[10px] font-bold flex items-center justify-center mt-0.5">{!tieneNumeroCedula ? '4' : '3'}</span>
+                  <li className='flex items-start gap-2'>
+                    <span className='mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-orange-500 text-[10px] font-bold text-white'>
+                      {!tieneNumeroCedula ? '4' : '3'}
+                    </span>
                     <div>
-                      <strong className="text-orange-600 dark:text-orange-400">Sube el archivo</strong> (cédula/pasaporte escaneado) y completa el formulario
+                      <strong className='text-orange-600 dark:text-orange-400'>
+                        Sube el archivo
+                      </strong>{' '}
+                      (cédula/pasaporte escaneado) y completa el formulario
                     </div>
                   </li>
-                  <li className="flex items-start gap-2">
-                    <span className="flex-shrink-0 w-5 h-5 rounded-full bg-emerald-500 text-white text-[10px] font-bold flex items-center justify-center mt-0.5">✓</span>
+                  <li className='flex items-start gap-2'>
+                    <span className='mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-emerald-500 text-[10px] font-bold text-white'>
+                      ✓
+                    </span>
                     <div>
-                      <strong className="text-emerald-600 dark:text-emerald-400">¡Listo!</strong> El botón &quot;Asignar Vivienda&quot; del header se habilitará automáticamente
+                      <strong className='text-emerald-600 dark:text-emerald-400'>
+                        ¡Listo!
+                      </strong>{' '}
+                      El botón &quot;Asignar Vivienda&quot; del header se
+                      habilitará automáticamente
                     </div>
                   </li>
                 </ol>
@@ -436,12 +495,14 @@ export function ViviendaAsignadaTab({ cliente }: ViviendaAsignadaTabProps) {
             </div>
             <button
               onClick={() => {
-                const documentosTab = document.querySelector('[data-tab="documentos"]') as HTMLButtonElement
+                const documentosTab = document.querySelector(
+                  '[data-tab="documentos"]'
+                ) as HTMLButtonElement
                 documentosTab?.click()
               }}
-              className="mt-4 w-full px-4 py-3 bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white rounded-lg font-bold transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2 animate-pulse"
+              className='mt-4 flex w-full animate-pulse items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-orange-600 to-red-600 px-4 py-3 font-bold text-white shadow-lg transition-all hover:from-orange-700 hover:to-red-700 hover:shadow-xl'
             >
-              <IdCard className="w-5 h-5" />
+              <IdCard className='h-5 w-5' />
               Ir a Documentos para subir archivo
             </button>
           </div>
@@ -454,7 +515,9 @@ export function ViviendaAsignadaTab({ cliente }: ViviendaAsignadaTabProps) {
                   ✅ ¡Todo listo! Usa el botón en el encabezado
                 </p>
                 <p className={styles.empty.ctaDescription}>
-                  El botón &quot;Asignar Vivienda&quot; en el header superior te permitirá seleccionar una vivienda disponible de cualquier proyecto activo.
+                  El botón &quot;Asignar Vivienda&quot; en el header superior te
+                  permitirá seleccionar una vivienda disponible de cualquier
+                  proyecto activo.
                 </p>
               </div>
             </div>
@@ -463,9 +526,11 @@ export function ViviendaAsignadaTab({ cliente }: ViviendaAsignadaTabProps) {
 
         {/* Información adicional */}
         <div className={styles.empty.footerInfo}>
-          <AlertCircle className="w-4 h-4 text-gray-400" />
+          <AlertCircle className='h-4 w-4 text-gray-400' />
           <p className={styles.empty.footerText}>
-            <strong>¿Por qué se requiere el documento?</strong> Es necesario para generar los contratos, validar la identidad del cliente y gestionar el proceso legal de compra-venta de la vivienda.
+            <strong>¿Por qué se requiere el documento?</strong> Es necesario
+            para generar los contratos, validar la identidad del cliente y
+            gestionar el proceso legal de compra-venta de la vivienda.
           </p>
         </div>
       </div>
@@ -489,9 +554,9 @@ export function ViviendaAsignadaTab({ cliente }: ViviendaAsignadaTabProps) {
 
       <ModalMarcarPasoCompletado
         isOpen={modalMarcarPasoOpen}
-        paso={pasoSeleccionado}
+        paso={pasoSeleccionado as unknown as PasoInfo | null}
         onClose={cerrarModalMarcarPaso}
-        onConfirmar={handleConfirmarPaso as any}
+        onConfirmar={handleConfirmarPaso}
       />
     </div>
   )

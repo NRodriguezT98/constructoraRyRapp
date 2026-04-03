@@ -15,17 +15,20 @@ import { useCallback, useState } from 'react'
 import { logger } from '@/lib/utils/logger'
 
 import { interesesService } from '../services/intereses.service'
-import type { ActualizarClienteDTO, ClienteResumen, CrearClienteDTO } from '../types'
+import type {
+  ActualizarClienteDTO,
+  ClienteResumen,
+  CrearClienteDTO,
+} from '../types'
 
 import {
-    useActualizarClienteMutation,
-    useClienteQuery,
-    useCrearClienteMutation,
-    useDetectarCambios,
-    useFormularioCliente,
-    useInteresFormulario,
+  useActualizarClienteMutation,
+  useClienteQuery,
+  useCrearClienteMutation,
+  useDetectarCambios,
+  useFormularioCliente,
+  useInteresFormulario,
 } from '.'
-
 
 interface UseFormularioClienteContainerProps {
   clienteId?: string | null
@@ -36,7 +39,7 @@ interface UseFormularioClienteContainerProps {
 
 export function useFormularioClienteContainer({
   clienteId,
-  cliente,
+  cliente: _cliente,
   isOpen = false,
   onClose,
 }: UseFormularioClienteContainerProps) {
@@ -47,7 +50,9 @@ export function useFormularioClienteContainer({
   // ✅ SIEMPRE hacer fetch del cliente completo en edición
   // ClienteResumen puede no tener todos los campos necesarios
   // (Similar a Proyectos que hace fetch de proyectoConValidacion)
-  const { data: clienteCompleto, isLoading: cargandoCliente } = useClienteQuery(clienteId ?? null)
+  const { data: clienteCompleto, isLoading: cargandoCliente } = useClienteQuery(
+    clienteId ?? null
+  )
 
   // Mutations
   const crearMutation = useCrearClienteMutation()
@@ -58,15 +63,21 @@ export function useFormularioClienteContainer({
   // =====================================================
 
   // Estados para los dos modales
-  const [mostrarConfirmacionCambios, setMostrarConfirmacionCambios] = useState(false)
+  const [mostrarConfirmacionCambios, setMostrarConfirmacionCambios] =
+    useState(false)
   const [mostrarDescarte, setMostrarDescarte] = useState(false)
-  const [datosParaGuardar, setDatosParaGuardar] = useState<CrearClienteDTO | ActualizarClienteDTO | null>(null)
+  const [datosParaGuardar, setDatosParaGuardar] = useState<
+    CrearClienteDTO | ActualizarClienteDTO | null
+  >(null)
 
   // Estado del modal principal
   // ✅ En edición: esperar a que clienteCompleto esté listo (como Proyectos)
   const modalAbierto = clienteId
-    ? (isOpen && !cargandoCliente && clienteCompleto !== null && clienteCompleto !== undefined)
-    : (isOpen || crearMutation.isPending || actualizarMutation.isPending)
+    ? isOpen &&
+      !cargandoCliente &&
+      clienteCompleto !== null &&
+      clienteCompleto !== undefined
+    : isOpen || crearMutation.isPending || actualizarMutation.isPending
 
   // =====================================================
   // HOOK DE INTERÉS (solo para nuevos clientes)
@@ -100,7 +111,9 @@ export function useFormularioClienteContainer({
         })
       } else {
         // Crear nuevo cliente
-        const nuevoCliente = await crearMutation.mutateAsync(datos as CrearClienteDTO)
+        const nuevoCliente = await crearMutation.mutateAsync(
+          datos as CrearClienteDTO
+        )
 
         // Si tiene interés inicial, registrarlo
         const interesData = getInteresData()
@@ -122,7 +135,14 @@ export function useFormularioClienteContainer({
       setMostrarConfirmacionCambios(false)
       onClose?.()
     },
-    [clienteCompleto, crearMutation, actualizarMutation, getInteresData, resetInteres, onClose]
+    [
+      clienteCompleto,
+      crearMutation,
+      actualizarMutation,
+      getInteresData,
+      resetInteres,
+      onClose,
+    ]
   )
 
   /**

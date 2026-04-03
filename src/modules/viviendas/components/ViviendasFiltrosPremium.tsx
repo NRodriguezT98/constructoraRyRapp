@@ -40,7 +40,9 @@ export function ViviendasFiltrosPremium({
   totalResultados,
   proyectos = [],
   vista = 'cards',
-  onCambiarVista = () => {},
+  onCambiarVista = (_vista: TipoVista) => {
+    /* noop: prop opcional sin handler */
+  },
 }: ViviendasFiltrosPremiumProps) {
   // ✅ FIX HYDRATION: Evitar mismatch entre servidor y cliente
   const [mounted, setMounted] = useState(false)
@@ -49,7 +51,9 @@ export function ViviendasFiltrosPremium({
     setMounted(true)
   }, [])
 
-  const hayFiltros = Boolean(filtros.search || filtros.proyecto_id || filtros.estado)
+  const hayFiltros = Boolean(
+    filtros.search || filtros.proyecto_id || filtros.estado
+  )
 
   return (
     <motion.div
@@ -62,16 +66,16 @@ export function ViviendasFiltrosPremium({
       <div className={styles.searchBar}>
         {/* Búsqueda */}
         <div className={styles.searchWrapper}>
-          <label htmlFor="search-viviendas" className={styles.label}>
+          <label htmlFor='search-viviendas' className={styles.label}>
             Buscar
           </label>
           <Search className={styles.searchIcon} />
           <input
-            id="search-viviendas"
-            type="text"
+            id='search-viviendas'
+            type='text'
             value={filtros.search}
-            onChange={(e) => onActualizarFiltros({ search: e.target.value })}
-            placeholder="Buscar número, manzana, matrícula..."
+            onChange={e => onActualizarFiltros({ search: e.target.value })}
+            placeholder='Buscar número, manzana, matrícula...'
             className={styles.searchInput}
           />
           {filtros.search && (
@@ -81,26 +85,26 @@ export function ViviendasFiltrosPremium({
               exit={{ opacity: 0, scale: 0.8 }}
               onClick={() => onActualizarFiltros({ search: '' })}
               className={styles.searchClearButton}
-              aria-label="Limpiar búsqueda"
+              aria-label='Limpiar búsqueda'
             >
-              <X className="w-4 h-4" />
+              <X className='h-4 w-4' />
             </motion.button>
           )}
         </div>
 
         {/* Select Proyecto */}
-        <div className="relative">
-          <label htmlFor="filter-proyecto" className={styles.label}>
+        <div className='relative'>
+          <label htmlFor='filter-proyecto' className={styles.label}>
             Proyecto
           </label>
           <select
-            id="filter-proyecto"
+            id='filter-proyecto'
             value={filtros.proyecto_id}
-            onChange={(e) => onActualizarFiltros({ proyecto_id: e.target.value })}
+            onChange={e => onActualizarFiltros({ proyecto_id: e.target.value })}
             className={styles.select}
           >
-            <option value="">Todos los proyectos</option>
-            {proyectos.map((proyecto) => (
+            <option value=''>Todos los proyectos</option>
+            {proyectos.map(proyecto => (
               <option key={proyecto.id} value={proyecto.id}>
                 {proyecto.nombre}
               </option>
@@ -109,20 +113,20 @@ export function ViviendasFiltrosPremium({
         </div>
 
         {/* Select Estado */}
-        <div className="relative">
-          <label htmlFor="filter-estado" className={styles.label}>
+        <div className='relative'>
+          <label htmlFor='filter-estado' className={styles.label}>
             Estado
           </label>
           <select
-            id="filter-estado"
+            id='filter-estado'
             value={filtros.estado}
-            onChange={(e) => onActualizarFiltros({ estado: e.target.value })}
+            onChange={e => onActualizarFiltros({ estado: e.target.value })}
             className={styles.select}
           >
-            <option value="">Todos los estados</option>
-            <option value="Disponible">🟢 Disponible</option>
-            <option value="Asignada">🔵 Asignada</option>
-            <option value="Entregada">🟣 Entregada</option>
+            <option value=''>Todos los estados</option>
+            <option value='Disponible'>🟢 Disponible</option>
+            <option value='Asignada'>🔵 Asignada</option>
+            <option value='Entregada'>🟣 Entregada</option>
           </select>
         </div>
       </div>
@@ -131,31 +135,31 @@ export function ViviendasFiltrosPremium({
       <div className={styles.footer}>
         {/* Toggle Cards/Tabla - Solo renderizar después de montar */}
         {mounted && (
-          <div className="flex items-center gap-1 p-1 bg-gray-100 dark:bg-gray-800 rounded-lg">
+          <div className='flex items-center gap-1 rounded-lg bg-gray-100 p-1 dark:bg-gray-800'>
             <button
               onClick={() => onCambiarVista('cards')}
               className={cn(
-                'px-2.5 py-1.5 rounded-md text-xs font-medium transition-all flex items-center gap-1.5',
+                'flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium transition-all',
                 vista === 'cards'
-                  ? 'bg-white dark:bg-gray-700 text-orange-600 dark:text-orange-400 shadow-sm'
-                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+                  ? 'bg-white text-orange-600 shadow-sm dark:bg-gray-700 dark:text-orange-400'
+                  : 'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200'
               )}
-              title="Vista de cards"
+              title='Vista de cards'
             >
-              <LayoutGrid className="w-3.5 h-3.5" />
+              <LayoutGrid className='h-3.5 w-3.5' />
               <span>Cards</span>
             </button>
             <button
               onClick={() => onCambiarVista('tabla')}
               className={cn(
-                'px-2.5 py-1.5 rounded-md text-xs font-medium transition-all flex items-center gap-1.5',
+                'flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium transition-all',
                 vista === 'tabla'
-                  ? 'bg-white dark:bg-gray-700 text-orange-600 dark:text-orange-400 shadow-sm'
-                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+                  ? 'bg-white text-orange-600 shadow-sm dark:bg-gray-700 dark:text-orange-400'
+                  : 'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200'
               )}
-              title="Vista de tabla"
+              title='Vista de tabla'
             >
-              <Table className="w-3.5 h-3.5" />
+              <Table className='h-3.5 w-3.5' />
               <span>Tabla</span>
             </button>
           </div>
@@ -174,7 +178,7 @@ export function ViviendasFiltrosPremium({
               onClick={onLimpiarFiltros}
               className={styles.clearButton}
             >
-              <X className="w-4 h-4" />
+              <X className='h-4 w-4' />
               Limpiar filtros
             </motion.button>
           )}

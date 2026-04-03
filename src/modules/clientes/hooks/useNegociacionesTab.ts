@@ -54,7 +54,7 @@ interface FuentePago {
   numero_referencia?: string
   observaciones?: string
   monto_recibido: number
-  abonos?: any[]
+  abonos?: Abono[]
 }
 
 interface Abono {
@@ -64,7 +64,10 @@ interface Abono {
   comprobante_url?: string
 }
 
-export function useNegociacionesTab({ clienteId, cliente }: UseNegociacionesTabProps) {
+export function useNegociacionesTab({
+  clienteId,
+  cliente,
+}: UseNegociacionesTabProps) {
   const router = useRouter()
 
   // =====================================================
@@ -73,7 +76,8 @@ export function useNegociacionesTab({ clienteId, cliente }: UseNegociacionesTabP
 
   const [negociaciones, setNegociaciones] = useState<NegociacionDetalle[]>([])
   const [loading, setLoading] = useState(true)
-  const [negociacionActiva, setNegociacionActiva] = useState<NegociacionDetalle | null>(null)
+  const [negociacionActiva, setNegociacionActiva] =
+    useState<NegociacionDetalle | null>(null)
   const [fuentesPago, setFuentesPago] = useState<FuentePago[]>([])
   const [abonos, setAbonos] = useState<Abono[]>([])
   const [loadingDatos, setLoadingDatos] = useState(false)
@@ -90,10 +94,14 @@ export function useNegociacionesTab({ clienteId, cliente }: UseNegociacionesTabP
 
     setLoading(true)
     try {
-      const data = await negociacionesService.obtenerNegociacionesCliente(clienteId)
+      const data =
+        await negociacionesService.obtenerNegociacionesCliente(clienteId)
       setNegociaciones(data)
     } catch (err) {
-      logger.error('❌ [useNegociacionesTab] Error cargando negociaciones:', err)
+      logger.error(
+        '❌ [useNegociacionesTab] Error cargando negociaciones:',
+        err
+      )
       setNegociaciones([])
     } finally {
       setLoading(false)
@@ -111,14 +119,18 @@ export function useNegociacionesTab({ clienteId, cliente }: UseNegociacionesTabP
       setFuentesPago(fuentesData)
 
       // Extraer todos los abonos de todas las fuentes
-      const todosAbonos = fuentesData.flatMap((fuente: any) => fuente.abonos || [])
+      const todosAbonos = fuentesData.flatMap(fuente => fuente.abonos || [])
       // Ordenar por fecha descendente
-      todosAbonos.sort((a: any, b: any) =>
-        new Date(b.fecha_abono).getTime() - new Date(a.fecha_abono).getTime()
+      todosAbonos.sort(
+        (a, b) =>
+          new Date(b.fecha_abono).getTime() - new Date(a.fecha_abono).getTime()
       )
       setAbonos(todosAbonos)
     } catch (err) {
-      logger.error('❌ [useNegociacionesTab] Error cargando datos de negociación:', err)
+      logger.error(
+        '❌ [useNegociacionesTab] Error cargando datos de negociación:',
+        err
+      )
       setFuentesPago([])
       setAbonos([])
     } finally {
@@ -154,11 +166,15 @@ export function useNegociacionesTab({ clienteId, cliente }: UseNegociacionesTabP
       id: cliente.id,
       nombre_completo: cliente.nombre_completo,
       nombres: cliente.nombres,
-      apellidos: cliente.apellidos
-    }).split('/').pop()
+      apellidos: cliente.apellidos,
+    })
+      .split('/')
+      .pop()
 
     const nombreCliente = cliente.nombre_completo || cliente.nombres || ''
-    router.push(`/clientes/${clienteSlug}/negociaciones/crear?nombre=${encodeURIComponent(nombreCliente)}` as any)
+    router.push(
+      `/clientes/${clienteSlug}/negociaciones/crear?nombre=${encodeURIComponent(nombreCliente)}`
+    )
   }, [cliente, router])
 
   /**
@@ -169,22 +185,29 @@ export function useNegociacionesTab({ clienteId, cliente }: UseNegociacionesTabP
       id: cliente.id,
       nombre_completo: cliente.nombre_completo,
       nombres: cliente.nombres,
-      apellidos: cliente.apellidos
-    }).split('/').pop()
+      apellidos: cliente.apellidos,
+    })
+      .split('/')
+      .pop()
 
     const nombreCliente = cliente.nombre_completo || cliente.nombres || ''
-    router.push(`/clientes/${clienteSlug}/asignar-vivienda?nombre=${encodeURIComponent(nombreCliente)}` as any)
+    router.push(
+      `/clientes/${clienteSlug}/asignar-vivienda?nombre=${encodeURIComponent(nombreCliente)}`
+    )
   }, [cliente, router])
 
   /**
    * Navegar a registrar abono
    */
-  const navegarARegistrarAbono = useCallback((negociacionId: string) => {
-    const nombreCliente = cliente.nombre_completo || cliente.nombres || ''
-    router.push(
-      `/abonos?cliente_id=${cliente.id}&negociacion_id=${negociacionId}&cliente_nombre=${encodeURIComponent(nombreCliente)}` as any
-    )
-  }, [cliente, router])
+  const navegarARegistrarAbono = useCallback(
+    (negociacionId: string) => {
+      const nombreCliente = cliente.nombre_completo || cliente.nombres || ''
+      router.push(
+        `/abonos?cliente_id=${cliente.id}&negociacion_id=${negociacionId}&cliente_nombre=${encodeURIComponent(nombreCliente)}`
+      )
+    },
+    [cliente, router]
+  )
 
   // =====================================================
   // CÁLCULOS COMPUTADOS
@@ -210,16 +233,20 @@ export function useNegociacionesTab({ clienteId, cliente }: UseNegociacionesTabP
 
   const totales = {
     valorFinal: negociacionActiva
-      ? (negociacionActiva.valor_negociado || 0) - (negociacionActiva.descuento_aplicado || 0)
+      ? (negociacionActiva.valor_negociado || 0) -
+        (negociacionActiva.descuento_aplicado || 0)
       : 0,
     totalAbonado: abonos.reduce((sum, abono) => sum + (abono.monto || 0), 0),
-    totalFuentesPago: fuentesPago.reduce((sum, fuente) => sum + (fuente.monto_aprobado || 0), 0),
+    totalFuentesPago: fuentesPago.reduce(
+      (sum, fuente) => sum + (fuente.monto_aprobado || 0),
+      0
+    ),
   }
 
   /**
    * Transformar fuentes de pago al formato esperado por componentes de UI
    */
-  const fuentesTransformadas = fuentesPago.map((fuente) => ({
+  const fuentesTransformadas = fuentesPago.map(fuente => ({
     tipo: fuente.tipo,
     monto: fuente.monto_aprobado || 0,
     entidad: fuente.entidad || undefined,
@@ -247,7 +274,8 @@ export function useNegociacionesTab({ clienteId, cliente }: UseNegociacionesTabP
 
     if (typeof window !== 'undefined') {
       window.addEventListener('negociacion-creada', handleRecargar)
-      return () => window.removeEventListener('negociacion-creada', handleRecargar)
+      return () =>
+        window.removeEventListener('negociacion-creada', handleRecargar)
     }
   }, [cargarNegociaciones])
 

@@ -11,8 +11,15 @@ interface CambioVisualProps {
 }
 
 export function CambioVisual({ version }: CambioVisualProps) {
-  const anterior = version.datos_anteriores
-  const nuevo = version.datos_nuevos
+  type DatosCambio = {
+    monto_aprobado?: number
+    entidad?: string | null
+    tipo?: string
+  }
+  const anterior = version.datos_anteriores as DatosCambio | undefined
+  const nuevo = version.datos_nuevos as DatosCambio | undefined
+
+  if (!anterior || !nuevo) return null
 
   // Detectar qué cambió de forma visual
   const cambios = []
@@ -20,9 +27,12 @@ export function CambioVisual({ version }: CambioVisualProps) {
   if (anterior.monto_aprobado !== nuevo.monto_aprobado) {
     cambios.push({
       campo: 'Monto Aprobado',
-      anterior: formatCurrency(anterior.monto_aprobado),
-      nuevo: formatCurrency(nuevo.monto_aprobado),
-      tipo: anterior.monto_aprobado > nuevo.monto_aprobado ? 'disminuyo' : 'aumento',
+      anterior: formatCurrency(anterior.monto_aprobado ?? 0),
+      nuevo: formatCurrency(nuevo.monto_aprobado ?? 0),
+      tipo:
+        (anterior.monto_aprobado ?? 0) > (nuevo.monto_aprobado ?? 0)
+          ? 'disminuyo'
+          : 'aumento',
     })
   }
 
@@ -56,7 +66,9 @@ export function CambioVisual({ version }: CambioVisualProps) {
             {/* Valor Anterior */}
             <div className={styles.cambio.valorAnterior.container}>
               <p className={styles.cambio.valorAnterior.label}>Antes:</p>
-              <p className={styles.cambio.valorAnterior.value}>{cambio.anterior}</p>
+              <p className={styles.cambio.valorAnterior.value}>
+                {cambio.anterior}
+              </p>
             </div>
 
             {/* Flecha */}

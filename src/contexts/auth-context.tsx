@@ -21,15 +21,14 @@ import { createContext, useContext } from 'react'
 import type { User } from '@supabase/supabase-js'
 
 import {
-    useAuthPerfilQuery,
-    useAuthSessionQuery,
-    useAuthUserQuery,
-    useLoginMutation,
-    useLogoutMutation,
-    type Perfil,
+  useAuthPerfilQuery,
+  useAuthSessionQuery,
+  useAuthUserQuery,
+  useLoginMutation,
+  useLogoutMutation,
+  type Perfil,
 } from '@/hooks/auth'
 import { debugLog, errorLog, successLog } from '@/lib/utils/logger'
-
 
 // ============================================
 // TYPES
@@ -55,9 +54,11 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Queries de React Query
-  const { data: session, isLoading: sessionLoading } = useAuthSessionQuery()
+  const { isLoading: sessionLoading } = useAuthSessionQuery()
   const { data: user, isLoading: userLoading } = useAuthUserQuery()
-  const { data: perfil, isLoading: perfilLoading } = useAuthPerfilQuery(user?.id)
+  const { data: perfil, isLoading: perfilLoading } = useAuthPerfilQuery(
+    user?.id
+  )
 
   // Mutaciones
   const loginMutation = useLoginMutation()
@@ -113,11 +114,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     signOut,
   }
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  )
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
 
 // ============================================

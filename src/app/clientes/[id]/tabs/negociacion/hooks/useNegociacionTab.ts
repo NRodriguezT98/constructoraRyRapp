@@ -93,7 +93,11 @@ export function useNegociacionTab({ cliente }: UseNegociacionTabProps) {
   const isAdmin = !permisosLoading && rol === 'Administrador'
 
   // ─── Negociación activa ──────────────────────────────────────────────────
-  const { negociaciones, isLoading: isLoadingNeg, refetch: refetchNegociaciones } = useNegociacionesQuery({
+  const {
+    negociaciones,
+    isLoading: isLoadingNeg,
+    refetch: refetchNegociaciones,
+  } = useNegociacionesQuery({
     clienteId: cliente.id,
   })
 
@@ -113,8 +117,8 @@ export function useNegociacionTab({ cliente }: UseNegociacionTabProps) {
   // Incluye: (valor_negociado - descuento) + gastos_notariales + recargo_esquinera
   const valorVivienda = useMemo(() => {
     if (!negociacion) return 0
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return (negociacion as any).valor_total_pagar ?? negociacion.valorFinal ?? 0
+
+    return negociacion.valor_total_pagar ?? negociacion.valorFinal ?? 0
   }, [negociacion])
 
   // ─── Fuentes de pago ────────────────────────────────────────────────────

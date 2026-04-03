@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import { logger } from '@/lib/utils/logger'
 
@@ -62,13 +62,16 @@ export function useRateLimit(email: string): UseRateLimitReturn {
         const bloqueosLimpios: BloqueoPorEmail = {}
 
         Object.entries(bloqueos).forEach(([emailKey, timestamp]) => {
-          if (timestamp && (ahora - timestamp) < TIEMPO_LIMPIEZA) {
+          if (timestamp && ahora - timestamp < TIEMPO_LIMPIEZA) {
             bloqueosLimpios[emailKey] = timestamp
           }
         })
 
         if (Object.keys(bloqueosLimpios).length > 0) {
-          localStorage.setItem(STORAGE_KEY_BLOQUEO, JSON.stringify(bloqueosLimpios))
+          localStorage.setItem(
+            STORAGE_KEY_BLOQUEO,
+            JSON.stringify(bloqueosLimpios)
+          )
         } else {
           localStorage.removeItem(STORAGE_KEY_BLOQUEO)
         }
@@ -78,7 +81,9 @@ export function useRateLimit(email: string): UseRateLimitReturn {
         // Limpiar intentos de emails que ya no están bloqueados
         const intentos: IntentosPorEmail = JSON.parse(intentosData)
         const bloqueoData = localStorage.getItem(STORAGE_KEY_BLOQUEO)
-        const bloqueos: BloqueoPorEmail = bloqueoData ? JSON.parse(bloqueoData) : {}
+        const bloqueos: BloqueoPorEmail = bloqueoData
+          ? JSON.parse(bloqueoData)
+          : {}
 
         const intentosLimpios: IntentosPorEmail = {}
         Object.entries(intentos).forEach(([emailKey, count]) => {
@@ -88,7 +93,10 @@ export function useRateLimit(email: string): UseRateLimitReturn {
         })
 
         if (Object.keys(intentosLimpios).length > 0) {
-          localStorage.setItem(STORAGE_KEY_INTENTOS, JSON.stringify(intentosLimpios))
+          localStorage.setItem(
+            STORAGE_KEY_INTENTOS,
+            JSON.stringify(intentosLimpios)
+          )
         } else {
           localStorage.removeItem(STORAGE_KEY_INTENTOS)
         }
@@ -97,6 +105,54 @@ export function useRateLimit(email: string): UseRateLimitReturn {
       logger.error('Error al limpiar emails antiguos:', error)
     }
   }
+
+  /**
+   * Limpia el bloqueo y resetea intentos para este email
+   */
+  const limpiarBloqueo = useCallback(() => {
+    if (!email) return
+
+    setEstaBloqueado(false)
+    setBloqueadoHasta(null)
+    setIntentosFallidos(0)
+    setMinutosRestantes(0)
+
+    try {
+      // Remover intentos de este email
+      const intentosData = localStorage.getItem(STORAGE_KEY_INTENTOS)
+      if (intentosData) {
+        const intentosPorEmail: IntentosPorEmail = JSON.parse(intentosData)
+        delete intentosPorEmail[email]
+
+        if (Object.keys(intentosPorEmail).length > 0) {
+          localStorage.setItem(
+            STORAGE_KEY_INTENTOS,
+            JSON.stringify(intentosPorEmail)
+          )
+        } else {
+          localStorage.removeItem(STORAGE_KEY_INTENTOS)
+        }
+      }
+
+      // Remover bloqueo de este email
+      const bloqueoData = localStorage.getItem(STORAGE_KEY_BLOQUEO)
+      if (bloqueoData) {
+        const bloqueoPorEmail: BloqueoPorEmail = JSON.parse(bloqueoData)
+        delete bloqueoPorEmail[email]
+
+        if (Object.keys(bloqueoPorEmail).length > 0) {
+          localStorage.setItem(
+            STORAGE_KEY_BLOQUEO,
+            JSON.stringify(bloqueoPorEmail)
+          )
+        } else {
+          localStorage.removeItem(STORAGE_KEY_BLOQUEO)
+        }
+      }
+    } catch (error) {
+      logger.error('Error al limpiar bloqueo:', error)
+    }
+  }, [email])
 
   // Cargar estado desde localStorage para este email específico
   useEffect(() => {
@@ -135,7 +191,7 @@ export function useRateLimit(email: string): UseRateLimitReturn {
     } catch (error) {
       logger.error('Error al cargar rate limit:', error)
     }
-  }, [email])
+  }, [email, limpiarBloqueo])
 
   // Actualizar minutos restantes cada segundo si está bloqueado
   useEffect(() => {
@@ -155,49 +211,7 @@ export function useRateLimit(email: string): UseRateLimitReturn {
     }, 1000)
 
     return () => clearInterval(interval)
-  }, [estaBloqueado, bloqueadoHasta])
-
-  /**
-   * Limpia el bloqueo y resetea intentos para este email
-   */
-  const limpiarBloqueo = () => {
-    if (!email) return
-
-    setEstaBloqueado(false)
-    setBloqueadoHasta(null)
-    setIntentosFallidos(0)
-    setMinutosRestantes(0)
-
-    try {
-      // Remover intentos de este email
-      const intentosData = localStorage.getItem(STORAGE_KEY_INTENTOS)
-      if (intentosData) {
-        const intentosPorEmail: IntentosPorEmail = JSON.parse(intentosData)
-        delete intentosPorEmail[email]
-
-        if (Object.keys(intentosPorEmail).length > 0) {
-          localStorage.setItem(STORAGE_KEY_INTENTOS, JSON.stringify(intentosPorEmail))
-        } else {
-          localStorage.removeItem(STORAGE_KEY_INTENTOS)
-        }
-      }
-
-      // Remover bloqueo de este email
-      const bloqueoData = localStorage.getItem(STORAGE_KEY_BLOQUEO)
-      if (bloqueoData) {
-        const bloqueoPorEmail: BloqueoPorEmail = JSON.parse(bloqueoData)
-        delete bloqueoPorEmail[email]
-
-        if (Object.keys(bloqueoPorEmail).length > 0) {
-          localStorage.setItem(STORAGE_KEY_BLOQUEO, JSON.stringify(bloqueoPorEmail))
-        } else {
-          localStorage.removeItem(STORAGE_KEY_BLOQUEO)
-        }
-      }
-    } catch (error) {
-      logger.error('Error al limpiar bloqueo:', error)
-    }
-  }
+  }, [estaBloqueado, bloqueadoHasta, limpiarBloqueo])
 
   /**
    * Verifica si la cuenta está bloqueada actualmente
@@ -226,9 +240,14 @@ export function useRateLimit(email: string): UseRateLimitReturn {
     try {
       // Actualizar intentos para este email
       const intentosData = localStorage.getItem(STORAGE_KEY_INTENTOS)
-      const intentosPorEmail: IntentosPorEmail = intentosData ? JSON.parse(intentosData) : {}
+      const intentosPorEmail: IntentosPorEmail = intentosData
+        ? JSON.parse(intentosData)
+        : {}
       intentosPorEmail[email] = nuevosIntentos
-      localStorage.setItem(STORAGE_KEY_INTENTOS, JSON.stringify(intentosPorEmail))
+      localStorage.setItem(
+        STORAGE_KEY_INTENTOS,
+        JSON.stringify(intentosPorEmail)
+      )
 
       // Si alcanzó el máximo, bloquear este email
       if (nuevosIntentos >= MAX_INTENTOS) {
@@ -237,11 +256,18 @@ export function useRateLimit(email: string): UseRateLimitReturn {
         setEstaBloqueado(true)
 
         const bloqueoData = localStorage.getItem(STORAGE_KEY_BLOQUEO)
-        const bloqueoPorEmail: BloqueoPorEmail = bloqueoData ? JSON.parse(bloqueoData) : {}
+        const bloqueoPorEmail: BloqueoPorEmail = bloqueoData
+          ? JSON.parse(bloqueoData)
+          : {}
         bloqueoPorEmail[email] = tiempoBloqueo
-        localStorage.setItem(STORAGE_KEY_BLOQUEO, JSON.stringify(bloqueoPorEmail))
+        localStorage.setItem(
+          STORAGE_KEY_BLOQUEO,
+          JSON.stringify(bloqueoPorEmail)
+        )
 
-        logger.warn(`🚨 Email ${email} bloqueado por ${TIEMPO_BLOQUEO / 60000} minutos`)
+        logger.warn(
+          `🚨 Email ${email} bloqueado por ${TIEMPO_BLOQUEO / 60000} minutos`
+        )
       }
     } catch (error) {
       logger.error('Error al registrar intento fallido:', error)
@@ -263,7 +289,10 @@ export function useRateLimit(email: string): UseRateLimitReturn {
         delete intentosPorEmail[email]
 
         if (Object.keys(intentosPorEmail).length > 0) {
-          localStorage.setItem(STORAGE_KEY_INTENTOS, JSON.stringify(intentosPorEmail))
+          localStorage.setItem(
+            STORAGE_KEY_INTENTOS,
+            JSON.stringify(intentosPorEmail)
+          )
         } else {
           localStorage.removeItem(STORAGE_KEY_INTENTOS)
         }

@@ -13,13 +13,12 @@ import { Pagination } from '@/shared/components/ui/Pagination'
 import { useVistaPreference } from '@/shared/hooks/useVistaPreference'
 
 import {
-    useEstadisticasProyectosQuery,
-    useProyectosFiltradosQuery,
-    useProyectosQuery,
+  useEstadisticasProyectosQuery,
+  useProyectosFiltradosQuery,
+  useProyectosQuery,
 } from '../hooks'
 import { proyectosPageStyles as styles } from '../styles/proyectos-page.styles'
 import type { Proyecto } from '../types'
-
 
 import { ArchivarProyectoModal } from './modals/archivar-proyecto-modal'
 import { RestaurarProyectoModal } from './modals/restaurar-proyecto-modal'
@@ -55,8 +54,8 @@ export function ProyectosPage({
   canCreate = false,
   canEdit = false,
   canDelete = false,
-  canView = true,
-  isAdmin = false,
+  canView: _canView = true,
+  isAdmin: _isAdmin = false,
 }: ProyectosPageProps = {}) {
   // ✅ Debug logs comentados (funcionalidad verificada)
   // console.log('🏗️ [PROYECTOS MAIN] Client Component montado con permisos:', {
@@ -70,9 +69,13 @@ export function ProyectosPage({
   const [modalEliminar, setModalEliminar] = useState(false)
   const [proyectoEliminar, setProyectoEliminar] = useState<string | null>(null)
   const [modalArchivar, setModalArchivar] = useState(false)
-  const [proyectoArchivar, setProyectoArchivar] = useState<Proyecto | null>(null)
+  const [proyectoArchivar, setProyectoArchivar] = useState<Proyecto | null>(
+    null
+  )
   const [modalRestaurar, setModalRestaurar] = useState(false)
-  const [proyectoRestaurar, setProyectoRestaurar] = useState<Proyecto | null>(null)
+  const [proyectoRestaurar, setProyectoRestaurar] = useState<Proyecto | null>(
+    null
+  )
 
   const router = useRouter()
 
@@ -84,9 +87,10 @@ export function ProyectosPage({
     cargando,
     eliminando,
     archivando,
-    restaurando
+    restaurando,
   } = useProyectosQuery()
-  const { proyectos, filtros, actualizarFiltros, limpiarFiltros } = useProyectosFiltradosQuery()
+  const { proyectos, filtros, actualizarFiltros, limpiarFiltros } =
+    useProyectosFiltradosQuery()
   const estadisticas = useEstadisticasProyectosQuery()
 
   // Detectar si hay filtros activos
@@ -105,13 +109,20 @@ export function ProyectosPage({
   )
 
   const proyectosPaginados = useMemo(
-    () => proyectos.slice((paginaActual - 1) * itemsPorPagina, paginaActual * itemsPorPagina),
+    () =>
+      proyectos.slice(
+        (paginaActual - 1) * itemsPorPagina,
+        paginaActual * itemsPorPagina
+      ),
     [proyectos, paginaActual, itemsPorPagina]
   )
 
-  const cambiarPagina = useCallback((pagina: number) => {
-    setPaginaActual(Math.max(1, Math.min(pagina, totalPaginas)))
-  }, [totalPaginas])
+  const cambiarPagina = useCallback(
+    (pagina: number) => {
+      setPaginaActual(Math.max(1, Math.min(pagina, totalPaginas)))
+    },
+    [totalPaginas]
+  )
 
   const cambiarItemsPorPagina = useCallback((items: number) => {
     setItemsPorPagina(items)
@@ -126,7 +137,9 @@ export function ProyectosPage({
   }
 
   const handleEditarProyecto = (proyecto: Proyecto) => {
-    router.push(`${construirURLProyecto({ id: proyecto.id, nombre: proyecto.nombre })}/editar`)
+    router.push(
+      `${construirURLProyecto({ id: proyecto.id, nombre: proyecto.nombre })}/editar`
+    )
   }
 
   const handleEliminarProyecto = async (id: string) => {
@@ -141,7 +154,7 @@ export function ProyectosPage({
       await eliminarProyecto(proyectoEliminar)
       setModalEliminar(false)
       setProyectoEliminar(null)
-    } catch (_error) {
+    } catch {
       // Error ya manejado por React Query con toast
     }
   }
@@ -161,7 +174,7 @@ export function ProyectosPage({
       await archivarProyecto(proyectoArchivar.id, motivo)
       setModalArchivar(false)
       setProyectoArchivar(null)
-    } catch (_error) {
+    } catch {
       // Error ya manejado por React Query con toast
     }
   }
@@ -181,7 +194,7 @@ export function ProyectosPage({
       await restaurarProyecto(proyectoRestaurar.id)
       setModalRestaurar(false)
       setProyectoRestaurar(null)
-    } catch (_error) {
+    } catch {
       // Error ya manejado por React Query con toast
     }
   }
@@ -189,7 +202,10 @@ export function ProyectosPage({
   return (
     <div className={styles.container.page}>
       {/* Animación simplificada para navegación instantánea */}
-      <motion.div {...styles.animations.container} className={styles.container.content}>
+      <motion.div
+        {...styles.animations.container}
+        className={styles.container.content}
+      >
         {/* Header Premium */}
         <ProyectosHeaderPremium
           onNuevoProyecto={canCreate ? handleAbrirModal : undefined}
@@ -221,7 +237,7 @@ export function ProyectosPage({
           // Si NO hay filtros y no hay proyectos → Empty
           hayFiltrosActivos ? (
             <NoResults
-              moduleName="proyectos"
+              moduleName='proyectos'
               onLimpiarFiltros={limpiarFiltros}
               mensaje={
                 filtros.busqueda && filtros.estado
@@ -234,10 +250,12 @@ export function ProyectosPage({
               }
             />
           ) : (
-            <ProyectosEmpty onCrear={canCreate ? handleAbrirModal : undefined} />
+            <ProyectosEmpty
+              onCrear={canCreate ? handleAbrirModal : undefined}
+            />
           )
         ) : vista === 'cards' ? (
-          <div className="space-y-4">
+          <div className='space-y-4'>
             <ProyectosLista
               proyectos={proyectosPaginados}
               onEdit={canEdit ? handleEditarProyecto : undefined}
@@ -262,7 +280,14 @@ export function ProyectosPage({
         ) : (
           <ProyectosTabla
             proyectos={proyectos}
-            onView={(proyecto) => router.push(construirURLProyecto({ id: proyecto.id, nombre: proyecto.nombre }))}
+            onView={proyecto =>
+              router.push(
+                construirURLProyecto({
+                  id: proyecto.id,
+                  nombre: proyecto.nombre,
+                })
+              )
+            }
             onEdit={canEdit ? handleEditarProyecto : undefined}
             onDelete={canDelete ? handleEliminarProyecto : undefined}
             onArchive={canEdit ? handleArchivarProyecto : undefined}
@@ -297,7 +322,8 @@ export function ProyectosPage({
           {proyectoEliminando && proyectoEliminando.manzanas.length > 0 && (
             <div className='rounded-lg border border-red-200 bg-red-50 p-2.5 dark:border-red-800 dark:bg-red-900/20'>
               <p className='text-xs text-red-800 dark:text-red-300'>
-                ⚠️ Incluye <strong>{proyectoEliminando.manzanas.length} manzana(s)</strong>
+                ⚠️ Incluye{' '}
+                <strong>{proyectoEliminando.manzanas.length} manzana(s)</strong>
               </p>
             </div>
           )}
@@ -309,7 +335,7 @@ export function ProyectosPage({
                 setProyectoEliminar(null)
               }}
               disabled={eliminando}
-              className='rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed'
+              className='rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
             >
               Cancelar
             </button>
@@ -317,27 +343,27 @@ export function ProyectosPage({
               type='button'
               onClick={confirmarEliminar}
               disabled={eliminando}
-              className='rounded-lg bg-red-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2'
+              className='flex items-center gap-2 rounded-lg bg-red-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50'
             >
               {eliminando && (
                 <svg
-                  className="animate-spin h-4 w-4"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
+                  className='h-4 w-4 animate-spin'
+                  xmlns='http://www.w3.org/2000/svg'
+                  fill='none'
+                  viewBox='0 0 24 24'
                 >
                   <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
+                    className='opacity-25'
+                    cx='12'
+                    cy='12'
+                    r='10'
+                    stroke='currentColor'
+                    strokeWidth='4'
                   />
                   <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    className='opacity-75'
+                    fill='currentColor'
+                    d='M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z'
                   />
                 </svg>
               )}

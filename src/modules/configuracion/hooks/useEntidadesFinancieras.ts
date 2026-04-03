@@ -15,13 +15,13 @@ import { logger } from '@/lib/utils/logger'
 
 import { entidadesFinancierasService } from '../services/entidades-financieras.service'
 import type {
-    ActualizarEntidadFinancieraDTO,
-    CrearEntidadFinancieraDTO,
-    EntidadesFinancierasFilters,
-    EntidadesFinancierasOrderBy,
-    EntidadFinanciera,
-    EntidadFinancieraOption,
-    TipoEntidadFinanciera,
+  ActualizarEntidadFinancieraDTO,
+  CrearEntidadFinancieraDTO,
+  EntidadesFinancierasFilters,
+  EntidadesFinancierasOrderBy,
+  EntidadFinanciera,
+  EntidadFinancieraOption,
+  TipoEntidadFinanciera,
 } from '../types/entidades-financieras.types'
 
 // =====================================================
@@ -31,8 +31,10 @@ import type {
 export const entidadesFinancierasKeys = {
   all: ['entidades-financieras'] as const,
   lists: () => [...entidadesFinancierasKeys.all, 'list'] as const,
-  list: (filters?: EntidadesFinancierasFilters, orderBy?: EntidadesFinancierasOrderBy) =>
-    [...entidadesFinancierasKeys.lists(), { filters, orderBy }] as const,
+  list: (
+    filters?: EntidadesFinancierasFilters,
+    orderBy?: EntidadesFinancierasOrderBy
+  ) => [...entidadesFinancierasKeys.lists(), { filters, orderBy }] as const,
   details: () => [...entidadesFinancierasKeys.all, 'detail'] as const,
   detail: (id: string) => [...entidadesFinancierasKeys.details(), id] as const,
   stats: () => [...entidadesFinancierasKeys.all, 'stats'] as const,
@@ -57,7 +59,7 @@ export function useEntidadesFinancieras(
       const result = await entidadesFinancierasService.getAll(filters, orderBy)
 
       if (!result.success) {
-        throw new Error((result as any).error)
+        throw new Error(result.error)
       }
 
       return result.data
@@ -77,7 +79,7 @@ export function useEntidadFinanciera(id: string) {
       const result = await entidadesFinancierasService.getById(id)
 
       if (!result.success) {
-        throw new Error((result as any).error)
+        throw new Error(result.error)
       }
 
       return result.data
@@ -98,7 +100,7 @@ export function useEntidadesFinancierasStats() {
       const result = await entidadesFinancierasService.getStats()
 
       if (!result.success) {
-        throw new Error((result as any).error)
+        throw new Error(result.error)
       }
 
       return result.data
@@ -118,7 +120,7 @@ export function useEntidadesFinancierasActivas(tipo?: TipoEntidadFinanciera) {
       const result = await entidadesFinancierasService.getActivas(tipo)
 
       if (!result.success) {
-        throw new Error((result as any).error)
+        throw new Error(result.error)
       }
 
       return result.data
@@ -138,10 +140,10 @@ export function useEntidadesFinancierasOptions(tipo?: TipoEntidadFinanciera) {
       const result = await entidadesFinancierasService.getActivas(tipo)
 
       if (!result.success) {
-        throw new Error((result as any).error)
+        throw new Error(result.error)
       }
 
-      const options: EntidadFinancieraOption[] = result.data.map((entidad) => ({
+      const options: EntidadFinancieraOption[] = result.data.map(entidad => ({
         value: entidad.id,
         label: entidad.nombre,
         tipo: entidad.tipo,
@@ -171,12 +173,12 @@ export function useCrearEntidadFinanciera() {
       const result = await entidadesFinancierasService.create(dto)
 
       if (!result.success) {
-        throw new Error((result as any).error)
+        throw new Error(result.error)
       }
 
       return result.data
     },
-    onSuccess: (data) => {
+    onSuccess: data => {
       // Invalidar todas las queries relacionadas
       queryClient.invalidateQueries({ queryKey: entidadesFinancierasKeys.all })
 
@@ -198,18 +200,26 @@ export function useActualizarEntidadFinanciera() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async ({ id, dto }: { id: string; dto: ActualizarEntidadFinancieraDTO }) => {
+    mutationFn: async ({
+      id,
+      dto,
+    }: {
+      id: string
+      dto: ActualizarEntidadFinancieraDTO
+    }) => {
       const result = await entidadesFinancierasService.update(id, dto)
 
       if (!result.success) {
-        throw new Error((result as any).error)
+        throw new Error(result.error)
       }
 
       return result.data
     },
     onMutate: async ({ id, dto }) => {
       // Cancel outgoing refetches
-      await queryClient.cancelQueries({ queryKey: entidadesFinancierasKeys.detail(id) })
+      await queryClient.cancelQueries({
+        queryKey: entidadesFinancierasKeys.detail(id),
+      })
 
       // Snapshot the previous value
       const previousData = queryClient.getQueryData<EntidadFinanciera>(
@@ -218,10 +228,13 @@ export function useActualizarEntidadFinanciera() {
 
       // Optimistically update
       if (previousData) {
-        queryClient.setQueryData<EntidadFinanciera>(entidadesFinancierasKeys.detail(id), {
-          ...previousData,
-          ...dto,
-        })
+        queryClient.setQueryData<EntidadFinanciera>(
+          entidadesFinancierasKeys.detail(id),
+          {
+            ...previousData,
+            ...dto,
+          }
+        )
       }
 
       return { previousData }
@@ -240,7 +253,7 @@ export function useActualizarEntidadFinanciera() {
         description: error.message,
       })
     },
-    onSuccess: (data) => {
+    onSuccess: data => {
       // Invalidar queries
       queryClient.invalidateQueries({ queryKey: entidadesFinancierasKeys.all })
 
@@ -260,12 +273,12 @@ export function useEliminarEntidadFinanciera() {
       const result = await entidadesFinancierasService.softDelete(id)
 
       if (!result.success) {
-        throw new Error((result as any).error)
+        throw new Error(result.error)
       }
 
       return result.data
     },
-    onSuccess: (data) => {
+    onSuccess: data => {
       queryClient.invalidateQueries({ queryKey: entidadesFinancierasKeys.all })
 
       toast.success('✓ Entidad desactivada', {
@@ -292,12 +305,12 @@ export function useReactivarEntidadFinanciera() {
       const result = await entidadesFinancierasService.reactivate(id)
 
       if (!result.success) {
-        throw new Error((result as any).error)
+        throw new Error(result.error)
       }
 
       return result.data
     },
-    onSuccess: (data) => {
+    onSuccess: data => {
       queryClient.invalidateQueries({ queryKey: entidadesFinancierasKeys.all })
 
       toast.success('✓ Entidad reactivada exitosamente', {
@@ -324,7 +337,7 @@ export function useReordenarEntidadesFinancieras() {
       const result = await entidadesFinancierasService.reordenar(updates)
 
       if (!result.success) {
-        throw new Error((result as any).error)
+        throw new Error(result.error)
       }
 
       return result.data

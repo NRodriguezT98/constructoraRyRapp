@@ -17,8 +17,8 @@ import type { Cliente } from '@/modules/clientes/types'
 
 export interface Cambio {
   campo: string
-  valorAnterior: any
-  valorNuevo: any
+  valorAnterior: unknown
+  valorNuevo: unknown
   tipo?: 'texto' | 'fecha' | 'numero' | 'select'
 }
 
@@ -97,8 +97,12 @@ export function useDetectarCambios(
     if (fechaNacimientoOriginal !== fechaNacimientoEditada) {
       cambios.push({
         campo: 'Fecha de Nacimiento',
-        valorAnterior: fechaNacimientoOriginal ? formatDateShort(fechaNacimientoOriginal) : 'Sin fecha',
-        valorNuevo: fechaNacimientoEditada ? formatDateShort(fechaNacimientoEditada) : 'Sin fecha',
+        valorAnterior: fechaNacimientoOriginal
+          ? formatDateShort(fechaNacimientoOriginal)
+          : 'Sin fecha',
+        valorNuevo: fechaNacimientoEditada
+          ? formatDateShort(fechaNacimientoEditada)
+          : 'Sin fecha',
         tipo: 'fecha',
       })
     }
@@ -200,7 +204,10 @@ export function useDetectarCambios(
     }
 
     // ⭐ Estado
-    if (datosEditados.estado && datosOriginales.estado !== datosEditados.estado) {
+    if (
+      datosEditados.estado &&
+      datosOriginales.estado !== datosEditados.estado
+    ) {
       cambios.push({
         campo: 'Estado',
         valorAnterior: datosOriginales.estado,

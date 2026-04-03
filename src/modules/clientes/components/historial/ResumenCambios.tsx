@@ -10,7 +10,11 @@ interface ResumenCambiosProps {
 }
 
 export function ResumenCambios({ version }: ResumenCambiosProps) {
-  const datos = version.datos_nuevos as any
+  type DatosResumen = {
+    motivo_usuario?: string
+    resumen?: { agregadas: number; eliminadas: number; modificadas: number }
+  }
+  const datos = version.datos_nuevos as DatosResumen | undefined
 
   // Si no tiene motivo_usuario, no mostrar nada
   if (!datos?.motivo_usuario) return null
@@ -30,24 +34,36 @@ export function ResumenCambios({ version }: ResumenCambiosProps) {
 
       {/* Estadísticas de Cambios */}
       {resumen &&
-        (resumen.agregadas > 0 || resumen.eliminadas > 0 || resumen.modificadas > 0) && (
+        (resumen.agregadas > 0 ||
+          resumen.eliminadas > 0 ||
+          resumen.modificadas > 0) && (
           <div className={styles.resumen.statsGrid}>
             {resumen.agregadas > 0 && (
               <div className={styles.resumen.statCard.agregada}>
-                <p className={styles.resumen.statValue.agregada}>+{resumen.agregadas}</p>
+                <p className={styles.resumen.statValue.agregada}>
+                  +{resumen.agregadas}
+                </p>
                 <p className={styles.resumen.statLabel.agregada}>Agregada(s)</p>
               </div>
             )}
             {resumen.eliminadas > 0 && (
               <div className={styles.resumen.statCard.eliminada}>
-                <p className={styles.resumen.statValue.eliminada}>-{resumen.eliminadas}</p>
-                <p className={styles.resumen.statLabel.eliminada}>Eliminada(s)</p>
+                <p className={styles.resumen.statValue.eliminada}>
+                  -{resumen.eliminadas}
+                </p>
+                <p className={styles.resumen.statLabel.eliminada}>
+                  Eliminada(s)
+                </p>
               </div>
             )}
             {resumen.modificadas > 0 && (
               <div className={styles.resumen.statCard.modificada}>
-                <p className={styles.resumen.statValue.modificada}>✏️{resumen.modificadas}</p>
-                <p className={styles.resumen.statLabel.modificada}>Modificada(s)</p>
+                <p className={styles.resumen.statValue.modificada}>
+                  ✏️{resumen.modificadas}
+                </p>
+                <p className={styles.resumen.statLabel.modificada}>
+                  Modificada(s)
+                </p>
               </div>
             )}
           </div>

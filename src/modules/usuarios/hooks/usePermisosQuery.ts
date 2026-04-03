@@ -23,10 +23,10 @@ import { useAuth } from '@/contexts/auth-context'
 import { logger } from '@/lib/utils/logger'
 
 import {
-    actualizarPermiso,
-    actualizarPermisosEnLote,
-    obtenerPermisosPorRol,
-    obtenerTodosLosPermisos
+  actualizarPermiso,
+  actualizarPermisosEnLote,
+  obtenerPermisosPorRol,
+  obtenerTodosLosPermisos,
 } from '../services/permisos.service'
 import type { Accion, Modulo, Rol } from '../types'
 
@@ -35,7 +35,6 @@ import type { Accion, Modulo, Rol } from '../types'
  */
 export function usePermisosQuery() {
   const { perfil, loading: authLoading } = useAuth()
-  const queryClient = useQueryClient()
   const rol = perfil?.rol as Rol | undefined
 
   /**
@@ -127,7 +126,9 @@ export function usePermisosQuery() {
   const modulosConAcceso = useMemo(() => {
     if (!rol) return []
 
-    const modulos = new Set(permisos.filter(p => p.permitido).map(p => p.modulo))
+    const modulos = new Set(
+      permisos.filter(p => p.permitido).map(p => p.modulo)
+    )
     return Array.from(modulos) as Modulo[]
   }, [rol, permisos])
 
@@ -205,7 +206,15 @@ export function useActualizarPermisoMutation() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async ({ id, permitido, rol }: { id: string; permitido: boolean; rol?: string }) => {
+    mutationFn: async ({
+      id,
+      permitido,
+      rol,
+    }: {
+      id: string
+      permitido: boolean
+      rol?: string
+    }) => {
       const resultado = await actualizarPermiso(id, permitido)
 
       // ✅ Invalidar sesiones si se proporcionó el rol
@@ -217,7 +226,10 @@ export function useActualizarPermisoMutation() {
             body: JSON.stringify({ rol }),
           })
         } catch (error) {
-          logger.warn('⚠️ [MUTATION] Error invalidando sesiones (no crítico):', error)
+          logger.warn(
+            '⚠️ [MUTATION] Error invalidando sesiones (no crítico):',
+            error
+          )
         }
       }
 
@@ -227,7 +239,6 @@ export function useActualizarPermisoMutation() {
     onSuccess: () => {
       // Invalidar TODOS los queries de permisos
       queryClient.invalidateQueries({ queryKey: ['permisos'] })
-
     },
 
     onError: error => {
@@ -262,7 +273,10 @@ export function useActualizarPermisosEnLoteMutation() {
             body: JSON.stringify({ rol }),
           })
         } catch (error) {
-          logger.warn('⚠️ [MUTATION] Error invalidando sesiones (no crítico):', error)
+          logger.warn(
+            '⚠️ [MUTATION] Error invalidando sesiones (no crítico):',
+            error
+          )
         }
       }
 
@@ -272,7 +286,6 @@ export function useActualizarPermisosEnLoteMutation() {
     onSuccess: () => {
       // Invalidar TODOS los queries de permisos
       queryClient.invalidateQueries({ queryKey: ['permisos'] })
-
     },
 
     onError: error => {

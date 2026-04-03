@@ -18,8 +18,8 @@ import { logger } from '@/lib/utils/logger'
 
 // Tipo para entidades arbitrarias pasadas al sistema de auditoría.
 // Estas funciones extraen propiedades opcionales de objetos con estructura variable.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type EntidadAuditable = Record<string, any>
+
+type EntidadAuditable = Record<string, unknown>
 
 // =====================================================
 // TIPOS
@@ -35,7 +35,6 @@ export type TablaAuditable =
   | 'abonos_historial'
   | 'fuentes_pago'
   | 'renuncias'
-  | 'procesos_negociacion'
   | 'proyectos'
   | 'manzanas'
   | 'usuarios'
@@ -262,7 +261,7 @@ class AuditService {
     manzanas: EntidadAuditable[] = []
   ): Promise<void> {
     const totalViviendas = manzanas.reduce(
-      (sum, m) => sum + (m.totalViviendas || m.numero_viviendas || 0),
+      (sum, m) => sum + Number(m.totalViviendas || m.numero_viviendas || 0),
       0
     )
 
@@ -295,9 +294,9 @@ class AuditService {
       metadataDetallada.proyecto_estado = proyecto.estado
     }
 
-    if (proyecto.presupuesto && proyecto.presupuesto > 0) {
+    if (proyecto.presupuesto && Number(proyecto.presupuesto) > 0) {
       metadataDetallada.proyecto_presupuesto = proyecto.presupuesto
-      metadataDetallada.proyecto_presupuesto_formateado = `$${proyecto.presupuesto.toLocaleString('es-CO')}`
+      metadataDetallada.proyecto_presupuesto_formateado = `$${Number(proyecto.presupuesto).toLocaleString('es-CO')}`
     }
 
     if (proyecto.responsable && proyecto.responsable !== 'RyR Constructora') {
@@ -325,7 +324,7 @@ class AuditService {
     return this.registrarAccion({
       tabla: 'proyectos',
       accion: 'CREATE',
-      registroId: proyecto.id,
+      registroId: proyecto.id as string,
       datosNuevos: proyecto,
       metadata: metadataDetallada,
       modulo: 'proyectos',
@@ -351,7 +350,8 @@ class AuditService {
       vivienda_nombre: vivienda.nombre,
       vivienda_numero: vivienda.numero || vivienda.vivienda_numero,
       vivienda_valor_base: vivienda.valorBase || vivienda.valor_base,
-      vivienda_valor_formateado: `$${(vivienda.valorBase || vivienda.valor_base)?.toLocaleString('es-CO')}`,
+      vivienda_valor_formateado: `$${Number(vivienda.valorBase || vivienda.valor_base || 0).toLocaleString('es-CO')}`,
+
       vivienda_area: vivienda.area,
       vivienda_habitaciones: vivienda.habitaciones,
       vivienda_banos: vivienda.banos,
@@ -373,7 +373,7 @@ class AuditService {
     return this.registrarAccion({
       tabla: 'viviendas',
       accion: 'CREATE',
-      registroId: vivienda.id,
+      registroId: vivienda.id as string,
       datosNuevos: vivienda,
       metadata: metadataDetallada,
       modulo: 'viviendas',
@@ -410,7 +410,7 @@ class AuditService {
     return this.registrarAccion({
       tabla: 'clientes',
       accion: 'CREATE',
-      registroId: cliente.id,
+      registroId: cliente.id as string,
       datosNuevos: cliente,
       metadata: metadataDetallada,
       modulo: 'clientes',
@@ -436,7 +436,7 @@ class AuditService {
       negociacion_estado: negociacion.estado,
       negociacion_valor_total:
         negociacion.valor_total || negociacion.valorTotal,
-      negociacion_valor_formateado: `$${(negociacion.valor_total || negociacion.valorTotal)?.toLocaleString('es-CO')}`,
+      negociacion_valor_formateado: `$${Number(negociacion.valor_total || negociacion.valorTotal || 0).toLocaleString('es-CO')}`,
       negociacion_cuota_inicial:
         negociacion.cuota_inicial || negociacion.cuotaInicial,
       negociacion_saldo_pendiente:
@@ -466,7 +466,7 @@ class AuditService {
     return this.registrarAccion({
       tabla: 'negociaciones',
       accion: 'CREATE',
-      registroId: negociacion.id,
+      registroId: negociacion.id as string,
       datosNuevos: negociacion,
       metadata: metadataDetallada,
       modulo: 'negociaciones',
@@ -737,7 +737,6 @@ class AuditService {
       abonos_historial: 'abonos',
       fuentes_pago: 'abonos',
       renuncias: 'renuncias',
-      procesos_negociacion: 'procesos',
       proyectos: 'proyectos',
       manzanas: 'proyectos',
       usuarios: 'usuarios',

@@ -14,15 +14,17 @@ export interface CategoriasSistemaResult {
 /**
  * Verifica y crea categorías por módulo específico
  */
-export async function verificarCategoriasPorModulo(modulo: 'clientes' | 'proyectos' | 'viviendas'): Promise<{
+export async function verificarCategoriasPorModulo(
+  modulo: 'clientes' | 'proyectos' | 'viviendas'
+): Promise<{
   success: boolean
   categorias: CategoriasSistemaResult[]
   mensaje: string
   error?: string
 }> {
   try {
-    const functionName = `verificar_categorias_${modulo}`
-    const { data, error } = await supabase.rpc(functionName as any)
+    const functionName = `verificar_categorias_${modulo}` as const
+    const { data, error } = await supabase.rpc(functionName)
 
     if (error) {
       logger.error(`❌ Error verificando categorías de ${modulo}:`, error)
@@ -41,7 +43,10 @@ export async function verificarCategoriasPorModulo(modulo: 'clientes' | 'proyect
     }
   } catch (error) {
     const mensaje = error instanceof Error ? error.message : 'Error desconocido'
-    logger.error(`❌ Error en verificarCategoriasPorModulo(${modulo}):`, mensaje)
+    logger.error(
+      `❌ Error en verificarCategoriasPorModulo(${modulo}):`,
+      mensaje
+    )
     return {
       success: false,
       categorias: [],
@@ -54,7 +59,9 @@ export async function verificarCategoriasPorModulo(modulo: 'clientes' | 'proyect
 /**
  * Obtiene el estado actual de categorías por módulo
  */
-export async function obtenerEstadoCategoriasPorModulo(modulo: 'clientes' | 'proyectos' | 'viviendas'): Promise<{
+export async function obtenerEstadoCategoriasPorModulo(
+  modulo: 'clientes' | 'proyectos' | 'viviendas'
+): Promise<{
   total: number
   activas: number
 }> {
@@ -74,7 +81,10 @@ export async function obtenerEstadoCategoriasPorModulo(modulo: 'clientes' | 'pro
       activas: data?.length || 0,
     }
   } catch (error) {
-    logger.error(`❌ Error en obtenerEstadoCategoriasPorModulo(${modulo}):`, error)
+    logger.error(
+      `❌ Error en obtenerEstadoCategoriasPorModulo(${modulo}):`,
+      error
+    )
     return { total: 0, activas: 0 }
   }
 }

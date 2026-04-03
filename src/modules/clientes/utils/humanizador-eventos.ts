@@ -4,33 +4,33 @@
  */
 
 import {
-    AlertCircle,
-    CheckCircle,
-    DollarSign,
-    Edit3,
-    FileCheck,
-    FileText,
-    FileX,
-    HandshakeIcon,
-    Heart,
-    HeartOff,
-    RefreshCw,
-    Trash2,
-    Upload,
-    UserCheck,
-    UserPen,
-    UserPlus,
-    UserX,
-    XCircle,
-    type LucideIcon,
+  AlertCircle,
+  CheckCircle,
+  DollarSign,
+  Edit3,
+  FileCheck,
+  FileText,
+  FileX,
+  HandshakeIcon,
+  Heart,
+  HeartOff,
+  RefreshCw,
+  Trash2,
+  Upload,
+  UserCheck,
+  UserPen,
+  UserPlus,
+  UserX,
+  XCircle,
+  type LucideIcon,
 } from 'lucide-react'
 
 import type {
-    ColorEvento,
-    DetalleEvento,
-    EventoHistorialCliente,
-    EventoHistorialHumanizado,
-    TipoEventoHistorial,
+  ColorEvento,
+  DetalleEvento,
+  EventoHistorialCliente,
+  EventoHistorialHumanizado,
+  TipoEventoHistorial,
 } from '../types/historial.types'
 
 /**
@@ -71,7 +71,9 @@ export function humanizarEvento(
  * Detectar tipo específico de evento
  * Analiza tabla + acción + metadata para determinar tipo exacto
  */
-function detectarTipoEvento(evento: EventoHistorialCliente): TipoEventoHistorial {
+function detectarTipoEvento(
+  evento: EventoHistorialCliente
+): TipoEventoHistorial {
   const { tabla, accion, cambios_especificos, metadata: _metadata } = evento
 
   // ========== CLIENTE ==========
@@ -143,7 +145,8 @@ function generarTextos(
   evento: EventoHistorialCliente,
   tipo: TipoEventoHistorial
 ): { titulo: string; descripcion: string } {
-  const { datos_nuevos, datos_anteriores, cambios_especificos, metadata } = evento
+  const { datos_nuevos, datos_anteriores, cambios_especificos, metadata } =
+    evento
 
   switch (tipo) {
     // ========== CLIENTE ==========
@@ -178,9 +181,10 @@ function generarTextos(
 
     // ========== NEGOCIACIÓN ==========
     case 'negociacion_creada':
-      const viviendaNombre = metadata?.vivienda_nombre || metadata?.vivienda_numero || 'N/A'
+      const viviendaNombre =
+        metadata?.vivienda_nombre || metadata?.vivienda_numero || 'N/A'
       const valorTotal = datos_nuevos?.valor_total
-        ? `$${datos_nuevos.valor_total.toLocaleString('es-CO')}`
+        ? `$${(datos_nuevos.valor_total as number).toLocaleString('es-CO')}`
         : 'N/A'
       return {
         titulo: 'Negociación iniciada',
@@ -194,8 +198,10 @@ function generarTextos(
       }
 
     case 'negociacion_estado_cambiada':
-      const negEstadoAnterior = cambios_especificos?.estado?.antes || 'desconocido'
-      const negEstadoNuevo = cambios_especificos?.estado?.despues || 'desconocido'
+      const negEstadoAnterior =
+        cambios_especificos?.estado?.antes || 'desconocido'
+      const negEstadoNuevo =
+        cambios_especificos?.estado?.despues || 'desconocido'
       return {
         titulo: 'Estado de negociación cambió',
         descripcion: `De "${negEstadoAnterior}" a "${negEstadoNuevo}"`,
@@ -210,7 +216,7 @@ function generarTextos(
     // ========== ABONO ==========
     case 'abono_registrado':
       const valorAbono = datos_nuevos?.valor_abono
-        ? `$${datos_nuevos.valor_abono.toLocaleString('es-CO')}`
+        ? `$${(datos_nuevos.valor_abono as number).toLocaleString('es-CO')}`
         : 'N/A'
       return {
         titulo: 'Abono registrado',
@@ -219,7 +225,7 @@ function generarTextos(
 
     case 'abono_anulado':
       const valorAnulado = datos_anteriores?.valor_abono
-        ? `$${datos_anteriores.valor_abono.toLocaleString('es-CO')}`
+        ? `$${(datos_anteriores.valor_abono as number).toLocaleString('es-CO')}`
         : 'N/A'
       return {
         titulo: 'Abono anulado',
@@ -460,12 +466,16 @@ function extraerDetalles(
 
     // ========== STEP 2: INTERÉS (OPCIONAL) ==========
     // Nota: estos campos solo existen si el cliente registró interés
-    if (datos_nuevos.proyecto_interes_inicial || datos_nuevos.vivienda_interes_inicial) {
+    if (
+      datos_nuevos.proyecto_interes_inicial ||
+      datos_nuevos.vivienda_interes_inicial
+    ) {
       detalles.push({
         campo: 'proyecto_interes_inicial',
         etiqueta: 'Proyecto de interés',
         valorAnterior: null,
-        valorNuevo: datos_nuevos.proyecto_interes_inicial || 'Sin proyecto específico',
+        valorNuevo:
+          datos_nuevos.proyecto_interes_inicial || 'Sin proyecto específico',
         tipo: 'texto',
       })
 
@@ -474,7 +484,8 @@ function extraerDetalles(
           campo: 'vivienda_interes_inicial',
           etiqueta: 'Vivienda de interés',
           valorAnterior: null,
-          valorNuevo: datos_nuevos.vivienda_interes_inicial || 'Sin vivienda específica',
+          valorNuevo:
+            datos_nuevos.vivienda_interes_inicial || 'Sin vivienda específica',
           tipo: 'texto',
         })
       }
@@ -564,12 +575,24 @@ function extraerDetalles(
 /**
  * Detectar tipo de campo para formato adecuado
  */
-function detectarTipoCampo(campo: string): 'texto' | 'numero' | 'fecha' | 'booleano' | 'enum' {
+function detectarTipoCampo(
+  campo: string
+): 'texto' | 'numero' | 'fecha' | 'booleano' | 'enum' {
   if (campo.includes('fecha')) return 'fecha'
-  if (campo.includes('valor') || campo.includes('ingresos') || campo === 'cuota_inicial' || campo === 'saldo_pendiente') {
+  if (
+    campo.includes('valor') ||
+    campo.includes('ingresos') ||
+    campo === 'cuota_inicial' ||
+    campo === 'saldo_pendiente'
+  ) {
     return 'numero'
   }
-  if (campo === 'estado' || campo === 'origen' || campo === 'tipo_documento' || campo === 'metodo_pago') {
+  if (
+    campo === 'estado' ||
+    campo === 'origen' ||
+    campo === 'tipo_documento' ||
+    campo === 'metodo_pago'
+  ) {
     return 'enum'
   }
   if (campo.includes('activo') || campo.includes('es_')) return 'booleano'

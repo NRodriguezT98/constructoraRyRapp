@@ -23,9 +23,9 @@ import { toast } from 'sonner'
 
 import { clientesService } from '../services/clientes.service'
 import type {
-    ActualizarClienteDTO,
-    CrearClienteDTO,
-    FiltrosClientes
+  ActualizarClienteDTO,
+  CrearClienteDTO,
+  FiltrosClientes,
 } from '../types'
 
 // ============================================================================
@@ -35,7 +35,8 @@ import type {
 export const clientesKeys = {
   all: ['clientes'] as const,
   lists: () => [...clientesKeys.all, 'list'] as const,
-  list: (filtros?: FiltrosClientes) => [...clientesKeys.lists(), filtros] as const,
+  list: (filtros?: FiltrosClientes) =>
+    [...clientesKeys.lists(), filtros] as const,
   details: () => [...clientesKeys.all, 'detail'] as const,
   detail: (id: string) => [...clientesKeys.details(), id] as const,
   estadisticas: () => [...clientesKeys.all, 'estadisticas'] as const,
@@ -54,7 +55,7 @@ export function useClientesQuery(filtros?: FiltrosClientes) {
     queryFn: () => clientesService.obtenerClientes(filtros),
     staleTime: 0, // Siempre refetch para datos actualizados
     gcTime: 1000 * 60 * 5, // Cache 5 minutos
-    placeholderData: (previousData) => previousData, // ⭐ Mantener datos anteriores mientras carga
+    placeholderData: previousData => previousData, // ⭐ Mantener datos anteriores mientras carga
   })
 }
 
@@ -62,10 +63,18 @@ export function useClientesQuery(filtros?: FiltrosClientes) {
  * Query: Detalle de cliente individual
  */
 export function useClienteQuery(id: string | null) {
+  const clienteId = id ?? null
+
   return useQuery({
-    queryKey: clientesKeys.detail(id || ''),
-    queryFn: () => clientesService.obtenerCliente(id!),
-    enabled: !!id, // Solo ejecutar si hay ID
+    queryKey: clientesKeys.detail(clienteId ?? ''),
+    queryFn: () => {
+      if (!clienteId) {
+        throw new Error('Cliente ID requerido')
+      }
+
+      return clientesService.obtenerCliente(clienteId)
+    },
+    enabled: !!clienteId, // Solo ejecutar si hay ID
     staleTime: 1000 * 60 * 2, // 2 minutos
     gcTime: 1000 * 60 * 10, // Cache 10 minutos
   })
@@ -95,7 +104,7 @@ export function useCrearClienteMutation() {
 
   return useMutation({
     mutationFn: (datos: CrearClienteDTO) => clientesService.crearCliente(datos),
-    onSuccess: (cliente) => {
+    onSuccess: cliente => {
       // Invalidar todas las listas de clientes
       queryClient.invalidateQueries({ queryKey: clientesKeys.lists() })
       queryClient.invalidateQueries({ queryKey: clientesKeys.estadisticas() })
@@ -127,7 +136,9 @@ export function useActualizarClienteMutation() {
       clientesService.actualizarCliente(id, datos),
     onSuccess: (cliente, variables) => {
       // Invalidar detalle del cliente actualizado
-      queryClient.invalidateQueries({ queryKey: clientesKeys.detail(variables.id) })
+      queryClient.invalidateQueries({
+        queryKey: clientesKeys.detail(variables.id),
+      })
       // Invalidar listas
       queryClient.invalidateQueries({ queryKey: clientesKeys.lists() })
       queryClient.invalidateQueries({ queryKey: clientesKeys.estadisticas() })
@@ -194,7 +205,9 @@ export function useCambiarEstadoClienteMutation() {
     }) => clientesService.cambiarEstado(id, estado),
     onSuccess: (data, variables) => {
       // Invalidar detalle del cliente
-      queryClient.invalidateQueries({ queryKey: clientesKeys.detail(variables.id) })
+      queryClient.invalidateQueries({
+        queryKey: clientesKeys.detail(variables.id),
+      })
       // Invalidar listas
       queryClient.invalidateQueries({ queryKey: clientesKeys.lists() })
       queryClient.invalidateQueries({ queryKey: clientesKeys.estadisticas() })
@@ -206,7 +219,9 @@ export function useCambiarEstadoClienteMutation() {
 // HELPER: Invalidar cache de clientes
 // ============================================================================
 
-export function invalidateClientesQueries(queryClient: ReturnType<typeof useQueryClient>) {
+export function invalidateClientesQueries(
+  queryClient: ReturnType<typeof useQueryClient>
+) {
   return Promise.all([
     queryClient.invalidateQueries({ queryKey: clientesKeys.lists() }),
     queryClient.invalidateQueries({ queryKey: clientesKeys.estadisticas() }),

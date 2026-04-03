@@ -11,6 +11,12 @@ import { useQuery } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase/client'
 import { proyectosService } from '@/modules/proyectos/services/proyectos.service'
 
+interface ViviendaDisponibleProyectoRow {
+  manzanas: {
+    proyecto_id: string | null
+  } | null
+}
+
 /**
  * Cargar solo proyectos que tengan al menos 1 vivienda disponible.
  * Consulta las viviendas con estado 'Disponible' y sin asignar,
@@ -31,9 +37,11 @@ export function useProyectosQuery() {
 
       const idsConDisponibles = [
         ...new Set(
-          (viviendasDisponibles ?? []).map(
-            (v: any) => v.manzanas?.proyecto_id
-          ).filter(Boolean)
+          (viviendasDisponibles ?? [])
+            .map(
+              v => (v as ViviendaDisponibleProyectoRow).manzanas?.proyecto_id
+            )
+            .filter((proyectoId): proyectoId is string => Boolean(proyectoId))
         ),
       ]
 

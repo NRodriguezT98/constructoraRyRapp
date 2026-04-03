@@ -29,9 +29,9 @@ export function ViviendaCard({
   onAsignarCliente,
   onVerAbonos,
   onRegistrarPago,
-  onGenerarEscritura,
+  onGenerarEscritura: _onGenerarEscritura,
   onEditar,
-  onEliminar,
+  onEliminar: _onEliminar,
 }: ViviendaCardProps) {
   // Renderizado condicional según el estado
   switch (vivienda.estado) {

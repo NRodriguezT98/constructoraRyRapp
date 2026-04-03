@@ -8,15 +8,21 @@
 
 import { AnimatePresence, motion } from 'framer-motion'
 
+import type { FuentePago } from '@/modules/clientes/types/fuentes-pago'
+
 import { DiffFuentesPago } from './DiffFuentesPago'
 
 interface VersionCardContentProps {
   isExpanded: boolean
-  fuentesPago: any[]
-  fuentesPagoAnteriores: any[]
+  fuentesPago: FuentePago[]
+  fuentesPagoAnteriores: FuentePago[]
 }
 
-export function VersionCardContent({ isExpanded, fuentesPago, fuentesPagoAnteriores }: VersionCardContentProps) {
+export function VersionCardContent({
+  isExpanded,
+  fuentesPago,
+  fuentesPagoAnteriores,
+}: VersionCardContentProps) {
   return (
     <AnimatePresence>
       {isExpanded && (
@@ -24,10 +30,13 @@ export function VersionCardContent({ isExpanded, fuentesPago, fuentesPagoAnterio
           initial={{ height: 0, opacity: 0 }}
           animate={{ height: 'auto', opacity: 1 }}
           exit={{ height: 0, opacity: 0 }}
-          className="border-t border-gray-200 dark:border-gray-700"
+          className='border-t border-gray-200 dark:border-gray-700'
         >
-          <div className="p-4 bg-gray-50 dark:bg-gray-900/50">
-            <DiffFuentesPago fuentesActuales={fuentesPago} fuentesAnteriores={fuentesPagoAnteriores} />
+          <div className='bg-gray-50 p-4 dark:bg-gray-900/50'>
+            <DiffFuentesPago
+              fuentesActuales={fuentesPago}
+              fuentesAnteriores={fuentesPagoAnteriores}
+            />
           </div>
         </motion.div>
       )}

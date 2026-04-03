@@ -10,7 +10,12 @@ import { useEffect } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 
-import { esCreditoHipotecario, esCuotaInicial, esSubsidioCajaCompensacion, esSubsidioMiCasaYa } from '@/shared/constants/fuentes-pago.constants'
+import {
+  esCreditoHipotecario,
+  esCuotaInicial,
+  esSubsidioCajaCompensacion,
+  esSubsidioMiCasaYa,
+} from '@/shared/constants/fuentes-pago.constants'
 
 import type { AsignarViviendaFormData } from '../schemas'
 import { asignarViviendaSchema } from '../schemas'
@@ -22,9 +27,8 @@ interface UseAsignarViviendaFormProps {
 
 export function useAsignarViviendaForm({
   initialData,
-  currentStep,
+  currentStep: _currentStep,
 }: UseAsignarViviendaFormProps) {
-
   // ============================================
   // REACT HOOK FORM CON ZOD
   // ============================================
@@ -37,7 +41,7 @@ export function useAsignarViviendaForm({
     watch,
     trigger,
     reset,
-  } = useForm<any>({ // Usar any temporalmente para evitar conflictos de tipos
+  } = useForm<AsignarViviendaFormData>({
     resolver: zodResolver(asignarViviendaSchema),
     mode: 'onChange', // Validar mientras escribe
     defaultValues: {
@@ -48,7 +52,8 @@ export function useAsignarViviendaForm({
       descuento_aplicado: initialData?.descuento_aplicado || 0,
       tipo_descuento: initialData?.tipo_descuento || '',
       motivo_descuento: initialData?.motivo_descuento || '',
-      valor_escritura_publica: initialData?.valor_escritura_publica || 128000000,
+      valor_escritura_publica:
+        initialData?.valor_escritura_publica || 128000000,
       notas: initialData?.notas || '',
       fuentes: initialData?.fuentes || [],
       valor_total: initialData?.valor_total || 0,
@@ -58,8 +63,6 @@ export function useAsignarViviendaForm({
   // ============================================
   // VALORES OBSERVADOS
   // ============================================
-
-  const watchedFields = watch()
 
   const proyecto_id = watch('proyecto_id')
   const vivienda_id = watch('vivienda_id')
@@ -118,21 +121,23 @@ export function useAsignarViviendaForm({
   // ============================================
 
   const paso1Valido = () => {
+    const descuento = descuento_aplicado ?? 0
     return (
       !!proyecto_id &&
       !!vivienda_id &&
       valor_negociado > 0 &&
-      descuento_aplicado >= 0 &&
-      descuento_aplicado < valor_negociado
+      descuento >= 0 &&
+      descuento < valor_negociado
     )
   }
 
   const camposCompletadosPaso1 = () => {
+    const descuento = descuento_aplicado ?? 0
     return [
       !!proyecto_id,
       !!vivienda_id,
       valor_negociado > 0,
-      descuento_aplicado >= 0 && descuento_aplicado < valor_negociado,
+      descuento >= 0 && descuento < valor_negociado,
     ].filter(Boolean).length
   }
 
@@ -144,7 +149,11 @@ export function useAsignarViviendaForm({
   // PASO 2: HELPERS
   // ============================================
 
-  const totalFuentes = fuentes.reduce((acc: number, f: { monto_aprobado?: number | null }) => acc + (f.monto_aprobado ?? 0), 0)
+  const totalFuentes = fuentes.reduce(
+    (acc: number, f: { monto_aprobado?: number | null }) =>
+      acc + (f.monto_aprobado ?? 0),
+    0
+  )
   const diferencia = valor_total - totalFuentes
   const sumaCierra = Math.abs(diferencia) < 0.01
 
@@ -152,40 +161,53 @@ export function useAsignarViviendaForm({
     return (
       fuentes.length > 0 &&
       sumaCierra &&
-      fuentes.every((f: { tipo?: string; monto_aprobado?: number | null; entidad?: string | null; numero_referencia?: string | null; fecha_acta?: string | null }) => {
-        // Validar monto obligatorio para todas las fuentes
-        const montoValido = (f.monto_aprobado ?? 0) > 0
+      fuentes.every(
+        (f: {
+          tipo?: string
+          monto_aprobado?: number | null
+          entidad?: string | null
+          numero_referencia?: string | null
+          fecha_acta?: string | null
+        }) => {
+          // Validar monto obligatorio para todas las fuentes
+          const montoValido = (f.monto_aprobado ?? 0) > 0
 
-        // Cuota Inicial: solo requiere monto
-        if (esCuotaInicial(f.tipo)) {
-          return montoValido
-        }
+          // Cuota Inicial: solo requiere monto
+          if (esCuotaInicial(f.tipo)) {
+            return montoValido
+          }
 
-        // Subsidio Mi Casa Ya: requiere monto, entidad NO es obligatoria, numero_referencia es opcional
-        if (esSubsidioMiCasaYa(f.tipo)) {
-          return montoValido
-        }
+          // Subsidio Mi Casa Ya: requiere monto, entidad NO es obligatoria, numero_referencia es opcional
+          if (esSubsidioMiCasaYa(f.tipo)) {
+            return montoValido
+          }
 
-        // Crédito Hipotecario: requiere monto, entidad (banco), numero_referencia
-        if (esCreditoHipotecario(f.tipo)) {
+          // Crédito Hipotecario: requiere monto, entidad (banco), numero_referencia
+          if (esCreditoHipotecario(f.tipo)) {
+            const entidadValida = f.entidad && f.entidad.trim() !== ''
+            const numeroValido =
+              f.numero_referencia && f.numero_referencia.trim() !== ''
+            return montoValido && entidadValida && numeroValido
+          }
+
+          // Subsidio Caja Compensación: requiere monto, entidad (caja), numero_referencia (acta), fecha_acta
+          if (esSubsidioCajaCompensacion(f.tipo)) {
+            const entidadValida = f.entidad && f.entidad.trim() !== ''
+            const numeroValido =
+              f.numero_referencia && f.numero_referencia.trim() !== ''
+            const fechaActaValida = f.fecha_acta && f.fecha_acta.trim() !== ''
+            return (
+              montoValido && entidadValida && numeroValido && fechaActaValida
+            )
+          }
+
+          // Fallback: requiere monto, entidad y número
           const entidadValida = f.entidad && f.entidad.trim() !== ''
-          const numeroValido = f.numero_referencia && f.numero_referencia.trim() !== ''
+          const numeroValido =
+            f.numero_referencia && f.numero_referencia.trim() !== ''
           return montoValido && entidadValida && numeroValido
         }
-
-        // Subsidio Caja Compensación: requiere monto, entidad (caja), numero_referencia (acta), fecha_acta
-        if (esSubsidioCajaCompensacion(f.tipo)) {
-          const entidadValida = f.entidad && f.entidad.trim() !== ''
-          const numeroValido = f.numero_referencia && f.numero_referencia.trim() !== ''
-          const fechaActaValida = f.fecha_acta && f.fecha_acta.trim() !== ''
-          return montoValido && entidadValida && numeroValido && fechaActaValida
-        }
-
-        // Fallback: requiere monto, entidad y número
-        const entidadValida = f.entidad && f.entidad.trim() !== ''
-        const numeroValido = f.numero_referencia && f.numero_referencia.trim() !== ''
-        return montoValido && entidadValida && numeroValido
-      })
+      )
     )
   }
 

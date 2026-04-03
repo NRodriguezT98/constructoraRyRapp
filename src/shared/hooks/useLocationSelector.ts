@@ -9,7 +9,10 @@
 
 import { useEffect, useState } from 'react'
 
-import { getCiudadesPorDepartamento, getDepartamentos } from '../data/colombia-locations'
+import {
+  getCiudadesPorDepartamento,
+  getDepartamentos,
+} from '../data/colombia-locations'
 
 interface UseLocationSelectorParams {
   departamentoInicial?: string
@@ -24,7 +27,8 @@ export function useLocationSelector({
   onDepartamentoChange,
   onCiudadChange,
 }: UseLocationSelectorParams = {}) {
-  const [departamentoSeleccionado, setDepartamentoSeleccionado] = useState(departamentoInicial)
+  const [departamentoSeleccionado, setDepartamentoSeleccionado] =
+    useState(departamentoInicial)
   const [ciudadSeleccionada, setCiudadSeleccionada] = useState(ciudadInicial)
   const [ciudadesDisponibles, setCiuداdesDisponibles] = useState<string[]>([])
 
@@ -47,19 +51,21 @@ export function useLocationSelector({
       setCiudadSeleccionada('')
       onCiudadChange?.('')
     }
-  }, [departamentoSeleccionado])
+  }, [departamentoSeleccionado, ciudadSeleccionada, onCiudadChange])
 
   // Sincronizar con valores externos (modo edición)
   useEffect(() => {
     if (departamentoInicial !== departamentoSeleccionado) {
       setDepartamentoSeleccionado(departamentoInicial)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- Intencionalmente omite departamentoSeleccionado: sincroniza estado interno con valor externo, añadirlo causaría bucle infinito
   }, [departamentoInicial])
 
   useEffect(() => {
     if (ciudadInicial !== ciudadSeleccionada) {
       setCiudadSeleccionada(ciudadInicial)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- Intencionalmente omite ciudadSeleccionada: sincroniza estado interno con valor externo, añadirlo causaría bucle infinito
   }, [ciudadInicial])
 
   const handleDepartamentoChange = (departamento: string) => {
@@ -91,6 +97,7 @@ export function useLocationSelector({
     resetSeleccion,
 
     // Estado
-    ciudadDeshabilitada: !departamentoSeleccionado || ciudadesDisponibles.length === 0,
+    ciudadDeshabilitada:
+      !departamentoSeleccionado || ciudadesDisponibles.length === 0,
   }
 }

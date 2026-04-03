@@ -6,107 +6,109 @@
 
 'use client'
 
+import { useMemo } from 'react'
+
 import { useQuery } from '@tanstack/react-query'
 import { motion } from 'framer-motion'
-import type { FieldErrors, UseFormRegister, UseFormWatch } from 'react-hook-form'
+import type {
+  FieldErrors,
+  Path,
+  UseFormRegister,
+  UseFormWatch,
+} from 'react-hook-form'
 
-import { supabase } from '@/lib/supabase/client'
 import { proyectosService } from '@/modules/proyectos/services/proyectos.service'
+import { viviendasService } from '@/modules/viviendas/services/viviendas.service'
 import {
-    AccordionWizardSelect,
-    AccordionWizardTextarea,
-    fieldStaggerAnim,
+  AccordionWizardSelect,
+  AccordionWizardTextarea,
+  fieldStaggerAnim,
 } from '@/shared/components/accordion-wizard'
 
-interface PasoInteresProps {
-  register: UseFormRegister<any>
-  errors: FieldErrors<any>
-  watch: UseFormWatch<any>
+import type { ClienteAccordionFormValues } from './cliente-accordion-form.types'
+
+interface PasoInteresProps<TFormValues extends ClienteAccordionFormValues> {
+  register: UseFormRegister<TFormValues>
+  errors: FieldErrors<TFormValues>
+  watch: UseFormWatch<TFormValues>
 }
 
-export function PasoInteres({ register, errors, watch }: PasoInteresProps) {
-  const proyectoId = watch('proyecto_interes_id')
+export function PasoInteres<TFormValues extends ClienteAccordionFormValues>({
+  register,
+  errors,
+  watch,
+}: PasoInteresProps<TFormValues>) {
+  const proyectoInteresField = 'proyecto_interes_id' as Path<TFormValues>
+  const viviendaInteresField = 'vivienda_interes_id' as Path<TFormValues>
+  const notasInteresField = 'notas_interes' as Path<TFormValues>
+  const proyectoId = watch(proyectoInteresField)
+  const proyectoIdValue = useMemo(
+    () => (typeof proyectoId === 'string' ? proyectoId : ''),
+    [proyectoId]
+  )
 
-  // Cargar proyectos activos
   const { data: proyectos = [] } = useQuery({
     queryKey: ['proyectos-activos'],
     queryFn: () => proyectosService.obtenerProyectos(),
     staleTime: 5 * 60 * 1000,
   })
 
-  // Cargar viviendas disponibles del proyecto seleccionado
   const { data: viviendas = [] } = useQuery({
-    queryKey: ['viviendas-interes', proyectoId],
-    queryFn: async () => {
-      if (!proyectoId) return []
-      // Obtener manzanas del proyecto
-      const { data: manzanas } = await supabase
-        .from('manzanas')
-        .select('id')
-        .eq('proyecto_id', proyectoId)
-      const ids = manzanas?.map((m) => m.id) ?? []
-      if (ids.length === 0) return []
-      // Obtener viviendas disponibles
-      const { data } = await supabase
-        .from('viviendas')
-        .select('id, numero, manzana_id, manzanas(nombre)')
-        .in('manzana_id', ids)
-        .eq('estado', 'Disponible')
-        .order('numero')
-      return data ?? []
-    },
-    enabled: !!proyectoId,
+    queryKey: ['viviendas-interes', proyectoIdValue],
+    queryFn: () =>
+      viviendasService.obtenerViviendasDisponiblesPorProyecto(proyectoIdValue),
+    enabled: !!proyectoIdValue,
     staleTime: 2 * 60 * 1000,
   })
 
   return (
-    <div className="space-y-4">
+    <div className='space-y-4'>
       <motion.div {...fieldStaggerAnim(0)}>
-        <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-          Esta sección es opcional. Si el cliente tiene interés en un proyecto específico, selecciónalo aquí.
+        <p className='mb-2 text-sm text-gray-600 dark:text-gray-400'>
+          Esta sección es opcional. Si el cliente tiene interés en un proyecto
+          específico, selecciónalo aquí.
         </p>
       </motion.div>
 
-      {/* Proyecto */}
       <motion.div {...fieldStaggerAnim(1)}>
         <AccordionWizardSelect
-          {...register('proyecto_interes_id')}
-          label="Proyecto de Interés"
-          moduleName="clientes"
+          {...register(proyectoInteresField)}
+          label='Proyecto de Interés'
+          moduleName='clientes'
           error={errors.proyecto_interes_id?.message as string}
         >
-          <option value="">Sin proyecto específico</option>
-          {proyectos.map((p: any) => (
-            <option key={p.id} value={p.id}>{p.nombre}</option>
+          <option value=''>Sin proyecto específico</option>
+          {proyectos.map(proyecto => (
+            <option key={proyecto.id} value={proyecto.id}>
+              {proyecto.nombre}
+            </option>
           ))}
         </AccordionWizardSelect>
       </motion.div>
 
-      {/* Vivienda (cascading from proyecto) */}
-      {proyectoId ? (
+      {proyectoIdValue ? (
         <motion.div {...fieldStaggerAnim(2)}>
           <AccordionWizardSelect
-            {...register('vivienda_interes_id')}
-            label="Vivienda de Interés"
-            moduleName="clientes"
+            {...register(viviendaInteresField)}
+            label='Vivienda de Interés'
+            moduleName='clientes'
             error={errors.vivienda_interes_id?.message as string}
           >
-            <option value="">Sin vivienda específica</option>
-            {viviendas.map((v: any) => (
-              <option key={v.id} value={v.id}>
-                Mz. {v.manzana_nombre ?? v.manzanas?.nombre ?? '?'} - Casa #{v.numero}
+            <option value=''>Sin vivienda específica</option>
+            {viviendas.map(vivienda => (
+              <option key={vivienda.id} value={vivienda.id}>
+                Mz. {vivienda.manzanas?.nombre ?? '?'} - Casa #{vivienda.numero}
               </option>
             ))}
           </AccordionWizardSelect>
         </motion.div>
       ) : null}
 
-      {/* Notas de interés */}
       <motion.div {...fieldStaggerAnim(3)}>
         <AccordionWizardTextarea
-          {...register('notas_interes')}
-          label="Notas sobre el interés"
-          moduleName="clientes"
+          {...register(notasInteresField)}
+          label='Notas sobre el interés'
+          moduleName='clientes'
         />
       </motion.div>
     </div>

@@ -18,8 +18,16 @@ interface Vivienda {
   id: string
   numero: string
   manzana_nombre: string
-  valor_total: number
+  valor_total: number | null
   estado: string
+}
+
+interface ViviendaRow {
+  id: string
+  numero: string
+  valor_total: number | null
+  estado: string
+  manzanas: { nombre: string; proyecto_id?: string } | null
 }
 
 export function useInteresFormulario() {
@@ -93,7 +101,7 @@ export function useInteresFormulario() {
 
       // Transformar datos
       const viviendasFormateadas =
-        data?.map((v: any) => ({
+        data?.map((v: ViviendaRow) => ({
           id: v.id,
           numero: v.numero,
           manzana_nombre: v.manzanas?.nombre || '',

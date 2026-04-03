@@ -14,13 +14,12 @@ import { formatDateForDisplay } from '@/lib/utils/date.utils'
 import { historialClienteService } from '../services/historial-cliente.service'
 import { notasHistorialService } from '../services/notas-historial.service'
 import type {
-    EventoHistorialHumanizado,
-    FiltrosHistorial,
-    GrupoEventosPorFecha,
+  EventoHistorialHumanizado,
+  FiltrosHistorial,
+  GrupoEventosPorFecha,
 } from '../types/historial.types'
 import { humanizarEventos } from '../utils/humanizador-eventos'
 import { convertirNotasAEventos } from '../utils/notas-a-eventos.utils'
-
 
 interface UseHistorialClienteProps {
   clienteId: string
@@ -87,7 +86,7 @@ export function useHistorialCliente({
   const usuariosDisponibles = useMemo(() => {
     const usuariosMap = new Map<string, { id: string; email: string }>()
 
-    todosLosEventos.forEach((evento) => {
+    todosLosEventos.forEach(evento => {
       if (evento.usuario.id && evento.usuario.email) {
         usuariosMap.set(evento.usuario.id, {
           id: evento.usuario.id,
@@ -107,28 +106,28 @@ export function useHistorialCliente({
 
     // Filtrar por tipo de evento (CREATE, UPDATE, DELETE)
     if (tipoEvento) {
-      eventos = eventos.filter((e) => e.accion === tipoEvento)
+      eventos = eventos.filter(e => e.accion === tipoEvento)
     }
 
     // Filtrar por módulo
     if (modulo) {
-      eventos = eventos.filter((e) => e.metadata?.modulo === modulo)
+      eventos = eventos.filter(e => e.metadata?.modulo === modulo)
     }
 
     // Filtrar por usuario
     if (usuarioFiltro) {
-      eventos = eventos.filter((e) => e.usuario.id === usuarioFiltro)
+      eventos = eventos.filter(e => e.usuario.id === usuarioFiltro)
     }
 
     // Filtrar por tipo (legacy - mantener compatibilidad)
     if (filtros.tipo && filtros.tipo.length > 0) {
-      eventos = eventos.filter((e) => filtros.tipo!.includes(e.tipo))
+      eventos = eventos.filter(e => filtros.tipo?.includes(e.tipo) ?? false)
     }
 
     // Filtrar por búsqueda
     if (busqueda.trim()) {
       const terminoLower = busqueda.toLowerCase()
-      eventos = eventos.filter((e) => {
+      eventos = eventos.filter(e => {
         const textoEvento = `
           ${e.titulo}
           ${e.descripcion}
@@ -143,12 +142,12 @@ export function useHistorialCliente({
     // Filtrar por fechas
     if (filtros.fecha_desde) {
       const fechaDesde = new Date(filtros.fecha_desde)
-      eventos = eventos.filter((e) => new Date(e.fecha) >= fechaDesde)
+      eventos = eventos.filter(e => new Date(e.fecha) >= fechaDesde)
     }
 
     if (filtros.fecha_hasta) {
       const fechaHasta = new Date(filtros.fecha_hasta)
-      eventos = eventos.filter((e) => new Date(e.fecha) <= fechaHasta)
+      eventos = eventos.filter(e => new Date(e.fecha) <= fechaHasta)
     }
 
     return eventos
@@ -158,7 +157,7 @@ export function useHistorialCliente({
   const eventosAgrupados = useMemo(() => {
     const grupos: Record<string, EventoHistorialHumanizado[]> = {}
 
-    eventosFiltrados.forEach((evento) => {
+    eventosFiltrados.forEach(evento => {
       const fecha = new Date(evento.fecha)
       const fechaKey = fecha.toISOString().split('T')[0] // YYYY-MM-DD
 
@@ -206,7 +205,7 @@ export function useHistorialCliente({
     let esteMes = 0
     let criticos = 0
 
-    todosLosEventos.forEach((evento) => {
+    todosLosEventos.forEach(evento => {
       const fechaEvento = new Date(evento.fecha)
 
       // Contar por tipo
@@ -238,7 +237,7 @@ export function useHistorialCliente({
 
   // ========== FUNCIONES DE FILTRADO ==========
   const aplicarFiltros = (nuevosFiltros: Partial<FiltrosHistorial>) => {
-    setFiltros((prev) => ({ ...prev, ...nuevosFiltros }))
+    setFiltros(prev => ({ ...prev, ...nuevosFiltros }))
   }
 
   const limpiarFiltros = () => {

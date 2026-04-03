@@ -26,15 +26,23 @@ import { logger } from '@/lib/utils/logger'
 import { resolverSlugCliente } from '@/lib/utils/slug.utils'
 import { useDocumentoIdentidad } from '@/modules/clientes/documentos/hooks/useDocumentoIdentidad'
 import { useClienteQuery } from '@/modules/clientes/hooks'
-import { useDocumentosQuery } from '@/modules/documentos/hooks/useDocumentosQuery'
-import { CategoriasService } from '@/modules/documentos/services'
-import { useDocumentosStore } from '@/modules/documentos/store/documentos.store'
+import { useDocumentosQuery } from '@/shared/documentos/hooks/useDocumentosQuery'
+import { CategoriasService } from '@/shared/documentos/services'
+import { useDocumentosStore } from '@/shared/documentos/store/documentos.store'
 
 interface UseClienteDetalleProps {
   clienteIdSlug: string // Puede ser slug o UUID
 }
 
-export type TabType = 'general' | 'intereses' | 'negociacion' | 'negociaciones' | 'documentos' | 'historial' | 'vivienda-asignada' | 'fuentes-pago'
+export type TabType =
+  | 'general'
+  | 'intereses'
+  | 'negociacion'
+  | 'negociaciones'
+  | 'documentos'
+  | 'historial'
+  | 'vivienda-asignada'
+  | 'fuentes-pago'
 
 export function useClienteDetalle({ clienteIdSlug }: UseClienteDetalleProps) {
   const router = useRouter()
@@ -51,7 +59,16 @@ export function useClienteDetalle({ clienteIdSlug }: UseClienteDetalleProps) {
   // Activar tab desde intent guardado en sessionStorage (p.ej. desde módulo Abonos)
   useEffect(() => {
     const intent = sessionStorage.getItem('cliente-tab-intent')
-    if (intent && ['general', 'intereses', 'negociacion', 'documentos', 'historial'].includes(intent)) {
+    if (
+      intent &&
+      [
+        'general',
+        'intereses',
+        'negociacion',
+        'documentos',
+        'historial',
+      ].includes(intent)
+    ) {
       setActiveTab(intent as TabType)
       sessionStorage.removeItem('cliente-tab-intent')
     }
@@ -62,10 +79,7 @@ export function useClienteDetalle({ clienteIdSlug }: UseClienteDetalleProps) {
   // =====================================================
 
   // Store de documentos (GENÉRICO)
-  const {
-    modalSubirAbierto,
-    cerrarModalSubir,
-  } = useDocumentosStore()
+  const { modalSubirAbierto, cerrarModalSubir } = useDocumentosStore()
 
   // Función para cargar categorías (reemplaza método del store legacy)
   const cargarCategorias = useCallback(async () => {
@@ -91,7 +105,10 @@ export function useClienteDetalle({ clienteIdSlug }: UseClienteDetalleProps) {
   })
 
   // ✅ Query de documentos para contador
-  const { documentos: documentosCliente } = useDocumentosQuery(clienteUUID || '', 'cliente')
+  const { documentos: documentosCliente } = useDocumentosQuery(
+    clienteUUID || '',
+    'cliente'
+  )
 
   // =====================================================
   // EFECTOS
@@ -121,8 +138,8 @@ export function useClienteDetalle({ clienteIdSlug }: UseClienteDetalleProps) {
 
   // 3. Listener para cambio de tab (desde otros componentes)
   useEffect(() => {
-    const handleCambiarTab = (event: any) => {
-      const nuevoTab = event.detail as TabType
+    const handleCambiarTab = (event: Event) => {
+      const nuevoTab = (event as CustomEvent<string>).detail as TabType
       setActiveTab(nuevoTab)
     }
 
@@ -142,7 +159,11 @@ export function useClienteDetalle({ clienteIdSlug }: UseClienteDetalleProps) {
 
     if (typeof window !== 'undefined') {
       window.addEventListener('cliente-actualizado', handleClienteActualizado)
-      return () => window.removeEventListener('cliente-actualizado', handleClienteActualizado)
+      return () =>
+        window.removeEventListener(
+          'cliente-actualizado',
+          handleClienteActualizado
+        )
     }
   }, [clienteUUID, recargarCliente])
 

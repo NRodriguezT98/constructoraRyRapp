@@ -31,7 +31,8 @@ import type { FiltroProyecto, ProyectoFormData } from '../types'
 export const proyectosKeys = {
   all: ['proyectos'] as const,
   lists: () => [...proyectosKeys.all, 'list'] as const,
-  list: (filtros?: FiltroProyecto) => [...proyectosKeys.lists(), { filtros }] as const,
+  list: (filtros?: FiltroProyecto) =>
+    [...proyectosKeys.lists(), { filtros }] as const,
   details: () => [...proyectosKeys.all, 'detail'] as const,
   detail: (id: string) => [...proyectosKeys.details(), id] as const,
 }
@@ -57,12 +58,13 @@ export function useProyectosQuery() {
 
   // ✅ MUTATION: Crear proyecto
   const crearProyectoMutation = useMutation({
-    mutationFn: (data: ProyectoFormData) => proyectosService.crearProyecto(data),
-    onSuccess: async (nuevoProyecto) => {
+    mutationFn: (data: ProyectoFormData) =>
+      proyectosService.crearProyecto(data),
+    onSuccess: async nuevoProyecto => {
       // ✅ INVALIDAR + REFETCH inmediato
       await queryClient.invalidateQueries({
         queryKey: proyectosKeys.lists(),
-        refetchType: 'all' // Refetch todas (activas e inactivas)
+        refetchType: 'all', // Refetch todas (activas e inactivas)
       })
 
       toast.success('Proyecto creado correctamente', {
@@ -78,24 +80,30 @@ export function useProyectosQuery() {
 
   // ✅ MUTATION: Actualizar proyecto
   const actualizarProyectoMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Partial<ProyectoFormData> }) => {
+    mutationFn: ({
+      id,
+      data,
+    }: {
+      id: string
+      data: Partial<ProyectoFormData>
+    }) => {
       return proyectosService.actualizarProyecto(id, data)
     },
-    onSuccess: async (proyectoActualizado) => {
+    onSuccess: async proyectoActualizado => {
       // ✅ INVALIDAR + REFETCH inmediato
       await queryClient.invalidateQueries({
         queryKey: proyectosKeys.lists(),
-        refetchType: 'all'
+        refetchType: 'all',
       })
       await queryClient.invalidateQueries({
         queryKey: proyectosKeys.detail(proyectoActualizado.id),
-        refetchType: 'all'
+        refetchType: 'all',
       })
 
       // ✅ Invalidar también query de validación (para modal de edición)
       await queryClient.invalidateQueries({
         queryKey: ['proyecto-validacion', proyectoActualizado.id],
-        refetchType: 'all'
+        refetchType: 'all',
       })
 
       toast.success('Proyecto actualizado', {
@@ -201,14 +209,22 @@ export function useProyectosQuery() {
 // 2. HOOK: useProyectoQuery (detalle individual)
 // ============================================
 export function useProyectoQuery(id?: string) {
+  const proyectoId = id ?? null
+
   const {
     data: proyecto,
     isLoading: cargando,
     error,
   } = useQuery({
-    queryKey: proyectosKeys.detail(id!),
-    queryFn: () => proyectosService.obtenerProyecto(id!),
-    enabled: !!id, // Solo ejecutar si hay ID
+    queryKey: proyectosKeys.detail(proyectoId ?? 'sin-id'),
+    queryFn: () => {
+      if (!proyectoId) {
+        throw new Error('Proyecto ID requerido')
+      }
+
+      return proyectosService.obtenerProyecto(proyectoId)
+    },
+    enabled: !!proyectoId, // Solo ejecutar si hay ID
     staleTime: 3 * 60 * 1000, // 3 minutos para detalles
     retry: 2, // Reintentar 2 veces si falla
     retryDelay: 1000, // Esperar 1s entre reintentos
@@ -268,22 +284,28 @@ export function useProyectosFiltrados() {
             proyecto.estado === 'pausado'
         )
       } else if (filtros.estado === 'completado') {
-        resultado = resultado.filter(proyecto => proyecto.estado === 'completado')
+        resultado = resultado.filter(
+          proyecto => proyecto.estado === 'completado'
+        )
       } else {
-        resultado = resultado.filter(proyecto => proyecto.estado === filtros.estado)
+        resultado = resultado.filter(
+          proyecto => proyecto.estado === filtros.estado
+        )
       }
     }
 
     // Filtro por fechas
     if (filtros.fechaDesde) {
+      const desde = filtros.fechaDesde
       resultado = resultado.filter(
-        proyecto => new Date(proyecto.fechaInicio ?? '') >= new Date(filtros.fechaDesde!)
+        proyecto => new Date(proyecto.fechaInicio ?? '') >= new Date(desde)
       )
     }
 
     if (filtros.fechaHasta) {
+      const hasta = filtros.fechaHasta
       resultado = resultado.filter(
-        proyecto => new Date(proyecto.fechaInicio ?? '') <= new Date(filtros.fechaHasta!)
+        proyecto => new Date(proyecto.fechaInicio ?? '') <= new Date(hasta)
       )
     }
 
@@ -354,13 +376,19 @@ export function useEstadisticasProyectos() {
         p.estado === 'pausado'
     ).length
 
-    const completados = proyectosActivos.filter(p => p.estado === 'completado').length
+    const completados = proyectosActivos.filter(
+      p => p.estado === 'completado'
+    ).length
 
-    const presupuestoTotal = proyectosActivos.reduce((sum, p) => sum + p.presupuesto, 0)
+    const presupuestoTotal = proyectosActivos.reduce(
+      (sum, p) => sum + p.presupuesto,
+      0
+    )
 
     const progresoPromedio =
       proyectosActivos.length > 0
-        ? proyectosActivos.reduce((sum, p) => sum + (p.progreso || 0), 0) / proyectosActivos.length
+        ? proyectosActivos.reduce((sum, p) => sum + (p.progreso || 0), 0) /
+          proyectosActivos.length
         : 0
 
     return {

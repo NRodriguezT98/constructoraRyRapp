@@ -13,7 +13,7 @@
  * ⚠️ NOMBRES DE CAMPOS VERIFICADOS EN: docs/DATABASE-SCHEMA-REFERENCE-ACTUALIZADO.md
  */
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import { toast } from 'sonner'
 
@@ -21,8 +21,8 @@ import { supabase } from '@/lib/supabase/client'
 import { logger } from '@/lib/utils/logger'
 import { fuentesPagoService } from '@/modules/clientes/services/fuentes-pago.service'
 import {
-    cargarTiposFuentesPagoActivas,
-    type TipoFuentePagoCatalogo,
+  cargarTiposFuentesPagoActivas,
+  type TipoFuentePagoCatalogo,
 } from '@/modules/clientes/services/tipos-fuentes-pago.service'
 import type { TipoFuentePago } from '@/modules/clientes/types'
 import { crearCredito } from '@/modules/fuentes-pago/services/creditos-constructora.service'
@@ -67,7 +67,9 @@ export function useConfigurarFuentesPago({
   const [fuentesPago, setFuentesPago] = useState<FuentePago[]>([])
   const [cargando, setCargando] = useState(true)
   const [cargandoTipos, setCargandoTipos] = useState(true)
-  const [tiposDisponibles, setTiposDisponibles] = useState<TipoFuentePagoCatalogo[]>([])
+  const [tiposDisponibles, setTiposDisponibles] = useState<
+    TipoFuentePagoCatalogo[]
+  >([])
   const [guardando, setGuardando] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [totales, setTotales] = useState<Totales>({
@@ -92,20 +94,6 @@ export function useConfigurarFuentesPago({
     cargarTipos()
   }, [])
 
-  /**
-   * Cargar fuentes de pago existentes al montar o cambiar negociacionId
-   */
-  useEffect(() => {
-    cargarFuentesPago()
-  }, [negociacionId])
-
-  /**
-   * Calcular totales cuando cambian las fuentes o el valorTotal
-   */
-  useEffect(() => {
-    calcularTotales()
-  }, [fuentesPago, valorTotal])
-
   // =====================================================
   // FUNCIONES DE LÓGICA
   // =====================================================
@@ -113,29 +101,32 @@ export function useConfigurarFuentesPago({
   /**
    * Cargar fuentes de pago desde la BD
    */
-  const cargarFuentesPago = async () => {
+  const cargarFuentesPago = useCallback(async () => {
     try {
       setCargando(true)
       setError(null)
-      const data = await fuentesPagoService.obtenerFuentesPagoNegociacion(negociacionId)
+      const data =
+        await fuentesPagoService.obtenerFuentesPagoNegociacion(negociacionId)
       setFuentesPago(
-        data.map((f: any) => ({
+        data.map(f => ({
           id: f.id,
           tipo: f.tipo,
           monto_aprobado: f.monto_aprobado || 0,
           capital_para_cierre: f.capital_para_cierre ?? undefined,
-          entidad: f.entidad,
-          numero_referencia: f.numero_referencia,
-          carta_asignacion_url: f.carta_asignacion_url,
+          entidad: f.entidad ?? undefined,
+          numero_referencia: f.numero_referencia ?? undefined,
+          carta_asignacion_url: f.carta_asignacion_url ?? undefined,
         }))
       )
     } catch (err: unknown) {
       logger.error('Error cargando fuentes:', err)
-      setError(`Error cargando fuentes de pago: ${err instanceof Error ? err.message : String(err)}`)
+      setError(
+        `Error cargando fuentes de pago: ${err instanceof Error ? err.message : String(err)}`
+      )
     } finally {
       setCargando(false)
     }
-  }
+  }, [negociacionId])
 
   /**
    * Calcular totales: monto total, porcentaje cubierto, diferencia
@@ -143,7 +134,7 @@ export function useConfigurarFuentesPago({
    * Uses shared calcularCierreFinanciero — capital_para_cierre is preferred
    * over monto_aprobado to avoid interest inflating the total.
    */
-  const calcularTotales = () => {
+  const calcularTotales = useCallback(() => {
     const cierre = calcularCierreFinanciero(fuentesPago, valorTotal)
 
     setTotales({
@@ -151,15 +142,34 @@ export function useConfigurarFuentesPago({
       porcentaje: cierre.porcentajeCubierto,
       diferencia: cierre.diferencia,
     })
-  }
+  }, [fuentesPago, valorTotal])
+
+  // ── Effects that depend on the above functions ──────────────────────────
+
+  /**
+   * Cargar fuentes de pago existentes al montar o cambiar negociacionId
+   */
+  useEffect(() => {
+    cargarFuentesPago()
+  }, [negociacionId, cargarFuentesPago])
+
+  /**
+   * Calcular totales cuando cambian las fuentes o el valorTotal
+   */
+  useEffect(() => {
+    calcularTotales()
+  }, [fuentesPago, valorTotal, calcularTotales])
 
   /**
    * Agregar una nueva fuente de pago
    */
-  const agregarFuente = (tipo: FuentePago['tipo'], permiteMultiples: boolean) => {
+  const agregarFuente = (
+    tipo: FuentePago['tipo'],
+    permiteMultiples: boolean
+  ) => {
     // Verificar si ya existe este tipo (excepto Cuota Inicial que puede repetirse)
     if (!permiteMultiples) {
-      const existe = fuentesPago.some((f) => f.tipo === tipo)
+      const existe = fuentesPago.some(f => f.tipo === tipo)
       if (existe) {
         setError(`Ya existe una fuente de tipo "${tipo}"`)
         return
@@ -181,7 +191,11 @@ export function useConfigurarFuentesPago({
   /**
    * Actualizar un campo de una fuente existente
    */
-  const actualizarFuente = (index: number, campo: keyof FuentePago, valor: any) => {
+  const actualizarFuente = (
+    index: number,
+    campo: keyof FuentePago,
+    valor: FuentePago[keyof FuentePago] | unknown
+  ) => {
     const nuevasFuentes = [...fuentesPago]
     nuevasFuentes[index] = { ...nuevasFuentes[index], [campo]: valor }
     setFuentesPago(nuevasFuentes)
@@ -208,7 +222,7 @@ export function useConfigurarFuentesPago({
         if (errMsg.includes('ya ha recibido')) {
           setError(
             `⚠️ No se puede eliminar esta fuente porque ya ha recibido dinero. ` +
-            `Para mantener la integridad del historial de abonos, esta fuente debe permanecer activa.`
+              `Para mantener la integridad del historial de abonos, esta fuente debe permanecer activa.`
           )
         } else {
           setError(`Error eliminando fuente: ${errMsg}`)
@@ -231,7 +245,9 @@ export function useConfigurarFuentesPago({
       setError(null)
 
       // Validar que todas las fuentes tengan monto > 0
-      const invalidas = fuentesPago.filter((f) => !f.monto_aprobado || f.monto_aprobado <= 0)
+      const invalidas = fuentesPago.filter(
+        f => !f.monto_aprobado || f.monto_aprobado <= 0
+      )
       if (invalidas.length > 0) {
         setError('Todas las fuentes deben tener un monto aprobado mayor a 0')
         return
@@ -241,7 +257,7 @@ export function useConfigurarFuentesPago({
       const { data: tiposConfig } = await supabase
         .from('tipos_fuentes_pago')
         .select('nombre, requiere_entidad')
-      const tiposMap = new Map((tiposConfig ?? []).map((t) => [t.nombre, t]))
+      const tiposMap = new Map((tiposConfig ?? []).map(t => [t.nombre, t]))
 
       // Validar entidades requeridas usando la flag de BD
       for (const fuente of fuentesPago) {
@@ -273,8 +289,13 @@ export function useConfigurarFuentesPago({
           })
 
           // Si el tipo genera cuotas y hay parámetros de crédito, crear tabla de amortización
-          const tipoConfig = tiposDisponibles.find(t => t.nombre === fuente.tipo)
-          if (tipoConfig?.logica_negocio?.genera_cuotas && fuente.parametrosCredito) {
+          const tipoConfig = tiposDisponibles.find(
+            t => t.nombre === fuente.tipo
+          )
+          if (
+            tipoConfig?.logica_negocio?.genera_cuotas &&
+            fuente.parametrosCredito
+          ) {
             const calculo = calcularTablaAmortizacion(fuente.parametrosCredito)
 
             // Crear registro en creditos_constructora
@@ -283,16 +304,22 @@ export function useConfigurarFuentesPago({
               capital: fuente.parametrosCredito.capital,
               tasa_mensual: fuente.parametrosCredito.tasaMensual,
               num_cuotas: fuente.parametrosCredito.numCuotas,
-              fecha_inicio: fuente.parametrosCredito.fechaInicio.toISOString().split('T')[0],
+              fecha_inicio: fuente.parametrosCredito.fechaInicio
+                .toISOString()
+                .split('T')[0],
               valor_cuota: calculo.valorCuotaMensual,
               interes_total: calculo.interesTotal,
               monto_total: calculo.montoTotal,
-              tasa_mora_diaria: fuente.parametrosCredito.tasaMoraDiaria ?? 0.001,
+              tasa_mora_diaria:
+                fuente.parametrosCredito.tasaMoraDiaria ?? 0.001,
             })
             if (eCred) throw eCred
 
             // Crear cuotas de amortización
-            const { error: eCuotas } = await crearCuotasCredito(nuevaFuente.id, calculo.cuotas)
+            const { error: eCuotas } = await crearCuotasCredito(
+              nuevaFuente.id,
+              calculo.cuotas
+            )
             if (eCuotas) throw eCuotas
           }
         }
@@ -307,7 +334,9 @@ export function useConfigurarFuentesPago({
       toast.info('✅ Fuentes de pago guardadas correctamente')
     } catch (err: unknown) {
       logger.error('Error guardando fuentes:', err)
-      setError(`Error guardando fuentes: ${err instanceof Error ? err.message : String(err)}`)
+      setError(
+        `Error guardando fuentes: ${err instanceof Error ? err.message : String(err)}`
+      )
     } finally {
       setGuardando(false)
     }

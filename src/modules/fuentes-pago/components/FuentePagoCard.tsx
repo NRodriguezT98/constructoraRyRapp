@@ -33,16 +33,24 @@ import React, { useCallback, useState } from 'react'
 
 import { AnimatePresence, motion } from 'framer-motion'
 
-import { DocumentoUpload } from '@/modules/documentos/components/upload/documento-upload'
 import { Modal } from '@/shared/components/ui/Modal'
+import { DocumentoUpload } from '@/shared/documentos/components/upload/documento-upload'
 
 // Hooks y tipos
-import { useFuentePagoCard, type FuentePagoData } from '../hooks/useFuentePagoCard'
+import {
+  useFuentePagoCard,
+  type FuentePagoData,
+} from '../hooks/useFuentePagoCard'
+import { type NivelValidacion } from '../types'
 
 // Componentes especializados
 import { FuentePagoCardHeader } from './partials/FuentePagoCardHeader'
 import { FuentePagoCardMetrics } from './partials/FuentePagoCardMetrics'
-import { FuentePagoCardProgress } from './partials/FuentePagoCardProgress'
+import {
+  FuentePagoCardProgress,
+  type Paso,
+  type Progreso,
+} from './partials/FuentePagoCardProgress'
 
 // =====================================================
 // TYPES
@@ -51,13 +59,13 @@ import { FuentePagoCardProgress } from './partials/FuentePagoCardProgress'
 interface FuentePagoCardProps {
   fuente: FuentePagoData
   clienteId?: string
-  onMarcarPaso?: (pasoId: string, paso: any) => void
+  onMarcarPaso?: (pasoId: string, paso: Paso) => void
   onVerDocumento?: (documentoId: string) => void
 }
 
 interface ModalState {
   isOpen: boolean
-  paso: any | null
+  paso: Paso | null
 }
 
 // =====================================================
@@ -67,7 +75,7 @@ interface ModalState {
 export function FuentePagoCard({
   fuente,
   clienteId,
-  onMarcarPaso,
+  onMarcarPaso: _onMarcarPaso,
   onVerDocumento,
 }: FuentePagoCardProps) {
   // ✅ Toda la lógica encapsulada en hook
@@ -94,7 +102,7 @@ export function FuentePagoCard({
     setIsExpanded(prev => !prev)
   }, [])
 
-  const handleAbrirModalSubida = useCallback((paso: any) => {
+  const handleAbrirModalSubida = useCallback((paso: Paso) => {
     setModalState({ isOpen: true, paso })
   }, [])
 
@@ -116,11 +124,11 @@ export function FuentePagoCard({
 
   if (isLoading) {
     return (
-      <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm p-4">
-        <div className="animate-pulse space-y-2">
-          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4" />
-          <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-full" />
-          <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-2/3" />
+      <div className='rounded-xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800'>
+        <div className='animate-pulse space-y-2'>
+          <div className='h-4 w-3/4 rounded bg-gray-200 dark:bg-gray-700' />
+          <div className='h-3 w-full rounded bg-gray-200 dark:bg-gray-700' />
+          <div className='h-3 w-2/3 rounded bg-gray-200 dark:bg-gray-700' />
         </div>
       </div>
     )
@@ -130,8 +138,6 @@ export function FuentePagoCard({
   // RENDER: ERROR STATE
   // ==========================================
 
-
-
   // ==========================================
   // RENDER: MAIN COMPONENT
   // ==========================================
@@ -140,12 +146,12 @@ export function FuentePagoCard({
     <>
       <motion.div
         layout
-        className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm hover:shadow-md transition-all cursor-pointer"
+        className='cursor-pointer rounded-xl border border-gray-200 bg-white shadow-sm transition-all hover:shadow-md dark:border-gray-700 dark:bg-gray-800'
         whileHover={{ y: -2 }}
         onClick={handleToggleExpand}
       >
         {/* VISTA COMPACTA - Siempre visible */}
-        <div className="p-4 space-y-3">
+        <div className='space-y-3 p-4'>
           {/* Header: Tipo + Icono + Estado */}
           <FuentePagoCardHeader
             tipo={fuente.tipo}
@@ -173,13 +179,13 @@ export function FuentePagoCard({
               animate={{ height: 'auto', opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
               transition={{ duration: 0.3, ease: 'easeInOut' }}
-              className="overflow-hidden"
+              className='overflow-hidden'
             >
-              <div className="px-4 pb-4 border-t border-gray-200 dark:border-gray-700 pt-4">
+              <div className='border-t border-gray-200 px-4 pb-4 pt-4 dark:border-gray-700'>
                 <FuentePagoCardProgress
-                  pasos={documentosPendientes as any}
-                  progreso={pendientesObligatorios as any}
-                  validacion={null as any}
+                  pasos={documentosPendientes as unknown as Paso[]}
+                  progreso={pendientesObligatorios as unknown as Progreso}
+                  validacion={null as unknown as NivelValidacion}
                   tieneRequisitos={tieneRequisitos}
                   onAbrirModalSubida={handleAbrirModalSubida}
                   onVerDocumento={onVerDocumento}
@@ -196,21 +202,25 @@ export function FuentePagoCard({
           isOpen={modalState.isOpen}
           onClose={handleCerrarModal}
           title={`Subir documento: ${modalState.paso.titulo}`}
-          size="lg"
+          size='lg'
         >
-          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-          {React.createElement(DocumentoUpload as any, {
-            clienteId,
-            categoria: 'fuentes_pago',
-            metadata: {
-              fuente_pago_id: fuente.id,
-              paso_id: modalState.paso.id,
-              tipo_fuente: fuente.tipo,
-              paso_nombre: modalState.paso.titulo,
-            },
-            onSuccess: handleSubidaExitosa,
-            onCancel: handleCerrarModal,
-          })}
+          {React.createElement(
+            DocumentoUpload as unknown as React.ComponentType<
+              Record<string, unknown>
+            >,
+            {
+              clienteId,
+              categoria: 'fuentes_pago',
+              metadata: {
+                fuente_pago_id: fuente.id,
+                paso_id: modalState.paso.id,
+                tipo_fuente: fuente.tipo,
+                paso_nombre: modalState.paso.titulo,
+              },
+              onSuccess: handleSubidaExitosa,
+              onCancel: handleCerrarModal,
+            }
+          )}
         </Modal>
       )}
     </>

@@ -6,9 +6,13 @@
  */
 
 import { supabase } from '@/lib/supabase/client'
+import type { Json } from '@/lib/supabase/database.types'
 import { logger } from '@/lib/utils/logger'
 
-import type { ConfiguracionCampos, TipoFuentePagoConCampos } from '../types/campos-dinamicos.types'
+import type {
+  ConfiguracionCampos,
+  TipoFuentePagoConCampos,
+} from '../types/campos-dinamicos.types'
 
 // ============================================
 // CARGAR TIPOS CON CONFIGURACIÓN DE CAMPOS
@@ -32,7 +36,8 @@ export async function cargarTiposFuentesConCampos() {
   // ✅ Cast JSON to ConfiguracionCampos
   return data.map(tipo => ({
     ...tipo,
-    configuracion_campos: tipo.configuracion_campos as unknown as ConfiguracionCampos,
+    configuracion_campos:
+      tipo.configuracion_campos as unknown as ConfiguracionCampos,
   })) as unknown as TipoFuentePagoConCampos[]
 }
 
@@ -54,7 +59,8 @@ export async function cargarTipoFuenteConCampos(tipoId: string) {
   // ✅ Cast JSON to ConfiguracionCampos
   return {
     ...data,
-    configuracion_campos: data.configuracion_campos as unknown as ConfiguracionCampos,
+    configuracion_campos:
+      data.configuracion_campos as unknown as ConfiguracionCampos,
   } as unknown as TipoFuentePagoConCampos
 }
 
@@ -72,7 +78,7 @@ export async function actualizarConfiguracionCampos(
   const { data, error } = await supabase
     .from('tipos_fuentes_pago')
     .update({
-      configuracion_campos: configuracion as any, // â† Cast to Json type
+      configuracion_campos: configuracion as unknown as Json,
       updated_at: new Date().toISOString(),
     })
     .eq('id', tipoId)
@@ -86,7 +92,8 @@ export async function actualizarConfiguracionCampos(
 
   return {
     ...data,
-    configuracion_campos: data.configuracion_campos as unknown as ConfiguracionCampos,
+    configuracion_campos:
+      data.configuracion_campos as unknown as ConfiguracionCampos,
   } as unknown as TipoFuentePagoConCampos
 }
 

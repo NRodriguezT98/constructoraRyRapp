@@ -7,20 +7,24 @@ import { supabase } from '@/lib/supabase/client'
 import { logger } from '@/lib/utils/logger'
 
 import type {
-    ActualizarNotaDTO,
-    CrearNotaDTO,
-    NotaHistorialConUsuario,
+  ActualizarNotaDTO,
+  CrearNotaDTO,
+  NotaHistorialConUsuario,
 } from '../types/notas-historial.types'
 
 class NotasHistorialService {
   /**
    * Obtener una nota específica por ID
    */
-  async obtenerNotaPorId(notaId: string): Promise<NotaHistorialConUsuario | null> {
+  async obtenerNotaPorId(
+    notaId: string
+  ): Promise<NotaHistorialConUsuario | null> {
     try {
       const { data: nota, error } = await supabase
         .from('notas_historial_cliente')
-        .select('id,cliente_id,titulo,contenido,es_importante,fecha_creacion,fecha_actualizacion,creado_por,actualizado_por')
+        .select(
+          'id,cliente_id,titulo,contenido,es_importante,fecha_creacion,fecha_actualizacion,creado_por,actualizado_por'
+        )
         .eq('id', notaId)
         .single()
 
@@ -53,11 +57,15 @@ class NotasHistorialService {
   /**
    * Obtener todas las notas de un cliente
    */
-  async obtenerNotasCliente(clienteId: string): Promise<NotaHistorialConUsuario[]> {
+  async obtenerNotasCliente(
+    clienteId: string
+  ): Promise<NotaHistorialConUsuario[]> {
     try {
       const { data: notas, error } = await supabase
         .from('notas_historial_cliente')
-        .select('id,cliente_id,titulo,contenido,es_importante,fecha_creacion,fecha_actualizacion,creado_por,actualizado_por')
+        .select(
+          'id,cliente_id,titulo,contenido,es_importante,fecha_creacion,fecha_actualizacion,creado_por,actualizado_por'
+        )
         .eq('cliente_id', clienteId)
         .order('fecha_creacion', { ascending: false })
 
@@ -67,7 +75,7 @@ class NotasHistorialService {
 
       // Obtener IDs únicos de usuarios (creadores + actualizadores)
       const usuarioIds = new Set<string>()
-      notas.forEach((nota) => {
+      notas.forEach(nota => {
         usuarioIds.add(nota.creado_por)
         if (nota.actualizado_por) usuarioIds.add(nota.actualizado_por)
       })
@@ -78,10 +86,10 @@ class NotasHistorialService {
         .select('id,email,nombres,apellidos,rol')
         .in('id', Array.from(usuarioIds))
 
-      const usuariosMap = new Map((usuarios || []).map((u) => [u.id, u]))
+      const usuariosMap = new Map((usuarios || []).map(u => [u.id, u]))
 
       // Mapear notas con datos de usuarios
-      return notas.map((nota) => {
+      return notas.map(nota => {
         const creador = usuariosMap.get(nota.creado_por)
         const actualizador = nota.actualizado_por
           ? usuariosMap.get(nota.actualizado_por)
@@ -123,7 +131,13 @@ class NotasHistorialService {
   /**
    * Crear una nota nueva
    */
-  async crearNota(datos: CrearNotaDTO): Promise<{ success: boolean; nota?: NotaHistorialConUsuario; error?: string }> {
+  async crearNota(
+    datos: CrearNotaDTO
+  ): Promise<{
+    success: boolean
+    nota?: NotaHistorialConUsuario
+    error?: string
+  }> {
     try {
       const {
         data: { user },
@@ -168,7 +182,8 @@ class NotasHistorialService {
         } as NotaHistorialConUsuario,
       }
     } catch (error) {
-      const mensaje = error instanceof Error ? error.message : 'Error desconocido'
+      const mensaje =
+        error instanceof Error ? error.message : 'Error desconocido'
       logger.error('❌ [NOTAS] Error creando nota:', error)
       return { success: false, error: mensaje }
     }
@@ -190,13 +205,21 @@ class NotasHistorialService {
         return { success: false, error: 'Usuario no autenticado' }
       }
 
-      const actualizacion: any = {
+      type NotaActualizacion = {
+        actualizado_por: string
+        titulo?: string
+        contenido?: string
+        es_importante?: boolean
+      }
+      const actualizacion: NotaActualizacion = {
         actualizado_por: user.id,
       }
 
       if (datos.titulo !== undefined) actualizacion.titulo = datos.titulo.trim()
-      if (datos.contenido !== undefined) actualizacion.contenido = datos.contenido.trim()
-      if (datos.es_importante !== undefined) actualizacion.es_importante = datos.es_importante
+      if (datos.contenido !== undefined)
+        actualizacion.contenido = datos.contenido.trim()
+      if (datos.es_importante !== undefined)
+        actualizacion.es_importante = datos.es_importante
 
       const { error } = await supabase
         .from('notas_historial_cliente')
@@ -207,7 +230,8 @@ class NotasHistorialService {
 
       return { success: true }
     } catch (error) {
-      const mensaje = error instanceof Error ? error.message : 'Error desconocido'
+      const mensaje =
+        error instanceof Error ? error.message : 'Error desconocido'
       logger.error('❌ [NOTAS] Error actualizando nota:', error)
       return { success: false, error: mensaje }
     }
@@ -216,15 +240,21 @@ class NotasHistorialService {
   /**
    * Eliminar una nota
    */
-  async eliminarNota(notaId: string): Promise<{ success: boolean; error?: string }> {
+  async eliminarNota(
+    notaId: string
+  ): Promise<{ success: boolean; error?: string }> {
     try {
-      const { error } = await supabase.from('notas_historial_cliente').delete().eq('id', notaId)
+      const { error } = await supabase
+        .from('notas_historial_cliente')
+        .delete()
+        .eq('id', notaId)
 
       if (error) throw error
 
       return { success: true }
     } catch (error) {
-      const mensaje = error instanceof Error ? error.message : 'Error desconocido'
+      const mensaje =
+        error instanceof Error ? error.message : 'Error desconocido'
       logger.error('❌ [NOTAS] Error eliminando nota:', error)
       return { success: false, error: mensaje }
     }
@@ -243,7 +273,11 @@ class NotasHistorialService {
 
       // Obtener nota y usuario
       const [notaResult, usuarioResult] = await Promise.all([
-        supabase.from('notas_historial_cliente').select('creado_por').eq('id', notaId).single(),
+        supabase
+          .from('notas_historial_cliente')
+          .select('creado_por')
+          .eq('id', notaId)
+          .single(),
         supabase.from('usuarios').select('rol').eq('id', user.id).single(),
       ])
 

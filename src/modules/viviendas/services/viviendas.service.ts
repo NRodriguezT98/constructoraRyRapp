@@ -37,6 +37,58 @@ class ViviendasService {
     return data || []
   }
 
+  /**
+   * Obtiene todos los proyectos (para filtros/selects que necesitan incluir todos)
+   */
+  async obtenerProyectosParaFiltro(): Promise<
+    Array<{ id: string; nombre: string }>
+  > {
+    const { data, error } = await supabase
+      .from('proyectos')
+      .select('id, nombre')
+      .order('nombre')
+
+    if (error) throw error
+    return data || []
+  }
+
+  /**
+   * Obtiene viviendas disponibles de un proyecto (para selects de interés)
+   */
+  async obtenerViviendasDisponiblesPorProyecto(
+    proyectoId: string
+  ): Promise<
+    Array<{
+      id: string
+      numero: string
+      manzana_id: string
+      manzanas: { nombre: string } | null
+    }>
+  > {
+    const { data: manzanas } = await supabase
+      .from('manzanas')
+      .select('id')
+      .eq('proyecto_id', proyectoId)
+
+    const ids = manzanas?.map(m => m.id) ?? []
+    if (ids.length === 0) return []
+
+    const { data, error } = await supabase
+      .from('viviendas')
+      .select('id, numero, manzana_id, manzanas(nombre)')
+      .in('manzana_id', ids)
+      .eq('estado', 'Disponible')
+      .order('numero')
+
+    if (error) throw error
+    return (data ?? []) as Array<{
+      id: string
+      numero: string
+      manzana_id: string
+      manzanas: { nombre: string } | null
+    }>
+  }
+
   // ============================================
   // MANZANAS
   // ============================================
@@ -608,8 +660,7 @@ class ViviendasService {
     }
 
     // Transformar datos de vista (flat) a estructura esperada (nested)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Vista no tipada en Supabase
-    const viviendas: Vivienda[] = (data || []).map((row: any) => ({
+    const viviendas = (data || []).map((row: Record<string, unknown>) => ({
       // Campos base de vivienda
       id: row.id,
       manzana_id: row.manzana_id,
@@ -654,21 +705,25 @@ class ViviendasService {
       },
 
       // Relación con cliente (nested) - solo si tiene cliente
-      ...(row.cliente_id && {
-        clientes: {
-          id: row.cliente_id_data,
-          nombre_completo: `${row.cliente_nombres} ${row.cliente_apellidos}`,
-          telefono: row.cliente_telefono,
-          email: row.cliente_email,
-        },
-      }),
+      ...(row.cliente_id
+        ? {
+            clientes: {
+              id: row.cliente_id_data,
+              nombre_completo:
+                `${String(row.cliente_nombres ?? '')} ${String(row.cliente_apellidos ?? '')}`.trim(),
+              telefono: row.cliente_telefono,
+              email: row.cliente_email,
+            },
+          }
+        : {}),
 
       // Cálculos de abonos (ya vienen calculados de la vista)
       total_abonado: Number(row.total_abonado) || 0,
       cantidad_abonos: Number(row.cantidad_abonos) || 0,
       porcentaje_pagado: Number(row.porcentaje_pagado) || 0,
-      saldo_pendiente: Number(row.saldo_pendiente) || row.valor_total,
-    }))
+      saldo_pendiente:
+        Number(row.saldo_pendiente) || (row.valor_total as number),
+    })) as Vivienda[]
 
     // ✅ ORDENAMIENTO POR DEFECTO: Manzana (alfabético) + Número (numérico ascendente)
     // Esto garantiza orden correcto: Mz.A Casa 1, 2, 3... 10, 11 (no 1, 10, 11, 2, 3)
@@ -798,18 +853,17 @@ class ViviendasService {
     if (error) throw error
     if (!data) return null
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Supabase join types are imprecise
-    const rawData = data as Record<string, any>
+    const rawData = data as Record<string, unknown>
     const clienteData = Array.isArray(rawData.clientes)
       ? rawData.clientes[0]
       : rawData.clientes
 
     return {
       id: data.id,
-      valor_negociado: rawData.valor_negociado ?? 0,
-      descuento_aplicado: rawData.descuento_aplicado ?? 0,
-      total_abonado: rawData.total_abonado ?? 0,
-      saldo_pendiente: rawData.saldo_pendiente ?? 0,
+      valor_negociado: Number(rawData.valor_negociado ?? 0),
+      descuento_aplicado: Number(rawData.descuento_aplicado ?? 0),
+      total_abonado: Number(rawData.total_abonado ?? 0),
+      saldo_pendiente: Number(rawData.saldo_pendiente ?? 0),
       estado: data.estado ?? '',
       cliente_id: data.cliente_id ?? '',
       cliente_nombre: clienteData

@@ -15,15 +15,34 @@ import {
   Trash2,
 } from 'lucide-react'
 
+import dynamic from 'next/dynamic'
 import { useRouter } from 'next/navigation'
 
 import { Button } from '@/components/ui/button'
-import {
-  AbonosTab,
-  DocumentosTab,
-  InfoTab,
-} from '@/modules/viviendas/components/detalle'
+import { InfoTab } from '@/modules/viviendas/components/detalle/tabs/InfoTab'
 import { useViviendaQuery } from '@/modules/viviendas/hooks/useViviendaQuery'
+
+const TabSpinner = () => (
+  <div className='flex items-center justify-center py-12'>
+    <div className='h-6 w-6 animate-spin rounded-full border-2 border-orange-500 border-t-transparent' />
+  </div>
+)
+
+const DocumentosTab = dynamic(
+  () =>
+    import('@/modules/viviendas/components/detalle/tabs/DocumentosTab').then(
+      m => ({ default: m.DocumentosTab })
+    ),
+  { loading: TabSpinner }
+)
+
+const AbonosTab = dynamic(
+  () =>
+    import('@/modules/viviendas/components/detalle/tabs/AbonosTab').then(m => ({
+      default: m.AbonosTab,
+    })),
+  { loading: TabSpinner }
+)
 
 import * as styles from './vivienda-detalle.styles'
 
@@ -168,11 +187,7 @@ export default function ViviendaDetalleClient({
       >
         <div className='mx-auto max-w-7xl space-y-4'>
           {/* Botón Volver */}
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-          >
+          <motion.div {...styles.animations.fadeInUp}>
             <Button
               variant='ghost'
               onClick={() => router.back()}
@@ -183,102 +198,99 @@ export default function ViviendaDetalleClient({
             </Button>
           </motion.div>
 
-          {/* Header Compacto */}
+          {/* Header Mejorado con Glassmorphism */}
           <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
+            {...styles.animations.fadeInUp}
             transition={{ delay: 0.1 }}
-            className='relative overflow-hidden rounded-2xl bg-gradient-to-r from-orange-600 via-orange-600 to-amber-600 shadow-2xl dark:from-orange-700 dark:via-orange-700 dark:to-amber-800'
+            className={styles.headerClasses.container}
           >
-            {/* Patrón de fondo sutil */}
-            <div className='bg-grid-white/10 absolute inset-0 [mask-image:linear-gradient(0deg,transparent,black,transparent)]' />
+            {/* Patrón de fondo */}
+            <div className={styles.headerClasses.backgroundPattern}>
+              <div className='absolute left-10 top-10 h-32 w-32 animate-pulse rounded-full bg-white/10'></div>
+              <div className='absolute bottom-10 right-10 h-24 w-24 animate-pulse rounded-full bg-white/10'></div>
+            </div>
 
-            {/* Contenido */}
-            <div className='relative z-10 p-6'>
-              {/* Breadcrumb superior */}
-              <div className='mb-3 flex items-center gap-2 text-sm text-orange-100'>
-                <Home className='h-4 w-4' />
-                <ChevronRight className='h-4 w-4' />
-                <span>Viviendas</span>
-                <ChevronRight className='h-4 w-4' />
-                <span className='font-medium text-white'>
-                  Mz. {vivienda.manzanas?.nombre || '?'} Casa {vivienda.numero}
-                </span>
-              </div>
+            {/* Breadcrumb */}
+            <div className={styles.headerClasses.breadcrumb}>
+              <Home className={styles.headerClasses.breadcrumbIcon} />
+              <ChevronRight className={styles.headerClasses.breadcrumbIcon} />
+              <span>Viviendas</span>
+              <ChevronRight className={styles.headerClasses.breadcrumbIcon} />
+              <span className={styles.headerClasses.breadcrumbCurrent}>
+                Mz. {vivienda.manzanas?.nombre || '?'} Casa {vivienda.numero}
+              </span>
+            </div>
 
-              {/* Contenido principal */}
-              <div className='flex items-center justify-between'>
-                {/* Lado izquierdo: Icono + Info */}
-                <div className='flex items-center gap-4'>
-                  <motion.div
-                    className='flex h-14 w-14 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm'
-                    whileHover={{ scale: 1.05, rotate: 5 }}
-                    transition={{ type: 'spring', stiffness: 300 }}
-                  >
-                    <Home className='h-7 w-7 text-white' />
-                  </motion.div>
+            {/* Contenido Principal */}
+            <div className={styles.headerClasses.contentWrapper}>
+              <div className={styles.headerClasses.leftSection}>
+                <motion.div
+                  className={styles.headerClasses.iconContainer}
+                  {...styles.animations.hoverScale}
+                >
+                  <Home className={styles.headerClasses.icon} />
+                </motion.div>
 
-                  <div className='space-y-1'>
-                    <div className='flex items-center gap-3'>
-                      <h1 className='text-3xl font-bold text-white'>
-                        Mz. {vivienda.manzanas?.nombre || '?'} Casa{' '}
-                        {vivienda.numero}
-                      </h1>
-                      <span
-                        className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${
-                          estadoColors[
-                            vivienda.estado as keyof typeof estadoColors
-                          ] || estadoColors.Disponible
-                        }`}
-                      >
-                        {vivienda.estado}
-                      </span>
-                    </div>
-                    <div className='flex items-center gap-2 text-sm text-orange-100'>
-                      <Building2 className='h-3.5 w-3.5' />
-                      <span>
-                        {vivienda.manzanas?.proyectos?.nombre || 'Sin proyecto'}
-                      </span>
-                    </div>
+                <div className={styles.headerClasses.titleSection}>
+                  <div className='flex items-center gap-3'>
+                    <h1 className={styles.headerClasses.title}>
+                      Mz. {vivienda.manzanas?.nombre || '?'} Casa{' '}
+                      {vivienda.numero}
+                    </h1>
+                    <span
+                      className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ${
+                        estadoColors[
+                          vivienda.estado as keyof typeof estadoColors
+                        ] || estadoColors.Disponible
+                      }`}
+                    >
+                      {vivienda.estado}
+                    </span>
+                  </div>
+                  <div className={styles.headerClasses.location}>
+                    <Building2 className={styles.headerClasses.locationIcon} />
+                    <span>
+                      {vivienda.manzanas?.proyectos?.nombre || 'Sin proyecto'}
+                    </span>
                   </div>
                 </div>
+              </div>
 
-                {/* Lado derecho: Acciones */}
-                <div className='flex items-center gap-2'>
-                  <Button
-                    variant='ghost'
-                    size='sm'
-                    className='h-10 w-10 rounded-lg border border-white/30 bg-white/20 p-0 text-white hover:bg-white/30'
-                    onClick={() =>
-                      router.push(window.location.pathname + '/editar')
-                    }
-                    title='Editar vivienda'
-                  >
-                    <Edit2 className='h-4 w-4' />
-                  </Button>
-                  <Button
-                    variant='ghost'
-                    size='sm'
-                    className='h-10 w-10 rounded-lg border border-white/30 bg-white/20 p-0 text-white hover:bg-white/30'
-                  >
-                    <Trash2 className='h-4 w-4' />
-                  </Button>
-                </div>
+              {/* Acciones */}
+              <div className={styles.headerClasses.actionsContainer}>
+                <button
+                  className={styles.headerClasses.actionButton}
+                  onClick={() =>
+                    router.push(window.location.pathname + '/editar')
+                  }
+                  title='Editar vivienda'
+                >
+                  <Edit2 className='h-4 w-4' />
+                </button>
+                <button className={styles.headerClasses.deleteButton}>
+                  <Trash2 className='h-4 w-4' />
+                </button>
               </div>
             </div>
           </motion.div>
 
           {/* Tabs Mejorados */}
           <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
+            {...styles.animations.fadeInUp}
             transition={{ delay: 0.2 }}
             className={styles.tabsClasses.container}
           >
-            <nav className={styles.tabsClasses.nav}>
+            <nav
+              role='tablist'
+              aria-label='Secciones de la vivienda'
+              className={styles.tabsClasses.nav}
+            >
               {tabs.map(tab => (
                 <motion.button
                   key={tab.id}
+                  role='tab'
+                  aria-selected={activeTab === tab.id}
+                  aria-controls={`panel-${tab.id}`}
                   onClick={() => setActiveTab(tab.id)}
                   className={`${styles.tabsClasses.tab} ${
                     activeTab === tab.id
@@ -303,7 +315,11 @@ export default function ViviendaDetalleClient({
           </motion.div>
 
           {/* Contenido de Tabs */}
-          <div className='animate-fade-in'>
+          <div
+            role='tabpanel'
+            id={`panel-${activeTab}`}
+            aria-labelledby={activeTab}
+          >
             {activeTab === 'info' && (
               <InfoTab
                 vivienda={vivienda}
@@ -319,7 +335,10 @@ export default function ViviendaDetalleClient({
               <AbonosTab
                 vivienda={vivienda}
                 onRegistrarAbono={() => {
-                  /* TODO */
+                  // Navega al módulo de abonos del cliente
+                  if (vivienda.clientes?.id) {
+                    router.push(`/abonos/${vivienda.clientes.id}`)
+                  }
                 }}
               />
             )}

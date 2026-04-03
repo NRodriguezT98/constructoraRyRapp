@@ -7,12 +7,7 @@
 
 import { useMemo } from 'react'
 
-import {
-    Home,
-    UserCheck,
-    UserPlus,
-    UserX,
-} from 'lucide-react'
+import { Home, UserCheck, UserPlus, UserX } from 'lucide-react'
 
 import type { ClienteResumen } from '../types'
 
@@ -23,23 +18,16 @@ interface UseClienteCardProps {
   onEliminar?: (cliente: ClienteResumen) => void
 }
 
-// Iconos por estado
-const IconosPorEstado = {
-  Interesado: UserPlus,
-  Activo: UserCheck,
-  Inactivo: UserX,
-  Propietario: Home,
-  'En Proceso de Renuncia': UserX,
-  'Renunció': UserX, // ⭐ NUEVO (2025-12-11) - Usuario con X (como UserCheck pero rojo)
-}
-
 // Configuración de colores por estado
-const estadoConfig: Record<string, {
-  gradient: string
-  bg: string
-  glow: string
-  shadow: string
-}> = {
+const estadoConfig: Record<
+  string,
+  {
+    gradient: string
+    bg: string
+    glow: string
+    shadow: string
+  }
+> = {
   Interesado: {
     gradient: 'from-blue-500 to-cyan-500',
     bg: 'bg-gradient-to-r from-blue-500 to-cyan-500',
@@ -70,7 +58,8 @@ const estadoConfig: Record<string, {
     glow: 'from-orange-500/5 via-red-500/5 to-orange-500/5',
     shadow: 'shadow-orange-500/30',
   },
-  'Renunció': { // ⭐ NUEVO (2025-12-11) - Rojo para indicar renuncia
+  Renunció: {
+    // ⭐ NUEVO (2025-12-11) - Rojo para indicar renuncia
     gradient: 'from-red-500 to-rose-500',
     bg: 'bg-gradient-to-r from-red-500 to-rose-500',
     glow: 'from-red-500/5 via-rose-500/5 to-red-500/5',

@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-/* eslint-disable @typescript-eslint/no-require-imports, no-console, no-restricted-syntax, @typescript-eslint/no-unused-vars */
 /**
  * @file ejecutar-sql-supabase.js
  * @description Ejecuta SQL usando @supabase/supabase-js
@@ -40,7 +39,9 @@ async function main() {
     // Validar argumentos
     const sqlFile = process.argv[2]
     if (!sqlFile) {
-      throw new Error('❌ Debes proporcionar un archivo SQL\n\nUso: node ejecutar-sql-supabase.js <archivo.sql>')
+      throw new Error(
+        '❌ Debes proporcionar un archivo SQL\n\nUso: node ejecutar-sql-supabase.js <archivo.sql>'
+      )
     }
 
     // Validar archivo existe
@@ -63,7 +64,9 @@ async function main() {
     const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
     if (!supabaseUrl || !serviceKey) {
-      throw new Error('Faltan variables: NEXT_PUBLIC_SUPABASE_URL o SUPABASE_SERVICE_ROLE_KEY en .env.local')
+      throw new Error(
+        'Faltan variables: NEXT_PUBLIC_SUPABASE_URL o SUPABASE_SERVICE_ROLE_KEY en .env.local'
+      )
     }
 
     log(`✓ URL: ${supabaseUrl}`, 'green')
@@ -72,8 +75,8 @@ async function main() {
     const supabase = createClient(supabaseUrl, serviceKey, {
       auth: {
         autoRefreshToken: false,
-        persistSession: false
-      }
+        persistSession: false,
+      },
     })
 
     // Ejecutar SQL usando fetch directamente
@@ -83,17 +86,20 @@ async function main() {
     const response = await fetch(`${supabaseUrl}/rest/v1/rpc/exec`, {
       method: 'POST',
       headers: {
-        'apikey': serviceKey,
-        'Authorization': `Bearer ${serviceKey}`,
+        apikey: serviceKey,
+        Authorization: `Bearer ${serviceKey}`,
         'Content-Type': 'application/json',
-        'Prefer': 'return=representation'
+        Prefer: 'return=representation',
       },
-      body: JSON.stringify({ query: sqlContent })
+      body: JSON.stringify({ query: sqlContent }),
     })
 
     // Si la función exec no existe, intentar ejecutar con pg_stat_statements
     if (!response.ok && response.status === 404) {
-      log('⚠️  Función exec() no disponible, usando método alternativo...', 'yellow')
+      log(
+        '⚠️  Función exec() no disponible, usando método alternativo...',
+        'yellow'
+      )
 
       // Dividir SQL en statements individuales (simple split por ;)
       const statements = sqlContent
@@ -111,11 +117,11 @@ async function main() {
         const stmtResponse = await fetch(`${supabaseUrl}/rest/v1/rpc/exec`, {
           method: 'POST',
           headers: {
-            'apikey': serviceKey,
-            'Authorization': `Bearer ${serviceKey}`,
-            'Content-Type': 'application/json'
+            apikey: serviceKey,
+            Authorization: `Bearer ${serviceKey}`,
+            'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ query: stmt })
+          body: JSON.stringify({ query: stmt }),
         })
 
         if (!stmtResponse.ok) {
@@ -137,14 +143,16 @@ async function main() {
     log(`✓ Ejecutado correctamente`, 'green')
 
     process.exit(0)
-
   } catch (error) {
     header('❌ ERROR AL EJECUTAR SQL')
     log(`\nERROR:`, 'red')
     log(error.message, 'red')
 
     log('\n💡 SOLUCIÓN ALTERNATIVA:', 'yellow')
-    log('1. Abre: https://supabase.com/dashboard/project/swyjhwgvkfcfdtemkyad/sql/new', 'yellow')
+    log(
+      '1. Abre: https://supabase.com/dashboard/project/swyjhwgvkfcfdtemkyad/sql/new',
+      'yellow'
+    )
     log(`2. Copia el contenido de: ${process.argv[2]}`, 'yellow')
     log('3. Pégalo en el editor SQL', 'yellow')
     log('4. Click en "Run" ▶️', 'yellow')

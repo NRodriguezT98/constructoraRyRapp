@@ -17,22 +17,22 @@
 
 const { spawn, exec } = require('child_process')
 const fs = require('fs')
-const path = require('path')// =============================================================================
+const path = require('path') // =============================================================================
 // CONFIGURACIÓN
 // =============================================================================
 const CONFIG = {
   OUTPUT_DIR: path.join(process.cwd(), '.reports'),
   IGNORE_PATTERNS: [
-    /\.OLD\./,           // Archivos .OLD
-    /\.ejemplo\./,       // Archivos de ejemplo
-    /\.test\./,          // Archivos de test
-    /node_modules/,      // node_modules
+    /\.OLD\./, // Archivos .OLD
+    /\.ejemplo\./, // Archivos de ejemplo
+    /\.test\./, // Archivos de test
+    /node_modules/, // node_modules
   ],
   CRITICAL_ERRORS: [
-    'TS2304',  // Cannot find name
-    'TS2305',  // Module has no exported member
-    'TS2307',  // Cannot find module
-    'TS2339',  // Property does not exist
+    'TS2304', // Cannot find name
+    'TS2305', // Module has no exported member
+    'TS2307', // Cannot find module
+    'TS2339', // Property does not exist
   ],
 }
 
@@ -89,7 +89,10 @@ async function runTypeCheck() {
       output = output.replace(/^\uFEFF/, '')
 
       if (output.length > 100) {
-        log(`✓ Usando archivo: type-check-output-raw.txt (${Math.round(ageMinutes)}m antiguo)`, 'green')
+        log(
+          `✓ Usando archivo: type-check-output-raw.txt (${Math.round(ageMinutes)}m antiguo)`,
+          'green'
+        )
         return output
       }
     }
@@ -101,7 +104,10 @@ async function runTypeCheck() {
   log('   ⚠️  ARCHIVO DE ERRORES NO ENCONTRADO O DESACTUALIZADO', 'yellow')
   log('═'.repeat(70), 'yellow')
   console.log('')
-  log('Debido a limitaciones de Windows PowerShell con Node.js child_process,', 'yellow')
+  log(
+    'Debido a limitaciones de Windows PowerShell con Node.js child_process,',
+    'yellow'
+  )
   log('necesitas generar el archivo de errores manualmente.', 'yellow')
   console.log('')
   log('Ejecuta este comando en la terminal:', 'cyan')
@@ -132,8 +138,12 @@ function parseTypeScriptErrors(output) {
     // Detectar línea de error con múltiples formatos:
     // Windows PowerShell: src/path/file.ts(123,45): error TS1234: Message (resto en una línea)
     // Linux/Mac: src/path/file.ts:123:45 - error TS1234: Message
-    const windowsMatch = line.match(/^([^(]+)\((\d+),(\d+)\):\s*error\s+(TS\d+):\s*(.*)$/)
-    const linuxMatch = line.match(/^(.+?):(\d+):(\d+)\s*-\s*error\s+(TS\d+):\s*(.+)$/)
+    const windowsMatch = line.match(
+      /^([^(]+)\((\d+),(\d+)\):\s*error\s+(TS\d+):\s*(.*)$/
+    )
+    const linuxMatch = line.match(
+      /^(.+?):(\d+):(\d+)\s*-\s*error\s+(TS\d+):\s*(.+)$/
+    )
 
     if (windowsMatch || linuxMatch) {
       const match = windowsMatch || linuxMatch
@@ -148,7 +158,11 @@ function parseTypeScriptErrors(output) {
         const nextLine = lines[j]
 
         // Si la línea siguiente no comienza con espacios, es un nuevo error
-        if (nextLine.trim() && !nextLine.startsWith('  ') && !nextLine.startsWith('\t')) {
+        if (
+          nextLine.trim() &&
+          !nextLine.startsWith('  ') &&
+          !nextLine.startsWith('\t')
+        ) {
           break
         }
 
@@ -182,7 +196,10 @@ function parseTypeScriptErrors(output) {
     const summaryMatch = output.match(/Found (\d+) errors? in (\d+) files?/)
     if (summaryMatch) {
       console.log('')
-      log(`⚠️  Detectados ${summaryMatch[1]} errores en ${summaryMatch[2]} archivos`, 'yellow')
+      log(
+        `⚠️  Detectados ${summaryMatch[1]} errores en ${summaryMatch[2]} archivos`,
+        'yellow'
+      )
       log('   Pero no se pudo parsear el formato. Posibles causas:', 'yellow')
       log('   - Formato de salida de TypeScript no reconocido', 'gray')
       log('   - Codificación de caracteres especiales', 'gray')
@@ -193,7 +210,7 @@ function parseTypeScriptErrors(output) {
   }
 
   return errors
-}// =============================================================================
+} // =============================================================================
 // FILTRAR ERRORES
 // =============================================================================
 function filterErrors(errors) {
@@ -226,11 +243,11 @@ function groupErrors(errors) {
 
     // Por módulo
     const moduleMatch = error.file.match(/src[\/\\]modules[\/\\]([^\/\\]+)/)
-    const module = moduleMatch ? moduleMatch[1] : 'otros'
-    if (!byModule[module]) {
-      byModule[module] = []
+    const moduleName = moduleMatch ? moduleMatch[1] : 'otros'
+    if (!byModule[moduleName]) {
+      byModule[moduleName] = []
     }
-    byModule[module].push(error)
+    byModule[moduleName].push(error)
   })
 
   return { byFile, byCode, byModule }
@@ -241,7 +258,9 @@ function groupErrors(errors) {
 // =============================================================================
 function generateStats(errors, grouped) {
   const totalErrors = errors.length
-  const criticalErrors = errors.filter(e => CONFIG.CRITICAL_ERRORS.includes(e.code)).length
+  const criticalErrors = errors.filter(e =>
+    CONFIG.CRITICAL_ERRORS.includes(e.code)
+  ).length
 
   const topFiles = Object.entries(grouped.byFile)
     .map(([file, errs]) => ({ file, count: errs.length }))
@@ -249,7 +268,11 @@ function generateStats(errors, grouped) {
     .slice(0, 10)
 
   const topCodes = Object.entries(grouped.byCode)
-    .map(([code, errs]) => ({ code, count: errs.length, critical: CONFIG.CRITICAL_ERRORS.includes(code) }))
+    .map(([code, errs]) => ({
+      code,
+      count: errs.length,
+      critical: CONFIG.CRITICAL_ERRORS.includes(code),
+    }))
     .sort((a, b) => b.count - a.count)
     .slice(0, 10)
 
@@ -276,8 +299,14 @@ function displayReport(stats, grouped) {
 
   // Resumen general
   log('RESUMEN GENERAL:', 'bright')
-  log(`  Total de errores: ${stats.totalErrors}`, stats.totalErrors > 100 ? 'red' : 'yellow')
-  log(`  Errores críticos: ${stats.criticalErrors}`, stats.criticalErrors > 0 ? 'red' : 'green')
+  log(
+    `  Total de errores: ${stats.totalErrors}`,
+    stats.totalErrors > 100 ? 'red' : 'yellow'
+  )
+  log(
+    `  Errores críticos: ${stats.criticalErrors}`,
+    stats.criticalErrors > 0 ? 'red' : 'green'
+  )
   log(`  Archivos afectados: ${stats.filesAffected}`, 'cyan')
   console.log('')
 
@@ -286,7 +315,10 @@ function displayReport(stats, grouped) {
   stats.topFiles.forEach((item, i) => {
     const fileName = path.basename(item.file)
     const relativePath = path.relative(process.cwd(), item.file)
-    log(`  ${i + 1}. ${fileName} (${item.count} errores)`, item.count > 10 ? 'red' : 'yellow')
+    log(
+      `  ${i + 1}. ${fileName} (${item.count} errores)`,
+      item.count > 10 ? 'red' : 'yellow'
+    )
     log(`     ${relativePath}`, 'gray')
   })
   console.log('')
@@ -303,7 +335,10 @@ function displayReport(stats, grouped) {
   // Errores por módulo
   log('ERRORES POR MÓDULO:', 'bright')
   stats.topModules.forEach(item => {
-    log(`  ${item.module}: ${item.count} errores`, item.count > 20 ? 'red' : 'yellow')
+    log(
+      `  ${item.module}: ${item.count} errores`,
+      item.count > 20 ? 'red' : 'yellow'
+    )
   })
   console.log('')
 }
@@ -325,9 +360,10 @@ function generateMarkdownReport(stats, grouped, errors) {
 
 Los siguientes tipos de errores son críticos y deben corregirse con prioridad:
 
-${stats.topCodes.filter(c => c.critical).map(c =>
-  `- **${c.code}**: ${c.count} ocurrencias`
-).join('\n')}
+${stats.topCodes
+  .filter(c => c.critical)
+  .map(c => `- **${c.code}**: ${c.count} ocurrencias`)
+  .join('\n')}
 
 ---
 
@@ -335,9 +371,12 @@ ${stats.topCodes.filter(c => c.critical).map(c =>
 
 | # | Archivo | Errores |
 |---|---------|---------|
-${stats.topFiles.map((item, i) =>
-  `| ${i + 1} | \`${path.basename(item.file)}\` | ${item.count} |`
-).join('\n')}
+${stats.topFiles
+  .map(
+    (item, i) =>
+      `| ${i + 1} | \`${path.basename(item.file)}\` | ${item.count} |`
+  )
+  .join('\n')}
 
 ---
 
@@ -345,9 +384,7 @@ ${stats.topFiles.map((item, i) =>
 
 | Módulo | Cantidad |
 |--------|----------|
-${stats.topModules.map(item =>
-  `| ${item.module} | ${item.count} |`
-).join('\n')}
+${stats.topModules.map(item => `| ${item.module} | ${item.count} |`).join('\n')}
 
 ---
 
@@ -363,12 +400,14 @@ ${Object.entries(grouped.byFile)
 
 **Ruta:** \`${relativePath}\`
 
-${errs.slice(0, 5).map(err =>
-  `- **Línea ${err.line}:** ${err.code} - ${err.message}`
-).join('\n')}
+${errs
+  .slice(0, 5)
+  .map(err => `- **Línea ${err.line}:** ${err.code} - ${err.message}`)
+  .join('\n')}
 
 ${errs.length > 5 ? `... y ${errs.length - 5} más\n` : ''}`
-  }).join('\n\n')}
+  })
+  .join('\n\n')}
 
 ---
 
@@ -407,28 +446,52 @@ function exportReports(stats, grouped, errors) {
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-').split('T')[0]
 
   // Exportar JSON
-  const jsonPath = path.join(CONFIG.OUTPUT_DIR, `typescript-errors-${timestamp}.json`)
-  fs.writeFileSync(jsonPath, JSON.stringify({ stats, grouped, errors }, null, 2))
-  log(`✓ Reporte JSON guardado: ${path.relative(process.cwd(), jsonPath)}`, 'green')
+  const jsonPath = path.join(
+    CONFIG.OUTPUT_DIR,
+    `typescript-errors-${timestamp}.json`
+  )
+  fs.writeFileSync(
+    jsonPath,
+    JSON.stringify({ stats, grouped, errors }, null, 2)
+  )
+  log(
+    `✓ Reporte JSON guardado: ${path.relative(process.cwd(), jsonPath)}`,
+    'green'
+  )
 
   // Exportar Markdown
-  const mdPath = path.join(CONFIG.OUTPUT_DIR, `typescript-errors-${timestamp}.md`)
+  const mdPath = path.join(
+    CONFIG.OUTPUT_DIR,
+    `typescript-errors-${timestamp}.md`
+  )
   const markdown = generateMarkdownReport(stats, grouped, errors)
   fs.writeFileSync(mdPath, markdown)
-  log(`✓ Reporte Markdown guardado: ${path.relative(process.cwd(), mdPath)}`, 'green')
+  log(
+    `✓ Reporte Markdown guardado: ${path.relative(process.cwd(), mdPath)}`,
+    'green'
+  )
 
   // Exportar resumen simple
-  const summaryPath = path.join(CONFIG.OUTPUT_DIR, 'typescript-errors-summary.txt')
+  const summaryPath = path.join(
+    CONFIG.OUTPUT_DIR,
+    'typescript-errors-summary.txt'
+  )
   const summary = `RESUMEN - ${new Date().toLocaleString('es-CO')}
 Total: ${stats.totalErrors} errores
 Críticos: ${stats.criticalErrors}
 Archivos: ${stats.filesAffected}
 
 Top 5 archivos:
-${stats.topFiles.slice(0, 5).map((f, i) => `${i + 1}. ${path.basename(f.file)}: ${f.count}`).join('\n')}
+${stats.topFiles
+  .slice(0, 5)
+  .map((f, i) => `${i + 1}. ${path.basename(f.file)}: ${f.count}`)
+  .join('\n')}
 `
   fs.writeFileSync(summaryPath, summary)
-  log(`✓ Resumen guardado: ${path.relative(process.cwd(), summaryPath)}`, 'green')
+  log(
+    `✓ Resumen guardado: ${path.relative(process.cwd(), summaryPath)}`,
+    'green'
+  )
 }
 
 // =============================================================================
@@ -470,9 +533,11 @@ async function main() {
     const duration = ((Date.now() - startTime) / 1000).toFixed(2)
     console.log('')
     log(`✨ Análisis completado en ${duration}s`, 'green')
-    log(`📁 Reportes guardados en: ${path.relative(process.cwd(), CONFIG.OUTPUT_DIR)}`, 'cyan')
+    log(
+      `📁 Reportes guardados en: ${path.relative(process.cwd(), CONFIG.OUTPUT_DIR)}`,
+      'cyan'
+    )
     console.log('')
-
   } catch (err) {
     console.log('')
     log(`❌ Error: ${err.message}`, 'red')

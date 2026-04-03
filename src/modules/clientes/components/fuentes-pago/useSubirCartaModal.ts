@@ -26,10 +26,9 @@ import { logger } from '@/lib/utils/logger'
 import { formatNombreCompleto } from '@/lib/utils/string.utils'
 import { negociacionesQueryKeys } from '@/modules/clientes/hooks/useNegociacionesQuery'
 import { documentosPendientesKeys } from '@/modules/clientes/types/documentos-pendientes.types'
-import { DocumentosBaseService } from '@/modules/documentos/services/documentos-base.service'
+import { DocumentosBaseService } from '@/shared/documentos/services/documentos-base.service'
 
 import type { DatosFuente } from './SubirCartaModal'
-
 
 // ============================================
 // TYPES
@@ -106,7 +105,9 @@ export function useSubirCartaModal({
       extras.push(formatNombreCompleto(fuente.cliente.nombre_completo))
     }
 
-    return extras.length > 0 ? `Carta de Aprobación - ${extras.join(' ')}` : 'Carta de Aprobación'
+    return extras.length > 0
+      ? `Carta de Aprobación - ${extras.join(' ')}`
+      : 'Carta de Aprobación'
   }, [fuente])
 
   // Inicializar título cuando se abre el modal o cambia la fuente
@@ -122,7 +123,12 @@ export function useSubirCartaModal({
     setErrorArchivo(null)
 
     // Validar tipo
-    const tiposPermitidos = ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg']
+    const tiposPermitidos = [
+      'application/pdf',
+      'image/jpeg',
+      'image/png',
+      'image/jpg',
+    ]
     if (!tiposPermitidos.includes(file.type)) {
       setErrorArchivo('Solo se permiten archivos PDF, JPG o PNG')
       return false
@@ -202,7 +208,6 @@ export function useSubirCartaModal({
         requisito_config_id: fuente.requisito_config_id,
       }
 
-
       // 3. Subir documento
       await DocumentosBaseService.subirDocumento(
         {
@@ -234,7 +239,8 @@ export function useSubirCartaModal({
       ])
 
       toast.success('Carta subida correctamente', {
-        description: 'El documento se ha vinculado automáticamente a la fuente de pago',
+        description:
+          'El documento se ha vinculado automáticamente a la fuente de pago',
       })
 
       onSuccess?.()
@@ -242,7 +248,10 @@ export function useSubirCartaModal({
     } catch (error) {
       logger.error('Error subiendo carta:', error)
       toast.error('Error al subir la carta', {
-        description: error instanceof Error ? error.message : 'Intenta nuevamente o contacta al soporte',
+        description:
+          error instanceof Error
+            ? error.message
+            : 'Intenta nuevamente o contacta al soporte',
       })
     } finally {
       setIsUploading(false)

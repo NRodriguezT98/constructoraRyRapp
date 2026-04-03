@@ -7,13 +7,19 @@
  * @version 1.0
  */
 
-import type { RolCampo, TipoCampoDinamico } from '../../../types/campos-dinamicos.types';
+import type {
+  RolCampo,
+  TipoCampoDinamico,
+} from '@/modules/configuracion/types/campos-dinamicos.types'
 
 // ============================================
 // TIPOS DE CAMPOS DISPONIBLES
 // ============================================
 
-export const TIPOS_DISPONIBLES: Array<{ value: TipoCampoDinamico; label: string }> = [
+export const TIPOS_DISPONIBLES: Array<{
+  value: TipoCampoDinamico
+  label: string
+}> = [
   { value: 'text', label: 'Texto' },
   { value: 'textarea', label: 'Área de texto' },
   { value: 'number', label: 'Número' },
@@ -30,11 +36,16 @@ export const TIPOS_DISPONIBLES: Array<{ value: TipoCampoDinamico; label: string 
 // ROLES DE CAMPOS DISPONIBLES
 // ============================================
 
-export const ROLES_DISPONIBLES: Array<{ value: RolCampo; label: string; description: string }> = [
+export const ROLES_DISPONIBLES: Array<{
+  value: RolCampo
+  label: string
+  description: string
+}> = [
   {
     value: 'monto',
     label: '💰 Monto Principal',
-    description: 'Campo que contiene el valor monetario (usado para calcular totales)',
+    description:
+      'Campo que contiene el valor monetario (usado para calcular totales)',
   },
   {
     value: 'entidad',

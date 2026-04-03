@@ -38,7 +38,9 @@ interface UseEditarFuentesPagoProps {
 // HOOK
 // ============================================
 
-export function useEditarFuentesPago({ negociacionId }: UseEditarFuentesPagoProps) {
+export function useEditarFuentesPago({
+  negociacionId,
+}: UseEditarFuentesPagoProps) {
   const queryClient = useQueryClient()
   const [isModalOpen, setIsModalOpen] = useState(false)
 
@@ -54,16 +56,19 @@ export function useEditarFuentesPago({ negociacionId }: UseEditarFuentesPagoProp
     setIsModalOpen(false)
   }
 
-  const guardarFuentes = async (fuentes: FuentePagoEditable[], motivoCambio: string) => {
+  const guardarFuentes = async (
+    fuentes: FuentePagoEditable[],
+    motivoCambio: string
+  ) => {
     try {
       // Transformar datos para API
-      const fuentesParaGuardar = fuentes.map((f) => ({
+      const fuentesParaGuardar = fuentes.map(f => ({
         id: f.id, // undefined si es nueva
         tipo: f.tipo,
         monto_aprobado: f.monto, // ✅ Mapear monto → monto_aprobado
         entidad: f.entidad || null,
         numero_referencia: f.numero_referencia || null,
-        detalles: (f as any).detalles || null,
+        detalles: f.detalles || null,
       }))
 
       // Llamar al service CON MOTIVO

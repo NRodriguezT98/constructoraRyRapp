@@ -8,6 +8,10 @@
  * ⚠️ Solo se puede llamar desde código cliente (browser).
  */
 
+import type React from 'react'
+
+import type { DocumentProps } from '@react-pdf/renderer'
+
 import type { AbonoParaDetalle } from '../abono-detalle-modal/useAbonoDetalle'
 
 function formatNumeroRecibo(n: number): string {
@@ -45,8 +49,9 @@ export async function generarYDescargarRecibo(
 
   // El tipo FunctionComponentElement no coincide exactamente con lo que espera pdf(),
   // pero en runtime funciona correctamente (ReciboAbonoPDF devuelve un Document)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const blob = await pdf(elemento as any).toBlob()
+  const blob = await pdf(
+    elemento as unknown as React.ReactElement<DocumentProps>
+  ).toBlob()
   const url = URL.createObjectURL(blob)
 
   const link = document.createElement('a')

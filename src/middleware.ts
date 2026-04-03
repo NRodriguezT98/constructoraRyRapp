@@ -32,24 +32,25 @@ const PUBLIC_ROUTES = ['/login', '/reset-password', '/update-password']
  * El middleware consultará permisos_rol en tiempo real
  * Si una ruta no está aquí, es accesible por todos los autenticados
  */
-const ROUTE_TO_PERMISSION: Record<string, { modulo: string; accion: string }> = {
-  // Módulos principales
-  '/viviendas': { modulo: 'viviendas', accion: 'ver' },
-  '/clientes': { modulo: 'clientes', accion: 'ver' },
-  '/proyectos': { modulo: 'proyectos', accion: 'ver' },
-  '/negociaciones': { modulo: 'negociaciones', accion: 'ver' },
-  '/documentos': { modulo: 'documentos', accion: 'ver' },
+const ROUTE_TO_PERMISSION: Record<string, { modulo: string; accion: string }> =
+  {
+    // Módulos principales
+    '/viviendas': { modulo: 'viviendas', accion: 'ver' },
+    '/clientes': { modulo: 'clientes', accion: 'ver' },
+    '/proyectos': { modulo: 'proyectos', accion: 'ver' },
+    '/negociaciones': { modulo: 'negociaciones', accion: 'ver' },
+    '/documentos': { modulo: 'documentos', accion: 'ver' },
 
-  // Módulos restringidos
-  '/abonos': { modulo: 'abonos', accion: 'ver' },
-  '/renuncias': { modulo: 'renuncias', accion: 'ver' },
-  '/auditorias': { modulo: 'auditorias', accion: 'ver' },
+    // Módulos restringidos
+    '/abonos': { modulo: 'abonos', accion: 'ver' },
+    '/renuncias': { modulo: 'renuncias', accion: 'ver' },
+    '/auditorias': { modulo: 'auditorias', accion: 'ver' },
 
-  // Administración
-  '/admin': { modulo: 'administracion', accion: 'ver' },
-  '/usuarios': { modulo: 'usuarios', accion: 'ver' },
-  '/reportes': { modulo: 'reportes', accion: 'ver' },
-}
+    // Administración
+    '/admin': { modulo: 'administracion', accion: 'ver' },
+    '/usuarios': { modulo: 'usuarios', accion: 'ver' },
+    '/reportes': { modulo: 'reportes', accion: 'ver' },
+  }
 
 // ============================================
 // HELPERS
@@ -118,7 +119,10 @@ function canAccessRoute(
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl
 
-  debugLog('🔍 Middleware request', { pathname, cookies: req.cookies.getAll().length })
+  debugLog('🔍 Middleware request', {
+    pathname,
+    cookies: req.cookies.getAll().length,
+  })
 
   // ============================================
   // 1. ASSETS ESTÁTICOS → Permitir sin validación
@@ -184,7 +188,9 @@ export async function middleware(req: NextRequest) {
     // ✅ CORRECCIÓN: No redirigir desde middleware, dejar que useLogin maneje la navegación
     // Esto evita race conditions entre middleware y router.push()
     if (pathname === '/login') {
-      debugLog('🔀 Usuario autenticado en /login, permitiendo (componente redirigirá)')
+      debugLog(
+        '🔀 Usuario autenticado en /login, permitiendo (componente redirigirá)'
+      )
       return res // Permitir acceso, el componente de login manejará la navegación
     }
 
@@ -217,7 +223,7 @@ export async function middleware(req: NextRequest) {
           const jsonPayload = decodeURIComponent(
             atob(base64)
               .split('')
-              .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+              .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
               .join('')
           )
           const payload = JSON.parse(jsonPayload)
@@ -258,7 +264,7 @@ export async function middleware(req: NextRequest) {
     res.headers.set('x-user-nombres', encodeURIComponent(nombres))
 
     return res
-  } catch (_error) {
+  } catch {
     // Si hay cualquier error, redirigir a login
     const redirectUrl = req.nextUrl.clone()
     redirectUrl.pathname = '/login'

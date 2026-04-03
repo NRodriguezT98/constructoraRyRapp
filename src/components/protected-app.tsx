@@ -13,7 +13,17 @@ import { useAuth } from '@/contexts/auth-context'
 import { logger } from '@/lib/utils/logger'
 import { InvalidRoleError } from '@/shared/components/errors'
 
-const ROLES_VALIDOS = ['Administrador', 'Contador', 'Supervisor', 'Gerente'] as const
+const ROLES_VALIDOS = [
+  'Administrador',
+  'Contador',
+  'Supervisor',
+  'Gerente',
+] as const
+type RolValido = (typeof ROLES_VALIDOS)[number]
+
+function esRolValido(rol: string | null | undefined): rol is RolValido {
+  return typeof rol === 'string' && ROLES_VALIDOS.includes(rol as RolValido)
+}
 
 interface ProtectedAppProps {
   children: React.ReactNode
@@ -25,8 +35,8 @@ export function ProtectedApp({ children }: ProtectedAppProps) {
   // Mientras carga auth, mostrar nada (evitar flicker)
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
+      <div className='flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-900'>
+        <div className='h-12 w-12 animate-spin rounded-full border-b-2 border-blue-600' />
       </div>
     )
   }
@@ -34,7 +44,7 @@ export function ProtectedApp({ children }: ProtectedAppProps) {
   // Si hay perfil, validar el rol
   if (perfil) {
     const rolActual = perfil.rol
-    const esRolInvalido = !ROLES_VALIDOS.includes(rolActual as any)
+    const esRolInvalido = !esRolValido(rolActual)
 
     if (esRolInvalido) {
       // 🚨 SEGURIDAD: Registrar intento de acceso con rol inválido
@@ -42,20 +52,23 @@ export function ProtectedApp({ children }: ProtectedAppProps) {
         timestamp: new Date().toISOString(),
         email: user?.email,
         rolInvalido: rolActual,
-        userAgent: typeof window !== 'undefined' ? window.navigator.userAgent : 'unknown',
+        userAgent:
+          typeof window !== 'undefined'
+            ? window.navigator.userAgent
+            : 'unknown',
       }
 
-      logger.error(`❌ [PROTECTED APP] ACCESO BLOQUEADO - Rol inválido`, errorLog)
+      logger.error(
+        `❌ [PROTECTED APP] ACCESO BLOQUEADO - Rol inválido`,
+        errorLog
+      )
 
       // TODO: Enviar a servicio de logging/alertas (Sentry, LogRocket, etc.)
       // await fetch('/api/security/invalid-role', { method: 'POST', body: JSON.stringify(errorLog) })
 
       // 🚨 BLOQUEO TOTAL: Mostrar solo pantalla de error (sin información sensible del sistema)
       return (
-        <InvalidRoleError
-          detectedRole={rolActual}
-          userEmail={user?.email}
-        />
+        <InvalidRoleError detectedRole={rolActual} userEmail={user?.email} />
       )
     }
   }

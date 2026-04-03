@@ -6,9 +6,16 @@
 'use client'
 
 import { AnimatePresence, motion } from 'framer-motion'
-import { CheckCircle2, Circle, FolderTree, Globe, Home, Users } from 'lucide-react'
+import {
+  CheckCircle2,
+  Circle,
+  FolderTree,
+  Globe,
+  Home,
+  Users,
+} from 'lucide-react'
 
-import type { ModuloDocumento } from '@/modules/documentos/types/documento.types'
+import type { ModuloDocumento } from '@/shared/documentos/types/documento.types'
 
 interface ModuloSelectorProps {
   esGlobal: boolean
@@ -71,10 +78,10 @@ export function ModuloSelector({
     <div className='space-y-4'>
       {/* Opción: Global */}
       <motion.div
-        className={`rounded-lg border-2 p-4 transition-all cursor-pointer ${
+        className={`cursor-pointer rounded-lg border-2 p-4 transition-all ${
           esGlobal
             ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-500/10'
-            : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+            : 'border-gray-200 hover:border-gray-300 dark:border-gray-700 dark:hover:border-gray-600'
         }`}
         onClick={() => onEsGlobalChange(!esGlobal)}
         whileHover={{ scale: 1.01 }}
@@ -96,7 +103,8 @@ export function ModuloSelector({
               </span>
             </div>
             <p className='mt-1 text-sm text-gray-600 dark:text-gray-400'>
-              Esta categoría estará disponible en proyectos, clientes y viviendas
+              Esta categoría estará disponible en proyectos, clientes y
+              viviendas
             </p>
           </div>
         </div>
@@ -125,11 +133,11 @@ export function ModuloSelector({
                 return (
                   <motion.div
                     key={modulo.id}
-                    className={`rounded-lg border-2 p-3 transition-all cursor-pointer ${
+                    className={`cursor-pointer rounded-lg border-2 p-3 transition-all ${
                       isSelected
                         ? `${modulo.borderColor} ${modulo.bgColor}`
-                        : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
-                    } ${isUltimoSeleccionado ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        : 'border-gray-200 hover:border-gray-300 dark:border-gray-700 dark:hover:border-gray-600'
+                    } ${isUltimoSeleccionado ? 'cursor-not-allowed opacity-50' : ''}`}
                     onClick={() =>
                       !isUltimoSeleccionado && handleModuloToggle(modulo.id)
                     }
@@ -139,9 +147,7 @@ export function ModuloSelector({
                     <div className='flex items-start gap-3'>
                       <div className='mt-0.5'>
                         {isSelected ? (
-                          <CheckCircle2
-                            className={`h-5 w-5 ${modulo.color}`}
-                          />
+                          <CheckCircle2 className={`h-5 w-5 ${modulo.color}`} />
                         ) : (
                           <Circle className='h-5 w-5 text-gray-400 dark:text-gray-600' />
                         )}
@@ -189,13 +195,13 @@ export function ModuloSelector({
       )}
 
       {/* Preview de disponibilidad */}
-      <div className='rounded-lg bg-gray-50 dark:bg-gray-800/50 p-4'>
-        <p className='text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2'>
+      <div className='rounded-lg bg-gray-50 p-4 dark:bg-gray-800/50'>
+        <p className='mb-2 text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400'>
           Disponibilidad
         </p>
         <div className='flex flex-wrap gap-2'>
           {esGlobal ? (
-            <span className='inline-flex items-center gap-1.5 rounded-full bg-indigo-100 dark:bg-indigo-500/20 px-3 py-1 text-xs font-medium text-indigo-700 dark:text-indigo-300'>
+            <span className='inline-flex items-center gap-1.5 rounded-full bg-indigo-100 px-3 py-1 text-xs font-medium text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-300'>
               <Globe className='h-3 w-3' />
               Todos los módulos
             </span>

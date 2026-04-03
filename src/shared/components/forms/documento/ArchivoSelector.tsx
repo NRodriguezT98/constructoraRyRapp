@@ -5,11 +5,11 @@ import { RefObject } from 'react'
 import { motion } from 'framer-motion'
 import { AlertCircle, FileText, Upload, X } from 'lucide-react'
 
+import { moduleThemes, type ModuleName } from '@/shared/config/module-themes'
 import {
   formatFileSize,
   getFileExtension,
-} from '@/modules/documentos/types/documento.types'
-import { moduleThemes, type ModuleName } from '@/shared/config/module-themes'
+} from '@/shared/documentos/types/documento.types'
 import { cn } from '@/shared/utils/helpers'
 
 interface ArchivoSelectorProps {

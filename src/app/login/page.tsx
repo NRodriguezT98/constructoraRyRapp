@@ -8,11 +8,6 @@ import { AlertCircle, Eye, EyeOff, Lock, Mail } from 'lucide-react'
 import Image from 'next/image'
 import { useSearchParams } from 'next/navigation'
 
-
-
-
-
-
 import { loginStyles } from './page.styles'
 import { ResetPasswordModal } from './reset-password-modal'
 import { useLogin } from './useLogin'
@@ -29,9 +24,7 @@ function LoginForm() {
     minutosRestantes,
     intentosRestantes,
     loginExitoso,
-    mensajeExito,
     recordarUsuario,
-    navegando, // ✅ Estado de navegación
     setEmail,
     setPassword,
     setRecordarUsuario,
@@ -44,10 +37,6 @@ function LoginForm() {
   // ✅ Refs para autofocus inteligente
   const emailInputRef = useRef<HTMLInputElement>(null)
   const passwordInputRef = useRef<HTMLInputElement>(null)
-
-
-
-
 
   // ✅ Autofocus inteligente: Si hay email guardado -> password, si no -> email
   useEffect(() => {
@@ -65,10 +54,6 @@ function LoginForm() {
     return () => clearTimeout(timer)
   }, [recordarUsuario, email]) // ✅ Ejecutar cuando recordarUsuario o email cambien
 
-
-
-
-
   // Mostrar toast cuando login es exitoso
   // ❌ DESACTIVADO: Ahora usamos toast moderno personalizado en useLogin.ts
   // useEffect(() => {
@@ -76,8 +61,6 @@ function LoginForm() {
   //     setShowToast(true)
   //   }
   // }, [loginExitoso])
-
-
 
   return (
     <div className={s.container}>
@@ -90,7 +73,7 @@ function LoginForm() {
           sizes='100vw'
           className={s.backgroundImage}
           priority
-          fetchPriority="low"
+          fetchPriority='low'
           quality={90}
         />
         {/* Overlay oscuro para mejorar legibilidad */}
@@ -111,7 +94,7 @@ function LoginForm() {
               className={s.logo1Image}
               style={inlineStyles.logo1Filter}
               priority
-              fetchPriority="high"
+              fetchPriority='high'
             />
           </div>
 
@@ -182,7 +165,11 @@ function LoginForm() {
                     className={s.togglePasswordBtn}
                     tabIndex={-1}
                   >
-                    {showPassword ? <EyeOff className={s.icon} /> : <Eye className={s.icon} />}
+                    {showPassword ? (
+                      <EyeOff className={s.icon} />
+                    ) : (
+                      <Eye className={s.icon} />
+                    )}
                   </button>
                 </div>
               </div>
@@ -225,9 +212,11 @@ function LoginForm() {
                   </div>
                   <div className={s.errorContent}>
                     <p className={s.errorMessage}>{error}</p>
-                    {intentosRestantes > 0 && intentosRestantes <= 2 && !estaBloqueado && (
-                      <p className={s.errorHint}>{t.errorHint}</p>
-                    )}
+                    {intentosRestantes > 0 &&
+                      intentosRestantes <= 2 &&
+                      !estaBloqueado && (
+                        <p className={s.errorHint}>{t.errorHint}</p>
+                      )}
                   </div>
                 </motion.div>
               )}
@@ -294,7 +283,10 @@ function LoginForm() {
             </form>
 
             <div className={s.resetPasswordContainer}>
-              <button onClick={() => setShowResetPassword(true)} className={s.resetPasswordBtn}>
+              <button
+                onClick={() => setShowResetPassword(true)}
+                className={s.resetPasswordBtn}
+              >
                 {t.forgotPassword}
               </button>
             </div>
@@ -333,7 +325,6 @@ export default function LoginPage() {
     >
       {/* ✅ SOLUCIÓN: Wrapper con key para forzar remontaje */}
       <LoginFormWrapper />
-
     </Suspense>
   )
 }

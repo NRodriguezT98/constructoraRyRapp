@@ -4,15 +4,15 @@ import { useState } from 'react'
 
 import { AnimatePresence, motion } from 'framer-motion'
 import {
-    ArrowLeft,
-    Building2,
-    ChevronRight,
-    Edit2,
-    FileText,
-    Home,
-    Info,
-    MapPin,
-    Trash2,
+  ArrowLeft,
+  Building2,
+  ChevronRight,
+  Edit2,
+  FileText,
+  Home,
+  Info,
+  MapPin,
+  Trash2,
 } from 'lucide-react'
 
 import { useRouter } from 'next/navigation'
@@ -23,12 +23,16 @@ import { ConfirmarCambiosModal } from '@/modules/proyectos/components/confirmar-
 import { ProyectosBadgesResumen } from '@/modules/proyectos/components/proyectos-badges-resumen'
 import { ProyectosForm } from '@/modules/proyectos/components/proyectos-form'
 import {
-    useProyectoConValidacion,
-    useProyectoQuery,
-    useProyectosQuery,
+  useProyectoConValidacion,
+  useProyectoQuery,
+  useProyectosQuery,
 } from '@/modules/proyectos/hooks'
 import { useDetectarCambios } from '@/modules/proyectos/hooks/useDetectarCambios'
-import type { EstadoProyecto, Proyecto, ProyectoFormData } from '@/modules/proyectos/types'
+import type {
+  EstadoProyecto,
+  Proyecto,
+  ProyectoFormData,
+} from '@/modules/proyectos/types'
 import { formatearEstadoProyecto } from '@/modules/proyectos/utils/estado.utils'
 import { Modal } from '@/shared/components/ui/Modal'
 
@@ -311,18 +315,18 @@ export default function ProyectoDetalleClient({
 
               {/* Acciones */}
               <div className={styles.headerClasses.actionsContainer}>
-                <Button
+                <button
                   className={styles.headerClasses.actionButton}
                   onClick={handleEdit}
                 >
                   <Edit2 className='h-4 w-4' />
-                </Button>
-                <Button
+                </button>
+                <button
                   className={styles.headerClasses.deleteButton}
                   onClick={handleEliminar}
                 >
                   <Trash2 className='h-4 w-4' />
-                </Button>
+                </button>
               </div>
             </div>
           </motion.div>
@@ -333,10 +337,17 @@ export default function ProyectoDetalleClient({
             transition={{ delay: 0.2 }}
             className={styles.tabsClasses.container}
           >
-            <nav className={styles.tabsClasses.nav}>
+            <nav
+              role='tablist'
+              aria-label='Secciones del proyecto'
+              className={styles.tabsClasses.nav}
+            >
               {tabs.map(tab => (
                 <motion.button
                   key={tab.id}
+                  role='tab'
+                  aria-selected={activeTab === tab.id}
+                  aria-controls={`panel-${tab.id}`}
                   onClick={() => setActiveTab(tab.id)}
                   className={`${styles.tabsClasses.tab} ${
                     activeTab === tab.id
@@ -361,9 +372,17 @@ export default function ProyectoDetalleClient({
           </motion.div>
 
           {/* Contenido de Tabs - Componentes Modulares */}
-          {activeTab === 'info' && <GeneralTab proyecto={proyecto} />}
+          <div
+            role='tabpanel'
+            id={`panel-${activeTab}`}
+            aria-labelledby={activeTab}
+          >
+            {activeTab === 'info' && <GeneralTab proyecto={proyecto} />}
 
-          {activeTab === 'documentos' && <DocumentosTab proyecto={proyecto} />}
+            {activeTab === 'documentos' && (
+              <DocumentosTab proyecto={proyecto} />
+            )}
+          </div>
         </div>
 
         {/* Modal de Edición */}

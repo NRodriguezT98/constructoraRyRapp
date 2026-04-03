@@ -9,12 +9,12 @@
 
 import { motion } from 'framer-motion'
 import {
-    AlertTriangle,
-    ArrowRight,
-    Calculator,
-    CheckCircle,
-    FileText,
-    XCircle
+  AlertTriangle,
+  ArrowRight,
+  Calculator,
+  CheckCircle,
+  FileText,
+  XCircle,
 } from 'lucide-react'
 
 import { fuentesPagoTabStyles as styles } from '../../fuentes-pago-tab.styles'
@@ -29,14 +29,13 @@ interface EstadoValidacionProps {
 export function EstadoValidacionComponent({
   estadoValidacion,
   onNavegar,
-  onVerDetalle
+  onVerDetalle,
 }: EstadoValidacionProps) {
   const {
     tieneFuentes,
-    sumaCuadra,
     todasConDocumentacion,
     puedeRegistrarAbonos,
-    mensajesValidacion
+    mensajesValidacion,
   } = estadoValidacion
 
   // Determinar icono y título principal
@@ -86,7 +85,10 @@ export function EstadoValidacionComponent({
       {mensajesValidacion.length > 0 && (
         <div className={styles.validacion.mensajes}>
           {mensajesValidacion.map((mensaje, index) => {
-            const isWarning = mensaje.includes('⚠️') || mensaje.includes('💰') || mensaje.includes('📄')
+            const isWarning =
+              mensaje.includes('⚠️') ||
+              mensaje.includes('💰') ||
+              mensaje.includes('📄')
             const isDanger = mensaje.includes('❌')
 
             const messageClass = isDanger
@@ -103,7 +105,7 @@ export function EstadoValidacionComponent({
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: index * 0.1 }}
               >
-                <ArrowRight className="w-3 h-3 flex-shrink-0 mt-0.5" />
+                <ArrowRight className='mt-0.5 h-3 w-3 flex-shrink-0' />
                 <span>{mensaje}</span>
               </motion.div>
             )
@@ -121,7 +123,7 @@ export function EstadoValidacionComponent({
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
-              <FileText className="w-4 h-4" />
+              <FileText className='h-4 w-4' />
               <span>Gestionar Documentos</span>
             </motion.button>
           )}
@@ -132,7 +134,7 @@ export function EstadoValidacionComponent({
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
           >
-            <Calculator className="w-4 h-4" />
+            <Calculator className='h-4 w-4' />
             <span>Ver Detalle</span>
           </motion.button>
         </div>
@@ -147,7 +149,7 @@ export function EstadoValidacionComponent({
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
-            <ArrowRight className="w-4 h-4" />
+            <ArrowRight className='h-4 w-4' />
             <span>Ir al Módulo de Abonos</span>
           </motion.button>
         </div>

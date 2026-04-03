@@ -17,9 +17,12 @@ export interface EventoHistorialCliente {
   usuario_email: string
   usuario_nombres: string | null
   usuario_rol: string | null
-  datos_anteriores: any | null
-  datos_nuevos: any | null
-  cambios_especificos: Record<string, { antes: any; despues: any }> | null
+  datos_anteriores: Record<string, unknown> | null
+  datos_nuevos: Record<string, unknown> | null
+  cambios_especificos: Record<
+    string,
+    { antes: unknown; despues: unknown }
+  > | null
   metadata: Record<string, unknown>
   modulo: string | null
 }
@@ -101,8 +104,8 @@ export type ColorEvento =
 export interface DetalleEvento {
   campo: string
   etiqueta: string
-  valorAnterior: any
-  valorNuevo: any
+  valorAnterior: unknown
+  valorNuevo: unknown
   tipo?: 'texto' | 'numero' | 'fecha' | 'booleano' | 'enum'
 }
 

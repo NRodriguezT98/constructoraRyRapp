@@ -9,7 +9,12 @@
 
 import { useCallback, useMemo, useState } from 'react'
 
-import type { CampoConfig, RolCampo, TipoCampoDinamico } from '../../../types/campos-dinamicos.types'
+import type {
+  CampoConfig,
+  RolCampo,
+  TipoCampoDinamico,
+} from '@/modules/configuracion/types/campos-dinamicos.types'
+
 import { ROLES_DISPONIBLES } from '../constants/campos-disponibles'
 
 // ============================================
@@ -45,10 +50,14 @@ export function useEditarCampoModal({
   // ============================================
 
   const [nombre, setNombre] = useState(campoInicial?.nombre || '')
-  const [tipo, setTipo] = useState<TipoCampoDinamico>(campoInicial?.tipo || 'text')
+  const [tipo, setTipo] = useState<TipoCampoDinamico>(
+    campoInicial?.tipo || 'text'
+  )
   const [rol, setRol] = useState<RolCampo>(campoInicial?.rol || 'informativo')
   const [label, setLabel] = useState(campoInicial?.label || '')
-  const [placeholder, setPlaceholder] = useState(campoInicial?.placeholder || '')
+  const [placeholder, setPlaceholder] = useState(
+    campoInicial?.placeholder || ''
+  )
   const [ayuda, setAyuda] = useState(campoInicial?.ayuda || '')
   const [requerido, setRequerido] = useState(campoInicial?.requerido || false)
   const [errores, setErrores] = useState<Errores>({})
@@ -60,12 +69,12 @@ export function useEditarCampoModal({
   const rolesDisponibles = useMemo(() => {
     // Verificar si ya existe un campo con rol='monto'
     const yaExisteMonto = camposExistentes.some(
-      (c) => c.rol === 'monto' && c.nombre !== campoInicial?.nombre
+      c => c.rol === 'monto' && c.nombre !== campoInicial?.nombre
     )
 
     // Si ya existe, filtrar el rol 'monto' de las opciones
     if (yaExisteMonto) {
-      return ROLES_DISPONIBLES.filter((r) => r.value !== 'monto')
+      return ROLES_DISPONIBLES.filter(r => r.value !== 'monto')
     }
 
     return ROLES_DISPONIBLES
@@ -82,8 +91,12 @@ export function useEditarCampoModal({
     if (!nombre.trim()) {
       nuevosErrores.nombre = 'El nombre es obligatorio'
     } else if (!/^[a-z_][a-z0-9_]*$/.test(nombre)) {
-      nuevosErrores.nombre = 'Solo minúsculas, números y guiones bajos (snake_case)'
-    } else if (modo === 'crear' && camposExistentes.some((c) => c.nombre === nombre)) {
+      nuevosErrores.nombre =
+        'Solo minúsculas, números y guiones bajos (snake_case)'
+    } else if (
+      modo === 'crear' &&
+      camposExistentes.some(c => c.nombre === nombre)
+    ) {
       nuevosErrores.nombre = 'Ya existe un campo con este nombre'
     }
 
@@ -99,7 +112,7 @@ export function useEditarCampoModal({
 
     setErrores(nuevosErrores)
     return Object.keys(nuevosErrores).length === 0
-  }, [nombre, label, tipo, rol, modo, camposExistentes, campoInicial])
+  }, [nombre, label, tipo, modo, camposExistentes])
 
   // ============================================
   // HANDLERS
@@ -111,7 +124,7 @@ export function useEditarCampoModal({
     // Calcular orden (último + 1 si es nuevo)
     const orden =
       modo === 'crear'
-        ? Math.max(0, ...camposExistentes.map((c) => c.orden)) + 1
+        ? Math.max(0, ...camposExistentes.map(c => c.orden)) + 1
         : campoInicial?.orden || 1
 
     const campo: CampoConfig = {
@@ -142,7 +155,8 @@ export function useEditarCampoModal({
   ])
 
   // Obtener descripción del rol seleccionado
-  const rolDescripcion = ROLES_DISPONIBLES.find((r) => r.value === rol)?.description || ''
+  const rolDescripcion =
+    ROLES_DISPONIBLES.find(r => r.value === rol)?.description || ''
 
   // ============================================
   // RETURN

@@ -7,13 +7,9 @@
  */
 
 import type { LucideIcon } from 'lucide-react'
-import {
-    DollarSign,
-    FileText,
-    Plus,
-    RefreshCw,
-    Trash2,
-} from 'lucide-react'
+import { DollarSign, FileText, Plus, RefreshCw, Trash2 } from 'lucide-react'
+
+import type { FuentePago } from '../../types/fuentes-pago'
 
 // ============================================
 // Iconos por tipo de cambio
@@ -64,7 +60,10 @@ export function getTipoCambioLabel(tipo: string): string {
   }
 
   // Fallback: convertir snake_case a Title Case
-  return labels[tipo] || tipo.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+  return (
+    labels[tipo] ||
+    tipo.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+  )
 }
 
 // ============================================
@@ -73,7 +72,7 @@ export function getTipoCambioLabel(tipo: string): string {
 
 export interface CambioFuente {
   tipo: 'agregada' | 'eliminada' | 'modificada' | 'sin_cambios'
-  fuente: any
+  fuente: FuentePago
   cambiosDetectados?: {
     monto?: { anterior: number; nuevo: number }
     entidad?: { anterior?: string; nuevo?: string }
@@ -81,8 +80,8 @@ export interface CambioFuente {
 }
 
 export function detectarCambiosFuentes(
-  fuentesActuales: any[],
-  fuentesAnteriores: any[]
+  fuentesActuales: FuentePago[],
+  fuentesAnteriores: FuentePago[]
 ): CambioFuente[] {
   const cambios: CambioFuente[] = []
 
@@ -109,7 +108,8 @@ export function detectarCambiosFuentes(
       })
     } else {
       // Verificar si hay cambios
-      const cambiosDetectados: any = {}
+      const cambiosDetectados: NonNullable<CambioFuente['cambiosDetectados']> =
+        {}
 
       if (anterior.monto_aprobado !== actual.monto_aprobado) {
         cambiosDetectados.monto = {
@@ -120,8 +120,8 @@ export function detectarCambiosFuentes(
 
       if (anterior.entidad !== actual.entidad) {
         cambiosDetectados.entidad = {
-          anterior: anterior.entidad,
-          nuevo: actual.entidad,
+          anterior: anterior.entidad ?? undefined,
+          nuevo: actual.entidad ?? undefined,
         }
       }
 

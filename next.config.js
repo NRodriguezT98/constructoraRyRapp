@@ -1,4 +1,6 @@
 /** @type {import('next').NextConfig} */
+const { withSentryConfig } = require('@sentry/nextjs')
+
 const nextConfig = {
   // ⚡ OPTIMIZACIONES DE IMÁGENES
   images: {
@@ -111,4 +113,20 @@ const nextConfig = {
   },
 }
 
-module.exports = nextConfig
+module.exports = withSentryConfig(nextConfig, {
+  // Sentry organization and project (set these in CI/CD or .env)
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+
+  // Subir source maps solo cuando SENTRY_AUTH_TOKEN esté disponible (CI/CD)
+  authToken: process.env.SENTRY_AUTH_TOKEN,
+
+  // Suprime el output de Sentry durante el build local para no contaminar logs
+  silent: !process.env.CI,
+
+  // No fallar el build si Sentry no está configurado (entorno local)
+  hideSourceMaps: true,
+
+  // Deshabilitar telemetría de Sentry
+  telemetry: false,
+})

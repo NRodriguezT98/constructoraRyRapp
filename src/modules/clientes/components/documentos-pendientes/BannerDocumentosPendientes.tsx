@@ -19,7 +19,17 @@
 import { useState } from 'react'
 
 import { AnimatePresence, motion } from 'framer-motion'
-import { AlertCircle, Building2, CheckCircle2, ChevronDown, ChevronUp, FileText, Gift, Home, Upload } from 'lucide-react'
+import {
+  AlertCircle,
+  Building2,
+  CheckCircle2,
+  ChevronDown,
+  ChevronUp,
+  FileText,
+  Gift,
+  Home,
+  Upload,
+} from 'lucide-react'
 
 import { useBannerDocumentosPendientes } from './useBannerDocumentosPendientes'
 
@@ -29,7 +39,11 @@ import { useBannerDocumentosPendientes } from './useBannerDocumentosPendientes'
 
 interface BannerDocumentosPendientesProps {
   clienteId: string
-  onSubirDocumento?: (pendienteId: string, tipoDocumento: string, metadata: Record<string, any>) => void
+  onSubirDocumento?: (
+    pendienteId: string,
+    tipoDocumento: string,
+    metadata: Record<string, unknown>
+  ) => void
 }
 
 // ============================================
@@ -62,7 +76,11 @@ export function BannerDocumentosPendientes({
   clienteId,
   onSubirDocumento,
 }: BannerDocumentosPendientesProps) {
-  const { documentosPendientes, loading, refetch: _refetch } = useBannerDocumentosPendientes(clienteId)
+  const {
+    documentosPendientes,
+    loading,
+    refetch: _refetch,
+  } = useBannerDocumentosPendientes(clienteId)
   const [expandido, setExpandido] = useState(true)
 
   if (loading || documentosPendientes.length === 0) {
@@ -79,14 +97,11 @@ export function BannerDocumentosPendientes({
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: -20, scale: 0.95 }}
         transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-        className="mb-4 overflow-hidden rounded-xl border-2 border-orange-200 dark:border-orange-800
-                   bg-gradient-to-br from-orange-50 via-orange-50/80 to-amber-50
-                   dark:from-orange-950/30 dark:via-orange-900/20 dark:to-amber-950/30
-                   shadow-lg shadow-orange-500/10 dark:shadow-orange-500/5"
+        className='mb-4 overflow-hidden rounded-xl border-2 border-orange-200 bg-gradient-to-br from-orange-50 via-orange-50/80 to-amber-50 shadow-lg shadow-orange-500/10 dark:border-orange-800 dark:from-orange-950/30 dark:via-orange-900/20 dark:to-amber-950/30 dark:shadow-orange-500/5'
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-4 bg-gradient-to-r from-orange-100/50 to-amber-100/50 dark:from-orange-900/20 dark:to-amber-900/20">
-          <div className="flex items-center gap-3">
+        <div className='flex items-center justify-between bg-gradient-to-r from-orange-100/50 to-amber-100/50 p-4 dark:from-orange-900/20 dark:to-amber-900/20'>
+          <div className='flex items-center gap-3'>
             <motion.div
               animate={{ scale: hayAlta ? [1, 1.1, 1] : 1 }}
               transition={{ repeat: hayAlta ? Infinity : 0, duration: 2 }}
@@ -96,31 +111,32 @@ export function BannerDocumentosPendientes({
                   : 'bg-gradient-to-br from-orange-500 to-orange-600 shadow-orange-500/30'
               }`}
             >
-              <AlertCircle className="h-5 w-5 text-white" />
+              <AlertCircle className='h-5 w-5 text-white' />
             </motion.div>
             <div>
-              <div className="flex items-center gap-2">
-                <h3 className="text-sm font-bold text-gray-900 dark:text-white">
+              <div className='flex items-center gap-2'>
+                <h3 className='text-sm font-bold text-gray-900 dark:text-white'>
                   Documentos Pendientes
                 </h3>
-                <span className="flex items-center justify-center w-6 h-6 rounded-full bg-gradient-to-br from-orange-500 to-orange-600 text-white text-xs font-bold shadow-lg shadow-orange-500/30 animate-pulse">
+                <span className='flex h-6 w-6 animate-pulse items-center justify-center rounded-full bg-gradient-to-br from-orange-500 to-orange-600 text-xs font-bold text-white shadow-lg shadow-orange-500/30'>
                   {totalPendientes}
                 </span>
               </div>
-              <p className="text-xs text-gray-600 dark:text-gray-400 mt-0.5">
-                {hayAlta ? '⚠️ Requiere atención inmediata' : 'Completa la documentación de las fuentes de pago'}
+              <p className='mt-0.5 text-xs text-gray-600 dark:text-gray-400'>
+                {hayAlta
+                  ? '⚠️ Requiere atención inmediata'
+                  : 'Completa la documentación de las fuentes de pago'}
               </p>
             </div>
           </div>
           <button
             onClick={() => setExpandido(!expandido)}
-            className="rounded-lg p-2 text-gray-500 hover:bg-white/70 dark:hover:bg-gray-800/70
-                       transition-all hover:scale-110"
+            className='rounded-lg p-2 text-gray-500 transition-all hover:scale-110 hover:bg-white/70 dark:hover:bg-gray-800/70'
           >
             {expandido ? (
-              <ChevronUp className="h-5 w-5" />
+              <ChevronUp className='h-5 w-5' />
             ) : (
-              <ChevronDown className="h-5 w-5" />
+              <ChevronDown className='h-5 w-5' />
             )}
           </button>
         </div>
@@ -133,9 +149,9 @@ export function BannerDocumentosPendientes({
               animate={{ height: 'auto', opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
               transition={{ duration: 0.3 }}
-              className="border-t border-orange-200 dark:border-orange-800"
+              className='border-t border-orange-200 dark:border-orange-800'
             >
-              <div className="space-y-0 p-4">
+              <div className='space-y-0 p-4'>
                 {documentosPendientes.map((doc, index) => {
                   const IconoDoc = getIconoPorTipo(doc.metadata.tipo_fuente)
                   const esAlta = doc.prioridad === 'Alta'
@@ -147,16 +163,11 @@ export function BannerDocumentosPendientes({
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: index * 0.1 }}
                         whileHover={{ x: 4, scale: 1.01 }}
-                        className={`group flex items-start gap-3 rounded-lg p-3 backdrop-blur-sm
-                                   transition-all duration-300 cursor-pointer
-                                   bg-white/80 dark:bg-gray-800/80
-                                   hover:bg-white dark:hover:bg-gray-800
-                                   hover:shadow-lg
-                                   border-l-2 hover:border-l-4
-                                   ${esAlta
-                                     ? 'border-red-500 hover:border-red-500 hover:shadow-red-500/20'
-                                     : 'border-orange-500 hover:border-orange-500 hover:shadow-orange-500/20'
-                                   }`}
+                        className={`group flex cursor-pointer items-start gap-3 rounded-lg border-l-2 bg-white/80 p-3 backdrop-blur-sm transition-all duration-300 hover:border-l-4 hover:bg-white hover:shadow-lg dark:bg-gray-800/80 dark:hover:bg-gray-800 ${
+                          esAlta
+                            ? 'border-red-500 hover:border-red-500 hover:shadow-red-500/20'
+                            : 'border-orange-500 hover:border-orange-500 hover:shadow-orange-500/20'
+                        }`}
                       >
                         {/* Icon */}
                         <motion.div
@@ -167,16 +178,19 @@ export function BannerDocumentosPendientes({
                               : 'bg-gradient-to-br from-orange-500 to-orange-600 shadow-orange-500/30'
                           }`}
                         >
-                          <IconoDoc className="h-4 w-4 text-white" />
+                          <IconoDoc className='h-4 w-4 text-white' />
                         </motion.div>
 
                         {/* Info */}
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold text-gray-900 dark:text-white">
-                            {doc.tipo_documento} {doc.metadata.tipo_fuente ? `- ${doc.metadata.tipo_fuente}` : ''}
+                        <div className='min-w-0 flex-1'>
+                          <p className='text-sm font-semibold text-gray-900 dark:text-white'>
+                            {doc.tipo_documento}{' '}
+                            {doc.metadata.tipo_fuente
+                              ? `- ${doc.metadata.tipo_fuente}`
+                              : ''}
                           </p>
                           {doc.metadata.entidad && (
-                            <p className="text-xs text-gray-600 dark:text-gray-400 mt-0.5 font-medium">
+                            <p className='mt-0.5 text-xs font-medium text-gray-600 dark:text-gray-400'>
                               {doc.metadata.entidad}
                             </p>
                           )}
@@ -184,10 +198,13 @@ export function BannerDocumentosPendientes({
                             <motion.p
                               animate={{ opacity: [1, 0.6, 1] }}
                               transition={{ repeat: Infinity, duration: 2 }}
-                              className="text-xs text-red-600 dark:text-red-400 mt-1 flex items-center gap-1 font-medium"
+                              className='mt-1 flex items-center gap-1 text-xs font-medium text-red-600 dark:text-red-400'
                             >
-                              <AlertCircle className="h-3 w-3" />
-                              Vence: {new Date(doc.fecha_limite).toLocaleDateString('es-CO')}
+                              <AlertCircle className='h-3 w-3' />
+                              Vence:{' '}
+                              {new Date(doc.fecha_limite).toLocaleDateString(
+                                'es-CO'
+                              )}
                             </motion.p>
                           )}
                         </div>
@@ -196,28 +213,22 @@ export function BannerDocumentosPendientes({
                         <motion.button
                           whileHover={{ scale: 1.05 }}
                           whileTap={{ scale: 0.95 }}
-                          onClick={() => onSubirDocumento?.(doc.id, doc.tipo_documento, {
-                            ...doc.metadata,
-                            fuente_pago_id: doc.fuente_pago_id
-                          })}
-                          className="flex items-center gap-1.5 rounded-lg
-                                     bg-gradient-to-r from-orange-500 to-orange-600
-                                     hover:from-orange-600 hover:to-orange-700
-                                     dark:from-orange-500 dark:to-orange-600
-                                     dark:hover:from-orange-600 dark:hover:to-orange-700
-                                     px-3 py-1.5 text-xs font-medium text-white
-                                     transition-all duration-300
-                                     shadow-lg shadow-orange-500/30
-                                     hover:shadow-xl hover:shadow-orange-500/50"
+                          onClick={() =>
+                            onSubirDocumento?.(doc.id, doc.tipo_documento, {
+                              ...doc.metadata,
+                              fuente_pago_id: doc.fuente_pago_id,
+                            })
+                          }
+                          className='flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 px-3 py-1.5 text-xs font-medium text-white shadow-lg shadow-orange-500/30 transition-all duration-300 hover:from-orange-600 hover:to-orange-700 hover:shadow-xl hover:shadow-orange-500/50 dark:from-orange-500 dark:to-orange-600 dark:hover:from-orange-600 dark:hover:to-orange-700'
                         >
-                          <Upload className="h-3.5 w-3.5" />
+                          <Upload className='h-3.5 w-3.5' />
                           Subir
                         </motion.button>
                       </motion.div>
 
                       {/* Separador con gradiente */}
                       {index < documentosPendientes.length - 1 && (
-                        <div className="h-px my-2 bg-gradient-to-r from-transparent via-orange-300/30 dark:via-orange-700/30 to-transparent" />
+                        <div className='my-2 h-px bg-gradient-to-r from-transparent via-orange-300/30 to-transparent dark:via-orange-700/30' />
                       )}
                     </div>
                   )
@@ -225,12 +236,11 @@ export function BannerDocumentosPendientes({
               </div>
 
               {/* Info adicional */}
-              <div className="border-t border-orange-200 dark:border-orange-800 p-3
-                             bg-gradient-to-r from-orange-50/80 to-amber-50/80
-                             dark:from-orange-950/40 dark:to-amber-950/40">
-                <p className="text-xs text-gray-600 dark:text-gray-400 flex items-center gap-2">
-                  <CheckCircle2 className="h-3.5 w-3.5 text-green-600 dark:text-green-400 flex-shrink-0" />
-                  Los documentos se vincularán automáticamente al subirlos en la categoría &quot;Cartas de Aprobación&quot;
+              <div className='border-t border-orange-200 bg-gradient-to-r from-orange-50/80 to-amber-50/80 p-3 dark:border-orange-800 dark:from-orange-950/40 dark:to-amber-950/40'>
+                <p className='flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400'>
+                  <CheckCircle2 className='h-3.5 w-3.5 flex-shrink-0 text-green-600 dark:text-green-400' />
+                  Los documentos se vincularán automáticamente al subirlos en la
+                  categoría &quot;Cartas de Aprobación&quot;
                 </p>
               </div>
             </motion.div>

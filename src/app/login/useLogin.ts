@@ -1,11 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-import { useQueryClient } from '@tanstack/react-query'
-
 import { useRouter, useSearchParams } from 'next/navigation'
 
 import { showLoginSuccessToast } from '@/components/toasts/custom-toasts'
-import { createClient } from '@/lib/supabase/client'
 import { debugLog, errorLog, successLog } from '@/lib/utils/logger'
 import { traducirErrorSupabase } from '@/lib/utils/traducir-errores'
 import { auditLogService } from '@/services/audit-log.service'
@@ -57,11 +54,6 @@ export function useLogin(): UseLoginReturn {
   const { signIn, perfil } = useAuth()
   const router = useRouter()
   const searchParams = useSearchParams()
-  const queryClient = useQueryClient()
-
-  // Cliente de Supabase
-  const supabase = createClient()
-
   // Obtener ruta de redirección (puede ser null en SSR/build)
   const redirectedFrom = searchParams?.get('redirectedFrom') || null
 
@@ -78,8 +70,6 @@ export function useLogin(): UseLoginReturn {
       setError('')
       setLoading(false)
       setPassword('') // ✅ CRÍTICO: Limpiar password
-
-
     }
   }, [logoutTimestamp]) // Ejecutar cuando cambie el timestamp
 
@@ -116,13 +106,10 @@ export function useLogin(): UseLoginReturn {
       e.preventDefault()
       setError('')
 
-
-
       debugLog('ðŸ“ Formulario de login enviado')
 
       // Verificar si está bloqueado
       if (verificarBloqueo()) {
-
         setError(
           `ðŸš¨ Cuenta bloqueada por seguridad. Intenta nuevamente en ${minutosRestantes} minuto${minutosRestantes !== 1 ? 's' : ''}.`
         )
@@ -131,14 +118,12 @@ export function useLogin(): UseLoginReturn {
 
       // Prevenir múltiples submissions
       if (loading || isSubmittingRef.current) {
-
         debugLog('⚠️ Login ya en progreso, ignorando submission duplicado')
         return
       }
 
       isSubmittingRef.current = true
       setLoading(true)
-
 
       let loginSuccess = false // ✅ Flag para controlar el finally
 
@@ -151,15 +136,11 @@ export function useLogin(): UseLoginReturn {
           redirectedFrom.startsWith('/auth/')
 
         const redirectTo = isInvalidRedirect ? '/' : redirectedFrom
-        const destinoNombre = isInvalidRedirect ? 'Dashboard' : redirectedFrom.replace('/', '')
-
-
 
         debugLog('ðŸ” Iniciando proceso de login', { email })
 
         // ✅ CRÍTICO: signIn PRIMERO, navegación INMEDIATA después (sin cambios de estado)
         await signIn(email, password)
-
 
         successLog('Login exitoso en signIn()')
 
@@ -176,7 +157,6 @@ export function useLogin(): UseLoginReturn {
         // ðŸ“ Registrar evento de auditoría
         auditLogService.logLoginExitoso(email)
 
-
         // Toast moderno personalizado
         showLoginSuccessToast()
 
@@ -191,16 +171,13 @@ export function useLogin(): UseLoginReturn {
         // ✅ Navegación directa sin cambiar estado previos
         router.push(redirectTo)
 
-
         successLog('Navegación exitosa con cache pre-poblado')
-
 
         // ✅ Marcar como exitoso para que finally NO desactive loading
         loginSuccess = true
 
         // ✅ NO ejecutar finally (no desactivar loading en caso exitoso)
         return
-
       } catch (err) {
         const error = err instanceof Error ? err : new Error(String(err))
         errorLog('login-submit', error, { email })
@@ -215,7 +192,9 @@ export function useLogin(): UseLoginReturn {
         auditLogService.logLoginFallido(email, nuevoIntentosFallidos)
 
         // Traducir mensaje de error al español
-        const mensajeError = traducirErrorSupabase(error.message || 'Error de autenticación')
+        const mensajeError = traducirErrorSupabase(
+          error.message || 'Error de autenticación'
+        )
 
         // Si se bloqueó la cuenta, registrar también
         if (nuevoIntentosFallidos === 0) {
@@ -240,7 +219,20 @@ export function useLogin(): UseLoginReturn {
         // Si fue exitoso, loading se queda activo hasta que navegue
       }
     },
-    [email, password, signIn, router, redirectedFrom, verificarBloqueo, minutosRestantes, registrarIntentoFallido, resetearIntentos, intentosRestantes, recordarUsuario]
+    [
+      email,
+      password,
+      signIn,
+      router,
+      redirectedFrom,
+      verificarBloqueo,
+      minutosRestantes,
+      registrarIntentoFallido,
+      resetearIntentos,
+      intentosRestantes,
+      recordarUsuario,
+      loading,
+    ]
   )
 
   // ✅ Estabilizar funciones con useCallback para evitar re-renders

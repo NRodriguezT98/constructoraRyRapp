@@ -2,16 +2,21 @@
 
 import { Edit3, Loader2 } from 'lucide-react'
 
+import Link from 'next/link'
+
 import {
-    AccordionWizardHero,
-    AccordionWizardLayout,
-    AccordionWizardNavigation,
-    AccordionWizardSection,
-    AccordionWizardSuccess,
+  AccordionWizardHero,
+  AccordionWizardLayout,
+  AccordionWizardNavigation,
+  AccordionWizardSection,
+  AccordionWizardSuccess,
 } from '@/shared/components/accordion-wizard'
 import { ConfirmarCambiosModal } from '@/shared/components/modulos/ConfirmarCambiosModal'
 
-import { PASOS_PROYECTO_EDICION, useEditarProyecto } from '../hooks/useEditarProyecto'
+import {
+  PASOS_PROYECTO_EDICION,
+  useEditarProyecto,
+} from '../hooks/useEditarProyecto'
 
 import { PasoEstadoFechas, PasoInfoGeneral, PasoManzanas } from './pasos'
 
@@ -20,7 +25,10 @@ interface EditarProyectoViewProps {
   canEdit: boolean
 }
 
-export function EditarProyectoView({ proyectoId, canEdit }: EditarProyectoViewProps) {
+export function EditarProyectoView({
+  proyectoId,
+  canEdit,
+}: EditarProyectoViewProps) {
   const {
     isLoading,
     isError,
@@ -28,7 +36,6 @@ export function EditarProyectoView({ proyectoId, canEdit }: EditarProyectoViewPr
     pasos,
     pasoActual,
     getEstadoPaso,
-    progress,
     irSiguiente,
     irAtras,
     irAPaso,
@@ -62,8 +69,8 @@ export function EditarProyectoView({ proyectoId, canEdit }: EditarProyectoViewPr
 
   if (!canEdit) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-gray-500 dark:text-gray-400">
+      <div className='flex min-h-screen items-center justify-center'>
+        <p className='text-gray-500 dark:text-gray-400'>
           No tienes permisos para editar proyectos.
         </p>
       </div>
@@ -72,10 +79,10 @@ export function EditarProyectoView({ proyectoId, canEdit }: EditarProyectoViewPr
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center space-y-3">
-          <Loader2 className="w-10 h-10 text-green-500 animate-spin mx-auto" />
-          <p className="text-sm text-gray-600 dark:text-gray-400">
+      <div className='flex min-h-screen items-center justify-center'>
+        <div className='space-y-3 text-center'>
+          <Loader2 className='mx-auto h-10 w-10 animate-spin text-green-500' />
+          <p className='text-sm text-gray-600 dark:text-gray-400'>
             Cargando datos del proyecto...
           </p>
         </div>
@@ -85,14 +92,17 @@ export function EditarProyectoView({ proyectoId, canEdit }: EditarProyectoViewPr
 
   if (isError) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center space-y-3">
-          <p className="text-sm text-red-600 dark:text-red-400">
+      <div className='flex min-h-screen items-center justify-center'>
+        <div className='space-y-3 text-center'>
+          <p className='text-sm text-red-600 dark:text-red-400'>
             Error al cargar el proyecto. Verifica que el proyecto exista.
           </p>
-          <a href="/proyectos" className="text-sm text-green-600 hover:underline">
+          <Link
+            href='/proyectos'
+            className='text-sm text-green-600 hover:underline'
+          >
             Volver al listado
-          </a>
+          </Link>
         </div>
       </div>
     )
@@ -100,22 +110,22 @@ export function EditarProyectoView({ proyectoId, canEdit }: EditarProyectoViewPr
 
   return (
     <AccordionWizardLayout
-      moduleName="proyectos"
+      moduleName='proyectos'
       breadcrumbs={[
         { label: 'Proyectos', href: '/proyectos' },
         { label: proyectoNombre || 'Proyecto' },
         { label: 'Editar' },
       ]}
       isSubmitting={isSubmitting}
-      submitLoadingLabel="Actualizando Proyecto..."
+      submitLoadingLabel='Actualizando Proyecto...'
     >
       {/* Hero Header */}
       <AccordionWizardHero
         icon={Edit3}
-        title="Editar Proyecto"
+        title='Editar Proyecto'
         subtitle={`Actualiza la información del proyecto${proyectoNombre ? ` "${proyectoNombre}"` : ''}.`}
-        moduleName="proyectos"
-        estimatedTime="~3 minutos"
+        moduleName='proyectos'
+        estimatedTime='~3 minutos'
         totalSteps={PASOS_PROYECTO_EDICION.length}
       />
 
@@ -129,19 +139,24 @@ export function EditarProyectoView({ proyectoId, canEdit }: EditarProyectoViewPr
         fieldCount={{ required: 5, optional: 0 }}
         currentStep={pasoActual}
         totalSteps={PASOS_PROYECTO_EDICION.length}
-        moduleName="proyectos"
+        moduleName='proyectos'
         summaryItems={summaryPaso1}
         onEdit={() => irAPaso(1)}
         changeCount={cambiosPorPaso.paso1}
       >
-        <PasoInfoGeneral register={register} errors={errors} watch={watch} setValue={setValue} />
+        <PasoInfoGeneral
+          register={register}
+          errors={errors}
+          watch={watch}
+          setValue={setValue}
+        />
         <AccordionWizardNavigation
           currentStep={1}
           totalSteps={PASOS_PROYECTO_EDICION.length}
           isFirst
           isLast={false}
           isValidating={pasoActual === 1 && isValidating}
-          moduleName="proyectos"
+          moduleName='proyectos'
           onBack={irAtras}
           onNext={irSiguiente}
         />
@@ -157,7 +172,7 @@ export function EditarProyectoView({ proyectoId, canEdit }: EditarProyectoViewPr
         fieldCount={{ required: 1, optional: 2 }}
         currentStep={pasoActual}
         totalSteps={PASOS_PROYECTO_EDICION.length}
-        moduleName="proyectos"
+        moduleName='proyectos'
         summaryItems={summaryPaso2}
         onEdit={() => irAPaso(2)}
         changeCount={cambiosPorPaso.paso2}
@@ -173,7 +188,7 @@ export function EditarProyectoView({ proyectoId, canEdit }: EditarProyectoViewPr
           isFirst={false}
           isLast={false}
           isValidating={pasoActual === 2 && isValidating}
-          moduleName="proyectos"
+          moduleName='proyectos'
           onBack={irAtras}
           onNext={irSiguiente}
         />
@@ -189,7 +204,7 @@ export function EditarProyectoView({ proyectoId, canEdit }: EditarProyectoViewPr
         fieldCount={{ required: 1, optional: 0 }}
         currentStep={pasoActual}
         totalSteps={PASOS_PROYECTO_EDICION.length}
-        moduleName="proyectos"
+        moduleName='proyectos'
         summaryItems={summaryPaso3}
         onEdit={() => irAPaso(3)}
         changeCount={cambiosPorPaso.paso3}
@@ -212,10 +227,10 @@ export function EditarProyectoView({ proyectoId, canEdit }: EditarProyectoViewPr
           isLast
           isSubmitting={isSubmitting}
           isValidating={pasoActual === 3 && isValidating}
-          moduleName="proyectos"
-          submitLabel="Actualizar Proyecto"
+          moduleName='proyectos'
+          submitLabel='Actualizar Proyecto'
           disableSubmit={!hayCambios}
-          disableSubmitMessage="Realiza cambios en el proyecto para habilitar la actualización."
+          disableSubmitMessage='Realiza cambios en el proyecto para habilitar la actualización.'
           onBack={irAtras}
           onNext={irSiguiente}
           onSubmit={handleSubmit}
@@ -229,16 +244,16 @@ export function EditarProyectoView({ proyectoId, canEdit }: EditarProyectoViewPr
         onConfirm={confirmarActualizacion}
         cambios={cambiosGenericos}
         categoriasConfig={categoriasConfig}
-        moduleName="proyectos"
+        moduleName='proyectos'
         tituloEntidad={`Proyecto${proyectoNombre ? ` "${proyectoNombre}"` : ''}`}
       />
 
       {/* Animación de éxito (cubre el formulario tras guardar) */}
       <AccordionWizardSuccess
         isVisible={showSuccess}
-        moduleName="proyectos"
-        title="¡Proyecto actualizado!"
-        subtitle="Redirigiendo al listado de proyectos..."
+        moduleName='proyectos'
+        title='¡Proyecto actualizado!'
+        subtitle='Redirigiendo al listado de proyectos...'
       />
     </AccordionWizardLayout>
   )

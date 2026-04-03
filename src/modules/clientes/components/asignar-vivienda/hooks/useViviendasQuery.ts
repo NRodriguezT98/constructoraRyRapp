@@ -11,6 +11,14 @@ import { supabase } from '@/lib/supabase/client'
 
 import type { ViviendaDetalle } from '../types'
 
+type ViviendaDisponibleRow = ViviendaDetalle & {
+  manzanas: {
+    id: string
+    nombre: string
+    proyecto_id: string
+  } | null
+}
+
 export function useViviendasQuery(proyectoId: string | undefined) {
   return useQuery({
     queryKey: ['viviendas', 'disponibles', proyectoId],
@@ -19,23 +27,27 @@ export function useViviendasQuery(proyectoId: string | undefined) {
 
       const { data, error } = await supabase
         .from('viviendas')
-        .select(`
+        .select(
+          `
           *,
           manzanas!inner (
             id,
             nombre,
             proyecto_id
           )
-        `)
+        `
+        )
         .eq('manzanas.proyecto_id', proyectoId)
         .eq('estado', 'Disponible')
         .is('negociacion_id', null) // ⭐ CRÍTICO: Solo viviendas sin negociación activa
-        .is('cliente_id', null)      // ⭐ Y sin cliente asignado
+        .is('cliente_id', null) // ⭐ Y sin cliente asignado
 
       if (error) throw error
 
       // Transformar para incluir manzana_nombre directamente
-      const viviendasConManzana: ViviendaDetalle[] = (data || []).map((v: any) => ({
+      const viviendasConManzana: ViviendaDetalle[] = (
+        (data || []) as ViviendaDisponibleRow[]
+      ).map(v => ({
         ...v,
         manzana_nombre: v.manzanas?.nombre,
       }))

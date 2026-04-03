@@ -18,14 +18,14 @@ import { useMemo, useState } from 'react'
 
 import { AnimatePresence, motion } from 'framer-motion'
 import {
-    AlertTriangle,
-    Building2,
-    CheckCircle2,
-    ChevronDown,
-    FileText,
-    Gift,
-    Home,
-    Upload
+  AlertTriangle,
+  Building2,
+  CheckCircle2,
+  ChevronDown,
+  FileText,
+  Gift,
+  Home,
+  Upload,
 } from 'lucide-react'
 
 import { useDocumentosPendientes } from '@/modules/clientes/hooks/useDocumentosPendientes'
@@ -36,7 +36,11 @@ import { useDocumentosPendientes } from '@/modules/clientes/hooks/useDocumentosP
 
 interface SeccionDocumentosPendientesProps {
   clienteId: string
-  onSubirDocumento?: (pendienteId: string, tipoDocumento: string, metadata: Record<string, any>) => void
+  onSubirDocumento?: (
+    pendienteId: string,
+    tipoDocumento: string,
+    metadata: Record<string, unknown>
+  ) => void
 }
 
 interface DocumentoPorFuente {
@@ -48,7 +52,7 @@ interface DocumentoPorFuente {
     tipo_documento: string
     nivel: string
     prioridad: string
-    metadata: any
+    metadata: Record<string, unknown>
   }>
   completados: number
   total: number
@@ -81,17 +85,18 @@ export function SeccionDocumentosPendientes({
   const [expandido, setExpandido] = useState(false) // Colapsado por defecto — se expande al hacer clic
 
   // Query de documentos pendientes con React Query
-  const { data: documentosPendientes = [], isLoading } = useDocumentosPendientes(clienteId)
+  const { data: documentosPendientes = [], isLoading } =
+    useDocumentosPendientes(clienteId)
 
   // Agrupar pendientes por fuente
   const pendientesPorFuente = useMemo(() => {
     const agrupados: Record<string, DocumentoPorFuente> = {}
 
-    documentosPendientes.forEach((doc) => {
+    documentosPendientes.forEach(doc => {
       const fuenteId = doc.fuente_pago_id
       const tipoFuente = doc.metadata?.tipo_fuente || 'Sin especificar'
       // ✅ La vista genera 'entidad_fuente' (no 'entidad') en el JSON
-      const entidad = (doc.metadata as any)?.entidad_fuente || ''
+      const entidad = doc.metadata?.entidad_fuente || ''
 
       if (!agrupados[fuenteId]) {
         agrupados[fuenteId] = {
@@ -108,7 +113,7 @@ export function SeccionDocumentosPendientes({
         agrupados[fuenteId].pendientes.push({
           id: doc.id,
           tipo_documento: doc.tipo_documento,
-          nivel: (doc.metadata as any)?.nivel_validacion || '',
+          nivel: doc.metadata?.nivel_validacion || '',
           prioridad: doc.prioridad,
           metadata: doc.metadata,
         })
@@ -120,7 +125,7 @@ export function SeccionDocumentosPendientes({
     })
 
     return Object.values(agrupados)
-      .filter((grupo) => grupo.pendientes.length > 0)
+      .filter(grupo => grupo.pendientes.length > 0)
       .sort((a, b) => {
         // Documentación final (docs compartidos como Boleta de Registro) siempre van al final
         const aEsCompartida = a.tipo === 'Compartido'
@@ -133,7 +138,11 @@ export function SeccionDocumentosPendientes({
 
   // Contar totales
   const totalPendientes = useMemo(
-    () => pendientesPorFuente.reduce((sum, grupo) => sum + grupo.pendientes.length, 0),
+    () =>
+      pendientesPorFuente.reduce(
+        (sum, grupo) => sum + grupo.pendientes.length,
+        0
+      ),
     [pendientesPorFuente]
   )
 
@@ -141,7 +150,9 @@ export function SeccionDocumentosPendientes({
     () =>
       pendientesPorFuente.reduce(
         (sum, grupo) =>
-          sum + grupo.pendientes.filter((p) => p.nivel === 'DOCUMENTO_OBLIGATORIO').length,
+          sum +
+          grupo.pendientes.filter(p => p.nivel === 'DOCUMENTO_OBLIGATORIO')
+            .length,
         0
       ),
     [pendientesPorFuente]
@@ -153,44 +164,44 @@ export function SeccionDocumentosPendientes({
   }
 
   return (
-    <div className="mb-4">
+    <div className='mb-4'>
       {/* Header Colapsable */}
       <button
         onClick={() => setExpandido(!expandido)}
-        className="w-full flex items-center justify-between p-3 rounded-lg
-                   bg-gradient-to-r from-amber-50 via-orange-50 to-amber-50
-                   dark:from-amber-950/30 dark:via-orange-950/30 dark:to-amber-950/30
-                   border-2 border-amber-200 dark:border-amber-800
-                   hover:border-amber-300 dark:hover:border-amber-700
-                   hover:shadow-lg hover:shadow-amber-500/20
-                   transition-all duration-300"
+        className='flex w-full items-center justify-between rounded-lg border-2 border-amber-200 bg-gradient-to-r from-amber-50 via-orange-50 to-amber-50 p-3 transition-all duration-300 hover:border-amber-300 hover:shadow-lg hover:shadow-amber-500/20 dark:border-amber-800 dark:from-amber-950/30 dark:via-orange-950/30 dark:to-amber-950/30 dark:hover:border-amber-700'
       >
-        <div className="flex items-center gap-3">
+        <div className='flex items-center gap-3'>
           <motion.div
             animate={{ scale: [1, 1.05, 1] }}
             transition={{ repeat: Infinity, duration: 2 }}
-            className="rounded-lg p-2 bg-gradient-to-br from-amber-500 to-orange-600 shadow-lg shadow-amber-500/30"
+            className='rounded-lg bg-gradient-to-br from-amber-500 to-orange-600 p-2 shadow-lg shadow-amber-500/30'
           >
-            <AlertTriangle className="h-5 w-5 text-white" />
+            <AlertTriangle className='h-5 w-5 text-white' />
           </motion.div>
-          <div className="text-left">
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-bold text-gray-900 dark:text-white">
-                Tienes {totalPendientes} documentos pendientes de fuentes de pago
+          <div className='text-left'>
+            <div className='flex items-center gap-2'>
+              <span className='text-sm font-bold text-gray-900 dark:text-white'>
+                Tienes {totalPendientes} documentos pendientes de fuentes de
+                pago
               </span>
               {totalObligatorios > 0 && (
-                <span className="px-2 py-0.5 text-xs font-bold bg-red-500 text-white rounded-full">
+                <span className='rounded-full bg-red-500 px-2 py-0.5 text-xs font-bold text-white'>
                   {totalObligatorios} obligatorios
                 </span>
               )}
             </div>
-            <p className="text-xs text-gray-600 dark:text-gray-400 mt-0.5">
-              {expandido ? 'Clic para ocultar detalles' : 'Clic para ver detalles y subir documentos'}
+            <p className='mt-0.5 text-xs text-gray-600 dark:text-gray-400'>
+              {expandido
+                ? 'Clic para ocultar detalles'
+                : 'Clic para ver detalles y subir documentos'}
             </p>
           </div>
         </div>
-        <motion.div animate={{ rotate: expandido ? 180 : 0 }} transition={{ duration: 0.3 }}>
-          <ChevronDown className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+        <motion.div
+          animate={{ rotate: expandido ? 180 : 0 }}
+          transition={{ duration: 0.3 }}
+        >
+          <ChevronDown className='h-5 w-5 text-amber-600 dark:text-amber-400' />
         </motion.div>
       </button>
 
@@ -202,11 +213,11 @@ export function SeccionDocumentosPendientes({
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className="overflow-hidden"
+            className='overflow-hidden'
           >
-            <div className="mt-2 p-4 rounded-lg border-2 border-amber-200 dark:border-amber-800 bg-white dark:bg-gray-800 space-y-4">
+            <div className='mt-2 space-y-4 rounded-lg border-2 border-amber-200 bg-white p-4 dark:border-amber-800 dark:bg-gray-800'>
               {/* Agrupación por fuente */}
-              {pendientesPorFuente.map((grupo) => {
+              {pendientesPorFuente.map(grupo => {
                 const IconoFuente = getIconoPorTipo(grupo.tipo)
 
                 return (
@@ -214,29 +225,39 @@ export function SeccionDocumentosPendientes({
                     key={grupo.fuenteId}
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="pb-4 border-b border-gray-200 dark:border-gray-700 last:border-0 last:pb-0"
+                    className='border-b border-gray-200 pb-4 last:border-0 last:pb-0 dark:border-gray-700'
                   >
                     {/* Header de fuente */}
-                    <div className="flex items-center gap-2 mb-3">
-                      <div className="p-2 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600">
-                        <IconoFuente className="h-4 w-4 text-white" />
+                    <div className='mb-3 flex items-center gap-2'>
+                      <div className='rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600 p-2'>
+                        <IconoFuente className='h-4 w-4 text-white' />
                       </div>
-                      <div className="flex-1">
-                        <h4 className="text-sm font-bold text-gray-900 dark:text-white">
-                          {grupo.tipo === 'Compartido' ? 'Documentación final' : grupo.tipo}
-                          {grupo.tipo !== 'Compartido' && grupo.entidad && <span className="text-cyan-600 dark:text-cyan-400"> • {grupo.entidad}</span>}
+                      <div className='flex-1'>
+                        <h4 className='text-sm font-bold text-gray-900 dark:text-white'>
+                          {grupo.tipo === 'Compartido'
+                            ? 'Documentación final'
+                            : grupo.tipo}
+                          {grupo.tipo !== 'Compartido' && grupo.entidad && (
+                            <span className='text-cyan-600 dark:text-cyan-400'>
+                              {' '}
+                              • {grupo.entidad}
+                            </span>
+                          )}
                         </h4>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">
-                          {grupo.pendientes.length} pendiente{grupo.pendientes.length !== 1 ? 's' : ''}
-                          {grupo.completados > 0 && ` • ${grupo.completados} completado${grupo.completados !== 1 ? 's' : ''}`}
+                        <p className='text-xs text-gray-500 dark:text-gray-400'>
+                          {grupo.pendientes.length} pendiente
+                          {grupo.pendientes.length !== 1 ? 's' : ''}
+                          {grupo.completados > 0 &&
+                            ` • ${grupo.completados} completado${grupo.completados !== 1 ? 's' : ''}`}
                         </p>
                       </div>
                     </div>
 
                     {/* Lista de documentos pendientes */}
-                    <div className="space-y-2 pl-4">
+                    <div className='space-y-2 pl-4'>
                       {grupo.pendientes.map((doc, index) => {
-                        const esObligatorio = doc.nivel === 'DOCUMENTO_OBLIGATORIO'
+                        const esObligatorio =
+                          doc.nivel === 'DOCUMENTO_OBLIGATORIO'
 
                         return (
                           <motion.div
@@ -245,16 +266,13 @@ export function SeccionDocumentosPendientes({
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ delay: index * 0.1 }}
                             whileHover={{ x: 4, scale: 1.01 }}
-                            className={`group flex items-center justify-between p-2.5 rounded-lg
-                                       backdrop-blur-sm transition-all duration-300
-                                       ${
-                                         esObligatorio
-                                           ? 'bg-red-50 dark:bg-red-950/30 border-l-4 border-red-500'
-                                           : 'bg-blue-50 dark:bg-blue-950/30 border-l-4 border-blue-500'
-                                       }
-                                       hover:shadow-md`}
+                            className={`group flex items-center justify-between rounded-lg p-2.5 backdrop-blur-sm transition-all duration-300 ${
+                              esObligatorio
+                                ? 'border-l-4 border-red-500 bg-red-50 dark:bg-red-950/30'
+                                : 'border-l-4 border-blue-500 bg-blue-50 dark:bg-blue-950/30'
+                            } hover:shadow-md`}
                           >
-                            <div className="flex items-center gap-2 flex-1">
+                            <div className='flex flex-1 items-center gap-2'>
                               <FileText
                                 className={`h-4 w-4 ${
                                   esObligatorio
@@ -262,8 +280,8 @@ export function SeccionDocumentosPendientes({
                                     : 'text-blue-600 dark:text-blue-400'
                                 }`}
                               />
-                              <div className="flex-1">
-                                <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                              <div className='flex-1'>
+                                <p className='text-sm font-semibold text-gray-900 dark:text-white'>
                                   {doc.tipo_documento}
                                 </p>
                                 <span
@@ -275,9 +293,11 @@ export function SeccionDocumentosPendientes({
                                 >
                                   {esObligatorio ? 'OBLIGATORIO' : 'Opcional'}
                                 </span>
-                                {(doc.metadata as any)?.alcance === 'COMPARTIDO_CLIENTE' && (
-                                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
-                                    Documento final · Se obtiene tras escrituración
+                                {doc.metadata?.alcance ===
+                                  'COMPARTIDO_CLIENTE' && (
+                                  <p className='mt-0.5 text-xs text-gray-400 dark:text-gray-500'>
+                                    Documento final · Se obtiene tras
+                                    escrituración
                                   </p>
                                 )}
                               </div>
@@ -292,15 +312,13 @@ export function SeccionDocumentosPendientes({
                                   fuente_pago_id: grupo.fuenteId,
                                 })
                               }
-                              className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5
-                                         text-xs font-medium text-white transition-all duration-300
-                                         ${
-                                           esObligatorio
-                                             ? 'bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 shadow-lg shadow-red-500/30'
-                                             : 'bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 shadow-lg shadow-orange-500/30'
-                                         }`}
+                              className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium text-white transition-all duration-300 ${
+                                esObligatorio
+                                  ? 'bg-gradient-to-r from-red-500 to-red-600 shadow-lg shadow-red-500/30 hover:from-red-600 hover:to-red-700'
+                                  : 'bg-gradient-to-r from-orange-500 to-orange-600 shadow-lg shadow-orange-500/30 hover:from-orange-600 hover:to-orange-700'
+                              }`}
                             >
-                              <Upload className="h-3.5 w-3.5" />
+                              <Upload className='h-3.5 w-3.5' />
                               Subir
                             </motion.button>
                           </motion.div>
@@ -312,10 +330,11 @@ export function SeccionDocumentosPendientes({
               })}
 
               {/* Footer informativo */}
-              <div className="pt-3 border-t border-amber-200 dark:border-amber-800">
-                <p className="text-xs text-gray-600 dark:text-gray-400 flex items-center gap-2">
-                  <CheckCircle2 className="h-3.5 w-3.5 text-green-600 dark:text-green-400 flex-shrink-0" />
-                  Los documentos se vincularán automáticamente a la fuente al subirlos
+              <div className='border-t border-amber-200 pt-3 dark:border-amber-800'>
+                <p className='flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400'>
+                  <CheckCircle2 className='h-3.5 w-3.5 flex-shrink-0 text-green-600 dark:text-green-400' />
+                  Los documentos se vincularán automáticamente a la fuente al
+                  subirlos
                 </p>
               </div>
             </div>

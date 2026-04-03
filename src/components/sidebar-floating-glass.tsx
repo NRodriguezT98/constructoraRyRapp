@@ -4,24 +4,23 @@ import { useEffect, useMemo, useState } from 'react'
 
 import { AnimatePresence, motion } from 'framer-motion'
 import {
-    ChevronLeft,
-    ChevronRight,
-    Crown,
-    LogOut,
-    Search,
-    Settings,
+  ChevronLeft,
+  ChevronRight,
+  Crown,
+  LogOut,
+  Search,
+  Settings,
 } from 'lucide-react'
 import { useTheme } from 'next-themes'
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 
 import { useAuth } from '@/contexts/auth-context'
 import { useLogout } from '@/hooks/auth'
-import { usePapeleraCount } from '@/modules/documentos/hooks'
 import { usePermisosQuery } from '@/modules/usuarios/hooks/usePermisosQuery'
 import { navigationGroups } from '@/shared/config/navigation.config'
+import { usePapeleraCount } from '@/shared/documentos/hooks'
 
 import { ThemeToggle } from './theme-toggle'
 import { Button } from './ui/button'
@@ -35,7 +34,6 @@ export function SidebarFloatingGlass() {
   })
   const { puede, esAdmin } = usePermisosQuery() // ← Sistema NUEVO desde BD
   const { theme, systemTheme } = useTheme()
-  const router = useRouter()
   const {
     isExpanded,
     isMobile,
@@ -43,7 +41,6 @@ export function SidebarFloatingGlass() {
     setSearchQuery,
     toggleSidebar,
     closeSidebar,
-    isActive,
     getMostSpecificMatch,
   } = useSidebar()
 
@@ -141,9 +138,13 @@ export function SidebarFloatingGlass() {
     const currentTheme = theme === 'system' ? systemTheme : theme
 
     if (expanded) {
-      return currentTheme === 'dark' ? '/images/logo1-dark.png' : '/images/logo1.png'
+      return currentTheme === 'dark'
+        ? '/images/logo1-dark.png'
+        : '/images/logo1.png'
     }
-    return currentTheme === 'dark' ? '/images/logo2-dark.png' : '/images/logo2.png'
+    return currentTheme === 'dark'
+      ? '/images/logo2-dark.png'
+      : '/images/logo2.png'
   }
 
   return (
@@ -156,7 +157,7 @@ export function SidebarFloatingGlass() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-30 bg-black/50 backdrop-blur-sm lg:hidden"
+            className='fixed inset-0 z-30 bg-black/50 backdrop-blur-sm lg:hidden'
             onClick={closeSidebar}
           />
         )}
@@ -181,44 +182,44 @@ export function SidebarFloatingGlass() {
           } relative flex flex-col border border-white/20 bg-white/80 shadow-2xl shadow-gray-900/10 backdrop-blur-2xl dark:border-gray-700/30 dark:bg-gray-900/80 dark:shadow-black/20`}
         >
           {/* Header */}
-          <div className="border-b border-gray-200/50 p-3 dark:border-gray-700/30">
-            <div className="flex items-center justify-between">
-              <AnimatePresence mode="wait">
+          <div className='border-b border-gray-200/50 p-3 dark:border-gray-700/30'>
+            <div className='flex items-center justify-between'>
+              <AnimatePresence mode='wait'>
                 {isExpanded ? (
                   <motion.div
-                    key="expanded-logo"
+                    key='expanded-logo'
                     variants={contentVariants}
-                    initial="collapsed"
-                    animate="expanded"
-                    exit="collapsed"
+                    initial='collapsed'
+                    animate='expanded'
+                    exit='collapsed'
                     transition={{ duration: 0.2 }}
-                    className="flex items-center"
+                    className='flex items-center'
                   >
                     <Image
                       src={getLogo(true)}
-                      alt="RyR Constructora"
+                      alt='RyR Constructora'
                       width={140}
                       height={40}
-                      className="h-auto w-auto"
+                      className='h-auto w-auto'
                       priority
                       suppressHydrationWarning
                     />
                   </motion.div>
                 ) : (
                   <motion.div
-                    key="collapsed-logo"
+                    key='collapsed-logo'
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ duration: 0.2 }}
-                    className="relative mx-auto flex items-center justify-center"
+                    className='relative mx-auto flex items-center justify-center'
                     style={{ width: '48px', height: '48px' }}
                   >
                     {/* Usar img nativo para control total del tamaño */}
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={getLogo(false)}
-                      alt="RyR"
-                      className="block"
+                      alt='RyR'
+                      className='block'
                       style={{
                         width: '48px',
                         height: '48px',
@@ -226,7 +227,7 @@ export function SidebarFloatingGlass() {
                         maxHeight: '48px',
                         minWidth: '48px',
                         minHeight: '48px',
-                        objectFit: 'contain'
+                        objectFit: 'contain',
                       }}
                     />
                   </motion.div>
@@ -234,18 +235,18 @@ export function SidebarFloatingGlass() {
               </AnimatePresence>
 
               <Button
-                variant="ghost"
-                size="sm"
+                variant='ghost'
+                size='sm'
                 onClick={toggleSidebar}
                 title={isExpanded ? 'Contraer sidebar' : 'Expandir sidebar'}
                 className={`rounded-lg hover:bg-gray-100/80 dark:hover:bg-gray-800/80 ${
-                  isExpanded ? 'p-1.5' : 'p-2 mx-auto'
+                  isExpanded ? 'p-1.5' : 'mx-auto p-2'
                 }`}
               >
                 {isExpanded ? (
-                  <ChevronLeft className="h-3.5 w-3.5" />
+                  <ChevronLeft className='h-3.5 w-3.5' />
                 ) : (
-                  <ChevronRight className="h-4 w-4" />
+                  <ChevronRight className='h-4 w-4' />
                 )}
               </Button>
             </div>
@@ -255,19 +256,19 @@ export function SidebarFloatingGlass() {
               {isExpanded && (
                 <motion.div
                   variants={contentVariants}
-                  initial="collapsed"
-                  animate="expanded"
-                  exit="collapsed"
+                  initial='collapsed'
+                  animate='expanded'
+                  exit='collapsed'
                   transition={{ duration: 0.2, delay: 0.1 }}
-                  className="mt-3"
+                  className='mt-3'
                 >
-                  <div className="group relative">
-                    <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-gray-400 transition-colors group-focus-within:text-blue-500" />
+                  <div className='group relative'>
+                    <Search className='absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-gray-400 transition-colors group-focus-within:text-blue-500' />
                     <input
-                      placeholder="Buscar módulos..."
+                      placeholder='Buscar módulos...'
                       value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="h-8 w-full rounded-lg border border-gray-200/50 bg-gray-50/50 pl-9 pr-3 text-xs text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/10 dark:border-gray-700/50 dark:bg-gray-800/50 dark:text-white dark:placeholder:text-gray-500 dark:focus:bg-gray-800"
+                      onChange={e => setSearchQuery(e.target.value)}
+                      className='h-8 w-full rounded-lg border border-gray-200/50 bg-gray-50/50 pl-9 pr-3 text-xs text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/10 dark:border-gray-700/50 dark:bg-gray-800/50 dark:text-white dark:placeholder:text-gray-500 dark:focus:bg-gray-800'
                     />
                   </div>
                 </motion.div>
@@ -276,21 +277,21 @@ export function SidebarFloatingGlass() {
           </div>
 
           {/* Navigation */}
-          <div className="custom-scrollbar flex-1 space-y-4 overflow-y-auto overflow-x-hidden px-2 py-3">
-            {navigationGroups.map((group) => (
+          <div className='custom-scrollbar flex-1 space-y-4 overflow-y-auto overflow-x-hidden px-2 py-3'>
+            {navigationGroups.map(group => (
               <div key={group.title}>
                 {/* Group Title */}
                 <AnimatePresence>
                   {isExpanded && (
                     <motion.div
                       variants={contentVariants}
-                      initial="collapsed"
-                      animate="expanded"
-                      exit="collapsed"
+                      initial='collapsed'
+                      animate='expanded'
+                      exit='collapsed'
                       transition={{ duration: 0.2 }}
-                      className="mb-2 px-2.5"
+                      className='mb-2 px-2.5'
                     >
-                      <h3 className="text-[10px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                      <h3 className='text-[10px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400'>
                         {group.title}
                       </h3>
                     </motion.div>
@@ -298,11 +299,11 @@ export function SidebarFloatingGlass() {
                 </AnimatePresence>
 
                 {/* Navigation Items */}
-                <div className="space-y-1">
+                <div className='space-y-1'>
                   {(() => {
                     // ✅ Filtrar items visibles
                     const visibleItems = group.items.filter(
-                      (item) =>
+                      item =>
                         // Filtro de búsqueda
                         (!searchQuery ||
                           item.name
@@ -312,12 +313,12 @@ export function SidebarFloatingGlass() {
                             .toLowerCase()
                             .includes(searchQuery.toLowerCase())) &&
                         // 🔒 Filtro adminOnly
-                        (!(item as any).adminOnly || esAdmin) &&
+                        (!item.adminOnly || esAdmin) &&
                         // 🔐 Filtro de permisos
-                        ((item as any).requiredPermission
+                        (item.requiredPermission
                           ? puede(
-                              (item as any).requiredPermission.modulo,
-                              (item as any).requiredPermission.accion
+                              item.requiredPermission.modulo,
+                              item.requiredPermission.accion
                             )
                           : true)
                     )
@@ -325,7 +326,7 @@ export function SidebarFloatingGlass() {
                     // ✅ Obtener la ruta MÁS ESPECÍFICA que coincide
                     const mostSpecificHref = getMostSpecificMatch(visibleItems)
 
-                    return visibleItems.map((item) => {
+                    return visibleItems.map(item => {
                       // ✅ Solo activar si es la ruta más específica
                       const active = item.href === mostSpecificHref
 
@@ -364,13 +365,13 @@ export function SidebarFloatingGlass() {
                               {isExpanded && (
                                 <motion.div
                                   variants={contentVariants}
-                                  initial="collapsed"
-                                  animate="expanded"
-                                  exit="collapsed"
+                                  initial='collapsed'
+                                  animate='expanded'
+                                  exit='collapsed'
                                   transition={{ duration: 0.2 }}
-                                  className="flex flex-1 items-center justify-between"
+                                  className='flex flex-1 items-center justify-between'
                                 >
-                                  <div className="flex flex-col">
+                                  <div className='flex flex-col'>
                                     <div
                                       className={`text-xs font-semibold ${
                                         active
@@ -392,54 +393,70 @@ export function SidebarFloatingGlass() {
                                   </div>
 
                                   {/* 🗑️ Badge contador para Papelera */}
-                                  {item.name === 'Papelera' && papeleraCount.total > 0 && (
-                                    <motion.div
-                                      initial={{ scale: 0 }}
-                                      animate={{ scale: 1 }}
-                                      transition={{ type: 'spring', stiffness: 500, damping: 15 }}
-                                      className={`flex items-center justify-center min-w-[18px] h-[18px] rounded-full text-[10px] font-bold px-1.5 ${
-                                        active
-                                          ? 'bg-white text-red-600'
-                                          : 'bg-red-500 text-white'
-                                      }`}
-                                    >
-                                      {papeleraCount.total > 99 ? '99+' : papeleraCount.total}
-                                    </motion.div>
-                                  )}
+                                  {item.name === 'Papelera' &&
+                                    papeleraCount.total > 0 && (
+                                      <motion.div
+                                        initial={{ scale: 0 }}
+                                        animate={{ scale: 1 }}
+                                        transition={{
+                                          type: 'spring',
+                                          stiffness: 500,
+                                          damping: 15,
+                                        }}
+                                        className={`flex h-[18px] min-w-[18px] items-center justify-center rounded-full px-1.5 text-[10px] font-bold ${
+                                          active
+                                            ? 'bg-white text-red-600'
+                                            : 'bg-red-500 text-white'
+                                        }`}
+                                      >
+                                        {papeleraCount.total > 99
+                                          ? '99+'
+                                          : papeleraCount.total}
+                                      </motion.div>
+                                    )}
                                 </motion.div>
                               )}
                             </AnimatePresence>
 
                             {/* Badge contador para Papelera (modo colapsado) */}
-                            {!isExpanded && item.name === 'Papelera' && papeleraCount.total > 0 && (
-                              <motion.div
-                                initial={{ scale: 0 }}
-                                animate={{ scale: 1 }}
-                                transition={{ type: 'spring', stiffness: 500, damping: 15 }}
-                                className="absolute -top-1 -right-1 flex items-center justify-center min-w-[16px] h-[16px] rounded-full bg-red-500 text-white text-[9px] font-bold px-1 shadow-lg border-2 border-white dark:border-gray-900"
-                              >
-                                {papeleraCount.total > 99 ? '99+' : papeleraCount.total}
-                              </motion.div>
-                            )}
+                            {!isExpanded &&
+                              item.name === 'Papelera' &&
+                              papeleraCount.total > 0 && (
+                                <motion.div
+                                  initial={{ scale: 0 }}
+                                  animate={{ scale: 1 }}
+                                  transition={{
+                                    type: 'spring',
+                                    stiffness: 500,
+                                    damping: 15,
+                                  }}
+                                  className='absolute -right-1 -top-1 flex h-[16px] min-w-[16px] items-center justify-center rounded-full border-2 border-white bg-red-500 px-1 text-[9px] font-bold text-white shadow-lg dark:border-gray-900'
+                                >
+                                  {papeleraCount.total > 99
+                                    ? '99+'
+                                    : papeleraCount.total}
+                                </motion.div>
+                              )}
 
                             {/* Tooltip para modo colapsado */}
                             {!isExpanded && (
-                              <div className="pointer-events-none absolute left-full z-50 ml-2 whitespace-nowrap rounded-lg bg-gray-900 px-2.5 py-1.5 text-xs font-medium text-white opacity-0 shadow-xl transition-opacity duration-200 group-hover:opacity-100 dark:bg-gray-700">
+                              <div className='pointer-events-none absolute left-full z-50 ml-2 whitespace-nowrap rounded-lg bg-gray-900 px-2.5 py-1.5 text-xs font-medium text-white opacity-0 shadow-xl transition-opacity duration-200 group-hover:opacity-100 dark:bg-gray-700'>
                                 {item.name}
-                                {item.name === 'Papelera' && papeleraCount.total > 0 && (
-                                  <span className="ml-1.5 inline-flex items-center justify-center min-w-[18px] h-[18px] rounded-full bg-red-500 text-white text-[9px] font-bold px-1">
-                                    {papeleraCount.total}
-                                  </span>
-                                )}
-                                <div className="absolute -left-1 top-1/2 h-2 w-2 -translate-y-1/2 rotate-45 bg-gray-900 dark:bg-gray-700" />
+                                {item.name === 'Papelera' &&
+                                  papeleraCount.total > 0 && (
+                                    <span className='ml-1.5 inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-red-500 px-1 text-[9px] font-bold text-white'>
+                                      {papeleraCount.total}
+                                    </span>
+                                  )}
+                                <div className='absolute -left-1 top-1/2 h-2 w-2 -translate-y-1/2 rotate-45 bg-gray-900 dark:bg-gray-700' />
                               </div>
                             )}
 
                             {/* Active indicator dot */}
                             {active && (
                               <motion.div
-                                layoutId="sidebar-indicator"
-                                className="absolute right-2.5 top-1/2 h-1.5 w-1.5 -translate-y-1/2 rounded-full bg-white shadow-md"
+                                layoutId='sidebar-indicator'
+                                className='absolute right-2.5 top-1/2 h-1.5 w-1.5 -translate-y-1/2 rounded-full bg-white shadow-md'
                                 transition={{
                                   type: 'spring',
                                   stiffness: 400,
@@ -458,26 +475,26 @@ export function SidebarFloatingGlass() {
           </div>
 
           {/* Footer */}
-          <div className="space-y-2 border-t border-gray-200/50 p-3 dark:border-gray-700/30">
+          <div className='space-y-2 border-t border-gray-200/50 p-3 dark:border-gray-700/30'>
             {/* User Profile Card - Solo cuando está expandido */}
             <AnimatePresence>
               {isExpanded && (
                 <motion.div
                   variants={contentVariants}
-                  initial="collapsed"
-                  animate="expanded"
-                  exit="collapsed"
+                  initial='collapsed'
+                  animate='expanded'
+                  exit='collapsed'
                   transition={{ duration: 0.2 }}
-                  className="group relative overflow-hidden rounded-xl bg-gradient-to-br from-gray-50 via-white to-gray-50 p-2.5 shadow-md shadow-gray-900/5 dark:from-gray-800 dark:via-gray-800/50 dark:to-gray-800"
+                  className='group relative overflow-hidden rounded-xl bg-gradient-to-br from-gray-50 via-white to-gray-50 p-2.5 shadow-md shadow-gray-900/5 dark:from-gray-800 dark:via-gray-800/50 dark:to-gray-800'
                 >
                   {/* Glow effect para admin */}
                   {isAdmin && (
-                    <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 via-yellow-500/10 to-orange-500/10 opacity-50" />
+                    <div className='absolute inset-0 bg-gradient-to-br from-amber-500/10 via-yellow-500/10 to-orange-500/10 opacity-50' />
                   )}
 
-                  <div className="relative flex items-start gap-2">
+                  <div className='relative flex items-start gap-2'>
                     {/* Avatar con gradiente según rol */}
-                    <div className="relative flex-shrink-0">
+                    <div className='relative flex-shrink-0'>
                       {/* Corona para administrador 👑 */}
                       {isAdmin && (
                         <motion.div
@@ -488,7 +505,7 @@ export function SidebarFloatingGlass() {
                             stiffness: 300,
                             damping: 20,
                           }}
-                          className="absolute -top-2.5 left-1/2 z-10 -translate-x-1/2"
+                          className='absolute -top-2.5 left-1/2 z-10 -translate-x-1/2'
                         >
                           <motion.div
                             animate={{
@@ -501,40 +518,42 @@ export function SidebarFloatingGlass() {
                               ease: 'easeInOut',
                             }}
                           >
-                            <Crown className="h-4 w-4 text-amber-500 drop-shadow-[0_0_6px_rgba(245,158,11,0.5)]" />
+                            <Crown className='h-4 w-4 text-amber-500 drop-shadow-[0_0_6px_rgba(245,158,11,0.5)]' />
                           </motion.div>
                         </motion.div>
                       )}
 
                       <div
                         className={`flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br ${getRolColor} shadow-md ${
-                          isAdmin ? 'shadow-amber-500/40 ring-2 ring-amber-400/20' : ''
+                          isAdmin
+                            ? 'shadow-amber-500/40 ring-2 ring-amber-400/20'
+                            : ''
                         }`}
                       >
-                        <span className="text-sm font-bold text-white drop-shadow-md">
+                        <span className='text-sm font-bold text-white drop-shadow-md'>
                           {getUserInitials}
                         </span>
                       </div>
                     </div>
 
                     {/* User Info */}
-                    <div className="min-w-0 flex-1 space-y-0.5">
+                    <div className='min-w-0 flex-1 space-y-0.5'>
                       {/* Nombre */}
-                      <div className="text-xs font-bold text-gray-900 dark:text-white line-clamp-1">
+                      <div className='line-clamp-1 text-xs font-bold text-gray-900 dark:text-white'>
                         {getDisplayName}
                       </div>
 
                       {/* Email */}
-                      <div className="text-[10px] text-gray-500 dark:text-gray-400 line-clamp-1">
+                      <div className='line-clamp-1 text-[10px] text-gray-500 dark:text-gray-400'>
                         {user?.email || 'usuario@ryr.com'}
                       </div>
 
                       {/* Badge de Rol */}
-                      <div className="flex items-center">
+                      <div className='flex items-center'>
                         <span
                           className={`inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[9px] font-bold ${getRolBadgeColor}`}
                         >
-                          {isAdmin && <Crown className="h-2.5 w-2.5" />}
+                          {isAdmin && <Crown className='h-2.5 w-2.5' />}
                           {perfil?.rol || 'Sin rol'}
                         </span>
                       </div>
@@ -542,12 +561,14 @@ export function SidebarFloatingGlass() {
 
                     {/* Botón logout */}
                     <Button
-                      variant="ghost"
-                      size="sm"
+                      variant='ghost'
+                      size='sm'
                       disabled={isLoggingOut}
-                      className="flex-shrink-0 rounded-lg p-1.5 hover:bg-red-100 dark:hover:bg-red-900/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className='flex-shrink-0 rounded-lg p-1.5 hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-50 dark:hover:bg-red-900/20'
                       onClick={logout}
-                      title={isLoggingOut ? 'Cerrando sesión...' : 'Cerrar sesión'}
+                      title={
+                        isLoggingOut ? 'Cerrando sesión...' : 'Cerrar sesión'
+                      }
                     >
                       <LogOut
                         className={`h-3.5 w-3.5 text-gray-600 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400 ${
@@ -562,7 +583,7 @@ export function SidebarFloatingGlass() {
 
             {/* Collapsed User Avatar */}
             {!isExpanded && (
-              <div className="relative mx-auto w-fit">
+              <div className='relative mx-auto w-fit'>
                 {/* Corona para administrador en modo colapsado */}
                 {isAdmin && (
                   <motion.div
@@ -573,7 +594,7 @@ export function SidebarFloatingGlass() {
                       stiffness: 300,
                       damping: 20,
                     }}
-                    className="absolute -top-2.5 left-1/2 z-10 -translate-x-1/2"
+                    className='absolute -top-2.5 left-1/2 z-10 -translate-x-1/2'
                   >
                     <motion.div
                       animate={{
@@ -586,17 +607,19 @@ export function SidebarFloatingGlass() {
                         ease: 'easeInOut',
                       }}
                     >
-                      <Crown className="h-4 w-4 text-amber-500 drop-shadow-[0_0_6px_rgba(245,158,11,0.5)]" />
+                      <Crown className='h-4 w-4 text-amber-500 drop-shadow-[0_0_6px_rgba(245,158,11,0.5)]' />
                     </motion.div>
                   </motion.div>
                 )}
 
                 <div
                   className={`flex h-11 w-11 items-center justify-center rounded-lg bg-gradient-to-br ${getRolColor} shadow-md ${
-                    isAdmin ? 'shadow-amber-500/40 ring-2 ring-amber-400/20' : ''
+                    isAdmin
+                      ? 'shadow-amber-500/40 ring-2 ring-amber-400/20'
+                      : ''
                   }`}
                 >
-                  <span className="text-base font-bold text-white drop-shadow-md">
+                  <span className='text-base font-bold text-white drop-shadow-md'>
                     {getUserInitials}
                   </span>
                 </div>
@@ -612,30 +635,32 @@ export function SidebarFloatingGlass() {
               <ThemeToggle />
               {isExpanded && (
                 <Button
-                  variant="ghost"
-                  size="sm"
-                  className="rounded-lg p-1.5 hover:bg-gray-100/80 dark:hover:bg-gray-800/80"
+                  variant='ghost'
+                  size='sm'
+                  className='rounded-lg p-1.5 hover:bg-gray-100/80 dark:hover:bg-gray-800/80'
                 >
-                  <Settings className="h-3.5 w-3.5" />
+                  <Settings className='h-3.5 w-3.5' />
                 </Button>
               )}
               {!isExpanded && (
                 <>
                   <Button
-                    variant="ghost"
-                    size="sm"
-                    className="rounded-lg p-2 hover:bg-gray-100/80 dark:hover:bg-gray-800/80"
-                    title="Configuración"
+                    variant='ghost'
+                    size='sm'
+                    className='rounded-lg p-2 hover:bg-gray-100/80 dark:hover:bg-gray-800/80'
+                    title='Configuración'
                   >
-                    <Settings className="h-4 w-4" />
+                    <Settings className='h-4 w-4' />
                   </Button>
                   <Button
-                    variant="ghost"
-                    size="sm"
+                    variant='ghost'
+                    size='sm'
                     disabled={isLoggingOut}
-                    className="rounded-lg p-2 hover:bg-red-100 dark:hover:bg-red-900/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className='rounded-lg p-2 hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-50 dark:hover:bg-red-900/20'
                     onClick={logout}
-                    title={isLoggingOut ? 'Cerrando sesión...' : 'Cerrar sesión'}
+                    title={
+                      isLoggingOut ? 'Cerrando sesión...' : 'Cerrar sesión'
+                    }
                   >
                     <LogOut
                       className={`h-4 w-4 text-gray-600 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400 ${

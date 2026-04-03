@@ -14,7 +14,7 @@
  * ⚠️ Integrado con Supabase y tablas: negociaciones, viviendas, manzanas, proyectos, abonos_historial, fuentes_pago
  */
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import { errorLog, warnLog } from '@/lib/utils/logger'
 
@@ -49,19 +49,10 @@ export function useClienteCardActivo({ clienteId }: UseClienteCardActivoProps) {
   // =====================================================
   // ESTADO
   // =====================================================
-  const [datosVivienda, setDatosVivienda] = useState<DatosNegociacion | null>(null)
+  const [datosVivienda, setDatosVivienda] = useState<DatosNegociacion | null>(
+    null
+  )
   const [cargando, setCargando] = useState(true)
-
-  // =====================================================
-  // EFECTOS
-  // =====================================================
-
-  /**
-   * Cargar datos de la negociación activa al montar o cambiar clienteId
-   */
-  useEffect(() => {
-    cargarDatosNegociacion()
-  }, [clienteId])
 
   // =====================================================
   // FUNCIONES DE LÓGICA
@@ -70,7 +61,7 @@ export function useClienteCardActivo({ clienteId }: UseClienteCardActivoProps) {
   /**
    * Cargar negociación activa del cliente con sus relaciones
    */
-  const cargarDatosNegociacion = async () => {
+  const cargarDatosNegociacion = useCallback(async () => {
     try {
       setCargando(true)
       // Importar dinámicamente para evitar problemas de SSR
@@ -121,12 +112,16 @@ export function useClienteCardActivo({ clienteId }: UseClienteCardActivoProps) {
       }
 
       // Obtener última fecha de abono
-      const abonos = (negociacion.abonos_historial || []) as Array<{ fecha_abono: string }>
+      const abonos = (negociacion.abonos_historial || []) as Array<{
+        fecha_abono: string
+      }>
       const ultimaCuota =
         abonos.length > 0
           ? new Date(
               abonos.sort(
-                (a, b) => new Date(b.fecha_abono).getTime() - new Date(a.fecha_abono).getTime()
+                (a, b) =>
+                  new Date(b.fecha_abono).getTime() -
+                  new Date(a.fecha_abono).getTime()
               )[0].fecha_abono
             )
           : null
@@ -134,20 +129,28 @@ export function useClienteCardActivo({ clienteId }: UseClienteCardActivoProps) {
       // Obtener fuentes de pago de la negociación
       const { data: fuentes, error: errorFuentes } = await supabase
         .from('fuentes_pago')
-        .select('id, tipo, monto_aprobado, monto_recibido, porcentaje_completado, entidad')
+        .select(
+          'id, tipo, monto_aprobado, monto_recibido, porcentaje_completado, entidad'
+        )
         .eq('negociacion_id', negociacion.id)
         .order('fecha_creacion', { ascending: true })
 
       if (errorFuentes) {
-        warnLog('Error cargando fuentes de pago: ' + JSON.stringify(errorFuentes))
+        warnLog(
+          'Error cargando fuentes de pago: ' + JSON.stringify(errorFuentes)
+        )
       }
 
       setDatosVivienda({
-        proyecto: negociacion.viviendas?.manzanas?.proyectos?.nombre || 'Sin proyecto',
-        ubicacion: negociacion.viviendas?.manzanas?.proyectos?.ubicacion || 'No especifica',
+        proyecto:
+          negociacion.viviendas?.manzanas?.proyectos?.nombre || 'Sin proyecto',
+        ubicacion:
+          negociacion.viviendas?.manzanas?.proyectos?.ubicacion ||
+          'No especifica',
         manzana: negociacion.viviendas?.manzanas?.nombre || '-',
         numero: negociacion.viviendas?.numero || '-',
-        valorTotal: negociacion.valor_total_pagar || negociacion.valor_total || 0,
+        valorTotal:
+          negociacion.valor_total_pagar || negociacion.valor_total || 0,
         valorPagado: negociacion.total_abonado || 0,
         saldoPendiente: negociacion.saldo_pendiente || 0,
         porcentaje: Math.round(negociacion.porcentaje_pagado || 0),
@@ -156,12 +159,26 @@ export function useClienteCardActivo({ clienteId }: UseClienteCardActivoProps) {
         fuentesPago: (fuentes as FuentePagoCard[]) || [],
       })
     } catch (err) {
-      errorLog('load-negociacion', err instanceof Error ? err : new Error(String(err)))
+      errorLog(
+        'load-negociacion',
+        err instanceof Error ? err : new Error(String(err))
+      )
       setDatosVivienda(null)
     } finally {
       setCargando(false)
     }
-  }
+  }, [clienteId])
+
+  // =====================================================
+  // EFECTOS
+  // =====================================================
+
+  /**
+   * Cargar datos de la negociación activa al montar o cambiar clienteId
+   */
+  useEffect(() => {
+    cargarDatosNegociacion()
+  }, [clienteId, cargarDatosNegociacion])
 
   // =====================================================
   // VALORES COMPUTADOS

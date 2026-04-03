@@ -22,13 +22,12 @@ export const paso1Schema = z
 
     valor_negociado: z.number().positive('El valor debe ser mayor a 0'),
 
-    aplicar_descuento: z.boolean().optional().default(false),
+    aplicar_descuento: z.boolean().optional(),
 
     descuento_aplicado: z
       .number()
       .min(0, 'El descuento no puede ser negativo')
-      .optional()
-      .default(0),
+      .optional(),
 
     tipo_descuento: z.string().optional(),
 
@@ -36,9 +35,9 @@ export const paso1Schema = z
 
     valor_escritura_publica: z.number().positive('El valor debe ser mayor a 0'),
 
-    notas: z.string().optional().default(''),
+    notas: z.string().optional(),
 
-    fecha_negociacion: z.string().optional().default(''),
+    fecha_negociacion: z.string().optional(),
   })
   .refine(
     data => {
@@ -121,7 +120,7 @@ const fuentePagoConfigSchema = z.object({
 
   monto_aprobado: z.number().positive('El monto debe ser mayor a 0'),
 
-  permite_multiples_abonos: z.boolean().default(false),
+  permite_multiples_abonos: z.boolean().optional(),
 
   entidad: z.string().optional(),
 

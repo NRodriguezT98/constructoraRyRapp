@@ -9,7 +9,7 @@ import { supabase } from '@/lib/supabase/client'
 import { logger } from '@/lib/utils/logger'
 
 import { NegociacionesVersionesService } from '../services/negociaciones-versiones.service'
-
+import type { FuentePago } from '../types/fuentes-pago'
 
 export interface SnapshotVersion {
   id: string
@@ -18,9 +18,9 @@ export interface SnapshotVersion {
   razon_cambio: string
   fecha_cambio: string
   campos_modificados: string[]
-  datos_anteriores?: any
-  datos_nuevos?: any
-  fuentes_pago_snapshot?: any[]
+  datos_anteriores?: Record<string, unknown>
+  datos_nuevos?: Record<string, unknown>
+  fuentes_pago_snapshot?: FuentePago[]
   usuario_id?: string
   usuario_email?: string
   usuario_nombre?: string
@@ -36,7 +36,6 @@ export function useHistorialVersiones(negociacionId: string) {
   } = useQuery({
     queryKey: ['negociaciones-historial-v2', negociacionId], // v2 para forzar refresh
     queryFn: async (): Promise<SnapshotVersion[]> => {
-
       const { data, error } = await supabase
         .from('negociaciones_historial')
         .select('*')
@@ -48,7 +47,7 @@ export function useHistorialVersiones(negociacionId: string) {
         throw error
       }
 
-      return (data || []) as SnapshotVersion[]
+      return (data || []) as unknown as SnapshotVersion[]
     },
     enabled: !!negociacionId,
     staleTime: 0, // Sin caché para debugging
@@ -95,7 +94,8 @@ export function useHistorialVersiones(negociacionId: string) {
 export function useVersionActual(negociacionId: string) {
   const { data, isLoading, error } = useQuery({
     queryKey: ['negociacion-version-actual', negociacionId],
-    queryFn: () => NegociacionesVersionesService.obtenerVersionActual(negociacionId),
+    queryFn: () =>
+      NegociacionesVersionesService.obtenerVersionActual(negociacionId),
     enabled: !!negociacionId,
   })
 

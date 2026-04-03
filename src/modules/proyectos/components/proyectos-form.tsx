@@ -11,11 +11,28 @@
 import { useEffect, useMemo } from 'react'
 
 import { AnimatePresence, motion } from 'framer-motion'
-import { AlertCircle, Building2, Calendar, CheckCircle2, FileCheck, FileText, Home, Loader2, Lock, LockOpen, MapPin, Plus, Trash2 } from 'lucide-react'
+import {
+  AlertCircle,
+  Building2,
+  Calendar,
+  CheckCircle2,
+  FileCheck,
+  FileText,
+  Home,
+  Loader2,
+  Lock,
+  LockOpen,
+  MapPin,
+  Plus,
+  Trash2,
+} from 'lucide-react'
 
-import { getCiudadesPorDepartamento, getDepartamentos } from '@/shared/data/colombia-locations'
+import {
+  getCiudadesPorDepartamento,
+  getDepartamentos,
+} from '@/shared/data/colombia-locations'
+import { cn } from '@/shared/utils/helpers'
 
-import { cn } from '../../../shared/utils/helpers'
 import { useProyectosForm } from '../hooks/useProyectosForm'
 import { proyectosFormPremiumStyles as styles } from '../styles/proyectos-form-premium.styles'
 import type { ProyectoFormData } from '../types'
@@ -27,7 +44,10 @@ interface ProyectosFormProps {
   initialData?: Partial<ProyectoFormData>
   isEditing?: boolean
   onHasChanges?: (hasChanges: boolean) => void // ✅ Callback para notificar cambios
-  onTotalsChange?: (totals: { totalManzanas: number; totalViviendas: number }) => void // ✅ Callback para notificar totales
+  onTotalsChange?: (totals: {
+    totalManzanas: number
+    totalViviendas: number
+  }) => void // ✅ Callback para notificar totales
 }
 
 export function ProyectosForm({
@@ -51,18 +71,13 @@ export function ProyectosForm({
     totalManzanas,
     totalViviendas,
     manzanasWatch, // ✅ Valores reales de las manzanas
-    hasChanges, // ← Detección de cambios
-    changes,
-    changesCount,
     isFieldChanged,
-    shouldShowChanges,
     canSave,
     getButtonText,
     canRemoveManzana,
     esManzanaEditable,
     esManzanaEliminable,
     obtenerMotivoBloqueado,
-    validandoManzanas,
     validandoNombre,
     manzanasState,
     watch,
@@ -81,7 +96,12 @@ export function ProyectosForm({
   useEffect(() => {
     if (departamentoSeleccionado) {
       const ciudadActual = watch('ciudad')
-      if (ciudadActual && !getCiudadesPorDepartamento(departamentoSeleccionado).includes(ciudadActual)) {
+      if (
+        ciudadActual &&
+        !getCiudadesPorDepartamento(departamentoSeleccionado).includes(
+          ciudadActual
+        )
+      ) {
         setValue('ciudad', '')
       }
     }
@@ -112,17 +132,20 @@ export function ProyectosForm({
             <div className={styles.infoSection.headerIcon}>
               <FileCheck className={styles.infoSection.headerIconSvg} />
             </div>
-            <h3 className={styles.infoSection.headerTitle}>Información General</h3>
+            <h3 className={styles.infoSection.headerTitle}>
+              Información General
+            </h3>
           </div>
 
           <div className={styles.infoSection.content}>
             {/* Campo: Nombre */}
             <div className={styles.field.container}>
               <label className={styles.field.label}>
-                Nombre del Proyecto <span className={styles.field.required}>*</span>
+                Nombre del Proyecto{' '}
+                <span className={styles.field.required}>*</span>
                 {/* Indicador de campo modificado */}
                 {isEditing && isFieldChanged('nombre') && (
-                  <span className="ml-2 text-xs text-orange-600 dark:text-orange-400 font-medium">
+                  <span className='ml-2 text-xs font-medium text-orange-600 dark:text-orange-400'>
                     ✏️ Modificado
                   </span>
                 )}
@@ -137,25 +160,33 @@ export function ProyectosForm({
                   className={cn(
                     styles.field.input,
                     errors.nombre && styles.field.inputError,
-                    touchedFields.nombre && !errors.nombre && 'border-green-300 dark:border-green-700 bg-green-50/50 dark:bg-green-950/20',
-                    isEditing && isFieldChanged('nombre') && !errors.nombre && 'border-orange-300 dark:border-orange-700 bg-orange-50/50 dark:bg-orange-950/20'
+                    touchedFields.nombre &&
+                      !errors.nombre &&
+                      'border-green-300 bg-green-50/50 dark:border-green-700 dark:bg-green-950/20',
+                    isEditing &&
+                      isFieldChanged('nombre') &&
+                      !errors.nombre &&
+                      'border-orange-300 bg-orange-50/50 dark:border-orange-700 dark:bg-orange-950/20'
                   )}
                 />
                 {/* Indicador de estado (validando/error/success) */}
                 {touchedFields.nombre && (
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                  <div className='absolute right-3 top-1/2 -translate-y-1/2'>
                     {validandoNombre ? (
-                      <Loader2 className="w-5 h-5 text-blue-500 animate-spin" />
+                      <Loader2 className='h-5 w-5 animate-spin text-blue-500' />
                     ) : errors.nombre ? (
-                      <AlertCircle className="w-5 h-5 text-red-500" />
+                      <AlertCircle className='h-5 w-5 text-red-500' />
                     ) : (
-                      <CheckCircle2 className="w-5 h-5 text-green-500 animate-in fade-in zoom-in duration-200" />
+                      <CheckCircle2 className='h-5 w-5 text-green-500 duration-200 animate-in fade-in zoom-in' />
                     )}
                   </div>
                 )}
               </div>
               {errors.nombre && (
-                <motion.div {...styles.animations.errorMessage} className={styles.field.error}>
+                <motion.div
+                  {...styles.animations.errorMessage}
+                  className={styles.field.error}
+                >
                   <AlertCircle className={styles.field.errorIcon} />
                   {errors.nombre.message}
                 </motion.div>
@@ -168,13 +199,13 @@ export function ProyectosForm({
             </div>
 
             {/* Campos: Departamento + Ciudad */}
-            <div className="grid grid-cols-2 gap-3">
+            <div className='grid grid-cols-2 gap-3'>
               {/* Departamento */}
               <div className={styles.field.container}>
                 <label className={styles.field.label}>
                   Departamento <span className={styles.field.required}>*</span>
                   {isEditing && isFieldChanged('departamento') && (
-                    <span className="ml-2 text-xs text-orange-600 dark:text-orange-400 font-medium">
+                    <span className='ml-2 text-xs font-medium text-orange-600 dark:text-orange-400'>
                       ✏️ Modificado
                     </span>
                   )}
@@ -186,27 +217,37 @@ export function ProyectosForm({
                     className={cn(
                       styles.field.input,
                       errors.departamento && styles.field.inputError,
-                      touchedFields.departamento && !errors.departamento && 'border-green-300 dark:border-green-700 bg-green-50/50 dark:bg-green-950/20',
-                      isEditing && isFieldChanged('departamento') && !errors.departamento && 'border-orange-300 dark:border-orange-700 bg-orange-50/50 dark:bg-orange-950/20'
+                      touchedFields.departamento &&
+                        !errors.departamento &&
+                        'border-green-300 bg-green-50/50 dark:border-green-700 dark:bg-green-950/20',
+                      isEditing &&
+                        isFieldChanged('departamento') &&
+                        !errors.departamento &&
+                        'border-orange-300 bg-orange-50/50 dark:border-orange-700 dark:bg-orange-950/20'
                     )}
                   >
-                    <option value="">Selecciona un departamento</option>
-                    {departamentos.map((d) => (
-                      <option key={d} value={d}>{d}</option>
+                    <option value=''>Selecciona un departamento</option>
+                    {departamentos.map(d => (
+                      <option key={d} value={d}>
+                        {d}
+                      </option>
                     ))}
                   </select>
                   {touchedFields.departamento && (
-                    <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                    <div className='pointer-events-none absolute right-3 top-1/2 -translate-y-1/2'>
                       {errors.departamento ? (
-                        <AlertCircle className="w-5 h-5 text-red-500" />
+                        <AlertCircle className='h-5 w-5 text-red-500' />
                       ) : (
-                        <CheckCircle2 className="w-5 h-5 text-green-500 animate-in fade-in zoom-in duration-200" />
+                        <CheckCircle2 className='h-5 w-5 text-green-500 duration-200 animate-in fade-in zoom-in' />
                       )}
                     </div>
                   )}
                 </div>
                 {errors.departamento && (
-                  <motion.div {...styles.animations.errorMessage} className={styles.field.error}>
+                  <motion.div
+                    {...styles.animations.errorMessage}
+                    className={styles.field.error}
+                  >
                     <AlertCircle className={styles.field.errorIcon} />
                     {errors.departamento.message}
                   </motion.div>
@@ -216,9 +257,10 @@ export function ProyectosForm({
               {/* Ciudad */}
               <div className={styles.field.container}>
                 <label className={styles.field.label}>
-                  Ciudad / Municipio <span className={styles.field.required}>*</span>
+                  Ciudad / Municipio{' '}
+                  <span className={styles.field.required}>*</span>
                   {isEditing && isFieldChanged('ciudad') && (
-                    <span className="ml-2 text-xs text-orange-600 dark:text-orange-400 font-medium">
+                    <span className='ml-2 text-xs font-medium text-orange-600 dark:text-orange-400'>
                       ✏️ Modificado
                     </span>
                   )}
@@ -231,30 +273,43 @@ export function ProyectosForm({
                     className={cn(
                       styles.field.input,
                       errors.ciudad && styles.field.inputError,
-                      touchedFields.ciudad && !errors.ciudad && 'border-green-300 dark:border-green-700 bg-green-50/50 dark:bg-green-950/20',
-                      isEditing && isFieldChanged('ciudad') && !errors.ciudad && 'border-orange-300 dark:border-orange-700 bg-orange-50/50 dark:bg-orange-950/20',
-                      !departamentoSeleccionado && 'opacity-50 cursor-not-allowed'
+                      touchedFields.ciudad &&
+                        !errors.ciudad &&
+                        'border-green-300 bg-green-50/50 dark:border-green-700 dark:bg-green-950/20',
+                      isEditing &&
+                        isFieldChanged('ciudad') &&
+                        !errors.ciudad &&
+                        'border-orange-300 bg-orange-50/50 dark:border-orange-700 dark:bg-orange-950/20',
+                      !departamentoSeleccionado &&
+                        'cursor-not-allowed opacity-50'
                     )}
                   >
-                    <option value="">
-                      {departamentoSeleccionado ? 'Selecciona una ciudad' : 'Primero selecciona un depto.'}
+                    <option value=''>
+                      {departamentoSeleccionado
+                        ? 'Selecciona una ciudad'
+                        : 'Primero selecciona un depto.'}
                     </option>
-                    {ciudades.map((c) => (
-                      <option key={c} value={c}>{c}</option>
+                    {ciudades.map(c => (
+                      <option key={c} value={c}>
+                        {c}
+                      </option>
                     ))}
                   </select>
                   {touchedFields.ciudad && (
-                    <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                    <div className='pointer-events-none absolute right-3 top-1/2 -translate-y-1/2'>
                       {errors.ciudad ? (
-                        <AlertCircle className="w-5 h-5 text-red-500" />
+                        <AlertCircle className='h-5 w-5 text-red-500' />
                       ) : (
-                        <CheckCircle2 className="w-5 h-5 text-green-500 animate-in fade-in zoom-in duration-200" />
+                        <CheckCircle2 className='h-5 w-5 text-green-500 duration-200 animate-in fade-in zoom-in' />
                       )}
                     </div>
                   )}
                 </div>
                 {errors.ciudad && (
-                  <motion.div {...styles.animations.errorMessage} className={styles.field.error}>
+                  <motion.div
+                    {...styles.animations.errorMessage}
+                    className={styles.field.error}
+                  >
                     <AlertCircle className={styles.field.errorIcon} />
                     {errors.ciudad.message}
                   </motion.div>
@@ -267,7 +322,7 @@ export function ProyectosForm({
               <label className={styles.field.label}>
                 Dirección <span className={styles.field.required}>*</span>
                 {isEditing && isFieldChanged('direccion') && (
-                  <span className="ml-2 text-xs text-orange-600 dark:text-orange-400 font-medium">
+                  <span className='ml-2 text-xs font-medium text-orange-600 dark:text-orange-400'>
                     ✏️ Modificado
                   </span>
                 )}
@@ -282,22 +337,30 @@ export function ProyectosForm({
                   className={cn(
                     styles.field.input,
                     errors.direccion && styles.field.inputError,
-                    touchedFields.direccion && !errors.direccion && 'border-green-300 dark:border-green-700 bg-green-50/50 dark:bg-green-950/20',
-                    isEditing && isFieldChanged('direccion') && !errors.direccion && 'border-orange-300 dark:border-orange-700 bg-orange-50/50 dark:bg-orange-950/20'
+                    touchedFields.direccion &&
+                      !errors.direccion &&
+                      'border-green-300 bg-green-50/50 dark:border-green-700 dark:bg-green-950/20',
+                    isEditing &&
+                      isFieldChanged('direccion') &&
+                      !errors.direccion &&
+                      'border-orange-300 bg-orange-50/50 dark:border-orange-700 dark:bg-orange-950/20'
                   )}
                 />
                 {touchedFields.direccion && (
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                  <div className='absolute right-3 top-1/2 -translate-y-1/2'>
                     {errors.direccion ? (
-                      <AlertCircle className="w-5 h-5 text-red-500" />
+                      <AlertCircle className='h-5 w-5 text-red-500' />
                     ) : (
-                      <CheckCircle2 className="w-5 h-5 text-green-500 animate-in fade-in zoom-in duration-200" />
+                      <CheckCircle2 className='h-5 w-5 text-green-500 duration-200 animate-in fade-in zoom-in' />
                     )}
                   </div>
                 )}
               </div>
               {errors.direccion && (
-                <motion.div {...styles.animations.errorMessage} className={styles.field.error}>
+                <motion.div
+                  {...styles.animations.errorMessage}
+                  className={styles.field.error}
+                >
                   <AlertCircle className={styles.field.errorIcon} />
                   {errors.direccion.message}
                 </motion.div>
@@ -315,7 +378,7 @@ export function ProyectosForm({
                 Descripción <span className={styles.field.required}>*</span>
                 {/* Indicador de campo modificado */}
                 {isEditing && isFieldChanged('descripcion') && (
-                  <span className="ml-2 text-xs text-orange-600 dark:text-orange-400 font-medium">
+                  <span className='ml-2 text-xs font-medium text-orange-600 dark:text-orange-400'>
                     ✏️ Modificado
                   </span>
                 )}
@@ -330,30 +393,39 @@ export function ProyectosForm({
                   className={cn(
                     styles.field.textarea,
                     errors.descripcion && styles.field.textareaError,
-                    touchedFields.descripcion && !errors.descripcion && 'border-green-300 dark:border-green-700 bg-green-50/50 dark:bg-green-950/20',
-                    isEditing && isFieldChanged('descripcion') && !errors.descripcion && 'border-orange-300 dark:border-orange-700 bg-orange-50/50 dark:bg-orange-950/20'
+                    touchedFields.descripcion &&
+                      !errors.descripcion &&
+                      'border-green-300 bg-green-50/50 dark:border-green-700 dark:bg-green-950/20',
+                    isEditing &&
+                      isFieldChanged('descripcion') &&
+                      !errors.descripcion &&
+                      'border-orange-300 bg-orange-50/50 dark:border-orange-700 dark:bg-orange-950/20'
                   )}
                 />
                 {/* Indicador de estado */}
                 {touchedFields.descripcion && (
-                  <div className="absolute right-3 top-3">
+                  <div className='absolute right-3 top-3'>
                     {errors.descripcion ? (
-                      <AlertCircle className="w-5 h-5 text-red-500" />
+                      <AlertCircle className='h-5 w-5 text-red-500' />
                     ) : (
-                      <CheckCircle2 className="w-5 h-5 text-green-500 animate-in fade-in zoom-in duration-200" />
+                      <CheckCircle2 className='h-5 w-5 text-green-500 duration-200 animate-in fade-in zoom-in' />
                     )}
                   </div>
                 )}
               </div>
               {errors.descripcion && (
-                <motion.div {...styles.animations.errorMessage} className={styles.field.error}>
+                <motion.div
+                  {...styles.animations.errorMessage}
+                  className={styles.field.error}
+                >
                   <AlertCircle className={styles.field.errorIcon} />
                   {errors.descripcion.message}
                 </motion.div>
               )}
               {!errors.descripcion && (
                 <p className={styles.field.helper}>
-                  Mínimo 10 caracteres. Puedes usar letras, números y puntuación básica
+                  Mínimo 10 caracteres. Puedes usar letras, números y puntuación
+                  básica
                 </p>
               )}
             </div>
@@ -361,9 +433,10 @@ export function ProyectosForm({
             {/* Campo: Estado */}
             <div className={styles.field.container}>
               <label className={styles.field.label}>
-                Estado del Proyecto <span className={styles.field.required}>*</span>
+                Estado del Proyecto{' '}
+                <span className={styles.field.required}>*</span>
                 {isEditing && isFieldChanged('estado') && (
-                  <span className="ml-2 text-xs text-orange-600 dark:text-orange-400 font-medium">
+                  <span className='ml-2 text-xs font-medium text-orange-600 dark:text-orange-400'>
                     ✏️ Modificado
                   </span>
                 )}
@@ -375,28 +448,36 @@ export function ProyectosForm({
                   className={cn(
                     styles.field.select,
                     errors.estado && styles.field.selectError,
-                    touchedFields.estado && !errors.estado && 'border-green-300 dark:border-green-700',
-                    isEditing && isFieldChanged('estado') && !errors.estado && 'border-orange-300 dark:border-orange-700'
+                    touchedFields.estado &&
+                      !errors.estado &&
+                      'border-green-300 dark:border-green-700',
+                    isEditing &&
+                      isFieldChanged('estado') &&
+                      !errors.estado &&
+                      'border-orange-300 dark:border-orange-700'
                   )}
                 >
-                  <option value="en_planificacion">En Planificación</option>
-                  <option value="en_proceso">En Proceso</option>
-                  <option value="en_construccion">En Construcción</option>
-                  <option value="completado">Completado</option>
-                  <option value="pausado">Pausado</option>
+                  <option value='en_planificacion'>En Planificación</option>
+                  <option value='en_proceso'>En Proceso</option>
+                  <option value='en_construccion'>En Construcción</option>
+                  <option value='completado'>Completado</option>
+                  <option value='pausado'>Pausado</option>
                 </select>
                 {touchedFields.estado && (
-                  <div className="absolute right-10 top-1/2 -translate-y-1/2 pointer-events-none">
+                  <div className='pointer-events-none absolute right-10 top-1/2 -translate-y-1/2'>
                     {errors.estado ? (
-                      <AlertCircle className="w-5 h-5 text-red-500" />
+                      <AlertCircle className='h-5 w-5 text-red-500' />
                     ) : (
-                      <CheckCircle2 className="w-5 h-5 text-green-500 animate-in fade-in zoom-in duration-200" />
+                      <CheckCircle2 className='h-5 w-5 text-green-500 duration-200 animate-in fade-in zoom-in' />
                     )}
                   </div>
                 )}
               </div>
               {errors.estado && (
-                <motion.div {...styles.animations.errorMessage} className={styles.field.error}>
+                <motion.div
+                  {...styles.animations.errorMessage}
+                  className={styles.field.error}
+                >
                   <AlertCircle className={styles.field.errorIcon} />
                   {errors.estado.message}
                 </motion.div>
@@ -409,13 +490,13 @@ export function ProyectosForm({
             </div>
 
             {/* Fechas en Grid 2 columnas */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
               {/* Campo: Fecha de Inicio */}
               <div className={styles.field.container}>
                 <label className={styles.field.label}>
                   Fecha de Inicio
                   {isEditing && isFieldChanged('fechaInicio') && (
-                    <span className="ml-2 text-xs text-orange-600 dark:text-orange-400 font-medium">
+                    <span className='ml-2 text-xs font-medium text-orange-600 dark:text-orange-400'>
                       ✏️ Modificado
                     </span>
                   )}
@@ -428,22 +509,30 @@ export function ProyectosForm({
                     className={cn(
                       styles.field.input,
                       errors.fechaInicio && styles.field.inputError,
-                      touchedFields.fechaInicio && !errors.fechaInicio && 'border-green-300 dark:border-green-700 bg-green-50/50 dark:bg-green-950/20',
-                      isEditing && isFieldChanged('fechaInicio') && !errors.fechaInicio && 'border-orange-300 dark:border-orange-700 bg-orange-50/50 dark:bg-orange-950/20'
+                      touchedFields.fechaInicio &&
+                        !errors.fechaInicio &&
+                        'border-green-300 bg-green-50/50 dark:border-green-700 dark:bg-green-950/20',
+                      isEditing &&
+                        isFieldChanged('fechaInicio') &&
+                        !errors.fechaInicio &&
+                        'border-orange-300 bg-orange-50/50 dark:border-orange-700 dark:bg-orange-950/20'
                     )}
                   />
                   {touchedFields.fechaInicio && (
-                    <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                    <div className='pointer-events-none absolute right-3 top-1/2 -translate-y-1/2'>
                       {errors.fechaInicio ? (
-                        <AlertCircle className="w-5 h-5 text-red-500" />
+                        <AlertCircle className='h-5 w-5 text-red-500' />
                       ) : (
-                        <CheckCircle2 className="w-5 h-5 text-green-500 animate-in fade-in zoom-in duration-200" />
+                        <CheckCircle2 className='h-5 w-5 text-green-500 duration-200 animate-in fade-in zoom-in' />
                       )}
                     </div>
                   )}
                 </div>
                 {errors.fechaInicio && (
-                  <motion.div {...styles.animations.errorMessage} className={styles.field.error}>
+                  <motion.div
+                    {...styles.animations.errorMessage}
+                    className={styles.field.error}
+                  >
                     <AlertCircle className={styles.field.errorIcon} />
                     {errors.fechaInicio.message}
                   </motion.div>
@@ -455,7 +544,7 @@ export function ProyectosForm({
                 <label className={styles.field.label}>
                   Fecha de Fin Estimada
                   {isEditing && isFieldChanged('fechaFinEstimada') && (
-                    <span className="ml-2 text-xs text-orange-600 dark:text-orange-400 font-medium">
+                    <span className='ml-2 text-xs font-medium text-orange-600 dark:text-orange-400'>
                       ✏️ Modificado
                     </span>
                   )}
@@ -468,22 +557,30 @@ export function ProyectosForm({
                     className={cn(
                       styles.field.input,
                       errors.fechaFinEstimada && styles.field.inputError,
-                      touchedFields.fechaFinEstimada && !errors.fechaFinEstimada && 'border-green-300 dark:border-green-700 bg-green-50/50 dark:bg-green-950/20',
-                      isEditing && isFieldChanged('fechaFinEstimada') && !errors.fechaFinEstimada && 'border-orange-300 dark:border-orange-700 bg-orange-50/50 dark:bg-orange-950/20'
+                      touchedFields.fechaFinEstimada &&
+                        !errors.fechaFinEstimada &&
+                        'border-green-300 bg-green-50/50 dark:border-green-700 dark:bg-green-950/20',
+                      isEditing &&
+                        isFieldChanged('fechaFinEstimada') &&
+                        !errors.fechaFinEstimada &&
+                        'border-orange-300 bg-orange-50/50 dark:border-orange-700 dark:bg-orange-950/20'
                     )}
                   />
                   {touchedFields.fechaFinEstimada && (
-                    <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                    <div className='pointer-events-none absolute right-3 top-1/2 -translate-y-1/2'>
                       {errors.fechaFinEstimada ? (
-                        <AlertCircle className="w-5 h-5 text-red-500" />
+                        <AlertCircle className='h-5 w-5 text-red-500' />
                       ) : (
-                        <CheckCircle2 className="w-5 h-5 text-green-500 animate-in fade-in zoom-in duration-200" />
+                        <CheckCircle2 className='h-5 w-5 text-green-500 duration-200 animate-in fade-in zoom-in' />
                       )}
                     </div>
                   )}
                 </div>
                 {errors.fechaFinEstimada && (
-                  <motion.div {...styles.animations.errorMessage} className={styles.field.error}>
+                  <motion.div
+                    {...styles.animations.errorMessage}
+                    className={styles.field.error}
+                  >
                     <AlertCircle className={styles.field.errorIcon} />
                     {errors.fechaFinEstimada.message}
                   </motion.div>
@@ -534,25 +631,27 @@ export function ProyectosForm({
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="rounded-lg border-2 border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/30 p-2.5 mb-4"
+              className='mb-4 rounded-lg border-2 border-blue-200 bg-blue-50 p-2.5 dark:border-blue-800 dark:bg-blue-950/30'
             >
-              <div className="flex items-start gap-3">
-                <AlertCircle className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
-                <div className="space-y-1.5 flex-1">
-                  <p className="text-sm font-semibold text-blue-900 dark:text-blue-100">
+              <div className='flex items-start gap-3'>
+                <AlertCircle className='mt-0.5 h-5 w-5 flex-shrink-0 text-blue-600 dark:text-blue-400' />
+                <div className='flex-1 space-y-1.5'>
+                  <p className='text-sm font-semibold text-blue-900 dark:text-blue-100'>
                     ℹ️ Edición inteligente de manzanas
                   </p>
-                  <p className="text-xs text-blue-700 dark:text-blue-300 leading-relaxed">
-                    Puedes <strong>agregar nuevas manzanas</strong> o <strong>modificar/eliminar las existentes</strong> que NO tienen viviendas creadas.
-                    Las manzanas con viviendas están protegidas para mantener la integridad de datos.
+                  <p className='text-xs leading-relaxed text-blue-700 dark:text-blue-300'>
+                    Puedes <strong>agregar nuevas manzanas</strong> o{' '}
+                    <strong>modificar/eliminar las existentes</strong> que NO
+                    tienen viviendas creadas. Las manzanas con viviendas están
+                    protegidas para mantener la integridad de datos.
                   </p>
-                  <div className="flex items-center gap-4 text-xs text-blue-700 dark:text-blue-300 mt-1.5">
-                    <div className="flex items-center gap-1.5">
-                      <LockOpen className="w-4 h-4 text-green-600 dark:text-green-400" />
+                  <div className='mt-1.5 flex items-center gap-4 text-xs text-blue-700 dark:text-blue-300'>
+                    <div className='flex items-center gap-1.5'>
+                      <LockOpen className='h-4 w-4 text-green-600 dark:text-green-400' />
                       <span>Sin viviendas = Editable</span>
                     </div>
-                    <div className="flex items-center gap-1.5">
-                      <Lock className="w-4 h-4 text-red-600 dark:text-red-400" />
+                    <div className='flex items-center gap-1.5'>
+                      <Lock className='h-4 w-4 text-red-600 dark:text-red-400' />
                       <span>Con viviendas = Bloqueada</span>
                     </div>
                   </div>
@@ -579,16 +678,21 @@ export function ProyectosForm({
                   const esEditable = esManzanaEditable(index)
                   const esEliminable = esManzanaEliminable(index)
                   const manzanaReal = manzanasWatch?.[index] // ✅ Valor real del formulario
-                  const motivoBloqueado = manzanaReal?.id ? obtenerMotivoBloqueado(manzanaReal.id) : ''
+                  const motivoBloqueado = manzanaReal?.id
+                    ? obtenerMotivoBloqueado(manzanaReal.id)
+                    : ''
 
                   // ✅ OPTIMIZACIÓN: Usar datos precargados si existen, sino usar manzanasState (fallback)
-                  const cantidadViviendasCreadas = manzanaReal?.cantidadViviendasCreadas ??
-                    (manzanaReal?.id ? manzanasState.get(manzanaReal.id)?.cantidadViviendas : undefined)
+                  const cantidadViviendasCreadas =
+                    manzanaReal?.cantidadViviendasCreadas ??
+                    (manzanaReal?.id
+                      ? manzanasState.get(manzanaReal.id)?.cantidadViviendas
+                      : undefined)
 
-                  const tieneValidacion = isEditing && (
-                    manzanaReal?.esEditable !== undefined ||
-                    (manzanaReal?.id && manzanasState.has(manzanaReal.id))
-                  )
+                  const tieneValidacion =
+                    isEditing &&
+                    (manzanaReal?.esEditable !== undefined ||
+                      (manzanaReal?.id && manzanasState.has(manzanaReal.id)))
 
                   return (
                     <motion.div
@@ -596,36 +700,45 @@ export function ProyectosForm({
                       {...styles.animations.manzanaCard}
                       className={cn(
                         styles.manzanaCard.container,
-                        !esEditable && 'opacity-75 ring-2 ring-red-200 dark:ring-red-800'
+                        !esEditable &&
+                          'opacity-75 ring-2 ring-red-200 dark:ring-red-800'
                       )}
                     >
                       {/* Header de la manzana */}
                       <div className={styles.manzanaCard.header}>
                         <div className={styles.manzanaCard.headerLeft}>
-                          <Building2 className={styles.manzanaCard.headerIcon} />
+                          <Building2
+                            className={styles.manzanaCard.headerIcon}
+                          />
                           <span className={styles.manzanaCard.headerTitle}>
                             Manzana #{index + 1}
                           </span>
                           {/* Badge de estado */}
                           {tieneValidacion && (
-                            <div className="flex items-center gap-1.5">
+                            <div className='flex items-center gap-1.5'>
                               {esEditable ? (
-                                <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-100 dark:bg-green-900/30 border border-green-300 dark:border-green-700">
-                                  <LockOpen className="w-3 h-3 text-green-600 dark:text-green-400" />
-                                  <span className="text-[10px] font-medium text-green-700 dark:text-green-300">
+                                <div className='flex items-center gap-1 rounded-full border border-green-300 bg-green-100 px-2 py-0.5 dark:border-green-700 dark:bg-green-900/30'>
+                                  <LockOpen className='h-3 w-3 text-green-600 dark:text-green-400' />
+                                  <span className='text-[10px] font-medium text-green-700 dark:text-green-300'>
                                     Editable
                                   </span>
                                 </div>
-                              ) : cantidadViviendasCreadas !== undefined && cantidadViviendasCreadas > 0 && (
-                                <div
-                                  className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-700"
-                                  title={motivoBloqueado}
-                                >
-                                  <Lock className="w-3 h-3 text-red-600 dark:text-red-400" />
-                                  <span className="text-[10px] font-medium text-red-700 dark:text-red-300">
-                                    {cantidadViviendasCreadas} vivienda{cantidadViviendasCreadas !== 1 ? 's' : ''}
-                                  </span>
-                                </div>
+                              ) : (
+                                cantidadViviendasCreadas !== undefined &&
+                                cantidadViviendasCreadas > 0 && (
+                                  <div
+                                    className='flex items-center gap-1 rounded-full border border-red-300 bg-red-100 px-2 py-0.5 dark:border-red-700 dark:bg-red-900/30'
+                                    title={motivoBloqueado}
+                                  >
+                                    <Lock className='h-3 w-3 text-red-600 dark:text-red-400' />
+                                    <span className='text-[10px] font-medium text-red-700 dark:text-red-300'>
+                                      {cantidadViviendasCreadas} vivienda
+                                      {cantidadViviendasCreadas !== 1
+                                        ? 's'
+                                        : ''}
+                                    </span>
+                                  </div>
+                                )
                               )}
                             </div>
                           )}
@@ -635,92 +748,106 @@ export function ProyectosForm({
                             type='button'
                             onClick={() => handleEliminarManzana(index)}
                             className={styles.manzanaCard.deleteButton}
-                            title={!esEliminable ? motivoBloqueado : 'Eliminar manzana'}
+                            title={
+                              !esEliminable
+                                ? motivoBloqueado
+                                : 'Eliminar manzana'
+                            }
                           >
                             <Trash2 className={styles.manzanaCard.deleteIcon} />
                           </button>
                         )}
                       </div>
 
-                    {/* Campos */}
-                    <div className={styles.manzanaCard.grid}>
-                      {/* Nombre */}
-                      <div className={styles.manzanaCard.field.container}>
-                        <label className={styles.manzanaCard.field.label}>
-                          Nombre de la manzana
-                        </label>
-                        <input
-                          {...register(`manzanas.${index}.nombre`)}
-                          type='text'
-                          placeholder='Nombre'
-                          disabled={!esEditable}
-                          className={cn(
-                            styles.manzanaCard.field.input,
-                            errors.manzanas?.[index]?.nombre &&
-                              styles.manzanaCard.field.inputError,
-                            !esEditable && 'opacity-60 cursor-not-allowed bg-gray-100 dark:bg-gray-800'
-                          )}
-                        />
-                        {errors.manzanas?.[index]?.nombre && (
-                          <motion.p
-                            {...styles.animations.errorMessage}
-                            className={styles.manzanaCard.field.error}
-                          >
-                            <AlertCircle className={styles.manzanaCard.field.errorIcon} />
-                            {errors.manzanas[index]?.nombre?.message}
-                          </motion.p>
-                        )}
-                      </div>
-
-                      {/* Cantidad Viviendas */}
-                      <div className={styles.manzanaCard.field.container}>
-                        <label className={styles.manzanaCard.field.label}>
-                          Cantidad de viviendas
-                        </label>
-                        <div className={styles.manzanaCard.field.inputWrapper}>
-                          <Home className={styles.manzanaCard.field.inputIcon} />
+                      {/* Campos */}
+                      <div className={styles.manzanaCard.grid}>
+                        {/* Nombre */}
+                        <div className={styles.manzanaCard.field.container}>
+                          <label className={styles.manzanaCard.field.label}>
+                            Nombre de la manzana
+                          </label>
                           <input
-                            {...register(`manzanas.${index}.totalViviendas`, {
-                              valueAsNumber: true,
-                            })}
-                            type='number'
-                            min='1'
-                            placeholder='N° Viviendas'
+                            {...register(`manzanas.${index}.nombre`)}
+                            type='text'
+                            placeholder='Nombre'
                             disabled={!esEditable}
                             className={cn(
-                              styles.manzanaCard.field.inputWithIcon,
-                              errors.manzanas?.[index]?.totalViviendas &&
+                              styles.manzanaCard.field.input,
+                              errors.manzanas?.[index]?.nombre &&
                                 styles.manzanaCard.field.inputError,
-                              !esEditable && 'opacity-60 cursor-not-allowed bg-gray-100 dark:bg-gray-800'
+                              !esEditable &&
+                                'cursor-not-allowed bg-gray-100 opacity-60 dark:bg-gray-800'
                             )}
                           />
+                          {errors.manzanas?.[index]?.nombre && (
+                            <motion.p
+                              {...styles.animations.errorMessage}
+                              className={styles.manzanaCard.field.error}
+                            >
+                              <AlertCircle
+                                className={styles.manzanaCard.field.errorIcon}
+                              />
+                              {errors.manzanas[index]?.nombre?.message}
+                            </motion.p>
+                          )}
                         </div>
-                        {errors.manzanas?.[index]?.totalViviendas && (
-                          <motion.p
-                            {...styles.animations.errorMessage}
-                            className={styles.manzanaCard.field.error}
+
+                        {/* Cantidad Viviendas */}
+                        <div className={styles.manzanaCard.field.container}>
+                          <label className={styles.manzanaCard.field.label}>
+                            Cantidad de viviendas
+                          </label>
+                          <div
+                            className={styles.manzanaCard.field.inputWrapper}
                           >
-                            <AlertCircle className={styles.manzanaCard.field.errorIcon} />
-                            {errors.manzanas[index]?.totalViviendas?.message}
-                          </motion.p>
+                            <Home
+                              className={styles.manzanaCard.field.inputIcon}
+                            />
+                            <input
+                              {...register(`manzanas.${index}.totalViviendas`, {
+                                valueAsNumber: true,
+                              })}
+                              type='number'
+                              min='1'
+                              placeholder='N° Viviendas'
+                              disabled={!esEditable}
+                              className={cn(
+                                styles.manzanaCard.field.inputWithIcon,
+                                errors.manzanas?.[index]?.totalViviendas &&
+                                  styles.manzanaCard.field.inputError,
+                                !esEditable &&
+                                  'cursor-not-allowed bg-gray-100 opacity-60 dark:bg-gray-800'
+                              )}
+                            />
+                          </div>
+                          {errors.manzanas?.[index]?.totalViviendas && (
+                            <motion.p
+                              {...styles.animations.errorMessage}
+                              className={styles.manzanaCard.field.error}
+                            >
+                              <AlertCircle
+                                className={styles.manzanaCard.field.errorIcon}
+                              />
+                              {errors.manzanas[index]?.totalViviendas?.message}
+                            </motion.p>
+                          )}
+                        </div>
+
+                        {/* Mensaje de por qué está bloqueada */}
+                        {!esEditable && motivoBloqueado && (
+                          <motion.div
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: 'auto' }}
+                            className='col-span-2 mt-2 rounded-lg border border-red-200 bg-red-50 p-2 dark:border-red-800 dark:bg-red-950/30'
+                          >
+                            <p className='flex items-start gap-2 text-xs text-red-700 dark:text-red-300'>
+                              <Lock className='mt-0.5 h-3.5 w-3.5 flex-shrink-0' />
+                              <span>{motivoBloqueado}</span>
+                            </p>
+                          </motion.div>
                         )}
                       </div>
-
-                      {/* Mensaje de por qué está bloqueada */}
-                      {!esEditable && motivoBloqueado && (
-                        <motion.div
-                          initial={{ opacity: 0, height: 0 }}
-                          animate={{ opacity: 1, height: 'auto' }}
-                          className="col-span-2 mt-2 p-2 rounded-lg bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800"
-                        >
-                          <p className="text-xs text-red-700 dark:text-red-300 flex items-start gap-2">
-                            <Lock className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
-                            <span>{motivoBloqueado}</span>
-                          </p>
-                        </motion.div>
-                      )}
-                    </div>
-                  </motion.div>
+                    </motion.div>
                   )
                 })}
               </AnimatePresence>
@@ -747,12 +874,14 @@ export function ProyectosForm({
           disabled={isLoading || !canSave} // ← Deshabilitar si no hay cambios (en edición)
           className={cn(
             styles.footer.submitButton,
-            !canSave && 'opacity-50 cursor-not-allowed' // ← Estilo deshabilitado
+            !canSave && 'cursor-not-allowed opacity-50' // ← Estilo deshabilitado
           )}
         >
           {isLoading ? (
             <>
-              <Loader2 className={cn(styles.footer.submitButtonIcon, 'animate-spin')} />
+              <Loader2
+                className={cn(styles.footer.submitButtonIcon, 'animate-spin')}
+              />
               Guardando...
             </>
           ) : (

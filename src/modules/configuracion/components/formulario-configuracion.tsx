@@ -14,7 +14,10 @@ import { AlertCircle, DollarSign, FileText, Tag, Type } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
-import { configuracionService, type ConfiguracionRecargo } from '../services/configuracion.service'
+import {
+  configuracionService,
+  type ConfiguracionRecargo,
+} from '../services/configuracion.service'
 
 const schema = z.object({
   tipo: z.string().min(1, 'El tipo es obligatorio'),
@@ -28,17 +31,20 @@ type FormData = z.infer<typeof schema>
 
 interface Props {
   configuracion?: ConfiguracionRecargo | null
-  onGuardar: (datos: any) => Promise<boolean>
+  onGuardar: (datos: FormData) => Promise<boolean>
   onCancelar: () => void
 }
 
-export function FormularioConfiguracion({ configuracion, onGuardar, onCancelar }: Props) {
+export function FormularioConfiguracion({
+  configuracion,
+  onGuardar,
+  onCancelar,
+}: Props) {
   const esEdicion = !!configuracion
 
   const {
     register,
     handleSubmit,
-    setValue,
     watch,
     formState: { errors, isSubmitting },
     reset,
@@ -86,21 +92,21 @@ export function FormularioConfiguracion({ configuracion, onGuardar, onCancelar }
   const tiposDisponibles = configuracionService.getTiposDisponibles()
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+    <form onSubmit={handleSubmit(onSubmit)} className='space-y-6'>
       {/* Tipo */}
-      <div className="space-y-2">
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-          Tipo <span className="text-red-500">*</span>
+      <div className='space-y-2'>
+        <label className='block text-sm font-medium text-gray-700 dark:text-gray-300'>
+          Tipo <span className='text-red-500'>*</span>
         </label>
-        <div className="relative">
-          <Tag className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+        <div className='relative'>
+          <Tag className='absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400' />
           <select
             {...register('tipo')}
             disabled={esEdicion}
-            className="w-full pl-10 pr-4 py-2.5 bg-gray-50 dark:bg-gray-900/50 border-2 border-gray-200 dark:border-gray-700 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all disabled:opacity-50"
+            className='w-full rounded-lg border-2 border-gray-200 bg-gray-50 py-2.5 pl-10 pr-4 transition-all focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 disabled:opacity-50 dark:border-gray-700 dark:bg-gray-900/50'
           >
-            <option value="">Selecciona un tipo</option>
-            {tiposDisponibles.map((tipo) => (
+            <option value=''>Selecciona un tipo</option>
+            {tiposDisponibles.map(tipo => (
               <option key={tipo.value} value={tipo.value}>
                 {tipo.label}
               </option>
@@ -108,108 +114,111 @@ export function FormularioConfiguracion({ configuracion, onGuardar, onCancelar }
           </select>
         </div>
         {errors.tipo && (
-          <p className="flex items-center gap-1 text-xs text-red-600 dark:text-red-400">
-            <AlertCircle className="w-3 h-3" />
+          <p className='flex items-center gap-1 text-xs text-red-600 dark:text-red-400'>
+            <AlertCircle className='h-3 w-3' />
             {errors.tipo.message}
           </p>
         )}
       </div>
 
       {/* Nombre */}
-      <div className="space-y-2">
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-          Nombre <span className="text-red-500">*</span>
+      <div className='space-y-2'>
+        <label className='block text-sm font-medium text-gray-700 dark:text-gray-300'>
+          Nombre <span className='text-red-500'>*</span>
         </label>
-        <div className="relative">
-          <Type className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+        <div className='relative'>
+          <Type className='absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400' />
           <input
             {...register('nombre')}
-            type="text"
-            placeholder="Ej: Gastos Notariales 2025"
-            className="w-full pl-10 pr-4 py-2.5 bg-gray-50 dark:bg-gray-900/50 border-2 border-gray-200 dark:border-gray-700 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+            type='text'
+            placeholder='Ej: Gastos Notariales 2025'
+            className='w-full rounded-lg border-2 border-gray-200 bg-gray-50 py-2.5 pl-10 pr-4 transition-all focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-gray-700 dark:bg-gray-900/50'
           />
         </div>
         {errors.nombre && (
-          <p className="flex items-center gap-1 text-xs text-red-600 dark:text-red-400">
-            <AlertCircle className="w-3 h-3" />
+          <p className='flex items-center gap-1 text-xs text-red-600 dark:text-red-400'>
+            <AlertCircle className='h-3 w-3' />
             {errors.nombre.message}
           </p>
         )}
       </div>
 
       {/* Valor */}
-      <div className="space-y-2">
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-          Valor <span className="text-red-500">*</span>
+      <div className='space-y-2'>
+        <label className='block text-sm font-medium text-gray-700 dark:text-gray-300'>
+          Valor <span className='text-red-500'>*</span>
         </label>
-        <div className="relative">
-          <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+        <div className='relative'>
+          <DollarSign className='absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400' />
           <input
             {...register('valor', { valueAsNumber: true })}
-            type="number"
-            step="100000"
-            min="0"
-            placeholder="5000000"
-            className="w-full pl-10 pr-4 py-2.5 bg-gray-50 dark:bg-gray-900/50 border-2 border-gray-200 dark:border-gray-700 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+            type='number'
+            step='100000'
+            min='0'
+            placeholder='5000000'
+            className='w-full rounded-lg border-2 border-gray-200 bg-gray-50 py-2.5 pl-10 pr-4 transition-all focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-gray-700 dark:bg-gray-900/50'
           />
         </div>
         {errors.valor && (
-          <p className="flex items-center gap-1 text-xs text-red-600 dark:text-red-400">
-            <AlertCircle className="w-3 h-3" />
+          <p className='flex items-center gap-1 text-xs text-red-600 dark:text-red-400'>
+            <AlertCircle className='h-3 w-3' />
             {errors.valor.message}
           </p>
         )}
-        <p className="text-xs text-gray-500 dark:text-gray-400">
+        <p className='text-xs text-gray-500 dark:text-gray-400'>
           Valor formateado: {formatCurrency(valorActual)}
         </p>
       </div>
 
       {/* Descripción */}
-      <div className="space-y-2">
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+      <div className='space-y-2'>
+        <label className='block text-sm font-medium text-gray-700 dark:text-gray-300'>
           Descripción (Opcional)
         </label>
-        <div className="relative">
-          <FileText className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
+        <div className='relative'>
+          <FileText className='absolute left-3 top-3 h-4 w-4 text-gray-400' />
           <textarea
             {...register('descripcion')}
             rows={3}
-            placeholder="Descripción del recargo..."
-            className="w-full pl-10 pr-4 py-2.5 bg-gray-50 dark:bg-gray-900/50 border-2 border-gray-200 dark:border-gray-700 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all resize-none"
+            placeholder='Descripción del recargo...'
+            className='w-full resize-none rounded-lg border-2 border-gray-200 bg-gray-50 py-2.5 pl-10 pr-4 transition-all focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-gray-700 dark:bg-gray-900/50'
           />
         </div>
       </div>
 
       {/* Activo */}
-      <div className="flex items-center gap-3">
+      <div className='flex items-center gap-3'>
         <input
           {...register('activo')}
-          id="activo"
-          type="checkbox"
-          className="w-5 h-5 rounded border-2 border-gray-300 dark:border-gray-600 text-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-colors"
+          id='activo'
+          type='checkbox'
+          className='h-5 w-5 rounded border-2 border-gray-300 text-blue-500 transition-colors focus:ring-2 focus:ring-blue-500/20 dark:border-gray-600'
         />
-        <label htmlFor="activo" className="text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer">
+        <label
+          htmlFor='activo'
+          className='cursor-pointer text-sm font-medium text-gray-700 dark:text-gray-300'
+        >
           Configuración activa
         </label>
       </div>
 
       {/* Botones */}
-      <div className="flex items-center gap-3 pt-4">
+      <div className='flex items-center gap-3 pt-4'>
         <motion.button
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
-          type="submit"
+          type='submit'
           disabled={isSubmitting}
-          className="flex-1 px-4 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg font-medium shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+          className='flex-1 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-2.5 font-medium text-white shadow-lg shadow-blue-500/30 transition-all hover:shadow-xl hover:shadow-blue-500/40 disabled:cursor-not-allowed disabled:opacity-50'
         >
           {isSubmitting ? 'Guardando...' : esEdicion ? 'Actualizar' : 'Crear'}
         </motion.button>
         <motion.button
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
-          type="button"
+          type='button'
           onClick={onCancelar}
-          className="px-4 py-2.5 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg font-medium hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+          className='rounded-lg bg-gray-200 px-4 py-2.5 font-medium text-gray-700 transition-colors hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
         >
           Cancelar
         </motion.button>

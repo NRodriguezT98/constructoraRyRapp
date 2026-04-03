@@ -3,9 +3,8 @@
 import { motion } from 'framer-motion'
 import { MessageSquare } from 'lucide-react'
 
+import * as styles from '@/app/clientes/[id]/cliente-detalle.styles'
 import type { Cliente } from '@/modules/clientes/types'
-
-import * as styles from '../../../cliente-detalle.styles'
 
 interface NotasCardProps {
   cliente: Cliente
@@ -35,7 +34,9 @@ export function NotasCard({ cliente }: NotasCardProps) {
         <h3 className={styles.infoCardClasses.title}>Notas y Observaciones</h3>
       </div>
       <div className={styles.infoCardClasses.content}>
-        <p className="text-sm text-gray-700 dark:text-gray-300">{cliente.notas}</p>
+        <p className='text-sm text-gray-700 dark:text-gray-300'>
+          {cliente.notas}
+        </p>
       </div>
     </motion.div>
   )

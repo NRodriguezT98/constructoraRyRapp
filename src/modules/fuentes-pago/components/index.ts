@@ -4,8 +4,6 @@
  * ============================================
  */
 
-export { EstadoDocumentacionFuenteCard } from './EstadoDocumentacionFuenteCard'
-export { estadoDocumentacionStyles, getEstadoClasses } from './EstadoDocumentacionFuenteCard.styles'
 export { FuentePagoCard } from './FuentePagoCard'
 export { ModalMarcarPasoCompletado } from './ModalMarcarPasoCompletado'
 

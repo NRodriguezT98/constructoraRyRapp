@@ -7,7 +7,7 @@
  * ✅ Validación granular de manzanas editables
  */
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo } from 'react'
 
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useFieldArray, useForm } from 'react-hook-form'
@@ -15,14 +15,16 @@ import { toast } from 'sonner'
 import { z } from 'zod'
 
 import { logger } from '@/lib/utils/logger'
-import { getDepartamentos, validarCiudadDepartamento } from '@/shared/data/colombia-locations'
+import {
+  getDepartamentos,
+  validarCiudadDepartamento,
+} from '@/shared/data/colombia-locations'
 import { useFormChanges } from '@/shared/hooks/useFormChanges'
 
 import { proyectosService } from '../services/proyectos.service'
 import type { ProyectoFormData } from '../types'
 
 import { useManzanasEditables } from './useManzanasEditables'
-
 
 // ==================== SCHEMAS ====================
 const manzanaSchema = z.object({
@@ -47,156 +49,118 @@ const manzanaSchema = z.object({
   motivoBloqueado: z.string().optional(),
 })
 
-const proyectoSchema = z.object({
-  id: z.string().optional(), // ID del proyecto (cuando se edita)
-  responsable: z.string().optional(), // Responsable del proyecto
-  nombre: z
-    .string()
-    .min(3, 'El nombre del proyecto debe tener al menos 3 caracteres')
-    .max(100, 'El nombre no puede exceder 100 caracteres')
-    .regex(
-      /^[a-zA-ZáéíóúÁÉÍÓÚñÃ‘0-9\s\-_().]+$/,
-      'Solo se permiten letras (con acentos), números, espacios, guiones, paréntesis y puntos'
-    ),
-  descripcion: z
-    .string()
-    .min(10, 'La descripción debe tener al menos 10 caracteres')
-    .max(1000, 'La descripción no puede exceder 1000 caracteres')
-    .regex(
-      /^[a-zA-ZáéíóúÁÉÍÓÚñÃ‘0-9\s\-_.,;:()\n¿?¡!'"Â°%$]+$/,
-      'Caracteres no permitidos en la descripción. Use solo letras, números y puntuación básica'
-    ),
-  departamento: z
-    .string()
-    .min(1, 'Selecciona un departamento')
-    .refine(
-      (val) => !val || getDepartamentos().includes(val),
-      { message: 'El departamento seleccionado no es válido' }
-    ),
-  ciudad: z
-    .string()
-    .min(1, 'Selecciona una ciudad o municipio'),
-  direccion: z
-    .string()
-    .min(5, 'La dirección debe tener al menos 5 caracteres')
-    .max(200, 'La dirección no puede exceder 200 caracteres')
-    .regex(
-      /^[a-zA-ZáéíóúÁÉÍÓÚñÃ'0-9\s\-,#.Â°]+$/,
-      'Solo se permiten letras, números, espacios, comas, guiones, # y puntos'
-    ),
-  estado: z.enum(['en_planificacion', 'en_proceso', 'en_construccion', 'completado', 'pausado'], {
-    message: 'Selecciona un estado para el proyecto',
-  }),
-  fechaInicio: z.string().optional(),
-  fechaFinEstimada: z.string().optional(),
-  manzanas: z.array(manzanaSchema)
-    .min(1, 'Debe agregar al menos una manzana')
-    .max(20, 'Máximo 20 manzanas por proyecto'),
-}).refine(
-  (data) => {
-    // Solo validar si ambas fechas están presentes y no son strings vacías
-    if (data.fechaInicio && data.fechaFinEstimada &&
-        data.fechaInicio.trim() !== '' && data.fechaFinEstimada.trim() !== '') {
-      return new Date(data.fechaFinEstimada) > new Date(data.fechaInicio)
-    }
-    return true
-  },
-  {
-    message: 'La fecha de fin debe ser posterior a la fecha de inicio',
-    path: ['fechaFinEstimada'],
-  }
-).refine(
-  (data) => {
-    // ✅ VALIDACIÓN: Fechas coherentes con estado del proyecto
-    const ahora = new Date()
-    const fechaInicio = data.fechaInicio ? new Date(data.fechaInicio) : null
-    const fechaFin = data.fechaFinEstimada ? new Date(data.fechaFinEstimada) : null
-
-    // Si está "completado", la fecha de fin no puede ser futura
-    if (data.estado === 'completado' && fechaFin && fechaFin > ahora) {
-      return false
-    }
-
-    // Si está "en_proceso" o "en_construccion", la fecha de inicio no puede ser futura
-    if (
-      (data.estado === 'en_proceso' || data.estado === 'en_construccion') &&
-      fechaInicio &&
-      fechaInicio > ahora
-    ) {
-      return false
-    }
-
-    return true
-  },
-  {
-    message: 'Las fechas no son coherentes con el estado del proyecto',
-    path: ['estado'],
-  }
-).refine(
-  (data) => {
-    if (!data.departamento || !data.ciudad) return true
-    return validarCiudadDepartamento(data.ciudad, data.departamento)
-  },
-  {
-    message: 'La ciudad seleccionada no corresponde al departamento elegido',
-    path: ['ciudad'],
-  }
-)
-
-// ✅ Schema factory: permite acceso a initialData e isEditing para validaciones async
-const createProyectoSchema = (params: { initialData?: Partial<ProyectoFormData>, isEditing: boolean }) => {
-  return proyectoSchema.superRefine(async (data, ctx) => {
-    // ✅ Validación async: Verificar nombres duplicados de PROYECTOS
-    if (data.nombre && data.nombre.length >= 3) {
-      // No validar si es el mismo nombre en modo edición
-      if (params.isEditing && data.nombre === params.initialData?.nombre) {
-        return
+const proyectoSchema = z
+  .object({
+    id: z.string().optional(), // ID del proyecto (cuando se edita)
+    responsable: z.string().optional(), // Responsable del proyecto
+    nombre: z
+      .string()
+      .min(3, 'El nombre del proyecto debe tener al menos 3 caracteres')
+      .max(100, 'El nombre no puede exceder 100 caracteres')
+      .regex(
+        /^[a-zA-ZáéíóúÁÉÍÓÚñÃ‘0-9\s\-_().]+$/,
+        'Solo se permiten letras (con acentos), números, espacios, guiones, paréntesis y puntos'
+      ),
+    descripcion: z
+      .string()
+      .min(10, 'La descripción debe tener al menos 10 caracteres')
+      .max(1000, 'La descripción no puede exceder 1000 caracteres')
+      .regex(
+        /^[a-zA-ZáéíóúÁÉÍÓÚñÃ‘0-9\s\-_.,;:()\n¿?¡!'"Â°%$]+$/,
+        'Caracteres no permitidos en la descripción. Use solo letras, números y puntuación básica'
+      ),
+    departamento: z
+      .string()
+      .min(1, 'Selecciona un departamento')
+      .refine(val => !val || getDepartamentos().includes(val), {
+        message: 'El departamento seleccionado no es válido',
+      }),
+    ciudad: z.string().min(1, 'Selecciona una ciudad o municipio'),
+    direccion: z
+      .string()
+      .min(5, 'La dirección debe tener al menos 5 caracteres')
+      .max(200, 'La dirección no puede exceder 200 caracteres')
+      .regex(
+        /^[a-zA-ZáéíóúÁÉÍÓÚñÃ'0-9\s\-,#.Â°]+$/,
+        'Solo se permiten letras, números, espacios, comas, guiones, # y puntos'
+      ),
+    estado: z.enum(
+      [
+        'en_planificacion',
+        'en_proceso',
+        'en_construccion',
+        'completado',
+        'pausado',
+      ],
+      {
+        message: 'Selecciona un estado para el proyecto',
       }
-
-      try {
-        const existe = await proyectosService.verificarNombreDuplicado(
-          data.nombre,
-          params.isEditing ? params.initialData?.id : undefined
-        )
-
-        if (existe) {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: `Ya existe un proyecto con el nombre "${data.nombre}"`,
-            path: ['nombre'],
-          })
-        }
-      } catch (error) {
-        logger.error('Error al validar nombre duplicado:', error)
-        // No bloqueamos el submit si falla la validación async
-      }
-    }
-
-    // ✅ Validación síncrona: Verificar nombres únicos de MANZANAS dentro del proyecto
-    if (data.manzanas && data.manzanas.length > 1) {
-      const nombresNormalizados = data.manzanas.map(m => m.nombre.trim().toLowerCase())
-      const duplicados = nombresNormalizados.filter((nombre, index) =>
-        nombresNormalizados.indexOf(nombre) !== index
-      )
-
-      if (duplicados.length > 0) {
-        // Encontrar índice de la primera manzana duplicada
-        const indiceDuplicado = nombresNormalizados.findIndex((nombre, index) =>
-          nombresNormalizados.indexOf(nombre) !== index
-        )
-
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: `Ya existe una manzana con este nombre en el proyecto`,
-          path: ['manzanas', indiceDuplicado, 'nombre'],
-        })
-      }
-    }
-
-    // ✅ Validación síncrona: Verificar formato de ubicación (evitar genéricas)
-    // [removido: ahora se captura por campos departamento, ciudad, direccion separados]
+    ),
+    fechaInicio: z.string().optional(),
+    fechaFinEstimada: z.string().optional(),
+    manzanas: z
+      .array(manzanaSchema)
+      .min(1, 'Debe agregar al menos una manzana')
+      .max(20, 'Máximo 20 manzanas por proyecto'),
   })
-}
+  .refine(
+    data => {
+      // Solo validar si ambas fechas están presentes y no son strings vacías
+      if (
+        data.fechaInicio &&
+        data.fechaFinEstimada &&
+        data.fechaInicio.trim() !== '' &&
+        data.fechaFinEstimada.trim() !== ''
+      ) {
+        return new Date(data.fechaFinEstimada) > new Date(data.fechaInicio)
+      }
+      return true
+    },
+    {
+      message: 'La fecha de fin debe ser posterior a la fecha de inicio',
+      path: ['fechaFinEstimada'],
+    }
+  )
+  .refine(
+    data => {
+      // ✅ VALIDACIÓN: Fechas coherentes con estado del proyecto
+      const ahora = new Date()
+      const fechaInicio = data.fechaInicio ? new Date(data.fechaInicio) : null
+      const fechaFin = data.fechaFinEstimada
+        ? new Date(data.fechaFinEstimada)
+        : null
+
+      // Si está "completado", la fecha de fin no puede ser futura
+      if (data.estado === 'completado' && fechaFin && fechaFin > ahora) {
+        return false
+      }
+
+      // Si está "en_proceso" o "en_construccion", la fecha de inicio no puede ser futura
+      if (
+        (data.estado === 'en_proceso' || data.estado === 'en_construccion') &&
+        fechaInicio &&
+        fechaInicio > ahora
+      ) {
+        return false
+      }
+
+      return true
+    },
+    {
+      message: 'Las fechas no son coherentes con el estado del proyecto',
+      path: ['estado'],
+    }
+  )
+  .refine(
+    data => {
+      if (!data.departamento || !data.ciudad) return true
+      return validarCiudadDepartamento(data.ciudad, data.departamento)
+    },
+    {
+      message: 'La ciudad seleccionada no corresponde al departamento elegido',
+      path: ['ciudad'],
+    }
+  )
 
 export type ProyectoFormSchema = z.infer<typeof proyectoSchema>
 
@@ -214,13 +178,16 @@ export function useProyectosForm({
   isEditing = false,
   onHasChanges,
 }: UseProyectosFormParams) {
-  // Estado para spinner de validación de nombre
-  const [validandoNombre, setValidandoNombre] = useState(false)
+  // Estado para spinner de validación de nombre - gestionado en retorno
+  // const [validandoNombre, setValidandoNombre] = useState(false)
 
   // ✅ OPTIMIZACIÓN: Si initialData ya tiene validación (de useProyectoConValidacion),
   // construir Map desde initialData en vez de consultar DB
-  const manzanasConValidacionInicial = initialData?.manzanas?.filter(m => m.id && m.esEditable !== undefined)
-  const validacionPrecargada = manzanasConValidacionInicial && manzanasConValidacionInicial.length > 0
+  const manzanasConValidacionInicial = initialData?.manzanas?.filter(
+    m => m.id && m.esEditable !== undefined
+  )
+  const validacionPrecargada =
+    manzanasConValidacionInicial && manzanasConValidacionInicial.length > 0
 
   // Hook de validación de manzanas editables (solo si NO hay validación precargada)
   const {
@@ -232,12 +199,8 @@ export function useProyectosForm({
     obtenerMotivoBloqueado,
   } = useManzanasEditables()
 
-  // React Hook Form con schema que incluye validación async
-  const schemaConValidacionAsync = useMemo(
-    () => createProyectoSchema({ initialData, isEditing }),
-    [initialData?.id, initialData?.nombre, isEditing]
-  )
-
+  // React Hook Form con schema que incluye validación async (no utilizado actualmente)
+  // const schemaConValidacionAsync = ...
   // React Hook Form con schema SIN validación async (para evitar validación constante)
   const {
     register,
@@ -246,10 +209,9 @@ export function useProyectosForm({
     watch,
     reset,
     setError,
-    clearErrors,
     trigger,
     setValue,
-    formState: { errors, touchedFields, isValidating },
+    formState: { errors, touchedFields },
   } = useForm<ProyectoFormSchema>({
     resolver: zodResolver(proyectoSchema), // â† Schema básico SIN validación async
     mode: 'onBlur', // â† Validar al salir del campo
@@ -293,7 +255,7 @@ export function useProyectosForm({
       fechaFinEstimada: initialData?.fechaFinEstimada?.split('T')[0] || '',
       manzanas: initialData?.manzanas || [],
     })
-  }, [initialData?.id, reset]) // ✅ Solo cuando cambia el ID (proyecto diferente)
+  }, [initialData, reset]) // ✅ Solo cuando cambia el ID (proyecto diferente)
 
   // ✅ OPTIMIZACIÓN: Validar manzanas SOLO si NO hay validación precargada
   useEffect(() => {
@@ -320,16 +282,13 @@ export function useProyectosForm({
   }, [fields.length])
 
   const totalViviendas = useMemo(() => {
-    return manzanasWatch?.reduce((sum, m) => sum + (m.totalViviendas || 0), 0) || 0
+    return (
+      manzanasWatch?.reduce((sum, m) => sum + (m.totalViviendas || 0), 0) || 0
+    )
   }, [manzanasWatch])
 
   // ==================== DETECCIÓN DE CAMBIOS (solo en modo edición) ====================
-  const {
-    hasChanges,
-    changes,
-    changesCount,
-    isFieldChanged,
-  } = useFormChanges(
+  const { hasChanges, changes, changesCount, isFieldChanged } = useFormChanges(
     {
       nombre: watch('nombre'),
       departamento: watch('departamento'),
@@ -385,7 +344,9 @@ export function useProyectosForm({
 
   const handleAgregarManzana = () => {
     if (!canAgregarManzana) {
-      toast.warning(`Has alcanzado el límite de ${MAX_MANZANAS} manzanas por proyecto`)
+      toast.warning(
+        `Has alcanzado el límite de ${MAX_MANZANAS} manzanas por proyecto`
+      )
       return
     }
     append({
@@ -419,7 +380,7 @@ export function useProyectosForm({
         if (esDuplicado) {
           setError('nombre', {
             type: 'manual',
-            message: 'Ya existe un proyecto con este nombre'
+            message: 'Ya existe un proyecto con este nombre',
           })
           return // Detener envío
         }
@@ -427,7 +388,7 @@ export function useProyectosForm({
         logger.error('Error validando nombre:', error)
         setError('nombre', {
           type: 'manual',
-          message: 'Error al validar el nombre. Intenta de nuevo.'
+          message: 'Error al validar el nombre. Intenta de nuevo.',
         })
         return
       }
@@ -446,12 +407,14 @@ export function useProyectosForm({
           ubicacion: '',
         })),
         // Convertir fechas opcionales de input (YYYY-MM-DD) a ISO con hora mediodía
-        fechaInicio: data.fechaInicio && data.fechaInicio.trim() !== ''
-          ? `${data.fechaInicio}T12:00:00`
-          : null,
-        fechaFinEstimada: data.fechaFinEstimada && data.fechaFinEstimada.trim() !== ''
-          ? `${data.fechaFinEstimada}T12:00:00`
-          : null,
+        fechaInicio:
+          data.fechaInicio && data.fechaInicio.trim() !== ''
+            ? `${data.fechaInicio}T12:00:00`
+            : null,
+        fechaFinEstimada:
+          data.fechaFinEstimada && data.fechaFinEstimada.trim() !== ''
+            ? `${data.fechaFinEstimada}T12:00:00`
+            : null,
       } as ProyectoFormData
 
       onSubmit(formDataEdicion)
@@ -467,12 +430,14 @@ export function useProyectosForm({
         })),
         // Convertir fechas de input (YYYY-MM-DD) a ISO con hora mediodía
         // Si están vacías, enviar null (las fechas son opcionales)
-        fechaInicio: data.fechaInicio && data.fechaInicio.trim() !== ''
-          ? `${data.fechaInicio}T12:00:00`
-          : null,
-        fechaFinEstimada: data.fechaFinEstimada && data.fechaFinEstimada.trim() !== ''
-          ? `${data.fechaFinEstimada}T12:00:00`
-          : null,
+        fechaInicio:
+          data.fechaInicio && data.fechaInicio.trim() !== ''
+            ? `${data.fechaInicio}T12:00:00`
+            : null,
+        fechaFinEstimada:
+          data.fechaFinEstimada && data.fechaFinEstimada.trim() !== ''
+            ? `${data.fechaFinEstimada}T12:00:00`
+            : null,
         presupuesto: 0,
       }
 

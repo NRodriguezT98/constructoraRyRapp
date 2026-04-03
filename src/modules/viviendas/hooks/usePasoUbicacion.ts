@@ -12,9 +12,8 @@ import type { UseFormSetValue, UseFormWatch } from 'react-hook-form'
 
 import { proyectosService } from '@/modules/proyectos/services/proyectos.service'
 
-import { viviendasService } from '../services/viviendas.service'
-
 import type { ViviendaSchemaType } from '../schemas/vivienda.schemas'
+import { viviendasService } from '../services/viviendas.service'
 
 interface UsePasoUbicacionProps {
   setValue: UseFormSetValue<ViviendaSchemaType>
@@ -22,7 +21,11 @@ interface UsePasoUbicacionProps {
   enabled?: boolean // ← Nuevo: permitir desactivar queries
 }
 
-export function usePasoUbicacion({ setValue, watch, enabled = true }: UsePasoUbicacionProps) {
+export function usePasoUbicacion({
+  setValue,
+  watch,
+  enabled = true,
+}: UsePasoUbicacionProps) {
   const proyectoSeleccionado = watch('proyecto_id')
   const manzanaSeleccionada = watch('manzana_id')
 
@@ -45,18 +48,27 @@ export function usePasoUbicacion({ setValue, watch, enabled = true }: UsePasoUbi
     error: errorManzanas,
   } = useQuery({
     queryKey: ['manzanas', proyectoSeleccionado],
-    queryFn: () => viviendasService.obtenerManzanasDisponibles(proyectoSeleccionado!),
+    queryFn: () => {
+      if (!proyectoSeleccionado) {
+        throw new Error('Proyecto requerido')
+      }
+
+      return viviendasService.obtenerManzanasDisponibles(proyectoSeleccionado)
+    },
     enabled: enabled && !!proyectoSeleccionado, // ← Solo ejecuta si enabled Y hay proyecto
     staleTime: 2 * 60 * 1000, // 2 minutos
   })
 
   // ✅ React Query: Cargar viviendas de la manzana (para calcular números disponibles)
-  const {
-    data: viviendasManzana = [],
-    isLoading: cargandoNumeros,
-  } = useQuery({
+  const { data: viviendasManzana = [], isLoading: cargandoNumeros } = useQuery({
     queryKey: ['viviendas-manzana', manzanaSeleccionada],
-    queryFn: () => viviendasService.obtenerPorManzana(manzanaSeleccionada!),
+    queryFn: () => {
+      if (!manzanaSeleccionada) {
+        throw new Error('Manzana requerida')
+      }
+
+      return viviendasService.obtenerPorManzana(manzanaSeleccionada)
+    },
     enabled: enabled && !!manzanaSeleccionada, // ← Solo ejecuta si enabled Y hay manzana
     staleTime: 1 * 60 * 1000, // 1 minuto
   })
@@ -69,7 +81,10 @@ export function usePasoUbicacion({ setValue, watch, enabled = true }: UsePasoUbi
     if (!manzanaInfo) return []
 
     const numerosUsados = viviendasManzana.map(v => parseInt(v.numero))
-    const todosNumeros = Array.from({ length: manzanaInfo.total_viviendas }, (_, i) => i + 1)
+    const todosNumeros = Array.from(
+      { length: manzanaInfo.total_viviendas },
+      (_, i) => i + 1
+    )
 
     return todosNumeros.filter(num => !numerosUsados.includes(num))
   }, [manzanaSeleccionada, manzanas, viviendasManzana])
@@ -104,8 +119,8 @@ export function usePasoUbicacion({ setValue, watch, enabled = true }: UsePasoUbi
   }, [manzanaSeleccionada, setValue])
 
   // ✅ Información de la manzana seleccionada
-  const manzanaInfo = useMemo(() =>
-    manzanas.find(m => m.id === manzanaSeleccionada),
+  const manzanaInfo = useMemo(
+    () => manzanas.find(m => m.id === manzanaSeleccionada),
     [manzanas, manzanaSeleccionada]
   )
 

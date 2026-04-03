@@ -11,14 +11,14 @@ import { supabase } from '@/lib/supabase/client'
 import type { Database } from '@/lib/supabase/database.types'
 import { logger } from '@/lib/utils/logger'
 
-type PermisoRol = Database['public']['Tables']['permisos_rol']['Row']
-type PermisoRolInsert = Database['public']['Tables']['permisos_rol']['Insert']
-type PermisoRolUpdate = Database['public']['Tables']['permisos_rol']['Update']
+export type PermisoRol = Database['public']['Tables']['permisos_rol']['Row']
 
 /**
  * Obtener todos los permisos de un rol específico
  */
-export async function obtenerPermisosPorRol(rol: string): Promise<PermisoRol[]> {
+export async function obtenerPermisosPorRol(
+  rol: string
+): Promise<PermisoRol[]> {
   const { data, error } = await supabase
     .from('permisos_rol')
     .select('*')
@@ -39,7 +39,6 @@ export async function obtenerPermisosPorRol(rol: string): Promise<PermisoRol[]> 
  * Obtener todos los permisos del sistema (para matriz de configuración)
  */
 export async function obtenerTodosLosPermisos(): Promise<PermisoRol[]> {
-
   const { data, error } = await supabase
     .from('permisos_rol')
     .select('*')
@@ -65,7 +64,6 @@ export async function verificarPermiso(
   modulo: string,
   accion: string
 ): Promise<boolean> {
-
   // Bypass para Administrador
   if (rol === 'Administrador') {
     return true
@@ -101,7 +99,6 @@ export async function actualizarPermiso(
   id: string,
   permitido: boolean
 ): Promise<PermisoRol> {
-
   const { data, error } = await supabase
     .from('permisos_rol')
     .update({ permitido })
@@ -125,12 +122,8 @@ export async function actualizarPermiso(
 export async function actualizarPermisosEnLote(
   actualizaciones: Array<{ id: string; permitido: boolean }>
 ): Promise<void> {
-
   const promesas = actualizaciones.map(({ id, permitido }) =>
-    supabase
-      .from('permisos_rol')
-      .update({ permitido })
-      .eq('id', id)
+    supabase.from('permisos_rol').update({ permitido }).eq('id', id)
   )
 
   const resultados = await Promise.all(promesas)
@@ -140,7 +133,6 @@ export async function actualizarPermisosEnLote(
     logger.error('❌ [SERVICE] Errores en actualización en lote:', errores)
     throw new Error(`${errores.length} permisos fallaron al actualizar`)
   }
-
 }
 
 /**

@@ -16,7 +16,11 @@ import { z } from 'zod'
 
 import { useRouter } from 'next/navigation'
 
-import type { SectionStatus, SummaryItem, WizardStepConfig } from '@/shared/components/accordion-wizard'
+import type {
+  SectionStatus,
+  SummaryItem,
+  WizardStepConfig,
+} from '@/shared/components/accordion-wizard'
 
 import { useCrearClienteMutation } from '../hooks/useClientesQuery'
 import { clientesService } from '../services/clientes.service'
@@ -27,10 +31,26 @@ import { validarDocumentoIdentidad } from '../utils/validacion-documentos-colomb
 
 // ── Configuración de pasos ─────────────────────────────
 export const PASOS_CLIENTE: WizardStepConfig[] = [
-  { id: 1, title: 'Datos Personales', description: 'Nombres, documento e información básica' },
-  { id: 2, title: 'Contacto y Ubicación', description: 'Teléfono, email y dirección' },
-  { id: 3, title: 'Interés Inicial', description: 'Proyecto y vivienda de interés' },
-  { id: 4, title: 'Notas Adicionales', description: 'Observaciones opcionales' },
+  {
+    id: 1,
+    title: 'Datos Personales',
+    description: 'Nombres, documento e información básica',
+  },
+  {
+    id: 2,
+    title: 'Contacto y Ubicación',
+    description: 'Teléfono, email y dirección',
+  },
+  {
+    id: 3,
+    title: 'Interés Inicial',
+    description: 'Proyecto y vivienda de interés',
+  },
+  {
+    id: 4,
+    title: 'Notas Adicionales',
+    description: 'Observaciones opcionales',
+  },
 ]
 
 // ── Helpers de validación ──────────────────────────────
@@ -42,36 +62,43 @@ const REGEX_TELEFONO = /^[0-9+\-\s()]+$/
 // ── Schema del formulario ─────────────────────────────
 const clienteFormSchema = z.object({
   // Paso 1: Datos Personales
-  nombres: z.string()
+  nombres: z
+    .string()
     .min(2, 'Mínimo 2 caracteres')
     .max(80, 'Máximo 80 caracteres')
     .regex(REGEX_SOLO_LETRAS, 'Solo letras, espacios y tildes'),
-  apellidos: z.string()
+  apellidos: z
+    .string()
     .min(2, 'Mínimo 2 caracteres')
     .max(80, 'Máximo 80 caracteres')
     .regex(REGEX_SOLO_LETRAS, 'Solo letras, espacios y tildes'),
   tipo_documento: z.string().min(1, 'El tipo de documento es requerido'),
-  numero_documento: z.string()
+  numero_documento: z
+    .string()
     .min(5, 'Mínimo 5 caracteres')
     .max(20, 'Máximo 20 caracteres'),
   fecha_nacimiento: z.string().optional(),
   estado_civil: z.string().optional(),
   // Paso 2: Contacto
-  telefono: z.string()
+  telefono: z
+    .string()
     .regex(REGEX_TELEFONO, 'Solo números, +, -, (, ) y espacios')
     .min(7, 'Mínimo 7 dígitos')
     .max(15, 'Máximo 15 caracteres')
     .or(z.literal('')),
-  telefono_alternativo: z.string()
+  telefono_alternativo: z
+    .string()
     .regex(REGEX_TELEFONO, 'Solo números, +, -, (, ) y espacios')
     .min(7, 'Mínimo 7 dígitos')
     .max(15, 'Máximo 15 caracteres')
     .or(z.literal('')),
-  email: z.string()
+  email: z
+    .string()
     .email('Correo electrónico inválido')
     .max(100, 'Máximo 100 caracteres')
     .or(z.literal('')),
-  direccion: z.string()
+  direccion: z
+    .string()
     .min(5, 'Mínimo 5 caracteres')
     .max(200, 'Máximo 200 caracteres')
     .or(z.literal('')),
@@ -85,10 +112,15 @@ const clienteFormSchema = z.object({
   notas: z.string().max(500, 'Máximo 500 caracteres').optional(),
 })
 
-type ClienteFormValues = z.input<typeof clienteFormSchema>
+type ClienteFormValues = z.infer<typeof clienteFormSchema>
 
 // Campos por paso
-const FIELDS_PASO_1 = ['nombres', 'apellidos', 'tipo_documento', 'numero_documento'] as const
+const FIELDS_PASO_1 = [
+  'nombres',
+  'apellidos',
+  'tipo_documento',
+  'numero_documento',
+] as const
 const FIELDS_PASO_2 = ['departamento', 'ciudad'] as const
 
 export function useNuevoClienteAccordion() {
@@ -96,7 +128,9 @@ export function useNuevoClienteAccordion() {
   const crearMutation = useCrearClienteMutation()
 
   const [pasoActual, setPasoActual] = useState(1)
-  const [pasosCompletados, setPasosCompletados] = useState<Set<number>>(new Set())
+  const [pasosCompletados, setPasosCompletados] = useState<Set<number>>(
+    new Set()
+  )
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isValidating, setIsValidating] = useState(false)
   const [showSuccess, setShowSuccess] = useState(false)
@@ -111,7 +145,7 @@ export function useNuevoClienteAccordion() {
     getValues,
     formState: { errors },
   } = useForm<ClienteFormValues>({
-    resolver: zodResolver(clienteFormSchema) as any,
+    resolver: zodResolver(clienteFormSchema),
     mode: 'onChange',
     defaultValues: {
       nombres: '',
@@ -136,33 +170,80 @@ export function useNuevoClienteAccordion() {
   const formData = watch()
 
   // ── Estado de sección ───────────────────────────────
-  const getEstadoPaso = useCallback((paso: number): SectionStatus => {
-    if (pasosCompletados.has(paso)) return 'completed'
-    if (paso === pasoActual) return 'active'
-    return 'pending'
-  }, [pasoActual, pasosCompletados])
+  const getEstadoPaso = useCallback(
+    (paso: number): SectionStatus => {
+      if (pasosCompletados.has(paso)) return 'completed'
+      if (paso === pasoActual) return 'active'
+      return 'pending'
+    },
+    [pasoActual, pasosCompletados]
+  )
 
   // ── Resúmenes ───────────────────────────────────────
-  const summaryPaso1: SummaryItem[] = useMemo(() => [
-    { label: 'Nombre', value: formData.nombres && formData.apellidos ? `${formData.nombres} ${formData.apellidos}` : undefined },
-    { label: 'Documento', value: formData.numero_documento ? `${formData.tipo_documento} ${formData.numero_documento}` : undefined },
-  ], [formData.nombres, formData.apellidos, formData.tipo_documento, formData.numero_documento])
+  const summaryPaso1: SummaryItem[] = useMemo(
+    () => [
+      {
+        label: 'Nombre',
+        value:
+          formData.nombres && formData.apellidos
+            ? `${formData.nombres} ${formData.apellidos}`
+            : undefined,
+      },
+      {
+        label: 'Documento',
+        value: formData.numero_documento
+          ? `${formData.tipo_documento} ${formData.numero_documento}`
+          : undefined,
+      },
+    ],
+    [
+      formData.nombres,
+      formData.apellidos,
+      formData.tipo_documento,
+      formData.numero_documento,
+    ]
+  )
 
   const summaryPaso2: SummaryItem[] = useMemo(() => {
     const contacto = formData.telefono || formData.email
     return [
       { label: 'Contacto', value: contacto || undefined },
-      { label: 'Ubicación', value: formData.ciudad && formData.departamento ? `${formData.ciudad}, ${formData.departamento}` : undefined },
+      {
+        label: 'Ubicación',
+        value:
+          formData.ciudad && formData.departamento
+            ? `${formData.ciudad}, ${formData.departamento}`
+            : undefined,
+      },
     ]
-  }, [formData.telefono, formData.email, formData.ciudad, formData.departamento])
+  }, [
+    formData.telefono,
+    formData.email,
+    formData.ciudad,
+    formData.departamento,
+  ])
 
-  const summaryPaso3: SummaryItem[] = useMemo(() => [
-    { label: 'Interés', value: formData.proyecto_interes_id ? 'Proyecto seleccionado' : 'Sin interés definido' },
-  ], [formData.proyecto_interes_id])
+  const summaryPaso3: SummaryItem[] = useMemo(
+    () => [
+      {
+        label: 'Interés',
+        value: formData.proyecto_interes_id
+          ? 'Proyecto seleccionado'
+          : 'Sin interés definido',
+      },
+    ],
+    [formData.proyecto_interes_id]
+  )
 
-  const summaryPaso4: SummaryItem[] = useMemo(() => [
-    { label: 'Notas', value: formData.notas ? 'Con observaciones' : 'Sin notas' },
-  ], [formData.notas])
+  const summaryPaso4: SummaryItem[] = useMemo(
+    () => [
+      {
+        label: 'Notas',
+        value: formData.notas ? 'Con observaciones' : 'Sin notas',
+      },
+    ],
+    [formData.notas]
+  )
 
   // ── Progreso ────────────────────────────────────────
   const progress = useMemo(() => {
@@ -179,7 +260,8 @@ export function useNuevoClienteAccordion() {
           const syncValid = await trigger([...FIELDS_PASO_1])
           if (!syncValid) return false
 
-          const erroresEncontrados: Array<{ campo: string; mensaje: string }> = []
+          const erroresEncontrados: Array<{ campo: string; mensaje: string }> =
+            []
 
           // 2. Validar formato + longitud + algoritmo del documento según tipo
           const tipoDoc = getValues('tipo_documento') as TipoDocumentoColombia
@@ -217,7 +299,10 @@ export function useNuevoClienteAccordion() {
           // 5. Async: verificar duplicados
           if (erroresEncontrados.length === 0 && numDoc.length >= 5) {
             try {
-              const existente = await clientesService.buscarPorDocumento(tipoDoc, numDoc)
+              const existente = await clientesService.buscarPorDocumento(
+                tipoDoc,
+                numDoc
+              )
               if (existente) {
                 erroresEncontrados.push({
                   campo: 'numero_documento',
@@ -230,8 +315,11 @@ export function useNuevoClienteAccordion() {
           }
 
           if (erroresEncontrados.length > 0) {
-            erroresEncontrados.forEach((e) => {
-              setError(e.campo as any, { type: 'manual', message: e.mensaje })
+            erroresEncontrados.forEach(e => {
+              setError(e.campo as keyof ClienteFormValues, {
+                type: 'manual',
+                message: e.mensaje,
+              })
             })
             return false
           }
@@ -247,8 +335,14 @@ export function useNuevoClienteAccordion() {
           const email = getValues('email')?.trim()
 
           if (!tel && !email) {
-            setError('telefono', { type: 'manual', message: 'Requerido: teléfono o email' })
-            setError('email', { type: 'manual', message: 'Requerido: teléfono o email' })
+            setError('telefono', {
+              type: 'manual',
+              message: 'Requerido: teléfono o email',
+            })
+            setError('email', {
+              type: 'manual',
+              message: 'Requerido: teléfono o email',
+            })
             return false
           }
 
@@ -285,7 +379,10 @@ export function useNuevoClienteAccordion() {
           const vivienda = getValues('vivienda_interes_id')
           const proyecto = getValues('proyecto_interes_id')
           if (vivienda && !proyecto) {
-            setError('proyecto_interes_id', { type: 'manual', message: 'Selecciona un proyecto primero' })
+            setError('proyecto_interes_id', {
+              type: 'manual',
+              message: 'Selecciona un proyecto primero',
+            })
             return false
           }
 
@@ -318,31 +415,34 @@ export function useNuevoClienteAccordion() {
   const irSiguiente = useCallback(async () => {
     const valido = await validarPasoActual()
     if (!valido) return
-    setPasosCompletados((prev) => new Set(prev).add(pasoActual))
-    setPasoActual((prev) => Math.min(prev + 1, PASOS_CLIENTE.length))
+    setPasosCompletados(prev => new Set(prev).add(pasoActual))
+    setPasoActual(prev => Math.min(prev + 1, PASOS_CLIENTE.length))
   }, [pasoActual, validarPasoActual])
 
   const irAtras = useCallback(() => {
-    setPasoActual((prev) => Math.max(prev - 1, 1))
+    setPasoActual(prev => Math.max(prev - 1, 1))
   }, [])
 
-  const irAPaso = useCallback((paso: number) => {
-    if (pasosCompletados.has(paso)) {
-      setPasosCompletados((prev) => {
-        const next = new Set(prev)
-        for (let i = paso; i <= PASOS_CLIENTE.length; i++) next.delete(i)
-        return next
-      })
-      setPasoActual(paso)
-    }
-  }, [pasosCompletados])
+  const irAPaso = useCallback(
+    (paso: number) => {
+      if (pasosCompletados.has(paso)) {
+        setPasosCompletados(prev => {
+          const next = new Set(prev)
+          for (let i = paso; i <= PASOS_CLIENTE.length; i++) next.delete(i)
+          return next
+        })
+        setPasoActual(paso)
+      }
+    },
+    [pasosCompletados]
+  )
 
   // ── Submit final ────────────────────────────────────
   const handleSubmitFinal = useCallback(async () => {
     const valido = await validarPasoActual()
     if (!valido) return
 
-    setPasosCompletados((prev) => new Set(prev).add(pasoActual))
+    setPasosCompletados(prev => new Set(prev).add(pasoActual))
     setIsSubmitting(true)
     try {
       const values = getValues()
@@ -354,7 +454,9 @@ export function useNuevoClienteAccordion() {
         tipo_documento: values.tipo_documento as TipoDocumento,
         numero_documento: values.numero_documento,
         fecha_nacimiento: values.fecha_nacimiento || undefined,
-        estado_civil: (values.estado_civil || undefined) as EstadoCivil | undefined,
+        estado_civil: (values.estado_civil || undefined) as
+          | EstadoCivil
+          | undefined,
         telefono: values.telefono || undefined,
         telefono_alternativo: values.telefono_alternativo || undefined,
         email: values.email || undefined,
@@ -374,7 +476,7 @@ export function useNuevoClienteAccordion() {
       }
 
       const sanitized = sanitizeCrearClienteDTO(dto)
-      await crearMutation.mutateAsync(sanitized as any)
+      await crearMutation.mutateAsync(sanitized)
       // Toast ya lo maneja useCrearClienteMutation → no duplicar
       setShowSuccess(true)
       setTimeout(() => router.push('/clientes'), 1800)
@@ -385,7 +487,7 @@ export function useNuevoClienteAccordion() {
       if (error instanceof Error && error.message.includes('documento')) {
         setError('numero_documento', { type: 'manual', message: error.message })
         setPasoActual(1)
-        setPasosCompletados((prev) => {
+        setPasosCompletados(prev => {
           const next = new Set(prev)
           for (let i = 1; i <= PASOS_CLIENTE.length; i++) next.delete(i)
           return next
@@ -394,7 +496,14 @@ export function useNuevoClienteAccordion() {
     } finally {
       setIsSubmitting(false)
     }
-  }, [pasoActual, validarPasoActual, getValues, crearMutation, router, setError])
+  }, [
+    pasoActual,
+    validarPasoActual,
+    getValues,
+    crearMutation,
+    router,
+    setError,
+  ])
 
   return {
     // Pasos

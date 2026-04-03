@@ -15,11 +15,21 @@ interface InteresCliente {
   proyecto_id: string
   proyecto_nombre?: string
   proyecto_ubicacion?: string
-  vivienda_id?: string
-  vivienda_numero?: string
-  manzana_nombre?: string
+  vivienda_id?: string | null
+  vivienda_numero?: string | null
+  manzana_nombre?: string | null
   fecha_interes: string
-  notas?: string
+  notas?: string | null
+}
+
+interface ClienteInteresRow {
+  id: string
+  proyecto_id: string
+  vivienda_id: string | null
+  fecha_interes: string
+  notas: string | null
+  proyectos: { nombre: string; ubicacion: string } | null
+  viviendas: { numero: string; manzanas: { nombre: string } | null } | null
 }
 
 interface UseClienteInteresesReturn {
@@ -28,7 +38,9 @@ interface UseClienteInteresesReturn {
   error: string | null
 }
 
-export function useClienteIntereses(clienteId: string): UseClienteInteresesReturn {
+export function useClienteIntereses(
+  clienteId: string
+): UseClienteInteresesReturn {
   const [intereses, setIntereses] = useState<InteresCliente[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -41,7 +53,8 @@ export function useClienteIntereses(clienteId: string): UseClienteInteresesRetur
 
         const { data, error: queryError } = await supabase
           .from('cliente_intereses')
-          .select(`
+          .select(
+            `
             id,
             proyecto_id,
             vivienda_id,
@@ -57,29 +70,35 @@ export function useClienteIntereses(clienteId: string): UseClienteInteresesRetur
                 nombre
               )
             )
-          `)
+          `
+          )
           .eq('cliente_id', clienteId)
           .order('fecha_interes', { ascending: false })
 
         if (queryError) throw queryError
 
         // Mapear datos
-        const interesesMapeados = (data || []).map((interes: any) => ({
-          id: interes.id,
-          proyecto_id: interes.proyecto_id,
-          proyecto_nombre: interes.proyectos?.nombre || 'Proyecto no especificado',
-          proyecto_ubicacion: interes.proyectos?.ubicacion || 'No especifica',
-          vivienda_id: interes.vivienda_id,
-          vivienda_numero: interes.viviendas?.numero || null,
-          manzana_nombre: interes.viviendas?.manzanas?.nombre || null,
-          fecha_interes: interes.fecha_interes,
-          notas: interes.notas,
-        }))
+        const interesesMapeados = (data || []).map(
+          (interes: ClienteInteresRow) => ({
+            id: interes.id,
+            proyecto_id: interes.proyecto_id,
+            proyecto_nombre:
+              interes.proyectos?.nombre || 'Proyecto no especificado',
+            proyecto_ubicacion: interes.proyectos?.ubicacion || 'No especifica',
+            vivienda_id: interes.vivienda_id,
+            vivienda_numero: interes.viviendas?.numero || null,
+            manzana_nombre: interes.viviendas?.manzanas?.nombre || null,
+            fecha_interes: interes.fecha_interes,
+            notas: interes.notas,
+          })
+        )
 
         setIntereses(interesesMapeados)
       } catch (err: unknown) {
         logger.error('❌ Error cargando intereses del cliente:', err)
-        setError(err instanceof Error ? err.message : 'Error cargando intereses')
+        setError(
+          err instanceof Error ? err.message : 'Error cargando intereses'
+        )
         setIntereses([])
       } finally {
         setIsLoading(false)

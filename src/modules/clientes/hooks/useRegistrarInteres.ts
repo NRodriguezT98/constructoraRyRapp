@@ -18,13 +18,18 @@ import { interesesService } from '../services/intereses.service'
 import { interesesKeys } from './useInteresesQuery'
 
 // Orden natural: manzana alphabético → número de vivienda numérico
-function sortViviendasNatural<T extends { numero: string; manzanas?: { nombre: string } | null }>(vivs: T[]): T[] {
+function sortViviendasNatural<
+  T extends { numero: string; manzanas?: { nombre: string } | null },
+>(vivs: T[]): T[] {
   return [...vivs].sort((a, b) => {
     const ma = a.manzanas?.nombre ?? ''
     const mb = b.manzanas?.nombre ?? ''
     const mCmp = ma.localeCompare(mb, 'es', { sensitivity: 'base' })
     if (mCmp !== 0) return mCmp
-    return a.numero.localeCompare(b.numero, 'es', { numeric: true, sensitivity: 'base' })
+    return a.numero.localeCompare(b.numero, 'es', {
+      numeric: true,
+      sensitivity: 'base',
+    })
   })
 }
 
@@ -36,11 +41,19 @@ interface Proyecto {
 interface Vivienda {
   id: string
   numero: string
-  valor_total: number
+  valor_total: number | null
   manzana_id: string
   manzanas?: {
     nombre: string
-  }
+  } | null
+}
+
+interface ViviendaRow {
+  id: string
+  numero: string
+  valor_total: number | null
+  manzana_id: string
+  manzanas: { nombre: string } | null
 }
 
 interface FormData {
@@ -56,7 +69,11 @@ interface UseRegistrarInteresProps {
   onClose: () => void
 }
 
-export function useRegistrarInteres({ clienteId, onSuccess, onClose }: UseRegistrarInteresProps) {
+export function useRegistrarInteres({
+  clienteId,
+  onSuccess,
+  onClose,
+}: UseRegistrarInteresProps) {
   const queryClient = useQueryClient()
   const [proyectos, setProyectos] = useState<Proyecto[]>([])
   const [viviendas, setViviendas] = useState<Vivienda[]>([])
@@ -67,7 +84,8 @@ export function useRegistrarInteres({ clienteId, onSuccess, onClose }: UseRegist
   const { tieneCedula } = useDocumentoIdentidad({ clienteId })
   const [cargandoViviendas, setCargandoViviendas] = useState(false)
   const [guardando, setGuardando] = useState(false)
-  const [errorNegociacionExistente, setErrorNegociacionExistente] = useState(false)
+  const [errorNegociacionExistente, setErrorNegociacionExistente] =
+    useState(false)
 
   const {
     register,
@@ -132,7 +150,7 @@ export function useRegistrarInteres({ clienteId, onSuccess, onClose }: UseRegist
         throw manzanasError
       }
 
-      const manzanaIds = manzanasData?.map((m) => m.id) || []
+      const manzanaIds = manzanasData?.map(m => m.id) || []
 
       if (manzanaIds.length === 0) {
         setViviendas([])
@@ -140,11 +158,11 @@ export function useRegistrarInteres({ clienteId, onSuccess, onClose }: UseRegist
         return
       }
 
-
       // Ahora obtenemos las viviendas de esas manzanas
       const { data, error } = await supabase
         .from('viviendas')
-        .select(`
+        .select(
+          `
           id,
           numero,
           valor_total,
@@ -152,7 +170,8 @@ export function useRegistrarInteres({ clienteId, onSuccess, onClose }: UseRegist
           manzanas (
             nombre
           )
-        `)
+        `
+        )
         .in('manzana_id', manzanaIds)
         .eq('estado', 'Disponible')
         .order('numero')
@@ -162,9 +181,8 @@ export function useRegistrarInteres({ clienteId, onSuccess, onClose }: UseRegist
         throw error
       }
 
-
       // Mapear la respuesta al tipo correcto
-      const viviendasMapeadas = (data || []).map((v: any) => ({
+      const viviendasMapeadas = (data || []).map((v: ViviendaRow) => ({
         id: v.id,
         numero: v.numero,
         valor_total: v.valor_total,
@@ -202,7 +220,7 @@ export function useRegistrarInteres({ clienteId, onSuccess, onClose }: UseRegist
   const viviendasFiltradas = useMemo(() => {
     if (!busquedaVivienda.trim()) return viviendas
     const q = busquedaVivienda.toLowerCase()
-    return viviendas.filter((v) => {
+    return viviendas.filter(v => {
       const manzana = (v.manzanas?.nombre ?? '').toLowerCase()
       const numero = v.numero.toLowerCase()
       return (
@@ -229,14 +247,19 @@ export function useRegistrarInteres({ clienteId, onSuccess, onClose }: UseRegist
     try {
       // ✅ Validar que el cliente tenga documento de identidad cargado
       if (!tieneCedula) {
-        toast.error('El cliente debe tener su documento de identidad cargado antes de registrar un interés')
+        toast.error(
+          'El cliente debe tener su documento de identidad cargado antes de registrar un interés'
+        )
         setGuardando(false)
         return
       }
 
       // Verificar si ya existe un interés activo para esta vivienda
-      const interesesExistentes = await interesesService.obtenerInteresesCliente(clienteId, true)
-      const existe = interesesExistentes.some(i => i.vivienda_id === data.viviendaId)
+      const interesesExistentes =
+        await interesesService.obtenerInteresesCliente(clienteId, true)
+      const existe = interesesExistentes.some(
+        i => i.vivienda_id === data.viviendaId
+      )
 
       if (existe) {
         setErrorNegociacionExistente(true)
@@ -250,11 +273,13 @@ export function useRegistrarInteres({ clienteId, onSuccess, onClose }: UseRegist
         proyecto_id: data.proyectoId,
         vivienda_id: data.viviendaId,
         notas: data.notas,
-        origen: (data.origen as any) || 'Otro',
+        origen: data.origen || 'Otro',
       })
 
       // Refrescar la lista de intereses en React Query sin recargar página
-      await queryClient.invalidateQueries({ queryKey: interesesKeys.byCliente(clienteId) })
+      await queryClient.invalidateQueries({
+        queryKey: interesesKeys.byCliente(clienteId),
+      })
       reset()
       onSuccess()
     } catch (error) {

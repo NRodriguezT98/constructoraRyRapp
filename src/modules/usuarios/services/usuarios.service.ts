@@ -11,14 +11,14 @@ import { supabase } from '@/lib/supabase/client'
 import { logger } from '@/lib/utils/logger'
 
 import type {
-    ActualizarUsuarioData,
-    CrearUsuarioData,
-    CrearUsuarioRespuesta,
-    EstadisticasUsuarios,
-    FiltrosUsuarios,
-    Rol,
-    Usuario,
-    UsuarioCompleto,
+  ActualizarUsuarioData,
+  CrearUsuarioData,
+  CrearUsuarioRespuesta,
+  EstadisticasUsuarios,
+  FiltrosUsuarios,
+  Rol,
+  Usuario,
+  UsuarioCompleto,
 } from '../types'
 
 /**
@@ -27,7 +27,8 @@ import type {
  */
 function generarPasswordTemporal(): string {
   const length = 12
-  const charset = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*'
+  const charset =
+    'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*'
 
   const randomIndex = (max: number): number => {
     const buf = new Uint32Array(1)
@@ -68,7 +69,9 @@ class UsuariosService {
       // Aplicar filtros
       if (filtros?.busqueda) {
         const busqueda = `%${filtros.busqueda}%`
-        query = query.or(`nombres.ilike.${busqueda},apellidos.ilike.${busqueda},email.ilike.${busqueda}`)
+        query = query.or(
+          `nombres.ilike.${busqueda},apellidos.ilike.${busqueda},email.ilike.${busqueda}`
+        )
       }
 
       if (filtros?.rol) {
@@ -152,7 +155,11 @@ class UsuariosService {
         .eq('id', adminUser.id)
         .single()
 
-      if (adminError || adminPerfil?.rol !== 'Administrador' || adminPerfil?.estado !== 'Activo') {
+      if (
+        adminError ||
+        adminPerfil?.rol !== 'Administrador' ||
+        adminPerfil?.estado !== 'Activo'
+      ) {
         throw new Error('No tienes permisos para crear usuarios')
       }
 
@@ -184,7 +191,7 @@ class UsuariosService {
 
       // El trigger handle_new_user creará automáticamente el perfil en la tabla usuarios
       // Esperar un momento para que el trigger se ejecute
-      await new Promise((resolve) => setTimeout(resolve, 500))
+      await new Promise(resolve => setTimeout(resolve, 500))
 
       // Actualizar información adicional del perfil
       const { error: updateError } = await supabase
@@ -222,11 +229,14 @@ class UsuariosService {
   /**
    * Actualizar usuario existente
    */
-  async actualizarUsuario(id: string, datos: ActualizarUsuarioData): Promise<Usuario> {
+  async actualizarUsuario(
+    id: string,
+    datos: ActualizarUsuarioData
+  ): Promise<Usuario> {
     try {
       const { data, error } = await supabase
         .from('usuarios')
-        .update(datos as any)
+        .update(datos as Record<string, unknown>)
         .eq('id', id)
         .select()
         .single()
@@ -246,7 +256,10 @@ class UsuariosService {
   /**
    * Cambiar estado de usuario
    */
-  async cambiarEstado(id: string, nuevoEstado: 'Activo' | 'Inactivo' | 'Bloqueado'): Promise<void> {
+  async cambiarEstado(
+    id: string,
+    nuevoEstado: 'Activo' | 'Inactivo' | 'Bloqueado'
+  ): Promise<void> {
     try {
       await this.actualizarUsuario(id, { estado: nuevoEstado })
     } catch (error) {
@@ -321,7 +334,7 @@ class UsuariosService {
       const hoy = new Date()
       hoy.setHours(0, 0, 0, 0)
 
-      usuarios.forEach((u) => {
+      usuarios.forEach(u => {
         // Contar por rol
         stats.por_rol[u.rol]++
 

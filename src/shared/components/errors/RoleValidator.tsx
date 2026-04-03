@@ -14,7 +14,12 @@ import { logger } from '@/lib/utils/logger'
 
 import { InvalidRoleError } from './InvalidRoleError'
 
-const ROLES_VALIDOS = ['Administrador', 'Contador', 'Supervisor', 'Gerente'] as const
+const ROLES_VALIDOS = [
+  'Administrador',
+  'Contador',
+  'Supervisor',
+  'Gerente',
+] as const
 
 interface RoleValidatorProps {
   children: React.ReactNode
@@ -25,7 +30,10 @@ interface RoleValidatorProps {
   requireAuth?: boolean
 }
 
-export function RoleValidator({ children, requireAuth = true }: RoleValidatorProps) {
+export function RoleValidator({
+  children,
+  requireAuth = true,
+}: RoleValidatorProps) {
   const { user, perfil, loading } = useAuth()
 
   // Mientras carga, no mostrar nada (evitar flicker)
@@ -46,16 +54,15 @@ export function RoleValidator({ children, requireAuth = true }: RoleValidatorPro
   // Validar rol si hay perfil
   if (perfil) {
     const rolActual = perfil.rol
-    const esRolInvalido = !ROLES_VALIDOS.includes(rolActual as any)
+    const esRolInvalido = !(ROLES_VALIDOS as readonly string[]).includes(
+      rolActual
+    )
 
     if (esRolInvalido) {
       logger.error(`❌ [ROLE VALIDATOR] Rol inválido: "${rolActual}"`)
       // ⚠️ NO pasamos información sensible del sistema
       return (
-        <InvalidRoleError
-          detectedRole={rolActual}
-          userEmail={user?.email}
-        />
+        <InvalidRoleError detectedRole={rolActual} userEmail={user?.email} />
       )
     }
   }

@@ -8,7 +8,7 @@
 
 import { motion } from 'framer-motion'
 
-import type { SnapshotVersion } from '../../../hooks/useHistorialVersiones'
+import type { SnapshotVersion } from '@/modules/clientes/hooks/useHistorialVersiones'
 
 import { VersionCardContent } from './VersionCardContent'
 import { VersionCardHeader } from './VersionCardHeader'
@@ -21,23 +21,31 @@ interface VersionCardProps {
   onToggle: () => void
 }
 
-export function VersionCard({ version, versionAnterior, isLatest, isExpanded, onToggle }: VersionCardProps) {
+export function VersionCard({
+  version,
+  versionAnterior,
+  isLatest,
+  isExpanded,
+  onToggle,
+}: VersionCardProps) {
   const fuentesPago = version.fuentes_pago_snapshot || []
   const fuentesPagoAnteriores = versionAnterior?.fuentes_pago_snapshot || []
 
   return (
     <motion.div
       layout
-      className={`
-        rounded-xl border-2 overflow-hidden transition-all
-        ${
-          isLatest
-            ? 'border-green-500 bg-green-50 dark:bg-green-950/30'
-            : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800'
-        }
-      `}
+      className={`overflow-hidden rounded-xl border-2 transition-all ${
+        isLatest
+          ? 'border-green-500 bg-green-50 dark:bg-green-950/30'
+          : 'border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800'
+      } `}
     >
-      <VersionCardHeader version={version} isLatest={isLatest} isExpanded={isExpanded} onToggle={onToggle} />
+      <VersionCardHeader
+        version={version}
+        isLatest={isLatest}
+        isExpanded={isExpanded}
+        onToggle={onToggle}
+      />
 
       <VersionCardContent
         isExpanded={isExpanded}

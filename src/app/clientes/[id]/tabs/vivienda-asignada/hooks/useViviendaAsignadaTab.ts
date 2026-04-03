@@ -22,15 +22,14 @@ import { useRouter } from 'next/navigation'
 import { logger } from '@/lib/utils/logger'
 import { construirURLCliente } from '@/lib/utils/slug.utils'
 import { useDocumentoIdentidad } from '@/modules/clientes/documentos/hooks/useDocumentoIdentidad'
+import { useGenerarReportePDF } from '@/modules/clientes/hooks'
 import {
-    useGenerarReportePDF
-} from '@/modules/clientes/hooks'
-import {
-    useNegociacionDetalle,
-    useNegociacionesQuery,
-    type NegociacionConValores,
+  useNegociacionDetalle,
+  useNegociacionesQuery,
+  type NegociacionConValores,
 } from '@/modules/clientes/hooks/useNegociacionesQuery'
 import type { Cliente } from '@/modules/clientes/types'
+import type { Paso } from '@/modules/fuentes-pago/components/partials/FuentePagoCardProgress'
 
 import { useEditarFuentesPago } from './useEditarFuentesPago'
 
@@ -46,32 +45,39 @@ interface UseViviendaAsignadaTabProps {
 // HOOK
 // ============================================
 
-export function useViviendaAsignadaTab({ cliente }: UseViviendaAsignadaTabProps) {
+export function useViviendaAsignadaTab({
+  cliente,
+}: UseViviendaAsignadaTabProps) {
   const router = useRouter()
 
   // =====================================================
   // REACT QUERY: Lista de negociaciones
   // =====================================================
 
-  const { negociaciones, isLoading, stats, invalidarNegociaciones } = useNegociacionesQuery({
-    clienteId: cliente.id,
-  })
+  const { negociaciones, isLoading, stats, invalidarNegociaciones } =
+    useNegociacionesQuery({
+      clienteId: cliente.id,
+    })
 
   // =====================================================
   // VALIDACIÓN: Documento de identidad
   // =====================================================
 
-  const { tieneCedula: tieneDocumentoFisico, cargando: cargandoDoc } = useDocumentoIdentidad({
-    clienteId: cliente.id
-  })
+  const { tieneCedula: tieneDocumentoFisico, cargando: cargandoDoc } =
+    useDocumentoIdentidad({
+      clienteId: cliente.id,
+    })
 
   // =====================================================
   // ESTADO LOCAL: UI y modales
   // =====================================================
 
-  const [viviendaActiva, setViviendaActiva] = useState<NegociacionConValores | null>(null)
+  const [viviendaActiva, setViviendaActiva] =
+    useState<NegociacionConValores | null>(null)
   const [showHistorial, setShowHistorial] = useState(false)
-  const [viviendaSeleccionadaId, setViviendaSeleccionadaId] = useState<string | null>(null)
+  const [viviendaSeleccionadaId, setViviendaSeleccionadaId] = useState<
+    string | null
+  >(null)
 
   // Modal de subir carta
   const [modalSubirCartaOpen, setModalSubirCartaOpen] = useState(false)
@@ -86,7 +92,7 @@ export function useViviendaAsignadaTab({ cliente }: UseViviendaAsignadaTabProps)
 
   // Modal de marcar paso completado
   const [modalMarcarPasoOpen, setModalMarcarPasoOpen] = useState(false)
-  const [pasoSeleccionado, setPasoSeleccionado] = useState<Record<string, unknown> | null>(null)
+  const [pasoSeleccionado, setPasoSeleccionado] = useState<Paso | null>(null)
 
   // =====================================================
   // REACT QUERY: Detalle de vivienda activa
@@ -146,7 +152,21 @@ export function useViviendaAsignadaTab({ cliente }: UseViviendaAsignadaTabProps)
     try {
       await generarReporte({
         cliente,
-        negociacion: viviendaActiva as any,
+        negociacion: {
+          id: viviendaActiva.id,
+          valor_negociado: viviendaActiva.valor_negociado,
+          descuento_aplicado: viviendaActiva.descuento_aplicado,
+          estado: viviendaActiva.estado,
+          proyecto: viviendaActiva.proyecto,
+          vivienda: viviendaActiva.vivienda
+            ? {
+                numero_vivienda: viviendaActiva.vivienda.numero,
+                manzana: viviendaActiva.vivienda.manzanas
+                  ? { codigo: viviendaActiva.vivienda.manzanas.nombre }
+                  : undefined,
+              }
+            : undefined,
+        },
         fuentesPago,
         abonos,
         totales,
@@ -198,7 +218,7 @@ export function useViviendaAsignadaTab({ cliente }: UseViviendaAsignadaTabProps)
   // HANDLERS: Modal de marcar paso completado
   // =====================================================
 
-  const abrirModalMarcarPaso = (paso: Record<string, unknown>) => {
+  const abrirModalMarcarPaso = (paso: Paso) => {
     setPasoSeleccionado(paso)
     setModalMarcarPasoOpen(true)
   }
@@ -208,7 +228,11 @@ export function useViviendaAsignadaTab({ cliente }: UseViviendaAsignadaTabProps)
     setPasoSeleccionado(null)
   }
 
-  const handleConfirmarPaso = async (datos: { fecha_completado: string; documento_id?: string; observaciones?: string }) => {
+  const handleConfirmarPaso = async (_datos: {
+    fecha_completado: string
+    documento_id?: string
+    observaciones?: string
+  }) => {
     try {
       // TODO: Llamar mutation para marcar paso
       toast.info('✅ Paso marcado como completado')
@@ -236,14 +260,14 @@ export function useViviendaAsignadaTab({ cliente }: UseViviendaAsignadaTabProps)
 
     const nombreCliente = cliente.nombre_completo || cliente.nombres || ''
     router.push(
-      `/clientes/${clienteSlug}/asignar-vivienda?nombre=${encodeURIComponent(nombreCliente)}` as any
+      `/clientes/${clienteSlug}/asignar-vivienda?nombre=${encodeURIComponent(nombreCliente)}`
     )
   }
 
   const navegarARegistrarAbono = (viviendaId: string) => {
     const nombreCliente = cliente.nombre_completo || cliente.nombres || ''
     router.push(
-      `/abonos?cliente_id=${cliente.id}&negociacion_id=${viviendaId}&cliente_nombre=${encodeURIComponent(nombreCliente)}` as any
+      `/abonos?cliente_id=${cliente.id}&negociacion_id=${viviendaId}&cliente_nombre=${encodeURIComponent(nombreCliente)}`
     )
   }
 
@@ -257,6 +281,8 @@ export function useViviendaAsignadaTab({ cliente }: UseViviendaAsignadaTabProps)
     viviendaActiva,
     isLoading,
     isLoadingDetalle,
+    tieneDocumentoFisico,
+    cargandoDoc,
     stats,
 
     // Detalle de vivienda activa

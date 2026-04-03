@@ -1,9 +1,9 @@
 ﻿import { supabase } from '@/lib/supabase/client'
 import type { TipoFuentePago } from '@/modules/clientes/types'
 import {
-    sanitizeActualizarFuentePagoServiceDTO,
-    sanitizeCrearFuentePagoServiceDTO,
-    sanitizeMontoRecibido,
+  sanitizeActualizarFuentePagoServiceDTO,
+  sanitizeCrearFuentePagoServiceDTO,
+  sanitizeMontoRecibido,
 } from '@/modules/clientes/utils/sanitize-fuente-pago.utils'
 export type { TipoFuentePago }
 
@@ -17,7 +17,7 @@ export interface CrearFuentePagoDTO {
   monto_aprobado: number
   /** Para créditos: capital sin intereses. Se guarda en capital_para_cierre */
   capital_para_cierre?: number
-  entidad?: string             // nombre legible (nunca UUID)
+  entidad?: string // nombre legible (nunca UUID)
   entidad_financiera_id?: string // opcional: ID resuelto por el caller
   numero_referencia?: string
   permite_multiples_abonos?: boolean
@@ -42,18 +42,18 @@ export interface FuentePago {
   monto_aprobado: number
   /** Para créditos: el capital sin intereses. Para otras fuentes: igual a monto_aprobado */
   capital_para_cierre: number | null
-  mora_total_recibida: number
+  mora_total_recibida?: number
   monto_recibido: number
   saldo_pendiente: number
   porcentaje_completado: number
-  entidad?: string
-  entidad_financiera_id?: string
-  numero_referencia?: string
+  entidad: string | null
+  entidad_financiera_id?: string | null
+  numero_referencia: string | null
   permite_multiples_abonos: boolean
-  carta_asignacion_url?: string
+  carta_asignacion_url: string | null
   estado: 'Activa' | 'Inactiva'
-  estado_fuente?: string
-  fecha_completado?: string
+  estado_fuente: string | null
+  fecha_completado: string | null
   fecha_creacion: string
   fecha_actualizacion: string
 }
@@ -78,7 +78,6 @@ const BASE_COLUMNS = `
 // ============================================================
 
 class FuentesPagoService {
-
   /** Crear fuente de pago */
   async crearFuentePago(datos: CrearFuentePagoDTO): Promise<FuentePago> {
     const datosSanitizados = sanitizeCrearFuentePagoServiceDTO(datos)
@@ -91,7 +90,9 @@ class FuentesPagoService {
       .single()
 
     if (tipoError || !tipoFuente) {
-      throw new Error(`Tipo de fuente de pago no encontrado: ${datosSanitizados.tipo}`)
+      throw new Error(
+        `Tipo de fuente de pago no encontrado: ${datosSanitizados.tipo}`
+      )
     }
 
     // Resolver entidad_financiera_id si no viene del caller pero sí el nombre
@@ -116,7 +117,10 @@ class FuentesPagoService {
         entidad: datosSanitizados.entidad ?? null,
         entidad_financiera_id: entidadFinancieraId,
         numero_referencia: datosSanitizados.numero_referencia ?? null,
-        permite_multiples_abonos: datosSanitizados.permite_multiples_abonos ?? tipoFuente.permite_multiples_abonos ?? false,
+        permite_multiples_abonos:
+          datosSanitizados.permite_multiples_abonos ??
+          tipoFuente.permite_multiples_abonos ??
+          false,
         capital_para_cierre: datosSanitizados.capital_para_cierre ?? null,
         estado: 'Activa',
         estado_fuente: 'activa',
@@ -133,24 +137,28 @@ class FuentesPagoService {
    * Usa la vista fuentes_pago_con_entidad para que entidad siempre sea
    * el nombre legible (via JOIN con entidades_financieras), nunca un UUID.
    */
-  async obtenerFuentesPagoNegociacion(negociacionId: string): Promise<FuentePago[]> {
+  async obtenerFuentesPagoNegociacion(
+    negociacionId: string
+  ): Promise<FuentePago[]> {
     const { data, error } = await supabase
       .from('fuentes_pago_con_entidad')
-      .select(`
+      .select(
+        `
         id, negociacion_id, tipo, entidad_display, entidad_financiera_id,
         monto_aprobado, capital_para_cierre, monto_recibido, saldo_pendiente, porcentaje_completado,
         numero_referencia, permite_multiples_abonos, carta_asignacion_url,
         estado, estado_fuente, fecha_completado, fecha_creacion, fecha_actualizacion
-      `)
+      `
+      )
       .eq('negociacion_id', negociacionId)
       .eq('estado_fuente', 'activa')
       .order('fecha_creacion', { ascending: true })
 
     if (error) throw error
 
-    return ((data ?? []) as FuentePagoConEntidadRow[]).map((row) => ({
+    return ((data ?? []) as FuentePagoConEntidadRow[]).map(row => ({
       ...row,
-      entidad: row.entidad_display ?? undefined,
+      entidad: row.entidad_display ?? null,
     })) as FuentePago[]
   }
 
@@ -158,12 +166,14 @@ class FuentesPagoService {
   async obtenerFuentePago(id: string): Promise<FuentePago | null> {
     const { data, error } = await supabase
       .from('fuentes_pago_con_entidad')
-      .select(`
+      .select(
+        `
         id, negociacion_id, tipo, entidad_display, entidad_financiera_id,
         monto_aprobado, capital_para_cierre, monto_recibido, saldo_pendiente, porcentaje_completado,
         numero_referencia, permite_multiples_abonos, carta_asignacion_url,
         estado, estado_fuente, fecha_completado, fecha_creacion, fecha_actualizacion
-      `)
+      `
+      )
       .eq('id', id)
       .maybeSingle()
 
@@ -171,11 +181,14 @@ class FuentesPagoService {
     if (!data) return null
 
     const row = data as FuentePagoConEntidadRow
-    return { ...row, entidad: row.entidad_display ?? undefined } as FuentePago
+    return { ...row, entidad: row.entidad_display ?? null } as FuentePago
   }
 
   /** Actualizar fuente de pago */
-  async actualizarFuentePago(id: string, datos: ActualizarFuentePagoDTO): Promise<FuentePago> {
+  async actualizarFuentePago(
+    id: string,
+    datos: ActualizarFuentePagoDTO
+  ): Promise<FuentePago> {
     const datosSanitizados = sanitizeActualizarFuentePagoServiceDTO(datos)
 
     const { data, error } = await supabase
@@ -212,14 +225,18 @@ class FuentesPagoService {
    * Inactivar fuente de pago (soft delete).
    * No se puede inactivar si ya recibió dinero.
    */
-  async inactivarFuentePago(id: string, razon: string, reemplazadaPor?: string): Promise<void> {
+  async inactivarFuentePago(
+    id: string,
+    razon: string,
+    reemplazadaPor?: string
+  ): Promise<void> {
     const fuente = await this.obtenerFuentePago(id)
     if (!fuente) throw new Error('Fuente de pago no encontrada')
 
     if (fuente.monto_recibido > 0) {
       throw new Error(
         `No se puede eliminar una fuente que ya recibió $${fuente.monto_recibido.toLocaleString('es-CO')}. ` +
-        `Debe permanecer activa para conservar el historial de abonos.`
+          `Debe permanecer activa para conservar el historial de abonos.`
       )
     }
 
@@ -275,7 +292,8 @@ class FuentesPagoService {
       total_aprobado,
       total_recibido,
       saldo_pendiente: total_aprobado - total_recibido,
-      porcentaje_completado: total_aprobado > 0 ? (total_recibido / total_aprobado) * 100 : 0,
+      porcentaje_completado:
+        total_aprobado > 0 ? (total_recibido / total_aprobado) * 100 : 0,
     }
   }
 
@@ -286,7 +304,10 @@ class FuentesPagoService {
    * contribuyan con su capital (no con capital+intereses) al total de financiación.
    * Evita que los intereses inflen el total por encima del valor de la vivienda.
    */
-  async verificarCierreFinancieroCompleto(negociacionId: string, valorTotal: number): Promise<boolean> {
+  async verificarCierreFinancieroCompleto(
+    negociacionId: string,
+    valorTotal: number
+  ): Promise<boolean> {
     const fuentes = await this.obtenerFuentesPagoNegociacion(negociacionId)
     const total_para_cierre = fuentes.reduce(
       (sum, f) => sum + (f.capital_para_cierre ?? f.monto_aprobado),

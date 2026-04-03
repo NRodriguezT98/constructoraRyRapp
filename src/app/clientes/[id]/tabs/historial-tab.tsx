@@ -27,7 +27,11 @@ import { EmptyState } from '@/shared/components/layout/EmptyState'
 import { LoadingState } from '@/shared/components/layout/LoadingState'
 import { useModal } from '@/shared/components/modals'
 
-import { FiltrosYBusqueda, GrupoEventosFecha, MetricasHistorial } from './historial/components'
+import {
+  FiltrosYBusqueda,
+  GrupoEventosFecha,
+  MetricasHistorial,
+} from './historial/components'
 import { NotaModal } from './historial/components/NotaModal'
 import { historialStyles } from './historial/historial-tab.styles'
 
@@ -39,9 +43,11 @@ interface HistorialTabProps {
 export function HistorialTab({ clienteId, clienteNombre }: HistorialTabProps) {
   const queryClient = useQueryClient()
   const [mostrarModalNota, setMostrarModalNota] = useState(false)
-  const [notaIdSeleccionado, setNotaIdSeleccionado] = useState<string | null>(null)
+  const [notaIdSeleccionado, setNotaIdSeleccionado] = useState<string | null>(
+    null
+  )
   const { confirm } = useModal()
-  const { eliminarNota, isEliminando } = useNotasHistorial(clienteId)
+  const { eliminarNota } = useNotasHistorial(clienteId)
 
   const {
     eventosAgrupados,
@@ -96,7 +102,8 @@ export function HistorialTab({ clienteId, clienteNombre }: HistorialTabProps) {
   const handleEliminarNota = async (notaId: string) => {
     const confirmado = await confirm({
       title: '¿Eliminar nota?',
-      message: 'Esta acción no se puede deshacer. La nota se eliminará permanentemente del historial.',
+      message:
+        'Esta acción no se puede deshacer. La nota se eliminará permanentemente del historial.',
       confirmText: 'Eliminar',
       cancelText: 'Cancelar',
       variant: 'danger',
@@ -119,8 +126,8 @@ export function HistorialTab({ clienteId, clienteNombre }: HistorialTabProps) {
   // ========== ESTADOS DE CARGA Y ERROR ==========
   if (isLoading) {
     return (
-      <div className="py-12">
-        <LoadingState message="Cargando historial del cliente..." />
+      <div className='py-12'>
+        <LoadingState message='Cargando historial del cliente...' />
       </div>
     )
   }
@@ -129,9 +136,9 @@ export function HistorialTab({ clienteId, clienteNombre }: HistorialTabProps) {
     return (
       <div className={historialStyles.empty.container}>
         <EmptyState
-          icon={<X className="w-12 h-12 text-red-500" />}
-          title="Error al cargar historial"
-          description="Ocurrió un error al cargar el historial del cliente"
+          icon={<X className='h-12 w-12 text-red-500' />}
+          title='Error al cargar historial'
+          description='Ocurrió un error al cargar el historial del cliente'
         />
       </div>
     )
@@ -141,9 +148,9 @@ export function HistorialTab({ clienteId, clienteNombre }: HistorialTabProps) {
     return (
       <div className={historialStyles.empty.container}>
         <EmptyState
-          icon={<Clock className="w-12 h-12 text-gray-400" />}
-          title="Sin historial"
-          description="Este cliente aún no tiene eventos registrados"
+          icon={<Clock className='h-12 w-12 text-gray-400' />}
+          title='Sin historial'
+          description='Este cliente aún no tiene eventos registrados'
         />
       </div>
     )
@@ -185,15 +192,15 @@ export function HistorialTab({ clienteId, clienteNombre }: HistorialTabProps) {
       {estadisticas.filtrados === 0 ? (
         <div className={historialStyles.empty.sinResultados}>
           <EmptyState
-            icon={<Filter className="w-12 h-12 text-gray-400" />}
-            title="Sin resultados"
-            description="No se encontraron eventos con los filtros aplicados"
+            icon={<Filter className='h-12 w-12 text-gray-400' />}
+            title='Sin resultados'
+            description='No se encontraron eventos con los filtros aplicados'
           />
         </div>
       ) : (
         <div className={historialStyles.timeline.container}>
           <AnimatePresence>
-            {eventosAgrupados.map((grupo) => (
+            {eventosAgrupados.map(grupo => (
               <GrupoEventosFecha
                 key={grupo.fecha}
                 fecha={grupo.fecha}

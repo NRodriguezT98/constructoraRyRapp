@@ -13,8 +13,13 @@ import { useCallback, useState } from 'react'
 
 import { toast } from 'sonner'
 
+import { useModal } from '@/shared/components/modals'
+
 import { useActualizarConfiguracionCampos } from '../../hooks/useTiposFuentesConCampos'
-import type { CampoConfig, ConfiguracionCampos } from '../../types/campos-dinamicos.types'
+import type {
+  CampoConfig,
+  ConfiguracionCampos,
+} from '../../types/campos-dinamicos.types'
 
 interface UseConfiguradorCamposProps {
   tipoId: string
@@ -31,16 +36,20 @@ export function useConfiguradorCampos({
   // ESTADO
   // ============================================
 
-  const [campos, setCampos] = useState<CampoConfig[]>(configuracionInicial.campos)
+  const [campos, setCampos] = useState<CampoConfig[]>(
+    configuracionInicial.campos
+  )
   const [campoEditando, setCampoEditando] = useState<CampoConfig | null>(null)
   const [modoEditor, setModoEditor] = useState<'crear' | 'editar'>('crear')
   const [modalEditorAbierto, setModalEditorAbierto] = useState(false)
+  const { confirm } = useModal()
 
   // ============================================
   // REACT QUERY
   // ============================================
 
-  const { mutate: actualizar, isPending: guardando } = useActualizarConfiguracionCampos()
+  const { mutate: actualizar, isPending: guardando } =
+    useActualizarConfiguracionCampos()
 
   // ============================================
   // HANDLERS: AGREGAR
@@ -53,7 +62,7 @@ export function useConfiguradorCampos({
   }, [])
 
   const handleConfirmarAgregar = useCallback((nuevoCampo: CampoConfig) => {
-    setCampos((prev) => [...prev, nuevoCampo])
+    setCampos(prev => [...prev, nuevoCampo])
     setModalEditorAbierto(false)
     toast.success('Campo agregado', {
       description: `"${nuevoCampo.label}" agregado correctamente`,
@@ -70,32 +79,47 @@ export function useConfiguradorCampos({
     setModalEditorAbierto(true)
   }, [])
 
-  const handleConfirmarEditar = useCallback((campoActualizado: CampoConfig) => {
-    setCampos((prev) =>
-      prev.map((c) => (c.nombre === campoEditando?.nombre ? campoActualizado : c))
-    )
-    setModalEditorAbierto(false)
-    toast.success('Campo actualizado', {
-      description: `"${campoActualizado.label}" actualizado correctamente`,
-    })
-  }, [campoEditando])
+  const handleConfirmarEditar = useCallback(
+    (campoActualizado: CampoConfig) => {
+      setCampos(prev =>
+        prev.map(c =>
+          c.nombre === campoEditando?.nombre ? campoActualizado : c
+        )
+      )
+      setModalEditorAbierto(false)
+      toast.success('Campo actualizado', {
+        description: `"${campoActualizado.label}" actualizado correctamente`,
+      })
+    },
+    [campoEditando]
+  )
 
   // ============================================
   // HANDLERS: ELIMINAR
   // ============================================
 
-  const handleEliminarCampo = useCallback((nombreCampo: string) => {
-    const campo = campos.find((c) => c.nombre === nombreCampo)
-    if (!campo) return
+  const handleEliminarCampo = useCallback(
+    async (nombreCampo: string) => {
+      const campo = campos.find(c => c.nombre === nombreCampo)
+      if (!campo) return
 
-    // Confirmación
-    if (!window.confirm(`¿Eliminar el campo "${campo.label}"?`)) return
+      // Confirmación
+      const confirmado = await confirm({
+        title: `Eliminar campo`,
+        message: `¿Eliminar el campo "${campo.label}"?`,
+        variant: 'danger',
+        confirmText: 'Eliminar',
+        cancelText: 'Cancelar',
+      })
+      if (!confirmado) return
 
-    setCampos((prev) => prev.filter((c) => c.nombre !== nombreCampo))
-    toast.success('Campo eliminado', {
-      description: `"${campo.label}" eliminado correctamente`,
-    })
-  }, [campos])
+      setCampos(prev => prev.filter(c => c.nombre !== nombreCampo))
+      toast.success('Campo eliminado', {
+        description: `"${campo.label}" eliminado correctamente`,
+      })
+    },
+    [campos, confirm]
+  )
 
   // ============================================
   // HANDLERS: REORDENAR (DRAG & DROP)
@@ -124,7 +148,7 @@ export function useConfiguradorCampos({
     }
 
     // Validar que todos los campos tengan nombre único
-    const nombres = campos.map((c) => c.nombre)
+    const nombres = campos.map(c => c.nombre)
     const nombresUnicos = new Set(nombres)
     if (nombres.length !== nombresUnicos.size) {
       toast.error('Nombres duplicados', {
@@ -134,7 +158,7 @@ export function useConfiguradorCampos({
     }
 
     // 🔥 Validar que solo haya UN campo con rol='monto'
-    const camposMonto = campos.filter((c) => c.rol === 'monto')
+    const camposMonto = campos.filter(c => c.rol === 'monto')
     if (camposMonto.length === 0) {
       toast.error('Campo de Monto obligatorio', {
         description: 'Debe configurar al menos un campo de Monto Principal',
@@ -166,14 +190,22 @@ export function useConfiguradorCampos({
   // HANDLERS: CANCELAR
   // ============================================
 
-  const handleCancelar = useCallback(() => {
+  const handleCancelar = useCallback(async () => {
     // Confirmar si hay cambios sin guardar
-    const tienesCambios = JSON.stringify(campos) !== JSON.stringify(configuracionInicial.campos)
+    const tienesCambios =
+      JSON.stringify(campos) !== JSON.stringify(configuracionInicial.campos)
     if (tienesCambios) {
-      if (!window.confirm('¿Descartar los cambios sin guardar?')) return
+      const confirmado = await confirm({
+        title: 'Descartar cambios',
+        message: '¿Descartar los cambios sin guardar?',
+        variant: 'warning',
+        confirmText: 'Descartar',
+        cancelText: 'Cancelar',
+      })
+      if (!confirmado) return
     }
     onClose()
-  }, [campos, configuracionInicial, onClose])
+  }, [campos, configuracionInicial, onClose, confirm])
 
   const handleCancelarEditor = useCallback(() => {
     setModalEditorAbierto(false)

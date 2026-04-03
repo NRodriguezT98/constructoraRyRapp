@@ -4,17 +4,26 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { logger } from '@/lib/utils/logger'
 
-import { obtenerAbonosNegociacion, obtenerNegociacionExpediente, obtenerRenunciaPorConsecutivo, obtenerViviendaExpediente } from '../services/renuncias.service'
+import {
+  obtenerAbonosNegociacion,
+  obtenerNegociacionExpediente,
+  obtenerRenunciaPorConsecutivo,
+  obtenerViviendaExpediente,
+} from '../services/renuncias.service'
 import type {
-    AbonoExpediente,
-    ExpedienteData,
-    FuenteExpediente,
-    RenunciaConInfo,
-    ResumenFinanciero,
-    TimelineHito,
-    ViviendaDetalle,
+  AbonoExpediente,
+  ExpedienteData,
+  FuenteExpediente,
+  RenunciaConInfo,
+  ResumenFinanciero,
+  TimelineHito,
+  ViviendaDetalle,
 } from '../types'
 import { transformarRenunciaRow } from '../utils/renuncias.utils'
+
+type NegociacionExpediente = Awaited<
+  ReturnType<typeof obtenerNegociacionExpediente>
+>
 
 interface UseExpedienteRenunciaReturn {
   datos: ExpedienteData | null
@@ -23,11 +32,14 @@ interface UseExpedienteRenunciaReturn {
   recargar: () => void
 }
 
-export function useExpedienteRenuncia(consecutivo: string): UseExpedienteRenunciaReturn {
+export function useExpedienteRenuncia(
+  consecutivo: string
+): UseExpedienteRenunciaReturn {
   const [renuncia, setRenuncia] = useState<RenunciaConInfo | null>(null)
   const [abonos, setAbonos] = useState<AbonoExpediente[]>([])
-  const [negociacion, setNegociacion] = useState<any>(null)
-  const [viviendaDetalle, setViviendaDetalle] = useState<ViviendaDetalle | null>(null)
+  const [negociacion, setNegociacion] = useState<NegociacionExpediente>(null)
+  const [viviendaDetalle, setViviendaDetalle] =
+    useState<ViviendaDetalle | null>(null)
   const [cargando, setCargando] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -44,21 +56,24 @@ export function useExpedienteRenuncia(consecutivo: string): UseExpedienteRenunci
       // 2. Abonos + negociación + vivienda en paralelo
       const negId = row.negociacion_id
       const vivId = row.vivienda_id
-      const promises: Promise<unknown>[] = [
-        obtenerViviendaExpediente(vivId),
-      ]
+      const promises: Promise<unknown>[] = [obtenerViviendaExpediente(vivId)]
       if (negId) {
-        promises.push(obtenerAbonosNegociacion(negId), obtenerNegociacionExpediente(negId))
+        promises.push(
+          obtenerAbonosNegociacion(negId),
+          obtenerNegociacionExpediente(negId)
+        )
       }
       const results = await Promise.all(promises)
       setViviendaDetalle((results[0] ?? null) as ViviendaDetalle | null)
       if (negId) {
         setAbonos((results[1] ?? []) as AbonoExpediente[])
-        setNegociacion((results[2] ?? null) as any)
+        setNegociacion((results[2] ?? null) as NegociacionExpediente)
       }
     } catch (err: unknown) {
       logger.error('Error cargando expediente:', err)
-      setError(err instanceof Error ? err.message : 'Error al cargar expediente')
+      setError(
+        err instanceof Error ? err.message : 'Error al cargar expediente'
+      )
     } finally {
       setCargando(false)
     }
@@ -80,31 +95,61 @@ export function useExpedienteRenuncia(consecutivo: string): UseExpedienteRenunci
     // Inicio de negociación
     const fechaInicio = negociacion?.fecha_negociacion
     if (fechaInicio) {
-      hitos.push({ label: 'Inicio de negociación', fecha: fechaInicio, icono: 'Handshake', completado: true })
+      hitos.push({
+        label: 'Inicio de negociación',
+        fecha: fechaInicio,
+        icono: 'Handshake',
+        completado: true,
+      })
     }
 
     // Primer abono
     const abonosActivos = abonos.filter(a => a.estado === 'Activo')
     if (abonosActivos.length > 0) {
-      hitos.push({ label: 'Primer abono', fecha: abonosActivos[0].fecha_abono, icono: 'DollarSign', completado: true })
+      hitos.push({
+        label: 'Primer abono',
+        fecha: abonosActivos[0].fecha_abono,
+        icono: 'DollarSign',
+        completado: true,
+      })
     }
 
     // Último abono (si hay más de 1)
     if (abonosActivos.length > 1) {
-      hitos.push({ label: 'Último abono', fecha: abonosActivos[abonosActivos.length - 1].fecha_abono, icono: 'TrendingUp', completado: true })
+      hitos.push({
+        label: 'Último abono',
+        fecha: abonosActivos[abonosActivos.length - 1].fecha_abono,
+        icono: 'TrendingUp',
+        completado: true,
+      })
     }
 
     // Solicitud de renuncia
-    hitos.push({ label: 'Solicitud de renuncia', fecha: renuncia.fecha_renuncia, icono: 'FileX', completado: true })
+    hitos.push({
+      label: 'Solicitud de renuncia',
+      fecha: renuncia.fecha_renuncia,
+      icono: 'FileX',
+      completado: true,
+    })
 
     // Cierre
     if (renuncia.fecha_cierre) {
-      hitos.push({ label: 'Cierre de renuncia', fecha: renuncia.fecha_cierre, icono: 'CheckCircle', completado: true })
+      hitos.push({
+        label: 'Cierre de renuncia',
+        fecha: renuncia.fecha_cierre,
+        icono: 'CheckCircle',
+        completado: true,
+      })
     }
 
     // Devolución procesada
     if (renuncia.fecha_devolucion) {
-      hitos.push({ label: 'Devolución procesada', fecha: renuncia.fecha_devolucion, icono: 'Banknote', completado: true })
+      hitos.push({
+        label: 'Devolución procesada',
+        fecha: renuncia.fecha_devolucion,
+        icono: 'Banknote',
+        completado: true,
+      })
     }
 
     return hitos
@@ -114,7 +159,7 @@ export function useExpedienteRenuncia(consecutivo: string): UseExpedienteRenunci
     if (!renuncia?.abonos_snapshot) return []
     const snap = renuncia.abonos_snapshot
     if (Array.isArray(snap)) {
-      const mapped = snap.map((f: any) => ({
+      const mapped = (snap as Partial<FuenteExpediente>[]).map(f => ({
         tipo: f.tipo ?? 'N/A',
         entidad: f.entidad ?? null,
         monto_aprobado: Number(f.monto_aprobado ?? 0),
@@ -124,20 +169,34 @@ export function useExpedienteRenuncia(consecutivo: string): UseExpedienteRenunci
         fecha_completado: f.fecha_completado ?? null,
       }))
       // Ordenar por prioridad estándar (tipos_fuentes_pago.orden)
-      return mapped.sort((a, b) => getFuenteOrden(a.tipo) - getFuenteOrden(b.tipo))
+      return mapped.sort(
+        (a, b) => getFuenteOrden(a.tipo) - getFuenteOrden(b.tipo)
+      )
     }
     return []
   }, [renuncia])
 
   const resumenFinanciero = useMemo((): ResumenFinanciero => {
     if (!renuncia) {
-      return { valorNegociado: 0, totalAbonado: 0, saldoPendiente: 0, porcentajePagado: 0, descuento: null, retencion: null, montoADevolver: 0 }
+      return {
+        valorNegociado: 0,
+        totalAbonado: 0,
+        saldoPendiente: 0,
+        porcentajePagado: 0,
+        descuento: null,
+        retencion: null,
+        montoADevolver: 0,
+      }
     }
 
-    const valorNegociado = renuncia.negociacion.valor_total_pagar ?? renuncia.negociacion.valor_total ?? 0
+    const valorNegociado =
+      renuncia.negociacion.valor_total_pagar ??
+      renuncia.negociacion.valor_total ??
+      0
     const totalAbonado = abonosActivos(abonos)
     const saldoPendiente = valorNegociado - totalAbonado
-    const porcentajePagado = valorNegociado > 0 ? (totalAbonado / valorNegociado) * 100 : 0
+    const porcentajePagado =
+      valorNegociado > 0 ? (totalAbonado / valorNegociado) * 100 : 0
 
     const descuento = negociacion?.descuento_aplicado
       ? {
@@ -148,9 +207,13 @@ export function useExpedienteRenuncia(consecutivo: string): UseExpedienteRenunci
         }
       : null
 
-    const retencion = renuncia.retencion_monto > 0
-      ? { monto: renuncia.retencion_monto, motivo: renuncia.retencion_motivo ?? '' }
-      : null
+    const retencion =
+      renuncia.retencion_monto > 0
+        ? {
+            monto: renuncia.retencion_monto,
+            motivo: renuncia.retencion_motivo ?? '',
+          }
+        : null
 
     return {
       valorNegociado,
@@ -167,7 +230,10 @@ export function useExpedienteRenuncia(consecutivo: string): UseExpedienteRenunci
     if (!renuncia || !negociacion?.fecha_negociacion) return 0
     const inicio = new Date(negociacion.fecha_negociacion)
     const fin = new Date(renuncia.fecha_renuncia)
-    return Math.max(0, Math.round((fin.getTime() - inicio.getTime()) / (1000 * 60 * 60 * 24)))
+    return Math.max(
+      0,
+      Math.round((fin.getTime() - inicio.getTime()) / (1000 * 60 * 60 * 24))
+    )
   }, [renuncia, negociacion])
 
   const datos = useMemo((): ExpedienteData | null => {
@@ -191,7 +257,16 @@ export function useExpedienteRenuncia(consecutivo: string): UseExpedienteRenunci
       fuentes,
       duracionDias,
     }
-  }, [renuncia, abonos, negociacion, viviendaDetalle, timeline, resumenFinanciero, fuentes, duracionDias])
+  }, [
+    renuncia,
+    abonos,
+    negociacion,
+    viviendaDetalle,
+    timeline,
+    resumenFinanciero,
+    fuentes,
+    duracionDias,
+  ])
 
   return { datos, cargando, error, recargar: cargarDatos }
 }

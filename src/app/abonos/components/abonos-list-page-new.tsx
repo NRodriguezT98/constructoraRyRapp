@@ -23,6 +23,7 @@ import { AbonoDetalleModal } from '@/modules/abonos/components/abono-detalle-mod
 import type { AbonoParaDetalle } from '@/modules/abonos/components/abono-detalle-modal/useAbonoDetalle'
 import { ModalAnularAbono } from '@/modules/abonos/components/modal-anular-abono'
 import { ModalEditarAbono } from '@/modules/abonos/components/modal-editar-abono'
+import type { MetodoPago } from '@/modules/abonos/types'
 import type { AbonoParaEditar } from '@/modules/abonos/types/editar-abono.types'
 import { formatearNumeroRecibo } from '@/modules/abonos/utils/formato-recibo'
 import { EmptyState } from '@/shared/components/ui/EmptyState'
@@ -482,21 +483,20 @@ export function AbonosListPage({
                               <button
                                 onClick={e => {
                                   e.stopPropagation()
-                                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                  const rawAbono = abono as any
                                   setAbonoEditando({
                                     id: abono.id,
-                                    negociacion_id: rawAbono.negociacion_id,
-                                    fuente_pago_id: rawAbono.fuente_pago_id,
+                                    negociacion_id: abono.negociacion_id,
+                                    fuente_pago_id: abono.fuente_pago_id,
                                     fuente_tipo: abono.fuente_pago.tipo,
                                     monto: abono.monto,
                                     fecha_abono: abono.fecha_abono,
-                                    metodo_pago: rawAbono.metodo_pago ?? null,
+                                    metodo_pago: (abono.metodo_pago ??
+                                      null) as MetodoPago | null,
                                     numero_referencia:
-                                      rawAbono.numero_referencia ?? null,
-                                    notas: rawAbono.notas ?? null,
+                                      abono.numero_referencia ?? null,
+                                    notas: abono.notas ?? null,
                                     comprobante_url:
-                                      rawAbono.comprobante_url ?? null,
+                                      abono.comprobante_url ?? null,
                                   })
                                 }}
                                 className='inline-flex h-7 w-7 items-center justify-center rounded-lg bg-gray-100 text-gray-400 transition-colors hover:bg-blue-50 hover:text-blue-600 dark:bg-gray-700/50 dark:hover:bg-blue-900/30 dark:hover:text-blue-400'

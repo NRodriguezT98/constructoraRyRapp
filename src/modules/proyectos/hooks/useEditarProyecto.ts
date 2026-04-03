@@ -9,55 +9,90 @@ import { useCallback, useMemo, useState } from 'react'
 
 import { useQueryClient } from '@tanstack/react-query'
 import {
-    Building2,
-    CalendarDays,
-    FileText,
-    Home,
-    LayoutGrid,
-    MapPin,
-    Pencil,
-    Plus,
-    Trash2,
-    TrendingUp,
-    User,
+  Building2,
+  CalendarDays,
+  FileText,
+  Home,
+  LayoutGrid,
+  MapPin,
+  Pencil,
+  Plus,
+  Trash2,
+  TrendingUp,
+  User,
 } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { useRouter } from 'next/navigation'
 
-import type { SectionStatus, SummaryItem, WizardStepConfig } from '@/shared/components/accordion-wizard'
-import type { CambioDetectado, CategoriaConfig } from '@/shared/components/modulos/ConfirmarCambiosModal'
+import type {
+  SectionStatus,
+  SummaryItem,
+  WizardStepConfig,
+} from '@/shared/components/accordion-wizard'
+import type {
+  CambioDetectado,
+  CategoriaConfig,
+} from '@/shared/components/modulos/ConfirmarCambiosModal'
 
 import { proyectosService } from '../services/proyectos.service'
 import type { EstadoProyecto, Proyecto, ProyectoFormData } from '../types'
 
-import { useDetectarCambios, type CambioManzana, type ResumenCambios } from './useDetectarCambios'
+import {
+  useDetectarCambios,
+  type CambioManzana,
+  type ResumenCambios,
+} from './useDetectarCambios'
 import { useProyectoConValidacion } from './useProyectoConValidacion'
 import { useProyectosForm } from './useProyectosForm'
+
+// ── Campos por paso (constantes estables, definidas fuera del hook) ──
+const CAMPOS_PASO_1 = [
+  'nombre',
+  'departamento',
+  'ciudad',
+  'direccion',
+  'descripcion',
+]
+const CAMPOS_PASO_2 = [
+  'estado',
+  'fechaInicio',
+  'fechaFinEstimada',
+  'responsable',
+]
 
 // ── Configuración de pasos (misma que creación) ──────────────────
 export const PASOS_PROYECTO_EDICION: WizardStepConfig[] = [
   {
     id: 1,
     title: 'Información General',
-    description: 'Modifica el nombre, departamento, ciudad, dirección y descripción del proyecto.',
+    description:
+      'Modifica el nombre, departamento, ciudad, dirección y descripción del proyecto.',
     icon: Building2,
   },
   {
     id: 2,
     title: 'Estado y Fechas',
-    description: 'Actualiza el estado actual del proyecto y las fechas de inicio y fin estimada.',
+    description:
+      'Actualiza el estado actual del proyecto y las fechas de inicio y fin estimada.',
     icon: CalendarDays,
   },
   {
     id: 3,
     title: 'Manzanas',
-    description: 'Ajusta la distribución de manzanas y la cantidad de viviendas por cada una.',
+    description:
+      'Ajusta la distribución de manzanas y la cantidad de viviendas por cada una.',
     icon: LayoutGrid,
   },
 ]
 
-const FIELDS_PASO_1 = ['nombre', 'departamento', 'ciudad', 'direccion', 'descripcion'] as const
+const FIELDS_PASO_1 = [
+  'nombre',
+  'departamento',
+  'ciudad',
+  'direccion',
+  'descripcion',
+] as const
 const FIELDS_PASO_2 = ['estado', 'fechaInicio', 'fechaFinEstimada'] as const
 
 const ESTADO_LABELS: Record<string, string> = {
@@ -105,39 +140,61 @@ function convertirAGenerico(resumen: ResumenCambios): CambioDetectado[] {
 
   // Cambios de manzanas
   for (const m of resumen.manzanas) {
-    const icono = m.tipo === 'agregada' ? Plus : m.tipo === 'eliminada' ? Trash2 : Pencil
-    const label = m.tipo === 'agregada'
-      ? `Manzana ${m.nombre} (nueva)`
-      : m.tipo === 'eliminada'
-        ? `Manzana ${m.nombre} (eliminada)`
-        : `Manzana ${m.nombre}`
+    const icono =
+      m.tipo === 'agregada' ? Plus : m.tipo === 'eliminada' ? Trash2 : Pencil
+    const label =
+      m.tipo === 'agregada'
+        ? `Manzana ${m.nombre} (nueva)`
+        : m.tipo === 'eliminada'
+          ? `Manzana ${m.nombre} (eliminada)`
+          : `Manzana ${m.nombre}`
 
     const anterior = formatManzanaValor(m, 'anterior')
     const nuevo = formatManzanaValor(m, 'nuevo')
 
-    resultado.push({ campo: `manzana_${m.nombre}`, label, valorAnterior: anterior, valorNuevo: nuevo, icono, categoria: 'manzanas' })
+    resultado.push({
+      campo: `manzana_${m.nombre}`,
+      label,
+      valorAnterior: anterior,
+      valorNuevo: nuevo,
+      icono,
+      categoria: 'manzanas',
+    })
   }
 
   return resultado
 }
 
-function formatManzanaValor(m: CambioManzana, tipo: 'anterior' | 'nuevo'): string {
-  if (m.tipo === 'agregada') return tipo === 'anterior' ? '—' : `${m.cambios?.viviendasNuevo ?? 0} viviendas`
-  if (m.tipo === 'eliminada') return tipo === 'anterior' ? `${m.nombre}` : '— (eliminada)'
+function formatManzanaValor(
+  m: CambioManzana,
+  tipo: 'anterior' | 'nuevo'
+): string {
+  if (m.tipo === 'agregada')
+    return tipo === 'anterior'
+      ? '—'
+      : `${m.cambios?.viviendasNuevo ?? 0} viviendas`
+  if (m.tipo === 'eliminada')
+    return tipo === 'anterior' ? `${m.nombre}` : '— (eliminada)'
   // modificada
   const partes: string[] = []
   if (tipo === 'anterior') {
     if (m.cambios?.nombreAnterior) partes.push(m.cambios.nombreAnterior)
-    if (m.cambios?.viviendasAnterior != null) partes.push(`${m.cambios.viviendasAnterior} viv.`)
+    if (m.cambios?.viviendasAnterior != null)
+      partes.push(`${m.cambios.viviendasAnterior} viv.`)
   } else {
     if (m.cambios?.nombreNuevo) partes.push(m.cambios.nombreNuevo)
-    if (m.cambios?.viviendasNuevo != null) partes.push(`${m.cambios.viviendasNuevo} viv.`)
+    if (m.cambios?.viviendasNuevo != null)
+      partes.push(`${m.cambios.viviendasNuevo} viv.`)
   }
   return partes.join(', ') || '—'
 }
 
 /** Parsea el campo `ubicacion` de la DB en sus 3 campos separados */
-function parsearUbicacion(ubicacion: string): { departamento: string; ciudad: string; direccion: string } {
+function parsearUbicacion(ubicacion: string): {
+  departamento: string
+  ciudad: string
+  direccion: string
+} {
   const partes = ubicacion.split(', ')
   if (partes.length >= 3) {
     return {
@@ -157,12 +214,15 @@ export function useEditarProyecto(proyectoId: string) {
   const queryClient = useQueryClient()
 
   const [pasoActual, setPasoActual] = useState(1)
-  const [pasosCompletados, setPasosCompletados] = useState<Set<number>>(new Set())
+  const [pasosCompletados, setPasosCompletados] = useState<Set<number>>(
+    new Set()
+  )
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isValidating, setIsValidating] = useState(false)
   const [showSuccess, setShowSuccess] = useState(false)
   const [mostrarConfirmacion, setMostrarConfirmacion] = useState(false)
-  const [datosFormularioPendiente, setDatosFormularioPendiente] = useState<ProyectoFormData | null>(null)
+  const [datosFormularioPendiente, setDatosFormularioPendiente] =
+    useState<ProyectoFormData | null>(null)
 
   // ── Cargar proyecto con validación de manzanas ────────────────────
   const {
@@ -175,7 +235,9 @@ export function useEditarProyecto(proyectoId: string) {
   const initialData = useMemo((): Partial<ProyectoFormData> | undefined => {
     if (!proyectoConValidacion) return undefined
 
-    const { departamento, ciudad, direccion } = parsearUbicacion(proyectoConValidacion.ubicacion)
+    const { departamento, ciudad, direccion } = parsearUbicacion(
+      proyectoConValidacion.ubicacion
+    )
 
     return {
       id: proyectoConValidacion.id,
@@ -207,7 +269,9 @@ export function useEditarProyecto(proyectoId: string) {
   const proyectoOriginalParaCambios = useMemo((): Proyecto | null => {
     if (!proyectoConValidacion) return null
 
-    const { departamento, ciudad, direccion } = parsearUbicacion(proyectoConValidacion.ubicacion)
+    const { departamento, ciudad, direccion } = parsearUbicacion(
+      proyectoConValidacion.ubicacion
+    )
 
     return {
       id: proyectoConValidacion.id,
@@ -239,13 +303,19 @@ export function useEditarProyecto(proyectoId: string) {
 
   // ── Detección de cambios EN TIEMPO REAL (proyecto original vs formulario actual) ──
   // Se computa con los datos pendientes de confirmar (si existen) o con watch() en vivo
-  const resumenCambios = useDetectarCambios(proyectoOriginalParaCambios, datosFormularioPendiente)
+  const resumenCambios = useDetectarCambios(
+    proyectoOriginalParaCambios,
+    datosFormularioPendiente
+  )
 
   // ── Interceptor de submit: captura datos y muestra confirmación ──
-  const handleSubmitInterceptor = useCallback(async (data: ProyectoFormData) => {
-    setDatosFormularioPendiente(data)
-    setMostrarConfirmacion(true)
-  }, [])
+  const handleSubmitInterceptor = useCallback(
+    async (data: ProyectoFormData) => {
+      setDatosFormularioPendiente(data)
+      setMostrarConfirmacion(true)
+    },
+    []
+  )
 
   // ── Confirmar actualización: cerrar modal → loading en formulario → éxito/error ──
   const confirmarActualizacion = useCallback(async () => {
@@ -257,17 +327,25 @@ export function useEditarProyecto(proyectoId: string) {
     // 2. Formulario entra en loading state
     setIsSubmitting(true)
     try {
-      await proyectosService.actualizarProyecto(proyectoId, datosFormularioPendiente)
+      await proyectosService.actualizarProyecto(
+        proyectoId,
+        datosFormularioPendiente
+      )
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ['proyectos'] }),
-        queryClient.invalidateQueries({ queryKey: ['proyecto-validacion', proyectoId] }),
+        queryClient.invalidateQueries({
+          queryKey: ['proyecto-validacion', proyectoId],
+        }),
       ])
       // 3. Formulario muestra celebración de éxito
       setIsSubmitting(false)
       setShowSuccess(true)
       setTimeout(() => router.push('/proyectos'), 2000)
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Error al actualizar el proyecto'
+      const message =
+        error instanceof Error
+          ? error.message
+          : 'Error al actualizar el proyecto'
       setIsSubmitting(false)
       toast.error(message)
       setDatosFormularioPendiente(null)
@@ -294,9 +372,20 @@ export function useEditarProyecto(proyectoId: string) {
   })
 
   const {
-    register, control, errors, trigger, watch, setValue, setError,
-    fields, handleAgregarManzana, handleEliminarManzana,
-    totalManzanas, totalViviendas, manzanasWatch, canAgregarManzana,
+    register,
+    control,
+    errors,
+    trigger,
+    watch,
+    setValue,
+    setError,
+    fields,
+    handleAgregarManzana,
+    handleEliminarManzana,
+    totalManzanas,
+    totalViviendas,
+    manzanasWatch,
+    canAgregarManzana,
   } = form
 
   // ── Watch values para resúmenes ──────────────────────────────────
@@ -312,15 +401,20 @@ export function useEditarProyecto(proyectoId: string) {
     return allFormValues as ProyectoFormData
   }, [allFormValues, proyectoOriginalParaCambios])
 
-  const resumenCambiosLive = useDetectarCambios(proyectoOriginalParaCambios, datosFormularioLive)
+  const resumenCambiosLive = useDetectarCambios(
+    proyectoOriginalParaCambios,
+    datosFormularioLive
+  )
 
   // ── Cambios por paso (para badges en cada sección del accordion) ──
-  const CAMPOS_PASO_1 = ['nombre', 'departamento', 'ciudad', 'direccion', 'descripcion']
-  const CAMPOS_PASO_2 = ['estado', 'fechaInicio', 'fechaFinEstimada', 'responsable']
 
   const cambiosPorPaso = useMemo(() => {
-    const cambiosPaso1 = resumenCambiosLive.proyecto.filter(c => CAMPOS_PASO_1.includes(c.campo)).length
-    const cambiosPaso2 = resumenCambiosLive.proyecto.filter(c => CAMPOS_PASO_2.includes(c.campo)).length
+    const cambiosPaso1 = resumenCambiosLive.proyecto.filter(c =>
+      CAMPOS_PASO_1.includes(c.campo)
+    ).length
+    const cambiosPaso2 = resumenCambiosLive.proyecto.filter(c =>
+      CAMPOS_PASO_2.includes(c.campo)
+    ).length
     const cambiosPaso3 = resumenCambiosLive.manzanas.length
     return { paso1: cambiosPaso1, paso2: cambiosPaso2, paso3: cambiosPaso3 }
   }, [resumenCambiosLive])
@@ -328,31 +422,54 @@ export function useEditarProyecto(proyectoId: string) {
   const hayCambios = resumenCambiosLive.hayCambios
 
   // ── Estado de cada sección ───────────────────────────────────────
-  const getEstadoPaso = useCallback((paso: number): SectionStatus => {
-    if (pasosCompletados.has(paso)) return 'completed'
-    if (paso === pasoActual) return 'active'
-    return 'pending'
-  }, [pasoActual, pasosCompletados])
+  const getEstadoPaso = useCallback(
+    (paso: number): SectionStatus => {
+      if (pasosCompletados.has(paso)) return 'completed'
+      if (paso === pasoActual) return 'active'
+      return 'pending'
+    },
+    [pasoActual, pasosCompletados]
+  )
 
   // ── Resúmenes de pasos completados ──────────────────────────────
-  const summaryPaso1: SummaryItem[] = useMemo(() => [
-    { label: 'Nombre', value: watchedNombre },
-    { label: 'Departamento', value: watchedDepartamento },
-    { label: 'Ciudad', value: watchedCiudad },
-  ], [watchedNombre, watchedDepartamento, watchedCiudad])
+  const summaryPaso1: SummaryItem[] = useMemo(
+    () => [
+      { label: 'Nombre', value: watchedNombre },
+      { label: 'Departamento', value: watchedDepartamento },
+      { label: 'Ciudad', value: watchedCiudad },
+    ],
+    [watchedNombre, watchedDepartamento, watchedCiudad]
+  )
 
-  const summaryPaso2: SummaryItem[] = useMemo(() => [
-    { label: 'Estado', value: watchedEstado ? ESTADO_LABELS[watchedEstado] : undefined },
-  ], [watchedEstado])
+  const summaryPaso2: SummaryItem[] = useMemo(
+    () => [
+      {
+        label: 'Estado',
+        value: watchedEstado ? ESTADO_LABELS[watchedEstado] : undefined,
+      },
+    ],
+    [watchedEstado]
+  )
 
-  const summaryPaso3: SummaryItem[] = useMemo(() => [
-    { label: 'Manzanas', value: totalManzanas > 0 ? `${totalManzanas} manzana(s)` : undefined },
-    { label: 'Viviendas', value: totalViviendas > 0 ? `${totalViviendas} vivienda(s)` : undefined },
-  ], [totalManzanas, totalViviendas])
+  const summaryPaso3: SummaryItem[] = useMemo(
+    () => [
+      {
+        label: 'Manzanas',
+        value: totalManzanas > 0 ? `${totalManzanas} manzana(s)` : undefined,
+      },
+      {
+        label: 'Viviendas',
+        value: totalViviendas > 0 ? `${totalViviendas} vivienda(s)` : undefined,
+      },
+    ],
+    [totalManzanas, totalViviendas]
+  )
 
   // ── Progreso global ──────────────────────────────────────────────
   const progress = useMemo(() => {
-    return Math.round((pasosCompletados.size / PASOS_PROYECTO_EDICION.length) * 100)
+    return Math.round(
+      (pasosCompletados.size / PASOS_PROYECTO_EDICION.length) * 100
+    )
   }, [pasosCompletados.size])
 
   // ── Validación por paso (idéntica a useNuevoProyecto) ────────────
@@ -368,7 +485,10 @@ export function useEditarProyecto(proyectoId: string) {
           // (previene edge-case si el select no sincronizó con RHF)
           const ciudadVal = watch('ciudad') as string | undefined
           if (!ciudadVal || ciudadVal.trim() === '') {
-            setError('ciudad', { type: 'manual', message: 'Selecciona una ciudad o municipio' })
+            setError('ciudad', {
+              type: 'manual',
+              message: 'Selecciona una ciudad o municipio',
+            })
             return false
           }
           return true
@@ -381,21 +501,41 @@ export function useEditarProyecto(proyectoId: string) {
           const fechaFin = watch('fechaFinEstimada') as string | undefined
           const estado = watch('estado') as string | undefined
 
-          if (fechaInicio && fechaFin && fechaInicio.trim() !== '' && fechaFin.trim() !== '') {
+          if (
+            fechaInicio &&
+            fechaFin &&
+            fechaInicio.trim() !== '' &&
+            fechaFin.trim() !== ''
+          ) {
             const dateInicio = new Date(fechaInicio)
             const dateFin = new Date(fechaFin)
             const ahora = new Date()
 
             if (dateFin <= dateInicio) {
-              setError('fechaFinEstimada', { type: 'manual', message: 'La fecha de fin debe ser posterior a la fecha de inicio' })
+              setError('fechaFinEstimada', {
+                type: 'manual',
+                message:
+                  'La fecha de fin debe ser posterior a la fecha de inicio',
+              })
               return false
             }
             if (estado === 'completado' && dateFin > ahora) {
-              setError('fechaFinEstimada', { type: 'manual', message: 'Un proyecto completado no puede tener fecha de fin futura' })
+              setError('fechaFinEstimada', {
+                type: 'manual',
+                message:
+                  'Un proyecto completado no puede tener fecha de fin futura',
+              })
               return false
             }
-            if ((estado === 'en_proceso' || estado === 'en_construccion') && dateInicio > ahora) {
-              setError('fechaInicio', { type: 'manual', message: 'Un proyecto en proceso o en construcción no puede tener fecha de inicio futura' })
+            if (
+              (estado === 'en_proceso' || estado === 'en_construccion') &&
+              dateInicio > ahora
+            ) {
+              setError('fechaInicio', {
+                type: 'manual',
+                message:
+                  'Un proyecto en proceso o en construcción no puede tener fecha de inicio futura',
+              })
               return false
             }
           }
@@ -415,32 +555,35 @@ export function useEditarProyecto(proyectoId: string) {
     const valido = await validarPasoActual()
     if (!valido) return
 
-    setPasosCompletados((prev) => new Set(prev).add(pasoActual))
-    setPasoActual((prev) => Math.min(prev + 1, PASOS_PROYECTO_EDICION.length))
+    setPasosCompletados(prev => new Set(prev).add(pasoActual))
+    setPasoActual(prev => Math.min(prev + 1, PASOS_PROYECTO_EDICION.length))
   }, [pasoActual, validarPasoActual])
 
   const irAtras = useCallback(() => {
-    setPasoActual((prev) => Math.max(prev - 1, 1))
+    setPasoActual(prev => Math.max(prev - 1, 1))
   }, [])
 
-  const irAPaso = useCallback((paso: number) => {
-    if (pasosCompletados.has(paso)) {
-      setPasosCompletados((prev) => {
-        const next = new Set(prev)
-        for (let i = paso; i <= PASOS_PROYECTO_EDICION.length; i++) {
-          next.delete(i)
-        }
-        return next
-      })
-      setPasoActual(paso)
-    }
-  }, [pasosCompletados])
+  const irAPaso = useCallback(
+    (paso: number) => {
+      if (pasosCompletados.has(paso)) {
+        setPasosCompletados(prev => {
+          const next = new Set(prev)
+          for (let i = paso; i <= PASOS_PROYECTO_EDICION.length; i++) {
+            next.delete(i)
+          }
+          return next
+        })
+        setPasoActual(paso)
+      }
+    },
+    [pasosCompletados]
+  )
 
   const handleSubmit = useCallback(async () => {
     const valido = await validarPasoActual()
     if (!valido) return
 
-    setPasosCompletados((prev) => new Set(prev).add(pasoActual))
+    setPasosCompletados(prev => new Set(prev).add(pasoActual))
     form.handleSubmit()
   }, [pasoActual, validarPasoActual, form])
 

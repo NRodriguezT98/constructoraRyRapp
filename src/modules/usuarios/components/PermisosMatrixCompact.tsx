@@ -18,11 +18,22 @@
 import { useMemo, useState } from 'react'
 
 import { motion } from 'framer-motion'
-import { AlertCircle, CheckSquare, Info, Search, Shield, Square } from 'lucide-react'
+import {
+  AlertCircle,
+  CheckSquare,
+  Info,
+  Search,
+  Shield,
+  Square,
+} from 'lucide-react'
 
 import { logger } from '@/lib/utils/logger'
 
-import { useActualizarPermisoMutation, useTodosLosPermisosQuery } from '../hooks'
+import {
+  useActualizarPermisoMutation,
+  useTodosLosPermisosQuery,
+} from '../hooks'
+import type { PermisoRol } from '../services/permisos.service'
 import type { Rol } from '../types'
 
 export function PermisosMatrixCompact() {
@@ -38,18 +49,22 @@ export function PermisosMatrixCompact() {
   const roles: Rol[] = ['Administrador', 'Contador', 'Supervisor', 'Gerente']
 
   // Extraer módulos y acciones únicas
-  const modulos = useMemo(() =>
-    Array.from(new Set(permisos.map(p => p.modulo))).sort(),
+  const modulos = useMemo(
+    () => Array.from(new Set(permisos.map(p => p.modulo))).sort(),
     [permisos]
   )
 
   // Agrupar permisos: { rol: { modulo: { accion: permiso } } }
   const permisosPorRolModulo = useMemo(() => {
-    const result: Record<string, Record<string, Record<string, any>>> = {}
+    const result: Record<
+      string,
+      Record<string, Record<string, PermisoRol>>
+    > = {}
 
     permisos.forEach(permiso => {
       if (!result[permiso.rol]) result[permiso.rol] = {}
-      if (!result[permiso.rol][permiso.modulo]) result[permiso.rol][permiso.modulo] = {}
+      if (!result[permiso.rol][permiso.modulo])
+        result[permiso.rol][permiso.modulo] = {}
       result[permiso.rol][permiso.modulo][permiso.accion] = permiso
     })
 
@@ -94,20 +109,24 @@ export function PermisosMatrixCompact() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center p-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600" />
+      <div className='flex items-center justify-center p-12'>
+        <div className='h-8 w-8 animate-spin rounded-full border-b-2 border-purple-600' />
       </div>
     )
   }
 
   if (error) {
     return (
-      <div className="bg-red-50 dark:bg-red-900/20 border-2 border-red-200 dark:border-red-800 rounded-xl p-6">
-        <div className="flex items-center gap-3">
-          <AlertCircle className="w-6 h-6 text-red-600 dark:text-red-400" />
+      <div className='rounded-xl border-2 border-red-200 bg-red-50 p-6 dark:border-red-800 dark:bg-red-900/20'>
+        <div className='flex items-center gap-3'>
+          <AlertCircle className='h-6 w-6 text-red-600 dark:text-red-400' />
           <div>
-            <h3 className="font-semibold text-red-900 dark:text-red-100">Error al cargar permisos</h3>
-            <p className="text-sm text-red-700 dark:text-red-300">{(error as Error).message}</p>
+            <h3 className='font-semibold text-red-900 dark:text-red-100'>
+              Error al cargar permisos
+            </h3>
+            <p className='text-sm text-red-700 dark:text-red-300'>
+              {(error as Error).message}
+            </p>
           </div>
         </div>
       </div>
@@ -115,43 +134,43 @@ export function PermisosMatrixCompact() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className='space-y-4'>
       {/* Header Compacto */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center shadow-lg">
-            <Shield className="w-5 h-5 text-white" />
+      <div className='flex items-center justify-between'>
+        <div className='flex items-center gap-3'>
+          <div className='flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-purple-500 to-indigo-600 shadow-lg'>
+            <Shield className='h-5 w-5 text-white' />
           </div>
           <div>
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+            <h2 className='text-xl font-bold text-gray-900 dark:text-white'>
               Matriz de Permisos
             </h2>
-            <p className="text-xs text-gray-600 dark:text-gray-400">
+            <p className='text-xs text-gray-600 dark:text-gray-400'>
               {permisosFiltrados.length} de {permisos.length} permisos
             </p>
           </div>
         </div>
 
         {/* Info Badge */}
-        <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-          <Info className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-          <span className="text-xs text-blue-700 dark:text-blue-300">
+        <div className='hidden items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-3 py-1.5 dark:border-blue-800 dark:bg-blue-900/20 sm:flex'>
+          <Info className='h-4 w-4 text-blue-600 dark:text-blue-400' />
+          <span className='text-xs text-blue-700 dark:text-blue-300'>
             Click para activar/desactivar
           </span>
         </div>
       </div>
 
       {/* Filtros Horizontales Compactos */}
-      <div className="flex flex-wrap items-center gap-2 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
+      <div className='flex flex-wrap items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-800/50'>
         {/* Búsqueda */}
-        <div className="relative flex-1 min-w-[200px]">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+        <div className='relative min-w-[200px] flex-1'>
+          <Search className='pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400' />
           <input
-            type="text"
-            placeholder="Buscar módulo, acción..."
+            type='text'
+            placeholder='Buscar módulo, acción...'
             value={busqueda}
             onChange={e => setBusqueda(e.target.value)}
-            className="w-full pl-9 pr-3 py-1.5 text-sm bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
+            className='w-full rounded-lg border border-gray-300 bg-white py-1.5 pl-9 pr-3 text-sm transition-all focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 dark:border-gray-700 dark:bg-gray-900'
           />
         </div>
 
@@ -159,22 +178,22 @@ export function PermisosMatrixCompact() {
         <select
           value={filtroRol}
           onChange={e => setFiltroRol(e.target.value as Rol | 'todos')}
-          className="px-3 py-1.5 text-sm bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
+          className='rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm transition-all focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 dark:border-gray-700 dark:bg-gray-900'
         >
-          <option value="todos">📋 Todos los roles</option>
-          <option value="Administrador">👑 Administrador</option>
-          <option value="Contador">📊 Contador</option>
-          <option value="Supervisor">👁️ Supervisor</option>
-          <option value="Gerente">💼 Gerente</option>
+          <option value='todos'>📋 Todos los roles</option>
+          <option value='Administrador'>👑 Administrador</option>
+          <option value='Contador'>📊 Contador</option>
+          <option value='Supervisor'>👁️ Supervisor</option>
+          <option value='Gerente'>💼 Gerente</option>
         </select>
 
         {/* Filtro Módulo */}
         <select
           value={filtroModulo}
           onChange={e => setFiltroModulo(e.target.value)}
-          className="px-3 py-1.5 text-sm bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
+          className='rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm transition-all focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 dark:border-gray-700 dark:bg-gray-900'
         >
-          <option value="todos">📁 Todos los módulos</option>
+          <option value='todos'>📁 Todos los módulos</option>
           {modulos.map(mod => (
             <option key={mod} value={mod}>
               {mod}
@@ -190,7 +209,7 @@ export function PermisosMatrixCompact() {
               setFiltroModulo('todos')
               setBusqueda('')
             }}
-            className="px-3 py-1.5 text-xs font-medium text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded-lg transition-colors"
+            className='rounded-lg px-3 py-1.5 text-xs font-medium text-purple-600 transition-colors hover:bg-purple-50 dark:text-purple-400 dark:hover:bg-purple-900/20'
           >
             Limpiar
           </button>
@@ -198,35 +217,40 @@ export function PermisosMatrixCompact() {
       </div>
 
       {/* Tabla Compacta Estilo AWS IAM / Auth0 */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden shadow-sm">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50 dark:bg-gray-900/50 border-b border-gray-200 dark:border-gray-700">
+      <div className='overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800'>
+        <div className='overflow-x-auto'>
+          <table className='w-full text-sm'>
+            <thead className='border-b border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-900/50'>
               <tr>
-                <th className="sticky left-0 z-20 bg-gray-50 dark:bg-gray-900/50 px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider border-r border-gray-200 dark:border-gray-700">
+                <th className='sticky left-0 z-20 border-r border-gray-200 bg-gray-50 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-700 dark:border-gray-700 dark:bg-gray-900/50 dark:text-gray-300'>
                   Módulo
                 </th>
-                <th className="sticky left-0 z-20 bg-gray-50 dark:bg-gray-900/50 px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider" style={{ left: '140px' }}>
+                <th
+                  className='sticky left-0 z-20 bg-gray-50 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-700 dark:bg-gray-900/50 dark:text-gray-300'
+                  style={{ left: '140px' }}
+                >
                   Acción
                 </th>
-                {(filtroRol === 'todos' ? roles : [filtroRol as Rol]).map(rol => (
-                  <th
-                    key={rol}
-                    className="px-4 py-3 text-center text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider"
-                  >
-                    <div className="flex items-center justify-center gap-1">
-                      {rol === 'Administrador' && '👑'}
-                      {rol === 'Contador' && '📊'}
-                      {rol === 'Supervisor' && '👁️'}
-                      {rol === 'Gerente' && '💼'}
-                      <span className="hidden md:inline">{rol}</span>
-                      <span className="md:hidden">{rol.slice(0, 4)}</span>
-                    </div>
-                  </th>
-                ))}
+                {(filtroRol === 'todos' ? roles : [filtroRol as Rol]).map(
+                  rol => (
+                    <th
+                      key={rol}
+                      className='px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider text-gray-700 dark:text-gray-300'
+                    >
+                      <div className='flex items-center justify-center gap-1'>
+                        {rol === 'Administrador' && '👑'}
+                        {rol === 'Contador' && '📊'}
+                        {rol === 'Supervisor' && '👁️'}
+                        {rol === 'Gerente' && '💼'}
+                        <span className='hidden md:inline'>{rol}</span>
+                        <span className='md:hidden'>{rol.slice(0, 4)}</span>
+                      </div>
+                    </th>
+                  )
+                )}
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+            <tbody className='divide-y divide-gray-200 dark:divide-gray-700'>
               {modulos
                 .filter(mod => filtroModulo === 'todos' || filtroModulo === mod)
                 .map(modulo => {
@@ -246,15 +270,15 @@ export function PermisosMatrixCompact() {
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       transition={{ delay: idx * 0.02 }}
-                      className="hover:bg-gray-50 dark:hover:bg-gray-900/30 transition-colors"
+                      className='transition-colors hover:bg-gray-50 dark:hover:bg-gray-900/30'
                     >
                       {/* Columna Módulo (merged) */}
                       {idx === 0 && (
                         <td
                           rowSpan={accionesDelModulo.length}
-                          className="sticky left-0 z-10 bg-white dark:bg-gray-800 px-4 py-3 font-medium text-gray-900 dark:text-white border-r border-gray-200 dark:border-gray-700 align-top"
+                          className='sticky left-0 z-10 border-r border-gray-200 bg-white px-4 py-3 align-top font-medium text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-white'
                         >
-                          <div className="flex items-center gap-2">
+                          <div className='flex items-center gap-2'>
                             <span>📁</span>
                             <span>{modulo}</span>
                           </div>
@@ -262,54 +286,63 @@ export function PermisosMatrixCompact() {
                       )}
 
                       {/* Columna Acción */}
-                      <td className="px-4 py-3 text-gray-700 dark:text-gray-300 font-medium">
+                      <td className='px-4 py-3 font-medium text-gray-700 dark:text-gray-300'>
                         {accion}
                       </td>
 
                       {/* Columnas de Roles con Checkboxes */}
-                      {(filtroRol === 'todos' ? roles : [filtroRol as Rol]).map(rol => {
-                        const permiso = permisosPorRolModulo[rol]?.[modulo]?.[accion]
-                        const isAdmin = rol === 'Administrador'
+                      {(filtroRol === 'todos' ? roles : [filtroRol as Rol]).map(
+                        rol => {
+                          const permiso =
+                            permisosPorRolModulo[rol]?.[modulo]?.[accion]
+                          const isAdmin = rol === 'Administrador'
 
-                        return (
-                          <td key={rol} className="px-4 py-3 text-center">
-                            {permiso ? (
-                              <button
-                                onClick={() =>
-                                  !isAdmin && handleTogglePermiso(permiso.id, permiso.permitido)
-                                }
-                                disabled={isAdmin || actualizarPermisoMutation.isPending}
-                                className={`
-                                  inline-flex items-center justify-center w-6 h-6 rounded transition-all
-                                  ${
+                          return (
+                            <td key={rol} className='px-4 py-3 text-center'>
+                              {permiso ? (
+                                <button
+                                  onClick={() =>
+                                    !isAdmin &&
+                                    handleTogglePermiso(
+                                      permiso.id,
+                                      permiso.permitido
+                                    )
+                                  }
+                                  disabled={
+                                    isAdmin ||
+                                    actualizarPermisoMutation.isPending
+                                  }
+                                  className={`inline-flex h-6 w-6 items-center justify-center rounded transition-all ${
                                     permiso.permitido
-                                      ? 'bg-green-500 text-white hover:bg-green-600 shadow-sm'
-                                      : 'bg-gray-200 dark:bg-gray-700 text-gray-400 hover:bg-gray-300 dark:hover:bg-gray-600'
-                                  }
-                                  ${
+                                      ? 'bg-green-500 text-white shadow-sm hover:bg-green-600'
+                                      : 'bg-gray-200 text-gray-400 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600'
+                                  } ${
                                     isAdmin
-                                      ? 'opacity-60 cursor-not-allowed'
+                                      ? 'cursor-not-allowed opacity-60'
                                       : 'cursor-pointer hover:scale-110'
+                                  } `}
+                                  title={
+                                    isAdmin
+                                      ? 'Administrador tiene acceso total'
+                                      : permiso.descripcion ||
+                                        `${accion} en ${modulo}`
                                   }
-                                `}
-                                title={
-                                  isAdmin
-                                    ? 'Administrador tiene acceso total'
-                                    : permiso.descripcion || `${accion} en ${modulo}`
-                                }
-                              >
-                                {permiso.permitido ? (
-                                  <CheckSquare className="w-4 h-4" />
-                                ) : (
-                                  <Square className="w-4 h-4" />
-                                )}
-                              </button>
-                            ) : (
-                              <span className="text-gray-300 dark:text-gray-700">-</span>
-                            )}
-                          </td>
-                        )
-                      })}
+                                >
+                                  {permiso.permitido ? (
+                                    <CheckSquare className='h-4 w-4' />
+                                  ) : (
+                                    <Square className='h-4 w-4' />
+                                  )}
+                                </button>
+                              ) : (
+                                <span className='text-gray-300 dark:text-gray-700'>
+                                  -
+                                </span>
+                              )}
+                            </td>
+                          )
+                        }
+                      )}
                     </motion.tr>
                   ))
                 })}
@@ -318,18 +351,18 @@ export function PermisosMatrixCompact() {
         </div>
 
         {/* Footer con leyenda */}
-        <div className="px-4 py-3 bg-gray-50 dark:bg-gray-900/50 border-t border-gray-200 dark:border-gray-700 flex flex-wrap items-center justify-between gap-3 text-xs text-gray-600 dark:text-gray-400">
-          <div className="flex items-center gap-4">
-            <span className="flex items-center gap-1">
-              <CheckSquare className="w-3.5 h-3.5 text-green-500" />
+        <div className='flex flex-wrap items-center justify-between gap-3 border-t border-gray-200 bg-gray-50 px-4 py-3 text-xs text-gray-600 dark:border-gray-700 dark:bg-gray-900/50 dark:text-gray-400'>
+          <div className='flex items-center gap-4'>
+            <span className='flex items-center gap-1'>
+              <CheckSquare className='h-3.5 w-3.5 text-green-500' />
               Permitido
             </span>
-            <span className="flex items-center gap-1">
-              <Square className="w-3.5 h-3.5 text-gray-400" />
+            <span className='flex items-center gap-1'>
+              <Square className='h-3.5 w-3.5 text-gray-400' />
               Denegado
             </span>
           </div>
-          <span className="flex items-center gap-1">
+          <span className='flex items-center gap-1'>
             <span>👑</span>
             <span>Administrador tiene control total (no editable)</span>
           </span>

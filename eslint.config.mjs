@@ -17,12 +17,13 @@ const compat = new FlatCompat({
   allConfig: js.configs.all,
 });
 
-export default [
+const eslintConfig = [
   // ============================================
   // 🚫 ARCHIVOS IGNORADOS
   // ============================================
   {
     ignores: [
+      // ── Carpetas de build / tooling ──────────────────────────────────
       '**/node_modules/**',
       '**/.next/**',
       '**/out/**',
@@ -31,8 +32,15 @@ export default [
       '**/coverage/**',
       '**/.git/**',
       '**/build/**',
+      // ── Tipos generados automáticamente ─────────────────────────────
       'src/lib/supabase/database.types.ts',
       'src/types/database.types.ts',
+      // ── Carpetas que NO son código de producción ─────────────────────
+      '.agents/**',              // Templates de skills de agentes
+      'public/**/*.js',          // Scripts de debug servidos estáticamente
+      'supabase/diagnostico/**', // Scripts de diagnóstico SQL
+      'next-env.d.ts',           // Generado por Next.js, no editar
+      'scripts/data-ops/fix-utf8.js', // Contiene bytes UTF-8 literales que confunden el parser
     ],
   },
 
@@ -199,10 +207,17 @@ export default [
       'postcss.config.js',
     ],
     rules: {
+      // Scripts son Node.js legacy (CommonJS) — permitir todo lo necesario
       'no-console': 'off',
-      '@typescript-eslint/no-var-requires': 'off',
-      '@typescript-eslint/no-explicit-any': 'off',
       'no-restricted-syntax': 'off',
+      'no-alert': 'off',
+      'no-var': 'off',
+      'prefer-const': 'off',
+      'import/order': 'off',
+      '@typescript-eslint/no-var-requires': 'off',
+      '@typescript-eslint/no-require-imports': 'off',
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-unused-vars': 'off',
     },
   },
 
@@ -230,4 +245,23 @@ export default [
       '@typescript-eslint/no-var-requires': 'off',
     },
   },
+
+  // ============================================
+  // 📄 React-PDF Files (renderers, no HTML DOM)
+  // ============================================
+  {
+    files: [
+      '**/*PDF*.tsx',
+      '**/*pdf*.tsx',
+      '**/*pdf*.service.tsx',
+      '**/*PDF*.service.tsx',
+    ],
+    rules: {
+      // @react-pdf/renderer usa Image, Text, View, etc. — no son elementos HTML
+      // jsx-a11y no aplica a componentes de renderizado de PDF
+      'jsx-a11y/alt-text': 'off',
+    },
+  },
 ];
+
+export default eslintConfig;

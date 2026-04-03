@@ -2,14 +2,14 @@
 
 import { motion } from 'framer-motion'
 import {
-    AlertCircle,
-    Building2,
-    CheckCircle2,
-    ChevronRight,
-    DollarSign,
-    Home,
-    MessageSquare,
-    User,
+  AlertCircle,
+  Building2,
+  CheckCircle2,
+  ChevronRight,
+  DollarSign,
+  Home,
+  MessageSquare,
+  User,
 } from 'lucide-react'
 
 import { pageStyles as s } from '@/modules/clientes/pages/asignar-vivienda/styles'
@@ -55,17 +55,16 @@ export function Paso1InfoBasica({
   viviendaId,
   valorNegociado,
   descuentoAplicado,
-  valorTotal,
+  valorTotal: _valorTotal,
   notas,
   viviendaIdProp,
-  validacionCampos,
+  validacionCampos: _validacionCampos,
   mostrarErrores = false, // ✅ Por defecto NO mostrar errores
   onProyectoChange,
   onViviendaChange,
   onDescuentoChange,
   onNotasChange,
 }: Paso1InfoBasicaProps) {
-
   // Helper para clases de input con error
   const getInputClasses = (hasError: boolean) => {
     return `${s.input.base} ${
@@ -91,22 +90,22 @@ export function Paso1InfoBasica({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -10 }}
       transition={{ duration: 0.25 }}
-      className="space-y-3"
+      className='space-y-3'
     >
       {/* Barra de Progreso Compacta */}
-      <div className="backdrop-blur-xl bg-gradient-to-br from-blue-50/90 to-indigo-50/90 dark:from-blue-950/70 dark:to-indigo-950/70 border border-blue-200/50 dark:border-blue-700 rounded-lg p-3 shadow-lg">
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-xs font-bold text-blue-700 dark:text-blue-300 flex items-center gap-1.5">
-            <CheckCircle2 className="w-3.5 h-3.5" />
+      <div className='rounded-lg border border-blue-200/50 bg-gradient-to-br from-blue-50/90 to-indigo-50/90 p-3 shadow-lg backdrop-blur-xl dark:border-blue-700 dark:from-blue-950/70 dark:to-indigo-950/70'>
+        <div className='mb-2 flex items-center justify-between'>
+          <span className='flex items-center gap-1.5 text-xs font-bold text-blue-700 dark:text-blue-300'>
+            <CheckCircle2 className='h-3.5 w-3.5' />
             Progreso: {camposCompletados}/4 campos obligatorios
           </span>
-          <span className="text-xs font-bold text-blue-600 dark:text-blue-400">
+          <span className='text-xs font-bold text-blue-600 dark:text-blue-400'>
             {porcentajeProgreso}%
           </span>
         </div>
-        <div className="h-1.5 bg-blue-200 dark:bg-blue-900/50 rounded-full overflow-hidden">
+        <div className='h-1.5 overflow-hidden rounded-full bg-blue-200 dark:bg-blue-900/50'>
           <motion.div
-            className="h-full bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 shadow-lg"
+            className='h-full bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 shadow-lg'
             initial={{ width: 0 }}
             animate={{ width: `${porcentajeProgreso}%` }}
             transition={{ duration: 0.15, ease: 'easeOut' }}
@@ -115,154 +114,180 @@ export function Paso1InfoBasica({
       </div>
 
       <div className={s.alert.info}>
-        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center flex-shrink-0 shadow-lg shadow-cyan-500/30">
-          <User className="w-5 h-5 text-white" />
+        <div className='flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-500 to-blue-500 shadow-lg shadow-cyan-500/30'>
+          <User className='h-5 w-5 text-white' />
         </div>
         <div>
-          <p className="text-xs text-cyan-700 dark:text-cyan-300 font-semibold">Cliente Seleccionado</p>
-          <p className="text-sm font-bold bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 bg-clip-text text-transparent mt-0.5">
+          <p className='text-xs font-semibold text-cyan-700 dark:text-cyan-300'>
+            Cliente Seleccionado
+          </p>
+          <p className='mt-0.5 bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 bg-clip-text text-sm font-bold text-transparent'>
             {clienteNombre || 'Cliente seleccionado'}
           </p>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-        <div className="space-y-1.5">
+      <div className='grid grid-cols-1 gap-3 md:grid-cols-2'>
+        <div className='space-y-1.5'>
           <label className={s.label.base}>
-            <Building2 className="w-4 h-4 text-cyan-500 dark:text-cyan-400" />
+            <Building2 className='h-4 w-4 text-cyan-500 dark:text-cyan-400' />
             Proyecto
-            <span className="text-red-500 ml-0.5">*</span>
+            <span className='ml-0.5 text-red-500'>*</span>
           </label>
-          <div className="relative">
+          <div className='relative'>
             <select
               value={proyectoSeleccionado}
-              onChange={(e) => onProyectoChange(e.target.value)}
+              onChange={e => onProyectoChange(e.target.value)}
               disabled={cargandoProyectos || !!viviendaIdProp}
               className={getInputClasses(
                 mostrarErrores && proyectos.length > 0 && !proyectoSeleccionado
               )}
             >
-              <option value="">Selecciona un proyecto</option>
-              {proyectos.map((p) => (
+              <option value=''>Selecciona un proyecto</option>
+              {proyectos.map(p => (
                 <option key={p.id} value={p.id}>
                   {p.nombre}
                 </option>
               ))}
             </select>
-            <ChevronRight className="pointer-events-none absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 rotate-90 text-gray-400" />
+            <ChevronRight className='pointer-events-none absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 rotate-90 text-gray-400' />
           </div>
           {mostrarErrores && proyectos.length > 0 && !proyectoSeleccionado && (
-            <p className="mt-1 text-xs text-red-600 dark:text-red-400 flex items-center gap-1">
-              <AlertCircle className="w-3 h-3" />
+            <p className='mt-1 flex items-center gap-1 text-xs text-red-600 dark:text-red-400'>
+              <AlertCircle className='h-3 w-3' />
               Selecciona un proyecto
             </p>
           )}
         </div>
 
-        <div className="space-y-1.5">
+        <div className='space-y-1.5'>
           <label className={s.label.base}>
-            <Home className="w-4 h-4 text-blue-500 dark:text-blue-400" />
+            <Home className='h-4 w-4 text-blue-500 dark:text-blue-400' />
             Vivienda
-            <span className="text-red-500 ml-0.5">*</span>
+            <span className='ml-0.5 text-red-500'>*</span>
           </label>
 
           <ViviendaCombobox
             viviendas={viviendas}
             value={viviendaId}
             onChange={onViviendaChange}
-            disabled={!proyectoSeleccionado || cargandoViviendas || !!viviendaIdProp}
-            placeholder="Busca por manzana o número (ej: A3)"
+            disabled={
+              !proyectoSeleccionado || cargandoViviendas || !!viviendaIdProp
+            }
+            placeholder='Busca por manzana o número (ej: A3)'
             error={mostrarErrores && !!proyectoSeleccionado && !viviendaId}
           />
 
-          {mostrarErrores && proyectoSeleccionado && !viviendaId && !cargandoViviendas && (
-            <p className="mt-1 text-xs text-red-600 dark:text-red-400 flex items-center gap-1">
-              <AlertCircle className="w-3 h-3" />
-              Selecciona una vivienda
-            </p>
-          )}
+          {mostrarErrores &&
+            proyectoSeleccionado &&
+            !viviendaId &&
+            !cargandoViviendas && (
+              <p className='mt-1 flex items-center gap-1 text-xs text-red-600 dark:text-red-400'>
+                <AlertCircle className='h-3 w-3' />
+                Selecciona una vivienda
+              </p>
+            )}
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-        <div className="space-y-1.5">
+      <div className='grid grid-cols-1 gap-3 md:grid-cols-2'>
+        <div className='space-y-1.5'>
           <label className={s.label.base}>
-            <DollarSign className="w-4 h-4 text-green-500 dark:text-green-400" />
+            <DollarSign className='h-4 w-4 text-green-500 dark:text-green-400' />
             Valor de la Vivienda
-            <span className="text-xs text-gray-500 dark:text-gray-400 ml-auto font-normal">(auto-llenado)</span>
+            <span className='ml-auto text-xs font-normal text-gray-500 dark:text-gray-400'>
+              (auto-llenado)
+            </span>
           </label>
-          <div className="relative">
-            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+          <div className='relative'>
+            <span className='absolute left-4 top-1/2 -translate-y-1/2 text-gray-500'>
+              $
+            </span>
             <input
-              type="text"
+              type='text'
               readOnly
-              value={valorNegociado ? valorNegociado.toLocaleString('es-CO') : '0'}
-              placeholder="Selecciona una vivienda"
-              className="w-full px-4 py-3 pl-8 backdrop-blur-xl bg-gray-50/80 dark:bg-gray-900/80 border border-gray-200 dark:border-gray-700 rounded-xl text-sm font-semibold text-gray-600 dark:text-gray-300 cursor-not-allowed"
+              value={
+                valorNegociado ? valorNegociado.toLocaleString('es-CO') : '0'
+              }
+              placeholder='Selecciona una vivienda'
+              className='w-full cursor-not-allowed rounded-xl border border-gray-200 bg-gray-50/80 px-4 py-3 pl-8 text-sm font-semibold text-gray-600 backdrop-blur-xl dark:border-gray-700 dark:bg-gray-900/80 dark:text-gray-300'
             />
           </div>
           {valorNegociado > 0 && (
-            <p className="text-[10px] text-gray-500 dark:text-gray-400 flex items-center gap-1">
-              <CheckCircle2 className="w-3 h-3 text-green-500" />
+            <p className='flex items-center gap-1 text-[10px] text-gray-500 dark:text-gray-400'>
+              <CheckCircle2 className='h-3 w-3 text-green-500' />
               Valor cargado desde vivienda
             </p>
           )}
         </div>
 
-        <div className="space-y-1.5">
+        <div className='space-y-1.5'>
           <label className={s.label.base}>
-            <DollarSign className="w-4 h-4 text-orange-500 dark:text-orange-400" />
+            <DollarSign className='h-4 w-4 text-orange-500 dark:text-orange-400' />
             Descuento Aplicado
-            <span className="text-xs text-gray-500 dark:text-gray-400 ml-auto font-normal">(opcional)</span>
+            <span className='ml-auto text-xs font-normal text-gray-500 dark:text-gray-400'>
+              (opcional)
+            </span>
           </label>
-          <div className="relative">
-            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+          <div className='relative'>
+            <span className='absolute left-4 top-1/2 -translate-y-1/2 text-gray-500'>
+              $
+            </span>
             <input
-              type="text"
-              value={descuentoAplicado ? descuentoAplicado.toLocaleString('es-CO') : ''}
-              onChange={(e) => {
-                const valor = e.target.value.replace(/\./g, '').replace(/,/g, '')
+              type='text'
+              value={
+                descuentoAplicado
+                  ? descuentoAplicado.toLocaleString('es-CO')
+                  : ''
+              }
+              onChange={e => {
+                const valor = e.target.value
+                  .replace(/\./g, '')
+                  .replace(/,/g, '')
                 const numero = Number(valor)
                 if (!isNaN(numero)) {
                   onDescuentoChange(numero)
                 }
               }}
-              placeholder="0"
+              placeholder='0'
               className={`${getInputClasses(
                 mostrarErrores && descuentoAplicado >= valorNegociado
               )} pl-8`}
             />
           </div>
           {mostrarErrores && descuentoAplicado >= valorNegociado && (
-            <p className="mt-1 text-xs text-red-600 dark:text-red-400 flex items-center gap-1">
-              <AlertCircle className="w-3 h-3" />
+            <p className='mt-1 flex items-center gap-1 text-xs text-red-600 dark:text-red-400'>
+              <AlertCircle className='h-3 w-3' />
               El descuento no puede ser mayor o igual al valor de la vivienda
             </p>
           )}
           {descuentoAplicado > 0 && descuentoAplicado < valorNegociado && (
-            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-              Descuento aplicado: {((descuentoAplicado / valorNegociado) * 100).toFixed(1)}%
+            <p className='mt-1 text-xs text-gray-500 dark:text-gray-400'>
+              Descuento aplicado:{' '}
+              {((descuentoAplicado / valorNegociado) * 100).toFixed(1)}%
             </p>
           )}
         </div>
       </div>
 
-      <div className="space-y-1.5">
+      <div className='space-y-1.5'>
         <label className={s.label.base}>
-          <MessageSquare className="w-4 h-4 text-indigo-500 dark:text-indigo-400" />
+          <MessageSquare className='h-4 w-4 text-indigo-500 dark:text-indigo-400' />
           Notas / Observaciones
-          <span className="text-xs text-gray-500 dark:text-gray-400 ml-2 font-normal">(opcional)</span>
+          <span className='ml-2 text-xs font-normal text-gray-500 dark:text-gray-400'>
+            (opcional)
+          </span>
         </label>
         <textarea
           value={notas}
-          onChange={(e) => onNotasChange(e.target.value)}
+          onChange={e => onNotasChange(e.target.value)}
           rows={3}
-          placeholder="Ej: Cliente solicitó descuento por pronto pago, tiene preferencia por segundo piso..."
+          placeholder='Ej: Cliente solicitó descuento por pronto pago, tiene preferencia por segundo piso...'
           className={`${s.input.base} resize-none`}
         />
         {notas && (
-          <p className="text-[10px] text-gray-500 dark:text-gray-400 flex items-center gap-1">
-            <CheckCircle2 className="w-3 h-3 text-green-500" />
+          <p className='flex items-center gap-1 text-[10px] text-gray-500 dark:text-gray-400'>
+            <CheckCircle2 className='h-3 w-3 text-green-500' />
             {notas.length} caracteres
           </p>
         )}

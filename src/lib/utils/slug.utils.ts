@@ -76,10 +76,14 @@ export function generarSlugProyecto(proyecto: {
 /**
  * Genera slug para vivienda: proyecto-manzana-numero-shortid
  */
-export function generarSlugVivienda(vivienda: {
-  numero: string
-  id: string
-}, manzana?: string, proyecto?: string): string {
+export function generarSlugVivienda(
+  vivienda: {
+    numero: string
+    id: string
+  },
+  manzana?: string,
+  proyecto?: string
+): string {
   const partes: string[] = []
 
   // Solo agregar partes si existen y no están vacías
@@ -110,7 +114,8 @@ export function generarSlugVivienda(vivienda: {
  * Verifica si un string es un UUID válido
  */
 export function esUUID(valor: string): boolean {
-  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+  const uuidRegex =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
   return uuidRegex.test(valor)
 }
 
@@ -158,9 +163,7 @@ export async function resolverSlugAUUID(
 
     // Obtener todos los registros y filtrar en cliente
     // Esto es más eficiente que una query LIKE que puede no estar soportada por RLS
-    const { data, error } = await supabase
-      .from(tabla)
-      .select('id')
+    const { data, error } = await supabase.from(tabla).select('id')
 
     if (error) {
       logger.error(`❌ Error al buscar en ${tabla}:`, error)
@@ -173,12 +176,14 @@ export async function resolverSlugAUUID(
     }
 
     // Filtrar en cliente por UUID que empiece con el short ID
-    const registro = data.find((item: any) =>
+    const registro = data.find((item: { id: string }) =>
       item.id.toLowerCase().startsWith(shortId.toLowerCase())
     )
 
     if (!registro) {
-      logger.error(`❌ No se encontró registro con short ID: ${shortId} en tabla: ${tabla}`)
+      logger.error(
+        `❌ No se encontró registro con short ID: ${shortId} en tabla: ${tabla}`
+      )
       return null
     }
 
@@ -192,21 +197,27 @@ export async function resolverSlugAUUID(
 /**
  * Hook para resolver slug en componentes de cliente
  */
-export async function resolverSlugCliente(slugOUUID: string): Promise<string | null> {
+export async function resolverSlugCliente(
+  slugOUUID: string
+): Promise<string | null> {
   return resolverSlugAUUID(slugOUUID, 'clientes')
 }
 
 /**
  * Hook para resolver slug de proyecto
  */
-export async function resolverSlugProyecto(slugOUUID: string): Promise<string | null> {
+export async function resolverSlugProyecto(
+  slugOUUID: string
+): Promise<string | null> {
   return resolverSlugAUUID(slugOUUID, 'proyectos')
 }
 
 /**
  * Hook para resolver slug de vivienda
  */
-export async function resolverSlugVivienda(slugOUUID: string): Promise<string | null> {
+export async function resolverSlugVivienda(
+  slugOUUID: string
+): Promise<string | null> {
   return resolverSlugAUUID(slugOUUID, 'viviendas')
 }
 
@@ -231,7 +242,7 @@ export function construirURLCliente(cliente: {
     slug = generarSlugCliente({
       nombres: cliente.nombres,
       apellidos: cliente.apellidos,
-      id: cliente.id
+      id: cliente.id,
     })
   } else if (cliente.nombre_completo) {
     // Usar nombre completo y normalizarlo

@@ -10,16 +10,16 @@
 // ============================================
 
 export type TipoCampoDinamico =
-  | 'text'              // Input de texto simple
-  | 'textarea'          // Área de texto
-  | 'number'            // Input numérico
-  | 'currency'          // Input de moneda (con formato COP)
-  | 'date'              // Selector de fecha
-  | 'select_banco'      // Select con bancos desde BD
-  | 'select_caja'       // Select con cajas desde BD
-  | 'select_custom'     // Select con opciones custom
-  | 'checkbox'          // Checkbox
-  | 'radio'             // Radio buttons
+  | 'text' // Input de texto simple
+  | 'textarea' // Área de texto
+  | 'number' // Input numérico
+  | 'currency' // Input de moneda (con formato COP)
+  | 'date' // Selector de fecha
+  | 'select_banco' // Select con bancos desde BD
+  | 'select_caja' // Select con cajas desde BD
+  | 'select_custom' // Select con opciones custom
+  | 'checkbox' // Checkbox
+  | 'radio' // Radio buttons
 
 // ============================================
 // ROLES DE CAMPOS (para identificar propósito)
@@ -41,18 +41,18 @@ export type RolCampo = 'monto' | 'entidad' | 'referencia' | 'informativo'
 
 export interface CampoConfig {
   // Identificación
-  nombre: string                    // Nombre del campo (key en el objeto)
-  tipo: TipoCampoDinamico           // Tipo de input a renderizar
-  rol: RolCampo                     // 🔥 ROL: propósito del campo en el sistema
+  nombre: string // Nombre del campo (key en el objeto)
+  tipo: TipoCampoDinamico // Tipo de input a renderizar
+  rol: RolCampo // 🔥 ROL: propósito del campo en el sistema
 
   // UI
-  label: string                     // Etiqueta a mostrar
-  placeholder?: string              // Placeholder del input
-  ayuda?: string                    // Texto de ayuda debajo del campo
+  label: string // Etiqueta a mostrar
+  placeholder?: string // Placeholder del input
+  ayuda?: string // Texto de ayuda debajo del campo
 
   // Validación
-  requerido: boolean                // Si es campo obligatorio
-  orden: number                     // Orden de aparición (para ordenar)
+  requerido: boolean // Si es campo obligatorio
+  orden: number // Orden de aparición (para ordenar)
 
   // Opciones (para selects/radios)
   opciones?: Array<{
@@ -61,15 +61,15 @@ export interface CampoConfig {
   }>
 
   // Validaciones adicionales
-  min?: number                      // Mínimo (para numbers/currency)
-  max?: number                      // Máximo (para numbers/currency)
-  pattern?: string                  // Regex de validación
-  mensajeError?: string             // Mensaje de error personalizado
+  min?: number // Mínimo (para numbers/currency)
+  max?: number // Máximo (para numbers/currency)
+  pattern?: string // Regex de validación
+  mensajeError?: string // Mensaje de error personalizado
 
   // Condicionales (futuro)
   mostrarSi?: {
     campo: string
-    valor: any
+    valor: unknown
   }
 }
 

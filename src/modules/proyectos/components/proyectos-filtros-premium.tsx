@@ -34,10 +34,16 @@ interface ProyectosFiltrosPremiumProps {
 export function ProyectosFiltrosPremium({
   totalResultados = 0,
   filtros = { busqueda: '', estado: undefined },
-  onActualizarFiltros = () => {},
-  onLimpiarFiltros = () => {},
+  onActualizarFiltros = (_filtros: Partial<FiltroProyecto>) => {
+    /* noop: prop opcional sin handler */
+  },
+  onLimpiarFiltros = () => {
+    /* noop: prop opcional sin handler */
+  },
   vista = 'cards',
-  onCambiarVista = () => {},
+  onCambiarVista = (_vista: TipoVista) => {
+    /* noop: prop opcional sin handler */
+  },
 }: ProyectosFiltrosPremiumProps) {
   // ✅ FIX HYDRATION: Evitar mismatch entre servidor y cliente
   const [mounted, setMounted] = useState(false)
@@ -46,7 +52,9 @@ export function ProyectosFiltrosPremium({
     setMounted(true)
   }, [])
 
-  const hasFilters = Boolean(filtros.busqueda || filtros.estado || filtros.verArchivados)
+  const hasFilters = Boolean(
+    filtros.busqueda || filtros.estado || filtros.verArchivados
+  )
 
   const handleLimpiarFiltros = () => {
     onLimpiarFiltros()
@@ -59,21 +67,24 @@ export function ProyectosFiltrosPremium({
   }
 
   return (
-    <motion.div {...styles.animations.filtros} className={styles.filtros.container}>
+    <motion.div
+      {...styles.animations.filtros}
+      className={styles.filtros.container}
+    >
       {/* Barra principal de búsqueda */}
       <div className={styles.filtros.searchBar}>
         {/* Búsqueda mejorada */}
         <div className={styles.filtros.searchWrapper}>
-          <label htmlFor="search-proyectos" className={styles.filtros.label}>
+          <label htmlFor='search-proyectos' className={styles.filtros.label}>
             Buscar
           </label>
           <Search className={styles.filtros.searchIcon} />
           <input
-            id="search-proyectos"
-            type="text"
+            id='search-proyectos'
+            type='text'
             value={filtros.busqueda || ''}
             onChange={e => onActualizarFiltros({ busqueda: e.target.value })}
-            placeholder="Buscar por nombre, ubicación..."
+            placeholder='Buscar por nombre, ubicación...'
             className={styles.filtros.searchInput}
           />
           {filtros.busqueda && (
@@ -83,9 +94,9 @@ export function ProyectosFiltrosPremium({
               exit={{ opacity: 0, scale: 0.8 }}
               onClick={() => onActualizarFiltros({ busqueda: '' })}
               className={styles.filtros.searchClearButton}
-              aria-label="Limpiar búsqueda"
+              aria-label='Limpiar búsqueda'
             >
-              <X className="w-4 h-4" />
+              <X className='h-4 w-4' />
             </motion.button>
           )}
         </div>
@@ -94,58 +105,60 @@ export function ProyectosFiltrosPremium({
       {/* Pills de Estado */}
       <div className={styles.filtros.pillsSection}>
         <div className={styles.filtros.pillsLabel}>
-          <Filter className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
-          <span className="text-xs font-medium text-gray-600 dark:text-gray-400">
+          <Filter className='h-3.5 w-3.5 text-gray-500 dark:text-gray-400' />
+          <span className='text-xs font-medium text-gray-600 dark:text-gray-400'>
             Estado:
           </span>
         </div>
-        <div className="flex items-center gap-3">
+        <div className='flex items-center gap-3'>
           <div className={styles.filtros.pillsContainer}>
-          {ESTADOS_PROYECTO.map(estado => {
-            const isActive = filtros.estado === estado.value
-            const getIcon = () => {
-              if (estado.value === undefined) return '📋' // Todos
-              if (estado.value === 'en_proceso') return '🏗️'
-              if (estado.value === 'completado') return '✅'
-              return '📋'
-            }
+            {ESTADOS_PROYECTO.map(estado => {
+              const isActive = filtros.estado === estado.value
+              const getIcon = () => {
+                if (estado.value === undefined) return '📋' // Todos
+                if (estado.value === 'en_proceso') return '🏗️'
+                if (estado.value === 'completado') return '✅'
+                return '📋'
+              }
 
-            return (
-              <motion.button
-                key={estado.label}
-                onClick={() => handleToggleEstado(estado.value)}
-                className={
-                  isActive ? styles.filtros.pillActive : styles.filtros.pill
-                }
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <span className={styles.filtros.pillIcon}>
-                  {getIcon()}
-                </span>
-                <span className={styles.filtros.pillLabel}>{estado.label}</span>
-                {isActive && (
-                  <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    className={styles.filtros.pillCheck}
-                  >
-                    ✓
-                  </motion.div>
-                )}
-              </motion.button>
-            )
-          })}
+              return (
+                <motion.button
+                  key={estado.label}
+                  onClick={() => handleToggleEstado(estado.value)}
+                  className={
+                    isActive ? styles.filtros.pillActive : styles.filtros.pill
+                  }
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <span className={styles.filtros.pillIcon}>{getIcon()}</span>
+                  <span className={styles.filtros.pillLabel}>
+                    {estado.label}
+                  </span>
+                  {isActive && (
+                    <motion.div
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      className={styles.filtros.pillCheck}
+                    >
+                      ✓
+                    </motion.div>
+                  )}
+                </motion.button>
+              )
+            })}
           </div>
           {/* Toggle Ver Archivados */}
-          <label className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer">
+          <label className='flex cursor-pointer items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-1.5 transition-colors hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-800/50 dark:hover:bg-gray-800'>
             <input
-              type="checkbox"
+              type='checkbox'
               checked={filtros.verArchivados || false}
-              onChange={(e) => onActualizarFiltros({ verArchivados: e.target.checked })}
-              className="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-amber-600 focus:ring-2 focus:ring-amber-500/20 focus:ring-offset-0 bg-white dark:bg-gray-900 cursor-pointer"
+              onChange={e =>
+                onActualizarFiltros({ verArchivados: e.target.checked })
+              }
+              className='h-4 w-4 cursor-pointer rounded border-gray-300 bg-white text-amber-600 focus:ring-2 focus:ring-amber-500/20 focus:ring-offset-0 dark:border-gray-600 dark:bg-gray-900'
             />
-            <span className="text-xs font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
+            <span className='whitespace-nowrap text-xs font-medium text-gray-700 dark:text-gray-300'>
               📦 Ver archivados
             </span>
           </label>
@@ -156,31 +169,31 @@ export function ProyectosFiltrosPremium({
       <div className={styles.filtros.footer}>
         {/* Toggle Cards/Tabla - Solo renderizar después de montar para evitar hydration mismatch */}
         {mounted && (
-          <div className="flex items-center gap-1 p-1 bg-gray-100 dark:bg-gray-800 rounded-lg">
+          <div className='flex items-center gap-1 rounded-lg bg-gray-100 p-1 dark:bg-gray-800'>
             <button
               onClick={() => onCambiarVista('cards')}
               className={cn(
-                'px-2.5 py-1.5 rounded-md text-xs font-medium transition-all flex items-center gap-1.5',
+                'flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium transition-all',
                 vista === 'cards'
-                  ? 'bg-white dark:bg-gray-700 text-orange-600 dark:text-orange-400 shadow-sm'
-                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+                  ? 'bg-white text-orange-600 shadow-sm dark:bg-gray-700 dark:text-orange-400'
+                  : 'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200'
               )}
-              title="Vista de cards"
+              title='Vista de cards'
             >
-              <LayoutGrid className="w-3.5 h-3.5" />
+              <LayoutGrid className='h-3.5 w-3.5' />
               <span>Cards</span>
             </button>
             <button
               onClick={() => onCambiarVista('tabla')}
               className={cn(
-                'px-2.5 py-1.5 rounded-md text-xs font-medium transition-all flex items-center gap-1.5',
+                'flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium transition-all',
                 vista === 'tabla'
-                  ? 'bg-white dark:bg-gray-700 text-orange-600 dark:text-orange-400 shadow-sm'
-                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+                  ? 'bg-white text-orange-600 shadow-sm dark:bg-gray-700 dark:text-orange-400'
+                  : 'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200'
               )}
-              title="Vista de tabla"
+              title='Vista de tabla'
             >
-              <Table className="w-3.5 h-3.5" />
+              <Table className='h-3.5 w-3.5' />
               <span>Tabla</span>
             </button>
           </div>

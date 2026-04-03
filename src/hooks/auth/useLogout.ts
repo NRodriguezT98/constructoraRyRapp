@@ -21,17 +21,15 @@
 
 import { useCallback, useState } from 'react'
 
-import { useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
-
-import { useRouter } from 'next/navigation'
 
 import {
   showLoggingOutToast,
   showLogoutErrorToast,
-  showLogoutToast
+  showLogoutToast,
 } from '@/components/toasts/custom-toasts'
 import { debugLog, errorLog, successLog } from '@/lib/utils/logger'
+import { useModal } from '@/shared/components/modals'
 
 import { useLogoutMutation } from './useAuthMutations'
 
@@ -87,10 +85,9 @@ export function useLogout(options: UseLogoutOptions = {}): UseLogoutReturn {
     onAfterLogout,
   } = options
 
-  const router = useRouter()
-  const queryClient = useQueryClient()
   const logoutMutation = useLogoutMutation()
   const [isLoggingOut, setIsLoggingOut] = useState(false)
+  const { confirm } = useModal()
 
   /**
    * Ejecutar logout con feedback completo
@@ -104,7 +101,13 @@ export function useLogout(options: UseLogoutOptions = {}): UseLogoutReturn {
 
     // Confirmación (si está habilitada)
     if (requireConfirmation) {
-      const confirmed = window.confirm('¿Estás seguro de que quieres cerrar sesión?')
+      const confirmed = await confirm({
+        title: 'Cerrar sesión',
+        message: '¿Estás seguro de que quieres cerrar sesión?',
+        variant: 'warning',
+        confirmText: 'Cerrar sesión',
+        cancelText: 'Cancelar',
+      })
       if (!confirmed) {
         debugLog('❌ Logout cancelado por el usuario')
         return
@@ -162,7 +165,6 @@ export function useLogout(options: UseLogoutOptions = {}): UseLogoutReturn {
       // ✅ SOLUCIÓN DEFINITIVA: Hard reload para garantizar estado limpio
       // window.location.href fuerza recarga completa, limpiando TODO el estado de React
       window.location.href = redirectTo
-
     } catch (error) {
       errorLog('logout-hook', error)
 
@@ -179,13 +181,12 @@ export function useLogout(options: UseLogoutOptions = {}): UseLogoutReturn {
   }, [
     isLoggingOut,
     requireConfirmation,
+    confirm,
     showToast,
     redirectTo,
     onBeforeLogout,
     onAfterLogout,
-    queryClient,
     logoutMutation,
-    router,
   ])
 
   return {

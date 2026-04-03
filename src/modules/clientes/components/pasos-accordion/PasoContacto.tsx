@@ -9,117 +9,145 @@
 import { useEffect, useMemo } from 'react'
 
 import { motion } from 'framer-motion'
-import type { FieldErrors, UseFormRegister, UseFormSetValue, UseFormWatch } from 'react-hook-form'
+import type {
+  FieldErrors,
+  Path,
+  PathValue,
+  UseFormRegister,
+  UseFormSetValue,
+  UseFormWatch,
+} from 'react-hook-form'
 
 import {
-    AccordionWizardField,
-    AccordionWizardSelect,
-    fieldStaggerAnim,
+  AccordionWizardField,
+  AccordionWizardSelect,
+  fieldStaggerAnim,
 } from '@/shared/components/accordion-wizard'
-import { getCiudadesPorDepartamento, getDepartamentos } from '@/shared/data/colombia-locations'
+import {
+  getCiudadesPorDepartamento,
+  getDepartamentos,
+} from '@/shared/data/colombia-locations'
 
-interface PasoContactoProps {
-  register: UseFormRegister<any>
-  errors: FieldErrors<any>
-  watch: UseFormWatch<any>
-  setValue: UseFormSetValue<any>
+import type { ClienteAccordionFormValues } from './cliente-accordion-form.types'
+
+interface PasoContactoProps<TFormValues extends ClienteAccordionFormValues> {
+  register: UseFormRegister<TFormValues>
+  errors: FieldErrors<TFormValues>
+  watch: UseFormWatch<TFormValues>
+  setValue: UseFormSetValue<TFormValues>
 }
 
-export function PasoContacto({ register, errors, watch, setValue }: PasoContactoProps) {
+export function PasoContacto<TFormValues extends ClienteAccordionFormValues>({
+  register,
+  errors,
+  watch,
+  setValue,
+}: PasoContactoProps<TFormValues>) {
+  const telefonoField = 'telefono' as Path<TFormValues>
+  const emailField = 'email' as Path<TFormValues>
+  const telefonoAlternativoField = 'telefono_alternativo' as Path<TFormValues>
+  const direccionField = 'direccion' as Path<TFormValues>
+  const departamentoField = 'departamento' as Path<TFormValues>
+  const ciudadField = 'ciudad' as Path<TFormValues>
   const departamentos = useMemo(() => getDepartamentos(), [])
-  const departamentoSeleccionado = watch('departamento')
+  const departamentoSeleccionado =
+    (watch(departamentoField) as string | undefined) ?? ''
 
   const ciudades = useMemo(() => {
     if (!departamentoSeleccionado) return []
     return getCiudadesPorDepartamento(departamentoSeleccionado)
   }, [departamentoSeleccionado])
 
-  // Reset ciudad cuando cambia departamento
   useEffect(() => {
     if (departamentoSeleccionado) {
-      const ciudadActual = watch('ciudad')
-      if (ciudadActual && !getCiudadesPorDepartamento(departamentoSeleccionado).includes(ciudadActual)) {
-        setValue('ciudad', '')
+      const ciudadActual = (watch(ciudadField) as string | undefined) ?? ''
+      if (
+        ciudadActual &&
+        !getCiudadesPorDepartamento(departamentoSeleccionado).includes(
+          ciudadActual
+        )
+      ) {
+        setValue(ciudadField, '' as PathValue<TFormValues, typeof ciudadField>)
       }
     }
-  }, [departamentoSeleccionado, setValue, watch])
+  }, [ciudadField, departamentoSeleccionado, setValue, watch])
 
   return (
-    <div className="space-y-4">
-      {/* Teléfono y Email */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+    <div className='space-y-4'>
+      <div className='grid grid-cols-1 gap-4 sm:grid-cols-2'>
         <motion.div {...fieldStaggerAnim(0)}>
           <AccordionWizardField
-            {...register('telefono')}
-            label="Teléfono"
-            type="tel"
-            moduleName="clientes"
+            {...register(telefonoField)}
+            label='Teléfono'
+            type='tel'
+            moduleName='clientes'
             error={errors.telefono?.message as string}
           />
         </motion.div>
         <motion.div {...fieldStaggerAnim(1)}>
           <AccordionWizardField
-            {...register('email')}
-            label="Correo Electrónico"
-            type="email"
-            moduleName="clientes"
+            {...register(emailField)}
+            label='Correo Electrónico'
+            type='email'
+            moduleName='clientes'
             error={errors.email?.message as string}
           />
         </motion.div>
       </div>
 
-      {/* Información de contacto adicional */}
       <motion.div {...fieldStaggerAnim(2)}>
-        <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
+        <p className='mb-3 text-xs text-gray-500 dark:text-gray-400'>
           Al menos teléfono o correo es requerido
         </p>
       </motion.div>
 
-      {/* Teléfono alternativo y Dirección */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className='grid grid-cols-1 gap-4 sm:grid-cols-2'>
         <motion.div {...fieldStaggerAnim(2)}>
           <AccordionWizardField
-            {...register('telefono_alternativo')}
-            label="Teléfono Alternativo"
-            type="tel"
-            moduleName="clientes"
+            {...register(telefonoAlternativoField)}
+            label='Teléfono Alternativo'
+            type='tel'
+            moduleName='clientes'
           />
         </motion.div>
         <motion.div {...fieldStaggerAnim(3)}>
           <AccordionWizardField
-            {...register('direccion')}
-            label="Dirección"
-            moduleName="clientes"
+            {...register(direccionField)}
+            label='Dirección'
+            moduleName='clientes'
           />
         </motion.div>
       </div>
 
-      {/* Departamento y Ciudad */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className='grid grid-cols-1 gap-4 sm:grid-cols-2'>
         <motion.div {...fieldStaggerAnim(4)}>
           <AccordionWizardSelect
-            {...register('departamento')}
-            label="Departamento"
+            {...register(departamentoField)}
+            label='Departamento'
             required
-            moduleName="clientes"
+            moduleName='clientes'
             error={errors.departamento?.message as string}
           >
-            {departamentos.map((d) => (
-              <option key={d} value={d}>{d}</option>
+            {departamentos.map(departamento => (
+              <option key={departamento} value={departamento}>
+                {departamento}
+              </option>
             ))}
           </AccordionWizardSelect>
         </motion.div>
         <motion.div {...fieldStaggerAnim(5)}>
           <AccordionWizardSelect
-            {...register('ciudad')}
-            label="Ciudad / Municipio"
+            {...register(ciudadField)}
+            label='Ciudad / Municipio'
             required
-            moduleName="clientes"
+            moduleName='clientes'
             error={errors.ciudad?.message as string}
             disabled={!departamentoSeleccionado}
           >
-            {ciudades.map((c) => (
-              <option key={c} value={c}>{c}</option>
+            {ciudades.map(ciudad => (
+              <option key={ciudad} value={ciudad}>
+                {ciudad}
+              </option>
             ))}
           </AccordionWizardSelect>
         </motion.div>

@@ -385,7 +385,6 @@ export function ReciboAbonoPDF({
               {/* Logo — contenedor blanco para visibilidad en header oscuro */}
               {logoUrl ? (
                 <View style={styles.logoContainer}>
-                  {/* eslint-disable-next-line jsx-a11y/alt-text */}
                   <Image src={logoUrl} style={styles.logo} />
                 </View>
               ) : null}

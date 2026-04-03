@@ -18,7 +18,7 @@
 import { useEffect, useState } from 'react'
 
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useForm } from 'react-hook-form'
+import { type Resolver, useForm } from 'react-hook-form'
 import { z } from 'zod'
 
 import { logger } from '@/lib/utils/logger'
@@ -187,8 +187,9 @@ export function useEntidadFinancieraFormModal({
 
   // React Hook Form
   const form = useForm<FormData>({
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    resolver: zodResolver(entidadFinancieraSchema) as any, // Fix para Zod .default() con TypeScript
+    resolver: zodResolver(
+      entidadFinancieraSchema
+    ) as unknown as Resolver<FormData>,
     defaultValues: {
       nombre: '',
       codigo: '',

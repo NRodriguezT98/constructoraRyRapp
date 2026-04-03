@@ -4,11 +4,13 @@
  */
 
 import { supabase } from '@/lib/supabase/client'
-import type { Database } from '@/lib/supabase/database.types'
+import type { Database, Json } from '@/lib/supabase/database.types'
 import { logger } from '@/lib/utils/logger'
 
-type NegociacionVersion = Database['public']['Tables']['negociaciones_versiones']['Row']
-type DescuentoNegociacion = Database['public']['Tables']['descuentos_negociacion']['Row']
+type NegociacionVersion =
+  Database['public']['Tables']['negociaciones_versiones']['Row']
+type DescuentoNegociacion =
+  Database['public']['Tables']['descuentos_negociacion']['Row']
 
 export interface FuentePagoSnapshot {
   id?: string
@@ -25,7 +27,13 @@ export interface CrearVersionParams {
   valorTotal: number
   fuentesPago: FuentePagoSnapshot[]
   motivoCambio: string
-  tipoCambio: 'creacion_inicial' | 'modificacion_fuentes' | 'aplicacion_descuento' | 'ajuste_avaluo' | 'cambio_entidad' | 'otro'
+  tipoCambio:
+    | 'creacion_inicial'
+    | 'modificacion_fuentes'
+    | 'aplicacion_descuento'
+    | 'ajuste_avaluo'
+    | 'cambio_entidad'
+    | 'otro'
 }
 
 export interface VersionConDescuentos extends NegociacionVersion {
@@ -41,13 +49,17 @@ export class NegociacionesVersionesService {
   /**
    * Obtener historial completo de versiones de una negociación
    */
-  static async obtenerHistorial(negociacionId: string): Promise<VersionConDescuentos[]> {
+  static async obtenerHistorial(
+    negociacionId: string
+  ): Promise<VersionConDescuentos[]> {
     const { data, error } = await supabase
       .from('negociaciones_versiones')
-      .select(`
+      .select(
+        `
         *,
         descuentos:descuentos_negociacion(*)
-      `)
+      `
+      )
       .eq('negociacion_id', negociacionId)
       .order('version', { ascending: false })
       .limit(50) // ✅ Limitar a últimas 50 versiones (performance)
@@ -59,13 +71,17 @@ export class NegociacionesVersionesService {
   /**
    * Obtener versión activa actual
    */
-  static async obtenerVersionActual(negociacionId: string): Promise<VersionConDescuentos | null> {
+  static async obtenerVersionActual(
+    negociacionId: string
+  ): Promise<VersionConDescuentos | null> {
     const { data, error } = await supabase
       .from('negociaciones_versiones')
-      .select(`
+      .select(
+        `
         *,
         descuentos:descuentos_negociacion(*)
-      `)
+      `
+      )
       .eq('negociacion_id', negociacionId)
       .eq('es_version_activa', true)
       .maybeSingle()
@@ -79,15 +95,18 @@ export class NegociacionesVersionesService {
    * Usa la función de PostgreSQL que valida permisos
    */
   static async crearNuevaVersion(params: CrearVersionParams): Promise<string> {
-    const { data, error } = await supabase.rpc('crear_nueva_version_negociacion', {
-      p_negociacion_id: params.negociacionId,
-      p_valor_vivienda: params.valorVivienda,
-      p_descuento_aplicado: params.descuentoAplicado,
-      p_valor_total: params.valorTotal,
-      p_fuentes_pago: params.fuentesPago as any,
-      p_motivo_cambio: params.motivoCambio,
-      p_tipo_cambio: params.tipoCambio,
-    })
+    const { data, error } = await supabase.rpc(
+      'crear_nueva_version_negociacion',
+      {
+        p_negociacion_id: params.negociacionId,
+        p_valor_vivienda: params.valorVivienda,
+        p_descuento_aplicado: params.descuentoAplicado,
+        p_valor_total: params.valorTotal,
+        p_fuentes_pago: params.fuentesPago as unknown as Json,
+        p_motivo_cambio: params.motivoCambio,
+        p_tipo_cambio: params.tipoCambio,
+      }
+    )
 
     if (error) {
       logger.error('Error al crear versión:', error)
@@ -117,10 +136,12 @@ export class NegociacionesVersionesService {
     // Obtener ambas versiones
     const { data: versiones, error } = await supabase
       .from('negociaciones_versiones')
-      .select(`
+      .select(
+        `
         *,
         descuentos:descuentos_negociacion(*)
-      `)
+      `
+      )
       .eq('negociacion_id', negociacionId)
       .in('version', [versionA, versionB])
 
@@ -129,30 +150,40 @@ export class NegociacionesVersionesService {
       throw new Error('No se encontraron las versiones especificadas')
     }
 
-    const vA = versiones.find((v) => v.version === versionA) as VersionConDescuentos
-    const vB = versiones.find((v) => v.version === versionB) as VersionConDescuentos
+    const vA = versiones.find(
+      v => v.version === versionA
+    ) as VersionConDescuentos
+    const vB = versiones.find(
+      v => v.version === versionB
+    ) as VersionConDescuentos
 
     // Calcular diferencias
-    const diferencias: any = {}
+    type Diferencias = {
+      valorVivienda?: { anterior: number; nuevo: number }
+      descuentoAplicado?: { anterior: number; nuevo: number }
+      valorTotal?: { anterior: number; nuevo: number }
+      fuentesPago?: { cambios: string[] }
+    }
+    const diferencias: Diferencias = {}
 
     if (vA.valor_vivienda !== vB.valor_vivienda) {
       diferencias.valorVivienda = {
-        anterior: vA.valor_vivienda,
-        nuevo: vB.valor_vivienda,
+        anterior: vA.valor_vivienda ?? 0,
+        nuevo: vB.valor_vivienda ?? 0,
       }
     }
 
     if (vA.descuento_aplicado !== vB.descuento_aplicado) {
       diferencias.descuentoAplicado = {
-        anterior: vA.descuento_aplicado,
-        nuevo: vB.descuento_aplicado,
+        anterior: vA.descuento_aplicado ?? 0,
+        nuevo: vB.descuento_aplicado ?? 0,
       }
     }
 
     if (vA.valor_total !== vB.valor_total) {
       diferencias.valorTotal = {
-        anterior: vA.valor_total,
-        nuevo: vB.valor_total,
+        anterior: vA.valor_total ?? 0,
+        nuevo: vB.valor_total ?? 0,
       }
     }
 
@@ -182,7 +213,12 @@ export class NegociacionesVersionesService {
   static async registrarDescuento(params: {
     versionId: string
     monto: number
-    tipoDescuento: 'inicial' | 'temporal' | 'pre-escritura' | 'referido' | 'otro'
+    tipoDescuento:
+      | 'inicial'
+      | 'temporal'
+      | 'pre-escritura'
+      | 'referido'
+      | 'otro'
     motivo: string
   }): Promise<DescuentoNegociacion> {
     const { data, error } = await supabase

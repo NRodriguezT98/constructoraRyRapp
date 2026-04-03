@@ -3,21 +3,28 @@ import type { Database } from '@/lib/supabase/database.types'
 import { formatDateForDB, getTodayDateString } from '@/lib/utils/date.utils'
 import { logger } from '@/lib/utils/logger'
 import { auditService } from '@/services/audit.service'
-import { getDepartamentos, validarCiudadDepartamento } from '@/shared/data/colombia-locations'
+import {
+  getDepartamentos,
+  validarCiudadDepartamento,
+} from '@/shared/data/colombia-locations'
 
 import type {
-    EstadoManzana,
-    EstadoProyecto,
-    Manzana,
-    Proyecto,
-    ProyectoFormData,
+  EstadoManzana,
+  EstadoProyecto,
+  Manzana,
+  Proyecto,
+  ProyectoFormData,
 } from '../types'
-import { sanitizeProyectoFormData, sanitizeProyectoUpdate } from '../utils/sanitize-proyecto.utils'
+import {
+  sanitizeProyectoFormData,
+  sanitizeProyectoUpdate,
+} from '../utils/sanitize-proyecto.utils'
 
 /** Tipo para resultado de query con JOIN de manzanas */
-type ProyectoConManzanasDB = Database['public']['Tables']['proyectos']['Row'] & {
-  manzanas: Array<Database['public']['Tables']['manzanas']['Row']>
-}
+type ProyectoConManzanasDB =
+  Database['public']['Tables']['proyectos']['Row'] & {
+    manzanas: Array<Database['public']['Tables']['manzanas']['Row']>
+  }
 
 /**
  * Servicio para gestionar proyectos usando Supabase
@@ -37,11 +44,9 @@ class ProyectosService {
    * const todosIncluidos = await proyectosService.obtenerProyectos(true)
    * ```
    */
-  async obtenerProyectos(incluirArchivados: boolean = false): Promise<Proyecto[]> {
-    let query = supabase
-      .from('proyectos')
-      .select(
-        `
+  async obtenerProyectos(incluirArchivados = false): Promise<Proyecto[]> {
+    let query = supabase.from('proyectos').select(
+      `
                 *,
                 manzanas (
                     id,
@@ -49,14 +54,16 @@ class ProyectosService {
                     numero_viviendas
                 )
             `
-      )
+    )
 
     // Por defecto, solo mostrar proyectos activos (NO archivados)
     if (!incluirArchivados) {
       query = query.eq('archivado', false)
     }
 
-    const { data, error } = await query.order('fecha_creacion', { ascending: false })
+    const { data, error } = await query.order('fecha_creacion', {
+      ascending: false,
+    })
 
     if (error) {
       logger.error('Error al obtener proyectos:', error)
@@ -64,7 +71,9 @@ class ProyectosService {
     }
 
     // Transformar datos de Supabase a formato de la aplicación
-    return (data || []).map(d => this.transformarProyectoDeDB(d as unknown as ProyectoConManzanasDB))
+    return (data || []).map(d =>
+      this.transformarProyectoDeDB(d as unknown as ProyectoConManzanasDB)
+    )
   }
 
   /**
@@ -102,7 +111,9 @@ class ProyectosService {
       throw new Error(`Error al obtener proyecto: ${error.message}`)
     }
 
-    return this.transformarProyectoDeDB(data as unknown as ProyectoConManzanasDB)
+    return this.transformarProyectoDeDB(
+      data as unknown as ProyectoConManzanasDB
+    )
   }
 
   /**
@@ -127,14 +138,22 @@ class ProyectosService {
     // ✅ VALIDACIÓN: Departamento y ciudad contra catálogo de Colombia
     const departamentosValidos = getDepartamentos()
     if (!departamentosValidos.includes(formData.departamento)) {
-      throw new Error(`Departamento inválido: "${formData.departamento}". Selecciona un departamento de Colombia válido.`)
+      throw new Error(
+        `Departamento inválido: "${formData.departamento}". Selecciona un departamento de Colombia válido.`
+      )
     }
     if (!validarCiudadDepartamento(formData.ciudad, formData.departamento)) {
-      throw new Error(`La ciudad "${formData.ciudad}" no pertenece al departamento "${formData.departamento}".`)
+      throw new Error(
+        `La ciudad "${formData.ciudad}" no pertenece al departamento "${formData.departamento}".`
+      )
     }
 
     // Combinar los 3 campos de ubicación en el formato del campo DB
-    const ubicacionCombinada = [formData.direccion, formData.ciudad, formData.departamento]
+    const ubicacionCombinada = [
+      formData.direccion,
+      formData.ciudad,
+      formData.departamento,
+    ]
       .filter(Boolean)
       .join(', ')
 
@@ -196,7 +215,9 @@ class ProyectosService {
     }
 
     // 3. Preparar objeto completo para retornar
-    const { departamento, ciudad, direccion } = this.parsearUbicacion(proyecto.ubicacion)
+    const { departamento, ciudad, direccion } = this.parsearUbicacion(
+      proyecto.ubicacion
+    )
     const proyectoCompleto: Proyecto = {
       id: proyecto.id,
       nombre: proyecto.nombre,
@@ -221,7 +242,10 @@ class ProyectosService {
 
     // 4. 🔍 AUDITORÍA DETALLADA: Registrar creación del proyecto con todos los detalles
     try {
-      await auditService.auditarCreacionProyecto(proyectoCompleto, manzanas)
+      await auditService.auditarCreacionProyecto(
+        proyectoCompleto as unknown as Record<string, unknown>,
+        manzanas as unknown as Record<string, unknown>[]
+      )
     } catch (auditError) {
       logger.error('Error al auditar creación de proyecto:', auditError)
       // No lanzamos error, la auditoría es secundaria
@@ -260,14 +284,24 @@ class ProyectosService {
       proyectoAnterior = await this.obtenerProyecto(id)
     } catch (error) {
       if (error instanceof Error) {
-        logger.error('[PROYECTOS] Error al obtener proyecto para auditoría:', error.message)
+        logger.error(
+          '[PROYECTOS] Error al obtener proyecto para auditoría:',
+          error.message
+        )
       } else {
-        logger.error('[PROYECTOS] Error desconocido al obtener proyecto:', String(error))
+        logger.error(
+          '[PROYECTOS] Error desconocido al obtener proyecto:',
+          String(error)
+        )
       }
     }
 
     // 2. ✅ VALIDACIÓN: Advertencia al cambiar nombre con viviendas vendidas
-    if (data.nombre && proyectoAnterior && proyectoAnterior.nombre !== data.nombre) {
+    if (
+      data.nombre &&
+      proyectoAnterior &&
+      proyectoAnterior.nombre !== data.nombre
+    ) {
       const { data: manzanas } = await supabase
         .from('manzanas')
         .select('id')
@@ -285,15 +319,19 @@ class ProyectosService {
         if (viviendasVendidas && viviendasVendidas > 0) {
           logger.warn(
             `⚠️ ADVERTENCIA: Cambiando nombre de proyecto de "${proyectoAnterior.nombre}" a "${data.nombre}". ` +
-            `El proyecto tiene ${viviendasVendidas} vivienda(s) vendida(s). ` +
-            `Verificar que no afecte documentos legales o contratos.`
+              `El proyecto tiene ${viviendasVendidas} vivienda(s) vendida(s). ` +
+              `Verificar que no afecte documentos legales o contratos.`
           )
         }
       }
     }
 
     // 3. ✅ VALIDACIÓN: Transiciones de estado coherentes
-    if (data.estado && proyectoAnterior && proyectoAnterior.estado !== data.estado) {
+    if (
+      data.estado &&
+      proyectoAnterior &&
+      proyectoAnterior.estado !== data.estado
+    ) {
       const { data: manzanas } = await supabase
         .from('manzanas')
         .select('id')
@@ -312,8 +350,8 @@ class ProyectosService {
         if (viviendasDisponibles && viviendasDisponibles > 0) {
           throw new Error(
             `No se puede marcar el proyecto como completado porque tiene ` +
-            `${viviendasDisponibles} vivienda(s) aún disponibles. ` +
-            `Todas las viviendas deben estar vendidas o reservadas.`
+              `${viviendasDisponibles} vivienda(s) aún disponibles. ` +
+              `Todas las viviendas deben estar vendidas o reservadas.`
           )
         }
       }
@@ -322,7 +360,7 @@ class ProyectosService {
       if (data.estado === 'pausado') {
         logger.warn(
           `⚠️ ADVERTENCIA: Pausando proyecto "${proyectoAnterior.nombre}". ` +
-          `Verificar que no haya negociaciones activas o compromisos pendientes.`
+            `Verificar que no haya negociaciones activas o compromisos pendientes.`
         )
       }
     }
@@ -335,38 +373,53 @@ class ProyectosService {
     const departamentosValidos = getDepartamentos()
     if (dataSanitizada.departamento !== undefined) {
       if (!departamentosValidos.includes(dataSanitizada.departamento)) {
-        throw new Error(`Departamento inválido: "${dataSanitizada.departamento}". Selecciona un departamento de Colombia válido.`)
+        throw new Error(
+          `Departamento inválido: "${dataSanitizada.departamento}". Selecciona un departamento de Colombia válido.`
+        )
       }
     }
     if (dataSanitizada.ciudad !== undefined) {
-      const depActual = dataSanitizada.departamento ?? proyectoAnterior?.departamento ?? ''
-      if (depActual && !validarCiudadDepartamento(dataSanitizada.ciudad, depActual)) {
-        throw new Error(`La ciudad "${dataSanitizada.ciudad}" no pertenece al departamento "${depActual}".`)
+      const depActual =
+        dataSanitizada.departamento ?? proyectoAnterior?.departamento ?? ''
+      if (
+        depActual &&
+        !validarCiudadDepartamento(dataSanitizada.ciudad, depActual)
+      ) {
+        throw new Error(
+          `La ciudad "${dataSanitizada.ciudad}" no pertenece al departamento "${depActual}".`
+        )
       }
     }
 
-    const updateData: Partial<Database['public']['Tables']['proyectos']['Update']> = {}
+    const updateData: Partial<
+      Database['public']['Tables']['proyectos']['Update']
+    > = {}
 
     // Mapear campos de la aplicación a campos de DB
-    if (dataSanitizada.nombre !== undefined) updateData.nombre = dataSanitizada.nombre
-    if (dataSanitizada.descripcion !== undefined) updateData.descripcion = dataSanitizada.descripcion
+    if (dataSanitizada.nombre !== undefined)
+      updateData.nombre = dataSanitizada.nombre
+    if (dataSanitizada.descripcion !== undefined)
+      updateData.descripcion = dataSanitizada.descripcion
     // Reconstruir ubicacion combinada si alguno de los 3 campos cambió
     if (
       dataSanitizada.departamento !== undefined ||
       dataSanitizada.ciudad !== undefined ||
       dataSanitizada.direccion !== undefined
     ) {
-      const dep = dataSanitizada.departamento ?? proyectoAnterior?.departamento ?? ''
+      const dep =
+        dataSanitizada.departamento ?? proyectoAnterior?.departamento ?? ''
       const ciu = dataSanitizada.ciudad ?? proyectoAnterior?.ciudad ?? ''
       const dir = dataSanitizada.direccion ?? proyectoAnterior?.direccion ?? ''
       updateData.ubicacion = [dir, ciu, dep].filter(Boolean).join(', ')
     }
-    if (dataSanitizada.fechaInicio !== undefined) updateData.fecha_inicio = dataSanitizada.fechaInicio
+    if (dataSanitizada.fechaInicio !== undefined)
+      updateData.fecha_inicio = dataSanitizada.fechaInicio
     if (dataSanitizada.fechaFinEstimada !== undefined)
       updateData.fecha_fin_estimada = dataSanitizada.fechaFinEstimada
     if (dataSanitizada.presupuesto !== undefined)
       updateData.presupuesto = dataSanitizada.presupuesto
-    if (dataSanitizada.estado !== undefined) updateData.estado = dataSanitizada.estado
+    if (dataSanitizada.estado !== undefined)
+      updateData.estado = dataSanitizada.estado
 
     // 5. Actualizar proyecto en DB
     const { data: proyecto, error } = await supabase
@@ -393,7 +446,7 @@ class ProyectosService {
     // 6. ✅ Actualizar manzanas si se proporcionaron
     if (data.manzanas && data.manzanas.length > 0) {
       // Obtener IDs de manzanas existentes
-      const manzanasExistentesIds = (proyecto.manzanas || []).map((m) => m.id)
+      const manzanasExistentesIds = (proyecto.manzanas || []).map(m => m.id)
 
       // Procesar cada manzana
       for (const manzana of data.manzanas) {
@@ -404,7 +457,11 @@ class ProyectosService {
         }
 
         // Si la manzana tiene ID y existe en DB → Actualizar
-        if ('id' in manzana && manzana.id && manzanasExistentesIds.includes(manzana.id)) {
+        if (
+          'id' in manzana &&
+          manzana.id &&
+          manzanasExistentesIds.includes(manzana.id)
+        ) {
           const { error: updateError } = await supabase
             .from('manzanas')
             .update(manzanaData)
@@ -429,7 +486,7 @@ class ProyectosService {
       // Eliminar manzanas que ya no están en el formulario
       // (Solo las que NO tienen viviendas - validación granular)
       const manzanasFormularioIds = data.manzanas
-        .map((m) => 'id' in m ? m.id : null)
+        .map(m => ('id' in m ? m.id : null))
         .filter(Boolean) as string[]
 
       const manzanasAEliminar = manzanasExistentesIds.filter(
@@ -456,7 +513,9 @@ class ProyectosService {
       }
     }
 
-    const proyectoActualizado = this.transformarProyectoDeDB(proyecto as unknown as ProyectoConManzanasDB)
+    const proyectoActualizado = this.transformarProyectoDeDB(
+      proyecto as unknown as ProyectoConManzanasDB
+    )
 
     // 7. 🔍 AUDITORÍA: Registrar actualización
     if (proyectoAnterior) {
@@ -495,9 +554,15 @@ class ProyectosService {
       proyectoEliminado = await this.obtenerProyecto(id)
     } catch (error) {
       if (error instanceof Error) {
-        logger.error('[PROYECTOS] Error al obtener proyecto para auditoría:', error.message)
+        logger.error(
+          '[PROYECTOS] Error al obtener proyecto para auditoría:',
+          error.message
+        )
       } else {
-        logger.error('[PROYECTOS] Error desconocido al obtener proyecto:', String(error))
+        logger.error(
+          '[PROYECTOS] Error desconocido al obtener proyecto:',
+          String(error)
+        )
       }
     }
 
@@ -519,7 +584,7 @@ class ProyectosService {
       if (totalViviendas && totalViviendas > 0) {
         throw new Error(
           `No se puede eliminar el proyecto porque tiene ${totalViviendas} vivienda(s) registrada(s). ` +
-          `Por seguridad de datos, archive el proyecto en lugar de eliminarlo.`
+            `Por seguridad de datos, archive el proyecto en lugar de eliminarlo.`
         )
       }
     }
@@ -533,7 +598,7 @@ class ProyectosService {
     if (totalDocumentos && totalDocumentos > 0) {
       throw new Error(
         `No se puede eliminar el proyecto porque tiene ${totalDocumentos} documento(s) asociado(s). ` +
-        `Elimine primero los documentos o archive el proyecto.`
+          `Elimine primero los documentos o archive el proyecto.`
       )
     }
 
@@ -586,9 +651,15 @@ class ProyectosService {
       proyectoArchivado = await this.obtenerProyecto(id)
     } catch (error) {
       if (error instanceof Error) {
-        logger.error('[PROYECTOS] Error al obtener proyecto para auditoría:', error.message)
+        logger.error(
+          '[PROYECTOS] Error al obtener proyecto para auditoría:',
+          error.message
+        )
       } else {
-        logger.error('[PROYECTOS] Error desconocido al obtener proyecto:', String(error))
+        logger.error(
+          '[PROYECTOS] Error desconocido al obtener proyecto:',
+          String(error)
+        )
       }
     }
 
@@ -648,9 +719,15 @@ class ProyectosService {
       proyectoRestaurado = await this.obtenerProyecto(id)
     } catch (error) {
       if (error instanceof Error) {
-        logger.error('[PROYECTOS] Error al obtener proyecto para auditoría:', error.message)
+        logger.error(
+          '[PROYECTOS] Error al obtener proyecto para auditoría:',
+          error.message
+        )
       } else {
-        logger.error('[PROYECTOS] Error desconocido al obtener proyecto:', String(error))
+        logger.error(
+          '[PROYECTOS] Error desconocido al obtener proyecto:',
+          String(error)
+        )
       }
     }
 
@@ -715,7 +792,7 @@ class ProyectosService {
     if (!proyecto?.archivado) {
       throw new Error(
         'El proyecto debe estar archivado antes de eliminarlo definitivamente. ' +
-        'Archive primero el proyecto y luego proceda con la eliminación.'
+          'Archive primero el proyecto y luego proceda con la eliminación.'
       )
     }
 
@@ -724,7 +801,11 @@ class ProyectosService {
   }
 
   // Métodos de transformación
-  private parsearUbicacion(ubicacion: string): { departamento: string; ciudad: string; direccion: string } {
+  private parsearUbicacion(ubicacion: string): {
+    departamento: string
+    ciudad: string
+    direccion: string
+  } {
     const partes = ubicacion.split(', ')
     if (partes.length >= 3) {
       return {
@@ -738,10 +819,14 @@ class ProyectosService {
     return { departamento: '', ciudad: '', direccion: ubicacion }
   }
 
-  private transformarProyectoDeDB(data: Database['public']['Tables']['proyectos']['Row'] & {
-    manzanas?: Array<Database['public']['Tables']['manzanas']['Row']>
-  }): Proyecto {
-    const { departamento, ciudad, direccion } = this.parsearUbicacion(data.ubicacion)
+  private transformarProyectoDeDB(
+    data: Database['public']['Tables']['proyectos']['Row'] & {
+      manzanas?: Array<Database['public']['Tables']['manzanas']['Row']>
+    }
+  ): Proyecto {
+    const { departamento, ciudad, direccion } = this.parsearUbicacion(
+      data.ubicacion
+    )
     return {
       id: data.id,
       nombre: data.nombre,
@@ -755,7 +840,7 @@ class ProyectosService {
       presupuesto: data.presupuesto,
       estado: data.estado as EstadoProyecto,
       progreso: data.progreso,
-      manzanas: (data.manzanas || []).map((m) => ({
+      manzanas: (data.manzanas || []).map(m => ({
         id: m.id,
         nombre: m.nombre,
         totalViviendas: m.numero_viviendas || 0,
@@ -764,7 +849,8 @@ class ProyectosService {
         superficieTotal: 0,
         proyectoId: data.id,
         estado: 'planificada' as EstadoManzana,
-        fechaCreacion: m.fecha_creacion || formatDateForDB(getTodayDateString()),
+        fechaCreacion:
+          m.fecha_creacion || formatDateForDB(getTodayDateString()),
       })),
       fechaCreacion: data.fecha_creacion ?? '',
       fechaActualizacion: data.fecha_actualizacion ?? '',

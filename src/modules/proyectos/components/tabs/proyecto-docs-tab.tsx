@@ -2,8 +2,8 @@
 
 import { FileText, FolderCog, Upload } from 'lucide-react'
 
-import { DocumentosLista } from '../../../../modules/documentos/components/lista/documentos-lista'
-import { useDocumentosStore } from '../../../../modules/documentos/store/documentos.store'
+import { DocumentosLista } from '@/shared/documentos/components/lista/documentos-lista'
+import { useDocumentosStore } from '@/shared/documentos/store/documentos.store'
 
 interface ProyectoDocsTabProps {
   proyectoId: string
@@ -55,7 +55,11 @@ export function ProyectoDocsTab({ proyectoId }: ProyectoDocsTabProps) {
       </div>
 
       {/* Lista de documentos */}
-      <DocumentosLista entidadId={proyectoId} tipoEntidad="proyecto" moduleName="proyectos" />
+      <DocumentosLista
+        entidadId={proyectoId}
+        tipoEntidad='proyecto'
+        moduleName='proyectos'
+      />
     </div>
   )
 }

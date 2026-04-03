@@ -28,6 +28,8 @@ import {
   Users,
 } from 'lucide-react'
 
+import type { Accion, Modulo } from '@/modules/usuarios/types'
+
 // ============================================
 // TYPES
 // ============================================
@@ -40,8 +42,8 @@ export interface NavigationItem {
   description: string
   /** Permiso requerido para ver este item */
   requiredPermission?: {
-    modulo: string
-    accion: string
+    modulo: Modulo
+    accion: Accion
   }
   /** Solo visible para administradores */
   adminOnly?: boolean

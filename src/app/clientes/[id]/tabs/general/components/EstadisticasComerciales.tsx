@@ -13,8 +13,11 @@ interface EstadisticasComercialesProps {
   cliente: Cliente
 }
 
-export function EstadisticasComerciales({ estadisticas, cliente }: EstadisticasComercialesProps) {
-  const intereses = (cliente as any).intereses?.length || 0
+export function EstadisticasComerciales({
+  estadisticas,
+  cliente,
+}: EstadisticasComercialesProps) {
+  const intereses = cliente.intereses?.length || 0
 
   const pills = [
     {
@@ -53,15 +56,17 @@ export function EstadisticasComerciales({ estadisticas, cliente }: EstadisticasC
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.15 }}
-      className="flex items-center gap-2 flex-wrap"
+      className='flex flex-wrap items-center gap-2'
     >
-      <p className="text-xs font-medium text-gray-400 dark:text-gray-500 mr-1">Actividad:</p>
-      {pills.map((pill) => (
+      <p className='mr-1 text-xs font-medium text-gray-400 dark:text-gray-500'>
+        Actividad:
+      </p>
+      {pills.map(pill => (
         <span
           key={pill.label}
-          className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold ${pill.color}`}
+          className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold ${pill.color}`}
         >
-          <span className="font-bold">{pill.value}</span>
+          <span className='font-bold'>{pill.value}</span>
           {pill.label}
         </span>
       ))}

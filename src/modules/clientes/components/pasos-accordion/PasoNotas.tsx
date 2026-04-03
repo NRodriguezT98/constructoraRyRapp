@@ -6,31 +6,37 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import type { UseFormRegister } from 'react-hook-form'
+import type { Path, UseFormRegister } from 'react-hook-form'
 
 import {
-    AccordionWizardTextarea,
-    fieldStaggerAnim,
+  AccordionWizardTextarea,
+  fieldStaggerAnim,
 } from '@/shared/components/accordion-wizard'
 
-interface PasoNotasProps {
-  register: UseFormRegister<any>
+import type { ClienteAccordionFormValues } from './cliente-accordion-form.types'
+
+interface PasoNotasProps<TFormValues extends ClienteAccordionFormValues> {
+  register: UseFormRegister<TFormValues>
 }
 
-export function PasoNotas({ register }: PasoNotasProps) {
+export function PasoNotas<TFormValues extends ClienteAccordionFormValues>({
+  register,
+}: PasoNotasProps<TFormValues>) {
+  const notasField = 'notas' as Path<TFormValues>
+
   return (
-    <div className="space-y-4">
+    <div className='space-y-4'>
       <motion.div {...fieldStaggerAnim(0)}>
-        <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+        <p className='mb-2 text-sm text-gray-600 dark:text-gray-400'>
           Agrega cualquier observación o nota relevante sobre el cliente.
         </p>
       </motion.div>
 
       <motion.div {...fieldStaggerAnim(1)}>
         <AccordionWizardTextarea
-          {...register('notas')}
-          label="Notas y Observaciones"
-          moduleName="clientes"
+          {...register(notasField)}
+          label='Notas y Observaciones'
+          moduleName='clientes'
         />
       </motion.div>
     </div>

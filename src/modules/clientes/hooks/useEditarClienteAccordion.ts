@@ -159,7 +159,7 @@ export function useEditarClienteAccordion(clienteId: string) {
     reset,
     formState: { errors },
   } = useForm<EditarClienteFormValues>({
-    resolver: zodResolver(editarClienteSchema) as any, // eslint-disable-line @typescript-eslint/no-explicit-any
+    resolver: zodResolver(editarClienteSchema),
     mode: 'onChange',
     defaultValues: {
       nombres: '',

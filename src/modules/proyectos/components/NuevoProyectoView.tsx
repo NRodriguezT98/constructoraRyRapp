@@ -3,11 +3,11 @@
 import { FolderPlus } from 'lucide-react'
 
 import {
-    AccordionWizardHero,
-    AccordionWizardLayout,
-    AccordionWizardNavigation,
-    AccordionWizardSection,
-    AccordionWizardSuccess,
+  AccordionWizardHero,
+  AccordionWizardLayout,
+  AccordionWizardNavigation,
+  AccordionWizardSection,
+  AccordionWizardSuccess,
 } from '@/shared/components/accordion-wizard'
 
 import { PASOS_PROYECTO, useNuevoProyecto } from '../hooks/useNuevoProyecto'
@@ -23,7 +23,6 @@ export function NuevoProyectoView({ canCreate }: NuevoProyectoViewProps) {
     pasos,
     pasoActual,
     getEstadoPaso,
-    progress,
     irSiguiente,
     irAtras,
     irAPaso,
@@ -50,8 +49,8 @@ export function NuevoProyectoView({ canCreate }: NuevoProyectoViewProps) {
 
   if (!canCreate) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-gray-500 dark:text-gray-400">
+      <div className='flex min-h-screen items-center justify-center'>
+        <p className='text-gray-500 dark:text-gray-400'>
           No tienes permisos para crear proyectos.
         </p>
       </div>
@@ -60,21 +59,21 @@ export function NuevoProyectoView({ canCreate }: NuevoProyectoViewProps) {
 
   return (
     <AccordionWizardLayout
-      moduleName="proyectos"
+      moduleName='proyectos'
       breadcrumbs={[
         { label: 'Proyectos', href: '/proyectos' },
         { label: 'Nuevo Proyecto' },
       ]}
       isSubmitting={isSubmitting}
-      submitLoadingLabel="Creando Proyecto..."
+      submitLoadingLabel='Creando Proyecto...'
     >
       {/* Hero Header */}
       <AccordionWizardHero
         icon={FolderPlus}
-        title="Nuevo Proyecto"
-        subtitle="Define la información general del proyecto de construcción, su estado y la distribución de manzanas."
-        moduleName="proyectos"
-        estimatedTime="~3 minutos"
+        title='Nuevo Proyecto'
+        subtitle='Define la información general del proyecto de construcción, su estado y la distribución de manzanas.'
+        moduleName='proyectos'
+        estimatedTime='~3 minutos'
         totalSteps={PASOS_PROYECTO.length}
       />
 
@@ -88,18 +87,23 @@ export function NuevoProyectoView({ canCreate }: NuevoProyectoViewProps) {
         fieldCount={{ required: 5, optional: 0 }}
         currentStep={pasoActual}
         totalSteps={PASOS_PROYECTO.length}
-        moduleName="proyectos"
+        moduleName='proyectos'
         summaryItems={summaryPaso1}
         onEdit={() => irAPaso(1)}
       >
-        <PasoInfoGeneral register={register} errors={errors} watch={watch} setValue={setValue} />
+        <PasoInfoGeneral
+          register={register}
+          errors={errors}
+          watch={watch}
+          setValue={setValue}
+        />
         <AccordionWizardNavigation
           currentStep={1}
           totalSteps={PASOS_PROYECTO.length}
           isFirst
           isLast={false}
           isValidating={pasoActual === 1 && isValidating}
-          moduleName="proyectos"
+          moduleName='proyectos'
           onBack={irAtras}
           onNext={irSiguiente}
         />
@@ -115,7 +119,7 @@ export function NuevoProyectoView({ canCreate }: NuevoProyectoViewProps) {
         fieldCount={{ required: 1, optional: 2 }}
         currentStep={pasoActual}
         totalSteps={PASOS_PROYECTO.length}
-        moduleName="proyectos"
+        moduleName='proyectos'
         summaryItems={summaryPaso2}
         onEdit={() => irAPaso(2)}
       >
@@ -130,7 +134,7 @@ export function NuevoProyectoView({ canCreate }: NuevoProyectoViewProps) {
           isFirst={false}
           isLast={false}
           isValidating={pasoActual === 2 && isValidating}
-          moduleName="proyectos"
+          moduleName='proyectos'
           onBack={irAtras}
           onNext={irSiguiente}
         />
@@ -146,7 +150,7 @@ export function NuevoProyectoView({ canCreate }: NuevoProyectoViewProps) {
         fieldCount={{ required: 1, optional: 0 }}
         currentStep={pasoActual}
         totalSteps={PASOS_PROYECTO.length}
-        moduleName="proyectos"
+        moduleName='proyectos'
         summaryItems={summaryPaso3}
         onEdit={() => irAPaso(3)}
       >
@@ -168,8 +172,8 @@ export function NuevoProyectoView({ canCreate }: NuevoProyectoViewProps) {
           isLast
           isSubmitting={isSubmitting}
           isValidating={pasoActual === 3 && isValidating}
-          moduleName="proyectos"
-          submitLabel="Crear Proyecto"
+          moduleName='proyectos'
+          submitLabel='Crear Proyecto'
           onBack={irAtras}
           onNext={irSiguiente}
           onSubmit={handleSubmit}
@@ -179,9 +183,9 @@ export function NuevoProyectoView({ canCreate }: NuevoProyectoViewProps) {
       {/* Success celebration */}
       <AccordionWizardSuccess
         isVisible={showSuccess}
-        moduleName="proyectos"
-        title="¡Proyecto creado!"
-        subtitle="Redirigiendo al listado de proyectos..."
+        moduleName='proyectos'
+        title='¡Proyecto creado!'
+        subtitle='Redirigiendo al listado de proyectos...'
       />
     </AccordionWizardLayout>
   )

@@ -4,10 +4,10 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { CheckCircle2, ChevronDown, DollarSign } from 'lucide-react'
 
 import {
-    formatCurrency,
-    formatDateTime,
-    getTipoCambioIcon,
-    getTipoCambioLabel,
+  formatCurrency,
+  formatDateTime,
+  getTipoCambioIcon,
+  getTipoCambioLabel,
 } from '../../hooks/useHistorialVersionesModal'
 import type { SnapshotVersion } from '../../types/historial'
 import { historialVersionesModalStyles as styles } from '../modals/HistorialVersionesModal.styles'
@@ -21,8 +21,12 @@ interface VersionCardProps {
   onToggle: () => void
 }
 
-export function VersionCard({ version, isExpanded, onToggle }: VersionCardProps) {
-  const fuentesPago = (version.fuentes_pago_snapshot || []) as any[]
+export function VersionCard({
+  version,
+  isExpanded,
+  onToggle,
+}: VersionCardProps) {
+  const fuentesPago = version.fuentes_pago_snapshot || []
 
   return (
     <motion.div
@@ -36,10 +40,9 @@ export function VersionCard({ version, isExpanded, onToggle }: VersionCardProps)
         <div className={styles.versionCard.header.content}>
           {/* Información */}
           <div className={styles.versionCard.header.leftSection}>
-            <div className="flex items-center gap-2">
+            <div className='flex items-center gap-2'>
               <span className={styles.versionCard.header.versionBadge}>
-                {getTipoCambioIcon(version.tipo_cambio)}
-                v{version.version}
+                {getTipoCambioIcon(version.tipo_cambio)}v{version.version}
               </span>
             </div>
             <p className={styles.versionCard.header.typeLabel}>
@@ -79,15 +82,16 @@ export function VersionCard({ version, isExpanded, onToggle }: VersionCardProps)
             className={styles.versionCard.expanded.container}
           >
             {/* Campos Modificados */}
-            {version.campos_modificados && version.campos_modificados.length > 0 && (
-              <div className={styles.versionCard.expanded.badgeContainer}>
-                {version.campos_modificados.map((campo, i) => (
-                  <span key={i} className={styles.versionCard.expanded.badge}>
-                    {campo}
-                  </span>
-                ))}
-              </div>
-            )}
+            {version.campos_modificados &&
+              version.campos_modificados.length > 0 && (
+                <div className={styles.versionCard.expanded.badgeContainer}>
+                  {version.campos_modificados.map((campo, i) => (
+                    <span key={i} className={styles.versionCard.expanded.badge}>
+                      {campo}
+                    </span>
+                  ))}
+                </div>
+              )}
 
             {/* Fuentes de Pago Snapshot */}
             {fuentesPago.length > 0 && (
@@ -97,11 +101,13 @@ export function VersionCard({ version, isExpanded, onToggle }: VersionCardProps)
                   Fuentes de Pago Activas en esta Versión
                 </p>
                 <div className={styles.fuentesPago.container}>
-                  {fuentesPago.map((fuente: any, i: number) => (
+                  {fuentesPago.map((fuente, i: number) => (
                     <div key={i} className={styles.fuentesPago.card}>
                       <div className={styles.fuentesPago.cardHeader}>
                         <div>
-                          <p className={styles.fuentesPago.cardType}>{fuente.tipo}</p>
+                          <p className={styles.fuentesPago.cardType}>
+                            {fuente.tipo}
+                          </p>
                           {fuente.entidad && (
                             <p className={styles.fuentesPago.cardEntidad}>
                               {fuente.entidad}
@@ -112,10 +118,12 @@ export function VersionCard({ version, isExpanded, onToggle }: VersionCardProps)
                           {formatCurrency(fuente.monto_aprobado || 0)}
                         </p>
                       </div>
-                      {fuente.monto_recibido > 0 && (
+                      {(fuente.monto_recibido ?? 0) > 0 && (
                         <div className={styles.fuentesPago.cardRecibido}>
-                          <CheckCircle2 className={styles.fuentesPago.cardRecibidoIcon} />
-                          Recibido: {formatCurrency(fuente.monto_recibido)}
+                          <CheckCircle2
+                            className={styles.fuentesPago.cardRecibidoIcon}
+                          />
+                          Recibido: {formatCurrency(fuente.monto_recibido ?? 0)}
                         </div>
                       )}
                     </div>

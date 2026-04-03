@@ -14,7 +14,7 @@ import type { NotaHistorialConUsuario } from '../types/notas-historial.types'
 export function convertirNotasAEventos(
   notas: NotaHistorialConUsuario[]
 ): EventoHistorialHumanizado[] {
-  return notas.map((nota) => convertirNotaAEvento(nota))
+  return notas.map(nota => convertirNotaAEvento(nota))
 }
 
 /**
@@ -29,8 +29,8 @@ export function convertirNotaAEvento(
 
   return {
     id: `nota-${nota.id}`,
-    tipo: 'nota_manual' as any, // Tipo especial para notas
-    accion: 'CREATE' as any, // Notas siempre son tipo CREATE visualmente
+    tipo: 'nota_manual', // Tipo especial para notas
+    accion: 'CREATE', // Notas siempre son tipo CREATE visualmente
     titulo: nota.titulo,
     descripcion: nota.contenido,
     fecha: nota.fecha_creacion,

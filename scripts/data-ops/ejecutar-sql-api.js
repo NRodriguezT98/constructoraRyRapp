@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-/* eslint-disable @typescript-eslint/no-require-imports, no-console, no-restricted-syntax, @typescript-eslint/no-unused-vars */
 /**
  * @file ejecutar-sql-api.js
  * @description Ejecuta SQL usando la API REST de Supabase (alternativa a pg)
@@ -64,16 +63,16 @@ function executeSQL(url, serviceKey, sql) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'apikey': serviceKey,
-        'Authorization': `Bearer ${serviceKey}`,
-        'Content-Length': Buffer.byteLength(postData)
-      }
+        apikey: serviceKey,
+        Authorization: `Bearer ${serviceKey}`,
+        'Content-Length': Buffer.byteLength(postData),
+      },
     }
 
-    const req = https.request(options, (res) => {
+    const req = https.request(options, res => {
       let data = ''
 
-      res.on('data', (chunk) => {
+      res.on('data', chunk => {
         data += chunk
       })
 
@@ -86,7 +85,7 @@ function executeSQL(url, serviceKey, sql) {
       })
     })
 
-    req.on('error', (error) => {
+    req.on('error', error => {
       reject(error)
     })
 
@@ -102,7 +101,9 @@ async function main() {
     // Validar argumentos
     const sqlFile = process.argv[2]
     if (!sqlFile) {
-      throw new Error('❌ Debes proporcionar un archivo SQL\n\nUso: node ejecutar-sql-api.js <archivo.sql>')
+      throw new Error(
+        '❌ Debes proporcionar un archivo SQL\n\nUso: node ejecutar-sql-api.js <archivo.sql>'
+      )
     }
 
     // Validar archivo existe
@@ -125,7 +126,9 @@ async function main() {
     const serviceKey = env.SUPABASE_SERVICE_ROLE_KEY
 
     if (!supabaseUrl || !serviceKey) {
-      throw new Error('Faltan variables de entorno: NEXT_PUBLIC_SUPABASE_URL o SUPABASE_SERVICE_ROLE_KEY')
+      throw new Error(
+        'Faltan variables de entorno: NEXT_PUBLIC_SUPABASE_URL o SUPABASE_SERVICE_ROLE_KEY'
+      )
     }
 
     log(`✓ URL: ${supabaseUrl}`, 'green')
@@ -161,7 +164,6 @@ async function main() {
     log(`✓ Archivo: ${sqlFile}`, 'green')
 
     process.exit(0)
-
   } catch (error) {
     header('❌ ERROR AL EJECUTAR SQL')
     log(`\nERROR:`, 'red')

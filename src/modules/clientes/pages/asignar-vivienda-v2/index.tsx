@@ -5,14 +5,18 @@ import { useMemo } from 'react'
 import { KeyRound } from 'lucide-react'
 
 import {
-    AccordionWizardHero,
-    AccordionWizardLayout,
-    AccordionWizardNavigation,
-    AccordionWizardSection,
-    AccordionWizardSuccess,
+  AccordionWizardHero,
+  AccordionWizardLayout,
+  AccordionWizardNavigation,
+  AccordionWizardSection,
+  AccordionWizardSuccess,
 } from '@/shared/components/accordion-wizard'
 
-import { SeccionFuentesPago, SeccionRevision, SeccionViviendaValores } from './components'
+import {
+  SeccionFuentesPago,
+  SeccionRevision,
+  SeccionViviendaValores,
+} from './components'
 import { PASOS_ASIGNACION, useAsignarViviendaV2 } from './hooks'
 
 interface AsignarViviendaV2PageProps {
@@ -30,7 +34,6 @@ export function AsignarViviendaV2Page({
     // Wizard
     pasoActual,
     getEstadoPaso,
-    progress,
     summaryPaso1,
     summaryPaso2,
     showSuccess,
@@ -80,32 +83,33 @@ export function AsignarViviendaV2Page({
 
   const proyectoNombre = useMemo(
     () => proyectos.find(p => p.id === proyectoSeleccionado)?.nombre ?? '',
-    [proyectos, proyectoSeleccionado],
+    [proyectos, proyectoSeleccionado]
   )
 
   const aplicarDescuento = watch('aplicar_descuento') as boolean
   const tipoDescuento = (watch('tipo_descuento') as string) ?? ''
   const notas = (watch('notas') as string) ?? ''
-  const valorEscrituraPublica = (watch('valor_escritura_publica') as number) ?? 0
+  const valorEscrituraPublica =
+    (watch('valor_escritura_publica') as number) ?? 0
 
   return (
     <AccordionWizardLayout
-      moduleName="clientes"
+      moduleName='clientes'
       breadcrumbs={[
         { label: 'Clientes', href: '/clientes' },
         { label: clienteNombre, href: `/clientes/${clienteSlug ?? clienteId}` },
         { label: 'Asignar Vivienda' },
       ]}
       isSubmitting={creando}
-      submitLoadingLabel="Asignando Vivienda..."
+      submitLoadingLabel='Asignando Vivienda...'
     >
       {/* Hero Header */}
       <AccordionWizardHero
         icon={KeyRound}
-        title="Asignar Vivienda"
+        title='Asignar Vivienda'
         subtitle={`Configura la vivienda y financiamiento para ${clienteNombre}. Completa cada sección en orden.`}
-        moduleName="clientes"
-        estimatedTime="~5 minutos"
+        moduleName='clientes'
+        estimatedTime='~5 minutos'
         totalSteps={PASOS_ASIGNACION.length}
       />
 
@@ -119,7 +123,7 @@ export function AsignarViviendaV2Page({
         fieldCount={{ required: 2, optional: 3 }}
         currentStep={pasoActual}
         totalSteps={PASOS_ASIGNACION.length}
-        moduleName="clientes"
+        moduleName='clientes'
         summaryItems={summaryPaso1}
         onEdit={() => irAPaso(1)}
       >
@@ -151,7 +155,7 @@ export function AsignarViviendaV2Page({
           isFirst
           isLast={false}
           isValidating={pasoActual === 1 && isValidating}
-          moduleName="clientes"
+          moduleName='clientes'
           onBack={irAtras}
           onNext={irSiguiente}
         />
@@ -167,7 +171,7 @@ export function AsignarViviendaV2Page({
         fieldCount={{ required: 1, optional: 0 }}
         currentStep={pasoActual}
         totalSteps={PASOS_ASIGNACION.length}
-        moduleName="clientes"
+        moduleName='clientes'
         summaryItems={summaryPaso2}
         onEdit={() => irAPaso(2)}
       >
@@ -190,7 +194,7 @@ export function AsignarViviendaV2Page({
           isFirst={false}
           isLast={false}
           isValidating={pasoActual === 2 && isValidating}
-          moduleName="clientes"
+          moduleName='clientes'
           onBack={irAtras}
           onNext={irSiguiente}
         />
@@ -205,7 +209,7 @@ export function AsignarViviendaV2Page({
         icon={pasos[2].icon}
         currentStep={pasoActual}
         totalSteps={PASOS_ASIGNACION.length}
-        moduleName="clientes"
+        moduleName='clientes'
         onEdit={() => irAPaso(3)}
       >
         <SeccionRevision
@@ -234,8 +238,8 @@ export function AsignarViviendaV2Page({
           isLast
           isSubmitting={creando}
           isValidating={isValidating}
-          moduleName="clientes"
-          submitLabel="Asignar Vivienda"
+          moduleName='clientes'
+          submitLabel='Asignar Vivienda'
           onBack={irAtras}
           onNext={irSiguiente}
           onSubmit={handleSubmitFinal}
@@ -245,9 +249,9 @@ export function AsignarViviendaV2Page({
       {/* Success celebration */}
       <AccordionWizardSuccess
         isVisible={showSuccess}
-        moduleName="clientes"
-        title="¡Vivienda asignada!"
-        subtitle="Redirigiendo al perfil del cliente..."
+        moduleName='clientes'
+        title='¡Vivienda asignada!'
+        subtitle='Redirigiendo al perfil del cliente...'
       />
     </AccordionWizardLayout>
   )

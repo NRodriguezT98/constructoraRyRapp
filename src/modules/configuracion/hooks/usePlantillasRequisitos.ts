@@ -22,8 +22,10 @@ import { PlantillasRequisitosService } from '../services/plantillas-requisitos.s
 export const PLANTILLAS_QUERY_KEYS = {
   all: ['plantillas-requisitos'] as const,
   list: () => [...PLANTILLAS_QUERY_KEYS.all, 'list'] as const,
-  byTipo: (tipoFuente: string) => [...PLANTILLAS_QUERY_KEYS.all, 'tipo', tipoFuente] as const,
-  configuradas: (tipoFuente: string) => [...PLANTILLAS_QUERY_KEYS.all, 'configuradas', tipoFuente] as const,
+  byTipo: (tipoFuente: string) =>
+    [...PLANTILLAS_QUERY_KEYS.all, 'tipo', tipoFuente] as const,
+  configuradas: (tipoFuente: string) =>
+    [...PLANTILLAS_QUERY_KEYS.all, 'configuradas', tipoFuente] as const,
 }
 
 // ============================================
@@ -46,10 +48,20 @@ export function usePlantillasRequisitos() {
  * Hook para obtener requisitos configurados de un tipo de fuente
  */
 export function useRequisitosPorTipo(tipoFuente: string | undefined) {
+  const tipoFuenteSeguro = tipoFuente ?? null
+
   return useQuery({
-    queryKey: PLANTILLAS_QUERY_KEYS.byTipo(tipoFuente || ''),
-    queryFn: () => PlantillasRequisitosService.obtenerRequisitosPorTipo(tipoFuente!),
-    enabled: !!tipoFuente,
+    queryKey: PLANTILLAS_QUERY_KEYS.byTipo(tipoFuenteSeguro || ''),
+    queryFn: () => {
+      if (!tipoFuenteSeguro) {
+        throw new Error('Tipo de fuente requerido')
+      }
+
+      return PlantillasRequisitosService.obtenerRequisitosPorTipo(
+        tipoFuenteSeguro
+      )
+    },
+    enabled: !!tipoFuenteSeguro,
     staleTime: 30000, // 30 segundos
   })
 }
@@ -58,10 +70,20 @@ export function useRequisitosPorTipo(tipoFuente: string | undefined) {
  * Hook para obtener IDs de plantillas configuradas
  */
 export function usePlantillasConfiguradas(tipoFuente: string | undefined) {
+  const tipoFuenteSeguro = tipoFuente ?? null
+
   return useQuery({
-    queryKey: PLANTILLAS_QUERY_KEYS.configuradas(tipoFuente || ''),
-    queryFn: () => PlantillasRequisitosService.obtenerPlantillasConfiguradas(tipoFuente!),
-    enabled: !!tipoFuente,
+    queryKey: PLANTILLAS_QUERY_KEYS.configuradas(tipoFuenteSeguro || ''),
+    queryFn: () => {
+      if (!tipoFuenteSeguro) {
+        throw new Error('Tipo de fuente requerido')
+      }
+
+      return PlantillasRequisitosService.obtenerPlantillasConfiguradas(
+        tipoFuenteSeguro
+      )
+    },
+    enabled: !!tipoFuenteSeguro,
     staleTime: 30000,
   })
 }
@@ -79,7 +101,11 @@ export function useConfigurarRequisitos() {
     }: {
       tipoFuente: string
       plantillasSeleccionadas: string[]
-    }) => PlantillasRequisitosService.configurarRequisitos(tipoFuente, plantillasSeleccionadas),
+    }) =>
+      PlantillasRequisitosService.configurarRequisitos(
+        tipoFuente,
+        plantillasSeleccionadas
+      ),
     onSuccess: (_, variables) => {
       // Invalidar queries relacionadas
       queryClient.invalidateQueries({

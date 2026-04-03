@@ -17,8 +17,8 @@ import type { FuentePago } from '@/modules/clientes/services/fuentes-pago.servic
 import { esCreditoConstructora } from '@/shared/constants/fuentes-pago.constants'
 import { formatCurrency } from '@/shared/utils/format'
 import {
-    calcularRestriccionesFuente,
-    validarRebalanceo,
+  calcularRestriccionesFuente,
+  validarRebalanceo,
 } from '@/shared/utils/reglas-cierre-financiero'
 
 import type { AjusteLocal, DatosRebalanceo, FuAlteNueva } from '../hooks'
@@ -36,7 +36,12 @@ interface RebalancearModalProps {
   onClose: () => void
   fuentesPago: FuentePago[]
   valorVivienda: number
-  tiposDisponibles: { nombre: string; descripcion: string; requiere_entidad?: boolean; color?: string }[]
+  tiposDisponibles: {
+    nombre: string
+    descripcion: string
+    requiere_entidad?: boolean
+    color?: string
+  }[]
   /** Todos los tipos activos (no solo los disponibles), para lookup de config: requiere_entidad, etc. */
   tiposConfig: { nombre: string; requiere_entidad?: boolean }[]
   /** Mapa tipo_fuente → títulos de documentos obligatorios (desde requisitos_fuentes_pago_config) */
@@ -67,7 +72,7 @@ export function RebalancearModal({
 
   // Mapa nombre → config para lookup sin hardcodear nombres de tipos
   const tiposConfigMap = useMemo(
-    () => new Map(tiposConfig.map((t) => [t.nombre, t])),
+    () => new Map(tiposConfig.map(t => [t.nombre, t])),
     [tiposConfig]
   )
 
@@ -76,7 +81,7 @@ export function RebalancearModal({
     if (!isOpen) return
     setMostrandoAdvertencia(false)
     setAjustes(
-      fuentesPago.map((f) => ({
+      fuentesPago.map(f => ({
         id: f.id,
         tipo: f.tipo,
         montoOriginal: f.monto_aprobado,
@@ -86,7 +91,8 @@ export function RebalancearModal({
         paraEliminar: false,
         monto_recibido: f.monto_recibido ?? 0,
         capital_para_cierre: f.capital_para_cierre,
-        tienePlanCuotas: esCreditoConstructora(f.tipo) && f.capital_para_cierre !== null,
+        tienePlanCuotas:
+          esCreditoConstructora(f.tipo) && f.capital_para_cierre !== null,
       }))
     )
     setNuevas([])
@@ -97,31 +103,40 @@ export function RebalancearModal({
 
   // ── Restricciones por fuente ────────────────────────────
   const restriccionesMap = useMemo(() => {
-    const map = new Map<string, ReturnType<typeof calcularRestriccionesFuente>>()
+    const map = new Map<
+      string,
+      ReturnType<typeof calcularRestriccionesFuente>
+    >()
     for (const a of ajustes) {
-      map.set(a.id, calcularRestriccionesFuente({
-        id: a.id,
-        tipo: a.tipo,
-        monto_aprobado: a.montoOriginal,
-        capital_para_cierre: a.capital_para_cierre,
-        monto_recibido: a.monto_recibido,
-        tienePlanCuotas: a.tienePlanCuotas,
-      }))
+      map.set(
+        a.id,
+        calcularRestriccionesFuente({
+          id: a.id,
+          tipo: a.tipo,
+          monto_aprobado: a.montoOriginal,
+          capital_para_cierre: a.capital_para_cierre,
+          monto_recibido: a.monto_recibido,
+          tienePlanCuotas: a.tienePlanCuotas,
+        })
+      )
     }
     return map
   }, [ajustes])
 
   // ── Cálculos en tiempo real ───────────────────────────────
   const subtotal = useMemo(() => {
-    const activas = ajustes.filter((a) => !a.paraEliminar).reduce((s, a) => {
-      const r = restriccionesMap.get(a.id)
-      // Para fuentes bloqueadas (crédito con plan), usar capital_para_cierre
-      // Para fuentes editables, usar el valor que el usuario escribió
-      const monto = r && !r.puedeEditarMonto && a.capital_para_cierre !== null
-        ? a.capital_para_cierre
-        : a.montoEditable
-      return s + monto
-    }, 0)
+    const activas = ajustes
+      .filter(a => !a.paraEliminar)
+      .reduce((s, a) => {
+        const r = restriccionesMap.get(a.id)
+        // Para fuentes bloqueadas (crédito con plan), usar capital_para_cierre
+        // Para fuentes editables, usar el valor que el usuario escribió
+        const monto =
+          r && !r.puedeEditarMonto && a.capital_para_cierre !== null
+            ? a.capital_para_cierre
+            : a.montoEditable
+        return s + monto
+      }, 0)
     const agregadas = nuevas.reduce((s, n) => s + n.monto, 0)
     return activas + agregadas
   }, [ajustes, nuevas, restriccionesMap])
@@ -132,14 +147,21 @@ export function RebalancearModal({
   // ── Validación global antes de guardar ────────────────────
   const erroresRebalanceo = useMemo(() => {
     return validarRebalanceo(
-      ajustes.map((a) => ({
-        id: a.id,
-        montoEditable: a.montoEditable,
-        paraEliminar: a.paraEliminar,
-        restricciones: restriccionesMap.get(a.id)!,
-      })),
+      ajustes.flatMap(a => {
+        const restricciones = restriccionesMap.get(a.id)
+        if (!restricciones) return []
+
+        return [
+          {
+            id: a.id,
+            montoEditable: a.montoEditable,
+            paraEliminar: a.paraEliminar,
+            restricciones,
+          },
+        ]
+      }),
       valorVivienda,
-      subtotal,
+      subtotal
     )
   }, [ajustes, restriccionesMap, valorVivienda, subtotal])
 
@@ -155,24 +177,32 @@ export function RebalancearModal({
   // Fuentes existentes que requerirán nueva documentación (solo tipos que requieren docs según BD)
   const fuentesExistentesQueInvalidan = useMemo<CambioEnriquecido[]>(() => {
     return ajustes
-      .filter((a) => !a.paraEliminar)
-      .filter((a) => {
+      .filter(a => !a.paraEliminar)
+      .filter(a => {
         // Solo advertir para tipos que requieren documentos — desde BD, no hardcodeado
         if (!tiposConfigMap.get(a.tipo)?.requiere_entidad) return false
         const cambioEntidad = a.entidadEditable !== a.entidad
         const aumentoMonto = a.montoEditable > a.montoOriginal // disminuir NO requiere docs
         return cambioEntidad || aumentoMonto
       })
-      .map((a) => {
+      .map(a => {
         const cambioEntidad = a.entidadEditable !== a.entidad
         const aumentoMonto = a.montoEditable > a.montoOriginal
         const motivoCambio =
-          cambioEntidad && aumentoMonto ? 'ambos' : cambioEntidad ? 'entidad' : 'monto'
+          cambioEntidad && aumentoMonto
+            ? 'ambos'
+            : cambioEntidad
+              ? 'entidad'
+              : 'monto'
         return {
           tipo: a.tipo,
           motivoCambio,
-          entidadAnterior: cambioEntidad ? (a.entidad || 'Sin entidad') : undefined,
-          entidadNueva: cambioEntidad ? (a.entidadEditable || 'Sin entidad') : undefined,
+          entidadAnterior: cambioEntidad
+            ? a.entidad || 'Sin entidad'
+            : undefined,
+          entidadNueva: cambioEntidad
+            ? a.entidadEditable || 'Sin entidad'
+            : undefined,
           montoAnterior: aumentoMonto ? a.montoOriginal : undefined,
           montoNuevo: aumentoMonto ? a.montoEditable : undefined,
           documentos: requisitosMap.get(a.tipo) ?? [],
@@ -183,43 +213,54 @@ export function RebalancearModal({
   // Fuentes nuevas que requerirán documentación (según flag requiere_entidad de BD)
   const fuentesNuevasQueNecesitanCarta = useMemo<NuevaEnriquecida[]>(() => {
     return nuevas
-      .filter((n) => tiposConfigMap.get(n.tipo)?.requiere_entidad ?? false)
-      .map((n) => ({
+      .filter(n => tiposConfigMap.get(n.tipo)?.requiere_entidad ?? false)
+      .map(n => ({
         tipo: n.tipo,
         documentos: requisitosMap.get(n.tipo) ?? [],
       }))
   }, [nuevas, tiposConfigMap, requisitosMap])
 
   const hayCambiosConAdvertencia =
-    fuentesExistentesQueInvalidan.length > 0 || fuentesNuevasQueNecesitanCarta.length > 0
+    fuentesExistentesQueInvalidan.length > 0 ||
+    fuentesNuevasQueNecesitanCarta.length > 0
 
   // ── Handlers ──────────────────────────────────────────────
 
   const handleCambioMonto = (id: string, monto: number) => {
-    setAjustes((prev) => prev.map((a) => (a.id === id ? { ...a, montoEditable: monto } : a)))
+    setAjustes(prev =>
+      prev.map(a => (a.id === id ? { ...a, montoEditable: monto } : a))
+    )
   }
 
   const handleCambioEntidad = (id: string, entidad: string) => {
-    setAjustes((prev) => prev.map((a) => (a.id === id ? { ...a, entidadEditable: entidad } : a)))
+    setAjustes(prev =>
+      prev.map(a => (a.id === id ? { ...a, entidadEditable: entidad } : a))
+    )
   }
 
   const handleToggleEliminar = (id: string) => {
-    setAjustes((prev) =>
-      prev.map((a) => (a.id === id ? { ...a, paraEliminar: !a.paraEliminar } : a))
+    setAjustes(prev =>
+      prev.map(a => (a.id === id ? { ...a, paraEliminar: !a.paraEliminar } : a))
     )
   }
 
   const handleAgregarTipo = (tipo: string) => {
-    setNuevas((prev) => [...prev, { tipo, monto: 0, entidad: '' }])
+    setNuevas(prev => [...prev, { tipo, monto: 0, entidad: '' }])
     setMostrarNuevaFuente(false)
   }
 
-  const handleCambioNueva = (index: number, campo: keyof FuAlteNueva, valor: string | number) => {
-    setNuevas((prev) => prev.map((n, i) => (i === index ? { ...n, [campo]: valor } : n)))
+  const handleCambioNueva = (
+    index: number,
+    campo: keyof FuAlteNueva,
+    valor: string | number
+  ) => {
+    setNuevas(prev =>
+      prev.map((n, i) => (i === index ? { ...n, [campo]: valor } : n))
+    )
   }
 
   const handleEliminarNueva = (index: number) => {
-    setNuevas((prev) => prev.filter((_, i) => i !== index))
+    setNuevas(prev => prev.filter((_, i) => i !== index))
   }
 
   const handleGuardar = () => {
@@ -244,7 +285,7 @@ export function RebalancearModal({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-sm"
+            className='fixed inset-0 z-[9999] bg-black/60 backdrop-blur-sm'
             onClick={onClose}
           />
 
@@ -254,64 +295,75 @@ export function RebalancearModal({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 16, scale: 0.97 }}
             transition={{ type: 'spring', stiffness: 320, damping: 28 }}
-            className="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center p-0 sm:p-4"
-            onClick={(e) => e.stopPropagation()}
+            className='fixed inset-0 z-[9999] flex items-end justify-center p-0 sm:items-center sm:p-4'
+            onClick={e => e.stopPropagation()}
           >
-            <div className="relative w-full sm:max-w-lg bg-white dark:bg-gray-850 rounded-t-2xl sm:rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90dvh]">
+            <div className='dark:bg-gray-850 relative flex max-h-[90dvh] w-full flex-col overflow-hidden rounded-t-2xl bg-white shadow-2xl sm:max-w-lg sm:rounded-2xl'>
               {/* Header */}
-              <div className="bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 px-5 py-4 flex items-center justify-between flex-shrink-0">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center">
-                    <Lock className="w-4 h-4 text-white" />
+              <div className='flex flex-shrink-0 items-center justify-between bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 px-5 py-4'>
+                <div className='flex items-center gap-2.5'>
+                  <div className='flex h-8 w-8 items-center justify-center rounded-lg bg-white/20'>
+                    <Lock className='h-4 w-4 text-white' />
                   </div>
                   <div>
-                    <h2 className="text-base font-bold text-white leading-tight">
+                    <h2 className='text-base font-bold leading-tight text-white'>
                       Ajustar Cierre Financiero
                     </h2>
-                    <p className="text-xs text-cyan-100 mt-0.5">Solo Administrador</p>
+                    <p className='mt-0.5 text-xs text-cyan-100'>
+                      Solo Administrador
+                    </p>
                   </div>
                 </div>
                 <button
-                  type="button"
+                  type='button'
                   onClick={onClose}
-                  className="w-8 h-8 flex items-center justify-center rounded-lg bg-white/20 hover:bg-white/30 text-white transition-colors"
+                  className='flex h-8 w-8 items-center justify-center rounded-lg bg-white/20 text-white transition-colors hover:bg-white/30'
                 >
-                  <X className="w-4 h-4" />
+                  <X className='h-4 w-4' />
                 </button>
               </div>
 
               {/* Subheader: valor objetivo */}
-              <div className="bg-gray-50 dark:bg-gray-800/60 border-b border-gray-200 dark:border-gray-700/50 px-5 py-3 flex-shrink-0">
-                <p className="text-xs text-gray-500 dark:text-gray-400">Valor de la vivienda</p>
-                <p className="text-xl font-bold text-gray-900 dark:text-white tabular-nums">
+              <div className='flex-shrink-0 border-b border-gray-200 bg-gray-50 px-5 py-3 dark:border-gray-700/50 dark:bg-gray-800/60'>
+                <p className='text-xs text-gray-500 dark:text-gray-400'>
+                  Valor de la vivienda
+                </p>
+                <p className='text-xl font-bold tabular-nums text-gray-900 dark:text-white'>
                   {formatCurrency(valorVivienda)}
                 </p>
               </div>
 
               {/* Body scrollable */}
-              <div className="flex-1 overflow-y-auto px-5 py-4 space-y-3">
+              <div className='flex-1 space-y-3 overflow-y-auto px-5 py-4'>
                 {/* Fuentes existentes */}
-                <div className="space-y-2">
-                  <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
+                <div className='space-y-2'>
+                  <p className='text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500'>
                     Fuentes configuradas
                   </p>
-                  {ajustes.map((ajuste) => (
-                    <FilaFuente
-                      key={ajuste.id}
-                      ajuste={ajuste}
-                      restricciones={restriccionesMap.get(ajuste.id)!}
-                      onChange={handleCambioMonto}
-                      onCambioEntidad={handleCambioEntidad}
-                      onToggleEliminar={handleToggleEliminar}
-                      requiereEntidad={tiposConfigMap.get(ajuste.tipo)?.requiere_entidad ?? false}
-                    />
-                  ))}
+                  {ajustes.map(ajuste => {
+                    const restricciones = restriccionesMap.get(ajuste.id)
+                    if (!restricciones) return null
+                    return (
+                      <FilaFuente
+                        key={ajuste.id}
+                        ajuste={ajuste}
+                        restricciones={restricciones}
+                        onChange={handleCambioMonto}
+                        onCambioEntidad={handleCambioEntidad}
+                        onToggleEliminar={handleToggleEliminar}
+                        requiereEntidad={
+                          tiposConfigMap.get(ajuste.tipo)?.requiere_entidad ??
+                          false
+                        }
+                      />
+                    )
+                  })}
                 </div>
 
                 {/* Fuentes nuevas */}
                 {nuevas.length > 0 && (
-                  <div className="space-y-2">
-                    <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
+                  <div className='space-y-2'>
+                    <p className='text-xs font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400'>
                       Nuevas fuentes
                     </p>
                     {nuevas.map((fuente, i) => (
@@ -321,7 +373,10 @@ export function RebalancearModal({
                         index={i}
                         onChange={handleCambioNueva}
                         onEliminar={handleEliminarNueva}
-                        requiereEntidad={tiposConfigMap.get(fuente.tipo)?.requiere_entidad ?? false}
+                        requiereEntidad={
+                          tiposConfigMap.get(fuente.tipo)?.requiere_entidad ??
+                          false
+                        }
                       />
                     ))}
                   </div>
@@ -332,46 +387,50 @@ export function RebalancearModal({
                   <div>
                     {!mostrarNuevaFuente ? (
                       <button
-                        type="button"
+                        type='button'
                         onClick={() => setMostrarNuevaFuente(true)}
-                        className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg border-2 border-dashed border-gray-200 dark:border-gray-600 text-sm text-gray-400 dark:text-gray-500 hover:border-cyan-400 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors"
+                        className='flex w-full items-center justify-center gap-2 rounded-lg border-2 border-dashed border-gray-200 py-2.5 text-sm text-gray-400 transition-colors hover:border-cyan-400 hover:text-cyan-600 dark:border-gray-600 dark:text-gray-500 dark:hover:text-cyan-400'
                       >
-                        <Plus className="w-4 h-4" />
+                        <Plus className='h-4 w-4' />
                         Agregar fuente de pago
                       </button>
                     ) : (
-                      <div className="rounded-lg border border-cyan-200 dark:border-cyan-800/50 overflow-hidden">
-                        <p className="text-xs font-semibold text-gray-500 px-3 pt-3 pb-2">
+                      <div className='overflow-hidden rounded-lg border border-cyan-200 dark:border-cyan-800/50'>
+                        <p className='px-3 pb-2 pt-3 text-xs font-semibold text-gray-500'>
                           Seleccionar tipo de fuente:
                         </p>
-                        <div className="max-h-40 overflow-y-auto divide-y divide-gray-100 dark:divide-gray-700/50">
-                          {tiposDisponibles.map((tipo) => {
+                        <div className='max-h-40 divide-y divide-gray-100 overflow-y-auto dark:divide-gray-700/50'>
+                          {tiposDisponibles.map(tipo => {
                             const color = getFuenteColor(tipo.nombre)
                             return (
                               <button
                                 key={tipo.nombre}
-                                type="button"
+                                type='button'
                                 onClick={() => handleAgregarTipo(tipo.nombre)}
-                                className="w-full text-left flex items-center gap-2.5 px-3 py-2.5 hover:bg-cyan-50/60 dark:hover:bg-cyan-900/10 transition-colors"
+                                className='flex w-full items-center gap-2.5 px-3 py-2.5 text-left transition-colors hover:bg-cyan-50/60 dark:hover:bg-cyan-900/10'
                               >
-                                <span className={`w-2 h-2 rounded-full flex-shrink-0 ${color.barra}`} />
+                                <span
+                                  className={`h-2 w-2 flex-shrink-0 rounded-full ${color.barra}`}
+                                />
                                 <div>
-                                  <p className="text-sm font-medium text-gray-900 dark:text-white">
+                                  <p className='text-sm font-medium text-gray-900 dark:text-white'>
                                     {tipo.nombre}
                                   </p>
                                   {tipo.descripcion && (
-                                    <p className="text-xs text-gray-400">{tipo.descripcion}</p>
+                                    <p className='text-xs text-gray-400'>
+                                      {tipo.descripcion}
+                                    </p>
                                   )}
                                 </div>
                               </button>
                             )
                           })}
                         </div>
-                        <div className="px-3 pb-2 pt-1 border-t border-gray-100 dark:border-gray-700/50">
+                        <div className='border-t border-gray-100 px-3 pb-2 pt-1 dark:border-gray-700/50'>
                           <button
-                            type="button"
+                            type='button'
                             onClick={() => setMostrarNuevaFuente(false)}
-                            className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                            className='text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
                           >
                             Cancelar
                           </button>
@@ -381,18 +440,18 @@ export function RebalancearModal({
                   </div>
                 )}
 
-              {/* Motivo del cambio */}
-                <div className="pt-1 space-y-2 border-t border-gray-100 dark:border-gray-700/50">
-                  <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    Motivo del cambio <span className="text-red-400">*</span>
+                {/* Motivo del cambio */}
+                <div className='space-y-2 border-t border-gray-100 pt-1 dark:border-gray-700/50'>
+                  <label className='text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400'>
+                    Motivo del cambio <span className='text-red-400'>*</span>
                   </label>
                   <select
                     value={motivo}
-                    onChange={(e) => setMotivo(e.target.value)}
-                    className="w-full px-3 py-2 text-sm bg-gray-50 dark:bg-gray-700/60 border border-gray-200 dark:border-gray-600 rounded-lg focus:outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 text-gray-900 dark:text-white"
+                    onChange={e => setMotivo(e.target.value)}
+                    className='w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-900 focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 dark:border-gray-600 dark:bg-gray-700/60 dark:text-white'
                   >
-                    <option value="">Seleccionar motivo...</option>
-                    {MOTIVOS_AJUSTE.map((m) => (
+                    <option value=''>Seleccionar motivo...</option>
+                    {MOTIVOS_AJUSTE.map(m => (
                       <option key={m} value={m}>
                         {m}
                       </option>
@@ -402,27 +461,27 @@ export function RebalancearModal({
                   {motivoRequiereNotas && (
                     <textarea
                       value={notas}
-                      onChange={(e) => setNotas(e.target.value)}
-                      placeholder="Describe el motivo del cambio... (requerido)"
+                      onChange={e => setNotas(e.target.value)}
+                      placeholder='Describe el motivo del cambio... (requerido)'
                       rows={2}
-                      className="w-full px-3 py-2 text-sm bg-gray-50 dark:bg-gray-700/60 border border-gray-200 dark:border-gray-600 rounded-lg focus:outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 text-gray-900 dark:text-white placeholder:text-gray-400 resize-none"
+                      className='w-full resize-none rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 dark:border-gray-600 dark:bg-gray-700/60 dark:text-white'
                     />
                   )}
 
                   {motivo && motivo !== 'Otro' && (
                     <textarea
                       value={notas}
-                      onChange={(e) => setNotas(e.target.value)}
-                      placeholder="Notas adicionales (opcional)"
+                      onChange={e => setNotas(e.target.value)}
+                      placeholder='Notas adicionales (opcional)'
                       rows={2}
-                      className="w-full px-3 py-2 text-sm bg-gray-50 dark:bg-gray-700/60 border border-gray-200 dark:border-gray-600 rounded-lg focus:outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 text-gray-900 dark:text-white placeholder:text-gray-400 resize-none"
+                      className='w-full resize-none rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 dark:border-gray-600 dark:bg-gray-700/60 dark:text-white'
                     />
                   )}
                 </div>
               </div>
 
               {/* Footer fijo: balance + botones */}
-              <div className="border-t border-gray-200 dark:border-gray-700 px-5 py-4 flex-shrink-0 space-y-3">
+              <div className='flex-shrink-0 space-y-3 border-t border-gray-200 px-5 py-4 dark:border-gray-700'>
                 {/* Advertencia: cambios que invalidarán cartas */}
                 <AdvertenciaDocumentos
                   visible={mostrandoAdvertencia}
@@ -431,16 +490,17 @@ export function RebalancearModal({
                 />
 
                 {/* Errores de validación de montos mínimos */}
-                {erroresRebalanceo.filter((e) => e.campo !== 'balance').length > 0 ? (
-                  <div className="space-y-1">
+                {erroresRebalanceo.filter(e => e.campo !== 'balance').length >
+                0 ? (
+                  <div className='space-y-1'>
                     {erroresRebalanceo
-                      .filter((e) => e.campo !== 'balance')
-                      .map((err) => (
+                      .filter(e => e.campo !== 'balance')
+                      .map(err => (
                         <p
                           key={err.campo}
-                          className="text-xs text-red-600 dark:text-red-400 flex items-center gap-1.5 px-3 py-1.5 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800/50"
+                          className='flex items-center gap-1.5 rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs text-red-600 dark:border-red-800/50 dark:bg-red-900/20 dark:text-red-400'
                         >
-                          <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0" />
+                          <AlertTriangle className='h-3.5 w-3.5 flex-shrink-0' />
                           {err.mensaje}
                         </p>
                       ))}
@@ -449,19 +509,19 @@ export function RebalancearModal({
 
                 {/* Balance indicator */}
                 <div
-                  className={`flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl ${
+                  className={`flex items-center gap-2.5 rounded-xl px-3.5 py-2.5 ${
                     estaBalanceado
-                      ? 'bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800/60'
-                      : 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/60'
+                      ? 'border border-emerald-200 bg-emerald-50 dark:border-emerald-800/60 dark:bg-emerald-900/20'
+                      : 'border border-red-200 bg-red-50 dark:border-red-800/60 dark:bg-red-900/20'
                   }`}
                 >
                   {estaBalanceado ? (
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
+                    <CheckCircle2 className='h-4 w-4 flex-shrink-0 text-emerald-600 dark:text-emerald-400' />
                   ) : (
-                    <AlertTriangle className="w-4 h-4 text-red-500 dark:text-red-400 flex-shrink-0" />
+                    <AlertTriangle className='h-4 w-4 flex-shrink-0 text-red-500 dark:text-red-400' />
                   )}
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between">
+                  <div className='flex-1'>
+                    <div className='flex items-center justify-between'>
                       <span
                         className={`text-xs font-semibold ${estaBalanceado ? 'text-emerald-700 dark:text-emerald-300' : 'text-red-600 dark:text-red-400'}`}
                       >
@@ -471,39 +531,39 @@ export function RebalancearModal({
                             ? `❌ Déficit: ${formatCurrency(Math.abs(diferencia))}`
                             : `❌ Excedente: ${formatCurrency(Math.abs(diferencia))}`}
                       </span>
-                      <span className="text-xs text-gray-400 tabular-nums">
-                        {formatCurrency(subtotal)} / {formatCurrency(valorVivienda)}
+                      <span className='text-xs tabular-nums text-gray-400'>
+                        {formatCurrency(subtotal)} /{' '}
+                        {formatCurrency(valorVivienda)}
                       </span>
                     </div>
                   </div>
                 </div>
 
                 {/* Botones */}
-                <div className="flex items-center gap-2.5">
+                <div className='flex items-center gap-2.5'>
                   <button
-                    type="button"
+                    type='button'
                     onClick={onClose}
                     disabled={isGuardando}
-                    className="flex-1 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/40 transition-colors"
+                    className='flex-1 rounded-xl border border-gray-200 py-2.5 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-700/40'
                   >
                     Cancelar
                   </button>
                   <button
-                    type="button"
+                    type='button'
                     onClick={handleGuardar}
                     disabled={!puedeGuardar}
-                    className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+                    className={`flex-1 rounded-xl py-2.5 text-sm font-semibold transition-all ${
                       puedeGuardar
-                        ? 'bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white shadow-lg shadow-cyan-500/25'
-                        : 'bg-gray-100 dark:bg-gray-700/40 text-gray-400 dark:text-gray-500 cursor-not-allowed'
+                        ? 'bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-lg shadow-cyan-500/25 hover:from-cyan-700 hover:to-blue-700'
+                        : 'cursor-not-allowed bg-gray-100 text-gray-400 dark:bg-gray-700/40 dark:text-gray-500'
                     }`}
                   >
                     {isGuardando
-                    ? 'Guardando...'
-                    : mostrandoAdvertencia && hayCambiosConAdvertencia
-                      ? 'Entendido, guardar'
-                      : 'Guardar cambios'
-                  }
+                      ? 'Guardando...'
+                      : mostrandoAdvertencia && hayCambiosConAdvertencia
+                        ? 'Entendido, guardar'
+                        : 'Guardar cambios'}
                   </button>
                 </div>
               </div>

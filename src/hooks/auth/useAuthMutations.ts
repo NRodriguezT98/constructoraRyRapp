@@ -15,6 +15,7 @@ import { toast } from 'sonner'
 import { createClient } from '@/lib/supabase/client'
 import { debugLog, errorLog, successLog, warnLog } from '@/lib/utils/logger'
 
+import type { Perfil } from './useAuthQuery'
 import { authKeys } from './useAuthQuery'
 
 const supabase = createClient()
@@ -40,10 +41,11 @@ export function useLoginMutation() {
       debugLog('ðŸ” Login mutation iniciado', { email })
 
       // 1. Iniciar sesión con Supabase Auth
-      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      })
+      const { data: authData, error: authError } =
+        await supabase.auth.signInWithPassword({
+          email,
+          password,
+        })
 
       debugLog('ðŸ“¥ Respuesta de Supabase Auth', {
         hasUser: !!authData?.user,
@@ -75,7 +77,9 @@ export function useLoginMutation() {
       })
 
       if (perfilError) {
-        errorLog('login-mutation-perfil', perfilError, { userId: authData.user.id })
+        errorLog('login-mutation-perfil', perfilError, {
+          userId: authData.user.id,
+        })
         throw perfilError
       }
 
@@ -93,7 +97,9 @@ export function useLoginMutation() {
         if (syncResponse.ok) {
           successLog('Permisos sincronizados al JWT')
         } else {
-          warnLog('Error sincronizando permisos (no crítico)', { status: syncResponse.status })
+          warnLog('Error sincronizando permisos (no crítico)', {
+            status: syncResponse.status,
+          })
         }
       } catch (error) {
         warnLog('Error sincronizando permisos (no crítico)', error)
@@ -107,7 +113,7 @@ export function useLoginMutation() {
         perfil: perfilData,
       }
     },
-    onSuccess: (data) => {
+    onSuccess: data => {
       debugLog('✅ Login mutation onSuccess ejecutado')
 
       // ✅ LIMPIAR TODOS LOS TOASTS anteriores (especialmente "Sesión cerrada")
@@ -197,27 +203,34 @@ export function useUpdatePerfilMutation(userId: string) {
       if (error) throw error
       return data
     },
-    onMutate: async (updates) => {
+    onMutate: async updates => {
       // Cancelar queries en progreso
       await queryClient.cancelQueries({ queryKey: authKeys.perfil(userId) })
 
       // Snapshot del valor anterior
-      const previousPerfil = queryClient.getQueryData(authKeys.perfil(userId))
+      const previousPerfil = queryClient.getQueryData<Perfil | null>(
+        authKeys.perfil(userId)
+      )
 
       // Actualización optimista
-      queryClient.setQueryData(authKeys.perfil(userId), (old: any) => ({
-        ...old,
-        ...updates,
-      }))
+      queryClient.setQueryData<Perfil | null>(authKeys.perfil(userId), old =>
+        old ? { ...old, ...updates } : old
+      )
 
       return { previousPerfil }
     },
     onError: (err, updates, context) => {
       // Revertir en caso de error
       if (context?.previousPerfil) {
-        queryClient.setQueryData(authKeys.perfil(userId), context.previousPerfil)
+        queryClient.setQueryData(
+          authKeys.perfil(userId),
+          context.previousPerfil
+        )
       }
-      errorLog('update-perfil', err instanceof Error ? err : new Error(String(err)))
+      errorLog(
+        'update-perfil',
+        err instanceof Error ? err : new Error(String(err))
+      )
     },
     onSuccess: () => {
       // Invalidar para refetch
@@ -243,7 +256,7 @@ export function useRefreshSessionMutation() {
       if (error) throw error
       return data.session
     },
-    onSuccess: (session) => {
+    onSuccess: session => {
       queryClient.setQueryData(authKeys.session(), session)
     },
     onError: (error: Error) => {

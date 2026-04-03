@@ -12,7 +12,11 @@
 import { motion } from 'framer-motion'
 import { AlertCircle, Plus, Save, X } from 'lucide-react'
 
-import type { CampoConfig } from '../../types/campos-dinamicos.types'
+import type {
+  CampoConfig,
+  RolCampo,
+  TipoCampoDinamico,
+} from '../../types/campos-dinamicos.types'
 
 import { TIPOS_DISPONIBLES } from './constants/campos-disponibles'
 import { s } from './EditarCampoModal.styles'
@@ -85,27 +89,35 @@ export function EditarCampoModal({
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.9, opacity: 0 }}
         className={s.editor.container}
-        onClick={(e) => e.stopPropagation()}
+        onClick={e => e.stopPropagation()}
       >
         {/* Header */}
-        <div className={`${s.modal.header.container} ${s.modal.header.gradient} from-blue-600 to-indigo-600`}>
-          <div className="flex items-center justify-between">
+        <div
+          className={`${s.modal.header.container} ${s.modal.header.gradient} from-blue-600 to-indigo-600`}
+        >
+          <div className='flex items-center justify-between'>
             <div>
               <h2 className={`${s.modal.header.title} text-white`}>
                 {modo === 'crear' ? '✨ Nuevo Campo' : '✏️ Editar Campo'}
               </h2>
               <p className={`${s.modal.header.subtitle} text-blue-100`}>
-                {modo === 'crear' ? 'Configura un nuevo campo para el formulario' : 'Modifica la configuración del campo'}
+                {modo === 'crear'
+                  ? 'Configura un nuevo campo para el formulario'
+                  : 'Modifica la configuración del campo'}
               </p>
             </div>
-            <button type="button" onClick={onCancelar} className={`${s.modal.header.closeButton} text-white`}>
-              <X className="w-5 h-5" />
+            <button
+              type='button'
+              onClick={onCancelar}
+              className={`${s.modal.header.closeButton} text-white`}
+            >
+              <X className='h-5 w-5' />
             </button>
           </div>
         </div>
 
         {/* Body */}
-        <div className="p-6 bg-white dark:bg-gray-800">
+        <div className='bg-white p-6 dark:bg-gray-800'>
           <form className={s.editor.form}>
             {/* Nombre */}
             <div className={s.editor.field}>
@@ -113,10 +125,10 @@ export function EditarCampoModal({
                 Nombre (ID) <span className={s.editor.required}>*</span>
               </label>
               <input
-                type="text"
+                type='text'
                 value={nombre}
-                onChange={(e) => setNombre(e.target.value.toLowerCase())}
-                placeholder="monto_aprobado"
+                onChange={e => setNombre(e.target.value.toLowerCase())}
+                placeholder='monto_aprobado'
                 disabled={modo === 'editar'}
                 className={s.editor.input}
               />
@@ -126,7 +138,9 @@ export function EditarCampoModal({
                   <span className={s.editor.errorText}>{errores.nombre}</span>
                 </div>
               )}
-              <p className={s.editor.help}>Snake_case, solo minúsculas y guiones bajos</p>
+              <p className={s.editor.help}>
+                Snake_case, solo minúsculas y guiones bajos
+              </p>
             </div>
 
             {/* Tipo */}
@@ -134,9 +148,15 @@ export function EditarCampoModal({
               <label className={s.editor.label}>
                 Tipo de Campo <span className={s.editor.required}>*</span>
               </label>
-              <select value={tipo} onChange={(e) => setTipo(e.target.value as any)} className={s.editor.select}>
-                {TIPOS_DISPONIBLES.map((t) => (
-                  <option key={t.value} value={t.value}>{t.label}</option>
+              <select
+                value={tipo}
+                onChange={e => setTipo(e.target.value as TipoCampoDinamico)}
+                className={s.editor.select}
+              >
+                {TIPOS_DISPONIBLES.map(t => (
+                  <option key={t.value} value={t.value}>
+                    {t.label}
+                  </option>
                 ))}
               </select>
             </div>
@@ -146,9 +166,15 @@ export function EditarCampoModal({
               <label className={s.editor.label}>
                 Rol del Campo <span className={s.editor.required}>*</span>
               </label>
-              <select value={rol} onChange={(e) => setRol(e.target.value as any)} className={s.editor.select}>
-                {rolesDisponibles.map((r) => (
-                  <option key={r.value} value={r.value}>{r.label}</option>
+              <select
+                value={rol}
+                onChange={e => setRol(e.target.value as RolCampo)}
+                className={s.editor.select}
+              >
+                {rolesDisponibles.map(r => (
+                  <option key={r.value} value={r.value}>
+                    {r.label}
+                  </option>
                 ))}
               </select>
               {errores.rol && (
@@ -166,10 +192,10 @@ export function EditarCampoModal({
                 Etiqueta (Label) <span className={s.editor.required}>*</span>
               </label>
               <input
-                type="text"
+                type='text'
                 value={label}
-                onChange={(e) => setLabel(e.target.value)}
-                placeholder="Monto Aprobado"
+                onChange={e => setLabel(e.target.value)}
+                placeholder='Monto Aprobado'
                 className={s.editor.input}
               />
               {errores.label && (
@@ -184,10 +210,10 @@ export function EditarCampoModal({
             <div className={s.editor.field}>
               <label className={s.editor.label}>Placeholder</label>
               <input
-                type="text"
+                type='text'
                 value={placeholder}
-                onChange={(e) => setPlaceholder(e.target.value)}
-                placeholder="Ej: 50.000.000"
+                onChange={e => setPlaceholder(e.target.value)}
+                placeholder='Ej: 50.000.000'
                 className={s.editor.input}
               />
             </div>
@@ -197,8 +223,8 @@ export function EditarCampoModal({
               <label className={s.editor.label}>Texto de Ayuda</label>
               <textarea
                 value={ayuda}
-                onChange={(e) => setAyuda(e.target.value)}
-                placeholder="Explicación breve del campo..."
+                onChange={e => setAyuda(e.target.value)}
+                placeholder='Explicación breve del campo...'
                 rows={2}
                 className={s.editor.textarea}
               />
@@ -206,11 +232,11 @@ export function EditarCampoModal({
 
             {/* Requerido */}
             <div className={s.editor.field}>
-              <label className="flex items-center gap-2 cursor-pointer">
+              <label className='flex cursor-pointer items-center gap-2'>
                 <input
-                  type="checkbox"
+                  type='checkbox'
                   checked={requerido}
-                  onChange={(e) => setRequerido(e.target.checked)}
+                  onChange={e => setRequerido(e.target.checked)}
                   className={s.editor.checkbox}
                 />
                 <span className={s.editor.label}>Campo obligatorio</span>
@@ -221,24 +247,28 @@ export function EditarCampoModal({
 
         {/* Footer */}
         <div className={s.modal.footer.container}>
-          <button type="button" onClick={onCancelar} className={s.modal.footer.buttonSecondary}>
-            <X className="w-4 h-4" />
+          <button
+            type='button'
+            onClick={onCancelar}
+            className={s.modal.footer.buttonSecondary}
+          >
+            <X className='h-4 w-4' />
             Cancelar
           </button>
 
           <button
-            type="button"
+            type='button'
             onClick={handleConfirmar}
             className={`${s.modal.footer.buttonPrimary} bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700`}
           >
             {modo === 'crear' ? (
               <>
-                <Plus className="w-4 h-4" />
+                <Plus className='h-4 w-4' />
                 Crear Campo
               </>
             ) : (
               <>
-                <Save className="w-4 h-4" />
+                <Save className='h-4 w-4' />
                 Guardar Cambios
               </>
             )}

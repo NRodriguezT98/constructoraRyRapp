@@ -8,27 +8,36 @@
 import { UserRoundPlus } from 'lucide-react'
 
 import {
-    AccordionWizardHero,
-    AccordionWizardLayout,
-    AccordionWizardNavigation,
-    AccordionWizardSection,
-    AccordionWizardSuccess,
+  AccordionWizardHero,
+  AccordionWizardLayout,
+  AccordionWizardNavigation,
+  AccordionWizardSection,
+  AccordionWizardSuccess,
 } from '@/shared/components/accordion-wizard'
 
-import { PASOS_CLIENTE, useNuevoClienteAccordion } from '../hooks/useNuevoClienteAccordion'
+import {
+  PASOS_CLIENTE,
+  useNuevoClienteAccordion,
+} from '../hooks/useNuevoClienteAccordion'
 
-import { PasoContacto, PasoInteres, PasoNotas, PasoPersonal } from './pasos-accordion'
+import {
+  PasoContacto,
+  PasoInteres,
+  PasoNotas,
+  PasoPersonal,
+} from './pasos-accordion'
 
 interface NuevoClienteAccordionViewProps {
   canCreate: boolean
 }
 
-export function NuevoClienteAccordionView({ canCreate }: NuevoClienteAccordionViewProps) {
+export function NuevoClienteAccordionView({
+  canCreate,
+}: NuevoClienteAccordionViewProps) {
   const {
     pasos,
     pasoActual,
     getEstadoPaso,
-    progress,
     irSiguiente,
     irAtras,
     irAPaso,
@@ -48,8 +57,8 @@ export function NuevoClienteAccordionView({ canCreate }: NuevoClienteAccordionVi
 
   if (!canCreate) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-gray-500 dark:text-gray-400">
+      <div className='flex min-h-screen items-center justify-center'>
+        <p className='text-gray-500 dark:text-gray-400'>
           No tienes permisos para crear clientes.
         </p>
       </div>
@@ -58,21 +67,21 @@ export function NuevoClienteAccordionView({ canCreate }: NuevoClienteAccordionVi
 
   return (
     <AccordionWizardLayout
-      moduleName="clientes"
+      moduleName='clientes'
       breadcrumbs={[
         { label: 'Clientes', href: '/clientes' },
         { label: 'Nuevo Cliente' },
       ]}
       isSubmitting={isSubmitting}
-      submitLoadingLabel="Creando Cliente..."
+      submitLoadingLabel='Creando Cliente...'
     >
       {/* Hero Header */}
       <AccordionWizardHero
         icon={UserRoundPlus}
-        title="Nuevo Cliente"
-        subtitle="Registra la información del cliente paso a paso. Solo los campos marcados con * son obligatorios."
-        moduleName="clientes"
-        estimatedTime="~2 minutos"
+        title='Nuevo Cliente'
+        subtitle='Registra la información del cliente paso a paso. Solo los campos marcados con * son obligatorios.'
+        moduleName='clientes'
+        estimatedTime='~2 minutos'
         totalSteps={PASOS_CLIENTE.length}
       />
 
@@ -86,18 +95,23 @@ export function NuevoClienteAccordionView({ canCreate }: NuevoClienteAccordionVi
         fieldCount={{ required: 3, optional: 2 }}
         currentStep={pasoActual}
         totalSteps={PASOS_CLIENTE.length}
-        moduleName="clientes"
+        moduleName='clientes'
         summaryItems={summaryPaso1}
         onEdit={() => irAPaso(1)}
       >
-        <PasoPersonal register={register} errors={errors} watch={watch} setValue={setValue} />
+        <PasoPersonal
+          register={register}
+          errors={errors}
+          watch={watch}
+          setValue={setValue}
+        />
         <AccordionWizardNavigation
           currentStep={1}
           totalSteps={PASOS_CLIENTE.length}
           isFirst
           isLast={false}
           isValidating={pasoActual === 1 && isValidating}
-          moduleName="clientes"
+          moduleName='clientes'
           onBack={irAtras}
           onNext={irSiguiente}
         />
@@ -113,7 +127,7 @@ export function NuevoClienteAccordionView({ canCreate }: NuevoClienteAccordionVi
         fieldCount={{ required: 2, optional: 4 }}
         currentStep={pasoActual}
         totalSteps={PASOS_CLIENTE.length}
-        moduleName="clientes"
+        moduleName='clientes'
         summaryItems={summaryPaso2}
         onEdit={() => irAPaso(2)}
       >
@@ -129,7 +143,7 @@ export function NuevoClienteAccordionView({ canCreate }: NuevoClienteAccordionVi
           isFirst={false}
           isLast={false}
           isValidating={pasoActual === 2 && isValidating}
-          moduleName="clientes"
+          moduleName='clientes'
           onBack={irAtras}
           onNext={irSiguiente}
         />
@@ -145,22 +159,18 @@ export function NuevoClienteAccordionView({ canCreate }: NuevoClienteAccordionVi
         fieldCount={{ required: 0, optional: 3 }}
         currentStep={pasoActual}
         totalSteps={PASOS_CLIENTE.length}
-        moduleName="clientes"
+        moduleName='clientes'
         summaryItems={summaryPaso3}
         onEdit={() => irAPaso(3)}
       >
-        <PasoInteres
-          register={register}
-          errors={errors}
-          watch={watch}
-        />
+        <PasoInteres register={register} errors={errors} watch={watch} />
         <AccordionWizardNavigation
           currentStep={3}
           totalSteps={PASOS_CLIENTE.length}
           isFirst={false}
           isLast={false}
           isValidating={pasoActual === 3 && isValidating}
-          moduleName="clientes"
+          moduleName='clientes'
           onBack={irAtras}
           onNext={irSiguiente}
         />
@@ -176,7 +186,7 @@ export function NuevoClienteAccordionView({ canCreate }: NuevoClienteAccordionVi
         fieldCount={{ required: 0, optional: 1 }}
         currentStep={pasoActual}
         totalSteps={PASOS_CLIENTE.length}
-        moduleName="clientes"
+        moduleName='clientes'
         summaryItems={summaryPaso4}
         onEdit={() => irAPaso(4)}
       >
@@ -188,8 +198,8 @@ export function NuevoClienteAccordionView({ canCreate }: NuevoClienteAccordionVi
           isLast
           isSubmitting={isSubmitting}
           isValidating={isValidating}
-          moduleName="clientes"
-          submitLabel="Crear Cliente"
+          moduleName='clientes'
+          submitLabel='Crear Cliente'
           onBack={irAtras}
           onNext={irSiguiente}
           onSubmit={handleSubmit}
@@ -199,9 +209,9 @@ export function NuevoClienteAccordionView({ canCreate }: NuevoClienteAccordionVi
       {/* Success celebration */}
       <AccordionWizardSuccess
         isVisible={showSuccess}
-        moduleName="clientes"
-        title="¡Cliente creado!"
-        subtitle="Redirigiendo al listado de clientes..."
+        moduleName='clientes'
+        title='¡Cliente creado!'
+        subtitle='Redirigiendo al listado de clientes...'
       />
     </AccordionWizardLayout>
   )

@@ -14,8 +14,6 @@ import { useEffect, useState } from 'react'
 import { AnimatePresence } from 'framer-motion'
 import { ArrowLeft, FileText, FolderCog, IdCard, Upload } from 'lucide-react'
 
-import { useRouter } from 'next/navigation'
-
 import { useAuth } from '@/contexts/auth-context'
 import { SeccionDocumentosPendientes } from '@/modules/clientes/components/documentos-pendientes'
 import { SubirCartaModal } from '@/modules/clientes/components/fuentes-pago'
@@ -23,17 +21,16 @@ import { BannerDocumentoRequerido } from '@/modules/clientes/documentos/componen
 import { useDocumentosTab } from '@/modules/clientes/hooks'
 import { useCategoriasSistemaClientes } from '@/modules/clientes/hooks/useCategoriasSistemaClientes'
 import type { Cliente } from '@/modules/clientes/types'
-import { CategoriasManager } from '@/modules/documentos/components/categorias/categorias-manager'
-import { DocumentosLista } from '@/modules/documentos/components/lista/documentos-lista'
-import { DocumentoUpload } from '@/modules/documentos/components/upload/documento-upload'
 import { moduleThemes } from '@/shared/config/module-themes'
+import { CategoriasManager } from '@/shared/documentos/components/categorias/categorias-manager'
+import { DocumentosLista } from '@/shared/documentos/components/lista/documentos-lista'
+import { DocumentoUpload } from '@/shared/documentos/components/upload/documento-upload'
 
 interface DocumentosTabProps {
   cliente: Cliente
 }
 
 export function DocumentosTab({ cliente }: DocumentosTabProps) {
-  const router = useRouter()
   const { user } = useAuth()
 
   // Tema cyan/azul para clientes
@@ -61,14 +58,12 @@ export function DocumentosTab({ cliente }: DocumentosTabProps) {
 
   // ✅ Hook con TODA la lógica
   const {
-    vistaActual,
     tieneCedula,
     cargandoValidacion,
     uploadTipoCedula,
     metadataPendiente,
     mostrandoUpload,
     mostrandoCategorias,
-    mostrandoDocumentos,
     mostrarUpload,
     mostrarCategorias,
     volverADocumentos,
@@ -81,7 +76,9 @@ export function DocumentosTab({ cliente }: DocumentosTabProps) {
     return (
       <div className='space-y-4'>
         {/* Header con botón volver */}
-        <div className={`rounded-lg border ${theme.classes.border.light} bg-white p-4 shadow-sm dark:bg-gray-800`}>
+        <div
+          className={`rounded-lg border ${theme.classes.border.light} bg-white p-4 shadow-sm dark:bg-gray-800`}
+        >
           <div className='mb-4 flex items-center gap-2.5'>
             <button
               onClick={volverADocumentos}
@@ -105,7 +102,7 @@ export function DocumentosTab({ cliente }: DocumentosTabProps) {
           <CategoriasManager
             userId={user.id}
             onClose={volverADocumentos}
-            modulo="clientes"
+            modulo='clientes'
           />
         </div>
       </div>
@@ -117,19 +114,21 @@ export function DocumentosTab({ cliente }: DocumentosTabProps) {
     return (
       <div className='space-y-3'>
         {/* Header premium compacto con glassmorphism */}
-        <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-cyan-600 via-blue-600 to-indigo-600 dark:from-cyan-700 dark:via-blue-700 dark:to-indigo-800 p-4 shadow-xl shadow-cyan-500/20">
-          <div className="absolute inset-0 bg-grid-white/10 [mask-image:linear-gradient(0deg,transparent,black,transparent)]" />
-          <div className="relative z-10">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
-                <div className="w-10 h-10 rounded-lg bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                  <IdCard className="w-5 h-5 text-white" />
+        <div className='relative overflow-hidden rounded-xl bg-gradient-to-br from-cyan-600 via-blue-600 to-indigo-600 p-4 shadow-xl shadow-cyan-500/20 dark:from-cyan-700 dark:via-blue-700 dark:to-indigo-800'>
+          <div className='bg-grid-white/10 absolute inset-0 [mask-image:linear-gradient(0deg,transparent,black,transparent)]' />
+          <div className='relative z-10'>
+            <div className='flex items-center justify-between'>
+              <div className='flex items-center gap-2.5'>
+                <div className='flex h-10 w-10 items-center justify-center rounded-lg bg-white/20 backdrop-blur-sm'>
+                  <IdCard className='h-5 w-5 text-white' />
                 </div>
                 <div>
                   <h2 className='text-lg font-bold text-white'>
-                    {uploadTipoCedula ? 'Subir Documento de Identidad' : 'Subir Documento'}
+                    {uploadTipoCedula
+                      ? 'Subir Documento de Identidad'
+                      : 'Subir Documento'}
                   </h2>
-                  <p className='text-cyan-100 dark:text-cyan-200 text-xs'>
+                  <p className='text-xs text-cyan-100 dark:text-cyan-200'>
                     {uploadTipoCedula
                       ? 'Sube la cédula o pasaporte oficial del cliente'
                       : 'Completa la información y selecciona el archivo a subir'}
@@ -140,7 +139,7 @@ export function DocumentosTab({ cliente }: DocumentosTabProps) {
               {/* Botón volver a la derecha */}
               <button
                 onClick={volverADocumentos}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/20 backdrop-blur-md border border-white/30 text-white text-xs font-medium hover:bg-white/30 transition-all"
+                className='flex items-center gap-1.5 rounded-lg border border-white/30 bg-white/20 px-3 py-1.5 text-xs font-medium text-white backdrop-blur-md transition-all hover:bg-white/30'
               >
                 <ArrowLeft className='h-3.5 w-3.5' />
                 <span>Volver</span>
@@ -149,11 +148,13 @@ export function DocumentosTab({ cliente }: DocumentosTabProps) {
           </div>
         </div>
 
-        <div className={`rounded-lg border ${theme.classes.border.light} bg-white p-3 shadow-sm dark:bg-gray-800`}>
+        <div
+          className={`rounded-lg border ${theme.classes.border.light} bg-white p-3 shadow-sm dark:bg-gray-800`}
+        >
           <DocumentoUpload
             entidadId={cliente.id}
-            tipoEntidad="cliente"
-            moduleName="clientes"
+            tipoEntidad='cliente'
+            moduleName='clientes'
             metadata={metadataPendiente}
             onSuccess={onSuccessUpload}
             onCancel={onCancelUpload}
@@ -166,20 +167,24 @@ export function DocumentosTab({ cliente }: DocumentosTabProps) {
   return (
     <div className='space-y-4'>
       {/* Header con acciones - PREMIUM GLASSMORPHISM */}
-      <div className={`relative overflow-hidden rounded-xl backdrop-blur-xl bg-gradient-to-br from-cyan-50/80 via-blue-50/80 to-indigo-50/80 dark:from-cyan-950/50 dark:via-blue-950/50 dark:to-indigo-950/50 border ${theme.classes.border.light} p-4 shadow-2xl shadow-cyan-500/10 dark:shadow-cyan-500/5`}>
+      <div
+        className={`relative overflow-hidden rounded-xl border bg-gradient-to-br from-cyan-50/80 via-blue-50/80 to-indigo-50/80 backdrop-blur-xl dark:from-cyan-950/50 dark:via-blue-950/50 dark:to-indigo-950/50 ${theme.classes.border.light} p-4 shadow-2xl shadow-cyan-500/10 dark:shadow-cyan-500/5`}
+      >
         {/* Pattern overlay */}
-        <div className="absolute inset-0 bg-grid-white/10 [mask-image:linear-gradient(0deg,transparent,black,transparent)] pointer-events-none" />
+        <div className='bg-grid-white/10 pointer-events-none absolute inset-0 [mask-image:linear-gradient(0deg,transparent,black,transparent)]' />
 
         <div className='relative z-10 flex items-center justify-between'>
           <div className='flex items-center gap-3'>
-            <div className={`rounded-xl bg-gradient-to-br ${theme.classes.gradient.primary} p-2.5 shadow-lg shadow-cyan-500/30`}>
+            <div
+              className={`rounded-xl bg-gradient-to-br ${theme.classes.gradient.primary} p-2.5 shadow-lg shadow-cyan-500/30`}
+            >
               <FileText className='h-5 w-5 text-white' />
             </div>
             <div>
-              <h2 className='text-base font-bold bg-gradient-to-br from-cyan-600 via-blue-600 to-indigo-600 dark:from-cyan-400 dark:via-blue-400 dark:to-indigo-400 bg-clip-text text-transparent'>
+              <h2 className='bg-gradient-to-br from-cyan-600 via-blue-600 to-indigo-600 bg-clip-text text-base font-bold text-transparent dark:from-cyan-400 dark:via-blue-400 dark:to-indigo-400'>
                 Documentos del Cliente
               </h2>
-              <p className='text-xs text-cyan-700 dark:text-cyan-300 font-medium'>
+              <p className='text-xs font-medium text-cyan-700 dark:text-cyan-300'>
                 Gestiona cédula, contratos y documentación legal
               </p>
             </div>
@@ -190,19 +195,21 @@ export function DocumentosTab({ cliente }: DocumentosTabProps) {
             {!tieneCedula && (
               <button
                 onClick={() => mostrarUpload(true)}
-                className='group flex items-center gap-2 rounded-lg bg-gradient-to-r from-orange-500 to-amber-500 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-orange-500/50 hover:shadow-2xl hover:shadow-orange-500/60 ring-2 ring-orange-300/50 dark:ring-orange-700/50 ring-offset-2 dark:ring-offset-gray-900 transition-all hover:from-orange-600 hover:to-amber-600 hover:scale-[1.02] active:scale-[0.98]'
+                className='group flex items-center gap-2 rounded-lg bg-gradient-to-r from-orange-500 to-amber-500 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-orange-500/50 ring-2 ring-orange-300/50 ring-offset-2 transition-all hover:scale-[1.02] hover:from-orange-600 hover:to-amber-600 hover:shadow-2xl hover:shadow-orange-500/60 active:scale-[0.98] dark:ring-orange-700/50 dark:ring-offset-gray-900'
               >
-                <IdCard className='h-4 w-4 group-hover:rotate-12 transition-transform' />
+                <IdCard className='h-4 w-4 transition-transform group-hover:rotate-12' />
                 <span>Subir Cédula/Pasaporte</span>
               </button>
             )}
 
             <button
               onClick={mostrarCategorias}
-              className={`group flex items-center gap-1.5 rounded-lg backdrop-blur-sm bg-white/60 dark:bg-gray-800/60 hover:bg-white/80 dark:hover:bg-gray-800/80 border ${theme.classes.border.light} px-3 py-1.5 text-xs font-medium transition-all hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]`}
+              className={`group flex items-center gap-1.5 rounded-lg border bg-white/60 backdrop-blur-sm hover:bg-white/80 dark:bg-gray-800/60 dark:hover:bg-gray-800/80 ${theme.classes.border.light} px-3 py-1.5 text-xs font-medium transition-all hover:scale-[1.02] hover:shadow-lg active:scale-[0.98]`}
             >
-              <FolderCog className='h-3.5 w-3.5 text-cyan-600 dark:text-cyan-400 group-hover:rotate-12 transition-transform' />
-              <span className='text-gray-700 dark:text-gray-300'>Categorías</span>
+              <FolderCog className='h-3.5 w-3.5 text-cyan-600 transition-transform group-hover:rotate-12 dark:text-cyan-400' />
+              <span className='text-gray-700 dark:text-gray-300'>
+                Categorías
+              </span>
             </button>
             {/* Botón genérico - primario si tiene cédula, secundario si no */}
             <button
@@ -210,11 +217,13 @@ export function DocumentosTab({ cliente }: DocumentosTabProps) {
               className={`group flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all hover:scale-[1.02] active:scale-[0.98] ${
                 tieneCedula
                   ? `bg-gradient-to-r ${theme.classes.gradient.primary} text-white shadow-lg shadow-cyan-500/30 hover:shadow-xl hover:shadow-cyan-500/40`
-                  : 'backdrop-blur-sm bg-white/60 dark:bg-gray-800/60 hover:bg-white/80 dark:hover:bg-gray-800/80 border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:shadow-lg'
+                  : 'border border-gray-300 bg-white/60 text-gray-600 backdrop-blur-sm hover:bg-white/80 hover:shadow-lg dark:border-gray-600 dark:bg-gray-800/60 dark:text-gray-400 dark:hover:bg-gray-800/80'
               }`}
             >
-              <Upload className='h-3.5 w-3.5 group-hover:-translate-y-0.5 transition-transform' />
-              <span>{tieneCedula ? 'Subir Documento' : 'Otros documentos'}</span>
+              <Upload className='h-3.5 w-3.5 transition-transform group-hover:-translate-y-0.5' />
+              <span>
+                {tieneCedula ? 'Subir Documento' : 'Otros documentos'}
+              </span>
             </button>
           </div>
         </div>
@@ -222,15 +231,18 @@ export function DocumentosTab({ cliente }: DocumentosTabProps) {
 
       {/* 🚨 Banner informativo cuando no hay documento de identidad */}
       <AnimatePresence>
-        {!tieneCedula && !cargandoValidacion && (() => {
-          // Si ya tiene negociación activa (vivienda asignada), mostrar advertencia suave
-          const tieneNegociacion = (cliente.estadisticas?.negociaciones_activas ?? 0) > 0
-          return (
-            <BannerDocumentoRequerido
-              variant={tieneNegociacion ? 'advertencia' : 'bloqueante'}
-            />
-          )
-        })()}
+        {!tieneCedula &&
+          !cargandoValidacion &&
+          (() => {
+            // Si ya tiene negociación activa (vivienda asignada), mostrar advertencia suave
+            const tieneNegociacion =
+              (cliente.estadisticas?.negociaciones_activas ?? 0) > 0
+            return (
+              <BannerDocumentoRequerido
+                variant={tieneNegociacion ? 'advertencia' : 'bloqueante'}
+              />
+            )
+          })()}
       </AnimatePresence>
 
       {/* 📄 Sección de documentos pendientes de fuentes (colapsable) */}
@@ -238,20 +250,28 @@ export function DocumentosTab({ cliente }: DocumentosTabProps) {
         clienteId={cliente.id}
         onSubirDocumento={(pendienteId, tipoDocumento, metadata) => {
           // ✅ Solo abrir SubirCartaModal para cartas de aprobación específicas
-          const esCarta = tipoDocumento.toLowerCase().includes('carta de aprobaci')
+          const esCarta = tipoDocumento
+            .toLowerCase()
+            .includes('carta de aprobaci')
           if (metadata.fuente_pago_id && esCarta) {
             setFuenteParaCarta({
-              id: metadata.fuente_pago_id,
-              tipo: metadata.tipo_fuente,
+              id: metadata.fuente_pago_id as string,
+              tipo: metadata.tipo_fuente as string,
               // ✅ La vista usa 'entidad_fuente', no 'entidad'
-              entidad: metadata.entidad_fuente,
-              monto_aprobado: metadata.monto_aprobado || 0,
+              entidad: metadata.entidad_fuente as string | undefined,
+              monto_aprobado: (metadata.monto_aprobado as number) || 0,
               // ✅ Pasar tipo exacto del doc para que la vista haga match al subir
               tipo_documento_sistema: tipoDocumento,
               // ✅ FK al requisito: documentos-base.service lo guarda → vista lo detecta por UUID
-              requisito_config_id: metadata.requisito_config_id,
-              vivienda: metadata.vivienda,
-              cliente: metadata.cliente,
+              requisito_config_id: metadata.requisito_config_id as
+                | string
+                | undefined,
+              vivienda: metadata.vivienda as
+                | { numero: string; manzana: string }
+                | undefined,
+              cliente: metadata.cliente as
+                | { nombre_completo: string }
+                | undefined,
             })
             setModalCartaOpen(true)
           } else {
@@ -264,9 +284,9 @@ export function DocumentosTab({ cliente }: DocumentosTabProps) {
       {/* ✅ Lista de documentos - Componente genérico estándar */}
       <DocumentosLista
         entidadId={cliente.id}
-        tipoEntidad="cliente"
-        moduleName="clientes"
-        defaultVista="lista"
+        tipoEntidad='cliente'
+        moduleName='clientes'
+        defaultVista='lista'
         onUploadClick={() => mostrarUpload(false)}
       />
 

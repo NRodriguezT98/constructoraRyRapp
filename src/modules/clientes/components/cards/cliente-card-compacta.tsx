@@ -31,7 +31,7 @@ interface ClienteCardCompactaProps {
 
 export function ClienteCardCompacta({
   cliente,
-  vista,
+  vista: _vista,
   tieneCedula = false,
   onVer,
   onEditar,

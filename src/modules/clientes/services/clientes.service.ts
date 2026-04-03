@@ -9,13 +9,18 @@ import { logger } from '@/lib/utils/logger'
 import { auditService } from '@/services/audit.service'
 
 import type {
-    ActualizarClienteDTO,
-    Cliente,
-    ClienteResumen,
-    CrearClienteDTO,
-    FiltrosClientes,
+  ActualizarClienteDTO,
+  Cliente,
+  ClienteResumen,
+  CrearClienteDTO,
+  EstadoCliente,
+  FiltrosClientes,
+  TipoDocumento,
 } from '../types'
-import { sanitizeActualizarClienteDTO, sanitizeCrearClienteDTO } from '../utils/sanitize-cliente.utils'
+import {
+  sanitizeActualizarClienteDTO,
+  sanitizeCrearClienteDTO,
+} from '../utils/sanitize-cliente.utils'
 
 class ClientesService {
   /**
@@ -63,18 +68,16 @@ class ClientesService {
     }
 
     // ⚡ EJECUTAR TODAS LAS CONSULTAS EN PARALELO (Promise.all)
-    const [
-      { data, error },
-      { data: negociaciones },
-      { data: intereses }
-    ] = await Promise.all([
-      // 1. Datos básicos de clientes
-      query.order('fecha_creacion', { ascending: false }),
+    const [{ data, error }, { data: negociaciones }, { data: intereses }] =
+      await Promise.all([
+        // 1. Datos básicos de clientes
+        query.order('fecha_creacion', { ascending: false }),
 
-      // 2. Negociaciones activas (en paralelo)
-      supabase
-        .from('negociaciones')
-        .select(`
+        // 2. Negociaciones activas (en paralelo)
+        supabase
+          .from('negociaciones')
+          .select(
+            `
           id,
           cliente_id,
           estado,
@@ -93,13 +96,15 @@ class ClientesService {
               )
             )
           )
-        `)
-        .eq('estado', 'Activa'),
+        `
+          )
+          .eq('estado', 'Activa'),
 
-      // 3. Intereses activos (en paralelo)
-      supabase
-        .from('cliente_intereses')
-        .select(`
+        // 3. Intereses activos (en paralelo)
+        supabase
+          .from('cliente_intereses')
+          .select(
+            `
           id,
           cliente_id,
           estado,
@@ -113,15 +118,16 @@ class ClientesService {
               nombre
             )
           )
-        `)
-        .eq('estado', 'Activo')
-    ])
+        `
+          )
+          .eq('estado', 'Activo'),
+      ])
 
     if (error) throw error
 
     // ⚡ CREAR MAPAS DE BÚSQUEDA RÁPIDA (O(1) lookup)
     const negociacionesMap = new Map(
-      negociaciones?.map((neg) => [
+      negociaciones?.map(neg => [
         neg.cliente_id,
         {
           nombre_proyecto: neg.viviendas?.manzanas?.proyectos?.nombre,
@@ -132,31 +138,32 @@ class ClientesService {
           valor_total_pagar: neg.valor_total_pagar,
           total_abonado: neg.total_abonado,
           saldo_pendiente: neg.saldo_pendiente,
-        }
+        },
       ]) || []
     )
 
     const interesesMap = new Map(
       intereses
-        ?.filter((int) => !negociacionesMap.has(int.cliente_id)) // Solo si no tiene negociación
-        .map((int) => [
+        ?.filter(int => !negociacionesMap.has(int.cliente_id)) // Solo si no tiene negociación
+        .map(int => [
           int.cliente_id,
           {
             nombre_proyecto: int.proyectos?.nombre,
             nombre_manzana: int.viviendas?.manzanas?.nombre,
             numero_vivienda: int.viviendas?.numero,
-          }
+          },
         ]) || []
     )
 
     // ⚡ TRANSFORMAR Y ENRIQUECER DATOS (O(n) single pass)
-    return (data || []).map((item) => {
-      const negociacion = negociacionesMap.get(item.id!)
-      const interes = interesesMap.get(item.id!)
+    return (data || []).map(item => {
+      const itemId = item.id || ''
+      const negociacion = itemId ? negociacionesMap.get(itemId) : undefined
+      const interes = itemId ? interesesMap.get(itemId) : undefined
 
       return {
-        id: item.id || '',
-        tipo_documento: (item.tipo_documento as any) || 'CC',
+        id: itemId,
+        tipo_documento: (item.tipo_documento as TipoDocumento) || 'CC',
         numero_documento: item.numero_documento || '',
         nombres: item.nombres || '',
         apellidos: item.apellidos || '',
@@ -165,9 +172,11 @@ class ClientesService {
         email: item.email || '',
         estado_civil: item.estado_civil || undefined,
         fecha_nacimiento: item.fecha_nacimiento || undefined,
-        estado: (item.estado as any) || 'Interesado',
-        fecha_creacion: item.fecha_creacion || formatDateForDB(getTodayDateString()),
-        fecha_actualizacion: item.fecha_creacion || formatDateForDB(getTodayDateString()),
+        estado: (item.estado as EstadoCliente) || 'Interesado',
+        fecha_creacion:
+          item.fecha_creacion || formatDateForDB(getTodayDateString()),
+        fecha_actualizacion:
+          item.fecha_creacion || formatDateForDB(getTodayDateString()),
         tiene_documento_identidad: item.tiene_documento_identidad || false,
         estadisticas: {
           total_negociaciones: item.total_negociaciones || 0,
@@ -226,12 +235,14 @@ class ClientesService {
     // 2. Obtener intereses del cliente usando la vista intereses_completos
     const { data: interesesData, error: interesesError } = await supabase
       .from('intereses_completos')
-      .select(`
+      .select(
+        `
         id, cliente_id, proyecto_id, vivienda_id, estado, origen,
         notas, fecha_interes, proyecto_nombre, vivienda_numero,
         vivienda_valor, manzana_nombre, proyecto_estado, vivienda_estado,
         motivo_descarte, fecha_actualizacion
-      `)
+      `
+      )
       .eq('cliente_id', id)
       .order('fecha_interes', { ascending: false })
 
@@ -244,19 +255,18 @@ class ClientesService {
     const negociaciones = clienteData.negociaciones || []
     const estadisticas = {
       total_negociaciones: negociaciones.length,
-      negociaciones_activas: negociaciones.filter((n) =>
+      negociaciones_activas: negociaciones.filter(n =>
         ['Activa', 'En Proceso'].includes(n.estado)
       ).length,
-      negociaciones_completadas: negociaciones.filter((n) =>
-        n.estado === 'Completada'
+      negociaciones_completadas: negociaciones.filter(
+        n => n.estado === 'Completada'
       ).length,
-      ultima_negociacion: negociaciones.length > 0
-        ? negociaciones[0].fecha_negociacion
-        : null,
+      ultima_negociacion:
+        negociaciones.length > 0 ? negociaciones[0].fecha_negociacion : null,
     }
 
     // 4. Mapear intereses al formato ClienteInteres
-    const intereses = (interesesData || []).map((interes) => ({
+    const intereses = (interesesData || []).map(interes => ({
       id: interes.id,
       cliente_id: interes.cliente_id,
       proyecto_id: interes.proyecto_id,
@@ -289,10 +299,11 @@ class ClientesService {
     tipo_documento: string,
     numero_documento: string
   ): Promise<Cliente | null> {
-
     const { data, error } = await supabase
       .from('clientes')
-      .select('id, nombres, apellidos, tipo_documento, numero_documento, estado')
+      .select(
+        'id, nombres, apellidos, tipo_documento, numero_documento, estado'
+      )
       .eq('tipo_documento', tipo_documento)
       .eq('numero_documento', numero_documento)
       .maybeSingle()
@@ -327,7 +338,6 @@ class ClientesService {
       throw new Error(error)
     }
 
-
     const {
       data: { user },
     } = await supabase.auth.getUser()
@@ -354,7 +364,6 @@ class ClientesService {
       throw error
     }
 
-
     // 🔍 Auditar creación de cliente
     try {
       await auditService.auditarCreacionCliente(data)
@@ -376,11 +385,13 @@ class ClientesService {
     // 1. Obtener datos anteriores para auditoría
     const { data: datosAnteriores } = await supabase
       .from('clientes')
-      .select(`
+      .select(
+        `
         id, nombres, apellidos, tipo_documento, numero_documento,
         telefono, telefono_alternativo, email, direccion, ciudad,
         departamento, fecha_nacimiento, estado_civil, notas, estado
-      `)
+      `
+      )
       .eq('id', id)
       .single()
     // 2. Actualizar cliente
@@ -406,7 +417,7 @@ class ClientesService {
           data,
           {
             campos_modificados: Object.keys(datosLimpios),
-            cliente_nombre: `${data.nombres} ${data.apellidos}`
+            cliente_nombre: `${data.nombres} ${data.apellidos}`,
           },
           'clientes'
         )
@@ -439,7 +450,7 @@ class ClientesService {
     if (negociaciones && negociaciones.length > 0) {
       throw new Error(
         'No se puede eliminar un cliente con historial de negociaciones. ' +
-        'Use el estado "Inactivo" en su lugar para mantener la trazabilidad.'
+          'Use el estado "Inactivo" en su lugar para mantener la trazabilidad.'
       )
     }
 
@@ -453,7 +464,7 @@ class ClientesService {
     if (viviendas && viviendas.length > 0) {
       throw new Error(
         'No se puede eliminar un cliente con viviendas asignadas. ' +
-        'Primero desasigne las viviendas o use el estado "Inactivo".'
+          'Primero desasigne las viviendas o use el estado "Inactivo".'
       )
     }
 
@@ -467,14 +478,16 @@ class ClientesService {
     if (cliente?.estado !== 'Interesado') {
       throw new Error(
         'Solo se pueden eliminar clientes en estado "Interesado". ' +
-        'Para clientes con historial, use el estado "Inactivo".'
+          'Para clientes con historial, use el estado "Inactivo".'
       )
     }
 
     // 4. Obtener datos del cliente para auditoría
     const { data: clienteData } = await supabase
       .from('clientes')
-      .select('id, nombres, apellidos, tipo_documento, numero_documento, estado')
+      .select(
+        'id, nombres, apellidos, tipo_documento, numero_documento, estado'
+      )
       .eq('id', id)
       .single()
 
@@ -493,7 +506,7 @@ class ClientesService {
           {
             motivo: 'Cliente sin historial de negociaciones',
             cliente_nombre: `${clienteData.nombres} ${clienteData.apellidos}`,
-            cliente_documento: `${clienteData.tipo_documento} ${clienteData.numero_documento}`
+            cliente_documento: `${clienteData.tipo_documento} ${clienteData.numero_documento}`,
           },
           'clientes'
         )
@@ -508,7 +521,11 @@ class ClientesService {
    */
   async verificarRenunciaPendiente(
     clienteId: string
-  ): Promise<{ pendiente: boolean; renunciaId?: string; consecutivo?: string }> {
+  ): Promise<{
+    pendiente: boolean
+    renunciaId?: string
+    consecutivo?: string
+  }> {
     const { data, error } = await supabase
       .from('renuncias')
       .select('id, consecutivo')
@@ -547,10 +564,10 @@ class ClientesService {
 
     const stats = {
       total: data?.length || 0,
-      interesados: data?.filter((c) => c.estado === 'Interesado').length || 0,
-      activos: data?.filter((c) => c.estado === 'Activo').length || 0,
-      inactivos: data?.filter((c) => c.estado === 'Inactivo').length || 0,
-      renunciaron: data?.filter((c) => c.estado === 'Renunció').length || 0,
+      interesados: data?.filter(c => c.estado === 'Interesado').length || 0,
+      activos: data?.filter(c => c.estado === 'Activo').length || 0,
+      inactivos: data?.filter(c => c.estado === 'Inactivo').length || 0,
+      renunciaron: data?.filter(c => c.estado === 'Renunció').length || 0,
     }
 
     return stats

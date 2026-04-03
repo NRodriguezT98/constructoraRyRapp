@@ -3,8 +3,8 @@
 import { motion } from 'framer-motion'
 
 import { Pagination } from '@/shared/components/ui/Pagination'
+import { staggerContainer, staggerItem } from '@/shared/styles/animations'
 
-import { staggerContainer, staggerItem } from '../../../shared/styles/animations'
 import { viviendasListStyles as styles } from '../styles/viviendasList.styles'
 import type { Vivienda } from '../types'
 
@@ -49,12 +49,12 @@ export function ViviendasLista({
   onCambiarItemsPorPagina,
 }: ViviendasListaProps) {
   return (
-    <div className="space-y-6">
+    <div className='space-y-6'>
       <motion.div
         key={`page-${paginaActual}`}
         variants={staggerContainer}
-        initial="hidden"
-        animate="visible"
+        initial='hidden'
+        animate='visible'
         className={styles.grid.container}
       >
         {viviendas.map(vivienda => (

@@ -34,14 +34,16 @@ export const FUENTES_PAGO_CODIGOS = {
   SUBSIDIO_CAJA_COMPENSACION: 'subsidio_caja_compensacion',
 } as const
 
-export type FuentePagoCodigo = typeof FUENTES_PAGO_CODIGOS[keyof typeof FUENTES_PAGO_CODIGOS]
+export type FuentePagoCodigo =
+  (typeof FUENTES_PAGO_CODIGOS)[keyof typeof FUENTES_PAGO_CODIGOS]
 
 export const ESTADOS_FUENTE_PAGO = {
   ACTIVA: 'Activa',
   INACTIVA: 'Inactiva',
 } as const
 
-export type EstadoFuentePago = typeof ESTADOS_FUENTE_PAGO[keyof typeof ESTADOS_FUENTE_PAGO]
+export type EstadoFuentePago =
+  (typeof ESTADOS_FUENTE_PAGO)[keyof typeof ESTADOS_FUENTE_PAGO]
 
 /**
  * DTO para crear fuente de pago
@@ -99,9 +101,12 @@ export interface FuentePago {
   // Documentos
   carta_asignacion_url: string | null
 
-  // Campos específicos para subsidios
-  fecha_resolucion: string | null // Para Subsidio Mi Casa Ya
-  fecha_acta: string | null // Para Subsidio Caja Compensación
+  // Campos específicos para subsidios (opcionales: solo presentes en ciertos tipos)
+  fecha_resolucion?: string | null // Para Subsidio Mi Casa Ya
+  fecha_acta?: string | null // Para Subsidio Caja Compensación
+
+  // Crédito constructor
+  capital_para_cierre?: number | null
 
   // Estado
   estado: EstadoFuentePago

@@ -22,6 +22,11 @@ import autoTable from 'jspdf-autotable'
 import { getTodayDateString } from '@/lib/utils/date.utils'
 import { logger } from '@/lib/utils/logger'
 
+// jspdf-autotable adds lastAutoTable to the jsPDF instance at runtime
+interface JsPDFWithAutoTable extends jsPDF {
+  lastAutoTable: { finalY: number }
+}
+
 // ============================================
 // TYPES
 // ============================================
@@ -103,7 +108,8 @@ const COLORES = {
 // LOGO EMPRESA (Base64)
 // ============================================
 
-const LOGO_RYR_BASE64 = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAdAAAADICAYAAABMh7NzAAAACXBIWXMAAAsTAAALEwEAmpwYAAAF8mlUWHRYTUw6Y29tLmFkb2JlLnhtcAAAAAAAPD94cGFja2V0IGJlZ2luPSLvu78iIGlkPSJXNU0wTXBDZWhpSHpyZVN6TlRjemtjOWQiPz4gPHg6eG1wbWV0YSB4bWxuczp4PSJhZG9iZTpuczptZXRhLyIgeDp4bXB0az0iQWRvYmUgWE1QIENvcmUgOS4xLWMwMDIgNzkuZTY2Y2JjNzk1LCAyMDIzLzA3LzE5LTE0OjU5OjY2ICAgICAgICAiPiA8cmRmOlJERiB4bWxuczpyZGY9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkvMDIvMjItcmRmLXN5bnRheC1ucyMiPiA8cmRmOkRlc2NyaXB0aW9uIHJkZjphYm91dD0iIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtbG5zOmRjPSJodHRwOi8vcHVybC5vcmcvZGMvZWxlbWVudHMvMS4xLyIgeG1sbnM6cGhvdG9zaG9wPSJodHRwOi8vbnMuYWRvYmUuY29tL3Bob3Rvc2hvcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RFdnQ9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZUV2ZW50IyIgeG1wOkNyZWF0b3JUb29sPSJBZG9iZSBQaG90b3Nob3AgMjUuMiAoV2luZG93cykiIHhtcDpDcmVhdGVEYXRlPSIyMDI0LTExLTE4VDAxOjQxOjE2LTA1OjAwIiB4bXA6TW9kaWZ5RGF0ZT0iMjAyNC0xMS0xOFQwMTo1MzowMi0wNTowMCIgeG1wOk1ldGFkYXRhRGF0ZT0iMjAyNC0xMS0xOFQwMTo1MzowMi0wNTowMCIgZGM6Zm9ybWF0PSJpbWFnZS9wbmciIHBob3Rvc2hvcDpDb2xvck1vZGU9IjMiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6YjBkZjBjNGUtNGQ2Yy00MDQ5LWE0YmQtOTEwODU4ZjYzZGQxIiB4bXBNTTpEb2N1bWVudElEPSJ4bXAuZGlkOmIwZGYwYzRlLTRkNmMtNDA0OS1hNGJkLTkxMDg1OGY2M2RkMSIgeG1wTU06T3JpZ2luYWxEb2N1bWVudElEPSJ4bXAuZGlkOmIwZGYwYzRlLTRkNmMtNDA0OS1hNGJkLTkxMDg1OGY2M2RkMSI+IDx4bXBNTTpIaXN0b3J5PiA8cmRmOlNlcT4gPHJkZjpsaSBzdEV2dDphY3Rpb249ImNyZWF0ZWQiIHN0RXZ0Omluc3RhbmNlSUQ9InhtcC5paWQ6YjBkZjBjNGUtNGQ2Yy00MDQ5LWE0YmQtOTEwODU4ZjYzZGQxIiBzdEV2dDp3aGVuPSIyMDI0LTExLTE4VDAxOjQxOjE2LTA1OjAwIiBzdEV2dDpzb2Z0d2FyZUFnZW50PSJBZG9iZSBQaG90b3Nob3AgMjUuMiAoV2luZG93cykiLz4gPC9yZGY6U2VxPiA8L3htcE1NOkhpc3Rvcnk+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+oVSUfQAAEp5JREFUeJzt3X2QZXV95/H3t7tnGBhmhhlgBhgYkAcBRVEUH1ZdV3djNlHX3aTWrWwSk2yS3axZk6ybTVKVf5L8k2STTSobTbKJSUxMNpu4Jm6iJhvjU3xAQRQQBQQGGJ5nGGZg+qG///H73Xtvd0/39J3p2327+/2quufe+7vnnPv73nP63nPP75xzIzORJEkrMzbtAiRJ2owMUEmSKhigkiRVMEAlSapggEqSVMEAlSSpggEqSVIFA1SSpAoGqCRJFQxQSZIqGKCSJFUwQCVJqmCASpJUwQCVJKmCASpJUgUDVJKkCgaoJEkVDFBJkioYoJIkVTBAJUmqYIBKklTBAJUkqYIBKklSBQNUkqQKBqgkSRUMUEmSKhigkiRVMEAlSapggEqSVMEAlSSpggEqSVIFA1SSpAoGqCRJFQxQSZIqGKCSJFUwQCVJqmCASpJUwQCVJKmCASpJUgUDVJKkCgaoJEkVDFBJkioYoJIkVTBAJUmqYIBKklTBAJUkqYIBKklSBQNUkqQKBqgkSRUMUEmSKhigkiRVMEAlSapggEqSVMEAlSSpggEqSVIFA1SSpAoGqCRJFQxQSZIqGKCSJFUwQCVJqmCASpJUwQCVJKmCASpJUgUDVJKkCgaoJEkVDFBJkioYoJIkVTBAJUmqYIBKklTBAJUkqYIBKklSBQNUkqQKBqgkSRUMUEmSKhigkiRVMEAlSapggEqSVMEAlSSpggEqSVIFA1SSpAoGqCRJFQxQSZIqGKCSJFUwQCVJqmCASpJUwQCVJKmCASpJUgUDVJKkCgaoJEkVDFBJkioYoJIkVTBAJUmqYIBKklTBAJUkqYIBKklSBQNUkqQKBqgkSRUMUEmSKhigkiRVMEAlSapggEqSVMEAlSSpggEqSVIFA1SSpAoGqCRJFQxQSZIqGKCSJFUwQCVJqmCASpJUwQCVJKmCASpJUgUDVJKkCgaoJEkVDFBJkioYoJIkVTBAJUmqYIBKklTBAJUkqYIBKklSBQNUkqQKBqgkSRUMUEmSKhigkiRVMEAlSapggEqSVMEAlSSpggEqSVIFA1SSpAoGqCRJFQxQSZIqGKCSJFUwQCVJqmCASpJUwQCVJKmCASpJUgUDVJKkCgaoJEkVDFBJkioYoJIkVTBAJUmqYIBKklTBAJUkqYIBKklSBQNUkqQKBqgkSRUMUEmSKhigkiRVMEAlSapggEqSVMEAlSSpggEqSVIFA1SSpAoGqCRJFQxQSZIqGKCSJFUwQCVJqmCASpJUwQCVJKmCASpJUgUDVJKkCgaoJEkVDFBJkioYoJIkVTBAJUmqYIBKklTBAJUkqYIBKklSBQNUkqQKBqgkSRUMUEmSKhigkiRVMEAlSapggEqSVMEAlSSpggEqSVIFA1SSpAoGqCRJFQxQSZIqGKCSJFUwQCVJqmCASpJUwQCVJKmCASpJUgUDVJKkCgaoJEkVDFBJkioYoJIkVTBAJUmqYIBKklTBAJUkqYIBKklSBQNUkqQKBqgkSRUMUEmSKhigkiRVMEAlSapggEqSVMEAlSSpggEqSVIFA1SSpAoGqCRJFQxQSZIqGKCSJFUwQCVJqmCASpJUwQCVJKmCASpJUgUDVJKkCgaoJEkVDFBJkioYoJIkVTBAJUmqYIBKklTBAJUkqYIBKklSBQNUkqQKBqgkSRUMUEmSKhigkiRVMEAlSapggEqSVMEAlSSpggEqSVIFA1SSpAoGqCRJFQxQSZIqGKCSJFUwQCVJqmCASpJUwQCVJKmCASpJUgUDVJKkCgaoJEkVDFBJkioYoJIkVTBAJUmqYIBKklTBAJUkqYIBKklSBQNUkqQKBqgkSRUMUEmSKhigkiRVMEAlSapggEqSVMEAlSSpggEqSVIFA1SSpAoGqCRJFQxQSZIqGKCSJFUwQCVJqmCASpJUwQCVJKmCASpJUgUDVJKkCgaoJEkVDFBJkioYoJIkVTBAJUmqYIBKklTBAJUkqYIBKklSBQNUkqQKBqgkSRUMUEmSKhigkiRVMEAlSapggEqSVMEAlSSpggEqSVIFA1SSpAoGqCRJFQxQSZIqGKCSJFUwQCVJqmCASpJUwQCVJKmCASpJUgUDVJKkCgaoJEkVDFBJkioYoJIkVTBAJUmqYIBKklTBAJUkqYIBKklSBQNUkqQKBqgkSRUMUEmSKhigkiRVMEAlSapggEqSVMEAlSSpggEqSVIFA1SSpAoGqCRJFQxQSZIqGKCSJFUwQCVJqmCASpJUwQCVJKmCASpJUgUDVJKkCgaoJEkVDFBJkioYoJIkVTBAJUmqYIBKklTBAJUkqYIBKklSBQNUkqQKBqgkSRUMUEmSKhigkiRVMEAlSapggEqSVMEAlSSpggEqSVIFA1SSpAoGqCRJFQxQSZIqGKCSJFUwQCVJqmCASpJUwQCVJKmCASpJUgUDVJKkCgaoJEkVDFBJkioYoJIkVTBAJUmqYIBKklTBAJUkqYIBKklSBQNUkqQKBqgkSRUMUEmSKhigkiRVMEAlSapggEqSVMEAlSSpggEqSVIFA1SSpAoGqCRJFQxQSZIqGKCSJFUwQCVJqmCASpJUwQCVJKmCASpJUgUDVJKkCgaoJEkVDFBJkioYoJIkVTBAJUmqYIBKklTBAJUkqYIBKklSBQNUkqQKBqgkSRUMUEmSKhigkiRVMEAlSapggEqSVMEAlSSpggEqSVIFA1SSpAoGqCRJFQxQSZIqGKCSJFUwQCVJqmCASpJUwQCVJKmCASpJUgUDVJKkCgaoJEkVDFBJkioYoJIkVTBAJUmqYIBKklTBAJUkqYIBKklSBQNUkqQKBqgkSRUMUEmSKhigkiRVMEAlSapggEqSVMEAlSSpggEqSVIFA1SSpAoGqCRJFQxQSZIqGKCSJFUwQCVJqmCASpJUwQCVJKmCASpJUgUDVJKkCgaoJEkVDFBJkioYoJIkVTBAJUmqYIBKklTBAJUkqYIBKklSBQNUkqQKBqgkSRUMUEmSKhigkiRVMEAlSapggEqSVMEAlSSpggEqSVIFA1SSpAoGqCRJFQxQSZIqGKCSJFUwQCVJqmCASpJUwQCVJKmCASpJUgUDVJKkCgaoJEkVDFBJkioYoJIkVTBAJUmqYIBKklTBAJUkqYIBKklSBQNUkqQKBqgkSRUMUEmSKhigkiRVMEAlSapggEqSVMEAlSSpggEqSVIFA1SSpAoGqCRJFQxQSZIqGKCSJFUwQCVJqmCASpJUwQCVJKmCASpJUgUDVJKkCgaoJEkVDFBJkioYoJIkVTBAJUmqYIBKklTBAJUkqYIBKklSBQNUkqQKBqgkSRUMUEmSKhigkiRVMEAlSapggEqSVMEAlSSpggEqSVIFA1SSpAoGqCRJFQxQSZIqGKCSJFUwQCVJqmCASpJUwQCVJKmCASpJUgUDVJKkCgaoJEkVDFBJkioYoJIkVTBAJUmqYIBKklTBAJUkqYIBKklSBQNUkqQKBqgkSRUMUEmSKhigkiRVMEAlSapggEqSVMEAlSSpggEqSVIFA1SSpAoGqCRJFQxQSZIqGKCSJFUwQCVJqmCASpJUwQCVJKmCASpJUgUDVJKkCgaoJEkVDFBJkioYoJIkVTBAJUmqYIBKklTBAJUkqYIBKklSBQNUkqQKBqgkSRUMUEmSKhigkiRVMEAlSapggEqSVMEAlSSpggEqSVIFA1SSpAoGqCRJFQxQSZIqGKCSJFUwQCVJqmCASpJUwQCVJKmCASpJUgUDVJKkCgaoJEkVDFBJkioYoJIkVTBAJUmqYIBKklTBAJUkqYIBKklSBQNUkqQKBqgkSRUMUEmSKhigkiRVMEAlSapggEqSVMEAlSSpggEqSVIFA1SSpAoGqCRJFQxQSZIqGKCSJFUwQCVJqmCASpJUwQCVJKmCASpJUgUDVJKkCgaoJEkVDFBJkioYoJIkVTBAJUmqYIBKklTBAJUkqYIBKklSBQNUkqQKBqgkSRUMUEmSKhigkiRVMEAlSapggEqSVMEAlSSpggEqSVIFA1SSpAoGqCRJFQxQSZIqGKCSJFUwQCVJqmCASpJUwQCVJKmCASpJUgUDVJKkCgaoJEkVDFBJkioYoJIkVTBAJUmqYIBKklTBAJUkqYIBKklSBQNUkqQKBqgkSRUMUEmSKhigkiRVMEAlSapggEqSVMEAlSSpggEqSVIFA1SSpAoGqCRJFQxQSZIqGKCSJFUwQCVJqmCASpJUwQCVJKmCASpJUgUDVJKkCgaoJEkVDFBJkioYoJIkVTBAJUmqYIBKklTBAJUkqYIBKklSBQNUkqQKBqgkSRUMUEmSKhigkiRVMEAlSapggEqSVMEAlSSpggEqSVIFA1SSpAoGqCRJFQxQSZIqGKCSJFUwQCVJqmCASpJUwQCVJKmCASpJUgUDVJKkCgaoJEkVDFBJkioYoJIkVTBAJUmqYIBKklTBAJUkqYIBKklSBQNUkqQKBqgkSRUMUEmSKhigkiRVMEAlSapggEqSVMEAlSSpggEqSVIFA1SSpAoGqCRJFQxQSZIqGKCSJFUwQCVJqmCASpJUwQCVJKmCASpJUgUDVJKkCgaoJEkVDFBJkioYoJIkVTBAJUmqYIBKklTBAJUkqYIBKklSBQNUkqQKBqgkSRUMUEmSKhigkiRVMEAlSapggEqSVMEAlSSpggEqSVIFA1SSpAoGqCRJFQxQSZIqGKCSJFUwQCVJqmCASpJUwQCVJKmCASpJUgUDVJKkCgaoJEkVDFBJkioYoJIkVTBAJUmqYIBKklTBAJUkqYIBKklSBQNUkqQKBqgkSRUMUEmSKhigkiRVMEAlSapggEqSVMEAlSSpggEqSVIFA1SSpAoGqCRJFQxQSZIqGKCSJFUwQCVJqmCASpJUwQCVJKmCASpJUgUDVJKkCgaoJEkVDFBJkioYoJIkVTBAJUmqYIBKklTBAJUkqYIBKklSBQNUkqQKBqgkSRUMUEmSKhigkiRVMEAlSapggEqSVMEAlSSpggEqSVIFA1SSpAoGqCRJFQxQSZIqGKCSJFUwQCVJqmCASpJUwQCVJKmCASpJUgUDVJKkCgaoJEkVDFBJkioYoJIkVTBAJUmqYIBKklTBAJUkqYIBKklSBQNUkqQKBqgkSRUMUEmSKhigkiRVMEAlSapggEqSVMEAlSSpggEqSVIFA1SSpAoGqCRJFQxQSZIqGKCSJFUwQCVJqmCASpJUwQCVJKmCASpJUgUDVJKkCgaoJEkVDFBJkioYoJIkVTBAJUmqYIBKklTBAJUkqYIBKklSBQNUkqQKBqgkSRUMUEmSKhigkiRVMEAlSapggEqSVMEAlSSpggEqSVIFA1SSpAoGqCRJFQxQSZIqGKCSJFUwQCVJqmCASpJUwQCVJKmCASpJUgUDVJKkCgaoJEkVDFBJkioYoJIkVTBAJUmqYIBKklTBAJUkqYIBKklSBQNUkqQKBqgkSRUMUEmSKhigkiRVMEAlSapggEqSVMEAlSSpggEqSVIFA1SSpAoGqCRJFQxQSZIqGKCSJFUwQCVJqmCASpJUwQCVJKmCASpJUgUDVJKkCgaoJEkVDFBJkioYoJIkVTBAJUmqYIBKklTBAJUkqYIBKklSBQNUkqQKBqgkSRUMUEmSKhigkiRVMEAlSapggEqSVMEAlSSpggEqSVIFA1SSpAoGqCRJFQxQSZIqGKCSJFUwQCVJqmCASpJUwQCVJKmCASpJUgUDVJKkCgaoJEkVDFBJkioYoJIkVTBAJUmqYIBKklTBAJUkqYIBKklSBQNUkqQKBqgkSRUMUEmSKhigkiRVMEAlSapggEqSVMEAlSSpggEqSVIFA1SSpAoGqCRJFQxQSZIqGKCSJFUwQCVJqmCASpJUwQCVJKmCASpJUgUDVJKkCgaoJEkVDFBJkioYoJIkVTBAJUmqYIBKklTBAJUkqYIBKklSBQNUkqQKBqgkSRUMUEmSKhigkiRVMEAlSapggEqSVMEAlSSpggEqSVIFA1SSpAoGqCRJFQxQSZIqGKCSJFUwQCVJqmCASpJUwQCVJKmCASpJUgUDVJKkCgaoJEkVDFBJkioYoJIkVTBAJUmqYIBKklTBAJUkqYIBKklSBQNUkqQKBqgkSRUMUEmSKhigkiRVMEAlSapggEqSVMEAlSSpggEqSVIFA1SSpAoGqCRJFQxQSZIqGKCSJFUwQCVJqmCASpJUwQCVJKmCASpJUgUDVJKkCgaoJEkVDFBJkioYoJIkVTBAJUmqYIBKklTBAJUkqYIBKklSBQNUkqQKBqgkSRUMUEmSKhigkiRVMEAlSapggEqSVMEAlSSpggEqSVKF/w9vL5rkHGbQFwAAAABJRU5ErkJggg=='
+const LOGO_RYR_BASE64 =
+  'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAdAAAADICAYAAABMh7NzAAAACXBIWXMAAAsTAAALEwEAmpwYAAAF8mlUWHRYTUw6Y29tLmFkb2JlLnhtcAAAAAAAPD94cGFja2V0IGJlZ2luPSLvu78iIGlkPSJXNU0wTXBDZWhpSHpyZVN6TlRjemtjOWQiPz4gPHg6eG1wbWV0YSB4bWxuczp4PSJhZG9iZTpuczptZXRhLyIgeDp4bXB0az0iQWRvYmUgWE1QIENvcmUgOS4xLWMwMDIgNzkuZTY2Y2JjNzk1LCAyMDIzLzA3LzE5LTE0OjU5OjY2ICAgICAgICAiPiA8cmRmOlJERiB4bWxuczpyZGY9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkvMDIvMjItcmRmLXN5bnRheC1ucyMiPiA8cmRmOkRlc2NyaXB0aW9uIHJkZjphYm91dD0iIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtbG5zOmRjPSJodHRwOi8vcHVybC5vcmcvZGMvZWxlbWVudHMvMS4xLyIgeG1sbnM6cGhvdG9zaG9wPSJodHRwOi8vbnMuYWRvYmUuY29tL3Bob3Rvc2hvcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RFdnQ9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZUV2ZW50IyIgeG1wOkNyZWF0b3JUb29sPSJBZG9iZSBQaG90b3Nob3AgMjUuMiAoV2luZG93cykiIHhtcDpDcmVhdGVEYXRlPSIyMDI0LTExLTE4VDAxOjQxOjE2LTA1OjAwIiB4bXA6TW9kaWZ5RGF0ZT0iMjAyNC0xMS0xOFQwMTo1MzowMi0wNTowMCIgeG1wOk1ldGFkYXRhRGF0ZT0iMjAyNC0xMS0xOFQwMTo1MzowMi0wNTowMCIgZGM6Zm9ybWF0PSJpbWFnZS9wbmciIHBob3Rvc2hvcDpDb2xvck1vZGU9IjMiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6YjBkZjBjNGUtNGQ2Yy00MDQ5LWE0YmQtOTEwODU4ZjYzZGQxIiB4bXBNTTpEb2N1bWVudElEPSJ4bXAuZGlkOmIwZGYwYzRlLTRkNmMtNDA0OS1hNGJkLTkxMDg1OGY2M2RkMSIgeG1wTU06T3JpZ2luYWxEb2N1bWVudElEPSJ4bXAuZGlkOmIwZGYwYzRlLTRkNmMtNDA0OS1hNGJkLTkxMDg1OGY2M2RkMSI+IDx4bXBNTTpIaXN0b3J5PiA8cmRmOlNlcT4gPHJkZjpsaSBzdEV2dDphY3Rpb249ImNyZWF0ZWQiIHN0RXZ0Omluc3RhbmNlSUQ9InhtcC5paWQ6YjBkZjBjNGUtNGQ2Yy00MDQ5LWE0YmQtOTEwODU4ZjYzZGQxIiBzdEV2dDp3aGVuPSIyMDI0LTExLTE4VDAxOjQxOjE2LTA1OjAwIiBzdEV2dDpzb2Z0d2FyZUFnZW50PSJBZG9iZSBQaG90b3Nob3AgMjUuMiAoV2luZG93cykiLz4gPC9yZGY6U2VxPiA8L3htcE1NOkhpc3Rvcnk+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+oVSUfQAAEp5JREFUeJzt3X2QZXV95/H3t7tnGBhmhhlgBhgYkAcBRVEUH1ZdV3djNlHX3aTWrWwSk2yS3axZk6ybTVKVf5L8k2STTSobTbKJSUxMNpu4Jm6iJhvjU3xAQRQQBQQGGJ5nGGZg+qG///H73Xtvd0/39J3p2327+/2quufe+7vnnPv73nP63nPP75xzIzORJEkrMzbtAiRJ2owMUEmSKhigkiRVMEAlSapggEqSVMEAlSSpggEqSVIFA1SSpAoGqCRJFQxQSZIqGKCSJFUwQCVJqmCASpJUwQCVJKmCASpJUgUDVJKkCgaoJEkVDFBJkioYoJIkVTBAJUmqYIBKklTBAJUkqYIBKklSBQNUkqQKBqgkSRUMUEmSKhigkiRVMEAlSapggEqSVMEAlSSpggEqSVIFA1SSpAoGqCRJFQxQSZIqGKCSJFUwQCVJqmCASpJUwQCVJKmCASpJUgUDVJKkCgaoJEkVDFBJkioYoJIkVTBAJUmqYIBKklTBAJUkqYIBKklSBQNUkqQKBqgkSRUMUEmSKhigkiRVMEAlSapggEqSVMEAlSSpggEqSVIFA1SSpAoGqCRJFQxQSZIqGKCSJFUwQCVJqmCASpJUwQCVJKmCASpJUgUDVJKkCgaoJEkVDFBJkioYoJIkVTBAJUmqYIBKklTBAJUkqYIBKklSBQNUkqQKBqgkSRUMUEmSKhigkiRVMEAlSapggEqSVMEAlSSpggEqSVIFA1SSpAoGqCRJFQxQSZIqGKCSJFUwQCVJqmCASpJUwQCVJKmCASpJUgUDVJKkCgaoJEkVDFBJkioYoJIkVTBAJUmqYIBKklTBAJUkqYIBKklSBQNUkqQKBqgkSRUMUEmSKhigkiRVMEAlSapggEqSVMEAlSSpggEqSVIFA1SSpAoGqCRJFQxQSZIqGKCSJFUwQCVJqmCASpJUwQCVJKmCASpJUgUDVJKkCgaoJEkVDFBJkioYoJIkVTBAJUmqYIBKklTBAJUkqYIBKklSBQNUkqQKBqgkSRUMUEmSKhigkiRVMEAlSapggEqSVMEAlSSpggEqSVIFA1SSpAoGqCRJFQxQSZIqGKCSJFUwQCVJqmCASpJUwQCVJKmCASpJUgUDVJKkCgaoJEkVDFBJkioYoJIkVTBAJUmqYIBKklTBAJUkqYIBKklSBQNUkqQKBqgkSRUMUEmSKhigkiRVMEAlSapggEqSVMEAlSSpggEqSVIFA1SSpAoGqCRJFQxQSZIqGKCSJFUwQCVJqmCASpJUwQCVJKmCASpJUgUDVJKkCgaoJEkVDFBJkioYoJIkVTBAJUmqYIBKklTBAJUkqYIBKklSBQNUkqQKBqgkSRUMUEmSKhigkiRVMEAlSapggEqSVMEAlSSpggEqSVIFA1SSpAoGqCRJFQxQSZIqGKCSJFUwQCVJqmCASpJUwQCVJKmCASpJUgUDVJKkCgaoJEkVDFBJkioYoJIkVTBAJUmqYIBKklTBAJUkqYIBKklSBQNUkqQKBqgkSRUMUEmSKhigkiRVMEAlSapggEqSVMEAlSSpggEqSVIFA1SSpAoGqCRJFQxQSZIqGKCSJFUwQCVJqmCASpJUwQCVJKmCASpJUgUDVJKkCgaoJEkVDFBJkioYoJIkVTBAJUmqYIBKklTBAJUkqYIBKklSBQNUkqQKBqgkSRUMUEmSKhigkiRVMEAlSapggEqSVMEAlSSpggEqSVIFA1SSpAoGqCRJFQxQSZIqGKCSJFUwQCVJqmCASpJUwQCVJKmCASpJUgUDVJKkCgaoJEkVDFBJkioYoJIkVTBAJUmqYIBKklTBAJUkqYIBKklSBQNUkqQKBqgkSRUMUEmSKhigkiRVMEAlSapggEqSVMEAlSSpggEqSVIFA1SSpAoGqCRJFQxQSZIqGKCSJFUwQCVJqmCASpJUwQCVJKmCASpJUgUDVJKkCgaoJEkVDFBJkioYoJIkVTBAJUmqYIBKklTBAJUkqYIBKklSBQNUkqQKBqgkSRUMUEmSKhigkiRVMEAlSapggEqSVMEAlSSpggEqSVIFA1SSpAoGqCRJFQxQSZIqGKCSJFUwQCVJqmCASpJUwQCVJKmCASpJUgUDVJKkCgaoJEkVDFBJkioYoJIkVTBAJUmqYIBKklTBAJUkqYIBKklSBQNUkqQKBqgkSRUMUEmSKhigkiRVMEAlSapggEqSVMEAlSSpggEqSVIFA1SSpAoGqCRJFQxQSZIqGKCSJFUwQCVJqmCASpJUwQCVJKmCASpJUgUDVJKkCgaoJEkVDFBJkioYoJIkVTBAJUmqYIBKklTBAJUkqYIBKklSBQNUkqQKBqgkSRUMUEmSKhigkiRVMEAlSapggEqSVMEAlSSpggEqSVIFA1SSpAoGqCRJFQxQSZIqGKCSJFUwQCVJqmCASpJUwQCVJKmCASpJUgUDVJKkCgaoJEkVDFBJkioYoJIkVTBAJUmqYIBKklTBAJUkqYIBKklSBQNUkqQKBqgkSRUMUEmSKhigkiRVMEAlSapggEqSVMEAlSSpggEqSVIFA1SSpAoGqCRJFQxQSZIqGKCSJFUwQCVJqmCASpJUwQCVJKmCASpJUgUDVJKkCgaoJEkVDFBJkioYoJIkVTBAJUmqYIBKklTBAJUkqYIBKklSBQNUkqQKBqgkSRUMUEmSKhigkiRVMEAlSapggEqSVMEAlSSpggEqSVIFA1SSpAoGqCRJFQxQSZIqGKCSJFUwQCVJqmCASpJUwQCVJKmCASpJUgUDVJKkCgaoJEkVDFBJkioYoJIkVTBAJUmqYIBKklTBAJUkqYIBKklSBQNUkqQKBqgkSRUMUEmSKhigkiRVMEAlSapggEqSVMEAlSSpggEqSVIFA1SSpAoGqCRJFQxQSZIqGKCSJFUwQCVJqmCASpJUwQCVJKmCASpJUgUDVJKkCgaoJEkVDFBJkioYoJIkVTBAJUmqYIBKklTBAJUkqYIBKklSBQNUkqQKBqgkSRUMUEmSKhigkiRVMEAlSapggEqSVMEAlSSpggEqSVIFA1SSpAoGqCRJFQxQSZIqGKCSJFUwQCVJqmCASpJUwQCVJKmCASpJUgUDVJKkCgaoJEkVDFBJkioYoJIkVTBAJUmqYIBKklTBAJUkqYIBKklSBQNUkqQKBqgkSRUMUEmSKhigkiRVMEAlSapggEqSVMEAlSSpggEqSVIFA1SSpAoGqCRJFQxQSZIqGKCSJFUwQCVJqmCASpJUwQCVJKmCASpJUgUDVJKkCgaoJEkVDFBJkioYoJIkVTBAJUmqYIBKklTBAJUkqYIBKklSBQNUkqQKBqgkSRUMUEmSKhigkiRVMEAlSapggEqSVMEAlSSpggEqSVIFA1SSpAoGqCRJFQxQSZIqGKCSJFUwQCVJqmCASpJUwQCVJKmCASpJUgUDVJKkCgaoJEkVDFBJkioYoJIkVTBAJUmqYIBKklTBAJUkqYIBKklSBQNUkqQKBqgkSRUMUEmSKhigkiRVMEAlSapggEqSVMEAlSSpggEqSVIFA1SSpAoGqCRJFQxQSZIqGKCSJFUwQCVJqmCASpJUwQCVJKmCASpJUgUDVJKkCgaoJEkVDFBJkioYoJIkVTBAJUmqYIBKklTBAJUkqYIBKklSBQNUkqQKBqgkSRUMUEmSKhigkiRVMEAlSapggEqSVMEAlSSpggEqSVIFA1SSpAoGqCRJFQxQSZIqGKCSJFUwQCVJqmCASpJUwQCVJKmCASpJUgUDVJKkCgaoJEkVDFBJkioYoJIkVTBAJUmqYIBKklTBAJUkqYIBKklSBQNUkqQKBqgkSRUMUEmSKhigkiRVMEAlSapggEqSVMEAlSSpggEqSVIFA1SSpAoGqCRJFQxQSZIqGKCSJFUwQCVJqmCASpJUwQCVJKmCASpJUgUDVJKkCgaoJEkVDFBJkioYoJIkVTBAJUmqYIBKklTBAJUkqYIBKklSBQNUkqQKBqgkSRUMUEmSKhigkiRVMEAlSapggEqSVMEAlSSpggEqSVIFA1SSpAoGqCRJFQxQSZIqGKCSJFUwQCVJqmCASpJUwQCVJKmCASpJUgUDVJKkCgaoJEkVDFBJkioYoJIkVTBAJUmqYIBKklTBAJUkqYIBKklSBQNUkqQKBqgkSRUMUEmSKhigkiRVMEAlSapggEqSVMEAlSSpggEqSVIFA1SSpAoGqCRJFQxQSZIqGKCSJFUwQCVJqmCASpJUwQCVJKmCASpJUgUDVJKkCgaoJEkVDFBJkioYoJIkVTBAJUmqYIBKklTBAJUkqYIBKklSBQNUkqQKBqgkSRUMUEmSKhigkiRVMEAlSapggEqSVMEAlSSpggEqSVIFA1SSpAoGqCRJFQxQSZIqGKCSJFUwQCVJqmCASpJUwQCVJKmCASpJUgUDVJKkCgaoJEkVDFBJkioYoJIkVTBAJUmqYIBKklTBAJUkqYIBKklSBQNUkqQKBqgkSRUMUEmSKhigkiRVMEAlSapggEqSVMEAlSSpggEqSVIFA1SSpAoGqCRJFQxQSZIqGKCSJFUwQCVJqmCASpJUwQCVJKmCASpJUgUDVJKkCgaoJEkVDFBJkioYoJIkVTBAJUmqYIBKklTBAJUkqYIBKklSBQNUkqQKBqgkSRUMUEmSKhigkiRVMEAlSapggEqSVMEAlSSpggEqSVIFA1SSpAoGqCRJFQxQSZIqGKCSJFUwQCVJqmCASpJUwQCVJKmCASpJUgUDVJKkCgaoJEkVDFBJkioYoJIkVTBAJUmqYIBKklTBAJUkqYIBKklSBQNUkqQKBqgkSRUMUEmSKhigkiRVMEAlSapggEqSVMEAlSSpggEqSVIFA1SSpAoGqCRJFQxQSZIqGKCSJFUwQCVJqmCASpJUwQCVJKmCASpJUgUDVJKkCgaoJEkVDFBJkioYoJIkVTBAJUmqYIBKklTBAJUkqYIBKklSBQNUkqQKBqgkSRUMUEmSKhigkiRVMEAlSapggEqSVMEAlSSpggEqSVIFA1SSpAoGqCRJFQxQSZIqGKCSJFUwQCVJqmCASpJUwQCVJKmCASpJUgUDVJKkCgaoJEkVDFBJkioYoJIkVTBAJUmqYIBKklTBAJUkqYIBKklSBQNUkqQKBqgkSRUMUEmSKhigkiRVMEAlSapggEqSVMEAlSSpggEqSVIFA1SSpAoGqCRJFQxQSZIqGKCSJFUwQCVJqmCASpJUwQCVJKmCASpJUgUDVJKkCgaoJEkVDFBJkioYoJIkVTBAJUmqYIBKklTBAJUkqYIBKklSBQNUkqQKBqgkSRUMUEmSKhigkiRVMEAlSapggEqSVMEAlSSpggEqSVIFA1SSpAoGqCRJFQxQSZIqGKCSJFUwQCVJqmCASpJUwQCVJKmCASpJUgUDVJKkCgaoJEkVDFBJkioYoJIkVTBAJUmqYIBKklTBAJUkqYIBKklSBQNUkqQKBqgkSRUMUEmSKhigkiRVMEAlSapggEqSVMEAlSSpggEqSVIFA1SSpAoGqCRJFQxQSZIqGKCSJFUwQCVJqmCASpJUwQCVJKmCASpJUgUDVJKkCgaoJEkVDFBJkioYoJIkVTBAJUmqYIBKklTBAJUkqYIBKklSBQNUkqQKBqgkSRUMUEmSKhigkiRVMEAlSapggEqSVMEAlSSpggEqSVIFA1SSpAoGqCRJFQxQSZIqGKCSJFUwQCVJqmCASpJUwQCVJKmCASpJUgUDVJKkCgaoJEkVDFBJkioYoJIkVTBAJUmqYIBKklTBAJUkqYIBKklSBQNUkqQKBqgkSRUMUEmSKhigkiRVMEAlSapggEqSVMEAlSSpggEqSVIFA1SSpAoGqCRJFQxQSZIqGKCSJFUwQCVJqmCASpJUwQCVJKmCASpJUgUDVJKkCgaoJEkVDFBJkioYoJIkVTBAJUmqYIBKklTBAJUkqYIBKklSBQNUkqQKBqgkSRUMUEmSKhigkiRVMEAlSapggEqSVMEAlSSpggEqSVIFA1SSpAoGqCRJFQxQSZIqGKCSJFUwQCVJqmCASpJUwQCVJKmCASpJUgUDVJKkCgaoJEkVDFBJkioYoJIkVTBAJUmqYIBKklTBAJUkqYIBKklSBQNUkqQKBqgkSRUMUEmSKhigkiRVMEAlSapggEqSVMEAlSSpggEqSVIFA1SSpAoGqCRJFQxQSZIqGKCSJFUwQCVJqmCASpJUwQCVJKmCASpJUgUDVJKkCgaoJEkVDFBJkioYoJIkVTBAJUmqYIBKklTBAJUkqYIBKklSBQNUkqQKBqgkSRUMUEmSKhigkiRVMEAlSapggEqSVMEAlSSpggEqSVKF/w9vL5rkHGbQFwAAAABJRU5ErkJggg=='
 
 // ============================================
 // FUNCIONES DE DISEÑO (UI Helpers)
@@ -112,7 +118,10 @@ const LOGO_RYR_BASE64 = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAdAAAADIC
 /**
  * Configurar fuente según tipo
  */
-function setFont(doc: jsPDF, type: 'title' | 'subtitle' | 'body' | 'caption' | 'bold') {
+function setFont(
+  doc: jsPDF,
+  type: 'title' | 'subtitle' | 'body' | 'caption' | 'bold'
+) {
   switch (type) {
     case 'title':
       doc.setFontSize(20)
@@ -161,9 +170,17 @@ function addDataRow(
   label: string,
   value: string,
   yPos: number,
-  options?: { align?: 'left' | 'right'; color?: [number, number, number]; bold?: boolean }
+  options?: {
+    align?: 'left' | 'right'
+    color?: [number, number, number]
+    bold?: boolean
+  }
 ): number {
-  const { align = 'left', color = COLORES.textPrimary, bold = false } = options || {}
+  const {
+    align = 'left',
+    color = COLORES.textPrimary,
+    bold = false,
+  } = options || {}
 
   setFont(doc, bold ? 'bold' : 'body')
   doc.setTextColor(...COLORES.textSecondary)
@@ -179,7 +196,7 @@ function addDataRow(
 /**
  * Verificar si hay espacio suficiente en la página
  */
-function checkPageBreak(doc: jsPDF, yPos: number, requiredSpace: number = 50): number {
+function checkPageBreak(doc: jsPDF, yPos: number, requiredSpace = 50): number {
   if (yPos + requiredSpace > 270) {
     doc.addPage()
     return 20
@@ -223,7 +240,7 @@ export async function generarReportePDF(datos: DatosReportePDF): Promise<void> {
     month: 'long',
     year: 'numeric',
     hour: '2-digit',
-    minute: '2-digit'
+    minute: '2-digit',
   })
   doc.text(`Generado: ${fechaGen}`, 105, yPos, { align: 'center' })
 
@@ -297,7 +314,13 @@ export async function generarReportePDF(datos: DatosReportePDF): Promise<void> {
       ? `-$${datos.negociacion.descuento.toLocaleString('es-CO')}`
       : 'N/A',
     yPos,
-    { align: 'right', color: datos.negociacion.descuento > 0 ? COLORES.warning : COLORES.textSecondary }
+    {
+      align: 'right',
+      color:
+        datos.negociacion.descuento > 0
+          ? COLORES.warning
+          : COLORES.textSecondary,
+    }
   )
 
   // Separador
@@ -359,7 +382,7 @@ export async function generarReportePDF(datos: DatosReportePDF): Promise<void> {
     doc.text('Sin fuentes de pago configuradas', 14, yPos)
     yPos += 10
   } else {
-    const fuentesData = datos.fuentesPago.map((f) => [
+    const fuentesData = datos.fuentesPago.map(f => [
       f.tipo,
       `$${f.monto.toLocaleString('es-CO')}`,
       f.entidad || 'N/A',
@@ -369,7 +392,9 @@ export async function generarReportePDF(datos: DatosReportePDF): Promise<void> {
 
     autoTable(doc, {
       startY: yPos,
-      head: [['Tipo', 'Monto Config.', 'Entidad', 'Monto Recibido', '% Pagado']],
+      head: [
+        ['Tipo', 'Monto Config.', 'Entidad', 'Monto Recibido', '% Pagado'],
+      ],
       body: fuentesData,
       theme: 'grid',
       headStyles: {
@@ -389,7 +414,7 @@ export async function generarReportePDF(datos: DatosReportePDF): Promise<void> {
       },
     })
 
-    yPos = (doc as any).lastAutoTable.finalY + 12
+    yPos = (doc as unknown as JsPDFWithAutoTable).lastAutoTable.finalY + 12
   }
 
   // ============================================
@@ -404,7 +429,10 @@ export async function generarReportePDF(datos: DatosReportePDF): Promise<void> {
     doc.setTextColor(...COLORES.textSecondary)
     doc.text('Sin abonos registrados', 14, yPos)
 
-    if (datos.negociacion.diasDesdeUltimoAbono === null || datos.negociacion.diasDesdeUltimoAbono === undefined) {
+    if (
+      datos.negociacion.diasDesdeUltimoAbono === null ||
+      datos.negociacion.diasDesdeUltimoAbono === undefined
+    ) {
       yPos += 5
       doc.setTextColor(...COLORES.warning)
       doc.text('⚠ Negociación activa sin pagos', 14, yPos)
@@ -412,7 +440,7 @@ export async function generarReportePDF(datos: DatosReportePDF): Promise<void> {
 
     yPos += 10
   } else {
-    const abonosData = datos.abonos.map((a) => [
+    const abonosData = datos.abonos.map(a => [
       a.fecha,
       a.fuente,
       `$${a.monto.toLocaleString('es-CO')}`,
@@ -441,7 +469,7 @@ export async function generarReportePDF(datos: DatosReportePDF): Promise<void> {
       },
     })
 
-    yPos = (doc as any).lastAutoTable.finalY + 12
+    yPos = (doc as unknown as JsPDFWithAutoTable).lastAutoTable.finalY + 12
   }
 
   // ============================================
@@ -452,17 +480,33 @@ export async function generarReportePDF(datos: DatosReportePDF): Promise<void> {
   yPos = addSection(doc, 'ESTADO DE LA NEGOCIACIÓN', yPos)
 
   yPos = addDataRow(doc, 'Estado actual:', datos.negociacion.estado, yPos, {
-    color: datos.negociacion.estado === 'Activa' ? COLORES.success : COLORES.textSecondary,
+    color:
+      datos.negociacion.estado === 'Activa'
+        ? COLORES.success
+        : COLORES.textSecondary,
     bold: true,
   })
 
   if (datos.negociacion.fechaInicio) {
-    yPos = addDataRow(doc, 'Fecha de inicio:', datos.negociacion.fechaInicio, yPos)
+    yPos = addDataRow(
+      doc,
+      'Fecha de inicio:',
+      datos.negociacion.fechaInicio,
+      yPos
+    )
   }
 
-  if (datos.negociacion.diasDesdeUltimoAbono !== null && datos.negociacion.diasDesdeUltimoAbono !== undefined) {
+  if (
+    datos.negociacion.diasDesdeUltimoAbono !== null &&
+    datos.negociacion.diasDesdeUltimoAbono !== undefined
+  ) {
     const dias = datos.negociacion.diasDesdeUltimoAbono
-    const color = dias === 0 ? COLORES.success : dias <= 30 ? COLORES.warning : COLORES.danger
+    const color =
+      dias === 0
+        ? COLORES.success
+        : dias <= 30
+          ? COLORES.warning
+          : COLORES.danger
 
     yPos = addDataRow(
       doc,
@@ -472,7 +516,9 @@ export async function generarReportePDF(datos: DatosReportePDF): Promise<void> {
       { color }
     )
   } else {
-    yPos = addDataRow(doc, 'Último abono:', 'Sin pagos registrados', yPos, { color: COLORES.textSecondary })
+    yPos = addDataRow(doc, 'Último abono:', 'Sin pagos registrados', yPos, {
+      color: COLORES.textSecondary,
+    })
   }
 
   // ============================================
@@ -552,7 +598,7 @@ export async function generarPDFPreview(datos: DatosPreviewPDF): Promise<void> {
   // Logo RyR
   try {
     doc.addImage(LOGO_RYR_BASE64, 'PNG', 15, 10, 35, 15)
-  } catch (error) {
+  } catch {
     logger.warn('⚠️ [PDF Preview] No se pudo cargar el logo')
   }
 
@@ -563,7 +609,9 @@ export async function generarPDFPreview(datos: DatosPreviewPDF): Promise<void> {
   yPos += 8
   setFont(doc, 'caption')
   doc.setTextColor(...COLORES.warning)
-  doc.text('🔸 BORRADOR - NO VÁLIDO PARA TRÁMITES 🔸', 105, yPos, { align: 'center' })
+  doc.text('🔸 BORRADOR - NO VÁLIDO PARA TRÁMITES 🔸', 105, yPos, {
+    align: 'center',
+  })
 
   yPos += 4
   doc.setTextColor(...COLORES.textSecondary)
@@ -572,7 +620,7 @@ export async function generarPDFPreview(datos: DatosPreviewPDF): Promise<void> {
     month: 'long',
     year: 'numeric',
     hour: '2-digit',
-    minute: '2-digit'
+    minute: '2-digit',
   })
   doc.text(`Generado: ${fechaGen}`, 105, yPos, { align: 'center' })
 
@@ -663,7 +711,7 @@ export async function generarPDFPreview(datos: DatosPreviewPDF): Promise<void> {
     doc.text('Sin fuentes de pago configuradas', 14, yPos)
     yPos += 10
   } else {
-    const fuentesData = datos.fuentesPago.map((f) => [
+    const fuentesData = datos.fuentesPago.map(f => [
       f.tipo,
       `$${f.monto.toLocaleString('es-CO')}`,
       f.entidad || 'N/A',
@@ -689,7 +737,7 @@ export async function generarPDFPreview(datos: DatosPreviewPDF): Promise<void> {
       },
     })
 
-    yPos = (doc as any).lastAutoTable.finalY + 12
+    yPos = (doc as unknown as JsPDFWithAutoTable).lastAutoTable.finalY + 12
   }
 
   // ============================================

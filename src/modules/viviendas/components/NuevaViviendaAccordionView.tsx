@@ -14,14 +14,17 @@ import { HousePlus } from 'lucide-react'
 
 import { proyectosService } from '@/modules/proyectos/services/proyectos.service'
 import {
-    AccordionWizardHero,
-    AccordionWizardLayout,
-    AccordionWizardNavigation,
-    AccordionWizardSection,
-    AccordionWizardSuccess,
+  AccordionWizardHero,
+  AccordionWizardLayout,
+  AccordionWizardNavigation,
+  AccordionWizardSection,
+  AccordionWizardSuccess,
 } from '@/shared/components/accordion-wizard'
 
-import { PASOS_VIVIENDA, useNuevaViviendaAccordion } from '../hooks/useNuevaViviendaAccordion'
+import {
+  PASOS_VIVIENDA,
+  useNuevaViviendaAccordion,
+} from '../hooks/useNuevaViviendaAccordion'
 import { viviendasService } from '../services/viviendas.service'
 
 // Componentes paso existentes (reutilizados)
@@ -40,7 +43,6 @@ export function NuevaViviendaAccordionView() {
     pasos,
     pasoActual,
     getEstadoPaso,
-    progress,
     irSiguiente,
     irAtras,
     irAPaso,
@@ -67,38 +69,50 @@ export function NuevaViviendaAccordionView() {
   const manzanaId = watch('manzana_id')
 
   useEffect(() => {
-    if (!proyectoId) { setProyectoNombre(null); return }
-    proyectosService.obtenerProyectos().then((proyectos) => {
-      const p = proyectos.find((x) => x.id === proyectoId)
-      setProyectoNombre(p?.nombre ?? null)
-    }).catch(() => setProyectoNombre(null))
+    if (!proyectoId) {
+      setProyectoNombre(null)
+      return
+    }
+    proyectosService
+      .obtenerProyectos()
+      .then(proyectos => {
+        const p = proyectos.find(x => x.id === proyectoId)
+        setProyectoNombre(p?.nombre ?? null)
+      })
+      .catch(() => setProyectoNombre(null))
   }, [proyectoId])
 
   useEffect(() => {
-    if (!manzanaId || !proyectoId) { setManzanaNombre(null); return }
-    viviendasService.obtenerManzanasDisponibles(proyectoId).then((manzanas) => {
-      const m = manzanas.find((x) => x.id === manzanaId)
-      setManzanaNombre(m ? `Manzana ${m.nombre}` : null)
-    }).catch(() => setManzanaNombre(null))
+    if (!manzanaId || !proyectoId) {
+      setManzanaNombre(null)
+      return
+    }
+    viviendasService
+      .obtenerManzanasDisponibles(proyectoId)
+      .then(manzanas => {
+        const m = manzanas.find(x => x.id === manzanaId)
+        setManzanaNombre(m ? `Manzana ${m.nombre}` : null)
+      })
+      .catch(() => setManzanaNombre(null))
   }, [manzanaId, proyectoId])
 
   return (
     <AccordionWizardLayout
-      moduleName="viviendas"
+      moduleName='viviendas'
       breadcrumbs={[
         { label: 'Viviendas', href: '/viviendas' },
         { label: 'Nueva Vivienda' },
       ]}
       isSubmitting={isSubmitting}
-      submitLoadingLabel="Creando Vivienda..."
+      submitLoadingLabel='Creando Vivienda...'
     >
       {/* Hero Header */}
       <AccordionWizardHero
         icon={HousePlus}
-        title="Nueva Vivienda"
-        subtitle="Registra una vivienda dentro de un proyecto existente. Configura ubicación, linderos, datos legales y financieros."
-        moduleName="viviendas"
-        estimatedTime="~4 minutos"
+        title='Nueva Vivienda'
+        subtitle='Registra una vivienda dentro de un proyecto existente. Configura ubicación, linderos, datos legales y financieros.'
+        moduleName='viviendas'
+        estimatedTime='~4 minutos'
         totalSteps={PASOS_VIVIENDA.length}
       />
 
@@ -112,7 +126,7 @@ export function NuevaViviendaAccordionView() {
         fieldCount={{ required: 3, optional: 0 }}
         currentStep={pasoActual}
         totalSteps={PASOS_VIVIENDA.length}
-        moduleName="viviendas"
+        moduleName='viviendas'
         summaryItems={summaryPaso1}
         onEdit={() => irAPaso(1)}
       >
@@ -128,7 +142,7 @@ export function NuevaViviendaAccordionView() {
           isFirst
           isLast={false}
           isValidating={pasoActual === 1 && isValidating}
-          moduleName="viviendas"
+          moduleName='viviendas'
           onBack={irAtras}
           onNext={irSiguiente}
         />
@@ -144,21 +158,18 @@ export function NuevaViviendaAccordionView() {
         fieldCount={{ required: 0, optional: 4 }}
         currentStep={pasoActual}
         totalSteps={PASOS_VIVIENDA.length}
-        moduleName="viviendas"
+        moduleName='viviendas'
         summaryItems={summaryPaso2}
         onEdit={() => irAPaso(2)}
       >
-        <PasoLinderosNuevo
-          register={register}
-          errors={errors}
-        />
+        <PasoLinderosNuevo register={register} errors={errors} />
         <AccordionWizardNavigation
           currentStep={2}
           totalSteps={PASOS_VIVIENDA.length}
           isFirst={false}
           isLast={false}
           isValidating={pasoActual === 2 && isValidating}
-          moduleName="viviendas"
+          moduleName='viviendas'
           onBack={irAtras}
           onNext={irSiguiente}
         />
@@ -174,21 +185,18 @@ export function NuevaViviendaAccordionView() {
         fieldCount={{ required: 0, optional: 4 }}
         currentStep={pasoActual}
         totalSteps={PASOS_VIVIENDA.length}
-        moduleName="viviendas"
+        moduleName='viviendas'
         summaryItems={summaryPaso3}
         onEdit={() => irAPaso(3)}
       >
-        <PasoLegalNuevo
-          register={register}
-          errors={errors}
-        />
+        <PasoLegalNuevo register={register} errors={errors} />
         <AccordionWizardNavigation
           currentStep={3}
           totalSteps={PASOS_VIVIENDA.length}
           isFirst={false}
           isLast={false}
           isValidating={pasoActual === 3 && isValidating}
-          moduleName="viviendas"
+          moduleName='viviendas'
           onBack={irAtras}
           onNext={irSiguiente}
         />
@@ -204,7 +212,7 @@ export function NuevaViviendaAccordionView() {
         fieldCount={{ required: 1, optional: 1 }}
         currentStep={pasoActual}
         totalSteps={PASOS_VIVIENDA.length}
-        moduleName="viviendas"
+        moduleName='viviendas'
         summaryItems={summaryPaso4}
         onEdit={() => irAPaso(4)}
       >
@@ -222,7 +230,7 @@ export function NuevaViviendaAccordionView() {
           isFirst={false}
           isLast={false}
           isValidating={pasoActual === 4 && isValidating}
-          moduleName="viviendas"
+          moduleName='viviendas'
           onBack={irAtras}
           onNext={irSiguiente}
         />
@@ -237,7 +245,7 @@ export function NuevaViviendaAccordionView() {
         icon={pasos[4].icon}
         currentStep={pasoActual}
         totalSteps={PASOS_VIVIENDA.length}
-        moduleName="viviendas"
+        moduleName='viviendas'
         summaryItems={[]}
         onEdit={() => irAPaso(5)}
       >
@@ -254,8 +262,8 @@ export function NuevaViviendaAccordionView() {
           isLast
           isSubmitting={isSubmitting}
           isValidating={isValidating}
-          moduleName="viviendas"
-          submitLabel="Crear Vivienda"
+          moduleName='viviendas'
+          submitLabel='Crear Vivienda'
           onBack={irAtras}
           onNext={irSiguiente}
           onSubmit={handleSubmit}
@@ -265,9 +273,9 @@ export function NuevaViviendaAccordionView() {
       {/* Success celebration */}
       <AccordionWizardSuccess
         isVisible={showSuccess}
-        moduleName="viviendas"
-        title="¡Vivienda creada!"
-        subtitle="Redirigiendo al listado de viviendas..."
+        moduleName='viviendas'
+        title='¡Vivienda creada!'
+        subtitle='Redirigiendo al listado de viviendas...'
       />
     </AccordionWizardLayout>
   )

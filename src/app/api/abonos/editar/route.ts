@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 
 import { supabaseAdmin } from '@/lib/supabase/admin'
+import type { TablesUpdate } from '@/lib/supabase/database.types'
 import { createRouteClient } from '@/lib/supabase/server-route'
 
 const METODOS_VALIDOS = [
@@ -157,7 +158,9 @@ export async function PATCH(request: NextRequest) {
       await supabaseAdmin.storage
         .from('comprobantes-abonos')
         .remove([abono.comprobante_url as string])
-        .catch(() => {}) // best-effort
+        .catch(_e => {
+          /* best-effort: fallo silencioso al limpiar storage */
+        })
     }
     comprobanteActualizado = null
   } else if (
@@ -169,7 +172,9 @@ export async function PATCH(request: NextRequest) {
       await supabaseAdmin.storage
         .from('comprobantes-abonos')
         .remove([abono.comprobante_url as string])
-        .catch(() => {})
+        .catch(_e => {
+          /* best-effort: fallo silencioso al limpiar storage */
+        })
     }
     comprobanteActualizado =
       typeof body.comprobante_url === 'string' ? body.comprobante_url : null
@@ -199,8 +204,7 @@ export async function PATCH(request: NextRequest) {
   // 10. Ejecutar UPDATE (usar supabaseAdmin para evitar restricción RLS en UPDATE)
   const { data: abonoActualizado, error: updateError } = await supabaseAdmin
     .from('abonos_historial')
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    .update(actualizacion as any)
+    .update(actualizacion as unknown as TablesUpdate<'abonos_historial'>)
     .eq('id', abonoId)
     .select(
       'id, negociacion_id, fuente_pago_id, monto, fecha_abono, metodo_pago, numero_referencia, notas, comprobante_url'

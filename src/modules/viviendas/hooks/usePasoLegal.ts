@@ -10,7 +10,11 @@ import type { UseFormSetValue } from 'react-hook-form'
 
 import type { ViviendaSchemaType } from '../schemas/vivienda.schemas'
 
-export function usePasoLegal({ setValue }: { setValue: UseFormSetValue<ViviendaSchemaType> }) {
+export function usePasoLegal({
+  setValue: _setValue,
+}: {
+  setValue: UseFormSetValue<ViviendaSchemaType>
+}) {
   const [certificadoFile, setCertificadoFile] = useState<File | null>(null)
   const [fileError, setFileError] = useState<string>('')
   const fileInputRef = useRef<HTMLInputElement>(null)

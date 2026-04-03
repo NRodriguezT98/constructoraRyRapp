@@ -18,16 +18,22 @@ import type { FiltrosViviendas, ViviendaFormData } from '../types'
 export const viviendasKeys = {
   all: ['viviendas'] as const,
   lists: () => [...viviendasKeys.all, 'list'] as const,
-  list: (filtros?: FiltrosViviendas) => [...viviendasKeys.lists(), filtros] as const,
+  list: (filtros?: FiltrosViviendas) =>
+    [...viviendasKeys.lists(), filtros] as const,
   details: () => [...viviendasKeys.all, 'detail'] as const,
   detail: (id: string) => [...viviendasKeys.details(), id] as const,
-  manzanaViviendas: (manzanaId: string) => [...viviendasKeys.all, 'manzana', manzanaId] as const,
+  manzanaViviendas: (manzanaId: string) =>
+    [...viviendasKeys.all, 'manzana', manzanaId] as const,
 
   // Relacionados
   proyectos: ['viviendas', 'proyectos'] as const,
-  manzanas: (proyectoId: string) => ['viviendas', 'manzanas', proyectoId] as const,
-  siguienteNumero: (manzanaId: string) => ['viviendas', 'siguiente-numero', manzanaId] as const,
-  numerosOcupados: (manzanaId: string) => ['viviendas', 'numeros-ocupados', manzanaId] as const,
+  proyectosFiltro: ['viviendas', 'proyectos-filtro'] as const,
+  manzanas: (proyectoId: string) =>
+    ['viviendas', 'manzanas', proyectoId] as const,
+  siguienteNumero: (manzanaId: string) =>
+    ['viviendas', 'siguiente-numero', manzanaId] as const,
+  numerosOcupados: (manzanaId: string) =>
+    ['viviendas', 'numeros-ocupados', manzanaId] as const,
   recargos: ['viviendas', 'recargos'] as const,
   gastosNotariales: ['viviendas', 'gastos-notariales'] as const,
 }
@@ -66,6 +72,17 @@ export function useProyectosActivosQuery() {
     queryKey: viviendasKeys.proyectos,
     queryFn: () => viviendasService.obtenerProyectos(),
     staleTime: 1000 * 60 * 10, // 10 minutos (proyectos no cambian frecuentemente)
+  })
+}
+
+// ============================================
+// 3b. QUERY: Todos los proyectos (para filtros)
+// ============================================
+export function useProyectosFiltroQuery() {
+  return useQuery({
+    queryKey: viviendasKeys.proyectosFiltro,
+    queryFn: () => viviendasService.obtenerProyectosParaFiltro(),
+    staleTime: 1000 * 60 * 10,
   })
 }
 
@@ -135,8 +152,9 @@ export function useCrearViviendaMutation(options?: { showToast?: boolean }) {
   const showToast = options?.showToast ?? true // Por defecto muestra toast
 
   return useMutation({
-    mutationFn: (formData: ViviendaFormData) => viviendasService.crear(formData),
-    onSuccess: async (nuevaVivienda) => {
+    mutationFn: (formData: ViviendaFormData) =>
+      viviendasService.crear(formData),
+    onSuccess: async nuevaVivienda => {
       // ✅ SOLUCIÓN DE PROYECTOS: invalidateQueries con refetchType: 'all'
       // Esto refetchea TODAS las queries (activas e inactivas)
       await queryClient.invalidateQueries({
@@ -189,12 +207,17 @@ export function useActualizarViviendaMutation() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Partial<ViviendaFormData> }) =>
-      viviendasService.actualizar(id, data),
+    mutationFn: ({
+      id,
+      data,
+    }: {
+      id: string
+      data: Partial<ViviendaFormData>
+    }) => viviendasService.actualizar(id, data),
     onSuccess: (viviendaActualizada, variables) => {
       // Invalidar detalle específico
       queryClient.invalidateQueries({
-        queryKey: viviendasKeys.detail(variables.id)
+        queryKey: viviendasKeys.detail(variables.id),
       })
 
       // Invalidar listas (con filtros)
@@ -257,7 +280,7 @@ export function useActualizarCertificadoMutation() {
     onSuccess: (certificadoUrl, variables) => {
       // Invalidar detalle de la vivienda
       queryClient.invalidateQueries({
-        queryKey: viviendasKeys.detail(variables.viviendaId)
+        queryKey: viviendasKeys.detail(variables.viviendaId),
       })
 
       // Invalidar listas (con filtros)
@@ -284,6 +307,9 @@ export async function verificarMatriculaUnica(
   matricula: string,
   viviendaId?: string
 ): Promise<boolean> {
-  const result = await viviendasService.verificarMatriculaUnica(matricula, viviendaId)
+  const result = await viviendasService.verificarMatriculaUnica(
+    matricula,
+    viviendaId
+  )
   return result.esUnica
 }

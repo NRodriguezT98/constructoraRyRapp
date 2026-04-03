@@ -1,3 +1,5 @@
+import { Analytics } from '@vercel/analytics/next'
+import { SpeedInsights } from '@vercel/speed-insights/next'
 import type { Metadata, Viewport } from 'next'
 import { Toaster } from 'sonner'
 
@@ -14,9 +16,9 @@ import { AuthProvider } from '@/contexts/auth-context'
 import { UnsavedChangesProvider } from '@/contexts/unsaved-changes-context'
 import { ReactQueryProvider } from '@/lib/react-query'
 import {
-    AlertModal,
-    ConfirmModal,
-    ModalProvider,
+  AlertModal,
+  ConfirmModal,
+  ModalProvider,
 } from '@/shared/components/modals'
 
 import './globals.css'
@@ -103,6 +105,11 @@ export default function RootLayout({
             </AuthProvider>
           </ReactQueryProvider>
         </SessionInterceptor>
+
+        {/* Vercel Analytics — mide page views y Core Web Vitals */}
+        <Analytics />
+        {/* Vercel Speed Insights — mide LCP, FID, CLS en producción */}
+        <SpeedInsights />
       </body>
     </html>
   )

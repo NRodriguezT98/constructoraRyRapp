@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 
-import { Eye, FileText, Image, Upload, X } from 'lucide-react'
+import { Eye, FileText, Image as ImageIcon, Upload, X } from 'lucide-react'
 
 import type { ModoRegistro } from '../../types'
 
@@ -167,7 +167,7 @@ export function ComprobantePago({
               </div>
             ) : (
               <div className='flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-800'>
-                <Image className='h-6 w-6 text-gray-500' />
+                <ImageIcon className='h-6 w-6 text-gray-500' />
               </div>
             )}
             <div className='min-w-0 flex-1'>

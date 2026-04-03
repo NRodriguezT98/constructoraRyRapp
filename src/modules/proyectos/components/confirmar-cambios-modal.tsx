@@ -9,7 +9,17 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { AlertTriangle, Building2, CheckCircle2, Home, Loader2, Pencil, Plus, Trash2, X } from 'lucide-react'
+import {
+  AlertTriangle,
+  Building2,
+  CheckCircle2,
+  Home,
+  Loader2,
+  Pencil,
+  Plus,
+  Trash2,
+  X,
+} from 'lucide-react'
 
 import { useConfirmarCambiosModal } from '../hooks/useConfirmarCambiosModal'
 import type { ResumenCambios } from '../hooks/useDetectarCambios'
@@ -38,7 +48,6 @@ export function ConfirmarCambiosModal({
     getManzanaContainerClass,
     getManzanaBadgeClass,
     getManzanaIconClass,
-    getConfirmButtonText,
   } = useConfirmarCambiosModal({ cambios, isLoading })
 
   if (!isOpen) {
@@ -51,7 +60,7 @@ export function ConfirmarCambiosModal({
       <motion.div
         {...styles.animations.overlay}
         className={styles.overlayBg}
-        onClick={(_e) => {
+        onClick={_e => {
           if (!isLoading) {
             onClose()
           }
@@ -62,7 +71,7 @@ export function ConfirmarCambiosModal({
       <motion.div
         {...styles.animations.modal}
         className={styles.modal}
-        onClick={(e) => {
+        onClick={e => {
           e.stopPropagation()
         }}
       >
@@ -97,7 +106,11 @@ export function ConfirmarCambiosModal({
           <div className={styles.body.resumen.container}>
             <CheckCircle2 className={styles.body.resumen.icon} />
             <p className={styles.body.resumen.text}>
-              Se detectaron <strong className={styles.body.resumen.strong}>{cambios.totalCambios}</strong> cambio(s) en total
+              Se detectaron{' '}
+              <strong className={styles.body.resumen.strong}>
+                {cambios.totalCambios}
+              </strong>{' '}
+              cambio(s) en total
             </p>
           </div>
 
@@ -113,16 +126,26 @@ export function ConfirmarCambiosModal({
                   <div key={index} className={styles.cards.proyecto.container}>
                     <div className={styles.cards.proyecto.header}>
                       <Pencil className={styles.cards.proyecto.headerIcon} />
-                      <span className={styles.cards.proyecto.label}>{cambio.label}</span>
+                      <span className={styles.cards.proyecto.label}>
+                        {cambio.label}
+                      </span>
                     </div>
                     <div className={styles.cards.proyecto.grid}>
                       <div className={styles.cards.proyecto.anterior.container}>
-                        <span className={styles.cards.proyecto.anterior.label}>Anterior</span>
-                        <p className={styles.cards.proyecto.anterior.value}>{cambio.valorAnterior}</p>
+                        <span className={styles.cards.proyecto.anterior.label}>
+                          Anterior
+                        </span>
+                        <p className={styles.cards.proyecto.anterior.value}>
+                          {cambio.valorAnterior}
+                        </p>
                       </div>
                       <div className={styles.cards.proyecto.nuevo.container}>
-                        <span className={styles.cards.proyecto.nuevo.label}>Nuevo</span>
-                        <p className={styles.cards.proyecto.nuevo.value}>{cambio.valorNuevo}</p>
+                        <span className={styles.cards.proyecto.nuevo.label}>
+                          Nuevo
+                        </span>
+                        <p className={styles.cards.proyecto.nuevo.value}>
+                          {cambio.valorNuevo}
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -140,16 +163,34 @@ export function ConfirmarCambiosModal({
               </h4>
               <div className={styles.body.section.list}>
                 {cambios.manzanas.map((cambio, index) => {
-                  const containerClass = styles.cards.manzana[getManzanaContainerClass(cambio.tipo) as keyof typeof styles.cards.manzana] as string
-                  const badgeClass = styles.cards.manzana[getManzanaBadgeClass(cambio.tipo) as keyof typeof styles.cards.manzana] as string
-                  const iconClass = styles.cards.manzana[getManzanaIconClass(cambio.tipo) as keyof typeof styles.cards.manzana] as string
+                  const containerClass = styles.cards.manzana[
+                    getManzanaContainerClass(
+                      cambio.tipo
+                    ) as keyof typeof styles.cards.manzana
+                  ] as string
+                  const badgeClass = styles.cards.manzana[
+                    getManzanaBadgeClass(
+                      cambio.tipo
+                    ) as keyof typeof styles.cards.manzana
+                  ] as string
+                  const iconClass = styles.cards.manzana[
+                    getManzanaIconClass(
+                      cambio.tipo
+                    ) as keyof typeof styles.cards.manzana
+                  ] as string
 
                   return (
                     <div key={index} className={containerClass}>
                       <div className={styles.cards.manzana.header}>
-                        {cambio.tipo === 'agregada' && <Plus className={iconClass} />}
-                        {cambio.tipo === 'eliminada' && <Trash2 className={iconClass} />}
-                        {cambio.tipo === 'modificada' && <Pencil className={iconClass} />}
+                        {cambio.tipo === 'agregada' && (
+                          <Plus className={iconClass} />
+                        )}
+                        {cambio.tipo === 'eliminada' && (
+                          <Trash2 className={iconClass} />
+                        )}
+                        {cambio.tipo === 'modificada' && (
+                          <Pencil className={iconClass} />
+                        )}
                         <span className={styles.cards.manzana.nombre}>
                           Manzana <strong>{cambio.nombre}</strong>
                         </span>
@@ -157,41 +198,82 @@ export function ConfirmarCambiosModal({
                       </div>
 
                       {cambio.cambios && (
-                        <div className={styles.cards.manzana.detalles.container}>
-                          {cambio.cambios.nombreAnterior && cambio.cambios.nombreNuevo && (
-                            <p className={styles.cards.manzana.detalles.text}>
-                              <span className={styles.cards.manzana.detalles.label}>Nombre:</span>{' '}
-                              <span className={styles.cards.manzana.detalles.valorAnterior}>
-                                {cambio.cambios.nombreAnterior}
-                              </span>
-                              {styles.cards.manzana.detalles.separador}
-                              <strong className={styles.cards.manzana.detalles.valorNuevo}>
-                                {cambio.cambios.nombreNuevo}
-                              </strong>
-                            </p>
-                          )}
+                        <div
+                          className={styles.cards.manzana.detalles.container}
+                        >
+                          {cambio.cambios.nombreAnterior &&
+                            cambio.cambios.nombreNuevo && (
+                              <p className={styles.cards.manzana.detalles.text}>
+                                <span
+                                  className={
+                                    styles.cards.manzana.detalles.label
+                                  }
+                                >
+                                  Nombre:
+                                </span>{' '}
+                                <span
+                                  className={
+                                    styles.cards.manzana.detalles.valorAnterior
+                                  }
+                                >
+                                  {cambio.cambios.nombreAnterior}
+                                </span>
+                                {styles.cards.manzana.detalles.separador}
+                                <strong
+                                  className={
+                                    styles.cards.manzana.detalles.valorNuevo
+                                  }
+                                >
+                                  {cambio.cambios.nombreNuevo}
+                                </strong>
+                              </p>
+                            )}
                           {cambio.cambios.viviendasAnterior !== undefined &&
-                           cambio.cambios.viviendasNuevo !== undefined && (
-                            <p className={styles.cards.manzana.detalles.text}>
-                              <span className={styles.cards.manzana.detalles.label}>Viviendas:</span>{' '}
-                              <span className={styles.cards.manzana.detalles.valorAnterior}>
-                                {cambio.cambios.viviendasAnterior}
-                              </span>
-                              {styles.cards.manzana.detalles.separador}
-                              <strong className={styles.cards.manzana.detalles.valorNuevo}>
-                                {cambio.cambios.viviendasNuevo}
-                              </strong>
-                            </p>
-                          )}
+                            cambio.cambios.viviendasNuevo !== undefined && (
+                              <p className={styles.cards.manzana.detalles.text}>
+                                <span
+                                  className={
+                                    styles.cards.manzana.detalles.label
+                                  }
+                                >
+                                  Viviendas:
+                                </span>{' '}
+                                <span
+                                  className={
+                                    styles.cards.manzana.detalles.valorAnterior
+                                  }
+                                >
+                                  {cambio.cambios.viviendasAnterior}
+                                </span>
+                                {styles.cards.manzana.detalles.separador}
+                                <strong
+                                  className={
+                                    styles.cards.manzana.detalles.valorNuevo
+                                  }
+                                >
+                                  {cambio.cambios.viviendasNuevo}
+                                </strong>
+                              </p>
+                            )}
                           {cambio.tipo === 'agregada' &&
-                           cambio.cambios.viviendasNuevo !== undefined && (
-                            <p className={styles.cards.manzana.detalles.text}>
-                              <span className={styles.cards.manzana.detalles.label}>Viviendas:</span>{' '}
-                              <strong className={styles.cards.manzana.detalles.valorNuevo}>
-                                {cambio.cambios.viviendasNuevo}
-                              </strong>
-                            </p>
-                          )}
+                            cambio.cambios.viviendasNuevo !== undefined && (
+                              <p className={styles.cards.manzana.detalles.text}>
+                                <span
+                                  className={
+                                    styles.cards.manzana.detalles.label
+                                  }
+                                >
+                                  Viviendas:
+                                </span>{' '}
+                                <strong
+                                  className={
+                                    styles.cards.manzana.detalles.valorNuevo
+                                  }
+                                >
+                                  {cambio.cambios.viviendasNuevo}
+                                </strong>
+                              </p>
+                            )}
                         </div>
                       )}
                     </div>
@@ -206,7 +288,7 @@ export function ConfirmarCambiosModal({
         <div className={styles.footer.container}>
           <div className={styles.footer.buttonsContainer}>
             <button
-              type="button"
+              type='button'
               onClick={onClose}
               disabled={isLoading}
               className={styles.footer.cancelButton}
@@ -214,19 +296,19 @@ export function ConfirmarCambiosModal({
               Cancelar
             </button>
             <button
-              type="button"
+              type='button'
               onClick={onConfirm}
               disabled={isLoading}
-              className={`${styles.footer.confirmButton} ${isLoading ? 'opacity-90 cursor-not-allowed' : ''}`}
+              className={`${styles.footer.confirmButton} ${isLoading ? 'cursor-not-allowed opacity-90' : ''}`}
             >
               {isLoading ? (
                 <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <Loader2 className='h-5 w-5 animate-spin' />
                   <span>Guardando cambios...</span>
                 </>
               ) : (
                 <>
-                  <CheckCircle2 className="w-5 h-5" />
+                  <CheckCircle2 className='h-5 w-5' />
                   <span>Confirmar y Guardar</span>
                 </>
               )}

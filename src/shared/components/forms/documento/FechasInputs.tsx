@@ -1,44 +1,51 @@
 'use client'
 
+import type { CSSProperties } from 'react'
+
 import { motion } from 'framer-motion'
 import { AlertCircle, Calendar } from 'lucide-react'
-import { FieldErrors, UseFormRegister } from 'react-hook-form'
+import type { FieldErrors, Path, UseFormRegister } from 'react-hook-form'
 
+import { getTodayDateString } from '@/lib/utils/date.utils'
 import { moduleThemes, type ModuleName } from '@/shared/config/module-themes'
 import { cn } from '@/shared/utils/helpers'
 
-interface FechasInputsProps {
+import type { DocumentoFormValuesBase } from './documento-form.types'
+
+interface FechasInputsProps<TFormValues extends DocumentoFormValuesBase> {
   moduleName?: ModuleName
-  register: UseFormRegister<any>
-  errors: FieldErrors
+  register: UseFormRegister<TFormValues>
+  errors: FieldErrors<TFormValues>
 }
 
-export function FechasInputs({
+export function FechasInputs<TFormValues extends DocumentoFormValuesBase>({
   moduleName = 'proyectos',
   register,
   errors,
-}: FechasInputsProps) {
+}: FechasInputsProps<TFormValues>) {
   const theme = moduleThemes[moduleName]
+  const fechaDocumentoField = 'fecha_documento' as Path<TFormValues>
+  const fechaVencimientoField = 'fecha_vencimiento' as Path<TFormValues>
 
   return (
     <div>
-      <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5 flex items-center gap-1.5">
+      <label className='mb-1.5 block flex items-center gap-1.5 text-xs font-medium text-gray-700 dark:text-gray-300'>
         <Calendar size={14} />
         Fechas (opcional)
       </label>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+      <div className='grid grid-cols-1 gap-3 md:grid-cols-2'>
         {/* Fecha del documento */}
         <div>
-          <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">
+          <label className='mb-1 block text-xs text-gray-600 dark:text-gray-400'>
             Fecha del documento
           </label>
           <input
-            {...register('fecha_documento')}
-            type="date"
-            max={new Date().toISOString().split('T')[0]}
+            {...register(fechaDocumentoField)}
+            type='date'
+            max={getTodayDateString()}
             className={cn(
-              'w-full px-3 py-2 text-sm bg-white dark:bg-gray-900/50 border rounded-lg transition-all',
-              'focus:ring-2 focus:border-transparent',
+              'w-full rounded-lg border bg-white px-3 py-2 text-sm transition-all dark:bg-gray-900/50',
+              'focus:border-transparent focus:ring-2',
               errors.fecha_documento
                 ? 'border-red-500 dark:border-red-500'
                 : 'border-gray-200 dark:border-gray-700'
@@ -46,16 +53,16 @@ export function FechasInputs({
             style={{
               ...(errors.fecha_documento
                 ? {}
-                : {
+                : ({
                     '--tw-ring-color': theme.colors.light,
-                  } as React.CSSProperties),
+                  } as CSSProperties)),
             }}
           />
           {errors.fecha_documento && (
             <motion.p
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="mt-1 text-xs text-red-600 dark:text-red-400 flex items-center gap-1"
+              className='mt-1 flex items-center gap-1 text-xs text-red-600 dark:text-red-400'
             >
               <AlertCircle size={12} />
               {errors.fecha_documento.message as string}
@@ -65,16 +72,16 @@ export function FechasInputs({
 
         {/* Fecha de vencimiento */}
         <div>
-          <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1 flex items-center gap-1">
+          <label className='mb-1 block flex items-center gap-1 text-xs text-gray-600 dark:text-gray-400'>
             <AlertCircle size={12} />
             Vencimiento
           </label>
           <input
-            {...register('fecha_vencimiento')}
-            type="date"
+            {...register(fechaVencimientoField)}
+            type='date'
             className={cn(
-              'w-full px-3 py-2 text-sm bg-white dark:bg-gray-900/50 border rounded-lg transition-all',
-              'focus:ring-2 focus:border-transparent',
+              'w-full rounded-lg border bg-white px-3 py-2 text-sm transition-all dark:bg-gray-900/50',
+              'focus:border-transparent focus:ring-2',
               errors.fecha_vencimiento
                 ? 'border-red-500 dark:border-red-500'
                 : 'border-gray-200 dark:border-gray-700'
@@ -82,23 +89,23 @@ export function FechasInputs({
             style={{
               ...(errors.fecha_vencimiento
                 ? {}
-                : {
+                : ({
                     '--tw-ring-color': theme.colors.light,
-                  } as React.CSSProperties),
+                  } as CSSProperties)),
             }}
           />
           {errors.fecha_vencimiento && (
             <motion.p
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="mt-1 text-xs text-red-600 dark:text-red-400 flex items-center gap-1"
+              className='mt-1 flex items-center gap-1 text-xs text-red-600 dark:text-red-400'
             >
               <AlertCircle size={12} />
               {errors.fecha_vencimiento.message as string}
             </motion.p>
           )}
           {!errors.fecha_vencimiento && (
-            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+            <p className='mt-1 text-xs text-gray-500 dark:text-gray-400'>
               Solo si expira
             </p>
           )}

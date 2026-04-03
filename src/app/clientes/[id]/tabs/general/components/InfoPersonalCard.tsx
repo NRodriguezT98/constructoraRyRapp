@@ -3,13 +3,12 @@
 import { motion } from 'framer-motion'
 import { User } from 'lucide-react'
 
+import * as styles from '@/app/clientes/[id]/cliente-detalle.styles'
 import { calculateAge, formatDateCompact } from '@/lib/utils/date.utils'
 import { formatearDocumentoCompleto } from '@/lib/utils/documento.utils'
 import { formatNombreApellido } from '@/lib/utils/string.utils'
 import type { Cliente } from '@/modules/clientes/types'
 import { ESTADOS_CIVILES } from '@/modules/clientes/types'
-
-import * as styles from '../../../cliente-detalle.styles'
 
 interface InfoPersonalCardProps {
   cliente: Cliente
@@ -34,8 +33,8 @@ export function InfoPersonalCard({ cliente }: InfoPersonalCardProps) {
       </div>
       <div className={styles.infoCardClasses.content}>
         {/* Grid compacto 2 columnas */}
-        <div className="grid grid-cols-2 gap-x-4 gap-y-2.5">
-          <div className="col-span-2">
+        <div className='grid grid-cols-2 gap-x-4 gap-y-2.5'>
+          <div className='col-span-2'>
             <p className={styles.infoCardClasses.label}>Nombre Completo</p>
             <p className={styles.infoCardClasses.value}>
               {formatNombreApellido(cliente.nombres, cliente.apellidos)}
@@ -45,28 +44,55 @@ export function InfoPersonalCard({ cliente }: InfoPersonalCardProps) {
           <div>
             <p className={styles.infoCardClasses.label}>Documento</p>
             <p className={styles.infoCardClasses.value}>
-              {formatearDocumentoCompleto(cliente.tipo_documento, cliente.numero_documento)}
+              {formatearDocumentoCompleto(
+                cliente.tipo_documento,
+                cliente.numero_documento
+              )}
             </p>
           </div>
 
           <div>
             <p className={styles.infoCardClasses.label}>Estado Civil</p>
-            <p className={cliente.estado_civil ? styles.infoCardClasses.value : 'text-xs text-gray-400 dark:text-gray-500 italic'}>
-              {cliente.estado_civil ? ESTADOS_CIVILES[cliente.estado_civil] : 'No indica'}
+            <p
+              className={
+                cliente.estado_civil
+                  ? styles.infoCardClasses.value
+                  : 'text-xs italic text-gray-400 dark:text-gray-500'
+              }
+            >
+              {cliente.estado_civil
+                ? ESTADOS_CIVILES[cliente.estado_civil]
+                : 'No indica'}
             </p>
           </div>
 
           <div>
             <p className={styles.infoCardClasses.label}>Fecha de Nacimiento</p>
-            <p className={cliente.fecha_nacimiento ? styles.infoCardClasses.value : 'text-xs text-gray-400 dark:text-gray-500 italic'}>
-              {cliente.fecha_nacimiento ? formatDateCompact(cliente.fecha_nacimiento) : 'No indica'}
+            <p
+              className={
+                cliente.fecha_nacimiento
+                  ? styles.infoCardClasses.value
+                  : 'text-xs italic text-gray-400 dark:text-gray-500'
+              }
+            >
+              {cliente.fecha_nacimiento
+                ? formatDateCompact(cliente.fecha_nacimiento)
+                : 'No indica'}
             </p>
           </div>
 
           <div>
             <p className={styles.infoCardClasses.label}>Edad</p>
-            <p className={cliente.fecha_nacimiento ? styles.infoCardClasses.value : 'text-xs text-gray-400 dark:text-gray-500 italic'}>
-              {cliente.fecha_nacimiento ? `${calculateAge(cliente.fecha_nacimiento)} años` : 'No indica'}
+            <p
+              className={
+                cliente.fecha_nacimiento
+                  ? styles.infoCardClasses.value
+                  : 'text-xs italic text-gray-400 dark:text-gray-500'
+              }
+            >
+              {cliente.fecha_nacimiento
+                ? `${calculateAge(cliente.fecha_nacimiento)} años`
+                : 'No indica'}
             </p>
           </div>
         </div>

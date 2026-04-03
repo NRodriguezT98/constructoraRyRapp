@@ -11,8 +11,8 @@
 
 import { useMemo } from 'react'
 
-import { useDocumentosQuery } from '@/modules/documentos/hooks/useDocumentosQuery'
-import type { DocumentoProyecto } from '@/modules/documentos/types'
+import { useDocumentosQuery } from '@/shared/documentos/hooks/useDocumentosQuery'
+import type { DocumentoProyecto } from '@/shared/documentos/types'
 
 interface UseDocumentoIdentidadProps {
   clienteId: string
@@ -23,7 +23,9 @@ interface UseDocumentoIdentidadReturn {
   tieneCedula: boolean
 
   /** Documento de identidad actual (si existe) */
-  documentoIdentidad: (DocumentoProyecto & { es_documento_identidad?: boolean }) | null
+  documentoIdentidad:
+    | (DocumentoProyecto & { es_documento_identidad?: boolean })
+    | null
 
   /** Estado de carga */
   cargando: boolean
@@ -36,17 +38,23 @@ interface UseDocumentoIdentidadReturn {
 }
 
 export function useDocumentoIdentidad({
-  clienteId
+  clienteId,
 }: UseDocumentoIdentidadProps): UseDocumentoIdentidadReturn {
-
   // ✅ Cargar documentos del cliente
-  const { documentos, cargando, error } = useDocumentosQuery(clienteId, 'cliente')
+  const { documentos, cargando, error } = useDocumentosQuery(
+    clienteId,
+    'cliente'
+  )
 
   // ✅ Buscar documento de identidad
   const documentoIdentidad = useMemo(() => {
-    return (documentos as (DocumentoProyecto & { es_documento_identidad?: boolean })[]).find(
-      doc => doc.es_documento_identidad === true
-    ) || null
+    return (
+      (
+        documentos as (DocumentoProyecto & {
+          es_documento_identidad?: boolean
+        })[]
+      ).find(doc => doc.es_documento_identidad === true) || null
+    )
   }, [documentos])
 
   // ✅ Verificar si tiene cédula

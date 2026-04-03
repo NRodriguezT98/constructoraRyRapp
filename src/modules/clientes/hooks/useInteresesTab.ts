@@ -32,7 +32,8 @@ export function useInteresesTab({ clienteId }: UseInteresesTabProps) {
   // =====================================================
 
   const [descartandoId, setDescartandoId] = useState<string | null>(null)
-  const [interesADescartar, setInteresADescartar] = useState<ClienteInteres | null>(null)
+  const [interesADescartar, setInteresADescartar] =
+    useState<ClienteInteres | null>(null)
 
   // ✅ Hook con React Query (cache, refetch automático, estados optimizados)
   const {
@@ -40,7 +41,6 @@ export function useInteresesTab({ clienteId }: UseInteresesTabProps) {
     loading,
     stats,
     descartarInteres,
-    descartando: descartandoMutation,
     filtrarPorEstado,
     estadoFiltro,
     refetch,
@@ -68,7 +68,10 @@ export function useInteresesTab({ clienteId }: UseInteresesTabProps) {
       setDescartandoId(interesADescartar.id)
       setInteresADescartar(null)
       try {
-        await descartarInteres(interesADescartar.id, motivo || 'Cliente ya no está interesado')
+        await descartarInteres(
+          interesADescartar.id,
+          motivo || 'Cliente ya no está interesado'
+        )
       } catch (error) {
         logger.error('❌ [useInteresesTab] Error al descartar:', error)
       } finally {

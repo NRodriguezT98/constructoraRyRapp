@@ -52,7 +52,9 @@ const colors = {
 
 function log(message, color = 'reset', prefix = '') {
   const timestamp = new Date().toLocaleTimeString('es-CO', { hour12: false })
-  console.log(`${colors.dim}[${timestamp}]${colors.reset} ${prefix}${colors[color]}${message}${colors.reset}`)
+  console.log(
+    `${colors.dim}[${timestamp}]${colors.reset} ${prefix}${colors[color]}${message}${colors.reset}`
+  )
 }
 
 function header(message) {
@@ -89,21 +91,25 @@ function checkSupabaseConnection(projectId) {
     info(`Validando conectividad a Supabase...`)
 
     const timeout = setTimeout(() => {
-      reject(new Error('Timeout: No se pudo conectar a Supabase en 10 segundos'))
+      reject(
+        new Error('Timeout: No se pudo conectar a Supabase en 10 segundos')
+      )
     }, 10000)
 
-    https.get(url, { timeout: 10000 }, (res) => {
-      clearTimeout(timeout)
-      if (res.statusCode === 401 || res.statusCode === 404) {
-        // 401/404 es esperado sin API key, confirma que el proyecto existe
-        resolve(true)
-      } else {
-        resolve(true)
-      }
-    }).on('error', (err) => {
-      clearTimeout(timeout)
-      reject(new Error(`Error de red: ${err.message}`))
-    })
+    https
+      .get(url, { timeout: 10000 }, res => {
+        clearTimeout(timeout)
+        if (res.statusCode === 401 || res.statusCode === 404) {
+          // 401/404 es esperado sin API key, confirma que el proyecto existe
+          resolve(true)
+        } else {
+          resolve(true)
+        }
+      })
+      .on('error', err => {
+        clearTimeout(timeout)
+        reject(new Error(`Error de red: ${err.message}`))
+      })
   })
 }
 
@@ -151,37 +157,58 @@ function generateTypes(attempt = 1) {
 
     // Usar supabase CLI local (instalado en node_modules)
     const supabaseBin = path.join(process.cwd(), 'node_modules/.bin/supabase')
-    const command = process.platform === 'win32' ? `${supabaseBin}.cmd` : supabaseBin
+    const command =
+      process.platform === 'win32' ? `${supabaseBin}.cmd` : supabaseBin
 
     const args = [
-      'gen', 'types', 'typescript',
-      '--project-id', CONFIG.PROJECT_ID,
-      '--schema', CONFIG.SCHEMA
+      'gen',
+      'types',
+      'typescript',
+      '--project-id',
+      CONFIG.PROJECT_ID,
+      '--schema',
+      CONFIG.SCHEMA,
     ]
+
+    // Cargar SUPABASE_ACCESS_TOKEN desde .env.local si no está en entorno
+    const envVars = { ...process.env }
+    if (!envVars.SUPABASE_ACCESS_TOKEN) {
+      try {
+        const envContent = fs.readFileSync(
+          path.join(process.cwd(), '.env.local'),
+          'utf8'
+        )
+        const match = envContent.match(/^SUPABASE_ACCESS_TOKEN=(.+)$/m)
+        if (match) envVars.SUPABASE_ACCESS_TOKEN = match[1].trim()
+      } catch {}
+    }
 
     const child = spawn(command, args, {
       stdio: ['ignore', 'pipe', 'pipe'],
-      shell: true
+      shell: true,
+      env: envVars,
     })
 
     let output = ''
     let errorOutput = ''
 
-    child.stdout.on('data', (data) => {
+    child.stdout.on('data', data => {
       output += data.toString()
     })
 
-    child.stderr.on('data', (data) => {
+    child.stderr.on('data', data => {
       errorOutput += data.toString()
     })
 
     // Timeout
     const timeout = setTimeout(() => {
       child.kill('SIGTERM')
-      reject(new Error(`Timeout después de ${CONFIG.TIMEOUT_MS / 1000} segundos`))
+      reject(
+        new Error(`Timeout después de ${CONFIG.TIMEOUT_MS / 1000} segundos`)
+      )
     }, CONFIG.TIMEOUT_MS)
 
-    child.on('close', (code) => {
+    child.on('close', code => {
       clearTimeout(timeout)
 
       if (code === 0 && output.length > 0) {
@@ -202,7 +229,7 @@ function generateTypes(attempt = 1) {
       }
     })
 
-    child.on('error', (err) => {
+    child.on('error', err => {
       clearTimeout(timeout)
       reject(new Error(`Error al ejecutar comando: ${err.message}`))
     })
@@ -258,13 +285,20 @@ function validateGeneratedFile() {
   const tableMatches = content.match(/(\w+):\s*{[\s\S]*?Row:\s*{/g)
   const tableCount = tableMatches ? tableMatches.length : 0
 
-  success(`Archivo generado: ${path.relative(process.cwd(), CONFIG.OUTPUT_FILE)}`)
+  success(
+    `Archivo generado: ${path.relative(process.cwd(), CONFIG.OUTPUT_FILE)}`
+  )
   info(`Tamaño: ${(content.length / 1024).toFixed(2)} KB`)
   info(`Tablas detectadas: ${tableCount}`)
 
   // Validar tablas nuevas específicas
-  if (content.includes('negociaciones_versiones') && content.includes('descuentos_negociacion')) {
-    success('Nuevas tablas detectadas: negociaciones_versiones, descuentos_negociacion')
+  if (
+    content.includes('negociaciones_versiones') &&
+    content.includes('descuentos_negociacion')
+  ) {
+    success(
+      'Nuevas tablas detectadas: negociaciones_versiones, descuentos_negociacion'
+    )
   }
 }
 
@@ -299,7 +333,6 @@ async function main() {
     console.log('')
 
     process.exit(0)
-
   } catch (err) {
     console.log('')
     error(`❌ Error al generar tipos: ${err.message}`)
@@ -319,7 +352,9 @@ async function main() {
       error('   Soluciones:')
       error('   1. Verifica tu conexión a internet')
       error('   2. Verifica que Supabase CLI esté instalado: npm install')
-      error('   3. Intenta con el comando directo: npm run types:generate:direct')
+      error(
+        '   3. Intenta con el comando directo: npm run types:generate:direct'
+      )
       console.log('')
       process.exit(1)
     }

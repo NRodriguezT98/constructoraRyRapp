@@ -25,7 +25,7 @@ export const DocumentoPendienteMetadataSchema = z.object({
     'Crédito Hipotecario',
     'Subsidio Caja Compensación',
     'Subsidio Mi Casa Ya',
-    'Cuota Inicial'
+    'Cuota Inicial',
   ]),
   descripcion: z.string().min(1, 'Descripción requerida'),
   origen: z.enum(['asignacion_vivienda', 'manual']),
@@ -37,13 +37,22 @@ export const DocumentoPendienteMetadataSchema = z.object({
   monto_aprobado: z.number().positive().optional(),
 
   // Datos enriquecidos (agregados dinámicamente)
-  cliente: z.object({
-    nombre_completo: z.string()
-  }).optional(),
-  vivienda_detalle: z.object({
-    numero: z.string(),
-    manzana: z.string()
-  }).optional()
+  cliente: z
+    .object({
+      nombre_completo: z.string(),
+    })
+    .optional(),
+  vivienda_detalle: z
+    .object({
+      numero: z.string(),
+      manzana: z.string(),
+    })
+    .optional(),
+
+  // Campos de la vista vista_documentos_pendientes_fuentes
+  entidad_fuente: z.string().optional(),
+  nivel_validacion: z.string().optional(),
+  alcance: z.enum(['ESPECIFICO_FUENTE', 'COMPARTIDO_CLIENTE']).optional(),
 })
 
 /**
@@ -62,14 +71,16 @@ export const DocumentoPendienteSchema = z.object({
   fecha_completado: z.string().datetime().nullable().optional(),
   completado_por: z.string().uuid().nullable().optional(),
   recordatorios_enviados: z.number().int().min(0).default(0),
-  ultima_notificacion: z.string().datetime().nullable().optional()
+  ultima_notificacion: z.string().datetime().nullable().optional(),
 })
 
 // ============================================
 // TYPESCRIPT TYPES (Inferidos de Zod)
 // ============================================
 
-export type DocumentoPendienteMetadata = z.infer<typeof DocumentoPendienteMetadataSchema>
+export type DocumentoPendienteMetadata = z.infer<
+  typeof DocumentoPendienteMetadataSchema
+>
 export type DocumentoPendiente = z.infer<typeof DocumentoPendienteSchema>
 
 /**
@@ -116,5 +127,5 @@ export const documentosPendientesKeys = {
   byNegociacion: (negociacionId: string) =>
     [...documentosPendientesKeys.all, 'negociacion', negociacionId] as const,
   byFuentePago: (fuentePagoId: string) =>
-    [...documentosPendientesKeys.all, 'fuente-pago', fuentePagoId] as const
+    [...documentosPendientesKeys.all, 'fuente-pago', fuentePagoId] as const,
 }

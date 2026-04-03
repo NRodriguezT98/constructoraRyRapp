@@ -28,6 +28,7 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 
+import dynamic from 'next/dynamic'
 import { useRouter } from 'next/navigation'
 
 import { construirURLCliente } from '@/lib/utils/slug.utils'
@@ -41,11 +42,37 @@ import {
   useClienteDetalle,
 } from '@/modules/clientes/hooks'
 import { clientesService } from '@/modules/clientes/services/clientes.service'
+import { useModal } from '@/shared/components/modals'
 import { Tooltip } from '@/shared/components/ui'
 
 import * as styles from './cliente-detalle.styles'
-import { DocumentosTab, GeneralTab, InteresesTab, NegociacionTab } from './tabs'
-import { HistorialTab } from './tabs/historial-tab'
+import { GeneralTab } from './tabs/general-tab'
+
+// Tabs pesados — se cargan solo cuando el usuario los abre
+const TabSpinner = () => (
+  <div className='flex items-center justify-center py-12'>
+    <div className='h-6 w-6 animate-spin rounded-full border-2 border-cyan-500 border-t-transparent' />
+  </div>
+)
+
+const InteresesTab = dynamic(
+  () => import('./tabs/intereses-tab').then(m => ({ default: m.InteresesTab })),
+  { loading: TabSpinner }
+)
+const NegociacionTab = dynamic(
+  () =>
+    import('./tabs/negociacion-tab').then(m => ({ default: m.NegociacionTab })),
+  { loading: TabSpinner }
+)
+const DocumentosTab = dynamic(
+  () =>
+    import('./tabs/documentos-tab').then(m => ({ default: m.DocumentosTab })),
+  { loading: TabSpinner }
+)
+const HistorialTab = dynamic(
+  () => import('./tabs/historial-tab').then(m => ({ default: m.HistorialTab })),
+  { loading: TabSpinner }
+)
 
 interface ClienteDetalleClientProps {
   clienteId: string // Puede ser slug o UUID
@@ -91,6 +118,7 @@ export default function ClienteDetalleClient({
   clienteId,
 }: ClienteDetalleClientProps) {
   const router = useRouter()
+  const { confirm } = useModal()
 
   // ✅ Hook consolidado con TODA la lógica
   const {
@@ -116,13 +144,15 @@ export default function ClienteDetalleClient({
     router.push(`/clientes/${clienteId}/editar`)
   }
 
-  const handleEliminar = () => {
-    if (
-      // eslint-disable-next-line no-alert
-      window.confirm(
-        `¿Estás seguro de eliminar al cliente ${cliente?.nombre_completo}? Esta acción no se puede deshacer.`
-      )
-    ) {
+  const handleEliminar = async () => {
+    const confirmado = await confirm({
+      title: 'Eliminar cliente',
+      message: `¿Estás seguro de eliminar al cliente ${cliente?.nombre_completo}? Esta acción no se puede deshacer.`,
+      variant: 'danger',
+      confirmText: 'Eliminar',
+      cancelText: 'Cancelar',
+    })
+    if (confirmado) {
       router.push('/clientes')
     }
   }
@@ -229,9 +259,8 @@ export default function ClienteDetalleClient({
           className='text-center'
         >
           <motion.div
-            className='mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-500 to-blue-600 shadow-2xl shadow-cyan-500/30'
             animate={{
-              scale: [1, 1.05, 1],
+              scale: [1, 1.1, 1],
               rotate: [0, 5, -5, 0],
             }}
             transition={{
@@ -240,7 +269,10 @@ export default function ClienteDetalleClient({
               ease: 'easeInOut',
             }}
           >
-            <User className='h-10 w-10 text-white' />
+            <User
+              className='mx-auto mb-4 h-16 w-16 text-cyan-500'
+              strokeWidth={2}
+            />
           </motion.div>
 
           <motion.p
@@ -331,10 +363,10 @@ export default function ClienteDetalleClient({
       label: 'Negociación',
       icon: Home,
       count: (
-        (cliente as any).negociaciones?.filter(
-          (n: any) => n.estado !== 'Cerrada por Renuncia'
+        cliente.negociaciones?.filter(
+          n => n.estado !== 'Cerrada por Renuncia'
         ) || []
-      ).length, // eslint-disable-line @typescript-eslint/no-explicit-any
+      ).length,
       badge: null,
     },
     {
@@ -430,10 +462,9 @@ export default function ClienteDetalleClient({
 
                   {/* Chip compacto de vivienda asignada */}
                   {cliente.estado === 'Activo' &&
-                    (cliente as any).negociaciones?.[0] &&
+                    cliente.negociaciones?.[0] &&
                     (() => {
-                      // eslint-disable-line @typescript-eslint/no-explicit-any
-                      const neg = (cliente as any).negociaciones[0] // eslint-disable-line @typescript-eslint/no-explicit-any
+                      const neg = cliente.negociaciones?.[0]
                       const proyecto =
                         neg?.viviendas?.manzanas?.proyectos?.nombre ||
                         'Sin proyecto'
@@ -461,9 +492,9 @@ export default function ClienteDetalleClient({
               <div className={styles.headerClasses.actionsContainer}>
                 {/* ✅ Botón Asignar Vivienda (solo visible para Interesados sin negociación activa) */}
                 {cliente.estado === 'Interesado' &&
-                  !(cliente as any).negociaciones?.filter(
-                    (n: any) => n.estado !== 'Cerrada por Renuncia'
-                  )?.length && ( // eslint-disable-line @typescript-eslint/no-explicit-any
+                  !cliente.negociaciones?.filter(
+                    n => n.estado !== 'Cerrada por Renuncia'
+                  )?.length && (
                     <Tooltip content={mensajeValidacion} side='bottom'>
                       <motion.button
                         onClick={handleIniciarAsignacion}
@@ -545,7 +576,7 @@ export default function ClienteDetalleClient({
             <nav
               role='tablist'
               aria-label='Secciones del cliente'
-              className='scrollbar-hide flex gap-2 overflow-x-auto pb-1'
+              className={`scrollbar-hide overflow-x-auto pb-1 ${styles.tabsClasses.nav}`}
             >
               {tabs.map(tab => (
                 <motion.button

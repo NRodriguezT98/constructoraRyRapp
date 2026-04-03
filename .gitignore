@@ -54,3 +54,14 @@ next-env.d.ts
 # OS
 Thumbs.db
 .DS_Store
+
+# Archivos temporales de auditoría y diagnóstico
+eslint-audit-raw.json
+eslint-current.txt
+eslint-full-output.txt
+lint-errors-full.txt
+docs/auditoria-bd-cruce-codigo.json
+docs/auditoria-bd-resultado.json
+scripts/auditoria-bd.js
+scripts/auditoria-cruce-codigo.js
+scripts/auditoria-cruce-codigo-v2.js

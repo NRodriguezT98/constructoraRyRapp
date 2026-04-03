@@ -4,7 +4,17 @@
  */
 
 import { motion } from 'framer-motion'
-import { Calendar, CheckCircle2, FileCheck, FileSignature, FileText, Home, MapPin, Phone, User } from 'lucide-react'
+import {
+  Calendar,
+  CheckCircle2,
+  FileCheck,
+  FileSignature,
+  FileText,
+  Home,
+  MapPin,
+  Phone,
+  User,
+} from 'lucide-react'
 
 import { ProgressBar } from '@/shared/components/ui'
 import { formatArea, formatCurrency, formatDate } from '@/shared/utils'
@@ -23,7 +33,7 @@ export function ViviendaCardPagada({
   vivienda,
   onVerAbonos,
   onGenerarEscritura,
-  onEditar,
+  onEditar: _onEditar,
 }: ViviendaCardPagadaProps) {
   const proyectoNombre = vivienda.manzanas?.proyectos?.nombre || 'Sin proyecto'
   const manzanaNombre = vivienda.manzanas?.nombre || '?'
@@ -38,47 +48,49 @@ export function ViviendaCardPagada({
     >
       {/* HEADER */}
       <div className={`${styles.header.base} ${styles.header.pagada}`}>
-        <div className="flex items-start justify-between">
-          <div className="flex-1">
+        <div className='flex items-start justify-between'>
+          <div className='flex-1'>
             <h3 className={styles.headerTitle}>
-              <Home className="w-5 h-5" />
+              <Home className='h-5 w-5' />
               Manzana {manzanaNombre} Casa {vivienda.numero}
             </h3>
             <p className={styles.headerSubtitle}>
-              <MapPin className="w-4 h-4" />
+              <MapPin className='h-4 w-4' />
               {proyectoNombre}
             </p>
           </div>
-          <span className={styles.estadoBadge.base}>
-            ✅ Pagada
-          </span>
+          <span className={styles.estadoBadge.base}>✅ Pagada</span>
         </div>
       </div>
 
       {/* BODY - 2 COLUMNAS */}
       <div className={styles.body}>
         {/* SECCIÓN PROPIETARIO - FULL WIDTH */}
-        <div className={`${styles.clienteSection.container} !from-emerald-50 !to-green-50 dark:!from-emerald-900/20 dark:!to-green-900/20 !border-emerald-200 dark:!border-emerald-700`}>
+        <div
+          className={`${styles.clienteSection.container} !border-emerald-200 !from-emerald-50 !to-green-50 dark:!border-emerald-700 dark:!from-emerald-900/20 dark:!to-green-900/20`}
+        >
           <div className={styles.clienteSection.nombre}>
-            <User className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+            <User className='h-5 w-5 text-emerald-600 dark:text-emerald-400' />
             {cliente?.nombre_completo || 'Propietario'}
           </div>
-          <div className="flex flex-wrap gap-3 mt-2">
+          <div className='mt-2 flex flex-wrap gap-3'>
             {cliente?.telefono && (
               <span className={styles.clienteSection.info}>
-                <Phone className="w-4 h-4" />
+                <Phone className='h-4 w-4' />
                 {cliente.telefono}
               </span>
             )}
             {vivienda.fecha_asignacion && (
               <span className={styles.clienteSection.info}>
-                <Calendar className="w-4 h-4" />
+                <Calendar className='h-4 w-4' />
                 Asignada: {formatDate(vivienda.fecha_asignacion)}
               </span>
             )}
             {vivienda.fecha_pago_completo && (
-              <span className={`${styles.clienteSection.info} !text-emerald-700 dark:!text-emerald-300 font-semibold`}>
-                <CheckCircle2 className="w-4 h-4" />
+              <span
+                className={`${styles.clienteSection.info} font-semibold !text-emerald-700 dark:!text-emerald-300`}
+              >
+                <CheckCircle2 className='h-4 w-4' />
                 Pagada: {formatDate(vivienda.fecha_pago_completo)}
               </span>
             )}
@@ -90,25 +102,25 @@ export function ViviendaCardPagada({
           {/* COLUMNA 1: INFORMACIÓN BÁSICA */}
           <div className={styles.section.base}>
             <h4 className={styles.section.title}>
-              <FileText className="w-4 h-4" />
+              <FileText className='h-4 w-4' />
               Detalles Técnicos
             </h4>
             <div className={styles.section.content}>
               {/* Tipo + Esquinera */}
-              <div className="flex items-center gap-2 flex-wrap">
+              <div className='flex flex-wrap items-center gap-2'>
                 <span
-                  className={`
-                    ${styles.badge.base}
-                    ${vivienda.tipo_vivienda === 'Irregular'
+                  className={` ${styles.badge.base} ${
+                    vivienda.tipo_vivienda === 'Irregular'
                       ? styles.badge.irregular
                       : styles.badge.regular
-                    }
-                  `}
+                  } `}
                 >
                   {vivienda.tipo_vivienda || 'Regular'}
                 </span>
                 {vivienda.es_esquinera && (
-                  <span className={`${styles.badge.base} ${styles.badge.esquinera}`}>
+                  <span
+                    className={`${styles.badge.base} ${styles.badge.esquinera}`}
+                  >
                     🏘️ Esquinera
                   </span>
                 )}
@@ -128,7 +140,9 @@ export function ViviendaCardPagada({
               {vivienda.nomenclatura && (
                 <div className={styles.infoRow}>
                   <span className={styles.infoLabel}>Nomenclatura:</span>
-                  <span className={styles.infoValue}>{vivienda.nomenclatura}</span>
+                  <span className={styles.infoValue}>
+                    {vivienda.nomenclatura}
+                  </span>
                 </div>
               )}
 
@@ -148,30 +162,29 @@ export function ViviendaCardPagada({
           <div className={styles.financialSection.container}>
             <div className={styles.pagadaConfirmation}>
               <div className={styles.pagadaIcon}>
-                <CheckCircle2 className="w-6 h-6 text-white" />
+                <CheckCircle2 className='h-6 w-6 text-white' />
               </div>
-              <p className={styles.pagadaText}>
-                TOTALMENTE PAGADA
-              </p>
-              <p className="text-sm text-white/90 mt-1">
+              <p className={styles.pagadaText}>TOTALMENTE PAGADA</p>
+              <p className='mt-1 text-sm text-white/90'>
                 {formatCurrency(vivienda.valor_total)}
               </p>
             </div>
 
             {/* Barra de progreso completa */}
-            <div className="mt-3">
+            <div className='mt-3'>
               <ProgressBar
                 porcentaje={100}
-                height="lg"
-                variant="success"
+                height='lg'
+                variant='success'
                 showPercentage={false}
               />
             </div>
 
             {/* Info adicional */}
             {vivienda.cantidad_abonos && vivienda.cantidad_abonos > 0 && (
-              <p className="text-xs text-center text-gray-600 dark:text-gray-400 mt-2">
-                Pagada en {vivienda.cantidad_abonos} abono{vivienda.cantidad_abonos > 1 ? 's' : ''}
+              <p className='mt-2 text-center text-xs text-gray-600 dark:text-gray-400'>
+                Pagada en {vivienda.cantidad_abonos} abono
+                {vivienda.cantidad_abonos > 1 ? 's' : ''}
               </p>
             )}
           </div>
@@ -186,7 +199,7 @@ export function ViviendaCardPagada({
               onClick={onVerAbonos}
               className={styles.actionButton.secondary}
             >
-              <FileCheck className="w-4 h-4" />
+              <FileCheck className='h-4 w-4' />
               Ver Abonos ({vivienda.cantidad_abonos || 0})
             </button>
           )}
@@ -195,7 +208,7 @@ export function ViviendaCardPagada({
               onClick={onGenerarEscritura}
               className={styles.actionButton.primary}
             >
-              <FileSignature className="w-4 h-4" />
+              <FileSignature className='h-4 w-4' />
               Generar Escritura
             </button>
           )}

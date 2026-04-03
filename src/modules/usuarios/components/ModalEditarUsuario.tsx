@@ -17,7 +17,14 @@ import { AlertCircle } from 'lucide-react'
 
 import { logger } from '@/lib/utils/logger'
 
-import { ESTADOS_USUARIO, ROLES, type ActualizarUsuarioData, type EstadoUsuario, type Rol, type UsuarioCompleto } from '../types'
+import {
+  ESTADOS_USUARIO,
+  ROLES,
+  type ActualizarUsuarioData,
+  type EstadoUsuario,
+  type Rol,
+  type UsuarioCompleto,
+} from '../types'
 
 import { Modal } from './Modal'
 import { usuariosStyles as styles } from './usuarios.styles'
@@ -37,7 +44,12 @@ interface FormularioEdicion {
   estado: EstadoUsuario
 }
 
-export function ModalEditarUsuario({ isOpen, onClose, usuario, onActualizar }: ModalEditarUsuarioProps) {
+export function ModalEditarUsuario({
+  isOpen,
+  onClose,
+  usuario,
+  onActualizar,
+}: ModalEditarUsuarioProps) {
   const [formulario, setFormulario] = useState<FormularioEdicion>({
     nombres: '',
     apellidos: '',
@@ -97,7 +109,10 @@ export function ModalEditarUsuario({ isOpen, onClose, usuario, onActualizar }: M
     } catch (error) {
       logger.error('Error actualizando usuario:', error)
       setErrores({
-        general: error instanceof Error ? error.message : 'Error al actualizar usuario',
+        general:
+          error instanceof Error
+            ? error.message
+            : 'Error al actualizar usuario',
       })
     } finally {
       setCargando(false)
@@ -122,12 +137,17 @@ export function ModalEditarUsuario({ isOpen, onClose, usuario, onActualizar }: M
   if (!usuario) return null
 
   return (
-    <Modal isOpen={isOpen} onClose={handleCerrar} title="Editar Usuario" maxWidth="lg">
-      <form onSubmit={handleSubmit} className="space-y-3">
+    <Modal
+      isOpen={isOpen}
+      onClose={handleCerrar}
+      title='Editar Usuario'
+      maxWidth='lg'
+    >
+      <form onSubmit={handleSubmit} className='space-y-3'>
         {/* Error general */}
         {errores.general && (
-          <div className="rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-3 text-sm text-red-800 dark:text-red-300 flex items-start gap-2">
-            <AlertCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
+          <div className='flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800 dark:border-red-800 dark:bg-red-900/20 dark:text-red-300'>
+            <AlertCircle className='mt-0.5 h-4 w-4 flex-shrink-0' />
             <span>{errores.general}</span>
           </div>
         )}
@@ -136,8 +156,8 @@ export function ModalEditarUsuario({ isOpen, onClose, usuario, onActualizar }: M
         <div className={styles.form.group}>
           <label className={styles.form.label}>Email</label>
           <input
-            type="email"
-            className={`${styles.form.input} opacity-60 cursor-not-allowed`}
+            type='email'
+            className={`${styles.form.input} cursor-not-allowed opacity-60`}
             value={usuario.email}
             disabled
           />
@@ -150,13 +170,17 @@ export function ModalEditarUsuario({ isOpen, onClose, usuario, onActualizar }: M
             Nombres <span className={styles.form.labelRequired}>*</span>
           </label>
           <input
-            type="text"
+            type='text'
             className={styles.form.input}
             value={formulario.nombres}
-            onChange={(e) => setFormulario({ ...formulario, nombres: e.target.value })}
-            placeholder="Juan Carlos"
+            onChange={e =>
+              setFormulario({ ...formulario, nombres: e.target.value })
+            }
+            placeholder='Juan Carlos'
           />
-          {errores.nombres && <p className={styles.form.error}>{errores.nombres}</p>}
+          {errores.nombres && (
+            <p className={styles.form.error}>{errores.nombres}</p>
+          )}
         </div>
 
         {/* Apellidos */}
@@ -165,24 +189,30 @@ export function ModalEditarUsuario({ isOpen, onClose, usuario, onActualizar }: M
             Apellidos <span className={styles.form.labelRequired}>*</span>
           </label>
           <input
-            type="text"
+            type='text'
             className={styles.form.input}
             value={formulario.apellidos}
-            onChange={(e) => setFormulario({ ...formulario, apellidos: e.target.value })}
-            placeholder="García Pérez"
+            onChange={e =>
+              setFormulario({ ...formulario, apellidos: e.target.value })
+            }
+            placeholder='García Pérez'
           />
-          {errores.apellidos && <p className={styles.form.error}>{errores.apellidos}</p>}
+          {errores.apellidos && (
+            <p className={styles.form.error}>{errores.apellidos}</p>
+          )}
         </div>
 
         {/* Teléfono */}
         <div className={styles.form.group}>
           <label className={styles.form.label}>Teléfono</label>
           <input
-            type="tel"
+            type='tel'
             className={styles.form.input}
             value={formulario.telefono}
-            onChange={(e) => setFormulario({ ...formulario, telefono: e.target.value })}
-            placeholder="+57 300 123 4567"
+            onChange={e =>
+              setFormulario({ ...formulario, telefono: e.target.value })
+            }
+            placeholder='+57 300 123 4567'
           />
         </div>
 
@@ -194,9 +224,11 @@ export function ModalEditarUsuario({ isOpen, onClose, usuario, onActualizar }: M
           <select
             className={styles.form.select}
             value={formulario.rol}
-            onChange={(e) => setFormulario({ ...formulario, rol: e.target.value as any })}
+            onChange={e =>
+              setFormulario({ ...formulario, rol: e.target.value as Rol })
+            }
           >
-            {ROLES.map((rol) => (
+            {ROLES.map(rol => (
               <option key={rol.value} value={rol.value}>
                 {rol.label} - {rol.descripcion}
               </option>
@@ -212,9 +244,14 @@ export function ModalEditarUsuario({ isOpen, onClose, usuario, onActualizar }: M
           <select
             className={styles.form.select}
             value={formulario.estado}
-            onChange={(e) => setFormulario({ ...formulario, estado: e.target.value as any })}
+            onChange={e =>
+              setFormulario({
+                ...formulario,
+                estado: e.target.value as EstadoUsuario,
+              })
+            }
           >
-            {ESTADOS_USUARIO.map((estado) => (
+            {ESTADOS_USUARIO.map(estado => (
               <option key={estado.value} value={estado.value}>
                 {estado.label}
               </option>
@@ -225,14 +262,18 @@ export function ModalEditarUsuario({ isOpen, onClose, usuario, onActualizar }: M
         {/* Footer */}
         <div className={styles.modal.footer}>
           <button
-            type="button"
+            type='button'
             onClick={handleCerrar}
             className={styles.button.secondary}
             disabled={cargando}
           >
             Cancelar
           </button>
-          <button type="submit" className={styles.button.primary} disabled={cargando}>
+          <button
+            type='submit'
+            className={styles.button.primary}
+            disabled={cargando}
+          >
             {cargando ? 'Guardando...' : 'Guardar Cambios'}
           </button>
         </div>

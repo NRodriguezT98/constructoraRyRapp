@@ -19,9 +19,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import {
-    showSessionClosedToast,
-    showSessionExpiringToast,
-    showSessionKeptAliveToast,
+  showSessionClosedToast,
+  showSessionExpiringToast,
+  showSessionKeptAliveToast,
 } from '@/components/toasts/custom-toasts'
 import { useAuth } from '@/contexts/auth-context'
 import { useLogoutMutation } from '@/hooks/auth'
@@ -36,11 +36,7 @@ interface UseAutoLogoutOptions {
 }
 
 export function useAutoLogout(options: UseAutoLogoutOptions = {}) {
-  const {
-    timeoutMinutes = 30,
-    warningMinutes = 5,
-    enabled = true,
-  } = options
+  const { timeoutMinutes = 30, warningMinutes = 5, enabled = true } = options
 
   const { user } = useAuth()
   const logoutMutation = useLogoutMutation() // ✅ Mutación estable de React Query
@@ -77,7 +73,8 @@ export function useAutoLogout(options: UseAutoLogoutOptions = {}) {
     // Limpiar todos los temporizadores
     if (timeoutRef.current) clearTimeout(timeoutRef.current)
     if (warningTimeoutRef.current) clearTimeout(warningTimeoutRef.current)
-    if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current)
+    if (countdownIntervalRef.current)
+      clearInterval(countdownIntervalRef.current)
 
     // ✅ SOLO mostrar toast UNA VEZ cuando la página está visible
     if (pageIsVisibleRef.current) {
@@ -100,7 +97,8 @@ export function useAutoLogout(options: UseAutoLogoutOptions = {}) {
     // Limpiar temporizadores anteriores
     if (timeoutRef.current) clearTimeout(timeoutRef.current)
     if (warningTimeoutRef.current) clearTimeout(warningTimeoutRef.current)
-    if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current)
+    if (countdownIntervalRef.current)
+      clearInterval(countdownIntervalRef.current)
 
     // Ocultar advertencia si estaba visible
     if (showWarning) {
@@ -142,7 +140,8 @@ export function useAutoLogout(options: UseAutoLogoutOptions = {}) {
           // Limpiar temporizadores
           if (timeoutRef.current) clearTimeout(timeoutRef.current)
           if (warningTimeoutRef.current) clearTimeout(warningTimeoutRef.current)
-          if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current)
+          if (countdownIntervalRef.current)
+            clearInterval(countdownIntervalRef.current)
           setShowWarning(false)
 
           // Reiniciar timers manualmente
@@ -155,7 +154,10 @@ export function useAutoLogout(options: UseAutoLogoutOptions = {}) {
               warningShownRef.current = true
               showSessionExpiringToast({
                 minutes: warningMinutes,
-                onKeepAlive: () => {},
+                onKeepAlive: () => {
+                  // El toast de sesión expirando no requiere acción extra aquí;
+                  // el usuario que hace click se detecta como actividad y resetea el timer
+                },
               })
             }
           }, TIMEOUT_MS - WARNING_MS)
@@ -230,7 +232,8 @@ export function useAutoLogout(options: UseAutoLogoutOptions = {}) {
     return () => {
       if (timeoutRef.current) clearTimeout(timeoutRef.current)
       if (warningTimeoutRef.current) clearTimeout(warningTimeoutRef.current)
-      if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current)
+      if (countdownIntervalRef.current)
+        clearInterval(countdownIntervalRef.current)
 
       activityEvents.forEach(event => {
         document.removeEventListener(event, handleUserActivity)

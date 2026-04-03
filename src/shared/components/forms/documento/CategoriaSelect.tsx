@@ -1,31 +1,31 @@
 'use client'
 
+import type { CSSProperties } from 'react'
 import { useEffect, useRef, useState } from 'react'
 
 import { AnimatePresence, motion } from 'framer-motion'
 import { AlertCircle, ChevronDown, Folder } from 'lucide-react'
-import { FieldErrors } from 'react-hook-form'
+import type { FieldErrors } from 'react-hook-form'
 
 import { moduleThemes, type ModuleName } from '@/shared/config/module-themes'
 import { cn } from '@/shared/utils/helpers'
 
-interface CategoriaDocumento {
-  id: string
-  nombre: string
-  descripcion?: string | null
-}
+import type {
+  CategoriaDocumentoBase,
+  DocumentoFormValuesBase,
+} from './documento-form.types'
 
-interface CategoriaSelectProps {
+interface CategoriaSelectProps<TFormValues extends DocumentoFormValuesBase> {
   moduleName?: ModuleName
-  categorias: CategoriaDocumento[]
+  categorias: CategoriaDocumentoBase[]
   value: string
   onChange: (value: string) => void
-  errors: FieldErrors
+  errors: FieldErrors<TFormValues>
   disabled?: boolean // ✅ Para deshabilitar select
   helperText?: string // ✅ Texto custom de ayuda
 }
 
-export function CategoriaSelect({
+export function CategoriaSelect<TFormValues extends DocumentoFormValuesBase>({
   moduleName = 'proyectos',
   categorias,
   value,
@@ -33,7 +33,7 @@ export function CategoriaSelect({
   errors,
   disabled = false,
   helperText,
-}: CategoriaSelectProps) {
+}: CategoriaSelectProps<TFormValues>) {
   const theme = moduleThemes[moduleName]
   const [isOpen, setIsOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
@@ -43,7 +43,10 @@ export function CategoriaSelect({
   // Cerrar dropdown al hacer click fuera
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false)
       }
     }
@@ -54,21 +57,21 @@ export function CategoriaSelect({
 
   return (
     <div>
-      <label className="flex items-center gap-1.5 text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+      <label className='mb-1.5 flex items-center gap-1.5 text-xs font-medium text-gray-700 dark:text-gray-300'>
         <Folder size={14} />
         Categoría
       </label>
 
-      <div ref={dropdownRef} className="relative">
+      <div ref={dropdownRef} className='relative'>
         {/* Botón del select */}
         <button
-          type="button"
+          type='button'
           onClick={() => !disabled && setIsOpen(!isOpen)}
           disabled={disabled}
           className={cn(
-            'w-full px-3 py-2 text-sm bg-white dark:bg-gray-900/50 border rounded-lg transition-all text-left flex items-center justify-between',
-            'focus:ring-2 focus:border-transparent',
-            disabled && 'opacity-50 cursor-not-allowed',
+            'flex w-full items-center justify-between rounded-lg border bg-white px-3 py-2 text-left text-sm transition-all dark:bg-gray-900/50',
+            'focus:border-transparent focus:ring-2',
+            disabled && 'cursor-not-allowed opacity-50',
             errors.categoria_id
               ? 'border-red-500 dark:border-red-500'
               : 'border-gray-200 dark:border-gray-700'
@@ -76,31 +79,33 @@ export function CategoriaSelect({
           style={{
             ...(errors.categoria_id
               ? {}
-              : {
+              : ({
                   '--tw-ring-color': theme.colors.light,
-                } as React.CSSProperties),
+                } as CSSProperties)),
           }}
         >
-          <div className="flex-1 min-w-0">
+          <div className='min-w-0 flex-1'>
             {categoriaSeleccionada ? (
               <div>
-                <div className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                <div className='truncate text-sm font-medium text-gray-900 dark:text-white'>
                   {categoriaSeleccionada.nombre}
                 </div>
                 {categoriaSeleccionada.descripcion && (
-                  <div className="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5">
+                  <div className='mt-0.5 truncate text-xs text-gray-500 dark:text-gray-400'>
                     {categoriaSeleccionada.descripcion}
                   </div>
                 )}
               </div>
             ) : (
-              <span className="text-sm text-gray-500 dark:text-gray-400">Sin categoría</span>
+              <span className='text-sm text-gray-500 dark:text-gray-400'>
+                Sin categoría
+              </span>
             )}
           </div>
           <ChevronDown
             size={14}
             className={cn(
-              'ml-2 flex-shrink-0 transition-transform text-gray-400',
+              'ml-2 flex-shrink-0 text-gray-400 transition-transform',
               isOpen && 'rotate-180'
             )}
           />
@@ -114,44 +119,44 @@ export function CategoriaSelect({
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.15 }}
-              className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl max-h-64 overflow-y-auto"
+              className='absolute z-50 mt-1 max-h-64 w-full overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-xl dark:border-gray-700 dark:bg-gray-800'
             >
               {/* Opción "Sin categoría" */}
               <button
-                type="button"
+                type='button'
                 onClick={() => {
                   onChange('')
                   setIsOpen(false)
                 }}
                 className={cn(
-                  'w-full px-2.5 py-1.5 text-left text-sm hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors',
+                  'w-full px-2.5 py-1.5 text-left text-sm transition-colors hover:bg-gray-50 dark:hover:bg-gray-700/50',
                   !value && theme.classes.bg.light
                 )}
               >
-                <div className="font-medium text-gray-900 dark:text-white">
+                <div className='font-medium text-gray-900 dark:text-white'>
                   Sin categoría
                 </div>
               </button>
 
               {/* Lista de categorías */}
-              {categorias.map((categoria) => (
+              {categorias.map(categoria => (
                 <button
                   key={categoria.id}
-                  type="button"
+                  type='button'
                   onClick={() => {
                     onChange(categoria.id)
                     setIsOpen(false)
                   }}
                   className={cn(
-                    'w-full px-2.5 py-1.5 text-left hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors border-t border-gray-100 dark:border-gray-700',
+                    'w-full border-t border-gray-100 px-2.5 py-1.5 text-left transition-colors hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-700/50',
                     value === categoria.id && theme.classes.bg.light
                   )}
                 >
-                  <div className="text-sm font-medium text-gray-900 dark:text-white">
+                  <div className='text-sm font-medium text-gray-900 dark:text-white'>
                     {categoria.nombre}
                   </div>
                   {categoria.descripcion && (
-                    <div className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5 line-clamp-2 leading-tight">
+                    <div className='mt-0.5 line-clamp-2 text-[11px] leading-tight text-gray-500 dark:text-gray-400'>
                       {categoria.descripcion}
                     </div>
                   )}
@@ -166,14 +171,14 @@ export function CategoriaSelect({
         <motion.p
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mt-1 text-xs text-red-600 dark:text-red-400 flex items-center gap-1"
+          className='mt-1 flex items-center gap-1 text-xs text-red-600 dark:text-red-400'
         >
           <AlertCircle size={12} />
           {errors.categoria_id.message as string}
         </motion.p>
       )}
       {!errors.categoria_id && (
-        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+        <p className='mt-1 text-xs text-gray-500 dark:text-gray-400'>
           {helperText || 'Clasifica el documento'}
         </p>
       )}
