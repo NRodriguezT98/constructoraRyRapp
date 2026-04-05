@@ -8,12 +8,14 @@ const fs = require('fs')
 const d = require('../eslint-output.json')
 
 const filesWithUnused = d
-  .filter(f => f.messages.some(m => m.ruleId === '@typescript-eslint/no-unused-vars'))
+  .filter(f =>
+    f.messages.some(m => m.ruleId === '@typescript-eslint/no-unused-vars')
+  )
   .map(f => ({
     filePath: f.filePath,
     errors: f.messages
       .filter(m => m.ruleId === '@typescript-eslint/no-unused-vars')
-      .map(m => ({ line: m.line, col: m.column, message: m.message }))
+      .map(m => ({ line: m.line, col: m.column, message: m.message })),
   }))
 
 console.log('Files with unused vars:', filesWithUnused.length)
@@ -56,7 +58,10 @@ for (const { filePath, errors } of filesWithUnused) {
     // Check what comes before: destructuring, parameter, or declaration
     const trimBefore = before.trimEnd()
 
-    const isDestructured = trimBefore.endsWith('{') || trimBefore.endsWith(',') || trimBefore.endsWith('(')
+    const isDestructured =
+      trimBefore.endsWith('{') ||
+      trimBefore.endsWith(',') ||
+      trimBefore.endsWith('(')
     const isDeclaration = /(?:const|let|var)\s+$/.test(trimBefore)
     const isParam = /[,(]\s*$/.test(trimBefore) || /^\s*$/.test(trimBefore)
 

@@ -14,7 +14,9 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
 if (!supabaseUrl || !supabaseKey) {
-  console.error('❌ Error: Falta NEXT_PUBLIC_SUPABASE_URL o SUPABASE_SERVICE_ROLE_KEY en .env.local')
+  console.error(
+    '❌ Error: Falta NEXT_PUBLIC_SUPABASE_URL o SUPABASE_SERVICE_ROLE_KEY en .env.local'
+  )
   process.exit(1)
 }
 
@@ -39,12 +41,16 @@ async function getTableSchemaAlternative() {
   console.log('⚠️ Usando método alternativo de introspección...\n')
 
   // Query SQL para obtener estructura de tablas
-  const { data, error } = await supabase.from('information_schema.tables').select('*')
+  const { data, error } = await supabase
+    .from('information_schema.tables')
+    .select('*')
 
   if (error) {
     console.error('❌ Error:', error.message)
     console.log('\n📋 Solución alternativa: Usar Supabase Studio')
-    console.log('1. Abre: https://supabase.com/dashboard/project/ynsxcwgrltvgdqzlgqtf/editor')
+    console.log(
+      '1. Abre: https://supabase.com/dashboard/project/ynsxcwgrltvgdqzlgqtf/editor'
+    )
     console.log('2. Ve a SQL Editor')
     console.log('3. Ejecuta este query:\n')
     console.log(`
@@ -60,7 +66,9 @@ WHERE t.table_schema = 'public'
   AND t.table_type = 'BASE TABLE'
 ORDER BY t.table_name, c.ordinal_position;
     `)
-    console.log('\n4. Copia el resultado y pégalo aquí para generar los types\n')
+    console.log(
+      '\n4. Copia el resultado y pégalo aquí para generar los types\n'
+    )
     process.exit(1)
   }
 

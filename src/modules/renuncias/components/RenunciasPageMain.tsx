@@ -23,9 +23,7 @@ interface RenunciasPageMainProps {
   isAdmin?: boolean
 }
 
-export function RenunciasPageMain({
-  isAdmin = false,
-}: RenunciasPageMainProps) {
+export function RenunciasPageMain({ isAdmin = false }: RenunciasPageMainProps) {
   const {
     renuncias,
     cargando,
@@ -38,7 +36,8 @@ export function RenunciasPageMain({
   } = useRenunciasList()
 
   // Modal state
-  const [renunciaDevolucion, setRenunciaDevolucion] = useState<RenunciaConInfo | null>(null)
+  const [renunciaDevolucion, setRenunciaDevolucion] =
+    useState<RenunciaConInfo | null>(null)
 
   // ==========================================
   // LOADING
@@ -50,12 +49,12 @@ export function RenunciasPageMain({
           <div className={styles.loading.container}>
             <div className={styles.loading.headerSkeleton} />
             <div className={styles.loading.metricsGrid}>
-              {[1, 2, 3, 4].map((i) => (
+              {[1, 2, 3, 4].map(i => (
                 <div key={i} className={styles.loading.metricSkeleton} />
               ))}
             </div>
             <div className={styles.loading.filtrosSkeleton} />
-            {[1, 2, 3].map((i) => (
+            {[1, 2, 3].map(i => (
               <div key={i} className={styles.loading.cardSkeleton} />
             ))}
           </div>
@@ -99,16 +98,19 @@ export function RenunciasPageMain({
             </div>
             <h3 className={styles.empty.title}>No hay renuncias registradas</h3>
             <p className={styles.empty.description}>
-              Las renuncias se registran desde el perfil de cliente, en la negociación activa.
+              Las renuncias se registran desde el perfil de cliente, en la
+              negociación activa.
             </p>
           </motion.div>
         ) : (
           <div className={styles.lista.grid}>
-            {renuncias.map((renuncia) => (
+            {renuncias.map(renuncia => (
               <RenunciaCard
                 key={renuncia.id}
                 renuncia={renuncia}
-                onProcesarDevolucion={isAdmin ? setRenunciaDevolucion : undefined}
+                onProcesarDevolucion={
+                  isAdmin ? setRenunciaDevolucion : undefined
+                }
               />
             ))}
           </div>

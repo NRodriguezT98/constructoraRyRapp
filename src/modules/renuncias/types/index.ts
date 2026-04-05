@@ -198,7 +198,10 @@ export interface ValidacionRenuncia {
 // CONSTANTES
 // =====================================================
 
-export const ESTADOS_RENUNCIA: Record<EstadoRenuncia, { label: string; color: string }> = {
+export const ESTADOS_RENUNCIA: Record<
+  EstadoRenuncia,
+  { label: string; color: string }
+> = {
   'Pendiente Devolución': {
     label: 'Pendiente Devolución',
     color: 'yellow',
@@ -225,7 +228,12 @@ export interface ResumenFinanciero {
   totalAbonado: number
   saldoPendiente: number
   porcentajePagado: number
-  descuento: { tipo: string; porcentaje: number; monto: number; motivo: string } | null
+  descuento: {
+    tipo: string
+    porcentaje: number
+    monto: number
+    motivo: string
+  } | null
   retencion: { monto: number; motivo: string } | null
   montoADevolver: number
 }

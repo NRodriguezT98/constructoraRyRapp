@@ -15,7 +15,7 @@ export function formatearFecha(fecha: string): string {
     year: 'numeric',
     hour: 'numeric',
     minute: '2-digit',
-    hour12: true
+    hour12: true,
   })
 }
 
@@ -27,7 +27,7 @@ export function formatearHora(fecha: string): string {
     hour: 'numeric',
     minute: '2-digit',
     second: '2-digit',
-    hour12: true
+    hour12: true,
   })
 }
 
@@ -38,7 +38,7 @@ export function formatearDinero(valor: number): string {
   return new Intl.NumberFormat('es-CO', {
     style: 'currency',
     currency: 'COP',
-    minimumFractionDigits: 0
+    minimumFractionDigits: 0,
   }).format(valor)
 }
 
@@ -47,10 +47,14 @@ export function formatearDinero(valor: number): string {
  */
 export function getAccionLabel(accion: string): string {
   switch (accion) {
-    case 'CREATE': return 'Creación'
-    case 'UPDATE': return 'Actualización'
-    case 'DELETE': return 'Eliminación'
-    default: return accion
+    case 'CREATE':
+      return 'Creación'
+    case 'UPDATE':
+      return 'Actualización'
+    case 'DELETE':
+      return 'Eliminación'
+    default:
+      return accion
   }
 }
 
@@ -61,39 +65,39 @@ export function getTipoOperacionLabel(tipoOperacion: string): string {
   // Mapeo de tipos de operación a labels legibles
   const labels: Record<string, string> = {
     // Documentos
-    'reemplazo_archivo_admin': 'Reemplazo de Archivo (Admin)',
-    'subida_documento': 'Subida de Documento',
-    'edicion_metadata': 'Edición de Metadatos',
-    'eliminacion_documento': 'Eliminación de Documento',
-    'nueva_version': 'Nueva Versión',
+    reemplazo_archivo_admin: 'Reemplazo de Archivo (Admin)',
+    subida_documento: 'Subida de Documento',
+    edicion_metadata: 'Edición de Metadatos',
+    eliminacion_documento: 'Eliminación de Documento',
+    nueva_version: 'Nueva Versión',
 
     // Proyectos
-    'creacion_proyecto': 'Creación de Proyecto',
-    'actualizacion_proyecto': 'Actualización de Proyecto',
-    'cierre_proyecto': 'Cierre de Proyecto',
+    creacion_proyecto: 'Creación de Proyecto',
+    actualizacion_proyecto: 'Actualización de Proyecto',
+    cierre_proyecto: 'Cierre de Proyecto',
 
     // Viviendas
-    'asignacion_vivienda': 'Asignación de Vivienda',
-    'liberacion_vivienda': 'Liberación de Vivienda',
-    'cambio_estado': 'Cambio de Estado',
+    asignacion_vivienda: 'Asignación de Vivienda',
+    liberacion_vivienda: 'Liberación de Vivienda',
+    cambio_estado: 'Cambio de Estado',
 
     // Clientes
-    'registro_cliente': 'Registro de Cliente',
-    'actualizacion_datos': 'Actualización de Datos',
+    registro_cliente: 'Registro de Cliente',
+    actualizacion_datos: 'Actualización de Datos',
 
     // Negociaciones
-    'inicio_negociacion': 'Inicio de Negociación',
-    'cambio_estado_negociacion': 'Cambio de Estado',
-    'firma_contrato': 'Firma de Contrato',
+    inicio_negociacion: 'Inicio de Negociación',
+    cambio_estado_negociacion: 'Cambio de Estado',
+    firma_contrato: 'Firma de Contrato',
 
     // Abonos
-    'registro_abono': 'Registro de Abono',
-    'anulacion_abono': 'Anulación de Abono',
+    registro_abono: 'Registro de Abono',
+    anulacion_abono: 'Anulación de Abono',
 
     // Usuarios
-    'cambio_rol': 'Cambio de Rol',
-    'activacion_usuario': 'Activación de Usuario',
-    'desactivacion_usuario': 'Desactivación de Usuario'
+    cambio_rol: 'Cambio de Rol',
+    activacion_usuario: 'Activación de Usuario',
+    desactivacion_usuario: 'Desactivación de Usuario',
   }
 
   // Si existe un label específico, retornarlo

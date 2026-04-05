@@ -23,7 +23,10 @@ import { formatDateShort } from '@/lib/utils/date.utils'
 import { logger } from '@/lib/utils/logger'
 import type { Cliente } from '@/modules/clientes/types'
 
-import { generarReportePDF, type DatosReportePDF } from '../services/pdf-negociacion.service'
+import {
+  generarReportePDF,
+  type DatosReportePDF,
+} from '../services/pdf-negociacion.service'
 
 // ============================================
 // TYPES
@@ -86,7 +89,15 @@ export function useGenerarReportePDF() {
    */
   const generarReporte = useCallback(
     async (props: UseGenerarReportePDFProps) => {
-      const { cliente, negociacion, fuentesPago, abonos, totales, diasDesdeUltimoAbono, generadoPor } = props
+      const {
+        cliente,
+        negociacion,
+        fuentesPago,
+        abonos,
+        totales,
+        diasDesdeUltimoAbono,
+        generadoPor,
+      } = props
 
       setIsGenerating(true)
 
@@ -95,14 +106,16 @@ export function useGenerarReportePDF() {
         const valorBase = negociacion.valor_negociado || 0
         const descuento = negociacion.descuento_aplicado || 0
         const valorFinal = valorBase - descuento
-        const porcentajePagado = valorFinal > 0 ? (totales.totalAbonado / valorFinal) * 100 : 0
+        const porcentajePagado =
+          valorFinal > 0 ? (totales.totalAbonado / valorFinal) * 100 : 0
 
         // Transformar datos al formato del service
         const datosPDF: DatosReportePDF = {
           cliente: {
             nombres: cliente.nombres || '',
             apellidos: cliente.apellidos || '',
-            cedula: `${cliente.tipo_documento}-${cliente.numero_documento}` || 'N/A',
+            cedula:
+              `${cliente.tipo_documento}-${cliente.numero_documento}` || 'N/A',
             telefono: cliente.telefono || undefined,
             email: cliente.email || undefined,
           },
@@ -120,18 +133,21 @@ export function useGenerarReportePDF() {
             saldoPendiente: totales.saldoPendiente,
             porcentajePagado,
             estado: negociacion.estado,
-            fechaInicio: negociacion.fecha_inicio ? formatDateShort(negociacion.fecha_inicio) : undefined,
+            fechaInicio: negociacion.fecha_inicio
+              ? formatDateShort(negociacion.fecha_inicio)
+              : undefined,
             diasDesdeUltimoAbono,
           },
-          fuentesPago: fuentesPago.map((f) => ({
+          fuentesPago: fuentesPago.map(f => ({
             tipo: f.tipo,
             monto: f.monto,
             entidad: f.entidad,
             referencia: f.numero_referencia,
             montoRecibido: f.monto_recibido || 0,
-            porcentajePagado: f.monto > 0 ? ((f.monto_recibido || 0) / f.monto) * 100 : 0,
+            porcentajePagado:
+              f.monto > 0 ? ((f.monto_recibido || 0) / f.monto) * 100 : 0,
           })),
-          abonos: abonos.map((a) => ({
+          abonos: abonos.map(a => ({
             fecha: formatDateShort(a.fecha_abono),
             fuente: 'N/A', // TODO: agregar relación fuente en abono
             monto: a.monto,

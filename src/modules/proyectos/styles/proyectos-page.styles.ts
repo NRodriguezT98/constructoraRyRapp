@@ -105,7 +105,8 @@ export const proyectosPageStyles = {
       'group relative inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 border-2 border-green-400 dark:border-green-600 text-white text-xs font-semibold shadow-lg shadow-green-500/30 cursor-pointer',
     pillIcon: 'text-base leading-none',
     pillLabel: 'leading-none',
-    pillCheck: 'w-4 h-4 flex items-center justify-center rounded-full bg-white/30 text-white text-xs font-bold',
+    pillCheck:
+      'w-4 h-4 flex items-center justify-center rounded-full bg-white/30 text-white text-xs font-bold',
 
     // Footer
     footer:

@@ -10,7 +10,7 @@ const client = new Client({
   database: 'postgres',
   user: 'postgres.ndnqpfjnxqfwjqjcnjwz',
   password: 'RyR2025@constructora',
-  ssl: { rejectUnauthorized: false }
+  ssl: { rejectUnauthorized: false },
 })
 
 async function diagnosticar() {
@@ -103,11 +103,12 @@ async function diagnosticar() {
       SELECT * FROM vista_documentos_pendientes_fuentes LIMIT 5
     `)
     if (vista.rows.length === 0) {
-      console.log('❌ Vista vacía - No hay documentos pendientes según criterios')
+      console.log(
+        '❌ Vista vacía - No hay documentos pendientes según criterios'
+      )
     } else {
       console.table(vista.rows)
     }
-
   } catch (error) {
     console.error('❌ Error:', error.message)
   } finally {

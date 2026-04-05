@@ -77,18 +77,18 @@ export function FormularioClienteContainer({
     <>
       {/* Loading Modal mientras carga datos de edición */}
       {mostrarLoading && (
-        <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-md p-4'>
-          <div className='relative w-full max-w-md rounded-2xl bg-white dark:bg-gray-900 p-8 shadow-2xl'>
+        <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-md'>
+          <div className='relative w-full max-w-md rounded-2xl bg-white p-8 shadow-2xl dark:bg-gray-900'>
             <div className='flex flex-col items-center gap-4'>
               <div className='relative'>
-                <div className='w-16 h-16 border-4 border-cyan-200 dark:border-cyan-900 rounded-full' />
-                <div className='absolute inset-0 w-16 h-16 border-4 border-t-cyan-600 dark:border-t-cyan-400 rounded-full animate-spin' />
+                <div className='h-16 w-16 rounded-full border-4 border-cyan-200 dark:border-cyan-900' />
+                <div className='absolute inset-0 h-16 w-16 animate-spin rounded-full border-4 border-t-cyan-600 dark:border-t-cyan-400' />
               </div>
               <div className='text-center'>
                 <p className='text-base font-semibold text-gray-900 dark:text-gray-100'>
                   Cargando datos del cliente...
                 </p>
-                <p className='text-sm text-gray-500 dark:text-gray-400 mt-1'>
+                <p className='mt-1 text-sm text-gray-500 dark:text-gray-400'>
                   Espera un momento
                 </p>
               </div>
@@ -103,23 +103,23 @@ export function FormularioClienteContainer({
           isOpen={modalAbierto}
           onClose={handleIntentarCerrar}
           formData={formData}
-        errors={errors}
-        isSubmitting={isSubmitting || isPending}
-        esEdicion={esEdicion}
-        hayCambios={hayCambios}
-        cargandoDatos={cargandoCliente}
-        onSubmit={handleSubmit}
-        onChange={handleChange}
-        proyectos={proyectos}
-        viviendas={viviendas}
-        cargandoProyectos={cargandoProyectos}
-        cargandoViviendas={cargandoViviendas}
-        onProyectoChange={handleProyectoChange}
-        onViviendaChange={handleViviendaChange}
-        validarStep0={validarStep0}
-        validarStep1={validarStep1}
-        validarStep2={validarStep2}
-        validarStep3={validarStep3}
+          errors={errors}
+          isSubmitting={isSubmitting || isPending}
+          esEdicion={esEdicion}
+          hayCambios={hayCambios}
+          cargandoDatos={cargandoCliente}
+          onSubmit={handleSubmit}
+          onChange={handleChange}
+          proyectos={proyectos}
+          viviendas={viviendas}
+          cargandoProyectos={cargandoProyectos}
+          cargandoViviendas={cargandoViviendas}
+          onProyectoChange={handleProyectoChange}
+          onViviendaChange={handleViviendaChange}
+          validarStep0={validarStep0}
+          validarStep1={validarStep1}
+          validarStep2={validarStep2}
+          validarStep3={validarStep3}
         />
       )}
 
@@ -142,15 +142,15 @@ export function FormularioClienteContainer({
         isOpen={mostrarDescarte}
         onClose={() => setMostrarDescarte(false)}
         onConfirm={confirmarDescartarCambios}
-        title="⚠️ ¿Descartar cambios?"
+        title='⚠️ ¿Descartar cambios?'
         message={
           `Tienes ${cambiosDetectados.length} cambio${cambiosDetectados.length > 1 ? 's' : ''} sin guardar.\n\n` +
           'Si sales ahora, se perderán todas las modificaciones realizadas.\n\n' +
           '¿Quieres continuar editando o prefieres descartar los cambios?'
         }
-        confirmText="Descartar Cambios"
-        cancelText="Continuar Editando"
-        variant="danger"
+        confirmText='Descartar Cambios'
+        cancelText='Continuar Editando'
+        variant='danger'
       />
     </>
   )

@@ -41,12 +41,15 @@ async function verificarUsuarioContador() {
   }
 
   // Verificar si hay auth.users
-  const { data: authUsers, error: authError } = await supabase.auth.admin.listUsers()
+  const { data: authUsers, error: authError } =
+    await supabase.auth.admin.listUsers()
 
   if (authError) {
     console.error('\n❌ Error listando auth.users:', authError.message)
   } else {
-    console.log(`\n🔐 Total usuarios en auth.users: ${authUsers?.users?.length || 0}`)
+    console.log(
+      `\n🔐 Total usuarios en auth.users: ${authUsers?.users?.length || 0}`
+    )
   }
 }
 

@@ -39,42 +39,54 @@ class HistorialClienteService {
       ] = await Promise.all([
         supabase
           .from('audit_log')
-          .select('id,tabla,accion,registro_id,fecha_evento,usuario_id,datos_anteriores,datos_nuevos,cambios_especificos,metadata,modulo')
+          .select(
+            'id,tabla,accion,registro_id,fecha_evento,usuario_id,datos_anteriores,datos_nuevos,cambios_especificos,metadata,modulo'
+          )
           .eq('tabla', 'clientes')
           .eq('registro_id', clienteId)
           .order('fecha_evento', { ascending: false }),
 
         supabase
           .from('audit_log')
-          .select('id,tabla,accion,registro_id,fecha_evento,usuario_id,datos_anteriores,datos_nuevos,cambios_especificos,metadata,modulo')
+          .select(
+            'id,tabla,accion,registro_id,fecha_evento,usuario_id,datos_anteriores,datos_nuevos,cambios_especificos,metadata,modulo'
+          )
           .eq('tabla', 'negociaciones')
           .contains('metadata', { cliente_id: clienteId })
           .order('fecha_evento', { ascending: false }),
 
         supabase
           .from('audit_log')
-          .select('id,tabla,accion,registro_id,fecha_evento,usuario_id,datos_anteriores,datos_nuevos,cambios_especificos,metadata,modulo')
+          .select(
+            'id,tabla,accion,registro_id,fecha_evento,usuario_id,datos_anteriores,datos_nuevos,cambios_especificos,metadata,modulo'
+          )
           .eq('tabla', 'abonos_historial')
           .contains('metadata', { cliente_id: clienteId })
           .order('fecha_evento', { ascending: false }),
 
         supabase
           .from('audit_log')
-          .select('id,tabla,accion,registro_id,fecha_evento,usuario_id,datos_anteriores,datos_nuevos,cambios_especificos,metadata,modulo')
+          .select(
+            'id,tabla,accion,registro_id,fecha_evento,usuario_id,datos_anteriores,datos_nuevos,cambios_especificos,metadata,modulo'
+          )
           .eq('tabla', 'renuncias')
           .contains('metadata', { cliente_id: clienteId })
           .order('fecha_evento', { ascending: false }),
 
         supabase
           .from('audit_log')
-          .select('id,tabla,accion,registro_id,fecha_evento,usuario_id,datos_anteriores,datos_nuevos,cambios_especificos,metadata,modulo')
+          .select(
+            'id,tabla,accion,registro_id,fecha_evento,usuario_id,datos_anteriores,datos_nuevos,cambios_especificos,metadata,modulo'
+          )
           .eq('tabla', 'intereses')
           .contains('metadata', { cliente_id: clienteId })
           .order('fecha_evento', { ascending: false }),
 
         supabase
           .from('audit_log')
-          .select('id,tabla,accion,registro_id,fecha_evento,usuario_id,datos_anteriores,datos_nuevos,cambios_especificos,metadata,modulo')
+          .select(
+            'id,tabla,accion,registro_id,fecha_evento,usuario_id,datos_anteriores,datos_nuevos,cambios_especificos,metadata,modulo'
+          )
           .eq('tabla', 'documentos_cliente')
           .contains('metadata', { cliente_id: clienteId })
           .order('fecha_evento', { ascending: false }),
@@ -92,11 +104,21 @@ class HistorialClienteService {
 
       // Ordenar y limitar
       const eventosOrdenados = todosEventos
-        .sort((a, b) => new Date(b.fecha_evento).getTime() - new Date(a.fecha_evento).getTime())
+        .sort(
+          (a, b) =>
+            new Date(b.fecha_evento).getTime() -
+            new Date(a.fecha_evento).getTime()
+        )
         .slice(0, limit)
 
       // ✅ PASO 2: Obtener IDs únicos de usuarios
-      const usuarioIds = [...new Set(eventosOrdenados.map(e => e.usuario_id).filter((id): id is string => Boolean(id)))]
+      const usuarioIds = [
+        ...new Set(
+          eventosOrdenados
+            .map(e => e.usuario_id)
+            .filter((id): id is string => Boolean(id))
+        ),
+      ]
 
       // ✅ PASO 3: Obtener datos de usuarios en UN SOLO QUERY
       const { data: usuarios } = await supabase
@@ -105,17 +127,16 @@ class HistorialClienteService {
         .in('id', usuarioIds)
 
       // Crear map para lookup rápido
-      const usuariosMap = new Map(
-        (usuarios || []).map(u => [u.id, u])
-      )
+      const usuariosMap = new Map((usuarios || []).map(u => [u.id, u]))
 
       // ✅ PASO 4: Mapear eventos con datos de usuarios
-      return eventosOrdenados.map((evento) => {
+      return eventosOrdenados.map(evento => {
         const usuario = usuariosMap.get(evento.usuario_id ?? '')
 
         // Construir nombre completo (nombres + apellidos)
         const nombreCompleto = usuario
-          ? [usuario.nombres, usuario.apellidos].filter(Boolean).join(' ') || null
+          ? [usuario.nombres, usuario.apellidos].filter(Boolean).join(' ') ||
+            null
           : null
 
         return {
@@ -136,8 +157,13 @@ class HistorialClienteService {
         }
       }) as unknown as EventoHistorialCliente[]
     } catch (error) {
-      const mensaje = error instanceof Error ? error.message : 'Error desconocido'
-      logger.error('❌ [CLIENTES] Error obteniendo historial del cliente:', mensaje, error)
+      const mensaje =
+        error instanceof Error ? error.message : 'Error desconocido'
+      logger.error(
+        '❌ [CLIENTES] Error obteniendo historial del cliente:',
+        mensaje,
+        error
+      )
       return []
     }
   }
@@ -158,7 +184,9 @@ class HistorialClienteService {
     try {
       let query = supabase
         .from('audit_log')
-        .select('id,tabla,accion,registro_id,fecha_evento,usuario_id,datos_anteriores,datos_nuevos,cambios_especificos,metadata,modulo')
+        .select(
+          'id,tabla,accion,registro_id,fecha_evento,usuario_id,datos_anteriores,datos_nuevos,cambios_especificos,metadata,modulo'
+        )
         .eq('tabla', tabla)
 
       if (tabla === 'clientes') {
@@ -174,7 +202,13 @@ class HistorialClienteService {
       if (error) throw error
 
       // Obtener usuarios
-      const usuarioIds = [...new Set((eventos || []).map(e => e.usuario_id).filter((id): id is string => Boolean(id)))]
+      const usuarioIds = [
+        ...new Set(
+          (eventos || [])
+            .map(e => e.usuario_id)
+            .filter((id): id is string => Boolean(id))
+        ),
+      ]
       const { data: usuarios } = await supabase
         .from('usuarios')
         .select('id,email,nombres,rol')
@@ -182,7 +216,7 @@ class HistorialClienteService {
 
       const usuariosMap = new Map((usuarios || []).map(u => [u.id, u]))
 
-      return (eventos || []).map((evento) => {
+      return (eventos || []).map(evento => {
         const usuario = usuariosMap.get(evento.usuario_id ?? '')
         return {
           id: evento.id,
@@ -201,8 +235,13 @@ class HistorialClienteService {
         }
       }) as unknown as EventoHistorialCliente[]
     } catch (error) {
-      const mensaje = error instanceof Error ? error.message : 'Error desconocido'
-      logger.error('❌ [CLIENTES] Error obteniendo eventos por tipo:', mensaje, error)
+      const mensaje =
+        error instanceof Error ? error.message : 'Error desconocido'
+      logger.error(
+        '❌ [CLIENTES] Error obteniendo eventos por tipo:',
+        mensaje,
+        error
+      )
       return []
     }
   }
@@ -220,19 +259,19 @@ class HistorialClienteService {
       const stats = {
         total_eventos: eventos.length,
         eventos_por_tipo: {
-          clientes: eventos.filter((e) => e.tabla === 'clientes').length,
-          negociaciones: eventos.filter((e) => e.tabla === 'negociaciones')
+          clientes: eventos.filter(e => e.tabla === 'clientes').length,
+          negociaciones: eventos.filter(e => e.tabla === 'negociaciones')
             .length,
-          abonos: eventos.filter((e) => e.tabla === 'abonos_historial').length,
-          renuncias: eventos.filter((e) => e.tabla === 'renuncias').length,
-          intereses: eventos.filter((e) => e.tabla === 'intereses').length,
-          documentos: eventos.filter((e) => e.tabla === 'documentos_cliente')
+          abonos: eventos.filter(e => e.tabla === 'abonos_historial').length,
+          renuncias: eventos.filter(e => e.tabla === 'renuncias').length,
+          intereses: eventos.filter(e => e.tabla === 'intereses').length,
+          documentos: eventos.filter(e => e.tabla === 'documentos_cliente')
             .length,
         },
         eventos_por_accion: {
-          creaciones: eventos.filter((e) => e.accion === 'CREATE').length,
-          actualizaciones: eventos.filter((e) => e.accion === 'UPDATE').length,
-          eliminaciones: eventos.filter((e) => e.accion === 'DELETE').length,
+          creaciones: eventos.filter(e => e.accion === 'CREATE').length,
+          actualizaciones: eventos.filter(e => e.accion === 'UPDATE').length,
+          eliminaciones: eventos.filter(e => e.accion === 'DELETE').length,
         },
         primer_evento: eventos[eventos.length - 1]?.fecha_evento || null,
         ultimo_evento: eventos[0]?.fecha_evento || null,
@@ -240,8 +279,13 @@ class HistorialClienteService {
 
       return stats
     } catch (error) {
-      const mensaje = error instanceof Error ? error.message : 'Error desconocido'
-      logger.error('❌ [CLIENTES] Error obteniendo estadísticas:', mensaje, error)
+      const mensaje =
+        error instanceof Error ? error.message : 'Error desconocido'
+      logger.error(
+        '❌ [CLIENTES] Error obteniendo estadísticas:',
+        mensaje,
+        error
+      )
       return null
     }
   }
@@ -262,7 +306,7 @@ class HistorialClienteService {
 
       const terminoLower = termino.toLowerCase()
 
-      return eventos.filter((evento) => {
+      return eventos.filter(evento => {
         // Buscar en usuario_email, usuario_nombres, metadata
         const textoEvento = JSON.stringify({
           usuario_email: evento.usuario_email,
@@ -274,7 +318,8 @@ class HistorialClienteService {
         return textoEvento.includes(terminoLower)
       })
     } catch (error) {
-      const mensaje = error instanceof Error ? error.message : 'Error desconocido'
+      const mensaje =
+        error instanceof Error ? error.message : 'Error desconocido'
       logger.error('❌ [CLIENTES] Error buscando eventos:', mensaje, error)
       return []
     }

@@ -5,7 +5,7 @@
  *
  * ✅ PROTEGIDA POR MIDDLEWARE
  * - Middleware ya validó autenticación
- * - Middleware ya validó permisos (Administrador, Gerente)
+ * - Middleware ya validó permisos (Administrador, Gerencia)
  *
  * Ruta: /renuncias/[consecutivo]
  * Ejemplo: /renuncias/REN-2025-001
@@ -20,5 +20,7 @@ interface PageProps {
 export default async function RenunciaExpedientePage({ params }: PageProps) {
   const { consecutivo } = await params
 
-  return <ExpedienteRenunciaPage consecutivo={decodeURIComponent(consecutivo)} />
+  return (
+    <ExpedienteRenunciaPage consecutivo={decodeURIComponent(consecutivo)} />
+  )
 }

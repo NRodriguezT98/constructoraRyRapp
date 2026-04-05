@@ -14,13 +14,15 @@ interface AccordionWizardSummaryProps {
  * Muestra "valor1 · valor2 · valor3" en una línea.
  */
 export function AccordionWizardSummary({ items }: AccordionWizardSummaryProps) {
-  const visibleItems = items.filter((item) => item.value != null && item.value !== '')
+  const visibleItems = items.filter(
+    item => item.value != null && item.value !== ''
+  )
 
   if (visibleItems.length === 0) return null
 
   return (
     <motion.p
-      className="text-sm text-gray-500 dark:text-gray-400 truncate max-w-[85%]"
+      className='max-w-[85%] truncate text-sm text-gray-500 dark:text-gray-400'
       initial={summaryAppearAnim.initial}
       animate={summaryAppearAnim.animate}
       transition={summaryAppearAnim.transition}
@@ -28,7 +30,7 @@ export function AccordionWizardSummary({ items }: AccordionWizardSummaryProps) {
       {visibleItems.map((item, i) => (
         <span key={item.label}>
           {i > 0 ? (
-            <span className="mx-1.5 text-gray-300 dark:text-gray-600">·</span>
+            <span className='mx-1.5 text-gray-300 dark:text-gray-600'>·</span>
           ) : null}
           {String(item.value)}
         </span>

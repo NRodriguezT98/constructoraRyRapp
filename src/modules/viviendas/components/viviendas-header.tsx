@@ -39,9 +39,9 @@ export function ViviendasHeader({ totalViviendas }: ViviendasHeaderProps) {
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className='flex items-center gap-2'>
             <span className={styles.header.badge}>
-              <Home className="w-3.5 h-3.5" />
+              <Home className='h-3.5 w-3.5' />
               {totalViviendas} Viviendas
             </span>
             <motion.button
@@ -50,7 +50,7 @@ export function ViviendasHeader({ totalViviendas }: ViviendasHeaderProps) {
               onClick={handleNuevaVivienda}
               className={styles.header.button}
             >
-              <Plus className="w-4 h-4" />
+              <Plus className='h-4 w-4' />
               Nueva Vivienda
             </motion.button>
           </div>

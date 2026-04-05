@@ -8,7 +8,17 @@
 'use client'
 
 import { type ColumnDef } from '@tanstack/react-table'
-import { Archive, ArchiveRestore, Building2, CheckCircle2, Clock, Edit2, Eye, MapPin, Trash2 } from 'lucide-react'
+import {
+  Archive,
+  ArchiveRestore,
+  Building2,
+  CheckCircle2,
+  Clock,
+  Edit2,
+  Eye,
+  MapPin,
+  Trash2,
+} from 'lucide-react'
 
 import { DataTable } from '@/shared/components/table/DataTable'
 import { cn } from '@/shared/utils/helpers'
@@ -50,19 +60,28 @@ export function ProyectosTabla({
         <div className={styles.statsGrid.container}>
           <div className={styles.statsGrid.cell}>
             <div className={styles.statsGrid.label}>Disp.</div>
-            <div className={cn(styles.statsGrid.value, styles.statsGrid.disponibles)}>
+            <div
+              className={cn(
+                styles.statsGrid.value,
+                styles.statsGrid.disponibles
+              )}
+            >
               {stats.totalDisponibles}
             </div>
           </div>
           <div className={styles.statsGrid.cell}>
             <div className={styles.statsGrid.label}>Asig.</div>
-            <div className={cn(styles.statsGrid.value, styles.statsGrid.asignadas)}>
+            <div
+              className={cn(styles.statsGrid.value, styles.statsGrid.asignadas)}
+            >
               {stats.totalAsignadas}
             </div>
           </div>
           <div className={styles.statsGrid.cell}>
             <div className={styles.statsGrid.label}>Vend.</div>
-            <div className={cn(styles.statsGrid.value, styles.statsGrid.vendidas)}>
+            <div
+              className={cn(styles.statsGrid.value, styles.statsGrid.vendidas)}
+            >
               {stats.totalVendidas}
             </div>
           </div>
@@ -79,7 +98,7 @@ export function ProyectosTabla({
               className={styles.progressBar.fillAsignadas}
               style={{
                 left: `${stats.porcentajeVendidas}%`,
-                width: `${stats.porcentajeAsignadas}%`
+                width: `${stats.porcentajeAsignadas}%`,
               }}
             />
           </div>
@@ -101,13 +120,11 @@ export function ProyectosTabla({
           <div className={styles.iconContainer}>
             <Building2 className={styles.iconSvg} />
           </div>
-          <div className="flex flex-col gap-1">
-            <span className={styles.nombre.text}>
-              {row.original.nombre}
-            </span>
+          <div className='flex flex-col gap-1'>
+            <span className={styles.nombre.text}>{row.original.nombre}</span>
             {row.original.archivado && (
-              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-amber-100 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800 text-xs font-medium text-amber-700 dark:text-amber-400 w-fit">
-                <Archive className="w-3 h-3" />
+              <span className='inline-flex w-fit items-center gap-1 rounded-md border border-amber-200 bg-amber-100 px-1.5 py-0.5 text-xs font-medium text-amber-700 dark:border-amber-800 dark:bg-amber-900/30 dark:text-amber-400'>
+                <Archive className='h-3 w-3' />
                 Archivado
               </span>
             )}
@@ -122,7 +139,9 @@ export function ProyectosTabla({
       cell: ({ row }) => (
         <div className={styles.ubicacion.container}>
           <MapPin className={styles.ubicacion.icon} />
-          <span className={styles.ubicacion.text}>{row.original.ubicacion}</span>
+          <span className={styles.ubicacion.text}>
+            {row.original.ubicacion}
+          </span>
         </div>
       ),
     },
@@ -132,21 +151,24 @@ export function ProyectosTabla({
       size: 140,
       cell: ({ row }) => {
         const estado = row.original.estado
-        const esEnProceso = estado === 'en_proceso' || estado === 'en_construccion'
+        const esEnProceso =
+          estado === 'en_proceso' || estado === 'en_construccion'
         const esCompletado = estado === 'completado'
 
         return (
           <div className={styles.cell.center}>
-            <div className={cn(
-              styles.badge.base,
-              esCompletado && styles.badge.completado,
-              esEnProceso && styles.badge.enProceso,
-              !esEnProceso && !esCompletado && styles.badge.default
-            )}>
+            <div
+              className={cn(
+                styles.badge.base,
+                esCompletado && styles.badge.completado,
+                esEnProceso && styles.badge.enProceso,
+                !esEnProceso && !esCompletado && styles.badge.default
+              )}
+            >
               {esCompletado ? (
-                <CheckCircle2 className="w-3 h-3 flex-shrink-0" />
+                <CheckCircle2 className='h-3 w-3 flex-shrink-0' />
               ) : esEnProceso ? (
-                <Clock className="w-3 h-3 flex-shrink-0" />
+                <Clock className='h-3 w-3 flex-shrink-0' />
               ) : null}
               <span>{formatearEstadoProyecto(estado)}</span>
             </div>
@@ -184,8 +206,11 @@ export function ProyectosTabla({
           {onView && (
             <button
               onClick={() => onView(row.original)}
-              className={cn(styles.actions.button.base, styles.actions.button.view)}
-              title="Ver detalles"
+              className={cn(
+                styles.actions.button.base,
+                styles.actions.button.view
+              )}
+              title='Ver detalles'
             >
               <Eye className={styles.actions.icon} />
             </button>
@@ -193,38 +218,50 @@ export function ProyectosTabla({
           {canEdit && onEdit && (
             <button
               onClick={() => onEdit(row.original)}
-              className={cn(styles.actions.button.base, styles.actions.button.edit)}
-              title="Editar proyecto"
+              className={cn(
+                styles.actions.button.base,
+                styles.actions.button.edit
+              )}
+              title='Editar proyecto'
             >
               <Edit2 className={styles.actions.icon} />
             </button>
           )}
-          {row.original.archivado ? (
-            canEdit && onRestore && (
-              <button
-                onClick={() => onRestore(row.original.id)}
-                className={cn(styles.actions.button.base, 'text-green-600 hover:bg-green-50 dark:text-green-400 dark:hover:bg-green-900/20')}
-                title="Restaurar proyecto"
-              >
-                <ArchiveRestore className={styles.actions.icon} />
-              </button>
-            )
-          ) : (
-            canEdit && onArchive && (
-              <button
-                onClick={() => onArchive(row.original.id)}
-                className={cn(styles.actions.button.base, 'text-amber-600 hover:bg-amber-50 dark:text-amber-400 dark:hover:bg-amber-900/20')}
-                title="Archivar proyecto"
-              >
-                <Archive className={styles.actions.icon} />
-              </button>
-            )
-          )}
+          {row.original.archivado
+            ? canEdit &&
+              onRestore && (
+                <button
+                  onClick={() => onRestore(row.original.id)}
+                  className={cn(
+                    styles.actions.button.base,
+                    'text-green-600 hover:bg-green-50 dark:text-green-400 dark:hover:bg-green-900/20'
+                  )}
+                  title='Restaurar proyecto'
+                >
+                  <ArchiveRestore className={styles.actions.icon} />
+                </button>
+              )
+            : canEdit &&
+              onArchive && (
+                <button
+                  onClick={() => onArchive(row.original.id)}
+                  className={cn(
+                    styles.actions.button.base,
+                    'text-amber-600 hover:bg-amber-50 dark:text-amber-400 dark:hover:bg-amber-900/20'
+                  )}
+                  title='Archivar proyecto'
+                >
+                  <Archive className={styles.actions.icon} />
+                </button>
+              )}
           {canDelete && onDelete && (
             <button
               onClick={() => onDelete(row.original.id)}
-              className={cn(styles.actions.button.base, styles.actions.button.delete)}
-              title="Eliminar proyecto"
+              className={cn(
+                styles.actions.button.base,
+                styles.actions.button.delete
+              )}
+              title='Eliminar proyecto'
             >
               <Trash2 className={styles.actions.icon} />
             </button>
@@ -238,7 +275,7 @@ export function ProyectosTabla({
     <DataTable
       columns={columns}
       data={proyectos}
-      gradientColor="green"
+      gradientColor='green'
       pageSize={10}
       showPagination={true}
     />

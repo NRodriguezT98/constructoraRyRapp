@@ -34,34 +34,40 @@ export const FuentePagoCardMetrics = memo(function FuentePagoCardMetrics({
   colores,
 }: FuentePagoCardMetricsProps) {
   return (
-    <div className="space-y-2">
+    <div className='space-y-2'>
       {/* Línea 2: Métricas financieras */}
-      <div className="flex items-center justify-between text-sm">
-        <div className="flex items-center gap-4">
+      <div className='flex items-center justify-between text-sm'>
+        <div className='flex items-center gap-4'>
           <div>
-            <span className="text-gray-500 dark:text-gray-400 text-xs">Total:</span>
-            <span className="ml-1 font-bold text-gray-900 dark:text-white">
+            <span className='text-xs text-gray-500 dark:text-gray-400'>
+              Total:
+            </span>
+            <span className='ml-1 font-bold text-gray-900 dark:text-white'>
               {formatCurrency(metricas.total)}
             </span>
           </div>
           <div>
-            <span className="text-gray-500 dark:text-gray-400 text-xs">Abonado:</span>
-            <span className="ml-1 font-semibold text-green-600 dark:text-green-400">
+            <span className='text-xs text-gray-500 dark:text-gray-400'>
+              Abonado:
+            </span>
+            <span className='ml-1 font-semibold text-green-600 dark:text-green-400'>
               {formatCurrency(metricas.abonado)}
             </span>
           </div>
           <div>
-            <span className="text-gray-500 dark:text-gray-400 text-xs">Pendiente:</span>
-            <span className="ml-1 font-semibold text-orange-600 dark:text-orange-400">
+            <span className='text-xs text-gray-500 dark:text-gray-400'>
+              Pendiente:
+            </span>
+            <span className='ml-1 font-semibold text-orange-600 dark:text-orange-400'>
               {formatCurrency(metricas.pendiente)}
             </span>
           </div>
         </div>
 
         {/* Porcentaje */}
-        <div className="text-right">
+        <div className='text-right'>
           <span
-            className="text-sm font-bold"
+            className='text-sm font-bold'
             style={{ color: colores.gradientFrom }}
           >
             {metricas.porcentajePagado}%
@@ -70,9 +76,9 @@ export const FuentePagoCardMetrics = memo(function FuentePagoCardMetrics({
       </div>
 
       {/* Línea 3: Barra de progreso */}
-      <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+      <div className='h-2 w-full rounded-full bg-gray-200 dark:bg-gray-700'>
         <div
-          className="h-2 rounded-full transition-all duration-500"
+          className='h-2 rounded-full transition-all duration-500'
           style={{
             width: `${metricas.porcentajePagado}%`,
             background: `linear-gradient(to right, ${colores.gradientFrom}, ${colores.gradientTo})`,

@@ -15,7 +15,7 @@ const MOTIVOS_VALIDOS = [
   'Otro',
 ] as const
 
-type MotivoAnulacion = typeof MOTIVOS_VALIDOS[number]
+type MotivoAnulacion = (typeof MOTIVOS_VALIDOS)[number]
 
 /**
  * PATCH /api/abonos/anular
@@ -41,7 +41,10 @@ export async function PATCH(request: NextRequest) {
   }
 
   if (!(await isAdmin())) {
-    return NextResponse.json({ error: 'Acceso denegado. Solo el Administrador puede anular abonos.' }, { status: 403 })
+    return NextResponse.json(
+      { error: 'Acceso denegado. Solo el Administrador puede anular abonos.' },
+      { status: 403 }
+    )
   }
 
   // 2. Parsear y validar body
@@ -62,17 +65,28 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json({ error: 'Falta abono_id' }, { status: 400 })
   }
 
-  if (!motivo_categoria || !(MOTIVOS_VALIDOS as readonly string[]).includes(motivo_categoria)) {
+  if (
+    !motivo_categoria ||
+    !(MOTIVOS_VALIDOS as readonly string[]).includes(motivo_categoria)
+  ) {
     return NextResponse.json(
-      { error: `motivo_categoria inválido. Valores permitidos: ${MOTIVOS_VALIDOS.join(', ')}` },
-      { status: 400 },
+      {
+        error: `motivo_categoria inválido. Valores permitidos: ${MOTIVOS_VALIDOS.join(', ')}`,
+      },
+      { status: 400 }
     )
   }
 
-  if (motivo_categoria === 'Otro' && (!motivo_detalle || !motivo_detalle.trim())) {
+  if (
+    motivo_categoria === 'Otro' &&
+    (!motivo_detalle || !motivo_detalle.trim())
+  ) {
     return NextResponse.json(
-      { error: 'Cuando motivo_categoria es "Otro", motivo_detalle es obligatorio' },
-      { status: 400 },
+      {
+        error:
+          'Cuando motivo_categoria es "Otro", motivo_detalle es obligatorio',
+      },
+      { status: 400 }
     )
   }
 
@@ -84,14 +98,20 @@ export async function PATCH(request: NextRequest) {
     .single()
 
   if (adminError || !adminData) {
-    return NextResponse.json({ error: 'No se pudo recuperar el perfil del administrador' }, { status: 500 })
+    return NextResponse.json(
+      { error: 'No se pudo recuperar el perfil del administrador' },
+      { status: 500 }
+    )
   }
-  const anulado_por_nombre = `${adminData.nombres} ${adminData.apellidos}`.trim()
+  const anulado_por_nombre =
+    `${adminData.nombres} ${adminData.apellidos}`.trim()
 
   // 4. Obtener el abono (verificar existencia y estado)
   const { data: abono, error: fetchError } = await supabaseAdmin
     .from('abonos_historial')
-    .select('id, comprobante_url, negociacion_id, fuente_pago_id, monto, estado, numero_recibo')
+    .select(
+      'id, comprobante_url, negociacion_id, fuente_pago_id, monto, estado, numero_recibo'
+    )
     .eq('id', abono_id)
     .maybeSingle()
 
@@ -100,7 +120,10 @@ export async function PATCH(request: NextRequest) {
   }
 
   if (abono.estado === 'Anulado') {
-    return NextResponse.json({ error: 'El abono ya se encuentra anulado' }, { status: 409 })
+    return NextResponse.json(
+      { error: 'El abono ya se encuentra anulado' },
+      { status: 409 }
+    )
   }
 
   // 5. Soft delete — UPDATE estado = 'Anulado' (trigger recalculará saldos)
@@ -121,7 +144,7 @@ export async function PATCH(request: NextRequest) {
   if (updateError) {
     return NextResponse.json(
       { error: 'Error al anular el abono: ' + updateError.message },
-      { status: 500 },
+      { status: 500 }
     )
   }
 
@@ -159,7 +182,11 @@ export async function PATCH(request: NextRequest) {
       modulo: 'abonos',
     })
     .then(({ error: auditError }) => {
-      if (auditError) logger.error('⚠️ audit_log insert failed (non-blocking):', auditError.message)
+      if (auditError)
+        logger.error(
+          '⚠️ audit_log insert failed (non-blocking):',
+          auditError.message
+        )
     })
 
   return NextResponse.json({

@@ -38,7 +38,7 @@ async function verificarStorageViviendas() {
       .from('documentos-viviendas')
       .list(doc.url_storage.split('/').slice(0, -1).join('/'), {
         limit: 100,
-        search: doc.url_storage.split('/').pop()
+        search: doc.url_storage.split('/').pop(),
       })
 
     // Verificar en documentos-proyectos
@@ -46,7 +46,7 @@ async function verificarStorageViviendas() {
       .from('documentos-proyectos')
       .list(doc.url_storage.split('/').slice(0, -1).join('/'), {
         limit: 100,
-        search: doc.url_storage.split('/').pop()
+        search: doc.url_storage.split('/').pop(),
       })
 
     const enViviendas = exists1 && exists1.length > 0

@@ -1,4 +1,8 @@
-export { DetalleRenunciaModal, ProcesarDevolucionModal, RegistrarRenunciaModal } from './modals'
+export {
+  DetalleRenunciaModal,
+  ProcesarDevolucionModal,
+  RegistrarRenunciaModal,
+} from './modals'
 export { RenunciaCard } from './RenunciaCard'
 export { RenunciasFiltrosPremium } from './RenunciasFiltrosPremium'
 export { RenunciasHeaderPremium } from './RenunciasHeaderPremium'

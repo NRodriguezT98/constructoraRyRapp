@@ -12,7 +12,10 @@ async function actualizarDocumentoCarta() {
   const { data: docs, error } = await supabase
     .from('documentos_cliente')
     .select('*')
-    .eq('titulo', 'Carta de Aprobación Subsidio Caja Compensación - A2 Juan carlos')
+    .eq(
+      'titulo',
+      'Carta de Aprobación Subsidio Caja Compensación - A2 Juan carlos'
+    )
 
   if (error) {
     console.error('❌ Error:', error)
@@ -35,7 +38,7 @@ async function actualizarDocumentoCarta() {
   // Actualizar metadata
   const nuevoMetadata = {
     ...doc.metadata,
-    entidad: 'COMFANDI'
+    entidad: 'COMFANDI',
   }
 
   console.log('🔧 Actualizando metadata con entidad: COMFANDI...\n')

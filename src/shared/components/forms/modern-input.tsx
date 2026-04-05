@@ -12,7 +12,8 @@ import type { InputHTMLAttributes } from 'react'
 import { motion } from 'framer-motion'
 import type { LucideIcon } from 'lucide-react'
 
-export interface ModernInputProps extends InputHTMLAttributes<HTMLInputElement> {
+export interface ModernInputProps
+  extends InputHTMLAttributes<HTMLInputElement> {
   icon: LucideIcon
   label: string
   error?: string

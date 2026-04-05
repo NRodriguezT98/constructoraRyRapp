@@ -21,7 +21,10 @@ export function formatCurrency(value: number): string {
   // Asegurar que sea positivo (evitar valores negativos problemáticos)
   const safeValue = Math.max(0, value)
 
-  return new Intl.NumberFormat(FORMATO_MONEDA.locale, FORMATO_MONEDA.options).format(safeValue)
+  return new Intl.NumberFormat(
+    FORMATO_MONEDA.locale,
+    FORMATO_MONEDA.options
+  ).format(safeValue)
 }
 
 /**
@@ -147,7 +150,10 @@ export const validarNomenclatura = (valor: string): string | null => {
  * Valida área (lote o construida)
  * Formato: números con hasta 2 decimales (Ej: 61.00)
  */
-export const validarArea = (valor: number | string, tipo: 'lote' | 'construida'): string | null => {
+export const validarArea = (
+  valor: number | string,
+  tipo: 'lote' | 'construida'
+): string | null => {
   const valorStr = String(valor)
 
   if (!valorStr || valorStr.trim() === '') {
@@ -248,7 +254,10 @@ export function generarLabelVivienda(
 /**
  * Valida un archivo PDF
  */
-export function validarArchivoPDF(file: File): { valido: boolean; mensaje?: string } {
+export function validarArchivoPDF(file: File): {
+  valido: boolean
+  mensaje?: string
+} {
   // Validar tipo
   if (!file.type.includes('pdf')) {
     return { valido: false, mensaje: 'El archivo debe ser un PDF' }
@@ -270,10 +279,10 @@ export function validarArchivoPDF(file: File): { valido: boolean; mensaje?: stri
 /**
  * Filtra manzanas que tienen viviendas disponibles
  */
-export function filtrarManzanasDisponibles<T extends { viviendas_disponibles: number }>(
-  manzanas: T[]
-): T[] {
-  return manzanas.filter((m) => m.viviendas_disponibles > 0)
+export function filtrarManzanasDisponibles<
+  T extends { viviendas_disponibles: number },
+>(manzanas: T[]): T[] {
+  return manzanas.filter(m => m.viviendas_disponibles > 0)
 }
 
 /**

@@ -11,7 +11,11 @@ import type { TipoFuentePago } from '@/modules/clientes/types'
 import { obtenerMonto } from '@/modules/clientes/utils/fuentes-pago-campos.utils'
 import { useTiposFuentesConCampos } from '@/modules/configuracion/hooks/useTiposFuentesConCampos'
 
-import type { FuentePagoConfig, FuentePagoConfiguracion, FuentePagoErrores } from '../types'
+import type {
+  FuentePagoConfig,
+  FuentePagoConfiguracion,
+  FuentePagoErrores,
+} from '../types'
 
 interface Paso2FuentesPagoProps {
   // 🔥 Estado de carga
@@ -28,7 +32,10 @@ interface Paso2FuentesPagoProps {
   manzana?: string
   numeroVivienda?: string
   onFuenteEnabledChange: (tipo: TipoFuentePago, enabled: boolean) => void
-  onFuenteConfigChange: (tipo: TipoFuentePago, config: FuentePagoConfig | null) => void
+  onFuenteConfigChange: (
+    tipo: TipoFuentePago,
+    config: FuentePagoConfig | null
+  ) => void
 }
 
 export function Paso2FuentesPago({
@@ -51,14 +58,31 @@ export function Paso2FuentesPago({
   // REACT QUERY: CARGAR CONFIGURACIÓN DE CAMPOS
   // ============================================
 
-  const { data: tiposConCampos = [], isLoading: cargandoCampos } = useTiposFuentesConCampos()
+  const { data: tiposConCampos = [], isLoading: cargandoCampos } =
+    useTiposFuentesConCampos()
 
   // Paleta de colores para la barra de distribución (por índice)
   const FUENTE_COLORS = [
-    { bar: 'bg-blue-500', dot: 'bg-blue-500', text: 'text-blue-600 dark:text-blue-400' },
-    { bar: 'bg-green-500', dot: 'bg-green-500', text: 'text-green-600 dark:text-green-400' },
-    { bar: 'bg-amber-500', dot: 'bg-amber-500', text: 'text-amber-600 dark:text-amber-400' },
-    { bar: 'bg-purple-500', dot: 'bg-purple-500', text: 'text-purple-600 dark:text-purple-400' },
+    {
+      bar: 'bg-blue-500',
+      dot: 'bg-blue-500',
+      text: 'text-blue-600 dark:text-blue-400',
+    },
+    {
+      bar: 'bg-green-500',
+      dot: 'bg-green-500',
+      text: 'text-green-600 dark:text-green-400',
+    },
+    {
+      bar: 'bg-amber-500',
+      dot: 'bg-amber-500',
+      text: 'text-amber-600 dark:text-amber-400',
+    },
+    {
+      bar: 'bg-purple-500',
+      dot: 'bg-purple-500',
+      text: 'text-purple-600 dark:text-purple-400',
+    },
   ]
 
   // Fuentes activas con su monto calculado para la barra de distribución
@@ -75,13 +99,20 @@ export function Paso2FuentesPago({
   }, [fuentes, tiposConCampos])
 
   // ✅ Memoizar callbacks para evitar re-renders innecesarios
-  const handleEnabledChange = useCallback((tipo: TipoFuentePago) => {
-    return (enabled: boolean) => onFuenteEnabledChange(tipo, enabled)
-  }, [onFuenteEnabledChange])
+  const handleEnabledChange = useCallback(
+    (tipo: TipoFuentePago) => {
+      return (enabled: boolean) => onFuenteEnabledChange(tipo, enabled)
+    },
+    [onFuenteEnabledChange]
+  )
 
-  const handleConfigChange = useCallback((tipo: TipoFuentePago) => {
-    return (config: FuentePagoConfig | null) => onFuenteConfigChange(tipo, config)
-  }, [onFuenteConfigChange])
+  const handleConfigChange = useCallback(
+    (tipo: TipoFuentePago) => {
+      return (config: FuentePagoConfig | null) =>
+        onFuenteConfigChange(tipo, config)
+    },
+    [onFuenteConfigChange]
+  )
 
   return (
     <motion.div
@@ -89,21 +120,28 @@ export function Paso2FuentesPago({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -10 }}
       transition={{ duration: 0.25 }}
-      className="space-y-3"
+      className='space-y-3'
     >
       {/* Información Guía */}
-      <div className="backdrop-blur-xl bg-gradient-to-br from-purple-50/90 to-indigo-50/90 dark:from-purple-950/30 dark:to-indigo-950/30 border border-purple-200/50 dark:border-purple-800/50 rounded-lg p-2.5 shadow-lg">
-        <p className="text-xs text-purple-800 dark:text-purple-200 leading-relaxed">
-          <span className="font-bold">💰 Instrucciones:</span> Activa y configura las <span className="font-semibold">fuentes de pago</span> que el cliente utilizará para cubrir el valor total de la vivienda. La suma de todas las fuentes debe ser exactamente <span className="font-semibold">${valorTotal.toLocaleString('es-CO')}</span>. Puedes combinar cuota inicial, crédito hipotecario y subsidios.
+      <div className='rounded-lg border border-purple-200/50 bg-gradient-to-br from-purple-50/90 to-indigo-50/90 p-2.5 shadow-lg backdrop-blur-xl dark:border-purple-800/50 dark:from-purple-950/30 dark:to-indigo-950/30'>
+        <p className='text-xs leading-relaxed text-purple-800 dark:text-purple-200'>
+          <span className='font-bold'>💰 Instrucciones:</span> Activa y
+          configura las <span className='font-semibold'>fuentes de pago</span>{' '}
+          que el cliente utilizará para cubrir el valor total de la vivienda. La
+          suma de todas las fuentes debe ser exactamente{' '}
+          <span className='font-semibold'>
+            ${valorTotal.toLocaleString('es-CO')}
+          </span>
+          . Puedes combinar cuota inicial, crédito hipotecario y subsidios.
         </p>
       </div>
 
       {/* 🔥 Estado de carga de fuentes desde BD */}
       {(cargandoTipos || cargandoCampos) && (
-        <div className="backdrop-blur-xl bg-white/80 dark:bg-gray-800/80 border border-cyan-200/50 dark:border-cyan-800/50 rounded-lg p-4 shadow-lg">
-          <div className="flex items-center gap-3">
-            <div className="w-5 h-5 border-3 border-cyan-500 border-t-transparent rounded-full animate-spin" />
-            <p className="text-sm text-cyan-700 dark:text-cyan-300 font-medium">
+        <div className='rounded-lg border border-cyan-200/50 bg-white/80 p-4 shadow-lg backdrop-blur-xl dark:border-cyan-800/50 dark:bg-gray-800/80'>
+          <div className='flex items-center gap-3'>
+            <div className='border-3 h-5 w-5 animate-spin rounded-full border-cyan-500 border-t-transparent' />
+            <p className='text-sm font-medium text-cyan-700 dark:text-cyan-300'>
               {cargandoTipos
                 ? 'Cargando fuentes de pago activas desde el sistema...'
                 : 'Cargando configuración de campos dinámicos...'}
@@ -114,33 +152,39 @@ export function Paso2FuentesPago({
 
       {/* 🔥 Lista dinámica de fuentes */}
       {!cargandoTipos && fuentes.length === 0 && (
-        <div className="backdrop-blur-xl bg-yellow-50/90 dark:bg-yellow-950/30 border border-yellow-200/50 dark:border-yellow-800/50 rounded-lg p-4 shadow-lg">
-          <p className="text-sm text-yellow-800 dark:text-yellow-200">
-            ⚠️ No hay fuentes de pago activas configuradas. Contacta al administrador.
+        <div className='rounded-lg border border-yellow-200/50 bg-yellow-50/90 p-4 shadow-lg backdrop-blur-xl dark:border-yellow-800/50 dark:bg-yellow-950/30'>
+          <p className='text-sm text-yellow-800 dark:text-yellow-200'>
+            ⚠️ No hay fuentes de pago activas configuradas. Contacta al
+            administrador.
           </p>
         </div>
       )}
 
       {!cargandoTipos && !cargandoCampos && fuentes.length > 0 && (
-        <div className="space-y-3">
+        <div className='space-y-3'>
           {/* Barra de distribución de financiamiento */}
           {fuentesConMonto.length > 0 && (
-            <div className="backdrop-blur-xl bg-white/80 dark:bg-gray-800/80 border border-gray-200/50 dark:border-gray-700/50 rounded-lg p-3 shadow-lg">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-semibold text-gray-600 dark:text-gray-400">Distribución del financiamiento</span>
-                <span className={`text-xs font-bold ${
-                  sumaCierra
-                    ? 'text-green-600 dark:text-green-400'
-                    : totalFuentes > 0
-                    ? 'text-red-500 dark:text-red-400'
-                    : 'text-gray-400'
-                }`}>
-                  ${totalFuentes.toLocaleString('es-CO')} / ${valorTotal.toLocaleString('es-CO')}
+            <div className='rounded-lg border border-gray-200/50 bg-white/80 p-3 shadow-lg backdrop-blur-xl dark:border-gray-700/50 dark:bg-gray-800/80'>
+              <div className='mb-2 flex items-center justify-between'>
+                <span className='text-xs font-semibold text-gray-600 dark:text-gray-400'>
+                  Distribución del financiamiento
+                </span>
+                <span
+                  className={`text-xs font-bold ${
+                    sumaCierra
+                      ? 'text-green-600 dark:text-green-400'
+                      : totalFuentes > 0
+                        ? 'text-red-500 dark:text-red-400'
+                        : 'text-gray-400'
+                  }`}
+                >
+                  ${totalFuentes.toLocaleString('es-CO')} / $
+                  {valorTotal.toLocaleString('es-CO')}
                   {sumaCierra ? ' ✓' : ''}
                 </span>
               </div>
               {/* Segmentos proporcionales */}
-              <div className="h-2.5 bg-gray-100 dark:bg-gray-900/60 rounded-full overflow-hidden flex gap-0.5">
+              <div className='flex h-2.5 gap-0.5 overflow-hidden rounded-full bg-gray-100 dark:bg-gray-900/60'>
                 {fuentesConMonto.map((f, i) => (
                   <motion.div
                     key={f.tipo}
@@ -152,12 +196,18 @@ export function Paso2FuentesPago({
                 ))}
               </div>
               {/* Leyenda */}
-              <div className="flex flex-wrap gap-x-4 gap-y-0.5 mt-2">
+              <div className='mt-2 flex flex-wrap gap-x-4 gap-y-0.5'>
                 {fuentesConMonto.map((f, i) => (
-                  <div key={f.tipo} className="flex items-center gap-1.5">
-                    <div className={`w-2 h-2 rounded-sm flex-shrink-0 ${FUENTE_COLORS[i % FUENTE_COLORS.length].dot}`} />
-                    <span className="text-[10px] text-gray-500 dark:text-gray-400">{f.tipo}</span>
-                    <span className={`text-[10px] font-bold ${FUENTE_COLORS[i % FUENTE_COLORS.length].text}`}>
+                  <div key={f.tipo} className='flex items-center gap-1.5'>
+                    <div
+                      className={`h-2 w-2 flex-shrink-0 rounded-sm ${FUENTE_COLORS[i % FUENTE_COLORS.length].dot}`}
+                    />
+                    <span className='text-[10px] text-gray-500 dark:text-gray-400'>
+                      {f.tipo}
+                    </span>
+                    <span
+                      className={`text-[10px] font-bold ${FUENTE_COLORS[i % FUENTE_COLORS.length].text}`}
+                    >
                       {((f.monto / valorTotal) * 100).toFixed(1)}%
                     </span>
                   </div>
@@ -166,10 +216,13 @@ export function Paso2FuentesPago({
             </div>
           )}
 
-          {fuentes.map((fuente) => {
+          {fuentes.map(fuente => {
             // ✅ Obtener configuración de campos para este tipo
-            const tipoConCampos = tiposConCampos.find(t => t.nombre === fuente.tipo)
-            const camposConfig = tipoConCampos?.configuracion_campos?.campos || []
+            const tipoConCampos = tiposConCampos.find(
+              t => t.nombre === fuente.tipo
+            )
+            const camposConfig =
+              tipoConCampos?.configuracion_campos?.campos || []
 
             return (
               <FuentePagoCard
@@ -179,7 +232,9 @@ export function Paso2FuentesPago({
                 camposConfig={camposConfig} // ← Pasar configuración dinámica
                 enabled={fuente.enabled}
                 valorTotal={valorTotal}
-                errores={mostrarErrores ? erroresFuentes?.[fuente.tipo] : undefined}
+                errores={
+                  mostrarErrores ? erroresFuentes?.[fuente.tipo] : undefined
+                }
                 clienteId={clienteId}
                 clienteNombre={clienteNombre}
                 manzana={manzana}
@@ -193,42 +248,46 @@ export function Paso2FuentesPago({
       )}
 
       <div
-        className={`rounded-xl border-2 p-4 transition-all backdrop-blur-xl ${
+        className={`rounded-xl border-2 p-4 backdrop-blur-xl transition-all ${
           sumaCierra
-            ? 'border-green-500 bg-gradient-to-br from-green-50/90 to-emerald-50/90 dark:from-green-950/30 dark:to-emerald-950/30 shadow-lg shadow-green-500/10'
+            ? 'border-green-500 bg-gradient-to-br from-green-50/90 to-emerald-50/90 shadow-lg shadow-green-500/10 dark:from-green-950/30 dark:to-emerald-950/30'
             : totalFuentes > 0
-              ? 'border-red-500 bg-gradient-to-br from-red-50/90 to-rose-50/90 dark:from-red-950/30 dark:to-rose-950/30 shadow-lg shadow-red-500/10'
-              : 'border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-800/80 shadow-xl'
+              ? 'border-red-500 bg-gradient-to-br from-red-50/90 to-rose-50/90 shadow-lg shadow-red-500/10 dark:from-red-950/30 dark:to-rose-950/30'
+              : 'border-gray-200 bg-white/80 shadow-xl dark:border-gray-700 dark:bg-gray-800/80'
         }`}
       >
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
-              <DollarSign className="w-4 h-4" />
+        <div className='space-y-3'>
+          <div className='flex items-center justify-between'>
+            <span className='flex items-center gap-2 text-xs font-semibold text-gray-700 dark:text-gray-300'>
+              <DollarSign className='h-4 w-4' />
               Total Fuentes de Pago
             </span>
-            <span className={`text-lg font-bold ${
-              sumaCierra
-                ? 'bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 bg-clip-text text-transparent'
-                : totalFuentes > 0
-                  ? 'bg-gradient-to-r from-red-600 via-rose-600 to-pink-600 bg-clip-text text-transparent'
-                  : 'text-gray-600 dark:text-gray-400'
-            }`}>
+            <span
+              className={`text-lg font-bold ${
+                sumaCierra
+                  ? 'bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 bg-clip-text text-transparent'
+                  : totalFuentes > 0
+                    ? 'bg-gradient-to-r from-red-600 via-rose-600 to-pink-600 bg-clip-text text-transparent'
+                    : 'text-gray-600 dark:text-gray-400'
+              }`}
+            >
               ${totalFuentes.toLocaleString('es-CO')}
             </span>
           </div>
 
-          <div className="h-px bg-gradient-to-r from-transparent via-gray-300 dark:via-gray-600 to-transparent" />
+          <div className='h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent dark:via-gray-600' />
 
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-gray-700 dark:text-gray-300">
+          <div className='flex items-center justify-between'>
+            <span className='text-xs font-semibold text-gray-700 dark:text-gray-300'>
               Diferencia
             </span>
-            <span className={`text-lg font-bold ${
-              sumaCierra
-                ? 'bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 bg-clip-text text-transparent'
-                : 'bg-gradient-to-r from-red-600 via-rose-600 to-pink-600 bg-clip-text text-transparent'
-            }`}>
+            <span
+              className={`text-lg font-bold ${
+                sumaCierra
+                  ? 'bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 bg-clip-text text-transparent'
+                  : 'bg-gradient-to-r from-red-600 via-rose-600 to-pink-600 bg-clip-text text-transparent'
+              }`}
+            >
               ${diferencia.toLocaleString('es-CO')}
             </span>
           </div>
@@ -236,28 +295,34 @@ export function Paso2FuentesPago({
           <motion.div
             initial={{ opacity: 0, y: -5 }}
             animate={{ opacity: 1, y: 0 }}
-            className={sumaCierra ? s.alert.success : totalFuentes > 0 ? s.alert.error : s.alert.info}
+            className={
+              sumaCierra
+                ? s.alert.success
+                : totalFuentes > 0
+                  ? s.alert.error
+                  : s.alert.info
+            }
           >
             {sumaCierra ? (
               <>
-                <CheckCircle2 className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
+                <CheckCircle2 className='mt-0.5 h-5 w-5 flex-shrink-0 text-green-600 dark:text-green-400' />
                 <div>
-                  <p className="text-sm font-bold text-green-800 dark:text-green-200">
+                  <p className='text-sm font-bold text-green-800 dark:text-green-200'>
                     ¡Perfecto! Las fuentes cubren exactamente el valor total
                   </p>
-                  <p className="text-xs text-green-700 dark:text-green-300 mt-1">
+                  <p className='mt-1 text-xs text-green-700 dark:text-green-300'>
                     Puedes continuar al siguiente paso
                   </p>
                 </div>
               </>
             ) : totalFuentes > 0 ? (
               <>
-                <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
+                <AlertCircle className='mt-0.5 h-5 w-5 flex-shrink-0 text-red-600 dark:text-red-400' />
                 <div>
-                  <p className="text-sm font-bold text-red-800 dark:text-red-200">
+                  <p className='text-sm font-bold text-red-800 dark:text-red-200'>
                     Las fuentes no coinciden con el valor total
                   </p>
-                  <p className="text-xs text-red-700 dark:text-red-300 mt-1">
+                  <p className='mt-1 text-xs text-red-700 dark:text-red-300'>
                     {diferencia > 0
                       ? `Falta cubrir $${diferencia.toLocaleString('es-CO')}`
                       : `Sobra $${Math.abs(diferencia).toLocaleString('es-CO')}`}
@@ -266,13 +331,14 @@ export function Paso2FuentesPago({
               </>
             ) : (
               <>
-                <Info className="w-5 h-5 text-cyan-600 dark:text-cyan-400 flex-shrink-0 mt-0.5" />
+                <Info className='mt-0.5 h-5 w-5 flex-shrink-0 text-cyan-600 dark:text-cyan-400' />
                 <div>
-                  <p className="text-sm font-bold text-cyan-800 dark:text-cyan-200">
+                  <p className='text-sm font-bold text-cyan-800 dark:text-cyan-200'>
                     Activa y configura las fuentes de pago necesarias
                   </p>
-                  <p className="text-xs text-cyan-700 dark:text-cyan-300 mt-1">
-                    La suma debe ser exactamente ${valorTotal.toLocaleString('es-CO')}
+                  <p className='mt-1 text-xs text-cyan-700 dark:text-cyan-300'>
+                    La suma debe ser exactamente $
+                    {valorTotal.toLocaleString('es-CO')}
                   </p>
                 </div>
               </>

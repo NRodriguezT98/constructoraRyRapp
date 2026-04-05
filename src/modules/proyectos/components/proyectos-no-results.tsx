@@ -39,22 +39,22 @@ export function ProyectosNoResults({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
-      className="flex flex-col items-center justify-center py-20 px-6"
+      className='flex flex-col items-center justify-center px-6 py-20'
     >
-      <div className="relative mb-6">
-        <div className="absolute inset-0 animate-ping opacity-20">
-          <div className="w-20 h-20 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500" />
+      <div className='relative mb-6'>
+        <div className='absolute inset-0 animate-ping opacity-20'>
+          <div className='h-20 w-20 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500' />
         </div>
-        <div className="relative w-20 h-20 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 flex items-center justify-center shadow-2xl shadow-blue-500/50">
-          <FilterX className="w-10 h-10 text-white" />
+        <div className='relative flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 shadow-2xl shadow-blue-500/50'>
+          <FilterX className='h-10 w-10 text-white' />
         </div>
       </div>
 
-      <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+      <h3 className='mb-2 text-xl font-bold text-gray-900 dark:text-white'>
         No hay resultados
       </h3>
 
-      <p className="text-sm text-gray-600 dark:text-gray-400 text-center max-w-md mb-6">
+      <p className='mb-6 max-w-md text-center text-sm text-gray-600 dark:text-gray-400'>
         {getMessage()}
       </p>
 
@@ -62,14 +62,14 @@ export function ProyectosNoResults({
         onClick={onLimpiarFiltros}
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
-        className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-gradient-to-r from-blue-500 to-indigo-500 text-white text-sm font-semibold shadow-lg shadow-blue-500/30 hover:shadow-2xl hover:shadow-blue-500/50 transition-all"
+        className='inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-blue-500 to-indigo-500 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-blue-500/30 transition-all hover:shadow-2xl hover:shadow-blue-500/50'
       >
-        <Search className="w-4 h-4" />
+        <Search className='h-4 w-4' />
         Limpiar filtros y ver todos
       </motion.button>
 
-      <div className="mt-8 flex items-center gap-2 text-xs text-gray-500 dark:text-gray-500">
-        <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
+      <div className='mt-8 flex items-center gap-2 text-xs text-gray-500 dark:text-gray-500'>
+        <div className='h-1.5 w-1.5 animate-pulse rounded-full bg-blue-500' />
         <span>Intenta ajustar los filtros de búsqueda</span>
       </div>
     </motion.div>

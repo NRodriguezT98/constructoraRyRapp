@@ -1,13 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import {
-    Calendar,
-    FileText,
-    Home,
-    MapPin,
-    TrendingUp
-} from 'lucide-react'
+import { Calendar, FileText, Home, MapPin, TrendingUp } from 'lucide-react'
 
 import type { Proyecto } from '@/modules/proyectos/types'
 import { formatDate } from '@/shared/utils/format'
@@ -44,21 +38,15 @@ export function GeneralTab({ proyecto }: GeneralTabProps) {
               <TrendingUp className={styles.progressClasses.icon} />
             </div>
             <div className={styles.progressClasses.titleSection}>
-              <p className={styles.progressClasses.title}>
-                Progreso de Ventas
-              </p>
+              <p className={styles.progressClasses.title}>Progreso de Ventas</p>
               <p className={styles.progressClasses.subtitle}>
                 Calculado según viviendas vendidas
               </p>
             </div>
           </div>
           <div className={styles.progressClasses.rightSection}>
-            <p className={styles.progressClasses.percentage}>
-              0%
-            </p>
-            <p className={styles.progressClasses.percentageLabel}>
-              Vendidas
-            </p>
+            <p className={styles.progressClasses.percentage}>0%</p>
+            <p className={styles.progressClasses.percentageLabel}>Vendidas</p>
           </div>
         </div>
 
@@ -70,7 +58,9 @@ export function GeneralTab({ proyecto }: GeneralTabProps) {
             animate={{ width: '0%' }}
             transition={{ duration: 1.5, ease: 'easeOut', delay: 0.1 }}
           >
-            <div className={`${styles.progressClasses.shimmer} animate-shimmer`}></div>
+            <div
+              className={`${styles.progressClasses.shimmer} animate-shimmer`}
+            ></div>
           </motion.div>
         </div>
 
@@ -80,9 +70,7 @@ export function GeneralTab({ proyecto }: GeneralTabProps) {
             <div className={styles.progressClasses.milestoneValue}>
               {totalViviendas}
             </div>
-            <div className={styles.progressClasses.milestoneLabel}>
-              Total
-            </div>
+            <div className={styles.progressClasses.milestoneLabel}>Total</div>
           </div>
           <div className={styles.progressClasses.milestone}>
             <div className={styles.progressClasses.milestoneValue}>
@@ -169,7 +157,9 @@ export function GeneralTab({ proyecto }: GeneralTabProps) {
             <div>
               <p className={styles.infoCardClasses.label}>Fecha de Inicio</p>
               <p className={styles.infoCardClasses.value}>
-                {proyecto.fechaInicio ? formatDate(proyecto.fechaInicio) : 'No especificado'}
+                {proyecto.fechaInicio
+                  ? formatDate(proyecto.fechaInicio)
+                  : 'No especificado'}
               </p>
             </div>
             <div className='mt-2'>
@@ -177,7 +167,9 @@ export function GeneralTab({ proyecto }: GeneralTabProps) {
                 Fecha de Finalización Estimada
               </p>
               <p className={styles.infoCardClasses.value}>
-                {proyecto.fechaFinEstimada ? formatDate(proyecto.fechaFinEstimada) : 'No especificado'}
+                {proyecto.fechaFinEstimada
+                  ? formatDate(proyecto.fechaFinEstimada)
+                  : 'No especificado'}
               </p>
             </div>
           </div>
@@ -185,33 +177,42 @@ export function GeneralTab({ proyecto }: GeneralTabProps) {
       </div>
 
       {/* Grid de Manzanas - Adaptativo según cantidad */}
-      <div className={cn(
-        'grid gap-3',
-        // 1 manzana: Ocupa todo el ancho disponible
-        proyecto.manzanas.length === 1 && 'grid-cols-1',
-        // 2 manzanas: 2 columnas
-        proyecto.manzanas.length === 2 && 'grid-cols-1 sm:grid-cols-2',
-        // 3 manzanas: 3 columnas
-        proyecto.manzanas.length === 3 && 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3',
-        // 4 manzanas: 4 columnas en línea
-        proyecto.manzanas.length === 4 && 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4',
-        // 5 manzanas: 5 columnas en línea
-        proyecto.manzanas.length === 5 && 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5',
-        // 6 manzanas: 2 filas de 3 (3+3)
-        proyecto.manzanas.length === 6 && 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3',
-        // 7-8 manzanas: 2 filas de 4 (4+3 o 4+4)
-        (proyecto.manzanas.length === 7 || proyecto.manzanas.length === 8) && 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4',
-        // 9+ manzanas: Grid flexible de 3-5 columnas
-        proyecto.manzanas.length >= 9 && 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5'
-      )}>
+      <div
+        className={cn(
+          'grid gap-3',
+          // 1 manzana: Ocupa todo el ancho disponible
+          proyecto.manzanas.length === 1 && 'grid-cols-1',
+          // 2 manzanas: 2 columnas
+          proyecto.manzanas.length === 2 && 'grid-cols-1 sm:grid-cols-2',
+          // 3 manzanas: 3 columnas
+          proyecto.manzanas.length === 3 &&
+            'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3',
+          // 4 manzanas: 4 columnas en línea
+          proyecto.manzanas.length === 4 &&
+            'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4',
+          // 5 manzanas: 5 columnas en línea
+          proyecto.manzanas.length === 5 &&
+            'grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5',
+          // 6 manzanas: 2 filas de 3 (3+3)
+          proyecto.manzanas.length === 6 &&
+            'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3',
+          // 7-8 manzanas: 2 filas de 4 (4+3 o 4+4)
+          (proyecto.manzanas.length === 7 || proyecto.manzanas.length === 8) &&
+            'grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4',
+          // 9+ manzanas: Grid flexible de 3-5 columnas
+          proyecto.manzanas.length >= 9 &&
+            'grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5'
+        )}
+      >
         {proyecto.manzanas.map((manzana, index) => {
           // Calcular estadísticas de viviendas
           const vendidas = manzana.viviendasVendidas || 0
           const asignadas = 0 // TODO: Obtener de BD cuando esté disponible
           const disponibles = manzana.totalViviendas - vendidas - asignadas
-          const porcentajeVendido = manzana.totalViviendas > 0
-            ? Math.round((vendidas / manzana.totalViviendas) * 100)
-            : 0
+          const porcentajeVendido =
+            manzana.totalViviendas > 0
+              ? Math.round((vendidas / manzana.totalViviendas) * 100)
+              : 0
 
           return (
             <motion.div
@@ -219,9 +220,9 @@ export function GeneralTab({ proyecto }: GeneralTabProps) {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
-              className='group relative overflow-hidden rounded-xl backdrop-blur-xl bg-white/80 dark:bg-gray-800/80 border border-gray-200/50 dark:border-gray-700/50 p-3 shadow-lg hover:shadow-2xl transition-all duration-300'
+              className='group relative overflow-hidden rounded-xl border border-gray-200/50 bg-white/80 p-3 shadow-lg backdrop-blur-xl transition-all duration-300 hover:shadow-2xl dark:border-gray-700/50 dark:bg-gray-800/80'
             >
-              <div className='absolute inset-0 bg-gradient-to-br from-green-500/10 to-emerald-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300' />
+              <div className='absolute inset-0 bg-gradient-to-br from-green-500/10 to-emerald-500/10 opacity-0 transition-opacity duration-300 group-hover:opacity-100' />
 
               <div className='relative z-10'>
                 {/* Header compacto */}
@@ -229,33 +230,41 @@ export function GeneralTab({ proyecto }: GeneralTabProps) {
                   <div className='rounded-lg bg-gradient-to-br from-green-500 to-emerald-600 p-1.5 shadow-lg shadow-green-500/50'>
                     <Home className='h-3.5 w-3.5 text-white' />
                   </div>
-                  <h3 className='text-sm font-semibold text-gray-900 dark:text-white flex-1 truncate'>
+                  <h3 className='flex-1 truncate text-sm font-semibold text-gray-900 dark:text-white'>
                     Manzana {manzana.nombre}
                   </h3>
                 </div>
 
                 {/* Estadísticas de Viviendas - Compactas */}
                 <div className='space-y-1.5 text-xs'>
-                  <div className='flex justify-between items-center'>
-                    <span className='text-gray-600 dark:text-gray-400'>Total</span>
+                  <div className='flex items-center justify-between'>
+                    <span className='text-gray-600 dark:text-gray-400'>
+                      Total
+                    </span>
                     <span className='font-bold text-gray-900 dark:text-white'>
                       {manzana.totalViviendas}
                     </span>
                   </div>
-                  <div className='flex justify-between items-center'>
-                    <span className='text-gray-600 dark:text-gray-400'>Disponibles</span>
+                  <div className='flex items-center justify-between'>
+                    <span className='text-gray-600 dark:text-gray-400'>
+                      Disponibles
+                    </span>
                     <span className='font-medium text-blue-600 dark:text-blue-400'>
                       {disponibles}
                     </span>
                   </div>
-                  <div className='flex justify-between items-center'>
-                    <span className='text-gray-600 dark:text-gray-400'>Asignadas</span>
+                  <div className='flex items-center justify-between'>
+                    <span className='text-gray-600 dark:text-gray-400'>
+                      Asignadas
+                    </span>
                     <span className='font-medium text-orange-600 dark:text-orange-400'>
                       {asignadas}
                     </span>
                   </div>
-                  <div className='flex justify-between items-center'>
-                    <span className='text-gray-600 dark:text-gray-400'>Vendidas</span>
+                  <div className='flex items-center justify-between'>
+                    <span className='text-gray-600 dark:text-gray-400'>
+                      Vendidas
+                    </span>
                     <span className='font-medium text-green-600 dark:text-green-400'>
                       {vendidas}
                     </span>
@@ -272,7 +281,11 @@ export function GeneralTab({ proyecto }: GeneralTabProps) {
                     <motion.div
                       initial={{ width: 0 }}
                       animate={{ width: `${porcentajeVendido}%` }}
-                      transition={{ duration: 1, ease: 'easeOut', delay: index * 0.1 + 0.3 }}
+                      transition={{
+                        duration: 1,
+                        ease: 'easeOut',
+                        delay: index * 0.1 + 0.3,
+                      }}
                       className='h-full bg-gradient-to-r from-green-500 to-emerald-600 transition-all duration-300'
                     />
                   </div>

@@ -8,7 +8,10 @@
 import { motion } from 'framer-motion'
 import { UserCheck, UserMinus, UserPlus, Users, UserX } from 'lucide-react'
 
-import { metricasClientesColors, clientesListaStyles as styles } from '../styles/clientes-lista.styles'
+import {
+  metricasClientesColors,
+  clientesListaStyles as styles,
+} from '../styles/clientes-lista.styles'
 
 interface EstadisticasClientesProps {
   total: number
@@ -18,11 +21,36 @@ interface EstadisticasClientesProps {
   renunciaron: number
 }
 
-const STATS_SECUNDARIAS = (interesados: number, activos: number, inactivos: number, renunciaron: number) => [
-  { label: 'Interesados', value: interesados, icon: UserPlus,    colors: metricasClientesColors.interesados },
-  { label: 'Activos',     value: activos,     icon: UserCheck,   colors: metricasClientesColors.activos },
-  { label: 'Renunciaron', value: renunciaron,  icon: UserMinus,   colors: metricasClientesColors.renunciaron },
-  { label: 'Inactivos',   value: inactivos,    icon: UserX,       colors: metricasClientesColors.inactivos },
+const STATS_SECUNDARIAS = (
+  interesados: number,
+  activos: number,
+  inactivos: number,
+  renunciaron: number
+) => [
+  {
+    label: 'Interesados',
+    value: interesados,
+    icon: UserPlus,
+    colors: metricasClientesColors.interesados,
+  },
+  {
+    label: 'Activos',
+    value: activos,
+    icon: UserCheck,
+    colors: metricasClientesColors.activos,
+  },
+  {
+    label: 'Renunciaron',
+    value: renunciaron,
+    icon: UserMinus,
+    colors: metricasClientesColors.renunciaron,
+  },
+  {
+    label: 'Inactivos',
+    value: inactivos,
+    icon: UserX,
+    colors: metricasClientesColors.inactivos,
+  },
 ]
 
 export function EstadisticasClientes({
@@ -32,29 +60,38 @@ export function EstadisticasClientes({
   inactivos,
   renunciaron,
 }: EstadisticasClientesProps) {
-  const secundarias = STATS_SECUNDARIAS(interesados, activos, inactivos, renunciaron)
+  const secundarias = STATS_SECUNDARIAS(
+    interesados,
+    activos,
+    inactivos,
+    renunciaron
+  )
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.1 }}
-      className="grid grid-cols-5 gap-3"
+      className='grid grid-cols-5 gap-3'
     >
       {/* ⭐ MÉTRICA HÉROE: Total Clientes — más grande, más prominente */}
       <motion.div
         whileHover={{ scale: 1.02, y: -4 }}
         transition={{ type: 'spring', stiffness: 300 }}
-        className="col-span-1 group relative overflow-hidden rounded-xl backdrop-blur-xl bg-white/80 dark:bg-gray-800/80 border-2 border-cyan-200 dark:border-cyan-800/60 p-4 shadow-lg hover:shadow-xl hover:shadow-cyan-500/10 transition-all duration-300"
+        className='group relative col-span-1 overflow-hidden rounded-xl border-2 border-cyan-200 bg-white/80 p-4 shadow-lg backdrop-blur-xl transition-all duration-300 hover:shadow-xl hover:shadow-cyan-500/10 dark:border-cyan-800/60 dark:bg-gray-800/80'
       >
-        <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-        <div className="relative z-10 flex items-center gap-3">
-          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center shadow-lg flex-shrink-0">
-            <Users className="w-6 h-6 text-white" />
+        <div className='absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-blue-500/5 opacity-0 transition-opacity duration-300 group-hover:opacity-100' />
+        <div className='relative z-10 flex items-center gap-3'>
+          <div className='flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 shadow-lg'>
+            <Users className='h-6 w-6 text-white' />
           </div>
           <div>
-            <p className="text-3xl font-black text-gray-900 dark:text-white leading-none">{total}</p>
-            <p className="text-xs font-semibold text-cyan-600 dark:text-cyan-400 mt-1">Total Clientes</p>
+            <p className='text-3xl font-black leading-none text-gray-900 dark:text-white'>
+              {total}
+            </p>
+            <p className='mt-1 text-xs font-semibold text-cyan-600 dark:text-cyan-400'>
+              Total Clientes
+            </p>
           </div>
         </div>
       </motion.div>
@@ -70,13 +107,19 @@ export function EstadisticasClientes({
           style={{ transitionDelay: `${(index + 1) * 0.05}s` }}
           className={styles.metricas.card}
         >
-          <div className={`${styles.metricas.cardGlow} bg-gradient-to-br ${stat.colors.glowColor}`} />
+          <div
+            className={`${styles.metricas.cardGlow} bg-gradient-to-br ${stat.colors.glowColor}`}
+          />
           <div className={styles.metricas.content}>
-            <div className={`${styles.metricas.iconCircle} bg-gradient-to-br ${stat.colors.gradient}`}>
+            <div
+              className={`${styles.metricas.iconCircle} bg-gradient-to-br ${stat.colors.gradient}`}
+            >
               <stat.icon className={styles.metricas.icon} />
             </div>
             <div className={styles.metricas.textGroup}>
-              <p className={`${styles.metricas.value} bg-gradient-to-br ${stat.colors.textGradient}`}>
+              <p
+                className={`${styles.metricas.value} bg-gradient-to-br ${stat.colors.textGradient}`}
+              >
                 {stat.value}
               </p>
               <p className={styles.metricas.label}>{stat.label}</p>

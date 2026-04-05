@@ -24,7 +24,7 @@ export function AccionBadge({ accion }: AccionBadgeProps) {
         text-green-700 dark:text-green-400
         font-bold shadow-md text-xs
       `.trim(),
-      label: 'Creación'
+      label: 'Creación',
     },
     UPDATE: {
       icon: Edit3,
@@ -36,7 +36,7 @@ export function AccionBadge({ accion }: AccionBadgeProps) {
         text-blue-700 dark:text-blue-400
         font-bold shadow-md text-xs
       `.trim(),
-      label: 'Actualización'
+      label: 'Actualización',
     },
     DELETE: {
       icon: Trash2,
@@ -48,15 +48,15 @@ export function AccionBadge({ accion }: AccionBadgeProps) {
         text-red-700 dark:text-red-400
         font-bold shadow-md text-xs
       `.trim(),
-      label: 'Eliminación'
-    }
+      label: 'Eliminación',
+    },
   }
 
   const badge = badges[accion as keyof typeof badges]
 
   if (!badge) {
     return (
-      <span className="px-2.5 py-1 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-bold text-xs">
+      <span className='rounded-lg bg-gray-100 px-2.5 py-1 text-xs font-bold text-gray-700 dark:bg-gray-800 dark:text-gray-300'>
         {accion}
       </span>
     )
@@ -66,7 +66,7 @@ export function AccionBadge({ accion }: AccionBadgeProps) {
 
   return (
     <span className={badge.className}>
-      <Icon className="w-3.5 h-3.5" />
+      <Icon className='h-3.5 w-3.5' />
       {badge.label}
     </span>
   )

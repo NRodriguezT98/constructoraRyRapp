@@ -33,16 +33,24 @@ export function AccordionWizardLayout({
         transition={pageEnterAnim.transition}
       >
         {/* Breadcrumbs */}
-        <nav className={styles.breadcrumbs.container} aria-label="Breadcrumb">
+        <nav className={styles.breadcrumbs.container} aria-label='Breadcrumb'>
           {breadcrumbs.map((crumb, i) => {
             const isLast = i === breadcrumbs.length - 1
             return (
-              <span key={crumb.label} className="flex items-center gap-2">
+              <span key={crumb.label} className='flex items-center gap-2'>
                 {i > 0 ? (
-                  <ChevronRight className={`w-4 h-4 ${styles.breadcrumbs.separator}`} />
+                  <ChevronRight
+                    className={`h-4 w-4 ${styles.breadcrumbs.separator}`}
+                  />
                 ) : null}
                 {isLast || !crumb.href ? (
-                  <span className={isLast ? styles.breadcrumbs.current : styles.breadcrumbs.link}>
+                  <span
+                    className={
+                      isLast
+                        ? styles.breadcrumbs.current
+                        : styles.breadcrumbs.link
+                    }
+                  >
                     {crumb.label}
                   </span>
                 ) : (
@@ -56,9 +64,7 @@ export function AccordionWizardLayout({
         </nav>
 
         {/* Wizard sections */}
-        <div className="space-y-3">
-          {children}
-        </div>
+        <div className='space-y-3'>{children}</div>
 
         {/* Submit loading overlay */}
         <AccordionWizardSubmitOverlay

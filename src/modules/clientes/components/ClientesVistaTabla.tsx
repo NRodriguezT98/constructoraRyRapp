@@ -1,0 +1,72 @@
+'use client'
+
+import { motion } from 'framer-motion'
+
+import type { ClienteResumen } from '../types'
+
+import { ClientesTabla } from './ClientesTabla'
+
+interface ClientesVistaTablaProps {
+  clientes: ClienteResumen[]
+  isLoading: boolean
+  isFetching: boolean
+  canEdit: boolean
+  canDelete: boolean
+  onVer: (cliente: ClienteResumen) => void
+  onEditar: (cliente: ClienteResumen) => void
+  onEliminar: (clienteId: string) => void
+}
+
+export function ClientesVistaTabla({
+  clientes,
+  isLoading,
+  isFetching,
+  canEdit,
+  canDelete,
+  onVer,
+  onEditar,
+  onEliminar,
+}: ClientesVistaTablaProps) {
+  if (isLoading && clientes.length === 0) {
+    return (
+      <div className='overflow-hidden rounded-2xl border border-gray-200/50 bg-white/80 shadow-lg backdrop-blur-xl dark:border-gray-700/50 dark:bg-gray-800/80'>
+        <div className='h-12 animate-pulse bg-gradient-to-r from-cyan-500 via-indigo-600 to-purple-600' />
+        <div className='space-y-3 p-4'>
+          {[...Array(5)].map((_, i) => (
+            <div
+              key={i}
+              className='h-16 animate-pulse rounded-lg bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 dark:from-gray-700 dark:via-gray-600 dark:to-gray-700'
+            />
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className='relative'>
+      {isFetching && clientes.length > 0 ? (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className='absolute -top-10 left-0 right-0 z-10 flex items-center justify-center gap-2 rounded-lg border border-cyan-200 bg-cyan-50/80 py-2 backdrop-blur-xl dark:border-cyan-800 dark:bg-cyan-950/20'
+        >
+          <div className='h-4 w-4 animate-spin rounded-full border-2 border-cyan-600 border-t-transparent' />
+          <span className='text-xs font-medium text-cyan-700 dark:text-cyan-400'>
+            Actualizando datos...
+          </span>
+        </motion.div>
+      ) : null}
+
+      <ClientesTabla
+        clientes={clientes}
+        onView={onVer}
+        onEdit={canEdit ? onEditar : undefined}
+        onDelete={canDelete ? onEliminar : undefined}
+        canEdit={canEdit}
+        canDelete={canDelete}
+        initialSorting={[{ id: 'vivienda', desc: false }]}
+      />
+    </div>
+  )
+}

@@ -10,12 +10,7 @@
  * DISEÑO: Compact, Glassmorphism, Premium
  */
 
-import {
-    Building2,
-    CheckCircle2,
-    Clock,
-    XCircle,
-} from 'lucide-react'
+import { Building2, CheckCircle2, Clock, XCircle } from 'lucide-react'
 
 // ============================================
 // ESTADOS CONFIG
@@ -73,7 +68,8 @@ export const viviendaAsignadaTabStyles = {
   header: {
     container: 'flex items-center justify-between mb-3',
     title: 'text-base font-semibold text-gray-900 dark:text-white',
-    detalleTitle: 'text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2',
+    detalleTitle:
+      'text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2',
     detalleIcon: 'w-5 h-5 text-cyan-600 dark:text-cyan-400',
   },
 
@@ -81,7 +77,8 @@ export const viviendaAsignadaTabStyles = {
     outline:
       'inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors',
     info: 'p-1.5 rounded-lg bg-cyan-100 dark:bg-cyan-900/20 text-cyan-600 dark:text-cyan-400 hover:bg-cyan-200 dark:hover:bg-cyan-900/30 transition-colors',
-    secondary: 'inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-cyan-700 dark:text-cyan-300 bg-cyan-50 dark:bg-cyan-900/20 hover:bg-cyan-100 dark:hover:bg-cyan-900/30 rounded-lg transition-colors',
+    secondary:
+      'inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-cyan-700 dark:text-cyan-300 bg-cyan-50 dark:bg-cyan-900/20 hover:bg-cyan-100 dark:hover:bg-cyan-900/30 rounded-lg transition-colors',
   },
 
   empty: {
@@ -95,8 +92,10 @@ export const viviendaAsignadaTabStyles = {
     icon: 'w-8 h-8 text-white',
 
     // Títulos
-    title: 'text-xl font-bold bg-gradient-to-br from-gray-900 via-gray-800 to-cyan-900 dark:from-white dark:via-gray-100 dark:to-cyan-100 bg-clip-text text-transparent',
-    description: 'text-sm text-gray-600 dark:text-gray-400 max-w-2xl mx-auto leading-relaxed',
+    title:
+      'text-xl font-bold bg-gradient-to-br from-gray-900 via-gray-800 to-cyan-900 dark:from-white dark:via-gray-100 dark:to-cyan-100 bg-clip-text text-transparent',
+    description:
+      'text-sm text-gray-600 dark:text-gray-400 max-w-2xl mx-auto leading-relaxed',
 
     // Checklist container
     checklistContainer:
@@ -107,24 +106,30 @@ export const viviendaAsignadaTabStyles = {
     checklistItem: 'flex items-start gap-3',
 
     // Iconos de checklist
-    checklistIconSuccess: 'w-5 h-5 text-emerald-600 dark:text-emerald-400 flex-shrink-0 mt-0.5',
-    checklistIconPending: 'w-5 h-5 text-orange-500 dark:text-orange-400 flex-shrink-0 mt-0.5',
+    checklistIconSuccess:
+      'w-5 h-5 text-emerald-600 dark:text-emerald-400 flex-shrink-0 mt-0.5',
+    checklistIconPending:
+      'w-5 h-5 text-orange-500 dark:text-orange-400 flex-shrink-0 mt-0.5',
 
     // Textos de checklist
-    checklistTextSuccess: 'text-sm font-medium text-gray-700 dark:text-gray-300',
-    checklistTextPending: 'text-sm font-medium text-gray-700 dark:text-gray-300',
+    checklistTextSuccess:
+      'text-sm font-medium text-gray-700 dark:text-gray-300',
+    checklistTextPending:
+      'text-sm font-medium text-gray-700 dark:text-gray-300',
     checklistSubtext: 'text-xs text-gray-500 dark:text-gray-400 mt-1',
 
     // Call to Action
     ctaContainer:
       'mt-4 rounded-xl bg-gradient-to-r from-cyan-50 via-blue-50 to-indigo-50 dark:from-cyan-950/30 dark:via-blue-950/30 dark:to-indigo-950/30 border border-cyan-200/50 dark:border-cyan-800/50 p-3 backdrop-blur-sm',
     ctaInfo: 'flex items-start gap-4 text-left',
-    ctaIcon: 'w-6 h-6 text-cyan-600 dark:text-cyan-400 flex-shrink-0 mt-1 animate-bounce',
+    ctaIcon:
+      'w-6 h-6 text-cyan-600 dark:text-cyan-400 flex-shrink-0 mt-1 animate-bounce',
     ctaTitle: 'text-sm font-bold text-cyan-900 dark:text-cyan-100 mb-1',
     ctaDescription: 'text-xs text-cyan-700 dark:text-cyan-300 leading-relaxed',
 
     // Footer
-    footerInfo: 'flex items-start gap-3 text-left mt-4 pt-4 border-t border-gray-200 dark:border-gray-700',
+    footerInfo:
+      'flex items-start gap-3 text-left mt-4 pt-4 border-t border-gray-200 dark:border-gray-700',
     footerText: 'text-xs text-gray-500 dark:text-gray-400 leading-relaxed',
   },
 
@@ -140,11 +145,13 @@ export const viviendaAsignadaTabStyles = {
   card: {
     statusIndicator: 'absolute left-0 top-0 bottom-0 w-1 rounded-l-xl',
     content: 'flex items-center gap-3 p-3 pl-4',
-    iconContainer: 'flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center',
+    iconContainer:
+      'flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center',
     icon: 'w-5 h-5',
     info: 'flex-1 min-w-0',
     title: 'text-sm font-semibold text-gray-900 dark:text-white truncate',
-    subtitle: 'flex items-center gap-1 mt-0.5 text-xs text-gray-600 dark:text-gray-400',
+    subtitle:
+      'flex items-center gap-1 mt-0.5 text-xs text-gray-600 dark:text-gray-400',
     subtitleIcon: 'w-3 h-3 flex-shrink-0',
     subtitleText: 'truncate',
     valores: 'flex items-center gap-3 text-xs',
@@ -157,7 +164,8 @@ export const viviendaAsignadaTabStyles = {
 
   // Footer styles
   footer: {
-    fecha: 'flex items-center gap-1.5 px-2 py-1 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-xs',
+    fecha:
+      'flex items-center gap-1.5 px-2 py-1 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-xs',
     fechaIcon: 'w-3.5 h-3.5 text-gray-500 dark:text-gray-400',
   },
 }
@@ -179,7 +187,10 @@ export const viviendaAsignadaAnimations = {
 // ============================================
 
 export function getEstadoConfig(estado: string) {
-  return ESTADOS_CONFIG[estado as keyof typeof ESTADOS_CONFIG] || ESTADOS_CONFIG['Activa']
+  return (
+    ESTADOS_CONFIG[estado as keyof typeof ESTADOS_CONFIG] ||
+    ESTADOS_CONFIG['Activa']
+  )
 }
 
 export function getBadgeClassName(estado: string) {

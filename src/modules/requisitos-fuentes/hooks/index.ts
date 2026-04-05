@@ -1,1 +1,5 @@
-export { useRequisitos, useRequisitosCompartidos, useTiposFuente } from './useRequisitos';
+export {
+  useRequisitos,
+  useRequisitosCompartidos,
+  useTiposFuente,
+} from './useRequisitos'

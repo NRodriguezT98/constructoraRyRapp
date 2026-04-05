@@ -16,7 +16,10 @@ interface ClientesHeaderProps {
   totalClientes: number
 }
 
-export function ClientesHeader({ onNuevoCliente, totalClientes }: ClientesHeaderProps) {
+export function ClientesHeader({
+  onNuevoCliente,
+  totalClientes,
+}: ClientesHeaderProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: -20 }}
@@ -40,22 +43,22 @@ export function ClientesHeader({ onNuevoCliente, totalClientes }: ClientesHeader
           </div>
 
           {/* Acciones del header (badge + botón) */}
-          <div className="flex items-center gap-2">
+          <div className='flex items-center gap-2'>
             <span className={styles.header.badge}>
-              <Users className="w-3.5 h-3.5" />
+              <Users className='h-3.5 w-3.5' />
               {totalClientes} Cliente{totalClientes !== 1 ? 's' : ''}
             </span>
 
             {/* Botón Nuevo Cliente dentro del header */}
             {onNuevoCliente && (
               <motion.button
-                type="button"
+                type='button'
                 onClick={onNuevoCliente}
                 className={styles.header.button}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
-                <Plus className="w-4 h-4" />
+                <Plus className='h-4 w-4' />
                 Nuevo Cliente
               </motion.button>
             )}

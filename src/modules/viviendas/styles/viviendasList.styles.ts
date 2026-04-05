@@ -18,14 +18,16 @@ export const viviendasListStyles = {
   // ============================================
   // CONTENEDOR PRINCIPAL
   // ============================================
-  container: 'min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50 to-teal-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950',
+  container:
+    'min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50 to-teal-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950',
   content: 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6',
 
   // ============================================
   // HEADER
   // ============================================
   header: {
-    container: 'flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between',
+    container:
+      'flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between',
     title: 'text-3xl font-bold text-gray-900 dark:text-white',
     subtitle: 'text-sm text-gray-600 dark:text-gray-400',
     buttonContainer: 'flex gap-2',
@@ -74,15 +76,19 @@ export const viviendasListStyles = {
   card: {
     container:
       'group relative overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm transition-all hover:shadow-md dark:border-gray-700 dark:bg-gray-800',
-    header: 'border-b border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-750',
+    header:
+      'border-b border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-750',
     headerTitle: 'flex items-center justify-between',
     numero: 'text-lg font-bold text-gray-900 dark:text-white',
     estado: {
       base: 'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium',
-      Disponible: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
-      Apartada: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
+      Disponible:
+        'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+      Apartada:
+        'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
       Vendida: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
-      Escriturada: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
+      Escriturada:
+        'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
     },
     body: 'space-y-3 p-4',
     info: 'flex items-start gap-2',
@@ -106,7 +112,8 @@ export const viviendasListStyles = {
   // ESTADOS VACÍOS Y CARGA
   // ============================================
   empty: {
-    container: 'rounded-lg border-2 border-dashed border-gray-300 p-12 text-center dark:border-gray-600',
+    container:
+      'rounded-lg border-2 border-dashed border-gray-300 p-12 text-center dark:border-gray-600',
     icon: 'mx-auto h-12 w-12 text-gray-400 dark:text-gray-500',
     title: 'mt-4 text-lg font-semibold text-gray-900 dark:text-white',
     description: 'mt-2 text-sm text-gray-600 dark:text-gray-400',

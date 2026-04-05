@@ -8,6 +8,12 @@ import { useQuery } from '@tanstack/react-query'
 import { viviendasService } from '@/modules/viviendas/services/viviendas.service'
 import type { Vivienda } from '@/modules/viviendas/types'
 
+export const viviendaKeys = {
+  all: ['vivienda'] as const,
+  details: () => [...viviendaKeys.all, 'detail'] as const,
+  detail: (id: string) => [...viviendaKeys.details(), id] as const,
+}
+
 export function useViviendaQuery(viviendaId: string) {
   const {
     data: vivienda,
@@ -15,7 +21,7 @@ export function useViviendaQuery(viviendaId: string) {
     error,
     refetch,
   } = useQuery<Vivienda | null>({
-    queryKey: ['vivienda', viviendaId],
+    queryKey: viviendaKeys.detail(viviendaId),
     queryFn: async () => {
       if (!viviendaId) return null
       return await viviendasService.obtenerVivienda(viviendaId)

@@ -41,29 +41,31 @@ export function RenunciasFiltrosPremium({
       <div className={styles.filtros.grid}>
         {/* Búsqueda */}
         <div className={styles.filtros.searchWrapper}>
-          <label className={styles.filtros.label} htmlFor="renuncias-search">
+          <label className={styles.filtros.label} htmlFor='renuncias-search'>
             Buscar
           </label>
           <Search className={styles.filtros.searchIcon} />
           <input
-            id="renuncias-search"
-            type="text"
-            placeholder="Buscar por cliente, documento, vivienda..."
+            id='renuncias-search'
+            type='text'
+            placeholder='Buscar por cliente, documento, vivienda...'
             value={filtros.busqueda ?? ''}
-            onChange={(e) => onFiltrosChange({ ...filtros, busqueda: e.target.value })}
+            onChange={e =>
+              onFiltrosChange({ ...filtros, busqueda: e.target.value })
+            }
             className={styles.filtros.searchInput}
           />
         </div>
 
         {/* Estado */}
         <div>
-          <label className={styles.filtros.label} htmlFor="renuncias-estado">
+          <label className={styles.filtros.label} htmlFor='renuncias-estado'>
             Estado
           </label>
           <select
-            id="renuncias-estado"
+            id='renuncias-estado'
             value={filtros.estado ?? 'todos'}
-            onChange={(e) =>
+            onChange={e =>
               onFiltrosChange({
                 ...filtros,
                 estado: e.target.value as EstadoRenuncia | 'todos',
@@ -71,25 +73,27 @@ export function RenunciasFiltrosPremium({
             }
             className={styles.filtros.select}
           >
-            <option value="todos">Todos los estados</option>
-            <option value="Pendiente Devolución">Pendiente Devolución</option>
-            <option value="Cerrada">Cerrada</option>
+            <option value='todos'>Todos los estados</option>
+            <option value='Pendiente Devolución'>Pendiente Devolución</option>
+            <option value='Cerrada'>Cerrada</option>
           </select>
         </div>
 
         {/* Proyecto */}
         <div>
-          <label className={styles.filtros.label} htmlFor="renuncias-proyecto">
+          <label className={styles.filtros.label} htmlFor='renuncias-proyecto'>
             Proyecto
           </label>
           <select
-            id="renuncias-proyecto"
+            id='renuncias-proyecto'
             value={filtros.proyecto_id ?? ''}
-            onChange={(e) => onFiltrosChange({ ...filtros, proyecto_id: e.target.value })}
+            onChange={e =>
+              onFiltrosChange({ ...filtros, proyecto_id: e.target.value })
+            }
             className={styles.filtros.select}
           >
-            <option value="">Todos los proyectos</option>
-            {proyectos.map((p) => (
+            <option value=''>Todos los proyectos</option>
+            {proyectos.map(p => (
               <option key={p.id} value={p.id}>
                 {p.nombre}
               </option>
@@ -101,12 +105,17 @@ export function RenunciasFiltrosPremium({
       {/* Footer */}
       <div className={styles.filtros.footer}>
         <p className={styles.filtros.resultCount}>
-          {totalResultados} renuncia{totalResultados !== 1 ? 's' : ''} encontrada
+          {totalResultados} renuncia{totalResultados !== 1 ? 's' : ''}{' '}
+          encontrada
           {totalResultados !== 1 ? 's' : ''}
         </p>
         {hayFiltrosActivos ? (
-          <button type="button" onClick={onLimpiar} className={styles.filtros.clearButton}>
-            <X className="w-3 h-3" />
+          <button
+            type='button'
+            onClick={onLimpiar}
+            className={styles.filtros.clearButton}
+          >
+            <X className='h-3 w-3' />
             Limpiar filtros
           </button>
         ) : null}

@@ -8,7 +8,11 @@ import { logger } from '@/lib/utils/logger'
 /**
  * Roles disponibles en el sistema
  */
-export type Rol = 'Administrador' | 'Contador' | 'Supervisor' | 'Gerente'
+export type Rol =
+  | 'Administrador'
+  | 'Contabilidad'
+  | 'Administrador de Obra'
+  | 'Gerencia'
 
 /**
  * Estados de usuario
@@ -106,7 +110,12 @@ export interface CrearUsuarioRespuesta {
 /**
  * Opciones de rol con metadata
  */
-export const ROLES: { value: Rol; label: string; descripcion: string; color: string }[] = [
+export const ROLES: {
+  value: Rol
+  label: string
+  descripcion: string
+  color: string
+}[] = [
   {
     value: 'Administrador',
     label: 'Administrador',
@@ -114,20 +123,20 @@ export const ROLES: { value: Rol; label: string; descripcion: string; color: str
     color: 'red',
   },
   {
-    value: 'Contador',
-    label: 'Contador',
+    value: 'Contabilidad',
+    label: 'Contabilidad',
     descripcion: 'Crear/Editar datos, aprobar abonos (sin eliminar)',
     color: 'blue',
   },
   {
-    value: 'Supervisor',
-    label: 'Supervisor',
-    descripcion: 'Solo lectura (Administrador de obra Guacarí)',
+    value: 'Administrador de Obra',
+    label: 'Administrador de Obra',
+    descripcion: 'Solo lectura (Obra Guacarí)',
     color: 'gray',
   },
   {
-    value: 'Gerente',
-    label: 'Gerente',
+    value: 'Gerencia',
+    label: 'Gerencia',
     descripcion: 'Lectura + Reportes avanzados (Ejecutivos)',
     color: 'purple',
   },
@@ -229,7 +238,7 @@ export const PERMISOS_POR_ROL: Record<Rol, Record<Modulo, Accion[]>> = {
     reportes: ['ver', 'exportar'],
     administracion: ['ver', 'gestionar'],
   },
-  Contador: {
+  Contabilidad: {
     proyectos: ['ver', 'crear', 'editar', 'exportar'],
     viviendas: ['ver', 'crear', 'editar', 'exportar'],
     clientes: ['ver', 'crear', 'editar', 'exportar'],
@@ -241,7 +250,7 @@ export const PERMISOS_POR_ROL: Record<Rol, Record<Modulo, Accion[]>> = {
     reportes: ['ver', 'exportar'],
     administracion: [],
   },
-  Supervisor: {
+  'Administrador de Obra': {
     proyectos: ['ver', 'exportar'],
     viviendas: ['ver', 'exportar'],
     clientes: ['ver', 'exportar'],
@@ -253,7 +262,7 @@ export const PERMISOS_POR_ROL: Record<Rol, Record<Modulo, Accion[]>> = {
     reportes: ['ver', 'exportar'],
     administracion: [],
   },
-  Gerente: {
+  Gerencia: {
     proyectos: ['ver', 'exportar'],
     viviendas: ['ver', 'exportar'],
     clientes: ['ver', 'exportar'],
@@ -396,10 +405,14 @@ export const DESCRIPCION_PERMISOS: Record<Modulo, Record<Accion, string>> = {
  * @returns true si el rol tiene el permiso
  *
  * @example
- * tienePermiso('Vendedor', 'clientes', 'crear') // true
- * tienePermiso('Vendedor', 'usuarios', 'crear') // false
+ * tienePermiso('Contabilidad', 'clientes', 'crear') // true
+ * tienePermiso('Administrador de Obra', 'usuarios', 'crear') // false
  */
-export function tienePermiso(rol: Rol, modulo: Modulo, accion: Accion): boolean {
+export function tienePermiso(
+  rol: Rol,
+  modulo: Modulo,
+  accion: Accion
+): boolean {
   const permisosModulo = PERMISOS_POR_ROL[rol]?.[modulo]
   return permisosModulo?.includes(accion) || false
 }
@@ -413,9 +426,13 @@ export function tienePermiso(rol: Rol, modulo: Modulo, accion: Accion): boolean 
  * @returns true si el rol tiene al menos una de las acciones
  *
  * @example
- * tieneAlgunPermiso('Vendedor', 'clientes', ['crear', 'editar']) // true
+ * tieneAlgunPermiso('Contabilidad', 'clientes', ['crear', 'editar']) // true
  */
-export function tieneAlgunPermiso(rol: Rol, modulo: Modulo, acciones: Accion[]): boolean {
+export function tieneAlgunPermiso(
+  rol: Rol,
+  modulo: Modulo,
+  acciones: Accion[]
+): boolean {
   return acciones.some(accion => tienePermiso(rol, modulo, accion))
 }
 
@@ -430,7 +447,11 @@ export function tieneAlgunPermiso(rol: Rol, modulo: Modulo, acciones: Accion[]):
  * @example
  * tieneTodosLosPermisos('Administrador', 'clientes', ['crear', 'editar']) // true
  */
-export function tieneTodosLosPermisos(rol: Rol, modulo: Modulo, acciones: Accion[]): boolean {
+export function tieneTodosLosPermisos(
+  rol: Rol,
+  modulo: Modulo,
+  acciones: Accion[]
+): boolean {
   return acciones.every(accion => tienePermiso(rol, modulo, accion))
 }
 
@@ -442,7 +463,7 @@ export function tieneTodosLosPermisos(rol: Rol, modulo: Modulo, acciones: Accion
  * @returns Array de acciones permitidas
  *
  * @example
- * obtenerPermisos('Vendedor', 'clientes') // ['ver', 'crear', 'editar']
+ * obtenerPermisos('Contabilidad', 'clientes') // ['ver', 'crear', 'editar']
  */
 export function obtenerPermisos(rol: Rol, modulo: Modulo): Accion[] {
   return PERMISOS_POR_ROL[rol]?.[modulo] || []
@@ -455,13 +476,15 @@ export function obtenerPermisos(rol: Rol, modulo: Modulo): Accion[] {
  * @returns Array de módulos con al menos un permiso
  *
  * @example
- * obtenerModulosConAcceso('Vendedor') // ['proyectos', 'viviendas', 'clientes', ...]
+ * obtenerModulosConAcceso('Contabilidad') // ['proyectos', 'viviendas', 'clientes', ...]
  */
 export function obtenerModulosConAcceso(rol: Rol): Modulo[] {
   // ⚠️ Validación: si el rol no existe en PERMISOS_POR_ROL, retornar array vacío
   const permisos = PERMISOS_POR_ROL[rol]
   if (!permisos) {
-    logger.warn(`⚠️ [PERMISOS] Rol "${rol}" no tiene permisos definidos. Retornando array vacío.`)
+    logger.warn(
+      `⚠️ [PERMISOS] Rol "${rol}" no tiene permisos definidos. Retornando array vacío.`
+    )
     return []
   }
 
@@ -474,12 +497,12 @@ export function obtenerModulosConAcceso(rol: Rol): Modulo[] {
  * Helper para obtener color de rol
  */
 export function getColorRol(rol: Rol): string {
-  return ROLES.find((r) => r.value === rol)?.color || 'gray'
+  return ROLES.find(r => r.value === rol)?.color || 'gray'
 }
 
 /**
  * Helper para obtener color de estado
  */
 export function getColorEstado(estado: EstadoUsuario): string {
-  return ESTADOS_USUARIO.find((e) => e.value === estado)?.color || 'gray'
+  return ESTADOS_USUARIO.find(e => e.value === estado)?.color || 'gray'
 }

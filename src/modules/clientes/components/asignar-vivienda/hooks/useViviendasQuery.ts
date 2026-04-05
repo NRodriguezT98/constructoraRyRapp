@@ -19,9 +19,15 @@ type ViviendaDisponibleRow = ViviendaDetalle & {
   } | null
 }
 
+export const viviendasDisponiblesKeys = {
+  all: ['viviendas-disponibles'] as const,
+  byProyecto: (proyectoId: string | undefined) =>
+    [...viviendasDisponiblesKeys.all, proyectoId] as const,
+}
+
 export function useViviendasQuery(proyectoId: string | undefined) {
   return useQuery({
-    queryKey: ['viviendas', 'disponibles', proyectoId],
+    queryKey: viviendasDisponiblesKeys.byProyecto(proyectoId),
     queryFn: async () => {
       if (!proyectoId) return []
 

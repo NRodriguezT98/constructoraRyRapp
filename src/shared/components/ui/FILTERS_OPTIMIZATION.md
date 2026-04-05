@@ -5,6 +5,7 @@
 **Botón de Filtros se sentía lento** al presionar en la vista de proyectos debido a:
 
 ### ❌ FilterButton
+
 ```tsx
 // Framer Motion con scale animations
 <motion.button
@@ -15,13 +16,14 @@
 ```
 
 ### ❌ FilterPanel (MÁS PESADO)
+
 ```tsx
 // AnimatePresence con height animation
 <AnimatePresence>
   {show && (
     <motion.div
       initial={{ opacity: 0, height: 0 }}
-      animate={{ opacity: 1, height: 'auto' }}  // Layout thrashing
+      animate={{ opacity: 1, height: 'auto' }} // Layout thrashing
       exit={{ opacity: 0, height: 0 }}
     />
   )}
@@ -29,6 +31,7 @@
 ```
 
 **Problemas**:
+
 1. `height: 'auto'` causa **layout recalculation** costoso
 2. `AnimatePresence` añade overhead innecesario
 3. `scale` animations en botón causan janky clicks
@@ -41,10 +44,10 @@
 ### 1. **FilterButton Optimizado**
 
 #### Antes:
+
 ```tsx
 import { motion } from 'framer-motion'
-
-<motion.button
+;<motion.button
   whileHover={{ scale: 1.02 }}
   whileTap={{ scale: 0.98 }}
   className='transition-all duration-200'
@@ -52,12 +55,11 @@ import { motion } from 'framer-motion'
 ```
 
 #### Después:
+
 ```tsx
 // Sin Framer Motion
 
-<button className='transition-colors'>
-  {/* Renderizado directo */}
-</button>
+<button className='transition-colors'>{/* Renderizado directo */}</button>
 ```
 
 **Ganancia**: Click instantáneo, sin scale janky
@@ -67,14 +69,14 @@ import { motion } from 'framer-motion'
 ### 2. **FilterPanel Optimizado**
 
 #### Antes (PESADO):
+
 ```tsx
 import { motion, AnimatePresence } from 'framer-motion'
-
-<AnimatePresence>
+;<AnimatePresence>
   {show && (
     <motion.div
       initial={{ opacity: 0, height: 0 }}
-      animate={{ opacity: 1, height: 'auto' }}  // ❌ Layout thrashing
+      animate={{ opacity: 1, height: 'auto' }} // ❌ Layout thrashing
       exit={{ opacity: 0, height: 0 }}
     >
       {/* Botones con transition-all duration-200 */}
@@ -84,14 +86,15 @@ import { motion, AnimatePresence } from 'framer-motion'
 ```
 
 #### Después (LIGERO):
+
 ```tsx
 // Sin Framer Motion, sin AnimatePresence
 
-{show && (
-  <div className='overflow-hidden'>
-    {/* Botones con transition-colors */}
-  </div>
-)}
+{
+  show && (
+    <div className='overflow-hidden'>{/* Botones con transition-colors */}</div>
+  )
+}
 ```
 
 **Ganancia**: Apertura instantánea del panel
@@ -101,14 +104,16 @@ import { motion, AnimatePresence } from 'framer-motion'
 ### 3. **Botones de Filtro Optimizados**
 
 #### Antes:
+
 ```tsx
-className='transition-all duration-200'
+className = 'transition-all duration-200'
 // Anima todas las propiedades (costoso)
 ```
 
 #### Después:
+
 ```tsx
-className='transition-colors'
+className = 'transition-colors'
 // Solo colores (muy ligero)
 ```
 
@@ -118,22 +123,22 @@ className='transition-colors'
 
 ### Performance
 
-| Métrica | Antes | Después | Mejora |
-|---------|-------|---------|--------|
-| **Click en Filtros** | ~200ms | ~20ms | **-90%** |
-| **Apertura panel** | ~300ms | Instantánea | **-100%** |
-| **Layout thrashing** | Frecuente | Ninguno | **-100%** |
-| **Framer Motion** | ✓ | ✗ | -50KB |
-| **Scale animations** | ✓ | ✗ | Sin janky |
+| Métrica              | Antes     | Después     | Mejora    |
+| -------------------- | --------- | ----------- | --------- |
+| **Click en Filtros** | ~200ms    | ~20ms       | **-90%**  |
+| **Apertura panel**   | ~300ms    | Instantánea | **-100%** |
+| **Layout thrashing** | Frecuente | Ninguno     | **-100%** |
+| **Framer Motion**    | ✓         | ✗           | -50KB     |
+| **Scale animations** | ✓         | ✗           | Sin janky |
 
 ### User Experience
 
-| Aspecto | Antes | Después |
-|---------|-------|---------|
-| Click botón Filtros | Lag 200ms | Instantáneo |
-| Panel se abre | Animación lenta | Instantáneo |
-| Cambiar filtros | Transition 200ms | Inmediato |
-| Mobile | 🟡 Lag notable | 🟢 Fluido |
+| Aspecto             | Antes            | Después     |
+| ------------------- | ---------------- | ----------- |
+| Click botón Filtros | Lag 200ms        | Instantáneo |
+| Panel se abre       | Animación lenta  | Instantáneo |
+| Cambiar filtros     | Transition 200ms | Inmediato   |
+| Mobile              | 🟡 Lag notable   | 🟢 Fluido   |
 
 ---
 
@@ -209,6 +214,7 @@ animate={{ height: 'auto' }}
 ```
 
 **Proceso del navegador**:
+
 1. Calcula altura del contenido → **Layout**
 2. Anima de 0px a altura calculada → **Paint**
 3. Re-renderiza cada frame → **Composite**
@@ -218,10 +224,13 @@ animate={{ height: 'auto' }}
 
 ```tsx
 // ✅ BUENO - Renderizado directo
-{show && <div />}
+{
+  show && <div />
+}
 ```
 
 **Proceso del navegador**:
+
 1. Renderiza contenido una vez
 2. CSS maneja el estilo
 3. Sin recalculations
@@ -266,8 +275,11 @@ Aplicación SÚPER FLUIDA
    - Específico y predecible
 
 4. **Renderizado condicional simple**
+
    ```tsx
-   {show && <Component />}
+   {
+     show && <Component />
+   }
    // Mejor que AnimatePresence
    ```
 
@@ -312,6 +324,7 @@ Estos componentes ahora usan los filtros optimizados:
 ---
 
 **Filosofía**:
+
 > "Los filtros deben responder tan rápido que parezcan nativos"
 
 ---

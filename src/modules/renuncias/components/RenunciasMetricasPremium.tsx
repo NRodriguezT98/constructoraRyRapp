@@ -3,7 +3,10 @@
 import { motion } from 'framer-motion'
 import { AlertTriangle, CheckCircle2, DollarSign, FileX } from 'lucide-react'
 
-import { metricasIconColors as colors, renunciasStyles as styles } from '../styles/renuncias.styles'
+import {
+  metricasIconColors as colors,
+  renunciasStyles as styles,
+} from '../styles/renuncias.styles'
 import type { MetricasRenuncias } from '../types'
 import { formatCOP } from '../utils/renuncias.utils'
 
@@ -11,7 +14,9 @@ interface RenunciasMetricasPremiumProps {
   metricas: MetricasRenuncias
 }
 
-export function RenunciasMetricasPremium({ metricas }: RenunciasMetricasPremiumProps) {
+export function RenunciasMetricasPremium({
+  metricas,
+}: RenunciasMetricasPremiumProps) {
   const items = [
     {
       icon: FileX,
@@ -55,11 +60,15 @@ export function RenunciasMetricasPremium({ metricas }: RenunciasMetricasPremiumP
         >
           <div className={`${styles.metricas.cardGlow} ${item.glow}`} />
           <div className={styles.metricas.content}>
-            <div className={`${styles.metricas.iconCircle} ${item.bg} ${item.shadow}`}>
+            <div
+              className={`${styles.metricas.iconCircle} ${item.bg} ${item.shadow}`}
+            >
               <item.icon className={styles.metricas.icon} />
             </div>
             <div className={styles.metricas.textGroup}>
-              <p className={`${styles.metricas.value} ${item.value}`}>{item.displayValue}</p>
+              <p className={`${styles.metricas.value} ${item.value}`}>
+                {item.displayValue}
+              </p>
               <p className={styles.metricas.label}>{item.label}</p>
             </div>
           </div>

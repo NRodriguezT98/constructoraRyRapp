@@ -59,7 +59,11 @@ try {
       for (let i = 0; i < lines.length; i++) {
         if (lines[i].startsWith('import ')) {
           insertIdx = i
-        } else if (insertIdx > 0 && !lines[i].startsWith('import ') && lines[i].trim() !== '') {
+        } else if (
+          insertIdx > 0 &&
+          !lines[i].startsWith('import ') &&
+          lines[i].trim() !== ''
+        ) {
           break
         }
       }

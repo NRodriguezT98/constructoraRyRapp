@@ -46,7 +46,9 @@ function parseTypeScriptErrors(output) {
     const line = lines[i]
 
     // Windows: src/path/file.ts(123,45): error TS1234: Message
-    const windowsMatch = line.match(/^([^(]+)\((\d+),(\d+)\):\s*error\s+(TS\d+):\s*(.*)$/)
+    const windowsMatch = line.match(
+      /^([^(]+)\((\d+),(\d+)\):\s*error\s+(TS\d+):\s*(.*)$/
+    )
 
     if (windowsMatch) {
       const match = windowsMatch
@@ -96,7 +98,7 @@ async function main() {
 
   // Paso 1: Ejecutar type-check y guardar salida
   log('→ Ejecutando type-check...', 'cyan')
-  await new Promise((resolve) => {
+  await new Promise(resolve => {
     exec('npm run type-check > type-check-temp.txt 2>&1', () => resolve())
   })
 
@@ -108,13 +110,19 @@ async function main() {
   log('→ Parseando errores...', 'cyan')
   const errors = parseTypeScriptErrors(output)
 
-  log(`→ Errores detectados: ${errors.length}`, errors.length > 0 ? 'yellow' : 'green')
+  log(
+    `→ Errores detectados: ${errors.length}`,
+    errors.length > 0 ? 'yellow' : 'green'
+  )
 
   if (errors.length > 0) {
     console.log('')
     log('Primeros 10 errores:', 'bright')
     errors.slice(0, 10).forEach((err, i) => {
-      log(`${i + 1}. ${path.basename(err.file)}:${err.line} - ${err.code}`, 'yellow')
+      log(
+        `${i + 1}. ${path.basename(err.file)}:${err.line} - ${err.code}`,
+        'yellow'
+      )
       log(`   ${err.message.substring(0, 100)}`, 'gray')
     })
   }

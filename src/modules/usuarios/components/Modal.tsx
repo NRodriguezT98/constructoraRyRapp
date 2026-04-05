@@ -21,7 +21,13 @@ interface ModalProps {
   maxWidth?: 'sm' | 'md' | 'lg' | 'xl'
 }
 
-export function Modal({ isOpen, onClose, title, children, maxWidth = 'lg' }: ModalProps) {
+export function Modal({
+  isOpen,
+  onClose,
+  title,
+  children,
+  maxWidth = 'lg',
+}: ModalProps) {
   // Cerrar con ESC
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -65,17 +71,17 @@ export function Modal({ isOpen, onClose, title, children, maxWidth = 'lg' }: Mod
       <div className={styles.modal.wrapper}>
         <div
           className={`${styles.modal.content} ${maxWidthClasses[maxWidth]}`}
-          onClick={(e) => e.stopPropagation()}
+          onClick={e => e.stopPropagation()}
         >
           {/* Header */}
           <div className={styles.modal.header}>
-            <div className="flex items-center justify-between">
+            <div className='flex items-center justify-between'>
               <h2 className={styles.modal.title}>{title}</h2>
               <button
                 onClick={onClose}
-                className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+                className='rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-700 dark:hover:text-slate-300'
               >
-                <X className="h-5 w-5" />
+                <X className='h-5 w-5' />
               </button>
             </div>
           </div>

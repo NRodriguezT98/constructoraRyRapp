@@ -1,155 +1,39 @@
-'use client'
-
-import { useEffect, useMemo, useState } from 'react'
+﻿'use client'
 
 import { AnimatePresence, motion } from 'framer-motion'
-import {
-  ChevronLeft,
-  ChevronRight,
-  Crown,
-  LogOut,
-  Search,
-  Settings,
-} from 'lucide-react'
-import { useTheme } from 'next-themes'
 
-import Image from 'next/image'
-import Link from 'next/link'
-
-import { useAuth } from '@/contexts/auth-context'
-import { useLogout } from '@/hooks/auth'
-import { usePermisosQuery } from '@/modules/usuarios/hooks/usePermisosQuery'
-import { navigationGroups } from '@/shared/config/navigation.config'
 import { usePapeleraCount } from '@/shared/documentos/hooks'
 
-import { ThemeToggle } from './theme-toggle'
-import { Button } from './ui/button'
+import { sidebarAnimationVariants } from './sidebar/sidebar.styles'
+import { SidebarFooter } from './sidebar/SidebarFooter'
+import { SidebarHeader } from './sidebar/SidebarHeader'
+import { SidebarNavItem } from './sidebar/SidebarNavItem'
+import { useSidebarNavigation } from './sidebar/useSidebarNavigation'
+import { useSidebarViewModel } from './sidebar/useSidebarViewModel'
 import { useSidebar } from './useSidebar'
 
 export function SidebarFloatingGlass() {
-  const { user, perfil } = useAuth()
-  const { logout, isLoggingOut } = useLogout({
-    showToast: true,
-    redirectTo: '/login',
-  })
-  const { puede, esAdmin } = usePermisosQuery() // ← Sistema NUEVO desde BD
-  const { theme, systemTheme } = useTheme()
   const {
     isExpanded,
     isMobile,
     searchQuery,
+    pathname,
     setSearchQuery,
     toggleSidebar,
     closeSidebar,
     getMostSpecificMatch,
   } = useSidebar()
-
-  // 🗑️ Contador de documentos en papelera (solo para admins)
   const papeleraCount = usePapeleraCount()
-
-  // State para evitar hydration mismatch con el tema
-  const [mounted, setMounted] = useState(false)
-
-  useEffect(() => {
-    setMounted(true)
-  }, [])
-
-  // Obtener iniciales del usuario (optimizado con useMemo)
-  const getUserInitials = useMemo(() => {
-    if (perfil?.nombres && perfil?.apellidos) {
-      return `${perfil.nombres.charAt(0)}${perfil.apellidos.charAt(0)}`.toUpperCase()
-    }
-    if (perfil?.nombres) {
-      return perfil.nombres.charAt(0).toUpperCase()
-    }
-    if (user?.email) {
-      return user.email.charAt(0).toUpperCase()
-    }
-    return 'U'
-  }, [perfil?.nombres, perfil?.apellidos, user?.email])
-
-  // Obtener nombre completo (optimizado con useMemo)
-  const getDisplayName = useMemo(() => {
-    if (perfil?.nombres && perfil?.apellidos) {
-      return `${perfil.nombres} ${perfil.apellidos}`
-    }
-    if (perfil?.nombres) {
-      return perfil.nombres
-    }
-    if (user?.email) {
-      return user.email.split('@')[0].replace(/[._-]/g, ' ')
-    }
-    return 'Usuario'
-  }, [perfil?.nombres, perfil?.apellidos, user?.email])
-
-  // Verificar si es administrador (para mostrar la corona 👑)
-  const isAdmin = perfil?.rol === 'Administrador'
-
-  // Obtener color según rol (optimizado con useMemo)
-  const getRolColor = useMemo(() => {
-    switch (perfil?.rol) {
-      case 'Administrador':
-        return 'from-amber-500 via-yellow-500 to-orange-500' // Dorado para el rey 👑
-      case 'Gerente':
-        return 'from-blue-500 to-indigo-500'
-      case 'Contador':
-        return 'from-emerald-500 to-teal-500'
-      case 'Supervisor':
-        return 'from-purple-500 to-pink-500'
-      default:
-        return 'from-gray-500 to-slate-500'
-    }
-  }, [perfil?.rol])
-
-  // Obtener badge color según rol (optimizado con useMemo)
-  const getRolBadgeColor = useMemo(() => {
-    switch (perfil?.rol) {
-      case 'Administrador':
-        return 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-lg shadow-amber-500/50'
-      case 'Gerente':
-        return 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
-      case 'Contador':
-        return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
-      case 'Supervisor':
-        return 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400'
-      default:
-        return 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400'
-    }
-  }, [perfil?.rol])
-
-  const sidebarVariants = {
-    expanded: { width: 260 },
-    collapsed: { width: 72 },
-  }
-
-  const contentVariants = {
-    expanded: { opacity: 1, x: 0 },
-    collapsed: { opacity: 0, x: -10 },
-  }
-
-  // Determinar qué logo usar según el tema (con protección hydration)
-  const getLogo = (expanded: boolean): string => {
-    // Si no está montado, usar logo claro por defecto (match con SSR)
-    if (!mounted) {
-      return expanded ? '/images/logo1.png' : '/images/logo2.png'
-    }
-
-    // Determinar tema actual (respetando 'system')
-    const currentTheme = theme === 'system' ? systemTheme : theme
-
-    if (expanded) {
-      return currentTheme === 'dark'
-        ? '/images/logo1-dark.png'
-        : '/images/logo1.png'
-    }
-    return currentTheme === 'dark'
-      ? '/images/logo2-dark.png'
-      : '/images/logo2.png'
-  }
+  const vm = useSidebarViewModel(pathname)
+  const navGroups = useSidebarNavigation({
+    pathname,
+    searchQuery,
+    getMostSpecificMatch,
+  })
 
   return (
     <>
-      {/* Mobile Overlay */}
+      {/* Overlay móvil */}
       <AnimatePresence>
         {isMobile && isExpanded && (
           <motion.div
@@ -163,14 +47,14 @@ export function SidebarFloatingGlass() {
         )}
       </AnimatePresence>
 
-      {/* Sidebar Container con padding para efecto flotante */}
+      {/* Contenedor con efecto flotante */}
       <div
         className={`fixed left-0 top-0 z-50 h-full ${
           isMobile ? (isExpanded ? 'w-full' : 'w-0') : ''
         }`}
       >
         <motion.aside
-          variants={sidebarVariants}
+          variants={sidebarAnimationVariants}
           animate={isExpanded ? 'expanded' : 'collapsed'}
           transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
           className={`h-full ${
@@ -181,113 +65,27 @@ export function SidebarFloatingGlass() {
               : 'm-3 h-[calc(100vh-24px)] rounded-3xl'
           } relative flex flex-col border border-white/20 bg-white/80 shadow-2xl shadow-gray-900/10 backdrop-blur-2xl dark:border-gray-700/30 dark:bg-gray-900/80 dark:shadow-black/20`}
         >
-          {/* Header */}
-          <div className='border-b border-gray-200/50 p-3 dark:border-gray-700/30'>
-            <div className='flex items-center justify-between'>
-              <AnimatePresence mode='wait'>
-                {isExpanded ? (
-                  <motion.div
-                    key='expanded-logo'
-                    variants={contentVariants}
-                    initial='collapsed'
-                    animate='expanded'
-                    exit='collapsed'
-                    transition={{ duration: 0.2 }}
-                    className='flex items-center'
-                  >
-                    <Image
-                      src={getLogo(true)}
-                      alt='RyR Constructora'
-                      width={140}
-                      height={40}
-                      className='h-auto w-auto'
-                      priority
-                      suppressHydrationWarning
-                    />
-                  </motion.div>
-                ) : (
-                  <motion.div
-                    key='collapsed-logo'
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.2 }}
-                    className='relative mx-auto flex items-center justify-center'
-                    style={{ width: '48px', height: '48px' }}
-                  >
-                    {/* Usar img nativo para control total del tamaño */}
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={getLogo(false)}
-                      alt='RyR'
-                      className='block'
-                      style={{
-                        width: '48px',
-                        height: '48px',
-                        maxWidth: '48px',
-                        maxHeight: '48px',
-                        minWidth: '48px',
-                        minHeight: '48px',
-                        objectFit: 'contain',
-                      }}
-                    />
-                  </motion.div>
-                )}
-              </AnimatePresence>
+          {/* Header: logo + toggle + buscador */}
+          <SidebarHeader
+            isExpanded={isExpanded}
+            logoSrc={vm.getLogoSrc(true)}
+            logoCollapsedSrc={vm.getLogoSrc(false)}
+            toggleSidebar={toggleSidebar}
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+          />
 
-              <Button
-                variant='ghost'
-                size='sm'
-                onClick={toggleSidebar}
-                title={isExpanded ? 'Contraer sidebar' : 'Expandir sidebar'}
-                className={`rounded-lg hover:bg-gray-100/80 dark:hover:bg-gray-800/80 ${
-                  isExpanded ? 'p-1.5' : 'mx-auto p-2'
-                }`}
-              >
-                {isExpanded ? (
-                  <ChevronLeft className='h-3.5 w-3.5' />
-                ) : (
-                  <ChevronRight className='h-4 w-4' />
-                )}
-              </Button>
-            </div>
-
-            {/* Search - Solo cuando está expandido */}
-            <AnimatePresence>
-              {isExpanded && (
-                <motion.div
-                  variants={contentVariants}
-                  initial='collapsed'
-                  animate='expanded'
-                  exit='collapsed'
-                  transition={{ duration: 0.2, delay: 0.1 }}
-                  className='mt-3'
-                >
-                  <div className='group relative'>
-                    <Search className='absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-gray-400 transition-colors group-focus-within:text-blue-500' />
-                    <input
-                      placeholder='Buscar módulos...'
-                      value={searchQuery}
-                      onChange={e => setSearchQuery(e.target.value)}
-                      className='h-8 w-full rounded-lg border border-gray-200/50 bg-gray-50/50 pl-9 pr-3 text-xs text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/10 dark:border-gray-700/50 dark:bg-gray-800/50 dark:text-white dark:placeholder:text-gray-500 dark:focus:bg-gray-800'
-                    />
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-
-          {/* Navigation */}
+          {/* Navegación */}
           <div className='custom-scrollbar flex-1 space-y-4 overflow-y-auto overflow-x-hidden px-2 py-3'>
-            {navigationGroups.map(group => (
+            {navGroups.map(group => (
               <div key={group.title}>
-                {/* Group Title */}
+                {/* Título del grupo */}
                 <AnimatePresence>
                   {isExpanded && (
                     <motion.div
-                      variants={contentVariants}
-                      initial='collapsed'
-                      animate='expanded'
-                      exit='collapsed'
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -10 }}
                       transition={{ duration: 0.2 }}
                       className='mb-2 px-2.5'
                     >
@@ -298,380 +96,43 @@ export function SidebarFloatingGlass() {
                   )}
                 </AnimatePresence>
 
-                {/* Navigation Items */}
+                {/* Items */}
                 <div className='space-y-1'>
-                  {(() => {
-                    // ✅ Filtrar items visibles
-                    const visibleItems = group.items.filter(
-                      item =>
-                        // Filtro de búsqueda
-                        (!searchQuery ||
-                          item.name
-                            .toLowerCase()
-                            .includes(searchQuery.toLowerCase()) ||
-                          item.description
-                            .toLowerCase()
-                            .includes(searchQuery.toLowerCase())) &&
-                        // 🔒 Filtro adminOnly
-                        (!item.adminOnly || esAdmin) &&
-                        // 🔐 Filtro de permisos
-                        (item.requiredPermission
-                          ? puede(
-                              item.requiredPermission.modulo,
-                              item.requiredPermission.accion
-                            )
-                          : true)
+                  {group.items.map(
+                    ({ item, isModuleActive, visibleChildren }) => (
+                      <SidebarNavItem
+                        key={item.href}
+                        item={item}
+                        isExpanded={isExpanded}
+                        pathname={pathname}
+                        isSubmenuOpen={vm.openSubmenus.has(item.href)}
+                        onToggleSubmenu={vm.toggleSubmenu}
+                        papeleraCount={papeleraCount.total}
+                        isModuleActive={isModuleActive}
+                        visibleChildren={visibleChildren}
+                        isMobile={isMobile}
+                        onCloseSidebar={closeSidebar}
+                      />
                     )
-
-                    // ✅ Obtener la ruta MÁS ESPECÍFICA que coincide
-                    const mostSpecificHref = getMostSpecificMatch(visibleItems)
-
-                    return visibleItems.map(item => {
-                      // ✅ Solo activar si es la ruta más específica
-                      const active = item.href === mostSpecificHref
-
-                      return (
-                        <Link key={item.href} href={item.href} prefetch={true}>
-                          <motion.div
-                            whileHover={{ scale: 1.01, x: 1 }}
-                            whileTap={{ scale: 0.98 }}
-                            className={`group relative flex items-center rounded-lg transition-all duration-200 ${
-                              isExpanded ? 'px-2.5 py-2' : 'px-2 py-3'
-                            } ${
-                              active
-                                ? `bg-gradient-to-r ${item.color} shadow-lg`
-                                : 'hover:bg-gray-100/60 dark:hover:bg-gray-800/60'
-                            }`}
-                          >
-                            {/* Icon */}
-                            <div
-                              className={`flex-shrink-0 ${
-                                isExpanded ? 'mr-2.5' : 'mx-auto'
-                              }`}
-                            >
-                              <item.icon
-                                className={`${
-                                  isExpanded ? 'h-4 w-4' : 'h-5 w-5'
-                                } ${
-                                  active
-                                    ? 'text-white drop-shadow-md'
-                                    : 'text-gray-600 group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-gray-200'
-                                }`}
-                              />
-                            </div>
-
-                            {/* Content - Solo cuando está expandido */}
-                            <AnimatePresence>
-                              {isExpanded && (
-                                <motion.div
-                                  variants={contentVariants}
-                                  initial='collapsed'
-                                  animate='expanded'
-                                  exit='collapsed'
-                                  transition={{ duration: 0.2 }}
-                                  className='flex flex-1 items-center justify-between'
-                                >
-                                  <div className='flex flex-col'>
-                                    <div
-                                      className={`text-xs font-semibold ${
-                                        active
-                                          ? 'text-white'
-                                          : 'text-gray-900 dark:text-gray-100'
-                                      }`}
-                                    >
-                                      {item.name}
-                                    </div>
-                                    <div
-                                      className={`text-[10px] ${
-                                        active
-                                          ? 'text-white/80'
-                                          : 'text-gray-500 dark:text-gray-400'
-                                      }`}
-                                    >
-                                      {item.description}
-                                    </div>
-                                  </div>
-
-                                  {/* 🗑️ Badge contador para Papelera */}
-                                  {item.name === 'Papelera' &&
-                                    papeleraCount.total > 0 && (
-                                      <motion.div
-                                        initial={{ scale: 0 }}
-                                        animate={{ scale: 1 }}
-                                        transition={{
-                                          type: 'spring',
-                                          stiffness: 500,
-                                          damping: 15,
-                                        }}
-                                        className={`flex h-[18px] min-w-[18px] items-center justify-center rounded-full px-1.5 text-[10px] font-bold ${
-                                          active
-                                            ? 'bg-white text-red-600'
-                                            : 'bg-red-500 text-white'
-                                        }`}
-                                      >
-                                        {papeleraCount.total > 99
-                                          ? '99+'
-                                          : papeleraCount.total}
-                                      </motion.div>
-                                    )}
-                                </motion.div>
-                              )}
-                            </AnimatePresence>
-
-                            {/* Badge contador para Papelera (modo colapsado) */}
-                            {!isExpanded &&
-                              item.name === 'Papelera' &&
-                              papeleraCount.total > 0 && (
-                                <motion.div
-                                  initial={{ scale: 0 }}
-                                  animate={{ scale: 1 }}
-                                  transition={{
-                                    type: 'spring',
-                                    stiffness: 500,
-                                    damping: 15,
-                                  }}
-                                  className='absolute -right-1 -top-1 flex h-[16px] min-w-[16px] items-center justify-center rounded-full border-2 border-white bg-red-500 px-1 text-[9px] font-bold text-white shadow-lg dark:border-gray-900'
-                                >
-                                  {papeleraCount.total > 99
-                                    ? '99+'
-                                    : papeleraCount.total}
-                                </motion.div>
-                              )}
-
-                            {/* Tooltip para modo colapsado */}
-                            {!isExpanded && (
-                              <div className='pointer-events-none absolute left-full z-50 ml-2 whitespace-nowrap rounded-lg bg-gray-900 px-2.5 py-1.5 text-xs font-medium text-white opacity-0 shadow-xl transition-opacity duration-200 group-hover:opacity-100 dark:bg-gray-700'>
-                                {item.name}
-                                {item.name === 'Papelera' &&
-                                  papeleraCount.total > 0 && (
-                                    <span className='ml-1.5 inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-red-500 px-1 text-[9px] font-bold text-white'>
-                                      {papeleraCount.total}
-                                    </span>
-                                  )}
-                                <div className='absolute -left-1 top-1/2 h-2 w-2 -translate-y-1/2 rotate-45 bg-gray-900 dark:bg-gray-700' />
-                              </div>
-                            )}
-
-                            {/* Active indicator dot */}
-                            {active && (
-                              <motion.div
-                                layoutId='sidebar-indicator'
-                                className='absolute right-2.5 top-1/2 h-1.5 w-1.5 -translate-y-1/2 rounded-full bg-white shadow-md'
-                                transition={{
-                                  type: 'spring',
-                                  stiffness: 400,
-                                  damping: 30,
-                                }}
-                              />
-                            )}
-                          </motion.div>
-                        </Link>
-                      )
-                    })
-                  })()}
+                  )}
                 </div>
               </div>
             ))}
           </div>
 
-          {/* Footer */}
-          <div className='space-y-2 border-t border-gray-200/50 p-3 dark:border-gray-700/30'>
-            {/* User Profile Card - Solo cuando está expandido */}
-            <AnimatePresence>
-              {isExpanded && (
-                <motion.div
-                  variants={contentVariants}
-                  initial='collapsed'
-                  animate='expanded'
-                  exit='collapsed'
-                  transition={{ duration: 0.2 }}
-                  className='group relative overflow-hidden rounded-xl bg-gradient-to-br from-gray-50 via-white to-gray-50 p-2.5 shadow-md shadow-gray-900/5 dark:from-gray-800 dark:via-gray-800/50 dark:to-gray-800'
-                >
-                  {/* Glow effect para admin */}
-                  {isAdmin && (
-                    <div className='absolute inset-0 bg-gradient-to-br from-amber-500/10 via-yellow-500/10 to-orange-500/10 opacity-50' />
-                  )}
-
-                  <div className='relative flex items-start gap-2'>
-                    {/* Avatar con gradiente según rol */}
-                    <div className='relative flex-shrink-0'>
-                      {/* Corona para administrador 👑 */}
-                      {isAdmin && (
-                        <motion.div
-                          initial={{ y: -20, opacity: 0, rotate: -20 }}
-                          animate={{ y: 0, opacity: 1, rotate: 0 }}
-                          transition={{
-                            type: 'spring',
-                            stiffness: 300,
-                            damping: 20,
-                          }}
-                          className='absolute -top-2.5 left-1/2 z-10 -translate-x-1/2'
-                        >
-                          <motion.div
-                            animate={{
-                              y: [0, -2, 0],
-                              rotate: [-5, 5, -5],
-                            }}
-                            transition={{
-                              duration: 3,
-                              repeat: Infinity,
-                              ease: 'easeInOut',
-                            }}
-                          >
-                            <Crown className='h-4 w-4 text-amber-500 drop-shadow-[0_0_6px_rgba(245,158,11,0.5)]' />
-                          </motion.div>
-                        </motion.div>
-                      )}
-
-                      <div
-                        className={`flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br ${getRolColor} shadow-md ${
-                          isAdmin
-                            ? 'shadow-amber-500/40 ring-2 ring-amber-400/20'
-                            : ''
-                        }`}
-                      >
-                        <span className='text-sm font-bold text-white drop-shadow-md'>
-                          {getUserInitials}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* User Info */}
-                    <div className='min-w-0 flex-1 space-y-0.5'>
-                      {/* Nombre */}
-                      <div className='line-clamp-1 text-xs font-bold text-gray-900 dark:text-white'>
-                        {getDisplayName}
-                      </div>
-
-                      {/* Email */}
-                      <div className='line-clamp-1 text-[10px] text-gray-500 dark:text-gray-400'>
-                        {user?.email || 'usuario@ryr.com'}
-                      </div>
-
-                      {/* Badge de Rol */}
-                      <div className='flex items-center'>
-                        <span
-                          className={`inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[9px] font-bold ${getRolBadgeColor}`}
-                        >
-                          {isAdmin && <Crown className='h-2.5 w-2.5' />}
-                          {perfil?.rol || 'Sin rol'}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Botón logout */}
-                    <Button
-                      variant='ghost'
-                      size='sm'
-                      disabled={isLoggingOut}
-                      className='flex-shrink-0 rounded-lg p-1.5 hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-50 dark:hover:bg-red-900/20'
-                      onClick={logout}
-                      title={
-                        isLoggingOut ? 'Cerrando sesión...' : 'Cerrar sesión'
-                      }
-                    >
-                      <LogOut
-                        className={`h-3.5 w-3.5 text-gray-600 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400 ${
-                          isLoggingOut ? 'animate-pulse' : ''
-                        }`}
-                      />
-                    </Button>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            {/* Collapsed User Avatar */}
-            {!isExpanded && (
-              <div className='relative mx-auto w-fit'>
-                {/* Corona para administrador en modo colapsado */}
-                {isAdmin && (
-                  <motion.div
-                    initial={{ y: -20, opacity: 0, rotate: -20 }}
-                    animate={{ y: 0, opacity: 1, rotate: 0 }}
-                    transition={{
-                      type: 'spring',
-                      stiffness: 300,
-                      damping: 20,
-                    }}
-                    className='absolute -top-2.5 left-1/2 z-10 -translate-x-1/2'
-                  >
-                    <motion.div
-                      animate={{
-                        y: [0, -2, 0],
-                        rotate: [-5, 5, -5],
-                      }}
-                      transition={{
-                        duration: 3,
-                        repeat: Infinity,
-                        ease: 'easeInOut',
-                      }}
-                    >
-                      <Crown className='h-4 w-4 text-amber-500 drop-shadow-[0_0_6px_rgba(245,158,11,0.5)]' />
-                    </motion.div>
-                  </motion.div>
-                )}
-
-                <div
-                  className={`flex h-11 w-11 items-center justify-center rounded-lg bg-gradient-to-br ${getRolColor} shadow-md ${
-                    isAdmin
-                      ? 'shadow-amber-500/40 ring-2 ring-amber-400/20'
-                      : ''
-                  }`}
-                >
-                  <span className='text-base font-bold text-white drop-shadow-md'>
-                    {getUserInitials}
-                  </span>
-                </div>
-              </div>
-            )}
-
-            {/* Theme Toggle & Settings */}
-            <div
-              className={`flex items-center ${
-                isExpanded ? 'justify-between gap-1.5' : 'flex-col gap-2'
-              }`}
-            >
-              <ThemeToggle />
-              {isExpanded && (
-                <Button
-                  variant='ghost'
-                  size='sm'
-                  className='rounded-lg p-1.5 hover:bg-gray-100/80 dark:hover:bg-gray-800/80'
-                >
-                  <Settings className='h-3.5 w-3.5' />
-                </Button>
-              )}
-              {!isExpanded && (
-                <>
-                  <Button
-                    variant='ghost'
-                    size='sm'
-                    className='rounded-lg p-2 hover:bg-gray-100/80 dark:hover:bg-gray-800/80'
-                    title='Configuración'
-                  >
-                    <Settings className='h-4 w-4' />
-                  </Button>
-                  <Button
-                    variant='ghost'
-                    size='sm'
-                    disabled={isLoggingOut}
-                    className='rounded-lg p-2 hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-50 dark:hover:bg-red-900/20'
-                    onClick={logout}
-                    title={
-                      isLoggingOut ? 'Cerrando sesión...' : 'Cerrar sesión'
-                    }
-                  >
-                    <LogOut
-                      className={`h-4 w-4 text-gray-600 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400 ${
-                        isLoggingOut ? 'animate-pulse' : ''
-                      }`}
-                    />
-                  </Button>
-                </>
-              )}
-            </div>
-          </div>
+          {/* Footer: perfil + tema + logout */}
+          <SidebarFooter
+            isExpanded={isExpanded}
+            isAdmin={vm.isAdmin}
+            initials={vm.initials}
+            displayName={vm.displayName}
+            email={vm.user?.email}
+            rol={vm.perfil?.rol}
+            rolGradient={vm.rolGradient}
+            rolBadgeColor={vm.rolBadgeColor}
+            isLoggingOut={vm.isLoggingOut}
+            onLogout={vm.logout}
+          />
         </motion.aside>
       </div>
     </>

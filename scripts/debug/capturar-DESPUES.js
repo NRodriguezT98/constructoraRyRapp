@@ -81,9 +81,13 @@ async function capturarDespues() {
 
     if (nuevas.length > 0) {
       nuevas.forEach((v, i) => {
-        console.log(`\n  ${i + 1}. Versión ${v.version} (hace ${v.segundos_atras}s)`)
+        console.log(
+          `\n  ${i + 1}. Versión ${v.version} (hace ${v.segundos_atras}s)`
+        )
         console.log(`     Tipo: ${v.tipo_cambio}`)
-        console.log(`     Razón: ${(v.razon_cambio || '(sin razón)').substring(0, 80)}`)
+        console.log(
+          `     Razón: ${(v.razon_cambio || '(sin razón)').substring(0, 80)}`
+        )
         console.log(`     Timestamp: ${v.timestamp}`)
       })
 
@@ -95,7 +99,9 @@ async function capturarDespues() {
         porSegundo[segundo].push(v.version)
       })
 
-      const duplicados = Object.entries(porSegundo).filter(([_, vers]) => vers.length > 1)
+      const duplicados = Object.entries(porSegundo).filter(
+        ([_, vers]) => vers.length > 1
+      )
 
       console.log('\n' + '='.repeat(60))
       if (duplicados.length > 0) {
@@ -106,13 +112,17 @@ async function capturarDespues() {
         console.log('\n❌ PRUEBA FALLIDA: Aún hay duplicación')
       } else {
         console.log('✅ NO HAY DUPLICADOS')
-        console.log(`✅ Se creó exactamente ${nuevas.length} versión(es) como esperado`)
+        console.log(
+          `✅ Se creó exactamente ${nuevas.length} versión(es) como esperado`
+        )
         console.log('\n✅ PRUEBA EXITOSA: Trigger desactivado correctamente')
       }
       console.log('='.repeat(60))
     } else {
       console.log('\n⚠️  No se detectaron versiones nuevas en el último minuto')
-      console.log('   Asegúrate de haber modificado las fuentes DESPUÉS de ejecutar este script')
+      console.log(
+        '   Asegúrate de haber modificado las fuentes DESPUÉS de ejecutar este script'
+      )
     }
 
     // 3. Fuentes activas
@@ -122,7 +132,6 @@ async function capturarDespues() {
     )
 
     console.log(`\n💰 Fuentes activas ahora: ${fuentes[0].activas}`)
-
   } finally {
     await client.end()
   }

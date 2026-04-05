@@ -13,19 +13,19 @@ export const designSystem = {
   // ESPACIADOS (Base 4px)
   // ============================================
   spacing: {
-    xs: 'gap-2',      // 8px
-    sm: 'gap-3',      // 12px
-    md: 'gap-4',      // 16px
-    lg: 'gap-6',      // 24px
-    xl: 'gap-8',      // 32px
+    xs: 'gap-2', // 8px
+    sm: 'gap-3', // 12px
+    md: 'gap-4', // 16px
+    lg: 'gap-6', // 24px
+    xl: 'gap-8', // 32px
   },
 
   padding: {
-    xs: 'p-2',        // 8px
-    sm: 'p-3',        // 12px
-    md: 'p-4',        // 16px
-    lg: 'p-5',        // 20px
-    xl: 'p-6',        // 24px
+    xs: 'p-2', // 8px
+    sm: 'p-3', // 12px
+    md: 'p-4', // 16px
+    lg: 'p-5', // 20px
+    xl: 'p-6', // 24px
   },
 
   // ============================================
@@ -33,19 +33,19 @@ export const designSystem = {
   // ============================================
   typography: {
     // Headings
-    h1: 'text-2xl font-semibold tracking-tight',           // Páginas principales
-    h2: 'text-xl font-semibold',                          // Secciones importantes
-    h3: 'text-lg font-medium',                            // Subsecciones
-    h4: 'text-base font-medium',                          // Cards/Componentes
+    h1: 'text-2xl font-semibold tracking-tight', // Páginas principales
+    h2: 'text-xl font-semibold', // Secciones importantes
+    h3: 'text-lg font-medium', // Subsecciones
+    h4: 'text-base font-medium', // Cards/Componentes
 
     // Body
-    body: 'text-sm',                                      // Texto normal
-    bodyLarge: 'text-base',                               // Texto destacado
-    bodySmall: 'text-xs',                                 // Texto secundario
+    body: 'text-sm', // Texto normal
+    bodyLarge: 'text-base', // Texto destacado
+    bodySmall: 'text-xs', // Texto secundario
 
     // Labels
-    label: 'text-xs font-medium',                         // Form labels
-    caption: 'text-[10px]',                               // Hints, metadata
+    label: 'text-xs font-medium', // Form labels
+    caption: 'text-[10px]', // Hints, metadata
 
     // Special
     code: 'font-mono text-xs',
@@ -87,9 +87,12 @@ export const designSystem = {
     lg: 'px-5 py-2.5 text-base',
 
     // Variantes
-    primary: 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:bg-gray-800 dark:hover:bg-gray-100',
-    secondary: 'bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800',
-    ghost: 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800',
+    primary:
+      'bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:bg-gray-800 dark:hover:bg-gray-100',
+    secondary:
+      'bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800',
+    ghost:
+      'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800',
     success: 'bg-green-600 text-white hover:bg-green-700',
     danger: 'bg-red-600 text-white hover:bg-red-700',
 
@@ -104,7 +107,8 @@ export const designSystem = {
     base: 'w-full px-3 py-2 text-sm bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all',
     error: 'border-red-500 dark:border-red-600 ring-2 ring-red-500/10',
     success: 'border-green-500 dark:border-green-600 ring-2 ring-green-500/10',
-    disabled: 'bg-gray-50 dark:bg-gray-900 text-gray-500 dark:text-gray-400 cursor-not-allowed',
+    disabled:
+      'bg-gray-50 dark:bg-gray-900 text-gray-500 dark:text-gray-400 cursor-not-allowed',
 
     label: 'text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5',
     hint: 'text-[10px] text-gray-500 dark:text-gray-400 mt-1',
@@ -146,9 +150,11 @@ export const designSystem = {
   // ============================================
   badge: {
     base: 'inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-medium',
-    success: 'bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+    success:
+      'bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400',
     error: 'bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-400',
-    warning: 'bg-yellow-50 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
+    warning:
+      'bg-yellow-50 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
     info: 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
     neutral: 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300',
   },
@@ -204,6 +210,19 @@ export const cn = (...classes: (string | undefined | null | false)[]) => {
 }
 
 // Exports con nombres específicos para mayor claridad
-export const { spacing, padding, typography, colors, button, input, card, table, badge, layout, icon, animation } = designSystem
+export const {
+  spacing,
+  padding,
+  typography,
+  colors,
+  button,
+  input,
+  card,
+  table,
+  badge,
+  layout,
+  icon,
+  animation,
+} = designSystem
 
 export default designSystem

@@ -54,28 +54,29 @@ export function PasoLinderosNuevo({ register, errors }: PasoLinderosProps) {
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -20 }}
       transition={{ duration: 0.2 }}
-      className="space-y-3"
+      className='space-y-3'
     >
       {/* Título del paso */}
       <div>
-        <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-1">
+        <h2 className='mb-1 text-xl font-bold text-gray-900 dark:text-white'>
           Linderos de la Vivienda
         </h2>
-        <p className="text-sm text-gray-600 dark:text-gray-400">
+        <p className='text-sm text-gray-600 dark:text-gray-400'>
           Define los límites de la vivienda en cada dirección
         </p>
       </div>
 
       {/* Consejo */}
-      <div className="flex items-start gap-3 p-3 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
-        <Lightbulb className="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+      <div className='flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 p-3 dark:border-amber-800 dark:bg-amber-900/20'>
+        <Lightbulb className='mt-0.5 h-5 w-5 flex-shrink-0 text-amber-600 dark:text-amber-400' />
         <div>
-          <p className="text-sm font-medium text-amber-900 dark:text-amber-100 mb-1">
+          <p className='mb-1 text-sm font-medium text-amber-900 dark:text-amber-100'>
             Consejo
           </p>
-          <p className="text-xs text-amber-700 dark:text-amber-300">
-            Describe claramente cada límite de la vivienda. Por ejemplo: &quot;Por el Norte con la Calle 123&quot;,
-            &quot;Por el Sur con el lote 45&quot;, etc.
+          <p className='text-xs text-amber-700 dark:text-amber-300'>
+            Describe claramente cada límite de la vivienda. Por ejemplo:
+            &quot;Por el Norte con la Calle 123&quot;, &quot;Por el Sur con el
+            lote 45&quot;, etc.
           </p>
         </div>
       </div>
@@ -85,7 +86,8 @@ export function PasoLinderosNuevo({ register, errors }: PasoLinderosProps) {
         {linderos.map(lindero => (
           <div key={lindero.id} className={styles.field.container}>
             <label htmlFor={lindero.id} className={styles.field.label}>
-              {lindero.icon} {lindero.label} <span className={styles.field.required}>*</span>
+              {lindero.icon} {lindero.label}{' '}
+              <span className={styles.field.required}>*</span>
             </label>
             <div className={styles.field.inputWrapper}>
               <Compass className={styles.field.inputIcon} />
@@ -96,7 +98,8 @@ export function PasoLinderosNuevo({ register, errors }: PasoLinderosProps) {
                 placeholder={lindero.placeholder}
                 className={cn(
                   styles.field.textarea,
-                  errors[lindero.id as keyof ViviendaSchemaType] && styles.field.inputError
+                  errors[lindero.id as keyof ViviendaSchemaType] &&
+                    styles.field.inputError
                 )}
               />
             </div>
@@ -107,7 +110,10 @@ export function PasoLinderosNuevo({ register, errors }: PasoLinderosProps) {
                 className={styles.field.error}
               >
                 <AlertCircle className={styles.field.errorIcon} />
-                {errors[lindero.id as keyof ViviendaSchemaType]?.message as string}
+                {
+                  errors[lindero.id as keyof ViviendaSchemaType]
+                    ?.message as string
+                }
               </motion.div>
             )}
           </div>

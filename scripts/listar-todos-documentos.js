@@ -7,7 +7,9 @@ const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 const supabase = createClient(supabaseUrl, supabaseKey)
 
 async function listarTodosLosDocumentosCliente() {
-  console.log('📋 Listando TODOS los documentos_cliente ordenados por fecha...\n')
+  console.log(
+    '📋 Listando TODOS los documentos_cliente ordenados por fecha...\n'
+  )
 
   const { data: docs, error } = await supabase
     .from('documentos_cliente')
@@ -33,8 +35,10 @@ async function listarTodosLosDocumentosCliente() {
   })
 
   // Buscar específicamente el de Juan Carlos
-  const juanCarlosDocs = docs.filter(d =>
-    d.titulo.toLowerCase().includes('juan') && d.titulo.toLowerCase().includes('carlos')
+  const juanCarlosDocs = docs.filter(
+    d =>
+      d.titulo.toLowerCase().includes('juan') &&
+      d.titulo.toLowerCase().includes('carlos')
   )
 
   if (juanCarlosDocs.length > 0) {
@@ -42,7 +46,9 @@ async function listarTodosLosDocumentosCliente() {
     juanCarlosDocs.forEach((doc, i) => {
       console.log(`${i + 1}. ${doc.titulo}`)
       console.log(`   ID para actualizar: ${doc.id}`)
-      console.log(`   Entidad actual: ${doc.metadata?.entidad || 'SIN ENTIDAD'}`)
+      console.log(
+        `   Entidad actual: ${doc.metadata?.entidad || 'SIN ENTIDAD'}`
+      )
       console.log('')
     })
   }

@@ -5,7 +5,11 @@ import { Check, Pencil } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
 
-import { checkAppearAnim, progressBarTransition, sectionExpandAnim } from './accordion-wizard.animations'
+import {
+  checkAppearAnim,
+  progressBarTransition,
+  sectionExpandAnim,
+} from './accordion-wizard.animations'
 import { getAccordionWizardStyles } from './accordion-wizard.styles'
 import type { AccordionWizardSectionProps } from './accordion-wizard.types'
 import { AccordionWizardSummary } from './AccordionWizardSummary'
@@ -40,14 +44,14 @@ export function AccordionWizardSection({
       <motion.div
         className={styles.section.completed}
         onClick={onEdit}
-        role="button"
+        role='button'
         tabIndex={0}
-        onKeyDown={(e) => {
+        onKeyDown={e => {
           if (e.key === 'Enter' || e.key === ' ') onEdit?.()
         }}
         layout
       >
-        <div className="flex items-center gap-3">
+        <div className='flex items-center gap-3'>
           {/* Check circle */}
           <motion.div
             className={styles.stepCircle.completed}
@@ -55,12 +59,12 @@ export function AccordionWizardSection({
             animate={checkAppearAnim.animate}
             transition={checkAppearAnim.transition}
           >
-            <Check className="w-4 h-4 text-green-600 dark:text-green-400" />
+            <Check className='h-4 w-4 text-green-600 dark:text-green-400' />
           </motion.div>
 
           {/* Title + Summary */}
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-gray-900 dark:text-white">
+          <div className='min-w-0 flex-1'>
+            <p className='text-sm font-semibold text-gray-900 dark:text-white'>
               {title}
             </p>
             {summaryItems ? (
@@ -70,8 +74,8 @@ export function AccordionWizardSection({
 
           {/* Change count badge (edit mode) */}
           {changeCount != null && changeCount > 0 ? (
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border border-amber-200 dark:border-amber-800/50">
-              <Pencil className="w-3 h-3" />
+            <span className='inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700 dark:border-amber-800/50 dark:bg-amber-900/30 dark:text-amber-400'>
+              <Pencil className='h-3 w-3' />
               {changeCount} {changeCount === 1 ? 'cambio' : 'cambios'}
             </span>
           ) : null}
@@ -79,15 +83,15 @@ export function AccordionWizardSection({
           {/* Edit button */}
           {onEdit ? (
             <button
-              type="button"
-              onClick={(e) => {
+              type='button'
+              onClick={e => {
                 e.stopPropagation()
                 onEdit()
               }}
               className={styles.editButton}
               aria-label={`Editar ${title}`}
             >
-              <Pencil className="w-3.5 h-3.5" />
+              <Pencil className='h-3.5 w-3.5' />
               Editar
             </button>
           ) : null}
@@ -101,27 +105,31 @@ export function AccordionWizardSection({
     return (
       <motion.div className={styles.section.active} layout>
         {/* Header */}
-        <div className="px-6 pt-5 pb-3 flex items-center gap-3">
+        <div className='flex items-center gap-3 px-6 pb-3 pt-5'>
           <div className={styles.stepCircle.active}>
             {StepIcon ? (
-              <StepIcon className={`w-4 h-4 ${styles.stepNumber.active.replace('text-sm font-bold ', '')}`} />
+              <StepIcon
+                className={`h-4 w-4 ${styles.stepNumber.active.replace('text-sm font-bold', '')}`}
+              />
             ) : (
               <span className={styles.stepNumber.active}>{stepNumber}</span>
             )}
           </div>
-          <div className="flex-1">
-            <p className="text-sm font-semibold text-gray-900 dark:text-white">
+          <div className='flex-1'>
+            <p className='text-sm font-semibold text-gray-900 dark:text-white'>
               {title}
             </p>
-            <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+            <div className='mt-0.5 flex flex-wrap items-center gap-2'>
               {currentStep != null && totalSteps != null ? (
-                <p className="text-xs text-gray-400 dark:text-gray-500">
+                <p className='text-xs text-gray-400 dark:text-gray-500'>
                   Paso {currentStep} de {totalSteps}
                 </p>
               ) : null}
               {fieldCount ? (
-                <span className="text-[11px] text-gray-400 dark:text-gray-500">
-                  · {fieldCount.required} obligatorio{fieldCount.required !== 1 ? 's' : ''} · {fieldCount.optional} opcional{fieldCount.optional !== 1 ? 'es' : ''}
+                <span className='text-[11px] text-gray-400 dark:text-gray-500'>
+                  · {fieldCount.required} obligatorio
+                  {fieldCount.required !== 1 ? 's' : ''} · {fieldCount.optional}{' '}
+                  opcional{fieldCount.optional !== 1 ? 'es' : ''}
                 </span>
               ) : null}
             </div>
@@ -130,8 +138,8 @@ export function AccordionWizardSection({
 
         {/* Description */}
         {description ? (
-          <div className="px-6 pb-3">
-            <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed bg-gray-50 dark:bg-gray-800/50 rounded-lg px-3 py-2 border border-gray-100 dark:border-gray-800">
+          <div className='px-6 pb-3'>
+            <p className='rounded-lg border border-gray-100 bg-gray-50 px-3 py-2 text-xs leading-relaxed text-gray-500 dark:border-gray-800 dark:bg-gray-800/50 dark:text-gray-400'>
               💡 {description}
             </p>
           </div>
@@ -150,14 +158,14 @@ export function AccordionWizardSection({
         ) : null}
 
         {/* Expandable content */}
-        <AnimatePresence mode="wait">
+        <AnimatePresence mode='wait'>
           <motion.div
             key={`section-content-${stepNumber}`}
             initial={sectionExpandAnim.initial}
             animate={sectionExpandAnim.animate}
             exit={sectionExpandAnim.exit}
             transition={sectionExpandAnim.transition}
-            className="px-6 pb-5"
+            className='px-6 pb-5'
           >
             {children}
           </motion.div>
@@ -169,15 +177,17 @@ export function AccordionWizardSection({
   // ── Pending ────────────────────────────────────────────
   return (
     <motion.div className={styles.section.pending} layout>
-      <div className="flex items-center gap-3">
+      <div className='flex items-center gap-3'>
         <div className={styles.stepCircle.pending}>
           {StepIcon ? (
-            <StepIcon className={`w-4 h-4 ${styles.stepNumber.pending.replace('text-sm font-medium ', '')}`} />
+            <StepIcon
+              className={`h-4 w-4 ${styles.stepNumber.pending.replace('text-sm font-medium', '')}`}
+            />
           ) : (
             <span className={styles.stepNumber.pending}>{stepNumber}</span>
           )}
         </div>
-        <p className="text-sm font-medium text-gray-400 dark:text-gray-500">
+        <p className='text-sm font-medium text-gray-400 dark:text-gray-500'>
           {title}
         </p>
       </div>

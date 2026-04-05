@@ -12,9 +12,7 @@
 
 import { supabase } from '@/lib/supabase/client'
 import { logger } from '@/lib/utils/logger'
-import type {
-    DocumentoPendienteEnriquecido
-} from '@/modules/clientes/types/documentos-pendientes.types'
+import type { DocumentoPendienteEnriquecido } from '@/modules/clientes/types/documentos-pendientes.types'
 
 // ============================================
 // FUNCIONES PÚBLICAS
@@ -31,7 +29,9 @@ export async function fetchDocumentosPendientesPorCliente(
   try {
     const { data: pendientes, error } = await supabase
       .from('vista_documentos_pendientes_fuentes')
-      .select('requisito_config_id,fuente_pago_id,cliente_id,tipo_documento,metadata,estado,prioridad,fecha_creacion,nivel_validacion,orden')
+      .select(
+        'requisito_config_id,fuente_pago_id,cliente_id,tipo_documento,metadata,estado,prioridad,fecha_creacion,nivel_validacion,orden'
+      )
       .eq('cliente_id', clienteId)
       .order('nivel_validacion', { ascending: true })
       .order('orden', { ascending: false })
@@ -60,23 +60,27 @@ export async function fetchDocumentosPendientesPorCliente(
       fecha_limite: null,
       fecha_completado: null,
       completado_por: null,
-      _enriched: p.metadata ? (() => {
-        const meta = p.metadata as Record<string, unknown>
-        return {
-          fuente_pago: {
-            tipo: meta.tipo_fuente,
-            entidad: meta.entidad_fuente,
-            estado: 'Activa' as const
-          },
-          negociacion: meta.negociacion_id ? {
-            vivienda: {
-              numero: meta.vivienda_numero,
-              manzana: { nombre: meta.manzana_nombre }
-            },
-            cliente: { nombre_completo: meta.cliente_nombre }
-          } : undefined
-        }
-      })() : undefined
+      _enriched: p.metadata
+        ? (() => {
+            const meta = p.metadata as Record<string, unknown>
+            return {
+              fuente_pago: {
+                tipo: meta.tipo_fuente,
+                entidad: meta.entidad_fuente,
+                estado: 'Activa' as const,
+              },
+              negociacion: meta.negociacion_id
+                ? {
+                    vivienda: {
+                      numero: meta.vivienda_numero,
+                      manzana: { nombre: meta.manzana_nombre },
+                    },
+                    cliente: { nombre_completo: meta.cliente_nombre },
+                  }
+                : undefined,
+            }
+          })()
+        : undefined,
     }))
 
     return documentosEnriquecidos as unknown as DocumentoPendienteEnriquecido[]

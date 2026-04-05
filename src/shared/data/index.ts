@@ -2,4 +2,4 @@
  * Barrel Export: Shared Data
  */
 
-export * from './colombia-locations';
+export * from './colombia-locations'

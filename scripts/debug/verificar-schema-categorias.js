@@ -18,8 +18,10 @@ async function verificarSchema() {
     `)
 
     console.log('📋 Columnas de categorias_documento:\n')
-    result.rows.forEach((col) => {
-      console.log(`  - ${col.column_name} (${col.data_type}) ${col.is_nullable === 'NO' ? 'NOT NULL' : ''}`)
+    result.rows.forEach(col => {
+      console.log(
+        `  - ${col.column_name} (${col.data_type}) ${col.is_nullable === 'NO' ? 'NOT NULL' : ''}`
+      )
     })
   } catch (error) {
     console.error('❌ Error:', error.message)

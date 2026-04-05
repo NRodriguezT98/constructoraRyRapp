@@ -13,6 +13,7 @@ d:\constructoraRyRapp\src\app\
 ```
 
 **Ejemplo de rutas válidas:**
+
 ```
 src/app/page.tsx                     → /
 src/app/layout.tsx                   → Layout raíz
@@ -36,6 +37,7 @@ src/app/proyectos/page.tsx          → /proyectos
 ## 📂 **CARPETAS EXISTENTES Y SU PROPÓSITO**
 
 ### **Carpetas Activas:**
+
 ```
 src/app/              ✅ App Router de Next.js (ÚNICA VÁLIDA)
 src/modules/          ✅ Módulos de negocio (components, hooks, services)
@@ -47,6 +49,7 @@ supabase/             ✅ Migraciones SQL
 ```
 
 ### **Carpetas Eliminadas:**
+
 ```
 app.OLD/              🗑️ ELIMINADA (5 Nov 2025) - Ya no existe
 ```
@@ -58,11 +61,13 @@ app.OLD/              🗑️ ELIMINADA (5 Nov 2025) - Ya no existe
 **ANTES de crear cualquier archivo `page.tsx` o `layout.tsx`:**
 
 1. **Verificar**: ¿La ruta ya existe en `src/app/`?
+
    ```bash
    ls src/app/[modulo]/
    ```
 
 2. **Crear SIEMPRE en**: `src/app/[modulo]/[subruta]/page.tsx`
+
    ```bash
    # ✅ CORRECTO
    New-Item -Path "src/app/viviendas/nueva/page.tsx" -Force
@@ -78,18 +83,21 @@ app.OLD/              🗑️ ELIMINADA (5 Nov 2025) - Ya no existe
 ## 🔍 **CÓMO VERIFICAR LA UBICACIÓN CORRECTA**
 
 ### **Método 1: Buscar archivos existentes**
+
 ```bash
 ls src/app/
 # Salida esperada: (dashboard)/, abonos/, admin/, api/, auditorias/, etc.
 ```
 
 ### **Método 2: Verificar que `app/` NO exista en raíz**
+
 ```bash
 Test-Path "app/"
 # Debe retornar: False
 ```
 
 ### **Método 3: Confirmar estructura en `next.config.js`**
+
 ```javascript
 // Next.js busca automáticamente en:
 // 1. ./app/ (si existe)
@@ -111,12 +119,14 @@ Test-Path "app/"
 ## 🛠️ **COMANDOS SEGUROS PARA CREAR RUTAS**
 
 ### **Crear nueva ruta en módulo existente:**
+
 ```powershell
 # Ejemplo: /viviendas/nueva
 New-Item -Path "src/app/viviendas/nueva/page.tsx" -ItemType File -Force
 ```
 
 ### **Crear nuevo módulo completo:**
+
 ```powershell
 # Ejemplo: nuevo módulo "contratos"
 New-Item -Path "src/app/contratos" -ItemType Directory -Force
@@ -125,6 +135,7 @@ New-Item -Path "src/app/contratos/layout.tsx" -ItemType File -Force
 ```
 
 ### **Verificar que NO existe `app/` en raíz:**
+
 ```powershell
 if (Test-Path "app/") {
     Write-Host "⚠️ ERROR: Carpeta 'app/' existe en raíz (debe estar en src/app/)" -ForegroundColor Red
@@ -137,12 +148,12 @@ if (Test-Path "app/") {
 
 ## 📌 **RESUMEN EJECUTIVO**
 
-| Aspecto | Valor |
-|---------|-------|
-| **App Directory** | `src/app/` |
-| **Crear rutas en** | `src/app/[modulo]/[subruta]/page.tsx` |
-| **NUNCA crear** | `app/` en raíz |
-| **Carpetas obsoletas** | `app.OLD/` (ignorar) |
+| Aspecto                | Valor                                 |
+| ---------------------- | ------------------------------------- |
+| **App Directory**      | `src/app/`                            |
+| **Crear rutas en**     | `src/app/[modulo]/[subruta]/page.tsx` |
+| **NUNCA crear**        | `app/` en raíz                        |
+| **Carpetas obsoletas** | `app.OLD/` (ignorar)                  |
 
 ---
 

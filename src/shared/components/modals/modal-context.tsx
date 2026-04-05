@@ -7,7 +7,13 @@
 
 'use client'
 
-import { createContext, useCallback, useContext, useState, type ReactNode } from 'react'
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useState,
+  type ReactNode,
+} from 'react'
 
 // ==========================================
 // TYPES
@@ -71,7 +77,7 @@ export function ModalProvider({ children }: { children: ReactNode }) {
   // ==========================================
 
   const confirm = useCallback((options: ConfirmOptions): Promise<boolean> => {
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       setConfirmState({
         ...options,
         isOpen: true,
@@ -80,19 +86,22 @@ export function ModalProvider({ children }: { children: ReactNode }) {
     })
   }, [])
 
-  const closeConfirm = useCallback((result: boolean) => {
-    if (confirmState) {
-      confirmState.resolve(result)
-      setConfirmState(null)
-    }
-  }, [confirmState])
+  const closeConfirm = useCallback(
+    (result: boolean) => {
+      if (confirmState) {
+        confirmState.resolve(result)
+        setConfirmState(null)
+      }
+    },
+    [confirmState]
+  )
 
   // ==========================================
   // ALERT
   // ==========================================
 
   const alert = useCallback((options: AlertOptions): Promise<void> => {
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       setAlertState({
         ...options,
         isOpen: true,

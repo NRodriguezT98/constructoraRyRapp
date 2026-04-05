@@ -16,10 +16,12 @@ export const colorMigrationMap = {
   'from-green-600 to-emerald-600': 'theme.classes.gradient.primary',
   'from-green-600 via-emerald-600 to-teal-600': 'theme.classes.gradient.triple',
   'from-green-50 to-emerald-50': 'theme.classes.gradient.background',
-  'from-green-900/20 to-emerald-900/20': 'theme.classes.gradient.backgroundDark',
+  'from-green-900/20 to-emerald-900/20':
+    'theme.classes.gradient.backgroundDark',
 
   'from-green-100 to-emerald-100': 'theme.classes.gradient.background', // Icon backgrounds
-  'dark:from-green-900/30 dark:to-emerald-900/30': 'theme.classes.gradient.backgroundDark',
+  'dark:from-green-900/30 dark:to-emerald-900/30':
+    'theme.classes.gradient.backgroundDark',
 
   // ===========================
   // BORDES
@@ -164,7 +166,10 @@ export const commonPatterns = {
 export const pendingComponents = [
   {
     path: 'src/modules/documentos/components/lista/documento-card.tsx',
-    hardcodedColors: ['from-green-100 to-emerald-100', 'from-green-600 to-emerald-600'],
+    hardcodedColors: [
+      'from-green-100 to-emerald-100',
+      'from-green-600 to-emerald-600',
+    ],
     priority: 'high',
   },
   {
@@ -186,7 +191,10 @@ export const pendingComponents = [
 /**
  * Convierte className estático a template string si es necesario
  */
-export function convertToTemplateString(className: string, hasTheme: boolean): string {
+export function convertToTemplateString(
+  className: string,
+  hasTheme: boolean
+): string {
   if (!hasTheme) return `'${className}'`
   return `\`${className}\``
 }
@@ -228,4 +236,3 @@ export function [COMPONENT_NAME]({
   // ... resto del componente
 }
 `
-

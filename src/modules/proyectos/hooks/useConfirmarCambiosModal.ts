@@ -16,9 +16,8 @@ interface UseConfirmarCambiosModalParams {
 
 export function useConfirmarCambiosModal({
   cambios,
-  isLoading = false
+  isLoading = false,
 }: UseConfirmarCambiosModalParams) {
-
   // Calcular si hay cambios en el proyecto
   const tieneCambiosProyecto = useMemo(() => {
     return cambios.proyecto.length > 0
@@ -30,7 +29,9 @@ export function useConfirmarCambiosModal({
   }, [cambios.manzanas])
 
   // Obtener tipo de contenedor para manzana según tipo de cambio
-  const getManzanaContainerClass = (tipo: 'agregada' | 'eliminada' | 'modificada') => {
+  const getManzanaContainerClass = (
+    tipo: 'agregada' | 'eliminada' | 'modificada'
+  ) => {
     const classMap = {
       agregada: 'agregada',
       eliminada: 'eliminada',
@@ -40,7 +41,9 @@ export function useConfirmarCambiosModal({
   }
 
   // Obtener tipo de badge para manzana según tipo de cambio
-  const getManzanaBadgeClass = (tipo: 'agregada' | 'eliminada' | 'modificada') => {
+  const getManzanaBadgeClass = (
+    tipo: 'agregada' | 'eliminada' | 'modificada'
+  ) => {
     const classMap = {
       agregada: 'badgeAgregada',
       eliminada: 'badgeEliminada',
@@ -50,7 +53,9 @@ export function useConfirmarCambiosModal({
   }
 
   // Obtener tipo de ícono para manzana según tipo de cambio
-  const getManzanaIconClass = (tipo: 'agregada' | 'eliminada' | 'modificada') => {
+  const getManzanaIconClass = (
+    tipo: 'agregada' | 'eliminada' | 'modificada'
+  ) => {
     const classMap = {
       agregada: 'iconAgregada',
       eliminada: 'iconEliminada',

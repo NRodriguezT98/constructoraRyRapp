@@ -19,7 +19,10 @@ import { logger } from '@/lib/utils/logger'
 
 import { anularAbono } from '../services/anular-abono.service'
 import { editarAbonoService } from '../services/editar-abono.service'
-import { registrarAbonoApi, type RegistrarAbonoPayload } from '../services/registrar-abono.service'
+import {
+  registrarAbonoApi,
+  type RegistrarAbonoPayload,
+} from '../services/registrar-abono.service'
 import type { AnularAbonoPayload } from '../types'
 import type { EditarAbonoPayload } from '../types/editar-abono.types'
 
@@ -52,7 +55,11 @@ export interface AbonoCompletoRow {
   cliente_nombres: string
   cliente_apellidos: string
   cliente_numero_documento: string
-  negociacion_estado: 'Activa' | 'Suspendida' | 'Cerrada por Renuncia' | 'Completada'
+  negociacion_estado:
+    | 'Activa'
+    | 'Suspendida'
+    | 'Cerrada por Renuncia'
+    | 'Completada'
   vivienda_id: string
   vivienda_numero: string
   manzana_id: string
@@ -113,7 +120,8 @@ export interface AbonoConInfo {
 export const abonosKeys = {
   all: ['abonos'] as const,
   lists: () => [...abonosKeys.all, 'list'] as const,
-  list: (filtros?: Record<string, unknown>) => [...abonosKeys.lists(), { filtros }] as const,
+  list: (filtros?: Record<string, unknown>) =>
+    [...abonosKeys.lists(), { filtros }] as const,
   details: () => [...abonosKeys.all, 'detail'] as const,
   detail: (id: string) => [...abonosKeys.details(), id] as const,
 }
@@ -199,7 +207,7 @@ export function useAbonosQuery() {
     queryFn: fetchAbonos,
     staleTime: 30 * 1000, // 30 segundos — datos de pagos cambian con frecuencia
     gcTime: 5 * 60 * 1000,
-    placeholderData: (previousData) => previousData, // Smooth UX: mantener datos previos
+    placeholderData: previousData => previousData, // Smooth UX: mantener datos previos
   })
 
   return {
@@ -219,10 +227,11 @@ export function useAnularAbonoMutation() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (payload: AnularAbonoPayload) => anularAbono(payload).then(({ data, error }) => {
-      if (error) throw new Error(error)
-      return data
-    }),
+    mutationFn: (payload: AnularAbonoPayload) =>
+      anularAbono(payload).then(({ data, error }) => {
+        if (error) throw new Error(error)
+        return data
+      }),
     onSuccess: async () => {
       await queryClient.invalidateQueries({
         queryKey: abonosKeys.lists(),
@@ -240,10 +249,11 @@ export function useEditarAbonoMutation() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (payload: EditarAbonoPayload) => editarAbonoService(payload).then(({ ok, error, abono }) => {
-      if (!ok) throw new Error(error ?? 'Error al editar el abono')
-      return abono
-    }),
+    mutationFn: (payload: EditarAbonoPayload) =>
+      editarAbonoService(payload).then(({ ok, error, abono }) => {
+        if (!ok) throw new Error(error ?? 'Error al editar el abono')
+        return abono
+      }),
     onSuccess: async () => {
       await queryClient.invalidateQueries({
         queryKey: abonosKeys.lists(),

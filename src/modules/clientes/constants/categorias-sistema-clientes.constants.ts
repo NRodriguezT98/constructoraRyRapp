@@ -14,22 +14,24 @@ export const CATEGORIAS_SISTEMA_CLIENTES = [
   {
     id: 'b795b842-f035-42ce-9ab9-7fef2e1c5f24',
     nombre: 'Documentos de Identidad',
-    descripcion: 'Cédula del cliente, cédula del cónyuge, pasaporte, documentos de identificación',
+    descripcion:
+      'Cédula del cliente, cédula del cónyuge, pasaporte, documentos de identificación',
     color: 'green',
     icono: 'IdCard',
     orden: 1,
     es_sistema: true,
-    modulos_permitidos: ['clientes']
+    modulos_permitidos: ['clientes'],
   },
   {
     id: 'bd49740e-d46d-43c8-973f-196f1418765c',
     nombre: 'Certificados de Tradición',
-    descripcion: 'Certificados de tradición y libertad, certificados de dominio y propiedad',
+    descripcion:
+      'Certificados de tradición y libertad, certificados de dominio y propiedad',
     color: 'yellow',
     icono: 'FileText',
     orden: 2,
     es_sistema: true,
-    modulos_permitidos: ['clientes']
+    modulos_permitidos: ['clientes'],
   },
   {
     id: 'a82ca714-b191-4976-a089-66c031ff1496',
@@ -39,27 +41,30 @@ export const CATEGORIAS_SISTEMA_CLIENTES = [
     icono: 'ScrollText',
     orden: 3,
     es_sistema: true,
-    modulos_permitidos: ['clientes']
+    modulos_permitidos: ['clientes'],
   },
   {
     id: '4898e798-c188-4f02-bfcf-b2b15be48e34',
-    nombre: 'Cartas de aprobación, Promesas de Compraventa y Documentos del Proceso',
-    descripcion: 'Cartas de aprobación, promesas de compraventa, actas de entrega, resoluciones, documentos del proceso legal',
+    nombre:
+      'Cartas de aprobación, Promesas de Compraventa y Documentos del Proceso',
+    descripcion:
+      'Cartas de aprobación, promesas de compraventa, actas de entrega, resoluciones, documentos del proceso legal',
     color: 'cyan',
     icono: 'FileSignature',
     orden: 4,
     es_sistema: true,
-    modulos_permitidos: ['clientes']
+    modulos_permitidos: ['clientes'],
   },
   {
     id: 'f84ec757-2f11-4245-a487-5091176feec5',
     nombre: 'Gastos Notariales, Avalúos y Paz y salvos',
-    descripcion: 'Estudio de títulos, avalúos comerciales, gastos notariales, paz y salvos',
+    descripcion:
+      'Estudio de títulos, avalúos comerciales, gastos notariales, paz y salvos',
     color: '#F59E0B',
     icono: 'receipt',
     orden: 5,
     es_sistema: true,
-    modulos_permitidos: ['clientes']
+    modulos_permitidos: ['clientes'],
   },
   {
     id: 'f50f53d6-c1d8-4c42-9993-fddc2f8f5ade',
@@ -69,8 +74,8 @@ export const CATEGORIAS_SISTEMA_CLIENTES = [
     icono: 'folder',
     orden: 6,
     es_sistema: true,
-    modulos_permitidos: ['clientes']
-  }
+    modulos_permitidos: ['clientes'],
+  },
 ] as const
 
 /**
@@ -94,10 +99,11 @@ export const CATEGORIA_IDS = {
   GASTOS_NOTARIALES: 'f84ec757-2f11-4245-a487-5091176feec5' as const,
 
   /** Otros documentos varios */
-  OTROS_DOCUMENTOS: 'f50f53d6-c1d8-4c42-9993-fddc2f8f5ade' as const
+  OTROS_DOCUMENTOS: 'f50f53d6-c1d8-4c42-9993-fddc2f8f5ade' as const,
 } as const
 
 /**
  * Tipo auxiliar para IDs de categorías
  */
-export type CategoriaClienteId = typeof CATEGORIA_IDS[keyof typeof CATEGORIA_IDS]
+export type CategoriaClienteId =
+  (typeof CATEGORIA_IDS)[keyof typeof CATEGORIA_IDS]

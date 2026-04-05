@@ -30,13 +30,7 @@ export function ModuleContainer({
 }: ModuleContainerProps) {
   return (
     <div
-      className={`
-        min-h-screen
-        bg-gradient-to-br from-slate-50 via-white to-slate-100
-        dark:from-slate-950 dark:via-slate-900 dark:to-slate-950
-        p-4 md:p-6 lg:p-8
-        ${className}
-      `}
+      className={`min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 p-4 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 md:p-6 lg:p-8 ${className} `}
     >
       <div className={`mx-auto ${maxWidthClasses[maxWidth]}`}>{children}</div>
     </div>

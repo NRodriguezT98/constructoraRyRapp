@@ -1,2 +1,2 @@
-export { AuditoriasView } from './AuditoriasView';
-export { DetalleAuditoriaModal } from './DetalleAuditoriaModal';
+export { AuditoriasView } from './AuditoriasView'
+export { DetalleAuditoriaModal } from './DetalleAuditoriaModal'

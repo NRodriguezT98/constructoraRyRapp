@@ -18,21 +18,19 @@ export function useProyectosViviendas({
   valorViviendaInicial,
 }: UseProyectosViviendasProps = {}) {
   // ✅ React Query para proyectos
-  const {
-    data: proyectos = [],
-    isLoading: cargandoProyectos,
-  } = useProyectosQuery()
+  const { data: proyectos = [], isLoading: cargandoProyectos } =
+    useProyectosQuery()
 
   // Estado local
   const [proyectoSeleccionado, setProyectoSeleccionado] = useState('')
   const [viviendaId, setViviendaId] = useState(viviendaIdInicial || '')
-  const [valorNegociado, setValorNegociado] = useState(valorViviendaInicial || 0)
+  const [valorNegociado, setValorNegociado] = useState(
+    valorViviendaInicial || 0
+  )
 
   // ✅ React Query para viviendas (se ejecuta solo si hay proyecto)
-  const {
-    data: viviendas = [],
-    isLoading: cargandoViviendas,
-  } = useViviendasQuery(proyectoSeleccionado || undefined)
+  const { data: viviendas = [], isLoading: cargandoViviendas } =
+    useViviendasQuery(proyectoSeleccionado || undefined)
 
   // Efecto: Resetear vivienda si no hay proyecto
   useEffect(() => {
@@ -44,15 +42,16 @@ export function useProyectosViviendas({
   // Efecto: Auto-llenar valor cuando se selecciona vivienda
   useEffect(() => {
     if (viviendaId && !valorViviendaInicial) {
-      const vivienda = viviendas.find((v) => v.id === viviendaId)
+      const vivienda = viviendas.find(v => v.id === viviendaId)
       if (vivienda) {
         // ✅ CRÍTICO: usar valor_base (precio sin gastos notariales ni recargos).
         // El trigger calcular_valor_total_pagar en BD suma gastos+recargo automáticamente
         // para obtener valor_total_pagar (obligación real del cliente).
         // Si usamos valor_total aquí, el trigger los suma DOS VECES → doble conteo.
-        const precioBase = (vivienda.valor_base && vivienda.valor_base > 0)
-          ? vivienda.valor_base
-          : vivienda.valor_total
+        const precioBase =
+          vivienda.valor_base && vivienda.valor_base > 0
+            ? vivienda.valor_base
+            : vivienda.valor_total
         setValorNegociado(precioBase)
       }
     }

@@ -78,13 +78,15 @@ async function verificar() {
       console.log(`Valor: ${primerRegistro}`)
       console.log(`Longitud: ${primerRegistro?.length || 0} caracteres`)
 
-      const esUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(primerRegistro)
+      const esUUID =
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+          primerRegistro
+        )
       const esEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(primerRegistro)
 
       console.log(`¿Es UUID?: ${esUUID ? '✅ SÍ' : '❌ NO'}`)
       console.log(`¿Es Email?: ${esEmail ? '✅ SÍ' : '❌ NO'}`)
     }
-
   } catch (error) {
     console.error('❌ Error:', error.message)
   } finally {

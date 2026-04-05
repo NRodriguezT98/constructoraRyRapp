@@ -96,7 +96,7 @@ export function useProyectoCard({
       e.stopPropagation()
       const url = construirURLProyecto({
         id: proyecto.id,
-        nombre: proyecto.nombre
+        nombre: proyecto.nombre,
       })
       router.push(url)
     },

@@ -20,7 +20,9 @@ async function verificarPermisosDirecto() {
     return
   }
 
-  console.log(`📊 Total permisos de Contador en BD: ${todosPermisos?.length || 0}`)
+  console.log(
+    `📊 Total permisos de Contador en BD: ${todosPermisos?.length || 0}`
+  )
 
   // Verificar específicamente proyectos.ver
   const { data: permisoVer, error: error2 } = await supabase

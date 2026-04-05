@@ -12,7 +12,8 @@ import type { SelectHTMLAttributes } from 'react'
 import { motion } from 'framer-motion'
 import { ChevronRight, type LucideIcon } from 'lucide-react'
 
-export interface ModernSelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
+export interface ModernSelectProps
+  extends SelectHTMLAttributes<HTMLSelectElement> {
   icon: LucideIcon
   label: string
   error?: string

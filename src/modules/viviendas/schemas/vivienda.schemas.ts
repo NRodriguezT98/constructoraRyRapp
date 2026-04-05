@@ -47,59 +47,74 @@ export const paso2Schema = z.object({
 })
 
 // ==================== PASO 3: INFORMACIÓN LEGAL ====================
-export const paso3SchemaBase = z.object({
-  matricula_inmobiliaria: z
-    .string()
-    .min(1, 'La matrícula inmobiliaria es obligatoria')
-    .regex(/^[0-9\-]+$/, 'Solo números y guiones (Ej: 050-123456)'),
-  nomenclatura: z
-    .string()
-    .min(5, 'Mínimo 5 caracteres')
-    .regex(
-      /^[a-zA-Z0-9\sáéíóúÁÉÍÓÚñÑ#.,\-()°]+$/,
-      'Solo letras, números, #, -, espacios, puntos, comas, paréntesis y grado (°)'
-    ),
-  area_lote: z
-    .preprocess(
-      (val) => (typeof val === 'number' ? String(val) : val),
+export const paso3SchemaBase = z
+  .object({
+    matricula_inmobiliaria: z
+      .string()
+      .min(1, 'La matrícula inmobiliaria es obligatoria')
+      .regex(/^[0-9\-]+$/, 'Solo números y guiones (Ej: 050-123456)'),
+    nomenclatura: z
+      .string()
+      .min(5, 'Mínimo 5 caracteres')
+      .regex(
+        /^[a-zA-Z0-9\sáéíóúÁÉÍÓÚñÑ#.,\-()°]+$/,
+        'Solo letras, números, #, -, espacios, puntos, comas, paréntesis y grado (°)'
+      ),
+    area_lote: z.preprocess(
+      val => (typeof val === 'number' ? String(val) : val),
       z
         .string()
-        .refine((val) => {
+        .refine(val => {
           const trimmed = val.trim()
           return trimmed !== '' && trimmed !== '0'
         }, 'El área del lote es obligatoria')
-        .refine((val) => /^\d+(\.\d+)?$/.test(val.trim()), 'Debe ser un número válido (ej: 120.5)')
-        .refine((val) => parseFloat(val) > 0, 'El área del lote debe ser mayor a 0')
-        .transform((val) => parseFloat(val))
+        .refine(
+          val => /^\d+(\.\d+)?$/.test(val.trim()),
+          'Debe ser un número válido (ej: 120.5)'
+        )
+        .refine(
+          val => parseFloat(val) > 0,
+          'El área del lote debe ser mayor a 0'
+        )
+        .transform(val => parseFloat(val))
     ),
-  area_construida: z
-    .preprocess(
-      (val) => (typeof val === 'number' ? String(val) : val),
+    area_construida: z.preprocess(
+      val => (typeof val === 'number' ? String(val) : val),
       z
         .string()
-        .refine((val) => {
+        .refine(val => {
           const trimmed = val.trim()
           return trimmed !== '' && trimmed !== '0'
         }, 'El área construida es obligatoria')
-        .refine((val) => /^\d+(\.\d+)?$/.test(val.trim()), 'Debe ser un número válido (ej: 80.0)')
-        .refine((val) => parseFloat(val) > 0, 'El área construida debe ser mayor a 0')
-        .transform((val) => parseFloat(val))
+        .refine(
+          val => /^\d+(\.\d+)?$/.test(val.trim()),
+          'Debe ser un número válido (ej: 80.0)'
+        )
+        .refine(
+          val => parseFloat(val) > 0,
+          'El área construida debe ser mayor a 0'
+        )
+        .transform(val => parseFloat(val))
     ),
-  tipo_vivienda: z.string().min(1, 'Selecciona un tipo de vivienda'),
-}).refine(
-  (data) => {
-    // ✅ Validación cruzada: área construida no puede ser mayor al área del lote
-    return data.area_construida <= data.area_lote
-  },
-  {
-    message: 'El área construida no puede ser mayor al área del lote',
-    path: ['area_construida'],
-  }
-)
+    tipo_vivienda: z.string().min(1, 'Selecciona un tipo de vivienda'),
+  })
+  .refine(
+    data => {
+      // ✅ Validación cruzada: área construida no puede ser mayor al área del lote
+      return data.area_construida <= data.area_lote
+    },
+    {
+      message: 'El área construida no puede ser mayor al área del lote',
+      path: ['area_construida'],
+    }
+  )
 
 // ==================== PASO 4: INFORMACIÓN FINANCIERA ====================
 export const paso4Schema = z.object({
-  valor_base: z.number().positive('El precio base debe ser mayor a 0').min(1000000, 'El precio mínimo es $1,000,000'),
+  valor_base: z
+    .number()
+    .positive('El precio base debe ser mayor a 0')
+    .min(1000000, 'El precio mínimo es $1,000,000'),
   es_esquinera: z.boolean().optional(),
   recargo_esquinera: z.number().optional(),
 })

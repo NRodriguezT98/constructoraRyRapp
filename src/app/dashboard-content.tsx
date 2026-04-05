@@ -1,35 +1,32 @@
-'use client'
-
+﻿'use client'
 
 import { motion } from 'framer-motion'
 import {
-    ArrowRight,
-    Award,
-    Building2,
-    Calendar,
-    CreditCard,
-    FileX,
-    Home,
-    Shield,
-    Sparkles,
-    TrendingUp,
-    Users,
-    Zap,
+  ArrowRight,
+  Award,
+  Building2,
+  Calendar,
+  CreditCard,
+  FileX,
+  Home,
+  Shield,
+  Sparkles,
+  TrendingUp,
+  Users,
+  Zap,
 } from 'lucide-react'
 
 import Link from 'next/link'
 
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
+import { Badge } from '@/shared/components/ui/badge'
+import { Button } from '@/shared/components/ui/button'
 import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from '@/components/ui/card'
-
-
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/shared/components/ui/card'
 
 import * as styles from './page.styles'
 
@@ -195,7 +192,7 @@ export default function DashboardContent(_props: DashboardContentProps) {
             variants={itemVariants}
             className={styles.statsClasses.container}
           >
-            {stats.map((stat) => (
+            {stats.map(stat => (
               <motion.div
                 key={stat.label}
                 variants={itemVariants}
@@ -245,7 +242,7 @@ export default function DashboardContent(_props: DashboardContentProps) {
             className={styles.modulesClasses.grid}
             variants={containerVariants}
           >
-            {modules.map((module) => (
+            {modules.map(module => (
               <motion.div key={module.title} variants={itemVariants}>
                 <Link href={module.href}>
                   <Card
@@ -260,7 +257,9 @@ export default function DashboardContent(_props: DashboardContentProps) {
                       <div
                         className={`bg-gradient-to-r ${module.color} ${styles.moduleCardClasses.iconContainer}`}
                       >
-                        <module.icon className={styles.moduleCardClasses.icon} />
+                        <module.icon
+                          className={styles.moduleCardClasses.icon}
+                        />
                       </div>
                       <CardTitle className={styles.moduleCardClasses.title}>
                         {module.title}

@@ -7,7 +7,7 @@ const pool = new Pool({
   database: process.env.DATABASE_NAME,
   user: process.env.DATABASE_USER,
   password: process.env.DATABASE_PASSWORD,
-  ssl: false
+  ssl: false,
 })
 
 async function monitorearANTES() {
@@ -74,7 +74,6 @@ async function monitorearANTES() {
     console.log('✅ Estado inicial capturado')
     console.log('⏳ Ahora MODIFICA las fuentes de pago en la UI...')
     console.log('='.repeat(70) + '\n')
-
   } catch (error) {
     console.error('❌ Error:', error.message)
   } finally {

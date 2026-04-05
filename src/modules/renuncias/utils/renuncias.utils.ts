@@ -1,9 +1,15 @@
-import type { EstadoRenuncia, RenunciaCompletaRow, RenunciaConInfo } from '../types'
+import type {
+  EstadoRenuncia,
+  RenunciaCompletaRow,
+  RenunciaConInfo,
+} from '../types'
 
 /**
  * Transforma una fila plana de la vista SQL a estructura anidada para componentes.
  */
-export function transformarRenunciaRow(row: RenunciaCompletaRow): RenunciaConInfo {
+export function transformarRenunciaRow(
+  row: RenunciaCompletaRow
+): RenunciaConInfo {
   return {
     id: row.id,
     consecutivo: row.consecutivo,
@@ -64,7 +70,8 @@ export function transformarRenunciaRow(row: RenunciaCompletaRow): RenunciaConInf
  */
 export function formatUsuarioRegistro(valor: string | null): string {
   if (!valor) return 'N/A'
-  const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+  const uuidPattern =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
   if (uuidPattern.test(valor)) return 'Usuario del sistema'
   return valor
 }

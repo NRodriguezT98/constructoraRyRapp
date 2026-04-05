@@ -26,7 +26,7 @@ export interface Perfil {
   nombres: string
   apellidos: string
   email: string
-  rol: 'Administrador' | 'Contador' | 'Supervisor' | 'Gerente'
+  rol: 'Administrador' | 'Contabilidad' | 'Administrador de Obra' | 'Gerencia'
   estado: 'Activo' | 'Inactivo'
   debe_cambiar_password: boolean
   ultimo_acceso: string | null
@@ -139,7 +139,9 @@ export function useAuthPerfilQuery(userId?: string) {
 export function useAuth() {
   const { data: session, isLoading: sessionLoading } = useAuthSessionQuery()
   const { data: user, isLoading: userLoading } = useAuthUserQuery()
-  const { data: perfil, isLoading: perfilLoading } = useAuthPerfilQuery(user?.id)
+  const { data: perfil, isLoading: perfilLoading } = useAuthPerfilQuery(
+    user?.id
+  )
 
   return {
     session,

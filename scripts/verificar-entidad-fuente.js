@@ -16,7 +16,8 @@ async function verificarEntidad() {
 
   const { data, error } = await supabase
     .from('fuentes_pago')
-    .select(`
+    .select(
+      `
       id,
       tipo,
       entidad,
@@ -27,7 +28,8 @@ async function verificarEntidad() {
           nombre_completo
         )
       )
-    `)
+    `
+    )
     .eq('tipo', 'Subsidio Caja Compensación')
 
   if (error) {
@@ -39,7 +41,9 @@ async function verificarEntidad() {
 
   data.forEach((fuente, i) => {
     console.log(`${i + 1}. ID: ${fuente.id}`)
-    console.log(`   Cliente: ${fuente.negociaciones?.clientes?.nombre_completo || 'N/A'}`)
+    console.log(
+      `   Cliente: ${fuente.negociaciones?.clientes?.nombre_completo || 'N/A'}`
+    )
     console.log(`   Entidad: "${fuente.entidad || '(vacío)'}"`)
     console.log(`   Monto: $${fuente.monto_aprobado?.toLocaleString('es-CO')}`)
     console.log('')

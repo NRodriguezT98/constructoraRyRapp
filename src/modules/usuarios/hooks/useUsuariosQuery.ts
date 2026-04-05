@@ -14,20 +14,30 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { logger } from '@/lib/utils/logger'
 
 import { usuariosService } from '../services/usuarios.service'
-import type {
-    ActualizarUsuarioData,
-    CrearUsuarioData,
-    EstadoUsuario,
-    FiltrosUsuarios,
-    Rol
+import {
+  ActualizarUsuarioData,
+  CrearUsuarioData,
+  EstadoUsuario,
+  FiltrosUsuarios,
+  Rol,
 } from '../types'
+
+export const usuariosKeys = {
+  all: ['usuarios'] as const,
+  lists: () => [...usuariosKeys.all, 'list'] as const,
+  list: (filtros?: FiltrosUsuarios) =>
+    [...usuariosKeys.lists(), { filtros }] as const,
+  details: () => [...usuariosKeys.all, 'detail'] as const,
+  detail: (id: string) => [...usuariosKeys.details(), id] as const,
+  estadisticas: () => [...usuariosKeys.all, 'estadisticas'] as const,
+}
 
 /**
  * Query: Obtener todos los usuarios con filtros
  */
 export function useUsuariosQuery(filtros?: FiltrosUsuarios) {
   return useQuery({
-    queryKey: ['usuarios', filtros],
+    queryKey: usuariosKeys.list(filtros),
     queryFn: () => usuariosService.obtenerUsuarios(filtros),
     staleTime: 2 * 60 * 1000, // 2 minutos
     gcTime: 5 * 60 * 1000, // 5 minutos
@@ -39,7 +49,7 @@ export function useUsuariosQuery(filtros?: FiltrosUsuarios) {
  */
 export function useEstadisticasUsuariosQuery() {
   return useQuery({
-    queryKey: ['usuarios', 'estadisticas'],
+    queryKey: usuariosKeys.estadisticas(),
     queryFn: () => usuariosService.obtenerEstadisticas(),
     staleTime: 2 * 60 * 1000,
     gcTime: 5 * 60 * 1000,
@@ -51,7 +61,7 @@ export function useEstadisticasUsuariosQuery() {
  */
 export function useUsuarioQuery(id: string | null) {
   return useQuery({
-    queryKey: ['usuarios', id],
+    queryKey: usuariosKeys.detail(id ?? ''),
     queryFn: () => {
       if (!id) throw new Error('ID no proporcionado')
       return usuariosService.obtenerUsuarioPorId(id)
@@ -69,12 +79,11 @@ export function useCrearUsuarioMutation() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (datos: CrearUsuarioData) => usuariosService.crearUsuario(datos),
+    mutationFn: (datos: CrearUsuarioData) =>
+      usuariosService.crearUsuario(datos),
 
     onSuccess: () => {
-      // Invalidar queries de usuarios y estadísticas
-      queryClient.invalidateQueries({ queryKey: ['usuarios'] })
-
+      queryClient.invalidateQueries({ queryKey: usuariosKeys.lists() })
     },
 
     onError: error => {
@@ -94,10 +103,10 @@ export function useActualizarUsuarioMutation() {
       usuariosService.actualizarUsuario(id, datos),
 
     onSuccess: (_, variables) => {
-      // Invalidar queries de usuarios y el usuario específico
-      queryClient.invalidateQueries({ queryKey: ['usuarios'] })
-      queryClient.invalidateQueries({ queryKey: ['usuarios', variables.id] })
-
+      queryClient.invalidateQueries({ queryKey: usuariosKeys.lists() })
+      queryClient.invalidateQueries({
+        queryKey: usuariosKeys.detail(variables.id),
+      })
     },
 
     onError: error => {
@@ -117,9 +126,10 @@ export function useCambiarRolMutation() {
       usuariosService.cambiarRol(id, nuevoRol),
 
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['usuarios'] })
-      queryClient.invalidateQueries({ queryKey: ['usuarios', variables.id] })
-
+      queryClient.invalidateQueries({ queryKey: usuariosKeys.lists() })
+      queryClient.invalidateQueries({
+        queryKey: usuariosKeys.detail(variables.id),
+      })
     },
 
     onError: error => {
@@ -135,13 +145,19 @@ export function useCambiarEstadoMutation() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ id, nuevoEstado }: { id: string; nuevoEstado: EstadoUsuario }) =>
-      usuariosService.cambiarEstado(id, nuevoEstado),
+    mutationFn: ({
+      id,
+      nuevoEstado,
+    }: {
+      id: string
+      nuevoEstado: EstadoUsuario
+    }) => usuariosService.cambiarEstado(id, nuevoEstado),
 
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['usuarios'] })
-      queryClient.invalidateQueries({ queryKey: ['usuarios', variables.id] })
-
+      queryClient.invalidateQueries({ queryKey: usuariosKeys.lists() })
+      queryClient.invalidateQueries({
+        queryKey: usuariosKeys.detail(variables.id),
+      })
     },
 
     onError: error => {
@@ -160,9 +176,8 @@ export function useResetearIntentosMutation() {
     mutationFn: (id: string) => usuariosService.resetearIntentosFallidos(id),
 
     onSuccess: (_, id) => {
-      queryClient.invalidateQueries({ queryKey: ['usuarios'] })
-      queryClient.invalidateQueries({ queryKey: ['usuarios', id] })
-
+      queryClient.invalidateQueries({ queryKey: usuariosKeys.lists() })
+      queryClient.invalidateQueries({ queryKey: usuariosKeys.detail(id) })
     },
 
     onError: error => {
@@ -181,8 +196,7 @@ export function useEliminarUsuarioMutation() {
     mutationFn: (id: string) => usuariosService.eliminarUsuario(id),
 
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['usuarios'] })
-
+      queryClient.invalidateQueries({ queryKey: usuariosKeys.lists() })
     },
 
     onError: error => {
@@ -196,7 +210,11 @@ export function useEliminarUsuarioMutation() {
  * Interfaz compatible con useUsuarios antiguo
  */
 export function useUsuariosConMutations(filtros?: FiltrosUsuarios) {
-  const { data: usuarios = [], isLoading: cargando, error } = useUsuariosQuery(filtros)
+  const {
+    data: usuarios = [],
+    isLoading: cargando,
+    error,
+  } = useUsuariosQuery(filtros)
   const { data: estadisticas } = useEstadisticasUsuariosQuery()
 
   const crearUsuarioMutation = useCrearUsuarioMutation()
@@ -243,7 +261,7 @@ export function useUsuariosConMutations(filtros?: FiltrosUsuarios) {
 
     // Utilidades
     refrescar: () => {
-      queryClient.invalidateQueries({ queryKey: ['usuarios'] })
+      queryClient.invalidateQueries({ queryKey: usuariosKeys.all })
     },
   }
 }

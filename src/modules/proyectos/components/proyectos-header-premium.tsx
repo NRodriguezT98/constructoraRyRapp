@@ -23,7 +23,10 @@ export function ProyectosHeaderPremium({
   totalProyectos,
 }: ProyectosHeaderPremiumProps) {
   return (
-    <motion.div {...styles.animations.header} className={styles.header.container}>
+    <motion.div
+      {...styles.animations.header}
+      className={styles.header.container}
+    >
       {/* Pattern overlay */}
       <div className={styles.header.pattern} />
 
@@ -38,7 +41,8 @@ export function ProyectosHeaderPremium({
             <div className={styles.header.titleWrapper}>
               <h1 className={styles.header.title}>Gestión de Proyectos</h1>
               <p className={styles.header.subtitle}>
-                Administra y supervisa tus desarrollos inmobiliarios • Sistema integrado
+                Administra y supervisa tus desarrollos inmobiliarios • Sistema
+                integrado
               </p>
             </div>
           </div>

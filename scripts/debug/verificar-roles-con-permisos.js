@@ -9,9 +9,7 @@ const supabase = createClient(
 async function verificarRolesConPermisos() {
   console.log('🔍 Verificando qué roles tienen permisos...\n')
 
-  const { data, error } = await supabase
-    .from('permisos_rol')
-    .select('rol')
+  const { data, error } = await supabase.from('permisos_rol').select('rol')
 
   if (error) {
     console.error('❌ Error:', error)
@@ -25,9 +23,11 @@ async function verificarRolesConPermisos() {
   })
 
   console.log(`📊 Permisos por rol:\n`)
-  Object.entries(conteo).sort().forEach(([rol, cantidad]) => {
-    console.log(`   ${rol}: ${cantidad} permisos`)
-  })
+  Object.entries(conteo)
+    .sort()
+    .forEach(([rol, cantidad]) => {
+      console.log(`   ${rol}: ${cantidad} permisos`)
+    })
 
   console.log(`\n📌 Total de registros en permisos_rol: ${data.length}`)
 

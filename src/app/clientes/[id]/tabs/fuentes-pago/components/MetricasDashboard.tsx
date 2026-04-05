@@ -9,10 +9,10 @@
 
 import { motion } from 'framer-motion'
 import {
-    AlertTriangle,
-    CheckCircle,
-    DollarSign,
-    TrendingUp
+  AlertTriangle,
+  CheckCircle,
+  DollarSign,
+  TrendingUp,
 } from 'lucide-react'
 
 import { formatCurrency } from '@/shared/utils/format'
@@ -36,7 +36,9 @@ export function MetricasDashboard({ metricas }: MetricasDashboardProps) {
       label: 'Fuentes Configuradas',
       value: formatCurrency(metricas.totalFuentesConfiguradas),
       icon: TrendingUp,
-      variant: (metricas.totalFuentesConfiguradas > 0 ? 'success' : 'warning') as 'success' | 'warning',
+      variant: (metricas.totalFuentesConfiguradas > 0
+        ? 'success'
+        : 'warning') as 'success' | 'warning',
     },
     {
       label: 'Saldo Pendiente',
@@ -60,7 +62,9 @@ export function MetricasDashboard({ metricas }: MetricasDashboardProps) {
     },
   ]
 
-  const getVariantStyles = (variant: 'success' | 'warning' | 'danger' | 'info') => {
+  const getVariantStyles = (
+    variant: 'success' | 'warning' | 'danger' | 'info'
+  ) => {
     switch (variant) {
       case 'success':
         return {
@@ -90,8 +94,8 @@ export function MetricasDashboard({ metricas }: MetricasDashboardProps) {
     <motion.div
       className={styles.metricas.container}
       variants={styles.animations.staggerChildren}
-      initial="initial"
-      animate="animate"
+      initial='initial'
+      animate='animate'
     >
       {metricasData.map((metrica, index) => {
         const variantStyles = getVariantStyles(metrica.variant)
@@ -109,12 +113,8 @@ export function MetricasDashboard({ metricas }: MetricasDashboardProps) {
               </div>
 
               <div className={styles.metricas.textSection}>
-                <p className={variantStyles.value}>
-                  {metrica.value}
-                </p>
-                <p className={styles.metricas.label}>
-                  {metrica.label}
-                </p>
+                <p className={variantStyles.value}>{metrica.value}</p>
+                <p className={styles.metricas.label}>{metrica.label}</p>
               </div>
             </div>
           </motion.div>

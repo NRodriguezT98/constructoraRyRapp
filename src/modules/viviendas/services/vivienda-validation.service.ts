@@ -5,7 +5,7 @@
  * Verifica duplicados, relaciones y reglas de negocio
  */
 
-import { supabase } from '@/lib/supabase/client';
+import { supabase } from '@/lib/supabase/client'
 import { logger } from '@/lib/utils/logger'
 
 // ============================================================================
@@ -46,9 +46,10 @@ export async function validarMatriculaDuplicada(
 
     // Duplicado encontrado
     if (data) {
-      const proyectoNombre = Array.isArray(data.proyecto) && data.proyecto.length > 0
-        ? data.proyecto[0].nombre
-        : 'proyecto'
+      const proyectoNombre =
+        Array.isArray(data.proyecto) && data.proyecto.length > 0
+          ? data.proyecto[0].nombre
+          : 'proyecto'
 
       return {
         exists: true,
@@ -274,7 +275,10 @@ export async function validarViviendaCompleta(
     }
 
     // 2. Validar manzana
-    const manzanaValidacion = await validarManzanaExiste(data.manzana_id, data.proyecto_id)
+    const manzanaValidacion = await validarManzanaExiste(
+      data.manzana_id,
+      data.proyecto_id
+    )
     if (!manzanaValidacion.exists) {
       errores.manzana_id = manzanaValidacion.mensaje || 'Manzana inválida'
     }

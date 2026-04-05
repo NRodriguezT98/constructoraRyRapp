@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: '13.0.5'
+    PostgrestVersion: "13.0.5"
   }
   public: {
     Tables: {
@@ -83,39 +83,39 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'abonos_historial_anulado_por_id_fkey'
-            columns: ['anulado_por_id']
+            foreignKeyName: "abonos_historial_anulado_por_id_fkey"
+            columns: ["anulado_por_id"]
             isOneToOne: false
-            referencedRelation: 'usuarios'
-            referencedColumns: ['id']
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'abonos_historial_anulado_por_id_fkey'
-            columns: ['anulado_por_id']
+            foreignKeyName: "abonos_historial_anulado_por_id_fkey"
+            columns: ["anulado_por_id"]
             isOneToOne: false
-            referencedRelation: 'vista_usuarios_completos'
-            referencedColumns: ['id']
+            referencedRelation: "vista_usuarios_completos"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'abonos_historial_fuente_pago_id_fkey'
-            columns: ['fuente_pago_id']
+            foreignKeyName: "abonos_historial_fuente_pago_id_fkey"
+            columns: ["fuente_pago_id"]
             isOneToOne: false
-            referencedRelation: 'fuentes_pago'
-            referencedColumns: ['id']
+            referencedRelation: "fuentes_pago"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'abonos_historial_fuente_pago_id_fkey'
-            columns: ['fuente_pago_id']
+            foreignKeyName: "abonos_historial_fuente_pago_id_fkey"
+            columns: ["fuente_pago_id"]
             isOneToOne: false
-            referencedRelation: 'fuentes_pago_con_entidad'
-            referencedColumns: ['id']
+            referencedRelation: "fuentes_pago_con_entidad"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'abonos_historial_negociacion_id_fkey'
-            columns: ['negociacion_id']
+            foreignKeyName: "abonos_historial_negociacion_id_fkey"
+            columns: ["negociacion_id"]
             isOneToOne: false
-            referencedRelation: 'negociaciones'
-            referencedColumns: ['id']
+            referencedRelation: "negociaciones"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -317,81 +317,81 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'cliente_intereses_cliente_id_fkey'
-            columns: ['cliente_id']
+            foreignKeyName: "cliente_intereses_cliente_id_fkey"
+            columns: ["cliente_id"]
             isOneToOne: false
-            referencedRelation: 'clientes'
-            referencedColumns: ['id']
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'cliente_intereses_cliente_id_fkey'
-            columns: ['cliente_id']
+            foreignKeyName: "cliente_intereses_cliente_id_fkey"
+            columns: ["cliente_id"]
             isOneToOne: false
-            referencedRelation: 'vista_abonos_completos'
-            referencedColumns: ['cliente_id']
+            referencedRelation: "vista_abonos_completos"
+            referencedColumns: ["cliente_id"]
           },
           {
-            foreignKeyName: 'cliente_intereses_cliente_id_fkey'
-            columns: ['cliente_id']
+            foreignKeyName: "cliente_intereses_cliente_id_fkey"
+            columns: ["cliente_id"]
             isOneToOne: false
-            referencedRelation: 'vista_clientes_resumen'
-            referencedColumns: ['id']
+            referencedRelation: "vista_clientes_resumen"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'cliente_intereses_cliente_id_fkey'
-            columns: ['cliente_id']
+            foreignKeyName: "cliente_intereses_cliente_id_fkey"
+            columns: ["cliente_id"]
             isOneToOne: false
-            referencedRelation: 'vista_viviendas_completas'
-            referencedColumns: ['cliente_id_data']
+            referencedRelation: "vista_viviendas_completas"
+            referencedColumns: ["cliente_id_data"]
           },
           {
-            foreignKeyName: 'cliente_intereses_negociacion_id_fkey'
-            columns: ['negociacion_id']
+            foreignKeyName: "cliente_intereses_negociacion_id_fkey"
+            columns: ["negociacion_id"]
             isOneToOne: false
-            referencedRelation: 'negociaciones'
-            referencedColumns: ['id']
+            referencedRelation: "negociaciones"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'cliente_intereses_proyecto_id_fkey'
-            columns: ['proyecto_id']
+            foreignKeyName: "cliente_intereses_proyecto_id_fkey"
+            columns: ["proyecto_id"]
             isOneToOne: false
-            referencedRelation: 'proyectos'
-            referencedColumns: ['id']
+            referencedRelation: "proyectos"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'cliente_intereses_proyecto_id_fkey'
-            columns: ['proyecto_id']
+            foreignKeyName: "cliente_intereses_proyecto_id_fkey"
+            columns: ["proyecto_id"]
             isOneToOne: false
-            referencedRelation: 'v_renuncias_completas'
-            referencedColumns: ['proyecto_id']
+            referencedRelation: "v_renuncias_completas"
+            referencedColumns: ["proyecto_id"]
           },
           {
-            foreignKeyName: 'cliente_intereses_proyecto_id_fkey'
-            columns: ['proyecto_id']
+            foreignKeyName: "cliente_intereses_proyecto_id_fkey"
+            columns: ["proyecto_id"]
             isOneToOne: false
-            referencedRelation: 'vista_abonos_completos'
-            referencedColumns: ['proyecto_id']
+            referencedRelation: "vista_abonos_completos"
+            referencedColumns: ["proyecto_id"]
           },
           {
-            foreignKeyName: 'cliente_intereses_vivienda_id_fkey'
-            columns: ['vivienda_id']
+            foreignKeyName: "cliente_intereses_vivienda_id_fkey"
+            columns: ["vivienda_id"]
             isOneToOne: false
-            referencedRelation: 'vista_abonos_completos'
-            referencedColumns: ['vivienda_id']
+            referencedRelation: "vista_abonos_completos"
+            referencedColumns: ["vivienda_id"]
           },
           {
-            foreignKeyName: 'cliente_intereses_vivienda_id_fkey'
-            columns: ['vivienda_id']
+            foreignKeyName: "cliente_intereses_vivienda_id_fkey"
+            columns: ["vivienda_id"]
             isOneToOne: false
-            referencedRelation: 'vista_viviendas_completas'
-            referencedColumns: ['id']
+            referencedRelation: "vista_viviendas_completas"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'cliente_intereses_vivienda_id_fkey'
-            columns: ['vivienda_id']
+            foreignKeyName: "cliente_intereses_vivienda_id_fkey"
+            columns: ["vivienda_id"]
             isOneToOne: false
-            referencedRelation: 'viviendas'
-            referencedColumns: ['id']
+            referencedRelation: "viviendas"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -405,7 +405,7 @@ export type Database = {
           documento_identidad_url: string | null
           email: string | null
           estado: string
-          estado_civil: Database['public']['Enums']['estado_civil_enum'] | null
+          estado_civil: Database["public"]["Enums"]["estado_civil_enum"] | null
           fecha_actualizacion: string
           fecha_creacion: string
           fecha_nacimiento: string | null
@@ -428,7 +428,7 @@ export type Database = {
           documento_identidad_url?: string | null
           email?: string | null
           estado?: string
-          estado_civil?: Database['public']['Enums']['estado_civil_enum'] | null
+          estado_civil?: Database["public"]["Enums"]["estado_civil_enum"] | null
           fecha_actualizacion?: string
           fecha_creacion?: string
           fecha_nacimiento?: string | null
@@ -451,7 +451,7 @@ export type Database = {
           documento_identidad_url?: string | null
           email?: string | null
           estado?: string
-          estado_civil?: Database['public']['Enums']['estado_civil_enum'] | null
+          estado_civil?: Database["public"]["Enums"]["estado_civil_enum"] | null
           fecha_actualizacion?: string
           fecha_creacion?: string
           fecha_nacimiento?: string | null
@@ -548,18 +548,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'creditos_constructora_fuente_pago_id_fkey'
-            columns: ['fuente_pago_id']
+            foreignKeyName: "creditos_constructora_fuente_pago_id_fkey"
+            columns: ["fuente_pago_id"]
             isOneToOne: true
-            referencedRelation: 'fuentes_pago'
-            referencedColumns: ['id']
+            referencedRelation: "fuentes_pago"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'creditos_constructora_fuente_pago_id_fkey'
-            columns: ['fuente_pago_id']
+            foreignKeyName: "creditos_constructora_fuente_pago_id_fkey"
+            columns: ["fuente_pago_id"]
             isOneToOne: true
-            referencedRelation: 'fuentes_pago_con_entidad'
-            referencedColumns: ['id']
+            referencedRelation: "fuentes_pago_con_entidad"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -599,18 +599,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'cuotas_credito_fuente_pago_id_fkey'
-            columns: ['fuente_pago_id']
+            foreignKeyName: "cuotas_credito_fuente_pago_id_fkey"
+            columns: ["fuente_pago_id"]
             isOneToOne: false
-            referencedRelation: 'fuentes_pago'
-            referencedColumns: ['id']
+            referencedRelation: "fuentes_pago"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'cuotas_credito_fuente_pago_id_fkey'
-            columns: ['fuente_pago_id']
+            foreignKeyName: "cuotas_credito_fuente_pago_id_fkey"
+            columns: ["fuente_pago_id"]
             isOneToOne: false
-            referencedRelation: 'fuentes_pago_con_entidad'
-            referencedColumns: ['id']
+            referencedRelation: "fuentes_pago_con_entidad"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -647,11 +647,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'descuentos_negociacion_negociacion_version_id_fkey'
-            columns: ['negociacion_version_id']
+            foreignKeyName: "descuentos_negociacion_negociacion_version_id_fkey"
+            columns: ["negociacion_version_id"]
             isOneToOne: false
-            referencedRelation: 'negociaciones_versiones'
-            referencedColumns: ['id']
+            referencedRelation: "negociaciones_versiones"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -703,25 +703,25 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'documento_reemplazos_admin_admin_id_fkey'
-            columns: ['admin_id']
+            foreignKeyName: "documento_reemplazos_admin_admin_id_fkey"
+            columns: ["admin_id"]
             isOneToOne: false
-            referencedRelation: 'usuarios'
-            referencedColumns: ['id']
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'documento_reemplazos_admin_admin_id_fkey'
-            columns: ['admin_id']
+            foreignKeyName: "documento_reemplazos_admin_admin_id_fkey"
+            columns: ["admin_id"]
             isOneToOne: false
-            referencedRelation: 'vista_usuarios_completos'
-            referencedColumns: ['id']
+            referencedRelation: "vista_usuarios_completos"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'documento_reemplazos_admin_documento_id_fkey'
-            columns: ['documento_id']
+            foreignKeyName: "documento_reemplazos_admin_documento_id_fkey"
+            columns: ["documento_id"]
             isOneToOne: false
-            referencedRelation: 'documentos_proyecto'
-            referencedColumns: ['id']
+            referencedRelation: "documentos_proyecto"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -830,95 +830,95 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'documentos_cliente_categoria_id_fkey'
-            columns: ['categoria_id']
+            foreignKeyName: "documentos_cliente_categoria_id_fkey"
+            columns: ["categoria_id"]
             isOneToOne: false
-            referencedRelation: 'categorias_documento'
-            referencedColumns: ['id']
+            referencedRelation: "categorias_documento"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'documentos_cliente_cliente_id_fkey'
-            columns: ['cliente_id']
+            foreignKeyName: "documentos_cliente_cliente_id_fkey"
+            columns: ["cliente_id"]
             isOneToOne: false
-            referencedRelation: 'clientes'
-            referencedColumns: ['id']
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'documentos_cliente_cliente_id_fkey'
-            columns: ['cliente_id']
+            foreignKeyName: "documentos_cliente_cliente_id_fkey"
+            columns: ["cliente_id"]
             isOneToOne: false
-            referencedRelation: 'vista_abonos_completos'
-            referencedColumns: ['cliente_id']
+            referencedRelation: "vista_abonos_completos"
+            referencedColumns: ["cliente_id"]
           },
           {
-            foreignKeyName: 'documentos_cliente_cliente_id_fkey'
-            columns: ['cliente_id']
+            foreignKeyName: "documentos_cliente_cliente_id_fkey"
+            columns: ["cliente_id"]
             isOneToOne: false
-            referencedRelation: 'vista_clientes_resumen'
-            referencedColumns: ['id']
+            referencedRelation: "vista_clientes_resumen"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'documentos_cliente_cliente_id_fkey'
-            columns: ['cliente_id']
+            foreignKeyName: "documentos_cliente_cliente_id_fkey"
+            columns: ["cliente_id"]
             isOneToOne: false
-            referencedRelation: 'vista_viviendas_completas'
-            referencedColumns: ['cliente_id_data']
+            referencedRelation: "vista_viviendas_completas"
+            referencedColumns: ["cliente_id_data"]
           },
           {
-            foreignKeyName: 'documentos_cliente_documento_padre_id_fkey'
-            columns: ['documento_padre_id']
+            foreignKeyName: "documentos_cliente_documento_padre_id_fkey"
+            columns: ["documento_padre_id"]
             isOneToOne: false
-            referencedRelation: 'documentos_cliente'
-            referencedColumns: ['id']
+            referencedRelation: "documentos_cliente"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'documentos_cliente_eliminado_por_fkey'
-            columns: ['eliminado_por']
+            foreignKeyName: "documentos_cliente_eliminado_por_fkey"
+            columns: ["eliminado_por"]
             isOneToOne: false
-            referencedRelation: 'usuarios'
-            referencedColumns: ['id']
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'documentos_cliente_eliminado_por_fkey'
-            columns: ['eliminado_por']
+            foreignKeyName: "documentos_cliente_eliminado_por_fkey"
+            columns: ["eliminado_por"]
             isOneToOne: false
-            referencedRelation: 'vista_usuarios_completos'
-            referencedColumns: ['id']
+            referencedRelation: "vista_usuarios_completos"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'documentos_cliente_fuente_pago_relacionada_fkey'
-            columns: ['fuente_pago_relacionada']
+            foreignKeyName: "documentos_cliente_fuente_pago_relacionada_fkey"
+            columns: ["fuente_pago_relacionada"]
             isOneToOne: false
-            referencedRelation: 'fuentes_pago'
-            referencedColumns: ['id']
+            referencedRelation: "fuentes_pago"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'documentos_cliente_fuente_pago_relacionada_fkey'
-            columns: ['fuente_pago_relacionada']
+            foreignKeyName: "documentos_cliente_fuente_pago_relacionada_fkey"
+            columns: ["fuente_pago_relacionada"]
             isOneToOne: false
-            referencedRelation: 'fuentes_pago_con_entidad'
-            referencedColumns: ['id']
+            referencedRelation: "fuentes_pago_con_entidad"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'documentos_cliente_requisito_config_id_fkey'
-            columns: ['requisito_config_id']
+            foreignKeyName: "documentos_cliente_requisito_config_id_fkey"
+            columns: ["requisito_config_id"]
             isOneToOne: false
-            referencedRelation: 'requisitos_fuentes_pago_config'
-            referencedColumns: ['id']
+            referencedRelation: "requisitos_fuentes_pago_config"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'fk_documentos_cliente_subido_por'
-            columns: ['subido_por']
+            foreignKeyName: "fk_documentos_cliente_subido_por"
+            columns: ["subido_por"]
             isOneToOne: false
-            referencedRelation: 'usuarios'
-            referencedColumns: ['id']
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'fk_documentos_cliente_subido_por'
-            columns: ['subido_por']
+            foreignKeyName: "fk_documentos_cliente_subido_por"
+            columns: ["subido_por"]
             isOneToOne: false
-            referencedRelation: 'vista_usuarios_completos'
-            referencedColumns: ['id']
+            referencedRelation: "vista_usuarios_completos"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1015,74 +1015,74 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'documentos_proyecto_categoria_id_fkey'
-            columns: ['categoria_id']
+            foreignKeyName: "documentos_proyecto_categoria_id_fkey"
+            columns: ["categoria_id"]
             isOneToOne: false
-            referencedRelation: 'categorias_documento'
-            referencedColumns: ['id']
+            referencedRelation: "categorias_documento"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'documentos_proyecto_documento_padre_id_fkey'
-            columns: ['documento_padre_id']
+            foreignKeyName: "documentos_proyecto_documento_padre_id_fkey"
+            columns: ["documento_padre_id"]
             isOneToOne: false
-            referencedRelation: 'documentos_proyecto'
-            referencedColumns: ['id']
+            referencedRelation: "documentos_proyecto"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'documentos_proyecto_eliminado_por_fkey'
-            columns: ['eliminado_por']
+            foreignKeyName: "documentos_proyecto_eliminado_por_fkey"
+            columns: ["eliminado_por"]
             isOneToOne: false
-            referencedRelation: 'usuarios'
-            referencedColumns: ['id']
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'documentos_proyecto_eliminado_por_fkey'
-            columns: ['eliminado_por']
+            foreignKeyName: "documentos_proyecto_eliminado_por_fkey"
+            columns: ["eliminado_por"]
             isOneToOne: false
-            referencedRelation: 'vista_usuarios_completos'
-            referencedColumns: ['id']
+            referencedRelation: "vista_usuarios_completos"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'documentos_proyecto_proyecto_id_fkey'
-            columns: ['proyecto_id']
+            foreignKeyName: "documentos_proyecto_proyecto_id_fkey"
+            columns: ["proyecto_id"]
             isOneToOne: false
-            referencedRelation: 'proyectos'
-            referencedColumns: ['id']
+            referencedRelation: "proyectos"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'documentos_proyecto_proyecto_id_fkey'
-            columns: ['proyecto_id']
+            foreignKeyName: "documentos_proyecto_proyecto_id_fkey"
+            columns: ["proyecto_id"]
             isOneToOne: false
-            referencedRelation: 'v_renuncias_completas'
-            referencedColumns: ['proyecto_id']
+            referencedRelation: "v_renuncias_completas"
+            referencedColumns: ["proyecto_id"]
           },
           {
-            foreignKeyName: 'documentos_proyecto_proyecto_id_fkey'
-            columns: ['proyecto_id']
+            foreignKeyName: "documentos_proyecto_proyecto_id_fkey"
+            columns: ["proyecto_id"]
             isOneToOne: false
-            referencedRelation: 'vista_abonos_completos'
-            referencedColumns: ['proyecto_id']
+            referencedRelation: "vista_abonos_completos"
+            referencedColumns: ["proyecto_id"]
           },
           {
-            foreignKeyName: 'documentos_proyecto_version_corrige_a_fkey'
-            columns: ['version_corrige_a']
+            foreignKeyName: "documentos_proyecto_version_corrige_a_fkey"
+            columns: ["version_corrige_a"]
             isOneToOne: false
-            referencedRelation: 'documentos_proyecto'
-            referencedColumns: ['id']
+            referencedRelation: "documentos_proyecto"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'fk_documentos_proyecto_subido_por'
-            columns: ['subido_por']
+            foreignKeyName: "fk_documentos_proyecto_subido_por"
+            columns: ["subido_por"]
             isOneToOne: false
-            referencedRelation: 'usuarios'
-            referencedColumns: ['id']
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'fk_documentos_proyecto_subido_por'
-            columns: ['subido_por']
+            foreignKeyName: "fk_documentos_proyecto_subido_por"
+            columns: ["subido_por"]
             isOneToOne: false
-            referencedRelation: 'vista_usuarios_completos'
-            referencedColumns: ['id']
+            referencedRelation: "vista_usuarios_completos"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1182,74 +1182,74 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'documentos_vivienda_categoria_id_fkey'
-            columns: ['categoria_id']
+            foreignKeyName: "documentos_vivienda_categoria_id_fkey"
+            columns: ["categoria_id"]
             isOneToOne: false
-            referencedRelation: 'categorias_documento'
-            referencedColumns: ['id']
+            referencedRelation: "categorias_documento"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'documentos_vivienda_documento_padre_id_fkey'
-            columns: ['documento_padre_id']
+            foreignKeyName: "documentos_vivienda_documento_padre_id_fkey"
+            columns: ["documento_padre_id"]
             isOneToOne: false
-            referencedRelation: 'documentos_vivienda'
-            referencedColumns: ['id']
+            referencedRelation: "documentos_vivienda"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'documentos_vivienda_eliminado_por_fkey'
-            columns: ['eliminado_por']
+            foreignKeyName: "documentos_vivienda_eliminado_por_fkey"
+            columns: ["eliminado_por"]
             isOneToOne: false
-            referencedRelation: 'usuarios'
-            referencedColumns: ['id']
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'documentos_vivienda_eliminado_por_fkey'
-            columns: ['eliminado_por']
+            foreignKeyName: "documentos_vivienda_eliminado_por_fkey"
+            columns: ["eliminado_por"]
             isOneToOne: false
-            referencedRelation: 'vista_usuarios_completos'
-            referencedColumns: ['id']
+            referencedRelation: "vista_usuarios_completos"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'documentos_vivienda_version_corrige_a_fkey'
-            columns: ['version_corrige_a']
+            foreignKeyName: "documentos_vivienda_version_corrige_a_fkey"
+            columns: ["version_corrige_a"]
             isOneToOne: false
-            referencedRelation: 'documentos_vivienda'
-            referencedColumns: ['id']
+            referencedRelation: "documentos_vivienda"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'documentos_vivienda_vivienda_id_fkey'
-            columns: ['vivienda_id']
+            foreignKeyName: "documentos_vivienda_vivienda_id_fkey"
+            columns: ["vivienda_id"]
             isOneToOne: false
-            referencedRelation: 'vista_abonos_completos'
-            referencedColumns: ['vivienda_id']
+            referencedRelation: "vista_abonos_completos"
+            referencedColumns: ["vivienda_id"]
           },
           {
-            foreignKeyName: 'documentos_vivienda_vivienda_id_fkey'
-            columns: ['vivienda_id']
+            foreignKeyName: "documentos_vivienda_vivienda_id_fkey"
+            columns: ["vivienda_id"]
             isOneToOne: false
-            referencedRelation: 'vista_viviendas_completas'
-            referencedColumns: ['id']
+            referencedRelation: "vista_viviendas_completas"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'documentos_vivienda_vivienda_id_fkey'
-            columns: ['vivienda_id']
+            foreignKeyName: "documentos_vivienda_vivienda_id_fkey"
+            columns: ["vivienda_id"]
             isOneToOne: false
-            referencedRelation: 'viviendas'
-            referencedColumns: ['id']
+            referencedRelation: "viviendas"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'fk_documentos_vivienda_subido_por'
-            columns: ['subido_por']
+            foreignKeyName: "fk_documentos_vivienda_subido_por"
+            columns: ["subido_por"]
             isOneToOne: false
-            referencedRelation: 'usuarios'
-            referencedColumns: ['id']
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'fk_documentos_vivienda_subido_por'
-            columns: ['subido_por']
+            foreignKeyName: "fk_documentos_vivienda_subido_por"
+            columns: ["subido_por"]
             isOneToOne: false
-            referencedRelation: 'vista_usuarios_completos'
-            referencedColumns: ['id']
+            referencedRelation: "vista_usuarios_completos"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1415,39 +1415,39 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'fk_fuentes_pago_tipo_fuente'
-            columns: ['tipo_fuente_id']
+            foreignKeyName: "fk_fuentes_pago_tipo_fuente"
+            columns: ["tipo_fuente_id"]
             isOneToOne: false
-            referencedRelation: 'tipos_fuentes_pago'
-            referencedColumns: ['id']
+            referencedRelation: "tipos_fuentes_pago"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'fuentes_pago_entidad_financiera_id_fkey'
-            columns: ['entidad_financiera_id']
+            foreignKeyName: "fuentes_pago_entidad_financiera_id_fkey"
+            columns: ["entidad_financiera_id"]
             isOneToOne: false
-            referencedRelation: 'entidades_financieras'
-            referencedColumns: ['id']
+            referencedRelation: "entidades_financieras"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'fuentes_pago_negociacion_id_fkey'
-            columns: ['negociacion_id']
+            foreignKeyName: "fuentes_pago_negociacion_id_fkey"
+            columns: ["negociacion_id"]
             isOneToOne: false
-            referencedRelation: 'negociaciones'
-            referencedColumns: ['id']
+            referencedRelation: "negociaciones"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'fuentes_pago_reemplazada_por_fkey'
-            columns: ['reemplazada_por']
+            foreignKeyName: "fuentes_pago_reemplazada_por_fkey"
+            columns: ["reemplazada_por"]
             isOneToOne: false
-            referencedRelation: 'fuentes_pago'
-            referencedColumns: ['id']
+            referencedRelation: "fuentes_pago"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'fuentes_pago_reemplazada_por_fkey'
-            columns: ['reemplazada_por']
+            foreignKeyName: "fuentes_pago_reemplazada_por_fkey"
+            columns: ["reemplazada_por"]
             isOneToOne: false
-            referencedRelation: 'fuentes_pago_con_entidad'
-            referencedColumns: ['id']
+            referencedRelation: "fuentes_pago_con_entidad"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1514,25 +1514,25 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'manzanas_proyecto_id_fkey'
-            columns: ['proyecto_id']
+            foreignKeyName: "manzanas_proyecto_id_fkey"
+            columns: ["proyecto_id"]
             isOneToOne: false
-            referencedRelation: 'proyectos'
-            referencedColumns: ['id']
+            referencedRelation: "proyectos"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'manzanas_proyecto_id_fkey'
-            columns: ['proyecto_id']
+            foreignKeyName: "manzanas_proyecto_id_fkey"
+            columns: ["proyecto_id"]
             isOneToOne: false
-            referencedRelation: 'v_renuncias_completas'
-            referencedColumns: ['proyecto_id']
+            referencedRelation: "v_renuncias_completas"
+            referencedColumns: ["proyecto_id"]
           },
           {
-            foreignKeyName: 'manzanas_proyecto_id_fkey'
-            columns: ['proyecto_id']
+            foreignKeyName: "manzanas_proyecto_id_fkey"
+            columns: ["proyecto_id"]
             isOneToOne: false
-            referencedRelation: 'vista_abonos_completos'
-            referencedColumns: ['proyecto_id']
+            referencedRelation: "vista_abonos_completos"
+            referencedColumns: ["proyecto_id"]
           },
         ]
       }
@@ -1635,53 +1635,53 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'negociaciones_cliente_id_fkey'
-            columns: ['cliente_id']
+            foreignKeyName: "negociaciones_cliente_id_fkey"
+            columns: ["cliente_id"]
             isOneToOne: false
-            referencedRelation: 'clientes'
-            referencedColumns: ['id']
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'negociaciones_cliente_id_fkey'
-            columns: ['cliente_id']
+            foreignKeyName: "negociaciones_cliente_id_fkey"
+            columns: ["cliente_id"]
             isOneToOne: false
-            referencedRelation: 'vista_abonos_completos'
-            referencedColumns: ['cliente_id']
+            referencedRelation: "vista_abonos_completos"
+            referencedColumns: ["cliente_id"]
           },
           {
-            foreignKeyName: 'negociaciones_cliente_id_fkey'
-            columns: ['cliente_id']
+            foreignKeyName: "negociaciones_cliente_id_fkey"
+            columns: ["cliente_id"]
             isOneToOne: false
-            referencedRelation: 'vista_clientes_resumen'
-            referencedColumns: ['id']
+            referencedRelation: "vista_clientes_resumen"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'negociaciones_cliente_id_fkey'
-            columns: ['cliente_id']
+            foreignKeyName: "negociaciones_cliente_id_fkey"
+            columns: ["cliente_id"]
             isOneToOne: false
-            referencedRelation: 'vista_viviendas_completas'
-            referencedColumns: ['cliente_id_data']
+            referencedRelation: "vista_viviendas_completas"
+            referencedColumns: ["cliente_id_data"]
           },
           {
-            foreignKeyName: 'negociaciones_vivienda_id_fkey'
-            columns: ['vivienda_id']
+            foreignKeyName: "negociaciones_vivienda_id_fkey"
+            columns: ["vivienda_id"]
             isOneToOne: false
-            referencedRelation: 'vista_abonos_completos'
-            referencedColumns: ['vivienda_id']
+            referencedRelation: "vista_abonos_completos"
+            referencedColumns: ["vivienda_id"]
           },
           {
-            foreignKeyName: 'negociaciones_vivienda_id_fkey'
-            columns: ['vivienda_id']
+            foreignKeyName: "negociaciones_vivienda_id_fkey"
+            columns: ["vivienda_id"]
             isOneToOne: false
-            referencedRelation: 'vista_viviendas_completas'
-            referencedColumns: ['id']
+            referencedRelation: "vista_viviendas_completas"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'negociaciones_vivienda_id_fkey'
-            columns: ['vivienda_id']
+            foreignKeyName: "negociaciones_vivienda_id_fkey"
+            columns: ["vivienda_id"]
             isOneToOne: false
-            referencedRelation: 'viviendas'
-            referencedColumns: ['id']
+            referencedRelation: "viviendas"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1739,11 +1739,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'negociaciones_historial_negociacion_id_fkey'
-            columns: ['negociacion_id']
+            foreignKeyName: "negociaciones_historial_negociacion_id_fkey"
+            columns: ["negociacion_id"]
             isOneToOne: false
-            referencedRelation: 'negociaciones'
-            referencedColumns: ['id']
+            referencedRelation: "negociaciones"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1792,11 +1792,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'negociaciones_versiones_negociacion_id_fkey'
-            columns: ['negociacion_id']
+            foreignKeyName: "negociaciones_versiones_negociacion_id_fkey"
+            columns: ["negociacion_id"]
             isOneToOne: false
-            referencedRelation: 'negociaciones'
-            referencedColumns: ['id']
+            referencedRelation: "negociaciones"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1836,60 +1836,60 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'notas_historial_cliente_actualizado_por_fkey'
-            columns: ['actualizado_por']
+            foreignKeyName: "notas_historial_cliente_actualizado_por_fkey"
+            columns: ["actualizado_por"]
             isOneToOne: false
-            referencedRelation: 'usuarios'
-            referencedColumns: ['id']
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'notas_historial_cliente_actualizado_por_fkey'
-            columns: ['actualizado_por']
+            foreignKeyName: "notas_historial_cliente_actualizado_por_fkey"
+            columns: ["actualizado_por"]
             isOneToOne: false
-            referencedRelation: 'vista_usuarios_completos'
-            referencedColumns: ['id']
+            referencedRelation: "vista_usuarios_completos"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'notas_historial_cliente_cliente_id_fkey'
-            columns: ['cliente_id']
+            foreignKeyName: "notas_historial_cliente_cliente_id_fkey"
+            columns: ["cliente_id"]
             isOneToOne: false
-            referencedRelation: 'clientes'
-            referencedColumns: ['id']
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'notas_historial_cliente_cliente_id_fkey'
-            columns: ['cliente_id']
+            foreignKeyName: "notas_historial_cliente_cliente_id_fkey"
+            columns: ["cliente_id"]
             isOneToOne: false
-            referencedRelation: 'vista_abonos_completos'
-            referencedColumns: ['cliente_id']
+            referencedRelation: "vista_abonos_completos"
+            referencedColumns: ["cliente_id"]
           },
           {
-            foreignKeyName: 'notas_historial_cliente_cliente_id_fkey'
-            columns: ['cliente_id']
+            foreignKeyName: "notas_historial_cliente_cliente_id_fkey"
+            columns: ["cliente_id"]
             isOneToOne: false
-            referencedRelation: 'vista_clientes_resumen'
-            referencedColumns: ['id']
+            referencedRelation: "vista_clientes_resumen"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'notas_historial_cliente_cliente_id_fkey'
-            columns: ['cliente_id']
+            foreignKeyName: "notas_historial_cliente_cliente_id_fkey"
+            columns: ["cliente_id"]
             isOneToOne: false
-            referencedRelation: 'vista_viviendas_completas'
-            referencedColumns: ['cliente_id_data']
+            referencedRelation: "vista_viviendas_completas"
+            referencedColumns: ["cliente_id_data"]
           },
           {
-            foreignKeyName: 'notas_historial_cliente_creado_por_fkey'
-            columns: ['creado_por']
+            foreignKeyName: "notas_historial_cliente_creado_por_fkey"
+            columns: ["creado_por"]
             isOneToOne: false
-            referencedRelation: 'usuarios'
-            referencedColumns: ['id']
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'notas_historial_cliente_creado_por_fkey'
-            columns: ['creado_por']
+            foreignKeyName: "notas_historial_cliente_creado_por_fkey"
+            columns: ["creado_por"]
             isOneToOne: false
-            referencedRelation: 'vista_usuarios_completos'
-            referencedColumns: ['id']
+            referencedRelation: "vista_usuarios_completos"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -2118,32 +2118,32 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'renuncias_negociacion_id_fkey'
-            columns: ['negociacion_id']
+            foreignKeyName: "renuncias_negociacion_id_fkey"
+            columns: ["negociacion_id"]
             isOneToOne: true
-            referencedRelation: 'negociaciones'
-            referencedColumns: ['id']
+            referencedRelation: "negociaciones"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'renuncias_vivienda_id_fkey'
-            columns: ['vivienda_id']
+            foreignKeyName: "renuncias_vivienda_id_fkey"
+            columns: ["vivienda_id"]
             isOneToOne: false
-            referencedRelation: 'vista_abonos_completos'
-            referencedColumns: ['vivienda_id']
+            referencedRelation: "vista_abonos_completos"
+            referencedColumns: ["vivienda_id"]
           },
           {
-            foreignKeyName: 'renuncias_vivienda_id_fkey'
-            columns: ['vivienda_id']
+            foreignKeyName: "renuncias_vivienda_id_fkey"
+            columns: ["vivienda_id"]
             isOneToOne: false
-            referencedRelation: 'vista_viviendas_completas'
-            referencedColumns: ['id']
+            referencedRelation: "vista_viviendas_completas"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'renuncias_vivienda_id_fkey'
-            columns: ['vivienda_id']
+            foreignKeyName: "renuncias_vivienda_id_fkey"
+            columns: ["vivienda_id"]
             isOneToOne: false
-            referencedRelation: 'viviendas'
-            referencedColumns: ['id']
+            referencedRelation: "viviendas"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -2213,11 +2213,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'fk_requisitos_categoria_documento'
-            columns: ['categoria_documento']
+            foreignKeyName: "fk_requisitos_categoria_documento"
+            columns: ["categoria_documento"]
             isOneToOne: false
-            referencedRelation: 'categorias_documento'
-            referencedColumns: ['nombre']
+            referencedRelation: "categorias_documento"
+            referencedColumns: ["nombre"]
           },
         ]
       }
@@ -2289,14 +2289,14 @@ export type Database = {
           creado_por: string | null
           debe_cambiar_password: boolean
           email: string
-          estado: Database['public']['Enums']['estado_usuario']
+          estado: Database["public"]["Enums"]["estado_usuario"]
           fecha_actualizacion: string
           fecha_creacion: string
           id: string
           intentos_fallidos: number
           nombres: string
           preferencias: Json | null
-          rol: Database['public']['Enums']['rol_usuario']
+          rol: Database["public"]["Enums"]["rol_usuario"]
           telefono: string | null
           ultimo_acceso: string | null
         }
@@ -2307,14 +2307,14 @@ export type Database = {
           creado_por?: string | null
           debe_cambiar_password?: boolean
           email: string
-          estado?: Database['public']['Enums']['estado_usuario']
+          estado?: Database["public"]["Enums"]["estado_usuario"]
           fecha_actualizacion?: string
           fecha_creacion?: string
           id: string
           intentos_fallidos?: number
           nombres: string
           preferencias?: Json | null
-          rol?: Database['public']['Enums']['rol_usuario']
+          rol: Database["public"]["Enums"]["rol_usuario"]
           telefono?: string | null
           ultimo_acceso?: string | null
         }
@@ -2325,14 +2325,14 @@ export type Database = {
           creado_por?: string | null
           debe_cambiar_password?: boolean
           email?: string
-          estado?: Database['public']['Enums']['estado_usuario']
+          estado?: Database["public"]["Enums"]["estado_usuario"]
           fecha_actualizacion?: string
           fecha_creacion?: string
           id?: string
           intentos_fallidos?: number
           nombres?: string
           preferencias?: Json | null
-          rol?: Database['public']['Enums']['rol_usuario']
+          rol?: Database["public"]["Enums"]["rol_usuario"]
           telefono?: string | null
           ultimo_acceso?: string | null
         }
@@ -2428,32 +2428,32 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'viviendas_manzana_id_fkey'
-            columns: ['manzana_id']
+            foreignKeyName: "viviendas_manzana_id_fkey"
+            columns: ["manzana_id"]
             isOneToOne: false
-            referencedRelation: 'manzanas'
-            referencedColumns: ['id']
+            referencedRelation: "manzanas"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'viviendas_manzana_id_fkey'
-            columns: ['manzana_id']
+            foreignKeyName: "viviendas_manzana_id_fkey"
+            columns: ["manzana_id"]
             isOneToOne: false
-            referencedRelation: 'vista_abonos_completos'
-            referencedColumns: ['manzana_id']
+            referencedRelation: "vista_abonos_completos"
+            referencedColumns: ["manzana_id"]
           },
           {
-            foreignKeyName: 'viviendas_manzana_id_fkey'
-            columns: ['manzana_id']
+            foreignKeyName: "viviendas_manzana_id_fkey"
+            columns: ["manzana_id"]
             isOneToOne: false
-            referencedRelation: 'vista_manzanas_disponibilidad'
-            referencedColumns: ['id']
+            referencedRelation: "vista_manzanas_disponibilidad"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'viviendas_negociacion_id_fkey'
-            columns: ['negociacion_id']
+            foreignKeyName: "viviendas_negociacion_id_fkey"
+            columns: ["negociacion_id"]
             isOneToOne: false
-            referencedRelation: 'negociaciones'
-            referencedColumns: ['id']
+            referencedRelation: "negociaciones"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -2494,39 +2494,39 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'fk_fuentes_pago_tipo_fuente'
-            columns: ['tipo_fuente_id']
+            foreignKeyName: "fk_fuentes_pago_tipo_fuente"
+            columns: ["tipo_fuente_id"]
             isOneToOne: false
-            referencedRelation: 'tipos_fuentes_pago'
-            referencedColumns: ['id']
+            referencedRelation: "tipos_fuentes_pago"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'fuentes_pago_entidad_financiera_id_fkey'
-            columns: ['entidad_financiera_id']
+            foreignKeyName: "fuentes_pago_entidad_financiera_id_fkey"
+            columns: ["entidad_financiera_id"]
             isOneToOne: false
-            referencedRelation: 'entidades_financieras'
-            referencedColumns: ['id']
+            referencedRelation: "entidades_financieras"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'fuentes_pago_negociacion_id_fkey'
-            columns: ['negociacion_id']
+            foreignKeyName: "fuentes_pago_negociacion_id_fkey"
+            columns: ["negociacion_id"]
             isOneToOne: false
-            referencedRelation: 'negociaciones'
-            referencedColumns: ['id']
+            referencedRelation: "negociaciones"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'fuentes_pago_reemplazada_por_fkey'
-            columns: ['reemplazada_por']
+            foreignKeyName: "fuentes_pago_reemplazada_por_fkey"
+            columns: ["reemplazada_por"]
             isOneToOne: false
-            referencedRelation: 'fuentes_pago'
-            referencedColumns: ['id']
+            referencedRelation: "fuentes_pago"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'fuentes_pago_reemplazada_por_fkey'
-            columns: ['reemplazada_por']
+            foreignKeyName: "fuentes_pago_reemplazada_por_fkey"
+            columns: ["reemplazada_por"]
             isOneToOne: false
-            referencedRelation: 'fuentes_pago_con_entidad'
-            referencedColumns: ['id']
+            referencedRelation: "fuentes_pago_con_entidad"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -2566,81 +2566,81 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'cliente_intereses_cliente_id_fkey'
-            columns: ['cliente_id']
+            foreignKeyName: "cliente_intereses_cliente_id_fkey"
+            columns: ["cliente_id"]
             isOneToOne: false
-            referencedRelation: 'clientes'
-            referencedColumns: ['id']
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'cliente_intereses_cliente_id_fkey'
-            columns: ['cliente_id']
+            foreignKeyName: "cliente_intereses_cliente_id_fkey"
+            columns: ["cliente_id"]
             isOneToOne: false
-            referencedRelation: 'vista_abonos_completos'
-            referencedColumns: ['cliente_id']
+            referencedRelation: "vista_abonos_completos"
+            referencedColumns: ["cliente_id"]
           },
           {
-            foreignKeyName: 'cliente_intereses_cliente_id_fkey'
-            columns: ['cliente_id']
+            foreignKeyName: "cliente_intereses_cliente_id_fkey"
+            columns: ["cliente_id"]
             isOneToOne: false
-            referencedRelation: 'vista_clientes_resumen'
-            referencedColumns: ['id']
+            referencedRelation: "vista_clientes_resumen"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'cliente_intereses_cliente_id_fkey'
-            columns: ['cliente_id']
+            foreignKeyName: "cliente_intereses_cliente_id_fkey"
+            columns: ["cliente_id"]
             isOneToOne: false
-            referencedRelation: 'vista_viviendas_completas'
-            referencedColumns: ['cliente_id_data']
+            referencedRelation: "vista_viviendas_completas"
+            referencedColumns: ["cliente_id_data"]
           },
           {
-            foreignKeyName: 'cliente_intereses_negociacion_id_fkey'
-            columns: ['negociacion_id']
+            foreignKeyName: "cliente_intereses_negociacion_id_fkey"
+            columns: ["negociacion_id"]
             isOneToOne: false
-            referencedRelation: 'negociaciones'
-            referencedColumns: ['id']
+            referencedRelation: "negociaciones"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'cliente_intereses_proyecto_id_fkey'
-            columns: ['proyecto_id']
+            foreignKeyName: "cliente_intereses_proyecto_id_fkey"
+            columns: ["proyecto_id"]
             isOneToOne: false
-            referencedRelation: 'proyectos'
-            referencedColumns: ['id']
+            referencedRelation: "proyectos"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'cliente_intereses_proyecto_id_fkey'
-            columns: ['proyecto_id']
+            foreignKeyName: "cliente_intereses_proyecto_id_fkey"
+            columns: ["proyecto_id"]
             isOneToOne: false
-            referencedRelation: 'v_renuncias_completas'
-            referencedColumns: ['proyecto_id']
+            referencedRelation: "v_renuncias_completas"
+            referencedColumns: ["proyecto_id"]
           },
           {
-            foreignKeyName: 'cliente_intereses_proyecto_id_fkey'
-            columns: ['proyecto_id']
+            foreignKeyName: "cliente_intereses_proyecto_id_fkey"
+            columns: ["proyecto_id"]
             isOneToOne: false
-            referencedRelation: 'vista_abonos_completos'
-            referencedColumns: ['proyecto_id']
+            referencedRelation: "vista_abonos_completos"
+            referencedColumns: ["proyecto_id"]
           },
           {
-            foreignKeyName: 'cliente_intereses_vivienda_id_fkey'
-            columns: ['vivienda_id']
+            foreignKeyName: "cliente_intereses_vivienda_id_fkey"
+            columns: ["vivienda_id"]
             isOneToOne: false
-            referencedRelation: 'vista_abonos_completos'
-            referencedColumns: ['vivienda_id']
+            referencedRelation: "vista_abonos_completos"
+            referencedColumns: ["vivienda_id"]
           },
           {
-            foreignKeyName: 'cliente_intereses_vivienda_id_fkey'
-            columns: ['vivienda_id']
+            foreignKeyName: "cliente_intereses_vivienda_id_fkey"
+            columns: ["vivienda_id"]
             isOneToOne: false
-            referencedRelation: 'vista_viviendas_completas'
-            referencedColumns: ['id']
+            referencedRelation: "vista_viviendas_completas"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'cliente_intereses_vivienda_id_fkey'
-            columns: ['vivienda_id']
+            foreignKeyName: "cliente_intereses_vivienda_id_fkey"
+            columns: ["vivienda_id"]
             isOneToOne: false
-            referencedRelation: 'viviendas'
-            referencedColumns: ['id']
+            referencedRelation: "viviendas"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -2701,32 +2701,32 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'renuncias_negociacion_id_fkey'
-            columns: ['negociacion_id']
+            foreignKeyName: "renuncias_negociacion_id_fkey"
+            columns: ["negociacion_id"]
             isOneToOne: true
-            referencedRelation: 'negociaciones'
-            referencedColumns: ['id']
+            referencedRelation: "negociaciones"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'renuncias_vivienda_id_fkey'
-            columns: ['vivienda_id']
+            foreignKeyName: "renuncias_vivienda_id_fkey"
+            columns: ["vivienda_id"]
             isOneToOne: false
-            referencedRelation: 'vista_abonos_completos'
-            referencedColumns: ['vivienda_id']
+            referencedRelation: "vista_abonos_completos"
+            referencedColumns: ["vivienda_id"]
           },
           {
-            foreignKeyName: 'renuncias_vivienda_id_fkey'
-            columns: ['vivienda_id']
+            foreignKeyName: "renuncias_vivienda_id_fkey"
+            columns: ["vivienda_id"]
             isOneToOne: false
-            referencedRelation: 'vista_viviendas_completas'
-            referencedColumns: ['id']
+            referencedRelation: "vista_viviendas_completas"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'renuncias_vivienda_id_fkey'
-            columns: ['vivienda_id']
+            foreignKeyName: "renuncias_vivienda_id_fkey"
+            columns: ["vivienda_id"]
             isOneToOne: false
-            referencedRelation: 'viviendas'
-            referencedColumns: ['id']
+            referencedRelation: "viviendas"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -2766,39 +2766,39 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'abonos_historial_anulado_por_id_fkey'
-            columns: ['anulado_por_id']
+            foreignKeyName: "abonos_historial_anulado_por_id_fkey"
+            columns: ["anulado_por_id"]
             isOneToOne: false
-            referencedRelation: 'usuarios'
-            referencedColumns: ['id']
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'abonos_historial_anulado_por_id_fkey'
-            columns: ['anulado_por_id']
+            foreignKeyName: "abonos_historial_anulado_por_id_fkey"
+            columns: ["anulado_por_id"]
             isOneToOne: false
-            referencedRelation: 'vista_usuarios_completos'
-            referencedColumns: ['id']
+            referencedRelation: "vista_usuarios_completos"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'abonos_historial_fuente_pago_id_fkey'
-            columns: ['fuente_pago_id']
+            foreignKeyName: "abonos_historial_fuente_pago_id_fkey"
+            columns: ["fuente_pago_id"]
             isOneToOne: false
-            referencedRelation: 'fuentes_pago'
-            referencedColumns: ['id']
+            referencedRelation: "fuentes_pago"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'abonos_historial_fuente_pago_id_fkey'
-            columns: ['fuente_pago_id']
+            foreignKeyName: "abonos_historial_fuente_pago_id_fkey"
+            columns: ["fuente_pago_id"]
             isOneToOne: false
-            referencedRelation: 'fuentes_pago_con_entidad'
-            referencedColumns: ['id']
+            referencedRelation: "fuentes_pago_con_entidad"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'abonos_historial_negociacion_id_fkey'
-            columns: ['negociacion_id']
+            foreignKeyName: "abonos_historial_negociacion_id_fkey"
+            columns: ["negociacion_id"]
             isOneToOne: false
-            referencedRelation: 'negociaciones'
-            referencedColumns: ['id']
+            referencedRelation: "negociaciones"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -2812,7 +2812,7 @@ export type Database = {
           documento_identidad_url: string | null
           email: string | null
           estado: string | null
-          estado_civil: Database['public']['Enums']['estado_civil_enum'] | null
+          estado_civil: Database["public"]["Enums"]["estado_civil_enum"] | null
           fecha_actualizacion: string | null
           fecha_creacion: string | null
           fecha_nacimiento: string | null
@@ -2838,7 +2838,7 @@ export type Database = {
           documento_identidad_url?: string | null
           email?: string | null
           estado?: string | null
-          estado_civil?: Database['public']['Enums']['estado_civil_enum'] | null
+          estado_civil?: Database["public"]["Enums"]["estado_civil_enum"] | null
           fecha_actualizacion?: string | null
           fecha_creacion?: string | null
           fecha_nacimiento?: string | null
@@ -2864,7 +2864,7 @@ export type Database = {
           documento_identidad_url?: string | null
           email?: string | null
           estado?: string | null
-          estado_civil?: Database['public']['Enums']['estado_civil_enum'] | null
+          estado_civil?: Database["public"]["Enums"]["estado_civil_enum"] | null
           fecha_actualizacion?: string | null
           fecha_creacion?: string | null
           fecha_nacimiento?: string | null
@@ -2926,18 +2926,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'cuotas_credito_fuente_pago_id_fkey'
-            columns: ['fuente_pago_id']
+            foreignKeyName: "cuotas_credito_fuente_pago_id_fkey"
+            columns: ["fuente_pago_id"]
             isOneToOne: false
-            referencedRelation: 'fuentes_pago'
-            referencedColumns: ['id']
+            referencedRelation: "fuentes_pago"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'cuotas_credito_fuente_pago_id_fkey'
-            columns: ['fuente_pago_id']
+            foreignKeyName: "cuotas_credito_fuente_pago_id_fkey"
+            columns: ["fuente_pago_id"]
             isOneToOne: false
-            referencedRelation: 'fuentes_pago_con_entidad'
-            referencedColumns: ['id']
+            referencedRelation: "fuentes_pago_con_entidad"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -2953,25 +2953,25 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'manzanas_proyecto_id_fkey'
-            columns: ['proyecto_id']
+            foreignKeyName: "manzanas_proyecto_id_fkey"
+            columns: ["proyecto_id"]
             isOneToOne: false
-            referencedRelation: 'proyectos'
-            referencedColumns: ['id']
+            referencedRelation: "proyectos"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'manzanas_proyecto_id_fkey'
-            columns: ['proyecto_id']
+            foreignKeyName: "manzanas_proyecto_id_fkey"
+            columns: ["proyecto_id"]
             isOneToOne: false
-            referencedRelation: 'v_renuncias_completas'
-            referencedColumns: ['proyecto_id']
+            referencedRelation: "v_renuncias_completas"
+            referencedColumns: ["proyecto_id"]
           },
           {
-            foreignKeyName: 'manzanas_proyecto_id_fkey'
-            columns: ['proyecto_id']
+            foreignKeyName: "manzanas_proyecto_id_fkey"
+            columns: ["proyecto_id"]
             isOneToOne: false
-            referencedRelation: 'vista_abonos_completos'
-            referencedColumns: ['proyecto_id']
+            referencedRelation: "vista_abonos_completos"
+            referencedColumns: ["proyecto_id"]
           },
         ]
       }
@@ -2983,7 +2983,7 @@ export type Database = {
           creado_por_nombre: string | null
           debe_cambiar_password: boolean | null
           email: string | null
-          estado: Database['public']['Enums']['estado_usuario'] | null
+          estado: Database["public"]["Enums"]["estado_usuario"] | null
           fecha_actualizacion: string | null
           fecha_creacion: string | null
           fecha_registro_auth: string | null
@@ -2991,7 +2991,7 @@ export type Database = {
           intentos_fallidos: number | null
           nombre_completo: string | null
           nombres: string | null
-          rol: Database['public']['Enums']['rol_usuario'] | null
+          rol: Database["public"]["Enums"]["rol_usuario"] | null
           telefono: string | null
           ultimo_acceso: string | null
           ultimo_login_auth: string | null
@@ -3040,53 +3040,53 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'manzanas_proyecto_id_fkey'
-            columns: ['proyecto_id']
+            foreignKeyName: "manzanas_proyecto_id_fkey"
+            columns: ["proyecto_id"]
             isOneToOne: false
-            referencedRelation: 'proyectos'
-            referencedColumns: ['id']
+            referencedRelation: "proyectos"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'manzanas_proyecto_id_fkey'
-            columns: ['proyecto_id']
+            foreignKeyName: "manzanas_proyecto_id_fkey"
+            columns: ["proyecto_id"]
             isOneToOne: false
-            referencedRelation: 'v_renuncias_completas'
-            referencedColumns: ['proyecto_id']
+            referencedRelation: "v_renuncias_completas"
+            referencedColumns: ["proyecto_id"]
           },
           {
-            foreignKeyName: 'manzanas_proyecto_id_fkey'
-            columns: ['proyecto_id']
+            foreignKeyName: "manzanas_proyecto_id_fkey"
+            columns: ["proyecto_id"]
             isOneToOne: false
-            referencedRelation: 'vista_abonos_completos'
-            referencedColumns: ['proyecto_id']
+            referencedRelation: "vista_abonos_completos"
+            referencedColumns: ["proyecto_id"]
           },
           {
-            foreignKeyName: 'viviendas_manzana_id_fkey'
-            columns: ['manzana_id']
+            foreignKeyName: "viviendas_manzana_id_fkey"
+            columns: ["manzana_id"]
             isOneToOne: false
-            referencedRelation: 'manzanas'
-            referencedColumns: ['id']
+            referencedRelation: "manzanas"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'viviendas_manzana_id_fkey'
-            columns: ['manzana_id']
+            foreignKeyName: "viviendas_manzana_id_fkey"
+            columns: ["manzana_id"]
             isOneToOne: false
-            referencedRelation: 'vista_abonos_completos'
-            referencedColumns: ['manzana_id']
+            referencedRelation: "vista_abonos_completos"
+            referencedColumns: ["manzana_id"]
           },
           {
-            foreignKeyName: 'viviendas_manzana_id_fkey'
-            columns: ['manzana_id']
+            foreignKeyName: "viviendas_manzana_id_fkey"
+            columns: ["manzana_id"]
             isOneToOne: false
-            referencedRelation: 'vista_manzanas_disponibilidad'
-            referencedColumns: ['id']
+            referencedRelation: "vista_manzanas_disponibilidad"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'viviendas_negociacion_id_fkey'
-            columns: ['negociacion_id']
+            foreignKeyName: "viviendas_negociacion_id_fkey"
+            columns: ["negociacion_id"]
             isOneToOne: false
-            referencedRelation: 'negociaciones'
-            referencedColumns: ['id']
+            referencedRelation: "negociaciones"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -3348,13 +3348,6 @@ export type Database = {
         Args: { p_accion: string; p_modulo: string; p_usuario_id: string }
         Returns: boolean
       }
-      tiene_rol: {
-        Args: {
-          p_roles: Database['public']['Enums']['rol_usuario'][]
-          p_user_id: string
-        }
-        Returns: boolean
-      }
       tipos_fuente_sin_configuracion: {
         Args: never
         Returns: {
@@ -3401,14 +3394,13 @@ export type Database = {
       }
     }
     Enums: {
-      estado_civil_enum: 'Soltero(a)' | 'Casado(a)' | 'Unión libre' | 'Viudo(a)'
-      estado_usuario: 'Activo' | 'Inactivo' | 'Bloqueado'
+      estado_civil_enum: "Soltero(a)" | "Casado(a)" | "Unión libre" | "Viudo(a)"
+      estado_usuario: "Activo" | "Inactivo" | "Bloqueado"
       rol_usuario:
-        | 'Administrador'
-        | 'Gerente'
-        | 'Vendedor'
-        | 'Contador'
-        | 'Supervisor'
+        | "Administrador"
+        | "Contabilidad"
+        | "Gerencia"
+        | "Administrador de Obra"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -3416,33 +3408,33 @@ export type Database = {
   }
 }
 
-type DatabaseWithoutInternals = Omit<Database, '__InternalSupabase'>
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
 
-type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, 'public'>]
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
 
 export type Tables<
   DefaultSchemaTableNameOrOptions extends
-    | keyof (DefaultSchema['Tables'] & DefaultSchema['Views'])
+    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'] &
-        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Views'])
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
     : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'] &
-      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Views'])[TableName] extends {
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
       Row: infer R
     }
     ? R
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema['Tables'] &
-        DefaultSchema['Views'])
-    ? (DefaultSchema['Tables'] &
-        DefaultSchema['Views'])[DefaultSchemaTableNameOrOptions] extends {
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
         Row: infer R
       }
       ? R
@@ -3451,23 +3443,23 @@ export type Tables<
 
 export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema['Tables']
+    | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables']
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'][TableName] extends {
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Insert: infer I
     }
     ? I
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema['Tables']
-    ? DefaultSchema['Tables'][DefaultSchemaTableNameOrOptions] extends {
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
         Insert: infer I
       }
       ? I
@@ -3476,23 +3468,23 @@ export type TablesInsert<
 
 export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema['Tables']
+    | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables']
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'][TableName] extends {
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Update: infer U
     }
     ? U
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema['Tables']
-    ? DefaultSchema['Tables'][DefaultSchemaTableNameOrOptions] extends {
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
         Update: infer U
       }
       ? U
@@ -3501,49 +3493,48 @@ export type TablesUpdate<
 
 export type Enums<
   DefaultSchemaEnumNameOrOptions extends
-    | keyof DefaultSchema['Enums']
+    | keyof DefaultSchema["Enums"]
     | { schema: keyof DatabaseWithoutInternals },
   EnumName extends DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions['schema']]['Enums']
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
     : never = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions['schema']]['Enums'][EnumName]
-  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema['Enums']
-    ? DefaultSchema['Enums'][DefaultSchemaEnumNameOrOptions]
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
+    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
     : never
 
 export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
-    | keyof DefaultSchema['CompositeTypes']
+    | keyof DefaultSchema["CompositeTypes"]
     | { schema: keyof DatabaseWithoutInternals },
   CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions['schema']]['CompositeTypes']
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
     : never = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions['schema']]['CompositeTypes'][CompositeTypeName]
-  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema['CompositeTypes']
-    ? DefaultSchema['CompositeTypes'][PublicCompositeTypeNameOrOptions]
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
+    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
     : never
 
 export const Constants = {
   public: {
     Enums: {
-      estado_civil_enum: ['Soltero(a)', 'Casado(a)', 'Unión libre', 'Viudo(a)'],
-      estado_usuario: ['Activo', 'Inactivo', 'Bloqueado'],
+      estado_civil_enum: ["Soltero(a)", "Casado(a)", "Unión libre", "Viudo(a)"],
+      estado_usuario: ["Activo", "Inactivo", "Bloqueado"],
       rol_usuario: [
-        'Administrador',
-        'Gerente',
-        'Vendedor',
-        'Contador',
-        'Supervisor',
+        "Administrador",
+        "Contabilidad",
+        "Gerencia",
+        "Administrador de Obra",
       ],
     },
   },

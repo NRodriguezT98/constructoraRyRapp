@@ -6,7 +6,8 @@
 const { createClient } = require('@supabase/supabase-js')
 
 const supabaseUrl = 'https://swyjhwgvkfcfdtemkyad.supabase.co'
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN3eWpod2d2a2ZjZmR0ZW1reWFkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA0NTU4ODQsImV4cCI6MjA3NjAzMTg4NH0.v9daNgC7Eesupwatd4eDipCXeTh1onVwVsCSFxYy5xs'
+const supabaseKey =
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN3eWpod2d2a2ZjZmR0ZW1reWFkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA0NTU4ODQsImV4cCI6MjA3NjAzMTg4NH0.v9daNgC7Eesupwatd4eDipCXeTh1onVwVsCSFxYy5xs'
 
 const supabase = createClient(supabaseUrl, supabaseKey)
 
@@ -43,19 +44,20 @@ async function extraerCategoriasClientes() {
       icono: cat.icono,
       orden: cat.orden,
       es_sistema: cat.es_sistema,
-      modulos_permitidos: cat.modulos_permitidos
+      modulos_permitidos: cat.modulos_permitidos,
     }
   })
 
   console.log('\n📋 Código TypeScript generado:\n')
-  console.log('=' .repeat(80))
+  console.log('='.repeat(80))
   console.log(generarCodigoTypeScript(categorias))
-  console.log('=' .repeat(80))
+  console.log('='.repeat(80))
 }
 
 function generarCodigoTypeScript(categorias) {
-  const categoriasCode = categorias.map(cat => {
-    return `  {
+  const categoriasCode = categorias
+    .map(cat => {
+      return `  {
     id: '${cat.id}',
     nombre: '${cat.nombre}',
     descripcion: ${cat.descripcion ? `'${cat.descripcion}'` : 'null'},
@@ -65,7 +67,8 @@ function generarCodigoTypeScript(categorias) {
     es_sistema: ${cat.es_sistema},
     modulos_permitidos: ['clientes']
   }`
-  }).join(',\n')
+    })
+    .join(',\n')
 
   return `/**
  * Categorías del sistema para módulo CLIENTES
@@ -80,14 +83,16 @@ ${categoriasCode}
 
 // ✅ IDs tipados para usar en código
 export const CATEGORIA_IDS = {
-${categorias.map(cat => {
-  const key = cat.nombre
-    .toUpperCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^A-Z0-9]+/g, '_')
-  return `  ${key}: '${cat.id}' as const`
-}).join(',\n')}
+${categorias
+  .map(cat => {
+    const key = cat.nombre
+      .toUpperCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^A-Z0-9]+/g, '_')
+    return `  ${key}: '${cat.id}' as const`
+  })
+  .join(',\n')}
 } as const`
 }
 

@@ -70,7 +70,9 @@ export class PlantillasRequisitosService {
   /**
    * Obtiene requisitos configurados para un tipo de fuente
    */
-  static async obtenerRequisitosPorTipo(tipoFuente: string): Promise<RequisitoTipoFuente[]> {
+  static async obtenerRequisitosPorTipo(
+    tipoFuente: string
+  ): Promise<RequisitoTipoFuente[]> {
     try {
       const { data, error } = await supabase
         .from('fuentes_pago_requisitos_config')
@@ -122,7 +124,9 @@ export class PlantillasRequisitosService {
 
       if (plantillasError) {
         logger.error('❌ Error obteniendo plantillas:', plantillasError)
-        throw new Error(`Error al obtener plantillas: ${plantillasError.message}`)
+        throw new Error(
+          `Error al obtener plantillas: ${plantillasError.message}`
+        )
       }
 
       if (!plantillas || plantillas.length === 0) {
@@ -130,7 +134,7 @@ export class PlantillasRequisitosService {
       }
 
       // 4. Insertar nuevos requisitos
-      const requisitos = plantillas.map((p) => ({
+      const requisitos = plantillas.map(p => ({
         tipo_fuente: tipoFuente,
         tipo_documento: p.tipo_documento,
         es_obligatorio: p.es_obligatorio,
@@ -157,7 +161,9 @@ export class PlantillasRequisitosService {
   /**
    * Obtiene IDs de plantillas configuradas para un tipo
    */
-  static async obtenerPlantillasConfiguradas(tipoFuente: string): Promise<string[]> {
+  static async obtenerPlantillasConfiguradas(
+    tipoFuente: string
+  ): Promise<string[]> {
     try {
       // Obtener requisitos actuales
       const requisitos = await this.obtenerRequisitosPorTipo(tipoFuente)
@@ -167,7 +173,7 @@ export class PlantillasRequisitosService {
       }
 
       // Buscar plantillas que coincidan con esos requisitos
-      const tiposDocumento = requisitos.map((r) => r.tipo_documento)
+      const tiposDocumento = requisitos.map(r => r.tipo_documento)
 
       const { data: plantillas, error } = await supabase
         .from('plantillas_requisitos_documentos')
@@ -179,7 +185,7 @@ export class PlantillasRequisitosService {
         return []
       }
 
-      return plantillas?.map((p) => p.id) || []
+      return plantillas?.map(p => p.id) || []
     } catch (error) {
       logger.error('❌ Error en obtenerPlantillasConfiguradas:', error)
       return []

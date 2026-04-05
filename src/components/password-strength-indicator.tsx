@@ -3,10 +3,10 @@ import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 
 import {
-    getStrengthColor,
-    getStrengthLabel,
-    validatePasswordStrength,
-    type PasswordValidationResult,
+  getStrengthColor,
+  getStrengthLabel,
+  validatePasswordStrength,
+  type PasswordValidationResult,
 } from '@/lib/validations/password'
 
 interface PasswordStrengthIndicatorProps {
@@ -22,7 +22,9 @@ export function PasswordStrengthIndicator({
   password,
   showDetails = true,
 }: PasswordStrengthIndicatorProps) {
-  const [validation, setValidation] = useState<PasswordValidationResult | null>(null)
+  const [validation, setValidation] = useState<PasswordValidationResult | null>(
+    null
+  )
 
   useEffect(() => {
     if (password.length > 0) {
@@ -66,9 +68,7 @@ export function PasswordStrengthIndicator({
             />
           </div>
         </div>
-        <span className={`text-xs font-medium ${colors.text}`}>
-          {label}
-        </span>
+        <span className={`text-xs font-medium ${colors.text}`}>{label}</span>
       </div>
 
       {/* Detalles de requisitos */}
@@ -116,7 +116,10 @@ export function PasswordStrengthIndicator({
           {validation.errors.length > 0 && (
             <div className='space-y-1'>
               {validation.errors.map((error, index) => (
-                <div key={index} className='flex items-center gap-2 text-xs text-red-300'>
+                <div
+                  key={index}
+                  className='flex items-center gap-2 text-xs text-red-300'
+                >
                   <span>✗</span>
                   <span>{error}</span>
                 </div>
@@ -127,8 +130,8 @@ export function PasswordStrengthIndicator({
           {/* Recomendaciones */}
           {validation.strength === 'weak' && (
             <div className='mt-2 rounded-lg border border-yellow-400/30 bg-yellow-500/10 p-2 text-xs text-yellow-200'>
-              💡 <strong>Tip:</strong> Usa una combinación de letras mayúsculas, minúsculas y números.
-              Considera agregar símbolos especiales.
+              💡 <strong>Tip:</strong> Usa una combinación de letras mayúsculas,
+              minúsculas y números. Considera agregar símbolos especiales.
             </div>
           )}
         </motion.div>

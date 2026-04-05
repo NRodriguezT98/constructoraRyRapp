@@ -2,7 +2,11 @@
  * Utilidades para trabajar con campos dinámicos de fuentes de pago
  */
 
-import type { CampoConfig, RolCampo, ValorCampo } from '@/modules/configuracion/types/campos-dinamicos.types'
+import type {
+  CampoConfig,
+  RolCampo,
+  ValorCampo,
+} from '@/modules/configuracion/types/campos-dinamicos.types'
 
 import type { FuentePagoConfig } from '../components/asignar-vivienda/types'
 
@@ -87,7 +91,9 @@ export function obtenerMonto(
  */
 export function obtenerMontoParaCierre(
   config: FuentePagoConfig | null,
-  tipoConCampos: import('@/modules/configuracion/types/campos-dinamicos.types').TipoFuentePagoConCampos | undefined,
+  tipoConCampos:
+    | import('@/modules/configuracion/types/campos-dinamicos.types').TipoFuentePagoConCampos
+    | undefined,
   camposConfig: CampoConfig[]
 ): number {
   if (!config) return 0
@@ -173,7 +179,9 @@ export function obtenerReferencia(
  * @param camposConfig - Array de configuraciones de campos
  * @returns Campo con rol='monto' o undefined
  */
-export function obtenerCampoMonto(camposConfig: CampoConfig[]): CampoConfig | undefined {
+export function obtenerCampoMonto(
+  camposConfig: CampoConfig[]
+): CampoConfig | undefined {
   return camposConfig.find(c => c.rol === 'monto')
 }
 

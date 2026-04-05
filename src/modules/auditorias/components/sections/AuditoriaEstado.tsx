@@ -55,18 +55,22 @@ const ESTADO_CONFIG = {
 }
 
 export function AuditoriaEstado({ estado }: AuditoriaEstadoProps) {
-  const config = ESTADO_CONFIG[estado as keyof typeof ESTADO_CONFIG] || ESTADO_CONFIG.en_proceso
+  const config =
+    ESTADO_CONFIG[estado as keyof typeof ESTADO_CONFIG] ||
+    ESTADO_CONFIG.en_proceso
   const Icon = config.icon
 
   return (
-    <div className={`p-4 rounded-xl ${config.bg} border ${config.border}`}>
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className={`w-10 h-10 rounded-lg bg-gradient-to-r ${config.gradient} flex items-center justify-center shadow-lg`}>
-            <Icon className="w-5 h-5 text-white" />
+    <div className={`rounded-xl p-4 ${config.bg} border ${config.border}`}>
+      <div className='flex items-center justify-between'>
+        <div className='flex items-center gap-3'>
+          <div
+            className={`h-10 w-10 rounded-lg bg-gradient-to-r ${config.gradient} flex items-center justify-center shadow-lg`}
+          >
+            <Icon className='h-5 w-5 text-white' />
           </div>
           <div>
-            <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase mb-0.5">
+            <p className='mb-0.5 text-xs font-semibold uppercase text-gray-500 dark:text-gray-400'>
               Estado
             </p>
             <p className={`text-base font-bold ${config.text}`}>
@@ -75,8 +79,10 @@ export function AuditoriaEstado({ estado }: AuditoriaEstadoProps) {
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          <div className={`w-2 h-2 rounded-full bg-gradient-to-r ${config.gradient} animate-pulse`} />
+        <div className='flex items-center gap-2'>
+          <div
+            className={`h-2 w-2 rounded-full bg-gradient-to-r ${config.gradient} animate-pulse`}
+          />
         </div>
       </div>
     </div>

@@ -54,7 +54,14 @@ const PARTICLES = Array.from({ length: 12 }, (_, i) => ({
   delay: Math.random() * 0.3,
 }))
 
-const PARTICLE_COLORS = ['#FFD700', '#FF6B6B', '#4ECDC4', '#A78BFA', '#F97316', '#06B6D4']
+const PARTICLE_COLORS = [
+  '#FFD700',
+  '#FF6B6B',
+  '#4ECDC4',
+  '#A78BFA',
+  '#F97316',
+  '#06B6D4',
+]
 
 export function AccordionWizardSuccess({
   isVisible,
@@ -82,19 +89,19 @@ export function AccordionWizardSuccess({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.3 }}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+          className='fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm'
         >
           <motion.div
             initial={{ scale: 0.5, opacity: 0, y: 30 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.8, opacity: 0, y: -20 }}
             transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-            className="relative flex flex-col items-center gap-4 p-8 text-center"
+            className='relative flex flex-col items-center gap-4 p-8 text-center'
           >
             {/* Confetti particles */}
             {showParticles ? (
-              <div className="absolute inset-0 pointer-events-none overflow-visible">
-                {PARTICLES.map((p) => (
+              <div className='pointer-events-none absolute inset-0 overflow-visible'>
+                {PARTICLES.map(p => (
                   <motion.div
                     key={p.id}
                     initial={{ x: 0, y: 0, opacity: 1, scale: 0 }}
@@ -105,10 +112,15 @@ export function AccordionWizardSuccess({
                       scale: p.scale,
                       rotate: p.rotate,
                     }}
-                    transition={{ duration: 1.2, delay: p.delay, ease: 'easeOut' }}
-                    className="absolute left-1/2 top-1/2 w-2 h-2 rounded-full"
+                    transition={{
+                      duration: 1.2,
+                      delay: p.delay,
+                      ease: 'easeOut',
+                    }}
+                    className='absolute left-1/2 top-1/2 h-2 w-2 rounded-full'
                     style={{
-                      backgroundColor: PARTICLE_COLORS[p.id % PARTICLE_COLORS.length],
+                      backgroundColor:
+                        PARTICLE_COLORS[p.id % PARTICLE_COLORS.length],
                     }}
                   />
                 ))}
@@ -119,10 +131,18 @@ export function AccordionWizardSuccess({
             <motion.div
               initial={{ scale: 0, rotate: -180 }}
               animate={{ scale: 1, rotate: 0 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 15, delay: 0.15 }}
-              className={`relative w-20 h-20 rounded-full bg-gradient-to-br ${bg} shadow-2xl ${glow} flex items-center justify-center`}
+              transition={{
+                type: 'spring',
+                stiffness: 300,
+                damping: 15,
+                delay: 0.15,
+              }}
+              className={`relative h-20 w-20 rounded-full bg-gradient-to-br ${bg} shadow-2xl ${glow} flex items-center justify-center`}
             >
-              <CheckCircle2 className="w-10 h-10 text-white" strokeWidth={2.5} />
+              <CheckCircle2
+                className='h-10 w-10 text-white'
+                strokeWidth={2.5}
+              />
 
               {/* Pulsing ring */}
               <motion.div
@@ -138,17 +158,17 @@ export function AccordionWizardSuccess({
               initial={{ opacity: 0, scale: 0 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.4 }}
-              className="absolute -top-2 -right-4"
+              className='absolute -right-4 -top-2'
             >
-              <Sparkles className="w-6 h-6 text-yellow-400" />
+              <Sparkles className='h-6 w-6 text-yellow-400' />
             </motion.div>
             <motion.div
               initial={{ opacity: 0, scale: 0 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.5 }}
-              className="absolute top-0 -left-6"
+              className='absolute -left-6 top-0'
             >
-              <PartyPopper className="w-5 h-5 text-orange-400" />
+              <PartyPopper className='h-5 w-5 text-orange-400' />
             </motion.div>
 
             {/* Texto */}
@@ -157,13 +177,11 @@ export function AccordionWizardSuccess({
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
             >
-              <h2 className="text-2xl font-bold text-white tracking-tight">
+              <h2 className='text-2xl font-bold tracking-tight text-white'>
                 {title}
               </h2>
               {subtitle ? (
-                <p className="text-white/70 text-sm mt-1">
-                  {subtitle}
-                </p>
+                <p className='mt-1 text-sm text-white/70'>{subtitle}</p>
               ) : null}
             </motion.div>
           </motion.div>

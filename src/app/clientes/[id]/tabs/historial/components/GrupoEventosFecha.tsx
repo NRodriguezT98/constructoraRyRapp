@@ -45,7 +45,9 @@ export function GrupoEventosFecha({
       {/* Header de fecha */}
       <div className={historialStyles.timeline.fechaHeader}>
         <Calendar className={historialStyles.timeline.fechaIcon} />
-        <h4 className={historialStyles.timeline.fechaTitulo}>{fechaFormateada}</h4>
+        <h4 className={historialStyles.timeline.fechaTitulo}>
+          {fechaFormateada}
+        </h4>
         <span className={historialStyles.timeline.fechaContador}>
           {total} {total === 1 ? 'evento' : 'eventos'}
         </span>

@@ -103,12 +103,10 @@ describe('clientService', () => {
       vi.mocked(createBrowserSupabaseClient).mockReturnValueOnce({
         from: vi.fn().mockReturnThis(),
         // ... resolves with error
-        order: vi
-          .fn()
-          .mockResolvedValue({
-            data: null,
-            error: { message: 'DB error', code: '42P01' },
-          }),
+        order: vi.fn().mockResolvedValue({
+          data: null,
+          error: { message: 'DB error', code: '42P01' },
+        }),
       } as unknown as ReturnType<typeof createBrowserSupabaseClient>)
       // Act & Assert
       await expect(clientService.getAll()).rejects.toThrow(ServiceError)
@@ -210,3 +208,23 @@ describe('ClientForm', () => {
 - Test names: `should [behavior] when [condition]`
 - Minimum 70% coverage: statements, branches, functions, lines
 - Always use `createWrapper()` with a fresh `QueryClient` for hook tests (retry: false)
+
+## ⚠️ REGLA DE ORO: VERIFICACIÓN OBLIGATORIA AL TERMINAR
+
+**DESPUÉS de cualquier cambio, SIEMPRE ejecutar antes de declarar la tarea completada:**
+
+```bash
+npm run check-all
+```
+
+Este comando ejecuta en orden: TypeScript (`tsc --noEmit`) → ESLint → Prettier → Vitest.
+La tarea NO está terminada hasta que `check-all` pase con **exit code 0**.
+
+Si falla, corregir en este orden: TypeScript → ESLint → Prettier → Tests.
+
+```bash
+npm run type-check   # Solo TypeScript
+npm run lint:fix     # ESLint con auto-corrección
+npm run format       # Prettier auto-corrección
+npm run test         # Solo tests
+```

@@ -7,7 +7,9 @@ const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 const supabase = createClient(supabaseUrl, supabaseKey)
 
 async function buscarDocumentoJuanCarlos() {
-  console.log('🔍 Buscando documentos de Juan Carlos con Subsidio Caja Compensación...\n')
+  console.log(
+    '🔍 Buscando documentos de Juan Carlos con Subsidio Caja Compensación...\n'
+  )
 
   const { data: cliente } = await supabase
     .from('clientes')
@@ -43,7 +45,7 @@ async function buscarDocumentoJuanCarlos() {
     // Actualizar metadata
     const nuevoMetadata = {
       ...doc.metadata,
-      entidad: 'COMFANDI'
+      entidad: 'COMFANDI',
     }
 
     const { error: errorUpdate } = await supabase

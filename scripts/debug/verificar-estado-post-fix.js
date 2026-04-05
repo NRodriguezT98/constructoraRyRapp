@@ -9,7 +9,8 @@
 import { createClient } from '@supabase/supabase-js'
 
 const supabaseUrl = 'https://ouhfqwpvzbjtrzotssco.supabase.co'
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im91aGZxd3B2emJqdHJ6b3Rzc2NvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjgyNjIxNjEsImV4cCI6MjA0MzgzODE2MX0.gqo_v_1gOWECjZQNPTHDqoSxLXCEb6-wR2PWaE_bIpo'
+const supabaseKey =
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im91aGZxd3B2emJqdHJ6b3Rzc2NvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjgyNjIxNjEsImV4cCI6MjA0MzgzODE2MX0.gqo_v_1gOWECjZQNPTHDqoSxLXCEb6-wR2PWaE_bIpo'
 
 const supabase = createClient(supabaseUrl, supabaseKey)
 
@@ -35,9 +36,13 @@ async function verificarEstados() {
     console.log('📊 Estado:', cliente.estado)
 
     if (cliente.estado === 'Activo') {
-      console.log('\n⚠️  TODAVÍA ACTIVO - Necesitas ejecutar la desvinculación de nuevo')
+      console.log(
+        '\n⚠️  TODAVÍA ACTIVO - Necesitas ejecutar la desvinculación de nuevo'
+      )
     } else if (cliente.estado === 'Renunció') {
-      console.log('\n✅ PERFECTO - Estado actualizado correctamente a "Renunció"')
+      console.log(
+        '\n✅ PERFECTO - Estado actualizado correctamente a "Renunció"'
+      )
     } else {
       console.log('\n🔸 Estado actual:', cliente.estado)
     }
@@ -48,14 +53,16 @@ async function verificarEstados() {
 
   const { data: viviendas, error: errorVivienda } = await supabase
     .from('viviendas')
-    .select(`
+    .select(
+      `
       id,
       numero,
       estado,
       cliente_id,
       negociacion_id,
       manzanas!inner (nombre)
-    `)
+    `
+    )
     .eq('numero', '5')
     .eq('manzanas.nombre', 'Manzana A')
 
@@ -70,10 +77,16 @@ async function verificarEstados() {
     console.log('👤 Cliente ID:', vivienda.cliente_id || 'NULL ✅')
     console.log('📋 Negociación ID:', vivienda.negociacion_id || 'NULL ✅')
 
-    if (vivienda.estado === 'Disponible' && !vivienda.cliente_id && !vivienda.negociacion_id) {
+    if (
+      vivienda.estado === 'Disponible' &&
+      !vivienda.cliente_id &&
+      !vivienda.negociacion_id
+    ) {
       console.log('\n✅ PERFECTO - Vivienda disponible sin vínculos')
     } else {
-      console.log('\n⚠️  Vivienda aún vinculada - Ejecutar desvinculación de nuevo')
+      console.log(
+        '\n⚠️  Vivienda aún vinculada - Ejecutar desvinculación de nuevo'
+      )
     }
   }
 

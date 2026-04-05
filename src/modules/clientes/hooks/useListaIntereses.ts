@@ -46,7 +46,9 @@ interface UseListaInteresesReturn {
 
 export function useListaIntereses(clienteId: string): UseListaInteresesReturn {
   const [intereses, setIntereses] = useState<ClienteInteres[]>([])
-  const [interesesFiltrados, setInteresesFiltrados] = useState<ClienteInteres[]>([])
+  const [interesesFiltrados, setInteresesFiltrados] = useState<
+    ClienteInteres[]
+  >([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [estadoFiltro, setEstadoFiltro] = useState<string | null>(null)
@@ -66,12 +68,16 @@ export function useListaIntereses(clienteId: string): UseListaInteresesReturn {
 
     try {
       // Obtener todos los intereses (activos y descartados)
-      const data = await interesesService.obtenerInteresesCliente(clienteId, false)
+      const data = await interesesService.obtenerInteresesCliente(
+        clienteId,
+        false
+      )
 
       setIntereses(data)
       setInteresesFiltrados(data) // Inicialmente sin filtro
     } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : 'Error al cargar intereses'
+      const errorMsg =
+        err instanceof Error ? err.message : 'Error al cargar intereses'
       logger.error('❌ Error cargando intereses:', err)
       setError(errorMsg)
       setIntereses([])
@@ -84,32 +90,37 @@ export function useListaIntereses(clienteId: string): UseListaInteresesReturn {
   /**
    * Descartar un interés (cambiar estado a 'Descartado')
    */
-  const descartarInteres = useCallback(async (interesId: string, motivo?: string) => {
+  const descartarInteres = useCallback(
+    async (interesId: string, motivo?: string) => {
+      try {
+        await interesesService.descartarInteres(interesId, motivo)
 
-    try {
-      await interesesService.descartarInteres(interesId, motivo)
-
-      // Recargar lista
-      await cargarIntereses()
-    } catch (err) {
-      logger.error('❌ Error descartando interés:', err)
-      throw err
-    }
-  }, [cargarIntereses])
+        // Recargar lista
+        await cargarIntereses()
+      } catch (err) {
+        logger.error('❌ Error descartando interés:', err)
+        throw err
+      }
+    },
+    [cargarIntereses]
+  )
 
   /**
    * Filtrar por estado
    */
-  const filtrarPorEstado = useCallback((estado: string | null) => {
-    setEstadoFiltro(estado)
+  const filtrarPorEstado = useCallback(
+    (estado: string | null) => {
+      setEstadoFiltro(estado)
 
-    if (!estado) {
-      setInteresesFiltrados(intereses)
-    } else {
-      const filtrados = intereses.filter(interes => interes.estado === estado)
-      setInteresesFiltrados(filtrados)
-    }
-  }, [intereses])
+      if (!estado) {
+        setInteresesFiltrados(intereses)
+      } else {
+        const filtrados = intereses.filter(interes => interes.estado === estado)
+        setInteresesFiltrados(filtrados)
+      }
+    },
+    [intereses]
+  )
 
   /**
    * Recalcular filtro cuando cambian los intereses

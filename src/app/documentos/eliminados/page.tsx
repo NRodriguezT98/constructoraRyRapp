@@ -83,7 +83,11 @@ export default function DocumentosEliminadosPage() {
 
               <div className='flex items-center gap-2'>
                 <button
-                  onClick={() => router.back()}
+                  onClick={() =>
+                    window.history.length > 1
+                      ? router.back()
+                      : router.push('/documentos/eliminados')
+                  }
                   className='inline-flex items-center gap-2 rounded-lg border border-white/30 bg-white/20 px-3 py-1.5 text-sm font-medium text-white shadow-lg backdrop-blur-md transition-all hover:bg-white/30'
                 >
                   <ArrowLeft className='h-4 w-4' />

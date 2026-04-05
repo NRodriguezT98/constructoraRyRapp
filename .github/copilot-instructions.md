@@ -2,6 +2,54 @@ si por # RyR Constructora - Sistema de Gestión Administrativa
 
 ## 🎯 PRINCIPIOS FUNDAMENTALES (APLICAR SIEMPRE)
 
+### 🚨 REGLA CRÍTICA #-12: VERIFICACIÓN COMPLETA OBLIGATORIA ANTES DE DECLARAR TAREA TERMINADA
+
+**⚠️ DESPUÉS de CUALQUIER cambio de código (nuevo feature, bugfix, refactor, migración de roles, etc.):**
+
+**EL ÚNICO COMANDO DE VERIFICACIÓN VÁLIDO ES:**
+
+```bash
+npm run check-all
+```
+
+**Qué verifica internamente (en orden):**
+
+| #   | Herramienta          | Detecta                                                                          |
+| --- | -------------------- | -------------------------------------------------------------------------------- |
+| 1   | `tsc --noEmit`       | Errores TypeScript, `any` implícito, referencias inválidas a tipos/enums         |
+| 2   | `next lint` (ESLint) | `no-console`, `no-explicit-any`, `no-unused-vars`, `import/order`, `react-hooks` |
+| 3   | `prettier --check`   | Formato inconsistente en cualquier archivo                                       |
+| 4   | `vitest run`         | Tests unitarios (regresiones en lógica de negocio)                               |
+
+**REGLAS ABSOLUTAS:**
+
+1. **NUNCA** declarar una tarea terminada sin que `npm run check-all` haya pasado con **exit code 0**
+2. **NUNCA** ignorar warnings de ESLint (`--max-warnings=0` está configurado — cualquier warning es fallo)
+3. **SIEMPRE** corregir los errores detectados, en este orden de prioridad: TypeScript → ESLint → Prettier → Tests
+4. **NUNCA** usar `eslint-disable` para silenciar errores en código de negocio — corregir el código
+5. **NUNCA** usar `// @ts-ignore` o `// @ts-expect-error` para ocultar errores TypeScript
+
+**Referencia rápida de comandos individuales (solo para diagnóstico):**
+
+```bash
+npm run type-check        # Solo TypeScript
+npm run lint              # Solo ESLint
+npm run lint:fix          # ESLint con auto-corrección
+npm run format            # Prettier auto-corrección
+npm run test              # Solo Vitest
+npm run check:full        # check-all + next build (usar antes de deploy)
+```
+
+**Errores comunes detectados por check-all que NO repetir:**
+
+- ❌ Renombrar roles en TypeScript pero no actualizar objetos de estilos → `TS7053`
+- ❌ Agregar `useEffect`/`useCallback` sin incluir todas las dependencias → `react-hooks/exhaustive-deps`
+- ❌ Importar módulos en orden incorrecto → `import/order`
+- ❌ `console.log` olvidado en código de producción → `no-console`
+- ❌ Dejar archivos sin formatear con Prettier → `format:check` falla
+
+---
+
 ### 🚨 REGLA CRÍTICA #-11: EDICIÓN EN PÁGINA PROPIA, NO EN MODAL (OBLIGATORIO)
 
 **⚠️ AL implementar o revisar flujos de EDICIÓN en CUALQUIER módulo:**

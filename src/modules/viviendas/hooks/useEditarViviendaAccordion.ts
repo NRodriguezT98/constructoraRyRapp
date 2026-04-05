@@ -12,7 +12,6 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useQuery } from '@tanstack/react-query'
-import { DollarSign, MapPin, Ruler, Scale } from 'lucide-react'
 import { useForm, type Resolver } from 'react-hook-form'
 import { toast } from 'sonner'
 
@@ -23,9 +22,14 @@ import { construirURLVivienda } from '@/lib/utils/slug.utils'
 import type {
   SectionStatus,
   SummaryItem,
-  WizardStepConfig,
 } from '@/shared/components/accordion-wizard'
 
+import {
+  FIELDS_PASO_2_VIVIENDA_EDICION as FIELDS_PASO_2,
+  FIELDS_PASO_3_VIVIENDA_EDICION as FIELDS_PASO_3,
+  FIELDS_PASO_4_VIVIENDA_EDICION as FIELDS_PASO_4,
+  PASOS_VIVIENDA_EDICION,
+} from '../schemas/editar-vivienda-accordion.schema'
 import {
   viviendaFullSchema,
   type ViviendaSchemaType,
@@ -44,56 +48,7 @@ import {
 
 // Re-exportamos los tipos para coherencia con useEditarVivienda
 export type { ImpactoFinanciero, NegociacionImpacto } from './useEditarVivienda'
-
-// ── Configuración de pasos ───────────────────────────────────────────────────
-export const PASOS_VIVIENDA_EDICION: WizardStepConfig[] = [
-  {
-    id: 1,
-    title: 'Ubicación',
-    description: 'Proyecto, manzana y número (solo lectura en edición).',
-    icon: MapPin,
-  },
-  {
-    id: 2,
-    title: 'Linderos',
-    description:
-      'Límites físicos de la vivienda: norte, sur, oriente y occidente.',
-    icon: Ruler,
-  },
-  {
-    id: 3,
-    title: 'Información Legal',
-    description: 'Matrícula inmobiliaria, nomenclatura y áreas del predio.',
-    icon: Scale,
-  },
-  {
-    id: 4,
-    title: 'Información Financiera',
-    description:
-      'Valor base, tipo y recargos. Cambios pueden impactar negociaciones activas.',
-    icon: DollarSign,
-  },
-]
-
-// ── Campos por paso (para trigger de validación parcial) ─────────────────────
-const FIELDS_PASO_2 = [
-  'lindero_norte',
-  'lindero_sur',
-  'lindero_oriente',
-  'lindero_occidente',
-] as const
-const FIELDS_PASO_3 = [
-  'matricula_inmobiliaria',
-  'nomenclatura',
-  'area_lote',
-  'area_construida',
-  'tipo_vivienda',
-] as const
-const FIELDS_PASO_4 = [
-  'valor_base',
-  'es_esquinera',
-  'recargo_esquinera',
-] as const
+export { PASOS_VIVIENDA_EDICION }
 
 type FormData = ViviendaSchemaType
 
@@ -237,7 +192,10 @@ export function useEditarViviendaAccordion({ viviendaId }: Props) {
   // ── Cambios detectados (para ConfirmarCambiosModal y badges) ──────────────
   const cambiosDetectados = useMemo(() => {
     if (!vivienda) return []
-    return detectarCambiosVivienda({ viviendaActual: vivienda, formData: formData as unknown as import('../types').Vivienda })
+    return detectarCambiosVivienda({
+      viviendaActual: vivienda,
+      formData: formData as unknown as import('../types').Vivienda,
+    })
   }, [vivienda, formData])
 
   const hayCambios = cambiosDetectados.length > 0

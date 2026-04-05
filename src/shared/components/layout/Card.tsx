@@ -22,20 +22,11 @@ const paddingVariants = {
   lg: 'p-8',
 }
 
-export function Card({
-  children,
-  padding = 'md',
-  className = ''
-}: CardProps) {
+export function Card({ children, padding = 'md', className = '' }: CardProps) {
   return (
-    <div className={`
-      bg-white dark:bg-slate-800
-      rounded-xl
-      shadow-sm
-      border border-slate-200 dark:border-slate-700
-      ${paddingVariants[padding]}
-      ${className}
-    `}>
+    <div
+      className={`rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800 ${paddingVariants[padding]} ${className} `}
+    >
       {children}
     </div>
   )

@@ -35,9 +35,9 @@ function sanitizeRequiredNumber(value: number, fallback = 0): number {
   return sanitizeNumber(value) ?? fallback
 }
 
-export function sanitizeCrearFuentePagoServiceDTO<T extends CrearFuentePagoShape>(
-  datos: T
-): T {
+export function sanitizeCrearFuentePagoServiceDTO<
+  T extends CrearFuentePagoShape,
+>(datos: T): T {
   return {
     ...datos,
     negociacion_id: sanitizeString(datos.negociacion_id) || '',
@@ -45,7 +45,8 @@ export function sanitizeCrearFuentePagoServiceDTO<T extends CrearFuentePagoShape
     monto_aprobado: sanitizeRequiredNumber(datos.monto_aprobado),
     capital_para_cierre: sanitizeNumber(datos.capital_para_cierre),
     entidad: sanitizeString(datos.entidad) ?? undefined,
-    entidad_financiera_id: sanitizeString(datos.entidad_financiera_id) ?? undefined,
+    entidad_financiera_id:
+      sanitizeString(datos.entidad_financiera_id) ?? undefined,
     numero_referencia: sanitizeString(datos.numero_referencia) ?? undefined,
     permite_multiples_abonos:
       typeof datos.permite_multiples_abonos === 'boolean'
@@ -54,9 +55,9 @@ export function sanitizeCrearFuentePagoServiceDTO<T extends CrearFuentePagoShape
   }
 }
 
-export function sanitizeActualizarFuentePagoServiceDTO<T extends ActualizarFuentePagoShape>(
-  datos: T
-): T {
+export function sanitizeActualizarFuentePagoServiceDTO<
+  T extends ActualizarFuentePagoShape,
+>(datos: T): T {
   return {
     ...datos,
     monto_aprobado:
@@ -73,23 +74,23 @@ export function sanitizeActualizarFuentePagoServiceDTO<T extends ActualizarFuent
         : undefined,
     entidad:
       datos.entidad !== undefined
-        ? sanitizeString(datos.entidad) ?? undefined
+        ? (sanitizeString(datos.entidad) ?? undefined)
         : undefined,
     entidad_financiera_id:
       datos.entidad_financiera_id !== undefined
-        ? sanitizeString(datos.entidad_financiera_id) ?? undefined
+        ? (sanitizeString(datos.entidad_financiera_id) ?? undefined)
         : undefined,
     numero_referencia:
       datos.numero_referencia !== undefined
-        ? sanitizeString(datos.numero_referencia) ?? undefined
+        ? (sanitizeString(datos.numero_referencia) ?? undefined)
         : undefined,
     carta_asignacion_url:
       datos.carta_asignacion_url !== undefined
-        ? sanitizeString(datos.carta_asignacion_url) ?? undefined
+        ? (sanitizeString(datos.carta_asignacion_url) ?? undefined)
         : undefined,
     fecha_completado:
       datos.fecha_completado !== undefined
-        ? sanitizeDate(datos.fecha_completado) ?? undefined
+        ? (sanitizeDate(datos.fecha_completado) ?? undefined)
         : undefined,
   }
 }

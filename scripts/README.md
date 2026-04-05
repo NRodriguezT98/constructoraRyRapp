@@ -11,16 +11,19 @@ Scripts de utilidad para desarrollo y mantenimiento del proyecto.
 Analiza errores de TypeScript y genera reportes organizados.
 
 **Uso:**
+
 ```bash
 npm run errors:analyze
 ```
 
 **Genera:**
+
 - `.reports/typescript-errors-YYYY-MM-DD.json` (datos completos)
 - `.reports/typescript-errors-YYYY-MM-DD.md` (reporte legible)
 - `.reports/typescript-errors-summary.txt` (resumen rápido)
 
 **Características:**
+
 - 📊 Agrupa errores por archivo, módulo, código
 - 🎯 Identifica errores críticos vs warnings
 - 📈 Genera estadísticas y prioridades
@@ -33,6 +36,7 @@ npm run errors:analyze
 Corrige automáticamente errores TypeScript comunes.
 
 **Uso:**
+
 ```bash
 npm run errors:fix              # Preview (dry-run)
 npm run errors:fix:apply        # Aplicar correcciones
@@ -40,12 +44,14 @@ npm run errors:fix -- --filter=documentos --apply  # Solo un módulo
 ```
 
 **Características:**
+
 - 🔧 Corrige imports faltantes automáticamente
 - 🔍 Modo dry-run para preview de cambios
 - 💾 Backups automáticos (`.backups/YYYY-MM-DD/`)
 - ✅ Reporta qué se corrigió y qué requiere manual
 
 **Workflow completo:**
+
 ```bash
 npm run errors:analyze          # 1. Analizar
 npm run errors:fix              # 2. Preview
@@ -64,11 +70,13 @@ npm run type-check              # 4. Verificar
 Genera tipos TypeScript desde el schema de Supabase con características avanzadas.
 
 **Uso:**
+
 ```bash
 npm run types:generate
 ```
 
 **Características:**
+
 - ✅ Timeout de 60s (previene cuelgues)
 - ✅ 3 reintentos con backoff exponencial
 - ✅ Sistema de caché automático

@@ -15,10 +15,7 @@ const supabase = createClient(
 async function verificarStorage() {
   console.log('🔍 Verificando Storage...\n')
 
-  const buckets = [
-    'documentos-viviendas',
-    'documentos-proyectos',
-  ]
+  const buckets = ['documentos-viviendas', 'documentos-proyectos']
 
   for (const bucket of buckets) {
     console.log(`📦 Bucket: ${bucket}`)
@@ -30,7 +27,7 @@ async function verificarStorage() {
         .from(bucket)
         .list('', {
           limit: 1000,
-          sortBy: { column: 'name', order: 'asc' }
+          sortBy: { column: 'name', order: 'asc' },
         })
 
       if (error) {
@@ -64,7 +61,9 @@ async function verificarStorage() {
 
             for (const file of subItems) {
               console.log(`         📄 ${file.name}`)
-              console.log(`            Tamaño: ${(file.metadata?.size / 1024).toFixed(2)} KB`)
+              console.log(
+                `            Tamaño: ${(file.metadata?.size / 1024).toFixed(2)} KB`
+              )
               console.log(`            Creado: ${file.created_at}`)
             }
           } else {
@@ -78,7 +77,6 @@ async function verificarStorage() {
       }
 
       console.log(`\n   📊 Total archivos: ${totalArchivos}\n`)
-
     } catch (error) {
       console.log(`   ❌ Error: ${error.message}\n`)
     }
@@ -89,7 +87,7 @@ async function verificarStorage() {
 
 verificarStorage()
   .then(() => process.exit(0))
-  .catch((error) => {
+  .catch(error => {
     console.error('❌ Error:', error)
     process.exit(1)
   })

@@ -1,9 +1,9 @@
 import type {
-    OpcionRecargo,
-    PasoFormulario,
-    TipoVivienda,
-    ViviendaEstado,
-    ViviendaVista,
+  OpcionRecargo,
+  PasoFormulario,
+  TipoVivienda,
+  ViviendaEstado,
+  ViviendaVista,
 } from '../types'
 
 /**
@@ -94,9 +94,11 @@ export const REGEX_PATTERNS = {
 // ============================================
 
 export const ESTADO_COLORS: Record<ViviendaEstado, string> = {
-  Disponible: 'text-green-600 bg-green-100 dark:bg-green-900 dark:text-green-300',
+  Disponible:
+    'text-green-600 bg-green-100 dark:bg-green-900 dark:text-green-300',
   Asignada: 'text-blue-600 bg-blue-100 dark:bg-blue-900 dark:text-blue-300',
-  Entregada: 'text-emerald-600 bg-emerald-100 dark:bg-emerald-900 dark:text-emerald-300',
+  Entregada:
+    'text-emerald-600 bg-emerald-100 dark:bg-emerald-900 dark:text-emerald-300',
 }
 
 export const ESTADO_LABELS: Record<ViviendaEstado, string> = {
@@ -122,7 +124,8 @@ export const TIPO_VIVIENDA_OPTIONS: { value: TipoVivienda; label: string }[] = [
 
 export const TIPO_VIVIENDA_COLORS: Record<TipoVivienda, string> = {
   Regular: 'text-blue-600 bg-blue-100 dark:bg-blue-900 dark:text-blue-300',
-  Irregular: 'text-purple-600 bg-purple-100 dark:bg-purple-900 dark:text-purple-300',
+  Irregular:
+    'text-purple-600 bg-purple-100 dark:bg-purple-900 dark:text-purple-300',
 }
 
 // ============================================

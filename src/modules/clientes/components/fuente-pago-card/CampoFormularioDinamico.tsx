@@ -13,8 +13,14 @@ import { forwardRef } from 'react'
 
 import { AlertCircle, HelpCircle } from 'lucide-react'
 
-import { useBancos, useCajas } from '@/modules/configuracion/hooks/useEntidadesFinancierasParaFuentes'
-import type { CampoConfig, ValorCampo } from '@/modules/configuracion/types/campos-dinamicos.types'
+import {
+  useBancos,
+  useCajas,
+} from '@/modules/configuracion/hooks/useEntidadesFinancierasParaFuentes'
+import type {
+  CampoConfig,
+  ValorCampo,
+} from '@/modules/configuracion/types/campos-dinamicos.types'
 
 import { EntidadCombobox } from './EntidadCombobox'
 
@@ -46,8 +52,14 @@ interface CampoFormularioDinamicoProps {
 // COMPONENTE
 // ============================================
 
-export const CampoFormularioDinamico = forwardRef<HTMLInputElement, CampoFormularioDinamicoProps>(
-  ({ config, value, onChange, error, disabled = false, className = '' }, ref) => {
+export const CampoFormularioDinamico = forwardRef<
+  HTMLInputElement,
+  CampoFormularioDinamicoProps
+>(
+  (
+    { config, value, onChange, error, disabled = false, className = '' },
+    ref
+  ) => {
     // ============================================
     // HOOKS
     // ============================================
@@ -92,9 +104,9 @@ export const CampoFormularioDinamico = forwardRef<HTMLInputElement, CampoFormula
           return (
             <input
               ref={ref}
-              type="text"
-              value={value as string || ''}
-              onChange={(e) => onChange(e.target.value)}
+              type='text'
+              value={(value as string) || ''}
+              onChange={e => onChange(e.target.value)}
               placeholder={config.placeholder}
               disabled={disabled}
               required={config.requerido}
@@ -107,8 +119,8 @@ export const CampoFormularioDinamico = forwardRef<HTMLInputElement, CampoFormula
         case 'textarea':
           return (
             <textarea
-              value={value as string || ''}
-              onChange={(e) => onChange(e.target.value)}
+              value={(value as string) || ''}
+              onChange={e => onChange(e.target.value)}
               placeholder={config.placeholder}
               disabled={disabled}
               required={config.requerido}
@@ -122,9 +134,11 @@ export const CampoFormularioDinamico = forwardRef<HTMLInputElement, CampoFormula
           return (
             <input
               ref={ref}
-              type="number"
-              value={value as number || ''}
-              onChange={(e) => onChange(e.target.value ? Number(e.target.value) : null)}
+              type='number'
+              value={(value as number) || ''}
+              onChange={e =>
+                onChange(e.target.value ? Number(e.target.value) : null)
+              }
               placeholder={config.placeholder}
               disabled={disabled}
               required={config.requerido}
@@ -137,16 +151,16 @@ export const CampoFormularioDinamico = forwardRef<HTMLInputElement, CampoFormula
         // ======== MONEDA ========
         case 'currency':
           return (
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-gray-500 dark:text-gray-400">
+            <div className='relative'>
+              <span className='absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-gray-500 dark:text-gray-400'>
                 $
               </span>
               <input
                 ref={ref}
-                type="text"
-                inputMode="numeric"
+                type='text'
+                inputMode='numeric'
                 value={formatCurrency(value as number)}
-                onChange={(e) => {
+                onChange={e => {
                   const numero = parseCurrency(e.target.value)
                   onChange(numero)
                 }}
@@ -163,9 +177,9 @@ export const CampoFormularioDinamico = forwardRef<HTMLInputElement, CampoFormula
           return (
             <input
               ref={ref}
-              type="date"
-              value={value as string || ''}
-              onChange={(e) => onChange(e.target.value)}
+              type='date'
+              value={(value as string) || ''}
+              onChange={e => onChange(e.target.value)}
               disabled={disabled}
               required={config.requerido}
               className={baseInputClasses}
@@ -177,8 +191,8 @@ export const CampoFormularioDinamico = forwardRef<HTMLInputElement, CampoFormula
           return (
             <EntidadCombobox
               opciones={bancos}
-              value={value as string || ''}
-              onChange={(v) => onChange(v)}
+              value={(value as string) || ''}
+              onChange={v => onChange(v)}
               disabled={disabled || cargandoBancos}
               loading={cargandoBancos}
               placeholder={config.placeholder || 'Buscar banco...'}
@@ -191,11 +205,13 @@ export const CampoFormularioDinamico = forwardRef<HTMLInputElement, CampoFormula
           return (
             <EntidadCombobox
               opciones={cajas}
-              value={value as string || ''}
-              onChange={(v) => onChange(v)}
+              value={(value as string) || ''}
+              onChange={v => onChange(v)}
               disabled={disabled || cargandoCajas}
               loading={cargandoCajas}
-              placeholder={config.placeholder || 'Buscar caja de compensación...'}
+              placeholder={
+                config.placeholder || 'Buscar caja de compensación...'
+              }
               error={!!error}
             />
           )
@@ -204,14 +220,14 @@ export const CampoFormularioDinamico = forwardRef<HTMLInputElement, CampoFormula
         case 'select_custom':
           return (
             <select
-              value={value as string || ''}
-              onChange={(e) => onChange(e.target.value)}
+              value={(value as string) || ''}
+              onChange={e => onChange(e.target.value)}
               disabled={disabled}
               required={config.requerido}
               className={baseInputClasses}
             >
-              <option value="">{config.placeholder || 'Seleccionar...'}</option>
-              {config.opciones?.map((opcion) => (
+              <option value=''>{config.placeholder || 'Seleccionar...'}</option>
+              {config.opciones?.map(opcion => (
                 <option key={opcion.value} value={opcion.value}>
                   {opcion.label}
                 </option>
@@ -222,16 +238,16 @@ export const CampoFormularioDinamico = forwardRef<HTMLInputElement, CampoFormula
         // ======== CHECKBOX ========
         case 'checkbox':
           return (
-            <label className="flex items-center gap-2 cursor-pointer">
+            <label className='flex cursor-pointer items-center gap-2'>
               <input
                 ref={ref}
-                type="checkbox"
-                checked={value as boolean || false}
-                onChange={(e) => onChange(e.target.checked)}
+                type='checkbox'
+                checked={(value as boolean) || false}
+                onChange={e => onChange(e.target.checked)}
                 disabled={disabled}
-                className="w-4 h-4 rounded border-2 border-gray-300 dark:border-gray-600 text-cyan-600 focus:ring-2 focus:ring-cyan-500/20"
+                className='h-4 w-4 rounded border-2 border-gray-300 text-cyan-600 focus:ring-2 focus:ring-cyan-500/20 dark:border-gray-600'
               />
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              <span className='text-sm font-medium text-gray-700 dark:text-gray-300'>
                 {config.label}
               </span>
             </label>
@@ -240,8 +256,8 @@ export const CampoFormularioDinamico = forwardRef<HTMLInputElement, CampoFormula
         // ======== DEFAULT ========
         default:
           return (
-            <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
-              <p className="text-xs text-amber-600 dark:text-amber-400">
+            <div className='rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-800 dark:bg-amber-900/20'>
+              <p className='text-xs text-amber-600 dark:text-amber-400'>
                 ⚠️ Tipo de campo no soportado: {config.tipo}
               </p>
             </div>
@@ -254,18 +270,18 @@ export const CampoFormularioDinamico = forwardRef<HTMLInputElement, CampoFormula
     // ============================================
 
     return (
-      <div className="space-y-1.5">
+      <div className='space-y-1.5'>
         {/* Label (excepto checkbox que tiene label integrado) */}
         {config.tipo !== 'checkbox' && (
           <label className={labelClasses}>
             {config.label}
-            {config.requerido && <span className="text-red-500 ml-1">*</span>}
+            {config.requerido && <span className='ml-1 text-red-500'>*</span>}
             {config.ayuda && (
               <span
-                className="ml-1.5 inline-flex items-center justify-center w-3.5 h-3.5 rounded-full bg-gray-200 dark:bg-gray-700 cursor-help"
+                className='ml-1.5 inline-flex h-3.5 w-3.5 cursor-help items-center justify-center rounded-full bg-gray-200 dark:bg-gray-700'
                 title={config.ayuda}
               >
-                <HelpCircle className="w-2.5 h-2.5 text-gray-600 dark:text-gray-400" />
+                <HelpCircle className='h-2.5 w-2.5 text-gray-600 dark:text-gray-400' />
               </span>
             )}
           </label>
@@ -276,15 +292,19 @@ export const CampoFormularioDinamico = forwardRef<HTMLInputElement, CampoFormula
 
         {/* Error */}
         {error && (
-          <div className="flex items-start gap-1.5 px-2 py-1.5 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
-            <AlertCircle className="w-3.5 h-3.5 text-red-600 dark:text-red-400 mt-0.5 flex-shrink-0" />
-            <p className="text-xs font-medium text-red-700 dark:text-red-300">{error}</p>
+          <div className='flex items-start gap-1.5 rounded-lg border border-red-200 bg-red-50 px-2 py-1.5 dark:border-red-800 dark:bg-red-900/20'>
+            <AlertCircle className='mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-red-600 dark:text-red-400' />
+            <p className='text-xs font-medium text-red-700 dark:text-red-300'>
+              {error}
+            </p>
           </div>
         )}
 
         {/* Ayuda (si no hay error) */}
         {!error && config.ayuda && config.tipo !== 'checkbox' && (
-          <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">{config.ayuda}</p>
+          <p className='text-xs leading-relaxed text-gray-500 dark:text-gray-400'>
+            {config.ayuda}
+          </p>
         )}
       </div>
     )

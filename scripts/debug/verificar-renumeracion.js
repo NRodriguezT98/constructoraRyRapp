@@ -98,18 +98,21 @@ async function verificarRenumeracion() {
     let secuenciaCorrecta = true
     for (let i = 0; i < versiones.length; i++) {
       if (versiones[i].version !== i + 1) {
-        console.log(`❌ ERROR: Versión ${versiones[i].version} debería ser ${i + 1}`)
+        console.log(
+          `❌ ERROR: Versión ${versiones[i].version} debería ser ${i + 1}`
+        )
         secuenciaCorrecta = false
       }
     }
 
     if (secuenciaCorrecta) {
       console.log('\n✅ ÉXITO: Secuencia de versiones correcta (1, 2, 3...)')
-      console.log(`✅ La última versión es v${versiones[versiones.length - 1].version} (coincide con total de ${versiones.length})`)
+      console.log(
+        `✅ La última versión es v${versiones[versiones.length - 1].version} (coincide con total de ${versiones.length})`
+      )
     } else {
       console.log('\n❌ HAY PROBLEMAS en la secuencia de versiones')
     }
-
   } finally {
     await client.end()
   }

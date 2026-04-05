@@ -31,7 +31,9 @@ async function verificarPermisos() {
   // Verificar específicamente el permiso 'ver'
   const permisoVer = data.find(p => p.accion === 'ver')
   console.log(`\n🎯 Permiso crítico para sidebar:`)
-  console.log(`   proyectos.ver = ${permisoVer?.permitido ? 'TRUE ✅' : 'FALSE ❌'}`)
+  console.log(
+    `   proyectos.ver = ${permisoVer?.permitido ? 'TRUE ✅' : 'FALSE ❌'}`
+  )
 
   process.exit(0)
 }

@@ -52,10 +52,15 @@ export function useCategoriasSistemaClientes(): UseCategoriasSistemaClientesRetu
 
     try {
       // Obtener user_id actual
-      const { data: { user }, error: userError } = await supabase.auth.getUser()
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser()
 
       if (userError || !user) {
-        logger.warn('⚠️ Usuario no autenticado, omitiendo verificación de categorías')
+        logger.warn(
+          '⚠️ Usuario no autenticado, omitiendo verificación de categorías'
+        )
         return
       }
 
@@ -63,7 +68,10 @@ export function useCategoriasSistemaClientes(): UseCategoriasSistemaClientesRetu
       const { data: categoriasExistentes, error: queryError } = await supabase
         .from('categorias_documento')
         .select('id')
-        .in('id', CATEGORIAS_SISTEMA_CLIENTES.map(c => c.id))
+        .in(
+          'id',
+          CATEGORIAS_SISTEMA_CLIENTES.map(c => c.id)
+        )
 
       if (queryError) {
         throw new Error(`Error al verificar categorías: ${queryError.message}`)
@@ -78,13 +86,12 @@ export function useCategoriasSistemaClientes(): UseCategoriasSistemaClientesRetu
         return
       }
 
-
       // Crear categorías faltantes con UUIDs fijos
       const { error: insertError } = await supabase
         .from('categorias_documento')
         .insert(
           categoriasFaltantes.map(cat => ({
-            id: cat.id,  // ⚠️ UUID FIJO (no auto-generado)
+            id: cat.id, // ⚠️ UUID FIJO (no auto-generado)
             user_id: user.id,
             nombre: cat.nombre,
             descripcion: cat.descripcion,
@@ -92,7 +99,7 @@ export function useCategoriasSistemaClientes(): UseCategoriasSistemaClientesRetu
             icono: cat.icono,
             orden: cat.orden,
             es_sistema: cat.es_sistema,
-            modulos_permitidos: [...cat.modulos_permitidos] as string[] // Fix readonly -> mutable
+            modulos_permitidos: [...cat.modulos_permitidos] as string[], // Fix readonly -> mutable
           }))
         )
 
@@ -103,7 +110,6 @@ export function useCategoriasSistemaClientes(): UseCategoriasSistemaClientesRetu
         }
         throw new Error(`Error al crear categorías: ${insertError.message}`)
       }
-
     } catch (err) {
       const mensaje = err instanceof Error ? err.message : 'Error desconocido'
       logger.error('❌ Error en verificación de categorías:', mensaje)
@@ -116,6 +122,6 @@ export function useCategoriasSistemaClientes(): UseCategoriasSistemaClientesRetu
   return {
     verificarYCrear,
     cargando,
-    error
+    error,
   }
 }

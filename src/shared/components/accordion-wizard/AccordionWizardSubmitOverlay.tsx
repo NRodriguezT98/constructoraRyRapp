@@ -66,7 +66,12 @@ const cardAnim = {
   initial: { opacity: 0, scale: 0.9, y: 20 },
   animate: { opacity: 1, scale: 1, y: 0 },
   exit: { opacity: 0, scale: 0.95, y: -10 },
-  transition: { type: 'spring' as const, stiffness: 300, damping: 25, delay: 0.1 },
+  transition: {
+    type: 'spring' as const,
+    stiffness: 300,
+    damping: 25,
+    delay: 0.1,
+  },
 }
 
 const spinnerAnim = {
@@ -81,7 +86,12 @@ const pulseRingAnim = {
 
 const dotAnim = (i: number) => ({
   animate: { y: [0, -6, 0] },
-  transition: { duration: 0.6, repeat: Infinity, delay: i * 0.15, ease: 'easeInOut' as const },
+  transition: {
+    duration: 0.6,
+    repeat: Infinity,
+    delay: i * 0.15,
+    ease: 'easeInOut' as const,
+  },
 })
 
 // ── Props ────────────────────────────────────────────────
@@ -110,44 +120,44 @@ export function AccordionWizardSubmitOverlay({
     <AnimatePresence>
       {isVisible ? (
         <motion.div
-          key="submit-overlay"
+          key='submit-overlay'
           {...overlayAnim}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-white/60 dark:bg-gray-950/70 backdrop-blur-md"
+          className='fixed inset-0 z-50 flex items-center justify-center bg-white/60 backdrop-blur-md dark:bg-gray-950/70'
         >
           <motion.div
             {...cardAnim}
-            className={`relative flex flex-col items-center gap-5 px-10 py-8 rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 shadow-2xl ${glow}`}
+            className={`relative flex flex-col items-center gap-5 rounded-2xl border border-gray-200 bg-white px-10 py-8 shadow-2xl dark:border-gray-700 dark:bg-gray-900 ${glow}`}
           >
             {/* Spinner con ring pulsante */}
-            <div className="relative flex items-center justify-center">
+            <div className='relative flex items-center justify-center'>
               {/* Ring pulsante */}
               <motion.div
                 {...pulseRingAnim}
-                className={`absolute w-16 h-16 rounded-full border-2 ${ring}`}
+                className={`absolute h-16 w-16 rounded-full border-2 ${ring}`}
               />
               {/* Spinner principal */}
               <motion.div {...spinnerAnim}>
-                <Loader2 className={`w-10 h-10 ${spinner}`} />
+                <Loader2 className={`h-10 w-10 ${spinner}`} />
               </motion.div>
             </div>
 
             {/* Texto principal */}
-            <div className="text-center space-y-1.5">
-              <p className="text-base font-semibold text-gray-900 dark:text-white">
+            <div className='space-y-1.5 text-center'>
+              <p className='text-base font-semibold text-gray-900 dark:text-white'>
                 {label}
               </p>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
+              <p className='text-sm text-gray-500 dark:text-gray-400'>
                 {subtitle}
               </p>
             </div>
 
             {/* Dots animados */}
-            <div className="flex items-center gap-1.5">
-              {[0, 1, 2].map((i) => (
+            <div className='flex items-center gap-1.5'>
+              {[0, 1, 2].map(i => (
                 <motion.div
                   key={i}
                   {...dotAnim(i)}
-                  className={`w-2 h-2 rounded-full ${dots}`}
+                  className={`h-2 w-2 rounded-full ${dots}`}
                 />
               ))}
             </div>

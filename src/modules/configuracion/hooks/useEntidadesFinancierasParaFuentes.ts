@@ -23,11 +23,15 @@ interface EntidadOption {
  * Retorna todos los bancos activos para el selector de Crédito Hipotecario.
  */
 export function useBancos() {
-  const { data: entidades, isLoading, isError } = useEntidadesFinancierasActivas('Banco')
+  const {
+    data: entidades,
+    isLoading,
+    isError,
+  } = useEntidadesFinancierasActivas('Banco')
 
   const bancos = useMemo<EntidadOption[]>(() => {
     if (!entidades) return []
-    return entidades.map((e) => ({
+    return entidades.map(e => ({
       value: e.id,
       label: e.nombre,
       codigo: e.codigo,
@@ -41,11 +45,15 @@ export function useBancos() {
  * Retorna todas las cajas de compensación activas para el selector de Subsidio.
  */
 export function useCajas() {
-  const { data: entidades, isLoading, isError } = useEntidadesFinancierasActivas('Caja de Compensación')
+  const {
+    data: entidades,
+    isLoading,
+    isError,
+  } = useEntidadesFinancierasActivas('Caja de Compensación')
 
   const cajas = useMemo<EntidadOption[]>(() => {
     if (!entidades) return []
-    return entidades.map((e) => ({
+    return entidades.map(e => ({
       value: e.id,
       label: e.nombre,
       codigo: e.codigo,
@@ -62,7 +70,10 @@ export function useEntidadesFinancierasCombinadas() {
   const { bancos, isLoading: loadingBancos, isError: errorBancos } = useBancos()
   const { cajas, isLoading: loadingCajas, isError: errorCajas } = useCajas()
 
-  const entidades = useMemo<EntidadOption[]>(() => [...bancos, ...cajas], [bancos, cajas])
+  const entidades = useMemo<EntidadOption[]>(
+    () => [...bancos, ...cajas],
+    [bancos, cajas]
+  )
 
   return {
     bancos,
@@ -77,11 +88,15 @@ export function useEntidadesFinancierasCombinadas() {
  * Obtener entidades por tipo dinámicamente.
  */
 export function useEntidadesPorTipo(tipo: TipoEntidadFinanciera) {
-  const { data: entidades, isLoading, isError } = useEntidadesFinancierasActivas(tipo)
+  const {
+    data: entidades,
+    isLoading,
+    isError,
+  } = useEntidadesFinancierasActivas(tipo)
 
   const opciones = useMemo<EntidadOption[]>(() => {
     if (!entidades) return []
-    return entidades.map((e) => ({
+    return entidades.map(e => ({
       value: e.id,
       label: e.nombre,
       codigo: e.codigo,
@@ -99,6 +114,6 @@ export function useEntidadNombre(entidadId: string | null | undefined) {
 
   return useMemo(() => {
     if (!entidadId || !entidades.length) return null
-    return entidades.find((e) => e.value === entidadId)?.label ?? null
+    return entidades.find(e => e.value === entidadId)?.label ?? null
   }, [entidadId, entidades])
 }

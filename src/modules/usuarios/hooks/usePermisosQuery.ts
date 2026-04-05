@@ -30,6 +30,12 @@ import {
 } from '../services/permisos.service'
 import type { Accion, Modulo, Rol } from '../types'
 
+export const permisosKeys = {
+  all: ['permisos'] as const,
+  byRol: (rol: Rol) => [...permisosKeys.all, rol] as const,
+  todos: () => [...permisosKeys.all, 'todos'] as const,
+}
+
 /**
  * Hook principal para gestión de permisos con React Query
  */
@@ -45,7 +51,7 @@ export function usePermisosQuery() {
     isLoading: permisosLoading,
     error: permisosError,
   } = useQuery({
-    queryKey: ['permisos', rol],
+    queryKey: rol ? permisosKeys.byRol(rol) : permisosKeys.all,
     queryFn: () => {
       if (!rol) {
         throw new Error('No hay rol definido')
@@ -136,9 +142,9 @@ export function usePermisosQuery() {
    * Helpers de rol
    */
   const esAdmin = useMemo(() => rol === 'Administrador', [rol])
-  const esContador = useMemo(() => rol === 'Contador', [rol])
-  const esSupervisor = useMemo(() => rol === 'Supervisor', [rol])
-  const esGerente = useMemo(() => rol === 'Gerente', [rol])
+  const esContabilidad = useMemo(() => rol === 'Contabilidad', [rol])
+  const esAdminObra = useMemo(() => rol === 'Administrador de Obra', [rol])
+  const esGerencia = useMemo(() => rol === 'Gerencia', [rol])
 
   /**
    * Obtiene todos los permisos disponibles del usuario
@@ -169,9 +175,9 @@ export function usePermisosQuery() {
 
     // Helpers de rol
     esAdmin,
-    esContador,
-    esSupervisor,
-    esGerente,
+    esContabilidad,
+    esAdminObra,
+    esGerencia,
     rol,
     tieneRol: !!rol,
 
@@ -190,7 +196,7 @@ export function useTodosLosPermisosQuery() {
   const esAdmin = perfil?.rol === 'Administrador'
 
   return useQuery({
-    queryKey: ['permisos', 'todos'],
+    queryKey: permisosKeys.todos(),
     queryFn: obtenerTodosLosPermisos,
     enabled: esAdmin, // Solo ejecutar si es admin
     staleTime: 2 * 60 * 1000, // 2 minutos
@@ -238,7 +244,7 @@ export function useActualizarPermisoMutation() {
 
     onSuccess: () => {
       // Invalidar TODOS los queries de permisos
-      queryClient.invalidateQueries({ queryKey: ['permisos'] })
+      queryClient.invalidateQueries({ queryKey: permisosKeys.all })
     },
 
     onError: error => {
@@ -285,7 +291,7 @@ export function useActualizarPermisosEnLoteMutation() {
 
     onSuccess: () => {
       // Invalidar TODOS los queries de permisos
-      queryClient.invalidateQueries({ queryKey: ['permisos'] })
+      queryClient.invalidateQueries({ queryKey: permisosKeys.all })
     },
 
     onError: error => {

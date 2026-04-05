@@ -1,7 +1,10 @@
 require('dotenv').config({ path: '.env.local' })
 const { createClient } = require('@supabase/supabase-js')
 
-const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY)
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+)
 
 async function testRpcReturn() {
   // Create a temp function that returns JSONB like the real one
@@ -48,7 +51,9 @@ async function testRpcReturn() {
   if (error) console.log('Error:', error.message)
 
   // Cleanup
-  await supabase.rpc('exec_sql', { sql_query: 'DROP FUNCTION IF EXISTS test_jsonb_return()' })
+  await supabase.rpc('exec_sql', {
+    sql_query: 'DROP FUNCTION IF EXISTS test_jsonb_return()',
+  })
 }
 
 testRpcReturn()

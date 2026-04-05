@@ -3,7 +3,16 @@
 import { useState } from 'react'
 
 import { AnimatePresence, motion } from 'framer-motion'
-import { AlertCircle, ArrowLeft, Camera, DollarSign, Home, Landmark, Receipt, Shield } from 'lucide-react'
+import {
+  AlertCircle,
+  ArrowLeft,
+  Camera,
+  DollarSign,
+  Home,
+  Landmark,
+  Receipt,
+  Shield,
+} from 'lucide-react'
 
 import Link from 'next/link'
 
@@ -34,8 +43,15 @@ const TABS = [
 
 type TabKey = (typeof TABS)[number]['key']
 
-export function ExpedienteRenunciaPage({ consecutivo }: ExpedienteRenunciaPageProps) {
-  const { datos, cargando, error, recargar: _recargar } = useExpedienteRenuncia(consecutivo)
+export function ExpedienteRenunciaPage({
+  consecutivo,
+}: ExpedienteRenunciaPageProps) {
+  const {
+    datos,
+    cargando,
+    error,
+    recargar: _recargar,
+  } = useExpedienteRenuncia(consecutivo)
   const [tabActiva, setTabActiva] = useState<TabKey>('financiero')
 
   // === LOADING ===
@@ -64,9 +80,11 @@ export function ExpedienteRenunciaPage({ consecutivo }: ExpedienteRenunciaPagePr
               <AlertCircle className={styles.error.icon} />
             </div>
             <h2 className={styles.error.title}>No se encontró el expediente</h2>
-            <p className={styles.error.message}>{error ?? `No existe la renuncia con consecutivo ${consecutivo}`}</p>
-            <Link href="/renuncias" className={styles.error.backButton}>
-              <ArrowLeft className="w-4 h-4" />
+            <p className={styles.error.message}>
+              {error ?? `No existe la renuncia con consecutivo ${consecutivo}`}
+            </p>
+            <Link href='/renuncias' className={styles.error.backButton}>
+              <ArrowLeft className='h-4 w-4' />
               Volver a renuncias
             </Link>
           </div>
@@ -91,12 +109,22 @@ export function ExpedienteRenunciaPage({ consecutivo }: ExpedienteRenunciaPagePr
             <Camera className={styles.snapshotBanner.icon} />
           </div>
           <p className={styles.snapshotBanner.text}>
-            <span className={styles.snapshotBanner.textBold}>Información histórica</span>
-            {' — Los datos de vivienda, financiero, fuentes y abonos corresponden al estado registrado a la '}
             <span className={styles.snapshotBanner.textBold}>
-              fecha de cierre ({datos.renuncia.fecha_cierre ? formatDateCompact(datos.renuncia.fecha_cierre) : formatDateCompact(datos.renuncia.fecha_renuncia)})
+              Información histórica
             </span>
-            {'. Cambios posteriores en la vivienda o valores no se reflejan aquí.'}
+            {
+              ' — Los datos de vivienda, financiero, fuentes y abonos corresponden al estado registrado a la '
+            }
+            <span className={styles.snapshotBanner.textBold}>
+              fecha de cierre (
+              {datos.renuncia.fecha_cierre
+                ? formatDateCompact(datos.renuncia.fecha_cierre)
+                : formatDateCompact(datos.renuncia.fecha_renuncia)}
+              )
+            </span>
+            {
+              '. Cambios posteriores en la vivienda o valores no se reflejan aquí.'
+            }
           </p>
         </div>
 
@@ -115,7 +143,7 @@ export function ExpedienteRenunciaPage({ consecutivo }: ExpedienteRenunciaPagePr
         </div>
 
         {/* Tab Content */}
-        <AnimatePresence mode="wait">
+        <AnimatePresence mode='wait'>
           <motion.div
             key={tabActiva}
             initial={{ opacity: 0, y: 8 }}
@@ -124,11 +152,21 @@ export function ExpedienteRenunciaPage({ consecutivo }: ExpedienteRenunciaPagePr
             transition={{ duration: 0.2 }}
             className={styles.tabs.content}
           >
-            {tabActiva === 'vivienda' ? <ExpedienteVivienda datos={datos} /> : null}
-            {tabActiva === 'financiero' ? <ExpedienteFinanciero datos={datos} /> : null}
-            {tabActiva === 'fuentes' ? <ExpedienteFuentes fuentes={datos.fuentes} /> : null}
-            {tabActiva === 'abonos' ? <ExpedienteAbonos abonos={datos.abonos} /> : null}
-            {tabActiva === 'auditoria' ? <ExpedienteAuditoria datos={datos} /> : null}
+            {tabActiva === 'vivienda' ? (
+              <ExpedienteVivienda datos={datos} />
+            ) : null}
+            {tabActiva === 'financiero' ? (
+              <ExpedienteFinanciero datos={datos} />
+            ) : null}
+            {tabActiva === 'fuentes' ? (
+              <ExpedienteFuentes fuentes={datos.fuentes} />
+            ) : null}
+            {tabActiva === 'abonos' ? (
+              <ExpedienteAbonos abonos={datos.abonos} />
+            ) : null}
+            {tabActiva === 'auditoria' ? (
+              <ExpedienteAuditoria datos={datos} />
+            ) : null}
           </motion.div>
         </AnimatePresence>
       </div>

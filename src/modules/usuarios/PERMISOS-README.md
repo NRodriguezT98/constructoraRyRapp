@@ -9,7 +9,7 @@ Sistema granular de permisos por rol con arquitectura preparada para migración 
 ## 🎯 Características
 
 - ✅ **Permisos Granulares**: Control por módulo × acción
-- ✅ **3 Roles**: Administrador, Gerente, Vendedor
+- ✅ **4 Roles**: Administrador, Contabilidad, Gerencia, Administrador de Obra
 - ✅ **9 Módulos**: Proyectos, Viviendas, Clientes, Abonos, Renuncias, Usuarios, Procesos, Reportes, Administración
 - ✅ **9 Acciones**: Ver, Crear, Editar, Eliminar, Aprobar, Rechazar, Exportar, Importar, Gestionar
 - ✅ **Migrable a DB**: Estructura preparada para futuras actualizaciones dinámicas
@@ -44,18 +44,18 @@ function ToolbarClientes() {
   return (
     <div>
       {/* Mostrar solo si puede crear */}
-      <ProtectedAction modulo="clientes" accion="crear">
+      <ProtectedAction modulo='clientes' accion='crear'>
         <Button>Crear Cliente</Button>
       </ProtectedAction>
 
       {/* Mostrar solo si puede editar O eliminar */}
-      <ProtectedAction modulo="clientes" acciones={['editar', 'eliminar']}>
+      <ProtectedAction modulo='clientes' acciones={['editar', 'eliminar']}>
         <MenuAcciones />
       </ProtectedAction>
 
       {/* Mostrar solo si puede editar Y eliminar */}
       <ProtectedAction
-        modulo="usuarios"
+        modulo='usuarios'
         acciones={['editar', 'eliminar']}
         requireAll
       >
@@ -64,8 +64,8 @@ function ToolbarClientes() {
 
       {/* Mostrar fallback si no tiene permiso */}
       <ProtectedAction
-        modulo="reportes"
-        accion="exportar"
+        modulo='reportes'
+        accion='exportar'
         fallback={<Text>No tienes permiso</Text>}
       >
         <ExportButton />
@@ -78,20 +78,25 @@ function ToolbarClientes() {
 ### 3️⃣ Componentes Simplificados
 
 ```tsx
-import { CanCreate, CanEdit, CanDelete, AdminOnly } from '@/modules/usuarios/components'
+import {
+  CanCreate,
+  CanEdit,
+  CanDelete,
+  AdminOnly,
+} from '@/modules/usuarios/components'
 
 function Toolbar() {
   return (
     <>
-      <CanCreate modulo="proyectos">
+      <CanCreate modulo='proyectos'>
         <CreateProjectButton />
       </CanCreate>
 
-      <CanEdit modulo="viviendas">
+      <CanEdit modulo='viviendas'>
         <EditButton />
       </CanEdit>
 
-      <CanDelete modulo="abonos">
+      <CanDelete modulo='abonos'>
         <DeleteButton />
       </CanDelete>
 
@@ -112,22 +117,23 @@ function Toolbar() {
 ```typescript
 const {
   // Verificación de permisos
-  puede,                    // (modulo, accion) => boolean
-  puedeAlguno,              // (modulo, acciones[]) => boolean (OR)
-  puedeTodos,               // (modulo, acciones[]) => boolean (AND)
+  puede, // (modulo, accion) => boolean
+  puedeAlguno, // (modulo, acciones[]) => boolean (OR)
+  puedeTodos, // (modulo, acciones[]) => boolean (AND)
 
   // Información de permisos
-  permisosModulo,           // (modulo) => Accion[]
-  modulosConAcceso,         // () => Modulo[]
-  todosLosPermisos,         // () => { modulo, accion, descripcion }[]
+  permisosModulo, // (modulo) => Accion[]
+  modulosConAcceso, // () => Modulo[]
+  todosLosPermisos, // () => { modulo, accion, descripcion }[]
   obtenerDescripcionPermiso, // (modulo, accion) => string
 
   // Helpers de rol
-  esAdmin,                  // boolean
-  esGerente,                // boolean
-  esVendedor,               // boolean
-  rol,                      // Rol | undefined
-  tieneRol,                 // boolean
+  esAdmin, // boolean
+  esGerencia, // boolean
+  esContabilidad, // boolean
+  esAdminObra, // boolean
+  rol, // Rol | undefined
+  tieneRol, // boolean
 } = usePermissions()
 ```
 
@@ -140,13 +146,13 @@ const { puede, puedeAlguno, puedeTodos } = useCan()
 ### Hook Rol: `useIsAdmin()`
 
 ```typescript
-const isAdmin = useIsAdmin()  // boolean
+const isAdmin = useIsAdmin() // boolean
 ```
 
 ### Hook Rol: `useRole()`
 
 ```typescript
-const rol = useRole()  // 'Administrador' | 'Gerente' | 'Vendedor' | undefined
+const rol = useRole() // 'Administrador' | 'Contabilidad' | 'Gerencia' | 'Administrador de Obra' | undefined
 ```
 
 ---
@@ -155,45 +161,45 @@ const rol = useRole()  // 'Administrador' | 'Gerente' | 'Vendedor' | undefined
 
 ### Administrador (Acceso Total)
 
-| Módulo | Permisos |
-|--------|----------|
-| **Proyectos** | Ver, Crear, Editar, Eliminar, Exportar |
-| **Viviendas** | Ver, Crear, Editar, Eliminar, Exportar |
-| **Clientes** | Ver, Crear, Editar, Eliminar, Exportar |
-| **Abonos** | Ver, Crear, Editar, Eliminar, Aprobar, Rechazar, Exportar |
-| **Renuncias** | Ver, Crear, Editar, Eliminar, Aprobar, Rechazar |
-| **Usuarios** | Ver, Crear, Editar, Eliminar, Gestionar |
-| **Procesos** | Ver, Crear, Editar, Eliminar, Gestionar |
-| **Reportes** | Ver, Exportar |
-| **Administración** | Ver, Gestionar |
+| Módulo             | Permisos                                                  |
+| ------------------ | --------------------------------------------------------- |
+| **Proyectos**      | Ver, Crear, Editar, Eliminar, Exportar                    |
+| **Viviendas**      | Ver, Crear, Editar, Eliminar, Exportar                    |
+| **Clientes**       | Ver, Crear, Editar, Eliminar, Exportar                    |
+| **Abonos**         | Ver, Crear, Editar, Eliminar, Aprobar, Rechazar, Exportar |
+| **Renuncias**      | Ver, Crear, Editar, Eliminar, Aprobar, Rechazar           |
+| **Usuarios**       | Ver, Crear, Editar, Eliminar, Gestionar                   |
+| **Procesos**       | Ver, Crear, Editar, Eliminar, Gestionar                   |
+| **Reportes**       | Ver, Exportar                                             |
+| **Administración** | Ver, Gestionar                                            |
 
-### Gerente (Gestión sin Eliminación)
+### Contabilidad (Gestión sin Eliminación)
 
-| Módulo | Permisos |
-|--------|----------|
-| **Proyectos** | Ver, Crear, Editar, Exportar |
-| **Viviendas** | Ver, Crear, Editar, Exportar |
-| **Clientes** | Ver, Crear, Editar, Exportar |
-| **Abonos** | Ver, Crear, Editar, Aprobar, Rechazar, Exportar |
-| **Renuncias** | Ver, Crear, Editar, Aprobar, Rechazar |
-| **Usuarios** | Ver, Crear, Editar *(no puede eliminar usuarios)* |
-| **Procesos** | Ver, Crear, Editar |
-| **Reportes** | Ver, Exportar |
-| **Administración** | Ver |
+| Módulo             | Permisos                                          |
+| ------------------ | ------------------------------------------------- |
+| **Proyectos**      | Ver, Crear, Editar, Exportar                      |
+| **Viviendas**      | Ver, Crear, Editar, Exportar                      |
+| **Clientes**       | Ver, Crear, Editar, Exportar                      |
+| **Abonos**         | Ver, Crear, Editar, Aprobar, Rechazar, Exportar   |
+| **Renuncias**      | Ver, Crear, Editar, Aprobar, Rechazar             |
+| **Usuarios**       | Ver, Crear, Editar _(no puede eliminar usuarios)_ |
+| **Procesos**       | Ver, Crear, Editar                                |
+| **Reportes**       | Ver, Exportar                                     |
+| **Administración** | Ver                                               |
 
-### Vendedor (Operaciones Básicas)
+### Administrador de Obra (Solo lectura)
 
-| Módulo | Permisos |
-|--------|----------|
-| **Proyectos** | Ver |
-| **Viviendas** | Ver |
-| **Clientes** | Ver, Crear, Editar |
-| **Abonos** | Ver, Crear |
-| **Renuncias** | Ver, Crear |
-| **Usuarios** | Ver |
-| **Procesos** | Ver |
-| **Reportes** | Ver |
-| **Administración** | *(sin acceso)* |
+| Módulo             | Permisos           |
+| ------------------ | ------------------ |
+| **Proyectos**      | Ver                |
+| **Viviendas**      | Ver                |
+| **Clientes**       | Ver, Crear, Editar |
+| **Abonos**         | Ver, Crear         |
+| **Renuncias**      | Ver, Crear         |
+| **Usuarios**       | Ver                |
+| **Procesos**       | Ver                |
+| **Reportes**       | Ver                |
+| **Administración** | _(sin acceso)_     |
 
 ---
 
@@ -234,12 +240,12 @@ function TablaClientes({ clientes }) {
         <tr key={cliente.id}>
           <td>{cliente.nombre}</td>
           <td>
-            <CanEdit modulo="clientes">
+            <CanEdit modulo='clientes'>
               <EditButton onClick={() => edit(cliente)} />
             </CanEdit>
 
-            <CanDelete modulo="clientes">
-              <DeleteButton onClick={() => delete(cliente)} />
+            <CanDelete modulo='clientes'>
+              <DeleteButton onClick={() => delete cliente} />
             </CanDelete>
           </td>
         </tr>
@@ -260,14 +266,14 @@ function Sidebar() {
   return (
     <nav>
       {modulosConAcceso.includes('proyectos') && (
-        <Link href="/proyectos">
+        <Link href='/proyectos'>
           Proyectos
           {puede('proyectos', 'crear') && <Badge>+</Badge>}
         </Link>
       )}
 
       {modulosConAcceso.includes('clientes') && (
-        <Link href="/clientes">Clientes</Link>
+        <Link href='/clientes'>Clientes</Link>
       )}
 
       {/* ... */}
@@ -305,11 +311,7 @@ function PanelAbonos() {
 import { usePermissions } from '@/modules/usuarios/hooks'
 
 function PerfilUsuario() {
-  const {
-    rol,
-    todosLosPermisos,
-    permisosModulo
-  } = usePermissions()
+  const { rol, todosLosPermisos, permisosModulo } = usePermissions()
 
   return (
     <div>
@@ -392,8 +394,8 @@ SELECT 'Administrador', id FROM permisos;  -- Admin tiene todos
 // Después de migración, el hook consultará DB:
 export function usePermissions() {
   const { perfil } = useAuth()
-  const { data: permisos } = useQuery(['permisos', perfil?.id],
-    () => fetchPermisos(perfil?.id)
+  const { data: permisos } = useQuery(['permisos', perfil?.id], () =>
+    fetchPermisos(perfil?.id)
   )
 
   // La API del hook NO cambia ✅
@@ -474,6 +476,7 @@ function DebugPermisos() {
 ## 📞 Soporte
 
 Para dudas o sugerencias sobre el sistema de permisos, consulta:
+
 - `src/modules/usuarios/types/index.ts` - Definición completa
 - `src/modules/usuarios/hooks/usePermissions.ts` - Hook principal
 - `src/modules/usuarios/components/ProtectedAction.tsx` - Componente de protección

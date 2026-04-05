@@ -15,4 +15,7 @@ async function main() {
   await cl.end()
 }
 
-main().catch(e => { console.error('ERR:', e.message); process.exit(1) })
+main().catch(e => {
+  console.error('ERR:', e.message)
+  process.exit(1)
+})

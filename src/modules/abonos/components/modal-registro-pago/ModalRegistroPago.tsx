@@ -1,24 +1,24 @@
-'use client'
+﻿'use client'
 
 import { useMemo } from 'react'
 
 import {
-    AlertCircle,
-    Calendar,
-    CheckCircle2,
-    Download,
-    FileText,
-    Landmark,
-    Loader2,
+  AlertCircle,
+  Calendar,
+  CheckCircle2,
+  Download,
+  FileText,
+  Landmark,
+  Loader2,
 } from 'lucide-react'
 
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogTitle,
-} from '@/components/ui/dialog'
 import { getTodayDateString } from '@/lib/utils/date.utils'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+} from '@/shared/components/ui/dialog'
 
 import type { FuentePagoConAbonos } from '../../types'
 import type { AbonoParaDetalle } from '../abono-detalle-modal/useAbonoDetalle'

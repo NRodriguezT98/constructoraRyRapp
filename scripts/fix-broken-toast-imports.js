@@ -40,24 +40,37 @@ for (const filePath of modifiedFiles) {
 
   // Broken pattern 1: insert after a multi-line opening
   // "import {\n" + TOAST_IMPORT + "\n    something,"
-  if (content.includes('\n' + TOAST_IMPORT + '\n') || content.includes(TOAST_IMPORT + '\n')) {
+  if (
+    content.includes('\n' + TOAST_IMPORT + '\n') ||
+    content.includes(TOAST_IMPORT + '\n')
+  ) {
     // Count how many TOAST_IMPORTs there are
-    const occurrences = (content.match(new RegExp(TOAST_IMPORT.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g')) || []).length
+    const occurrences = (
+      content.match(
+        new RegExp(TOAST_IMPORT.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g')
+      ) || []
+    ).length
 
     // Check if the toast import is in a correct position (standalone line between import groups)
     // A "correct" position is: the previous non-empty line ends the import (ends with ';' or similar)
     // and the next non-empty line is also an import
     const lines = content.split('\n')
-    const toastLineIdx = lines.findIndex(l => l.trim() === TOAST_IMPORT || l === TOAST_IMPORT)
+    const toastLineIdx = lines.findIndex(
+      l => l.trim() === TOAST_IMPORT || l === TOAST_IMPORT
+    )
 
     if (toastLineIdx > 0) {
       const prevLine = lines[toastLineIdx - 1].trim()
       const nextLine = lines[toastLineIdx + 1]?.trim() || ''
 
       // Check if it's inside a multi-line import (previous line doesn't end with ; or })
-      const isBroken = !prevLine.endsWith("'") && !prevLine.endsWith('"') &&
-                       !prevLine.endsWith(';') && prevLine !== '' &&
-                       !prevLine.startsWith('//') && !prevLine.startsWith('import ')
+      const isBroken =
+        !prevLine.endsWith("'") &&
+        !prevLine.endsWith('"') &&
+        !prevLine.endsWith(';') &&
+        prevLine !== '' &&
+        !prevLine.startsWith('//') &&
+        !prevLine.startsWith('import ')
 
       if (isBroken) {
         // Remove the misplaced toast import
@@ -86,7 +99,12 @@ for (const filePath of modifiedFiles) {
               }
             }
             // Stop looking after we've passed all imports
-            if (!inMultiLineImport && lastImportIdx > 0 && i > lastImportIdx + 2 && !line.startsWith('import ')) {
+            if (
+              !inMultiLineImport &&
+              lastImportIdx > 0 &&
+              i > lastImportIdx + 2 &&
+              !line.startsWith('import ')
+            ) {
               break
             }
           }

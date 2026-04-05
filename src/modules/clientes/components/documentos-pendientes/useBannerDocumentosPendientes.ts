@@ -49,7 +49,7 @@ export function useBannerDocumentosPendientes(clienteId: string) {
     data: documentosPendientes = [],
     isLoading: loading,
     error,
-    refetch
+    refetch,
   } = useDocumentosPendientes(clienteId)
 
   // ✅ Transformar a formato legacy (compatibilidad con componente existente)
@@ -63,25 +63,25 @@ export function useBannerDocumentosPendientes(clienteId: string) {
       vivienda: doc._enriched?.vivienda
         ? {
             numero: String(doc._enriched.vivienda.numero), // ✅ Asegurar string
-            manzana: doc._enriched.vivienda.manzana || ''  // ✅ Fallback string vacío
+            manzana: doc._enriched.vivienda.manzana || '', // ✅ Fallback string vacío
           }
         : undefined,
       cliente: doc._enriched?.cliente
         ? {
-            nombre_completo: doc._enriched.cliente.nombre_completo || ''
+            nombre_completo: doc._enriched.cliente.nombre_completo || '',
           }
-        : undefined
+        : undefined,
     },
     estado: doc.estado,
     prioridad: doc.prioridad,
     fecha_creacion: doc.fecha_creacion,
-    fecha_limite: doc.fecha_limite
+    fecha_limite: doc.fecha_limite,
   }))
 
   return {
     documentosPendientes: documentosFormateados,
     loading,
     error,
-    refetch
+    refetch,
   }
 }

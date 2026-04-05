@@ -70,34 +70,44 @@ export const TIPOS_FUENTE_DEPRECADO = [
   'Subsidio Caja Compensación', // Nombre oficial del catálogo (sin "de")
 ] as const
 
-export const NIVELES_VALIDACION: { value: NivelValidacion; label: string; color: string }[] = [
+export const NIVELES_VALIDACION: {
+  value: NivelValidacion
+  label: string
+  color: string
+}[] = [
   {
     value: 'DOCUMENTO_OBLIGATORIO',
     label: 'Documento Obligatorio',
-    color: 'red'
+    color: 'red',
   },
   {
     value: 'DOCUMENTO_OPCIONAL',
     label: 'Documento Opcional',
-    color: 'yellow'
+    color: 'yellow',
   },
   {
     value: 'SOLO_CONFIRMACION',
     label: 'Solo Confirmación',
-    color: 'green'
+    color: 'green',
   },
 ]
 
-export const ALCANCES_REQUISITO: { value: AlcanceRequisito; label: string; descripcion: string }[] = [
+export const ALCANCES_REQUISITO: {
+  value: AlcanceRequisito
+  label: string
+  descripcion: string
+}[] = [
   {
     value: 'ESPECIFICO_FUENTE',
     label: 'Específico por Fuente',
-    descripcion: 'El cliente debe subir un documento diferente para cada fuente (ej: Carta de Aprobación)'
+    descripcion:
+      'El cliente debe subir un documento diferente para cada fuente (ej: Carta de Aprobación)',
   },
   {
     value: 'COMPARTIDO_CLIENTE',
     label: 'Compartido entre Fuentes',
-    descripcion: 'Un solo documento aplica para todas las fuentes seleccionadas (ej: Boleta de Registro)'
+    descripcion:
+      'Un solo documento aplica para todas las fuentes seleccionadas (ej: Boleta de Registro)',
   },
 ]
 

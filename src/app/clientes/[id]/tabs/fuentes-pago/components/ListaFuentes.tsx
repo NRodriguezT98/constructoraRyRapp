@@ -655,7 +655,9 @@ export function ListaFuentes({
                           <p className='mt-1 pl-5 text-xs italic text-gray-500 dark:text-gray-400'>
                             Click para ver {docEstado.documentos?.pendientes}{' '}
                             documento
-                            {docEstado.documentos?.pendientes === 1 ? '' : 's'}{' '}
+                            {docEstado.documentos?.pendientes === 1
+                              ? ''
+                              : 's'}{' '}
                             pendiente
                             {docEstado.documentos?.pendientes === 1 ? '' : 's'}
                           </p>

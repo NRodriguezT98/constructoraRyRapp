@@ -1,5 +1,9 @@
 /**
- * Configuración de rutas de la aplicación
+ * @deprecated Este archivo está obsoleto y no es usado por ningún módulo.
+ * - Para rutas de navegación del sidebar → `@/shared/config/navigation.config`
+ * - Para rutas públicas (login/reset) → `@/shared/config/public-routes`
+ *
+ * No modificar. Será eliminado en una limpieza futura.
  */
 
 export interface Route {

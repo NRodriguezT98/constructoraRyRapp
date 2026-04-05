@@ -38,11 +38,11 @@ export interface CierreFinancieroResult {
 
 export function calcularCierreFinanciero(
   fuentes: FuenteParaCierre[],
-  valorVivienda: number,
+  valorVivienda: number
 ): CierreFinancieroResult {
   const totalParaCierre = fuentes.reduce(
     (sum, f) => sum + (f.capital_para_cierre ?? f.monto_aprobado ?? 0),
-    0,
+    0
   )
 
   const diferencia = valorVivienda - totalParaCierre
@@ -64,10 +64,10 @@ export function calcularCierreFinanciero(
 
 export function useCierreFinanciero(
   fuentes: FuenteParaCierre[],
-  valorVivienda: number,
+  valorVivienda: number
 ): CierreFinancieroResult {
   return useMemo(
     () => calcularCierreFinanciero(fuentes, valorVivienda),
-    [fuentes, valorVivienda],
+    [fuentes, valorVivienda]
   )
 }

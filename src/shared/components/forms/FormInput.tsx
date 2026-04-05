@@ -65,7 +65,8 @@ interface FormInputProps {
   inputClassName?: string
 }
 
-interface FormTextareaProps extends Omit<FormInputProps, 'type' | 'prefix' | 'suffix'> {
+interface FormTextareaProps
+  extends Omit<FormInputProps, 'type' | 'prefix' | 'suffix'> {
   rows?: number
 }
 
@@ -105,17 +106,17 @@ export function FormInput({
       {/* Label */}
       <label
         htmlFor={name}
-        className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+        className='block text-sm font-medium text-gray-700 dark:text-gray-300'
       >
         {label}
-        {required && <span className="text-red-500 ml-1">*</span>}
+        {required && <span className='ml-1 text-red-500'>*</span>}
       </label>
 
       {/* Input Container */}
-      <div className="relative">
+      <div className='relative'>
         {/* Prefix (opcional) */}
         {prefix && (
-          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400 text-sm font-medium pointer-events-none">
+          <div className='pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm font-medium text-gray-500 dark:text-gray-400'>
             {prefix}
           </div>
         )}
@@ -133,12 +134,12 @@ export function FormInput({
           aria-describedby={
             hasError ? `${name}-error` : helpText ? `${name}-help` : undefined
           }
-          onChange={(e) => {
+          onChange={e => {
             register.onChange(e)
             setCurrentLength(e.target.value.length)
           }}
           className={cn(
-            'w-full px-4 py-2.5 rounded-lg border-2 transition-all duration-200',
+            'w-full rounded-lg border-2 px-4 py-2.5 transition-all duration-200',
             'focus:outline-none focus:ring-2 focus:ring-offset-1',
             'dark:bg-gray-900/50 dark:text-white',
             'placeholder:text-gray-400 dark:placeholder:text-gray-500',
@@ -148,28 +149,28 @@ export function FormInput({
             // Estados
             !touched && 'border-gray-300 dark:border-gray-700',
             hasError &&
-              'border-red-300 focus:border-red-500 focus:ring-red-500/20 bg-red-50/50 dark:bg-red-950/20',
+              'border-red-300 bg-red-50/50 focus:border-red-500 focus:ring-red-500/20 dark:bg-red-950/20',
             isSuccess &&
-              'border-green-300 focus:border-green-500 focus:ring-green-500/20 bg-green-50/50 dark:bg-green-950/20',
+              'border-green-300 bg-green-50/50 focus:border-green-500 focus:ring-green-500/20 dark:bg-green-950/20',
             !hasError &&
               !isSuccess &&
               touched &&
               'border-blue-300 focus:border-blue-500 focus:ring-blue-500/20',
             disabled &&
-              'opacity-50 cursor-not-allowed bg-gray-100 dark:bg-gray-800',
+              'cursor-not-allowed bg-gray-100 opacity-50 dark:bg-gray-800',
             inputClassName
           )}
         />
 
         {/* Suffix (opcional) */}
         {suffix && (
-          <div className="absolute right-12 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400 text-sm font-medium pointer-events-none">
+          <div className='pointer-events-none absolute right-12 top-1/2 -translate-y-1/2 text-sm font-medium text-gray-500 dark:text-gray-400'>
             {suffix}
           </div>
         )}
 
         {/* Indicadores (derecha) */}
-        <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
+        <div className='absolute right-3 top-1/2 flex -translate-y-1/2 items-center gap-2'>
           {/* Contador de caracteres */}
           {maxLength && currentLength > 0 && !isLoading && !hasError && (
             <span
@@ -186,36 +187,39 @@ export function FormInput({
 
           {/* Validando */}
           {isLoading && (
-            <Loader2 className="w-5 h-5 animate-spin text-blue-500" aria-label="Validando..." />
+            <Loader2
+              className='h-5 w-5 animate-spin text-blue-500'
+              aria-label='Validando...'
+            />
           )}
 
           {/* Válido */}
           {isSuccess && (
             <CheckCircle2
-              className="w-5 h-5 text-green-500 animate-in fade-in zoom-in duration-200"
-              aria-label="Campo válido"
+              className='h-5 w-5 text-green-500 duration-200 animate-in fade-in zoom-in'
+              aria-label='Campo válido'
             />
           )}
 
           {/* Error */}
           {hasError && (
             <AlertCircle
-              className="w-5 h-5 text-red-500 animate-in fade-in zoom-in duration-200"
-              aria-label="Campo con error"
+              className='h-5 w-5 text-red-500 duration-200 animate-in fade-in zoom-in'
+              aria-label='Campo con error'
             />
           )}
         </div>
       </div>
 
       {/* Mensajes */}
-      <div className="min-h-[20px]" role="alert" aria-live="polite">
+      <div className='min-h-[20px]' role='alert' aria-live='polite'>
         {/* Error */}
         {hasError && (
           <p
             id={`${name}-error`}
-            className="text-sm text-red-600 dark:text-red-400 flex items-start gap-1.5 animate-in slide-in-from-top-1 duration-200"
+            className='flex items-start gap-1.5 text-sm text-red-600 duration-200 animate-in slide-in-from-top-1 dark:text-red-400'
           >
-            <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+            <AlertCircle className='mt-0.5 h-4 w-4 flex-shrink-0' />
             <span>{error.message}</span>
           </p>
         )}
@@ -224,9 +228,9 @@ export function FormInput({
         {!hasError && helpText && (
           <p
             id={`${name}-help`}
-            className="text-xs text-gray-500 dark:text-gray-400 flex items-start gap-1.5"
+            className='flex items-start gap-1.5 text-xs text-gray-500 dark:text-gray-400'
           >
-            <Info className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
+            <Info className='mt-0.5 h-3.5 w-3.5 flex-shrink-0' />
             <span>{helpText}</span>
           </p>
         )}
@@ -268,14 +272,14 @@ export function FormTextarea({
       {/* Label */}
       <label
         htmlFor={name}
-        className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+        className='block text-sm font-medium text-gray-700 dark:text-gray-300'
       >
         {label}
-        {required && <span className="text-red-500 ml-1">*</span>}
+        {required && <span className='ml-1 text-red-500'>*</span>}
       </label>
 
       {/* Textarea Container */}
-      <div className="relative">
+      <div className='relative'>
         <textarea
           {...register}
           id={name}
@@ -288,12 +292,12 @@ export function FormTextarea({
           aria-describedby={
             hasError ? `${name}-error` : helpText ? `${name}-help` : undefined
           }
-          onChange={(e) => {
+          onChange={e => {
             register.onChange(e)
             setCurrentLength(e.target.value.length)
           }}
           className={cn(
-            'w-full px-4 py-2.5 rounded-lg border-2 transition-all duration-200',
+            'w-full rounded-lg border-2 px-4 py-2.5 transition-all duration-200',
             'focus:outline-none focus:ring-2 focus:ring-offset-1',
             'dark:bg-gray-900/50 dark:text-white',
             'placeholder:text-gray-400 dark:placeholder:text-gray-500',
@@ -301,21 +305,21 @@ export function FormTextarea({
             // Estados
             !touched && 'border-gray-300 dark:border-gray-700',
             hasError &&
-              'border-red-300 focus:border-red-500 focus:ring-red-500/20 bg-red-50/50 dark:bg-red-950/20',
+              'border-red-300 bg-red-50/50 focus:border-red-500 focus:ring-red-500/20 dark:bg-red-950/20',
             isSuccess &&
-              'border-green-300 focus:border-green-500 focus:ring-green-500/20 bg-green-50/50 dark:bg-green-950/20',
+              'border-green-300 bg-green-50/50 focus:border-green-500 focus:ring-green-500/20 dark:bg-green-950/20',
             !hasError &&
               !isSuccess &&
               touched &&
               'border-blue-300 focus:border-blue-500 focus:ring-blue-500/20',
             disabled &&
-              'opacity-50 cursor-not-allowed bg-gray-100 dark:bg-gray-800',
+              'cursor-not-allowed bg-gray-100 opacity-50 dark:bg-gray-800',
             inputClassName
           )}
         />
 
         {/* Indicadores (esquina superior derecha) */}
-        <div className="absolute right-3 top-3 flex items-center gap-2">
+        <div className='absolute right-3 top-3 flex items-center gap-2'>
           {/* Contador */}
           {maxLength && (
             <span
@@ -332,29 +336,29 @@ export function FormTextarea({
 
           {/* Validando */}
           {isLoading && (
-            <Loader2 className="w-5 h-5 animate-spin text-blue-500" />
+            <Loader2 className='h-5 w-5 animate-spin text-blue-500' />
           )}
 
           {/* Válido */}
           {isSuccess && (
-            <CheckCircle2 className="w-5 h-5 text-green-500 animate-in fade-in zoom-in duration-200" />
+            <CheckCircle2 className='h-5 w-5 text-green-500 duration-200 animate-in fade-in zoom-in' />
           )}
 
           {/* Error */}
           {hasError && (
-            <AlertCircle className="w-5 h-5 text-red-500 animate-in fade-in zoom-in duration-200" />
+            <AlertCircle className='h-5 w-5 text-red-500 duration-200 animate-in fade-in zoom-in' />
           )}
         </div>
       </div>
 
       {/* Mensajes */}
-      <div className="min-h-[20px]" role="alert" aria-live="polite">
+      <div className='min-h-[20px]' role='alert' aria-live='polite'>
         {hasError && (
           <p
             id={`${name}-error`}
-            className="text-sm text-red-600 dark:text-red-400 flex items-start gap-1.5 animate-in slide-in-from-top-1 duration-200"
+            className='flex items-start gap-1.5 text-sm text-red-600 duration-200 animate-in slide-in-from-top-1 dark:text-red-400'
           >
-            <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+            <AlertCircle className='mt-0.5 h-4 w-4 flex-shrink-0' />
             <span>{error.message}</span>
           </p>
         )}
@@ -362,9 +366,9 @@ export function FormTextarea({
         {!hasError && helpText && (
           <p
             id={`${name}-help`}
-            className="text-xs text-gray-500 dark:text-gray-400 flex items-start gap-1.5"
+            className='flex items-start gap-1.5 text-xs text-gray-500 dark:text-gray-400'
           >
-            <Info className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
+            <Info className='mt-0.5 h-3.5 w-3.5 flex-shrink-0' />
             <span>{helpText}</span>
           </p>
         )}
@@ -402,10 +406,10 @@ export function FormSelect({
     <div className={cn('space-y-2', className)}>
       <label
         htmlFor={name}
-        className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+        className='block text-sm font-medium text-gray-700 dark:text-gray-300'
       >
         {label}
-        {required && <span className="text-red-500 ml-1">*</span>}
+        {required && <span className='ml-1 text-red-500'>*</span>}
       </label>
 
       <select
@@ -414,37 +418,37 @@ export function FormSelect({
         disabled={disabled}
         aria-invalid={hasError ? 'true' : 'false'}
         className={cn(
-          'w-full px-4 py-2.5 rounded-lg border-2 transition-all duration-200',
+          'w-full rounded-lg border-2 px-4 py-2.5 transition-all duration-200',
           'focus:outline-none focus:ring-2 focus:ring-offset-1',
           'dark:bg-gray-900/50 dark:text-white',
           !touched && 'border-gray-300 dark:border-gray-700',
           hasError &&
-            'border-red-300 focus:border-red-500 focus:ring-red-500/20 bg-red-50/50 dark:bg-red-950/20',
+            'border-red-300 bg-red-50/50 focus:border-red-500 focus:ring-red-500/20 dark:bg-red-950/20',
           touched &&
             !hasError &&
             'border-green-300 focus:border-green-500 focus:ring-green-500/20',
-          disabled && 'opacity-50 cursor-not-allowed',
+          disabled && 'cursor-not-allowed opacity-50',
           inputClassName
         )}
       >
-        {placeholder && <option value="">{placeholder}</option>}
-        {options.map((option) => (
+        {placeholder && <option value=''>{placeholder}</option>}
+        {options.map(option => (
           <option key={option.value} value={option.value}>
             {option.label}
           </option>
         ))}
       </select>
 
-      <div className="min-h-[20px]" role="alert" aria-live="polite">
+      <div className='min-h-[20px]' role='alert' aria-live='polite'>
         {hasError && (
-          <p className="text-sm text-red-600 dark:text-red-400 flex items-start gap-1.5">
-            <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+          <p className='flex items-start gap-1.5 text-sm text-red-600 dark:text-red-400'>
+            <AlertCircle className='mt-0.5 h-4 w-4 flex-shrink-0' />
             <span>{error.message}</span>
           </p>
         )}
         {!hasError && helpText && (
-          <p className="text-xs text-gray-500 dark:text-gray-400 flex items-start gap-1.5">
-            <Info className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
+          <p className='flex items-start gap-1.5 text-xs text-gray-500 dark:text-gray-400'>
+            <Info className='mt-0.5 h-3.5 w-3.5 flex-shrink-0' />
             <span>{helpText}</span>
           </p>
         )}

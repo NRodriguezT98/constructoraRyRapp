@@ -27,8 +27,14 @@ for (const filePath of filesWithAlert) {
 
   // confirm() is more complex - replace with a simple toast.info and true return
   // Just convert the call pattern, won't be functionally identical but ESLint compliant
-  content = content.replace(/\bwindow\.confirm\b/g, '/* TODO: use dialog */ (()=>true)(')
-  content = content.replace(/\bconfirm\s*\(/g, '/* TODO: use dialog */ (()=>true)(')
+  content = content.replace(
+    /\bwindow\.confirm\b/g,
+    '/* TODO: use dialog */ (()=>true)('
+  )
+  content = content.replace(
+    /\bconfirm\s*\(/g,
+    '/* TODO: use dialog */ (()=>true)('
+  )
 
   // prompt() → toast.info
   content = content.replace(/\bwindow\.prompt\b/g, 'toast.info')
@@ -45,7 +51,11 @@ for (const filePath of filesWithAlert) {
     for (let i = 0; i < lines.length; i++) {
       if (lines[i].startsWith('import ')) {
         insertIdx = i
-      } else if (insertIdx > 0 && !lines[i].startsWith('import ') && lines[i].trim() !== '') {
+      } else if (
+        insertIdx > 0 &&
+        !lines[i].startsWith('import ') &&
+        lines[i].trim() !== ''
+      ) {
         break
       }
     }

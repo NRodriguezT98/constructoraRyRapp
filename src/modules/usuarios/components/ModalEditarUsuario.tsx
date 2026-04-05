@@ -54,7 +54,7 @@ export function ModalEditarUsuario({
     nombres: '',
     apellidos: '',
     telefono: '',
-    rol: 'Contador',
+    rol: 'Contabilidad',
     estado: 'Activo',
   })
 
@@ -127,7 +127,7 @@ export function ModalEditarUsuario({
       nombres: '',
       apellidos: '',
       telefono: '',
-      rol: 'Contador',
+      rol: 'Contabilidad',
       estado: 'Activo',
     })
     setErrores({})

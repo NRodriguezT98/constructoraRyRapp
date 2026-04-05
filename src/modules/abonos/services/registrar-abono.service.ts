@@ -21,7 +21,7 @@ export interface RegistrarAbonoPayload {
  * @returns La respuesta JSON con { abono: {...} }
  */
 export async function registrarAbonoApi(
-  payload: RegistrarAbonoPayload,
+  payload: RegistrarAbonoPayload
 ): Promise<{ abono: Record<string, unknown> }> {
   const response = await fetch('/api/abonos/registrar', {
     method: 'POST',

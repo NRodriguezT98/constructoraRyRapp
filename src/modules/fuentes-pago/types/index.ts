@@ -47,9 +47,9 @@ export interface CreditoConstructora {
   id: string
   fuente_pago_id: string
   capital: number
-  tasa_mensual: number     // porcentaje: 1.5 = 1.5%
+  tasa_mensual: number // porcentaje: 1.5 = 1.5%
   num_cuotas: number
-  fecha_inicio: string     // YYYY-MM-DD
+  fecha_inicio: string // YYYY-MM-DD
   valor_cuota: number
   interes_total: number
   monto_total: number
@@ -59,7 +59,10 @@ export interface CreditoConstructora {
   updated_at: string
 }
 
-export type CrearCreditoDTO = Omit<CreditoConstructora, 'id' | 'version_actual' | 'created_at' | 'updated_at'>
+export type CrearCreditoDTO = Omit<
+  CreditoConstructora,
+  'id' | 'version_actual' | 'created_at' | 'updated_at'
+>
 
 export interface ParametrosCredito {
   capital: number
@@ -118,9 +121,9 @@ export interface ResumenCuotas {
   total: number
   cubiertos: number
   atrasados: number
-  pendientes: number    // En curso + Futuro
+  pendientes: number // En curso + Futuro
   deficitTotal: number
-  moraTotal: number     // Suma de mora_sugerida en períodos Atrasados
+  moraTotal: number // Suma de mora_sugerida en períodos Atrasados
 }
 
 export interface CuotaCalculo {
@@ -158,10 +161,10 @@ export interface ProximaCuota {
   numero_cuota: number
   fecha_vencimiento: string
   valor_cuota: number
-  deficit: number          // Cuánto falta cubrir de este período
-  mora_sugerida: number    // Interés sugerido si está atrasado
+  deficit: number // Cuánto falta cubrir de este período
+  mora_sugerida: number // Interés sugerido si está atrasado
   estado: 'Atrasado' | 'En curso'
-  dias_atraso: number      // 0 si En curso
+  dias_atraso: number // 0 si En curso
 }
 
 /** Progreso global del crédito */
@@ -170,6 +173,6 @@ export interface ProgresoCredito {
   cuotasCubiertas: number
   cuotasPendientes: number
   montoTotal: number
-  montoCubierto: number    // Suma de valor_cuota de períodos Cubiertos
-  porcentaje: number       // 0-100
+  montoCubierto: number // Suma de valor_cuota de períodos Cubiertos
+  porcentaje: number // 0-100
 }

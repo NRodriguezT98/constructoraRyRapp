@@ -4,25 +4,28 @@ import { useState } from 'react'
 
 import { motion } from 'framer-motion'
 import {
-    AlertTriangle,
-    BadgeCheck,
-    Building2,
-    CheckCircle2,
-    ChevronDown,
-    ChevronUp,
-    CreditCard,
-    ExternalLink,
-    FileWarning,
-    Hash,
-    Landmark,
-    Lock,
+  AlertTriangle,
+  BadgeCheck,
+  Building2,
+  CheckCircle2,
+  ChevronDown,
+  ChevronUp,
+  CreditCard,
+  ExternalLink,
+  FileWarning,
+  Hash,
+  Landmark,
+  Lock,
 } from 'lucide-react'
 
 import Link from 'next/link'
 
 import type { FuentePagoConAbonos } from '@/modules/abonos/types'
 import { CuotasCreditoTab } from '@/modules/fuentes-pago/components/CuotasCreditoTab'
-import { esCreditoConstructora as checkCreditoConstructora, esCuotaInicial as checkCuotaInicial } from '@/shared/constants/fuentes-pago.constants'
+import {
+  esCreditoConstructora as checkCreditoConstructora,
+  esCuotaInicial as checkCuotaInicial,
+} from '@/shared/constants/fuentes-pago.constants'
 
 interface FuentePagoCardProps {
   fuente: FuentePagoConAbonos
@@ -129,14 +132,21 @@ export function FuentePagoCard({
   const [cuotasExpandidas, setCuotasExpandidas] = useState(false)
 
   // Textos semánticos por tipo de fuente
-  const labelAprobado = esCuotaInicial ? 'Valor Pactado' : esCreditoConstructora ? 'Monto del Crédito' : 'Aprobado'
+  const labelAprobado = esCuotaInicial
+    ? 'Valor Pactado'
+    : esCreditoConstructora
+      ? 'Monto del Crédito'
+      : 'Aprobado'
   const labelRecibido = esDesembolsoUnico ? 'Desembolsado' : 'Recibido'
 
   // Desglose crédito: capital vs intereses
-  const capitalCredito = esCreditoConstructora ? (fuente.capital_para_cierre ?? fuente.monto_aprobado) : null
-  const interesesCredito = esCreditoConstructora && capitalCredito !== null
-    ? fuente.monto_aprobado - capitalCredito
+  const capitalCredito = esCreditoConstructora
+    ? (fuente.capital_para_cierre ?? fuente.monto_aprobado)
     : null
+  const interesesCredito =
+    esCreditoConstructora && capitalCredito !== null
+      ? fuente.monto_aprobado - capitalCredito
+      : null
 
   return (
     <motion.div
@@ -199,7 +209,10 @@ export function FuentePagoCard({
               <>
                 {puedeAbonar ? (
                   <motion.button
-                    whileHover={{ scale: 1.05, boxShadow: `0 0 18px ${colors.glow}` }}
+                    whileHover={{
+                      scale: 1.05,
+                      boxShadow: `0 0 18px ${colors.glow}`,
+                    }}
                     whileTap={{ scale: 0.96 }}
                     onClick={() => onRegistrarAbono(fuente)}
                     className={`inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r px-3 py-1.5 ${colors.accent} text-xs font-semibold text-white shadow-md`}
@@ -210,8 +223,8 @@ export function FuentePagoCard({
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.96 }}
-                  onClick={() => setCuotasExpandidas((p) => !p)}
-                  className='inline-flex items-center gap-1.5 rounded-xl border border-violet-500/40 bg-violet-500/15 px-3 py-1.5 text-xs font-semibold text-violet-300 hover:bg-violet-500/25 transition-colors'
+                  onClick={() => setCuotasExpandidas(p => !p)}
+                  className='inline-flex items-center gap-1.5 rounded-xl border border-violet-500/40 bg-violet-500/15 px-3 py-1.5 text-xs font-semibold text-violet-300 transition-colors hover:bg-violet-500/25'
                 >
                   {cuotasExpandidas ? (
                     <ChevronUp className='h-3.5 w-3.5' />
@@ -280,13 +293,20 @@ export function FuentePagoCard({
         </div>
 
         {/* Desglose crédito: capital + intereses */}
-        {esCreditoConstructora && capitalCredito !== null && interesesCredito !== null && interesesCredito > 0 ? (
+        {esCreditoConstructora &&
+        capitalCredito !== null &&
+        interesesCredito !== null &&
+        interesesCredito > 0 ? (
           <div className='mb-2 flex items-center gap-2 rounded-lg border border-violet-200/60 bg-violet-50/50 px-3 py-1.5 text-[11px] dark:border-violet-800/30 dark:bg-violet-900/10'>
             <span className='text-gray-500 dark:text-gray-400'>Capital:</span>
-            <span className='font-semibold text-gray-800 dark:text-white'>{formatCurrency(capitalCredito)}</span>
+            <span className='font-semibold text-gray-800 dark:text-white'>
+              {formatCurrency(capitalCredito)}
+            </span>
             <span className='text-gray-300 dark:text-gray-600'>+</span>
             <span className='text-gray-500 dark:text-gray-400'>Intereses:</span>
-            <span className='font-semibold text-violet-600 dark:text-violet-400'>{formatCurrency(interesesCredito)}</span>
+            <span className='font-semibold text-violet-600 dark:text-violet-400'>
+              {formatCurrency(interesesCredito)}
+            </span>
           </div>
         ) : null}
 

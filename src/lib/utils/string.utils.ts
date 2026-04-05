@@ -34,7 +34,9 @@ export function toTitleCase(str: string | null | undefined): string {
  * @param nombre - Nombre a formatear
  * @returns Nombre formateado
  */
-export function formatNombreCompleto(nombre: string | null | undefined): string {
+export function formatNombreCompleto(
+  nombre: string | null | undefined
+): string {
   if (!nombre) return ''
 
   // Limpiar espacios extras y aplicar Title Case

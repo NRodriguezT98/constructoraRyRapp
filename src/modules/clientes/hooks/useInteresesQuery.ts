@@ -35,7 +35,8 @@ import type { ClienteInteres } from '@/modules/clientes/types'
 export const interesesKeys = {
   all: ['cliente-intereses'] as const,
   byCliente: (clienteId: string) => ['cliente-intereses', clienteId] as const,
-  byProyecto: (proyectoId: string) => ['proyecto-intereses', proyectoId] as const,
+  byProyecto: (proyectoId: string) =>
+    ['proyecto-intereses', proyectoId] as const,
 }
 
 // =====================================================
@@ -90,7 +91,8 @@ export function useInteresesQuery({
     refetch,
   } = useQuery({
     queryKey: [...interesesKeys.byCliente(clienteId), soloActivos],
-    queryFn: () => interesesService.obtenerInteresesCliente(clienteId, soloActivos),
+    queryFn: () =>
+      interesesService.obtenerInteresesCliente(clienteId, soloActivos),
     enabled: !!clienteId,
     staleTime: 60 * 1000, // 60s - intereses cambian menos frecuentemente
     gcTime: 5 * 60 * 1000, // 5min - mantener en cache
@@ -101,13 +103,20 @@ export function useInteresesQuery({
   // =====================================================
 
   const descartarMutation = useMutation({
-    mutationFn: ({ interesId, motivo }: { interesId: string; motivo?: string }) =>
-      interesesService.descartarInteres(interesId, motivo),
+    mutationFn: ({
+      interesId,
+      motivo,
+    }: {
+      interesId: string
+      motivo?: string
+    }) => interesesService.descartarInteres(interesId, motivo),
     onSuccess: () => {
       // Invalidar cache para refetch automático
-      queryClient.invalidateQueries({ queryKey: interesesKeys.byCliente(clienteId) })
+      queryClient.invalidateQueries({
+        queryKey: interesesKeys.byCliente(clienteId),
+      })
     },
-    onError: (error) => {
+    onError: error => {
       logger.error('❌ Error descartando interés:', error)
     },
   })
@@ -119,7 +128,7 @@ export function useInteresesQuery({
   const interesesFiltrados = useMemo(() => {
     if (!estadoFiltro) return intereses
 
-    return intereses.filter((interes) => interes.estado === estadoFiltro)
+    return intereses.filter(interes => interes.estado === estadoFiltro)
   }, [intereses, estadoFiltro])
 
   // =====================================================
@@ -129,9 +138,9 @@ export function useInteresesQuery({
   const stats = useMemo(
     () => ({
       total: intereses.length,
-      activos: intereses.filter((i) => i.estado === 'Activo').length,
-      descartados: intereses.filter((i) => i.estado === 'Descartado').length,
-      convertidos: intereses.filter((i) => i.estado === 'Convertido').length,
+      activos: intereses.filter(i => i.estado === 'Activo').length,
+      descartados: intereses.filter(i => i.estado === 'Descartado').length,
+      convertidos: intereses.filter(i => i.estado === 'Convertido').length,
     }),
     [intereses]
   )

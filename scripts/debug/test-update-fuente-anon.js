@@ -35,7 +35,13 @@ async function probarUpdate() {
   // 2. Intentar UPDATE
   console.log('🔄 Intentando marcar como inactiva...\n')
 
-  const { data: resultado, error: errorUpdate, count, status, statusText } = await supabase
+  const {
+    data: resultado,
+    error: errorUpdate,
+    count,
+    status,
+    statusText,
+  } = await supabase
     .from('fuentes_pago')
     .update({
       estado_fuente: 'inactiva',

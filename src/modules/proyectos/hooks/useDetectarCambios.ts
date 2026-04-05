@@ -220,8 +220,12 @@ export function useDetectarCambios(
         // Si el nombre cambió pero no es una manzana nueva/eliminada
         if (
           manzanaOriginal.nombre !== manzanaNueva.nombre &&
-          !cambiosManzanas.some(c => c.nombre === manzanaOriginal.nombre && c.tipo === 'eliminada') &&
-          !cambiosManzanas.some(c => c.nombre === manzanaNueva.nombre && c.tipo === 'agregada')
+          !cambiosManzanas.some(
+            c => c.nombre === manzanaOriginal.nombre && c.tipo === 'eliminada'
+          ) &&
+          !cambiosManzanas.some(
+            c => c.nombre === manzanaNueva.nombre && c.tipo === 'agregada'
+          )
         ) {
           const cambioExistente = cambiosManzanas.find(
             c => c.nombre === manzanaNueva.nombre && c.tipo === 'modificada'

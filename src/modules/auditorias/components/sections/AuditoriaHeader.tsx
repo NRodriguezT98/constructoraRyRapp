@@ -5,7 +5,13 @@
 
 'use client'
 
-import { Archive, ArchiveRestore, CheckCircle2, Edit3, Trash2 } from 'lucide-react'
+import {
+  Archive,
+  ArchiveRestore,
+  CheckCircle2,
+  Edit3,
+  Trash2,
+} from 'lucide-react'
 
 import { formatDateTimeForDisplay } from '@/lib/utils/date.utils'
 
@@ -58,49 +64,56 @@ const ACCION_CONFIG = {
   },
 }
 
-export function AuditoriaHeader({ accion, usuario, fecha, modulo }: AuditoriaHeaderProps) {
+export function AuditoriaHeader({
+  accion,
+  usuario,
+  fecha,
+  modulo,
+}: AuditoriaHeaderProps) {
   const config = ACCION_CONFIG[accion] || ACCION_CONFIG.UPDATE
   const Icon = config.icon
 
   return (
-    <div className={`relative h-32 bg-gradient-to-br ${config.color} p-6 rounded-t-2xl`}>
-      <div className="absolute inset-0 bg-grid-white/10 [mask-image:linear-gradient(0deg,transparent,black,transparent)]" />
+    <div
+      className={`relative h-32 bg-gradient-to-br ${config.color} rounded-t-2xl p-6`}
+    >
+      <div className='bg-grid-white/10 absolute inset-0 [mask-image:linear-gradient(0deg,transparent,black,transparent)]' />
 
-      <div className="relative z-10">
+      <div className='relative z-10'>
         {/* Badge de Acción */}
-        <div className="flex items-center gap-3 mb-3">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/20 backdrop-blur-md border border-white/30">
-            <Icon className="w-4 h-4 text-white" />
-            <span className="text-sm font-bold text-white">{config.label}</span>
+        <div className='mb-3 flex items-center gap-3'>
+          <div className='inline-flex items-center gap-2 rounded-full border border-white/30 bg-white/20 px-3 py-1.5 backdrop-blur-md'>
+            <Icon className='h-4 w-4 text-white' />
+            <span className='text-sm font-bold text-white'>{config.label}</span>
           </div>
           {modulo && (
-            <span className="text-xs font-medium text-white/80 uppercase tracking-wider">
+            <span className='text-xs font-medium uppercase tracking-wider text-white/80'>
               {modulo}
             </span>
           )}
         </div>
 
         {/* Usuario y Fecha */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center">
-              <span className="text-sm font-bold text-white">
+        <div className='flex items-center justify-between'>
+          <div className='flex items-center gap-3'>
+            <div className='flex h-10 w-10 items-center justify-center rounded-full border border-white/30 bg-white/20 backdrop-blur-md'>
+              <span className='text-sm font-bold text-white'>
                 {usuario.nombre.charAt(0).toUpperCase()}
               </span>
             </div>
             <div>
-              <p className="text-sm font-bold text-white">{usuario.nombre}</p>
+              <p className='text-sm font-bold text-white'>{usuario.nombre}</p>
               <p className={`text-xs ${config.textColor}`}>
                 {usuario.rol || 'Administrador'}
               </p>
             </div>
           </div>
 
-          <div className="text-right">
-            <p className="text-xs font-medium text-white/80 uppercase tracking-wide mb-1">
+          <div className='text-right'>
+            <p className='mb-1 text-xs font-medium uppercase tracking-wide text-white/80'>
               Fecha
             </p>
-            <p className="text-sm font-bold text-white">
+            <p className='text-sm font-bold text-white'>
               {formatDateTimeForDisplay(fecha)}
             </p>
           </div>

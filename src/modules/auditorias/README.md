@@ -46,7 +46,7 @@ import { auditoriasService } from '@/modules/auditorias'
 const resultado = await auditoriasService.obtenerAuditorias({
   modulo: 'proyectos',
   accion: 'UPDATE',
-  limite: 50
+  limite: 50,
 })
 
 // Historial de un registro

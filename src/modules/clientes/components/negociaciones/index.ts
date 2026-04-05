@@ -2,4 +2,4 @@
  * Barrel export de componentes de Negociaciones
  */
 
-export * from './configurar-fuentes-pago';
+export * from './configurar-fuentes-pago'

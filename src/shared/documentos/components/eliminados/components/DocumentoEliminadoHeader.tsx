@@ -1,7 +1,7 @@
-import { Calendar, ChevronDown, ChevronUp, FileText, User } from 'lucide-react'
+﻿import { Calendar, ChevronDown, ChevronUp, FileText, User } from 'lucide-react'
 
-import { Badge } from '@/components/ui/badge'
 import { formatDateCompact } from '@/lib/utils/date.utils'
+import { Badge } from '@/shared/components/ui/badge'
 import type { DocumentoProyecto } from '@/shared/documentos/types/documento.types'
 
 // Tipo extendido con relación usuario (FK join)

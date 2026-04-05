@@ -47,10 +47,11 @@ export interface RestriccionesFuente {
 // ─── Cálculo de restricciones por fuente ───────────────────
 
 export function calcularRestriccionesFuente(
-  fuente: DatosFuenteParaReglas,
+  fuente: DatosFuenteParaReglas
 ): RestriccionesFuente {
   const tieneAbonos = fuente.monto_recibido > 0
-  const esCompletada = fuente.monto_recibido >= fuente.monto_aprobado && fuente.monto_aprobado > 0
+  const esCompletada =
+    fuente.monto_recibido >= fuente.monto_aprobado && fuente.monto_aprobado > 0
   const esCredito = esCreditoConstructora(fuente.tipo)
   const esCreditoConPlan = esCredito && (fuente.tienePlanCuotas ?? false)
 
@@ -87,7 +88,8 @@ export function calcularRestriccionesFuente(
         puedeEditarEntidad: false,
         montoMinimo: fuente.monto_recibido,
         razonBloqueoEliminar: `Ya recibió ${recibidoStr} en abonos`,
-        razonBloqueoMonto: 'Para modificar el crédito, usa "Reestructurar" desde el plan de cuotas',
+        razonBloqueoMonto:
+          'Para modificar el crédito, usa "Reestructurar" desde el plan de cuotas',
         razonBloqueoEntidad: null,
         advertencias: [],
         esCompletada: false,
@@ -148,9 +150,14 @@ export interface ErrorRebalanceo {
 }
 
 export function validarRebalanceo(
-  ajustes: { id: string; montoEditable: number; paraEliminar: boolean; restricciones: RestriccionesFuente }[],
+  ajustes: {
+    id: string
+    montoEditable: number
+    paraEliminar: boolean
+    restricciones: RestriccionesFuente
+  }[],
   valorVivienda: number,
-  subtotal: number,
+  subtotal: number
 ): ErrorRebalanceo[] {
   const errores: ErrorRebalanceo[] = []
 
@@ -159,9 +166,10 @@ export function validarRebalanceo(
   if (Math.abs(diferencia) >= 1) {
     errores.push({
       campo: 'balance',
-      mensaje: diferencia > 0
-        ? `Faltan ${formatCurrency(diferencia)} para cubrir el valor de la vivienda`
-        : `Excedente de ${formatCurrency(Math.abs(diferencia))} sobre el valor de la vivienda`,
+      mensaje:
+        diferencia > 0
+          ? `Faltan ${formatCurrency(diferencia)} para cubrir el valor de la vivienda`
+          : `Excedente de ${formatCurrency(Math.abs(diferencia))} sobre el valor de la vivienda`,
     })
   }
 

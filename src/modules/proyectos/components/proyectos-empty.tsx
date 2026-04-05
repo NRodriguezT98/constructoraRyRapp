@@ -14,12 +14,16 @@ export function ProyectosEmpty({ onCrear }: ProyectosEmptyProps) {
       icon={Building2}
       title='No hay proyectos'
       description='Comienza creando tu primer proyecto de construcción'
-      action={onCrear ? {
-        label: 'Crear Proyecto',
-        onClick: onCrear,
-        icon: Plus,
-      } : undefined}
-      moduleName="proyectos"
+      action={
+        onCrear
+          ? {
+              label: 'Crear Proyecto',
+              onClick: onCrear,
+              icon: Plus,
+            }
+          : undefined
+      }
+      moduleName='proyectos'
     />
   )
 }

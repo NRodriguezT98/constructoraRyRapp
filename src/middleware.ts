@@ -198,7 +198,7 @@ export async function middleware(req: NextRequest) {
     // 6. OBTENER ROL Y PERMISOS DEL JWT (EDGE RUNTIME COMPATIBLE)
     // ============================================
 
-    let rol = 'Supervisor'
+    let rol = 'Administrador de Obra'
     let nombres = ''
     let email = user.email || ''
     let permisosCache: string[] = [] // ✅ Cache de permisos desde JWT
@@ -229,7 +229,7 @@ export async function middleware(req: NextRequest) {
           const payload = JSON.parse(jsonPayload)
 
           // Leer claims custom del payload
-          rol = payload.user_rol || 'Supervisor'
+          rol = payload.user_rol || 'Administrador de Obra'
           nombres = payload.user_nombres || ''
           email = payload.user_email || user.email || ''
 

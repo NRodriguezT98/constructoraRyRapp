@@ -28,8 +28,8 @@ if (!supabaseUrl || !supabaseServiceKey) {
 const supabase = createClient(supabaseUrl, supabaseServiceKey, {
   auth: {
     autoRefreshToken: false,
-    persistSession: false
-  }
+    persistSession: false,
+  },
 })
 
 async function eliminarCampo() {
@@ -43,7 +43,7 @@ async function eliminarCampo() {
       WHERE table_schema = 'public'
         AND table_name = 'documentos_cliente'
         AND column_name = 'es_documento_identidad'
-    `
+    `,
   })
 
   if (errorCheck) {
@@ -75,12 +75,18 @@ async function eliminarCampo() {
     `
 
     console.log('📝 Ejecutando script SQL...\n')
-    console.log('⚠️  IMPORTANTE: Este script requiere acceso directo a la base de datos.')
-    console.log('Por favor, ejecuta el siguiente SQL en el Dashboard de Supabase:\n')
-    console.log('=' .repeat(80))
+    console.log(
+      '⚠️  IMPORTANTE: Este script requiere acceso directo a la base de datos.'
+    )
+    console.log(
+      'Por favor, ejecuta el siguiente SQL en el Dashboard de Supabase:\n'
+    )
+    console.log('='.repeat(80))
     console.log(sqlScript)
-    console.log('=' .repeat(80))
-    console.log('\n📍 Dashboard de Supabase → SQL Editor → Pega el script → RUN\n')
+    console.log('='.repeat(80))
+    console.log(
+      '\n📍 Dashboard de Supabase → SQL Editor → Pega el script → RUN\n'
+    )
 
     return
   }
@@ -91,16 +97,19 @@ async function eliminarCampo() {
 
     // Eliminar índice
     const { error: errorIndex } = await supabase.rpc('exec_sql', {
-      sql: 'DROP INDEX IF EXISTS idx_documentos_cliente_cedula'
+      sql: 'DROP INDEX IF EXISTS idx_documentos_cliente_cedula',
     })
 
     if (errorIndex) {
-      console.log('⚠️  Error al eliminar índice (puede no existir):', errorIndex.message)
+      console.log(
+        '⚠️  Error al eliminar índice (puede no existir):',
+        errorIndex.message
+      )
     }
 
     // Eliminar columna
     const { error: errorDrop } = await supabase.rpc('exec_sql', {
-      sql: 'ALTER TABLE documentos_cliente DROP COLUMN IF EXISTS es_documento_identidad'
+      sql: 'ALTER TABLE documentos_cliente DROP COLUMN IF EXISTS es_documento_identidad',
     })
 
     if (errorDrop) {

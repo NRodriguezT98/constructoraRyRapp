@@ -44,7 +44,7 @@ export function ViviendaCombobox({
 
   // Vivienda seleccionada
   const selectedVivienda = useMemo(() => {
-    return viviendas.find((v) => v.id === value)
+    return viviendas.find(v => v.id === value)
   }, [viviendas, value])
 
   // Filtrado inteligente
@@ -53,7 +53,7 @@ export function ViviendaCombobox({
 
     const term = searchTerm.toLowerCase().trim()
 
-    return viviendas.filter((v) => {
+    return viviendas.filter(v => {
       const manzana = (v.manzana_nombre || '').toLowerCase()
       const numero = v.numero.toString()
       const fullText = `${manzana}${numero}` // "a3"
@@ -83,7 +83,9 @@ export function ViviendaCombobox({
   // Scroll automático al item highlighted
   useEffect(() => {
     if (isOpen && listRef.current) {
-      const highlightedElement = listRef.current.children[highlightedIndex] as HTMLElement
+      const highlightedElement = listRef.current.children[
+        highlightedIndex
+      ] as HTMLElement
       if (highlightedElement) {
         highlightedElement.scrollIntoView({
           block: 'nearest',
@@ -114,13 +116,13 @@ export function ViviendaCombobox({
     switch (e.key) {
       case 'ArrowDown':
         e.preventDefault()
-        setHighlightedIndex((prev) =>
+        setHighlightedIndex(prev =>
           Math.min(prev + 1, filteredViviendas.length - 1)
         )
         break
       case 'ArrowUp':
         e.preventDefault()
-        setHighlightedIndex((prev) => Math.max(prev - 1, 0))
+        setHighlightedIndex(prev => Math.max(prev - 1, 0))
         break
       case 'Enter':
         e.preventDefault()
@@ -160,18 +162,24 @@ export function ViviendaCombobox({
       : s.input.base
 
   return (
-    <div className="relative">
+    <div className='relative'>
       {/* Input de búsqueda */}
-      <div className="relative">
-        <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
-          <Search className="w-4 h-4 text-gray-400" />
+      <div className='relative'>
+        <div className='pointer-events-none absolute left-3 top-1/2 -translate-y-1/2'>
+          <Search className='h-4 w-4 text-gray-400' />
         </div>
 
         <input
           ref={inputRef}
-          type="text"
-          value={isOpen ? searchTerm : selectedVivienda ? `Manzana ${selectedVivienda.manzana_nombre} - Casa ${selectedVivienda.numero}` : ''}
-          onChange={(e) => {
+          type='text'
+          value={
+            isOpen
+              ? searchTerm
+              : selectedVivienda
+                ? `Manzana ${selectedVivienda.manzana_nombre} - Casa ${selectedVivienda.numero}`
+                : ''
+          }
+          onChange={e => {
             setSearchTerm(e.target.value)
             if (!isOpen) setIsOpen(true)
           }}
@@ -185,24 +193,26 @@ export function ViviendaCombobox({
           className={`${inputClasses} pl-10 pr-20`}
         />
 
-        <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1">
+        <div className='absolute right-3 top-1/2 flex -translate-y-1/2 items-center gap-1'>
           {value && !disabled && (
             <button
               onClick={handleClear}
-              className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
-              type="button"
+              className='rounded-lg p-1 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800'
+              type='button'
             >
-              <X className="w-4 h-4 text-gray-400" />
+              <X className='h-4 w-4 text-gray-400' />
             </button>
           )}
 
           <button
             onClick={() => setIsOpen(!isOpen)}
             disabled={disabled}
-            className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
-            type="button"
+            className='rounded-lg p-1 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800'
+            type='button'
           >
-            <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+            <ChevronDown
+              className={`h-4 w-4 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`}
+            />
           </button>
         </div>
       </div>
@@ -216,69 +226,82 @@ export function ViviendaCombobox({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.15 }}
-            className="absolute z-50 w-full mt-2 backdrop-blur-xl bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-xl shadow-2xl shadow-cyan-500/10 overflow-hidden"
+            className='absolute z-50 mt-2 w-full overflow-hidden rounded-xl border-2 border-gray-200 bg-white shadow-2xl shadow-cyan-500/10 backdrop-blur-xl dark:border-gray-700 dark:bg-gray-800'
           >
             {filteredViviendas.length > 0 ? (
               <>
                 {/* Contador de resultados */}
-                <div className="px-3 py-2 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                    {filteredViviendas.length} vivienda{filteredViviendas.length !== 1 ? 's' : ''} disponible{filteredViviendas.length !== 1 ? 's' : ''}
+                <div className='border-b border-gray-200 bg-gray-50 px-3 py-2 dark:border-gray-700 dark:bg-gray-900'>
+                  <p className='text-xs text-gray-500 dark:text-gray-400'>
+                    {filteredViviendas.length} vivienda
+                    {filteredViviendas.length !== 1 ? 's' : ''} disponible
+                    {filteredViviendas.length !== 1 ? 's' : ''}
                   </p>
                 </div>
-                <div className="p-2 max-h-[260px] overflow-y-auto">
-                {filteredViviendas.map((vivienda, index) => {
-                  const isSelected = vivienda.id === value
-                  const isHighlighted = index === highlightedIndex
+                <div className='max-h-[260px] overflow-y-auto p-2'>
+                  {filteredViviendas.map((vivienda, index) => {
+                    const isSelected = vivienda.id === value
+                    const isHighlighted = index === highlightedIndex
 
-                  return (
-                    <button
-                      key={vivienda.id}
-                      onClick={() => handleSelect(vivienda.id)}
-                      onMouseEnter={() => setHighlightedIndex(index)}
-                      className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-left transition-all ${
-                        isHighlighted
-                          ? 'bg-gradient-to-r from-cyan-50 to-blue-50 dark:from-cyan-900/40 dark:to-blue-900/40'
-                          : 'hover:bg-gray-50 dark:hover:bg-gray-700/50'
-                      }`}
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                          isSelected
-                            ? 'bg-gradient-to-br from-cyan-500 to-blue-500 shadow-lg shadow-cyan-500/30'
-                            : 'bg-gray-100 dark:bg-gray-800'
-                        }`}>
-                          <Home className={`w-4 h-4 ${
-                            isSelected ? 'text-white' : 'text-gray-400'
-                          }`} />
+                    return (
+                      <button
+                        key={vivienda.id}
+                        onClick={() => handleSelect(vivienda.id)}
+                        onMouseEnter={() => setHighlightedIndex(index)}
+                        className={`flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-left transition-all ${
+                          isHighlighted
+                            ? 'bg-gradient-to-r from-cyan-50 to-blue-50 dark:from-cyan-900/40 dark:to-blue-900/40'
+                            : 'hover:bg-gray-50 dark:hover:bg-gray-700/50'
+                        }`}
+                      >
+                        <div className='flex items-center gap-3'>
+                          <div
+                            className={`flex h-8 w-8 items-center justify-center rounded-lg ${
+                              isSelected
+                                ? 'bg-gradient-to-br from-cyan-500 to-blue-500 shadow-lg shadow-cyan-500/30'
+                                : 'bg-gray-100 dark:bg-gray-800'
+                            }`}
+                          >
+                            <Home
+                              className={`h-4 w-4 ${
+                                isSelected ? 'text-white' : 'text-gray-400'
+                              }`}
+                            />
+                          </div>
+
+                          <div>
+                            <p className='text-sm font-semibold text-gray-900 dark:text-white'>
+                              {vivienda.manzana_nombre
+                                ? `Manzana ${vivienda.manzana_nombre}`
+                                : 'Sin manzana'}{' '}
+                              - Casa {vivienda.numero}
+                            </p>
+                            <p className='text-xs text-gray-500 dark:text-gray-400'>
+                              $
+                              {vivienda.valor_total?.toLocaleString('es-CO') ||
+                                '0'}
+                            </p>
+                          </div>
                         </div>
 
-                        <div>
-                          <p className="text-sm font-semibold text-gray-900 dark:text-white">
-                            {vivienda.manzana_nombre ? `Manzana ${vivienda.manzana_nombre}` : 'Sin manzana'} - Casa {vivienda.numero}
-                          </p>
-                          <p className="text-xs text-gray-500 dark:text-gray-400">
-                            ${vivienda.valor_total?.toLocaleString('es-CO') || '0'}
-                          </p>
-                        </div>
-                      </div>
-
-                      {isSelected && (
-                        <Check className="w-5 h-5 text-cyan-600 dark:text-cyan-400 flex-shrink-0" />
-                      )}
-                    </button>
-                  )
-                })}
+                        {isSelected && (
+                          <Check className='h-5 w-5 flex-shrink-0 text-cyan-600 dark:text-cyan-400' />
+                        )}
+                      </button>
+                    )
+                  })}
                 </div>
               </>
             ) : (
-              <div className="p-6 text-center">
-                <Home className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-2" />
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                  {searchTerm ? 'No se encontraron viviendas' : 'No hay viviendas disponibles'}
+              <div className='p-6 text-center'>
+                <Home className='mx-auto mb-2 h-12 w-12 text-gray-300 dark:text-gray-600' />
+                <p className='text-sm font-medium text-gray-600 dark:text-gray-400'>
+                  {searchTerm
+                    ? 'No se encontraron viviendas'
+                    : 'No hay viviendas disponibles'}
                 </p>
                 {searchTerm && (
-                  <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                  <p className='mt-1 text-xs text-gray-500 dark:text-gray-500'>
                     Intenta con otro término de búsqueda
                   </p>
                 )}

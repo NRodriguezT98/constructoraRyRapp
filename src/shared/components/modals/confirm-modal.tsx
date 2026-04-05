@@ -63,7 +63,8 @@ const styles = {
                   hover:bg-gray-100 dark:hover:bg-gray-700/50
                   transition-all duration-200
                   group`,
-    closeIcon: 'w-5 h-5 text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors',
+    closeIcon:
+      'w-5 h-5 text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors',
   },
 
   footer: `px-8 pb-8 pt-4 flex items-center justify-end gap-3`,
@@ -163,13 +164,15 @@ export function ConfirmModal() {
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ type: 'spring', duration: 0.3 }}
             className={styles.modal.base}
-            onClick={(e) => e.stopPropagation()}
+            onClick={e => e.stopPropagation()}
           >
             {/* Header */}
             <div className={styles.modal.header}>
               {/* Icono */}
               <div className={styles.modal.iconContainer[variant]}>
-                {confirmState.icon || <Icon className={styles.modal.icon[variant]} />}
+                {confirmState.icon || (
+                  <Icon className={styles.modal.icon[variant]} />
+                )}
               </div>
 
               {/* Contenido */}
@@ -178,27 +181,36 @@ export function ConfirmModal() {
                 <div className={styles.modal.message}>
                   {confirmState.message.split('\n').map((line, index) => {
                     // Si la línea empieza con viñeta (• o -)
-                    if (line.trim().startsWith('•') || line.trim().startsWith('-')) {
+                    if (
+                      line.trim().startsWith('•') ||
+                      line.trim().startsWith('-')
+                    ) {
                       return (
-                        <div key={index} className="flex gap-2 mt-2">
-                          <span className="text-amber-500 dark:text-amber-400 font-bold flex-shrink-0">•</span>
+                        <div key={index} className='mt-2 flex gap-2'>
+                          <span className='flex-shrink-0 font-bold text-amber-500 dark:text-amber-400'>
+                            •
+                          </span>
                           <span>{line.trim().replace(/^[•\-]\s*/, '')}</span>
                         </div>
                       )
                     }
                     // Líneas normales
                     if (line.trim()) {
-                      return <p key={index} className="mt-2 first:mt-0">{line}</p>
+                      return (
+                        <p key={index} className='mt-2 first:mt-0'>
+                          {line}
+                        </p>
+                      )
                     }
                     // Líneas vacías = separador
-                    return <div key={index} className="h-2" />
+                    return <div key={index} className='h-2' />
                   })}
                 </div>
               </div>
 
               {/* Botón cerrar */}
               <button
-                type="button"
+                type='button'
                 onClick={() => closeConfirm(false)}
                 className={styles.modal.closeButton}
               >
@@ -209,14 +221,14 @@ export function ConfirmModal() {
             {/* Footer con botones */}
             <div className={styles.footer}>
               <button
-                type="button"
+                type='button'
                 onClick={() => closeConfirm(false)}
                 className={styles.button.cancel}
               >
                 {confirmState.cancelText || 'Cancelar'}
               </button>
               <button
-                type="button"
+                type='button'
                 onClick={() => closeConfirm(true)}
                 className={styles.button.confirm[variant]}
               >

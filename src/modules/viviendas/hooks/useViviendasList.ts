@@ -1,11 +1,16 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 
-import { supabase } from '@/lib/supabase/client'
+import { useQuery } from '@tanstack/react-query'
+
+import { obtenerProyectosSimples } from '@/modules/proyectos/services/proyectos-consultas.service'
 import { usePagination } from '@/shared/hooks/usePagination'
 
 import type { FiltrosViviendas } from '../types'
 
-import { useEliminarViviendaMutation, useViviendasQuery } from './useViviendasQuery'
+import {
+  useEliminarViviendaMutation,
+  useViviendasQuery,
+} from './useViviendasQuery'
 
 /**
  * Hook para gestión del listado de viviendas
@@ -18,7 +23,6 @@ import { useEliminarViviendaMutation, useViviendasQuery } from './useViviendasQu
 export function useViviendasList() {
   const [modalEliminar, setModalEliminar] = useState(false)
   const [viviendaEliminar, setViviendaEliminar] = useState<string | null>(null)
-  const [proyectos, setProyectos] = useState<Array<{ id: string; nombre: string }>>([])
 
   const [filtros, setFiltros] = useState<FiltrosViviendas>({
     search: '',
@@ -28,17 +32,20 @@ export function useViviendasList() {
   })
 
   // ✅ React Query hooks
-  const { data: viviendas = [], isLoading: cargando, error, refetch } = useViviendasQuery(filtros)
+  const {
+    data: viviendas = [],
+    isLoading: cargando,
+    error,
+    refetch,
+  } = useViviendasQuery(filtros)
   const eliminarMutation = useEliminarViviendaMutation()
 
-  // ✅ Cargar proyectos al montar (useEffect, NO useMemo)
-  useEffect(() => {
-    const cargarProyectos = async () => {
-      const { data } = await supabase.from('proyectos').select('id, nombre').order('nombre')
-      if (data) setProyectos(data)
-    }
-    cargarProyectos()
-  }, [])
+  // ✅ Proyectos para filtro con React Query (id + nombre solamente)
+  const { data: proyectos = [] } = useQuery({
+    queryKey: ['proyectos', 'simples'],
+    queryFn: obtenerProyectosSimples,
+    staleTime: 5 * 60 * 1000,
+  })
 
   const viviendasFiltradas = useMemo(() => {
     let resultado = [...viviendas]
@@ -123,7 +130,10 @@ export function useViviendasList() {
     const asignadas = viviendas.filter(v => v.estado === 'Asignada').length
     const entregadas = viviendas.filter(v => v.estado === 'Entregada').length
 
-    const valorTotal = viviendas.reduce((sum, v) => sum + (v.valor_total || 0), 0)
+    const valorTotal = viviendas.reduce(
+      (sum, v) => sum + (v.valor_total || 0),
+      0
+    )
 
     return {
       total,

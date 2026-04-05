@@ -40,14 +40,17 @@ async function contarPermisosPermitidos() {
   console.log(`  ❌ No permitidos (false): ${noPermitidos?.length || 0}`)
 
   // Verificar proyectos.ver específicamente
-  const proyectosVer = permitidos?.find(p => p.modulo === 'proyectos' && p.accion === 'ver')
+  const proyectosVer = permitidos?.find(
+    p => p.modulo === 'proyectos' && p.accion === 'ver'
+  )
   console.log(`\n🎯 proyectos.ver existe: ${proyectosVer ? '✅ SÍ' : '❌ NO'}`)
   if (proyectosVer) {
     console.log(`   permitido: ${proyectosVer.permitido}`)
   }
 
   // Listar módulos con permiso 'ver'
-  const permisosVer = permitidos?.filter(p => p.accion === 'ver').map(p => p.modulo) || []
+  const permisosVer =
+    permitidos?.filter(p => p.accion === 'ver').map(p => p.modulo) || []
   console.log(`\n📋 Módulos con permiso 'ver' para Contador:`)
   permisosVer.forEach(modulo => {
     console.log(`   - ${modulo}`)

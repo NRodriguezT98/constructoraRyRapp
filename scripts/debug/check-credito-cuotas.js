@@ -9,16 +9,30 @@ const supabase = createClient(
 async function check() {
   const { data: fuentes } = await supabase
     .from('fuentes_pago')
-    .select('id, tipo, monto_aprobado, capital_para_cierre, created_at, negociacion_id')
+    .select(
+      'id, tipo, monto_aprobado, capital_para_cierre, created_at, negociacion_id'
+    )
     .ilike('tipo', '%constructora%')
     .order('created_at', { ascending: false })
     .limit(5)
 
   console.log('=== Fuentes crédito constructora (más recientes) ===')
-  if (!fuentes?.length) { console.log('(ninguna)'); return }
+  if (!fuentes?.length) {
+    console.log('(ninguna)')
+    return
+  }
 
   fuentes.forEach(f => {
-    console.log('fuente:', f.id.slice(0,8), '| monto:', f.monto_aprobado, '| capital_para_cierre:', f.capital_para_cierre, '| created:', f.created_at.slice(0,19))
+    console.log(
+      'fuente:',
+      f.id.slice(0, 8),
+      '| monto:',
+      f.monto_aprobado,
+      '| capital_para_cierre:',
+      f.capital_para_cierre,
+      '| created:',
+      f.created_at.slice(0, 19)
+    )
   })
 
   const ids = fuentes.map(f => f.id)
@@ -30,9 +44,20 @@ async function check() {
 
   console.log('\n=== creditos_constructora ===')
   if (!creditos?.length) {
-    console.log('(ninguno) — estas fuentes son ANTERIORES a la implementacion de hoy')
+    console.log(
+      '(ninguno) — estas fuentes son ANTERIORES a la implementacion de hoy'
+    )
   } else {
-    creditos.forEach(c => console.log('fuente:', String(c.fuente_pago_id).slice(0,8), '| capital:', c.capital, '| num_cuotas:', c.num_cuotas))
+    creditos.forEach(c =>
+      console.log(
+        'fuente:',
+        String(c.fuente_pago_id).slice(0, 8),
+        '| capital:',
+        c.capital,
+        '| num_cuotas:',
+        c.num_cuotas
+      )
+    )
   }
 
   const { data: cuotas } = await supabase

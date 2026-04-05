@@ -70,7 +70,15 @@ export function useProgressSection({
       porcentajePagadoTexto: porcentajePagado.toFixed(1),
       porcentajeFuentesTexto: porcentajeFuentes.toFixed(1),
     }
-  }, [valorNegociado, descuento, valorFinal, totalAbonado, saldoPendiente, porcentajePagado, porcentajeFuentes])
+  }, [
+    valorNegociado,
+    descuento,
+    valorFinal,
+    totalAbonado,
+    saldoPendiente,
+    porcentajePagado,
+    porcentajeFuentes,
+  ])
 
   // =====================================================
   // RETURN

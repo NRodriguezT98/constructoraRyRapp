@@ -15,25 +15,23 @@ export function useProyectoTabla(proyecto: Proyecto) {
       (sum, m) => sum + m.totalViviendas,
       0
     )
-    
+
     const totalVendidas = proyecto.manzanas.reduce(
       (sum, m) => sum + m.viviendasVendidas,
       0
     )
-    
+
     // TODO: Query real para asignadas (con cliente_id pero no vendidas)
     const totalAsignadas = 0
-    
+
     const totalDisponibles = totalViviendas - totalVendidas - totalAsignadas
-    
-    const porcentajeVendidas = totalViviendas > 0 
-      ? (totalVendidas / totalViviendas) * 100 
-      : 0
-      
-    const porcentajeAsignadas = totalViviendas > 0 
-      ? (totalAsignadas / totalViviendas) * 100 
-      : 0
-    
+
+    const porcentajeVendidas =
+      totalViviendas > 0 ? (totalVendidas / totalViviendas) * 100 : 0
+
+    const porcentajeAsignadas =
+      totalViviendas > 0 ? (totalAsignadas / totalViviendas) * 100 : 0
+
     return {
       totalViviendas,
       totalVendidas,
@@ -43,6 +41,6 @@ export function useProyectoTabla(proyecto: Proyecto) {
       porcentajeAsignadas,
     }
   }, [proyecto.manzanas])
-  
+
   return estadisticas
 }

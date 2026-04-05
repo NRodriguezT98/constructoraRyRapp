@@ -13,13 +13,13 @@
 import { useState } from 'react'
 
 import {
-    flexRender,
-    getCoreRowModel,
-    getPaginationRowModel,
-    getSortedRowModel,
-    useReactTable,
-    type ColumnDef,
-    type SortingState,
+  flexRender,
+  getCoreRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
+  useReactTable,
+  type ColumnDef,
+  type SortingState,
 } from '@tanstack/react-table'
 import { ChevronDown, ChevronUp, ChevronsUpDown } from 'lucide-react'
 
@@ -103,32 +103,40 @@ export function DataTable<TData>({
   })
 
   return (
-    <div className={cn(
-      "relative overflow-hidden rounded-xl border border-gray-200/50 dark:border-gray-700/50 bg-white dark:bg-gray-800 shadow-2xl",
-      theme.shadow
-    )}>
+    <div
+      className={cn(
+        'relative overflow-hidden rounded-xl border border-gray-200/50 bg-white shadow-2xl dark:border-gray-700/50 dark:bg-gray-800',
+        theme.shadow
+      )}
+    >
       {/* Tabla */}
-      <div className="overflow-x-auto">
-        <table className="w-full">
+      <div className='overflow-x-auto'>
+        <table className='w-full'>
           {/* Header con gradiente premium */}
-          <thead className={cn(
-            'bg-gradient-to-r border-b-2',
-            theme.header,
-            theme.border
-          )}>
-            {table.getHeaderGroups().map((headerGroup) => (
+          <thead
+            className={cn(
+              'border-b-2 bg-gradient-to-r',
+              theme.header,
+              theme.border
+            )}
+          >
+            {table.getHeaderGroups().map(headerGroup => (
               <tr key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
+                {headerGroup.headers.map(header => (
                   <th
                     key={header.id}
                     className={cn(
                       'px-4 py-3.5 text-xs font-bold uppercase tracking-wider text-white',
-                      header.column.getCanSort() && 'cursor-pointer select-none hover:bg-white/10 transition-all'
+                      header.column.getCanSort() &&
+                        'cursor-pointer select-none transition-all hover:bg-white/10'
                     )}
                     onClick={header.column.getToggleSortingHandler()}
-                    style={{ width: header.getSize() !== 150 ? header.getSize() : undefined }}
+                    style={{
+                      width:
+                        header.getSize() !== 150 ? header.getSize() : undefined,
+                    }}
                   >
-                    <div className="flex items-center gap-2 justify-center">
+                    <div className='flex items-center justify-center gap-2'>
                       {header.isPlaceholder
                         ? null
                         : flexRender(
@@ -139,11 +147,11 @@ export function DataTable<TData>({
                       {header.column.getCanSort() && (
                         <span>
                           {header.column.getIsSorted() === 'asc' ? (
-                            <ChevronUp className="w-4 h-4" />
+                            <ChevronUp className='h-4 w-4' />
                           ) : header.column.getIsSorted() === 'desc' ? (
-                            <ChevronDown className="w-4 h-4" />
+                            <ChevronDown className='h-4 w-4' />
                           ) : (
-                            <ChevronsUpDown className="w-4 h-4 opacity-40" />
+                            <ChevronsUpDown className='h-4 w-4 opacity-40' />
                           )}
                         </span>
                       )}
@@ -155,12 +163,14 @@ export function DataTable<TData>({
           </thead>
 
           {/* Body con hover effects premium */}
-          <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+          <tbody className='divide-y divide-gray-200 dark:divide-gray-700'>
             {table.getRowModel().rows.length > 0 ? (
               table.getRowModel().rows.map((row, idx) => (
                 <tr
                   key={row.id}
-                  onClick={onRowClick ? () => onRowClick(row.original) : undefined}
+                  onClick={
+                    onRowClick ? () => onRowClick(row.original) : undefined
+                  }
                   className={cn(
                     'transition-all duration-200',
                     theme.hover,
@@ -170,10 +180,10 @@ export function DataTable<TData>({
                       : 'bg-gray-50/30 dark:bg-gray-800/30'
                   )}
                 >
-                  {row.getVisibleCells().map((cell) => (
+                  {row.getVisibleCells().map(cell => (
                     <td
                       key={cell.id}
-                      className="px-4 py-3.5 text-sm text-gray-700 dark:text-gray-300"
+                      className='px-4 py-3.5 text-sm text-gray-700 dark:text-gray-300'
                     >
                       {flexRender(
                         cell.column.columnDef.cell,
@@ -187,7 +197,7 @@ export function DataTable<TData>({
               <tr>
                 <td
                   colSpan={columns.length}
-                  className="px-4 py-12 text-center text-sm text-gray-500 dark:text-gray-400"
+                  className='px-4 py-12 text-center text-sm text-gray-500 dark:text-gray-400'
                 >
                   No se encontraron resultados
                 </td>
@@ -199,59 +209,87 @@ export function DataTable<TData>({
 
       {/* Paginación moderna y compacta - Mostrar siempre */}
       {showPagination && (
-        <div className="border-t border-gray-200/50 dark:border-gray-700/50 backdrop-blur-xl bg-gradient-to-r from-white/95 via-gray-50/95 to-white/95 dark:from-gray-800/95 dark:via-gray-800/90 dark:to-gray-800/95 px-4 py-2.5 flex items-center justify-between">
+        <div className='flex items-center justify-between border-t border-gray-200/50 bg-gradient-to-r from-white/95 via-gray-50/95 to-white/95 px-4 py-2.5 backdrop-blur-xl dark:border-gray-700/50 dark:from-gray-800/95 dark:via-gray-800/90 dark:to-gray-800/95'>
           {/* Contador compacto + Selector de items por página */}
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-gray-100 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600">
-              <span className="text-xs font-semibold text-gray-900 dark:text-gray-100">
-                {data.length > 0 ? table.getState().pagination.pageIndex * table.getState().pagination.pageSize + 1 : 0}-{Math.min((table.getState().pagination.pageIndex + 1) * table.getState().pagination.pageSize, data.length)}
+          <div className='flex items-center gap-2'>
+            <div className='flex items-center gap-1 rounded-full border border-gray-200 bg-gray-100 px-2.5 py-1 dark:border-gray-600 dark:bg-gray-700/50'>
+              <span className='text-xs font-semibold text-gray-900 dark:text-gray-100'>
+                {data.length > 0
+                  ? table.getState().pagination.pageIndex *
+                      table.getState().pagination.pageSize +
+                    1
+                  : 0}
+                -
+                {Math.min(
+                  (table.getState().pagination.pageIndex + 1) *
+                    table.getState().pagination.pageSize,
+                  data.length
+                )}
               </span>
-              <span className="text-xs text-gray-500 dark:text-gray-400">de</span>
-              <span className="text-xs font-semibold text-gray-900 dark:text-gray-100">
+              <span className='text-xs text-gray-500 dark:text-gray-400'>
+                de
+              </span>
+              <span className='text-xs font-semibold text-gray-900 dark:text-gray-100'>
                 {data.length}
               </span>
             </div>
 
             {/* Selector de items por página */}
-            <div className="flex items-center gap-1.5">
-              <span className="text-xs text-gray-600 dark:text-gray-400">Mostrar:</span>
+            <div className='flex items-center gap-1.5'>
+              <span className='text-xs text-gray-600 dark:text-gray-400'>
+                Mostrar:
+              </span>
               <select
                 value={table.getState().pagination.pageSize}
-                onChange={(e) => {
+                onChange={e => {
                   table.setPageSize(Number(e.target.value))
                 }}
-                className="text-xs font-semibold px-2 py-1 rounded-lg bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 hover:border-gray-400 dark:hover:border-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 dark:focus:border-orange-400 transition-all cursor-pointer"
+                className='cursor-pointer rounded-lg border border-gray-300 bg-white px-2 py-1 text-xs font-semibold text-gray-900 transition-all hover:border-gray-400 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 dark:hover:border-gray-500 dark:focus:border-orange-400'
               >
                 <option value={10}>10</option>
                 <option value={25}>25</option>
                 <option value={50}>50</option>
                 <option value={100}>100</option>
-                {data.length > 100 && <option value={data.length}>Todos ({data.length})</option>}
+                {data.length > 100 && (
+                  <option value={data.length}>Todos ({data.length})</option>
+                )}
               </select>
             </div>
           </div>
 
           {/* Controles de navegación modernos */}
-          <div className="flex items-center gap-1.5">
+          <div className='flex items-center gap-1.5'>
             <button
               onClick={() => table.previousPage()}
               disabled={!table.getCanPreviousPage()}
-              className="group relative px-2.5 py-1.5 text-xs font-semibold text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100 dark:hover:from-gray-600 dark:hover:to-gray-700 hover:border-gray-400 dark:hover:border-gray-500 transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white dark:disabled:hover:bg-gray-700 shadow-sm hover:shadow-md"
+              className='group relative rounded-lg border border-gray-300 bg-white px-2.5 py-1.5 text-xs font-semibold text-gray-700 shadow-sm transition-all duration-200 hover:border-gray-400 hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-white dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:border-gray-500 dark:hover:from-gray-600 dark:hover:to-gray-700 dark:disabled:hover:bg-gray-700'
             >
-              <span className="flex items-center gap-1">
-                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              <span className='flex items-center gap-1'>
+                <svg
+                  className='h-3.5 w-3.5'
+                  fill='none'
+                  stroke='currentColor'
+                  viewBox='0 0 24 24'
+                >
+                  <path
+                    strokeLinecap='round'
+                    strokeLinejoin='round'
+                    strokeWidth={2}
+                    d='M15 19l-7-7 7-7'
+                  />
                 </svg>
                 Anterior
               </span>
             </button>
 
-            <div className="flex items-center gap-1 px-3 py-1 rounded-full bg-gradient-to-r from-gray-100 via-gray-50 to-gray-100 dark:from-gray-700 dark:via-gray-700/50 dark:to-gray-700 border border-gray-300 dark:border-gray-600 shadow-inner">
-              <span className="text-xs font-bold text-gray-900 dark:text-gray-100">
+            <div className='flex items-center gap-1 rounded-full border border-gray-300 bg-gradient-to-r from-gray-100 via-gray-50 to-gray-100 px-3 py-1 shadow-inner dark:border-gray-600 dark:from-gray-700 dark:via-gray-700/50 dark:to-gray-700'>
+              <span className='text-xs font-bold text-gray-900 dark:text-gray-100'>
                 {table.getState().pagination.pageIndex + 1}
               </span>
-              <span className="text-xs text-gray-400 dark:text-gray-500">/</span>
-              <span className="text-xs font-semibold text-gray-600 dark:text-gray-400">
+              <span className='text-xs text-gray-400 dark:text-gray-500'>
+                /
+              </span>
+              <span className='text-xs font-semibold text-gray-600 dark:text-gray-400'>
                 {table.getPageCount()}
               </span>
             </div>
@@ -259,12 +297,22 @@ export function DataTable<TData>({
             <button
               onClick={() => table.nextPage()}
               disabled={!table.getCanNextPage()}
-              className="group relative px-2.5 py-1.5 text-xs font-semibold text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100 dark:hover:from-gray-600 dark:hover:to-gray-700 hover:border-gray-400 dark:hover:border-gray-500 transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white dark:disabled:hover:bg-gray-700 shadow-sm hover:shadow-md"
+              className='group relative rounded-lg border border-gray-300 bg-white px-2.5 py-1.5 text-xs font-semibold text-gray-700 shadow-sm transition-all duration-200 hover:border-gray-400 hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-white dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:border-gray-500 dark:hover:from-gray-600 dark:hover:to-gray-700 dark:disabled:hover:bg-gray-700'
             >
-              <span className="flex items-center gap-1">
+              <span className='flex items-center gap-1'>
                 Siguiente
-                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                <svg
+                  className='h-3.5 w-3.5'
+                  fill='none'
+                  stroke='currentColor'
+                  viewBox='0 0 24 24'
+                >
+                  <path
+                    strokeLinecap='round'
+                    strokeLinejoin='round'
+                    strokeWidth={2}
+                    d='M9 5l7 7-7 7'
+                  />
                 </svg>
               </span>
             </button>

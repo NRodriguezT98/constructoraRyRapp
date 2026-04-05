@@ -22,7 +22,8 @@ export const clientesStyles = {
   cardBody: 'space-y-3',
 
   // Badges de estado
-  badge: 'inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium',
+  badge:
+    'inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium',
   badgeInteresado:
     'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
   badgeActivo:
@@ -47,8 +48,7 @@ export const clientesStyles = {
     'bg-gradient-to-r from-purple-600 to-violet-600 text-white hover:from-purple-700 hover:to-violet-700 focus:ring-purple-500',
   buttonSecondary:
     'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 focus:ring-gray-500 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700',
-  buttonDanger:
-    'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500',
+  buttonDanger: 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500',
   buttonSuccess:
     'bg-green-600 text-white hover:bg-green-700 focus:ring-green-500',
 
@@ -64,8 +64,7 @@ export const clientesStyles = {
 
   // Estados vacíos
   emptyState: 'py-10 text-center',
-  emptyIcon:
-    'mx-auto h-12 w-12 text-gray-400 dark:text-gray-600 mb-3',
+  emptyIcon: 'mx-auto h-12 w-12 text-gray-400 dark:text-gray-600 mb-3',
   emptyTitle: 'text-lg font-semibold text-gray-700 dark:text-gray-300 mb-1.5',
   emptyDescription: 'text-sm text-gray-500 dark:text-gray-400 mb-4',
 
@@ -83,8 +82,7 @@ export const clientesStyles = {
   statCard:
     'rounded-xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800',
   statLabel: 'text-xs font-medium text-gray-600 dark:text-gray-400',
-  statValue:
-    'mt-1.5 text-2xl font-bold text-gray-900 dark:text-white',
+  statValue: 'mt-1.5 text-2xl font-bold text-gray-900 dark:text-white',
   statIcon: 'h-8 w-8 text-purple-600 dark:text-purple-400',
 
   // Filtros

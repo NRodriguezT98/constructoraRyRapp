@@ -46,7 +46,12 @@ export function PermisosMatrixCompact() {
   const [busqueda, setBusqueda] = useState('')
 
   // Roles disponibles
-  const roles: Rol[] = ['Administrador', 'Contador', 'Supervisor', 'Gerente']
+  const roles: Rol[] = [
+    'Administrador',
+    'Contabilidad',
+    'Administrador de Obra',
+    'Gerencia',
+  ]
 
   // Extraer módulos y acciones únicas
   const modulos = useMemo(
@@ -182,9 +187,9 @@ export function PermisosMatrixCompact() {
         >
           <option value='todos'>📋 Todos los roles</option>
           <option value='Administrador'>👑 Administrador</option>
-          <option value='Contador'>📊 Contador</option>
-          <option value='Supervisor'>👁️ Supervisor</option>
-          <option value='Gerente'>💼 Gerente</option>
+          <option value='Contabilidad'>📊 Contabilidad</option>
+          <option value='Administrador de Obra'>👁️ Admin. Obra</option>
+          <option value='Gerencia'>💼 Gerencia</option>
         </select>
 
         {/* Filtro Módulo */}
@@ -239,9 +244,9 @@ export function PermisosMatrixCompact() {
                     >
                       <div className='flex items-center justify-center gap-1'>
                         {rol === 'Administrador' && '👑'}
-                        {rol === 'Contador' && '📊'}
-                        {rol === 'Supervisor' && '👁️'}
-                        {rol === 'Gerente' && '💼'}
+                        {rol === 'Contabilidad' && '📊'}
+                        {rol === 'Administrador de Obra' && '👁️'}
+                        {rol === 'Gerencia' && '💼'}
                         <span className='hidden md:inline'>{rol}</span>
                         <span className='md:hidden'>{rol.slice(0, 4)}</span>
                       </div>

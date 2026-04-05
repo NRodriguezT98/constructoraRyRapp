@@ -227,3 +227,23 @@ import { motion } from 'framer-motion'
 
 **If you define a constant array (roles, statuses, options) in a component,
 STOP. It belongs in `<module>/constants/`. Components NEVER own shared data.**
+
+## ⚠️ REGLA DE ORO: VERIFICACIÓN OBLIGATORIA AL TERMINAR
+
+**DESPUÉS de cualquier cambio, SIEMPRE ejecutar antes de declarar la tarea completada:**
+
+```bash
+npm run check-all
+```
+
+Este comando ejecuta en orden: TypeScript (`tsc --noEmit`) → ESLint → Prettier → Vitest.
+La tarea NO está terminada hasta que `check-all` pase con **exit code 0**.
+
+Si falla, corregir en este orden: TypeScript → ESLint → Prettier → Tests.
+
+```bash
+npm run type-check   # Solo TypeScript
+npm run lint:fix     # ESLint con auto-corrección
+npm run format       # Prettier auto-corrección
+npm run test         # Solo tests
+```

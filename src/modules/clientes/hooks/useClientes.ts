@@ -19,15 +19,19 @@ import { useCallback, useState } from 'react'
 
 import { logger } from '@/lib/utils/logger'
 
-import type { ActualizarClienteDTO, CrearClienteDTO, FiltrosClientes } from '../types'
+import type {
+  ActualizarClienteDTO,
+  CrearClienteDTO,
+  FiltrosClientes,
+} from '../types'
 
 import {
-    useActualizarClienteMutation,
-    useCambiarEstadoClienteMutation,
-    useClienteQuery,
-    useClientesQuery,
-    useCrearClienteMutation,
-    useEliminarClienteMutation,
+  useActualizarClienteMutation,
+  useCambiarEstadoClienteMutation,
+  useClienteQuery,
+  useClientesQuery,
+  useCrearClienteMutation,
+  useEliminarClienteMutation,
 } from './useClientesQuery'
 
 export function useClientes(filtros?: FiltrosClientes) {
@@ -35,7 +39,9 @@ export function useClientes(filtros?: FiltrosClientes) {
   // ESTADO LOCAL
   // =====================================================
 
-  const [clienteSeleccionadoId, setClienteSeleccionadoId] = useState<string | null>(null)
+  const [clienteSeleccionadoId, setClienteSeleccionadoId] = useState<
+    string | null
+  >(null)
 
   // =====================================================
   // REACT QUERY HOOKS
@@ -117,9 +123,9 @@ export function useClientes(filtros?: FiltrosClientes) {
 
   const estadisticas = {
     total: clientes.length,
-    interesados: clientes.filter((c) => c.estado === 'Interesado').length,
-    activos: clientes.filter((c) => c.estado === 'Activo').length,
-    inactivos: clientes.filter((c) => c.estado === 'Inactivo').length,
+    interesados: clientes.filter(c => c.estado === 'Interesado').length,
+    activos: clientes.filter(c => c.estado === 'Activo').length,
+    inactivos: clientes.filter(c => c.estado === 'Inactivo').length,
   }
 
   // =====================================================
@@ -150,10 +156,14 @@ export function useClientes(filtros?: FiltrosClientes) {
     filtros: filtros || {},
     busqueda: filtros?.busqueda || '',
     aplicarFiltros: () => {
-      logger.warn('useClientes.aplicarFiltros() está deprecado. Usar useClientesList()')
+      logger.warn(
+        'useClientes.aplicarFiltros() está deprecado. Usar useClientesList()'
+      )
     },
     aplicarBusqueda: () => {
-      logger.warn('useClientes.aplicarBusqueda() está deprecado. Usar useClientesList()')
+      logger.warn(
+        'useClientes.aplicarBusqueda() está deprecado. Usar useClientesList()'
+      )
     },
   }
 }

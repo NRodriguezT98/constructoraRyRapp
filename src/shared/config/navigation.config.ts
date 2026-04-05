@@ -23,6 +23,8 @@ import {
   FileText,
   FileX,
   Home,
+  LayoutList,
+  Plus,
   Shield,
   Trash2,
   Users,
@@ -31,8 +33,25 @@ import {
 import type { Accion, Modulo } from '@/modules/usuarios/types'
 
 // ============================================
+// CONSTANTS
+// ============================================
+
+export const PAPELERA_NAV_NAME = 'Papelera'
+
+// ============================================
 // TYPES
 // ============================================
+
+export interface NavigationSubItem {
+  name: string
+  href: string
+  icon: LucideIcon
+  description: string
+  requiredPermission?: {
+    modulo: Modulo
+    accion: Accion
+  }
+}
 
 export interface NavigationItem {
   name: string
@@ -47,6 +66,8 @@ export interface NavigationItem {
   }
   /** Solo visible para administradores */
   adminOnly?: boolean
+  /** Sub-items desplegables en el sidebar */
+  children?: NavigationSubItem[]
 }
 
 export interface NavigationGroup {
@@ -81,6 +102,22 @@ export const navigationGroups: NavigationGroup[] = [
         color: 'from-green-500 to-emerald-500',
         description: 'Gestión de proyectos',
         requiredPermission: { modulo: 'proyectos', accion: 'ver' },
+        children: [
+          {
+            name: 'Ver Proyectos',
+            href: '/proyectos',
+            icon: LayoutList,
+            description: 'Lista de proyectos',
+            requiredPermission: { modulo: 'proyectos', accion: 'ver' },
+          },
+          {
+            name: 'Nuevo Proyecto',
+            href: '/proyectos/nuevo',
+            icon: Plus,
+            description: 'Crear proyecto',
+            requiredPermission: { modulo: 'proyectos', accion: 'crear' },
+          },
+        ],
       },
       {
         name: 'Viviendas',
@@ -89,6 +126,22 @@ export const navigationGroups: NavigationGroup[] = [
         color: 'from-orange-500 to-amber-500',
         description: 'Administrar viviendas',
         requiredPermission: { modulo: 'viviendas', accion: 'ver' },
+        children: [
+          {
+            name: 'Ver Viviendas',
+            href: '/viviendas',
+            icon: LayoutList,
+            description: 'Lista de viviendas',
+            requiredPermission: { modulo: 'viviendas', accion: 'ver' },
+          },
+          {
+            name: 'Nueva Vivienda',
+            href: '/viviendas/nueva',
+            icon: Plus,
+            description: 'Registrar vivienda',
+            requiredPermission: { modulo: 'viviendas', accion: 'crear' },
+          },
+        ],
       },
     ],
   },
@@ -102,6 +155,22 @@ export const navigationGroups: NavigationGroup[] = [
         color: 'from-cyan-500 to-blue-500',
         description: 'Base de clientes',
         requiredPermission: { modulo: 'clientes', accion: 'ver' },
+        children: [
+          {
+            name: 'Ver Clientes',
+            href: '/clientes',
+            icon: LayoutList,
+            description: 'Lista de clientes',
+            requiredPermission: { modulo: 'clientes', accion: 'ver' },
+          },
+          {
+            name: 'Nuevo Cliente',
+            href: '/clientes/nuevo',
+            icon: Plus,
+            description: 'Registrar cliente',
+            requiredPermission: { modulo: 'clientes', accion: 'crear' },
+          },
+        ],
       },
       {
         name: 'Abonos',
@@ -110,6 +179,22 @@ export const navigationGroups: NavigationGroup[] = [
         color: 'from-violet-500 to-purple-500',
         description: 'Gestión de pagos',
         requiredPermission: { modulo: 'abonos', accion: 'ver' },
+        children: [
+          {
+            name: 'Ver Abonos',
+            href: '/abonos',
+            icon: LayoutList,
+            description: 'Historial de abonos',
+            requiredPermission: { modulo: 'abonos', accion: 'ver' },
+          },
+          {
+            name: 'Registrar Abono',
+            href: '/abonos/registrar',
+            icon: Plus,
+            description: 'Nuevo pago',
+            requiredPermission: { modulo: 'abonos', accion: 'crear' },
+          },
+        ],
       },
       {
         name: 'Renuncias',

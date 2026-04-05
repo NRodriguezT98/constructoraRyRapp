@@ -32,15 +32,18 @@ export interface ResultadoValidacion {
  *  - Migración Colombia (para CE, PEP)
  *  - ICAO Doc 9303 (para Pasaporte)
  */
-export const REGLAS_DOCUMENTO: Record<TipoDocumentoColombia, {
-  label: string
-  soloDigitos: boolean
-  minLength: number
-  maxLength: number
-  placeholder: string
-  inputMode: 'numeric' | 'text'
-  descripcion: string
-}> = {
+export const REGLAS_DOCUMENTO: Record<
+  TipoDocumentoColombia,
+  {
+    label: string
+    soloDigitos: boolean
+    minLength: number
+    maxLength: number
+    placeholder: string
+    inputMode: 'numeric' | 'text'
+    descripcion: string
+  }
+> = {
   CC: {
     label: 'Cédula de Ciudadanía',
     soloDigitos: true,
@@ -116,7 +119,7 @@ export function validarFormatoCedula(cedula: string): ResultadoValidacion {
     return {
       valido: false,
       mensaje: 'La cédula solo debe contener números',
-      detalles: 'No incluyas puntos, comas ni espacios'
+      detalles: 'No incluyas puntos, comas ni espacios',
     }
   }
 
@@ -125,7 +128,7 @@ export function validarFormatoCedula(cedula: string): ResultadoValidacion {
     return {
       valido: false,
       mensaje: 'La cédula debe tener entre 6 y 10 dígitos',
-      detalles: `Actualmente tiene ${cedulaLimpia.length} dígitos`
+      detalles: `Actualmente tiene ${cedulaLimpia.length} dígitos`,
     }
   }
 
@@ -136,13 +139,15 @@ export function validarFormatoCedula(cedula: string): ResultadoValidacion {
  * Valida cédula extranjera (CE)
  * Emitida por Migración Colombia. Solo números, entre 6 y 10 dígitos.
  */
-export function validarFormatoCedulaExtranjera(ce: string): ResultadoValidacion {
+export function validarFormatoCedulaExtranjera(
+  ce: string
+): ResultadoValidacion {
   const ceLimpia = ce.trim()
 
   if (!/^\d+$/.test(ceLimpia)) {
     return {
       valido: false,
-      mensaje: 'La cédula de extranjería solo debe contener números'
+      mensaje: 'La cédula de extranjería solo debe contener números',
     }
   }
 
@@ -150,7 +155,7 @@ export function validarFormatoCedulaExtranjera(ce: string): ResultadoValidacion 
     return {
       valido: false,
       mensaje: 'La cédula de extranjería debe tener entre 6 y 10 dígitos',
-      detalles: `Actualmente tiene ${ceLimpia.length} dígitos`
+      detalles: `Actualmente tiene ${ceLimpia.length} dígitos`,
     }
   }
 
@@ -167,7 +172,7 @@ export function validarTarjetaIdentidad(ti: string): ResultadoValidacion {
   if (!/^\d+$/.test(tiLimpia)) {
     return {
       valido: false,
-      mensaje: 'La tarjeta de identidad solo debe contener números'
+      mensaje: 'La tarjeta de identidad solo debe contener números',
     }
   }
 
@@ -175,7 +180,7 @@ export function validarTarjetaIdentidad(ti: string): ResultadoValidacion {
     return {
       valido: false,
       mensaje: 'La tarjeta de identidad debe tener 10 u 11 dígitos',
-      detalles: `Actualmente tiene ${tiLimpia.length} dígitos`
+      detalles: `Actualmente tiene ${tiLimpia.length} dígitos`,
     }
   }
 
@@ -192,7 +197,7 @@ export function validarPEP(pep: string): ResultadoValidacion {
   if (!/^\d+$/.test(pepLimpio)) {
     return {
       valido: false,
-      mensaje: 'El PEP solo debe contener números'
+      mensaje: 'El PEP solo debe contener números',
     }
   }
 
@@ -200,7 +205,7 @@ export function validarPEP(pep: string): ResultadoValidacion {
     return {
       valido: false,
       mensaje: 'El PEP debe tener entre 6 y 15 dígitos',
-      detalles: `Actualmente tiene ${pepLimpio.length} dígitos`
+      detalles: `Actualmente tiene ${pepLimpio.length} dígitos`,
     }
   }
 
@@ -261,7 +266,7 @@ export function validarNIT(nit: string): ResultadoValidacion {
     return {
       valido: false,
       mensaje: 'El NIT solo debe contener números y opcionalmente un guion',
-      detalles: 'Formato esperado: 900123456-7 o 9001234567'
+      detalles: 'Formato esperado: 900123456-7 o 9001234567',
     }
   }
 
@@ -276,7 +281,7 @@ export function validarNIT(nit: string): ResultadoValidacion {
       return {
         valido: false,
         mensaje: 'Formato de NIT inválido',
-        detalles: 'Debe tener el formato: 900123456-7'
+        detalles: 'Debe tener el formato: 900123456-7',
       }
     }
 
@@ -287,7 +292,7 @@ export function validarNIT(nit: string): ResultadoValidacion {
       return {
         valido: false,
         mensaje: 'El dígito verificador debe ser un único número',
-        detalles: 'Ejemplo: 900123456-7'
+        detalles: 'Ejemplo: 900123456-7',
       }
     }
   } else {
@@ -296,7 +301,7 @@ export function validarNIT(nit: string): ResultadoValidacion {
       return {
         valido: false,
         mensaje: 'El NIT debe tener al menos 9 dígitos',
-        detalles: 'Formato: XXXXXXXXX-X (mínimo 8 dígitos + verificador)'
+        detalles: 'Formato: XXXXXXXXX-X (mínimo 8 dígitos + verificador)',
       }
     }
 
@@ -308,8 +313,9 @@ export function validarNIT(nit: string): ResultadoValidacion {
   if (nitSinDV.length < 8 || nitSinDV.length > 15) {
     return {
       valido: false,
-      mensaje: 'El NIT debe tener entre 8 y 15 dígitos (sin contar el verificador)',
-      detalles: `Actualmente tiene ${nitSinDV.length} dígitos`
+      mensaje:
+        'El NIT debe tener entre 8 y 15 dígitos (sin contar el verificador)',
+      detalles: `Actualmente tiene ${nitSinDV.length} dígitos`,
     }
   }
 
@@ -317,7 +323,7 @@ export function validarNIT(nit: string): ResultadoValidacion {
   if (!/^\d+$/.test(nitSinDV)) {
     return {
       valido: false,
-      mensaje: 'El NIT solo debe contener números'
+      mensaje: 'El NIT solo debe contener números',
     }
   }
 
@@ -329,13 +335,13 @@ export function validarNIT(nit: string): ResultadoValidacion {
     return {
       valido: false,
       mensaje: 'El dígito verificador del NIT es incorrecto',
-      detalles: `El dígito correcto para ${nitSinDV} es ${digitoVerificadorCalculado}`
+      detalles: `El dígito correcto para ${nitSinDV} es ${digitoVerificadorCalculado}`,
     }
   }
 
   return {
     valido: true,
-    mensaje: 'NIT válido'
+    mensaje: 'NIT válido',
   }
 }
 
@@ -354,7 +360,7 @@ export function validarPasaporte(pasaporte: string): ResultadoValidacion {
   if (!pasaporteLimpio) {
     return {
       valido: false,
-      mensaje: 'El número de pasaporte no puede estar vacío'
+      mensaje: 'El número de pasaporte no puede estar vacío',
     }
   }
 
@@ -363,7 +369,7 @@ export function validarPasaporte(pasaporte: string): ResultadoValidacion {
     return {
       valido: false,
       mensaje: 'El pasaporte solo debe contener letras y números',
-      detalles: 'Sin espacios ni caracteres especiales'
+      detalles: 'Sin espacios ni caracteres especiales',
     }
   }
 
@@ -372,13 +378,13 @@ export function validarPasaporte(pasaporte: string): ResultadoValidacion {
     return {
       valido: false,
       mensaje: 'El pasaporte debe tener entre 6 y 15 caracteres',
-      detalles: `Actualmente tiene ${pasaporteLimpio.length} caracteres`
+      detalles: `Actualmente tiene ${pasaporteLimpio.length} caracteres`,
     }
   }
 
   return {
     valido: true,
-    mensaje: 'Pasaporte válido'
+    mensaje: 'Pasaporte válido',
   }
 }
 
@@ -401,7 +407,7 @@ export function validarDocumentoIdentidad(
   if (!numeroDocumento || numeroDocumento.trim() === '') {
     return {
       valido: false,
-      mensaje: 'El número de documento no puede estar vacío'
+      mensaje: 'El número de documento no puede estar vacío',
     }
   }
 
@@ -429,7 +435,7 @@ export function validarDocumentoIdentidad(
       return {
         valido: false,
         mensaje: 'Tipo de documento no soportado',
-        detalles: 'Tipos válidos: CC, TI, CE, NIT, PP, PEP'
+        detalles: 'Tipos válidos: CC, TI, CE, NIT, PP, PEP',
       }
   }
 }

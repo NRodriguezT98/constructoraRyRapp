@@ -11,18 +11,22 @@ export const loginLogoStyles = {
 
   // Opción 2: Resplandor intenso (si logo1-dark aún no es visible)
   glowIntense: {
-    filter: 'drop-shadow(0 0 50px rgba(255, 255, 255, 0.5)) drop-shadow(0 0 20px rgba(255, 255, 255, 0.4))',
+    filter:
+      'drop-shadow(0 0 50px rgba(255, 255, 255, 0.5)) drop-shadow(0 0 20px rgba(255, 255, 255, 0.4))',
   },
 
   // Opción 3: Fondo semi-transparente detrás del logo
-  containerWithBackground: 'rounded-2xl bg-white/5 p-6 backdrop-blur-sm border border-white/10',
+  containerWithBackground:
+    'rounded-2xl bg-white/5 p-6 backdrop-blur-sm border border-white/10',
 
   // Opción 4: Fondo con gradiente
-  containerWithGradient: 'rounded-2xl bg-gradient-to-br from-white/10 to-transparent p-6 backdrop-blur-md border border-white/20',
+  containerWithGradient:
+    'rounded-2xl bg-gradient-to-br from-white/10 to-transparent p-6 backdrop-blur-md border border-white/20',
 
   // Opción 5: Sombra pronunciada
   strongShadow: {
-    filter: 'drop-shadow(0 4px 20px rgba(0, 0, 0, 0.8)) drop-shadow(0 0 40px rgba(255, 255, 255, 0.4))',
+    filter:
+      'drop-shadow(0 4px 20px rgba(0, 0, 0, 0.8)) drop-shadow(0 0 40px rgba(255, 255, 255, 0.4))',
   },
 }
 

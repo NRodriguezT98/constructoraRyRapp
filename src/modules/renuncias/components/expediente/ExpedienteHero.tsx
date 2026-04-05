@@ -3,7 +3,22 @@
 import { useEffect, useRef, useState } from 'react'
 
 import { motion } from 'framer-motion'
-import { ArrowLeft, Building2, Clock, ExternalLink, FileText, FileX, Home, Loader2, Mail, MapPin, Phone, Receipt, Upload, User } from 'lucide-react'
+import {
+  ArrowLeft,
+  Building2,
+  Clock,
+  ExternalLink,
+  FileText,
+  FileX,
+  Home,
+  Loader2,
+  Mail,
+  MapPin,
+  Phone,
+  Receipt,
+  Upload,
+  User,
+} from 'lucide-react'
 import { toast } from 'sonner'
 
 import Link from 'next/link'
@@ -11,7 +26,10 @@ import Link from 'next/link'
 import { formatDateCompact } from '@/lib/utils/date.utils'
 import { logger } from '@/lib/utils/logger'
 
-import { generarUrlFirmadaComprobante, subirFormularioRenuncia } from '../../services/renuncias.service'
+import {
+  generarUrlFirmadaComprobante,
+  subirFormularioRenuncia,
+} from '../../services/renuncias.service'
 import type { ExpedienteData } from '../../types'
 import { getTipoDocumentoLabel } from '../../utils/renuncias.utils'
 
@@ -24,10 +42,16 @@ interface ExpedienteHeroProps {
 export function ExpedienteHero({ datos }: ExpedienteHeroProps) {
   const { renuncia, duracionDias } = datos
   const esPendiente = renuncia.estado === 'Pendiente Devolución'
-  const badgeClass = esPendiente ? styles.hero.estadoBadge.pendiente : styles.hero.estadoBadge.cerrada
+  const badgeClass = esPendiente
+    ? styles.hero.estadoBadge.pendiente
+    : styles.hero.estadoBadge.cerrada
 
-  const clienteSnap = renuncia.cliente_datos_snapshot as Record<string, unknown> | null
-  const email = typeof clienteSnap?.email === 'string' ? clienteSnap.email : null
+  const clienteSnap = renuncia.cliente_datos_snapshot as Record<
+    string,
+    unknown
+  > | null
+  const email =
+    typeof clienteSnap?.email === 'string' ? clienteSnap.email : null
 
   const fechaInicio = datos.negociacion.fecha_negociacion
   const fechaFin = renuncia.fecha_renuncia
@@ -35,7 +59,9 @@ export function ExpedienteHero({ datos }: ExpedienteHeroProps) {
   // Signed URL para formulario de renuncia
   const [formularioUrl, setFormularioUrl] = useState<string | null>(null)
   const [subiendoFormulario, setSubiendoFormulario] = useState(false)
-  const [formularioPath, setFormularioPath] = useState<string | null>(renuncia.formulario_renuncia_url)
+  const [formularioPath, setFormularioPath] = useState<string | null>(
+    renuncia.formulario_renuncia_url
+  )
   const formularioInputRef = useRef<HTMLInputElement>(null)
 
   // Signed URL para comprobante de devolución
@@ -57,7 +83,9 @@ export function ExpedienteHero({ datos }: ExpedienteHeroProps) {
     }
   }, [renuncia.comprobante_devolucion_url])
 
-  const handleSubirFormulario = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleSubirFormulario = async (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const file = e.target.files?.[0]
     if (!file) return
     setSubiendoFormulario(true)
@@ -77,8 +105,8 @@ export function ExpedienteHero({ datos }: ExpedienteHeroProps) {
   return (
     <>
       {/* Back link */}
-      <Link href="/renuncias" className={styles.page.backLink}>
-        <ArrowLeft className="w-4 h-4" />
+      <Link href='/renuncias' className={styles.page.backLink}>
+        <ArrowLeft className='h-4 w-4' />
         Volver a Renuncias
       </Link>
 
@@ -93,7 +121,7 @@ export function ExpedienteHero({ datos }: ExpedienteHeroProps) {
           {/* Top: consecutivo + estado */}
           <div className={styles.hero.topRow}>
             <span className={styles.hero.consecutivoBadge}>
-              <FileX className="w-4 h-4" />
+              <FileX className='h-4 w-4' />
               {renuncia.consecutivo}
             </span>
             <span className={badgeClass}>
@@ -103,21 +131,24 @@ export function ExpedienteHero({ datos }: ExpedienteHeroProps) {
 
           {/* Cliente */}
           <div>
-            <h1 className={styles.hero.clienteNombre}>{renuncia.cliente.nombre}</h1>
+            <h1 className={styles.hero.clienteNombre}>
+              {renuncia.cliente.nombre}
+            </h1>
             <div className={styles.hero.clienteInfo}>
               <span className={styles.hero.clienteInfoItem}>
-                <User className="w-3.5 h-3.5" />
-                {getTipoDocumentoLabel(renuncia.cliente.tipo_documento)} {renuncia.cliente.documento}
+                <User className='h-3.5 w-3.5' />
+                {getTipoDocumentoLabel(renuncia.cliente.tipo_documento)}{' '}
+                {renuncia.cliente.documento}
               </span>
               {renuncia.cliente.telefono ? (
                 <span className={styles.hero.clienteInfoItem}>
-                  <Phone className="w-3.5 h-3.5" />
+                  <Phone className='h-3.5 w-3.5' />
                   {renuncia.cliente.telefono}
                 </span>
               ) : null}
               {email ? (
                 <span className={styles.hero.clienteInfoItem}>
-                  <Mail className="w-3.5 h-3.5" />
+                  <Mail className='h-3.5 w-3.5' />
                   {email}
                 </span>
               ) : null}
@@ -126,14 +157,14 @@ export function ExpedienteHero({ datos }: ExpedienteHeroProps) {
 
           {/* Vivienda */}
           <div className={styles.hero.viviendaRow}>
-            <MapPin className="w-3.5 h-3.5" />
+            <MapPin className='h-3.5 w-3.5' />
             <span>Manzana {renuncia.vivienda.manzana}</span>
             <span>·</span>
-            <Home className="w-3.5 h-3.5" />
+            <Home className='h-3.5 w-3.5' />
             <span>Casa No. {renuncia.vivienda.numero}</span>
             <span>·</span>
-            <Building2 className="w-3.5 h-3.5" />
-            <span className="font-semibold">{renuncia.proyecto.nombre}</span>
+            <Building2 className='h-3.5 w-3.5' />
+            <span className='font-semibold'>{renuncia.proyecto.nombre}</span>
           </div>
         </div>
       </motion.div>
@@ -143,7 +174,7 @@ export function ExpedienteHero({ datos }: ExpedienteHeroProps) {
         initial={{ opacity: 0, y: 6 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.05 }}
-        className="grid grid-cols-1 lg:grid-cols-12 gap-3"
+        className='grid grid-cols-1 gap-3 lg:grid-cols-12'
       >
         {/* Motivo de renuncia (wider) */}
         <div className={`lg:col-span-5 ${styles.detailCards.motivoCard}`}>
@@ -153,30 +184,37 @@ export function ExpedienteHero({ datos }: ExpedienteHeroProps) {
 
         {/* Documentos de la renuncia */}
         <div className={`lg:col-span-4 ${styles.detailCards.formularioCard}`}>
-          <p className={styles.detailCards.cardLabel}>Documentos de la renuncia</p>
-          <div className="space-y-3 mt-1">
-
+          <p className={styles.detailCards.cardLabel}>
+            Documentos de la renuncia
+          </p>
+          <div className='mt-1 space-y-3'>
             {/* — Formulario firmado — */}
             <div>
-              <p className="text-[10px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1.5">Formulario firmado</p>
+              <p className='mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500'>
+                Formulario firmado
+              </p>
               {formularioPath ? (
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center flex-shrink-0">
-                    <FileText className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                <div className='flex items-center gap-2.5'>
+                  <div className='flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-900/40'>
+                    <FileText className='h-4 w-4 text-emerald-600 dark:text-emerald-400' />
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[10px] text-emerald-700 dark:text-emerald-300 font-medium">Adjunto</p>
+                  <div className='min-w-0 flex-1'>
+                    <p className='text-[10px] font-medium text-emerald-700 dark:text-emerald-300'>
+                      Adjunto
+                    </p>
                     {formularioUrl ? (
                       <a
                         href={formularioUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 text-sm font-semibold text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 transition-colors"
+                        target='_blank'
+                        rel='noopener noreferrer'
+                        className='inline-flex items-center gap-1 text-sm font-semibold text-red-600 transition-colors hover:text-red-700 dark:text-red-400 dark:hover:text-red-300'
                       >
-                        Ver documento <ExternalLink className="w-3 h-3" />
+                        Ver documento <ExternalLink className='h-3 w-3' />
                       </a>
                     ) : (
-                      <span className="text-xs text-gray-400">Generando enlace...</span>
+                      <span className='text-xs text-gray-400'>
+                        Generando enlace...
+                      </span>
                     )}
                   </div>
                 </div>
@@ -184,68 +222,79 @@ export function ExpedienteHero({ datos }: ExpedienteHeroProps) {
                 <div>
                   <input
                     ref={formularioInputRef}
-                    type="file"
-                    accept=".pdf,.jpg,.jpeg,.png,.webp"
-                    className="hidden"
+                    type='file'
+                    accept='.pdf,.jpg,.jpeg,.png,.webp'
+                    className='hidden'
                     onChange={handleSubirFormulario}
                   />
                   <button
-                    type="button"
+                    type='button'
                     disabled={subiendoFormulario}
                     onClick={() => formularioInputRef.current?.click()}
                     className={styles.detailCards.uploadButton}
                   >
                     {subiendoFormulario ? (
-                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      <Loader2 className='h-3.5 w-3.5 animate-spin' />
                     ) : (
-                      <Upload className="w-3.5 h-3.5" />
+                      <Upload className='h-3.5 w-3.5' />
                     )}
                     {subiendoFormulario ? 'Subiendo...' : 'Adjuntar formulario'}
                   </button>
-                  <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-1">PDF, JPG, PNG o WEBP</p>
+                  <p className='mt-1 text-[10px] text-gray-400 dark:text-gray-500'>
+                    PDF, JPG, PNG o WEBP
+                  </p>
                 </div>
               )}
             </div>
 
             {/* — Comprobante de devolución (solo si existe) — */}
             {renuncia.comprobante_devolucion_url ? (
-              <div className="pt-2.5 border-t border-gray-200 dark:border-gray-700">
-                <p className="text-[10px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1.5">Comprobante de devolución</p>
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center flex-shrink-0">
-                    <Receipt className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+              <div className='border-t border-gray-200 pt-2.5 dark:border-gray-700'>
+                <p className='mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500'>
+                  Comprobante de devolución
+                </p>
+                <div className='flex items-center gap-2.5'>
+                  <div className='flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-900/40'>
+                    <Receipt className='h-4 w-4 text-blue-600 dark:text-blue-400' />
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[10px] text-blue-700 dark:text-blue-300 font-medium">Adjunto</p>
+                  <div className='min-w-0 flex-1'>
+                    <p className='text-[10px] font-medium text-blue-700 dark:text-blue-300'>
+                      Adjunto
+                    </p>
                     {comprobanteUrl ? (
                       <a
                         href={comprobanteUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 text-sm font-semibold text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 transition-colors"
+                        target='_blank'
+                        rel='noopener noreferrer'
+                        className='inline-flex items-center gap-1 text-sm font-semibold text-red-600 transition-colors hover:text-red-700 dark:text-red-400 dark:hover:text-red-300'
                       >
-                        Ver documento <ExternalLink className="w-3 h-3" />
+                        Ver documento <ExternalLink className='h-3 w-3' />
                       </a>
                     ) : (
-                      <span className="text-xs text-gray-400">Generando enlace...</span>
+                      <span className='text-xs text-gray-400'>
+                        Generando enlace...
+                      </span>
                     )}
                   </div>
                 </div>
               </div>
             ) : null}
-
           </div>
         </div>
 
         {/* Duración */}
         <div className={`lg:col-span-3 ${styles.detailCards.duracionCard}`}>
-          <p className={styles.detailCards.cardLabel}>Duración de la negociación</p>
-          <div className="flex items-center gap-2 mt-1">
-            <Clock className="w-4 h-4 text-gray-400 dark:text-gray-500 flex-shrink-0" />
-            <span className="text-lg font-bold text-gray-900 dark:text-white">{duracionDias} días</span>
+          <p className={styles.detailCards.cardLabel}>
+            Duración de la negociación
+          </p>
+          <div className='mt-1 flex items-center gap-2'>
+            <Clock className='h-4 w-4 flex-shrink-0 text-gray-400 dark:text-gray-500' />
+            <span className='text-lg font-bold text-gray-900 dark:text-white'>
+              {duracionDias} días
+            </span>
           </div>
           {fechaInicio && fechaFin ? (
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+            <p className='mt-1 text-xs text-gray-500 dark:text-gray-400'>
               {formatDateCompact(fechaInicio)} → {formatDateCompact(fechaFin)}
             </p>
           ) : null}

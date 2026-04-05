@@ -56,9 +56,15 @@ async function verificarBuckets() {
       console.log('Lista de buckets:\n')
       buckets.forEach((bucket, index) => {
         console.log(`${index + 1}. 📁 ${bucket.id}`)
-        console.log(`   - Público: ${bucket.public ? '✅ Sí' : '❌ No (privado)'}`)
-        console.log(`   - Límite archivos: ${bucket.file_size_limit ? (bucket.file_size_limit / 1024 / 1024).toFixed(2) + ' MB' : 'Sin límite'}`)
-        console.log(`   - Tipos permitidos: ${bucket.allowed_mime_types?.join(', ') || 'Todos'}`)
+        console.log(
+          `   - Público: ${bucket.public ? '✅ Sí' : '❌ No (privado)'}`
+        )
+        console.log(
+          `   - Límite archivos: ${bucket.file_size_limit ? (bucket.file_size_limit / 1024 / 1024).toFixed(2) + ' MB' : 'Sin límite'}`
+        )
+        console.log(
+          `   - Tipos permitidos: ${bucket.allowed_mime_types?.join(', ') || 'Todos'}`
+        )
         console.log('')
       })
     } else {
@@ -95,7 +101,6 @@ async function verificarBuckets() {
       console.log('   - CREAR-BUCKET-CLIENTES.md (para documentos-clientes)')
       console.log('   - GUIA-CREAR-BUCKET.md (para documentos-proyectos)')
     }
-
   } catch (error) {
     console.error('❌ Error ejecutando script:', error.message)
   }

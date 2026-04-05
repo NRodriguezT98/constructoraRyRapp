@@ -131,9 +131,7 @@ class NotasHistorialService {
   /**
    * Crear una nota nueva
    */
-  async crearNota(
-    datos: CrearNotaDTO
-  ): Promise<{
+  async crearNota(datos: CrearNotaDTO): Promise<{
     success: boolean
     nota?: NotaHistorialConUsuario
     error?: string

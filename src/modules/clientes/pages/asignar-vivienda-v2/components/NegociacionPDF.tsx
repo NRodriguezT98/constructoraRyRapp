@@ -9,12 +9,12 @@
  */
 
 import {
-    Document,
-    Image,
-    Page,
-    StyleSheet,
-    Text,
-    View,
+  Document,
+  Image,
+  Page,
+  StyleSheet,
+  Text,
+  View,
 } from '@react-pdf/renderer'
 
 // ============================================
@@ -233,7 +233,11 @@ const s = StyleSheet.create({
     borderBottomColor: BORDER,
   },
   descuentoLabel: { fontSize: 9, color: GRAY },
-  descuentoValue: { fontSize: 9, color: '#ef4444', fontFamily: 'Helvetica-Bold' },
+  descuentoValue: {
+    fontSize: 9,
+    color: '#ef4444',
+    fontFamily: 'Helvetica-Bold',
+  },
 
   // ── Fila financiero ──────────────────────
   financialRow: {
@@ -373,21 +377,27 @@ export function NegociacionPDF({
           {gastosNotariales > 0 ? (
             <View style={s.financialRow}>
               <Text style={s.financialLabel}>Gastos notariales</Text>
-              <Text style={s.financialValue}>{formatCOP(gastosNotariales)}</Text>
+              <Text style={s.financialValue}>
+                {formatCOP(gastosNotariales)}
+              </Text>
             </View>
           ) : null}
 
           {recargoEsquinera > 0 ? (
             <View style={s.financialRow}>
               <Text style={s.financialLabel}>Recargo esquinera</Text>
-              <Text style={s.financialValue}>{formatCOP(recargoEsquinera)}</Text>
+              <Text style={s.financialValue}>
+                {formatCOP(recargoEsquinera)}
+              </Text>
             </View>
           ) : null}
 
           {aplicarDescuento && descuentoAplicado > 0 ? (
             <View style={s.descuentoRow}>
               <Text style={s.descuentoLabel}>Descuento ({pctDescuento}%)</Text>
-              <Text style={s.descuentoValue}>− {formatCOP(descuentoAplicado)}</Text>
+              <Text style={s.descuentoValue}>
+                − {formatCOP(descuentoAplicado)}
+              </Text>
             </View>
           ) : null}
 
@@ -399,7 +409,9 @@ export function NegociacionPDF({
           {valorEscrituraPublica && valorEscrituraPublica > 0 ? (
             <View style={s.financialRow}>
               <Text style={s.financialLabel}>Valor escritura pública</Text>
-              <Text style={s.financialValue}>{formatCOP(valorEscrituraPublica)}</Text>
+              <Text style={s.financialValue}>
+                {formatCOP(valorEscrituraPublica)}
+              </Text>
             </View>
           ) : null}
         </View>
@@ -411,7 +423,9 @@ export function NegociacionPDF({
           {/* Cabecera tabla */}
           <View style={s.tableHeader}>
             <Text style={[s.tableHeaderText, s.colFuente]}>Fuente</Text>
-            <Text style={[s.tableHeaderText, s.colEntidad]}>Entidad / Referencia</Text>
+            <Text style={[s.tableHeaderText, s.colEntidad]}>
+              Entidad / Referencia
+            </Text>
             <Text style={[s.tableHeaderText, s.colMonto]}>Monto</Text>
           </View>
 
@@ -444,7 +458,8 @@ export function NegociacionPDF({
         {/* ── FOOTER ─────────────────────────────── */}
         <View style={s.footer} fixed>
           <Text style={s.footerText}>
-            Documento generado automáticamente · No tiene validez legal sin firma
+            Documento generado automáticamente · No tiene validez legal sin
+            firma
           </Text>
           <Text style={s.footerBrand}>RyR Constructora Ltda.</Text>
         </View>

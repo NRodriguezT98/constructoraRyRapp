@@ -103,11 +103,16 @@ async function executeSQL(sqlFile) {
   }
 
   if (!databaseUrl) {
-    throw new Error('DATABASE_URL no encontrado en .env.local ni en variables de entorno')
+    throw new Error(
+      'DATABASE_URL no encontrado en .env.local ni en variables de entorno'
+    )
   }
 
   const dbConfig = parseConnectionString(databaseUrl)
-  log(`✓ Conectando a: ${dbConfig.host}:${dbConfig.port}/${dbConfig.database}`, 'green')
+  log(
+    `✓ Conectando a: ${dbConfig.host}:${dbConfig.port}/${dbConfig.database}`,
+    'green'
+  )
   console.log('')
 
   // 4. Conectar a base de datos
@@ -132,7 +137,10 @@ async function executeSQL(sqlFile) {
     log('🔍 DEBUG - Estructura del resultado:', 'gray')
     log(`  - Comando: ${result.command}`, 'gray')
     log(`  - rowCount: ${result.rowCount}`, 'gray')
-    log(`  - rows length: ${result.rows ? result.rows.length : 'undefined'}`, 'gray')
+    log(
+      `  - rows length: ${result.rows ? result.rows.length : 'undefined'}`,
+      'gray'
+    )
     if (result.rows && result.rows.length > 0) {
       log(`  - Primera fila: ${JSON.stringify(result.rows[0])}`, 'gray')
     }
@@ -162,7 +170,6 @@ async function executeSQL(sqlFile) {
     }
 
     console.log('')
-
   } catch (error) {
     console.log('')
     log('=======================================================', 'red')
@@ -183,7 +190,6 @@ async function executeSQL(sqlFile) {
 
     console.log('')
     throw error
-
   } finally {
     await client.end()
   }
@@ -201,7 +207,9 @@ if (!sqlFile) {
   console.log('  node ejecutar-sql.js <archivo.sql>')
   console.log('')
   console.log('Ejemplo:')
-  console.log('  node ejecutar-sql.js supabase/storage/storage-documentos-viviendas.sql')
+  console.log(
+    '  node ejecutar-sql.js supabase/storage/storage-documentos-viviendas.sql'
+  )
   console.log('')
   process.exit(1)
 }

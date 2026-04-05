@@ -40,7 +40,7 @@ export function InfoField({
           className={`mt-1 text-base font-semibold ${
             value
               ? 'text-gray-900 dark:text-white'
-              : 'text-gray-400 dark:text-gray-600 italic'
+              : 'italic text-gray-400 dark:text-gray-600'
           }`}
         >
           {value || 'No especificado'}

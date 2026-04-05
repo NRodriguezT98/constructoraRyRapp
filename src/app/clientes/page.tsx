@@ -5,7 +5,7 @@
  *
  * ✅ PROTEGIDA POR MIDDLEWARE
  * - Middleware ya validó autenticación
- * - Middleware ya validó permisos (Administrador, Gerente, Vendedor)
+ * - Middleware ya validó permisos (Administrador, Contabilidad, Gerencia, Administrador de Obra)
  * - No necesita <RequireView> wrapper
  *
  * ARQUITECTURA:

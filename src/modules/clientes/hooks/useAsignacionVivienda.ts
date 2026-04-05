@@ -62,7 +62,9 @@ export function useAsignacionVivienda({
   const handleIniciarAsignacion = () => {
     // Validación: debe tener documento
     if (!tieneCedula) {
-      logger.warn('❌ No se puede asignar vivienda: documento de identidad faltante')
+      logger.warn(
+        '❌ No se puede asignar vivienda: documento de identidad faltante'
+      )
       return
     }
 
@@ -71,7 +73,9 @@ export function useAsignacionVivienda({
 
     // Construir URL para asignar vivienda
     const slug = clienteSlug || clienteId
-    const nombreParam = clienteNombre ? `?nombre=${encodeURIComponent(clienteNombre)}` : ''
+    const nombreParam = clienteNombre
+      ? `?nombre=${encodeURIComponent(clienteNombre)}`
+      : ''
 
     // Navegar a asignar vivienda
     router.push(`/clientes/${slug}/asignar-vivienda${nombreParam}`)

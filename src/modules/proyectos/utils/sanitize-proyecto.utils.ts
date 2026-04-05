@@ -13,7 +13,9 @@ import type { ManzanaFormData, ProyectoFormData } from '../types'
  * Sanitizar datos de creación/actualización de proyecto
  * Convierte strings vacíos a null y valida fechas
  */
-export function sanitizeProyectoFormData(datos: ProyectoFormData): ProyectoFormData {
+export function sanitizeProyectoFormData(
+  datos: ProyectoFormData
+): ProyectoFormData {
   return {
     ...datos,
     // Campos obligatorios (strings)
@@ -39,7 +41,9 @@ export function sanitizeProyectoFormData(datos: ProyectoFormData): ProyectoFormD
 /**
  * Sanitizar datos de manzana
  */
-export function sanitizeManzanaFormData(datos: ManzanaFormData): ManzanaFormData {
+export function sanitizeManzanaFormData(
+  datos: ManzanaFormData
+): ManzanaFormData {
   return {
     ...datos,
     // Campos obligatorios
@@ -65,12 +69,17 @@ export function sanitizeProyectoUpdate(
   const sanitized: Partial<ProyectoFormData> = {}
 
   if ('nombre' in datos) sanitized.nombre = sanitizeString(datos.nombre) || ''
-  if ('descripcion' in datos) sanitized.descripcion = sanitizeString(datos.descripcion) || ''
-  if ('departamento' in datos) sanitized.departamento = sanitizeString(datos.departamento) || ''
+  if ('descripcion' in datos)
+    sanitized.descripcion = sanitizeString(datos.descripcion) || ''
+  if ('departamento' in datos)
+    sanitized.departamento = sanitizeString(datos.departamento) || ''
   if ('ciudad' in datos) sanitized.ciudad = sanitizeString(datos.ciudad) || ''
-  if ('direccion' in datos) sanitized.direccion = sanitizeString(datos.direccion) || ''
-  if ('fechaInicio' in datos) sanitized.fechaInicio = sanitizeDate(datos.fechaInicio)
-  if ('fechaFinEstimada' in datos) sanitized.fechaFinEstimada = sanitizeDate(datos.fechaFinEstimada)
+  if ('direccion' in datos)
+    sanitized.direccion = sanitizeString(datos.direccion) || ''
+  if ('fechaInicio' in datos)
+    sanitized.fechaInicio = sanitizeDate(datos.fechaInicio)
+  if ('fechaFinEstimada' in datos)
+    sanitized.fechaFinEstimada = sanitizeDate(datos.fechaFinEstimada)
   if ('presupuesto' in datos) sanitized.presupuesto = datos.presupuesto
   if ('estado' in datos) sanitized.estado = datos.estado
   if ('manzanas' in datos && datos.manzanas) {

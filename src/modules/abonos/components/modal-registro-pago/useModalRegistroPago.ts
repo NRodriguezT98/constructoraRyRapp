@@ -6,15 +6,15 @@ import { esCreditoConstructora } from '@/shared/constants/fuentes-pago.constants
 
 import { useRegistrarAbonoMutation } from '../../hooks/useAbonosQuery'
 import {
-    eliminarComprobante,
-    generarPathComprobante,
-    subirComprobante,
+  eliminarComprobante,
+  generarPathComprobante,
+  subirComprobante,
 } from '../../services/abonos-storage.service'
 import {
-    getModoRegistro,
-    type FuentePagoConAbonos,
-    type MetodoPago,
-    type ModoRegistro,
+  getModoRegistro,
+  type FuentePagoConAbonos,
+  type MetodoPago,
+  type ModoRegistro,
 } from '../../types'
 
 import { getColorScheme, type ColorScheme } from './ModalRegistroPago.styles'
@@ -126,8 +126,7 @@ export function useModalRegistroPago({
     setFaseLoading('idle')
     setAbonoRegistrado(null)
     cancelledRef.current = false
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open])
+  }, [open, fuenteInicial, fuentesPago, fechaMinima, montoPrecargado])
 
   // ── Cuando cambia la fuente: recalcular monto y método ─────────────────────
   useEffect(() => {
@@ -140,8 +139,7 @@ export function useModalRegistroPago({
       setMonto(montoPrecargado != null ? montoPrecargado.toString() : '')
     }
     setErrors({})
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fuenteSeleccionada])
+  }, [fuenteSeleccionada, montoPrecargado])
 
   // ── Valores derivados ───────────────────────────────────────────────────────
   const modo: ModoRegistro = getModoRegistro(fuenteSeleccionada)

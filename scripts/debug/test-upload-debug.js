@@ -2,8 +2,14 @@ require('dotenv').config({ path: '.env.local' })
 const { createClient } = require('@supabase/supabase-js')
 const fs = require('fs')
 
-const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY)
-const supabaseAnon = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+)
+const supabaseAnon = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+)
 
 const RENUNCIA_ID = 'b9976124-aec9-41f0-80a1-6ef4d08cc0b0'
 
@@ -17,7 +23,7 @@ async function check() {
     .from('renuncias-comprobantes')
     .upload(filePath, testContent, {
       contentType: 'text/plain',
-      upsert: true
+      upsert: true,
     })
   console.log('Service Role Upload:', d1 ? 'SUCCESS' : 'FAILED')
   if (e1) console.log('Error:', e1.message)

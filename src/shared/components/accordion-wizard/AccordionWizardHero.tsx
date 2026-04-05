@@ -66,41 +66,41 @@ export function AccordionWizardHero({
       className={`relative overflow-hidden rounded-2xl bg-gradient-to-r ${gradient} p-6 shadow-xl ${shadow}`}
     >
       {/* Pattern decorativo */}
-      <div className="absolute inset-0 bg-grid-white/10 [mask-image:linear-gradient(0deg,transparent,black,transparent)]" />
+      <div className='bg-grid-white/10 absolute inset-0 [mask-image:linear-gradient(0deg,transparent,black,transparent)]' />
 
       {/* Círculos decorativos */}
-      <div className="absolute -top-6 -right-6 w-32 h-32 rounded-full bg-white/5" />
-      <div className="absolute -bottom-4 -left-4 w-20 h-20 rounded-full bg-white/5" />
+      <div className='absolute -right-6 -top-6 h-32 w-32 rounded-full bg-white/5' />
+      <div className='absolute -bottom-4 -left-4 h-20 w-20 rounded-full bg-white/5' />
 
-      <div className="relative z-10 flex items-start gap-4">
+      <div className='relative z-10 flex items-start gap-4'>
         {/* Ícono */}
-        <div className="w-12 h-12 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center flex-shrink-0">
-          <Icon className="w-6 h-6 text-white" />
+        <div className='flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm'>
+          <Icon className='h-6 w-6 text-white' />
         </div>
 
         {/* Texto */}
-        <div className="flex-1 min-w-0">
-          <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
+        <div className='min-w-0 flex-1'>
+          <h1 className='text-xl font-bold tracking-tight text-white sm:text-2xl'>
             {title}
           </h1>
-          <p className="text-white/80 text-sm mt-1 leading-relaxed">
+          <p className='mt-1 text-sm leading-relaxed text-white/80'>
             {subtitle}
           </p>
 
           {/* Chips informativos */}
-          <div className="flex flex-wrap items-center gap-2 mt-3">
+          <div className='mt-3 flex flex-wrap items-center gap-2'>
             {totalSteps ? (
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/15 backdrop-blur-sm border border-white/20 text-white/90 text-xs font-medium">
+              <span className='inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/15 px-2.5 py-1 text-xs font-medium text-white/90 backdrop-blur-sm'>
                 {totalSteps} pasos
               </span>
             ) : null}
             {estimatedTime ? (
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/15 backdrop-blur-sm border border-white/20 text-white/90 text-xs font-medium">
-                <Clock className="w-3 h-3" />
+              <span className='inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/15 px-2.5 py-1 text-xs font-medium text-white/90 backdrop-blur-sm'>
+                <Clock className='h-3 w-3' />
                 {estimatedTime}
               </span>
             ) : null}
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/15 backdrop-blur-sm border border-white/20 text-white/90 text-xs font-medium">
+            <span className='inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/15 px-2.5 py-1 text-xs font-medium text-white/90 backdrop-blur-sm'>
               * = obligatorio
             </span>
           </div>

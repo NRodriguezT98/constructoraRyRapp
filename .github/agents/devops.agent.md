@@ -81,3 +81,23 @@ When adding new scopes to `commitlint.config.js`, align with module names:
 - NEVER edit `.env.local` — only `.env.example`
 - When updating dependencies, prefer minor/patch updates unless explicitly requested
 - Always run `npm run check-all` after changes to verify nothing broke
+
+## ⚠️ REGLA DE ORO: VERIFICACIÓN OBLIGATORIA AL TERMINAR
+
+**DESPUÉS de cualquier cambio, SIEMPRE ejecutar antes de declarar la tarea completada:**
+
+```bash
+npm run check-all
+```
+
+Este comando ejecuta en orden: TypeScript (`tsc --noEmit`) → ESLint → Prettier → Vitest.
+La tarea NO está terminada hasta que `check-all` pase con **exit code 0**.
+
+Si falla, corregir en este orden: TypeScript → ESLint → Prettier → Tests.
+
+```bash
+npm run type-check   # Solo TypeScript
+npm run lint:fix     # ESLint con auto-corrección
+npm run format       # Prettier auto-corrección
+npm run test         # Solo tests
+```

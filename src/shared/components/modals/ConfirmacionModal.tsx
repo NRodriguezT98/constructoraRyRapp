@@ -1,7 +1,14 @@
 'use client'
 
 import { AnimatePresence, motion } from 'framer-motion'
-import { AlertTriangle, CheckCircle, Info, Loader2, X, XCircle } from 'lucide-react'
+import {
+  AlertTriangle,
+  CheckCircle,
+  Info,
+  Loader2,
+  X,
+  XCircle,
+} from 'lucide-react'
 
 export type ConfirmacionVariant = 'danger' | 'warning' | 'info' | 'success'
 
@@ -24,7 +31,8 @@ const variantConfig = {
     barGradient: 'linear-gradient(to bottom, #ef4444 0%, transparent 100%)',
     iconCls: 'text-red-400',
     iconWrapCls: 'bg-red-500/10 ring-1 ring-red-500/25',
-    ambientStyle: 'radial-gradient(ellipse at bottom right, rgba(239,68,68,0.11) 0%, transparent 65%)',
+    ambientStyle:
+      'radial-gradient(ellipse at bottom right, rgba(239,68,68,0.11) 0%, transparent 65%)',
     confirmCls:
       'bg-red-600 hover:bg-red-500 active:scale-[0.98] text-white shadow-[0_4px_18px_rgba(239,68,68,0.38)]',
     loadingCls: 'bg-zinc-800 dark:bg-zinc-800 text-zinc-400 cursor-not-allowed',
@@ -34,7 +42,8 @@ const variantConfig = {
     barGradient: 'linear-gradient(to bottom, #f59e0b 0%, transparent 100%)',
     iconCls: 'text-amber-400',
     iconWrapCls: 'bg-amber-500/10 ring-1 ring-amber-500/25',
-    ambientStyle: 'radial-gradient(ellipse at bottom right, rgba(245,158,11,0.10) 0%, transparent 65%)',
+    ambientStyle:
+      'radial-gradient(ellipse at bottom right, rgba(245,158,11,0.10) 0%, transparent 65%)',
     confirmCls:
       'bg-amber-500 hover:bg-amber-400 active:scale-[0.98] text-zinc-950 font-bold shadow-[0_4px_18px_rgba(245,158,11,0.32)]',
     loadingCls: 'bg-zinc-800 dark:bg-zinc-800 text-zinc-400 cursor-not-allowed',
@@ -44,7 +53,8 @@ const variantConfig = {
     barGradient: 'linear-gradient(to bottom, #3b82f6 0%, transparent 100%)',
     iconCls: 'text-blue-400',
     iconWrapCls: 'bg-blue-500/10 ring-1 ring-blue-500/25',
-    ambientStyle: 'radial-gradient(ellipse at bottom right, rgba(59,130,246,0.10) 0%, transparent 65%)',
+    ambientStyle:
+      'radial-gradient(ellipse at bottom right, rgba(59,130,246,0.10) 0%, transparent 65%)',
     confirmCls:
       'bg-blue-600 hover:bg-blue-500 active:scale-[0.98] text-white shadow-[0_4px_18px_rgba(59,130,246,0.38)]',
     loadingCls: 'bg-zinc-800 dark:bg-zinc-800 text-zinc-400 cursor-not-allowed',
@@ -54,7 +64,8 @@ const variantConfig = {
     barGradient: 'linear-gradient(to bottom, #10b981 0%, transparent 100%)',
     iconCls: 'text-emerald-400',
     iconWrapCls: 'bg-emerald-500/10 ring-1 ring-emerald-500/25',
-    ambientStyle: 'radial-gradient(ellipse at bottom right, rgba(16,185,129,0.10) 0%, transparent 65%)',
+    ambientStyle:
+      'radial-gradient(ellipse at bottom right, rgba(16,185,129,0.10) 0%, transparent 65%)',
     confirmCls:
       'bg-emerald-600 hover:bg-emerald-500 active:scale-[0.98] text-white shadow-[0_4px_18px_rgba(16,185,129,0.36)]',
     loadingCls: 'bg-zinc-800 dark:bg-zinc-800 text-zinc-400 cursor-not-allowed',
@@ -86,14 +97,17 @@ export function ConfirmacionModal({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.18 }}
-            onClick={(e) => { e.stopPropagation(); if (!isLoading) onClose() }}
+            onClick={e => {
+              e.stopPropagation()
+              if (!isLoading) onClose()
+            }}
             className='fixed inset-0 z-[200] bg-black/70 backdrop-blur-[3px]'
           />
 
           {/* Modal — stopPropagation evita que clicks en el modal suban al componente padre */}
           <div
             className='fixed inset-0 z-[200] flex items-center justify-center p-4'
-            onClick={(e) => e.stopPropagation()}
+            onClick={e => e.stopPropagation()}
           >
             <motion.div
               initial={{ opacity: 0, y: 20, scale: 0.95 }}

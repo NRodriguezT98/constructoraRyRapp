@@ -21,9 +21,15 @@ interface RequisitosMetricasProps {
 export function RequisitosMetricas({ requisitos }: RequisitosMetricasProps) {
   // Cálculo de métricas
   const total = requisitos.length
-  const obligatorios = requisitos.filter((r) => r.nivel_validacion === 'DOCUMENTO_OBLIGATORIO').length
-  const opcionales = requisitos.filter((r) => r.nivel_validacion === 'DOCUMENTO_OPCIONAL').length
-  const confirmaciones = requisitos.filter((r) => r.nivel_validacion === 'SOLO_CONFIRMACION').length
+  const obligatorios = requisitos.filter(
+    r => r.nivel_validacion === 'DOCUMENTO_OBLIGATORIO'
+  ).length
+  const opcionales = requisitos.filter(
+    r => r.nivel_validacion === 'DOCUMENTO_OPCIONAL'
+  ).length
+  const confirmaciones = requisitos.filter(
+    r => r.nivel_validacion === 'SOLO_CONFIRMACION'
+  ).length
 
   const metricas = [
     {
@@ -80,7 +86,7 @@ export function RequisitosMetricas({ requisitos }: RequisitosMetricasProps) {
             className={`${styles.metricas.cardGradient} bg-gradient-to-br ${metrica.bgGradient}`}
           />
 
-          <div className="relative z-10 flex items-center gap-3">
+          <div className='relative z-10 flex items-center gap-3'>
             {/* Icono */}
             <div
               className={`${styles.metricas.iconBox} bg-gradient-to-br ${metrica.gradient} shadow-${metrica.gradient.split('-')[1]}-500/50`}
@@ -89,13 +95,15 @@ export function RequisitosMetricas({ requisitos }: RequisitosMetricasProps) {
             </div>
 
             {/* Valor y label */}
-            <div className="flex-1">
+            <div className='flex-1'>
               <p
                 className={`${styles.metricas.value} bg-gradient-to-br ${metrica.textGradient}`}
               >
                 {metrica.value}
               </p>
-              <p className={`${styles.metricas.label} text-gray-600 dark:text-gray-400`}>
+              <p
+                className={`${styles.metricas.label} text-gray-600 dark:text-gray-400`}
+              >
                 {metrica.label}
               </p>
             </div>

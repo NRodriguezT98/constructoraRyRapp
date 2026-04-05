@@ -55,7 +55,7 @@ export function ModalDescartarInteres({
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.95, opacity: 0, y: 16 }}
             transition={{ type: 'spring', duration: 0.35, bounce: 0.2 }}
-            onClick={(e) => e.stopPropagation()}
+            onClick={e => e.stopPropagation()}
             className={sharedModalStyles.container.small}
           >
             {/* Header rojo destructivo */}
@@ -65,19 +65,23 @@ export function ModalDescartarInteres({
               </div>
               <div className='relative flex items-center justify-between'>
                 <div className='flex items-center gap-3'>
-                  <div className='flex h-11 w-11 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm ring-2 ring-white/30'>
+                  <div className='flex h-11 w-11 items-center justify-center rounded-xl bg-white/20 ring-2 ring-white/30 backdrop-blur-sm'>
                     <AlertTriangle className='h-6 w-6 text-white' />
                   </div>
                   <div>
-                    <h2 className='text-lg font-bold text-white'>Descartar Interés</h2>
-                    <p className='text-xs text-red-100'>Esta acción cambiará el estado del interés</p>
+                    <h2 className='text-lg font-bold text-white'>
+                      Descartar Interés
+                    </h2>
+                    <p className='text-xs text-red-100'>
+                      Esta acción cambiará el estado del interés
+                    </p>
                   </div>
                 </div>
                 <button
                   type='button'
                   onClick={handleCancelar}
                   disabled={descartando}
-                  className='flex h-9 w-9 items-center justify-center rounded-xl bg-white/10 text-white backdrop-blur-sm transition-all hover:bg-white/20 hover:rotate-90 disabled:opacity-50'
+                  className='flex h-9 w-9 items-center justify-center rounded-xl bg-white/10 text-white backdrop-blur-sm transition-all hover:rotate-90 hover:bg-white/20 disabled:opacity-50'
                 >
                   <X className='h-4 w-4' />
                 </button>
@@ -85,18 +89,20 @@ export function ModalDescartarInteres({
             </div>
 
             {/* Contenido */}
-            <div className='px-6 py-5 space-y-4'>
+            <div className='space-y-4 px-6 py-5'>
               {/* Info del interés que se va a descartar */}
-              <div className='rounded-xl bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 p-4 space-y-2'>
+              <div className='space-y-2 rounded-xl border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-950/30'>
                 <div className='flex items-center gap-2 text-sm font-medium text-red-900 dark:text-red-200'>
-                  <Building2 className='w-4 h-4 text-red-500 flex-shrink-0' />
+                  <Building2 className='h-4 w-4 flex-shrink-0 text-red-500' />
                   <span>{interes.proyecto_nombre ?? 'Proyecto'}</span>
                 </div>
                 {interes.vivienda_numero && (
                   <div className='flex items-center gap-2 text-sm text-red-700 dark:text-red-300'>
-                    <Home className='w-4 h-4 text-red-400 flex-shrink-0' />
+                    <Home className='h-4 w-4 flex-shrink-0 text-red-400' />
                     <span>
-                      {interes.manzana_nombre ? `Manzana ${interes.manzana_nombre} · ` : ''}
+                      {interes.manzana_nombre
+                        ? `Manzana ${interes.manzana_nombre} · `
+                        : ''}
                       Casa {interes.vivienda_numero}
                     </span>
                   </div>
@@ -105,18 +111,18 @@ export function ModalDescartarInteres({
 
               {/* Motivo (opcional) */}
               <div>
-                <label className='flex items-center gap-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5'>
-                  <MessageSquare className='w-4 h-4 text-gray-400' />
+                <label className='mb-1.5 flex items-center gap-1.5 text-sm font-medium text-gray-700 dark:text-gray-300'>
+                  <MessageSquare className='h-4 w-4 text-gray-400' />
                   Motivo del descarte
-                  <span className='text-gray-400 font-normal'>(opcional)</span>
+                  <span className='font-normal text-gray-400'>(opcional)</span>
                 </label>
                 <textarea
                   value={motivo}
-                  onChange={(e) => setMotivo(e.target.value)}
+                  onChange={e => setMotivo(e.target.value)}
                   placeholder='Ej: El cliente encontró otra opción, cambió de presupuesto...'
                   rows={3}
                   disabled={descartando}
-                  className='w-full resize-none rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3.5 py-2.5 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 transition-all focus:border-red-400 dark:focus:border-red-600 focus:outline-none focus:ring-2 focus:ring-red-400/20 disabled:opacity-50 disabled:cursor-not-allowed'
+                  className='w-full resize-none rounded-xl border-2 border-gray-200 bg-white px-3.5 py-2.5 text-sm text-gray-900 transition-all placeholder:text-gray-400 focus:border-red-400 focus:outline-none focus:ring-2 focus:ring-red-400/20 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 dark:focus:border-red-600'
                 />
               </div>
             </div>
@@ -138,13 +144,13 @@ export function ModalDescartarInteres({
                   type='button'
                   onClick={handleConfirmar}
                   disabled={descartando}
-                  className='inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-red-600 to-rose-600 px-6 py-2.5 text-sm font-semibold text-white transition-all hover:from-red-700 hover:to-rose-700 disabled:cursor-not-allowed disabled:opacity-50 shadow-lg shadow-red-500/25 hover:shadow-red-500/40'
+                  className='inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-red-600 to-rose-600 px-6 py-2.5 text-sm font-semibold text-white shadow-lg shadow-red-500/25 transition-all hover:from-red-700 hover:to-rose-700 hover:shadow-red-500/40 disabled:cursor-not-allowed disabled:opacity-50'
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                 >
                   {descartando ? (
                     <>
-                      <div className='h-4 w-4 rounded-full border-2 border-white/40 border-t-white animate-spin' />
+                      <div className='h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white' />
                       Descartando...
                     </>
                   ) : (

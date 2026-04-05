@@ -27,8 +27,14 @@ async function verificarSistema() {
     { nombre: 'negociaciones', descripcion: 'Negociaciones' },
     { nombre: 'documentos_vivienda', descripcion: 'Documentos de viviendas' },
     { nombre: 'renuncias', descripcion: 'Renuncias' },
-    { nombre: 'plantillas_proceso', descripcion: 'Plantillas de proceso (PRESERVADO)' },
-    { nombre: 'categorias_documento', descripcion: 'Categorías de documentos (SISTEMA)' },
+    {
+      nombre: 'plantillas_proceso',
+      descripcion: 'Plantillas de proceso (PRESERVADO)',
+    },
+    {
+      nombre: 'categorias_documento',
+      descripcion: 'Categorías de documentos (SISTEMA)',
+    },
   ]
 
   for (const tabla of tablas) {
@@ -98,7 +104,8 @@ async function verificarSistema() {
       }
 
       const icono = totalArchivos === 0 ? '✅' : '📦'
-      const estado = totalArchivos === 0 ? 'LIMPIO' : `${totalArchivos} archivos`
+      const estado =
+        totalArchivos === 0 ? 'LIMPIO' : `${totalArchivos} archivos`
       console.log(`${icono} ${bucket.padEnd(30)} ${estado}`)
     }
   }
@@ -114,7 +121,7 @@ async function verificarSistema() {
 
 verificarSistema()
   .then(() => process.exit(0))
-  .catch((error) => {
+  .catch(error => {
     console.error('❌ Error:', error)
     process.exit(1)
   })

@@ -132,7 +132,7 @@ export function ModalConfirmacion({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className='fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4'
+          className='fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm'
           onClick={handleCancel}
         >
           <motion.div
@@ -140,11 +140,13 @@ export function ModalConfirmacion({
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.9, opacity: 0, y: 20 }}
             transition={{ type: 'spring', duration: 0.5, bounce: 0.3 }}
-            onClick={(e) => e.stopPropagation()}
+            onClick={e => e.stopPropagation()}
             className='relative w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-2xl dark:bg-gray-900'
           >
             {/* Header con gradiente */}
-            <div className={`relative overflow-hidden bg-gradient-to-r ${config.gradient} px-6 py-4`}>
+            <div
+              className={`relative overflow-hidden bg-gradient-to-r ${config.gradient} px-6 py-4`}
+            >
               {/* Patrón de fondo animado */}
               <div className='absolute inset-0 opacity-10'>
                 <div className='absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(255,255,255,0.8),transparent)]' />
@@ -156,9 +158,7 @@ export function ModalConfirmacion({
                   <div className={`rounded-xl ${config.iconBg} p-2`}>
                     <Icon className={`h-5 w-5 ${config.iconColor}`} />
                   </div>
-                  <h3 className='text-lg font-bold text-white'>
-                    {title}
-                  </h3>
+                  <h3 className='text-lg font-bold text-white'>{title}</h3>
                 </div>
 
                 <button
@@ -175,7 +175,9 @@ export function ModalConfirmacion({
             <div className='p-6'>
               <div className='text-gray-700 dark:text-gray-300'>
                 {typeof message === 'string' ? (
-                  <p className='leading-relaxed whitespace-pre-line'>{message}</p>
+                  <p className='whitespace-pre-line leading-relaxed'>
+                    {message}
+                  </p>
                 ) : (
                   message
                 )}
@@ -195,18 +197,17 @@ export function ModalConfirmacion({
               <button
                 onClick={handleConfirm}
                 disabled={isLoading}
-                className={`
-                  rounded-xl px-6 py-2.5 font-semibold text-white shadow-lg
-                  transition-all hover:shadow-xl disabled:cursor-not-allowed
-                  disabled:opacity-50 ${config.buttonBg}
-                  ${isLoading ? 'cursor-wait' : ''}
-                `}
+                className={`rounded-xl px-6 py-2.5 font-semibold text-white shadow-lg transition-all hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-50 ${config.buttonBg} ${isLoading ? 'cursor-wait' : ''} `}
               >
                 {isLoading ? (
                   <span className='flex items-center gap-2'>
                     <motion.div
                       animate={{ rotate: 360 }}
-                      transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                      transition={{
+                        duration: 1,
+                        repeat: Infinity,
+                        ease: 'linear',
+                      }}
                       className='h-4 w-4 rounded-full border-2 border-white border-t-transparent'
                     />
                     Procesando...

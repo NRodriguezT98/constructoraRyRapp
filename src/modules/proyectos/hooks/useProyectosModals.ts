@@ -38,8 +38,13 @@ interface UseProyectosModalsReturn {
   cerrarModalRestaurar: () => void
   abrirModalConfirmarCambios: (data: ProyectoFormData) => void
   cerrarModalConfirmarCambios: () => void
-  setDatosConfirmacion: (data: { proyectoId: string; data: ProyectoFormData } | null) => void
-  setTotalesProyecto: (totales: { totalManzanas: number; totalViviendas: number }) => void
+  setDatosConfirmacion: (
+    data: { proyectoId: string; data: ProyectoFormData } | null
+  ) => void
+  setTotalesProyecto: (totales: {
+    totalManzanas: number
+    totalViviendas: number
+  }) => void
 }
 
 /**
@@ -68,9 +73,15 @@ export function useProyectosModals(): UseProyectosModalsReturn {
   // ==================== DATOS DE MODALES ====================
   const [proyectoEditar, setProyectoEditar] = useState<Proyecto | null>(null)
   const [proyectoEliminar, setProyectoEliminar] = useState<string | null>(null)
-  const [proyectoArchivar, setProyectoArchivar] = useState<Proyecto | null>(null)
-  const [proyectoRestaurar, setProyectoRestaurar] = useState<Proyecto | null>(null)
-  const [datosEdicion, setDatosEdicion] = useState<ProyectoFormData | null>(null)
+  const [proyectoArchivar, setProyectoArchivar] = useState<Proyecto | null>(
+    null
+  )
+  const [proyectoRestaurar, setProyectoRestaurar] = useState<Proyecto | null>(
+    null
+  )
+  const [datosEdicion, setDatosEdicion] = useState<ProyectoFormData | null>(
+    null
+  )
   const [datosConfirmacion, setDatosConfirmacionState] = useState<{
     proyectoId: string
     data: ProyectoFormData
@@ -141,7 +152,9 @@ export function useProyectosModals(): UseProyectosModalsReturn {
     setDatosEdicion(null)
   }
 
-  const setDatosConfirmacion = (data: { proyectoId: string; data: ProyectoFormData } | null) => {
+  const setDatosConfirmacion = (
+    data: { proyectoId: string; data: ProyectoFormData } | null
+  ) => {
     setDatosConfirmacionState(data)
   }
 

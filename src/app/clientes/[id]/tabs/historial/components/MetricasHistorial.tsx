@@ -15,7 +15,12 @@ interface MetricasHistorialProps {
   criticos: number
 }
 
-export function MetricasHistorial({ total, estaSemana, esteMes, criticos }: MetricasHistorialProps) {
+export function MetricasHistorial({
+  total,
+  estaSemana,
+  esteMes,
+  criticos,
+}: MetricasHistorialProps) {
   const metricas = [
     {
       label: 'Total',
@@ -52,7 +57,7 @@ export function MetricasHistorial({ total, estaSemana, esteMes, criticos }: Metr
   ]
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+    <div className='mb-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4'>
       {metricas.map((metrica, index) => {
         const Icon = metrica.icon
 
@@ -63,17 +68,19 @@ export function MetricasHistorial({ total, estaSemana, esteMes, criticos }: Metr
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.05 }}
             whileHover={{ scale: 1.02, y: -2 }}
-            className={`${metrica.bgLight} rounded-lg p-3 border border-gray-200 dark:border-gray-700 transition-all`}
+            className={`${metrica.bgLight} rounded-lg border border-gray-200 p-3 transition-all dark:border-gray-700`}
           >
-            <div className="flex items-center gap-3">
-              <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${metrica.color} flex items-center justify-center shadow-md`}>
-                <Icon className="w-5 h-5 text-white" strokeWidth={2.5} />
+            <div className='flex items-center gap-3'>
+              <div
+                className={`h-10 w-10 rounded-lg bg-gradient-to-br ${metrica.color} flex items-center justify-center shadow-md`}
+              >
+                <Icon className='h-5 w-5 text-white' strokeWidth={2.5} />
               </div>
-              <div className="flex-1">
+              <div className='flex-1'>
                 <p className={`text-2xl font-bold ${metrica.textColor}`}>
                   {metrica.valor}
                 </p>
-                <p className="text-xs text-gray-600 dark:text-gray-400 font-medium">
+                <p className='text-xs font-medium text-gray-600 dark:text-gray-400'>
                   {metrica.label}
                 </p>
               </div>

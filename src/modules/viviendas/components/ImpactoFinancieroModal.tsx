@@ -62,13 +62,17 @@ export function ImpactoFinancieroModal({
   } = impacto
   const subio = diferencia > 0
   const isBlocked = estado === 'loading' || estado === 'success'
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
-  const handleCloseBlocked = () => {}
+
+  function handleClose() {
+    if (!isBlocked) {
+      onClose()
+    }
+  }
 
   return (
     <Modal
       isOpen={isOpen}
-      onClose={isBlocked ? handleCloseBlocked : onClose}
+      onClose={handleClose}
       title='Impacto Financiero Detectado'
       description='El cambio de precio afecta una negociación activa'
       size='md'

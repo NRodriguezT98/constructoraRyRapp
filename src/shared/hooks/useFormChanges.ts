@@ -57,7 +57,12 @@ interface UseFormChangesOptions {
 function deepEqual(obj1: unknown, obj2: unknown): boolean {
   if (obj1 === obj2) return true
 
-  if (typeof obj1 !== 'object' || typeof obj2 !== 'object' || obj1 === null || obj2 === null) {
+  if (
+    typeof obj1 !== 'object' ||
+    typeof obj2 !== 'object' ||
+    obj1 === null ||
+    obj2 === null
+  ) {
     return false
   }
 
@@ -107,7 +112,7 @@ export function useFormChanges<T extends Record<string, unknown>>(
 
     // Filtrar campos ignorados
     const keysToCheck = Array.from(allKeys).filter(
-      (key) => !ignoreFields.includes(key)
+      key => !ignoreFields.includes(key)
     )
 
     // Comparar cada campo
@@ -137,7 +142,7 @@ export function useFormChanges<T extends Record<string, unknown>>(
     ])
 
     const keysToCheck = Array.from(allKeys).filter(
-      (key) => !ignoreFields.includes(key)
+      key => !ignoreFields.includes(key)
     )
 
     for (const key of keysToCheck) {
@@ -190,7 +195,7 @@ export function useFormChanges<T extends Record<string, unknown>>(
    * Obtiene el cambio específico de un campo
    */
   const getFieldChange = (fieldName: string): FieldChange | undefined => {
-    return changes.find((change) => change.field === fieldName)
+    return changes.find(change => change.field === fieldName)
   }
 
   /**

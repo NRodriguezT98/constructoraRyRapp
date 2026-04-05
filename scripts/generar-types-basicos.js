@@ -8,7 +8,8 @@ const fs = require('fs')
 
 // Configuración
 const SUPABASE_URL = 'https://swyjhwgvkfcfdtemkyad.supabase.co'
-const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN3eWpod2d2a2ZjZmR0ZW1reWFkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA0NTU4ODQsImV4cCI6MjA3NjAzMTg4NH0.v9daNgC7Eesupwatd4eDipCXeTh1onVwVsCSFxYy5xs'
+const ANON_KEY =
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN3eWpod2d2a2ZjZmR0ZW1reWFkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA0NTU4ODQsImV4cCI6MjA3NjAzMTg4NH0.v9daNgC7Eesupwatd4eDipCXeTh1onVwVsCSFxYy5xs'
 
 // Lista manual de tablas conocidas (extraídas de la documentación)
 const TABLES = [
@@ -29,7 +30,7 @@ const TABLES = [
   'audit_log_seguridad',
   'configuracion_sistema',
   'recargos_esquinera',
-  'configuracion_recargos'
+  'configuracion_recargos',
 ]
 
 const VIEWS = [
@@ -42,7 +43,7 @@ const VIEWS = [
   'v_renuncias_pendientes',
   'intereses_completos',
   'v_auditoria_por_modulo',
-  'vista_documentos_vivienda'
+  'vista_documentos_vivienda',
 ]
 
 console.log('📝 Generando types básicos de Supabase...\n')
@@ -59,18 +60,22 @@ const typeContent = `export type Json =
 export interface Database {
   public: {
     Tables: {
-${TABLES.map(table => `      ${table}: {
+${TABLES.map(
+  table => `      ${table}: {
         Row: {}
         Insert: {}
         Update: {}
         Relationships: []
-      }`).join('\n')}
+      }`
+).join('\n')}
     }
     Views: {
-${VIEWS.map(view => `      ${view}: {
+${VIEWS.map(
+  view => `      ${view}: {
         Row: {}
         Relationships: []
-      }`).join('\n')}
+      }`
+).join('\n')}
     }
     Functions: {
       [_ in never]: never
@@ -91,6 +96,10 @@ fs.writeFileSync(outputPath, typeContent, 'utf8')
 
 console.log('✅ Types básicos generados en:', outputPath)
 console.log('\n⚠️ NOTA: Estos types son básicos (Row: {}).')
-console.log('   TypeScript ahora reconocerá las tablas, pero sin autocomplete de columnas.')
-console.log('   Para types completos, usa: https://supabase.com/dashboard/project/ynsxcwgrltvgdqzlgqtf/settings/api')
+console.log(
+  '   TypeScript ahora reconocerá las tablas, pero sin autocomplete de columnas.'
+)
+console.log(
+  '   Para types completos, usa: https://supabase.com/dashboard/project/ynsxcwgrltvgdqzlgqtf/settings/api'
+)
 console.log('   Y copia manualmente el código generado.\n')

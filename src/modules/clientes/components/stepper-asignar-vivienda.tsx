@@ -29,45 +29,45 @@ const STEPS = [
   },
 ] as const
 
-export function StepperAsignarVivienda({ currentStep, completedSteps }: StepperAsignarViviendaProps) {
+export function StepperAsignarVivienda({
+  currentStep,
+  completedSteps,
+}: StepperAsignarViviendaProps) {
   return (
-    <div className="w-full py-3">
+    <div className='w-full py-3'>
       {/* Desktop - Horizontal Centrado */}
-      <div className="hidden md:flex justify-center items-center w-full">
-        <div className="flex items-center justify-center gap-3 max-w-3xl w-full px-6">
+      <div className='hidden w-full items-center justify-center md:flex'>
+        <div className='flex w-full max-w-3xl items-center justify-center gap-3 px-6'>
           {STEPS.map((step, index) => {
             const isActive = step.number === currentStep
             const isCompleted = completedSteps.includes(step.number)
             const Icon = step.icon
 
             return (
-              <div key={step.number} className="flex items-center flex-1">
+              <div key={step.number} className='flex flex-1 items-center'>
                 {/* Step Card */}
-                <div className="flex flex-col items-center w-full">
+                <div className='flex w-full flex-col items-center'>
                   {/* Icon Circle */}
                   <motion.div
                     initial={false}
                     animate={{ scale: isActive ? 1.05 : 1 }}
                     transition={{ duration: 0.2 }}
-                    className="relative"
+                    className='relative'
                   >
                     <div
-                      className={`
-                        flex items-center justify-center w-10 h-10 rounded-full border-3 transition-all duration-300
-                        ${
-                          isCompleted
-                            ? 'bg-green-500 border-green-500'
-                            : isActive
-                              ? 'bg-blue-600 border-blue-600'
-                              : 'bg-gray-100 dark:bg-gray-800 border-gray-300 dark:border-gray-700'
-                        }
-                      `}
+                      className={`border-3 flex h-10 w-10 items-center justify-center rounded-full transition-all duration-300 ${
+                        isCompleted
+                          ? 'border-green-500 bg-green-500'
+                          : isActive
+                            ? 'border-blue-600 bg-blue-600'
+                            : 'border-gray-300 bg-gray-100 dark:border-gray-700 dark:bg-gray-800'
+                      } `}
                     >
                       {isCompleted ? (
-                        <CheckCircle2 className="w-5 h-5 text-white" />
+                        <CheckCircle2 className='h-5 w-5 text-white' />
                       ) : (
                         <Icon
-                          className={`w-5 h-5 ${
+                          className={`h-5 w-5 ${
                             isActive
                               ? 'text-white'
                               : 'text-gray-400 dark:text-gray-500'
@@ -79,7 +79,7 @@ export function StepperAsignarVivienda({ currentStep, completedSteps }: StepperA
                     {/* Pulse Animation */}
                     {isActive && (
                       <motion.div
-                        className="absolute inset-0 rounded-full bg-blue-500"
+                        className='absolute inset-0 rounded-full bg-blue-500'
                         initial={{ scale: 1, opacity: 0.5 }}
                         animate={{ scale: 1.4, opacity: 0 }}
                         transition={{
@@ -92,7 +92,7 @@ export function StepperAsignarVivienda({ currentStep, completedSteps }: StepperA
                   </motion.div>
 
                   {/* Step Info */}
-                  <div className="mt-1.5 text-center">
+                  <div className='mt-1.5 text-center'>
                     <p
                       className={`text-xs font-semibold transition-colors ${
                         isActive
@@ -104,7 +104,7 @@ export function StepperAsignarVivienda({ currentStep, completedSteps }: StepperA
                     >
                       {step.title}
                     </p>
-                    <p className="mt-0.5 text-[10px] text-gray-500 dark:text-gray-400">
+                    <p className='mt-0.5 text-[10px] text-gray-500 dark:text-gray-400'>
                       {step.description}
                     </p>
                   </div>
@@ -112,14 +112,14 @@ export function StepperAsignarVivienda({ currentStep, completedSteps }: StepperA
 
                 {/* Connecting Line */}
                 {index < STEPS.length - 1 && (
-                  <div className="flex items-center justify-center w-16 -mt-10">
-                    <div className="relative w-full h-1">
+                  <div className='-mt-10 flex w-16 items-center justify-center'>
+                    <div className='relative h-1 w-full'>
                       {/* Background Line */}
-                      <div className="absolute inset-0 bg-gray-200 dark:bg-gray-700 rounded-full" />
+                      <div className='absolute inset-0 rounded-full bg-gray-200 dark:bg-gray-700' />
 
                       {/* Progress Line */}
                       <motion.div
-                        className="absolute inset-0 bg-gradient-to-r from-blue-500 to-green-500 rounded-full origin-left"
+                        className='absolute inset-0 origin-left rounded-full bg-gradient-to-r from-blue-500 to-green-500'
                         initial={{ scaleX: 0 }}
                         animate={{
                           scaleX:
@@ -137,8 +137,8 @@ export function StepperAsignarVivienda({ currentStep, completedSteps }: StepperA
       </div>
 
       {/* Mobile - Vertical Stack */}
-      <div className="md:hidden space-y-3 px-4">
-        {STEPS.map((step) => {
+      <div className='space-y-3 px-4 md:hidden'>
+        {STEPS.map(step => {
           const isActive = step.number === currentStep
           const isCompleted = completedSteps.includes(step.number)
           const Icon = step.icon
@@ -149,41 +149,35 @@ export function StepperAsignarVivienda({ currentStep, completedSteps }: StepperA
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: step.number * 0.1 }}
-              className={`
-                flex items-center gap-3 p-3 rounded-xl border-2 transition-all
-                ${
-                  isActive
-                    ? 'bg-blue-50 dark:bg-blue-950/30 border-blue-500'
-                    : isCompleted
-                      ? 'bg-green-50 dark:bg-green-950/30 border-green-500'
-                      : 'bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-800'
-                }
-              `}
+              className={`flex items-center gap-3 rounded-xl border-2 p-3 transition-all ${
+                isActive
+                  ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/30'
+                  : isCompleted
+                    ? 'border-green-500 bg-green-50 dark:bg-green-950/30'
+                    : 'border-gray-200 bg-gray-50 dark:border-gray-800 dark:bg-gray-900'
+              } `}
             >
               {/* Icon */}
               <div
-                className={`
-                  flex items-center justify-center w-10 h-10 rounded-full flex-shrink-0 transition-colors
-                  ${
-                    isCompleted
-                      ? 'bg-green-500'
-                      : isActive
-                        ? 'bg-blue-600'
-                        : 'bg-gray-300 dark:bg-gray-700'
-                  }
-                `}
+                className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full transition-colors ${
+                  isCompleted
+                    ? 'bg-green-500'
+                    : isActive
+                      ? 'bg-blue-600'
+                      : 'bg-gray-300 dark:bg-gray-700'
+                } `}
               >
                 {isCompleted ? (
-                  <CheckCircle2 className="w-5 h-5 text-white" />
+                  <CheckCircle2 className='h-5 w-5 text-white' />
                 ) : (
-                  <Icon className="w-5 h-5 text-white" />
+                  <Icon className='h-5 w-5 text-white' />
                 )}
               </div>
 
               {/* Content */}
-              <div className="flex-1">
+              <div className='flex-1'>
                 <p
-                  className={`font-semibold text-sm ${
+                  className={`text-sm font-semibold ${
                     isActive
                       ? 'text-blue-700 dark:text-blue-300'
                       : isCompleted
@@ -193,15 +187,15 @@ export function StepperAsignarVivienda({ currentStep, completedSteps }: StepperA
                 >
                   Paso {step.number}: {step.title}
                 </p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                <p className='mt-1 text-xs text-gray-500 dark:text-gray-400'>
                   {step.description}
                 </p>
               </div>
 
               {/* Active Badge */}
               {isActive && (
-                <div className="flex-shrink-0">
-                  <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300">
+                <div className='flex-shrink-0'>
+                  <span className='inline-flex items-center rounded-full bg-blue-100 px-2.5 py-1 text-xs font-medium text-blue-700 dark:bg-blue-900/50 dark:text-blue-300'>
                     Actual
                   </span>
                 </div>

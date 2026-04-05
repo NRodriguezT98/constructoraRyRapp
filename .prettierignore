@@ -1,0 +1,23 @@
+# Generados automáticamente
+src/types/database.types.ts
+src/lib/supabase/database.types.ts
+next-env.d.ts
+
+# Build outputs
+.next/
+out/
+dist/
+build/
+coverage/
+
+# Dependencies
+node_modules/
+
+# Agentes y assets
+.agents/
+public/
+
+# Documentación y SQL (no son código de producción — formateo manual)
+docs/
+supabase/
+scripts/data-ops/

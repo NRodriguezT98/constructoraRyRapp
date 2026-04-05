@@ -11,10 +11,7 @@ export const formatNumber = (num: number, decimals = 0): string => {
 }
 
 // Formatear moneda
-export const formatCurrency = (
-  amount: number,
-  currency = 'COP'
-): string => {
+export const formatCurrency = (amount: number, currency = 'COP'): string => {
   return new Intl.NumberFormat('es-CO', {
     style: 'currency',
     currency: currency,
@@ -24,10 +21,7 @@ export const formatCurrency = (
 }
 
 // Formatear porcentaje
-export const formatPercentage = (
-  value: number,
-  decimals = 1
-): string => {
+export const formatPercentage = (value: number, decimals = 1): string => {
   return `${formatNumber(value, decimals)}%`
 }
 

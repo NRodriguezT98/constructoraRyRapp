@@ -62,11 +62,11 @@ export function useProyectoConValidacion(proyectoId?: string) {
     queryFn: async () => {
       if (!proyectoId) return null
 
-
       // ✅ 1 QUERY CON JOIN (en vez de N+1)
       const { data, error } = await supabase
         .from('proyectos')
-        .select(`
+        .select(
+          `
           *,
           manzanas:manzanas(
             id,
@@ -74,7 +74,8 @@ export function useProyectoConValidacion(proyectoId?: string) {
             numero_viviendas,
             viviendas:viviendas(count)
           )
-        `)
+        `
+        )
         .eq('id', proyectoId)
         .single()
 
@@ -88,9 +89,10 @@ export function useProyectoConValidacion(proyectoId?: string) {
         return null
       }
 
-
       // Mapear manzanas con estado de validación
-      const manzanasConValidacion: ManzanaConValidacion[] = (data.manzanas || []).map(m => {
+      const manzanasConValidacion: ManzanaConValidacion[] = (
+        data.manzanas || []
+      ).map(m => {
         const cantidadViviendas = m.viviendas?.[0]?.count || 0
         const esEditable = cantidadViviendas === 0
 

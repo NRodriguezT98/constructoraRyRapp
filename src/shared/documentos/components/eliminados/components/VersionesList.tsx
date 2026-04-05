@@ -1,12 +1,12 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 
 import { Calendar, Eye, HardDrive, Loader2, Upload, User } from 'lucide-react'
 import { toast } from 'sonner'
 
-import { Badge } from '@/components/ui/badge'
 import { formatDateCompact } from '@/lib/utils/date.utils'
 import { formatFileSize } from '@/lib/utils/format.utils'
 import { logger } from '@/lib/utils/logger'
+import { Badge } from '@/shared/components/ui/badge'
 import { DocumentosStorageService } from '@/shared/documentos/services/documentos-storage.service'
 import type { DocumentoProyecto } from '@/shared/documentos/types/documento.types'
 import type { TipoEntidad } from '@/shared/documentos/types/entidad.types'

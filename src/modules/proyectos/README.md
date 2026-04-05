@@ -308,7 +308,6 @@ import {
 
 ```tsx
 import { ProyectoCard } from '@/modules/proyectos'
-
 ;<ProyectoCard
   proyecto={proyecto}
   onView={p => navigate(`/proyectos/${p.id}`)}
@@ -321,7 +320,6 @@ import { ProyectoCard } from '@/modules/proyectos'
 
 ```tsx
 import { EmptyState } from '@/modules/proyectos'
-
 ;<EmptyState
   title='No hay proyectos'
   description='Comienza creando tu primer proyecto'

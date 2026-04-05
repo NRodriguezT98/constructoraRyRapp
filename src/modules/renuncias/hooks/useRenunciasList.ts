@@ -23,7 +23,7 @@ export function useRenunciasList() {
   // Proyectos únicos (para select de filtros)
   const proyectos = useMemo(() => {
     const map = new Map<string, string>()
-    renuncias.forEach((r) => {
+    renuncias.forEach(r => {
       if (r.proyecto.id && r.proyecto.nombre) {
         map.set(r.proyecto.id, r.proyecto.nombre)
       }
@@ -41,7 +41,7 @@ export function useRenunciasList() {
     if (filtros.busqueda && filtros.busqueda.trim().length > 0) {
       const term = filtros.busqueda.toLowerCase().trim()
       resultado = resultado.filter(
-        (r) =>
+        r =>
           r.cliente.nombre.toLowerCase().includes(term) ||
           r.cliente.documento.toLowerCase().includes(term) ||
           r.vivienda.numero.toLowerCase().includes(term) ||
@@ -52,12 +52,12 @@ export function useRenunciasList() {
 
     // Filtro por estado
     if (filtros.estado && filtros.estado !== 'todos') {
-      resultado = resultado.filter((r) => r.estado === filtros.estado)
+      resultado = resultado.filter(r => r.estado === filtros.estado)
     }
 
     // Filtro por proyecto
     if (filtros.proyecto_id && filtros.proyecto_id.length > 0) {
-      resultado = resultado.filter((r) => r.proyecto.id === filtros.proyecto_id)
+      resultado = resultado.filter(r => r.proyecto.id === filtros.proyecto_id)
     }
 
     return resultado
@@ -70,7 +70,13 @@ export function useRenunciasList() {
   return {
     renuncias: renunciasFiltradas,
     cargando: isLoading,
-    metricas: metricas ?? { total: 0, pendientes: 0, cerradas: 0, totalDevuelto: 0, totalRetenido: 0 },
+    metricas: metricas ?? {
+      total: 0,
+      pendientes: 0,
+      cerradas: 0,
+      totalDevuelto: 0,
+      totalRetenido: 0,
+    },
     filtros,
     actualizarFiltros: setFiltros,
     limpiarFiltros,

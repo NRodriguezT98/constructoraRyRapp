@@ -7,12 +7,12 @@ import { supabase } from '@/lib/supabase/client'
 import { logger } from '@/lib/utils/logger'
 
 import type {
-    AbonoExpediente,
-    MetricasRenuncias,
-    ProcesarDevolucionDTO,
-    RegistrarRenunciaDTO,
-    RenunciaCompletaRow,
-    ValidacionRenuncia,
+  AbonoExpediente,
+  MetricasRenuncias,
+  ProcesarDevolucionDTO,
+  RegistrarRenunciaDTO,
+  RenunciaCompletaRow,
+  ValidacionRenuncia,
 } from '../types'
 
 // =====================================================
@@ -36,7 +36,9 @@ export async function obtenerRenuncias(): Promise<RenunciaCompletaRow[]> {
 // OBTENER RENUNCIA POR ID
 // =====================================================
 
-export async function obtenerRenuncia(id: string): Promise<RenunciaCompletaRow> {
+export async function obtenerRenuncia(
+  id: string
+): Promise<RenunciaCompletaRow> {
   const { data, error } = await supabase
     .from('v_renuncias_completas')
     .select('*')
@@ -59,7 +61,9 @@ export async function obtenerRenuncia(id: string): Promise<RenunciaCompletaRow> 
  * Valida si una negociación puede renunciar.
  * Checks: estado válido, sin renuncia previa, sin desembolsos.
  */
-export async function validarPuedeRenunciar(negociacionId: string): Promise<ValidacionRenuncia> {
+export async function validarPuedeRenunciar(
+  negociacionId: string
+): Promise<ValidacionRenuncia> {
   // 1. Obtener negociación con cliente y vivienda (separate joins for reliability)
   const { data: neg, error: errNeg } = await supabase
     .from('negociaciones')
@@ -153,10 +157,17 @@ export async function validarPuedeRenunciar(negociacionId: string): Promise<Vali
     .eq('negociacion_id', negociacionId)
 
   const fuentesConDesembolso = (fuentes ?? [])
-    .filter((f: { id: string; tipo: string | null; estado: string; monto_recibido: number | null }) => {
-      const esExterna = !['Cuota Inicial'].includes(f.tipo ?? '')
-      return esExterna && (f.monto_recibido ?? 0) > 0
-    })
+    .filter(
+      (f: {
+        id: string
+        tipo: string | null
+        estado: string
+        monto_recibido: number | null
+      }) => {
+        const esExterna = !['Cuota Inicial'].includes(f.tipo ?? '')
+        return esExterna && (f.monto_recibido ?? 0) > 0
+      }
+    )
     .map((f: { tipo: string | null }) => f.tipo ?? 'Desconocida')
 
   if (fuentesConDesembolso.length > 0) {
@@ -206,7 +217,10 @@ export async function registrarRenuncia(dto: RegistrarRenunciaDTO) {
 // PROCESAR DEVOLUCIÓN
 // =====================================================
 
-export async function procesarDevolucion(renunciaId: string, dto: ProcesarDevolucionDTO) {
+export async function procesarDevolucion(
+  renunciaId: string,
+  dto: ProcesarDevolucionDTO
+) {
   const { data: session } = await supabase.auth.getSession()
   const userId = session?.session?.user?.id ?? null
 
@@ -252,7 +266,10 @@ export async function procesarDevolucion(renunciaId: string, dto: ProcesarDevolu
 // SUBIR COMPROBANTE
 // =====================================================
 
-export async function subirComprobante(file: File, renunciaId: string): Promise<string> {
+export async function subirComprobante(
+  file: File,
+  renunciaId: string
+): Promise<string> {
   const ext = file.name.split('.').pop()
   const filePath = `${renunciaId}/${Date.now()}.${ext}`
 
@@ -277,7 +294,9 @@ export async function subirComprobante(file: File, renunciaId: string): Promise<
  *   - Una URL pública completa (registros anteriores al bucket privado)
  * En ambos casos se extrae el path correcto antes de llamar a createSignedUrl.
  */
-export async function generarUrlFirmadaComprobante(pathOrUrl: string): Promise<string> {
+export async function generarUrlFirmadaComprobante(
+  pathOrUrl: string
+): Promise<string> {
   // Normalizar: si viene una URL completa, extraer solo el path relativo al bucket
   const BUCKET = 'renuncias-comprobantes'
   let filePath = pathOrUrl
@@ -307,7 +326,10 @@ export async function generarUrlFirmadaComprobante(pathOrUrl: string): Promise<s
  * Sube el formulario de renuncia al bucket privado y actualiza la columna en la tabla.
  * Se ejecuta DESPUÉS de registrar la renuncia exitosamente.
  */
-export async function subirFormularioRenuncia(file: File, renunciaId: string): Promise<string> {
+export async function subirFormularioRenuncia(
+  file: File,
+  renunciaId: string
+): Promise<string> {
   const ext = file.name.split('.').pop()
   const filePath = `${renunciaId}/formulario-renuncia.${ext}`
 
@@ -356,12 +378,16 @@ export async function obtenerMetricas(): Promise<MetricasRenuncias> {
 
   return {
     total: renuncias.length,
-    pendientes: renuncias.filter(r => r.estado === 'Pendiente Devolución').length,
+    pendientes: renuncias.filter(r => r.estado === 'Pendiente Devolución')
+      .length,
     cerradas: renuncias.filter(r => r.estado === 'Cerrada').length,
     totalDevuelto: renuncias
       .filter(r => r.estado === 'Cerrada')
       .reduce((sum, r) => sum + (r.monto_a_devolver ?? 0), 0),
-    totalRetenido: renuncias.reduce((sum, r) => sum + (r.retencion_monto ?? 0), 0),
+    totalRetenido: renuncias.reduce(
+      (sum, r) => sum + (r.retencion_monto ?? 0),
+      0
+    ),
   }
 }
 
@@ -369,7 +395,9 @@ export async function obtenerMetricas(): Promise<MetricasRenuncias> {
 // OBTENER RENUNCIA POR CONSECUTIVO (para expediente)
 // =====================================================
 
-export async function obtenerRenunciaPorConsecutivo(consecutivo: string): Promise<RenunciaCompletaRow> {
+export async function obtenerRenunciaPorConsecutivo(
+  consecutivo: string
+): Promise<RenunciaCompletaRow> {
   const { data, error } = await supabase
     .from('v_renuncias_completas')
     .select('*')
@@ -388,10 +416,14 @@ export async function obtenerRenunciaPorConsecutivo(consecutivo: string): Promis
 // OBTENER ABONOS DE NEGOCIACIÓN (para expediente)
 // =====================================================
 
-export async function obtenerAbonosNegociacion(negociacionId: string): Promise<AbonoExpediente[]> {
+export async function obtenerAbonosNegociacion(
+  negociacionId: string
+): Promise<AbonoExpediente[]> {
   const { data, error } = await supabase
     .from('abonos_historial')
-    .select('id, numero_recibo, fecha_abono, monto, metodo_pago, numero_referencia, comprobante_url, estado, fuente_pago_id')
+    .select(
+      'id, numero_recibo, fecha_abono, monto, metodo_pago, numero_referencia, comprobante_url, estado, fuente_pago_id'
+    )
     .eq('negociacion_id', negociacionId)
     .order('fecha_abono', { ascending: true })
 
@@ -406,9 +438,16 @@ export async function obtenerAbonosNegociacion(negociacionId: string): Promise<A
     .select('id, tipo, entidad')
     .eq('negociacion_id', negociacionId)
 
-  const fuentesMap = new Map((fuentes ?? []).map((f: { id: string; tipo: string | null; entidad: string | null }) => [f.id, f]))
+  const fuentesMap = new Map(
+    (fuentes ?? []).map(
+      (f: { id: string; tipo: string | null; entidad: string | null }) => [
+        f.id,
+        f,
+      ]
+    )
+  )
 
-  return (data ?? []).map((a) => {
+  return (data ?? []).map(a => {
     const fuente = fuentesMap.get(a.fuente_pago_id ?? '')
     return {
       id: a.id,
@@ -432,7 +471,9 @@ export async function obtenerAbonosNegociacion(negociacionId: string): Promise<A
 export async function obtenerNegociacionExpediente(negociacionId: string) {
   const { data, error } = await supabase
     .from('negociaciones')
-    .select('fecha_negociacion, valor_negociado, descuento_aplicado, tipo_descuento, porcentaje_descuento, motivo_descuento, promesa_compraventa_url, promesa_firmada_url')
+    .select(
+      'fecha_negociacion, valor_negociado, descuento_aplicado, tipo_descuento, porcentaje_descuento, motivo_descuento, promesa_compraventa_url, promesa_firmada_url'
+    )
     .eq('id', negociacionId)
     .single()
 
@@ -451,7 +492,9 @@ export async function obtenerNegociacionExpediente(negociacionId: string) {
 export async function obtenerViviendaExpediente(viviendaId: string) {
   const { data, error } = await supabase
     .from('viviendas')
-    .select('tipo_vivienda, area_construida, area_lote, matricula_inmobiliaria, es_esquinera')
+    .select(
+      'tipo_vivienda, area_construida, area_lote, matricula_inmobiliaria, es_esquinera'
+    )
     .eq('id', viviendaId)
     .single()
 

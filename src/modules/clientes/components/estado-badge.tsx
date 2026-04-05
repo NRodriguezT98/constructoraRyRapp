@@ -31,8 +31,11 @@ export function EstadoBadge({ estado }: EstadoBadgeProps) {
     },
   }
 
-  const { bg, text, icon: Icon } =
-    config[estado as keyof typeof config] || config.Interesado
+  const {
+    bg,
+    text,
+    icon: Icon,
+  } = config[estado as keyof typeof config] || config.Interesado
 
   return (
     <span

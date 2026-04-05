@@ -125,7 +125,20 @@ export function formatDateCompact(dateString: string): string {
   const [year, month, day] = dateInput.split('-')
 
   // Mapeo directo de mes a abreviación en español
-  const monthNames = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic']
+  const monthNames = [
+    'ene',
+    'feb',
+    'mar',
+    'abr',
+    'may',
+    'jun',
+    'jul',
+    'ago',
+    'sep',
+    'oct',
+    'nov',
+    'dic',
+  ]
   const monthAbbr = monthNames[parseInt(month) - 1]
 
   return `${day}-${monthAbbr}-${year}` // dd-MMM-yyyy
@@ -352,10 +365,13 @@ export function formatRelativeDate(dateString: string): string {
   const diffYear = Math.floor(diffDay / 365)
 
   if (diffYear > 0) return `hace ${diffYear} ${diffYear === 1 ? 'año' : 'años'}`
-  if (diffMonth > 0) return `hace ${diffMonth} ${diffMonth === 1 ? 'mes' : 'meses'}`
+  if (diffMonth > 0)
+    return `hace ${diffMonth} ${diffMonth === 1 ? 'mes' : 'meses'}`
   if (diffDay > 0) return `hace ${diffDay} ${diffDay === 1 ? 'día' : 'días'}`
-  if (diffHour > 0) return `hace ${diffHour} ${diffHour === 1 ? 'hora' : 'horas'}`
-  if (diffMin > 0) return `hace ${diffMin} ${diffMin === 1 ? 'minuto' : 'minutos'}`
+  if (diffHour > 0)
+    return `hace ${diffHour} ${diffHour === 1 ? 'hora' : 'horas'}`
+  if (diffMin > 0)
+    return `hace ${diffMin} ${diffMin === 1 ? 'minuto' : 'minutos'}`
 
   return 'hace un momento'
 }

@@ -34,18 +34,21 @@ export function BannerDocumentoRequerido({
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -10 }}
-        className="p-3.5 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-300 dark:border-amber-700/60 shadow-sm"
+        className='rounded-xl border border-amber-300 bg-amber-50 p-3.5 shadow-sm dark:border-amber-700/60 dark:bg-amber-900/20'
       >
-        <div className="flex items-start gap-3">
-          <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-amber-100 dark:bg-amber-800/50 flex items-center justify-center">
-            <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+        <div className='flex items-start gap-3'>
+          <div className='flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-amber-100 dark:bg-amber-800/50'>
+            <AlertTriangle className='h-4 w-4 text-amber-600 dark:text-amber-400' />
           </div>
-          <div className="flex-1">
-            <h4 className="text-sm font-semibold text-amber-900 dark:text-amber-200 mb-0.5">
+          <div className='flex-1'>
+            <h4 className='mb-0.5 text-sm font-semibold text-amber-900 dark:text-amber-200'>
               Documento de identidad pendiente
             </h4>
-            <p className="text-xs text-amber-800 dark:text-amber-300 leading-relaxed">
-              El expediente de este cliente está incompleto. Sube la cédula o pasaporte usando el botón <strong>&quot;Subir Cédula/Pasaporte&quot;</strong> en la esquina superior para mantener el registro actualizado.
+            <p className='text-xs leading-relaxed text-amber-800 dark:text-amber-300'>
+              El expediente de este cliente está incompleto. Sube la cédula o
+              pasaporte usando el botón{' '}
+              <strong>&quot;Subir Cédula/Pasaporte&quot;</strong> en la esquina
+              superior para mantener el registro actualizado.
             </p>
           </div>
         </div>
@@ -58,49 +61,62 @@ export function BannerDocumentoRequerido({
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -10 }}
-      className="p-4 rounded-xl bg-gradient-to-r from-orange-600 via-red-600 to-pink-600 text-white shadow-xl border-2 border-orange-500 dark:border-orange-700"
+      className='rounded-xl border-2 border-orange-500 bg-gradient-to-r from-orange-600 via-red-600 to-pink-600 p-4 text-white shadow-xl dark:border-orange-700'
     >
-      <div className="flex items-start gap-3">
+      <div className='flex items-start gap-3'>
         {/* Icono animado con glassmorphism */}
-        <div className="flex-shrink-0 w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
-          <AlertTriangle className="w-5 h-5 text-white animate-pulse" />
+        <div className='flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-white/20 backdrop-blur-sm'>
+          <AlertTriangle className='h-5 w-5 animate-pulse text-white' />
         </div>
 
         {/* Contenido */}
-        <div className="flex-1">
-          <h3 className="text-base font-bold mb-1.5">
+        <div className='flex-1'>
+          <h3 className='mb-1.5 text-base font-bold'>
             📋 Documento de Identidad Requerido
           </h3>
-          <p className="text-sm text-white/95 leading-relaxed mb-3">
-            Para poder asignar una vivienda a este cliente, primero debes subir su cédula o documento de identidad.
+          <p className='mb-3 text-sm leading-relaxed text-white/95'>
+            Para poder asignar una vivienda a este cliente, primero debes subir
+            su cédula o documento de identidad.
           </p>
 
           {/* Pasos ordenados */}
-          <div className="space-y-2">
+          <div className='space-y-2'>
             {/* Paso 1 */}
-            <div className="flex items-start gap-2">
-              <span className="flex-shrink-0 w-5 h-5 rounded-full bg-white text-orange-600 text-[10px] font-bold flex items-center justify-center">1</span>
-              <div className="flex-1 flex items-center gap-2">
-                <ArrowUpRight className="w-3.5 h-3.5 text-white flex-shrink-0" />
-                <p className="text-xs text-white font-medium">
-                  Presiona el botón naranja <span className="px-1.5 py-0.5 rounded bg-white text-orange-600 font-bold">📄 Subir Cédula/Pasaporte</span> en la esquina superior
+            <div className='flex items-start gap-2'>
+              <span className='flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-white text-[10px] font-bold text-orange-600'>
+                1
+              </span>
+              <div className='flex flex-1 items-center gap-2'>
+                <ArrowUpRight className='h-3.5 w-3.5 flex-shrink-0 text-white' />
+                <p className='text-xs font-medium text-white'>
+                  Presiona el botón naranja{' '}
+                  <span className='rounded bg-white px-1.5 py-0.5 font-bold text-orange-600'>
+                    📄 Subir Cédula/Pasaporte
+                  </span>{' '}
+                  en la esquina superior
                 </p>
               </div>
             </div>
 
             {/* Paso 2 */}
-            <div className="flex items-start gap-2">
-              <span className="flex-shrink-0 w-5 h-5 rounded-full bg-white text-orange-600 text-[10px] font-bold flex items-center justify-center">2</span>
-              <p className="text-xs text-white font-medium flex-1">
-                Selecciona el archivo escaneado, completa el formulario y presiona <strong>&quot;Subir documento&quot;</strong>
+            <div className='flex items-start gap-2'>
+              <span className='flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-white text-[10px] font-bold text-orange-600'>
+                2
+              </span>
+              <p className='flex-1 text-xs font-medium text-white'>
+                Selecciona el archivo escaneado, completa el formulario y
+                presiona <strong>&quot;Subir documento&quot;</strong>
               </p>
             </div>
 
             {/* Paso 3 */}
-            <div className="flex items-start gap-2">
-              <span className="flex-shrink-0 w-5 h-5 rounded-full bg-emerald-500 text-white text-[10px] font-bold flex items-center justify-center">✓</span>
-              <p className="text-xs text-white font-medium flex-1">
-                ¡Listo! El botón <strong>&quot;Asignar Vivienda&quot;</strong> del header se habilitará automáticamente
+            <div className='flex items-start gap-2'>
+              <span className='flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-emerald-500 text-[10px] font-bold text-white'>
+                ✓
+              </span>
+              <p className='flex-1 text-xs font-medium text-white'>
+                ¡Listo! El botón <strong>&quot;Asignar Vivienda&quot;</strong>{' '}
+                del header se habilitará automáticamente
               </p>
             </div>
           </div>

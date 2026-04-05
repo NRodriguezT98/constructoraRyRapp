@@ -181,3 +181,23 @@ Consult these skills to deepen your review expertise. Read them to calibrate you
 - NEVER edit any project file
 - NEVER approve work with Critical issues outstanding
 - ONLY read files — your tools are read and search
+
+## ⚠️ REGLA DE ORO: VERIFICACIÓN OBLIGATORIA AL TERMINAR
+
+**DESPUÉS de cualquier revisión, SIEMPRE verificar antes de emitir el reporte final:**
+
+```bash
+npm run check-all
+```
+
+Este comando ejecuta en orden: TypeScript (`tsc --noEmit`) → ESLint → Prettier → Vitest.
+La tarea NO está terminada hasta que `check-all` pase con **exit code 0**.
+
+Si falla, el reporte debe incluir estos errores como issues Críticos.
+
+```bash
+npm run type-check   # Solo TypeScript
+npm run lint:fix     # ESLint con auto-corrección
+npm run format       # Prettier auto-corrección
+npm run test         # Solo tests
+```

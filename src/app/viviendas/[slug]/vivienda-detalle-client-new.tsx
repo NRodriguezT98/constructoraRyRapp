@@ -18,9 +18,9 @@ import {
 import dynamic from 'next/dynamic'
 import { useRouter } from 'next/navigation'
 
-import { Button } from '@/components/ui/button'
 import { InfoTab } from '@/modules/viviendas/components/detalle/tabs/InfoTab'
 import { useViviendaQuery } from '@/modules/viviendas/hooks/useViviendaQuery'
+import { Button } from '@/shared/components/ui/button'
 
 const TabSpinner = () => (
   <div className='flex items-center justify-center py-12'>
@@ -190,7 +190,11 @@ export default function ViviendaDetalleClient({
           <motion.div {...styles.animations.fadeInUp}>
             <Button
               variant='ghost'
-              onClick={() => router.back()}
+              onClick={() =>
+                window.history.length > 1
+                  ? router.back()
+                  : router.push('/viviendas')
+              }
               className='group'
             >
               <ArrowLeft className='mr-2 h-4 w-4 transition-transform group-hover:-translate-x-1' />

@@ -8,14 +8,22 @@ import { useCallback, useEffect, useState } from 'react'
 
 import { logger } from '@/lib/utils/logger'
 
-import { configuracionService, type ActualizarConfiguracionDTO, type ConfiguracionRecargo, type CrearConfiguracionDTO } from '../services/configuracion.service'
+import {
+  configuracionService,
+  type ActualizarConfiguracionDTO,
+  type ConfiguracionRecargo,
+  type CrearConfiguracionDTO,
+} from '../services/configuracion.service'
 
 export function useConfiguracion() {
-  const [configuraciones, setConfiguraciones] = useState<ConfiguracionRecargo[]>([])
+  const [configuraciones, setConfiguraciones] = useState<
+    ConfiguracionRecargo[]
+  >([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [modoEdicion, setModoEdicion] = useState(false)
-  const [configuracionSeleccionada, setConfiguracionSeleccionada] = useState<ConfiguracionRecargo | null>(null)
+  const [configuracionSeleccionada, setConfiguracionSeleccionada] =
+    useState<ConfiguracionRecargo | null>(null)
 
   // Cargar configuraciones
   const cargarConfiguraciones = useCallback(async () => {
@@ -33,56 +41,68 @@ export function useConfiguracion() {
   }, [])
 
   // Crear configuración
-  const crear = useCallback(async (datos: CrearConfiguracionDTO) => {
-    try {
-      await configuracionService.crear(datos)
-      await cargarConfiguraciones()
-      return true
-    } catch (err) {
-      logger.error('Error creando configuración:', err)
-      setError('Error al crear configuración')
-      return false
-    }
-  }, [cargarConfiguraciones])
+  const crear = useCallback(
+    async (datos: CrearConfiguracionDTO) => {
+      try {
+        await configuracionService.crear(datos)
+        await cargarConfiguraciones()
+        return true
+      } catch (err) {
+        logger.error('Error creando configuración:', err)
+        setError('Error al crear configuración')
+        return false
+      }
+    },
+    [cargarConfiguraciones]
+  )
 
   // Actualizar configuración
-  const actualizar = useCallback(async (id: string, datos: ActualizarConfiguracionDTO) => {
-    try {
-      await configuracionService.actualizar(id, datos)
-      await cargarConfiguraciones()
-      return true
-    } catch (err) {
-      logger.error('Error actualizando configuración:', err)
-      setError('Error al actualizar configuración')
-      return false
-    }
-  }, [cargarConfiguraciones])
+  const actualizar = useCallback(
+    async (id: string, datos: ActualizarConfiguracionDTO) => {
+      try {
+        await configuracionService.actualizar(id, datos)
+        await cargarConfiguraciones()
+        return true
+      } catch (err) {
+        logger.error('Error actualizando configuración:', err)
+        setError('Error al actualizar configuración')
+        return false
+      }
+    },
+    [cargarConfiguraciones]
+  )
 
   // Eliminar configuración
-  const eliminar = useCallback(async (id: string) => {
-    try {
-      await configuracionService.eliminar(id)
-      await cargarConfiguraciones()
-      return true
-    } catch (err) {
-      logger.error('Error eliminando configuración:', err)
-      setError('Error al eliminar configuración')
-      return false
-    }
-  }, [cargarConfiguraciones])
+  const eliminar = useCallback(
+    async (id: string) => {
+      try {
+        await configuracionService.eliminar(id)
+        await cargarConfiguraciones()
+        return true
+      } catch (err) {
+        logger.error('Error eliminando configuración:', err)
+        setError('Error al eliminar configuración')
+        return false
+      }
+    },
+    [cargarConfiguraciones]
+  )
 
   // Toggle activo
-  const toggleActivo = useCallback(async (id: string, activo: boolean) => {
-    try {
-      await configuracionService.toggleActivo(id, activo)
-      await cargarConfiguraciones()
-      return true
-    } catch (err) {
-      logger.error('Error cambiando estado:', err)
-      setError('Error al cambiar estado')
-      return false
-    }
-  }, [cargarConfiguraciones])
+  const toggleActivo = useCallback(
+    async (id: string, activo: boolean) => {
+      try {
+        await configuracionService.toggleActivo(id, activo)
+        await cargarConfiguraciones()
+        return true
+      } catch (err) {
+        logger.error('Error cambiando estado:', err)
+        setError('Error al cambiar estado')
+        return false
+      }
+    },
+    [cargarConfiguraciones]
+  )
 
   // Abrir modal de edición
   const abrirEdicion = useCallback((configuracion: ConfiguracionRecargo) => {

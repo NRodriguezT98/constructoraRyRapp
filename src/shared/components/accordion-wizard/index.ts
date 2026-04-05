@@ -4,9 +4,16 @@
 
 // Types
 export type {
-    AccordionWizardFieldProps, AccordionWizardLayoutProps, AccordionWizardNavigationProps, AccordionWizardSectionProps, AccordionWizardSelectProps,
-    AccordionWizardTextareaProps, BreadcrumbItem, SectionStatus,
-    SummaryItem, WizardStepConfig
+  AccordionWizardFieldProps,
+  AccordionWizardLayoutProps,
+  AccordionWizardNavigationProps,
+  AccordionWizardSectionProps,
+  AccordionWizardSelectProps,
+  AccordionWizardTextareaProps,
+  BreadcrumbItem,
+  SectionStatus,
+  SummaryItem,
+  WizardStepConfig,
 } from './accordion-wizard.types'
 
 // Styles
@@ -14,16 +21,20 @@ export { getAccordionWizardStyles } from './accordion-wizard.styles'
 
 // Animations
 export {
-    checkAppearAnim,
-    errorShakeAnim, fieldStaggerAnim, pageEnterAnim, progressBarTransition, sectionExpandAnim,
-    summaryAppearAnim
+  checkAppearAnim,
+  errorShakeAnim,
+  fieldStaggerAnim,
+  pageEnterAnim,
+  progressBarTransition,
+  sectionExpandAnim,
+  summaryAppearAnim,
 } from './accordion-wizard.animations'
 
 // Components
 export {
-    AccordionWizardField,
-    AccordionWizardSelect,
-    AccordionWizardTextarea
+  AccordionWizardField,
+  AccordionWizardSelect,
+  AccordionWizardTextarea,
 } from './AccordionWizardField'
 export { AccordionWizardHero } from './AccordionWizardHero'
 export { AccordionWizardLayout } from './AccordionWizardLayout'

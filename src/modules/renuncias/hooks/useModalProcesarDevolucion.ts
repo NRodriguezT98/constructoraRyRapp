@@ -15,13 +15,18 @@ export interface UseModalProcesarDevolucionProps {
   onExitosa?: () => void
 }
 
-export function useModalProcesarDevolucion({ renunciaId, onExitosa }: UseModalProcesarDevolucionProps) {
+export function useModalProcesarDevolucion({
+  renunciaId,
+  onExitosa,
+}: UseModalProcesarDevolucionProps) {
   // ── Mutation ───────────────────────────────────────────────────────────
   const procesarMutation = useProcesarDevolucion()
 
   // ── Formulario ─────────────────────────────────────────────────────────
   const [fechaDevolucion, setFechaDevolucion] = useState(getTodayDateString())
-  const [metodoDevolucion, setMetodoDevolucion] = useState<MetodoDevolucion>(METODOS_DEVOLUCION[0])
+  const [metodoDevolucion, setMetodoDevolucion] = useState<MetodoDevolucion>(
+    METODOS_DEVOLUCION[0]
+  )
   const [numeroComprobante, setNumeroComprobante] = useState('')
   const [notasCierre, setNotasCierre] = useState('')
   const [comprobante, setComprobante] = useState<File | null>(null)

@@ -35,7 +35,12 @@ function findLastImportEndIndex(lines) {
     const line = lines[i]
 
     // Skip comments and empty lines before imports start
-    if (line.trim() === '' || line.trim().startsWith('//') || line.trim().startsWith('*') || line.trim().startsWith('/*')) {
+    if (
+      line.trim() === '' ||
+      line.trim().startsWith('//') ||
+      line.trim().startsWith('*') ||
+      line.trim().startsWith('/*')
+    ) {
       i++
       continue
     }
@@ -48,20 +53,23 @@ function findLastImportEndIndex(lines) {
 
     if (line.trimStart().startsWith('import ')) {
       // Check if it's a single-line import (contains ' from ')
-      if (line.includes(' from ') || line.includes("\tfrom ")) {
+      if (line.includes(' from ') || line.includes('\tfrom ')) {
         lastEndIdx = i
         i++
       } else if (line.includes('{')) {
         // Multi-line import — find closing '} from'
         let j = i
         while (j < lines.length) {
-          if (lines[j].includes('} from ') || lines[j].includes("} from\t")) {
+          if (lines[j].includes('} from ') || lines[j].includes('} from\t')) {
             lastEndIdx = j
             i = j + 1
             break
           }
           j++
-          if (j - i > 50) { i++; break } // Safety: max 50 lines for an import
+          if (j - i > 50) {
+            i++
+            break
+          } // Safety: max 50 lines for an import
         }
       } else {
         // `import 'side-effect'` style
@@ -115,7 +123,11 @@ console.log('\n=== Fix 1: console.* → logger.* ===')
 const LOGGER_IMPORT = "import { logger } from '@/lib/utils/logger'"
 
 const consoleFiles = eslintData
-  .filter(f => f.messages.some(m => m.ruleId === 'no-console' || m.ruleId === 'no-restricted-syntax'))
+  .filter(f =>
+    f.messages.some(
+      m => m.ruleId === 'no-console' || m.ruleId === 'no-restricted-syntax'
+    )
+  )
   .map(f => f.filePath)
 
 console.log('Files:', consoleFiles.length)
@@ -135,7 +147,9 @@ for (const filePath of consoleFiles) {
 
   if (content === original) continue
 
-  const hasLogger = content.includes("from '@/lib/utils/logger'") || content.includes('from "@/lib/utils/logger"')
+  const hasLogger =
+    content.includes("from '@/lib/utils/logger'") ||
+    content.includes('from "@/lib/utils/logger"')
   if (!hasLogger) {
     content = insertAfterLastImport(content, LOGGER_IMPORT)
   }
@@ -161,7 +175,10 @@ for (const filePath of anyFiles) {
   content = content.replace(/Record<string,\s*any>/g, 'Record<string, unknown>')
   content = content.replace(/Array<any>/g, 'Array<unknown>')
   content = content.replace(/Promise<any>/g, 'Promise<unknown>')
-  content = content.replace(/catch\s*\(\s*(\w+)\s*:\s*any\s*\)/g, 'catch ($1: unknown)')
+  content = content.replace(
+    /catch\s*\(\s*(\w+)\s*:\s*any\s*\)/g,
+    'catch ($1: unknown)'
+  )
 
   if (content !== original) {
     fs.writeFileSync(filePath, content, 'utf8')
@@ -186,11 +203,15 @@ for (const filePath of alertFiles) {
 
   // Only replace simple alert() calls (not confirm/prompt which are more complex)
   content = content.replace(/\bwindow\.alert\s*\(/g, 'toast.info(')
-  content = content.replace(/\balert\s*\((?!.*confirm|.*prompt)/g, 'toast.info(')
+  content = content.replace(
+    /\balert\s*\((?!.*confirm|.*prompt)/g,
+    'toast.info('
+  )
 
   if (content === original) continue
 
-  const hasToast = content.includes("from 'sonner'") || content.includes('from "sonner"')
+  const hasToast =
+    content.includes("from 'sonner'") || content.includes('from "sonner"')
   if (!hasToast) {
     content = insertAfterLastImport(content, TOAST_IMPORT)
   }
@@ -211,12 +232,30 @@ let fixed4 = 0
 
 // Known patterns for deep relative imports
 const relativeReplacements = [
-  { from: /from ['"]\.\.\/\.\.\/\.\.\/\.\.\/shared\/hooks['"]/g, to: "from '@/shared/hooks'" },
-  { from: /from ['"]\.\.\/\.\.\/\.\.\/shared\/hooks['"]/g, to: "from '@/shared/hooks'" },
-  { from: /from ['"]\.\.\/\.\.\/shared\/hooks['"]/g, to: "from '@/shared/hooks'" },
-  { from: /from ['"]\.\.\/\.\.\/\.\.\/\.\.\/shared\/components/g, to: "from '@/shared/components" },
-  { from: /from ['"]\.\.\/\.\.\/\.\.\/shared\/components/g, to: "from '@/shared/components" },
-  { from: /from ['"]\.\.\/\.\.\/shared\/components/g, to: "from '@/shared/components" },
+  {
+    from: /from ['"]\.\.\/\.\.\/\.\.\/\.\.\/shared\/hooks['"]/g,
+    to: "from '@/shared/hooks'",
+  },
+  {
+    from: /from ['"]\.\.\/\.\.\/\.\.\/shared\/hooks['"]/g,
+    to: "from '@/shared/hooks'",
+  },
+  {
+    from: /from ['"]\.\.\/\.\.\/shared\/hooks['"]/g,
+    to: "from '@/shared/hooks'",
+  },
+  {
+    from: /from ['"]\.\.\/\.\.\/\.\.\/\.\.\/shared\/components/g,
+    to: "from '@/shared/components",
+  },
+  {
+    from: /from ['"]\.\.\/\.\.\/\.\.\/shared\/components/g,
+    to: "from '@/shared/components",
+  },
+  {
+    from: /from ['"]\.\.\/\.\.\/shared\/components/g,
+    to: "from '@/shared/components",
+  },
   { from: /from ['"]\.\.\/\.\.\/\.\.\/\.\.\/lib\//g, to: "from '@/lib/" },
   { from: /from ['"]\.\.\/\.\.\/\.\.\/lib\//g, to: "from '@/lib/" },
   { from: /from ['"]\.\.\/\.\.\/lib\//g, to: "from '@/lib/" },
@@ -243,12 +282,14 @@ console.log('Fixed:', fixed4)
 
 console.log('\n=== Fix 5: Unused vars prefix with _ ===')
 const unusedVarFiles = eslintData
-  .filter(f => f.messages.some(m => m.ruleId === '@typescript-eslint/no-unused-vars'))
+  .filter(f =>
+    f.messages.some(m => m.ruleId === '@typescript-eslint/no-unused-vars')
+  )
   .map(f => ({
     filePath: f.filePath,
     errors: f.messages
       .filter(m => m.ruleId === '@typescript-eslint/no-unused-vars')
-      .sort((a, b) => b.line - a.line || b.column - a.column) // Process in reverse order
+      .sort((a, b) => b.line - a.line || b.column - a.column), // Process in reverse order
   }))
 
 console.log('Files:', unusedVarFiles.length)
@@ -263,7 +304,9 @@ for (const { filePath, errors } of unusedVarFiles) {
     const line = lines[lineIdx]
     if (!line) continue
 
-    const nameMatch = err.message.match(/'(\w+)' is (?:defined|assigned a value) but never used/)
+    const nameMatch = err.message.match(
+      /'(\w+)' is (?:defined|assigned a value) but never used/
+    )
     if (!nameMatch) continue
 
     const varName = nameMatch[1]

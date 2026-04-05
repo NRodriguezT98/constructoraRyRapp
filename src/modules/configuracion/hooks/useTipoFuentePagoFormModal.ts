@@ -17,8 +17,8 @@ import type { TipoFuentePago } from '../types'
 import { TIPO_FUENTE_PAGO_LIMITS } from '../types'
 
 import {
-    useActualizarTipoFuentePago,
-    useCrearTipoFuentePago,
+  useActualizarTipoFuentePago,
+  useCrearTipoFuentePago,
 } from './useTiposFuentesPago'
 
 // =====================================================
@@ -28,19 +28,34 @@ import {
 const tipoFuentePagoSchema = z.object({
   nombre: z
     .string()
-    .min(TIPO_FUENTE_PAGO_LIMITS.NOMBRE_MIN, `Mínimo ${TIPO_FUENTE_PAGO_LIMITS.NOMBRE_MIN} caracteres`)
-    .max(TIPO_FUENTE_PAGO_LIMITS.NOMBRE_MAX, `Máximo ${TIPO_FUENTE_PAGO_LIMITS.NOMBRE_MAX} caracteres`)
+    .min(
+      TIPO_FUENTE_PAGO_LIMITS.NOMBRE_MIN,
+      `Mínimo ${TIPO_FUENTE_PAGO_LIMITS.NOMBRE_MIN} caracteres`
+    )
+    .max(
+      TIPO_FUENTE_PAGO_LIMITS.NOMBRE_MAX,
+      `Máximo ${TIPO_FUENTE_PAGO_LIMITS.NOMBRE_MAX} caracteres`
+    )
     .trim(),
   codigo: z
     .string()
-    .min(TIPO_FUENTE_PAGO_LIMITS.CODIGO_MIN, `Mínimo ${TIPO_FUENTE_PAGO_LIMITS.CODIGO_MIN} caracteres`)
-    .max(TIPO_FUENTE_PAGO_LIMITS.CODIGO_MAX, `Máximo ${TIPO_FUENTE_PAGO_LIMITS.CODIGO_MAX} caracteres`)
+    .min(
+      TIPO_FUENTE_PAGO_LIMITS.CODIGO_MIN,
+      `Mínimo ${TIPO_FUENTE_PAGO_LIMITS.CODIGO_MIN} caracteres`
+    )
+    .max(
+      TIPO_FUENTE_PAGO_LIMITS.CODIGO_MAX,
+      `Máximo ${TIPO_FUENTE_PAGO_LIMITS.CODIGO_MAX} caracteres`
+    )
     .regex(/^[a-z0-9_]+$/, 'Solo letras minúsculas, números y guiones bajos')
     .trim(),
   descripcion: z
     .string()
-    .max(TIPO_FUENTE_PAGO_LIMITS.DESCRIPCION_MAX, `Máximo ${TIPO_FUENTE_PAGO_LIMITS.DESCRIPCION_MAX} caracteres`)
-    .transform((val) => val || ''), // ✅ Transforma vacío a ''
+    .max(
+      TIPO_FUENTE_PAGO_LIMITS.DESCRIPCION_MAX,
+      `Máximo ${TIPO_FUENTE_PAGO_LIMITS.DESCRIPCION_MAX} caracteres`
+    )
+    .transform(val => val || ''), // ✅ Transforma vacío a ''
   requiere_entidad: z.boolean(),
   permite_multiples_abonos: z.boolean(),
   es_subsidio: z.boolean(),
@@ -71,8 +86,14 @@ const tipoFuentePagoSchema = z.object({
   orden: z
     .number()
     .int('Debe ser un número entero')
-    .min(TIPO_FUENTE_PAGO_LIMITS.ORDEN_MIN, `Mínimo ${TIPO_FUENTE_PAGO_LIMITS.ORDEN_MIN}`)
-    .max(TIPO_FUENTE_PAGO_LIMITS.ORDEN_MAX, `Máximo ${TIPO_FUENTE_PAGO_LIMITS.ORDEN_MAX}`),
+    .min(
+      TIPO_FUENTE_PAGO_LIMITS.ORDEN_MIN,
+      `Mínimo ${TIPO_FUENTE_PAGO_LIMITS.ORDEN_MIN}`
+    )
+    .max(
+      TIPO_FUENTE_PAGO_LIMITS.ORDEN_MAX,
+      `Máximo ${TIPO_FUENTE_PAGO_LIMITS.ORDEN_MAX}`
+    ),
   activo: z.boolean(),
 })
 
@@ -141,12 +162,13 @@ export function useTipoFuentePagoFormModal({
     },
   })
 
-  const { mutate: actualizar, isPending: isUpdating } = useActualizarTipoFuentePago({
-    onSuccess: () => {
-      onSuccess?.()
-      onClose()
-    },
-  })
+  const { mutate: actualizar, isPending: isUpdating } =
+    useActualizarTipoFuentePago({
+      onSuccess: () => {
+        onSuccess?.()
+        onClose()
+      },
+    })
 
   const isPending = isCreating || isUpdating
 

@@ -24,7 +24,9 @@ async function verificarEstructura() {
     Object.keys(data[0]).forEach(col => {
       const value = data[0][col]
       const type = typeof value
-      console.log(`  - ${col}: ${type} (ejemplo: ${value === null ? 'NULL' : JSON.stringify(value).substring(0, 50)})`)
+      console.log(
+        `  - ${col}: ${type} (ejemplo: ${value === null ? 'NULL' : JSON.stringify(value).substring(0, 50)})`
+      )
     })
   } else {
     console.log('⚠️ No hay datos en la tabla')

@@ -8,7 +8,7 @@
  * Consolida los 5 useEffect del componente original.
  *
  * Responsabilidades:
- * - Resolver slug a UUID del cliente
+ * - Recibe UUID del cliente (resolución de slug delegada al Server Component)
  * - Cargar datos del cliente con React Query
  * - Gestionar tabs activos
  * - Cargar categorías de documentos
@@ -19,11 +19,8 @@
 
 import { useCallback, useEffect, useState } from 'react'
 
-import { useRouter } from 'next/navigation'
-
 import { useAuth } from '@/contexts/auth-context'
 import { logger } from '@/lib/utils/logger'
-import { resolverSlugCliente } from '@/lib/utils/slug.utils'
 import { useDocumentoIdentidad } from '@/modules/clientes/documentos/hooks/useDocumentoIdentidad'
 import { useClienteQuery } from '@/modules/clientes/hooks'
 import { useDocumentosQuery } from '@/shared/documentos/hooks/useDocumentosQuery'
@@ -31,7 +28,7 @@ import { CategoriasService } from '@/shared/documentos/services'
 import { useDocumentosStore } from '@/shared/documentos/store/documentos.store'
 
 interface UseClienteDetalleProps {
-  clienteIdSlug: string // Puede ser slug o UUID
+  clienteId: string // UUID del cliente (resuelto en el Server Component)
 }
 
 export type TabType =
@@ -44,15 +41,15 @@ export type TabType =
   | 'vivienda-asignada'
   | 'fuentes-pago'
 
-export function useClienteDetalle({ clienteIdSlug }: UseClienteDetalleProps) {
-  const router = useRouter()
+export function useClienteDetalle({ clienteId }: UseClienteDetalleProps) {
   const { user } = useAuth()
 
   // =====================================================
   // ESTADO
   // =====================================================
 
-  const [clienteUUID, setClienteUUID] = useState<string | null>(null)
+  // clienteId ya es un UUID resuelto por el Server Component
+  const clienteUUID = clienteId
   const [activeTab, setActiveTab] = useState<TabType>('general')
   const [modalInteresAbierto, setModalInteresAbierto] = useState(false)
 
@@ -101,12 +98,12 @@ export function useClienteDetalle({ clienteIdSlug }: UseClienteDetalleProps) {
 
   // ✅ Hook de validación de documento de identidad
   const { tieneCedula, cargando: cargandoValidacion } = useDocumentoIdentidad({
-    clienteId: clienteUUID || '',
+    clienteId: clienteUUID,
   })
 
   // ✅ Query de documentos para contador
   const { documentos: documentosCliente } = useDocumentosQuery(
-    clienteUUID || '',
+    clienteUUID,
     'cliente'
   )
 
@@ -114,29 +111,14 @@ export function useClienteDetalle({ clienteIdSlug }: UseClienteDetalleProps) {
   // EFECTOS
   // =====================================================
 
-  // 1. Resolver slug a UUID
-  useEffect(() => {
-    const resolverSlug = async () => {
-      const uuid = await resolverSlugCliente(clienteIdSlug)
-      if (uuid) {
-        setClienteUUID(uuid)
-      } else {
-        logger.error('❌ [useClienteDetalle] No se pudo resolver el cliente')
-        router.push('/clientes')
-      }
-    }
-
-    resolverSlug()
-  }, [clienteIdSlug, router])
-
-  // 2. Cargar categorías al montar (si hay usuario)
+  // 1. Cargar categorías al montar (si hay usuario)
   useEffect(() => {
     if (user?.id) {
       cargarCategorias()
     }
   }, [user?.id, cargarCategorias])
 
-  // 3. Listener para cambio de tab (desde otros componentes)
+  // 2. Listener para cambio de tab (desde otros componentes)
   useEffect(() => {
     const handleCambiarTab = (event: Event) => {
       const nuevoTab = (event as CustomEvent<string>).detail as TabType
@@ -149,10 +131,8 @@ export function useClienteDetalle({ clienteIdSlug }: UseClienteDetalleProps) {
     }
   }, [])
 
-  // 4. Listener para actualización de cliente (cuando se sube cédula)
+  // 3. Listener para actualización de cliente (cuando se sube cédula)
   useEffect(() => {
-    if (!clienteUUID) return
-
     const handleClienteActualizado = () => {
       recargarCliente()
     }

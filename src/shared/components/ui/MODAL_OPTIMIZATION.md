@@ -7,6 +7,7 @@
 ### ❌ Efectos Pesados Eliminados:
 
 1. **Backdrop con gradientes animados infinitos**
+
    ```tsx
    // 2 blobs con scale + opacity animándose constantemente
    <motion.div animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] }} />
@@ -14,29 +15,34 @@
    ```
 
 2. **Spring animations en apertura/cierre**
+
    ```tsx
    transition={{ type: 'spring', damping: 25, stiffness: 300 }}
    ```
 
 3. **Borde superior con gradiente animado**
+
    ```tsx
    animate={{ backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'] }}
    transition={{ duration: 3, repeat: Infinity }}
    ```
 
 4. **Ícono Sparkles rotando infinitamente**
+
    ```tsx
    animate={{ rotate: [0, 360] }}
    transition={{ duration: 20, repeat: Infinity }}
    ```
 
 5. **Botón cerrar con scale + rotate en hover**
+
    ```tsx
    whileHover={{ scale: 1.05, rotate: 90 }}
    whileTap={{ scale: 0.95 }}
    ```
 
 6. **Content y Footer con delays**
+
    ```tsx
    initial={{ opacity: 0, y: 10 }}
    transition={{ delay: 0.1 }} // Content
@@ -57,23 +63,22 @@
 ### 1. **Eliminado Framer Motion Completamente**
 
 #### Antes (270 líneas con animaciones):
+
 ```tsx
 import { motion, AnimatePresence } from 'framer-motion'
-
-<AnimatePresence>
-  {isOpen && (
-    <motion.div /* 7+ motion components anidados */ />
-  )}
+;<AnimatePresence>
+  {isOpen && <motion.div /* 7+ motion components anidados */ />}
 </AnimatePresence>
 ```
 
 #### Después (130 líneas, renderizado directo):
+
 ```tsx
 // Sin Framer Motion
 
-{isOpen && (
-  <div /* Divs simples con CSS */ />
-)}
+{
+  isOpen && <div /* Divs simples con CSS */ />
+}
 ```
 
 **Ganancia**: -50KB bundle, apertura instantánea
@@ -83,6 +88,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 ### 2. **Backdrop Simplificado**
 
 #### Antes (Pesado):
+
 ```tsx
 <motion.div
   initial={{ opacity: 0 }}
@@ -96,6 +102,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 ```
 
 #### Después (Ligero):
+
 ```tsx
 <div className='bg-black/50 backdrop-blur-sm transition-opacity'>
   {/* Sin gradientes animados */}
@@ -109,6 +116,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 ### 3. **Modal Container Sin Spring Animations**
 
 #### Antes:
+
 ```tsx
 <motion.div
   initial={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -118,6 +126,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 ```
 
 #### Después:
+
 ```tsx
 <div className='rounded-2xl shadow-2xl'>
   {/* Renderizado directo, sin animations */}
@@ -129,12 +138,14 @@ import { motion, AnimatePresence } from 'framer-motion'
 ### 4. **Header Optimizado**
 
 #### Antes:
+
 ```tsx
 <Sparkles /* Rotando infinitamente 360° cada 20s */ />
 <motion.div animate={{ rotate: [0, 360] }} />
 ```
 
 #### Después:
+
 ```tsx
 <h2 className='text-2xl font-black'>
   {/* Solo texto con gradiente estático */}
@@ -148,6 +159,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 ### 5. **Botón Cerrar Simplificado**
 
 #### Antes:
+
 ```tsx
 <motion.button
   whileHover={{ scale: 1.05, rotate: 90 }}
@@ -159,6 +171,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 ```
 
 #### Después:
+
 ```tsx
 <button className='transition-colors hover:bg-gray-200'>
   <X className='h-5 w-5' />
@@ -170,6 +183,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 ### 6. **Content y Footer Sin Delays**
 
 #### Antes:
+
 ```tsx
 <motion.div
   initial={{ opacity: 0, y: 10 }}
@@ -181,6 +195,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 ```
 
 #### Después:
+
 ```tsx
 <div className='overflow-y-auto p-6'>
   {children} {/* Renderizado inmediato */}
@@ -192,6 +207,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 ### 7. **ConfirmModal Botones Optimizados**
 
 #### Antes (Complejo):
+
 ```tsx
 <motion.button whileHover={{ scale: 1.02 }}>
   <div className='absolute inset-0 group-hover:scale-105' />
@@ -202,8 +218,9 @@ import { motion, AnimatePresence } from 'framer-motion'
 ```
 
 #### Después (Simple):
+
 ```tsx
-<button className='bg-gradient-to-r hover:shadow-xl transition-shadow'>
+<button className='bg-gradient-to-r transition-shadow hover:shadow-xl'>
   {isLoading && <div className='animate-spin' />}
   {confirmText}
 </button>
@@ -215,26 +232,26 @@ import { motion, AnimatePresence } from 'framer-motion'
 
 ### Performance
 
-| Métrica | Antes | Después | Mejora |
-|---------|-------|---------|--------|
-| **Bundle size** | +50KB | 0KB | **-100%** |
-| **Apertura modal** | ~500ms | ~50ms | **-90%** |
-| **GPU usage** | Alto | Bajo | -70% |
-| **Animaciones** | 10+ infinitas | 0 | -100% |
-| **Layout thrashing** | Frecuente | Ninguno | -100% |
-| **Líneas de código** | 270 | 130 | **-52%** |
+| Métrica              | Antes         | Después | Mejora    |
+| -------------------- | ------------- | ------- | --------- |
+| **Bundle size**      | +50KB         | 0KB     | **-100%** |
+| **Apertura modal**   | ~500ms        | ~50ms   | **-90%**  |
+| **GPU usage**        | Alto          | Bajo    | -70%      |
+| **Animaciones**      | 10+ infinitas | 0       | -100%     |
+| **Layout thrashing** | Frecuente     | Ninguno | -100%     |
+| **Líneas de código** | 270           | 130     | **-52%**  |
 
 ### User Experience
 
-| Aspecto | Antes | Después |
-|---------|-------|---------|
-| Apertura | Lageada con spring | Instantánea |
-| Backdrop | Blur pesado + blobs | Ligero |
-| Header | Ícono rotando 24/7 | Estático |
-| Close button | Scale janky | Suave |
-| Content | Delay 0.1s | Inmediato |
-| Footer | Delay 0.15s | Inmediato |
-| Mobile | 🔴 Lag notable | 🟢 Fluido |
+| Aspecto      | Antes               | Después     |
+| ------------ | ------------------- | ----------- |
+| Apertura     | Lageada con spring  | Instantánea |
+| Backdrop     | Blur pesado + blobs | Ligero      |
+| Header       | Ícono rotando 24/7  | Estático    |
+| Close button | Scale janky         | Suave       |
+| Content      | Delay 0.1s          | Inmediato   |
+| Footer       | Delay 0.15s         | Inmediato   |
+| Mobile       | 🔴 Lag notable      | 🟢 Fluido   |
 
 ---
 
@@ -375,6 +392,7 @@ Experiencia 10x más fluida
 ### ✅ Mejores Prácticas
 
 1. **CSS transitions para efectos simples**
+
    ```css
    transition-colors
    transition-shadow
@@ -382,8 +400,11 @@ Experiencia 10x más fluida
    ```
 
 2. **Renderizado directo**
+
    ```tsx
-   {isOpen && <div />} // Mejor que AnimatePresence
+   {
+     isOpen && <div />
+   } // Mejor que AnimatePresence
    ```
 
 3. **Un solo backdrop-blur**
@@ -431,6 +452,7 @@ Experiencia 10x más fluida
 ---
 
 **Filosofía**:
+
 > "Un modal debe abrirse tan rápido que el usuario no note la transición"
 
 ---

@@ -9,14 +9,14 @@ import { supabase as supabaseSingleton } from '@/lib/supabase/client'
 import { logger } from '@/lib/utils/logger'
 
 import type {
-    ActualizarEntidadFinancieraDTO,
-    CrearEntidadFinancieraDTO,
-    EntidadesFinancierasFilters,
-    EntidadesFinancierasOrderBy,
-    EntidadesFinancierasStats,
-    EntidadFinanciera,
-    EntidadFinancieraResult,
-    TipoEntidadFinanciera,
+  ActualizarEntidadFinancieraDTO,
+  CrearEntidadFinancieraDTO,
+  EntidadesFinancierasFilters,
+  EntidadesFinancierasOrderBy,
+  EntidadesFinancierasStats,
+  EntidadFinanciera,
+  EntidadFinancieraResult,
+  TipoEntidadFinanciera,
 } from '../types/entidades-financieras.types'
 
 export class EntidadesFinancierasService {
@@ -34,9 +34,7 @@ export class EntidadesFinancierasService {
     orderBy?: EntidadesFinancierasOrderBy
   ): Promise<EntidadFinancieraResult<EntidadFinanciera[]>> {
     try {
-      let query = this.supabase
-        .from('entidades_financieras')
-        .select('*')
+      let query = this.supabase.from('entidades_financieras').select('*')
 
       // Aplicar filtros
       if (filters?.tipo) {
@@ -77,7 +75,9 @@ export class EntidadesFinancierasService {
   /**
    * Obtener entidad por ID
    */
-  async getById(id: string): Promise<EntidadFinancieraResult<EntidadFinanciera | null>> {
+  async getById(
+    id: string
+  ): Promise<EntidadFinancieraResult<EntidadFinanciera | null>> {
     try {
       const { data, error } = await this.supabase
         .from('entidades_financieras')
@@ -100,7 +100,9 @@ export class EntidadesFinancierasService {
   /**
    * Obtener entidad por código
    */
-  async getByCodigo(codigo: string): Promise<EntidadFinancieraResult<EntidadFinanciera | null>> {
+  async getByCodigo(
+    codigo: string
+  ): Promise<EntidadFinancieraResult<EntidadFinanciera | null>> {
     try {
       const { data, error } = await this.supabase
         .from('entidades_financieras')
@@ -128,8 +130,13 @@ export class EntidadesFinancierasService {
   /**
    * Obtener solo entidades activas (para formularios)
    */
-  async getActivas(tipo?: TipoEntidadFinanciera): Promise<EntidadFinancieraResult<EntidadFinanciera[]>> {
-    return this.getAll({ activo: true, tipo }, { column: 'orden', ascending: true })
+  async getActivas(
+    tipo?: TipoEntidadFinanciera
+  ): Promise<EntidadFinancieraResult<EntidadFinanciera[]>> {
+    return this.getAll(
+      { activo: true, tipo },
+      { column: 'orden', ascending: true }
+    )
   }
 
   /**
@@ -137,13 +144,17 @@ export class EntidadesFinancierasService {
    * Usa la función SQL get_entidades_por_tipo_fuente() con índice GIN optimizado
    * @param tipoFuenteId UUID del tipo de fuente de pago desde tipos_fuentes_pago
    */
-  async getActivasPorTipoFuente(tipoFuenteId: string): Promise<EntidadFinancieraResult<EntidadFinanciera[]>> {
+  async getActivasPorTipoFuente(
+    tipoFuenteId: string
+  ): Promise<EntidadFinancieraResult<EntidadFinanciera[]>> {
     try {
-      const { data, error } = await this.supabase
-        .rpc('get_entidades_por_tipo_fuente', {
+      const { data, error } = await this.supabase.rpc(
+        'get_entidades_por_tipo_fuente',
+        {
           p_tipo_fuente_id: tipoFuenteId,
-          p_solo_activas: true
-        })
+          p_solo_activas: true,
+        }
+      )
 
       if (error) throw error
 
@@ -160,7 +171,9 @@ export class EntidadesFinancierasService {
   /**
    * Obtener estadísticas
    */
-  async getStats(): Promise<EntidadFinancieraResult<EntidadesFinancierasStats>> {
+  async getStats(): Promise<
+    EntidadFinancieraResult<EntidadesFinancierasStats>
+  > {
     try {
       const { data, error } = await this.supabase
         .from('entidades_financieras')
@@ -170,13 +183,15 @@ export class EntidadesFinancierasService {
 
       const stats: EntidadesFinancierasStats = {
         total: data.length,
-        activas: data.filter((e) => e.activo).length,
-        inactivas: data.filter((e) => !e.activo).length,
+        activas: data.filter(e => e.activo).length,
+        inactivas: data.filter(e => !e.activo).length,
         porTipo: {
-          Banco: data.filter((e) => e.tipo === 'Banco').length,
-          'Caja de Compensación': data.filter((e) => e.tipo === 'Caja de Compensación').length,
-          Cooperativa: data.filter((e) => e.tipo === 'Cooperativa').length,
-          Otro: data.filter((e) => e.tipo === 'Otro').length,
+          Banco: data.filter(e => e.tipo === 'Banco').length,
+          'Caja de Compensación': data.filter(
+            e => e.tipo === 'Caja de Compensación'
+          ).length,
+          Cooperativa: data.filter(e => e.tipo === 'Cooperativa').length,
+          Otro: data.filter(e => e.tipo === 'Otro').length,
         },
       }
 
@@ -197,7 +212,9 @@ export class EntidadesFinancierasService {
   /**
    * Crear nueva entidad
    */
-  async create(dto: CrearEntidadFinancieraDTO): Promise<EntidadFinancieraResult<EntidadFinanciera>> {
+  async create(
+    dto: CrearEntidadFinancieraDTO
+  ): Promise<EntidadFinancieraResult<EntidadFinanciera>> {
     try {
       // Validar nombre único
       const existeNombre = await this.existeNombre(dto.nombre)
@@ -212,7 +229,9 @@ export class EntidadesFinancierasService {
       }
 
       // Obtener user ID
-      const { data: { user } } = await this.supabase.auth.getUser()
+      const {
+        data: { user },
+      } = await this.supabase.auth.getUser()
 
       const { data, error } = await this.supabase
         .from('entidades_financieras')
@@ -263,7 +282,10 @@ export class EntidadesFinancierasService {
       if (dto.nombre) {
         const existeNombre = await this.existeNombre(dto.nombre, id)
         if (existeNombre) {
-          return { success: false, error: 'Ya existe una entidad con ese nombre' }
+          return {
+            success: false,
+            error: 'Ya existe una entidad con ese nombre',
+          }
         }
       }
 
@@ -271,27 +293,40 @@ export class EntidadesFinancierasService {
       if (dto.codigo) {
         const existeCodigo = await this.existeCodigo(dto.codigo, id)
         if (existeCodigo) {
-          return { success: false, error: 'Ya existe una entidad con ese código' }
+          return {
+            success: false,
+            error: 'Ya existe una entidad con ese código',
+          }
         }
       }
 
       // Obtener user ID
-      const { data: { user } } = await this.supabase.auth.getUser()
+      const {
+        data: { user },
+      } = await this.supabase.auth.getUser()
 
       const updateData: Record<string, unknown> = {}
 
       if (dto.nombre !== undefined) updateData.nombre = dto.nombre.trim()
-      if (dto.codigo !== undefined) updateData.codigo = dto.codigo.trim().toLowerCase()
+      if (dto.codigo !== undefined)
+        updateData.codigo = dto.codigo.trim().toLowerCase()
       if (dto.tipo !== undefined) updateData.tipo = dto.tipo
-      if (dto.tipos_fuentes_aplicables !== undefined) updateData.tipos_fuentes_aplicables = dto.tipos_fuentes_aplicables
+      if (dto.tipos_fuentes_aplicables !== undefined)
+        updateData.tipos_fuentes_aplicables = dto.tipos_fuentes_aplicables
       if (dto.nit !== undefined) updateData.nit = dto.nit?.trim() || null
-      if (dto.razon_social !== undefined) updateData.razon_social = dto.razon_social?.trim() || null
-      if (dto.telefono !== undefined) updateData.telefono = dto.telefono?.trim() || null
-      if (dto.email_contacto !== undefined) updateData.email_contacto = dto.email_contacto?.trim() || null
-      if (dto.sitio_web !== undefined) updateData.sitio_web = dto.sitio_web?.trim() || null
-      if (dto.direccion !== undefined) updateData.direccion = dto.direccion?.trim() || null
+      if (dto.razon_social !== undefined)
+        updateData.razon_social = dto.razon_social?.trim() || null
+      if (dto.telefono !== undefined)
+        updateData.telefono = dto.telefono?.trim() || null
+      if (dto.email_contacto !== undefined)
+        updateData.email_contacto = dto.email_contacto?.trim() || null
+      if (dto.sitio_web !== undefined)
+        updateData.sitio_web = dto.sitio_web?.trim() || null
+      if (dto.direccion !== undefined)
+        updateData.direccion = dto.direccion?.trim() || null
       if (dto.codigo_superintendencia !== undefined)
-        updateData.codigo_superintendencia = dto.codigo_superintendencia?.trim() || null
+        updateData.codigo_superintendencia =
+          dto.codigo_superintendencia?.trim() || null
       if (dto.notas !== undefined) updateData.notas = dto.notas?.trim() || null
       if (dto.logo_url !== undefined) updateData.logo_url = dto.logo_url || null
       if (dto.color !== undefined) updateData.color = dto.color
@@ -299,7 +334,6 @@ export class EntidadesFinancierasService {
       if (dto.activo !== undefined) updateData.activo = dto.activo
 
       updateData.updated_by = user?.id || null
-
 
       const { data, error } = await this.supabase
         .from('entidades_financieras')
@@ -323,25 +357,33 @@ export class EntidadesFinancierasService {
   /**
    * Soft delete (desactivar)
    */
-  async softDelete(id: string): Promise<EntidadFinancieraResult<EntidadFinanciera>> {
+  async softDelete(
+    id: string
+  ): Promise<EntidadFinancieraResult<EntidadFinanciera>> {
     return this.update(id, { activo: false })
   }
 
   /**
    * Reactivar entidad
    */
-  async reactivate(id: string): Promise<EntidadFinancieraResult<EntidadFinanciera>> {
+  async reactivate(
+    id: string
+  ): Promise<EntidadFinancieraResult<EntidadFinanciera>> {
     return this.update(id, { activo: true })
   }
 
   /**
    * Reordenar entidades
    */
-  async reordenar(updates: Array<{ id: string; orden: number }>): Promise<EntidadFinancieraResult<boolean>> {
+  async reordenar(
+    updates: Array<{ id: string; orden: number }>
+  ): Promise<EntidadFinancieraResult<boolean>> {
     try {
-      const { data: { user } } = await this.supabase.auth.getUser()
+      const {
+        data: { user },
+      } = await this.supabase.auth.getUser()
 
-      const promises = updates.map((update) =>
+      const promises = updates.map(update =>
         this.supabase
           .from('entidades_financieras')
           .update({ orden: update.orden, updated_by: user?.id || null })
@@ -350,7 +392,7 @@ export class EntidadesFinancierasService {
 
       const results = await Promise.all(promises)
 
-      const hasError = results.some((r) => r.error)
+      const hasError = results.some(r => r.error)
       if (hasError) {
         throw new Error('Error al reordenar algunas entidades')
       }
@@ -369,7 +411,10 @@ export class EntidadesFinancierasService {
   // VALIDACIONES PRIVADAS
   // =====================================================
 
-  private async existeNombre(nombre: string, excludeId?: string): Promise<boolean> {
+  private async existeNombre(
+    nombre: string,
+    excludeId?: string
+  ): Promise<boolean> {
     try {
       let query = this.supabase
         .from('entidades_financieras')
@@ -391,7 +436,10 @@ export class EntidadesFinancierasService {
     }
   }
 
-  private async existeCodigo(codigo: string, excludeId?: string): Promise<boolean> {
+  private async existeCodigo(
+    codigo: string,
+    excludeId?: string
+  ): Promise<boolean> {
     try {
       let query = this.supabase
         .from('entidades_financieras')

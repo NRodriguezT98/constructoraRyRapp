@@ -30,7 +30,9 @@ export interface PasswordValidationResult {
  * }
  * console.log('Fortaleza:', result.strength)
  */
-export function validatePasswordStrength(password: string): PasswordValidationResult {
+export function validatePasswordStrength(
+  password: string
+): PasswordValidationResult {
   const errors: string[] = []
   let score = 0
 
@@ -66,7 +68,10 @@ export function validatePasswordStrength(password: string): PasswordValidationRe
   }
 
   // Validación de caracteres especiales (opcional pero suma puntos)
-  if (PASSWORD_REQUIREMENTS.requireSpecialChars && !/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(password)) {
+  if (
+    PASSWORD_REQUIREMENTS.requireSpecialChars &&
+    !/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(password)
+  ) {
     errors.push('Al menos un carácter especial (!@#$%^&*...)')
   } else if (/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(password)) {
     score += 10
@@ -74,8 +79,16 @@ export function validatePasswordStrength(password: string): PasswordValidationRe
 
   // Penalización por patrones comunes
   const commonPatterns = [
-    '123456', 'password', 'qwerty', 'abc123', '111111',
-    '123123', 'admin', 'letmein', 'welcome', '123321',
+    '123456',
+    'password',
+    'qwerty',
+    'abc123',
+    '111111',
+    '123123',
+    'admin',
+    'letmein',
+    'welcome',
+    '123321',
   ]
 
   const lowerPassword = password.toLowerCase()
@@ -121,7 +134,9 @@ export function validatePasswordStrength(password: string): PasswordValidationRe
 /**
  * Obtiene el color asociado a la fortaleza de la contraseña
  */
-export function getStrengthColor(strength: PasswordValidationResult['strength']): {
+export function getStrengthColor(
+  strength: PasswordValidationResult['strength']
+): {
   bg: string
   text: string
   border: string
@@ -157,7 +172,9 @@ export function getStrengthColor(strength: PasswordValidationResult['strength'])
 /**
  * Obtiene el texto legible de la fortaleza
  */
-export function getStrengthLabel(strength: PasswordValidationResult['strength']): string {
+export function getStrengthLabel(
+  strength: PasswordValidationResult['strength']
+): string {
   switch (strength) {
     case 'very-strong':
       return 'Muy Fuerte'

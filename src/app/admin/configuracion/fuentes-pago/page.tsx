@@ -15,19 +15,19 @@ import { useState } from 'react'
 
 import { AnimatePresence, motion } from 'framer-motion'
 import {
-    AlertCircle,
-    BadgeDollarSign,
-    Banknote,
-    Building2,
-    CreditCard,
-    DollarSign,
-    HandCoins,
-    Home,
-    Landmark,
-    Settings,
-    Shield,
-    Sparkles,
-    Wallet,
+  AlertCircle,
+  BadgeDollarSign,
+  Banknote,
+  Building2,
+  CreditCard,
+  DollarSign,
+  HandCoins,
+  Home,
+  Landmark,
+  Settings,
+  Shield,
+  Sparkles,
+  Wallet,
 } from 'lucide-react'
 
 import { configuradorStyles as s } from '@/modules/configuracion/components/configurador-campos/configurador-campos.styles'
@@ -35,12 +35,14 @@ import { ConfiguradorCamposModal } from '@/modules/configuracion/components/conf
 import { useTiposFuentesConCampos } from '@/modules/configuracion/hooks/useTiposFuentesConCampos'
 import type { TipoFuentePagoConCampos } from '@/modules/configuracion/types/campos-dinamicos.types'
 
-
 // ============================================
 // ICONOS DINÁMICOS (TODOS LOS DISPONIBLES)
 // ============================================
 
-const ICONOS_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
+const ICONOS_MAP: Record<
+  string,
+  React.ComponentType<{ className?: string }>
+> = {
   Wallet,
   Building2,
   Home,
@@ -88,13 +90,19 @@ export default function FuentesPagoConfigPage() {
   // ============================================
 
   const [modalAbierto, setModalAbierto] = useState(false)
-  const [tipoSeleccionado, setTipoSeleccionado] = useState<TipoFuentePagoConCampos | null>(null)
+  const [tipoSeleccionado, setTipoSeleccionado] =
+    useState<TipoFuentePagoConCampos | null>(null)
 
   // ============================================
   // REACT QUERY
   // ============================================
 
-  const { data: tipos = [], isLoading, isError, error } = useTiposFuentesConCampos()
+  const {
+    data: tipos = [],
+    isLoading,
+    isError,
+    error,
+  } = useTiposFuentesConCampos()
 
   // ============================================
   // HANDLERS
@@ -127,20 +135,22 @@ export default function FuentesPagoConfigPage() {
         >
           <div className={s.header.pattern} />
           <div className={s.header.content}>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
+            <div className='flex items-center justify-between'>
+              <div className='flex items-center gap-3'>
                 <div className={s.header.iconContainer}>
                   <Settings className={s.header.icon} />
                 </div>
-                <div className="space-y-0.5">
-                  <h1 className={s.header.title}>Configuración de Fuentes de Pago</h1>
+                <div className='space-y-0.5'>
+                  <h1 className={s.header.title}>
+                    Configuración de Fuentes de Pago
+                  </h1>
                   <p className={s.header.subtitle}>
                     Administra los campos dinámicos de cada tipo de fuente
                   </p>
                 </div>
               </div>
               <span className={s.header.badge}>
-                <Sparkles className="w-3.5 h-3.5" />
+                <Sparkles className='h-3.5 w-3.5' />
                 {tipos.length} Tipos Activos
               </span>
             </div>
@@ -162,10 +172,12 @@ export default function FuentesPagoConfigPage() {
         {/* ============================================ */}
         {isError && (
           <div className={s.error.container}>
-            <div className="flex items-start gap-3">
+            <div className='flex items-start gap-3'>
               <AlertCircle className={s.error.icon} />
-              <div className="flex-1">
-                <p className={s.error.title}>Error al cargar tipos de fuentes</p>
+              <div className='flex-1'>
+                <p className={s.error.title}>
+                  Error al cargar tipos de fuentes
+                </p>
                 <p className={s.error.message}>{(error as Error)?.message}</p>
               </div>
             </div>
@@ -180,7 +192,7 @@ export default function FuentesPagoConfigPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.1 }}
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"
+            className='grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3'
           >
             {tipos.map((tipo, index) => {
               const Icon = obtenerIcono(tipo.icono)
@@ -220,19 +232,23 @@ export default function FuentesPagoConfigPage() {
                       </p>
 
                       {/* Badge de campos */}
-                      <div className="flex items-center gap-2 mt-2">
+                      <div className='mt-2 flex items-center gap-2'>
                         <span
                           className={s.tipoCard.badge}
                           style={{
-                            background: numCampos > 0 ? `${toHex(tipo.color)}20` : '#f3f4f620',
-                            color: numCampos > 0 ? toHex(tipo.color) : '#9ca3af',
+                            background:
+                              numCampos > 0
+                                ? `${toHex(tipo.color)}20`
+                                : '#f3f4f620',
+                            color:
+                              numCampos > 0 ? toHex(tipo.color) : '#9ca3af',
                           }}
                         >
                           {numCampos} campo{numCampos !== 1 ? 's' : ''}
                         </span>
                         {tipo.es_subsidio && (
                           <span
-                            className={`${s.tipoCard.badge} bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400`}
+                            className={`${s.tipoCard.badge} bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400`}
                           >
                             Subsidio
                           </span>
@@ -242,7 +258,7 @@ export default function FuentesPagoConfigPage() {
 
                     {/* Botón */}
                     <button
-                      type="button"
+                      type='button'
                       onClick={() => handleAbrirConfigurador(tipo)}
                       className={s.tipoCard.button}
                       style={{
@@ -250,7 +266,7 @@ export default function FuentesPagoConfigPage() {
                         color: '#fff',
                       }}
                     >
-                      <Settings className="w-4 h-4" />
+                      <Settings className='h-4 w-4' />
                       Configurar
                     </button>
                   </div>
@@ -266,26 +282,30 @@ export default function FuentesPagoConfigPage() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-            className="p-4 rounded-xl bg-gradient-to-r from-cyan-50 to-blue-50 dark:from-cyan-950/30 dark:to-blue-950/30 border border-cyan-200 dark:border-cyan-800"
+            className='rounded-xl border border-cyan-200 bg-gradient-to-r from-cyan-50 to-blue-50 p-4 dark:border-cyan-800 dark:from-cyan-950/30 dark:to-blue-950/30'
           >
-            <div className="flex items-start gap-3">
-              <AlertCircle className="w-5 h-5 text-cyan-600 dark:text-cyan-400 mt-0.5 flex-shrink-0" />
-              <div className="flex-1">
-                <p className="text-sm font-semibold text-cyan-900 dark:text-cyan-100 mb-1">
+            <div className='flex items-start gap-3'>
+              <AlertCircle className='mt-0.5 h-5 w-5 flex-shrink-0 text-cyan-600 dark:text-cyan-400' />
+              <div className='flex-1'>
+                <p className='mb-1 text-sm font-semibold text-cyan-900 dark:text-cyan-100'>
                   💡 ¿Cómo funciona?
                 </p>
-                <ul className="text-xs text-cyan-800 dark:text-cyan-200 space-y-1 list-disc list-inside">
+                <ul className='list-inside list-disc space-y-1 text-xs text-cyan-800 dark:text-cyan-200'>
                   <li>
-                    Los campos configurados aquí se mostrarán automáticamente en el formulario de
-                    asignación de viviendas
-                  </li>
-                  <li>Puedes reordenar los campos arrastrándolos en el modal de configuración</li>
-                  <li>
-                    Los cambios se reflejan inmediatamente (gracias a React Query con caché de 5
-                    minutos)
+                    Los campos configurados aquí se mostrarán automáticamente en
+                    el formulario de asignación de viviendas
                   </li>
                   <li>
-                    Tipos soportados: texto, moneda, números, fechas, selects de bancos/cajas, etc.
+                    Puedes reordenar los campos arrastrándolos en el modal de
+                    configuración
+                  </li>
+                  <li>
+                    Los cambios se reflejan inmediatamente (gracias a React
+                    Query con caché de 5 minutos)
+                  </li>
+                  <li>
+                    Tipos soportados: texto, moneda, números, fechas, selects de
+                    bancos/cajas, etc.
                   </li>
                 </ul>
               </div>

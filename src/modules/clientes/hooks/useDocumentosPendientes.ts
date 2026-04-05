@@ -12,17 +12,10 @@
  * @version 2.0.0 - 2025-12-12
  */
 
-import {
-    useQuery,
-    useQueryClient
-} from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 
-import {
-    fetchDocumentosPendientesPorCliente
-} from '@/modules/clientes/services/documentos-pendientes.service'
-import {
-    documentosPendientesKeys
-} from '@/modules/clientes/types/documentos-pendientes.types'
+import { fetchDocumentosPendientesPorCliente } from '@/modules/clientes/services/documentos-pendientes.service'
+import { documentosPendientesKeys } from '@/modules/clientes/types/documentos-pendientes.types'
 
 // ============================================
 // QUERY HOOK
@@ -47,11 +40,11 @@ export function useDocumentosPendientes(
     queryKey: documentosPendientesKeys.byCliente(clienteId),
     queryFn: () => fetchDocumentosPendientesPorCliente(clienteId),
     enabled: enabled && !!clienteId,
-    staleTime: 1000 * 30,          // ✅ 30 s — la fuente es una VIEW real-time, no cache largo
-    gcTime: 1000 * 60 * 30,        // ✅ Garbage collect después de 30 min
-    refetchOnWindowFocus: true,     // ✅ Refetch al volver a la ventana
-    refetchInterval,                // ✅ Polling opcional
-    retry: 2,                       // ✅ Reintentar 2 veces en caso de error
+    staleTime: 1000 * 30, // ✅ 30 s — la fuente es una VIEW real-time, no cache largo
+    gcTime: 1000 * 60 * 30, // ✅ Garbage collect después de 30 min
+    refetchOnWindowFocus: true, // ✅ Refetch al volver a la ventana
+    refetchInterval, // ✅ Polling opcional
+    retry: 2, // ✅ Reintentar 2 veces en caso de error
     retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
   })
 }
@@ -68,18 +61,18 @@ export function useInvalidarDocumentosPendientes() {
   return {
     invalidarPorCliente: (clienteId: string) => {
       queryClient.invalidateQueries({
-        queryKey: documentosPendientesKeys.byCliente(clienteId)
+        queryKey: documentosPendientesKeys.byCliente(clienteId),
       })
     },
     invalidarTodos: () => {
       queryClient.invalidateQueries({
-        queryKey: documentosPendientesKeys.all
+        queryKey: documentosPendientesKeys.all,
       })
     },
     refetchPorCliente: (clienteId: string) => {
       queryClient.refetchQueries({
-        queryKey: documentosPendientesKeys.byCliente(clienteId)
+        queryKey: documentosPendientesKeys.byCliente(clienteId),
       })
-    }
+    },
   }
 }

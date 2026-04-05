@@ -12,7 +12,8 @@ import type { InputHTMLAttributes } from 'react'
 import { motion } from 'framer-motion'
 import type { LucideIcon } from 'lucide-react'
 
-export interface MoneyInputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'onChange'> {
+export interface MoneyInputProps
+  extends Omit<InputHTMLAttributes<HTMLInputElement>, 'onChange'> {
   icon: LucideIcon
   label: string
   error?: string
@@ -53,7 +54,12 @@ export function MoneyInput({
             {value ? formatCurrency(value) : '$0'}
           </span>
         </div>
-        <input type='hidden' value={value || 0} onChange={onChange} {...props} />
+        <input
+          type='hidden'
+          value={value || 0}
+          onChange={onChange}
+          {...props}
+        />
         {error && (
           <motion.p
             initial={{ opacity: 0, y: -10 }}

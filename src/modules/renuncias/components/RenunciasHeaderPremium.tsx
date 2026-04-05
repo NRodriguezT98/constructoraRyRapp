@@ -9,7 +9,9 @@ interface RenunciasHeaderPremiumProps {
   totalRenuncias: number
 }
 
-export function RenunciasHeaderPremium({ totalRenuncias }: RenunciasHeaderPremiumProps) {
+export function RenunciasHeaderPremium({
+  totalRenuncias,
+}: RenunciasHeaderPremiumProps) {
   return (
     <motion.div
       initial={{ y: -10, opacity: 0 }}
@@ -33,7 +35,7 @@ export function RenunciasHeaderPremium({ totalRenuncias }: RenunciasHeaderPremiu
           </div>
           <div className={styles.header.buttonGroup}>
             <span className={styles.header.badge}>
-              <FileX className="w-3.5 h-3.5" />
+              <FileX className='h-3.5 w-3.5' />
               {totalRenuncias} Renuncias
             </span>
           </div>

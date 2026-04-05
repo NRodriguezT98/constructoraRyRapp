@@ -10,7 +10,14 @@
 'use client'
 
 import { type ColumnDef } from '@tanstack/react-table'
-import { Building2, CheckCircle2, Clock, Edit2, Home, Trash2 } from 'lucide-react'
+import {
+  Building2,
+  CheckCircle2,
+  Clock,
+  Edit2,
+  Home,
+  Trash2,
+} from 'lucide-react'
 
 import { DataTable } from '@/shared/components/table/DataTable'
 import { cn } from '@/shared/utils/helpers'
@@ -42,7 +49,7 @@ export function ViviendasTabla({
       id: 'identificador',
       header: 'Vivienda',
       size: 130,
-      accessorFn: (row) => `${row.manzanas?.nombre || ''} ${row.numero}`,
+      accessorFn: row => `${row.manzanas?.nombre || ''} ${row.numero}`,
       enableSorting: true,
       sortingFn: (rowA, rowB) => {
         const manzanaA = rowA.original.manzanas?.nombre || ''
@@ -78,12 +85,13 @@ export function ViviendasTabla({
       id: 'proyecto',
       header: 'Proyecto',
       size: 140,
-      accessorFn: (row) => row.manzanas?.proyectos?.nombre || '',
+      accessorFn: row => row.manzanas?.proyectos?.nombre || '',
       cell: ({ row }) => {
-        const nombreProyecto = row.original.manzanas?.proyectos?.nombre || 'Sin proyecto'
+        const nombreProyecto =
+          row.original.manzanas?.proyectos?.nombre || 'Sin proyecto'
         return (
-          <div className="flex items-center gap-1.5">
-            <Building2 className="w-3 h-3 text-orange-600 dark:text-orange-400 flex-shrink-0" />
+          <div className='flex items-center gap-1.5'>
+            <Building2 className='h-3 w-3 flex-shrink-0 text-orange-600 dark:text-orange-400' />
             <span className={styles.proyecto.nombre} title={nombreProyecto}>
               {nombreProyecto}
             </span>
@@ -99,7 +107,10 @@ export function ViviendasTabla({
       size: 110,
       cell: ({ row }) => (
         <div className={styles.cell.center}>
-          <span className={styles.cell.textCompact} title={row.original.nomenclatura || 'N/A'}>
+          <span
+            className={styles.cell.textCompact}
+            title={row.original.nomenclatura || 'N/A'}
+          >
             {row.original.nomenclatura || 'N/A'}
           </span>
         </div>
@@ -113,7 +124,10 @@ export function ViviendasTabla({
       size: 100,
       cell: ({ row }) => (
         <div className={styles.cell.center}>
-          <span className={styles.cell.textCompact} title={row.original.matricula_inmobiliaria || 'N/A'}>
+          <span
+            className={styles.cell.textCompact}
+            title={row.original.matricula_inmobiliaria || 'N/A'}
+          >
             {row.original.matricula_inmobiliaria || 'N/A'}
           </span>
         </div>
@@ -153,15 +167,18 @@ export function ViviendasTabla({
                 esDisponible && styles.badge.disponible,
                 esAsignada && styles.badge.asignada,
                 esEntregada && styles.badge.entregada,
-                !esDisponible && !esAsignada && !esEntregada && styles.badge.default
+                !esDisponible &&
+                  !esAsignada &&
+                  !esEntregada &&
+                  styles.badge.default
               )}
             >
               {esDisponible ? (
-                <CheckCircle2 className="w-3 h-3 flex-shrink-0" />
+                <CheckCircle2 className='h-3 w-3 flex-shrink-0' />
               ) : esAsignada ? (
-                <Clock className="w-3 h-3 flex-shrink-0" />
+                <Clock className='h-3 w-3 flex-shrink-0' />
               ) : esEntregada ? (
-                <CheckCircle2 className="w-3 h-3 flex-shrink-0" />
+                <CheckCircle2 className='h-3 w-3 flex-shrink-0' />
               ) : null}
               <span>{estado}</span>
             </div>
@@ -175,18 +192,26 @@ export function ViviendasTabla({
       id: 'saldo',
       header: 'Valor',
       size: 155,
-      accessorFn: (row) => row.saldo_pendiente || 0,
+      accessorFn: row => row.saldo_pendiente || 0,
       enableSorting: true,
       cell: ({ row }) => {
-        const estaAsignada = row.original.estado === 'Asignada' || row.original.estado === 'Entregada'
+        const estaAsignada =
+          row.original.estado === 'Asignada' ||
+          row.original.estado === 'Entregada'
         if (!estaAsignada) {
           return (
             <div className={styles.cell.center}>
-              <div className="flex flex-col items-center gap-0.5 py-0.5">
-                <span className="text-xs font-semibold text-gray-700 dark:text-gray-300">
-                  {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(row.original.valor_total || 0)}
+              <div className='flex flex-col items-center gap-0.5 py-0.5'>
+                <span className='text-xs font-semibold text-gray-700 dark:text-gray-300'>
+                  {new Intl.NumberFormat('es-CO', {
+                    style: 'currency',
+                    currency: 'COP',
+                    minimumFractionDigits: 0,
+                  }).format(row.original.valor_total || 0)}
                 </span>
-                <span className="text-[10px] text-gray-400 dark:text-gray-500">Valor total</span>
+                <span className='text-[10px] text-gray-400 dark:text-gray-500'>
+                  Valor total
+                </span>
               </div>
             </div>
           )
@@ -195,16 +220,28 @@ export function ViviendasTabla({
         const saldo = row.original.saldo_pendiente || 0
         const pagadoCompleto = saldo === 0 && valorTotal > 0
         const fmt = (v: number) =>
-          new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0, maximumFractionDigits: 0 })
-            .format(v).replace(/\s/g, '')
+          new Intl.NumberFormat('es-CO', {
+            style: 'currency',
+            currency: 'COP',
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0,
+          })
+            .format(v)
+            .replace(/\s/g, '')
         return (
-          <div className="flex flex-col items-center gap-0.5 py-0.5">
-            <span className={`text-xs font-bold leading-tight ${
-              pagadoCompleto ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500 dark:text-red-400'
-            }`}>
+          <div className='flex flex-col items-center gap-0.5 py-0.5'>
+            <span
+              className={`text-xs font-bold leading-tight ${
+                pagadoCompleto
+                  ? 'text-emerald-600 dark:text-emerald-400'
+                  : 'text-red-500 dark:text-red-400'
+              }`}
+            >
               {pagadoCompleto ? '✓ Pagado' : fmt(saldo)}
             </span>
-            <span className="text-[10px] text-gray-400 dark:text-gray-500 leading-none">de {fmt(valorTotal)}</span>
+            <span className='text-[10px] leading-none text-gray-400 dark:text-gray-500'>
+              de {fmt(valorTotal)}
+            </span>
           </div>
         )
       },
@@ -215,13 +252,23 @@ export function ViviendasTabla({
       id: 'progreso',
       header: 'Progreso',
       size: 72,
-      accessorFn: (row) => row.porcentaje_pagado || 0,
+      accessorFn: row => row.porcentaje_pagado || 0,
       enableSorting: true,
-      sortingFn: (rowA, rowB) => (rowA.original.porcentaje_pagado || 0) - (rowB.original.porcentaje_pagado || 0),
+      sortingFn: (rowA, rowB) =>
+        (rowA.original.porcentaje_pagado || 0) -
+        (rowB.original.porcentaje_pagado || 0),
       cell: ({ row }) => {
-        const estaAsignada = row.original.estado === 'Asignada' || row.original.estado === 'Entregada'
+        const estaAsignada =
+          row.original.estado === 'Asignada' ||
+          row.original.estado === 'Entregada'
         if (!estaAsignada) {
-          return <div className={styles.cell.center}><span className="text-xs text-gray-400 dark:text-gray-500">—</span></div>
+          return (
+            <div className={styles.cell.center}>
+              <span className='text-xs text-gray-400 dark:text-gray-500'>
+                —
+              </span>
+            </div>
+          )
         }
         const valorTotal = row.original.valor_total || 0
         const saldo = row.original.saldo_pendiente || 0
@@ -229,18 +276,42 @@ export function ViviendasTabla({
         const pagadoCompleto = saldo === 0 && valorTotal > 0
         const CIRCUNFERENCIA = 87.96
         const strokeDash = (porcentaje / 100) * CIRCUNFERENCIA
-        const ringColor = pagadoCompleto ? '#10b981' : porcentaje >= 50 ? '#3b82f6' : '#f59e0b'
+        const ringColor = pagadoCompleto
+          ? '#10b981'
+          : porcentaje >= 50
+            ? '#3b82f6'
+            : '#f59e0b'
         return (
           <div className={styles.cell.center}>
-            <div className="relative w-9 h-9">
-              <svg width="36" height="36" viewBox="0 0 36 36" style={{ transform: 'rotate(-90deg)' }}>
-                <circle cx="18" cy="18" r="14" fill="none" stroke="currentColor" strokeWidth="4"
-                  className="text-gray-200 dark:text-gray-700" />
-                <circle cx="18" cy="18" r="14" fill="none" stroke={ringColor} strokeWidth="4"
-                  strokeLinecap="round" strokeDasharray={`${strokeDash} ${CIRCUNFERENCIA}`} />
+            <div className='relative h-9 w-9'>
+              <svg
+                width='36'
+                height='36'
+                viewBox='0 0 36 36'
+                style={{ transform: 'rotate(-90deg)' }}
+              >
+                <circle
+                  cx='18'
+                  cy='18'
+                  r='14'
+                  fill='none'
+                  stroke='currentColor'
+                  strokeWidth='4'
+                  className='text-gray-200 dark:text-gray-700'
+                />
+                <circle
+                  cx='18'
+                  cy='18'
+                  r='14'
+                  fill='none'
+                  stroke={ringColor}
+                  strokeWidth='4'
+                  strokeLinecap='round'
+                  strokeDasharray={`${strokeDash} ${CIRCUNFERENCIA}`}
+                />
               </svg>
-              <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-[9px] font-bold text-gray-700 dark:text-gray-200 leading-none">
+              <div className='absolute inset-0 flex items-center justify-center'>
+                <span className='text-[9px] font-bold leading-none text-gray-700 dark:text-gray-200'>
                   {pagadoCompleto ? '✓' : `${porcentaje}%`}
                 </span>
               </div>
@@ -260,18 +331,30 @@ export function ViviendasTabla({
         <div className={styles.actions.container}>
           {canEdit && onEdit && (
             <button
-              onClick={(e) => { e.stopPropagation(); onEdit(row.original) }}
-              className={cn(styles.actions.button.base, styles.actions.button.edit)}
-              title="Editar"
+              onClick={e => {
+                e.stopPropagation()
+                onEdit(row.original)
+              }}
+              className={cn(
+                styles.actions.button.base,
+                styles.actions.button.edit
+              )}
+              title='Editar'
             >
               <Edit2 className={styles.actions.icon} />
             </button>
           )}
           {canDelete && onDelete && (
             <button
-              onClick={(e) => { e.stopPropagation(); onDelete(row.original.id) }}
-              className={cn(styles.actions.button.base, styles.actions.button.delete)}
-              title="Eliminar"
+              onClick={e => {
+                e.stopPropagation()
+                onDelete(row.original.id)
+              }}
+              className={cn(
+                styles.actions.button.base,
+                styles.actions.button.delete
+              )}
+              title='Eliminar'
             >
               <Trash2 className={styles.actions.icon} />
             </button>
@@ -282,10 +365,15 @@ export function ViviendasTabla({
   ]
 
   return (
-    <div className="viviendas-tabla-wrapper w-full">
+    <div className='viviendas-tabla-wrapper w-full'>
       <style jsx>{`
         .viviendas-tabla-wrapper :global(thead) {
-          background: linear-gradient(135deg, #ea580c 0%, #d97706 50%, #ca8a04 100%) !important;
+          background: linear-gradient(
+            135deg,
+            #ea580c 0%,
+            #d97706 50%,
+            #ca8a04 100%
+          ) !important;
         }
         .viviendas-tabla-wrapper :global(thead th) {
           color: white !important;
@@ -298,7 +386,12 @@ export function ViviendasTabla({
           opacity: 0.6 !important;
         }
         .viviendas-tabla-wrapper :global(tbody tr:hover) {
-          background: linear-gradient(90deg, rgba(234, 88, 12, 0.05) 0%, rgba(217, 119, 6, 0.05) 50%, rgba(202, 138, 4, 0.05) 100%) !important;
+          background: linear-gradient(
+            90deg,
+            rgba(234, 88, 12, 0.05) 0%,
+            rgba(217, 119, 6, 0.05) 50%,
+            rgba(202, 138, 4, 0.05) 100%
+          ) !important;
         }
         .viviendas-tabla-wrapper :global(tbody tr) {
           transition: all 0.2s ease;
@@ -307,7 +400,7 @@ export function ViviendasTabla({
       <DataTable
         columns={columns}
         data={viviendas}
-        gradientColor="orange"
+        gradientColor='orange'
         pageSize={10}
         initialSorting={[
           {

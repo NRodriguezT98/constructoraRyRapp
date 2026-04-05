@@ -84,20 +84,28 @@ async function verificarTablasModulos() {
     })
 
     // 5. Resumen
-    const totalDocs = parseInt(proyectos.rows[0].total) +
-                      parseInt(viviendas.rows[0].total) +
-                      parseInt(clientes.rows[0].total)
+    const totalDocs =
+      parseInt(proyectos.rows[0].total) +
+      parseInt(viviendas.rows[0].total) +
+      parseInt(clientes.rows[0].total)
 
     console.log('\n' + '='.repeat(70))
     console.log('\n📈 RESUMEN:')
     console.log(`   Total documentos en sistema: ${totalDocs}`)
     console.log(`   Distribución:`)
-    console.log(`     - Proyectos: ${proyectos.rows[0].total} docs (${((proyectos.rows[0].total / totalDocs) * 100).toFixed(1)}%)`)
-    console.log(`     - Viviendas: ${viviendas.rows[0].total} docs (${((viviendas.rows[0].total / totalDocs) * 100).toFixed(1)}%)`)
-    console.log(`     - Clientes: ${clientes.rows[0].total} docs (${((clientes.rows[0].total / totalDocs) * 100).toFixed(1)}%)`)
+    console.log(
+      `     - Proyectos: ${proyectos.rows[0].total} docs (${((proyectos.rows[0].total / totalDocs) * 100).toFixed(1)}%)`
+    )
+    console.log(
+      `     - Viviendas: ${viviendas.rows[0].total} docs (${((viviendas.rows[0].total / totalDocs) * 100).toFixed(1)}%)`
+    )
+    console.log(
+      `     - Clientes: ${clientes.rows[0].total} docs (${((clientes.rows[0].total / totalDocs) * 100).toFixed(1)}%)`
+    )
 
-    console.log('\n✅ VERIFICACIÓN COMPLETADA: Cada módulo usa su tabla correcta\n')
-
+    console.log(
+      '\n✅ VERIFICACIÓN COMPLETADA: Cada módulo usa su tabla correcta\n'
+    )
   } catch (error) {
     console.error('❌ Error:', error.message)
   } finally {

@@ -17,7 +17,9 @@ async function buscarEnTodasLasTablas() {
     .select('id, proyecto_id, titulo, metadata')
     .ilike('titulo', TITULO_BUSCAR)
 
-  console.log(`📁 documentos_proyecto: ${docsProyecto?.length || 0} encontrado(s)`)
+  console.log(
+    `📁 documentos_proyecto: ${docsProyecto?.length || 0} encontrado(s)`
+  )
   if (docsProyecto && docsProyecto.length > 0) {
     docsProyecto.forEach(doc => {
       console.log(`   - ${doc.titulo}`)
@@ -32,7 +34,9 @@ async function buscarEnTodasLasTablas() {
     .select('id, cliente_id, titulo, metadata')
     .ilike('titulo', TITULO_BUSCAR)
 
-  console.log(`\n👤 documentos_cliente: ${docsCliente?.length || 0} encontrado(s)`)
+  console.log(
+    `\n👤 documentos_cliente: ${docsCliente?.length || 0} encontrado(s)`
+  )
   if (docsCliente && docsCliente.length > 0) {
     docsCliente.forEach(doc => {
       console.log(`   - ${doc.titulo}`)
@@ -47,7 +51,9 @@ async function buscarEnTodasLasTablas() {
     .select('id, vivienda_id, titulo, metadata')
     .ilike('titulo', TITULO_BUSCAR)
 
-  console.log(`\n🏠 documentos_vivienda: ${docsVivienda?.length || 0} encontrado(s)`)
+  console.log(
+    `\n🏠 documentos_vivienda: ${docsVivienda?.length || 0} encontrado(s)`
+  )
   if (docsVivienda && docsVivienda.length > 0) {
     docsVivienda.forEach(doc => {
       console.log(`   - ${doc.titulo}`)
@@ -64,7 +70,9 @@ async function buscarEnTodasLasTablas() {
     .select('id, cliente_id, titulo, metadata')
     .ilike('titulo', '%juan%carlos%')
 
-  console.log(`👤 documentos_cliente con "juan carlos": ${porNombre?.length || 0}`)
+  console.log(
+    `👤 documentos_cliente con "juan carlos": ${porNombre?.length || 0}`
+  )
   if (porNombre && porNombre.length > 0) {
     porNombre.forEach((doc, i) => {
       console.log(`\n${i + 1}. Título: ${doc.titulo}`)

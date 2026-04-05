@@ -44,7 +44,9 @@ async function capturarANTES() {
 
     console.log(`\n📜 Últimas 5 versiones (total: ${versiones.length}):`)
     versiones.forEach(v => {
-      console.log(`   v${v.version}: ${v.tipo_cambio} - ${v.razon || '(sin razón)'}`)
+      console.log(
+        `   v${v.version}: ${v.tipo_cambio} - ${v.razon || '(sin razón)'}`
+      )
     })
 
     // Fuentes activas
@@ -66,12 +68,15 @@ async function capturarANTES() {
       [NEG_ID]
     )
 
-    console.log(`📦 Total versiones: ${total[0].total} (última: v${total[0].max_version})`)
+    console.log(
+      `📦 Total versiones: ${total[0].total} (última: v${total[0].max_version})`
+    )
 
     console.log('\n✅ Estado capturado')
-    console.log('👉 Ahora MODIFICA las fuentes en la UI (agregar, editar o eliminar)')
+    console.log(
+      '👉 Ahora MODIFICA las fuentes en la UI (agregar, editar o eliminar)'
+    )
     console.log('👉 Luego ejecuta: node capturar-DESPUES-directo.js\n')
-
   } finally {
     await client.end()
   }

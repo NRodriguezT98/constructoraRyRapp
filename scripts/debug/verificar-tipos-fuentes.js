@@ -31,21 +31,47 @@ async function verificarTiposFuentes() {
   })
 
   // Verificar si hay iconos inválidos
-  const iconosValidos = ['Wallet', 'Building2', 'Home', 'Shield', 'CreditCard', 'Landmark', 'BadgeDollarSign', 'DollarSign', 'Banknote', 'HandCoins']
-  const coloresValidos = ['blue', 'green', 'purple', 'orange', 'red', 'cyan', 'pink', 'indigo', 'yellow', 'emerald']
+  const iconosValidos = [
+    'Wallet',
+    'Building2',
+    'Home',
+    'Shield',
+    'CreditCard',
+    'Landmark',
+    'BadgeDollarSign',
+    'DollarSign',
+    'Banknote',
+    'HandCoins',
+  ]
+  const coloresValidos = [
+    'blue',
+    'green',
+    'purple',
+    'orange',
+    'red',
+    'cyan',
+    'pink',
+    'indigo',
+    'yellow',
+    'emerald',
+  ]
 
   const problemasIcono = data.filter(t => !iconosValidos.includes(t.icono))
   const problemasColor = data.filter(t => !coloresValidos.includes(t.color))
 
   if (problemasIcono.length > 0) {
     console.log('⚠️  PROBLEMAS CON ICONOS:')
-    problemasIcono.forEach(t => console.log(`   - ${t.nombre}: icono="${t.icono}" (no válido)`))
+    problemasIcono.forEach(t =>
+      console.log(`   - ${t.nombre}: icono="${t.icono}" (no válido)`)
+    )
     console.log()
   }
 
   if (problemasColor.length > 0) {
     console.log('⚠️  PROBLEMAS CON COLORES:')
-    problemasColor.forEach(t => console.log(`   - ${t.nombre}: color="${t.color}" (no válido)`))
+    problemasColor.forEach(t =>
+      console.log(`   - ${t.nombre}: color="${t.color}" (no válido)`)
+    )
     console.log()
   }
 

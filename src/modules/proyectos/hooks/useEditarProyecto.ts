@@ -8,19 +8,6 @@
 import { useCallback, useMemo, useState } from 'react'
 
 import { useQueryClient } from '@tanstack/react-query'
-import {
-  Building2,
-  CalendarDays,
-  FileText,
-  Home,
-  LayoutGrid,
-  MapPin,
-  Pencil,
-  Plus,
-  Trash2,
-  TrendingUp,
-  User,
-} from 'lucide-react'
 import { toast } from 'sonner'
 
 import { useRouter } from 'next/navigation'
@@ -28,186 +15,27 @@ import { useRouter } from 'next/navigation'
 import type {
   SectionStatus,
   SummaryItem,
-  WizardStepConfig,
 } from '@/shared/components/accordion-wizard'
-import type {
-  CambioDetectado,
-  CategoriaConfig,
-} from '@/shared/components/modulos/ConfirmarCambiosModal'
 
 import { proyectosService } from '../services/proyectos.service'
 import type { EstadoProyecto, Proyecto, ProyectoFormData } from '../types'
-
 import {
-  useDetectarCambios,
-  type CambioManzana,
-  type ResumenCambios,
-} from './useDetectarCambios'
+  CAMPOS_PASO_1,
+  CAMPOS_PASO_2,
+  CATEGORIAS_CAMBIOS_PROYECTO,
+  ESTADO_LABELS,
+  FIELDS_PASO_1,
+  FIELDS_PASO_2,
+  PASOS_PROYECTO_EDICION,
+  convertirAGenerico,
+  parsearUbicacion,
+} from '../utils/editar-proyecto-accordion.utils'
+
+import { useDetectarCambios } from './useDetectarCambios'
 import { useProyectoConValidacion } from './useProyectoConValidacion'
 import { useProyectosForm } from './useProyectosForm'
 
-// ── Campos por paso (constantes estables, definidas fuera del hook) ──
-const CAMPOS_PASO_1 = [
-  'nombre',
-  'departamento',
-  'ciudad',
-  'direccion',
-  'descripcion',
-]
-const CAMPOS_PASO_2 = [
-  'estado',
-  'fechaInicio',
-  'fechaFinEstimada',
-  'responsable',
-]
-
-// ── Configuración de pasos (misma que creación) ──────────────────
-export const PASOS_PROYECTO_EDICION: WizardStepConfig[] = [
-  {
-    id: 1,
-    title: 'Información General',
-    description:
-      'Modifica el nombre, departamento, ciudad, dirección y descripción del proyecto.',
-    icon: Building2,
-  },
-  {
-    id: 2,
-    title: 'Estado y Fechas',
-    description:
-      'Actualiza el estado actual del proyecto y las fechas de inicio y fin estimada.',
-    icon: CalendarDays,
-  },
-  {
-    id: 3,
-    title: 'Manzanas',
-    description:
-      'Ajusta la distribución de manzanas y la cantidad de viviendas por cada una.',
-    icon: LayoutGrid,
-  },
-]
-
-const FIELDS_PASO_1 = [
-  'nombre',
-  'departamento',
-  'ciudad',
-  'direccion',
-  'descripcion',
-] as const
-const FIELDS_PASO_2 = ['estado', 'fechaInicio', 'fechaFinEstimada'] as const
-
-const ESTADO_LABELS: Record<string, string> = {
-  en_planificacion: 'En Planificación',
-  en_proceso: 'En Proceso',
-  en_construccion: 'En Construcción',
-  completado: 'Completado',
-  pausado: 'Pausado',
-}
-
-// ── Iconos por campo para la modal de confirmación ───────────────
-const CAMPO_ICONO: Record<string, import('lucide-react').LucideIcon> = {
-  nombre: Building2,
-  departamento: MapPin,
-  ciudad: MapPin,
-  direccion: MapPin,
-  descripcion: FileText,
-  estado: TrendingUp,
-  fechaInicio: CalendarDays,
-  fechaFinEstimada: CalendarDays,
-  responsable: User,
-}
-
-// ── Categorías para agrupar cambios en la modal ──────────────────
-export const CATEGORIAS_CAMBIOS_PROYECTO: Record<string, CategoriaConfig> = {
-  proyecto: { titulo: 'Cambios en el Proyecto', icono: Building2 },
-  manzanas: { titulo: 'Cambios en Manzanas', icono: Home },
-}
-
-/** Convierte ResumenCambios (específico de proyectos) al formato genérico CambioDetectado[] */
-function convertirAGenerico(resumen: ResumenCambios): CambioDetectado[] {
-  const resultado: CambioDetectado[] = []
-
-  // Cambios de proyecto
-  for (const c of resumen.proyecto) {
-    resultado.push({
-      campo: c.campo,
-      label: c.label,
-      valorAnterior: c.valorAnterior ?? '—',
-      valorNuevo: c.valorNuevo ?? '—',
-      icono: CAMPO_ICONO[c.campo] ?? FileText,
-      categoria: 'proyecto',
-    })
-  }
-
-  // Cambios de manzanas
-  for (const m of resumen.manzanas) {
-    const icono =
-      m.tipo === 'agregada' ? Plus : m.tipo === 'eliminada' ? Trash2 : Pencil
-    const label =
-      m.tipo === 'agregada'
-        ? `Manzana ${m.nombre} (nueva)`
-        : m.tipo === 'eliminada'
-          ? `Manzana ${m.nombre} (eliminada)`
-          : `Manzana ${m.nombre}`
-
-    const anterior = formatManzanaValor(m, 'anterior')
-    const nuevo = formatManzanaValor(m, 'nuevo')
-
-    resultado.push({
-      campo: `manzana_${m.nombre}`,
-      label,
-      valorAnterior: anterior,
-      valorNuevo: nuevo,
-      icono,
-      categoria: 'manzanas',
-    })
-  }
-
-  return resultado
-}
-
-function formatManzanaValor(
-  m: CambioManzana,
-  tipo: 'anterior' | 'nuevo'
-): string {
-  if (m.tipo === 'agregada')
-    return tipo === 'anterior'
-      ? '—'
-      : `${m.cambios?.viviendasNuevo ?? 0} viviendas`
-  if (m.tipo === 'eliminada')
-    return tipo === 'anterior' ? `${m.nombre}` : '— (eliminada)'
-  // modificada
-  const partes: string[] = []
-  if (tipo === 'anterior') {
-    if (m.cambios?.nombreAnterior) partes.push(m.cambios.nombreAnterior)
-    if (m.cambios?.viviendasAnterior != null)
-      partes.push(`${m.cambios.viviendasAnterior} viv.`)
-  } else {
-    if (m.cambios?.nombreNuevo) partes.push(m.cambios.nombreNuevo)
-    if (m.cambios?.viviendasNuevo != null)
-      partes.push(`${m.cambios.viviendasNuevo} viv.`)
-  }
-  return partes.join(', ') || '—'
-}
-
-/** Parsea el campo `ubicacion` de la DB en sus 3 campos separados */
-function parsearUbicacion(ubicacion: string): {
-  departamento: string
-  ciudad: string
-  direccion: string
-} {
-  const partes = ubicacion.split(', ')
-  if (partes.length >= 3) {
-    return {
-      departamento: partes[partes.length - 1],
-      ciudad: partes[partes.length - 2],
-      direccion: partes.slice(0, -2).join(', '),
-    }
-  }
-  if (partes.length === 2) {
-    return { departamento: partes[1], ciudad: partes[0], direccion: '' }
-  }
-  return { departamento: '', ciudad: '', direccion: ubicacion }
-}
+export { CATEGORIAS_CAMBIOS_PROYECTO, PASOS_PROYECTO_EDICION }
 
 export function useEditarProyecto(proyectoId: string) {
   const router = useRouter()

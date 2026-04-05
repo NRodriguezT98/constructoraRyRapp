@@ -13,11 +13,11 @@
  * ✅ KEYS coinciden con TipoDocumento: 'CC' | 'CE' | 'TI' | 'NIT' | 'PP' | 'PEP'
  */
 export const SIGLAS_DOCUMENTO: Record<string, string> = {
-  CC: 'C.C',    // Cédula de Ciudadanía
-  CE: 'C.E',    // Cédula de Extranjería
-  TI: 'T.I',    // Tarjeta de Identidad
-  NIT: 'NIT',   // NIT
-  PP: 'P.P',    // Pasaporte
+  CC: 'C.C', // Cédula de Ciudadanía
+  CE: 'C.E', // Cédula de Extranjería
+  TI: 'T.I', // Tarjeta de Identidad
+  NIT: 'NIT', // NIT
+  PP: 'P.P', // Pasaporte
   PEP: 'P.E.P', // Permiso Especial de Permanencia
 }
 

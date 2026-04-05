@@ -17,7 +17,6 @@ import {
 
 import { useRouter } from 'next/navigation'
 
-import { Button } from '@/components/ui/button'
 import { useAuth } from '@/contexts/auth-context'
 import { ConfirmarCambiosModal } from '@/modules/proyectos/components/confirmar-cambios-modal'
 import { ProyectosBadgesResumen } from '@/modules/proyectos/components/proyectos-badges-resumen'
@@ -34,6 +33,7 @@ import type {
   ProyectoFormData,
 } from '@/modules/proyectos/types'
 import { formatearEstadoProyecto } from '@/modules/proyectos/utils/estado.utils'
+import { Button } from '@/shared/components/ui/button'
 import { Modal } from '@/shared/components/ui/Modal'
 
 import * as styles from './proyecto-detalle.styles'
@@ -250,7 +250,11 @@ export default function ProyectoDetalleClient({
           <motion.div {...styles.animations.fadeInUp}>
             <Button
               variant='ghost'
-              onClick={() => router.back()}
+              onClick={() =>
+                window.history.length > 1
+                  ? router.back()
+                  : router.push('/proyectos')
+              }
               className='group'
             >
               <ArrowLeft className='mr-2 h-4 w-4 transition-transform group-hover:-translate-x-1' />

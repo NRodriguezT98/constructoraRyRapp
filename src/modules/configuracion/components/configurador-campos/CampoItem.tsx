@@ -52,10 +52,10 @@ export function CampoItem({ campo, onEditar, onEliminar }: CampoItemProps) {
       style={style}
       className={`${s.campoItem.container} ${isDragging ? s.campoItem.containerDragging : ''}`}
     >
-      <div className="flex items-start gap-3">
+      <div className='flex items-start gap-3'>
         {/* Drag Handle */}
         <button
-          type="button"
+          type='button'
           className={s.campoItem.dragHandle}
           {...attributes}
           {...listeners}
@@ -74,12 +74,20 @@ export function CampoItem({ campo, onEditar, onEliminar }: CampoItemProps) {
             )}
             {/* 🔥 Badge de Rol */}
             {campo.rol && campo.rol !== 'informativo' && (
-              <span className={
-                campo.rol === 'monto' ? 'px-2 py-0.5 rounded-full bg-green-100 dark:bg-green-900/30 text-[10px] font-bold text-green-700 dark:text-green-400' :
-                campo.rol === 'entidad' ? 'px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/30 text-[10px] font-bold text-blue-700 dark:text-blue-400' :
-                'px-2 py-0.5 rounded-full bg-purple-100 dark:bg-purple-900/30 text-[10px] font-bold text-purple-700 dark:text-purple-400'
-              }>
-                {campo.rol === 'monto' ? '💰 Monto' : campo.rol === 'entidad' ? '🏦 Entidad' : '📄 Ref'}
+              <span
+                className={
+                  campo.rol === 'monto'
+                    ? 'rounded-full bg-green-100 px-2 py-0.5 text-[10px] font-bold text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                    : campo.rol === 'entidad'
+                      ? 'rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-bold text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+                      : 'rounded-full bg-purple-100 px-2 py-0.5 text-[10px] font-bold text-purple-700 dark:bg-purple-900/30 dark:text-purple-400'
+                }
+              >
+                {campo.rol === 'monto'
+                  ? '💰 Monto'
+                  : campo.rol === 'entidad'
+                    ? '🏦 Entidad'
+                    : '📄 Ref'}
               </span>
             )}
           </div>
@@ -88,18 +96,18 @@ export function CampoItem({ campo, onEditar, onEliminar }: CampoItemProps) {
           <div className={s.campoItem.details}>
             <span className={s.campoItem.tipo}>{campo.tipo}</span>
             <span>•</span>
-            <span className="font-mono text-[10px]">{campo.nombre}</span>
+            <span className='font-mono text-[10px]'>{campo.nombre}</span>
             {campo.placeholder && (
               <>
                 <span>•</span>
-                <span className="italic">&quot;{campo.placeholder}&quot;</span>
+                <span className='italic'>&quot;{campo.placeholder}&quot;</span>
               </>
             )}
           </div>
 
           {/* Ayuda */}
           {campo.ayuda && (
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
+            <p className='mt-1 text-xs leading-relaxed text-gray-500 dark:text-gray-400'>
               💡 {campo.ayuda}
             </p>
           )}
@@ -108,20 +116,20 @@ export function CampoItem({ campo, onEditar, onEliminar }: CampoItemProps) {
         {/* Acciones */}
         <div className={s.campoItem.actions}>
           <button
-            type="button"
+            type='button'
             onClick={() => onEditar(campo)}
             className={`${s.campoItem.button} ${s.campoItem.buttonEdit}`}
-            title="Editar campo"
+            title='Editar campo'
           >
-            <Edit2 className="w-4 h-4" />
+            <Edit2 className='h-4 w-4' />
           </button>
           <button
-            type="button"
+            type='button'
             onClick={() => onEliminar(campo.nombre)}
             className={`${s.campoItem.button} ${s.campoItem.buttonDelete}`}
-            title="Eliminar campo"
+            title='Eliminar campo'
           >
-            <Trash2 className="w-4 h-4" />
+            <Trash2 className='h-4 w-4' />
           </button>
         </div>
       </div>

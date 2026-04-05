@@ -6,7 +6,10 @@
 import { logger } from '@/lib/utils/logger'
 import type { RendererAuditoriaProps } from '@/modules/auditorias/types'
 
-import { ActualizacionProyectoRenderer, CreacionProyectoRenderer } from './proyectos'
+import {
+  ActualizacionProyectoRenderer,
+  CreacionProyectoRenderer,
+} from './proyectos'
 import { RendererGenerico } from './shared/RendererGenerico'
 
 // Tipo para los renderers
@@ -32,18 +35,25 @@ const RENDERERS_MAP: Record<string, Record<string, RendererComponent>> = {
  * Obtiene el renderer apropiado para un módulo y acción
  * Si no existe, retorna el renderer genérico
  */
-export function getAuditoriaRenderer(modulo: string, accion: string): RendererComponent {
+export function getAuditoriaRenderer(
+  modulo: string,
+  accion: string
+): RendererComponent {
   const moduloRenderers = RENDERERS_MAP[modulo]
 
   if (!moduloRenderers) {
-    logger.warn(`No hay renderers definidos para el módulo: ${modulo}. Usando renderer genérico.`)
+    logger.warn(
+      `No hay renderers definidos para el módulo: ${modulo}. Usando renderer genérico.`
+    )
     return RendererGenerico
   }
 
   const renderer = moduloRenderers[accion]
 
   if (!renderer) {
-    logger.warn(`No hay renderer definido para ${modulo}/${accion}. Usando renderer genérico.`)
+    logger.warn(
+      `No hay renderer definido para ${modulo}/${accion}. Usando renderer genérico.`
+    )
     return RendererGenerico
   }
 

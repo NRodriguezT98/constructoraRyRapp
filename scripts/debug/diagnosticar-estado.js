@@ -24,7 +24,8 @@ async function diagnosticar() {
   console.log('1️⃣ Estado de Vivienda Casa 5:')
   const { data: viviendas, error: errorV } = await supabase
     .from('viviendas')
-    .select(`
+    .select(
+      `
       id,
       numero,
       estado,
@@ -33,7 +34,8 @@ async function diagnosticar() {
       manzanas!inner (
         nombre
       )
-    `)
+    `
+    )
     .eq('numero', '5')
     .eq('manzanas.nombre', 'Manzana A')
     .single()
@@ -46,10 +48,13 @@ async function diagnosticar() {
     console.log('   👤 cliente_id:', viviendas.cliente_id || 'NULL ✅')
     console.log('   📄 negociacion_id:', viviendas.negociacion_id || 'NULL ✅')
 
-    const disponible = viviendas.estado === 'Disponible' &&
-                       !viviendas.cliente_id &&
-                       !viviendas.negociacion_id
-    console.log(`   ${disponible ? '✅' : '❌'} ${disponible ? 'DISPONIBLE CORRECTAMENTE' : 'NO DISPONIBLE - HAY PROBLEMA'}`)
+    const disponible =
+      viviendas.estado === 'Disponible' &&
+      !viviendas.cliente_id &&
+      !viviendas.negociacion_id
+    console.log(
+      `   ${disponible ? '✅' : '❌'} ${disponible ? 'DISPONIBLE CORRECTAMENTE' : 'NO DISPONIBLE - HAY PROBLEMA'}`
+    )
   }
 
   // 2. Verificar cliente
@@ -66,7 +71,9 @@ async function diagnosticar() {
     console.log('   👤 Nombre:', cliente.nombre_completo)
     console.log('   📄 Documento:', cliente.numero_documento)
     console.log('   📊 Estado:', cliente.estado)
-    console.log(`   ${cliente.estado === 'Prospecto' ? '✅' : '❌'} ${cliente.estado === 'Prospecto' ? 'CORRECTO' : 'INCORRECTO - Debería ser Prospecto'}`)
+    console.log(
+      `   ${cliente.estado === 'Prospecto' ? '✅' : '❌'} ${cliente.estado === 'Prospecto' ? 'CORRECTO' : 'INCORRECTO - Debería ser Prospecto'}`
+    )
   }
 
   // 3. Verificar negociaciones huérfanas
@@ -82,7 +89,11 @@ async function diagnosticar() {
     } else if (negociaciones.length === 0) {
       console.log('   ✅ No hay negociaciones (correcto)')
     } else {
-      console.log('   ❌ PROBLEMA: Hay', negociaciones.length, 'negociaciones huérfanas:')
+      console.log(
+        '   ❌ PROBLEMA: Hay',
+        negociaciones.length,
+        'negociaciones huérfanas:'
+      )
       console.log(JSON.stringify(negociaciones, null, 2))
     }
   }

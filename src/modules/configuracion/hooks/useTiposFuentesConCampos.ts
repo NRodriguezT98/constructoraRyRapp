@@ -10,9 +10,9 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
 import {
-    actualizarConfiguracionCampos,
-    cargarTipoFuenteConCampos,
-    cargarTiposFuentesConCampos,
+  actualizarConfiguracionCampos,
+  cargarTipoFuenteConCampos,
+  cargarTiposFuentesConCampos,
 } from '../services/tipos-fuentes-campos.service'
 import type { ConfiguracionCampos } from '../types/campos-dinamicos.types'
 
@@ -23,7 +23,8 @@ import type { ConfiguracionCampos } from '../types/campos-dinamicos.types'
 export const TIPOS_FUENTES_CAMPOS_KEYS = {
   all: ['tipos-fuentes-campos'] as const,
   lists: () => [...TIPOS_FUENTES_CAMPOS_KEYS.all, 'list'] as const,
-  list: (filters: string) => [...TIPOS_FUENTES_CAMPOS_KEYS.lists(), { filters }] as const,
+  list: (filters: string) =>
+    [...TIPOS_FUENTES_CAMPOS_KEYS.lists(), { filters }] as const,
   details: () => [...TIPOS_FUENTES_CAMPOS_KEYS.all, 'detail'] as const,
   detail: (id: string) => [...TIPOS_FUENTES_CAMPOS_KEYS.details(), id] as const,
 }
@@ -63,12 +64,15 @@ export function useActualizarConfiguracionCampos() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ tipoId, configuracion }: {
+    mutationFn: ({
+      tipoId,
+      configuracion,
+    }: {
       tipoId: string
       configuracion: ConfiguracionCampos
     }) => actualizarConfiguracionCampos(tipoId, configuracion),
 
-    onSuccess: (_data) => {
+    onSuccess: _data => {
       // Invalidar caché
       queryClient.invalidateQueries({
         queryKey: TIPOS_FUENTES_CAMPOS_KEYS.all,

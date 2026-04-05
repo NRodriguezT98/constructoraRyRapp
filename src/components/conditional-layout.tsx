@@ -2,25 +2,29 @@
 
 import { usePathname } from 'next/navigation'
 
-/**
- * Componente que renderiza el contenedor principal condicionalmente
- * Aplica estilos diferentes para rutas públicas vs rutas autenticadas
- */
+import { isPublicUIRoute } from '@/shared/config/public-routes'
+
 export function ConditionalLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
 
-  // Rutas públicas (sin sidebar, sin fondo gris)
-  const publicRoutes = ['/login', '/registro', '/reset-password']
-  const isPublicRoute = publicRoutes.some(route => pathname.startsWith(route))
-
-  if (isPublicRoute) {
+  if (isPublicUIRoute(pathname)) {
     // Layout para rutas públicas (login, etc) - CENTRADO
-    return <div className='flex-1 flex items-center justify-center' suppressHydrationWarning>{children}</div>
+    return (
+      <div
+        className='flex flex-1 items-center justify-center'
+        suppressHydrationWarning
+      >
+        {children}
+      </div>
+    )
   }
 
   // Layout para rutas autenticadas (con sidebar)
   return (
-    <main className='flex-1 overflow-auto custom-scrollbar' suppressHydrationWarning>
+    <main
+      className='custom-scrollbar flex-1 overflow-auto'
+      suppressHydrationWarning
+    >
       {children}
     </main>
   )

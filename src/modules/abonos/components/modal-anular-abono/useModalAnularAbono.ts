@@ -3,7 +3,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { useAnularAbonoMutation } from '../../hooks/useAbonosQuery'
-import { MOTIVOS_ANULACION, type AbonoHistorial, type MotivoAnulacion } from '../../types'
+import {
+  MOTIVOS_ANULACION,
+  type AbonoHistorial,
+  type MotivoAnulacion,
+} from '../../types'
 
 const DETALLE_MAX_CHARS = 300
 
@@ -15,12 +19,17 @@ export interface UseModalAnularAbonoProps {
   onAnulacionExitosa?: () => void
 }
 
-export function useModalAnularAbono({ abono, onAnulacionExitosa }: UseModalAnularAbonoProps) {
+export function useModalAnularAbono({
+  abono,
+  onAnulacionExitosa,
+}: UseModalAnularAbonoProps) {
   // ── React Query mutation ───────────────────────────────────────────────────
   const anularAbonoMutation = useAnularAbonoMutation()
 
   // ── Formulario ─────────────────────────────────────────────────────────────
-  const [motivoCategoria, setMotivoCategoria] = useState<MotivoAnulacion | ''>('')
+  const [motivoCategoria, setMotivoCategoria] = useState<MotivoAnulacion | ''>(
+    ''
+  )
   // El valor del textarea vive en un ref para no re-renderizar en cada tecla.
   // Solo tracking.SÍ/NO-está-vacío (booleano) para habilitar el botón cuando es obligatorio.
   const motivoDetalleRef = useRef('')
@@ -62,7 +71,7 @@ export function useModalAnularAbono({ abono, onAnulacionExitosa }: UseModalAnula
     if (valor.length <= DETALLE_MAX_CHARS) {
       motivoDetalleRef.current = valor
       const esVacio = valor.trim().length === 0
-      setDetalleEsVacio((prev) => (prev === esVacio ? prev : esVacio))
+      setDetalleEsVacio(prev => (prev === esVacio ? prev : esVacio))
     }
   }, [])
 
@@ -85,9 +94,17 @@ export function useModalAnularAbono({ abono, onAnulacionExitosa }: UseModalAnula
         onAnulacionExitosa?.()
       }, CELEBRATION_DELAY_MS)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error desconocido al anular')
+      setError(
+        err instanceof Error ? err.message : 'Error desconocido al anular'
+      )
     }
-  }, [formularioValido, motivoCategoria, abono.id, anularAbonoMutation, onAnulacionExitosa])
+  }, [
+    formularioValido,
+    motivoCategoria,
+    abono.id,
+    anularAbonoMutation,
+    onAnulacionExitosa,
+  ])
 
   return {
     // Estado del formulario

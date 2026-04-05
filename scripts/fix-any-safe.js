@@ -7,7 +7,9 @@ const fs = require('fs')
 const d = require('../eslint-output.json')
 
 const filesWithAny = d
-  .filter(f => f.messages.some(m => m.ruleId === '@typescript-eslint/no-explicit-any'))
+  .filter(f =>
+    f.messages.some(m => m.ruleId === '@typescript-eslint/no-explicit-any')
+  )
   .map(f => f.filePath)
 
 console.log('Files with any:', filesWithAny.length)
@@ -33,7 +35,10 @@ for (const filePath of filesWithAny) {
   content = content.replace(/Promise<any>/g, 'Promise<unknown>')
 
   // Safe 5: catch (e: any) → catch (e: unknown)
-  content = content.replace(/catch\s*\(\s*(\w+)\s*:\s*any\s*\)/g, 'catch ($1: unknown)')
+  content = content.replace(
+    /catch\s*\(\s*(\w+)\s*:\s*any\s*\)/g,
+    'catch ($1: unknown)'
+  )
 
   // Safe 6: metadata?: any → metadata?: unknown (common pattern in this codebase)
   content = content.replace(/metadata\?:\s*any\b/g, 'metadata?: unknown')

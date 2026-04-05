@@ -57,7 +57,10 @@ async function verificarColumnas() {
   header('🔍 VERIFICAR NUEVAS COLUMNAS EN BD')
 
   const env = await loadEnv()
-  const supabase = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY)
+  const supabase = createClient(
+    env.NEXT_PUBLIC_SUPABASE_URL,
+    env.SUPABASE_SERVICE_ROLE_KEY
+  )
 
   log('→ Consultando schema de documentos_vivienda...', 'yellow')
 
@@ -72,14 +75,18 @@ async function verificarColumnas() {
     log('✓ Tabla documentos_vivienda:', 'green')
     if (viviendaData && viviendaData.length > 0) {
       const columns = Object.keys(viviendaData[0])
-      const newColumns = columns.filter(c =>
-        c === 'estado_version' ||
-        c === 'motivo_estado' ||
-        c === 'version_corrige_a'
+      const newColumns = columns.filter(
+        c =>
+          c === 'estado_version' ||
+          c === 'motivo_estado' ||
+          c === 'version_corrige_a'
       )
 
       if (newColumns.length > 0) {
-        log(`  ✓ Nuevas columnas encontradas: ${newColumns.join(', ')}`, 'green')
+        log(
+          `  ✓ Nuevas columnas encontradas: ${newColumns.join(', ')}`,
+          'green'
+        )
       } else {
         log('  ℹ No hay datos aún para verificar columnas', 'gray')
       }
@@ -100,14 +107,18 @@ async function verificarColumnas() {
     log('✓ Tabla documentos_proyecto:', 'green')
     if (proyectoData && proyectoData.length > 0) {
       const columns = Object.keys(proyectoData[0])
-      const newColumns = columns.filter(c =>
-        c === 'estado_version' ||
-        c === 'motivo_estado' ||
-        c === 'version_corrige_a'
+      const newColumns = columns.filter(
+        c =>
+          c === 'estado_version' ||
+          c === 'motivo_estado' ||
+          c === 'version_corrige_a'
       )
 
       if (newColumns.length > 0) {
-        log(`  ✓ Nuevas columnas encontradas: ${newColumns.join(', ')}`, 'green')
+        log(
+          `  ✓ Nuevas columnas encontradas: ${newColumns.join(', ')}`,
+          'green'
+        )
       } else {
         log('  ℹ No hay datos aún para verificar columnas', 'gray')
       }
@@ -118,15 +129,18 @@ async function verificarColumnas() {
   // Verificar directamente en information_schema
   log('→ Consultando information_schema.columns...', 'yellow')
 
-  const { data: schemaData, error: schemaError } = await supabase.rpc('exec_sql', {
-    sql_query: `
+  const { data: schemaData, error: schemaError } = await supabase.rpc(
+    'exec_sql',
+    {
+      sql_query: `
       SELECT column_name, data_type, is_nullable
       FROM information_schema.columns
       WHERE table_name IN ('documentos_vivienda', 'documentos_proyecto')
         AND column_name IN ('estado_version', 'motivo_estado', 'version_corrige_a', 'metadata')
       ORDER BY table_name, column_name;
-    `
-  })
+    `,
+    }
+  )
 
   if (schemaError) {
     log(`✗ Error consultando schema: ${schemaError.message}`, 'yellow')
@@ -147,7 +161,10 @@ async function verificarColumnas() {
   log('   npm run types:generate', 'gray')
   log('', 'reset')
   log('2. Usar Supabase CLI local (si está instalado):', 'yellow')
-  log('   supabase gen types typescript --local > src/lib/supabase/database.types.ts', 'gray')
+  log(
+    '   supabase gen types typescript --local > src/lib/supabase/database.types.ts',
+    'gray'
+  )
   log('', 'reset')
   log('3. Actualizar manualmente el archivo:', 'yellow')
   log('   src/lib/supabase/database.types.ts', 'gray')

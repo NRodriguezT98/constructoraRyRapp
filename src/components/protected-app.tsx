@@ -15,9 +15,9 @@ import { InvalidRoleError } from '@/shared/components/errors'
 
 const ROLES_VALIDOS = [
   'Administrador',
-  'Contador',
-  'Supervisor',
-  'Gerente',
+  'Contabilidad',
+  'Administrador de Obra',
+  'Gerencia',
 ] as const
 type RolValido = (typeof ROLES_VALIDOS)[number]
 

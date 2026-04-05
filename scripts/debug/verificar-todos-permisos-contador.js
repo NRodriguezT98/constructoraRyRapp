@@ -32,13 +32,15 @@ async function verificarTodosPermisos() {
   })
 
   // Mostrar por módulo
-  Object.keys(porModulo).sort().forEach(modulo => {
-    console.log(`\n📁 ${modulo}:`)
-    porModulo[modulo].forEach(permiso => {
-      const icono = permiso.permitido ? '✅' : '❌'
-      console.log(`   ${icono} ${permiso.accion}: ${permiso.permitido}`)
+  Object.keys(porModulo)
+    .sort()
+    .forEach(modulo => {
+      console.log(`\n📁 ${modulo}:`)
+      porModulo[modulo].forEach(permiso => {
+        const icono = permiso.permitido ? '✅' : '❌'
+        console.log(`   ${icono} ${permiso.accion}: ${permiso.permitido}`)
+      })
     })
-  })
 
   process.exit(0)
 }

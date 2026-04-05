@@ -43,7 +43,7 @@ export function ModalCrearUsuario({
     nombres: '',
     apellidos: '',
     telefono: '',
-    rol: 'Contador',
+    rol: 'Contabilidad',
     password: '',
     enviar_invitacion: false,
   })
@@ -141,7 +141,7 @@ export function ModalCrearUsuario({
       nombres: '',
       apellidos: '',
       telefono: '',
-      rol: 'Contador',
+      rol: 'Contabilidad',
       password: '',
       enviar_invitacion: false,
     })

@@ -45,21 +45,27 @@ export function ProyectoInfoTab({ proyecto }: ProyectoInfoTabProps) {
           <label className='mb-1.5 block text-xs font-medium text-gray-700 dark:text-gray-300'>
             Departamento
           </label>
-          <p className='text-sm text-gray-900 dark:text-white'>{proyecto.departamento || '-'}</p>
+          <p className='text-sm text-gray-900 dark:text-white'>
+            {proyecto.departamento || '-'}
+          </p>
         </div>
 
         <div>
           <label className='mb-1.5 block text-xs font-medium text-gray-700 dark:text-gray-300'>
             Ciudad / Municipio
           </label>
-          <p className='text-sm text-gray-900 dark:text-white'>{proyecto.ciudad || '-'}</p>
+          <p className='text-sm text-gray-900 dark:text-white'>
+            {proyecto.ciudad || '-'}
+          </p>
         </div>
 
         <div className='md:col-span-2'>
           <label className='mb-1.5 block text-xs font-medium text-gray-700 dark:text-gray-300'>
             Direcci&#xF3;n
           </label>
-          <p className='text-sm text-gray-900 dark:text-white'>{proyecto.direccion || '-'}</p>
+          <p className='text-sm text-gray-900 dark:text-white'>
+            {proyecto.direccion || '-'}
+          </p>
         </div>
 
         <div className='md:col-span-2'>
@@ -93,14 +99,18 @@ export function ProyectoInfoTab({ proyecto }: ProyectoInfoTabProps) {
           <label className='mb-1.5 block text-xs font-medium text-gray-700 dark:text-gray-300'>
             Tel�fono
           </label>
-          <p className='text-sm text-gray-900 dark:text-white'>{String(extra.telefono || '-')}</p>
+          <p className='text-sm text-gray-900 dark:text-white'>
+            {String(extra.telefono || '-')}
+          </p>
         </div>
 
         <div>
           <label className='mb-1.5 block text-xs font-medium text-gray-700 dark:text-gray-300'>
             Email
           </label>
-          <p className='text-sm text-gray-900 dark:text-white'>{String(extra.email || '-')}</p>
+          <p className='text-sm text-gray-900 dark:text-white'>
+            {String(extra.email || '-')}
+          </p>
         </div>
       </div>
     </div>

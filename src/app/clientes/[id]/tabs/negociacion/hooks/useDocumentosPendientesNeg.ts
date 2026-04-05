@@ -24,13 +24,18 @@ interface UseDocumentosPendientesNegProps {
   negociacionId?: string
 }
 
-export function useDocumentosPendientesNeg({ clienteId, negociacionId }: UseDocumentosPendientesNegProps) {
+export function useDocumentosPendientesNeg({
+  clienteId,
+  negociacionId,
+}: UseDocumentosPendientesNegProps) {
   const { data: documentosPendientesRaw = [] } = useQuery({
     queryKey: ['docs-pendientes-neg-tab', clienteId],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('vista_documentos_pendientes_fuentes')
-        .select('fuente_pago_id,tipo_documento,nivel_validacion,tipo_fuente,entidad')
+        .select(
+          'fuente_pago_id,tipo_documento,nivel_validacion,tipo_fuente,entidad'
+        )
         .eq('cliente_id', clienteId)
 
       if (error) throw error
@@ -41,7 +46,9 @@ export function useDocumentosPendientesNeg({ clienteId, negociacionId }: UseDocu
   })
 
   /** Mapa: fuente_pago_id → docs específicos de esa fuente */
-  const pendientesPorFuente = useMemo<Record<string, DocPendienteFuente>>(() => {
+  const pendientesPorFuente = useMemo<
+    Record<string, DocPendienteFuente>
+  >(() => {
     if (!documentosPendientesRaw.length) return {}
 
     const mapa: Record<string, DocPendienteFuente> = {}
@@ -52,7 +59,10 @@ export function useDocumentosPendientesNeg({ clienteId, negociacionId }: UseDocu
       const esObligatorio = doc.nivel_validacion === 'DOCUMENTO_OBLIGATORIO'
       mapa[key].total++
       if (esObligatorio) mapa[key].obligatorios++
-      mapa[key].docs.push({ nombre: doc.tipo_documento ?? '', obligatorio: esObligatorio })
+      mapa[key].docs.push({
+        nombre: doc.tipo_documento ?? '',
+        obligatorio: esObligatorio,
+      })
     }
     return mapa
   }, [documentosPendientesRaw])
@@ -61,19 +71,22 @@ export function useDocumentosPendientesNeg({ clienteId, negociacionId }: UseDocu
   const pendientesCompartidos = useMemo(
     () =>
       documentosPendientesRaw
-        .filter((d) => !d.fuente_pago_id)
-        .map((d) => ({
+        .filter(d => !d.fuente_pago_id)
+        .map(d => ({
           nombre: d.tipo_documento ?? '',
           obligatorio: d.nivel_validacion === 'DOCUMENTO_OBLIGATORIO',
         })),
-    [documentosPendientesRaw],
+    [documentosPendientesRaw]
   )
 
   const totalDocsPendientes = documentosPendientesRaw.length
 
   const totalDocsObligatoriosPendientes = useMemo(
-    () => documentosPendientesRaw.filter((d) => d.nivel_validacion === 'DOCUMENTO_OBLIGATORIO').length,
-    [documentosPendientesRaw],
+    () =>
+      documentosPendientesRaw.filter(
+        d => d.nivel_validacion === 'DOCUMENTO_OBLIGATORIO'
+      ).length,
+    [documentosPendientesRaw]
   )
 
   return {

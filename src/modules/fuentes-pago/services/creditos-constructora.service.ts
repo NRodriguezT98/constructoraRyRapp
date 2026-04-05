@@ -10,9 +10,9 @@
  * - Actualizar version_actual al reestructurar (atomicamente con cuotas)
  */
 
-import { supabase } from '@/lib/supabase/client';
+import { supabase } from '@/lib/supabase/client'
 
-import type { CrearCreditoDTO, CreditoConstructora } from '../types';
+import type { CrearCreditoDTO, CreditoConstructora } from '../types'
 
 // ============================================================
 // OBTENER

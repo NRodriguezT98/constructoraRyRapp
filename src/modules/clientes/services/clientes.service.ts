@@ -519,9 +519,7 @@ class ClientesService {
   /**
    * Verificar si un cliente tiene una renuncia pendiente de devolución
    */
-  async verificarRenunciaPendiente(
-    clienteId: string
-  ): Promise<{
+  async verificarRenunciaPendiente(clienteId: string): Promise<{
     pendiente: boolean
     renunciaId?: string
     consecutivo?: string

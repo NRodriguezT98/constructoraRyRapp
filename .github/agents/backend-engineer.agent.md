@@ -252,3 +252,23 @@ Before writing a service, hook, or schema, verify you're putting code in the rig
 
 **If you're tempted to put `fetch()` or `supabase.*` directly in a hook to "save time",
 STOP. Create a service method first. This is non-negotiable — even for one-off calls.**
+
+## ⚠️ REGLA DE ORO: VERIFICACIÓN OBLIGATORIA AL TERMINAR
+
+**DESPUÉS de cualquier cambio, SIEMPRE ejecutar antes de declarar la tarea completada:**
+
+```bash
+npm run check-all
+```
+
+Este comando ejecuta en orden: TypeScript (`tsc --noEmit`) → ESLint → Prettier → Vitest.
+La tarea NO está terminada hasta que `check-all` pase con **exit code 0**.
+
+Si falla, corregir en este orden: TypeScript → ESLint → Prettier → Tests.
+
+```bash
+npm run type-check   # Solo TypeScript
+npm run lint:fix     # ESLint con auto-corrección
+npm run format       # Prettier auto-corrección
+npm run test         # Solo tests
+```

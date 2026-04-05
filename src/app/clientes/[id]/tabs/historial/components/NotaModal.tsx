@@ -23,13 +23,20 @@ interface NotaModalProps {
   notaId?: string | null // Para modo edición
 }
 
-export function NotaModal({ isOpen, onClose, clienteId, clienteNombre, notaId }: NotaModalProps) {
+export function NotaModal({
+  isOpen,
+  onClose,
+  clienteId,
+  clienteNombre,
+  notaId,
+}: NotaModalProps) {
   const [titulo, setTitulo] = useState('')
   const [contenido, setContenido] = useState('')
   const [esImportante, setEsImportante] = useState(false)
 
   const modoEdicion = !!notaId
-  const { crearNota, actualizarNota, isCreando, isActualizando } = useNotasHistorial(clienteId)
+  const { crearNota, actualizarNota, isCreando, isActualizando } =
+    useNotasHistorial(clienteId)
 
   // ✅ REACT QUERY: Datos desde cache (pre-cargados, instantáneos)
   const { data: notaData } = useNotaPorId(notaId)
@@ -71,7 +78,7 @@ export function NotaModal({ isOpen, onClose, clienteId, clienteNombre, notaId }:
             titulo: titulo.trim(),
             contenido: contenido.trim(),
             es_importante: esImportante,
-          }
+          },
         })
       } else {
         // Modo creación
@@ -99,14 +106,14 @@ export function NotaModal({ isOpen, onClose, clienteId, clienteNombre, notaId }:
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className='fixed inset-0 z-50 flex items-center justify-center p-4'>
       {/* Backdrop */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         onClick={onClose}
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+        className='absolute inset-0 bg-black/60 backdrop-blur-sm'
       />
 
       {/* Modal */}
@@ -114,127 +121,136 @@ export function NotaModal({ isOpen, onClose, clienteId, clienteNombre, notaId }:
         initial={{ opacity: 0, scale: 0.95, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 20 }}
-        className="relative w-full max-w-2xl bg-white dark:bg-gray-900 rounded-2xl shadow-2xl overflow-hidden"
+        className='relative w-full max-w-2xl overflow-hidden rounded-2xl bg-white shadow-2xl dark:bg-gray-900'
       >
         {/* Header */}
-        <div className="bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                <FileEdit className="w-5 h-5 text-white" strokeWidth={2.5} />
+        <div className='bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 px-6 py-4'>
+          <div className='flex items-center justify-between'>
+            <div className='flex items-center gap-3'>
+              <div className='flex h-10 w-10 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm'>
+                <FileEdit className='h-5 w-5 text-white' strokeWidth={2.5} />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-white">
+                <h3 className='text-lg font-bold text-white'>
                   {modoEdicion ? 'Editar Nota' : 'Agregar Nota al Historial'}
                 </h3>
-                <p className="text-purple-100 text-sm">Cliente: {clienteNombre}</p>
+                <p className='text-sm text-purple-100'>
+                  Cliente: {clienteNombre}
+                </p>
               </div>
             </div>
             <button
               onClick={onClose}
-              className="w-8 h-8 rounded-lg bg-white/20 hover:bg-white/30 transition-colors flex items-center justify-center text-white"
+              className='flex h-8 w-8 items-center justify-center rounded-lg bg-white/20 text-white transition-colors hover:bg-white/30'
             >
-              <X className="w-5 h-5" />
+              <X className='h-5 w-5' />
             </button>
           </div>
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <form onSubmit={handleSubmit} className='space-y-4 p-6'>
           {/* Título */}
           <div>
-            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+            <label className='mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300'>
               Título de la nota *
             </label>
             <input
-              type="text"
+              type='text'
               value={titulo}
-              onChange={(e) => setTitulo(e.target.value)}
-              placeholder="Ej: Llamada telefónica - Consulta sobre disponibilidad"
+              onChange={e => setTitulo(e.target.value)}
+              placeholder='Ej: Llamada telefónica - Consulta sobre disponibilidad'
               maxLength={200}
-              className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all text-sm"
+              className='w-full rounded-lg border-2 border-gray-200 bg-gray-50 px-4 py-2.5 text-sm transition-all focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 dark:border-gray-700 dark:bg-gray-800'
               required
             />
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+            <p className='mt-1 text-xs text-gray-500 dark:text-gray-400'>
               {titulo.length}/200 caracteres
             </p>
           </div>
 
           {/* Contenido */}
           <div>
-            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+            <label className='mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300'>
               Contenido de la nota *
             </label>
             <textarea
               value={contenido}
-              onChange={(e) => setContenido(e.target.value)}
-              placeholder="Describe el evento, conversación o información relevante..."
+              onChange={e => setContenido(e.target.value)}
+              placeholder='Describe el evento, conversación o información relevante...'
               rows={6}
-              className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all text-sm resize-none"
+              className='w-full resize-none rounded-lg border-2 border-gray-200 bg-gray-50 px-4 py-2.5 text-sm transition-all focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 dark:border-gray-700 dark:bg-gray-800'
               required
             />
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+            <p className='mt-1 text-xs text-gray-500 dark:text-gray-400'>
               {contenido.length} caracteres (mínimo 10)
             </p>
           </div>
 
           {/* Marcar como importante */}
-          <div className="flex items-start gap-3 p-3 rounded-lg bg-yellow-50 dark:bg-yellow-950/30 border border-yellow-200 dark:border-yellow-800">
+          <div className='flex items-start gap-3 rounded-lg border border-yellow-200 bg-yellow-50 p-3 dark:border-yellow-800 dark:bg-yellow-950/30'>
             <input
-              type="checkbox"
-              id="es-importante"
+              type='checkbox'
+              id='es-importante'
               checked={esImportante}
-              onChange={(e) => setEsImportante(e.target.checked)}
-              className="mt-0.5 w-4 h-4 text-yellow-600 bg-gray-100 border-gray-300 rounded focus:ring-yellow-500 focus:ring-2"
+              onChange={e => setEsImportante(e.target.checked)}
+              className='mt-0.5 h-4 w-4 rounded border-gray-300 bg-gray-100 text-yellow-600 focus:ring-2 focus:ring-yellow-500'
             />
-            <div className="flex-1">
+            <div className='flex-1'>
               <label
-                htmlFor="es-importante"
-                className="flex items-center gap-2 text-sm font-semibold text-yellow-900 dark:text-yellow-100 cursor-pointer"
+                htmlFor='es-importante'
+                className='flex cursor-pointer items-center gap-2 text-sm font-semibold text-yellow-900 dark:text-yellow-100'
               >
-                <Star className="w-4 h-4" />
+                <Star className='h-4 w-4' />
                 Marcar como importante
               </label>
-              <p className="text-xs text-yellow-700 dark:text-yellow-300 mt-0.5">
-                Las notas importantes se destacarán con una estrella en el historial
+              <p className='mt-0.5 text-xs text-yellow-700 dark:text-yellow-300'>
+                Las notas importantes se destacarán con una estrella en el
+                historial
               </p>
             </div>
           </div>
 
           {/* Info */}
-          <div className="flex items-start gap-2 p-3 rounded-lg bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800">
-            <AlertCircle className="w-4 h-4 text-blue-600 dark:text-blue-400 mt-0.5 shrink-0" />
-            <p className="text-xs text-blue-800 dark:text-blue-200">
-              Esta nota se agregará al historial del cliente y será visible para todos los usuarios.
-              Solo tú o un administrador podrán editarla o eliminarla.
+          <div className='flex items-start gap-2 rounded-lg border border-blue-200 bg-blue-50 p-3 dark:border-blue-800 dark:bg-blue-950/30'>
+            <AlertCircle className='mt-0.5 h-4 w-4 shrink-0 text-blue-600 dark:text-blue-400' />
+            <p className='text-xs text-blue-800 dark:text-blue-200'>
+              Esta nota se agregará al historial del cliente y será visible para
+              todos los usuarios. Solo tú o un administrador podrán editarla o
+              eliminarla.
             </p>
           </div>
 
           {/* Botones */}
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+          <div className='flex items-center justify-end gap-3 border-t border-gray-200 pt-4 dark:border-gray-700'>
             <button
-              type="button"
+              type='button'
               onClick={onClose}
               disabled={isCreando || isActualizando}
-              className="px-4 py-2 text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors disabled:opacity-50"
+              className='rounded-lg px-4 py-2 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-100 disabled:opacity-50 dark:text-gray-300 dark:hover:bg-gray-800'
             >
               Cancelar
             </button>
             <motion.button
-              type="submit"
-              disabled={isCreando || isActualizando || titulo.trim().length < 3 || contenido.trim().length < 10}
+              type='submit'
+              disabled={
+                isCreando ||
+                isActualizando ||
+                titulo.trim().length < 3 ||
+                contenido.trim().length < 10
+              }
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className="px-6 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white text-sm font-semibold rounded-lg shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2"
+              className='flex items-center gap-2 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 px-6 py-2 text-sm font-semibold text-white shadow-lg transition-all hover:from-purple-700 hover:to-indigo-700 disabled:cursor-not-allowed disabled:opacity-50'
             >
-              {(isCreando || isActualizando) ? (
+              {isCreando || isActualizando ? (
                 <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <Loader2 className='h-4 w-4 animate-spin' />
                   {modoEdicion ? 'Actualizando...' : 'Guardando...'}
                 </>
               ) : (
                 <>
-                  <Save className="w-4 h-4" />
+                  <Save className='h-4 w-4' />
                   {modoEdicion ? 'Actualizar Nota' : 'Guardar Nota'}
                 </>
               )}

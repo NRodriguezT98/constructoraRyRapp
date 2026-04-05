@@ -16,7 +16,7 @@ async function verificarConstraint() {
       FROM pg_constraint
       WHERE conrelid = 'permisos_rol'::regclass
       AND contype = 'c';
-    `
+    `,
   })
 
   if (error) {
@@ -30,8 +30,12 @@ async function verificarConstraint() {
 
     if (err2) {
       console.error('❌ Error alternativo:', err2.message)
-      console.log('\n💡 El constraint actual no permite insertar algunos roles.')
-      console.log('Necesitas ejecutar la migración 027 primero para actualizar el constraint.')
+      console.log(
+        '\n💡 El constraint actual no permite insertar algunos roles.'
+      )
+      console.log(
+        'Necesitas ejecutar la migración 027 primero para actualizar el constraint.'
+      )
     } else {
       console.log('✅ Tabla existe y es accesible')
     }

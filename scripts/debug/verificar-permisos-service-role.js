@@ -11,15 +11,14 @@ async function verificarPermisosConServiceRole() {
   console.log('🔍 Consultando permisos_rol con SERVICE_ROLE (bypass RLS)...\n')
 
   // Contar permisos por rol
-  const { data: counts, error } = await supabase
-    .rpc('exec_sql', {
-      sql: `
+  const { data: counts, error } = await supabase.rpc('exec_sql', {
+    sql: `
         SELECT rol, COUNT(*) as cantidad
         FROM permisos_rol
         GROUP BY rol
         ORDER BY rol
-      `
-    })
+      `,
+  })
 
   if (error) {
     // Intento directo

@@ -3,6 +3,7 @@
 ## ✨ Características del Rediseño
 
 ### ⚡ **Rendimiento Optimizado** (v2.0)
+
 - **Sin Framer Motion**: Eliminado para mejor rendimiento (-50KB bundle)
 - **Transiciones específicas**: Solo `transition-shadow` y `transition-colors`
 - **Sin backdrop-blur**: Mejor rendimiento GPU
@@ -10,6 +11,7 @@
 - **Respuesta instantánea**: Time to Interactive -75%
 
 ### 🎨 **Diseño Visual**
+
 - **Layout de 2 columnas**: Aprovecha mejor el espacio en desktop
 - **Responsive**: 1 columna en mobile, 2 en desktop (lg+)
 - **Glassmorphism**: Cards con gradientes sutiles (sin blur pesado)
@@ -19,6 +21,7 @@
 ### 📐 **Optimización de Espacio**
 
 #### Antes vs. Después:
+
 ```
 ANTES:
 - space-y-8 → DESPUÉS: space-y-6 (secciones)
@@ -60,16 +63,13 @@ ANTES:
 ```tsx
 <form>
   {/* Grid de 2 columnas en desktop (lg+), 1 en mobile */}
-  <div className='grid grid-cols-1 lg:grid-cols-2 gap-5'>
-
+  <div className='grid grid-cols-1 gap-5 lg:grid-cols-2'>
     {/* COLUMNA IZQUIERDA: Información General */}
     <div className={sectionClasses.card}>
       <header className={sectionClasses.header}>
         <Icon /> <Title />
       </header>
-      <fields>
-        nombre, ubicación, descripción (5 rows)
-      </fields>
+      <fields>nombre, ubicación, descripción (5 rows)</fields>
     </div>
 
     {/* COLUMNA DERECHA: Manzanas */}
@@ -77,7 +77,7 @@ ANTES:
       <header>
         <Icon /> <Title /> <Stats /> <AddButton />
       </header>
-      {fields.map((manzana) => (
+      {fields.map(manzana => (
         <div key={manzana.id} className={manzanaClasses.card}>
           nombre, totalViviendas, deleteButton
         </div>
@@ -95,6 +95,7 @@ ANTES:
 ## 🎨 Clases de Estilos
 
 ### Secciones (`sectionClasses`)
+
 ```typescript
 card: 'rounded-xl border from-white to-gray-50/50 p-5 transition-shadow'
 header: 'mb-4 flex items-center gap-2.5'
@@ -103,6 +104,7 @@ title: 'text-base font-bold'
 ```
 
 ### Campos (`fieldClasses`)
+
 ```typescript
 label: 'mb-1.5 block text-sm font-medium'
 input: 'px-3.5 py-2.5 text-sm rounded-lg transition-colors'
@@ -111,6 +113,7 @@ error: 'mt-1.5 text-xs text-red-500'
 ```
 
 ### Manzanas (`manzanaClasses`)
+
 ```typescript
 card: 'rounded-lg p-4 gradient transition-shadow'
 header: 'mb-3 flex items-center justify-between'
@@ -121,6 +124,7 @@ input: 'px-3 py-2 text-sm transition-colors'
 ```
 
 ### Botones (`buttonClasses`)
+
 ```typescript
 primary: 'from-blue-600 to-indigo-600 px-5 py-2.5 text-sm transition-shadow'
 secondary: 'border-2 px-5 py-2.5 text-sm transition-colors'
@@ -131,6 +135,7 @@ delete: 'p-1.5 text-red-600 transition-colors'
 ## 🎭 Transiciones CSS
 
 ### Optimizadas para Rendimiento
+
 ```css
 /* Solo propiedades específicas - NO transition-all */
 transition-shadow  /* Sombras en hover */
@@ -143,6 +148,7 @@ transition-colors  /* Colores de inputs/botones */
 ```
 
 ### Ventajas
+
 - ✅ 60 FPS constantes
 - ✅ Mejor en mobile/tablets
 - ✅ Menos GPU usage
@@ -150,24 +156,23 @@ transition-colors  /* Colores de inputs/botones */
 
 ## 📊 Métricas de Mejora
 
-| Aspecto | Antes | Después | Mejora |
-|---------|-------|---------|--------|
-| Altura modal | ~800px | ~480px | **-40%** |
-| Ancho utilizado | ~60% | ~95% | **+58%** |
-| Padding vertical | 232px | 138px | **-40%** |
-| Bundle size | +50KB | 0KB | **-100%** |
-| Time to Interactive | ~800ms | ~200ms | **-75%** |
-| Frame drops | 15-20 FPS | < 3 FPS | **+80%** |
-| Líneas de código | 350+ | 325 | **-7%** |
-| Clases inline | 40+ | 0 | **-100%** |
-| Layout | 1 columna | 2 columnas (responsive) | ✅ |
+| Aspecto             | Antes     | Después                 | Mejora    |
+| ------------------- | --------- | ----------------------- | --------- |
+| Altura modal        | ~800px    | ~480px                  | **-40%**  |
+| Ancho utilizado     | ~60%      | ~95%                    | **+58%**  |
+| Padding vertical    | 232px     | 138px                   | **-40%**  |
+| Bundle size         | +50KB     | 0KB                     | **-100%** |
+| Time to Interactive | ~800ms    | ~200ms                  | **-75%**  |
+| Frame drops         | 15-20 FPS | < 3 FPS                 | **+80%**  |
+| Líneas de código    | 350+      | 325                     | **-7%**   |
+| Clases inline       | 40+       | 0                       | **-100%** |
+| Layout              | 1 columna | 2 columnas (responsive) | ✅        |
 
 ## 🎯 Uso
 
 ```tsx
 import { ProyectosForm } from '@/modules/proyectos/components'
-
-<Modal size='xl' title='Nuevo Proyecto'>
+;<Modal size='xl' title='Nuevo Proyecto'>
   <ProyectosForm
     onSubmit={handleCrear}
     onCancel={() => setIsOpen(false)}
@@ -196,6 +201,7 @@ import { ProyectosForm } from '@/modules/proyectos/components'
 ## ⚡ Optimización de Rendimiento
 
 Ver [PERFORMANCE_OPTIMIZATION.md](./PERFORMANCE_OPTIMIZATION.md) para detalles completos sobre:
+
 - Por qué se eliminó Framer Motion
 - Comparativas de rendimiento
 - Mejores prácticas para formularios

@@ -262,7 +262,6 @@ import { LoadingSpinner, LoadingOverlay, Skeleton } from '@/shared'
 
 ```tsx
 import { EmptyState } from '@/shared'
-
 ;<EmptyState
   icon={<FileX className='h-12 w-12' />}
   title='No hay proyectos'
@@ -278,7 +277,6 @@ import { EmptyState } from '@/shared'
 
 ```tsx
 import { NotificationComponent, NotificationContainer } from '@/shared'
-
 ;<NotificationContainer
   notifications={notifications}
   onClose={removeNotification}

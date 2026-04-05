@@ -7,6 +7,9 @@ interface TimelineProcesoProps {
   categoriaId?: string | null
 }
 
-export function TimelineProceso({ negociacionId: _negociacionId, clienteId: _clienteId }: TimelineProcesoProps) {
+export function TimelineProceso({
+  negociacionId: _negociacionId,
+  clienteId: _clienteId,
+}: TimelineProcesoProps) {
   return null
 }

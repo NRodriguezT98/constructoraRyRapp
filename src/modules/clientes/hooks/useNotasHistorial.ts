@@ -11,7 +11,10 @@ import { toast } from 'sonner'
 import { logger } from '@/lib/utils/logger'
 
 import { notasHistorialService } from '../services/notas-historial.service'
-import type { ActualizarNotaDTO, CrearNotaDTO } from '../types/notas-historial.types'
+import type {
+  ActualizarNotaDTO,
+  CrearNotaDTO,
+} from '../types/notas-historial.types'
 
 export function useNotasHistorial(clienteId: string) {
   const queryClient = useQueryClient()
@@ -21,12 +24,12 @@ export function useNotasHistorial(clienteId: string) {
    */
   const crearNotaMutation = useMutation({
     mutationFn: (datos: CrearNotaDTO) => notasHistorialService.crearNota(datos),
-    onSuccess: async (result) => {
+    onSuccess: async result => {
       if (result.success) {
         // Refetch INMEDIATO (no esperar invalidación)
         await queryClient.refetchQueries({
           queryKey: ['notas-historial-cliente', clienteId],
-          type: 'active'
+          type: 'active',
         })
 
         toast.success('Nota agregada al historial')
@@ -44,14 +47,19 @@ export function useNotasHistorial(clienteId: string) {
    * Mutation: Actualizar nota
    */
   const actualizarNotaMutation = useMutation({
-    mutationFn: ({ notaId, datos }: { notaId: string; datos: ActualizarNotaDTO }) =>
-      notasHistorialService.actualizarNota(notaId, datos),
-    onSuccess: async (result) => {
+    mutationFn: ({
+      notaId,
+      datos,
+    }: {
+      notaId: string
+      datos: ActualizarNotaDTO
+    }) => notasHistorialService.actualizarNota(notaId, datos),
+    onSuccess: async result => {
       if (result.success) {
         // Refetch INMEDIATO
         await queryClient.refetchQueries({
           queryKey: ['notas-historial-cliente', clienteId],
-          type: 'active'
+          type: 'active',
         })
 
         toast.success('Nota actualizada')
@@ -70,12 +78,12 @@ export function useNotasHistorial(clienteId: string) {
    */
   const eliminarNotaMutation = useMutation({
     mutationFn: (notaId: string) => notasHistorialService.eliminarNota(notaId),
-    onSuccess: async (result) => {
+    onSuccess: async result => {
       if (result.success) {
         // Refetch INMEDIATO
         await queryClient.refetchQueries({
           queryKey: ['notas-historial-cliente', clienteId],
-          type: 'active'
+          type: 'active',
         })
 
         toast.success('Nota eliminada')

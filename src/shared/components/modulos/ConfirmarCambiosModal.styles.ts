@@ -76,26 +76,40 @@ export const MODAL_SUCCESS_GLOW: Record<string, string> = {
 
 // ── Confirm button gradient ──────────────────────────────────────
 export const MODAL_BTN_CONFIRM: Record<string, string> = {
-  proyectos: 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700',
-  viviendas: 'bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700',
-  clientes: 'bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700',
-  negociaciones: 'bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700',
-  abonos: 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700',
-  documentos: 'bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700',
-  auditorias: 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700',
-  renuncias: 'bg-gradient-to-r from-gray-600 to-slate-600 hover:from-gray-700 hover:to-slate-700',
+  proyectos:
+    'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700',
+  viviendas:
+    'bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700',
+  clientes:
+    'bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700',
+  negociaciones:
+    'bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700',
+  abonos:
+    'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700',
+  documentos:
+    'bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700',
+  auditorias:
+    'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700',
+  renuncias:
+    'bg-gradient-to-r from-gray-600 to-slate-600 hover:from-gray-700 hover:to-slate-700',
 }
 
 // ── Summary badge colors ─────────────────────────────────────────
 export const MODAL_BADGE_BG: Record<string, string> = {
-  proyectos: 'bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-800',
-  viviendas: 'bg-orange-50 dark:bg-orange-950/30 border-orange-200 dark:border-orange-800',
-  clientes: 'bg-cyan-50 dark:bg-cyan-950/30 border-cyan-200 dark:border-cyan-800',
-  negociaciones: 'bg-pink-50 dark:bg-pink-950/30 border-pink-200 dark:border-pink-800',
+  proyectos:
+    'bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-800',
+  viviendas:
+    'bg-orange-50 dark:bg-orange-950/30 border-orange-200 dark:border-orange-800',
+  clientes:
+    'bg-cyan-50 dark:bg-cyan-950/30 border-cyan-200 dark:border-cyan-800',
+  negociaciones:
+    'bg-pink-50 dark:bg-pink-950/30 border-pink-200 dark:border-pink-800',
   abonos: 'bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800',
   documentos: 'bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-800',
-  auditorias: 'bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800',
-  renuncias: 'bg-gray-50 dark:bg-gray-950/30 border-gray-200 dark:border-gray-800',
+  auditorias:
+    'bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800',
+  renuncias:
+    'bg-gray-50 dark:bg-gray-950/30 border-gray-200 dark:border-gray-800',
 }
 
 export const MODAL_BADGE_TEXT: Record<string, string> = {
@@ -167,7 +181,12 @@ export const modalAnimations = {
   successIcon: {
     initial: { scale: 0, rotate: -180 },
     animate: { scale: 1, rotate: 0 },
-    transition: { type: 'spring' as const, stiffness: 300, damping: 15, delay: 0.15 },
+    transition: {
+      type: 'spring' as const,
+      stiffness: 300,
+      damping: 15,
+      delay: 0.15,
+    },
   },
   pulseRing: {
     animate: { scale: [1, 1.6, 1], opacity: [0.4, 0, 0.4] },
@@ -183,7 +202,12 @@ export const modalAnimations = {
   },
   dotBounce: (i: number) => ({
     animate: { y: [0, -6, 0] },
-    transition: { duration: 0.6, repeat: Infinity, delay: i * 0.15, ease: 'easeInOut' as const },
+    transition: {
+      duration: 0.6,
+      repeat: Infinity,
+      delay: i * 0.15,
+      ease: 'easeInOut' as const,
+    },
   }),
   fadeUp: (delay = 0) => ({
     initial: { opacity: 0, y: 10 },
@@ -202,4 +226,11 @@ export const CONFETTI_PARTICLES = Array.from({ length: 10 }, (_, i) => ({
   delay: Math.random() * 0.3,
 }))
 
-export const CONFETTI_COLORS = ['#FFD700', '#FF6B6B', '#4ECDC4', '#A78BFA', '#F97316', '#06B6D4']
+export const CONFETTI_COLORS = [
+  '#FFD700',
+  '#FF6B6B',
+  '#4ECDC4',
+  '#A78BFA',
+  '#F97316',
+  '#06B6D4',
+]

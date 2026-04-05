@@ -40,7 +40,9 @@ class ConfiguracionService {
   async obtenerTodas(): Promise<ConfiguracionRecargo[]> {
     const { data, error } = await supabase
       .from('configuracion_recargos')
-      .select('id,tipo,nombre,valor,descripcion,activo,fecha_creacion,fecha_actualizacion')
+      .select(
+        'id,tipo,nombre,valor,descripcion,activo,fecha_creacion,fecha_actualizacion'
+      )
       .order('tipo', { ascending: true })
       .order('valor', { ascending: false })
 
@@ -58,7 +60,9 @@ class ConfiguracionService {
   async obtenerActivas(): Promise<ConfiguracionRecargo[]> {
     const { data, error } = await supabase
       .from('configuracion_recargos')
-      .select('id,tipo,nombre,valor,descripcion,activo,fecha_creacion,fecha_actualizacion')
+      .select(
+        'id,tipo,nombre,valor,descripcion,activo,fecha_creacion,fecha_actualizacion'
+      )
       .eq('activo', true)
       .order('tipo', { ascending: true })
       .order('valor', { ascending: false })
@@ -77,7 +81,9 @@ class ConfiguracionService {
   async obtenerPorId(id: string): Promise<ConfiguracionRecargo | null> {
     const { data, error } = await supabase
       .from('configuracion_recargos')
-      .select('id,tipo,nombre,valor,descripcion,activo,fecha_creacion,fecha_actualizacion')
+      .select(
+        'id,tipo,nombre,valor,descripcion,activo,fecha_creacion,fecha_actualizacion'
+      )
       .eq('id', id)
       .single()
 
@@ -116,7 +122,10 @@ class ConfiguracionService {
   /**
    * Actualizar configuración existente
    */
-  async actualizar(id: string, datos: ActualizarConfiguracionDTO): Promise<ConfiguracionRecargo> {
+  async actualizar(
+    id: string,
+    datos: ActualizarConfiguracionDTO
+  ): Promise<ConfiguracionRecargo> {
     const { data, error } = await supabase
       .from('configuracion_recargos')
       .update({
@@ -153,7 +162,10 @@ class ConfiguracionService {
   /**
    * Activar/Desactivar configuración
    */
-  async toggleActivo(id: string, activo: boolean): Promise<ConfiguracionRecargo> {
+  async toggleActivo(
+    id: string,
+    activo: boolean
+  ): Promise<ConfiguracionRecargo> {
     return this.actualizar(id, { activo })
   }
 

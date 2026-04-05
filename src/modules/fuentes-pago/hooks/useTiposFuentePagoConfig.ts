@@ -1,11 +1,13 @@
 /**
  * Hook para obtener configuración de tipos de fuentes de pago
  *
- * Este hook se conecta a la tabla `tipos_fuentes_pago` para obtener
- * la configuración de colores e iconos desde el panel de administración
+ * ✅ Migrado a React Query (useQuery)
+ * ✅ Cache automático por 5 minutos (datos raramente cambian)
  */
 
-import { useEffect, useState } from 'react'
+import { useMemo } from 'react'
+
+import { useQuery } from '@tanstack/react-query'
 
 import { supabase } from '@/lib/supabase/client'
 import { logger } from '@/lib/utils/logger'
@@ -65,68 +67,59 @@ const COLOR_MAP: Record<string, { from: string; to: string }> = {
   emerald: { from: 'rgb(16, 185, 129)', to: 'rgb(5, 150, 105)' },
 }
 
-interface TipoDesdeBD {
-  nombre: string
-  icono: string
-  color: string
-  requiere_entidad: boolean
+export const tiposFuenteConfigKeys = {
+  all: ['tipos-fuente-config'] as const,
+}
+
+async function fetchTiposConfig(): Promise<TiposFuenteConfigMap> {
+  const { data, error } = await supabase
+    .from('tipos_fuentes_pago')
+    .select('nombre, icono, color, requiere_entidad')
+    .eq('activo', true)
+    .order('orden')
+
+  if (error) {
+    logger.error('Error al obtener tipos de fuente:', error)
+    throw new Error(error.message)
+  }
+
+  if (!data || data.length === 0) return FALLBACK_CONFIG
+
+  const configMap: TiposFuenteConfigMap = {}
+  data.forEach(tipo => {
+    const colorInfo = COLOR_MAP[tipo.color] || COLOR_MAP.blue
+    configMap[tipo.nombre] = {
+      icono: tipo.icono,
+      color: tipo.color,
+      from: colorInfo.from,
+      to: colorInfo.to,
+      requiere_entidad: tipo.requiere_entidad ?? false,
+    }
+  })
+  return configMap
 }
 
 export function useTiposFuentePagoConfig() {
-  const [tiposConfig, setTiposConfig] = useState<TiposFuenteConfigMap>(FALLBACK_CONFIG)
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const { data, isLoading, error } = useQuery({
+    queryKey: tiposFuenteConfigKeys.all,
+    queryFn: fetchTiposConfig,
+    staleTime: 5 * 60 * 1000, // 5 minutos — raramente cambia
+    placeholderData: FALLBACK_CONFIG,
+  })
 
-  useEffect(() => {
-    const fetchTiposConfig = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('tipos_fuentes_pago')
-          .select('nombre, icono, color, requiere_entidad')
-          .eq('activo', true)
-          .order('orden')
+  const tiposConfig = data ?? FALLBACK_CONFIG
 
-        if (error) {
-          logger.error('Error al obtener tipos de fuente:', error)
-          setError(error.message)
-          return
-        }
-
-        if (data && data.length > 0) {
-          const configMap: TiposFuenteConfigMap = {}
-
-          data.forEach((tipo: TipoDesdeBD) => {
-            const colorInfo = COLOR_MAP[tipo.color] || COLOR_MAP.blue
-            configMap[tipo.nombre] = {
-              icono: tipo.icono,
-              color: tipo.color,
-              from: colorInfo.from,
-              to: colorInfo.to,
-              requiere_entidad: tipo.requiere_entidad ?? false,
-            }
-          })
-
-          setTiposConfig(configMap)
-        }
-      } catch (err) {
-        logger.error('Error al cargar configuración de tipos de fuente:', err)
-        setError('Error al cargar configuración')
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    fetchTiposConfig()
-  }, [])
-
-  const getTipoConfig = (tipoNombre: string): TipoFuenteConfig => {
-    return tiposConfig[tipoNombre] || FALLBACK_CONFIG['Cuota Inicial']
-  }
+  const getTipoConfig = useMemo(
+    () =>
+      (tipoNombre: string): TipoFuenteConfig =>
+        tiposConfig[tipoNombre] ?? FALLBACK_CONFIG['Cuota Inicial'],
+    [tiposConfig]
+  )
 
   return {
     tiposConfig,
     getTipoConfig,
     isLoading,
-    error,
+    error: error ? (error as Error).message : null,
   }
 }

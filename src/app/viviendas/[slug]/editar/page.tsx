@@ -1,5 +1,5 @@
 import { getServerPermissions } from '@/lib/auth/server'
-import { resolverSlugVivienda } from '@/lib/utils/slug.utils'
+import { resolverSlugViviendaServer } from '@/lib/utils/slug.server'
 import { EditarViviendaAccordionView } from '@/modules/viviendas/components/EditarViviendaAccordionView'
 
 interface PageProps {
@@ -12,7 +12,7 @@ export default async function EditarViviendaPage({ params }: PageProps) {
   const { slug } = await params
   const permisos = await getServerPermissions()
 
-  const viviendaUUID = await resolverSlugVivienda(slug)
+  const viviendaUUID = await resolverSlugViviendaServer(slug)
 
   if (!viviendaUUID) {
     return (

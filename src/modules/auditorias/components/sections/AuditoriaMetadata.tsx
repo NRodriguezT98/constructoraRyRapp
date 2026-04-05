@@ -13,47 +13,51 @@ interface AuditoriaMetadataProps {
   ip?: string
 }
 
-export function AuditoriaMetadata({ navegador, registroId, ip }: AuditoriaMetadataProps) {
+export function AuditoriaMetadata({
+  navegador,
+  registroId,
+  ip,
+}: AuditoriaMetadataProps) {
   if (!navegador && !registroId && !ip) return null
 
   return (
-    <div className="mt-4 p-4 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700">
-      <div className="flex items-center gap-2 mb-3">
-        <Monitor className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-        <h3 className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+    <div className='mt-4 rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800/50'>
+      <div className='mb-3 flex items-center gap-2'>
+        <Monitor className='h-4 w-4 text-gray-500 dark:text-gray-400' />
+        <h3 className='text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400'>
           Información Técnica de la Sesión
         </h3>
       </div>
 
-      <div className="space-y-2">
+      <div className='space-y-2'>
         {navegador && (
-          <div className="flex items-start gap-2">
-            <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 min-w-[80px]">
+          <div className='flex items-start gap-2'>
+            <span className='min-w-[80px] text-xs font-semibold text-gray-500 dark:text-gray-400'>
               Navegador:
             </span>
-            <span className="text-xs text-gray-700 dark:text-gray-300 font-mono">
+            <span className='font-mono text-xs text-gray-700 dark:text-gray-300'>
               {navegador}
             </span>
           </div>
         )}
 
         {registroId && (
-          <div className="flex items-start gap-2">
-            <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 min-w-[80px]">
+          <div className='flex items-start gap-2'>
+            <span className='min-w-[80px] text-xs font-semibold text-gray-500 dark:text-gray-400'>
               ID Registro:
             </span>
-            <span className="text-xs text-gray-700 dark:text-gray-300 font-mono">
+            <span className='font-mono text-xs text-gray-700 dark:text-gray-300'>
               {registroId}
             </span>
           </div>
         )}
 
         {ip && (
-          <div className="flex items-start gap-2">
-            <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 min-w-[80px]">
+          <div className='flex items-start gap-2'>
+            <span className='min-w-[80px] text-xs font-semibold text-gray-500 dark:text-gray-400'>
               IP:
             </span>
-            <span className="text-xs text-gray-700 dark:text-gray-300 font-mono">
+            <span className='font-mono text-xs text-gray-700 dark:text-gray-300'>
               {ip}
             </span>
           </div>

@@ -12,15 +12,15 @@ import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { motion } from 'framer-motion'
 import {
-    AlertTriangle,
-    CheckCircle,
-    Edit,
-    FileText,
-    FolderOpen,
-    GripVertical,
-    Share2,
-    Target,
-    Trash2,
+  AlertTriangle,
+  CheckCircle,
+  Edit,
+  FileText,
+  FolderOpen,
+  GripVertical,
+  Share2,
+  Target,
+  Trash2,
 } from 'lucide-react'
 
 import { requisitosConfigStyles as styles } from '../styles/requisitos-config.styles'
@@ -33,7 +33,12 @@ interface RequisitoCardProps {
   onEliminar: () => void
 }
 
-export function RequisitoCard({ requisito, index, onEditar, onEliminar }: RequisitoCardProps) {
+export function RequisitoCard({
+  requisito,
+  index,
+  onEditar,
+  onEliminar,
+}: RequisitoCardProps) {
   // ============================================
   // DRAG-AND-DROP SETUP
   // ============================================
@@ -104,7 +109,7 @@ export function RequisitoCard({ requisito, index, onEditar, onEliminar }: Requis
           {...listeners}
           className={`${styles.card.dragHandle} cursor-grab active:cursor-grabbing`}
         >
-          <GripVertical className="w-5 h-5" />
+          <GripVertical className='h-5 w-5' />
         </div>
 
         {/* Badge de Orden (posición en la lista, no el valor raw de `orden`) */}
@@ -125,25 +130,25 @@ export function RequisitoCard({ requisito, index, onEditar, onEliminar }: Requis
             {/* ✅ Badge de Alcance COMPARTIDO */}
             {requisito.alcance === 'COMPARTIDO_CLIENTE' && (
               <div
-                className={`${styles.card.badge} bg-emerald-100 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-200 border-emerald-300 dark:border-emerald-800`}
+                className={`${styles.card.badge} border-emerald-300 bg-emerald-100 text-emerald-800 dark:border-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-200`}
               >
-                <Share2 className="w-3.5 h-3.5" />
+                <Share2 className='h-3.5 w-3.5' />
                 <span>Compartido entre Fuentes</span>
               </div>
             )}
 
             {/* Nivel de Validación */}
             <div className={`${styles.card.badge} ${nivelStyles.container}`}>
-              <NivelIcon className="w-3.5 h-3.5" />
+              <NivelIcon className='h-3.5 w-3.5' />
               <span>{getNivelLabel()}</span>
             </div>
 
             {/* Tipo de Documento */}
             {requisito.tipo_documento_sugerido && (
               <div
-                className={`${styles.card.badge} bg-purple-100 dark:bg-purple-950/50 text-purple-800 dark:text-purple-200 border-purple-300 dark:border-purple-800`}
+                className={`${styles.card.badge} border-purple-300 bg-purple-100 text-purple-800 dark:border-purple-800 dark:bg-purple-950/50 dark:text-purple-200`}
               >
-                <FileText className="w-3.5 h-3.5" />
+                <FileText className='h-3.5 w-3.5' />
                 <span>{requisito.tipo_documento_sugerido}</span>
               </div>
             )}
@@ -151,18 +156,20 @@ export function RequisitoCard({ requisito, index, onEditar, onEliminar }: Requis
             {/* Categoría */}
             {requisito.categoria_documento && (
               <div
-                className={`${styles.card.badge} bg-indigo-100 dark:bg-indigo-950/50 text-indigo-800 dark:text-indigo-200 border-indigo-300 dark:border-indigo-800`}
+                className={`${styles.card.badge} border-indigo-300 bg-indigo-100 text-indigo-800 dark:border-indigo-800 dark:bg-indigo-950/50 dark:text-indigo-200`}
               >
-                <FolderOpen className="w-3.5 h-3.5" />
-                <span className="capitalize">{requisito.categoria_documento}</span>
+                <FolderOpen className='h-3.5 w-3.5' />
+                <span className='capitalize'>
+                  {requisito.categoria_documento}
+                </span>
               </div>
             )}
           </div>
 
           {/* Instrucciones (si existen) */}
           {requisito.instrucciones && (
-            <div className="mt-2 px-3 py-2 rounded-lg bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800">
-              <p className="text-xs text-blue-800 dark:text-blue-200">
+            <div className='mt-2 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 dark:border-blue-800 dark:bg-blue-950/30'>
+              <p className='text-xs text-blue-800 dark:text-blue-200'>
                 💡 <strong>Instrucciones:</strong> {requisito.instrucciones}
               </p>
             </div>
@@ -177,9 +184,9 @@ export function RequisitoCard({ requisito, index, onEditar, onEliminar }: Requis
           whileTap={{ scale: 0.95 }}
           onClick={onEditar}
           className={`${styles.card.btnIcon} hover:text-blue-600 dark:hover:text-blue-400`}
-          title="Editar requisito"
+          title='Editar requisito'
         >
-          <Edit className="w-4 h-4" />
+          <Edit className='h-4 w-4' />
         </motion.button>
 
         <motion.button
@@ -187,9 +194,9 @@ export function RequisitoCard({ requisito, index, onEditar, onEliminar }: Requis
           whileTap={{ scale: 0.95 }}
           onClick={onEliminar}
           className={`${styles.card.btnIcon} hover:text-red-600 dark:hover:text-red-400`}
-          title="Eliminar requisito"
+          title='Eliminar requisito'
         >
-          <Trash2 className="w-4 h-4" />
+          <Trash2 className='h-4 w-4' />
         </motion.button>
       </div>
     </motion.div>

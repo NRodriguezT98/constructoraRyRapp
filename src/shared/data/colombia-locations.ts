@@ -137,7 +137,14 @@ export const DEPARTAMENTOS_COLOMBIA: Departamento[] = [
   },
   {
     nombre: 'Casanare',
-    ciudades: ['Yopal', 'Aguazul', 'Villanueva', 'Monterrey', 'Tauramena', 'Paz de Ariporo'],
+    ciudades: [
+      'Yopal',
+      'Aguazul',
+      'Villanueva',
+      'Monterrey',
+      'Tauramena',
+      'Paz de Ariporo',
+    ],
   },
   {
     nombre: 'Cauca',
@@ -169,7 +176,14 @@ export const DEPARTAMENTOS_COLOMBIA: Departamento[] = [
   },
   {
     nombre: 'Chocó',
-    ciudades: ['Quibdó', 'Istmina', 'Condoto', 'Tadó', 'Acandí', 'Bahía Solano'],
+    ciudades: [
+      'Quibdó',
+      'Istmina',
+      'Condoto',
+      'Tadó',
+      'Acandí',
+      'Bahía Solano',
+    ],
   },
   {
     nombre: 'Córdoba',
@@ -446,7 +460,7 @@ export const DEPARTAMENTOS_COLOMBIA: Departamento[] = [
  * Obtener lista de nombres de departamentos (ordenados alfabéticamente)
  */
 export function getDepartamentos(): string[] {
-  return DEPARTAMENTOS_COLOMBIA.map((d) => d.nombre).sort()
+  return DEPARTAMENTOS_COLOMBIA.map(d => d.nombre).sort()
 }
 
 /**
@@ -455,7 +469,7 @@ export function getDepartamentos(): string[] {
  * @returns Array de nombres de municipios
  */
 export function getCiudadesPorDepartamento(departamento: string): string[] {
-  const dept = DEPARTAMENTOS_COLOMBIA.find((d) => d.nombre === departamento)
+  const dept = DEPARTAMENTOS_COLOMBIA.find(d => d.nombre === departamento)
   return dept ? dept.ciudades.sort() : []
 }
 
@@ -465,7 +479,10 @@ export function getCiudadesPorDepartamento(departamento: string): string[] {
  * @param departamento - Nombre del departamento
  * @returns true si el municipio pertenece al departamento
  */
-export function validarCiudadDepartamento(ciudad: string, departamento: string): boolean {
+export function validarCiudadDepartamento(
+  ciudad: string,
+  departamento: string
+): boolean {
   const ciudades = getCiudadesPorDepartamento(departamento)
   return ciudades.includes(ciudad)
 }

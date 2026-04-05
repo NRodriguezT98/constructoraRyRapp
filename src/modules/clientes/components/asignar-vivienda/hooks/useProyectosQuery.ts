@@ -22,9 +22,15 @@ interface ViviendaDisponibleProyectoRow {
  * Consulta las viviendas con estado 'Disponible' y sin asignar,
  * luego filtra los proyectos por IDs encontrados.
  */
+export const proyectosAsignarKeys = {
+  all: ['proyectos-asignar'] as const,
+  conDisponibles: () =>
+    [...proyectosAsignarKeys.all, 'con-viviendas-disponibles'] as const,
+}
+
 export function useProyectosQuery() {
   return useQuery({
-    queryKey: ['proyectos', 'con-viviendas-disponibles'],
+    queryKey: proyectosAsignarKeys.conDisponibles(),
     queryFn: async () => {
       // 1. Obtener IDs de proyectos que tienen viviendas disponibles
       //    viviendas → manzanas.proyecto_id (viviendas no tiene proyecto_id directo)

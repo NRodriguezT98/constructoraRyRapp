@@ -42,28 +42,28 @@ export const FuentePagoCardHeader = memo(function FuentePagoCardHeader({
   onToggleExpand,
 }: FuentePagoCardHeaderProps) {
   return (
-    <div className="flex items-center justify-between">
-      <div className="flex items-center gap-3 flex-1">
+    <div className='flex items-center justify-between'>
+      <div className='flex flex-1 items-center gap-3'>
         {/* Icono dinámico */}
         <div
-          className="w-8 h-8 rounded-lg flex items-center justify-center"
+          className='flex h-8 w-8 items-center justify-center rounded-lg'
           style={{
-            background: `linear-gradient(to bottom right, ${colores.gradientFrom}, ${colores.gradientTo})`
+            background: `linear-gradient(to bottom right, ${colores.gradientFrom}, ${colores.gradientTo})`,
           }}
         >
-          <IconoTipo className="w-4 h-4 text-white" />
+          <IconoTipo className='h-4 w-4 text-white' />
         </div>
 
         {/* Tipo + Entidad */}
-        <div className="flex-1">
-          <div className="flex items-center gap-2">
-            <h3 className="text-sm font-bold text-gray-900 dark:text-white">
+        <div className='flex-1'>
+          <div className='flex items-center gap-2'>
+            <h3 className='text-sm font-bold text-gray-900 dark:text-white'>
               {tipo}
             </h3>
             {entidad && (
               <>
-                <span className="text-gray-400">•</span>
-                <span className="text-xs text-gray-600 dark:text-gray-300 font-medium">
+                <span className='text-gray-400'>•</span>
+                <span className='text-xs font-medium text-gray-600 dark:text-gray-300'>
                   {entidad}
                 </span>
               </>
@@ -73,20 +73,20 @@ export const FuentePagoCardHeader = memo(function FuentePagoCardHeader({
       </div>
 
       {/* Estado + Botón expandir */}
-      <div className="flex items-center gap-3">
+      <div className='flex items-center gap-3'>
         <span className={`text-xs font-medium ${estadoVisual.color}`}>
           {estadoVisual.label}
         </span>
         <button
-          onClick={(e) => {
+          onClick={e => {
             e.stopPropagation() // Prevenir propagación del evento
             onToggleExpand()
           }}
-          className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-          aria-label={isExpanded ? "Colapsar detalles" : "Expandir detalles"}
+          className='rounded p-1 transition-colors hover:bg-gray-100 dark:hover:bg-gray-700'
+          aria-label={isExpanded ? 'Colapsar detalles' : 'Expandir detalles'}
         >
           <ChevronDown
-            className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${
+            className={`h-4 w-4 text-gray-500 transition-transform duration-200 ${
               isExpanded ? 'rotate-180' : ''
             }`}
           />

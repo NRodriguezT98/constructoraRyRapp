@@ -18,13 +18,13 @@ import {
   Upload,
 } from 'lucide-react'
 
+import { getTodayDateString } from '@/lib/utils/date.utils'
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogTitle,
-} from '@/components/ui/dialog'
-import { getTodayDateString } from '@/lib/utils/date.utils'
+} from '@/shared/components/ui/dialog'
 
 import type { AbonoParaEditar } from '../../types/editar-abono.types'
 import { formatMontoDisplay } from '../modal-registro-pago/CampoMontoPago'

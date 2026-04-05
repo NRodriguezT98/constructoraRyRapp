@@ -42,8 +42,8 @@ export function ModuleLoadingScreen({
     <div
       className={`flex h-screen w-full items-center justify-center bg-gradient-to-br from-gray-50 ${pageBg} dark:from-gray-900 ${pageBgDark}`}
     >
-      <div className="flex flex-col items-center gap-8">
-        <div className="relative">
+      <div className='flex flex-col items-center gap-8'>
+        <div className='relative'>
           {/* Outer rotating ring */}
           <motion.div
             className={`absolute inset-0 h-32 w-32 rounded-full border-4 border-transparent ${ringColors}`}
@@ -60,24 +60,24 @@ export function ModuleLoadingScreen({
 
           {/* Icon */}
           <motion.div
-            className="relative flex h-32 w-32 items-center justify-center"
+            className='relative flex h-32 w-32 items-center justify-center'
             animate={{ scale: [1, 1.05, 1] }}
             transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
           >
-            <div className="absolute inset-0 flex items-center justify-center">
+            <div className='absolute inset-0 flex items-center justify-center'>
               <div
                 className={`rounded-2xl bg-gradient-to-br ${iconGradient} p-6 shadow-2xl ${iconShadow}`}
               >
-                <Icon className="h-12 w-12 text-white" strokeWidth={2.5} />
+                <Icon className='h-12 w-12 text-white' strokeWidth={2.5} />
               </div>
             </div>
           </motion.div>
 
           {/* Sparkle particles */}
-          {[0, 1, 2].map((i) => (
+          {[0, 1, 2].map(i => (
             <motion.div
               key={i}
-              className="absolute"
+              className='absolute'
               style={{ top: '50%', left: '50%' }}
               animate={{
                 x: [0, Math.cos((i * 2 * Math.PI) / 3) * 60, 0],
@@ -98,8 +98,8 @@ export function ModuleLoadingScreen({
         </div>
 
         {/* Dots animation */}
-        <div className="flex gap-2">
-          {[0, 1, 2].map((i) => (
+        <div className='flex gap-2'>
+          {[0, 1, 2].map(i => (
             <motion.div
               key={i}
               className={`h-2 w-2 rounded-full ${sparkleColor.replace('text-', 'bg-')}`}

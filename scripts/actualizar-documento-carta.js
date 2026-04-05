@@ -7,7 +7,9 @@ const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 const supabase = createClient(supabaseUrl, supabaseKey)
 
 async function buscarYActualizarDocumento() {
-  console.log('🔍 Buscando documento "Carta de Aprobación Subsidio Caja Compensación"...\n')
+  console.log(
+    '🔍 Buscando documento "Carta de Aprobación Subsidio Caja Compensación"...\n'
+  )
 
   // Buscar por título exacto
   const { data: docs, error } = await supabase
@@ -23,7 +25,9 @@ async function buscarYActualizarDocumento() {
   console.log(`📄 Documentos encontrados: ${docs.length}\n`)
 
   if (docs.length === 0) {
-    console.log('⚠️ No se encontró el documento. Probando búsqueda más amplia...\n')
+    console.log(
+      '⚠️ No se encontró el documento. Probando búsqueda más amplia...\n'
+    )
 
     // Búsqueda más amplia
     const { data: docsAmplia } = await supabase
@@ -32,7 +36,9 @@ async function buscarYActualizarDocumento() {
       .or('titulo.ilike.%Subsidio Caja%,titulo.ilike.%Compensación%')
       .limit(20)
 
-    console.log(`📄 Documentos con "Subsidio" o "Compensación": ${docsAmplia?.length || 0}\n`)
+    console.log(
+      `📄 Documentos con "Subsidio" o "Compensación": ${docsAmplia?.length || 0}\n`
+    )
 
     if (docsAmplia && docsAmplia.length > 0) {
       docsAmplia.forEach((doc, i) => {
@@ -55,7 +61,7 @@ async function buscarYActualizarDocumento() {
     // Actualizar metadata con entidad correcta
     const nuevoMetadata = {
       ...doc.metadata,
-      entidad: 'COMFANDI'
+      entidad: 'COMFANDI',
     }
 
     console.log(`\n🔧 Actualizando metadata...`)

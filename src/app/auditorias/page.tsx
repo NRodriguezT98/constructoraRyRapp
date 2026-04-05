@@ -13,10 +13,8 @@ import { getServerPermissions } from '@/lib/auth/server'
 import { AuditoriasView } from '@/modules/auditorias'
 
 export default async function AuditoriasPage() {
-
   // ✅ Obtener permisos desde el servidor
   const permisos = await getServerPermissions()
-
 
   // ✅ Pasar permisos como props
   return <AuditoriasView {...permisos} />

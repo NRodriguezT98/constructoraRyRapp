@@ -20,10 +20,7 @@ export function createClient() {
     return client
   }
 
-  client = createBrowserClient<Database>(
-    supabaseUrl,
-    supabaseAnonKey
-  )
+  client = createBrowserClient<Database>(supabaseUrl, supabaseAnonKey)
 
   return client
 }

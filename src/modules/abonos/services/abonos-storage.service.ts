@@ -36,7 +36,10 @@ export function generarPathComprobante(
  * Sube un comprobante al bucket privado.
  * @returns El path de storage donde quedó guardado.
  */
-export async function subirComprobante(path: string, archivo: File): Promise<string> {
+export async function subirComprobante(
+  path: string,
+  archivo: File
+): Promise<string> {
   const { error } = await supabase.storage.from(BUCKET).upload(path, archivo, {
     cacheControl: '3600',
     upsert: false,

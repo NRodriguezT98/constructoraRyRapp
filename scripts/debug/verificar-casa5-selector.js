@@ -5,10 +5,11 @@
 import { createClient } from '@supabase/supabase-js'
 
 const supabaseUrl = 'https://ouhfqwpvzbjtrzotssco.supabase.co'
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im91aGZxd3B2emJqdHJ6b3Rzc2NvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjgyNjIxNjEsImV4cCI6MjA0MzgzODE2MX0.gqo_v_1gOWECjZQNPTHDqoSxLXCEb6-wR2PWaE_bIpo'
+const supabaseKey =
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im91aGZxd3B2emJqdHJ6b3Rzc2NvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjgyNjIxNjEsImV4cCI6MjA0MzgzODE2MX0.gqo_v_1gOWECjZQNPTHDqoSxLXCEb6-wR2PWaE_bIpo'
 
 const supabase = createClient(supabaseUrl, supabaseKey, {
-  auth: { persistSession: false }
+  auth: { persistSession: false },
 })
 
 async function verificar() {
@@ -19,14 +20,16 @@ async function verificar() {
   // Buscar Casa 5 en Manzana A
   const { data: viviendas, error } = await supabase
     .from('viviendas')
-    .select(`
+    .select(
+      `
       id,
       numero,
       estado,
       cliente_id,
       negociacion_id,
       manzanas!inner (nombre, proyecto_id, proyectos(nombre))
-    `)
+    `
+    )
     .eq('numero', '5')
     .eq('manzanas.nombre', 'Manzana A')
 
@@ -70,7 +73,9 @@ async function verificar() {
   if (problemas.length > 0) {
     console.log('🚨 PROBLEMAS ENCONTRADOS:\n')
     problemas.forEach(p => console.log(`   ${p}`))
-    console.log('\n💡 SOLUCIÓN: La vivienda NO aparecerá en el selector hasta que:')
+    console.log(
+      '\n💡 SOLUCIÓN: La vivienda NO aparecerá en el selector hasta que:'
+    )
     console.log('   1. estado = "Disponible"')
     console.log('   2. cliente_id = NULL')
     console.log('   3. negociacion_id = NULL')

@@ -7,14 +7,16 @@ async function probarConsultaManzanas() {
   // 1. Obtener proyecto "Las Américas 2"
   const { data: proyecto, error: errorProyecto } = await supabase
     .from('proyectos')
-    .select(`
+    .select(
+      `
       *,
       manzanas (
         id,
         nombre,
         numero_viviendas
       )
-    `)
+    `
+    )
     .ilike('nombre', '%américas 2%')
     .single()
 
@@ -34,7 +36,10 @@ async function probarConsultaManzanas() {
       .eq('manzana_id', manzana.id)
 
     if (countError) {
-      console.error(`❌ Error contando viviendas de ${manzana.nombre}:`, countError)
+      console.error(
+        `❌ Error contando viviendas de ${manzana.nombre}:`,
+        countError
+      )
       continue
     }
 

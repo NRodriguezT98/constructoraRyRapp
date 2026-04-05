@@ -2,7 +2,10 @@ import { useState } from 'react'
 
 import { logger } from '@/lib/utils/logger'
 
-import { obtenerEstadoCategoriasPorModulo, verificarCategoriasPorModulo } from '../services/categorias-sistema.service'
+import {
+  obtenerEstadoCategoriasPorModulo,
+  verificarCategoriasPorModulo,
+} from '../services/categorias-sistema.service'
 
 export type Modulo = 'clientes' | 'proyectos' | 'viviendas'
 
@@ -24,16 +27,20 @@ const MODULOS_CONFIG: Record<Modulo, ModuloConfig> = {
 }
 
 export function useCategoriasSistema() {
-  const [verificandoModulo, setVerificandoModulo] = useState<Modulo | null>(null)
-  const [resultados, setResultados] = useState<Record<Modulo, ResultadoModulo>>({
-    clientes: { tipo: null, mensaje: '' },
-    proyectos: { tipo: null, mensaje: '' },
-    viviendas: { tipo: null, mensaje: '' },
-  })
+  const [verificandoModulo, setVerificandoModulo] = useState<Modulo | null>(
+    null
+  )
+  const [resultados, setResultados] = useState<Record<Modulo, ResultadoModulo>>(
+    {
+      clientes: { tipo: null, mensaje: '' },
+      proyectos: { tipo: null, mensaje: '' },
+      viviendas: { tipo: null, mensaje: '' },
+    }
+  )
 
   const verificarModulo = async (modulo: Modulo) => {
     setVerificandoModulo(modulo)
-    setResultados((prev) => ({
+    setResultados(prev => ({
       ...prev,
       [modulo]: {
         tipo: 'info',
@@ -47,7 +54,7 @@ export function useCategoriasSistema() {
       const expected = MODULOS_CONFIG[modulo].expectedCount
 
       if (estado.activas === expected) {
-        setResultados((prev) => ({
+        setResultados(prev => ({
           ...prev,
           [modulo]: {
             tipo: 'success',
@@ -62,7 +69,7 @@ export function useCategoriasSistema() {
       const response = await verificarCategoriasPorModulo(modulo)
 
       if (response.success) {
-        setResultados((prev) => ({
+        setResultados(prev => ({
           ...prev,
           [modulo]: {
             tipo: 'success',
@@ -71,7 +78,7 @@ export function useCategoriasSistema() {
           },
         }))
       } else {
-        setResultados((prev) => ({
+        setResultados(prev => ({
           ...prev,
           [modulo]: {
             tipo: 'error',
@@ -81,7 +88,7 @@ export function useCategoriasSistema() {
       }
     } catch (error) {
       logger.error(`Error al verificar categorías de ${modulo}:`, error)
-      setResultados((prev) => ({
+      setResultados(prev => ({
         ...prev,
         [modulo]: {
           tipo: 'error',

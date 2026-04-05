@@ -11,9 +11,12 @@ import type { Database } from '@/lib/supabase/database.types'
 // DATABASE TYPES
 // =====================================================
 
-export type EntidadFinancieraRow = Database['public']['Tables']['entidades_financieras']['Row']
-export type EntidadFinancieraInsert = Database['public']['Tables']['entidades_financieras']['Insert']
-export type EntidadFinancieraUpdate = Database['public']['Tables']['entidades_financieras']['Update']
+export type EntidadFinancieraRow =
+  Database['public']['Tables']['entidades_financieras']['Row']
+export type EntidadFinancieraInsert =
+  Database['public']['Tables']['entidades_financieras']['Insert']
+export type EntidadFinancieraUpdate =
+  Database['public']['Tables']['entidades_financieras']['Update']
 
 // =====================================================
 // ENUMS & CONSTANTS

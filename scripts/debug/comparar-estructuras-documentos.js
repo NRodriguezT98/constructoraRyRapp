@@ -7,7 +7,9 @@ const supabase = createClient(
 )
 
 async function compararEstructuras() {
-  console.log('🔍 Comparando estructuras documentos_proyecto vs documentos_vivienda...\n')
+  console.log(
+    '🔍 Comparando estructuras documentos_proyecto vs documentos_vivienda...\n'
+  )
 
   // Proyectos
   const { data: proyecto } = await supabase
@@ -38,26 +40,36 @@ async function compararEstructuras() {
   // Test query con FK en proyectos
   const { data: testProyecto, error: errorProyecto } = await supabase
     .from('documentos_proyecto')
-    .select(`
+    .select(
+      `
       id,
       titulo,
       usuario:usuarios!subido_por (nombres, apellidos)
-    `)
+    `
+    )
     .limit(1)
 
-  console.log('\n✅ Query proyectos con usuarios!subido_por:', errorProyecto ? `❌ ${errorProyecto.message}` : '✓ OK')
+  console.log(
+    '\n✅ Query proyectos con usuarios!subido_por:',
+    errorProyecto ? `❌ ${errorProyecto.message}` : '✓ OK'
+  )
 
   // Test query con FK en viviendas
   const { data: testVivienda, error: errorVivienda } = await supabase
     .from('documentos_vivienda')
-    .select(`
+    .select(
+      `
       id,
       titulo,
       usuario:usuarios!subido_por (nombres, apellidos)
-    `)
+    `
+    )
     .limit(1)
 
-  console.log('✅ Query viviendas con usuarios!subido_por:', errorVivienda ? `❌ ${errorVivienda.message}` : '✓ OK')
+  console.log(
+    '✅ Query viviendas con usuarios!subido_por:',
+    errorVivienda ? `❌ ${errorVivienda.message}` : '✓ OK'
+  )
 }
 
 compararEstructuras()

@@ -2,7 +2,10 @@
  * Listas de entidades por tipo de fuente para selects del modal de rebalanceo.
  */
 
-import { esCreditoHipotecario, esSubsidioCajaCompensacion } from '@/shared/constants/fuentes-pago.constants'
+import {
+  esCreditoHipotecario,
+  esSubsidioCajaCompensacion,
+} from '@/shared/constants/fuentes-pago.constants'
 
 export const BANCOS_HIPOTECARIO = [
   'Bancolombia',

@@ -20,7 +20,9 @@ import type { EventoHistorialHumanizado } from '../types/historial.types'
  * - ✅ No requiere llamadas async a BD
  * - ✅ Botones aparecen instantáneamente
  */
-export function usePermisosNotasHistorial(eventos: EventoHistorialHumanizado[]) {
+export function usePermisosNotasHistorial(
+  eventos: EventoHistorialHumanizado[]
+) {
   const { user, perfil } = useAuth()
 
   const notasEditables = useMemo(() => {
@@ -29,7 +31,7 @@ export function usePermisosNotasHistorial(eventos: EventoHistorialHumanizado[]) 
     const esAdmin = perfil.rol === 'Administrador'
     const editables = new Set<string>()
 
-    eventos.forEach((evento) => {
+    eventos.forEach(evento => {
       // Solo procesar notas manuales
       if (evento.metadata?.esNota && evento.metadata?.notaId) {
         const notaId = evento.metadata.notaId as string

@@ -13,7 +13,10 @@ interface UseAccionesSectionProps {
   disabled?: boolean
 }
 
-export function useAccionesSection({ estado, disabled = false }: UseAccionesSectionProps) {
+export function useAccionesSection({
+  estado,
+  disabled = false,
+}: UseAccionesSectionProps) {
   // =====================================================
   // CÁLCULOS COMPUTADOS (con memoización)
   // =====================================================
@@ -21,7 +24,8 @@ export function useAccionesSection({ estado, disabled = false }: UseAccionesSect
   const estadosComputados = useMemo(() => {
     const isActiva = estado === 'Activa'
     const isSuspendida = estado === 'Suspendida'
-    const isCerrada = estado === 'Cerrada por Renuncia' || estado === 'Completada'
+    const isCerrada =
+      estado === 'Cerrada por Renuncia' || estado === 'Completada'
 
     return {
       isActiva,

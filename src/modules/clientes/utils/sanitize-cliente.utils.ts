@@ -5,9 +5,18 @@
  * antes de enviarlos a la base de datos.
  */
 
-import { formatNombrePropio, sanitizeDate, sanitizeEnum, sanitizeString } from '@/lib/utils/sanitize.utils'
+import {
+  formatNombrePropio,
+  sanitizeDate,
+  sanitizeEnum,
+  sanitizeString,
+} from '@/lib/utils/sanitize.utils'
 
-import type { ActualizarClienteDTO, CrearClienteDTO, EstadoCivil } from '../types'
+import type {
+  ActualizarClienteDTO,
+  CrearClienteDTO,
+  EstadoCivil,
+} from '../types'
 
 /**
  * Valores válidos del enum EstadoCivil
@@ -24,7 +33,9 @@ const VALID_ESTADOS_CIVILES: readonly EstadoCivil[] = [
  * Sanitizar datos de creación de cliente
  * Convierte strings vacíos a null y valida enums
  */
-export function sanitizeCrearClienteDTO(datos: CrearClienteDTO): CrearClienteDTO {
+export function sanitizeCrearClienteDTO(
+  datos: CrearClienteDTO
+): CrearClienteDTO {
   return {
     ...datos,
     // Campos obligatorios (strings)
@@ -35,8 +46,11 @@ export function sanitizeCrearClienteDTO(datos: CrearClienteDTO): CrearClienteDTO
 
     // Campos opcionales (strings)
     telefono: sanitizeString(datos.telefono) ?? undefined,
-    telefono_alternativo: sanitizeString(datos.telefono_alternativo) ?? undefined,
-    email: datos.email ? (sanitizeString(datos.email)?.toLowerCase() ?? undefined) : undefined,
+    telefono_alternativo:
+      sanitizeString(datos.telefono_alternativo) ?? undefined,
+    email: datos.email
+      ? (sanitizeString(datos.email)?.toLowerCase() ?? undefined)
+      : undefined,
     direccion: sanitizeString(datos.direccion) ?? undefined,
     ciudad: sanitizeString(datos.ciudad) ?? undefined,
     departamento: sanitizeString(datos.departamento) ?? undefined,
@@ -44,7 +58,8 @@ export function sanitizeCrearClienteDTO(datos: CrearClienteDTO): CrearClienteDTO
 
     // Campos opcionales (especiales)
     fecha_nacimiento: sanitizeDate(datos.fecha_nacimiento) ?? undefined,
-    estado_civil: sanitizeEnum(datos.estado_civil, VALID_ESTADOS_CIVILES) ?? undefined,
+    estado_civil:
+      sanitizeEnum(datos.estado_civil, VALID_ESTADOS_CIVILES) ?? undefined,
 
     // Interés inicial (mantener como está)
     interes_inicial: datos.interes_inicial,
@@ -61,22 +76,40 @@ export function sanitizeActualizarClienteDTO(
   const sanitized: ActualizarClienteDTO = {}
 
   // Solo incluir campos que existen en el DTO original (con valor !== undefined)
-  if (datos.nombres !== undefined) sanitized.nombres = formatNombrePropio(datos.nombres) || ''
-  if (datos.apellidos !== undefined) sanitized.apellidos = formatNombrePropio(datos.apellidos) || ''
-  if (datos.tipo_documento !== undefined) sanitized.tipo_documento = datos.tipo_documento
-  if (datos.numero_documento !== undefined) sanitized.numero_documento = sanitizeString(datos.numero_documento) || ''
+  if (datos.nombres !== undefined)
+    sanitized.nombres = formatNombrePropio(datos.nombres) || ''
+  if (datos.apellidos !== undefined)
+    sanitized.apellidos = formatNombrePropio(datos.apellidos) || ''
+  if (datos.tipo_documento !== undefined)
+    sanitized.tipo_documento = datos.tipo_documento
+  if (datos.numero_documento !== undefined)
+    sanitized.numero_documento = sanitizeString(datos.numero_documento) || ''
 
-  if (datos.telefono !== undefined) sanitized.telefono = sanitizeString(datos.telefono) ?? undefined
-  if (datos.telefono_alternativo !== undefined) sanitized.telefono_alternativo = sanitizeString(datos.telefono_alternativo) ?? undefined
-  if (datos.email !== undefined) sanitized.email = datos.email ? (sanitizeString(datos.email)?.toLowerCase() ?? undefined) : undefined
-  if (datos.direccion !== undefined) sanitized.direccion = sanitizeString(datos.direccion) ?? undefined
-  if (datos.ciudad !== undefined) sanitized.ciudad = sanitizeString(datos.ciudad) ?? undefined
-  if (datos.departamento !== undefined) sanitized.departamento = sanitizeString(datos.departamento) ?? undefined
-  if (datos.notas !== undefined) sanitized.notas = sanitizeString(datos.notas) ?? undefined
+  if (datos.telefono !== undefined)
+    sanitized.telefono = sanitizeString(datos.telefono) ?? undefined
+  if (datos.telefono_alternativo !== undefined)
+    sanitized.telefono_alternativo =
+      sanitizeString(datos.telefono_alternativo) ?? undefined
+  if (datos.email !== undefined)
+    sanitized.email = datos.email
+      ? (sanitizeString(datos.email)?.toLowerCase() ?? undefined)
+      : undefined
+  if (datos.direccion !== undefined)
+    sanitized.direccion = sanitizeString(datos.direccion) ?? undefined
+  if (datos.ciudad !== undefined)
+    sanitized.ciudad = sanitizeString(datos.ciudad) ?? undefined
+  if (datos.departamento !== undefined)
+    sanitized.departamento = sanitizeString(datos.departamento) ?? undefined
+  if (datos.notas !== undefined)
+    sanitized.notas = sanitizeString(datos.notas) ?? undefined
 
   // ⚠️ CRÍTICO: Validar que el campo no sea undefined antes de sanitizar
-  if (datos.fecha_nacimiento !== undefined) sanitized.fecha_nacimiento = sanitizeDate(datos.fecha_nacimiento) ?? undefined
-  if (datos.estado_civil !== undefined) sanitized.estado_civil = sanitizeEnum(datos.estado_civil, VALID_ESTADOS_CIVILES) ?? undefined
+  if (datos.fecha_nacimiento !== undefined)
+    sanitized.fecha_nacimiento =
+      sanitizeDate(datos.fecha_nacimiento) ?? undefined
+  if (datos.estado_civil !== undefined)
+    sanitized.estado_civil =
+      sanitizeEnum(datos.estado_civil, VALID_ESTADOS_CIVILES) ?? undefined
 
   // Estado (si se está actualizando)
   if (datos.estado !== undefined) sanitized.estado = datos.estado

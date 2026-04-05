@@ -22,7 +22,10 @@ interface UseUltimosAbonosSectionProps {
   limite?: number
 }
 
-export function useUltimosAbonosSection({ abonos, limite = 5 }: UseUltimosAbonosSectionProps) {
+export function useUltimosAbonosSection({
+  abonos,
+  limite = 5,
+}: UseUltimosAbonosSectionProps) {
   // =====================================================
   // CÁLCULOS COMPUTADOS (con memoización)
   // =====================================================

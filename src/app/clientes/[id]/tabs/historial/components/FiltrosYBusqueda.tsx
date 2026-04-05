@@ -51,16 +51,21 @@ export function FiltrosYBusqueda({
       {/* Header con estadísticas */}
       <div className={historialStyles.header.wrapper}>
         <div className={historialStyles.header.titleContainer}>
-          <h3 className={historialStyles.header.title}>Historial de {clienteNombre}</h3>
+          <h3 className={historialStyles.header.title}>
+            Historial de {clienteNombre}
+          </h3>
           <p className={historialStyles.header.stats}>
             {estadisticasFiltrados} de {estadisticasTotal} eventos
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className='flex items-center gap-2'>
           {tieneAplicados ? (
-            <button onClick={onLimpiarFiltros} className={historialStyles.header.clearButton}>
-              <X className="w-4 h-4" />
+            <button
+              onClick={onLimpiarFiltros}
+              className={historialStyles.header.clearButton}
+            >
+              <X className='h-4 w-4' />
               Limpiar filtros
             </button>
           ) : null}
@@ -68,9 +73,9 @@ export function FiltrosYBusqueda({
           {onAgregarNota && (
             <button
               onClick={onAgregarNota}
-              className="inline-flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white text-sm font-semibold rounded-lg shadow-lg transition-all"
+              className='inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 px-3 py-1.5 text-sm font-semibold text-white shadow-lg transition-all hover:from-purple-700 hover:to-indigo-700'
             >
-              <Plus className="w-4 h-4" strokeWidth={2.5} />
+              <Plus className='h-4 w-4' strokeWidth={2.5} />
               Agregar Nota
             </button>
           )}
@@ -78,71 +83,71 @@ export function FiltrosYBusqueda({
       </div>
 
       {/* Grid de filtros avanzados */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2 mb-3">
+      <div className='mb-3 grid grid-cols-1 gap-2 md:grid-cols-2 lg:grid-cols-4'>
         {/* Búsqueda */}
         <div className={historialStyles.search.container}>
           <Search className={historialStyles.search.icon} />
           <input
-            type="text"
-            placeholder="Buscar..."
+            type='text'
+            placeholder='Buscar...'
             value={busqueda}
-            onChange={(e) => onBusquedaChange(e.target.value)}
+            onChange={e => onBusquedaChange(e.target.value)}
             className={historialStyles.search.input}
           />
           {busqueda ? (
             <button
               onClick={() => onBusquedaChange('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 rounded text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
-              aria-label="Limpiar búsqueda"
+              className='absolute right-3 top-1/2 -translate-y-1/2 rounded p-0.5 text-gray-400 transition-colors hover:text-gray-600 dark:hover:text-gray-200'
+              aria-label='Limpiar búsqueda'
             >
-              <X className="w-4 h-4" />
+              <X className='h-4 w-4' />
             </button>
           ) : null}
         </div>
 
         {/* Filtro tipo de evento */}
-        <div className="relative">
-          <FileText className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+        <div className='relative'>
+          <FileText className='pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400' />
           <select
             value={tipoEvento}
-            onChange={(e) => onTipoEventoChange(e.target.value)}
-            className="w-full pl-10 pr-3 py-2 bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 rounded-lg focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 transition-all text-sm"
+            onChange={e => onTipoEventoChange(e.target.value)}
+            className='w-full rounded-lg border-2 border-gray-200 bg-white py-2 pl-10 pr-3 text-sm transition-all focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 dark:border-gray-700 dark:bg-gray-900'
           >
-            <option value="">Todos los tipos</option>
-            <option value="CREATE">Creación</option>
-            <option value="UPDATE">Actualización</option>
-            <option value="DELETE">Eliminación</option>
+            <option value=''>Todos los tipos</option>
+            <option value='CREATE'>Creación</option>
+            <option value='UPDATE'>Actualización</option>
+            <option value='DELETE'>Eliminación</option>
           </select>
         </div>
 
         {/* Filtro módulo */}
-        <div className="relative">
-          <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+        <div className='relative'>
+          <Calendar className='pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400' />
           <select
             value={modulo}
-            onChange={(e) => onModuloChange(e.target.value)}
-            className="w-full pl-10 pr-3 py-2 bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 rounded-lg focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 transition-all text-sm"
+            onChange={e => onModuloChange(e.target.value)}
+            className='w-full rounded-lg border-2 border-gray-200 bg-white py-2 pl-10 pr-3 text-sm transition-all focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 dark:border-gray-700 dark:bg-gray-900'
           >
-            <option value="">Todos los módulos</option>
-            <option value="clientes">Clientes</option>
-            <option value="negociaciones">Negociaciones</option>
-            <option value="abonos_historial">Abonos</option>
-            <option value="renuncias">Renuncias</option>
-            <option value="intereses">Intereses</option>
-            <option value="documentos_cliente">Documentos</option>
+            <option value=''>Todos los módulos</option>
+            <option value='clientes'>Clientes</option>
+            <option value='negociaciones'>Negociaciones</option>
+            <option value='abonos_historial'>Abonos</option>
+            <option value='renuncias'>Renuncias</option>
+            <option value='intereses'>Intereses</option>
+            <option value='documentos_cliente'>Documentos</option>
           </select>
         </div>
 
         {/* Filtro usuario */}
-        <div className="relative">
-          <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+        <div className='relative'>
+          <User className='pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400' />
           <select
             value={usuario}
-            onChange={(e) => onUsuarioChange(e.target.value)}
-            className="w-full pl-10 pr-3 py-2 bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 rounded-lg focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 transition-all text-sm"
+            onChange={e => onUsuarioChange(e.target.value)}
+            className='w-full rounded-lg border-2 border-gray-200 bg-white py-2 pl-10 pr-3 text-sm transition-all focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 dark:border-gray-700 dark:bg-gray-900'
           >
-            <option value="">Todos los usuarios</option>
-            {usuariosDisponibles.map((user) => (
+            <option value=''>Todos los usuarios</option>
+            {usuariosDisponibles.map(user => (
               <option key={user.id} value={user.id}>
                 {user.email}
               </option>

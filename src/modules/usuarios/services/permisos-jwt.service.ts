@@ -27,8 +27,9 @@ export type PermisoCompacto = string
 /**
  * Obtener permisos en formato compacto para JWT
  */
-export async function obtenerPermisosParaJWT(rol: Rol): Promise<PermisoCompacto[]> {
-
+export async function obtenerPermisosParaJWT(
+  rol: Rol
+): Promise<PermisoCompacto[]> {
   // Administrador: No necesita cache (bypass automático)
   if (rol === 'Administrador') {
     return ['*.*'] // Wildcard = todos los permisos
@@ -59,7 +60,6 @@ export async function sincronizarPermisosAlJWT(
   userId: string,
   rol: Rol
 ): Promise<void> {
-
   try {
     // Obtener permisos en formato compacto
     const permisos = await obtenerPermisosParaJWT(rol)
@@ -76,7 +76,6 @@ export async function sincronizarPermisosAlJWT(
       logger.error('❌ [JWT] Error actualizando metadata:', error)
       throw error
     }
-
   } catch (error) {
     logger.error('❌ [JWT] Error en sincronización:', error)
     throw error
@@ -108,7 +107,6 @@ export function tienePermisoEnCache(
 export async function invalidarSesionPorCambioPermisos(
   rol: Rol
 ): Promise<void> {
-
   try {
     // Obtener todos los usuarios con ese rol
     const { data: usuarios, error: errorUsuarios } = await supabaseAdmin
@@ -122,19 +120,20 @@ export async function invalidarSesionPorCambioPermisos(
       throw errorUsuarios
     }
 
-
     // Invalidar sesiones de cada usuario (sign out forzado)
     if (usuarios && usuarios.length > 0) {
       for (const usuario of usuarios) {
         try {
           await supabaseAdmin.auth.admin.signOut(usuario.id, 'global')
         } catch (error) {
-          logger.error(`⚠️ [JWT] Error invalidando sesión de ${usuario.id}:`, error)
+          logger.error(
+            `⚠️ [JWT] Error invalidando sesión de ${usuario.id}:`,
+            error
+          )
           // Continuar con los demás usuarios
         }
       }
     }
-
   } catch (error) {
     logger.error('❌ [JWT] Error en invalidación de sesiones:', error)
     throw error

@@ -23,7 +23,9 @@ async function verificarDocumentos() {
     // 1. Documentos de proyectos
     const { data: docProyectos, error: errorProyectos } = await supabase
       .from('documentos_proyecto')
-      .select('id, titulo, proyecto_id, estado, es_version_actual, fecha_creacion')
+      .select(
+        'id, titulo, proyecto_id, estado, es_version_actual, fecha_creacion'
+      )
       .order('fecha_creacion', { ascending: false })
       .limit(10)
 
@@ -31,7 +33,9 @@ async function verificarDocumentos() {
     if (errorProyectos) {
       console.error('❌ Error:', errorProyectos.message)
     } else {
-      console.log(`   Total encontrados (últimos 10): ${docProyectos?.length || 0}`)
+      console.log(
+        `   Total encontrados (últimos 10): ${docProyectos?.length || 0}`
+      )
       if (docProyectos && docProyectos.length > 0) {
         docProyectos.forEach(doc => {
           console.log(`   - ${doc.titulo}`)
@@ -50,7 +54,9 @@ async function verificarDocumentos() {
     // 2. Documentos de viviendas
     const { data: docViviendas, error: errorViviendas } = await supabase
       .from('documentos_vivienda')
-      .select('id, titulo, vivienda_id, estado, es_version_actual, fecha_creacion')
+      .select(
+        'id, titulo, vivienda_id, estado, es_version_actual, fecha_creacion'
+      )
       .order('fecha_creacion', { ascending: false })
       .limit(10)
 
@@ -58,7 +64,9 @@ async function verificarDocumentos() {
     if (errorViviendas) {
       console.error('❌ Error:', errorViviendas.message)
     } else {
-      console.log(`   Total encontrados (últimos 10): ${docViviendas?.length || 0}`)
+      console.log(
+        `   Total encontrados (últimos 10): ${docViviendas?.length || 0}`
+      )
       if (docViviendas && docViviendas.length > 0) {
         docViviendas.forEach(doc => {
           console.log(`   - ${doc.titulo}`)
@@ -92,7 +100,6 @@ async function verificarDocumentos() {
     }
 
     console.log('\n✅ Verificación completada\n')
-
   } catch (error) {
     console.error('❌ Error general:', error)
   }

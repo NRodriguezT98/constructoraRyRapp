@@ -3,15 +3,15 @@ import type { Database } from '@/lib/supabase/database.types'
 import { logger } from '@/lib/utils/logger'
 
 import type {
-    AccionAuditoria,
-    ActividadUsuario,
-    AuditoriaRegistro,
-    CambioDetalle,
-    ConsultaAuditoriaParams,
-    EliminacionMasiva,
-    EstadisticasAuditoria,
-    ResultadoPaginado,
-    ResumenModulo,
+  AccionAuditoria,
+  ActividadUsuario,
+  AuditoriaRegistro,
+  CambioDetalle,
+  ConsultaAuditoriaParams,
+  EliminacionMasiva,
+  EstadisticasAuditoria,
+  ResultadoPaginado,
+  ResumenModulo,
 } from '../types'
 
 /**
@@ -96,7 +96,7 @@ class AuditoriasService {
       throw new Error(`Error al obtener historial: ${error.message}`)
     }
 
-    return (data || []).map((item) => ({
+    return (data || []).map(item => ({
       id: item.id,
       tabla,
       accion: item.accion as AccionAuditoria,
@@ -110,8 +110,11 @@ class AuditoriasService {
       userAgent: null,
       datosAnteriores: null,
       datosNuevos: null,
-      cambiosEspecificos: (item.cambios_especificos ?? null) as Record<string, CambioDetalle> | null,
-      metadata: ((item.metadata ?? {}) as Record<string, unknown>),
+      cambiosEspecificos: (item.cambios_especificos ?? null) as Record<
+        string,
+        CambioDetalle
+      > | null,
+      metadata: (item.metadata ?? {}) as Record<string, unknown>,
       modulo: null,
     }))
   }
@@ -132,19 +135,17 @@ class AuditoriasService {
 
     if (error) {
       logger.error('Error al obtener actividad de usuario:', error)
-      throw new Error(
-        `Error al obtener actividad de usuario: ${error.message}`
-      )
+      throw new Error(`Error al obtener actividad de usuario: ${error.message}`)
     }
 
-    return (data || []).map((item) => ({
+    return (data || []).map(item => ({
       id: item.id,
       tabla: item.tabla,
       accion: item.accion as AccionAuditoria,
       fechaEvento: item.fecha_evento,
       registroId: item.registro_id,
       modulo: item.modulo ?? null,
-      metadata: ((item.metadata ?? {}) as Record<string, unknown>),
+      metadata: (item.metadata ?? {}) as Record<string, unknown>,
     }))
   }
 
@@ -170,7 +171,7 @@ class AuditoriasService {
       )
     }
 
-    return (data || []).map((item) => ({
+    return (data || []).map(item => ({
       fecha: item.fecha ?? '',
       usuarioEmail: item.usuario_email ?? '',
       tabla: item.tabla ?? '',
@@ -192,7 +193,7 @@ class AuditoriasService {
       throw new Error(`Error al obtener resumen de seguridad: ${error.message}`)
     }
 
-    return (data || []).map((item) => ({
+    return (data || []).map(item => ({
       modulo: item.modulo ?? '',
       totalEventos: item.total_eventos ?? 0,
       usuariosActivos: item.usuarios_activos ?? 0,
@@ -245,9 +246,7 @@ class AuditoriasService {
       .select('usuario_id')
       .not('usuario_id', 'is', null)
 
-    const usuariosUnicos = new Set(
-      usuariosData?.map((u) => u.usuario_id) || []
-    )
+    const usuariosUnicos = new Set(usuariosData?.map(u => u.usuario_id) || [])
 
     // Módulo más activo
     const resumenModulos = await this.obtenerResumenModulos()
@@ -255,9 +254,7 @@ class AuditoriasService {
       resumenModulos.length > 0 ? resumenModulos[0].modulo : 'N/A'
 
     // Acción más común
-    const { data: acciones } = await supabase
-      .from('audit_log')
-      .select('accion')
+    const { data: acciones } = await supabase.from('audit_log').select('accion')
 
     const conteoaccion = acciones?.reduce(
       (acc: Record<string, number>, item) => {
@@ -317,7 +314,9 @@ class AuditoriasService {
   /**
    * Transformar datos de DB a formato de aplicación
    */
-  private transformarAuditoriaDeDB(data: Database['public']['Tables']['audit_log']['Row']): AuditoriaRegistro {
+  private transformarAuditoriaDeDB(
+    data: Database['public']['Tables']['audit_log']['Row']
+  ): AuditoriaRegistro {
     return {
       id: data.id,
       tabla: data.tabla,
@@ -330,10 +329,19 @@ class AuditoriasService {
       fechaEvento: data.fecha_evento,
       ipAddress: (data.ip_address as string | null) ?? null,
       userAgent: data.user_agent,
-      datosAnteriores: (data.datos_anteriores ?? null) as Record<string, unknown> | null,
-      datosNuevos: (data.datos_nuevos ?? null) as Record<string, unknown> | null,
-      cambiosEspecificos: (data.cambios_especificos ?? null) as Record<string, CambioDetalle> | null,
-      metadata: ((data.metadata ?? {}) as Record<string, unknown>),
+      datosAnteriores: (data.datos_anteriores ?? null) as Record<
+        string,
+        unknown
+      > | null,
+      datosNuevos: (data.datos_nuevos ?? null) as Record<
+        string,
+        unknown
+      > | null,
+      cambiosEspecificos: (data.cambios_especificos ?? null) as Record<
+        string,
+        CambioDetalle
+      > | null,
+      metadata: (data.metadata ?? {}) as Record<string, unknown>,
       modulo: data.modulo,
     }
   }

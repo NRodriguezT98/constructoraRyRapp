@@ -1,23 +1,23 @@
-'use client';
+'use client'
 
 // =====================================================
 // HOOK: useRegistrarAbono
 // Hook para formulario de registro de abonos
 // =====================================================
 
-import { useState } from 'react';
+import { useState } from 'react'
 
-import { formatDateToISO, getTodayDateString } from '@/lib/utils/date.utils';
+import { formatDateToISO, getTodayDateString } from '@/lib/utils/date.utils'
 
-import type { CrearAbonoDTO, MetodoPago } from '../types';
+import type { CrearAbonoDTO, MetodoPago } from '../types'
 
 interface FormData {
-  fuente_pago_id: string;
-  monto: number;
-  fecha_abono: string;
-  metodo_pago: MetodoPago;
-  numero_referencia: string;
-  notas: string;
+  fuente_pago_id: string
+  monto: number
+  fecha_abono: string
+  metodo_pago: MetodoPago
+  numero_referencia: string
+  notas: string
 }
 
 const initialFormData: FormData = {
@@ -27,59 +27,64 @@ const initialFormData: FormData = {
   metodo_pago: 'Transferencia',
   numero_referencia: '',
   notas: '',
-};
+}
 
 export function useRegistrarAbono() {
-  const [formData, setFormData] = useState<FormData>(initialFormData);
-  const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>({});
+  const [formData, setFormData] = useState<FormData>(initialFormData)
+  const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>(
+    {}
+  )
 
   // =====================================================
   // VALIDACIONES
   // =====================================================
 
   const validarFormulario = (): boolean => {
-    const newErrors: Partial<Record<keyof FormData, string>> = {};
+    const newErrors: Partial<Record<keyof FormData, string>> = {}
 
     if (!formData.fuente_pago_id) {
-      newErrors.fuente_pago_id = 'Debe seleccionar una fuente de pago';
+      newErrors.fuente_pago_id = 'Debe seleccionar una fuente de pago'
     }
 
     if (formData.monto <= 0) {
-      newErrors.monto = 'El monto debe ser mayor a cero';
+      newErrors.monto = 'El monto debe ser mayor a cero'
     }
 
     if (!formData.fecha_abono) {
-      newErrors.fecha_abono = 'Debe especificar la fecha del abono';
+      newErrors.fecha_abono = 'Debe especificar la fecha del abono'
     }
 
     if (!formData.metodo_pago) {
-      newErrors.metodo_pago = 'Debe seleccionar un método de pago';
+      newErrors.metodo_pago = 'Debe seleccionar un método de pago'
     }
 
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
 
   // =====================================================
   // HANDLERS
   // =====================================================
 
-  const actualizarCampo = <K extends keyof FormData>(campo: K, valor: FormData[K]) => {
-    setFormData((prev) => ({ ...prev, [campo]: valor }));
+  const actualizarCampo = <K extends keyof FormData>(
+    campo: K,
+    valor: FormData[K]
+  ) => {
+    setFormData(prev => ({ ...prev, [campo]: valor }))
     // Limpiar error del campo al editarlo
     if (errors[campo]) {
-      setErrors((prev) => {
-        const newErrors = { ...prev };
-        delete newErrors[campo];
-        return newErrors;
-      });
+      setErrors(prev => {
+        const newErrors = { ...prev }
+        delete newErrors[campo]
+        return newErrors
+      })
     }
-  };
+  }
 
   const resetear = () => {
-    setFormData(initialFormData);
-    setErrors({});
-  };
+    setFormData(initialFormData)
+    setErrors({})
+  }
 
   const prepararDTO = (negociacionId: string): CrearAbonoDTO => {
     return {
@@ -90,8 +95,8 @@ export function useRegistrarAbono() {
       metodo_pago: formData.metodo_pago,
       numero_referencia: formData.numero_referencia || undefined,
       notas: formData.notas || undefined,
-    };
-  };
+    }
+  }
 
   return {
     formData,
@@ -100,5 +105,5 @@ export function useRegistrarAbono() {
     validarFormulario,
     resetear,
     prepararDTO,
-  };
+  }
 }

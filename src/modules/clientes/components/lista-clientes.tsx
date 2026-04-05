@@ -49,11 +49,11 @@ export function ListaClientes({
       initial='initial'
       animate='animate'
     >
-      {clientes.map((cliente) => (
+      {clientes.map(cliente => (
         <ClienteCardCompacta
           key={cliente.id}
           cliente={cliente}
-          vista="grid"
+          vista='grid'
           tieneCedula={cliente.tiene_documento_identidad}
           onVer={onVerCliente}
           onEditar={onEditarCliente}

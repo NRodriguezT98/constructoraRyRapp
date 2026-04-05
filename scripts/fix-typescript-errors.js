@@ -23,16 +23,22 @@ const path = require('path')
 // =============================================================================
 const CONFIG = {
   DRY_RUN: !process.argv.includes('--apply'),
-  FILTER_MODULE: process.argv.find(arg => arg.startsWith('--filter='))?.split('=')[1],
-  BACKUP_DIR: path.join(process.cwd(), '.backups', new Date().toISOString().split('T')[0]),
+  FILTER_MODULE: process.argv
+    .find(arg => arg.startsWith('--filter='))
+    ?.split('=')[1],
+  BACKUP_DIR: path.join(
+    process.cwd(),
+    '.backups',
+    new Date().toISOString().split('T')[0]
+  ),
   FIXES: {
     // Imports faltantes comunes
     MISSING_IMPORTS: {
-      'Database': "import type { Database } from '@/lib/supabase/database.types'",
-      'Proyecto': "import type { Proyecto } from '@/types'",
-      'Vivienda': "import type { Vivienda } from '@/types'",
-      'Cliente': "import type { Cliente } from '@/types'",
-      'Negociacion': "import type { Negociacion } from '@/types'",
+      Database: "import type { Database } from '@/lib/supabase/database.types'",
+      Proyecto: "import type { Proyecto } from '@/types'",
+      Vivienda: "import type { Vivienda } from '@/types'",
+      Cliente: "import type { Cliente } from '@/types'",
+      Negociacion: "import type { Negociacion } from '@/types'",
     },
 
     // Properties faltantes (agregar como opcionales)
@@ -68,10 +74,13 @@ function loadLatestReport() {
   const reportsDir = path.join(process.cwd(), '.reports')
 
   if (!fs.existsSync(reportsDir)) {
-    throw new Error('No se encontraron reportes. Ejecuta: npm run errors:analyze')
+    throw new Error(
+      'No se encontraron reportes. Ejecuta: npm run errors:analyze'
+    )
   }
 
-  const files = fs.readdirSync(reportsDir)
+  const files = fs
+    .readdirSync(reportsDir)
     .filter(f => f.startsWith('typescript-errors-') && f.endsWith('.json'))
     .sort()
     .reverse()
@@ -149,7 +158,9 @@ function fixMissingProperties(errors) {
       const match = error.message.match(/Property '(\w+)' does not exist/)
       if (match) {
         const propName = match[1]
-        const knownProp = CONFIG.FIXES.MISSING_PROPERTIES.find(p => p.prop === propName)
+        const knownProp = CONFIG.FIXES.MISSING_PROPERTIES.find(
+          p => p.prop === propName
+        )
 
         if (knownProp) {
           fixes.push({
@@ -236,7 +247,10 @@ function applyFixes(fixes) {
           applied = applyAddImport(fix)
           if (applied) {
             const action = CONFIG.DRY_RUN ? 'Se agregaría' : 'Agregado'
-            log(`     ✓ ${action}: ${fix.import}`, CONFIG.DRY_RUN ? 'yellow' : 'green')
+            log(
+              `     ✓ ${action}: ${fix.import}`,
+              CONFIG.DRY_RUN ? 'yellow' : 'green'
+            )
             results.applied++
           } else {
             log(`     - Ya existe: import ${fix.typeName}`, 'gray')
@@ -273,21 +287,29 @@ function generateFixReport(allFixes, results) {
 
 ### Imports Faltantes (${allFixes.filter(f => f.type === 'ADD_IMPORT').length})
 
-${allFixes.filter(f => f.type === 'ADD_IMPORT')
+${allFixes
+  .filter(f => f.type === 'ADD_IMPORT')
   .slice(0, 20)
-  .map(f => `- \`${path.basename(f.file)}\`: Agregar import de \`${f.typeName}\``)
+  .map(
+    f => `- \`${path.basename(f.file)}\`: Agregar import de \`${f.typeName}\``
+  )
   .join('\n')}
 
 ### Properties Faltantes (${allFixes.filter(f => f.type === 'ADD_PROPERTY').length})
 
-${allFixes.filter(f => f.type === 'ADD_PROPERTY')
+${allFixes
+  .filter(f => f.type === 'ADD_PROPERTY')
   .slice(0, 20)
-  .map(f => `- \`${path.basename(f.file)}\`: Agregar property \`${f.property}\``)
+  .map(
+    f => `- \`${path.basename(f.file)}\`: Agregar property \`${f.property}\``
+  )
   .join('\n')}
 
 ---
 
-${CONFIG.DRY_RUN ? `
+${
+  CONFIG.DRY_RUN
+    ? `
 ## ⚠️ PRÓXIMOS PASOS
 
 Este fue un **preview**. Para aplicar las correcciones:
@@ -295,7 +317,8 @@ Este fue un **preview**. Para aplicar las correcciones:
 \`\`\`bash
 npm run errors:fix --apply
 \`\`\`
-` : `
+`
+    : `
 ## ✅ APLICADO
 
 Las correcciones se aplicaron exitosamente.
@@ -305,7 +328,8 @@ Las correcciones se aplicaron exitosamente.
 \`\`\`bash
 npm run type-check
 \`\`\`
-`}
+`
+}
 
 **Generado por:** \`scripts/fix-typescript-errors.js\`
 `
@@ -317,12 +341,21 @@ npm run type-check
 // MAIN
 // =============================================================================
 async function main() {
-  log('\n═══════════════════════════════════════════════════════════════════', 'cyan')
+  log(
+    '\n═══════════════════════════════════════════════════════════════════',
+    'cyan'
+  )
   log('   🔧 CORRECTOR AUTOMÁTICO DE ERRORES TYPESCRIPT', 'cyan')
-  log('═══════════════════════════════════════════════════════════════════\n', 'cyan')
+  log(
+    '═══════════════════════════════════════════════════════════════════\n',
+    'cyan'
+  )
 
   if (CONFIG.DRY_RUN) {
-    log('ℹ️  Modo DRY-RUN: Solo se mostrarán los cambios (no se aplicarán)', 'yellow')
+    log(
+      'ℹ️  Modo DRY-RUN: Solo se mostrarán los cambios (no se aplicarán)',
+      'yellow'
+    )
     log('   Para aplicar: npm run errors:fix --apply\n', 'yellow')
   }
 
@@ -334,7 +367,9 @@ async function main() {
     // 2. Filtrar por módulo si se especificó
     if (CONFIG.FILTER_MODULE) {
       log(`→ Filtrando errores del módulo: ${CONFIG.FILTER_MODULE}`, 'cyan')
-      errors = errors.filter(e => e.file.includes(`/modules/${CONFIG.FILTER_MODULE}/`))
+      errors = errors.filter(e =>
+        e.file.includes(`/modules/${CONFIG.FILTER_MODULE}/`)
+      )
     }
 
     log(`→ Errores a procesar: ${errors.length}\n`, 'cyan')
@@ -361,27 +396,44 @@ async function main() {
     const results = applyFixes(allFixes)
 
     // 5. Mostrar resumen
-    log('\n═══════════════════════════════════════════════════════════════════', 'cyan')
+    log(
+      '\n═══════════════════════════════════════════════════════════════════',
+      'cyan'
+    )
     log(`   📊 RESUMEN`, 'bright')
-    log('═══════════════════════════════════════════════════════════════════\n', 'cyan')
-    log(`   Aplicadas:  ${results.applied}`, results.applied > 0 ? 'green' : 'gray')
+    log(
+      '═══════════════════════════════════════════════════════════════════\n',
+      'cyan'
+    )
+    log(
+      `   Aplicadas:  ${results.applied}`,
+      results.applied > 0 ? 'green' : 'gray'
+    )
     log(`   Omitidas:   ${results.skipped}`, 'gray')
     log(`   Fallidas:   ${results.failed}`, results.failed > 0 ? 'red' : 'gray')
     log(`   Total:      ${allFixes.length}\n`, 'bright')
 
     // 6. Guardar reporte
     const reportsDir = path.join(process.cwd(), '.reports')
-    const reportPath = path.join(reportsDir, `fix-report-${new Date().toISOString().split('T')[0]}.md`)
+    const reportPath = path.join(
+      reportsDir,
+      `fix-report-${new Date().toISOString().split('T')[0]}.md`
+    )
     const markdownReport = generateFixReport(allFixes, results)
     fs.writeFileSync(reportPath, markdownReport)
-    log(`✓ Reporte guardado: ${path.relative(process.cwd(), reportPath)}`, 'green')
+    log(
+      `✓ Reporte guardado: ${path.relative(process.cwd(), reportPath)}`,
+      'green'
+    )
 
     if (!CONFIG.DRY_RUN && results.applied > 0) {
-      log(`✓ Backups guardados en: ${path.relative(process.cwd(), CONFIG.BACKUP_DIR)}`, 'green')
+      log(
+        `✓ Backups guardados en: ${path.relative(process.cwd(), CONFIG.BACKUP_DIR)}`,
+        'green'
+      )
     }
 
     log('\n✨ Proceso completado\n', 'green')
-
   } catch (err) {
     log(`\n❌ Error: ${err.message}\n`, 'red')
     if (err.stack) {

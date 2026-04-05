@@ -39,10 +39,13 @@ class AuditLogService {
   }: LogSecurityEventParams): Promise<void> {
     try {
       // Obtener información adicional del navegador
-      const userAgent = typeof window !== 'undefined' ? window.navigator.userAgent : 'Unknown'
+      const userAgent =
+        typeof window !== 'undefined' ? window.navigator.userAgent : 'Unknown'
 
       // Obtener usuario actual si está autenticado
-      const { data: { user } } = await supabase.auth.getUser()
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
 
       const logData = {
         tipo,
@@ -74,7 +77,10 @@ class AuditLogService {
   /**
    * Registra un login exitoso
    */
-  async logLoginExitoso(usuarioEmail: string, metadata?: Record<string, unknown>): Promise<void> {
+  async logLoginExitoso(
+    usuarioEmail: string,
+    metadata?: Record<string, unknown>
+  ): Promise<void> {
     await this.logSecurityEvent({
       tipo: 'login_exitoso',
       usuarioEmail,
@@ -85,7 +91,10 @@ class AuditLogService {
   /**
    * Registra un intento de login fallido
    */
-  async logLoginFallido(usuarioEmail: string, intentosRestantes: number): Promise<void> {
+  async logLoginFallido(
+    usuarioEmail: string,
+    intentosRestantes: number
+  ): Promise<void> {
     await this.logSecurityEvent({
       tipo: 'login_fallido',
       usuarioEmail,
@@ -118,7 +127,10 @@ class AuditLogService {
   /**
    * Registra una sesión expirada
    */
-  async logSessionExpirada(usuarioEmail: string, duracionMinutos: number): Promise<void> {
+  async logSessionExpirada(
+    usuarioEmail: string,
+    duracionMinutos: number
+  ): Promise<void> {
     await this.logSecurityEvent({
       tipo: 'session_expirada',
       usuarioEmail,
@@ -131,7 +143,10 @@ class AuditLogService {
   /**
    * Registra un bloqueo de cuenta por intentos fallidos
    */
-  async logCuentaBloqueada(usuarioEmail: string, minutosBloqueo: number): Promise<void> {
+  async logCuentaBloqueada(
+    usuarioEmail: string,
+    minutosBloqueo: number
+  ): Promise<void> {
     await this.logSecurityEvent({
       tipo: 'cuenta_bloqueada',
       usuarioEmail,
@@ -164,10 +179,9 @@ class AuditLogService {
    * Obtiene resumen de seguridad de un usuario (últimos 30 días)
    */
   async obtenerResumenSeguridad(usuarioEmail: string) {
-    const { data, error } = await supabase
-      .rpc('obtener_resumen_seguridad', {
-        p_usuario_email: usuarioEmail,
-      })
+    const { data, error } = await supabase.rpc('obtener_resumen_seguridad', {
+      p_usuario_email: usuarioEmail,
+    })
 
     if (error) {
       logger.error('Error obteniendo resumen de seguridad:', error)

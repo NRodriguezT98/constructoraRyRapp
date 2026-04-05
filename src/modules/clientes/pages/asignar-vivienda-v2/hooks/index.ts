@@ -1,1 +1,1 @@
-export { PASOS_ASIGNACION, useAsignarViviendaV2 } from './useAsignarViviendaV2';
+export { PASOS_ASIGNACION, useAsignarViviendaV2 } from './useAsignarViviendaV2'

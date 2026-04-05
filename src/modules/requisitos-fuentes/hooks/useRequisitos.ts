@@ -30,7 +30,11 @@ export function useRequisitos(tipoFuenteSeleccionado: string) {
     error,
   } = useQuery({
     queryKey: ['requisitos-fuentes', tipoFuenteSeleccionado],
-    queryFn: () => requisitosService.obtenerRequisitosPorTipo(supabase, tipoFuenteSeleccionado),
+    queryFn: () =>
+      requisitosService.obtenerRequisitosPorTipo(
+        supabase,
+        tipoFuenteSeleccionado
+      ),
     enabled: !!tipoFuenteSeleccionado,
   })
 
@@ -43,7 +47,9 @@ export function useRequisitos(tipoFuenteSeleccionado: string) {
       if (!user) throw new Error('No autenticado')
 
       // ✅ Si tipo_fuente es array, crear uno para cada fuente
-      const fuentesArray = Array.isArray(datos.tipo_fuente) ? datos.tipo_fuente : [datos.tipo_fuente]
+      const fuentesArray = Array.isArray(datos.tipo_fuente)
+        ? datos.tipo_fuente
+        : [datos.tipo_fuente]
 
       // Crear requisitos en paralelo para todas las fuentes seleccionadas
       const promesas = fuentesArray.map(fuente =>
@@ -56,10 +62,12 @@ export function useRequisitos(tipoFuenteSeleccionado: string) {
 
       return Promise.all(promesas)
     },
-    onSuccess: (resultados) => {
+    onSuccess: resultados => {
       queryClient.invalidateQueries({ queryKey: ['requisitos-fuentes'] })
       const plural = resultados.length > 1
-      toast.success(`${resultados.length} requisito${plural ? 's' : ''} creado${plural ? 's' : ''} exitosamente`)
+      toast.success(
+        `${resultados.length} requisito${plural ? 's' : ''} creado${plural ? 's' : ''} exitosamente`
+      )
     },
     onError: (error: Error) => {
       logger.error('Error al crear requisito:', error)
@@ -69,7 +77,13 @@ export function useRequisitos(tipoFuenteSeleccionado: string) {
 
   // Mutation: Actualizar requisito
   const actualizarMutation = useMutation({
-    mutationFn: async ({ id, datos }: { id: string; datos: ActualizarRequisitoDTO }) => {
+    mutationFn: async ({
+      id,
+      datos,
+    }: {
+      id: string
+      datos: ActualizarRequisitoDTO
+    }) => {
       const {
         data: { user },
       } = await supabase.auth.getUser()
@@ -88,7 +102,8 @@ export function useRequisitos(tipoFuenteSeleccionado: string) {
 
   // Mutation: Desactivar requisito
   const desactivarMutation = useMutation({
-    mutationFn: (id: string) => requisitosService.desactivarRequisito(supabase, id),
+    mutationFn: (id: string) =>
+      requisitosService.desactivarRequisito(supabase, id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['requisitos-fuentes'] })
       toast.success('Requisito eliminado')
@@ -102,7 +117,11 @@ export function useRequisitos(tipoFuenteSeleccionado: string) {
   // Mutation: Reordenar requisitos
   const reordenarMutation = useMutation({
     mutationFn: (requisitosOrdenados: { id: string; orden: number }[]) =>
-      requisitosService.reordenarRequisitos(supabase, tipoFuenteSeleccionado, requisitosOrdenados),
+      requisitosService.reordenarRequisitos(
+        supabase,
+        tipoFuenteSeleccionado,
+        requisitosOrdenados
+      ),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['requisitos-fuentes'] })
       toast.success('Orden actualizado')
@@ -156,12 +175,16 @@ export function useRequisitosCompartidos() {
 
   const crearMutation = useMutation({
     mutationFn: async (datos: CrearRequisitoDTO) => {
-      const { data: { user } } = await supabase.auth.getUser()
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
       if (!user) throw new Error('No autenticado')
 
       // ✅ COMPARTIDO_CLIENTE → siempre UNA sola fila con tipo_fuente = 'COMPARTIDO'
       // fuentes_aplicables guarda cuáles fuentes aplican (null = todas)
-      const fuentesSeleccionadas = Array.isArray(datos.tipo_fuente) ? datos.tipo_fuente : [datos.tipo_fuente]
+      const fuentesSeleccionadas = Array.isArray(datos.tipo_fuente)
+        ? datos.tipo_fuente
+        : [datos.tipo_fuente]
       const todasLasFuentes = fuentesSeleccionadas.length === 0
       const fuentes_aplicables = todasLasFuentes ? null : fuentesSeleccionadas
 
@@ -171,7 +194,11 @@ export function useRequisitosCompartidos() {
         alcance: 'COMPARTIDO_CLIENTE' as const,
         fuentes_aplicables,
       }
-      const resultado = await requisitosService.crearRequisito(supabase, datosSanitizados, user.id)
+      const resultado = await requisitosService.crearRequisito(
+        supabase,
+        datosSanitizados,
+        user.id
+      )
       return [resultado]
     },
     onSuccess: () => {
@@ -183,8 +210,16 @@ export function useRequisitosCompartidos() {
   })
 
   const actualizarMutation = useMutation({
-    mutationFn: async ({ id, datos }: { id: string; datos: ActualizarRequisitoDTO }) => {
-      const { data: { user } } = await supabase.auth.getUser()
+    mutationFn: async ({
+      id,
+      datos,
+    }: {
+      id: string
+      datos: ActualizarRequisitoDTO
+    }) => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
       if (!user) throw new Error('No autenticado')
       return requisitosService.actualizarRequisito(supabase, id, datos, user.id)
     },
@@ -196,7 +231,8 @@ export function useRequisitosCompartidos() {
   })
 
   const desactivarMutation = useMutation({
-    mutationFn: (id: string) => requisitosService.desactivarRequisito(supabase, id),
+    mutationFn: (id: string) =>
+      requisitosService.desactivarRequisito(supabase, id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['requisitos-compartidos'] })
       queryClient.invalidateQueries({ queryKey: ['requisitos-fuentes'] })
@@ -207,7 +243,11 @@ export function useRequisitosCompartidos() {
 
   const reordenarMutation = useMutation({
     mutationFn: (requisitosOrdenados: { id: string; orden: number }[]) =>
-      requisitosService.reordenarRequisitos(supabase, 'compartido', requisitosOrdenados),
+      requisitosService.reordenarRequisitos(
+        supabase,
+        'compartido',
+        requisitosOrdenados
+      ),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['requisitos-compartidos'] })
       toast.success('Orden actualizado')
@@ -237,7 +277,6 @@ export function useRequisitosCompartidos() {
  * Hook para obtener tipos de fuente dinámicos desde BD
  */
 export function useTiposFuente() {
-
   const {
     data: tiposFuente = [],
     isLoading,

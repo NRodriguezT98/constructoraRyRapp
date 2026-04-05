@@ -64,8 +64,7 @@ export const textStyles = {
 
 // Estilos para estadísticas
 export const statsStyles = {
-  container:
-    'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4',
+  container: 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4',
   card: 'bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-2 border-gray-200 dark:border-gray-700 rounded-lg p-3 hover:shadow-lg transition-all',
   value:
     'text-xl font-bold bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent',

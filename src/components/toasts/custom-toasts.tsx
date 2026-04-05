@@ -11,14 +11,14 @@
 
 import { motion } from 'framer-motion'
 import {
-    AlertTriangle,
-    CheckCircle2,
-    Clock,
-    LogIn,
-    LogOut,
-    ShieldAlert,
-    Sparkles,
-    XCircle,
+  AlertTriangle,
+  CheckCircle2,
+  Clock,
+  LogIn,
+  LogOut,
+  ShieldAlert,
+  Sparkles,
+  XCircle,
 } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -32,34 +32,37 @@ import { toast } from 'sonner'
  */
 export function showLoginSuccessToast() {
   toast.custom(
-    (_t) => (
+    _t => (
       <motion.div
         initial={{ opacity: 0, x: 100 }}
         animate={{ opacity: 1, x: 0 }}
         exit={{ opacity: 0, x: 100 }}
         transition={{ duration: 0.2, ease: 'easeOut' }}
-        className='flex items-center gap-3 rounded-lg bg-gradient-to-r from-[#0d1f17] to-[#1a1d24] border-l-4 border-green-500 pl-3 pr-4 py-3.5 min-w-[340px]'
+        className='flex min-w-[340px] items-center gap-3 rounded-lg border-l-4 border-green-500 bg-gradient-to-r from-[#0d1f17] to-[#1a1d24] py-3.5 pl-3 pr-4'
       >
         {/* Icono con más presencia */}
-        <div className='flex-shrink-0 w-9 h-9 rounded-lg bg-green-500/30 flex items-center justify-center ring-1 ring-green-500/40'>
-          <LogIn className='w-5 h-5 text-green-400' strokeWidth={2.5} />
+        <div className='flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-green-500/30 ring-1 ring-green-500/40'>
+          <LogIn className='h-5 w-5 text-green-400' strokeWidth={2.5} />
         </div>
 
         {/* Texto */}
-        <div className='flex-1 min-w-0'>
+        <div className='min-w-0 flex-1'>
           <div className='flex items-center gap-1.5'>
             <h3 className='text-sm font-bold text-green-50'>
               ¡Bienvenido de nuevo!
             </h3>
-            <Sparkles className='w-4 h-4 text-yellow-400 flex-shrink-0' />
+            <Sparkles className='h-4 w-4 flex-shrink-0 text-yellow-400' />
           </div>
-          <p className='text-xs text-green-200/70 mt-0.5'>
+          <p className='mt-0.5 text-xs text-green-200/70'>
             Redirigiendo al dashboard...
           </p>
         </div>
 
         {/* Check con mejor contraste */}
-        <CheckCircle2 className='w-5 h-5 text-green-400 flex-shrink-0' strokeWidth={2.5} />
+        <CheckCircle2
+          className='h-5 w-5 flex-shrink-0 text-green-400'
+          strokeWidth={2.5}
+        />
       </motion.div>
     ),
     {
@@ -84,7 +87,7 @@ export function showSessionExpiringToast({
   onKeepAlive,
 }: SessionExpiringToastProps) {
   toast.custom(
-    (t) => (
+    t => (
       <motion.div
         initial={{ opacity: 0, y: -20, scale: 0.95 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -93,13 +96,13 @@ export function showSessionExpiringToast({
         className='relative overflow-hidden rounded-2xl bg-gradient-to-br from-amber-500 via-orange-500 to-red-500 p-[2px] shadow-2xl shadow-orange-500/50'
       >
         {/* Pulso de fondo */}
-        <div className='absolute inset-0 bg-gradient-to-r from-amber-400/30 via-orange-400/30 to-red-400/30 animate-pulse' />
+        <div className='absolute inset-0 animate-pulse bg-gradient-to-r from-amber-400/30 via-orange-400/30 to-red-400/30' />
 
         {/* Patrón de advertencia */}
-        <div className='absolute inset-0 bg-grid-white/10 [mask-image:radial-gradient(white,transparent_70%)]' />
+        <div className='bg-grid-white/10 absolute inset-0 [mask-image:radial-gradient(white,transparent_70%)]' />
 
         {/* Contenido */}
-        <div className='relative backdrop-blur-xl bg-white/95 dark:bg-gray-900/95 rounded-2xl p-4 min-w-[420px]'>
+        <div className='relative min-w-[420px] rounded-2xl bg-white/95 p-4 backdrop-blur-xl dark:bg-gray-900/95'>
           <div className='flex items-start gap-4'>
             {/* Icono animado con pulso */}
             <motion.div
@@ -114,33 +117,36 @@ export function showSessionExpiringToast({
               className='flex-shrink-0'
             >
               <div className='relative'>
-                <div className='absolute inset-0 bg-orange-500 rounded-full blur-xl opacity-50 animate-pulse' />
-                <div className='relative w-14 h-14 rounded-full bg-gradient-to-br from-amber-400 via-orange-500 to-red-600 flex items-center justify-center shadow-lg'>
-                  <Clock className='w-7 h-7 text-white' strokeWidth={2.5} />
+                <div className='absolute inset-0 animate-pulse rounded-full bg-orange-500 opacity-50 blur-xl' />
+                <div className='relative flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-amber-400 via-orange-500 to-red-600 shadow-lg'>
+                  <Clock className='h-7 w-7 text-white' strokeWidth={2.5} />
                 </div>
               </div>
             </motion.div>
 
             {/* Texto */}
-            <div className='flex-1 min-w-0'>
+            <div className='min-w-0 flex-1'>
               <motion.div
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.1 }}
               >
-                <div className='flex items-center gap-2 mb-1'>
-                  <AlertTriangle className='w-5 h-5 text-orange-600 dark:text-orange-400' strokeWidth={2.5} />
-                  <h3 className='text-lg font-bold bg-gradient-to-r from-amber-600 via-orange-600 to-red-600 bg-clip-text text-transparent'>
+                <div className='mb-1 flex items-center gap-2'>
+                  <AlertTriangle
+                    className='h-5 w-5 text-orange-600 dark:text-orange-400'
+                    strokeWidth={2.5}
+                  />
+                  <h3 className='bg-gradient-to-r from-amber-600 via-orange-600 to-red-600 bg-clip-text text-lg font-bold text-transparent'>
                     ⚠️ Sesión por expirar
                   </h3>
                 </div>
-                <p className='text-sm text-gray-700 dark:text-gray-300 font-medium'>
+                <p className='text-sm font-medium text-gray-700 dark:text-gray-300'>
                   Tu sesión se cerrará en{' '}
                   <span className='font-bold text-orange-600 dark:text-orange-400'>
                     {minutes} {minutes === 1 ? 'minuto' : 'minutos'}
                   </span>
                 </p>
-                <p className='text-xs text-gray-500 dark:text-gray-400 mt-0.5'>
+                <p className='mt-0.5 text-xs text-gray-500 dark:text-gray-400'>
                   Por seguridad, cierra automáticamente por inactividad
                 </p>
               </motion.div>
@@ -156,9 +162,9 @@ export function showSessionExpiringToast({
                   onKeepAlive()
                   toast.dismiss(t)
                 }}
-                className='mt-3 w-full px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 via-orange-500 to-red-500 text-white font-semibold text-sm shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-2'
+                className='mt-3 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 via-orange-500 to-red-500 px-4 py-2.5 text-sm font-semibold text-white shadow-lg transition-all duration-200 hover:shadow-xl'
               >
-                <ShieldAlert className='w-4 h-4' />
+                <ShieldAlert className='h-4 w-4' />
                 Mantener sesión activa
               </motion.button>
             </div>
@@ -185,7 +191,7 @@ export function showSessionClosedToast() {
   toast.dismiss(toastId)
 
   toast.custom(
-    (_t) => (
+    _t => (
       <motion.div
         initial={{ opacity: 0, y: -20, scale: 0.95 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -194,13 +200,13 @@ export function showSessionClosedToast() {
         className='relative overflow-hidden rounded-2xl bg-gradient-to-br from-red-500 via-rose-500 to-pink-600 p-[2px] shadow-2xl shadow-red-500/50'
       >
         {/* Fondo animado */}
-        <div className='absolute inset-0 bg-gradient-to-r from-red-400/20 via-rose-400/20 to-pink-400/20 animate-pulse' />
+        <div className='absolute inset-0 animate-pulse bg-gradient-to-r from-red-400/20 via-rose-400/20 to-pink-400/20' />
 
         {/* Patrón */}
-        <div className='absolute inset-0 bg-grid-white/5 [mask-image:radial-gradient(white,transparent_70%)]' />
+        <div className='bg-grid-white/5 absolute inset-0 [mask-image:radial-gradient(white,transparent_70%)]' />
 
         {/* Contenido */}
-        <div className='relative backdrop-blur-xl bg-white/95 dark:bg-gray-900/95 rounded-2xl p-4 min-w-[400px]'>
+        <div className='relative min-w-[400px] rounded-2xl bg-white/95 p-4 backdrop-blur-xl dark:bg-gray-900/95'>
           <div className='flex items-start gap-4'>
             {/* Icono */}
             <motion.div
@@ -210,30 +216,33 @@ export function showSessionClosedToast() {
               className='flex-shrink-0'
             >
               <div className='relative'>
-                <div className='absolute inset-0 bg-red-500 rounded-full blur-xl opacity-50 animate-pulse' />
-                <div className='relative w-12 h-12 rounded-full bg-gradient-to-br from-red-400 to-rose-600 flex items-center justify-center shadow-lg'>
-                  <LogOut className='w-6 h-6 text-white' strokeWidth={2.5} />
+                <div className='absolute inset-0 animate-pulse rounded-full bg-red-500 opacity-50 blur-xl' />
+                <div className='relative flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-red-400 to-rose-600 shadow-lg'>
+                  <LogOut className='h-6 w-6 text-white' strokeWidth={2.5} />
                 </div>
               </div>
             </motion.div>
 
             {/* Texto */}
-            <div className='flex-1 min-w-0'>
+            <div className='min-w-0 flex-1'>
               <motion.div
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.1 }}
               >
-                <div className='flex items-center gap-2 mb-1'>
-                  <XCircle className='w-5 h-5 text-red-600 dark:text-red-400' strokeWidth={2.5} />
-                  <h3 className='text-lg font-bold bg-gradient-to-r from-red-600 via-rose-600 to-pink-600 bg-clip-text text-transparent'>
+                <div className='mb-1 flex items-center gap-2'>
+                  <XCircle
+                    className='h-5 w-5 text-red-600 dark:text-red-400'
+                    strokeWidth={2.5}
+                  />
+                  <h3 className='bg-gradient-to-r from-red-600 via-rose-600 to-pink-600 bg-clip-text text-lg font-bold text-transparent'>
                     Sesión cerrada
                   </h3>
                 </div>
-                <p className='text-sm text-gray-700 dark:text-gray-300 font-medium'>
+                <p className='text-sm font-medium text-gray-700 dark:text-gray-300'>
                   Por seguridad, tu sesión se cerró automáticamente
                 </p>
-                <p className='text-xs text-gray-500 dark:text-gray-400 mt-0.5'>
+                <p className='mt-0.5 text-xs text-gray-500 dark:text-gray-400'>
                   Detectamos inactividad prolongada • Vuelve a iniciar sesión
                 </p>
               </motion.div>
@@ -256,7 +265,7 @@ export function showSessionClosedToast() {
 
 export function showSessionKeptAliveToast() {
   toast.custom(
-    (_t) => (
+    _t => (
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -264,15 +273,18 @@ export function showSessionKeptAliveToast() {
         transition={{ duration: 0.2 }}
         className='relative overflow-hidden rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 p-[2px] shadow-xl shadow-blue-500/50'
       >
-        <div className='relative backdrop-blur-xl bg-white/95 dark:bg-gray-900/95 rounded-xl p-3 min-w-[300px]'>
+        <div className='relative min-w-[300px] rounded-xl bg-white/95 p-3 backdrop-blur-xl dark:bg-gray-900/95'>
           <div className='flex items-center gap-3'>
             <motion.div
               initial={{ scale: 0, rotate: -180 }}
               animate={{ scale: 1, rotate: 0 }}
               transition={{ type: 'spring', stiffness: 300 }}
             >
-              <div className='w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-indigo-600 flex items-center justify-center'>
-                <CheckCircle2 className='w-5 h-5 text-white' strokeWidth={2.5} />
+              <div className='flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-blue-400 to-indigo-600'>
+                <CheckCircle2
+                  className='h-5 w-5 text-white'
+                  strokeWidth={2.5}
+                />
               </div>
             </motion.div>
             <div className='flex-1'>
@@ -305,7 +317,7 @@ export function showSessionKeptAliveToast() {
  */
 export function showLoggingOutToast() {
   return toast.custom(
-    (_t) => (
+    _t => (
       <motion.div
         initial={{ opacity: 0, y: -20, scale: 0.9 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -314,13 +326,13 @@ export function showLoggingOutToast() {
         className='relative overflow-hidden rounded-2xl bg-gradient-to-br from-gray-600 via-gray-700 to-gray-800 p-[2px] shadow-2xl shadow-gray-900/50'
       >
         {/* Gradiente animado de fondo */}
-        <div className='absolute inset-0 bg-gradient-to-r from-blue-500/20 via-purple-500/20 to-pink-500/20 animate-pulse' />
+        <div className='absolute inset-0 animate-pulse bg-gradient-to-r from-blue-500/20 via-purple-500/20 to-pink-500/20' />
 
         {/* Patrón de grid sutil */}
-        <div className='absolute inset-0 bg-grid-white/5 [mask-image:radial-gradient(white,transparent_70%)]' />
+        <div className='bg-grid-white/5 absolute inset-0 [mask-image:radial-gradient(white,transparent_70%)]' />
 
         {/* Contenido */}
-        <div className='relative backdrop-blur-xl bg-white/95 dark:bg-gray-900/95 rounded-2xl p-4 min-w-[340px]'>
+        <div className='relative min-w-[340px] rounded-2xl bg-white/95 p-4 backdrop-blur-xl dark:bg-gray-900/95'>
           <div className='flex items-center gap-3'>
             {/* Spinner animado con efecto de salida */}
             <motion.div
@@ -336,10 +348,10 @@ export function showLoggingOutToast() {
             >
               <div className='relative'>
                 {/* Glow effect */}
-                <div className='absolute inset-0 bg-blue-500 rounded-full blur-xl opacity-40 animate-pulse' />
+                <div className='absolute inset-0 animate-pulse rounded-full bg-blue-500 opacity-40 blur-xl' />
 
                 {/* Icono con gradiente */}
-                <div className='relative w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 via-blue-500 to-indigo-600 flex items-center justify-center shadow-lg'>
+                <div className='relative flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-blue-400 via-blue-500 to-indigo-600 shadow-lg'>
                   <motion.div
                     animate={{
                       scale: [1, 1.1, 1],
@@ -350,23 +362,23 @@ export function showLoggingOutToast() {
                       ease: 'easeInOut',
                     }}
                   >
-                    <LogOut className='w-6 h-6 text-white' strokeWidth={2.5} />
+                    <LogOut className='h-6 w-6 text-white' strokeWidth={2.5} />
                   </motion.div>
                 </div>
               </div>
             </motion.div>
 
             {/* Texto con animación */}
-            <div className='flex-1 min-w-0'>
+            <div className='min-w-0 flex-1'>
               <motion.div
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.1 }}
               >
-                <h3 className='text-base font-bold bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent'>
+                <h3 className='bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-base font-bold text-transparent'>
                   Cerrando sesión...
                 </h3>
-                <p className='text-sm text-gray-700 dark:text-gray-300 mt-0.5'>
+                <p className='mt-0.5 text-sm text-gray-700 dark:text-gray-300'>
                   Finalizando tu sesión de forma segura
                 </p>
               </motion.div>
@@ -374,7 +386,7 @@ export function showLoggingOutToast() {
 
             {/* Dots animados */}
             <div className='flex gap-1'>
-              {[0, 1, 2].map((i) => (
+              {[0, 1, 2].map(i => (
                 <motion.div
                   key={i}
                   animate={{
@@ -387,7 +399,7 @@ export function showLoggingOutToast() {
                     delay: i * 0.2,
                     ease: 'easeInOut',
                   }}
-                  className='w-2 h-2 rounded-full bg-gradient-to-br from-blue-400 to-indigo-600'
+                  className='h-2 w-2 rounded-full bg-gradient-to-br from-blue-400 to-indigo-600'
                 />
               ))}
             </div>
@@ -411,7 +423,7 @@ export function showLoggingOutToast() {
  */
 export function showLogoutToast() {
   toast.custom(
-    (_t) => (
+    _t => (
       <motion.div
         initial={{ opacity: 0, y: 20, scale: 0.95 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -420,13 +432,13 @@ export function showLogoutToast() {
         className='relative overflow-hidden rounded-2xl bg-gradient-to-br from-gray-700 via-blue-700 to-indigo-700 p-[2px] shadow-2xl shadow-blue-500/30'
       >
         {/* Fondo animado */}
-        <div className='absolute inset-0 bg-gradient-to-r from-blue-400/20 via-indigo-400/20 to-purple-400/20 animate-pulse' />
+        <div className='absolute inset-0 animate-pulse bg-gradient-to-r from-blue-400/20 via-indigo-400/20 to-purple-400/20' />
 
         {/* Patrón de grid */}
-        <div className='absolute inset-0 bg-grid-white/10 [mask-image:radial-gradient(white,transparent_70%)]' />
+        <div className='bg-grid-white/10 absolute inset-0 [mask-image:radial-gradient(white,transparent_70%)]' />
 
         {/* Contenido */}
-        <div className='relative backdrop-blur-xl bg-white/95 dark:bg-gray-900/95 rounded-2xl p-4 min-w-[360px]'>
+        <div className='relative min-w-[360px] rounded-2xl bg-white/95 p-4 backdrop-blur-xl dark:bg-gray-900/95'>
           <div className='flex items-start gap-3'>
             {/* Icono animado con rotación */}
             <motion.div
@@ -434,29 +446,29 @@ export function showLogoutToast() {
               animate={{ rotate: [0, -10, 10, -10, 0], scale: 1 }}
               transition={{
                 rotate: { duration: 0.5 },
-                scale: { type: 'spring', stiffness: 200 }
+                scale: { type: 'spring', stiffness: 200 },
               }}
               className='flex-shrink-0'
             >
               <div className='relative'>
-                <div className='absolute inset-0 bg-blue-500 rounded-full blur-xl opacity-50 animate-pulse' />
-                <div className='relative w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-indigo-600 flex items-center justify-center shadow-lg'>
-                  <LogOut className='w-5 h-5 text-white' strokeWidth={2.5} />
+                <div className='absolute inset-0 animate-pulse rounded-full bg-blue-500 opacity-50 blur-xl' />
+                <div className='relative flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-blue-400 to-indigo-600 shadow-lg'>
+                  <LogOut className='h-5 w-5 text-white' strokeWidth={2.5} />
                 </div>
               </div>
             </motion.div>
 
             {/* Texto */}
-            <div className='flex-1 min-w-0'>
+            <div className='min-w-0 flex-1'>
               <motion.div
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.1 }}
               >
-                <h3 className='text-base font-bold bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent'>
+                <h3 className='bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-base font-bold text-transparent'>
                   Sesión cerrada
                 </h3>
-                <p className='text-sm text-gray-700 dark:text-gray-300 mt-0.5'>
+                <p className='mt-0.5 text-sm text-gray-700 dark:text-gray-300'>
                   ¡Hasta pronto! 👋
                 </p>
               </motion.div>
@@ -468,7 +480,10 @@ export function showLogoutToast() {
               animate={{ scale: 1, rotate: 0 }}
               transition={{ delay: 0.15, type: 'spring', stiffness: 200 }}
             >
-              <CheckCircle2 className='w-5 h-5 text-blue-600 dark:text-blue-400' strokeWidth={2.5} />
+              <CheckCircle2
+                className='h-5 w-5 text-blue-600 dark:text-blue-400'
+                strokeWidth={2.5}
+              />
             </motion.div>
           </div>
         </div>
@@ -490,7 +505,7 @@ export function showLogoutToast() {
  */
 export function showLogoutErrorToast() {
   toast.custom(
-    (_t) => (
+    _t => (
       <motion.div
         initial={{ opacity: 0, y: 20, scale: 0.95 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -499,7 +514,7 @@ export function showLogoutErrorToast() {
         className='relative overflow-hidden rounded-2xl bg-gradient-to-br from-red-500 to-rose-600 p-[2px] shadow-2xl shadow-red-500/50'
       >
         {/* Contenido */}
-        <div className='relative backdrop-blur-xl bg-white/95 dark:bg-gray-900/95 rounded-2xl p-4 min-w-[340px]'>
+        <div className='relative min-w-[340px] rounded-2xl bg-white/95 p-4 backdrop-blur-xl dark:bg-gray-900/95'>
           <div className='flex items-start gap-3'>
             {/* Icono de error */}
             <motion.div
@@ -509,19 +524,19 @@ export function showLogoutErrorToast() {
               className='flex-shrink-0'
             >
               <div className='relative'>
-                <div className='absolute inset-0 bg-red-500 rounded-full blur-xl opacity-50' />
-                <div className='relative w-10 h-10 rounded-full bg-gradient-to-br from-red-400 to-rose-600 flex items-center justify-center shadow-lg'>
-                  <XCircle className='w-5 h-5 text-white' strokeWidth={2.5} />
+                <div className='absolute inset-0 rounded-full bg-red-500 opacity-50 blur-xl' />
+                <div className='relative flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-red-400 to-rose-600 shadow-lg'>
+                  <XCircle className='h-5 w-5 text-white' strokeWidth={2.5} />
                 </div>
               </div>
             </motion.div>
 
             {/* Texto */}
-            <div className='flex-1 min-w-0'>
+            <div className='min-w-0 flex-1'>
               <h3 className='text-base font-bold text-red-600 dark:text-red-400'>
                 Error al cerrar sesión
               </h3>
-              <p className='text-sm text-gray-700 dark:text-gray-300 mt-0.5'>
+              <p className='mt-0.5 text-sm text-gray-700 dark:text-gray-300'>
                 Intenta nuevamente o recarga la página
               </p>
             </div>
@@ -545,41 +560,50 @@ interface ShowEntitySuccessToastProps {
   action: 'created' | 'updated'
 }
 
-export function showEntitySuccessToast({ entityName, action }: ShowEntitySuccessToastProps) {
+export function showEntitySuccessToast({
+  entityName,
+  action,
+}: ShowEntitySuccessToastProps) {
   const isCreated = action === 'created'
 
   toast.custom(
-    (_t) => (
+    _t => (
       <motion.div
         initial={{ opacity: 0, x: 100 }}
         animate={{ opacity: 1, x: 0 }}
         exit={{ opacity: 0, x: 100 }}
         transition={{ duration: 0.2, ease: 'easeOut' }}
-        className='flex items-center gap-3 rounded-lg bg-gradient-to-r from-[#0d1f17] to-[#1a1d24] border-l-4 border-green-500 pl-3 pr-4 py-3.5 min-w-[340px]'
+        className='flex min-w-[340px] items-center gap-3 rounded-lg border-l-4 border-green-500 bg-gradient-to-r from-[#0d1f17] to-[#1a1d24] py-3.5 pl-3 pr-4'
       >
         {/* Icono con más presencia */}
-        <div className='flex-shrink-0 w-9 h-9 rounded-lg bg-green-500/30 flex items-center justify-center ring-1 ring-green-500/40'>
-          <CheckCircle2 className='w-5 h-5 text-green-400' strokeWidth={2.5} />
+        <div className='flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-green-500/30 ring-1 ring-green-500/40'>
+          <CheckCircle2 className='h-5 w-5 text-green-400' strokeWidth={2.5} />
         </div>
 
         {/* Texto */}
-        <div className='flex-1 min-w-0'>
+        <div className='min-w-0 flex-1'>
           <div className='flex items-center gap-1.5'>
             <h3 className='text-sm font-bold text-green-50'>
-              {isCreated ? '✓ Entidad creada exitosamente' : '✓ Cambios guardados correctamente'}
+              {isCreated
+                ? '✓ Entidad creada exitosamente'
+                : '✓ Cambios guardados correctamente'}
             </h3>
-            {isCreated && <Sparkles className='w-4 h-4 text-yellow-400 flex-shrink-0' />}
+            {isCreated && (
+              <Sparkles className='h-4 w-4 flex-shrink-0 text-yellow-400' />
+            )}
           </div>
-          <p className='text-xs text-green-200/70 mt-0.5'>
+          <p className='mt-0.5 text-xs text-green-200/70'>
             {isCreated
               ? `${entityName} ya está disponible para configurar fuentes de pago`
-              : `${entityName} se actualizó con la nueva información`
-            }
+              : `${entityName} se actualizó con la nueva información`}
           </p>
         </div>
 
         {/* Check con mejor contraste */}
-        <CheckCircle2 className='w-5 h-5 text-green-400 flex-shrink-0' strokeWidth={2.5} />
+        <CheckCircle2
+          className='h-5 w-5 flex-shrink-0 text-green-400'
+          strokeWidth={2.5}
+        />
       </motion.div>
     ),
     {

@@ -14,20 +14,23 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import { logger } from '@/lib/utils/logger'
 
 import type {
-    ActualizarRequisitoDTO,
-    CrearRequisitoDTO,
-    RequisitoFuenteConfig
+  ActualizarRequisitoDTO,
+  CrearRequisitoDTO,
+  RequisitoFuenteConfig,
 } from '../types'
 
 export class RequisitosService {
-
   /**
    * Obtener todos los requisitos activos
    */
-  async obtenerRequisitos(supabase: SupabaseClient): Promise<RequisitoFuenteConfig[]> {
+  async obtenerRequisitos(
+    supabase: SupabaseClient
+  ): Promise<RequisitoFuenteConfig[]> {
     const { data, error } = await supabase
       .from('requisitos_fuentes_pago_config')
-      .select('id,tipo_fuente,paso_identificador,titulo,descripcion,instrucciones,nivel_validacion,tipo_documento_sugerido,categoria_documento,alcance,fuentes_aplicables,orden,activo,version,fecha_creacion,fecha_actualizacion,usuario_creacion,usuario_actualizacion')
+      .select(
+        'id,tipo_fuente,paso_identificador,titulo,descripcion,instrucciones,nivel_validacion,tipo_documento_sugerido,categoria_documento,alcance,fuentes_aplicables,orden,activo,version,fecha_creacion,fecha_actualizacion,usuario_creacion,usuario_actualizacion'
+      )
       .eq('activo', true)
       .order('tipo_fuente', { ascending: true })
       .order('orden', { ascending: true })
@@ -45,7 +48,9 @@ export class RequisitosService {
   ): Promise<RequisitoFuenteConfig[]> {
     const { data, error } = await supabase
       .from('requisitos_fuentes_pago_config')
-      .select('id,tipo_fuente,paso_identificador,titulo,descripcion,instrucciones,nivel_validacion,tipo_documento_sugerido,categoria_documento,alcance,fuentes_aplicables,orden,activo,version,fecha_creacion,fecha_actualizacion,usuario_creacion,usuario_actualizacion')
+      .select(
+        'id,tipo_fuente,paso_identificador,titulo,descripcion,instrucciones,nivel_validacion,tipo_documento_sugerido,categoria_documento,alcance,fuentes_aplicables,orden,activo,version,fecha_creacion,fecha_actualizacion,usuario_creacion,usuario_actualizacion'
+      )
       .eq('tipo_fuente', tipoFuente)
       .eq('activo', true)
       .order('orden', { ascending: true })
@@ -79,7 +84,9 @@ export class RequisitosService {
         activo: true,
         usuario_creacion: userId,
       })
-      .select('id,tipo_fuente,paso_identificador,titulo,descripcion,instrucciones,nivel_validacion,tipo_documento_sugerido,categoria_documento,alcance,fuentes_aplicables,orden,activo,version,fecha_creacion,fecha_actualizacion,usuario_creacion,usuario_actualizacion')
+      .select(
+        'id,tipo_fuente,paso_identificador,titulo,descripcion,instrucciones,nivel_validacion,tipo_documento_sugerido,categoria_documento,alcance,fuentes_aplicables,orden,activo,version,fecha_creacion,fecha_actualizacion,usuario_creacion,usuario_actualizacion'
+      )
       .single()
 
     if (error) throw error
@@ -100,20 +107,34 @@ export class RequisitosService {
       .update({
         ...(datos.titulo !== undefined && { titulo: datos.titulo }),
         // Sanitizar strings vacíos a null para evitar violaciones de FK/constraints
-        ...(datos.descripcion !== undefined && { descripcion: datos.descripcion || null }),
-        ...(datos.instrucciones !== undefined && { instrucciones: datos.instrucciones || null }),
-        ...(datos.nivel_validacion !== undefined && { nivel_validacion: datos.nivel_validacion }),
-        ...(datos.tipo_documento_sugerido !== undefined && { tipo_documento_sugerido: datos.tipo_documento_sugerido || null }),
+        ...(datos.descripcion !== undefined && {
+          descripcion: datos.descripcion || null,
+        }),
+        ...(datos.instrucciones !== undefined && {
+          instrucciones: datos.instrucciones || null,
+        }),
+        ...(datos.nivel_validacion !== undefined && {
+          nivel_validacion: datos.nivel_validacion,
+        }),
+        ...(datos.tipo_documento_sugerido !== undefined && {
+          tipo_documento_sugerido: datos.tipo_documento_sugerido || null,
+        }),
         // categoria_documento es FK → null obligatorio cuando está vacío
-        ...(datos.categoria_documento !== undefined && { categoria_documento: datos.categoria_documento || null }),
+        ...(datos.categoria_documento !== undefined && {
+          categoria_documento: datos.categoria_documento || null,
+        }),
         // fuentes_aplicables: undefined = no tocar, null = todas, array = selectivas
-        ...(datos.fuentes_aplicables !== undefined && { fuentes_aplicables: datos.fuentes_aplicables }),
+        ...(datos.fuentes_aplicables !== undefined && {
+          fuentes_aplicables: datos.fuentes_aplicables,
+        }),
         ...(datos.orden !== undefined && { orden: datos.orden }),
         ...(datos.activo !== undefined && { activo: datos.activo }),
         usuario_actualizacion: userId,
       })
       .eq('id', id)
-      .select('id,tipo_fuente,paso_identificador,titulo,descripcion,instrucciones,nivel_validacion,tipo_documento_sugerido,categoria_documento,alcance,fuentes_aplicables,orden,activo,version,fecha_creacion,fecha_actualizacion,usuario_creacion,usuario_actualizacion')
+      .select(
+        'id,tipo_fuente,paso_identificador,titulo,descripcion,instrucciones,nivel_validacion,tipo_documento_sugerido,categoria_documento,alcance,fuentes_aplicables,orden,activo,version,fecha_creacion,fecha_actualizacion,usuario_creacion,usuario_actualizacion'
+      )
       .single()
 
     if (error) throw error
@@ -123,10 +144,14 @@ export class RequisitosService {
   /**
    * Obtener requisitos COMPARTIDOS entre fuentes (alcance = COMPARTIDO_CLIENTE)
    */
-  async obtenerRequisitosCompartidos(supabase: SupabaseClient): Promise<RequisitoFuenteConfig[]> {
+  async obtenerRequisitosCompartidos(
+    supabase: SupabaseClient
+  ): Promise<RequisitoFuenteConfig[]> {
     const { data, error } = await supabase
       .from('requisitos_fuentes_pago_config')
-      .select('id,tipo_fuente,paso_identificador,titulo,descripcion,instrucciones,nivel_validacion,tipo_documento_sugerido,categoria_documento,alcance,fuentes_aplicables,orden,activo,version,fecha_creacion,fecha_actualizacion,usuario_creacion,usuario_actualizacion')
+      .select(
+        'id,tipo_fuente,paso_identificador,titulo,descripcion,instrucciones,nivel_validacion,tipo_documento_sugerido,categoria_documento,alcance,fuentes_aplicables,orden,activo,version,fecha_creacion,fecha_actualizacion,usuario_creacion,usuario_actualizacion'
+      )
       .eq('activo', true)
       .eq('alcance', 'COMPARTIDO_CLIENTE')
       .order('orden', { ascending: true })
@@ -172,7 +197,9 @@ export class RequisitosService {
    * ✅ Obtener tipos de fuente desde CATÁLOGO MAESTRO (tipos_fuentes_pago)
    * NO usar fuentes_pago.tipo que puede tener inconsistencias
    */
-  async obtenerTiposFuente(supabase: SupabaseClient): Promise<Array<{ value: string; label: string; cantidad: number }>> {
+  async obtenerTiposFuente(
+    supabase: SupabaseClient
+  ): Promise<Array<{ value: string; label: string; cantidad: number }>> {
     // 1. Obtener tipos del catálogo maestro
     const { data: tiposCatalogo, error: errorCatalogo } = await supabase
       .from('tipos_fuentes_pago')
@@ -181,7 +208,10 @@ export class RequisitosService {
       .order('orden', { ascending: true })
 
     if (errorCatalogo) {
-      logger.error('Error al obtener catálogo de tipos de fuentes:', errorCatalogo)
+      logger.error(
+        'Error al obtener catálogo de tipos de fuentes:',
+        errorCatalogo
+      )
       throw errorCatalogo
     }
 

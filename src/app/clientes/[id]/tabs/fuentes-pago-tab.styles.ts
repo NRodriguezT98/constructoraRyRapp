@@ -64,7 +64,8 @@ export const headerStyles = {
 
   actionButton: `inline-flex items-center gap-2 px-3 py-1.5 rounded-lg ${clientesTheme.bg} text-white text-sm font-medium hover:opacity-90 transition-all shadow-sm`,
 
-  secondaryButton: 'inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm font-medium hover:bg-gray-300 dark:hover:bg-gray-600 transition-all',
+  secondaryButton:
+    'inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm font-medium hover:bg-gray-300 dark:hover:bg-gray-600 transition-all',
 }
 
 // ============================================
@@ -121,7 +122,8 @@ export const validacionStyles = {
   mensajeWarning: `flex items-start gap-2 text-sm text-orange-700 dark:text-orange-300`,
   mensajeDanger: `flex items-start gap-2 text-sm text-red-700 dark:text-red-300`,
 
-  acciones: 'flex items-center gap-2 mt-3 pt-3 border-t border-gray-200 dark:border-gray-700',
+  acciones:
+    'flex items-center gap-2 mt-3 pt-3 border-t border-gray-200 dark:border-gray-700',
 }
 
 // ============================================
@@ -133,7 +135,8 @@ export const fuentesListStyles = {
 
   header: 'flex items-center justify-between mb-4',
 
-  headerTitle: 'font-semibold text-gray-900 dark:text-white flex items-center gap-2',
+  headerTitle:
+    'font-semibold text-gray-900 dark:text-white flex items-center gap-2',
 
   headerIcon: `w-4 h-4 ${clientesTheme.text}`,
 
@@ -162,8 +165,10 @@ export const emptyStateStyles = {
   icon: 'w-8 h-8 text-white',
 
   // Títulos
-  title: 'text-xl font-bold bg-gradient-to-br from-gray-900 via-gray-800 to-orange-900 dark:from-white dark:via-gray-100 dark:to-orange-100 bg-clip-text text-transparent',
-  description: 'text-sm text-gray-600 dark:text-gray-400 max-w-2xl mx-auto leading-relaxed',
+  title:
+    'text-xl font-bold bg-gradient-to-br from-gray-900 via-gray-800 to-orange-900 dark:from-white dark:via-gray-100 dark:to-orange-100 bg-clip-text text-transparent',
+  description:
+    'text-sm text-gray-600 dark:text-gray-400 max-w-2xl mx-auto leading-relaxed',
 
   // Checklist container
   checklistContainer:
@@ -174,7 +179,8 @@ export const emptyStateStyles = {
   checklistItem: 'flex items-start gap-3',
 
   // Iconos de checklist
-  checklistIconPending: 'w-5 h-5 text-orange-500 dark:text-orange-400 flex-shrink-0 mt-0.5',
+  checklistIconPending:
+    'w-5 h-5 text-orange-500 dark:text-orange-400 flex-shrink-0 mt-0.5',
 
   // Textos de checklist
   checklistTextPending: 'text-sm font-medium text-gray-700 dark:text-gray-300',
@@ -183,15 +189,19 @@ export const emptyStateStyles = {
   ctaContainer:
     'mt-4 rounded-xl bg-gradient-to-r from-orange-50 via-amber-50 to-yellow-50 dark:from-orange-950/30 dark:via-amber-950/30 dark:to-yellow-950/30 border border-orange-200/50 dark:border-orange-800/50 p-3 backdrop-blur-sm',
   ctaInfo: 'flex items-start gap-4 text-left',
-  ctaIcon: 'w-6 h-6 text-orange-600 dark:text-orange-400 flex-shrink-0 mt-1 animate-bounce',
+  ctaIcon:
+    'w-6 h-6 text-orange-600 dark:text-orange-400 flex-shrink-0 mt-1 animate-bounce',
   ctaTitle: 'text-sm font-bold text-orange-900 dark:text-orange-100 mb-1',
-  ctaDescription: 'text-xs text-orange-700 dark:text-orange-300 leading-relaxed',
+  ctaDescription:
+    'text-xs text-orange-700 dark:text-orange-300 leading-relaxed',
   ctaButton:
     'mt-3 w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-gradient-to-r from-orange-600 via-amber-600 to-yellow-600 hover:from-orange-700 hover:via-amber-700 hover:to-yellow-700 text-white font-semibold text-sm shadow-lg shadow-orange-500/30 hover:shadow-2xl hover:shadow-orange-500/40 transform hover:scale-[1.02] active:scale-[0.98] transition-all duration-300',
 
   // Footer
-  footerInfo: 'flex items-start gap-3 text-left mt-4 pt-4 border-t border-gray-200 dark:border-gray-700',
-  footerIcon: 'w-5 h-5 text-orange-600 dark:text-orange-400 flex-shrink-0 mt-0.5',
+  footerInfo:
+    'flex items-start gap-3 text-left mt-4 pt-4 border-t border-gray-200 dark:border-gray-700',
+  footerIcon:
+    'w-5 h-5 text-orange-600 dark:text-orange-400 flex-shrink-0 mt-0.5',
   footerText: 'text-xs text-gray-600 dark:text-gray-400 leading-relaxed',
 }
 
@@ -227,7 +237,8 @@ export const fuenteCardStyles = {
   estadoProceso: `px-2 py-1 rounded-md text-xs font-semibold bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300`,
   estadoCompletada: `px-2 py-1 rounded-md text-xs font-semibold bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300`,
 
-  actionButton: 'p-1.5 rounded-md text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all',
+  actionButton:
+    'p-1.5 rounded-md text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all',
 
   body: 'space-y-3',
 
@@ -259,7 +270,8 @@ export const fuenteCardStyles = {
   documentacionNo: `text-xs text-orange-600 dark:text-orange-400 font-semibold`,
 
   documentacionAcciones: 'flex items-center gap-2',
-  documentacionButton: 'text-xs px-2 py-1 rounded-md font-medium transition-all',
+  documentacionButton:
+    'text-xs px-2 py-1 rounded-md font-medium transition-all',
   documentacionButtonPrimary: `text-xs px-2 py-1 rounded-md font-medium transition-all ${clientesTheme.bg} text-white hover:opacity-90`,
   documentacionButtonSecondary: `text-xs px-2 py-1 rounded-md font-medium transition-all bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600`,
 }
@@ -284,11 +296,13 @@ export const accionesStyles = {
 
   textSection: 'flex-1',
 
-  title: 'font-semibold text-gray-900 dark:text-white group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors',
+  title:
+    'font-semibold text-gray-900 dark:text-white group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors',
 
   subtitle: 'text-sm text-gray-600 dark:text-gray-400 mt-0.5',
 
-  arrow: 'w-4 h-4 text-gray-400 group-hover:text-cyan-600 dark:group-hover:text-cyan-400 group-hover:translate-x-1 transition-all',
+  arrow:
+    'w-4 h-4 text-gray-400 group-hover:text-cyan-600 dark:group-hover:text-cyan-400 group-hover:translate-x-1 transition-all',
 }
 
 // ============================================
@@ -299,27 +313,27 @@ export const animations = {
   fadeInUp: {
     initial: { opacity: 0, y: 20 },
     animate: { opacity: 1, y: 0 },
-    transition: { duration: 0.3 }
+    transition: { duration: 0.3 },
   },
 
   staggerChildren: {
     animate: {
       transition: {
-        staggerChildren: 0.1
-      }
-    }
+        staggerChildren: 0.1,
+      },
+    },
   },
 
   hoverScale: {
     whileHover: { scale: 1.05 },
-    whileTap: { scale: 0.95 }
+    whileTap: { scale: 0.95 },
   },
 
   slideInRight: {
     initial: { opacity: 0, x: 20 },
     animate: { opacity: 1, x: 0 },
-    exit: { opacity: 0, x: -20 }
-  }
+    exit: { opacity: 0, x: -20 },
+  },
 }
 
 // ============================================

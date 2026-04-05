@@ -90,7 +90,8 @@ export function sanitizeCrearFuentePagoDTO(
     monto_aprobado: sanitizeRequiredNumber(datos.monto_aprobado),
     entidad: sanitizeString(datos.entidad) ?? undefined,
     numero_referencia: sanitizeString(datos.numero_referencia) ?? undefined,
-    carta_asignacion_url: sanitizeString(datos.carta_asignacion_url) ?? undefined,
+    carta_asignacion_url:
+      sanitizeString(datos.carta_asignacion_url) ?? undefined,
     capital_para_cierre: sanitizeNumber(datos.capital_para_cierre),
     permite_multiples_abonos:
       typeof datos.permite_multiples_abonos === 'boolean'
@@ -146,13 +147,17 @@ export function sanitizeActualizarNegociacionDTO(
     sanitized.tipo_descuento = sanitizeString(datos.tipo_descuento) ?? undefined
   }
   if (datos.motivo_descuento !== undefined) {
-    sanitized.motivo_descuento = sanitizeString(datos.motivo_descuento) ?? undefined
+    sanitized.motivo_descuento =
+      sanitizeString(datos.motivo_descuento) ?? undefined
   }
   if (datos.valor_escritura_publica !== undefined) {
-    sanitized.valor_escritura_publica = sanitizeNumber(datos.valor_escritura_publica)
+    sanitized.valor_escritura_publica = sanitizeNumber(
+      datos.valor_escritura_publica
+    )
   }
   if (datos.fecha_completada !== undefined) {
-    sanitized.fecha_completada = sanitizeDate(datos.fecha_completada) ?? undefined
+    sanitized.fecha_completada =
+      sanitizeDate(datos.fecha_completada) ?? undefined
   }
   if (datos.notas !== undefined) {
     sanitized.notas = sanitizeString(datos.notas) ?? undefined

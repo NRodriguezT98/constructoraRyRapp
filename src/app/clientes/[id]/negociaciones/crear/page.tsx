@@ -7,7 +7,6 @@
 
 import { redirect } from 'next/navigation'
 
-
 interface PageProps {
   params: Promise<{
     id: string

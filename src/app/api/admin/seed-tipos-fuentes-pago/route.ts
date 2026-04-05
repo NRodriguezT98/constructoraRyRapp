@@ -73,7 +73,7 @@ export async function POST() {
 
     // Ejecutar upserts en paralelo
     const resultados = await Promise.all(
-      FUENTES_OFICIALES.map(async (fuente) => {
+      FUENTES_OFICIALES.map(async fuente => {
         const { data, error } = await supabase
           .from('tipos_fuentes_pago')
           .upsert(

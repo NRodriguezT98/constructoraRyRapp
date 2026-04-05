@@ -12,7 +12,8 @@ import type { TextareaHTMLAttributes } from 'react'
 import { motion } from 'framer-motion'
 import type { LucideIcon } from 'lucide-react'
 
-export interface ModernTextareaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
+export interface ModernTextareaProps
+  extends TextareaHTMLAttributes<HTMLTextAreaElement> {
   icon: LucideIcon
   label: string
   error?: string

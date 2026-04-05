@@ -20,19 +20,26 @@ export function useDetalleAuditoria(registro: AuditLogRecord) {
   }
 
   // Datos formateados memorizados
-  const datosFormateados = useMemo(() => ({
-    fechaFormateada: formatearFecha(registro.fechaEvento),
-    metadata: registro.metadata || {},
-    tieneMetadata: registro.metadata && Object.keys(registro.metadata).length > 0,
-    tieneDatosNuevos: !!registro.datosNuevos,
-    tieneCambiosEspecificos: registro.cambiosEspecificos && Object.keys(registro.cambiosEspecificos).length > 0
-  }), [registro])
+  const datosFormateados = useMemo(
+    () => ({
+      fechaFormateada: formatearFecha(registro.fechaEvento),
+      metadata: registro.metadata || {},
+      tieneMetadata:
+        registro.metadata && Object.keys(registro.metadata).length > 0,
+      tieneDatosNuevos: !!registro.datosNuevos,
+      tieneCambiosEspecificos:
+        registro.cambiosEspecificos &&
+        Object.keys(registro.cambiosEspecificos).length > 0,
+    }),
+    [registro]
+  )
 
   // Verificar si debe mostrar sección JSON
-  const mostrarSeccionJson = useMemo(() =>
-    datosFormateados.tieneMetadata ||
-    datosFormateados.tieneDatosNuevos ||
-    datosFormateados.tieneCambiosEspecificos,
+  const mostrarSeccionJson = useMemo(
+    () =>
+      datosFormateados.tieneMetadata ||
+      datosFormateados.tieneDatosNuevos ||
+      datosFormateados.tieneCambiosEspecificos,
     [datosFormateados]
   )
 
@@ -40,6 +47,6 @@ export function useDetalleAuditoria(registro: AuditLogRecord) {
     seccionAbierta,
     toggleSeccion,
     datosFormateados,
-    mostrarSeccionJson
+    mostrarSeccionJson,
   }
 }

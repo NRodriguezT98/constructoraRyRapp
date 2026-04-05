@@ -3,17 +3,30 @@
 import { useCallback, useRef, useState } from 'react'
 
 import { AnimatePresence, motion } from 'framer-motion'
-import { AlertCircle, Banknote, Building2, Check, CircleDollarSign, Home, Wallet } from 'lucide-react'
+import {
+  AlertCircle,
+  Banknote,
+  Building2,
+  Check,
+  CircleDollarSign,
+  Home,
+  Wallet,
+} from 'lucide-react'
 
 import { formatCurrency } from '@/lib/utils/format.utils'
 import type {
-    FuentePagoConfig,
-    FuentePagoConfiguracion,
+  FuentePagoConfig,
+  FuentePagoConfiguracion,
 } from '@/modules/clientes/components/asignar-vivienda/types'
 import { CampoFormularioDinamico } from '@/modules/clientes/components/fuente-pago-card/CampoFormularioDinamico'
 import type { TipoFuentePago } from '@/modules/clientes/types'
 import { obtenerMontoParaCierre } from '@/modules/clientes/utils/fuentes-pago-campos.utils'
-import type { CampoConfig, TipoFuentePagoConCampos, ValorCampo, ValoresCampos } from '@/modules/configuracion/types/campos-dinamicos.types'
+import type {
+  CampoConfig,
+  TipoFuentePagoConCampos,
+  ValorCampo,
+  ValoresCampos,
+} from '@/modules/configuracion/types/campos-dinamicos.types'
 import { CreditoConstructoraForm } from '@/modules/fuentes-pago/components/CreditoConstructoraForm'
 import type { ParametrosCredito } from '@/modules/fuentes-pago/types'
 
@@ -39,7 +52,8 @@ interface SeccionFuentesPagoProps {
 function iconForFuente(nombre: string) {
   const n = nombre.toLowerCase()
   if (n.includes('hipotecario') || n.includes('banco')) return Building2
-  if (n.includes('subsidio') || n.includes('vivienda') || n.includes('casa')) return Home
+  if (n.includes('subsidio') || n.includes('vivienda') || n.includes('casa'))
+    return Home
   if (n.includes('cuota') || n.includes('inicial')) return Wallet
   if (n.includes('leasing')) return CircleDollarSign
   return Banknote
@@ -74,14 +88,14 @@ export function SeccionFuentesPago({
     <div className='space-y-3'>
       {/* Barra de progreso de cobertura */}
       <div className={s.fuentes.progressWrapper}>
-        <div className='flex items-center justify-between mb-1'>
+        <div className='mb-1 flex items-center justify-between'>
           <span className={s.fuentes.progressLabel}>
             Por cubrir: {formatCurrency(valorTotal)}
           </span>
           <span
             className={
               sumaCierra
-                ? 'font-mono text-[11px] text-emerald-500 font-semibold'
+                ? 'font-mono text-[11px] font-semibold text-emerald-500'
                 : s.fuentes.progressLabelRight
             }
           >
@@ -108,7 +122,8 @@ export function SeccionFuentesPago({
             t => t.nombre === fuente.tipo
           )
           const camposConfig = tipoConCampos?.configuracion_campos?.campos ?? []
-          const generaCuotas = tipoConCampos?.logica_negocio?.genera_cuotas ?? false
+          const generaCuotas =
+            tipoConCampos?.logica_negocio?.genera_cuotas ?? false
           // Para crédito constructora: muestra capital (sin intereses) para que
           // el badge sea coherente con la barra de progreso
           const monto = fuente.config
@@ -124,7 +139,9 @@ export function SeccionFuentesPago({
                 <div className={s.fuentes.fuenteIconWrapper(fuente.enabled)}>
                   {(() => {
                     const Icon = iconForFuente(fuente.tipo)
-                    return <Icon className={s.fuentes.fuenteIcon(fuente.enabled)} />
+                    return (
+                      <Icon className={s.fuentes.fuenteIcon(fuente.enabled)} />
+                    )
                   })()}
                 </div>
 
@@ -180,12 +197,17 @@ export function SeccionFuentesPago({
                     <FuenteExpandida
                       fuente={fuente}
                       camposConfig={camposConfig}
-                      permiteMultiples={tipoConCampos?.permite_multiples_abonos ?? false}
+                      permiteMultiples={
+                        tipoConCampos?.permite_multiples_abonos ?? false
+                      }
                       generaCuotas={generaCuotas}
                       esError={!!esError}
                       mensajeError={erroresFuentes[fuente.tipo] ?? ''}
-                      onChange={(config) => {
-                        handleFuenteConfigChange(fuente.tipo as TipoFuentePago, config)
+                      onChange={config => {
+                        handleFuenteConfigChange(
+                          fuente.tipo as TipoFuentePago,
+                          config
+                        )
                       }}
                     />
                   </motion.div>
@@ -276,7 +298,10 @@ function FuenteExpandida({
   })
 
   const handleCreditoActualizar = useCallback(
-    (campo: 'monto_aprobado' | 'capital_para_cierre' | 'parametrosCredito', valor: unknown) => {
+    (
+      campo: 'monto_aprobado' | 'capital_para_cierre' | 'parametrosCredito',
+      valor: unknown
+    ) => {
       creditoRef.current = { ...creditoRef.current, [campo]: valor }
       const acc = creditoRef.current
       if (acc.monto_aprobado != null && acc.monto_aprobado > 0) {
@@ -321,9 +346,15 @@ function FuenteExpandida({
     const refCampo = sorted.find(c => c.rol === 'referencia')
     return {
       tipo: fuente.tipo as TipoFuentePago,
-      monto_aprobado: montoCampo ? (newValores[montoCampo.nombre] as number ?? 0) : 0,
-      entidad: entidadCampo ? (newValores[entidadCampo.nombre] as string ?? '') : '',
-      numero_referencia: refCampo ? (newValores[refCampo.nombre] as string ?? '') : '',
+      monto_aprobado: montoCampo
+        ? ((newValores[montoCampo.nombre] as number) ?? 0)
+        : 0,
+      entidad: entidadCampo
+        ? ((newValores[entidadCampo.nombre] as string) ?? '')
+        : '',
+      numero_referencia: refCampo
+        ? ((newValores[refCampo.nombre] as string) ?? '')
+        : '',
       permite_multiples_abonos: permiteMultiples,
       campos: { ...newValores },
     }

@@ -99,8 +99,7 @@ export function useFormularioCliente({
     }
     // Limpiar errores cuando cambia el cliente
     setErrors({})
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [clienteInicial?.id])
+  }, [clienteInicial])
 
   // =====================================================
   // VALIDACIONES POR STEP

@@ -28,7 +28,8 @@ function loadEnv() {
 
 const env = loadEnv()
 const supabaseUrl = env.NEXT_PUBLIC_SUPABASE_URL
-const supabaseServiceKey = env.SUPABASE_SERVICE_ROLE_KEY || env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+const supabaseServiceKey =
+  env.SUPABASE_SERVICE_ROLE_KEY || env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
 if (!supabaseUrl || !supabaseServiceKey) {
   console.error('❌ Error: Faltan credenciales en .env.local')
@@ -51,25 +52,30 @@ async function crearBucketClientes() {
     }
 
     // 2. Crear bucket
-    const { data, error } = await supabase.storage.createBucket('documentos-clientes', {
-      public: false,
-      fileSizeLimit: 10485760, // 10MB
-      allowedMimeTypes: [
-        'application/pdf',
-        'image/jpeg',
-        'image/jpg',
-        'image/png',
-        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-        'application/msword',
-        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        'application/vnd.ms-excel'
-      ]
-    })
+    const { data, error } = await supabase.storage.createBucket(
+      'documentos-clientes',
+      {
+        public: false,
+        fileSizeLimit: 10485760, // 10MB
+        allowedMimeTypes: [
+          'application/pdf',
+          'image/jpeg',
+          'image/jpg',
+          'image/png',
+          'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+          'application/msword',
+          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+          'application/vnd.ms-excel',
+        ],
+      }
+    )
 
     if (error) {
       console.error('❌ Error al crear bucket:', error.message)
       console.log('\n⚠️  SOLUCIÓN: Crea el bucket manualmente en el dashboard')
-      console.log('   URL: https://supabase.com/dashboard/project/swyjhwgvkfcfdtemkyad/storage/buckets')
+      console.log(
+        '   URL: https://supabase.com/dashboard/project/swyjhwgvkfcfdtemkyad/storage/buckets'
+      )
       return
     }
 
@@ -77,8 +83,9 @@ async function crearBucketClientes() {
     console.log('\n⚠️  IMPORTANTE: Debes crear las políticas RLS manualmente:')
     console.log('   1. Ve a Storage → documentos-clientes → Policies')
     console.log('   2. Crea 3 políticas (INSERT, SELECT, DELETE)')
-    console.log('   3. Usa esta expresión: bucket_id = \'documentos-clientes\' AND auth.uid()::text = (storage.foldername(name))[1]')
-
+    console.log(
+      "   3. Usa esta expresión: bucket_id = 'documentos-clientes' AND auth.uid()::text = (storage.foldername(name))[1]"
+    )
   } catch (error) {
     console.error('❌ Error:', error.message)
   }

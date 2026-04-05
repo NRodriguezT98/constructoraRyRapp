@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react'
 
 import { Eye, FileText, Image as ImageIcon, Upload, X } from 'lucide-react'
 
+import NextImage from 'next/image'
+
 import type { ModoRegistro } from '../../types'
 
 const MIME_ACEPTADOS = [
@@ -152,12 +154,15 @@ export function ComprobantePago({
           <div className='flex items-center gap-3 pr-8'>
             {esImagen ? (
               previewUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={previewUrl}
-                  alt='Vista previa del comprobante'
-                  className='h-12 w-12 flex-shrink-0 rounded-lg border border-gray-200 object-cover dark:border-gray-700'
-                />
+                <div className='relative h-12 w-12 flex-shrink-0'>
+                  <NextImage
+                    unoptimized
+                    src={previewUrl}
+                    alt='Vista previa del comprobante'
+                    fill
+                    className='rounded-lg border border-gray-200 object-cover dark:border-gray-700'
+                  />
+                </div>
               ) : (
                 <div className='h-12 w-12 flex-shrink-0 animate-pulse rounded-lg bg-blue-100 dark:bg-blue-900/40' />
               )

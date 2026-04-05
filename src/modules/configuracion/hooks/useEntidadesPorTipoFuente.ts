@@ -26,14 +26,14 @@ import { supabase } from '@/lib/supabase/client'
 import { logger } from '@/lib/utils/logger'
 import type { EntidadFinanciera } from '@/modules/configuracion/types/entidades-financieras.types'
 
-
 // =====================================================
 // QUERY KEYS
 // =====================================================
 
 export const entidadesPorTipoFuenteKeys = {
   all: ['entidades-por-tipo-fuente'] as const,
-  byTipo: (tipoFuenteId: string) => [...entidadesPorTipoFuenteKeys.all, tipoFuenteId] as const,
+  byTipo: (tipoFuenteId: string) =>
+    [...entidadesPorTipoFuenteKeys.all, tipoFuenteId] as const,
 }
 
 // =====================================================
@@ -64,7 +64,10 @@ export interface EntidadFinancieraOption {
  */
 export function useEntidadesPorTipoFuente(
   tipoFuenteId: string | null | undefined,
-  options?: Omit<UseQueryOptions<EntidadFinanciera[], Error>, 'queryKey' | 'queryFn'>
+  options?: Omit<
+    UseQueryOptions<EntidadFinanciera[], Error>,
+    'queryKey' | 'queryFn'
+  >
 ) {
   return useQuery({
     queryKey: entidadesPorTipoFuenteKeys.byTipo(tipoFuenteId || ''),
@@ -109,12 +112,17 @@ export function useEntidadesPorTipoFuente(
  * ```
  */
 export function useEntidadesOptions(tipoFuenteId: string | null | undefined) {
-  const { data: entidades, isLoading, isError, error } = useEntidadesPorTipoFuente(tipoFuenteId)
+  const {
+    data: entidades,
+    isLoading,
+    isError,
+    error,
+  } = useEntidadesPorTipoFuente(tipoFuenteId)
 
   const opciones = useMemo<EntidadFinancieraOption[]>(() => {
     if (!entidades) return []
 
-    return entidades.map((entidad) => ({
+    return entidades.map(entidad => ({
       id: entidad.id,
       nombre: entidad.nombre,
       codigo: entidad.codigo,

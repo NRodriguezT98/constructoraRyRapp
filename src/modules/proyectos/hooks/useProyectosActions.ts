@@ -18,7 +18,10 @@ import { proyectosKeys, useProyectosQuery } from './useProyectosQuery'
 
 interface UseProyectosActionsReturn {
   crearProyecto: (data: ProyectoFormData) => Promise<void>
-  actualizarProyecto: (proyectoId: string, data: ProyectoFormData) => Promise<void>
+  actualizarProyecto: (
+    proyectoId: string,
+    data: ProyectoFormData
+  ) => Promise<void>
   eliminarProyecto: (proyectoId: string) => Promise<void>
   archivarProyecto: (proyectoId: string, motivo?: string) => Promise<void>
   restaurarProyecto: (proyectoId: string) => Promise<void>
@@ -73,7 +76,9 @@ export function useProyectosActions(): UseProyectosActionsReturn {
         await mutateActualizar(proyectoId, data)
 
         // Invalidar queries relacionadas
-        queryClient.invalidateQueries({ queryKey: proyectosKeys.detail(proyectoId) })
+        queryClient.invalidateQueries({
+          queryKey: proyectosKeys.detail(proyectoId),
+        })
         queryClient.invalidateQueries({ queryKey: proyectosKeys.lists() })
       } catch (error) {
         if (error instanceof Error) {

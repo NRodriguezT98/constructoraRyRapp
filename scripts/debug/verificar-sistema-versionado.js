@@ -19,8 +19,12 @@ async function verificarSistema() {
   try {
     // 1. Verificar que no hay triggers automáticos
     console.log('1️⃣ Verificando triggers...')
-    const { data: triggers } = await supabase.rpc('pg_catalog.pg_get_triggerdef', {})
-    const triggersActivos = triggers?.filter(t => t?.includes('fuentes_pago')) || []
+    const { data: triggers } = await supabase.rpc(
+      'pg_catalog.pg_get_triggerdef',
+      {}
+    )
+    const triggersActivos =
+      triggers?.filter(t => t?.includes('fuentes_pago')) || []
 
     if (triggersActivos.length === 0) {
       console.log('✅ No hay triggers automáticos en fuentes_pago (correcto)')
@@ -50,7 +54,9 @@ async function verificarSistema() {
         console.log(`  Razón: ${s.razon_cambio}`)
 
         if (s.datos_nuevos?.motivo_usuario) {
-          console.log(`  ✅ Motivo del usuario: "${s.datos_nuevos.motivo_usuario}"`)
+          console.log(
+            `  ✅ Motivo del usuario: "${s.datos_nuevos.motivo_usuario}"`
+          )
         }
 
         if (s.datos_nuevos?.resumen) {
@@ -73,7 +79,9 @@ async function verificarSistema() {
     if (negociaciones && negociaciones.length > 0) {
       console.log('✅ Negociaciones con versiones:')
       negociaciones.forEach(n => {
-        console.log(`  ID: ${n.id.substring(0, 8)}... | Versión actual: v${n.version_actual}`)
+        console.log(
+          `  ID: ${n.id.substring(0, 8)}... | Versión actual: v${n.version_actual}`
+        )
       })
     }
 
@@ -93,12 +101,13 @@ async function verificarSistema() {
       if (estructura.tiene_motivo_usuario && estructura.tiene_resumen) {
         console.log('✅ Estructura correcta con motivo y resumen')
       } else {
-        console.log('⚠️ Falta motivo_usuario o resumen (puede ser snapshot antiguo)')
+        console.log(
+          '⚠️ Falta motivo_usuario o resumen (puede ser snapshot antiguo)'
+        )
       }
     }
 
     console.log('\n✅ VERIFICACIÓN COMPLETA')
-
   } catch (error) {
     console.error('❌ Error en verificación:', error)
   }

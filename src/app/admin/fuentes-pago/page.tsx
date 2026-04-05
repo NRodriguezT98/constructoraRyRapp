@@ -15,18 +15,17 @@ import { FuentesPagoAdminContent } from './fuentes-pago-admin-content'
 
 export const metadata = {
   title: 'Administración de Fuentes de Pago | RyR Constructora',
-  description: 'Gestiona los tipos de fuentes de pago disponibles en el sistema',
+  description:
+    'Gestiona los tipos de fuentes de pago disponibles en el sistema',
 }
 
 export default async function FuentesPagoAdminPage() {
-
   // Verificar permisos de admin
   const permisos = await getServerPermissions()
 
   if (!permisos.isAdmin) {
     redirect('/dashboard')
   }
-
 
   return <FuentesPagoAdminContent />
 }

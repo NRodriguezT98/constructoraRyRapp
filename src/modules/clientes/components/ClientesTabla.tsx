@@ -11,14 +11,14 @@
 
 import { type ColumnDef, type SortingState } from '@tanstack/react-table'
 import {
-    Building2,
-    Edit2,
-    Heart,
-    Trash2,
-    User,
-    UserCheck,
-    Users,
-    UserX,
+  Building2,
+  Edit2,
+  Heart,
+  Trash2,
+  User,
+  UserCheck,
+  Users,
+  UserX,
 } from 'lucide-react'
 
 import { formatNombreCompleto } from '@/lib/utils/string.utils'
@@ -49,20 +49,27 @@ const styles = {
   // Badges de estado
   badge: {
     base: 'inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-xs font-bold whitespace-nowrap',
-    interesado: 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-md shadow-blue-500/30',
-    activo: 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-md shadow-emerald-500/30',
-    renuncio: 'bg-gradient-to-r from-red-500 to-rose-500 text-white shadow-md shadow-red-500/30', // ⭐ NUEVO
-    inactivo: 'bg-gradient-to-r from-gray-500 to-slate-500 text-white shadow-md shadow-gray-500/30',
-    propietario: 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-md shadow-purple-500/30',
+    interesado:
+      'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-md shadow-blue-500/30',
+    activo:
+      'bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-md shadow-emerald-500/30',
+    renuncio:
+      'bg-gradient-to-r from-red-500 to-rose-500 text-white shadow-md shadow-red-500/30', // ⭐ NUEVO
+    inactivo:
+      'bg-gradient-to-r from-gray-500 to-slate-500 text-white shadow-md shadow-gray-500/30',
+    propietario:
+      'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-md shadow-purple-500/30',
   },
 
   // Badge de origen (cyan/blue del módulo)
-  origenBadge: 'inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-cyan-100 dark:bg-cyan-900/30 text-cyan-700 dark:text-cyan-300 text-xs font-semibold',
+  origenBadge:
+    'inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-cyan-100 dark:bg-cyan-900/30 text-cyan-700 dark:text-cyan-300 text-xs font-semibold',
 
   // Células genéricas
   cell: {
     center: 'flex items-center justify-center',
-    textCompact: 'text-xs font-medium text-gray-700 dark:text-gray-300 truncate',
+    textCompact:
+      'text-xs font-medium text-gray-700 dark:text-gray-300 truncate',
   },
 
   // Acciones (cyan/blue del módulo)
@@ -71,7 +78,8 @@ const styles = {
     button: 'p-1.5 rounded-lg transition-all',
     view: 'text-cyan-600 dark:text-cyan-400 hover:bg-cyan-100 dark:hover:bg-cyan-900/30',
     edit: 'text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/30',
-    delete: 'text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30',
+    delete:
+      'text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30',
   },
 }
 
@@ -91,29 +99,36 @@ export function ClientesTabla({
       header: 'Cliente',
       size: 260,
       cell: ({ row }) => {
-        const nombreCompleto = formatNombreCompleto(row.original.nombre_completo)
+        const nombreCompleto = formatNombreCompleto(
+          row.original.nombre_completo
+        )
         const estado = row.original.estado
         const isActivo = estado === 'Activo'
         const isRenuncio = estado === 'Renunció' // ⭐ NUEVO
 
         return (
           <div className={styles.iconCell.container}>
-            <div className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 ${
-              isActivo
-                ? 'bg-gradient-to-br from-green-500 to-emerald-600'
-                : isRenuncio
-                ? 'bg-gradient-to-br from-red-500 to-rose-600' // ⭐ NUEVO - Rojo para renunció
-                : 'bg-gradient-to-br from-cyan-500 to-blue-600'
-            }`}>
+            <div
+              className={`flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg ${
+                isActivo
+                  ? 'bg-gradient-to-br from-green-500 to-emerald-600'
+                  : isRenuncio
+                    ? 'bg-gradient-to-br from-red-500 to-rose-600' // ⭐ NUEVO - Rojo para renunció
+                    : 'bg-gradient-to-br from-cyan-500 to-blue-600'
+              }`}
+            >
               {isActivo ? (
-                <UserCheck className="w-3.5 h-3.5 text-white" />
+                <UserCheck className='h-3.5 w-3.5 text-white' />
               ) : isRenuncio ? (
-                <UserX className="w-3.5 h-3.5 text-white" /> // ⭐ Usuario con X rojo
+                <UserX className='h-3.5 w-3.5 text-white' /> // ⭐ Usuario con X rojo
               ) : (
-                <User className="w-3.5 h-3.5 text-white" />
+                <User className='h-3.5 w-3.5 text-white' />
               )}
             </div>
-            <span className="text-xs font-bold text-gray-900 dark:text-white" title={nombreCompleto}>
+            <span
+              className='text-xs font-bold text-gray-900 dark:text-white'
+              title={nombreCompleto}
+            >
               {nombreCompleto}
             </span>
           </div>
@@ -151,12 +166,12 @@ export function ClientesTabla({
         const Icon = isInteresado
           ? Heart
           : isActivo
-          ? UserCheck
-          : isRenuncio
-          ? UserX // ⭐ Usuario con X (igual que UserCheck pero rojo)
-          : isInactivo
-          ? UserX
-          : Users
+            ? UserCheck
+            : isRenuncio
+              ? UserX // ⭐ Usuario con X (igual que UserCheck pero rojo)
+              : isInactivo
+                ? UserX
+                : Users
 
         return (
           <div className={styles.cell.center}>
@@ -170,7 +185,7 @@ export function ClientesTabla({
                 isPropietario && styles.badge.propietario
               )}
             >
-              <Icon className="w-3 h-3 flex-shrink-0" />
+              <Icon className='h-3 w-3 flex-shrink-0' />
               <span>{estado}</span>
             </div>
           </div>
@@ -185,26 +200,29 @@ export function ClientesTabla({
       size: 160,
       cell: ({ row }) => {
         const cliente = row.original
-        const proyecto = cliente.estado === 'Activo'
-          ? cliente.vivienda?.nombre_proyecto
-          : cliente.estado === 'Interesado'
-          ? cliente.interes?.nombre_proyecto
-          : null
+        const proyecto =
+          cliente.estado === 'Activo'
+            ? cliente.vivienda?.nombre_proyecto
+            : cliente.estado === 'Interesado'
+              ? cliente.interes?.nombre_proyecto
+              : null
 
         return (
           <div className={styles.cell.center}>
             {proyecto ? (
-              <div className="flex items-center gap-1.5 max-w-full overflow-hidden">
-                <Building2 className="w-3.5 h-3.5 text-green-600 dark:text-green-400 flex-shrink-0" />
+              <div className='flex max-w-full items-center gap-1.5 overflow-hidden'>
+                <Building2 className='h-3.5 w-3.5 flex-shrink-0 text-green-600 dark:text-green-400' />
                 <span
-                  className="text-xs font-medium text-gray-900 dark:text-white whitespace-nowrap overflow-hidden"
+                  className='overflow-hidden whitespace-nowrap text-xs font-medium text-gray-900 dark:text-white'
                   title={proyecto}
                 >
                   {proyecto}
                 </span>
               </div>
             ) : (
-              <span className="text-xs text-gray-400 dark:text-gray-500">—</span>
+              <span className='text-xs text-gray-400 dark:text-gray-500'>
+                —
+              </span>
             )}
           </div>
         )
@@ -218,7 +236,7 @@ export function ClientesTabla({
       size: 100,
       enableSorting: true,
       // AccessorFn para que TanStack Table reconozca el valor
-      accessorFn: (row) => {
+      accessorFn: row => {
         if (row.estado === 'Activo' && row.vivienda) {
           const manzana = row.vivienda.nombre_manzana || ''
           const numero = row.vivienda.numero_vivienda || ''
@@ -277,24 +295,24 @@ export function ClientesTabla({
         }
 
         return viviendaCompacta ? (
-          <div className="flex items-center justify-center h-full">
+          <div className='flex h-full items-center justify-center'>
             {esInteres ? (
               // Badge azul con icono corazón para INTERESADO
-              <span className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-700 dark:text-blue-300 bg-blue-100 dark:bg-blue-950/30 px-2.5 py-1.5 rounded-lg border border-blue-300 dark:border-blue-800 shadow-sm">
-                <Heart className="w-3.5 h-3.5" />
+              <span className='inline-flex items-center gap-1.5 rounded-lg border border-blue-300 bg-blue-100 px-2.5 py-1.5 text-xs font-bold text-blue-700 shadow-sm dark:border-blue-800 dark:bg-blue-950/30 dark:text-blue-300'>
+                <Heart className='h-3.5 w-3.5' />
                 {viviendaCompacta}
               </span>
             ) : (
               // Badge verde con checkmark para ACTIVO
-              <span className="inline-flex items-center gap-1.5 text-xs font-bold text-green-700 dark:text-green-300 bg-green-100 dark:bg-green-950/30 px-2.5 py-1.5 rounded-lg border border-green-300 dark:border-green-800 shadow-sm">
-                <UserCheck className="w-3.5 h-3.5" />
+              <span className='inline-flex items-center gap-1.5 rounded-lg border border-green-300 bg-green-100 px-2.5 py-1.5 text-xs font-bold text-green-700 shadow-sm dark:border-green-800 dark:bg-green-950/30 dark:text-green-300'>
+                <UserCheck className='h-3.5 w-3.5' />
                 {viviendaCompacta}
               </span>
             )}
           </div>
         ) : (
           <div className={styles.cell.center}>
-            <span className="text-xs text-gray-400 dark:text-gray-500">—</span>
+            <span className='text-xs text-gray-400 dark:text-gray-500'>—</span>
           </div>
         )
       },
@@ -308,26 +326,41 @@ export function ClientesTabla({
       cell: ({ row }) => {
         const cliente = row.original
         if (cliente.estado === 'Activo' && cliente.vivienda) {
-          const valorTotal = cliente.vivienda.valor_total_pagar || cliente.vivienda.valor_total || 0
+          const valorTotal =
+            cliente.vivienda.valor_total_pagar ||
+            cliente.vivienda.valor_total ||
+            0
           const saldo = cliente.vivienda.saldo_pendiente || 0
           const pagadoCompleto = saldo === 0 && valorTotal > 0
           const fmt = (v: number) =>
-            new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0, maximumFractionDigits: 0 })
-              .format(v).replace(/\s/g, '')
+            new Intl.NumberFormat('es-CO', {
+              style: 'currency',
+              currency: 'COP',
+              minimumFractionDigits: 0,
+              maximumFractionDigits: 0,
+            })
+              .format(v)
+              .replace(/\s/g, '')
           return (
-            <div className="flex flex-col items-center gap-0.5 py-0.5">
-              <span className={`text-xs font-bold leading-tight ${
-                pagadoCompleto ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500 dark:text-red-400'
-              }`}>
+            <div className='flex flex-col items-center gap-0.5 py-0.5'>
+              <span
+                className={`text-xs font-bold leading-tight ${
+                  pagadoCompleto
+                    ? 'text-emerald-600 dark:text-emerald-400'
+                    : 'text-red-500 dark:text-red-400'
+                }`}
+              >
                 {pagadoCompleto ? '✓ Pagado' : fmt(saldo)}
               </span>
-              <span className="text-[10px] text-gray-400 dark:text-gray-500 leading-none">de {fmt(valorTotal)}</span>
+              <span className='text-[10px] leading-none text-gray-400 dark:text-gray-500'>
+                de {fmt(valorTotal)}
+              </span>
             </div>
           )
         }
         return (
           <div className={styles.cell.center}>
-            <span className="text-xs text-gray-400 dark:text-gray-500">—</span>
+            <span className='text-xs text-gray-400 dark:text-gray-500'>—</span>
           </div>
         )
       },
@@ -341,25 +374,55 @@ export function ClientesTabla({
       cell: ({ row }) => {
         const cliente = row.original
         if (cliente.estado === 'Activo' && cliente.vivienda) {
-          const valorTotal = cliente.vivienda.valor_total_pagar || cliente.vivienda.valor_total || 0
+          const valorTotal =
+            cliente.vivienda.valor_total_pagar ||
+            cliente.vivienda.valor_total ||
+            0
           const totalAbonado = cliente.vivienda.total_abonado || 0
           const saldo = cliente.vivienda.saldo_pendiente || 0
-          const porcentaje = valorTotal > 0 ? Math.min(Math.round((totalAbonado / valorTotal) * 100), 100) : 0
+          const porcentaje =
+            valorTotal > 0
+              ? Math.min(Math.round((totalAbonado / valorTotal) * 100), 100)
+              : 0
           const pagadoCompleto = saldo === 0 && valorTotal > 0
           const CIRCUNFERENCIA = 87.96
           const strokeDash = (porcentaje / 100) * CIRCUNFERENCIA
-          const ringColor = pagadoCompleto ? '#10b981' : porcentaje >= 50 ? '#3b82f6' : '#f59e0b'
+          const ringColor = pagadoCompleto
+            ? '#10b981'
+            : porcentaje >= 50
+              ? '#3b82f6'
+              : '#f59e0b'
           return (
             <div className={styles.cell.center}>
-              <div className="relative w-9 h-9">
-                <svg width="36" height="36" viewBox="0 0 36 36" style={{ transform: 'rotate(-90deg)' }}>
-                  <circle cx="18" cy="18" r="14" fill="none" stroke="currentColor" strokeWidth="4"
-                    className="text-gray-200 dark:text-gray-700" />
-                  <circle cx="18" cy="18" r="14" fill="none" stroke={ringColor} strokeWidth="4"
-                    strokeLinecap="round" strokeDasharray={`${strokeDash} ${CIRCUNFERENCIA}`} />
+              <div className='relative h-9 w-9'>
+                <svg
+                  width='36'
+                  height='36'
+                  viewBox='0 0 36 36'
+                  style={{ transform: 'rotate(-90deg)' }}
+                >
+                  <circle
+                    cx='18'
+                    cy='18'
+                    r='14'
+                    fill='none'
+                    stroke='currentColor'
+                    strokeWidth='4'
+                    className='text-gray-200 dark:text-gray-700'
+                  />
+                  <circle
+                    cx='18'
+                    cy='18'
+                    r='14'
+                    fill='none'
+                    stroke={ringColor}
+                    strokeWidth='4'
+                    strokeLinecap='round'
+                    strokeDasharray={`${strokeDash} ${CIRCUNFERENCIA}`}
+                  />
                 </svg>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-[9px] font-bold text-gray-700 dark:text-gray-200 leading-none">
+                <div className='absolute inset-0 flex items-center justify-center'>
+                  <span className='text-[9px] font-bold leading-none text-gray-700 dark:text-gray-200'>
                     {pagadoCompleto ? '✓' : `${porcentaje}%`}
                   </span>
                 </div>
@@ -369,7 +432,7 @@ export function ClientesTabla({
         }
         return (
           <div className={styles.cell.center}>
-            <span className="text-xs text-gray-400 dark:text-gray-500">—</span>
+            <span className='text-xs text-gray-400 dark:text-gray-500'>—</span>
           </div>
         )
       },
@@ -384,20 +447,26 @@ export function ClientesTabla({
         <div className={styles.actions.container}>
           {canEdit && onEdit && (
             <button
-              onClick={(e) => { e.stopPropagation(); onEdit(row.original) }}
+              onClick={e => {
+                e.stopPropagation()
+                onEdit(row.original)
+              }}
               className={cn(styles.actions.button, styles.actions.edit)}
-              title="Editar"
+              title='Editar'
             >
-              <Edit2 className="w-3.5 h-3.5" />
+              <Edit2 className='h-3.5 w-3.5' />
             </button>
           )}
           {canDelete && onDelete && (
             <button
-              onClick={(e) => { e.stopPropagation(); onDelete(row.original.id) }}
+              onClick={e => {
+                e.stopPropagation()
+                onDelete(row.original.id)
+              }}
               className={cn(styles.actions.button, styles.actions.delete)}
-              title="Eliminar"
+              title='Eliminar'
             >
-              <Trash2 className="w-3.5 h-3.5" />
+              <Trash2 className='h-3.5 w-3.5' />
             </button>
           )}
         </div>
@@ -406,10 +475,15 @@ export function ClientesTabla({
   ]
 
   return (
-    <div className="clientes-tabla-wrapper w-full">
+    <div className='clientes-tabla-wrapper w-full'>
       <style jsx>{`
         .clientes-tabla-wrapper :global(thead) {
-          background: linear-gradient(135deg, #0891b2 0%, #6366f1 50%, #8b5cf6 100%) !important;
+          background: linear-gradient(
+            135deg,
+            #0891b2 0%,
+            #6366f1 50%,
+            #8b5cf6 100%
+          ) !important;
         }
         .clientes-tabla-wrapper :global(thead th) {
           color: white !important;
@@ -422,7 +496,12 @@ export function ClientesTabla({
           opacity: 0.6 !important;
         }
         .clientes-tabla-wrapper :global(tbody tr:hover) {
-          background: linear-gradient(90deg, rgba(8, 145, 178, 0.05) 0%, rgba(99, 102, 241, 0.05) 50%, rgba(139, 92, 246, 0.05) 100%) !important;
+          background: linear-gradient(
+            90deg,
+            rgba(8, 145, 178, 0.05) 0%,
+            rgba(99, 102, 241, 0.05) 50%,
+            rgba(139, 92, 246, 0.05) 100%
+          ) !important;
         }
         .clientes-tabla-wrapper :global(tbody tr) {
           transition: all 0.2s ease;

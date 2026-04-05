@@ -17,50 +17,53 @@ interface AuditoriaManzanasProps {
   totalViviendas: number
 }
 
-export function AuditoriaManzanas({ manzanas, totalViviendas }: AuditoriaManzanasProps) {
+export function AuditoriaManzanas({
+  manzanas,
+  totalViviendas,
+}: AuditoriaManzanasProps) {
   return (
-    <div className="p-4 rounded-xl bg-gradient-to-br from-emerald-500/10 to-teal-500/10 backdrop-blur-sm border border-emerald-200/50 dark:border-emerald-800/50">
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center shadow-lg">
-            <Home className="w-5 h-5 text-white" />
+    <div className='rounded-xl border border-emerald-200/50 bg-gradient-to-br from-emerald-500/10 to-teal-500/10 p-4 backdrop-blur-sm dark:border-emerald-800/50'>
+      <div className='mb-3 flex items-center justify-between'>
+        <div className='flex items-center gap-3'>
+          <div className='flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-500 to-teal-500 shadow-lg'>
+            <Home className='h-5 w-5 text-white' />
           </div>
-          <h3 className="text-sm font-bold text-emerald-900 dark:text-emerald-300 uppercase tracking-wide">
+          <h3 className='text-sm font-bold uppercase tracking-wide text-emerald-900 dark:text-emerald-300'>
             Manzanas
           </h3>
         </div>
 
-        <div className="flex items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500 text-white text-xs font-bold shadow-md">
-            <Home className="w-3 h-3" />
+        <div className='flex items-center gap-2'>
+          <span className='inline-flex items-center gap-1.5 rounded-full bg-emerald-500 px-3 py-1 text-xs font-bold text-white shadow-md'>
+            <Home className='h-3 w-3' />
             {manzanas.length}
           </span>
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500 text-white text-xs font-bold shadow-md">
-            <Building2 className="w-3 h-3" />
+          <span className='inline-flex items-center gap-1.5 rounded-full bg-blue-500 px-3 py-1 text-xs font-bold text-white shadow-md'>
+            <Building2 className='h-3 w-3' />
             {totalViviendas}
           </span>
         </div>
       </div>
 
       {/* Grid de manzanas */}
-      <div className="space-y-2 mt-4">
+      <div className='mt-4 space-y-2'>
         {manzanas.map((manzana, index) => (
           <div
             key={index}
-            className="flex items-center justify-between p-3 rounded-lg bg-white/50 dark:bg-gray-800/50 border border-emerald-200/30 dark:border-emerald-800/30 hover:bg-white/80 dark:hover:bg-gray-800/80 transition-colors"
+            className='flex items-center justify-between rounded-lg border border-emerald-200/30 bg-white/50 p-3 transition-colors hover:bg-white/80 dark:border-emerald-800/30 dark:bg-gray-800/50 dark:hover:bg-gray-800/80'
           >
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-400 to-teal-400 flex items-center justify-center text-white font-bold text-sm shadow-md">
+            <div className='flex items-center gap-3'>
+              <div className='flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-400 to-teal-400 text-sm font-bold text-white shadow-md'>
                 {manzana.nombre}
               </div>
-              <span className="font-semibold text-gray-900 dark:text-white">
+              <span className='font-semibold text-gray-900 dark:text-white'>
                 Manzana {manzana.nombre}
               </span>
             </div>
 
-            <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-100 dark:bg-emerald-900/30 border border-emerald-200 dark:border-emerald-800">
-              <Building2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-              <span className="text-sm font-bold text-emerald-700 dark:text-emerald-300">
+            <div className='flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-100 px-3 py-1 dark:border-emerald-800 dark:bg-emerald-900/30'>
+              <Building2 className='h-4 w-4 text-emerald-600 dark:text-emerald-400' />
+              <span className='text-sm font-bold text-emerald-700 dark:text-emerald-300'>
                 {manzana.numero_viviendas} viviendas
               </span>
             </div>

@@ -48,7 +48,9 @@ export function EntidadCombobox({
     return opciones.filter(o => o.label.toLowerCase().includes(term))
   }, [opciones, searchTerm])
 
-  useEffect(() => { setHighlightedIndex(0) }, [searchTerm])
+  useEffect(() => {
+    setHighlightedIndex(0)
+  }, [searchTerm])
 
   useEffect(() => {
     if (isOpen && listRef.current) {
@@ -96,7 +98,10 @@ export function EntidadCombobox({
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
+      if (
+        wrapperRef.current &&
+        !wrapperRef.current.contains(e.target as Node)
+      ) {
         setIsOpen(false)
       }
     }
@@ -111,33 +116,47 @@ export function EntidadCombobox({
       : 'border-gray-200 dark:border-gray-700 focus-within:border-cyan-500 focus-within:ring-2 focus-within:ring-cyan-500/20'
 
   return (
-    <div ref={wrapperRef} className="relative">
+    <div ref={wrapperRef} className='relative'>
       <div
-        className={`flex items-center w-full bg-white dark:bg-gray-900 border-2 rounded-lg transition-all duration-200 ${borderColor} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+        className={`flex w-full items-center rounded-lg border-2 bg-white transition-all duration-200 dark:bg-gray-900 ${borderColor} ${disabled ? 'cursor-not-allowed opacity-50' : ''}`}
       >
-        <Search className="w-4 h-4 text-gray-400 ml-3 flex-shrink-0" />
+        <Search className='ml-3 h-4 w-4 flex-shrink-0 text-gray-400' />
         <input
           ref={inputRef}
-          type="text"
-          value={isOpen ? searchTerm : selectedOption?.label ?? ''}
+          type='text'
+          value={isOpen ? searchTerm : (selectedOption?.label ?? '')}
           onChange={e => {
             setSearchTerm(e.target.value)
             if (!isOpen) setIsOpen(true)
           }}
-          onFocus={() => { setIsOpen(true); setSearchTerm('') }}
+          onFocus={() => {
+            setIsOpen(true)
+            setSearchTerm('')
+          }}
           onKeyDown={handleKeyDown}
           placeholder={loading ? 'Cargando...' : placeholder}
           disabled={disabled || loading}
-          className="flex-1 bg-transparent px-2 py-2 text-sm font-medium text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 outline-none"
+          className='flex-1 bg-transparent px-2 py-2 text-sm font-medium text-gray-900 outline-none placeholder:text-gray-400 dark:text-white dark:placeholder:text-gray-500'
         />
-        <div className="flex items-center gap-0.5 pr-2">
+        <div className='flex items-center gap-0.5 pr-2'>
           {value && !disabled && (
-            <button type="button" onClick={handleClear} className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded transition-colors">
-              <X className="w-3.5 h-3.5 text-gray-400" />
+            <button
+              type='button'
+              onClick={handleClear}
+              className='rounded p-1 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800'
+            >
+              <X className='h-3.5 w-3.5 text-gray-400' />
             </button>
           )}
-          <button type="button" onClick={() => !disabled && setIsOpen(!isOpen)} disabled={disabled} className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded transition-colors">
-            <ChevronDown className={`w-3.5 h-3.5 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+          <button
+            type='button'
+            onClick={() => !disabled && setIsOpen(!isOpen)}
+            disabled={disabled}
+            className='rounded p-1 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800'
+          >
+            <ChevronDown
+              className={`h-3.5 w-3.5 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`}
+            />
           </button>
         </div>
       </div>
@@ -149,45 +168,55 @@ export function EntidadCombobox({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -6 }}
             transition={{ duration: 0.12 }}
-            className="absolute z-50 w-full mt-1.5 backdrop-blur-xl bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-xl shadow-2xl shadow-cyan-500/10 overflow-hidden"
+            className='absolute z-50 mt-1.5 w-full overflow-hidden rounded-xl border-2 border-gray-200 bg-white shadow-2xl shadow-cyan-500/10 backdrop-blur-xl dark:border-gray-700 dark:bg-gray-800'
           >
             {filtered.length > 0 ? (
               <>
-                <div className="px-3 py-1.5 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
-                  <p className="text-[10px] text-gray-500 dark:text-gray-400 font-medium">
+                <div className='border-b border-gray-200 bg-gray-50 px-3 py-1.5 dark:border-gray-700 dark:bg-gray-900'>
+                  <p className='text-[10px] font-medium text-gray-500 dark:text-gray-400'>
                     {filtered.length} entidad{filtered.length !== 1 ? 'es' : ''}
                   </p>
                 </div>
-                <div ref={listRef} className="p-1.5 max-h-[220px] overflow-y-auto">
+                <div
+                  ref={listRef}
+                  className='max-h-[220px] overflow-y-auto p-1.5'
+                >
                   {filtered.map((opt, index) => {
-                    const isSelected = opt.label === value || opt.value === value
+                    const isSelected =
+                      opt.label === value || opt.value === value
                     const isHighlighted = index === highlightedIndex
                     return (
                       <button
                         key={opt.value}
-                        type="button"
+                        type='button'
                         onClick={() => handleSelect(opt)}
                         onMouseEnter={() => setHighlightedIndex(index)}
-                        className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-left transition-all ${
+                        className={`flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left transition-all ${
                           isHighlighted
                             ? 'bg-cyan-50 dark:bg-cyan-900/30'
                             : 'hover:bg-gray-50 dark:hover:bg-gray-700/50'
                         }`}
                       >
-                        <Building2 className={`w-4 h-4 flex-shrink-0 ${isSelected ? 'text-cyan-500' : 'text-gray-400'}`} />
-                        <span className={`text-sm ${isSelected ? 'font-semibold text-cyan-600 dark:text-cyan-400' : 'text-gray-900 dark:text-white'}`}>
+                        <Building2
+                          className={`h-4 w-4 flex-shrink-0 ${isSelected ? 'text-cyan-500' : 'text-gray-400'}`}
+                        />
+                        <span
+                          className={`text-sm ${isSelected ? 'font-semibold text-cyan-600 dark:text-cyan-400' : 'text-gray-900 dark:text-white'}`}
+                        >
                           {opt.label}
                         </span>
-                        {isSelected && <Check className="w-4 h-4 text-cyan-500 ml-auto flex-shrink-0" />}
+                        {isSelected && (
+                          <Check className='ml-auto h-4 w-4 flex-shrink-0 text-cyan-500' />
+                        )}
                       </button>
                     )
                   })}
                 </div>
               </>
             ) : (
-              <div className="p-4 text-center">
-                <Building2 className="w-8 h-8 text-gray-300 dark:text-gray-600 mx-auto mb-1" />
-                <p className="text-xs text-gray-500 dark:text-gray-400">
+              <div className='p-4 text-center'>
+                <Building2 className='mx-auto mb-1 h-8 w-8 text-gray-300 dark:text-gray-600' />
+                <p className='text-xs text-gray-500 dark:text-gray-400'>
                   {searchTerm ? 'No se encontraron entidades' : 'Sin opciones'}
                 </p>
               </div>

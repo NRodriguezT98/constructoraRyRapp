@@ -160,7 +160,11 @@ export function getNestedValue<T = unknown>(
 }
 
 // Establecer valor anidado en un objeto
-export function setNestedValue(obj: Record<string, unknown>, path: string, value: unknown): void {
+export function setNestedValue(
+  obj: Record<string, unknown>,
+  path: string,
+  value: unknown
+): void {
   const keys = path.split('.')
   const lastKey = keys.pop()
   if (lastKey === undefined) return

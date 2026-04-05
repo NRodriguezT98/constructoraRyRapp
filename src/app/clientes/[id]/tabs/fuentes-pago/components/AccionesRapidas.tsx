@@ -8,11 +8,7 @@
  */
 
 import { motion } from 'framer-motion'
-import {
-    ArrowRight,
-    FileText,
-    TrendingUp
-} from 'lucide-react'
+import { ArrowRight, FileText, TrendingUp } from 'lucide-react'
 
 import { fuentesPagoTabStyles as styles } from '../../fuentes-pago-tab.styles'
 
@@ -25,16 +21,16 @@ interface AccionesRapidasProps {
 export function AccionesRapidas({
   onNavegar,
   fuentesSinDocumentacion,
-  puedeRegistrarAbonos
+  puedeRegistrarAbonos,
 }: AccionesRapidasProps) {
-
   const acciones = [
     {
       id: 'documentos',
       titulo: 'Gestionar Documentación',
-      subtitulo: fuentesSinDocumentacion > 0
-        ? `${fuentesSinDocumentacion} fuentes necesitan documentos`
-        : 'Todas las fuentes tienen documentación',
+      subtitulo:
+        fuentesSinDocumentacion > 0
+          ? `${fuentesSinDocumentacion} fuentes necesitan documentos`
+          : 'Todas las fuentes tienen documentación',
       icon: FileText,
       iconStyles: styles.acciones.iconDocumentos,
       onClick: () => onNavegar('documentos'),
@@ -57,15 +53,15 @@ export function AccionesRapidas({
     <motion.div
       className={styles.acciones.container}
       variants={styles.animations.staggerChildren}
-      initial="initial"
-      animate="animate"
+      initial='initial'
+      animate='animate'
     >
       {acciones.map((accion, index) => (
         <motion.div
           key={accion.id}
           className={`${styles.acciones.card} ${
             accion.destacado
-              ? 'ring-2 ring-cyan-500/20 border-cyan-200 dark:border-cyan-700'
+              ? 'border-cyan-200 ring-2 ring-cyan-500/20 dark:border-cyan-700'
               : ''
           }`}
           onClick={accion.onClick}
@@ -80,12 +76,8 @@ export function AccionesRapidas({
             </div>
 
             <div className={styles.acciones.textSection}>
-              <h4 className={styles.acciones.title}>
-                {accion.titulo}
-              </h4>
-              <p className={styles.acciones.subtitle}>
-                {accion.subtitulo}
-              </p>
+              <h4 className={styles.acciones.title}>{accion.titulo}</h4>
+              <p className={styles.acciones.subtitle}>{accion.subtitulo}</p>
             </div>
 
             <ArrowRight className={styles.acciones.arrow} />

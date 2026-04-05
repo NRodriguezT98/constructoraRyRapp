@@ -1,4 +1,4 @@
-/**
+﻿/**
  * useProyectosForm - Hook con lógica del formulario de proyectos
  * ✅ Separación de responsabilidades ESTRICTA
  * ✅ Validación con Zod
@@ -12,157 +12,19 @@ import { useEffect, useMemo } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useFieldArray, useForm } from 'react-hook-form'
 import { toast } from 'sonner'
-import { z } from 'zod'
 
 import { logger } from '@/lib/utils/logger'
-import {
-  getDepartamentos,
-  validarCiudadDepartamento,
-} from '@/shared/data/colombia-locations'
 import { useFormChanges } from '@/shared/hooks/useFormChanges'
 
+import {
+  proyectoSchema,
+  type ProyectoFormSchema,
+} from '../schemas/proyecto.schemas'
 import { proyectosService } from '../services/proyectos.service'
 import type { ProyectoFormData } from '../types'
+export type { ProyectoFormSchema }
 
 import { useManzanasEditables } from './useManzanasEditables'
-
-// ==================== SCHEMAS ====================
-const manzanaSchema = z.object({
-  id: z.string().optional(), // ID real de la DB (si existe)
-  nombre: z
-    .string()
-    .min(1, 'El nombre de la manzana es obligatorio')
-    .regex(
-      /^[a-zA-ZáéíóúÁÉÍÓÚñÃ‘0-9\s\-_().]+$/,
-      'Solo se permiten letras, números, espacios, guiones, paréntesis y puntos'
-    ),
-  totalViviendas: z
-    .number({
-      message: 'La cantidad de viviendas es obligatoria',
-    })
-    .min(1, 'Mínimo 1 vivienda')
-    .max(100, 'Máximo 100 viviendas')
-    .int('Debe ser un número entero'),
-  // ✅ Campos opcionales para validación precargada
-  cantidadViviendasCreadas: z.number().optional(),
-  esEditable: z.boolean().optional(),
-  motivoBloqueado: z.string().optional(),
-})
-
-const proyectoSchema = z
-  .object({
-    id: z.string().optional(), // ID del proyecto (cuando se edita)
-    responsable: z.string().optional(), // Responsable del proyecto
-    nombre: z
-      .string()
-      .min(3, 'El nombre del proyecto debe tener al menos 3 caracteres')
-      .max(100, 'El nombre no puede exceder 100 caracteres')
-      .regex(
-        /^[a-zA-ZáéíóúÁÉÍÓÚñÃ‘0-9\s\-_().]+$/,
-        'Solo se permiten letras (con acentos), números, espacios, guiones, paréntesis y puntos'
-      ),
-    descripcion: z
-      .string()
-      .min(10, 'La descripción debe tener al menos 10 caracteres')
-      .max(1000, 'La descripción no puede exceder 1000 caracteres')
-      .regex(
-        /^[a-zA-ZáéíóúÁÉÍÓÚñÃ‘0-9\s\-_.,;:()\n¿?¡!'"Â°%$]+$/,
-        'Caracteres no permitidos en la descripción. Use solo letras, números y puntuación básica'
-      ),
-    departamento: z
-      .string()
-      .min(1, 'Selecciona un departamento')
-      .refine(val => !val || getDepartamentos().includes(val), {
-        message: 'El departamento seleccionado no es válido',
-      }),
-    ciudad: z.string().min(1, 'Selecciona una ciudad o municipio'),
-    direccion: z
-      .string()
-      .min(5, 'La dirección debe tener al menos 5 caracteres')
-      .max(200, 'La dirección no puede exceder 200 caracteres')
-      .regex(
-        /^[a-zA-ZáéíóúÁÉÍÓÚñÃ'0-9\s\-,#.Â°]+$/,
-        'Solo se permiten letras, números, espacios, comas, guiones, # y puntos'
-      ),
-    estado: z.enum(
-      [
-        'en_planificacion',
-        'en_proceso',
-        'en_construccion',
-        'completado',
-        'pausado',
-      ],
-      {
-        message: 'Selecciona un estado para el proyecto',
-      }
-    ),
-    fechaInicio: z.string().optional(),
-    fechaFinEstimada: z.string().optional(),
-    manzanas: z
-      .array(manzanaSchema)
-      .min(1, 'Debe agregar al menos una manzana')
-      .max(20, 'Máximo 20 manzanas por proyecto'),
-  })
-  .refine(
-    data => {
-      // Solo validar si ambas fechas están presentes y no son strings vacías
-      if (
-        data.fechaInicio &&
-        data.fechaFinEstimada &&
-        data.fechaInicio.trim() !== '' &&
-        data.fechaFinEstimada.trim() !== ''
-      ) {
-        return new Date(data.fechaFinEstimada) > new Date(data.fechaInicio)
-      }
-      return true
-    },
-    {
-      message: 'La fecha de fin debe ser posterior a la fecha de inicio',
-      path: ['fechaFinEstimada'],
-    }
-  )
-  .refine(
-    data => {
-      // ✅ VALIDACIÓN: Fechas coherentes con estado del proyecto
-      const ahora = new Date()
-      const fechaInicio = data.fechaInicio ? new Date(data.fechaInicio) : null
-      const fechaFin = data.fechaFinEstimada
-        ? new Date(data.fechaFinEstimada)
-        : null
-
-      // Si está "completado", la fecha de fin no puede ser futura
-      if (data.estado === 'completado' && fechaFin && fechaFin > ahora) {
-        return false
-      }
-
-      // Si está "en_proceso" o "en_construccion", la fecha de inicio no puede ser futura
-      if (
-        (data.estado === 'en_proceso' || data.estado === 'en_construccion') &&
-        fechaInicio &&
-        fechaInicio > ahora
-      ) {
-        return false
-      }
-
-      return true
-    },
-    {
-      message: 'Las fechas no son coherentes con el estado del proyecto',
-      path: ['estado'],
-    }
-  )
-  .refine(
-    data => {
-      if (!data.departamento || !data.ciudad) return true
-      return validarCiudadDepartamento(data.ciudad, data.departamento)
-    },
-    {
-      message: 'La ciudad seleccionada no corresponde al departamento elegido',
-      path: ['ciudad'],
-    }
-  )
-
-export type ProyectoFormSchema = z.infer<typeof proyectoSchema>
 
 // ==================== TIPOS ====================
 interface UseProyectosFormParams {
@@ -273,8 +135,7 @@ export function useProyectosForm({
         validarManzanas(manzanasIds)
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isEditing, validacionPrecargada]) // Solo ejecutar al montar si no hay precarga
+  }, [isEditing, validacionPrecargada, validarManzanas, manzanasWatch])
 
   // ==================== CÁLCULOS ====================
   const totalManzanas = useMemo(() => {

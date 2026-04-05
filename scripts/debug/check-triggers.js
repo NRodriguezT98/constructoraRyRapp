@@ -13,7 +13,11 @@ async function main() {
     ORDER BY trigger_name
   `)
   console.log('=== TRIGGERS en abonos_historial ===')
-  r1.rows.forEach(r => console.log(`  ${r.trigger_name} [${r.event_manipulation}] → ${r.action_statement}`))
+  r1.rows.forEach(r =>
+    console.log(
+      `  ${r.trigger_name} [${r.event_manipulation}] → ${r.action_statement}`
+    )
+  )
 
   // Triggers en fuentes_pago
   const r2 = await cl.query(`
@@ -23,7 +27,11 @@ async function main() {
     ORDER BY trigger_name
   `)
   console.log('\n=== TRIGGERS en fuentes_pago ===')
-  r2.rows.forEach(r => console.log(`  ${r.trigger_name} [${r.event_manipulation}] → ${r.action_statement}`))
+  r2.rows.forEach(r =>
+    console.log(
+      `  ${r.trigger_name} [${r.event_manipulation}] → ${r.action_statement}`
+    )
+  )
 
   // Funciones de triggers
   const r3 = await cl.query(`
@@ -39,4 +47,7 @@ async function main() {
   await cl.end()
 }
 
-main().catch(e => { console.error('ERR:', e.message); process.exit(1) })
+main().catch(e => {
+  console.error('ERR:', e.message)
+  process.exit(1)
+})

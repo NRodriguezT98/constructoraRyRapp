@@ -10,9 +10,12 @@ import type { Database } from '@/lib/supabase/database.types'
 // =====================================================
 // DATABASE TYPES
 // =====================================================
-export type TipoFuentePagoDB = Database['public']['Tables']['tipos_fuentes_pago']['Row']
-export type TipoFuentePagoInsert = Database['public']['Tables']['tipos_fuentes_pago']['Insert']
-export type TipoFuentePagoUpdate = Database['public']['Tables']['tipos_fuentes_pago']['Update']
+export type TipoFuentePagoDB =
+  Database['public']['Tables']['tipos_fuentes_pago']['Row']
+export type TipoFuentePagoInsert =
+  Database['public']['Tables']['tipos_fuentes_pago']['Insert']
+export type TipoFuentePagoUpdate =
+  Database['public']['Tables']['tipos_fuentes_pago']['Update']
 
 // =====================================================
 // DOMAIN TYPES
@@ -138,7 +141,11 @@ export interface TipoFuentePagoFilters {
 /**
  * Opciones de ordenamiento
  */
-export type TipoFuentePagoOrderBy = 'orden' | 'nombre' | 'created_at' | 'updated_at'
+export type TipoFuentePagoOrderBy =
+  | 'orden'
+  | 'nombre'
+  | 'created_at'
+  | 'updated_at'
 
 /**
  * Dirección de ordenamiento

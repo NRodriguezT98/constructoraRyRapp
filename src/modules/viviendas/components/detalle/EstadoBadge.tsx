@@ -32,15 +32,18 @@ export function EstadoBadge({ estado }: EstadoBadgeProps) {
     },
   }
 
-  const config = estadoConfig[estado as keyof typeof estadoConfig] || estadoConfig.Disponible
+  const config =
+    estadoConfig[estado as keyof typeof estadoConfig] || estadoConfig.Disponible
 
   return (
     <motion.span
-      className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg ${config.color} text-sm font-medium`}
+      className={`inline-flex items-center gap-2 rounded-lg px-3 py-1.5 ${config.color} text-sm font-medium`}
       whileHover={{ scale: 1.05 }}
       transition={{ type: 'spring', stiffness: 300 }}
     >
-      <span className={`h-2 w-2 rounded-full ${config.dotColor} animate-pulse`} />
+      <span
+        className={`h-2 w-2 rounded-full ${config.dotColor} animate-pulse`}
+      />
       <span className={config.textColor}>{config.label}</span>
     </motion.span>
   )

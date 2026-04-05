@@ -21,7 +21,8 @@ function parseConnectionString(connectionString) {
       rejectUnauthorized: false,
     },
   }
-}async function consultarFuentes() {
+}
+async function consultarFuentes() {
   const env = {}
   const envPath = require('path').join(process.cwd(), '.env.local')
   const fs = require('fs')
@@ -71,7 +72,9 @@ function parseConnectionString(connectionString) {
     } else {
       fuentesResult.rows.forEach((row, i) => {
         console.log(`  ${i + 1}. ${row.tipo} - ${row.entidad || 'Sin entidad'}`)
-        console.log(`     Monto: $${parseInt(row.monto_aprobado).toLocaleString()}`)
+        console.log(
+          `     Monto: $${parseInt(row.monto_aprobado).toLocaleString()}`
+        )
         console.log(`     Carta: ${row.tiene_carta}`)
         console.log(`     Estado: ${row.estado_fuente}`)
         console.log(`     UI: ${row.visibilidad_ui}`)
@@ -106,7 +109,6 @@ function parseConnectionString(connectionString) {
         console.log(`     Fuente ID: ${row.fuente_pago_id}\n`)
       })
     }
-
   } finally {
     await client.end()
   }

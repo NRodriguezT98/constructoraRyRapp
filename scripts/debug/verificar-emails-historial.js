@@ -30,7 +30,9 @@ async function verificarEmailsHistoricos() {
   if (sinEmail.length > 0) {
     console.log('📋 Registros sin email:')
     sinEmail.forEach(r => {
-      console.log(`  - v${r.version} | ${r.fecha_cambio} | usuario_id: ${r.usuario_id || 'NULL'}`)
+      console.log(
+        `  - v${r.version} | ${r.fecha_cambio} | usuario_id: ${r.usuario_id || 'NULL'}`
+      )
     })
   }
 
@@ -41,7 +43,7 @@ async function verificarEmailsHistoricos() {
         COUNT(*) FILTER (WHERE nh.usuario_email IS NULL) as sin_email,
         COUNT(*) FILTER (WHERE nh.usuario_email IS NOT NULL) as con_email
       FROM negociaciones_historial nh
-    `
+    `,
   })
 
   console.log('\n✅ Verificación completa')

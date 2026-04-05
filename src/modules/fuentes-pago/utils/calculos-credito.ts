@@ -26,12 +26,16 @@ import type { CuotaCalculo, ParametrosCredito, ResumenCredito } from '../types'
  * @param params - Capital, tasa mensual (%), número de cuotas y fecha de inicio
  * @returns Resumen financiero + array de cuotas con fecha y desglose
  */
-export function calcularTablaAmortizacion(params: ParametrosCredito): ResumenCredito {
+export function calcularTablaAmortizacion(
+  params: ParametrosCredito
+): ResumenCredito {
   const { capital, tasaMensual, numCuotas, fechaInicio } = params
 
   if (capital <= 0) throw new Error('El capital debe ser mayor a 0')
-  if (tasaMensual <= 0 || tasaMensual > 10) throw new Error('La tasa mensual debe estar entre 0 y 10%')
-  if (numCuotas < 1 || numCuotas > 360) throw new Error('El número de cuotas debe estar entre 1 y 360')
+  if (tasaMensual <= 0 || tasaMensual > 10)
+    throw new Error('La tasa mensual debe estar entre 0 y 10%')
+  if (numCuotas < 1 || numCuotas > 360)
+    throw new Error('El número de cuotas debe estar entre 1 y 360')
 
   const tasa = tasaMensual / 100
   const interesTotal = Math.round(capital * tasa * numCuotas)
@@ -42,7 +46,11 @@ export function calcularTablaAmortizacion(params: ParametrosCredito): ResumenCre
 
   const cuotas: CuotaCalculo[] = Array.from({ length: numCuotas }, (_, i) => {
     // Usar nuevo objeto Date para evitar mutaciones
-    const fecha = new Date(fechaInicio.getFullYear(), fechaInicio.getMonth() + i + 1, fechaInicio.getDate())
+    const fecha = new Date(
+      fechaInicio.getFullYear(),
+      fechaInicio.getMonth() + i + 1,
+      fechaInicio.getDate()
+    )
     return {
       numero: i + 1,
       fechaVencimiento: fecha,

@@ -43,7 +43,9 @@ async function verificar() {
       WHERE estado = 'activo' AND fecha_documento IS NULL
     `)
 
-    console.log(`\n⚠️  Documentos SIN fecha_documento: ${sinFecha.rows[0].total}`)
+    console.log(
+      `\n⚠️  Documentos SIN fecha_documento: ${sinFecha.rows[0].total}`
+    )
 
     // Contar documentos con fecha_documento
     const conFecha = await client.query(`
@@ -53,7 +55,6 @@ async function verificar() {
     `)
 
     console.log(`✅ Documentos CON fecha_documento: ${conFecha.rows[0].total}`)
-
   } catch (error) {
     console.error('❌ Error:', error.message)
   } finally {

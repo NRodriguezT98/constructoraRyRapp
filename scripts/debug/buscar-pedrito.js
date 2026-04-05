@@ -5,10 +5,11 @@
 import { createClient } from '@supabase/supabase-js'
 
 const supabaseUrl = 'https://ouhfqwpvzbjtrzotssco.supabase.co'
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im91aGZxd3B2emJqdHJ6b3Rzc2NvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjgyNjIxNjEsImV4cCI6MjA0MzgzODE2MX0.gqo_v_1gOWECjZQNPTHDqoSxLXCEb6-wR2PWaE_bIpo'
+const supabaseKey =
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im91aGZxd3B2emJqdHJ6b3Rzc2NvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjgyNjIxNjEsImV4cCI6MjA0MzgzODE2MX0.gqo_v_1gOWECjZQNPTHDqoSxLXCEb6-wR2PWaE_bIpo'
 
 const supabase = createClient(supabaseUrl, supabaseKey, {
-  auth: { persistSession: false }
+  auth: { persistSession: false },
 })
 
 async function buscar() {
@@ -30,7 +31,9 @@ async function buscar() {
 
     const { data: viviendas } = await supabase
       .from('viviendas')
-      .select('id, numero, estado, cliente_id, negociacion_id, manzanas(nombre)')
+      .select(
+        'id, numero, estado, cliente_id, negociacion_id, manzanas(nombre)'
+      )
       .eq('numero', '5')
 
     console.log('Viviendas encontradas:', viviendas?.length || 0)

@@ -35,7 +35,9 @@ async function testVistaPendientes() {
       return
     }
 
-    console.log(`✅ Documentos pendientes encontrados: ${pendientes?.length || 0}\n`)
+    console.log(
+      `✅ Documentos pendientes encontrados: ${pendientes?.length || 0}\n`
+    )
 
     if (!pendientes || pendientes.length === 0) {
       console.log('⚠️ No hay documentos pendientes para este cliente')
@@ -43,13 +45,15 @@ async function testVistaPendientes() {
       // Verificar fuentes activas
       const { data: fuentes } = await supabase
         .from('fuentes_pago')
-        .select(`
+        .select(
+          `
           id,
           tipo,
           entidad,
           estado,
           negociacion_id
-        `)
+        `
+        )
         .eq('estado', 'Activa')
         .order('created_at', { ascending: false })
         .limit(1)
@@ -66,7 +70,9 @@ async function testVistaPendientes() {
           .eq('tipo_fuente', fuentes.tipo)
           .eq('activo', true)
 
-        console.log(`\n📋 Requisitos configurados para tipo "${fuentes.tipo}": ${requisitos?.length || 0}`)
+        console.log(
+          `\n📋 Requisitos configurados para tipo "${fuentes.tipo}": ${requisitos?.length || 0}`
+        )
         requisitos?.forEach((req, i) => {
           console.log(`  ${i + 1}. ${req.titulo} (${req.nivel_validacion})`)
         })
@@ -77,7 +83,9 @@ async function testVistaPendientes() {
           .select('id, titulo, tipo_documento')
           .eq('fuente_pago_relacionada', fuentes.id)
 
-        console.log(`\n📄 Documentos ya subidos para esta fuente: ${docs?.length || 0}`)
+        console.log(
+          `\n📄 Documentos ya subidos para esta fuente: ${docs?.length || 0}`
+        )
         docs?.forEach((doc, i) => {
           console.log(`  ${i + 1}. ${doc.titulo} (${doc.tipo_documento})`)
         })
@@ -92,7 +100,7 @@ async function testVistaPendientes() {
         acc[p.fuente_pago_id] = {
           tipo: p.metadata?.tipo_fuente || 'Sin tipo',
           entidad: p.metadata?.entidad_fuente || 'Sin entidad',
-          pendientes: []
+          pendientes: [],
         }
       }
       acc[p.fuente_pago_id].pendientes.push(p)
@@ -107,14 +115,17 @@ async function testVistaPendientes() {
       console.log(`   Documentos pendientes: ${info.pendientes.length}\n`)
 
       info.pendientes.forEach((p, j) => {
-        const icono = p.nivel_validacion === 'DOCUMENTO_OBLIGATORIO' ? '🔴' : '🔵'
+        const icono =
+          p.nivel_validacion === 'DOCUMENTO_OBLIGATORIO' ? '🔴' : '🔵'
         console.log(`   ${icono} ${j + 1}. ${p.tipo_documento}`)
         console.log(`      Nivel: ${p.nivel_validacion}`)
         console.log(`      Prioridad: ${p.prioridad}`)
 
         // Mostrar metadata relevante
         if (p.metadata?.vivienda_numero) {
-          console.log(`      Vivienda: ${p.metadata.manzana_nombre}${p.metadata.vivienda_numero}`)
+          console.log(
+            `      Vivienda: ${p.metadata.manzana_nombre}${p.metadata.vivienda_numero}`
+          )
         }
         console.log('')
       })

@@ -13,7 +13,10 @@ interface TipoCambioIconProps {
   className?: string
 }
 
-export function TipoCambioIcon({ tipoCambio, className = 'w-4 h-4' }: TipoCambioIconProps) {
+export function TipoCambioIcon({
+  tipoCambio,
+  className = 'w-4 h-4',
+}: TipoCambioIconProps) {
   const IconComponent = getTipoCambioIcon(tipoCambio)
   const iconColor = getTipoCambioColor(tipoCambio)
 

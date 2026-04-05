@@ -57,13 +57,15 @@ const styles = {
 
     content: 'flex-1 min-w-0',
     title: 'text-xl font-bold text-gray-900 dark:text-white mb-2',
-    message: 'text-sm leading-relaxed text-gray-600 dark:text-gray-300 whitespace-pre-line',
+    message:
+      'text-sm leading-relaxed text-gray-600 dark:text-gray-300 whitespace-pre-line',
 
     closeButton: `absolute top-6 right-6 p-2 rounded-xl
                   hover:bg-gray-100 dark:hover:bg-gray-700/50
                   transition-all duration-200
                   group`,
-    closeIcon: 'w-5 h-5 text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors',
+    closeIcon:
+      'w-5 h-5 text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors',
   },
 
   footer: `p-8 pt-0 flex items-center justify-end`,
@@ -154,13 +156,15 @@ export function AlertModal() {
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ type: 'spring', duration: 0.3 }}
             className={styles.modal.base}
-            onClick={(e) => e.stopPropagation()}
+            onClick={e => e.stopPropagation()}
           >
             {/* Header */}
             <div className={styles.modal.header}>
               {/* Icono */}
               <div className={styles.modal.iconContainer[variant]}>
-                {alertState.icon || <Icon className={styles.modal.icon[variant]} />}
+                {alertState.icon || (
+                  <Icon className={styles.modal.icon[variant]} />
+                )}
               </div>
 
               {/* Contenido */}
@@ -169,27 +173,36 @@ export function AlertModal() {
                 <div className={styles.modal.message}>
                   {alertState.message.split('\n').map((line, index) => {
                     // Si la línea empieza con viñeta (• o -)
-                    if (line.trim().startsWith('•') || line.trim().startsWith('-')) {
+                    if (
+                      line.trim().startsWith('•') ||
+                      line.trim().startsWith('-')
+                    ) {
                       return (
-                        <div key={index} className="flex gap-2 mt-2">
-                          <span className="text-amber-500 dark:text-amber-400 font-bold flex-shrink-0">•</span>
+                        <div key={index} className='mt-2 flex gap-2'>
+                          <span className='flex-shrink-0 font-bold text-amber-500 dark:text-amber-400'>
+                            •
+                          </span>
                           <span>{line.trim().replace(/^[•\-]\s*/, '')}</span>
                         </div>
                       )
                     }
                     // Líneas normales
                     if (line.trim()) {
-                      return <p key={index} className="mt-2 first:mt-0">{line}</p>
+                      return (
+                        <p key={index} className='mt-2 first:mt-0'>
+                          {line}
+                        </p>
+                      )
                     }
                     // Líneas vacías = separador
-                    return <div key={index} className="h-2" />
+                    return <div key={index} className='h-2' />
                   })}
                 </div>
               </div>
 
               {/* Botón cerrar */}
               <button
-                type="button"
+                type='button'
                 onClick={closeAlert}
                 className={styles.modal.closeButton}
               >
@@ -200,7 +213,7 @@ export function AlertModal() {
             {/* Footer con botón */}
             <div className={styles.footer}>
               <button
-                type="button"
+                type='button'
                 onClick={closeAlert}
                 className={styles.button[variant]}
               >

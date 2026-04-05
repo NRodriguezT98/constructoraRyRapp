@@ -38,7 +38,7 @@ export function UsuariosHeader({ totalUsuarios }: UsuariosHeaderProps) {
             </div>
           </div>
           <span className={styles.header.badge}>
-            <Users className="w-4 h-4" />
+            <Users className='h-4 w-4' />
             {totalUsuarios} Usuario{totalUsuarios !== 1 ? 's' : ''}
           </span>
         </div>

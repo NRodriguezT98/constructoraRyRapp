@@ -1,31 +1,15 @@
-/**
- * ProyectosForm - Componente presentacional PREMIUM
+﻿/**
+ * ProyectosForm - Componente presentacional PREMIUM (orquestador)
  * ✅ Separación de responsabilidades ESTRICTA
- * ✅ Diseño premium con gradientes naranja/ámbar
- * ✅ Animaciones Framer Motion
- * ✅ Modo oscuro completo
+ * ✅ Secciones extraídas en form-sections/
  */
 
 'use client'
 
 import { useEffect, useMemo } from 'react'
 
-import { AnimatePresence, motion } from 'framer-motion'
-import {
-  AlertCircle,
-  Building2,
-  Calendar,
-  CheckCircle2,
-  FileCheck,
-  FileText,
-  Home,
-  Loader2,
-  Lock,
-  LockOpen,
-  MapPin,
-  Plus,
-  Trash2,
-} from 'lucide-react'
+import { motion } from 'framer-motion'
+import { Building2, Loader2 } from 'lucide-react'
 
 import {
   getCiudadesPorDepartamento,
@@ -37,17 +21,21 @@ import { useProyectosForm } from '../hooks/useProyectosForm'
 import { proyectosFormPremiumStyles as styles } from '../styles/proyectos-form-premium.styles'
 import type { ProyectoFormData } from '../types'
 
+import { FormSeccionEstadoFechas } from './form-sections/FormSeccionEstadoFechas'
+import { FormSeccionInfoGeneral } from './form-sections/FormSeccionInfoGeneral'
+import { FormSeccionManzanas } from './form-sections/FormSeccionManzanas'
+
 interface ProyectosFormProps {
   onSubmit: (data: ProyectoFormData) => void | Promise<void>
   onCancel: () => void
   isLoading?: boolean
   initialData?: Partial<ProyectoFormData>
   isEditing?: boolean
-  onHasChanges?: (hasChanges: boolean) => void // ✅ Callback para notificar cambios
+  onHasChanges?: (hasChanges: boolean) => void
   onTotalsChange?: (totals: {
     totalManzanas: number
     totalViviendas: number
-  }) => void // ✅ Callback para notificar totales
+  }) => void
 }
 
 export function ProyectosForm({
@@ -59,18 +47,17 @@ export function ProyectosForm({
   onHasChanges,
   onTotalsChange,
 }: ProyectosFormProps) {
-  // Hook con toda la lógica
   const {
     register,
     handleSubmit,
     errors,
-    touchedFields, // ← Para validación progresiva
+    touchedFields,
     fields,
     handleAgregarManzana,
     handleEliminarManzana,
     totalManzanas,
     totalViviendas,
-    manzanasWatch, // ✅ Valores reales de las manzanas
+    manzanasWatch,
     isFieldChanged,
     canSave,
     getButtonText,
@@ -84,7 +71,6 @@ export function ProyectosForm({
     setValue,
   } = useProyectosForm({ initialData, onSubmit, isEditing, onHasChanges })
 
-  // Datos de ubicación en cascada
   const departamentos = useMemo(() => getDepartamentos(), [])
   const departamentoSeleccionado = watch('departamento')
   const ciudades = useMemo(() => {
@@ -92,7 +78,6 @@ export function ProyectosForm({
     return getCiudadesPorDepartamento(departamentoSeleccionado)
   }, [departamentoSeleccionado])
 
-  // Reset ciudad si el departamento cambia y la ciudad actual ya no aplica
   useEffect(() => {
     if (departamentoSeleccionado) {
       const ciudadActual = watch('ciudad')
@@ -107,7 +92,6 @@ export function ProyectosForm({
     }
   }, [departamentoSeleccionado, setValue, watch])
 
-  // ✅ Notificar cambios en totales al padre
   useEffect(() => {
     if (onTotalsChange) {
       onTotalsChange({ totalManzanas, totalViviendas })
@@ -120,740 +104,45 @@ export function ProyectosForm({
       onSubmit={handleSubmit}
       className={styles.form}
     >
-      {/* LAYOUT DE 2 COLUMNAS */}
       <div className={styles.grid}>
-        {/* COLUMNA IZQUIERDA: Información General */}
-        <motion.div
-          {...styles.animations.infoSection}
-          className={styles.infoSection.container}
-        >
-          {/* Header */}
-          <div className={styles.infoSection.header}>
-            <div className={styles.infoSection.headerIcon}>
-              <FileCheck className={styles.infoSection.headerIconSvg} />
-            </div>
-            <h3 className={styles.infoSection.headerTitle}>
-              Información General
-            </h3>
-          </div>
-
-          <div className={styles.infoSection.content}>
-            {/* Campo: Nombre */}
-            <div className={styles.field.container}>
-              <label className={styles.field.label}>
-                Nombre del Proyecto{' '}
-                <span className={styles.field.required}>*</span>
-                {/* Indicador de campo modificado */}
-                {isEditing && isFieldChanged('nombre') && (
-                  <span className='ml-2 text-xs font-medium text-orange-600 dark:text-orange-400'>
-                    ✏️ Modificado
-                  </span>
-                )}
-              </label>
-              <div className={styles.field.inputWrapper}>
-                <Building2 className={styles.field.inputIcon} />
-                <input
-                  {...register('nombre')}
-                  type='text'
-                  placeholder='Ej: Urbanización Los Pinos'
-                  maxLength={100}
-                  className={cn(
-                    styles.field.input,
-                    errors.nombre && styles.field.inputError,
-                    touchedFields.nombre &&
-                      !errors.nombre &&
-                      'border-green-300 bg-green-50/50 dark:border-green-700 dark:bg-green-950/20',
-                    isEditing &&
-                      isFieldChanged('nombre') &&
-                      !errors.nombre &&
-                      'border-orange-300 bg-orange-50/50 dark:border-orange-700 dark:bg-orange-950/20'
-                  )}
-                />
-                {/* Indicador de estado (validando/error/success) */}
-                {touchedFields.nombre && (
-                  <div className='absolute right-3 top-1/2 -translate-y-1/2'>
-                    {validandoNombre ? (
-                      <Loader2 className='h-5 w-5 animate-spin text-blue-500' />
-                    ) : errors.nombre ? (
-                      <AlertCircle className='h-5 w-5 text-red-500' />
-                    ) : (
-                      <CheckCircle2 className='h-5 w-5 text-green-500 duration-200 animate-in fade-in zoom-in' />
-                    )}
-                  </div>
-                )}
-              </div>
-              {errors.nombre && (
-                <motion.div
-                  {...styles.animations.errorMessage}
-                  className={styles.field.error}
-                >
-                  <AlertCircle className={styles.field.errorIcon} />
-                  {errors.nombre.message}
-                </motion.div>
-              )}
-              {!errors.nombre && (
-                <p className={styles.field.helper}>
-                  Solo letras, números, espacios, guiones, paréntesis y puntos
-                </p>
-              )}
-            </div>
-
-            {/* Campos: Departamento + Ciudad */}
-            <div className='grid grid-cols-2 gap-3'>
-              {/* Departamento */}
-              <div className={styles.field.container}>
-                <label className={styles.field.label}>
-                  Departamento <span className={styles.field.required}>*</span>
-                  {isEditing && isFieldChanged('departamento') && (
-                    <span className='ml-2 text-xs font-medium text-orange-600 dark:text-orange-400'>
-                      ✏️ Modificado
-                    </span>
-                  )}
-                </label>
-                <div className={styles.field.inputWrapper}>
-                  <MapPin className={styles.field.inputIcon} />
-                  <select
-                    {...register('departamento')}
-                    className={cn(
-                      styles.field.input,
-                      errors.departamento && styles.field.inputError,
-                      touchedFields.departamento &&
-                        !errors.departamento &&
-                        'border-green-300 bg-green-50/50 dark:border-green-700 dark:bg-green-950/20',
-                      isEditing &&
-                        isFieldChanged('departamento') &&
-                        !errors.departamento &&
-                        'border-orange-300 bg-orange-50/50 dark:border-orange-700 dark:bg-orange-950/20'
-                    )}
-                  >
-                    <option value=''>Selecciona un departamento</option>
-                    {departamentos.map(d => (
-                      <option key={d} value={d}>
-                        {d}
-                      </option>
-                    ))}
-                  </select>
-                  {touchedFields.departamento && (
-                    <div className='pointer-events-none absolute right-3 top-1/2 -translate-y-1/2'>
-                      {errors.departamento ? (
-                        <AlertCircle className='h-5 w-5 text-red-500' />
-                      ) : (
-                        <CheckCircle2 className='h-5 w-5 text-green-500 duration-200 animate-in fade-in zoom-in' />
-                      )}
-                    </div>
-                  )}
-                </div>
-                {errors.departamento && (
-                  <motion.div
-                    {...styles.animations.errorMessage}
-                    className={styles.field.error}
-                  >
-                    <AlertCircle className={styles.field.errorIcon} />
-                    {errors.departamento.message}
-                  </motion.div>
-                )}
-              </div>
-
-              {/* Ciudad */}
-              <div className={styles.field.container}>
-                <label className={styles.field.label}>
-                  Ciudad / Municipio{' '}
-                  <span className={styles.field.required}>*</span>
-                  {isEditing && isFieldChanged('ciudad') && (
-                    <span className='ml-2 text-xs font-medium text-orange-600 dark:text-orange-400'>
-                      ✏️ Modificado
-                    </span>
-                  )}
-                </label>
-                <div className={styles.field.inputWrapper}>
-                  <MapPin className={styles.field.inputIcon} />
-                  <select
-                    {...register('ciudad')}
-                    disabled={!departamentoSeleccionado}
-                    className={cn(
-                      styles.field.input,
-                      errors.ciudad && styles.field.inputError,
-                      touchedFields.ciudad &&
-                        !errors.ciudad &&
-                        'border-green-300 bg-green-50/50 dark:border-green-700 dark:bg-green-950/20',
-                      isEditing &&
-                        isFieldChanged('ciudad') &&
-                        !errors.ciudad &&
-                        'border-orange-300 bg-orange-50/50 dark:border-orange-700 dark:bg-orange-950/20',
-                      !departamentoSeleccionado &&
-                        'cursor-not-allowed opacity-50'
-                    )}
-                  >
-                    <option value=''>
-                      {departamentoSeleccionado
-                        ? 'Selecciona una ciudad'
-                        : 'Primero selecciona un depto.'}
-                    </option>
-                    {ciudades.map(c => (
-                      <option key={c} value={c}>
-                        {c}
-                      </option>
-                    ))}
-                  </select>
-                  {touchedFields.ciudad && (
-                    <div className='pointer-events-none absolute right-3 top-1/2 -translate-y-1/2'>
-                      {errors.ciudad ? (
-                        <AlertCircle className='h-5 w-5 text-red-500' />
-                      ) : (
-                        <CheckCircle2 className='h-5 w-5 text-green-500 duration-200 animate-in fade-in zoom-in' />
-                      )}
-                    </div>
-                  )}
-                </div>
-                {errors.ciudad && (
-                  <motion.div
-                    {...styles.animations.errorMessage}
-                    className={styles.field.error}
-                  >
-                    <AlertCircle className={styles.field.errorIcon} />
-                    {errors.ciudad.message}
-                  </motion.div>
-                )}
-              </div>
-            </div>
-
-            {/* Campo: Dirección */}
-            <div className={styles.field.container}>
-              <label className={styles.field.label}>
-                Dirección <span className={styles.field.required}>*</span>
-                {isEditing && isFieldChanged('direccion') && (
-                  <span className='ml-2 text-xs font-medium text-orange-600 dark:text-orange-400'>
-                    ✏️ Modificado
-                  </span>
-                )}
-              </label>
-              <div className={styles.field.inputWrapper}>
-                <MapPin className={styles.field.inputIcon} />
-                <input
-                  {...register('direccion')}
-                  type='text'
-                  placeholder='Ej: Calle 48 Norte #4E-07'
-                  maxLength={200}
-                  className={cn(
-                    styles.field.input,
-                    errors.direccion && styles.field.inputError,
-                    touchedFields.direccion &&
-                      !errors.direccion &&
-                      'border-green-300 bg-green-50/50 dark:border-green-700 dark:bg-green-950/20',
-                    isEditing &&
-                      isFieldChanged('direccion') &&
-                      !errors.direccion &&
-                      'border-orange-300 bg-orange-50/50 dark:border-orange-700 dark:bg-orange-950/20'
-                  )}
-                />
-                {touchedFields.direccion && (
-                  <div className='absolute right-3 top-1/2 -translate-y-1/2'>
-                    {errors.direccion ? (
-                      <AlertCircle className='h-5 w-5 text-red-500' />
-                    ) : (
-                      <CheckCircle2 className='h-5 w-5 text-green-500 duration-200 animate-in fade-in zoom-in' />
-                    )}
-                  </div>
-                )}
-              </div>
-              {errors.direccion && (
-                <motion.div
-                  {...styles.animations.errorMessage}
-                  className={styles.field.error}
-                >
-                  <AlertCircle className={styles.field.errorIcon} />
-                  {errors.direccion.message}
-                </motion.div>
-              )}
-              {!errors.direccion && (
-                <p className={styles.field.helper}>
-                  Dirección exacta del proyecto
-                </p>
-              )}
-            </div>
-
-            {/* Campo: Descripción */}
-            <div>
-              <label className={styles.field.label}>
-                Descripción <span className={styles.field.required}>*</span>
-                {/* Indicador de campo modificado */}
-                {isEditing && isFieldChanged('descripcion') && (
-                  <span className='ml-2 text-xs font-medium text-orange-600 dark:text-orange-400'>
-                    ✏️ Modificado
-                  </span>
-                )}
-              </label>
-              <div className={styles.field.textareaWrapper}>
-                <FileText className={styles.field.textareaIcon} />
-                <textarea
-                  {...register('descripcion')}
-                  rows={3}
-                  placeholder='Descripción breve del proyecto...'
-                  maxLength={1000}
-                  className={cn(
-                    styles.field.textarea,
-                    errors.descripcion && styles.field.textareaError,
-                    touchedFields.descripcion &&
-                      !errors.descripcion &&
-                      'border-green-300 bg-green-50/50 dark:border-green-700 dark:bg-green-950/20',
-                    isEditing &&
-                      isFieldChanged('descripcion') &&
-                      !errors.descripcion &&
-                      'border-orange-300 bg-orange-50/50 dark:border-orange-700 dark:bg-orange-950/20'
-                  )}
-                />
-                {/* Indicador de estado */}
-                {touchedFields.descripcion && (
-                  <div className='absolute right-3 top-3'>
-                    {errors.descripcion ? (
-                      <AlertCircle className='h-5 w-5 text-red-500' />
-                    ) : (
-                      <CheckCircle2 className='h-5 w-5 text-green-500 duration-200 animate-in fade-in zoom-in' />
-                    )}
-                  </div>
-                )}
-              </div>
-              {errors.descripcion && (
-                <motion.div
-                  {...styles.animations.errorMessage}
-                  className={styles.field.error}
-                >
-                  <AlertCircle className={styles.field.errorIcon} />
-                  {errors.descripcion.message}
-                </motion.div>
-              )}
-              {!errors.descripcion && (
-                <p className={styles.field.helper}>
-                  Mínimo 10 caracteres. Puedes usar letras, números y puntuación
-                  básica
-                </p>
-              )}
-            </div>
-
-            {/* Campo: Estado */}
-            <div className={styles.field.container}>
-              <label className={styles.field.label}>
-                Estado del Proyecto{' '}
-                <span className={styles.field.required}>*</span>
-                {isEditing && isFieldChanged('estado') && (
-                  <span className='ml-2 text-xs font-medium text-orange-600 dark:text-orange-400'>
-                    ✏️ Modificado
-                  </span>
-                )}
-              </label>
-              <div className={styles.field.inputWrapper}>
-                <Building2 className={styles.field.inputIcon} />
-                <select
-                  {...register('estado')}
-                  className={cn(
-                    styles.field.select,
-                    errors.estado && styles.field.selectError,
-                    touchedFields.estado &&
-                      !errors.estado &&
-                      'border-green-300 dark:border-green-700',
-                    isEditing &&
-                      isFieldChanged('estado') &&
-                      !errors.estado &&
-                      'border-orange-300 dark:border-orange-700'
-                  )}
-                >
-                  <option value='en_planificacion'>En Planificación</option>
-                  <option value='en_proceso'>En Proceso</option>
-                  <option value='en_construccion'>En Construcción</option>
-                  <option value='completado'>Completado</option>
-                  <option value='pausado'>Pausado</option>
-                </select>
-                {touchedFields.estado && (
-                  <div className='pointer-events-none absolute right-10 top-1/2 -translate-y-1/2'>
-                    {errors.estado ? (
-                      <AlertCircle className='h-5 w-5 text-red-500' />
-                    ) : (
-                      <CheckCircle2 className='h-5 w-5 text-green-500 duration-200 animate-in fade-in zoom-in' />
-                    )}
-                  </div>
-                )}
-              </div>
-              {errors.estado && (
-                <motion.div
-                  {...styles.animations.errorMessage}
-                  className={styles.field.error}
-                >
-                  <AlertCircle className={styles.field.errorIcon} />
-                  {errors.estado.message}
-                </motion.div>
-              )}
-              {!errors.estado && (
-                <p className={styles.field.helper}>
-                  Marca el estado actual del proyecto
-                </p>
-              )}
-            </div>
-
-            {/* Fechas en Grid 2 columnas */}
-            <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
-              {/* Campo: Fecha de Inicio */}
-              <div className={styles.field.container}>
-                <label className={styles.field.label}>
-                  Fecha de Inicio
-                  {isEditing && isFieldChanged('fechaInicio') && (
-                    <span className='ml-2 text-xs font-medium text-orange-600 dark:text-orange-400'>
-                      ✏️ Modificado
-                    </span>
-                  )}
-                </label>
-                <div className={styles.field.inputWrapper}>
-                  <Calendar className={styles.field.inputIcon} />
-                  <input
-                    {...register('fechaInicio')}
-                    type='date'
-                    className={cn(
-                      styles.field.input,
-                      errors.fechaInicio && styles.field.inputError,
-                      touchedFields.fechaInicio &&
-                        !errors.fechaInicio &&
-                        'border-green-300 bg-green-50/50 dark:border-green-700 dark:bg-green-950/20',
-                      isEditing &&
-                        isFieldChanged('fechaInicio') &&
-                        !errors.fechaInicio &&
-                        'border-orange-300 bg-orange-50/50 dark:border-orange-700 dark:bg-orange-950/20'
-                    )}
-                  />
-                  {touchedFields.fechaInicio && (
-                    <div className='pointer-events-none absolute right-3 top-1/2 -translate-y-1/2'>
-                      {errors.fechaInicio ? (
-                        <AlertCircle className='h-5 w-5 text-red-500' />
-                      ) : (
-                        <CheckCircle2 className='h-5 w-5 text-green-500 duration-200 animate-in fade-in zoom-in' />
-                      )}
-                    </div>
-                  )}
-                </div>
-                {errors.fechaInicio && (
-                  <motion.div
-                    {...styles.animations.errorMessage}
-                    className={styles.field.error}
-                  >
-                    <AlertCircle className={styles.field.errorIcon} />
-                    {errors.fechaInicio.message}
-                  </motion.div>
-                )}
-              </div>
-
-              {/* Campo: Fecha de Fin Estimada */}
-              <div className={styles.field.container}>
-                <label className={styles.field.label}>
-                  Fecha de Fin Estimada
-                  {isEditing && isFieldChanged('fechaFinEstimada') && (
-                    <span className='ml-2 text-xs font-medium text-orange-600 dark:text-orange-400'>
-                      ✏️ Modificado
-                    </span>
-                  )}
-                </label>
-                <div className={styles.field.inputWrapper}>
-                  <Calendar className={styles.field.inputIcon} />
-                  <input
-                    {...register('fechaFinEstimada')}
-                    type='date'
-                    className={cn(
-                      styles.field.input,
-                      errors.fechaFinEstimada && styles.field.inputError,
-                      touchedFields.fechaFinEstimada &&
-                        !errors.fechaFinEstimada &&
-                        'border-green-300 bg-green-50/50 dark:border-green-700 dark:bg-green-950/20',
-                      isEditing &&
-                        isFieldChanged('fechaFinEstimada') &&
-                        !errors.fechaFinEstimada &&
-                        'border-orange-300 bg-orange-50/50 dark:border-orange-700 dark:bg-orange-950/20'
-                    )}
-                  />
-                  {touchedFields.fechaFinEstimada && (
-                    <div className='pointer-events-none absolute right-3 top-1/2 -translate-y-1/2'>
-                      {errors.fechaFinEstimada ? (
-                        <AlertCircle className='h-5 w-5 text-red-500' />
-                      ) : (
-                        <CheckCircle2 className='h-5 w-5 text-green-500 duration-200 animate-in fade-in zoom-in' />
-                      )}
-                    </div>
-                  )}
-                </div>
-                {errors.fechaFinEstimada && (
-                  <motion.div
-                    {...styles.animations.errorMessage}
-                    className={styles.field.error}
-                  >
-                    <AlertCircle className={styles.field.errorIcon} />
-                    {errors.fechaFinEstimada.message}
-                  </motion.div>
-                )}
-              </div>
-            </div>
-          </div>
-        </motion.div>
+        {/* COLUMNA IZQUIERDA: Información General + Estado/Fechas */}
+        <div className={styles.infoSection.container}>
+          <FormSeccionInfoGeneral
+            register={register}
+            errors={errors}
+            touchedFields={touchedFields}
+            watch={watch}
+            setValue={setValue}
+            isEditing={isEditing}
+            isFieldChanged={isFieldChanged}
+            validandoNombre={validandoNombre}
+            departamentos={departamentos}
+            ciudades={ciudades}
+          />
+          <FormSeccionEstadoFechas
+            register={register}
+            errors={errors}
+            touchedFields={touchedFields}
+            isEditing={isEditing}
+            isFieldChanged={isFieldChanged}
+          />
+        </div>
 
         {/* COLUMNA DERECHA: Manzanas */}
-        <motion.div
-          {...styles.animations.manzanasSection}
-          className={styles.manzanasSection.container}
-        >
-          {/* Header */}
-          <div className={styles.manzanasSection.header}>
-            <div className={styles.manzanasSection.headerLeft}>
-              <div className={styles.manzanasSection.headerIcon}>
-                <Building2 className={styles.manzanasSection.headerIconSvg} />
-              </div>
-              <h3 className={styles.manzanasSection.headerTitle}>
-                Manzanas del Proyecto
-              </h3>
-            </div>
-            <button
-              type='button'
-              onClick={handleAgregarManzana}
-              className={styles.manzanasSection.addButton}
-            >
-              <Plus className={styles.manzanasSection.addButtonIcon} />
-              Agregar
-            </button>
-          </div>
-
-          {/* Error general de manzanas */}
-          {errors.manzanas && !Array.isArray(errors.manzanas) && (
-            <motion.div
-              {...styles.animations.errorMessage}
-              className={styles.manzanasSection.errorMessage}
-            >
-              <AlertCircle className={styles.manzanasSection.errorIcon} />
-              {errors.manzanas.message}
-            </motion.div>
-          )}
-
-          {/* Mensaje informativo en modo edición */}
-          {isEditing && fields.length > 0 && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className='mb-4 rounded-lg border-2 border-blue-200 bg-blue-50 p-2.5 dark:border-blue-800 dark:bg-blue-950/30'
-            >
-              <div className='flex items-start gap-3'>
-                <AlertCircle className='mt-0.5 h-5 w-5 flex-shrink-0 text-blue-600 dark:text-blue-400' />
-                <div className='flex-1 space-y-1.5'>
-                  <p className='text-sm font-semibold text-blue-900 dark:text-blue-100'>
-                    ℹ️ Edición inteligente de manzanas
-                  </p>
-                  <p className='text-xs leading-relaxed text-blue-700 dark:text-blue-300'>
-                    Puedes <strong>agregar nuevas manzanas</strong> o{' '}
-                    <strong>modificar/eliminar las existentes</strong> que NO
-                    tienen viviendas creadas. Las manzanas con viviendas están
-                    protegidas para mantener la integridad de datos.
-                  </p>
-                  <div className='mt-1.5 flex items-center gap-4 text-xs text-blue-700 dark:text-blue-300'>
-                    <div className='flex items-center gap-1.5'>
-                      <LockOpen className='h-4 w-4 text-green-600 dark:text-green-400' />
-                      <span>Sin viviendas = Editable</span>
-                    </div>
-                    <div className='flex items-center gap-1.5'>
-                      <Lock className='h-4 w-4 text-red-600 dark:text-red-400' />
-                      <span>Con viviendas = Bloqueada</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          )}
-
-          {/* Lista de manzanas con AnimatePresence */}
-          <div className={styles.manzanasSection.list}>
-            {fields.length === 0 ? (
-              <div className={styles.manzanasSection.emptyState}>
-                <Building2 className={styles.manzanasSection.emptyIcon} />
-                <p className={styles.manzanasSection.emptyTitle}>
-                  No hay manzanas agregadas
-                </p>
-                <p className={styles.manzanasSection.emptySubtitle}>
-                  Haz clic en &quot;Agregar&quot; para comenzar
-                </p>
-              </div>
-            ) : (
-              <AnimatePresence mode='popLayout'>
-                {fields.map((field, index) => {
-                  const esEditable = esManzanaEditable(index)
-                  const esEliminable = esManzanaEliminable(index)
-                  const manzanaReal = manzanasWatch?.[index] // ✅ Valor real del formulario
-                  const motivoBloqueado = manzanaReal?.id
-                    ? obtenerMotivoBloqueado(manzanaReal.id)
-                    : ''
-
-                  // ✅ OPTIMIZACIÓN: Usar datos precargados si existen, sino usar manzanasState (fallback)
-                  const cantidadViviendasCreadas =
-                    manzanaReal?.cantidadViviendasCreadas ??
-                    (manzanaReal?.id
-                      ? manzanasState.get(manzanaReal.id)?.cantidadViviendas
-                      : undefined)
-
-                  const tieneValidacion =
-                    isEditing &&
-                    (manzanaReal?.esEditable !== undefined ||
-                      (manzanaReal?.id && manzanasState.has(manzanaReal.id)))
-
-                  return (
-                    <motion.div
-                      key={field.id}
-                      {...styles.animations.manzanaCard}
-                      className={cn(
-                        styles.manzanaCard.container,
-                        !esEditable &&
-                          'opacity-75 ring-2 ring-red-200 dark:ring-red-800'
-                      )}
-                    >
-                      {/* Header de la manzana */}
-                      <div className={styles.manzanaCard.header}>
-                        <div className={styles.manzanaCard.headerLeft}>
-                          <Building2
-                            className={styles.manzanaCard.headerIcon}
-                          />
-                          <span className={styles.manzanaCard.headerTitle}>
-                            Manzana #{index + 1}
-                          </span>
-                          {/* Badge de estado */}
-                          {tieneValidacion && (
-                            <div className='flex items-center gap-1.5'>
-                              {esEditable ? (
-                                <div className='flex items-center gap-1 rounded-full border border-green-300 bg-green-100 px-2 py-0.5 dark:border-green-700 dark:bg-green-900/30'>
-                                  <LockOpen className='h-3 w-3 text-green-600 dark:text-green-400' />
-                                  <span className='text-[10px] font-medium text-green-700 dark:text-green-300'>
-                                    Editable
-                                  </span>
-                                </div>
-                              ) : (
-                                cantidadViviendasCreadas !== undefined &&
-                                cantidadViviendasCreadas > 0 && (
-                                  <div
-                                    className='flex items-center gap-1 rounded-full border border-red-300 bg-red-100 px-2 py-0.5 dark:border-red-700 dark:bg-red-900/30'
-                                    title={motivoBloqueado}
-                                  >
-                                    <Lock className='h-3 w-3 text-red-600 dark:text-red-400' />
-                                    <span className='text-[10px] font-medium text-red-700 dark:text-red-300'>
-                                      {cantidadViviendasCreadas} vivienda
-                                      {cantidadViviendasCreadas !== 1
-                                        ? 's'
-                                        : ''}
-                                    </span>
-                                  </div>
-                                )
-                              )}
-                            </div>
-                          )}
-                        </div>
-                        {(!isEditing || esEliminable) && canRemoveManzana() && (
-                          <button
-                            type='button'
-                            onClick={() => handleEliminarManzana(index)}
-                            className={styles.manzanaCard.deleteButton}
-                            title={
-                              !esEliminable
-                                ? motivoBloqueado
-                                : 'Eliminar manzana'
-                            }
-                          >
-                            <Trash2 className={styles.manzanaCard.deleteIcon} />
-                          </button>
-                        )}
-                      </div>
-
-                      {/* Campos */}
-                      <div className={styles.manzanaCard.grid}>
-                        {/* Nombre */}
-                        <div className={styles.manzanaCard.field.container}>
-                          <label className={styles.manzanaCard.field.label}>
-                            Nombre de la manzana
-                          </label>
-                          <input
-                            {...register(`manzanas.${index}.nombre`)}
-                            type='text'
-                            placeholder='Nombre'
-                            disabled={!esEditable}
-                            className={cn(
-                              styles.manzanaCard.field.input,
-                              errors.manzanas?.[index]?.nombre &&
-                                styles.manzanaCard.field.inputError,
-                              !esEditable &&
-                                'cursor-not-allowed bg-gray-100 opacity-60 dark:bg-gray-800'
-                            )}
-                          />
-                          {errors.manzanas?.[index]?.nombre && (
-                            <motion.p
-                              {...styles.animations.errorMessage}
-                              className={styles.manzanaCard.field.error}
-                            >
-                              <AlertCircle
-                                className={styles.manzanaCard.field.errorIcon}
-                              />
-                              {errors.manzanas[index]?.nombre?.message}
-                            </motion.p>
-                          )}
-                        </div>
-
-                        {/* Cantidad Viviendas */}
-                        <div className={styles.manzanaCard.field.container}>
-                          <label className={styles.manzanaCard.field.label}>
-                            Cantidad de viviendas
-                          </label>
-                          <div
-                            className={styles.manzanaCard.field.inputWrapper}
-                          >
-                            <Home
-                              className={styles.manzanaCard.field.inputIcon}
-                            />
-                            <input
-                              {...register(`manzanas.${index}.totalViviendas`, {
-                                valueAsNumber: true,
-                              })}
-                              type='number'
-                              min='1'
-                              placeholder='N° Viviendas'
-                              disabled={!esEditable}
-                              className={cn(
-                                styles.manzanaCard.field.inputWithIcon,
-                                errors.manzanas?.[index]?.totalViviendas &&
-                                  styles.manzanaCard.field.inputError,
-                                !esEditable &&
-                                  'cursor-not-allowed bg-gray-100 opacity-60 dark:bg-gray-800'
-                              )}
-                            />
-                          </div>
-                          {errors.manzanas?.[index]?.totalViviendas && (
-                            <motion.p
-                              {...styles.animations.errorMessage}
-                              className={styles.manzanaCard.field.error}
-                            >
-                              <AlertCircle
-                                className={styles.manzanaCard.field.errorIcon}
-                              />
-                              {errors.manzanas[index]?.totalViviendas?.message}
-                            </motion.p>
-                          )}
-                        </div>
-
-                        {/* Mensaje de por qué está bloqueada */}
-                        {!esEditable && motivoBloqueado && (
-                          <motion.div
-                            initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: 'auto' }}
-                            className='col-span-2 mt-2 rounded-lg border border-red-200 bg-red-50 p-2 dark:border-red-800 dark:bg-red-950/30'
-                          >
-                            <p className='flex items-start gap-2 text-xs text-red-700 dark:text-red-300'>
-                              <Lock className='mt-0.5 h-3.5 w-3.5 flex-shrink-0' />
-                              <span>{motivoBloqueado}</span>
-                            </p>
-                          </motion.div>
-                        )}
-                      </div>
-                    </motion.div>
-                  )
-                })}
-              </AnimatePresence>
-            )}
-          </div>
-        </motion.div>
+        <FormSeccionManzanas
+          register={register}
+          errors={errors}
+          fields={fields}
+          manzanasWatch={manzanasWatch}
+          manzanasState={manzanasState}
+          isEditing={isEditing}
+          canRemoveManzana={canRemoveManzana}
+          esManzanaEditable={esManzanaEditable}
+          esManzanaEliminable={esManzanaEliminable}
+          obtenerMotivoBloqueado={obtenerMotivoBloqueado}
+          handleAgregarManzana={handleAgregarManzana}
+          handleEliminarManzana={handleEliminarManzana}
+        />
       </div>
 
       {/* BOTONES FOOTER */}
@@ -871,10 +160,10 @@ export function ProyectosForm({
         </button>
         <button
           type='submit'
-          disabled={isLoading || !canSave} // ← Deshabilitar si no hay cambios (en edición)
+          disabled={isLoading || !canSave}
           className={cn(
             styles.footer.submitButton,
-            !canSave && 'cursor-not-allowed opacity-50' // ← Estilo deshabilitado
+            !canSave && 'cursor-not-allowed opacity-50'
           )}
         >
           {isLoading ? (

@@ -89,12 +89,15 @@ async function generarSchema() {
     for (const tabla of TABLAS_PRINCIPALES) {
       console.log(`  📊 Consultando: ${tabla}`)
 
-      const result = await client.query(`
+      const result = await client.query(
+        `
         SELECT column_name, data_type, is_nullable
         FROM information_schema.columns
         WHERE table_schema = 'public' AND table_name = $1
         ORDER BY ordinal_position
-      `, [tabla])
+      `,
+        [tabla]
+      )
 
       if (result.rows.length === 0) {
         console.log(`  ⚠️  Tabla ${tabla} no encontrada, saltando...`)
@@ -104,7 +107,7 @@ async function generarSchema() {
       markdown += `## \`${tabla}\` (${result.rows.length} columnas)\n\n`
       markdown += '```sql\n'
 
-      result.rows.forEach((row) => {
+      result.rows.forEach(row => {
         const nullable = row.is_nullable === 'YES' ? 'NULL' : 'NOT NULL'
         markdown += `${row.column_name.padEnd(25)} ${row.data_type.padEnd(20)} ${nullable}\n`
       })

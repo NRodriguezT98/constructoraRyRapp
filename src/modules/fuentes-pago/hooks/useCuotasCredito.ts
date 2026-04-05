@@ -19,7 +19,10 @@ interface UseCuotasCreditoProps {
   negociacionId: string
 }
 
-export function useCuotasCredito({ fuentePagoId, negociacionId: _negociacionId }: UseCuotasCreditoProps) {
+export function useCuotasCredito({
+  fuentePagoId,
+  negociacionId: _negociacionId,
+}: UseCuotasCreditoProps) {
   const inner = useCreditoConstructora({ fuentePagoId })
 
   // ─── Período activo (En curso o Atrasado más antiguo) ────────────────────
@@ -45,7 +48,14 @@ export function useCuotasCredito({ fuentePagoId, negociacionId: _negociacionId }
     const periodos = inner.periodos
     const credito = inner.credito
     if (!periodos.length || !credito) {
-      return { totalCuotas: 0, cuotasCubiertas: 0, cuotasPendientes: 0, montoTotal: credito?.monto_total ?? 0, montoCubierto: 0, porcentaje: 0 }
+      return {
+        totalCuotas: 0,
+        cuotasCubiertas: 0,
+        cuotasPendientes: 0,
+        montoTotal: credito?.monto_total ?? 0,
+        montoCubierto: 0,
+        porcentaje: 0,
+      }
     }
     const cubiertos = periodos.filter(p => p.estado_periodo === 'Cubierto')
     const montoCubierto = cubiertos.reduce((s, p) => s + p.valor_cuota, 0)
@@ -55,7 +65,10 @@ export function useCuotasCredito({ fuentePagoId, negociacionId: _negociacionId }
       cuotasPendientes: periodos.length - cubiertos.length,
       montoTotal: credito.monto_total,
       montoCubierto,
-      porcentaje: periodos.length > 0 ? Math.round((cubiertos.length / periodos.length) * 100) : 0,
+      porcentaje:
+        periodos.length > 0
+          ? Math.round((cubiertos.length / periodos.length) * 100)
+          : 0,
     }
   }, [inner.periodos, inner.credito])
 

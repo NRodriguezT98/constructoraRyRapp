@@ -49,7 +49,7 @@ async function actualizarEntidad() {
 
       const nuevoMetadata = {
         ...doc.metadata,
-        entidad: ENTIDAD
+        entidad: ENTIDAD,
       }
 
       const { error: errorUpdate } = await supabase
@@ -58,7 +58,10 @@ async function actualizarEntidad() {
         .eq('id', doc.id)
 
       if (errorUpdate) {
-        console.error(`   ❌ Error actualizando documento ${doc.id}:`, errorUpdate)
+        console.error(
+          `   ❌ Error actualizando documento ${doc.id}:`,
+          errorUpdate
+        )
       } else {
         console.log(`   ✅ Metadata actualizado`)
       }
@@ -74,14 +77,16 @@ async function actualizarEntidad() {
     .eq('fuente_pago_id', FUENTE_ID)
 
   if (!errorPendientes && pendientes && pendientes.length > 0) {
-    console.log(`\n📋 Encontrados ${pendientes.length} documento(s) pendiente(s):\n`)
+    console.log(
+      `\n📋 Encontrados ${pendientes.length} documento(s) pendiente(s):\n`
+    )
 
     for (const pend of pendientes) {
       console.log(`   - ${pend.tipo_documento}`)
 
       const nuevoMetadata = {
         ...pend.metadata,
-        entidad: ENTIDAD
+        entidad: ENTIDAD,
       }
 
       const { error: errorUpdatePend } = await supabase
@@ -90,7 +95,10 @@ async function actualizarEntidad() {
         .eq('id', pend.id)
 
       if (errorUpdatePend) {
-        console.error(`   ❌ Error actualizando pendiente ${pend.id}:`, errorUpdatePend)
+        console.error(
+          `   ❌ Error actualizando pendiente ${pend.id}:`,
+          errorUpdatePend
+        )
       } else {
         console.log(`   ✅ Metadata actualizado`)
       }

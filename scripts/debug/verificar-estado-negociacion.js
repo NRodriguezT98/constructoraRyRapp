@@ -17,7 +17,9 @@ async function verificarEstado() {
   // 1. Última negociación creada
   const { data: negociaciones } = await supabase
     .from('negociaciones')
-    .select('*, clientes(nombres, apellidos), viviendas(numero, manzanas(nombre))')
+    .select(
+      '*, clientes(nombres, apellidos), viviendas(numero, manzanas(nombre))'
+    )
     .order('fecha_creacion', { ascending: false })
     .limit(1)
 
@@ -25,8 +27,12 @@ async function verificarEstado() {
     const neg = negociaciones[0]
     console.log('📋 ÚLTIMA NEGOCIACIÓN:')
     console.log(`   ID: ${neg.id}`)
-    console.log(`   Cliente: ${neg.clientes?.nombres} ${neg.clientes?.apellidos}`)
-    console.log(`   Vivienda: ${neg.viviendas?.manzanas?.nombre}${neg.viviendas?.numero}`)
+    console.log(
+      `   Cliente: ${neg.clientes?.nombres} ${neg.clientes?.apellidos}`
+    )
+    console.log(
+      `   Vivienda: ${neg.viviendas?.manzanas?.nombre}${neg.viviendas?.numero}`
+    )
     console.log(`   Estado: ${neg.estado}`)
     console.log(`   Fecha: ${neg.fecha_creacion}`)
     console.log('')
@@ -79,7 +85,9 @@ async function verificarEstado() {
     if (vivienda) {
       console.log('🏠 ESTADO DE LA VIVIENDA:')
       console.log(`   Estado: ${vivienda.estado}`)
-      console.log(`   Cliente asignado: ${vivienda.clientes?.nombres} ${vivienda.clientes?.apellidos}`)
+      console.log(
+        `   Cliente asignado: ${vivienda.clientes?.nombres} ${vivienda.clientes?.apellidos}`
+      )
       console.log(`   Negociación ID: ${vivienda.negociacion_id}`)
       console.log(`   Fecha asignación: ${vivienda.fecha_asignacion}`)
     }
@@ -97,7 +105,6 @@ async function verificarEstado() {
       console.log(`   Nombre: ${cliente.nombres} ${cliente.apellidos}`)
       console.log(`   Estado: ${cliente.estado}`)
     }
-
   } else {
     console.log('⚠️ No se encontraron negociaciones')
   }
@@ -105,7 +112,7 @@ async function verificarEstado() {
 
 verificarEstado()
   .then(() => process.exit(0))
-  .catch((error) => {
+  .catch(error => {
     console.error('❌ Error:', error)
     process.exit(1)
   })

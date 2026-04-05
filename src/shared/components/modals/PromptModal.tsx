@@ -1,4 +1,4 @@
-/**
+﻿/**
  * 🎨 COMPONENTE REUTILIZABLE: PromptModal
  *
  * Modal con campo de input para capturar texto del usuario
@@ -30,8 +30,7 @@ import { useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Loader2, MessageSquare, X } from 'lucide-react'
 
-import { Button } from '@/components/ui/button'
-
+import { Button } from '@/shared/components/ui/button'
 
 interface PromptModalProps {
   isOpen: boolean
@@ -108,65 +107,59 @@ export function PromptModal({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={handleClose}
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50"
+            className='fixed inset-0 z-50 bg-black/50 backdrop-blur-sm'
           />
 
           {/* Modal */}
-          <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
+          <div className='fixed inset-0 z-50 flex items-center justify-center p-4'>
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               transition={{ type: 'spring', duration: 0.3 }}
-              className="
-                relative w-full max-w-md
-                bg-white dark:bg-gray-800
-                rounded-2xl shadow-2xl
-                border-2 border-blue-200 dark:border-blue-800
-                overflow-hidden
-              "
+              className='relative w-full max-w-md overflow-hidden rounded-2xl border-2 border-blue-200 bg-white shadow-2xl dark:border-blue-800 dark:bg-gray-800'
             >
               {/* Header */}
-              <div className="relative p-6 pb-4">
+              <div className='relative p-6 pb-4'>
                 {/* Botón cerrar */}
                 <button
                   onClick={handleClose}
                   disabled={isLoading}
-                  className="absolute top-4 right-4 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
-                  aria-label="Cerrar"
+                  className='absolute right-4 top-4 rounded-lg p-2 transition-colors hover:bg-gray-100 disabled:opacity-50 dark:hover:bg-gray-700'
+                  aria-label='Cerrar'
                 >
-                  <X className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                  <X className='h-5 w-5 text-gray-500 dark:text-gray-400' />
                 </button>
 
                 {/* Icono */}
-                <div className="flex justify-center mb-4">
-                  <div className="p-4 rounded-2xl bg-blue-100 dark:bg-blue-900/30">
-                    <MessageSquare className="w-12 h-12 text-blue-600 dark:text-blue-400" />
+                <div className='mb-4 flex justify-center'>
+                  <div className='rounded-2xl bg-blue-100 p-4 dark:bg-blue-900/30'>
+                    <MessageSquare className='h-12 w-12 text-blue-600 dark:text-blue-400' />
                   </div>
                 </div>
 
                 {/* Título */}
-                <h2 className="text-xl font-bold text-center text-blue-900 dark:text-blue-100">
+                <h2 className='text-center text-xl font-bold text-blue-900 dark:text-blue-100'>
                   {title}
                 </h2>
               </div>
 
               {/* Contenido */}
-              <div className="px-6 pb-6">
+              <div className='px-6 pb-6'>
                 {/* Mensaje opcional */}
                 {message && (
-                  <p className="text-center text-gray-700 dark:text-gray-300 mb-4 text-sm">
+                  <p className='mb-4 text-center text-sm text-gray-700 dark:text-gray-300'>
                     {message}
                   </p>
                 )}
 
                 {/* Input */}
-                <div className="mb-4">
-                  <label htmlFor="prompt-input" className="sr-only">
+                <div className='mb-4'>
+                  <label htmlFor='prompt-input' className='sr-only'>
                     {title}
                   </label>
                   <input
-                    id="prompt-input"
+                    id='prompt-input'
                     type={inputType}
                     value={value}
                     onChange={handleChange}
@@ -174,7 +167,7 @@ export function PromptModal({
                     maxLength={maxLength}
                     disabled={isLoading}
                     autoFocus
-                    onKeyDown={(e) => {
+                    onKeyDown={e => {
                       if (e.key === 'Enter' && !isLoading) {
                         handleConfirm()
                       }
@@ -182,27 +175,20 @@ export function PromptModal({
                         handleClose()
                       }
                     }}
-                    className={`
-                      w-full px-4 py-3 rounded-lg
-                      bg-gray-50 dark:bg-gray-900/50
-                      border-2 transition-all
-                      focus:outline-none focus:ring-2 focus:ring-blue-500/20
-                      disabled:opacity-50 disabled:cursor-not-allowed
-                      ${
-                        error
-                          ? 'border-red-500 dark:border-red-500'
-                          : 'border-gray-200 dark:border-gray-700 focus:border-blue-500'
-                      }
-                    `}
+                    className={`w-full rounded-lg border-2 bg-gray-50 px-4 py-3 transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-gray-900/50 ${
+                      error
+                        ? 'border-red-500 dark:border-red-500'
+                        : 'border-gray-200 focus:border-blue-500 dark:border-gray-700'
+                    } `}
                   />
 
                   {/* Contador de caracteres */}
                   {maxLength && (
-                    <div className="flex items-center justify-between mt-1 px-1">
-                      <span className="text-xs text-gray-500 dark:text-gray-400">
+                    <div className='mt-1 flex items-center justify-between px-1'>
+                      <span className='text-xs text-gray-500 dark:text-gray-400'>
                         {error || '\u00A0'}
                       </span>
-                      <span className="text-xs text-gray-500 dark:text-gray-400">
+                      <span className='text-xs text-gray-500 dark:text-gray-400'>
                         {value.length}/{maxLength}
                       </span>
                     </div>
@@ -210,19 +196,19 @@ export function PromptModal({
 
                   {/* Mensaje de error */}
                   {error && !maxLength && (
-                    <p className="mt-1 text-xs text-red-600 dark:text-red-400 px-1">
+                    <p className='mt-1 px-1 text-xs text-red-600 dark:text-red-400'>
                       {error}
                     </p>
                   )}
                 </div>
 
                 {/* Botones de acción */}
-                <div className="flex flex-col-reverse sm:flex-row gap-3">
+                <div className='flex flex-col-reverse gap-3 sm:flex-row'>
                   <Button
-                    variant="outline"
+                    variant='outline'
                     onClick={handleClose}
                     disabled={isLoading}
-                    className="flex-1 border-2"
+                    className='flex-1 border-2'
                   >
                     {cancelText}
                   </Button>
@@ -230,11 +216,11 @@ export function PromptModal({
                   <Button
                     onClick={handleConfirm}
                     disabled={isLoading}
-                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white shadow-lg"
+                    className='flex-1 bg-blue-600 text-white shadow-lg hover:bg-blue-700'
                   >
                     {isLoading ? (
                       <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        <Loader2 className='mr-2 h-4 w-4 animate-spin' />
                         {loadingText}
                       </>
                     ) : (

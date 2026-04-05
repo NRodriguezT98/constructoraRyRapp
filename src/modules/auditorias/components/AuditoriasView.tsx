@@ -17,7 +17,7 @@
 
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 import { AnimatePresence, motion } from 'framer-motion'
 import {
@@ -32,8 +32,6 @@ import {
   User,
   X,
 } from 'lucide-react'
-
-import { errorLog } from '@/lib/utils/logger'
 
 import { useAuditorias } from '../hooks/useAuditorias'
 import {
@@ -75,9 +73,6 @@ export function AuditoriasView({
     filtros,
     paginaActual,
     totalPaginas,
-    cargarEstadisticas,
-    cargarResumenModulos,
-    cargarEliminacionesMasivas,
     aplicarFiltros,
     limpiarFiltros,
     cambiarPagina,
@@ -86,32 +81,6 @@ export function AuditoriasView({
 
   const [registroDetalle, setRegistroDetalle] =
     useState<AuditoriaRegistro | null>(null)
-
-  // Cargar datos adicionales al montar
-  useEffect(() => {
-    let cancelado = false
-
-    const cargarDatos = async () => {
-      try {
-        await Promise.all([
-          cargarEstadisticas(),
-          cargarResumenModulos(),
-          cargarEliminacionesMasivas(),
-        ])
-      } catch (error) {
-        if (!cancelado) {
-          errorLog('[AUDITORIAS] Error al cargar datos', error)
-        }
-      }
-    }
-
-    cargarDatos()
-
-    return () => {
-      cancelado = true
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []) // Solo ejecutar al montar
 
   // Mostrar loading skeleton SOLO en carga inicial (sin datos previos)
   if (cargando && registros.length === 0 && !estadisticas) {

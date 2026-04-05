@@ -7,10 +7,11 @@
 import { createClient } from '@supabase/supabase-js'
 
 const supabaseUrl = 'https://ouhfqwpvzbjtrzotssco.supabase.co'
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im91aGZxd3B2emJqdHJ6b3Rzc2NvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjgyNjIxNjEsImV4cCI6MjA0MzgzODE2MX0.gqo_v_1gOWECjZQNPTHDqoSxLXCEb6-wR2PWaE_bIpo'
+const supabaseKey =
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im91aGZxd3B2emJqdHJ6b3Rzc2NvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjgyNjIxNjEsImV4cCI6MjA0MzgzODE2MX0.gqo_v_1gOWECjZQNPTHDqoSxLXCEb6-wR2PWaE_bIpo'
 
 const supabase = createClient(supabaseUrl, supabaseKey, {
-  auth: { persistSession: false }
+  auth: { persistSession: false },
 })
 
 async function diagnosticar() {
@@ -30,14 +31,18 @@ async function diagnosticar() {
     console.log(`   ID: ${cliente.id}`)
     console.log(`   Nombre: ${cliente.nombres} ${cliente.apellidos}`)
     console.log(`   Estado: ${cliente.estado}`)
-    console.log(`   ${cliente.estado === 'Activo' ? '❌ AÚN ACTIVO' : cliente.estado === 'Renunció' ? '✅ CORRECTO' : '🔸 ESTADO: ' + cliente.estado}`)
+    console.log(
+      `   ${cliente.estado === 'Activo' ? '❌ AÚN ACTIVO' : cliente.estado === 'Renunció' ? '✅ CORRECTO' : '🔸 ESTADO: ' + cliente.estado}`
+    )
   }
 
   // 2. Vivienda
   console.log('\n2️⃣ VIVIENDA CASA 5:\n')
   const { data: viviendas } = await supabase
     .from('viviendas')
-    .select('id, numero, estado, cliente_id, negociacion_id, manzanas!inner(nombre)')
+    .select(
+      'id, numero, estado, cliente_id, negociacion_id, manzanas!inner(nombre)'
+    )
     .eq('numero', '5')
     .eq('manzanas.nombre', 'Manzana A')
 
@@ -85,9 +90,13 @@ async function diagnosticar() {
       .in('negociacion_id', negIds)
 
     if (fuentes && fuentes.length > 0) {
-      console.log(`   ❌ ${fuentes.length} fuente(s) huérfana(s) encontrada(s):`)
+      console.log(
+        `   ❌ ${fuentes.length} fuente(s) huérfana(s) encontrada(s):`
+      )
       fuentes.forEach((f, i) => {
-        console.log(`     ${i + 1}. ${f.tipo} - ${f.estado} - $${f.monto_aprobado}`)
+        console.log(
+          `     ${i + 1}. ${f.tipo} - ${f.estado} - $${f.monto_aprobado}`
+        )
       })
     } else {
       console.log(`   ✅ Sin fuentes huérfanas`)

@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 
 import { usePathname } from 'next/navigation'
 
-import { useMediaQuery } from '@/shared/hooks'
+import { useLocalStorage, useMediaQuery } from '@/shared/hooks'
 
 interface UseSidebarReturn {
   isExpanded: boolean
@@ -12,8 +12,7 @@ interface UseSidebarReturn {
   setSearchQuery: (query: string) => void
   toggleSidebar: () => void
   closeSidebar: () => void
-  isActive: (href: string) => boolean
-  getMostSpecificMatch: (items: { href: string }[]) => string | null  // ✅ Nueva función
+  getMostSpecificMatch: (items: { href: string }[]) => string | null
 }
 
 /**
@@ -22,50 +21,32 @@ interface UseSidebarReturn {
  */
 export function useSidebar(): UseSidebarReturn {
   // Estados
-  const [isExpanded, setIsExpanded] = useState(true)
+  const [isExpanded, setIsExpanded] = useLocalStorage(
+    'ryr-sidebar-expanded',
+    true
+  )
   const [searchQuery, setSearchQuery] = useState('')
 
   // Hooks externos
   const pathname = usePathname()
   const isMobile = useMediaQuery('(max-width: 768px)')
 
-  // Efecto: Colapsar sidebar en móvil
+  // Efecto: Colapsar sidebar en móvil (no tocar en desktop — localStorage lo maneja)
   useEffect(() => {
     if (isMobile) {
       setIsExpanded(false)
-    } else {
-      setIsExpanded(true)
     }
-  }, [isMobile])
+  }, [isMobile, setIsExpanded])
 
   // Toggle sidebar
   const toggleSidebar = useCallback(() => {
     setIsExpanded(prev => !prev)
-  }, [])
+  }, [setIsExpanded])
 
   // Cerrar sidebar (para móvil)
   const closeSidebar = useCallback(() => {
     setIsExpanded(false)
-  }, [])
-
-  // Verificar si una ruta está activa
-  const isActive = useCallback(
-    (href: string) => {
-      // Caso especial: Home debe ser match exacto
-      if (href === '/') {
-        return pathname === '/'
-      }
-
-      // Match exacto
-      if (pathname === href) {
-        return true
-      }
-
-      // Para subrutas: pathname debe empezar con href + '/'
-      return pathname.startsWith(href + '/')
-    },
-    [pathname]
-  )
+  }, [setIsExpanded])
 
   /**
    * Obtiene la ruta MÁS ESPECÍFICA que coincide con pathname
@@ -116,7 +97,6 @@ export function useSidebar(): UseSidebarReturn {
     setSearchQuery,
     toggleSidebar,
     closeSidebar,
-    isActive,
     getMostSpecificMatch,
   }
 }

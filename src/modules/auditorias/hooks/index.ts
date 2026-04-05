@@ -2,4 +2,4 @@
  * Barrel export para hooks
  */
 
-export { useDetalleAuditoria } from './useDetalleAuditoria';
+export { useDetalleAuditoria } from './useDetalleAuditoria'

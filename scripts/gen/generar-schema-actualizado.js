@@ -54,7 +54,7 @@ async function generarSchemaReference() {
       markdown += '| Columna | Tipo | Nullable |\n'
       markdown += '|---------|------|----------|\n'
 
-      table.columns.forEach((col) => {
+      table.columns.forEach(col => {
         markdown += `| \`${col.column_name}\` | ${col.data_type} | ${col.is_nullable} |\n`
       })
 
@@ -63,10 +63,15 @@ async function generarSchemaReference() {
 
     // Guardar archivo
     fs.writeFileSync('docs/DATABASE-SCHEMA-REFERENCE-ACTUALIZADO.md', markdown)
-    console.log('✅ Schema actualizado guardado en: docs/DATABASE-SCHEMA-REFERENCE-ACTUALIZADO.md\n')
+    console.log(
+      '✅ Schema actualizado guardado en: docs/DATABASE-SCHEMA-REFERENCE-ACTUALIZADO.md\n'
+    )
 
     // También guardar JSON crudo
-    fs.writeFileSync('docs/schema-completo.json', JSON.stringify(result.rows, null, 2))
+    fs.writeFileSync(
+      'docs/schema-completo.json',
+      JSON.stringify(result.rows, null, 2)
+    )
     console.log('✅ Schema JSON guardado en: docs/schema-completo.json\n')
 
     await pool.end()

@@ -49,17 +49,17 @@ export function ProgressBar({
   const clampedPercentage = Math.min(Math.max(porcentaje, 0), 100)
 
   return (
-    <div className="w-full space-y-1">
+    <div className='w-full space-y-1'>
       {/* Label superior */}
       {(label || showPercentage) && (
-        <div className="flex items-center justify-between text-sm">
+        <div className='flex items-center justify-between text-sm'>
           {label && (
-            <span className="font-medium text-gray-700 dark:text-gray-300">
+            <span className='font-medium text-gray-700 dark:text-gray-300'>
               {label}
             </span>
           )}
           {showPercentage && (
-            <span className="font-semibold text-gray-900 dark:text-white">
+            <span className='font-semibold text-gray-900 dark:text-white'>
               {clampedPercentage.toFixed(0)}%
             </span>
           )}
@@ -68,18 +68,10 @@ export function ProgressBar({
 
       {/* Barra de progreso */}
       <div
-        className={`
-          w-full overflow-hidden rounded-full
-          bg-gray-200 dark:bg-gray-700
-          ${heightClasses[height]}
-        `}
+        className={`w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700 ${heightClasses[height]} `}
       >
         <motion.div
-          className={`
-            h-full rounded-full
-            bg-gradient-to-r ${variantColors[colorVariant]}
-            shadow-sm
-          `}
+          className={`h-full rounded-full bg-gradient-to-r ${variantColors[colorVariant]} shadow-sm`}
           initial={{ width: 0 }}
           animate={{ width: `${clampedPercentage}%` }}
           transition={{

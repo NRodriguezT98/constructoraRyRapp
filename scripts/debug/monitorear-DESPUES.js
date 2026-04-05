@@ -7,7 +7,7 @@ const pool = new Pool({
   database: process.env.DATABASE_NAME,
   user: process.env.DATABASE_USER,
   password: process.env.DATABASE_PASSWORD,
-  ssl: false
+  ssl: false,
 })
 
 async function monitorearDESPUES() {
@@ -64,7 +64,9 @@ async function monitorearDESPUES() {
       console.log('\n⚠️  PROBLEMA: VERSIONES DUPLICADAS EN EL MISMO SEGUNDO:')
       console.table(duplicados.rows)
     } else {
-      console.log('\n✅ Sin duplicados detectados (cada versión en timestamp diferente)')
+      console.log(
+        '\n✅ Sin duplicados detectados (cada versión en timestamp diferente)'
+      )
     }
 
     // 4. Fuentes después del cambio
@@ -118,7 +120,9 @@ async function monitorearDESPUES() {
     console.log('\n' + '='.repeat(70))
     const versionesNuevas = parseInt(resumen.rows[0].versiones_nuevas)
     if (versionesNuevas > 1) {
-      console.log(`❌ PROBLEMA: Se crearon ${versionesNuevas} versiones para 1 solo cambio`)
+      console.log(
+        `❌ PROBLEMA: Se crearon ${versionesNuevas} versiones para 1 solo cambio`
+      )
       console.log('🔧 Hay triggers duplicados disparándose')
     } else if (versionesNuevas === 1) {
       console.log('✅ CORRECTO: Solo 1 versión creada')
@@ -126,7 +130,6 @@ async function monitorearDESPUES() {
       console.log('⚠️  No se detectaron versiones nuevas (¿cambio muy viejo?)')
     }
     console.log('='.repeat(70) + '\n')
-
   } catch (error) {
     console.error('❌ Error:', error.message)
   } finally {

@@ -12,24 +12,24 @@ import { formatDistanceToNow } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { AnimatePresence, motion } from 'framer-motion'
 import {
-    BarChart3,
-    Building2,
-    Calendar,
-    CheckCircle2,
-    Clock,
-    Edit,
-    Eye,
-    FileText,
-    Heart,
-    Home,
-    Mail,
-    MapPin,
-    MessageSquare,
-    Phone,
-    Trash2,
-    TrendingUp,
-    User,
-    X
+  BarChart3,
+  Building2,
+  Calendar,
+  CheckCircle2,
+  Clock,
+  Edit,
+  Eye,
+  FileText,
+  Heart,
+  Home,
+  Mail,
+  MapPin,
+  MessageSquare,
+  Phone,
+  Trash2,
+  TrendingUp,
+  User,
+  X,
 } from 'lucide-react'
 
 import { calculateAge, formatDateCompact } from '@/lib/utils/date.utils'
@@ -58,7 +58,7 @@ export function DetalleCliente({
 }: DetalleClienteProps) {
   // ✅ Hook para obtener documento de identidad desde documentos_cliente
   const { documentoIdentidad } = useDocumentoIdentidad({
-    clienteId: cliente?.id || ''
+    clienteId: cliente?.id || '',
   })
 
   if (!cliente) return null
@@ -70,7 +70,7 @@ export function DetalleCliente({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className='fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-md p-4'
+          className='fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-md'
           onClick={onClose}
         >
           <motion.div
@@ -78,8 +78,8 @@ export function DetalleCliente({
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.95, opacity: 0, y: 20 }}
             transition={{ type: 'spring', duration: 0.5, bounce: 0.3 }}
-            onClick={(e) => e.stopPropagation()}
-            className='relative w-full max-w-4xl max-h-[90vh] overflow-hidden rounded-3xl bg-white shadow-2xl dark:bg-gray-900'
+            onClick={e => e.stopPropagation()}
+            className='relative max-h-[90vh] w-full max-w-4xl overflow-hidden rounded-3xl bg-white shadow-2xl dark:bg-gray-900'
           >
             {/* Header con gradiente */}
             <div className='relative overflow-hidden bg-gradient-to-r from-purple-600 via-violet-600 to-fuchsia-600 px-8 py-6'>
@@ -93,7 +93,7 @@ export function DetalleCliente({
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
                     transition={{ type: 'spring', delay: 0.2 }}
-                    className='flex h-16 w-16 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-sm ring-2 ring-white/30'
+                    className='flex h-16 w-16 items-center justify-center rounded-2xl bg-white/20 ring-2 ring-white/30 backdrop-blur-sm'
                   >
                     <User className='h-8 w-8 text-white' />
                   </motion.div>
@@ -102,7 +102,8 @@ export function DetalleCliente({
                       {cliente.nombre_completo}
                     </h2>
                     <p className='text-sm text-purple-100'>
-                      {TIPOS_DOCUMENTO[cliente.tipo_documento]} - {cliente.numero_documento}
+                      {TIPOS_DOCUMENTO[cliente.tipo_documento]} -{' '}
+                      {cliente.numero_documento}
                     </p>
                   </div>
                 </div>
@@ -110,7 +111,7 @@ export function DetalleCliente({
                   <EstadoBadge estado={cliente.estado} />
                   <button
                     onClick={onClose}
-                    className='rounded-xl p-2.5 text-white/80 transition-all hover:bg-white/20 hover:text-white hover:rotate-90'
+                    className='rounded-xl p-2.5 text-white/80 transition-all hover:rotate-90 hover:bg-white/20 hover:text-white'
                     type='button'
                   >
                     <X className='h-6 w-6 transition-transform' />
@@ -129,8 +130,18 @@ export function DetalleCliente({
                     Información Personal
                   </h3>
                   <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
-                    <InfoField icon={User} label='Nombres' value={cliente.nombres} showEmpty />
-                    <InfoField icon={User} label='Apellidos' value={cliente.apellidos} showEmpty />
+                    <InfoField
+                      icon={User}
+                      label='Nombres'
+                      value={cliente.nombres}
+                      showEmpty
+                    />
+                    <InfoField
+                      icon={User}
+                      label='Apellidos'
+                      value={cliente.apellidos}
+                      showEmpty
+                    />
                     <InfoField
                       icon={FileText}
                       label='Tipo de Documento'
@@ -186,17 +197,42 @@ export function DetalleCliente({
                     Información de Contacto
                   </h3>
                   <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
-                    <InfoField icon={Phone} label='Teléfono Principal' value={cliente.telefono} showEmpty />
+                    <InfoField
+                      icon={Phone}
+                      label='Teléfono Principal'
+                      value={cliente.telefono}
+                      showEmpty
+                    />
                     <InfoField
                       icon={Phone}
                       label='Teléfono Alternativo'
                       value={cliente.telefono_alternativo}
                       showEmpty
                     />
-                    <InfoField icon={Mail} label='Correo Electrónico' value={cliente.email} showEmpty />
-                    <InfoField icon={MapPin} label='Dirección' value={cliente.direccion} showEmpty />
-                    <InfoField icon={Building2} label='Ciudad' value={cliente.ciudad} showEmpty />
-                    <InfoField icon={Home} label='Departamento' value={cliente.departamento} showEmpty />
+                    <InfoField
+                      icon={Mail}
+                      label='Correo Electrónico'
+                      value={cliente.email}
+                      showEmpty
+                    />
+                    <InfoField
+                      icon={MapPin}
+                      label='Dirección'
+                      value={cliente.direccion}
+                      showEmpty
+                    />
+                    <InfoField
+                      icon={Building2}
+                      label='Ciudad'
+                      value={cliente.ciudad}
+                      showEmpty
+                    />
+                    <InfoField
+                      icon={Home}
+                      label='Departamento'
+                      value={cliente.departamento}
+                      showEmpty
+                    />
                   </div>
                 </div>
 
@@ -214,7 +250,7 @@ export function DetalleCliente({
                     </div>
 
                     <div className='space-y-3'>
-                      {cliente.intereses.map((interes) => (
+                      {cliente.intereses.map(interes => (
                         <div
                           key={interes.id}
                           className='rounded-xl border-2 border-purple-200 bg-white p-4 shadow-sm transition-all hover:shadow-md dark:border-purple-700 dark:bg-purple-900/20'
@@ -271,10 +307,13 @@ export function DetalleCliente({
                             <Clock className='h-3.5 w-3.5' />
                             <span>
                               Registrado{' '}
-                              {formatDistanceToNow(new Date(interes.fecha_interes), {
-                                addSuffix: true,
-                                locale: es,
-                              })}
+                              {formatDistanceToNow(
+                                new Date(interes.fecha_interes),
+                                {
+                                  addSuffix: true,
+                                  locale: es,
+                                }
+                              )}
                             </span>
                           </div>
                         </div>
@@ -333,7 +372,9 @@ export function DetalleCliente({
                       <div className='mt-4 rounded-lg bg-blue-100 px-4 py-3 text-center dark:bg-blue-900/40'>
                         <div className='flex items-center justify-center gap-2 text-sm text-blue-900 dark:text-blue-100'>
                           <Clock className='h-4 w-4' />
-                          <span className='font-medium'>Última negociación:</span>
+                          <span className='font-medium'>
+                            Última negociación:
+                          </span>
                           <span>
                             {formatDistanceToNow(
                               new Date(cliente.estadisticas.ultima_negociacion),
@@ -362,7 +403,9 @@ export function DetalleCliente({
                         <MessageSquare className='h-4 w-4' />
                         Notas y Observaciones
                       </p>
-                      <p className={`text-base ${cliente.notas ? 'text-gray-900 dark:text-white' : 'text-gray-400 dark:text-gray-600 italic'}`}>
+                      <p
+                        className={`text-base ${cliente.notas ? 'text-gray-900 dark:text-white' : 'italic text-gray-400 dark:text-gray-600'}`}
+                      >
                         {cliente.notas || 'Sin notas adicionales'}
                       </p>
                     </div>
@@ -375,19 +418,26 @@ export function DetalleCliente({
                     <div>
                       <p className='text-gray-500 dark:text-gray-400'>Creado</p>
                       <p className='font-medium text-gray-900 dark:text-white'>
-                        {new Date(cliente.fecha_creacion).toLocaleDateString('es-CO', {
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })}
+                        {new Date(cliente.fecha_creacion).toLocaleDateString(
+                          'es-CO',
+                          {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          }
+                        )}
                       </p>
                     </div>
                     <div>
-                      <p className='text-gray-500 dark:text-gray-400'>Última actualización</p>
+                      <p className='text-gray-500 dark:text-gray-400'>
+                        Última actualización
+                      </p>
                       <p className='font-medium text-gray-900 dark:text-white'>
-                        {new Date(cliente.fecha_actualizacion).toLocaleDateString('es-CO', {
+                        {new Date(
+                          cliente.fecha_actualizacion
+                        ).toLocaleDateString('es-CO', {
                           year: 'numeric',
                           month: 'long',
                           day: 'numeric',
@@ -427,7 +477,7 @@ export function DetalleCliente({
                     <button
                       type='button'
                       onClick={onEditar}
-                      className='flex items-center gap-2 rounded-xl bg-gradient-to-r from-purple-600 to-violet-600 px-6 py-2.5 font-medium text-white shadow-lg shadow-purple-500/30 transition-all hover:shadow-xl hover:shadow-purple-500/40 hover:-translate-y-0.5'
+                      className='flex items-center gap-2 rounded-xl bg-gradient-to-r from-purple-600 to-violet-600 px-6 py-2.5 font-medium text-white shadow-lg shadow-purple-500/30 transition-all hover:-translate-y-0.5 hover:shadow-xl hover:shadow-purple-500/40'
                     >
                       <Edit className='h-5 w-5' />
                       Editar Cliente

@@ -23,9 +23,19 @@ function log(msg, color = 'reset') {
 }
 
 function header(msg) {
-  console.log('\n' + colors.cyan + '=======================================' + colors.reset)
+  console.log(
+    '\n' +
+      colors.cyan +
+      '=======================================' +
+      colors.reset
+  )
   console.log(colors.cyan + '   ' + msg + colors.reset)
-  console.log(colors.cyan + '=======================================' + colors.reset + '\n')
+  console.log(
+    colors.cyan +
+      '=======================================' +
+      colors.reset +
+      '\n'
+  )
 }
 
 // Cargar .env.local
@@ -36,12 +46,14 @@ function loadEnv() {
   }
 
   const env = {}
-  fs.readFileSync(envPath, 'utf8').split('\n').forEach(line => {
-    const match = line.match(/^\s*([^#][^=]*)\s*=\s*(.*)$/)
-    if (match) {
-      env[match[1].trim()] = match[2].trim().replace(/^["']|["']$/g, '')
-    }
-  })
+  fs.readFileSync(envPath, 'utf8')
+    .split('\n')
+    .forEach(line => {
+      const match = line.match(/^\s*([^#][^=]*)\s*=\s*(.*)$/)
+      if (match) {
+        env[match[1].trim()] = match[2].trim().replace(/^["']|["']$/g, '')
+      }
+    })
   return env
 }
 
@@ -50,7 +62,7 @@ function httpsRequest(url, options) {
   return new Promise((resolve, reject) => {
     const req = https.request(url, options, res => {
       let data = ''
-      res.on('data', chunk => data += chunk)
+      res.on('data', chunk => (data += chunk))
       res.on('end', () => {
         if (res.statusCode >= 200 && res.statusCode < 300) {
           resolve({ data: JSON.parse(data), status: res.statusCode })
@@ -78,16 +90,19 @@ async function generarTipos() {
   const options = {
     method: 'GET',
     headers: {
-      'apikey': env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-      'Authorization': `Bearer ${env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`,
-    }
+      apikey: env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+      Authorization: `Bearer ${env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`,
+    },
   }
 
   try {
     const { data } = await httpsRequest(url, options)
 
     log('✓ Schema obtenido correctamente', 'green')
-    log(`  Tablas encontradas: ${data.definitions ? Object.keys(data.definitions).length : 0}`, 'cyan')
+    log(
+      `  Tablas encontradas: ${data.definitions ? Object.keys(data.definitions).length : 0}`,
+      'cyan'
+    )
 
     // Escribir el schema en un archivo temporal
     const schemaPath = path.join(process.cwd(), 'temp-schema.json')
@@ -97,17 +112,25 @@ async function generarTipos() {
     log('', 'reset')
     log('OPCIONES:', 'cyan')
     log('1. Usar Supabase CLI con timeout más largo:', 'yellow')
-    log('   npx supabase gen types typescript --project-id swyjhwgvkfcfdtemkyad --schema public 2> nul', 'reset')
+    log(
+      '   npx supabase gen types typescript --project-id swyjhwgvkfcfdtemkyad --schema public 2> nul',
+      'reset'
+    )
     log('', 'reset')
-    log('2. Copiar schema manualmente desde el dashboard de Supabase:', 'yellow')
-    log('   https://supabase.com/dashboard/project/swyjhwgvkfcfdtemkyad/api?page=tables-intro', 'reset')
+    log(
+      '2. Copiar schema manualmente desde el dashboard de Supabase:',
+      'yellow'
+    )
+    log(
+      '   https://supabase.com/dashboard/project/swyjhwgvkfcfdtemkyad/api?page=tables-intro',
+      'reset'
+    )
     log('', 'reset')
     log('3. Continuar sin regenerar tipos por ahora (RECOMENDADO):', 'green')
     log('   Las nuevas tablas son:', 'reset')
     log('   - negociaciones_versiones', 'cyan')
     log('   - descuentos_negociacion', 'cyan')
     log('   Podemos agregarlas manualmente al database.types.ts', 'reset')
-
   } catch (error) {
     log('✗ Error al obtener schema:', 'red')
     log(error.message, 'red')

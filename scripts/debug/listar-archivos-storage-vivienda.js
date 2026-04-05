@@ -23,7 +23,7 @@ async function listarArchivos() {
     .list(viviendaId, {
       limit: 100,
       offset: 0,
-      sortBy: { column: 'created_at', order: 'desc' }
+      sortBy: { column: 'created_at', order: 'desc' },
     })
 
   if (error) {
@@ -36,7 +36,9 @@ async function listarArchivos() {
   archivos.forEach((archivo, index) => {
     console.log(`${index + 1}. ${archivo.name}`)
     console.log(`   Tamaño: ${(archivo.metadata.size / 1024).toFixed(2)} KB`)
-    console.log(`   Creado: ${new Date(archivo.created_at).toLocaleString('es-CO')}`)
+    console.log(
+      `   Creado: ${new Date(archivo.created_at).toLocaleString('es-CO')}`
+    )
     console.log('')
   })
 
@@ -75,7 +77,9 @@ async function listarArchivos() {
         const nombreEnUrl = decodeURIComponent(urlParts[1])
         console.log(`   ⚠️  Nombre en URL: ${nombreEnUrl}`)
         const existeEnUrl = archivosEnStorage.has(nombreEnUrl)
-        console.log(`   ⚠️  Existe con nombre de URL: ${existeEnUrl ? 'SÍ' : 'NO'}`)
+        console.log(
+          `   ⚠️  Existe con nombre de URL: ${existeEnUrl ? 'SÍ' : 'NO'}`
+        )
       }
     }
     console.log('')
@@ -87,7 +91,7 @@ listarArchivos()
     console.log('✅ Listado completado')
     process.exit(0)
   })
-  .catch((error) => {
+  .catch(error => {
     console.error('❌ Error:', error)
     process.exit(1)
   })

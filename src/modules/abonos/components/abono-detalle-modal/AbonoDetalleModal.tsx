@@ -19,6 +19,8 @@ import {
 } from 'lucide-react'
 import { createPortal } from 'react-dom'
 
+import NextImage from 'next/image'
+
 import { formatDateCompact, formatDateForDisplay } from '@/lib/utils/date.utils'
 import { formatNombreCompleto } from '@/lib/utils/string.utils'
 
@@ -202,12 +204,14 @@ export function AbonoDetalleModal({
                         title='Comprobante de pago'
                       />
                     ) : esImagen ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={comprobanteUrl}
-                        alt='Comprobante de pago'
-                        className={s.preview.img}
-                      />
+                      <div className={`relative ${s.preview.img}`}>
+                        <NextImage
+                          src={comprobanteUrl}
+                          alt='Comprobante de pago'
+                          fill
+                          className='object-contain'
+                        />
+                      </div>
                     ) : (
                       // Tipo desconocido → intentar iframe
                       <iframe

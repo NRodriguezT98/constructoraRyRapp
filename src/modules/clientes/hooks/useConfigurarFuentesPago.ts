@@ -13,17 +13,14 @@
  * ⚠️ NOMBRES DE CAMPOS VERIFICADOS EN: docs/DATABASE-SCHEMA-REFERENCE-ACTUALIZADO.md
  */
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
+import { useQuery } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
-import { supabase } from '@/lib/supabase/client'
 import { logger } from '@/lib/utils/logger'
 import { fuentesPagoService } from '@/modules/clientes/services/fuentes-pago.service'
-import {
-  cargarTiposFuentesPagoActivas,
-  type TipoFuentePagoCatalogo,
-} from '@/modules/clientes/services/tipos-fuentes-pago.service'
+import { cargarTiposFuentesPagoActivas } from '@/modules/clientes/services/tipos-fuentes-pago.service'
 import type { TipoFuentePago } from '@/modules/clientes/types'
 import { crearCredito } from '@/modules/fuentes-pago/services/creditos-constructora.service'
 import { crearCuotasCredito } from '@/modules/fuentes-pago/services/cuotas-credito.service'
@@ -44,12 +41,6 @@ export interface FuentePago {
   parametrosCredito?: ParametrosCredito | null
 }
 
-interface Totales {
-  total: number
-  porcentaje: number
-  diferencia: number
-}
-
 interface UseConfigurarFuentesPagoProps {
   negociacionId: string
   valorTotal: number
@@ -66,33 +57,32 @@ export function useConfigurarFuentesPago({
   // =====================================================
   const [fuentesPago, setFuentesPago] = useState<FuentePago[]>([])
   const [cargando, setCargando] = useState(true)
-  const [cargandoTipos, setCargandoTipos] = useState(true)
-  const [tiposDisponibles, setTiposDisponibles] = useState<
-    TipoFuentePagoCatalogo[]
-  >([])
   const [guardando, setGuardando] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [totales, setTotales] = useState<Totales>({
-    total: 0,
-    porcentaje: 0,
-    diferencia: 0,
+
+  // =====================================================
+  // REACT QUERY: tipos de fuentes activos (read-only, catálogo)
+  // =====================================================
+  const { data: tiposDisponibles = [], isLoading: cargandoTipos } = useQuery({
+    queryKey: ['tipos-fuentes-pago-activas'],
+    queryFn: async () => {
+      const { data } = await cargarTiposFuentesPagoActivas()
+      return data ?? []
+    },
+    staleTime: 5 * 60 * 1000,
   })
 
   // =====================================================
-  // EFECTOS
+  // TOTALES calculados de forma reactiva (useMemo)
   // =====================================================
-
-  /**
-   * Cargar tipos de fuentes activos desde catálogo (una sola vez)
-   */
-  useEffect(() => {
-    const cargarTipos = async () => {
-      const { data } = await cargarTiposFuentesPagoActivas()
-      if (data) setTiposDisponibles(data)
-      setCargandoTipos(false)
+  const totales = useMemo(() => {
+    const cierre = calcularCierreFinanciero(fuentesPago, valorTotal)
+    return {
+      total: cierre.totalParaCierre,
+      porcentaje: cierre.porcentajeCubierto,
+      diferencia: cierre.diferencia,
     }
-    cargarTipos()
-  }, [])
+  }, [fuentesPago, valorTotal])
 
   // =====================================================
   // FUNCIONES DE LÓGICA
@@ -134,15 +124,6 @@ export function useConfigurarFuentesPago({
    * Uses shared calcularCierreFinanciero — capital_para_cierre is preferred
    * over monto_aprobado to avoid interest inflating the total.
    */
-  const calcularTotales = useCallback(() => {
-    const cierre = calcularCierreFinanciero(fuentesPago, valorTotal)
-
-    setTotales({
-      total: cierre.totalParaCierre,
-      porcentaje: cierre.porcentajeCubierto,
-      diferencia: cierre.diferencia,
-    })
-  }, [fuentesPago, valorTotal])
 
   // ── Effects that depend on the above functions ──────────────────────────
 
@@ -152,13 +133,6 @@ export function useConfigurarFuentesPago({
   useEffect(() => {
     cargarFuentesPago()
   }, [negociacionId, cargarFuentesPago])
-
-  /**
-   * Calcular totales cuando cambian las fuentes o el valorTotal
-   */
-  useEffect(() => {
-    calcularTotales()
-  }, [fuentesPago, valorTotal, calcularTotales])
 
   /**
    * Agregar una nueva fuente de pago
@@ -253,11 +227,8 @@ export function useConfigurarFuentesPago({
         return
       }
 
-      // Cargar configuración de tipos desde BD para validar sin hardcodear nombres
-      const { data: tiposConfig } = await supabase
-        .from('tipos_fuentes_pago')
-        .select('nombre, requiere_entidad')
-      const tiposMap = new Map((tiposConfig ?? []).map(t => [t.nombre, t]))
+      // Cargar configuración de tipos desde tiposDisponibles (ya cargados via useQuery)
+      const tiposMap = new Map(tiposDisponibles.map(t => [t.nombre, t]))
 
       // Validar entidades requeridas usando la flag de BD
       for (const fuente of fuentesPago) {

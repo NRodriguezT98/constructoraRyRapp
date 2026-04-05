@@ -32,7 +32,9 @@ async function verificar() {
 
       if (manzanas && manzanas.length > 0) {
         manzanas.forEach(m => {
-          console.log(`    - ${m.nombre}: ${m.numero_viviendas} viviendas (ID: ${m.id})`)
+          console.log(
+            `    - ${m.nombre}: ${m.numero_viviendas} viviendas (ID: ${m.id})`
+          )
         })
       } else {
         console.log('    ⚠️ SIN MANZANAS GUARDADAS')

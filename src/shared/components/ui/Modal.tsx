@@ -133,41 +133,43 @@ export function Modal({
               className={cn(
                 'relative w-full',
                 'bg-white dark:bg-gray-900',
-                'rounded-xl sm:rounded-2xl shadow-2xl',
+                'rounded-xl shadow-2xl sm:rounded-2xl',
                 'border border-gray-200/50 dark:border-gray-700/50',
                 'overflow-hidden',
-                'max-h-[95vh] flex flex-col',
+                'flex max-h-[95vh] flex-col',
                 sizeClasses[size],
                 className
               )}
             >
               {/* Header mejorado y compacto */}
               {(title || showCloseButton) && (
-                <div className='relative px-3 py-3 sm:px-6 sm:py-4 border-b border-gray-200/50 dark:border-gray-700/50 bg-gradient-to-b from-gray-50/50 to-transparent dark:from-gray-800/30 flex-shrink-0'>
+                <div className='relative flex-shrink-0 border-b border-gray-200/50 bg-gradient-to-b from-gray-50/50 to-transparent px-3 py-3 dark:border-gray-700/50 dark:from-gray-800/30 sm:px-6 sm:py-4'>
                   <div className='flex items-start justify-between gap-2 sm:gap-4'>
                     {/* Lado izquierdo: Ícono + Títulos */}
-                    <div className='flex items-start gap-2 sm:gap-4 flex-1 min-w-0'>
+                    <div className='flex min-w-0 flex-1 items-start gap-2 sm:gap-4'>
                       {/* Ícono */}
                       {icon && (
-                        <div className={cn(
-                          'w-8 h-8 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center shadow-lg flex-shrink-0',
-                          'bg-gradient-to-br',
-                          gradient.icon,
-                          gradient.shadow
-                        )}>
+                        <div
+                          className={cn(
+                            'flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-xl shadow-lg sm:h-10 sm:w-10',
+                            'bg-gradient-to-br',
+                            gradient.icon,
+                            gradient.shadow
+                          )}
+                        >
                           {icon}
                         </div>
                       )}
 
                       {/* Títulos */}
-                      <div className='flex-1 min-w-0 pr-2'>
+                      <div className='min-w-0 flex-1 pr-2'>
                         {title && (
-                          <h2 className='text-base sm:text-xl font-bold text-gray-900 dark:text-white mb-0.5 leading-tight'>
+                          <h2 className='mb-0.5 text-base font-bold leading-tight text-gray-900 dark:text-white sm:text-xl'>
                             {title}
                           </h2>
                         )}
                         {description && (
-                          <p className='text-[10px] sm:text-xs text-gray-600 dark:text-gray-400 leading-tight sm:leading-relaxed line-clamp-1 sm:line-clamp-2'>
+                          <p className='line-clamp-1 text-[10px] leading-tight text-gray-600 dark:text-gray-400 sm:line-clamp-2 sm:text-xs sm:leading-relaxed'>
                             {description}
                           </p>
                         )}
@@ -177,9 +179,7 @@ export function Modal({
                     {/* Lado derecho: HeaderExtra + Botón cerrar */}
                     <div className='flex items-start gap-2 sm:gap-3'>
                       {headerExtra && (
-                        <div className='flex-shrink-0'>
-                          {headerExtra}
-                        </div>
+                        <div className='flex-shrink-0'>{headerExtra}</div>
                       )}
 
                       {/* Botón de cerrar mejorado */}
@@ -187,9 +187,9 @@ export function Modal({
                         <button
                           onClick={onClose}
                           type='button'
-                          className='flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 flex items-center justify-center transition-colors'
+                          className='flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-gray-100 transition-colors hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 sm:h-10 sm:w-10'
                         >
-                          <X className='h-4 w-4 sm:h-5 sm:w-5 text-gray-600 dark:text-gray-400' />
+                          <X className='h-4 w-4 text-gray-600 dark:text-gray-400 sm:h-5 sm:w-5' />
                         </button>
                       )}
                     </div>
@@ -198,19 +198,21 @@ export function Modal({
               )}
 
               {/* Content - Wizard mode sin scroll automático */}
-              <div className={cn(
-                'flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar',
-                noContentScroll
-                  ? 'px-0' // ← Sin padding horizontal en wizard mode
-                  : 'px-3 sm:px-6',
-                compact ? 'py-3 sm:py-4' : 'py-3'
-              )}>
+              <div
+                className={cn(
+                  'custom-scrollbar flex-1 overflow-y-auto overflow-x-hidden',
+                  noContentScroll
+                    ? 'px-0' // ← Sin padding horizontal en wizard mode
+                    : 'px-3 sm:px-6',
+                  compact ? 'py-3 sm:py-4' : 'py-3'
+                )}
+              >
                 {children}
               </div>
 
               {/* Footer mejorado y compacto */}
               {footer && (
-                <div className='px-3 sm:px-6 py-3 border-t border-gray-200/50 dark:border-gray-700/50 bg-gray-50/50 dark:bg-gray-800/30 flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-3 flex-shrink-0'>
+                <div className='flex flex-shrink-0 flex-col items-stretch justify-end gap-3 border-t border-gray-200/50 bg-gray-50/50 px-3 py-3 dark:border-gray-700/50 dark:bg-gray-800/30 sm:flex-row sm:items-center sm:px-6'>
                   {footer}
                 </div>
               )}

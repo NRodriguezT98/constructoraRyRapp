@@ -16,9 +16,9 @@ import { InvalidRoleError } from './InvalidRoleError'
 
 const ROLES_VALIDOS = [
   'Administrador',
-  'Contador',
-  'Supervisor',
-  'Gerente',
+  'Contabilidad',
+  'Administrador de Obra',
+  'Gerencia',
 ] as const
 
 interface RoleValidatorProps {

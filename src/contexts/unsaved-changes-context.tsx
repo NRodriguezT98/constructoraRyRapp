@@ -7,7 +7,14 @@
 
 'use client'
 
-import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react'
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from 'react'
 
 import { usePathname } from 'next/navigation'
 
@@ -23,9 +30,15 @@ interface UnsavedChangesContextType {
   setOnDiscard: (callback: (() => Promise<void>) | null) => void
 }
 
-const UnsavedChangesContext = createContext<UnsavedChangesContextType | null>(null)
+const UnsavedChangesContext = createContext<UnsavedChangesContextType | null>(
+  null
+)
 
-export function UnsavedChangesProvider({ children }: { children: React.ReactNode }) {
+export function UnsavedChangesProvider({
+  children,
+}: {
+  children: React.ReactNode
+}) {
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
   const onDiscardRef = useRef<(() => Promise<void>) | null>(null)
@@ -76,12 +89,13 @@ export function UnsavedChangesProvider({ children }: { children: React.ReactNode
 
         const confirmed = await confirm({
           title: '⚠️ Cambios sin guardar',
-          message: message ||
+          message:
+            message ||
             'Tienes cambios sin guardar.\n\n' +
-            'Si sales ahora, se perderán todos los cambios realizados.',
+              'Si sales ahora, se perderán todos los cambios realizados.',
           confirmText: 'Salir sin Guardar',
           cancelText: 'Quedarme Aquí',
-          variant: 'warning'
+          variant: 'warning',
         })
 
         if (confirmed) {
@@ -131,7 +145,9 @@ export function UnsavedChangesProvider({ children }: { children: React.ReactNode
 export function useUnsavedChanges() {
   const context = useContext(UnsavedChangesContext)
   if (!context) {
-    throw new Error('useUnsavedChanges debe usarse dentro de UnsavedChangesProvider')
+    throw new Error(
+      'useUnsavedChanges debe usarse dentro de UnsavedChangesProvider'
+    )
   }
   return context
 }

@@ -17,7 +17,6 @@ import {
 
 import { useParams, useRouter } from 'next/navigation'
 
-import { Button } from '@/components/ui/button'
 import { formatNombreCompleto } from '@/lib/utils/string.utils'
 import {
   useHistorialAbonosQuery,
@@ -25,6 +24,7 @@ import {
   useNegociacionesAbonos,
 } from '@/modules/abonos/hooks'
 import type { FuentePagoConAbonos } from '@/modules/abonos/types'
+import { Button } from '@/shared/components/ui/button'
 
 /**
  * 🎨 PÁGINA DE GESTIÓN DE ABONOS - DISEÑO PREMIUM

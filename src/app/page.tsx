@@ -11,7 +11,6 @@
 
 import { getServerPermissions } from '@/lib/auth/server'
 
-
 import DashboardContent from './dashboard-content'
 
 export default async function HomePage() {
@@ -22,7 +21,6 @@ export default async function HomePage() {
   return (
     <>
       <DashboardContent {...permisos} />
-
     </>
   )
 }

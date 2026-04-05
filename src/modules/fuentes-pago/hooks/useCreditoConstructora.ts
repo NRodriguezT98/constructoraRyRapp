@@ -7,21 +7,27 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
-import { crearCredito, getCreditoByFuente } from '../services/creditos-constructora.service'
 import {
-    calcularResumenCuotas,
-    crearCuotasCredito,
-    getPeriodosCredito,
-    reestructurarCredito,
+  crearCredito,
+  getCreditoByFuente,
+} from '../services/creditos-constructora.service'
+import {
+  calcularResumenCuotas,
+  crearCuotasCredito,
+  getPeriodosCredito,
+  reestructurarCredito,
 } from '../services/cuotas-credito.service'
 import type {
-    CreditoConstructora,
-    ParametrosCredito,
-    ParametrosReestructuracion,
-    PeriodoCredito,
-    ResumenCuotas,
+  CreditoConstructora,
+  ParametrosCredito,
+  ParametrosReestructuracion,
+  PeriodoCredito,
+  ResumenCuotas,
 } from '../types'
-import { calcularTablaAmortizacion, fechaCuotaParaBD } from '../utils/calculos-credito'
+import {
+  calcularTablaAmortizacion,
+  fechaCuotaParaBD,
+} from '../utils/calculos-credito'
 
 interface UseCreditoConstructoraProps {
   fuentePagoId: string
@@ -57,23 +63,29 @@ export function useCreditoConstructora({
     try {
       setCargando(true)
       setError(null)
-      const [{ data: creditoData, error: e1 }, { data: periodosData, error: e2 }] =
-        await Promise.all([
-          getCreditoByFuente(fuentePagoId),
-          getPeriodosCredito(fuentePagoId),
-        ])
+      const [
+        { data: creditoData, error: e1 },
+        { data: periodosData, error: e2 },
+      ] = await Promise.all([
+        getCreditoByFuente(fuentePagoId),
+        getPeriodosCredito(fuentePagoId),
+      ])
       if (e1) throw e1
       if (e2) throw e2
       setCredito(creditoData)
       setPeriodos(periodosData ?? [])
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Error cargando datos del crédito')
+      setError(
+        err instanceof Error ? err.message : 'Error cargando datos del crédito'
+      )
     } finally {
       setCargando(false)
     }
   }, [fuentePagoId])
 
-  useEffect(() => { cargarDatos() }, [cargarDatos])
+  useEffect(() => {
+    cargarDatos()
+  }, [cargarDatos])
 
   const reestructurar = useCallback(
     async (params: ParametrosReestructuracion): Promise<boolean> => {
@@ -98,7 +110,9 @@ export function useCreditoConstructora({
         await cargarDatos()
         return true
       } catch (err: unknown) {
-        setError(err instanceof Error ? err.message : 'Error reestructurando crédito')
+        setError(
+          err instanceof Error ? err.message : 'Error reestructurando crédito'
+        )
         return false
       } finally {
         setProcesando(false)
@@ -116,7 +130,10 @@ export function useCreditoConstructora({
           params.fechaInicio instanceof Date
             ? params.fechaInicio
             : new Date(String(params.fechaInicio) + 'T12:00:00')
-        const calculo = calcularTablaAmortizacion({ ...params, fechaInicio: fechaDate })
+        const calculo = calcularTablaAmortizacion({
+          ...params,
+          fechaInicio: fechaDate,
+        })
         const { error: eCredito } = await crearCredito({
           fuente_pago_id: fuentePagoId,
           capital: params.capital,
@@ -129,12 +146,18 @@ export function useCreditoConstructora({
           tasa_mora_diaria: params.tasaMoraDiaria ?? 0.001,
         })
         if (eCredito) throw eCredito
-        const { error: eCuotas } = await crearCuotasCredito(fuentePagoId, calculo.cuotas, 1)
+        const { error: eCuotas } = await crearCuotasCredito(
+          fuentePagoId,
+          calculo.cuotas,
+          1
+        )
         if (eCuotas) throw eCuotas
         await cargarDatos()
         return true
       } catch (err: unknown) {
-        setError(err instanceof Error ? err.message : 'Error creando plan de cuotas')
+        setError(
+          err instanceof Error ? err.message : 'Error creando plan de cuotas'
+        )
         return false
       } finally {
         setProcesando(false)

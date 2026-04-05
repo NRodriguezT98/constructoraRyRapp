@@ -1,7 +1,8 @@
 const { createClient } = require('@supabase/supabase-js')
 
 const SUPABASE_URL = 'https://zhqecllcqwfdmmfthfwq.supabase.co'
-const SERVICE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpocWVjbGxjcXdmZG1tZnRoZndxIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTczMDY1MDU3NywiZXhwIjoyMDQ2MjI2NTc3fQ.WVHdSvfHSDrfkIcDZDNaUJcqMN-P8XrFd2s_z8hAKy0'
+const SERVICE_KEY =
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpocWVjbGxjcXdmZG1tZnRoZndxIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTczMDY1MDU3NywiZXhwIjoyMDQ2MjI2NTc3fQ.WVHdSvfHSDrfkIcDZDNaUJcqMN-P8XrFd2s_z8hAKy0'
 
 const supabase = createClient(SUPABASE_URL, SERVICE_KEY)
 
@@ -28,7 +29,9 @@ async function mostrarEstado() {
 
   console.log('\n📜 Últimas 5 versiones:')
   versiones?.forEach(v => {
-    console.log(`   v${v.version}: ${v.tipo_cambio} - ${v.razon_cambio?.substring(0, 40)}`)
+    console.log(
+      `   v${v.version}: ${v.tipo_cambio} - ${v.razon_cambio?.substring(0, 40)}`
+    )
   })
 
   // Fuentes activas

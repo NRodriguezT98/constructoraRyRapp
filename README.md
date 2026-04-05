@@ -342,10 +342,12 @@ Sistema de autenticación **100% funcional** con las siguientes características
 - ✅ **Manejo de roles** (Administrador, Gerente, Vendedor)
 
 **📚 Documentación completa**:
+
 - **[SISTEMA-AUTENTICACION-COMPLETO.md](./docs/SISTEMA-AUTENTICACION-COMPLETO.md)** - Guía completa (100+ páginas)
 - **[AUTENTICACION-REFERENCIA-RAPIDA.md](./docs/AUTENTICACION-REFERENCIA-RAPIDA.md)** - Referencia rápida
 
 **Seguridad adicional**:
+
 - Row Level Security (RLS) en base de datos
 - Validación de inputs con Zod
 - HTTPS en producción

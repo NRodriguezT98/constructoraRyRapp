@@ -67,7 +67,9 @@ export function ProtectedAction({
 
   // Validación: no puede usar accion y acciones juntos
   if (accion && acciones) {
-    logger.error('ProtectedAction: No uses "accion" y "acciones" al mismo tiempo')
+    logger.error(
+      'ProtectedAction: No uses "accion" y "acciones" al mismo tiempo'
+    )
     return <>{fallback}</>
   }
 
@@ -108,7 +110,7 @@ interface SimpleActionProps {
 
 export function CanCreate({ modulo, children, fallback }: SimpleActionProps) {
   return (
-    <ProtectedAction modulo={modulo} accion="crear" fallback={fallback}>
+    <ProtectedAction modulo={modulo} accion='crear' fallback={fallback}>
       {children}
     </ProtectedAction>
   )
@@ -119,7 +121,7 @@ export function CanCreate({ modulo, children, fallback }: SimpleActionProps) {
  */
 export function CanEdit({ modulo, children, fallback }: SimpleActionProps) {
   return (
-    <ProtectedAction modulo={modulo} accion="editar" fallback={fallback}>
+    <ProtectedAction modulo={modulo} accion='editar' fallback={fallback}>
       {children}
     </ProtectedAction>
   )
@@ -130,7 +132,7 @@ export function CanEdit({ modulo, children, fallback }: SimpleActionProps) {
  */
 export function CanDelete({ modulo, children, fallback }: SimpleActionProps) {
   return (
-    <ProtectedAction modulo={modulo} accion="eliminar" fallback={fallback}>
+    <ProtectedAction modulo={modulo} accion='eliminar' fallback={fallback}>
       {children}
     </ProtectedAction>
   )
@@ -141,7 +143,7 @@ export function CanDelete({ modulo, children, fallback }: SimpleActionProps) {
  */
 export function CanView({ modulo, children, fallback }: SimpleActionProps) {
   return (
-    <ProtectedAction modulo={modulo} accion="ver" fallback={fallback}>
+    <ProtectedAction modulo={modulo} accion='ver' fallback={fallback}>
       {children}
     </ProtectedAction>
   )
@@ -152,7 +154,7 @@ export function CanView({ modulo, children, fallback }: SimpleActionProps) {
  */
 export function CanApprove({ modulo, children, fallback }: SimpleActionProps) {
   return (
-    <ProtectedAction modulo={modulo} accion="aprobar" fallback={fallback}>
+    <ProtectedAction modulo={modulo} accion='aprobar' fallback={fallback}>
       {children}
     </ProtectedAction>
   )
@@ -163,7 +165,7 @@ export function CanApprove({ modulo, children, fallback }: SimpleActionProps) {
  */
 export function CanReject({ modulo, children, fallback }: SimpleActionProps) {
   return (
-    <ProtectedAction modulo={modulo} accion="rechazar" fallback={fallback}>
+    <ProtectedAction modulo={modulo} accion='rechazar' fallback={fallback}>
       {children}
     </ProtectedAction>
   )
@@ -174,7 +176,7 @@ export function CanReject({ modulo, children, fallback }: SimpleActionProps) {
  */
 export function CanExport({ modulo, children, fallback }: SimpleActionProps) {
   return (
-    <ProtectedAction modulo={modulo} accion="exportar" fallback={fallback}>
+    <ProtectedAction modulo={modulo} accion='exportar' fallback={fallback}>
       {children}
     </ProtectedAction>
   )
@@ -200,9 +202,9 @@ export function AdminOnly({ children, fallback = null }: AdminOnlyProps) {
  * Componente para verificar si el usuario es Gerencia o superior
  */
 export function ManagerOrAbove({ children, fallback = null }: AdminOnlyProps) {
-  const { esAdmin, esGerente, isLoading } = usePermisosQuery()
+  const { esAdmin, esGerencia, isLoading } = usePermisosQuery()
 
   if (isLoading) return <>{fallback}</>
 
-  return esAdmin || esGerente ? <>{children}</> : <>{fallback}</>
+  return esAdmin || esGerencia ? <>{children}</> : <>{fallback}</>
 }

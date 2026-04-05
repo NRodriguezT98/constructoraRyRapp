@@ -38,7 +38,8 @@ export const historialStyles = {
       'sticky top-0 z-10 flex items-center gap-3 py-2 px-3 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700 rounded-lg mb-3',
     fechaIcon: 'w-4 h-4 text-cyan-600 dark:text-cyan-400',
     fechaTitulo: 'text-sm font-bold text-gray-900 dark:text-white',
-    fechaContador: 'ml-auto text-xs font-medium text-gray-500 dark:text-gray-400',
+    fechaContador:
+      'ml-auto text-xs font-medium text-gray-500 dark:text-gray-400',
 
     // Contenedor de eventos
     eventosContainer: 'relative pl-8 space-y-3',
@@ -51,7 +52,8 @@ export const historialStyles = {
     wrapper: 'relative',
 
     // Punto del timeline
-    punto: 'absolute -left-[26px] top-3 w-8 h-8 rounded-full flex items-center justify-center shadow-lg',
+    punto:
+      'absolute -left-[26px] top-3 w-8 h-8 rounded-full flex items-center justify-center shadow-lg',
     puntoIcon: 'w-4 h-4',
 
     // Card contenedor
@@ -68,7 +70,8 @@ export const historialStyles = {
     descripcion: 'text-xs text-gray-600 dark:text-gray-400 mt-0.5',
 
     // Fecha/hora
-    fechaContainer: 'flex flex-col items-end gap-0.5 text-[10px] text-gray-500 dark:text-gray-400',
+    fechaContainer:
+      'flex flex-col items-end gap-0.5 text-[10px] text-gray-500 dark:text-gray-400',
     fechaLabel: 'flex items-center gap-1',
     fechaLabelIcon: 'w-3 h-3',
     fechaLabelText: 'font-semibold',
@@ -79,12 +82,15 @@ export const historialStyles = {
       'flex items-center gap-2 mt-2 pt-2 border-t border-gray-100 dark:border-gray-700',
     usuarioIcon: 'w-3 h-3 text-gray-400 dark:text-gray-500',
     usuarioBody: 'flex-1',
-    usuarioLabel: 'text-[9px] font-semibold text-gray-500 dark:text-gray-400 uppercase',
-    usuarioNombre: 'text-[10px] font-medium text-gray-700 dark:text-gray-300 mt-0.5',
+    usuarioLabel:
+      'text-[9px] font-semibold text-gray-500 dark:text-gray-400 uppercase',
+    usuarioNombre:
+      'text-[10px] font-medium text-gray-700 dark:text-gray-300 mt-0.5',
     usuarioRol: 'text-cyan-600 dark:text-cyan-400 font-semibold',
 
     // Detalles
-    detallesContainer: 'mt-3 pt-3 border-t border-gray-100 dark:border-gray-700',
+    detallesContainer:
+      'mt-3 pt-3 border-t border-gray-100 dark:border-gray-700',
   },
 
   // ========== BOTÓN VER DETALLES ==========
@@ -102,9 +108,16 @@ export const historialStyles = {
 
   // ========== ANIMACIONES ==========
   animations: {
-    fadeIn: { initial: { opacity: 0, y: 10 }, animate: { opacity: 1, y: 0 }, exit: { opacity: 0, y: -10 } },
+    fadeIn: {
+      initial: { opacity: 0, y: 10 },
+      animate: { opacity: 1, y: 0 },
+      exit: { opacity: 0, y: -10 },
+    },
     slideIn: { initial: { opacity: 0, x: -20 }, animate: { opacity: 1, x: 0 } },
-    hoverSlide: { whileHover: { x: 2 }, transition: { type: 'tween', duration: 0.2, ease: 'easeOut' } },
+    hoverSlide: {
+      whileHover: { x: 2 },
+      transition: { type: 'tween', duration: 0.2, ease: 'easeOut' },
+    },
   },
 } as const
 

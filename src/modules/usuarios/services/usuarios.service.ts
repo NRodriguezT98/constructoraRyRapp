@@ -318,9 +318,9 @@ class UsuariosService {
         total: usuarios.length,
         por_rol: {
           Administrador: 0,
-          Contador: 0,
-          Supervisor: 0,
-          Gerente: 0,
+          Contabilidad: 0,
+          'Administrador de Obra': 0,
+          Gerencia: 0,
         },
         por_estado: {
           Activo: 0,

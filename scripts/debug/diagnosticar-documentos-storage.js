@@ -19,7 +19,9 @@ async function diagnosticar() {
   // 1. Obtener todos los documentos
   const { data: documentos, error } = await supabase
     .from('documentos_vivienda')
-    .select('id, vivienda_id, nombre_archivo, nombre_original, url_storage, version')
+    .select(
+      'id, vivienda_id, nombre_archivo, nombre_original, url_storage, version'
+    )
     .order('fecha_creacion', { ascending: false })
     .limit(100)
 
@@ -56,7 +58,7 @@ async function diagnosticar() {
         vivienda_id: doc.vivienda_id,
         nombre_bd: doc.nombre_archivo,
         nombre_url: nombreEnUrl,
-        url_completa: doc.url_storage
+        url_completa: doc.url_storage,
       })
 
       console.log(`⚠️  Inconsistencia encontrada:`)
@@ -72,12 +74,16 @@ async function diagnosticar() {
 
   // Resumen
   console.log('\n📋 RESUMEN:')
-  console.log(`✅ Documentos correctos: ${documentos.length - problemas.length}`)
+  console.log(
+    `✅ Documentos correctos: ${documentos.length - problemas.length}`
+  )
   console.log(`⚠️  Documentos con inconsistencias: ${problemas.length}`)
 
   if (problemas.length > 0) {
     console.log('\n🔧 SOLUCIÓN RECOMENDADA:')
-    console.log('Ejecutar script de corrección para actualizar campo nombre_archivo')
+    console.log(
+      'Ejecutar script de corrección para actualizar campo nombre_archivo'
+    )
     console.log('con el valor extraído de url_storage\n')
 
     // Guardar problemas en archivo JSON
@@ -95,7 +101,7 @@ diagnosticar()
     console.log('\n✅ Diagnóstico completado')
     process.exit(0)
   })
-  .catch((error) => {
+  .catch(error => {
     console.error('❌ Error en diagnóstico:', error)
     process.exit(1)
   })

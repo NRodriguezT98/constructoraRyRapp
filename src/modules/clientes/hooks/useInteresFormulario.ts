@@ -3,120 +3,34 @@
  * Carga proyectos y viviendas disponibles
  */
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useState } from 'react'
 
-import { supabase } from '@/lib/supabase/client'
-import { logger } from '@/lib/utils/logger'
+import { useQuery } from '@tanstack/react-query'
 
-interface Proyecto {
-  id: string
-  nombre: string
-  ubicacion: string
-}
-
-interface Vivienda {
-  id: string
-  numero: string
-  manzana_nombre: string
-  valor_total: number | null
-  estado: string
-}
-
-interface ViviendaRow {
-  id: string
-  numero: string
-  valor_total: number | null
-  estado: string
-  manzanas: { nombre: string; proyecto_id?: string } | null
-}
+import {
+  obtenerProyectosParaInteres,
+  obtenerViviendasParaInteres,
+} from '../services/intereses.service'
 
 export function useInteresFormulario() {
-  const [proyectos, setProyectos] = useState<Proyecto[]>([])
-  const [viviendas, setViviendas] = useState<Vivienda[]>([])
   const [proyectoSeleccionado, setProyectoSeleccionado] = useState<string>('')
   const [viviendaSeleccionada, setViviendaSeleccionada] = useState<string>('')
   const [notasInteres, setNotasInteres] = useState<string>('')
-  const [cargandoProyectos, setCargandoProyectos] = useState(false)
-  const [cargandoViviendas, setCargandoViviendas] = useState(false)
 
-  // =====================================================
-  // CARGAR PROYECTOS ACTIVOS
-  // =====================================================
-  useEffect(() => {
-    cargarProyectos()
-  }, [])
+  // ✅ React Query: proyectos activos para el selector
+  const { data: proyectos = [], isLoading: cargandoProyectos } = useQuery({
+    queryKey: ['proyectos-para-interes'],
+    queryFn: obtenerProyectosParaInteres,
+    staleTime: 5 * 60 * 1000,
+  })
 
-  const cargarProyectos = async () => {
-    setCargandoProyectos(true)
-    try {
-      const { data, error } = await supabase
-        .from('proyectos')
-        .select('id, nombre, ubicacion')
-        .in('estado', ['en_planificacion', 'en_construccion'])
-        .order('nombre')
-
-      if (error) throw error
-      setProyectos(data || [])
-    } catch (error) {
-      logger.error('Error cargando proyectos:', error)
-    } finally {
-      setCargandoProyectos(false)
-    }
-  }
-
-  // =====================================================
-  // CARGAR VIVIENDAS DISPONIBLES CUANDO SELECCIONA PROYECTO
-  // =====================================================
-  useEffect(() => {
-    if (proyectoSeleccionado) {
-      cargarViviendasProyecto(proyectoSeleccionado)
-    } else {
-      setViviendas([])
-      setViviendaSeleccionada('')
-    }
-  }, [proyectoSeleccionado])
-
-  const cargarViviendasProyecto = async (proyectoId: string) => {
-    setCargandoViviendas(true)
-    try {
-      const { data, error } = await supabase
-        .from('viviendas')
-        .select(
-          `
-          id,
-          numero,
-          valor_total,
-          estado,
-          manzanas!inner(
-            nombre,
-            proyecto_id
-          )
-        `
-        )
-        .eq('manzanas.proyecto_id', proyectoId)
-        .eq('estado', 'Disponible')
-        .order('numero')
-
-      if (error) throw error
-
-      // Transformar datos
-      const viviendasFormateadas =
-        data?.map((v: ViviendaRow) => ({
-          id: v.id,
-          numero: v.numero,
-          manzana_nombre: v.manzanas?.nombre || '',
-          valor_total: v.valor_total,
-          estado: v.estado,
-        })) || []
-
-      setViviendas(viviendasFormateadas)
-    } catch (error) {
-      logger.error('Error cargando viviendas:', error)
-      setViviendas([])
-    } finally {
-      setCargandoViviendas(false)
-    }
-  }
+  // ✅ React Query: viviendas disponibles según proyecto seleccionado
+  const { data: viviendas = [], isLoading: cargandoViviendas } = useQuery({
+    queryKey: ['viviendas-para-interes', proyectoSeleccionado],
+    queryFn: () => obtenerViviendasParaInteres(proyectoSeleccionado),
+    enabled: !!proyectoSeleccionado,
+    staleTime: 2 * 60 * 1000,
+  })
 
   // =====================================================
   // HANDLERS

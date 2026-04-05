@@ -1,5 +1,5 @@
 import { getServerPermissions } from '@/lib/auth/server'
-import { resolverSlugProyecto } from '@/lib/utils/slug.utils'
+import { resolverSlugProyectoServer } from '@/lib/utils/slug.server'
 import { EditarProyectoView } from '@/modules/proyectos/components/EditarProyectoView'
 
 interface PageProps {
@@ -12,11 +12,17 @@ export default async function EditarProyectoPage({ params }: PageProps) {
   const { id } = await params
   const permisos = await getServerPermissions()
 
-  const proyectoUUID = await resolverSlugProyecto(id)
+  const proyectoUUID = await resolverSlugProyectoServer(id)
 
   if (!proyectoUUID) {
-    return <div className="min-h-screen flex items-center justify-center text-gray-500">Proyecto no encontrado</div>
+    return (
+      <div className='flex min-h-screen items-center justify-center text-gray-500'>
+        Proyecto no encontrado
+      </div>
+    )
   }
 
-  return <EditarProyectoView proyectoId={proyectoUUID} canEdit={permisos.canEdit} />
+  return (
+    <EditarProyectoView proyectoId={proyectoUUID} canEdit={permisos.canEdit} />
+  )
 }

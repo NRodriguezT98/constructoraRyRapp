@@ -2,4 +2,4 @@
 // BARREL EXPORT: ModuloSelector
 // ============================================
 
-export { ModuloSelector } from './modulo-selector';
+export { ModuloSelector } from './modulo-selector'

@@ -32,12 +32,14 @@ async function buscarTodosDocumentosJuanCarlos() {
     console.log(`Metadata:`, JSON.stringify(doc.metadata, null, 2))
 
     // Si tiene fuente_pago_id en metadata, actualizar
-    if (doc.metadata?.fuente_pago_id === '68995ee2-04ce-4d1e-b0ca-4f28f7397bc9') {
+    if (
+      doc.metadata?.fuente_pago_id === '68995ee2-04ce-4d1e-b0ca-4f28f7397bc9'
+    ) {
       console.log('\n🎯 ¡Este documento está vinculado a la fuente de pago!')
 
       const nuevoMetadata = {
         ...doc.metadata,
-        entidad: 'COMFANDI'
+        entidad: 'COMFANDI',
       }
 
       const { error: errorUpdate } = await supabase

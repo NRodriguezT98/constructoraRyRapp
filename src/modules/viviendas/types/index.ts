@@ -198,7 +198,12 @@ export type ViviendaVista = 'grid' | 'list' | 'table'
 // PASOS DEL FORMULARIO
 // ============================================
 
-export type PasoFormulario = 'ubicacion' | 'linderos' | 'legal' | 'financiero' | 'resumen'
+export type PasoFormulario =
+  | 'ubicacion'
+  | 'linderos'
+  | 'legal'
+  | 'financiero'
+  | 'resumen'
 
 export interface EstadoFormulario {
   paso_actual: PasoFormulario

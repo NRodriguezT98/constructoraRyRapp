@@ -1,9 +1,9 @@
-import { notFound } from 'next/navigation';
+import { notFound } from 'next/navigation'
 
-import { logger } from '@/lib/utils/logger';
-import { resolverSlugAUUID } from '@/lib/utils/slug.utils';
+import { logger } from '@/lib/utils/logger'
+import { resolverSlugViviendaServer } from '@/lib/utils/slug.server'
 
-import ViviendaDetalleClient from './vivienda-detalle-client-new'; // ✅ Estructura de proyectos
+import ViviendaDetalleClient from './vivienda-detalle-client-new' // ✅ Estructura de proyectos
 
 interface PageProps {
   params: Promise<{ slug: string }>
@@ -18,7 +18,7 @@ export default async function ViviendaDetallePage({ params }: PageProps) {
     const { slug } = await params
 
     // Resolver slug a UUID completo
-    const viviendaId = await resolverSlugAUUID(slug, 'viviendas')
+    const viviendaId = await resolverSlugViviendaServer(slug)
 
     if (!viviendaId) {
       notFound()

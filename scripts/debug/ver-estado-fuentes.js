@@ -7,7 +7,7 @@ const pool = new Pool({
   database: process.env.DATABASE_NAME,
   user: process.env.DATABASE_USER,
   password: process.env.DATABASE_PASSWORD,
-  ssl: false // ✅ Sin SSL para pooler
+  ssl: false, // ✅ Sin SSL para pooler
 })
 
 async function diagnosticar() {
@@ -75,7 +75,6 @@ async function diagnosticar() {
     } else {
       console.log('⚠️ No hay fuentes inactivas en esta negociación')
     }
-
   } catch (error) {
     console.error('❌ Error:', error.message)
   } finally {

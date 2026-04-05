@@ -15,7 +15,10 @@ interface DetectarCambiosParams {
   formData: Partial<Vivienda>
 }
 
-export function detectarCambiosVivienda({ viviendaActual, formData }: DetectarCambiosParams): CambioDetectado[] {
+export function detectarCambiosVivienda({
+  viviendaActual,
+  formData,
+}: DetectarCambiosParams): CambioDetectado[] {
   const cambios: CambioDetectado[] = []
 
   // Helper para formatear moneda
@@ -73,7 +76,9 @@ export function detectarCambiosVivienda({ viviendaActual, formData }: DetectarCa
   }
 
   // ==================== INFORMACIÓN LEGAL ====================
-  if (formData.matricula_inmobiliaria !== viviendaActual.matricula_inmobiliaria) {
+  if (
+    formData.matricula_inmobiliaria !== viviendaActual.matricula_inmobiliaria
+  ) {
     cambios.push({
       campo: 'matricula_inmobiliaria',
       label: 'Matrícula Inmobiliaria',

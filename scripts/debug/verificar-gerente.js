@@ -22,9 +22,7 @@ async function verificarPermisosGerente() {
   }
 
   // Agrupar manualmente
-  const conteoManual = await supabase
-    .from('permisos_rol')
-    .select('rol')
+  const conteoManual = await supabase.from('permisos_rol').select('rol')
 
   const grupos = {}
   conteoManual.data?.forEach(item => {
@@ -58,7 +56,9 @@ async function verificarPermisosGerente() {
     .select('*')
     .eq('rol', 'Gerencia')
 
-  console.log(`\n❌ Permisos de "Gerencia" (debe ser 0): ${permisosGerencia?.length || 0}`)
+  console.log(
+    `\n❌ Permisos de "Gerencia" (debe ser 0): ${permisosGerencia?.length || 0}`
+  )
 
   if (permisosGerencia && permisosGerencia.length > 0) {
     console.log('\n⚠️  PROBLEMA: Todavía existen permisos con rol "Gerencia"')

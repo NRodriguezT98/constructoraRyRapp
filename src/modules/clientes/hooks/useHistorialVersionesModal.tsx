@@ -10,12 +10,7 @@
 
 import { useState, useMemo } from 'react'
 
-import {
-  Plus,
-  Trash2,
-  RefreshCw,
-  FileText,
-} from 'lucide-react'
+import { Plus, Trash2, RefreshCw, FileText } from 'lucide-react'
 
 import type { SnapshotVersion } from '../types/historial'
 
@@ -33,7 +28,7 @@ export function useHistorialVersionesModal({
 
   // Manejar toggle de expansión
   const toggleVersion = (versionId: string) => {
-    setVersionesExpandidas((prev) => {
+    setVersionesExpandidas(prev => {
       const next = new Set(prev)
       if (next.has(versionId)) {
         next.delete(versionId)
@@ -66,13 +61,27 @@ export function useHistorialVersionesModal({
 
 export function getTipoCambioIcon(tipo: string) {
   const icons: Record<string, React.ReactElement> = {
-    fuente_agregada: <Plus className="w-4 h-4 text-green-600 dark:text-green-400" />,
-    fuente_inactivada: <Trash2 className="w-4 h-4 text-red-600 dark:text-red-400" />,
-    fuente_modificada: <RefreshCw className="w-4 h-4 text-blue-600 dark:text-blue-400" />,
-    fuente_eliminada: <Trash2 className="w-4 h-4 text-gray-600 dark:text-gray-400" />,
-    fuentes_pago_actualizadas: <RefreshCw className="w-4 h-4 text-blue-600 dark:text-blue-400" />,
+    fuente_agregada: (
+      <Plus className='h-4 w-4 text-green-600 dark:text-green-400' />
+    ),
+    fuente_inactivada: (
+      <Trash2 className='h-4 w-4 text-red-600 dark:text-red-400' />
+    ),
+    fuente_modificada: (
+      <RefreshCw className='h-4 w-4 text-blue-600 dark:text-blue-400' />
+    ),
+    fuente_eliminada: (
+      <Trash2 className='h-4 w-4 text-gray-600 dark:text-gray-400' />
+    ),
+    fuentes_pago_actualizadas: (
+      <RefreshCw className='h-4 w-4 text-blue-600 dark:text-blue-400' />
+    ),
   }
-  return icons[tipo] || <FileText className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+  return (
+    icons[tipo] || (
+      <FileText className='h-4 w-4 text-gray-600 dark:text-gray-400' />
+    )
+  )
 }
 
 export function getTipoCambioLabel(tipo: string): string {

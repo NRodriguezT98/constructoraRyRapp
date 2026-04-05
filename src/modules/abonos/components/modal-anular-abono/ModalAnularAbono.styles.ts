@@ -5,10 +5,12 @@
 
 export const modalAnularAbonoStyles = {
   // Overlay
-  overlay: 'fixed inset-0 z-[10001] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4',
+  overlay:
+    'fixed inset-0 z-[10001] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4',
 
   // Contenedor principal
-  container: 'relative w-full max-w-md rounded-2xl bg-white dark:bg-gray-900 shadow-2xl overflow-hidden',
+  container:
+    'relative w-full max-w-md rounded-2xl bg-white dark:bg-gray-900 shadow-2xl overflow-hidden',
 
   // ─── Header ──────────────────────────────────────────────────────────────────
   header: {
@@ -31,8 +33,7 @@ export const modalAnularAbonoStyles = {
     'flex items-center gap-3 rounded-xl bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700 px-4 py-3',
   infoBadgeLabel:
     'text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500',
-  infoBadgeValue:
-    'text-sm font-bold text-gray-900 dark:text-white',
+  infoBadgeValue: 'text-sm font-bold text-gray-900 dark:text-white',
 
   // Advertencia
   warningBox:
@@ -43,7 +44,8 @@ export const modalAnularAbonoStyles = {
   // ─── Formulario ───────────────────────────────────────────────────────────────
   form: {
     fieldGroup: 'space-y-1.5',
-    label: 'block text-xs font-bold uppercase tracking-wide text-gray-500 dark:text-gray-400',
+    label:
+      'block text-xs font-bold uppercase tracking-wide text-gray-500 dark:text-gray-400',
     labelRequired: 'ml-0.5 text-red-500',
     select:
       'w-full rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2.5 text-sm text-gray-900 dark:text-white transition-all focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-500/20',
@@ -54,7 +56,8 @@ export const modalAnularAbonoStyles = {
   },
 
   // ─── Footer ───────────────────────────────────────────────────────────────────
-  footer: 'flex items-center justify-end gap-3 border-t border-gray-200 dark:border-gray-700 px-5 py-4',
+  footer:
+    'flex items-center justify-end gap-3 border-t border-gray-200 dark:border-gray-700 px-5 py-4',
   btnCancel:
     'inline-flex items-center gap-1.5 rounded-xl border-2 border-gray-200 dark:border-gray-700 px-4 py-2 text-sm font-semibold text-gray-600 dark:text-gray-300 transition-all hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800',
   btnConfirm:

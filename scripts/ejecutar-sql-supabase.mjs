@@ -13,7 +13,9 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
 if (!supabaseUrl || !supabaseKey) {
-  console.error('❌ Error: Faltan variables de entorno NEXT_PUBLIC_SUPABASE_URL o NEXT_PUBLIC_SUPABASE_ANON_KEY')
+  console.error(
+    '❌ Error: Faltan variables de entorno NEXT_PUBLIC_SUPABASE_URL o NEXT_PUBLIC_SUPABASE_ANON_KEY'
+  )
   process.exit(1)
 }
 
@@ -41,13 +43,19 @@ BEGIN
 END $$;
 `
 
-console.log('⚠️  NOTA: Supabase no permite ejecutar DDL (ALTER TABLE, DROP COLUMN) desde el cliente.')
-console.log('Necesitas ejecutar este SQL directamente en el Dashboard de Supabase.\n')
-console.log('=' .repeat(80))
+console.log(
+  '⚠️  NOTA: Supabase no permite ejecutar DDL (ALTER TABLE, DROP COLUMN) desde el cliente.'
+)
+console.log(
+  'Necesitas ejecutar este SQL directamente en el Dashboard de Supabase.\n'
+)
+console.log('='.repeat(80))
 console.log(sql)
-console.log('=' .repeat(80))
+console.log('='.repeat(80))
 console.log('\n📍 Pasos:')
-console.log('  1. Ve a: https://supabase.com/dashboard/project/[tu-proyecto]/sql')
+console.log(
+  '  1. Ve a: https://supabase.com/dashboard/project/[tu-proyecto]/sql'
+)
 console.log('  2. Pega el SQL de arriba')
 console.log('  3. Haz click en RUN')
 console.log('  4. Reinicia el servidor de desarrollo\n')

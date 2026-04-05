@@ -9,21 +9,25 @@ Sistema desacoplado que permite gestionar clientes independientemente de las viv
 ## 🎯 Conceptos Clave
 
 ### **Cliente**
+
 - Puede existir sin vivienda ("Interesado")
 - Estados: `Interesado` | `Activo` | `Inactivo`
 - Información personal, contacto y documentos
 
 ### **Negociación**
+
 - Vincula `Cliente` + `Vivienda`
 - Gestiona el **cierre financiero**
 - Estados: `En Proceso` → `Cierre Financiero` → `Activa` → `Completada`/`Cancelada`/`Renuncia`
 
 ### **Fuente de Pago**
+
 - Configuraciones por negociación
 - Tipos: Cuota Inicial, Crédito Hipotecario, Subsidios
 - Permite múltiples abonos o desembolso único
 
 ### **Proceso**
+
 - Workflow por negociación
 - Hitos configurables con dependencias
 - Documentos requeridos por paso
@@ -62,11 +66,13 @@ supabase/
 ### ✅ COMPLETADO (60%)
 
 #### Estructura Base
+
 - ✅ Carpetas: components/, hooks/, store/, styles/
 - ✅ Barrel exports en todas las carpetas
 - ✅ Arquitectura siguiendo GUIA-ESTILOS.md
 
 #### Componentes Implementados (7)
+
 - ✅ `ClientesPageMain` - Orquestador principal
 - ✅ `ClientesHeader` - Header con CTA
 - ✅ `EstadisticasClientes` - Cards de estadísticas
@@ -76,22 +82,27 @@ supabase/
 - ✅ `ClientesEmpty` - Estado vacío
 
 #### Hooks Implementados (2)
+
 - ✅ `useClientes` - Hook principal con toda la lógica
 - ✅ `useFormularioCliente` - Hook para formulario
 
 #### Estado Global (1)
+
 - ✅ `useClientesStore` - Zustand store completo
 
 #### Estilos (2)
+
 - ✅ `classes.ts` - 50+ clases centralizadas
 - ✅ `animations.ts` - Variantes de Framer Motion
 
 #### Integración
+
 - ✅ `app/clientes/page.tsx` actualizada
 - ✅ Sin errores de TypeScript
 - ✅ Servidor corriendo sin problemas
 
 ### 📊 Métricas
+
 - **Componentes**: 7 de 10 (70%)
 - **Hooks**: 2 de 3 (66%)
 - **Servicios**: 1 de 3 (33%)
@@ -128,6 +139,7 @@ npx supabase gen types typescript --project-id [TU_PROJECT_ID] > src/lib/supabas
 ### 4. **Completar Servicios**
 
 Una vez los tipos estén actualizados:
+
 - ✅ `clientes.service.ts`
 - ⏳ `negociaciones.service.ts`
 - ⏳ `fuentes-pago.service.ts`
@@ -135,6 +147,7 @@ Una vez los tipos estén actualizados:
 ### 5. **Componente Cierre Financiero**
 
 El componente más complejo:
+
 - Selección de fuentes de pago dinámicas
 - Validación en tiempo real (suma = valor vivienda)
 - Subida de documentos
@@ -143,6 +156,7 @@ El componente más complejo:
 ### 6. **Módulo Negociaciones**
 
 Sistema completo:
+
 - Crear negociación (cliente + vivienda + cierre)
 - Ver negociaciones activas
 - Gestionar proceso
@@ -229,6 +243,7 @@ interface CierreFinancieroProps {
 ```
 
 **Features:**
+
 - Toggle switches por fuente de pago
 - Campos dinámicos según tipo
 - Validación en tiempo real
@@ -238,6 +253,7 @@ interface CierreFinancieroProps {
 ### 2. **FormularioCliente Component**
 
 CRUD básico:
+
 - Datos personales
 - Contacto
 - Documento identidad
@@ -246,6 +262,7 @@ CRUD básico:
 ### 3. **ListaClientes Component**
 
 Vista principal:
+
 - Tabla/Grid responsive
 - Filtros (estado, origen, fecha)
 - Búsqueda
@@ -254,6 +271,7 @@ Vista principal:
 ### 4. **DetallCliente Component**
 
 Vista completa:
+
 - Información del cliente
 - Historial de negociaciones
 - Documentos
@@ -301,6 +319,7 @@ Vista completa:
 ## 📞 ¿Listo para continuar?
 
 Una vez ejecutes el SQL y regeneres los tipos, podremos:
+
 1. ✅ Completar servicios sin errores
 2. 🎨 Crear el componente `CierreFinanciero`
 3. 📄 Implementar páginas del módulo

@@ -8,7 +8,8 @@ export function traducirErrorSupabase(errorMessage: string): string {
   // Mapeo de errores comunes de Supabase
   const traducciones: Record<string, string> = {
     // Errores de autenticación
-    'Invalid login credentials': 'Credenciales incorrectas. Verifica tu email y contraseña.',
+    'Invalid login credentials':
+      'Credenciales incorrectas. Verifica tu email y contraseña.',
     'Email not confirmed': 'Email no confirmado. Revisa tu bandeja de entrada.',
     'User not found': 'Usuario no encontrado.',
     'Invalid email': 'Email inválido.',
@@ -22,13 +23,15 @@ export function traducirErrorSupabase(errorMessage: string): string {
     'Unable to validate email': 'No se pudo validar el email.',
     'Token expired': 'El enlace ha expirado. Solicita uno nuevo.',
     'Invalid token': 'Enlace inválido.',
-    'New password should be different from the old password': 'La nueva contraseña debe ser diferente a la anterior.',
-    'New password should be different': 'La nueva contraseña debe ser diferente a la anterior.',
+    'New password should be different from the old password':
+      'La nueva contraseña debe ser diferente a la anterior.',
+    'New password should be different':
+      'La nueva contraseña debe ser diferente a la anterior.',
 
     // Errores de conexión
     'Network error': 'Error de conexión. Verifica tu internet.',
     'Failed to fetch': 'Error de conexión con el servidor.',
-    'Timeout': 'Tiempo de espera agotado. Intenta nuevamente.',
+    Timeout: 'Tiempo de espera agotado. Intenta nuevamente.',
 
     // Errores de sesión
     'Session expired': 'Tu sesión ha expirado. Inicia sesión nuevamente.',

@@ -27,15 +27,18 @@ export * from './styles'
 
 // Components (con alias para evitar conflictos)
 export {
-    LoadingDots, LoadingOverlay, LoadingSpinner, Skeleton
+  LoadingDots,
+  LoadingOverlay,
+  LoadingSpinner,
+  Skeleton,
 } from './components/ui/Loading'
 
 export { EmptyState } from './components/ui/EmptyState'
 
 export {
-    Notification as NotificationComponent,
-    NotificationContainer,
-    type NotificationType
+  Notification as NotificationComponent,
+  NotificationContainer,
+  type NotificationType,
 } from './components/ui/Notification'
 
 export { ConfirmModal, Modal } from './components/ui/Modal'

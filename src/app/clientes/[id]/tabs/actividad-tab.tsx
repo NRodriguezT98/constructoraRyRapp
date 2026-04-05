@@ -22,7 +22,9 @@ interface ActividadTabProps {
 
 export function ActividadTab({ clienteId }: ActividadTabProps) {
   // ✅ Hook con TODA la lógica
-  const { isLoading, error, hasNegociacionActiva } = useActividadTab({ clienteId })
+  const { isLoading, error, hasNegociacionActiva } = useActividadTab({
+    clienteId,
+  })
 
   // =====================================================
   // RENDER: Loading State
@@ -30,8 +32,8 @@ export function ActividadTab({ clienteId }: ActividadTabProps) {
 
   if (isLoading) {
     return (
-      <div className="py-12">
-        <LoadingState message="Cargando proceso de negociación..." />
+      <div className='py-12'>
+        <LoadingState message='Cargando proceso de negociación...' />
       </div>
     )
   }
@@ -44,9 +46,9 @@ export function ActividadTab({ clienteId }: ActividadTabProps) {
     return (
       <div className={styles.emptyStateClasses.container}>
         <EmptyState
-          icon={<AlertCircle className="w-12 h-12 text-amber-500" />}
+          icon={<AlertCircle className='h-12 w-12 text-amber-500' />}
           title={error || 'Sin negociación activa'}
-          description="Este cliente no tiene una negociación activa. El proceso de compra se mostrará cuando exista una negociación."
+          description='Este cliente no tiene una negociación activa. El proceso de compra se mostrará cuando exista una negociación.'
         />
       </div>
     )
@@ -59,9 +61,9 @@ export function ActividadTab({ clienteId }: ActividadTabProps) {
   return (
     <div className={styles.emptyStateClasses.container}>
       <EmptyState
-        icon={<ClipboardList className="w-12 h-12 text-blue-500" />}
-        title="Seguimiento de Pasos"
-        description="Los requisitos y pasos de validación por fuente de pago se gestionan desde la sección de Abonos del cliente, en cada tarjeta de fuente de pago."
+        icon={<ClipboardList className='h-12 w-12 text-blue-500' />}
+        title='Seguimiento de Pasos'
+        description='Los requisitos y pasos de validación por fuente de pago se gestionan desde la sección de Abonos del cliente, en cada tarjeta de fuente de pago.'
       />
     </div>
   )

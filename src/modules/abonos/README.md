@@ -59,18 +59,21 @@ src/modules/abonos/
 ## 🔄 Flujo de Uso
 
 ### 1. Acceder al Módulo
+
 ```
 Sidebar → Abonos (icono CreditCard naranja)
 Ruta: /abonos
 ```
 
 ### 2. Seleccionar Negociación
+
 - Click en tarjeta de negociación en panel izquierdo
 - Se cargan automáticamente:
   - Fuentes de pago con saldos actualizados
   - Historial completo de abonos
 
 ### 3. Registrar Abono
+
 1. Click en "Registrar Abono"
 2. Seleccionar fuente de pago (muestra saldo disponible)
 3. Ingresar monto (validado contra saldo)
@@ -81,6 +84,7 @@ Ruta: /abonos
 8. Click en "Registrar Abono"
 
 ### 4. Verificar Actualización
+
 - **Automáticamente** se actualizan:
   - `fuentes_pago.monto_recibido` (trigger)
   - `fuentes_pago.saldo_pendiente` (columna generada)
@@ -92,6 +96,7 @@ Ruta: /abonos
 ## 🔧 Arquitectura Técnica
 
 ### Base de Datos
+
 - **Tabla**: `abonos_historial`
 - **Triggers**:
   - `actualizar_monto_recibido_fuente()` - Actualiza monto_recibido
@@ -99,6 +104,7 @@ Ruta: /abonos
   - `update_abonos_historial_fecha_actualizacion()` - Timestamp automático
 
 ### Service Layer
+
 - `obtenerNegociacionesActivas()` - Lista negociaciones
 - `obtenerFuentesPagoConAbonos()` - Fuentes con historial
 - `registrarAbono()` - Crea nuevo abono (con validaciones)
@@ -106,10 +112,12 @@ Ruta: /abonos
 - `eliminarAbono()` - Elimina abono (reversa operación)
 
 ### Hooks
+
 - **useAbonos**: Lógica principal (carga datos, maneja estado)
 - **useRegistrarAbono**: Formulario (validaciones, DTO)
 
 ### UI
+
 - **Dashboard**: Componente principal todo-en-uno
 - **Modal**: Formulario de registro integrado
 - **Responsive**: Mobile-first, grid adaptativo
@@ -118,6 +126,7 @@ Ruta: /abonos
 ## 📊 Validaciones
 
 ### Cliente (useRegistrarAbono)
+
 - Fuente de pago seleccionada
 - Monto > 0
 - Monto ≤ saldo_pendiente
@@ -126,6 +135,7 @@ Ruta: /abonos
 - Número de referencia recomendado (warning si falta)
 
 ### Servidor (Trigger)
+
 - Monto > 0 (CHECK constraint)
 - Monto + monto_recibido ≤ monto_aprobado (trigger validación)
 - Método de pago válido (CHECK constraint)
@@ -133,31 +143,37 @@ Ruta: /abonos
 ## 🎨 Estados Visuales
 
 ### Fuentes de Pago
+
 - 🟢 **Verde (100%)**: Completamente abonada
 - 🟡 **Amarillo (1-99%)**: Parcialmente abonada
 - ⚪ **Gris (0%)**: Sin abonos
 
 ### Tarjetas de Negociación
+
 - 🔵 **Azul**: Seleccionada (borde + fondo)
 - ⚪ **Blanco**: No seleccionada (hover gris)
 
 ## 🧪 Cómo Probar
 
 ### 1. Inicia el servidor de desarrollo
+
 ```bash
 npm run dev
 ```
 
 ### 2. Navega a /abonos
+
 ```
 http://localhost:3000/abonos
 ```
 
 ### 3. Selecciona una negociación activa
+
 - Debe ser del cliente con cédula que ya creaste
 - Ejemplo: Laura Duque (1234567890)
 
 ### 4. Registra un abono de prueba
+
 ```
 Fuente: Cuota Inicial
 Monto: 10000000 ($10M)
@@ -168,6 +184,7 @@ Notas: Prueba del sistema
 ```
 
 ### 5. Verifica actualizaciones automáticas
+
 - ✅ Monto recibido aumenta
 - ✅ Saldo pendiente disminuye
 - ✅ Porcentaje completado actualizado
@@ -216,6 +233,7 @@ Notas: Prueba del sistema
 ---
 
 **Desarrollado siguiendo arquitectura del proyecto**
+
 - Separación de responsabilidades (hooks, services, components)
 - Types estrictos de TypeScript
 - Código limpio y mantenible

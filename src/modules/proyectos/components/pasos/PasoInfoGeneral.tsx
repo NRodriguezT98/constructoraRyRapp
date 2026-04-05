@@ -3,10 +3,23 @@
 import { useEffect, useMemo, useRef } from 'react'
 
 import { motion } from 'framer-motion'
-import type { FieldErrors, UseFormRegister, UseFormSetValue, UseFormWatch } from 'react-hook-form'
+import type {
+  FieldErrors,
+  UseFormRegister,
+  UseFormSetValue,
+  UseFormWatch,
+} from 'react-hook-form'
 
-import { AccordionWizardField, AccordionWizardSelect, AccordionWizardTextarea, fieldStaggerAnim } from '@/shared/components/accordion-wizard'
-import { getCiudadesPorDepartamento, getDepartamentos } from '@/shared/data/colombia-locations'
+import {
+  AccordionWizardField,
+  AccordionWizardSelect,
+  AccordionWizardTextarea,
+  fieldStaggerAnim,
+} from '@/shared/components/accordion-wizard'
+import {
+  getCiudadesPorDepartamento,
+  getDepartamentos,
+} from '@/shared/data/colombia-locations'
 
 import type { ProyectoFormSchema } from '../../hooks/useProyectosForm'
 
@@ -20,7 +33,12 @@ interface PasoInfoGeneralProps {
 /**
  * Paso 1: Información General (nombre, departamento, ciudad, dirección, descripción)
  */
-export function PasoInfoGeneral({ register, errors, watch, setValue }: PasoInfoGeneralProps) {
+export function PasoInfoGeneral({
+  register,
+  errors,
+  watch,
+  setValue,
+}: PasoInfoGeneralProps) {
   const departamentos = useMemo(() => getDepartamentos(), [])
   const departamentoSeleccionado = watch('departamento')
 
@@ -39,7 +57,12 @@ export function PasoInfoGeneral({ register, errors, watch, setValue }: PasoInfoG
       prevDepartamento.current !== departamentoSeleccionado
     ) {
       const ciudadActual = watch('ciudad')
-      if (ciudadActual && !getCiudadesPorDepartamento(departamentoSeleccionado).includes(ciudadActual)) {
+      if (
+        ciudadActual &&
+        !getCiudadesPorDepartamento(departamentoSeleccionado).includes(
+          ciudadActual
+        )
+      ) {
         setValue('ciudad', '')
       }
     }
@@ -55,15 +78,14 @@ export function PasoInfoGeneral({ register, errors, watch, setValue }: PasoInfoG
     if (ciudadEnFormulario && ciudades.includes(ciudadEnFormulario)) {
       setValue('ciudad', ciudadEnFormulario, { shouldValidate: false })
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ciudades, setValue])
+  }, [ciudades, setValue, watch])
 
   return (
-    <div className="space-y-4 pt-4">
+    <div className='space-y-4 pt-4'>
       <motion.div {...fieldStaggerAnim(0)}>
         <AccordionWizardField
-          label="Nombre del proyecto"
-          moduleName="proyectos"
+          label='Nombre del proyecto'
+          moduleName='proyectos'
           required
           error={errors.nombre?.message as string}
           {...register('nombre')}
@@ -71,35 +93,41 @@ export function PasoInfoGeneral({ register, errors, watch, setValue }: PasoInfoG
       </motion.div>
 
       {/* Departamento + Ciudad en fila */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className='grid grid-cols-1 gap-4 sm:grid-cols-2'>
         <motion.div {...fieldStaggerAnim(1)}>
           <AccordionWizardSelect
-            label="Departamento"
-            moduleName="proyectos"
+            label='Departamento'
+            moduleName='proyectos'
             required
             error={errors.departamento?.message as string}
             {...register('departamento')}
           >
-            <option value="">Selecciona un departamento</option>
-            {departamentos.map((d) => (
-              <option key={d} value={d}>{d}</option>
+            <option value=''>Selecciona un departamento</option>
+            {departamentos.map(d => (
+              <option key={d} value={d}>
+                {d}
+              </option>
             ))}
           </AccordionWizardSelect>
         </motion.div>
         <motion.div {...fieldStaggerAnim(2)}>
           <AccordionWizardSelect
-            label="Ciudad / Municipio"
-            moduleName="proyectos"
+            label='Ciudad / Municipio'
+            moduleName='proyectos'
             required
             error={errors.ciudad?.message as string}
             disabled={!departamentoSeleccionado}
             {...register('ciudad')}
           >
-            <option value="">
-              {departamentoSeleccionado ? 'Selecciona una ciudad' : 'Primero selecciona un departamento'}
+            <option value=''>
+              {departamentoSeleccionado
+                ? 'Selecciona una ciudad'
+                : 'Primero selecciona un departamento'}
             </option>
-            {ciudades.map((c) => (
-              <option key={c} value={c}>{c}</option>
+            {ciudades.map(c => (
+              <option key={c} value={c}>
+                {c}
+              </option>
             ))}
           </AccordionWizardSelect>
         </motion.div>
@@ -107,10 +135,10 @@ export function PasoInfoGeneral({ register, errors, watch, setValue }: PasoInfoG
 
       <motion.div {...fieldStaggerAnim(3)}>
         <AccordionWizardField
-          label="Dirección"
-          moduleName="proyectos"
+          label='Dirección'
+          moduleName='proyectos'
           required
-          placeholder="Ej: Calle 48 Norte #4E-07"
+          placeholder='Ej: Calle 48 Norte #4E-07'
           error={errors.direccion?.message as string}
           {...register('direccion')}
         />
@@ -118,8 +146,8 @@ export function PasoInfoGeneral({ register, errors, watch, setValue }: PasoInfoG
 
       <motion.div {...fieldStaggerAnim(4)}>
         <AccordionWizardTextarea
-          label="Descripción"
-          moduleName="proyectos"
+          label='Descripción'
+          moduleName='proyectos'
           required
           error={errors.descripcion?.message as string}
           {...register('descripcion')}

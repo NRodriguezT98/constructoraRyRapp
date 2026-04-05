@@ -42,9 +42,15 @@ export function useValidacionBotonDesembolso({
 }: UseValidacionBotonDesembolsoProps): EstadoBoton {
   const esDesembolsoUnico = checkDesembolsoUnico(tipoFuente)
 
-  const textoBoton = esDesembolsoUnico ? 'Registrar Desembolso' : 'Registrar Abono'
+  const textoBoton = esDesembolsoUnico
+    ? 'Registrar Desembolso'
+    : 'Registrar Abono'
 
-  const { data: todosLosPendientes = [], isLoading, isError } = useDocumentosPendientesObligatorios(clienteId)
+  const {
+    data: todosLosPendientes = [],
+    isLoading,
+    isError,
+  } = useDocumentosPendientesObligatorios(clienteId)
 
   return useMemo((): EstadoBoton => {
     if (fuenteCompletada) {
@@ -64,12 +70,17 @@ export function useValidacionBotonDesembolso({
       return {
         habilitado: true,
         texto: textoBoton,
-        tooltipMensaje: 'No se pudo verificar los requisitos. Proceda con precaución.',
+        tooltipMensaje:
+          'No se pudo verificar los requisitos. Proceda con precaución.',
         cargando: false,
       }
     }
 
-    const pendientes = filtrarPendientesPorFuente(todosLosPendientes, fuenteId, tipoFuente)
+    const pendientes = filtrarPendientesPorFuente(
+      todosLosPendientes,
+      fuenteId,
+      tipoFuente
+    )
 
     if (pendientes.length === 0) {
       return { habilitado: true, texto: textoBoton, cargando: false }
@@ -82,5 +93,14 @@ export function useValidacionBotonDesembolso({
       tooltipMensaje: `Completa los siguientes documentos antes de registrar:\n\n${lista}`,
       cargando: false,
     }
-  }, [fuenteCompletada, fuenteId, clienteId, isLoading, isError, todosLosPendientes, tipoFuente, textoBoton])
+  }, [
+    fuenteCompletada,
+    fuenteId,
+    clienteId,
+    isLoading,
+    isError,
+    todosLosPendientes,
+    tipoFuente,
+    textoBoton,
+  ])
 }

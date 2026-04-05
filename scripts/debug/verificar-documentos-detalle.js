@@ -15,9 +15,7 @@ const supabase = createClient(
 async function verificarDocumentos() {
   console.log('🔍 Verificando tabla documentos_vivienda...\n')
 
-  const { data, error } = await supabase
-    .from('documentos_vivienda')
-    .select('*')
+  const { data, error } = await supabase.from('documentos_vivienda').select('*')
 
   if (error) {
     console.error('❌ Error:', error)
@@ -43,7 +41,10 @@ async function verificarDocumentos() {
     const { error: deleteError } = await supabase
       .from('documentos_vivienda')
       .delete()
-      .in('id', data.map(d => d.id))
+      .in(
+        'id',
+        data.map(d => d.id)
+      )
 
     if (deleteError) {
       console.error('❌ Error al eliminar:', deleteError)
@@ -82,7 +83,9 @@ async function verificarDocumentos() {
         if (files && files.length > 0) {
           console.log(`   Archivos: ${files.length}`)
           files.forEach(f => {
-            console.log(`   - ${f.name} (${(f.metadata.size / 1024).toFixed(2)} KB)`)
+            console.log(
+              `   - ${f.name} (${(f.metadata.size / 1024).toFixed(2)} KB)`
+            )
           })
         } else {
           console.log(`   (vacía)`)
@@ -100,7 +103,7 @@ async function verificarDocumentos() {
 
 verificarDocumentos()
   .then(() => process.exit(0))
-  .catch((error) => {
+  .catch(error => {
     console.error('❌ Error:', error)
     process.exit(1)
   })

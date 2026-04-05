@@ -219,8 +219,7 @@ export function useAsignarViviendaForm({
     if (initialData) {
       reset(initialData)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initialData]) // ✅ SOLO initialData (reset es estable pero ESLint no lo detecta)
+  }, [initialData, reset]) // reset de React Hook Form es estable por definición
 
   // ============================================
   // RETURN

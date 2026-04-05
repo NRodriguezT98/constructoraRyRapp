@@ -28,7 +28,7 @@ async function verificarIndices() {
         WHERE tablename IN ('documentos_proyecto', 'documentos_vivienda', 'documentos_cliente')
           AND indexname LIKE 'idx_docs_%'
         ORDER BY tablename, indexname;
-      `
+      `,
     })
 
     if (error) {
@@ -64,21 +64,24 @@ async function verificarIndices() {
     })
 
     // Mostrar resultados
-    Object.keys(indicesPorTabla).sort().forEach(tabla => {
-      console.log(`\n📊 ${tabla.toUpperCase()}`)
-      console.log('-'.repeat(80))
+    Object.keys(indicesPorTabla)
+      .sort()
+      .forEach(tabla => {
+        console.log(`\n📊 ${tabla.toUpperCase()}`)
+        console.log('-'.repeat(80))
 
-      indicesPorTabla[tabla].forEach((idx, i) => {
-        console.log(`\n${i + 1}. ${idx.indexname}`)
-        console.log(`   ${idx.indexdef}`)
+        indicesPorTabla[tabla].forEach((idx, i) => {
+          console.log(`\n${i + 1}. ${idx.indexname}`)
+          console.log(`   ${idx.indexdef}`)
+        })
+
+        console.log(`\n✅ Total: ${indicesPorTabla[tabla].length} índices`)
       })
 
-      console.log(`\n✅ Total: ${indicesPorTabla[tabla].length} índices`)
-    })
-
     console.log('\n' + '='.repeat(80))
-    console.log(`\n🎉 TOTAL: ${data.length} índices de optimización encontrados\n`)
-
+    console.log(
+      `\n🎉 TOTAL: ${data.length} índices de optimización encontrados\n`
+    )
   } catch (err) {
     console.error('❌ Error ejecutando verificación:', err)
   }
@@ -86,7 +89,7 @@ async function verificarIndices() {
 
 verificarIndices()
   .then(() => process.exit(0))
-  .catch((error) => {
+  .catch(error => {
     console.error('❌ Error:', error)
     process.exit(1)
   })

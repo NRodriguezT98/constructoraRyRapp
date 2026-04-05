@@ -13,13 +13,14 @@ interface ManzanasTabProps {
 export function ManzanasTab({ proyecto }: ManzanasTabProps) {
   // Calcular el número óptimo de columnas según la cantidad de manzanas
   const numManzanas = proyecto.manzanas.length
-  const gridCols = numManzanas === 1
-    ? 'grid-cols-1' // 1 manzana: ocupa todo el ancho
-    : numManzanas === 2
-    ? 'grid-cols-1 sm:grid-cols-2' // 2 manzanas: 2 columnas
-    : numManzanas === 3
-    ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' // 3 manzanas: 3 columnas en desktop
-    : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' // 4+ manzanas: hasta 4 columnas
+  const gridCols =
+    numManzanas === 1
+      ? 'grid-cols-1' // 1 manzana: ocupa todo el ancho
+      : numManzanas === 2
+        ? 'grid-cols-1 sm:grid-cols-2' // 2 manzanas: 2 columnas
+        : numManzanas === 3
+          ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' // 3 manzanas: 3 columnas en desktop
+          : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' // 4+ manzanas: hasta 4 columnas
 
   return (
     <motion.div
@@ -58,7 +59,9 @@ export function ManzanasTab({ proyecto }: ManzanasTabProps) {
                 </span>
               </div>
               <div className='flex justify-between'>
-                <span className='text-gray-600 dark:text-gray-400'>Vendidas</span>
+                <span className='text-gray-600 dark:text-gray-400'>
+                  Vendidas
+                </span>
                 <span className='font-medium text-green-600 dark:text-green-400'>
                   {manzana.viviendasVendidas}
                 </span>
@@ -88,7 +91,8 @@ export function ManzanasTab({ proyecto }: ManzanasTabProps) {
                 <span>
                   {Math.round(
                     manzana.totalViviendas > 0
-                      ? (manzana.viviendasVendidas / manzana.totalViviendas) * 100
+                      ? (manzana.viviendasVendidas / manzana.totalViviendas) *
+                          100
                       : 0
                   )}
                   %

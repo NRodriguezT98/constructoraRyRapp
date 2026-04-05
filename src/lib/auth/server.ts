@@ -60,7 +60,7 @@ export const getServerUserProfile = cache(async (): Promise<Usuario | null> => {
   }
 
   const user = session.user
-  let rol = 'Supervisor'
+  let rol = 'Administrador de Obra'
   let nombres = ''
   let email: string = user.email || ''
 
@@ -81,13 +81,13 @@ export const getServerUserProfile = cache(async (): Promise<Usuario | null> => {
         const jsonPayload = decodeURIComponent(
           atob(base64)
             .split('')
-            .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+            .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
             .join('')
         )
         const payload = JSON.parse(jsonPayload)
 
         // Leer claims custom del payload
-        rol = payload.user_rol || 'Supervisor'
+        rol = payload.user_rol || 'Administrador de Obra'
         nombres = payload.user_nombres || ''
         email = payload.user_email || user.email || ''
       }
@@ -102,7 +102,11 @@ export const getServerUserProfile = cache(async (): Promise<Usuario | null> => {
   // si realmente se necesitan mediante query separada y explícita
   const perfil: Partial<Usuario> = {
     id: user.id,
-    rol: rol as 'Administrador' | 'Contador' | 'Supervisor' | 'Gerente',
+    rol: rol as
+      | 'Administrador'
+      | 'Contabilidad'
+      | 'Administrador de Obra'
+      | 'Gerencia',
     nombres,
     email,
     // Campos requeridos por tipo Usuario pero no disponibles en JWT:
@@ -127,7 +131,7 @@ export const getServerUserProfile = cache(async (): Promise<Usuario | null> => {
  * Verificar si el usuario tiene un rol específico
  */
 export async function hasRole(
-  rol: 'Administrador' | 'Contador' | 'Supervisor' | 'Gerente'
+  rol: 'Administrador' | 'Contabilidad' | 'Administrador de Obra' | 'Gerencia'
 ): Promise<boolean> {
   const perfil = await getServerUserProfile()
   return perfil?.rol === rol
@@ -153,13 +157,33 @@ export async function canAccessModule(modulo: string): Promise<boolean> {
 
   // Matriz de permisos: qué roles pueden acceder a qué módulos
   const modulePermissions: Record<string, string[]> = {
-    viviendas: ['Administrador', 'Contador', 'Supervisor', 'Gerente'],
-    clientes: ['Administrador', 'Contador', 'Supervisor', 'Gerente'],
-    proyectos: ['Administrador', 'Contador', 'Supervisor', 'Gerente'],
-    abonos: ['Administrador', 'Contador', 'Gerente'],
-    documentos: ['Administrador', 'Contador', 'Supervisor', 'Gerente'],
-    negociaciones: ['Administrador', 'Contador', 'Gerente'],
-    auditorias: ['Administrador', 'Gerente'],
+    viviendas: [
+      'Administrador',
+      'Contabilidad',
+      'Administrador de Obra',
+      'Gerencia',
+    ],
+    clientes: [
+      'Administrador',
+      'Contabilidad',
+      'Administrador de Obra',
+      'Gerencia',
+    ],
+    proyectos: [
+      'Administrador',
+      'Contabilidad',
+      'Administrador de Obra',
+      'Gerencia',
+    ],
+    abonos: ['Administrador', 'Contabilidad', 'Gerencia'],
+    documentos: [
+      'Administrador',
+      'Contabilidad',
+      'Administrador de Obra',
+      'Gerencia',
+    ],
+    negociaciones: ['Administrador', 'Contabilidad', 'Gerencia'],
+    auditorias: ['Administrador', 'Gerencia'],
     admin: ['Administrador'],
   }
 
@@ -229,8 +253,8 @@ export async function getServerPermissions(modulo?: string) {
 
   // Fallback genérico (backward compatible)
   return {
-    canCreate: ['Administrador', 'Contador'].includes(rol),
-    canEdit: ['Administrador', 'Contador'].includes(rol),
+    canCreate: ['Administrador', 'Contabilidad'].includes(rol),
+    canEdit: ['Administrador', 'Contabilidad'].includes(rol),
     canDelete: false,
     canView: true,
     isAdmin: false,

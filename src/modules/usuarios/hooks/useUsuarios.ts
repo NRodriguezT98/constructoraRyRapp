@@ -13,18 +13,20 @@ import { logger } from '@/lib/utils/logger'
 
 import { usuariosService } from '../services/usuarios.service'
 import type {
-    ActualizarUsuarioData,
-    CrearUsuarioData,
-    EstadisticasUsuarios,
-    EstadoUsuario,
-    FiltrosUsuarios,
-    Rol,
-    UsuarioCompleto,
+  ActualizarUsuarioData,
+  CrearUsuarioData,
+  EstadisticasUsuarios,
+  EstadoUsuario,
+  FiltrosUsuarios,
+  Rol,
+  UsuarioCompleto,
 } from '../types'
 
 export function useUsuarios() {
   const [usuarios, setUsuarios] = useState<UsuarioCompleto[]>([])
-  const [estadisticas, setEstadisticas] = useState<EstadisticasUsuarios | null>(null)
+  const [estadisticas, setEstadisticas] = useState<EstadisticasUsuarios | null>(
+    null
+  )
   const [cargando, setCargando] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [filtros, setFiltros] = useState<FiltrosUsuarios>({})

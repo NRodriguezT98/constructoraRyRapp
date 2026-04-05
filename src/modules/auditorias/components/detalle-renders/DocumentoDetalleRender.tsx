@@ -17,7 +17,9 @@ interface DocumentoDetalleRenderProps {
   registro: AuditLogRecord
 }
 
-export function DocumentoDetalleRender({ registro }: DocumentoDetalleRenderProps) {
+export function DocumentoDetalleRender({
+  registro,
+}: DocumentoDetalleRenderProps) {
   const metadata = registro.metadata
 
   // Operaciones de versiones de documentos
@@ -25,10 +27,13 @@ export function DocumentoDetalleRender({ registro }: DocumentoDetalleRenderProps
     'MARCAR_VERSION_ERRONEA',
     'MARCAR_VERSION_OBSOLETA',
     'RESTAURAR_ESTADO_VERSION',
-    'REEMPLAZO_ARCHIVO'
+    'REEMPLAZO_ARCHIVO',
   ]
 
-  if (metadata?.tipo_operacion && operacionesVersiones.includes(String(metadata.tipo_operacion))) {
+  if (
+    metadata?.tipo_operacion &&
+    operacionesVersiones.includes(String(metadata.tipo_operacion))
+  ) {
     return (
       <DocumentosAuditoriaDetalle
         metadata={metadata}

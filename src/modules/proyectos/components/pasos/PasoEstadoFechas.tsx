@@ -3,7 +3,11 @@
 import { motion } from 'framer-motion'
 import type { FieldErrors, UseFormRegister } from 'react-hook-form'
 
-import { AccordionWizardField, AccordionWizardSelect, fieldStaggerAnim } from '@/shared/components/accordion-wizard'
+import {
+  AccordionWizardField,
+  AccordionWizardSelect,
+  fieldStaggerAnim,
+} from '@/shared/components/accordion-wizard'
 
 import type { ProyectoFormSchema } from '../../hooks/useProyectosForm'
 
@@ -16,13 +20,17 @@ interface PasoEstadoFechasProps {
 /**
  * Paso 2: Estado y Fechas (estado, fecha inicio, fecha fin estimada)
  */
-export function PasoEstadoFechas({ register, errors, estadoLabels }: PasoEstadoFechasProps) {
+export function PasoEstadoFechas({
+  register,
+  errors,
+  estadoLabels,
+}: PasoEstadoFechasProps) {
   return (
-    <div className="space-y-4 pt-4">
+    <div className='space-y-4 pt-4'>
       <motion.div {...fieldStaggerAnim(0)}>
         <AccordionWizardSelect
-          label="Estado del proyecto"
-          moduleName="proyectos"
+          label='Estado del proyecto'
+          moduleName='proyectos'
           required
           error={errors.estado?.message as string}
           {...register('estado')}
@@ -35,12 +43,12 @@ export function PasoEstadoFechas({ register, errors, estadoLabels }: PasoEstadoF
         </AccordionWizardSelect>
       </motion.div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className='grid grid-cols-1 gap-4 sm:grid-cols-2'>
         <motion.div {...fieldStaggerAnim(1)}>
           <AccordionWizardField
-            label="Fecha de inicio"
-            type="date"
-            moduleName="proyectos"
+            label='Fecha de inicio'
+            type='date'
+            moduleName='proyectos'
             error={errors.fechaInicio?.message as string}
             {...register('fechaInicio')}
           />
@@ -48,9 +56,9 @@ export function PasoEstadoFechas({ register, errors, estadoLabels }: PasoEstadoF
 
         <motion.div {...fieldStaggerAnim(2)}>
           <AccordionWizardField
-            label="Fecha fin estimada"
-            type="date"
-            moduleName="proyectos"
+            label='Fecha fin estimada'
+            type='date'
+            moduleName='proyectos'
             error={errors.fechaFinEstimada?.message as string}
             {...register('fechaFinEstimada')}
           />

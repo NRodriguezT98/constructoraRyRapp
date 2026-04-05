@@ -1,21 +1,21 @@
 // eslint.config.mjs - ESLint v9 Flat Config
 // Migración desde .eslintrc.json para RyR Constructora
 
-import { FlatCompat } from '@eslint/eslintrc';
-import js from '@eslint/js';
-import typescriptEslint from '@typescript-eslint/eslint-plugin';
-import tsParser from '@typescript-eslint/parser';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { FlatCompat } from '@eslint/eslintrc'
+import js from '@eslint/js'
+import typescriptEslint from '@typescript-eslint/eslint-plugin'
+import tsParser from '@typescript-eslint/parser'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 
 const compat = new FlatCompat({
   baseDirectory: __dirname,
   recommendedConfig: js.configs.recommended,
   allConfig: js.configs.all,
-});
+})
 
 const eslintConfig = [
   // ============================================
@@ -36,10 +36,10 @@ const eslintConfig = [
       'src/lib/supabase/database.types.ts',
       'src/types/database.types.ts',
       // ── Carpetas que NO son código de producción ─────────────────────
-      '.agents/**',              // Templates de skills de agentes
-      'public/**/*.js',          // Scripts de debug servidos estáticamente
+      '.agents/**', // Templates de skills de agentes
+      'public/**/*.js', // Scripts de debug servidos estáticamente
       'supabase/diagnostico/**', // Scripts de diagnóstico SQL
-      'next-env.d.ts',           // Generado por Next.js, no editar
+      'next-env.d.ts', // Generado por Next.js, no editar
       'scripts/data-ops/fix-utf8.js', // Contiene bytes UTF-8 literales que confunden el parser
     ],
   },
@@ -185,8 +185,7 @@ const eslintConfig = [
         'error',
         {
           selector: "CallExpression[callee.object.name='console']",
-          message:
-            'Usa logger en lugar de console para logging consistente',
+          message: 'Usa logger en lugar de console para logging consistente',
         },
       ],
     },
@@ -262,6 +261,6 @@ const eslintConfig = [
       'jsx-a11y/alt-text': 'off',
     },
   },
-];
+]
 
-export default eslintConfig;
+export default eslintConfig

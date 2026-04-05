@@ -21,7 +21,8 @@ export const ubicacionSchema = z.object({
 })
 
 export const legalSchema = z.object({
-  numero_matricula: z.string()
+  numero_matricula: z
+    .string()
     .min(5, 'Mínimo 5 caracteres')
     .max(50, 'Máximo 50 caracteres')
     .regex(/^[A-Z0-9-]+$/, 'Solo mayúsculas, números y guiones'),
@@ -39,9 +40,15 @@ export const financieroSchema = z.object({
   valor_separacion: z.coerce.number().min(0, 'Valor no puede ser negativo'),
   valor_inicial: z.coerce.number().min(0, 'Valor no puede ser negativo'),
   valor_saldo: z.coerce.number().min(0, 'Valor no puede ser negativo'),
-  cuotas_cantidad: z.coerce.number().int().positive('Debe haber al menos 1 cuota'),
+  cuotas_cantidad: z.coerce
+    .number()
+    .int()
+    .positive('Debe haber al menos 1 cuota'),
   cuotas_valor: z.coerce.number().positive('Valor de cuota debe ser positivo'),
-  tasa_interes: z.coerce.number().min(0, 'Tasa no puede ser negativa').max(100, 'Tasa máxima 100%'),
+  tasa_interes: z.coerce
+    .number()
+    .min(0, 'Tasa no puede ser negativa')
+    .max(100, 'Tasa máxima 100%'),
 })
 
 // ============================================================================

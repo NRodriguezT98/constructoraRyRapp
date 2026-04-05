@@ -12,9 +12,13 @@ export interface UseModalRegistrarRenunciaProps {
   onExitosa?: () => void
 }
 
-export function useModalRegistrarRenuncia({ negociacionId, onExitosa }: UseModalRegistrarRenunciaProps) {
+export function useModalRegistrarRenuncia({
+  negociacionId,
+  onExitosa,
+}: UseModalRegistrarRenunciaProps) {
   // ── Queries & mutations ────────────────────────────────────────────────
-  const { data: validacion, isLoading: validando } = useValidarRenuncia(negociacionId)
+  const { data: validacion, isLoading: validando } =
+    useValidarRenuncia(negociacionId)
   const registrarMutation = useRegistrarRenuncia()
 
   // ── Wizard ─────────────────────────────────────────────────────────────
@@ -25,7 +29,9 @@ export function useModalRegistrarRenuncia({ negociacionId, onExitosa }: UseModal
   const [retencionMonto, setRetencionMonto] = useState(0)
   const [retencionMotivo, setRetencionMotivo] = useState('')
   const [textoConfirmacion, setTextoConfirmacion] = useState('')
-  const [formularioRenuncia, setFormularioRenuncia] = useState<File | null>(null)
+  const [formularioRenuncia, setFormularioRenuncia] = useState<File | null>(
+    null
+  )
 
   // ── Estado ─────────────────────────────────────────────────────────────
   const registrando = registrarMutation.isPending
@@ -47,7 +53,8 @@ export function useModalRegistrarRenuncia({ negociacionId, onExitosa }: UseModal
 
   const motivoValido = motivo.trim().length >= 10
   const retencionValida =
-    retencionMonto === 0 || (retencionMonto > 0 && retencionMotivo.trim().length > 0)
+    retencionMonto === 0 ||
+    (retencionMonto > 0 && retencionMotivo.trim().length > 0)
   const retencionEnRango = retencionMonto >= 0 && retencionMonto <= totalAbonado
 
   const paso1Valido = motivoValido && retencionValida && retencionEnRango
@@ -104,7 +111,8 @@ export function useModalRegistrarRenuncia({ negociacionId, onExitosa }: UseModal
           negociacion_id: negociacionId,
           motivo: motivo.trim(),
           retencion_monto: retencionMonto > 0 ? retencionMonto : undefined,
-          retencion_motivo: retencionMonto > 0 ? retencionMotivo.trim() : undefined,
+          retencion_motivo:
+            retencionMonto > 0 ? retencionMotivo.trim() : undefined,
         },
         formularioRenuncia: formularioRenuncia ?? undefined,
       })

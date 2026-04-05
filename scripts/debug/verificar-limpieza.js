@@ -10,10 +10,11 @@ console.log('🎉 VERIFICACIÓN POST-MIGRACIÓN LIMPIA\n')
 const archivos = {
   nuevo: 'src/modules/fuentes-pago/components/FuentePagoCard.tsx',
   legacy: 'src/modules/fuentes-pago/components/FuentePagoCardConProgreso.tsx',
-  refactorizado: 'src/modules/fuentes-pago/components/FuentePagoCardRefactored.tsx',
+  refactorizado:
+    'src/modules/fuentes-pago/components/FuentePagoCardRefactored.tsx',
   viviendaTab: 'src/app/clientes/[id]/tabs/vivienda-asignada-tab.tsx',
   index: 'src/modules/fuentes-pago/components/index.ts',
-  partialsIndex: 'src/modules/fuentes-pago/components/partials/index.ts'
+  partialsIndex: 'src/modules/fuentes-pago/components/partials/index.ts',
 }
 
 let errores = []
@@ -42,10 +43,15 @@ if (!fs.existsSync(archivos.refactorizado)) {
 try {
   const contenidoTab = fs.readFileSync(archivos.viviendaTab, 'utf8')
 
-  if (contenidoTab.includes('FuentePagoCard') && !contenidoTab.includes('FuentePagoCardRefactored')) {
+  if (
+    contenidoTab.includes('FuentePagoCard') &&
+    !contenidoTab.includes('FuentePagoCardRefactored')
+  ) {
     console.log('✅ vivienda-asignada-tab.tsx usando FuentePagoCard')
   } else {
-    errores.push('❌ vivienda-asignada-tab.tsx no está usando FuentePagoCard correctamente')
+    errores.push(
+      '❌ vivienda-asignada-tab.tsx no está usando FuentePagoCard correctamente'
+    )
   }
 } catch (error) {
   errores.push('❌ Error leyendo vivienda-asignada-tab.tsx')
@@ -55,7 +61,10 @@ try {
 try {
   const contenidoIndex = fs.readFileSync(archivos.index, 'utf8')
 
-  if (contenidoIndex.includes('FuentePagoCard') && !contenidoIndex.includes('FuentePagoCardRefactored')) {
+  if (
+    contenidoIndex.includes('FuentePagoCard') &&
+    !contenidoIndex.includes('FuentePagoCardRefactored')
+  ) {
     console.log('✅ index.ts exporta FuentePagoCard')
   } else {
     errores.push('❌ index.ts no exporta FuentePagoCard correctamente')
@@ -68,7 +77,10 @@ try {
 try {
   const contenidoPartials = fs.readFileSync(archivos.partialsIndex, 'utf8')
 
-  if (contenidoPartials.includes('FuentePagoCard') && !contenidoPartials.includes('FuentePagoCardRefactored')) {
+  if (
+    contenidoPartials.includes('FuentePagoCard') &&
+    !contenidoPartials.includes('FuentePagoCardRefactored')
+  ) {
     console.log('✅ partials/index.ts exporta FuentePagoCard')
   } else {
     errores.push('❌ partials/index.ts no exporta FuentePagoCard correctamente')

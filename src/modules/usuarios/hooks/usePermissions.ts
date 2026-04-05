@@ -21,13 +21,13 @@ import { logger } from '@/lib/utils/logger'
 
 import type { Accion, Modulo, Rol } from '../types'
 import {
-    DESCRIPCION_PERMISOS,
-    obtenerModulosConAcceso,
-    obtenerPermisos,
-    PERMISOS_POR_ROL,
-    tieneAlgunPermiso as verificarAlgunPermiso,
-    tienePermiso as verificarPermiso,
-    tieneTodosLosPermisos as verificarTodosPermisos,
+  DESCRIPCION_PERMISOS,
+  obtenerModulosConAcceso,
+  obtenerPermisos,
+  PERMISOS_POR_ROL,
+  tieneAlgunPermiso as verificarAlgunPermiso,
+  tienePermiso as verificarPermiso,
+  tieneTodosLosPermisos as verificarTodosPermisos,
 } from '../types'
 
 export function usePermissions() {
@@ -107,7 +107,9 @@ export function usePermissions() {
 
     // ⚠️ Validación adicional: verificar que el rol existe en PERMISOS_POR_ROL
     if (!PERMISOS_POR_ROL[rol]) {
-      logger.error(`❌ [PERMISOS] Rol "${rol}" no reconocido en sistema de permisos`)
+      logger.error(
+        `❌ [PERMISOS] Rol "${rol}" no reconocido en sistema de permisos`
+      )
       return []
     }
 
@@ -122,24 +124,24 @@ export function usePermissions() {
   }, [rol])
 
   /**
-   * Verifica si el usuario es contador
+   * Verifica si el usuario es contabilidad
    */
-  const esContador = useMemo(() => {
-    return rol === 'Contador'
+  const esContabilidad = useMemo(() => {
+    return rol === 'Contabilidad'
   }, [rol])
 
   /**
-   * Verifica si el usuario es supervisor
+   * Verifica si el usuario es administrador de obra
    */
-  const esSupervisor = useMemo(() => {
-    return rol === 'Supervisor'
+  const esAdminObra = useMemo(() => {
+    return rol === 'Administrador de Obra'
   }, [rol])
 
   /**
-   * Verifica si el usuario es gerente
+   * Verifica si el usuario es gerencia
    */
-  const esGerente = useMemo(() => {
-    return rol === 'Gerente'
+  const esGerencia = useMemo(() => {
+    return rol === 'Gerencia'
   }, [rol])
 
   /**
@@ -164,7 +166,8 @@ export function usePermissions() {
       return []
     }
 
-    const permisos: { modulo: Modulo; accion: Accion; descripcion: string }[] = []
+    const permisos: { modulo: Modulo; accion: Accion; descripcion: string }[] =
+      []
 
     Object.entries(PERMISOS_POR_ROL[rol]).forEach(([modulo, acciones]) => {
       acciones.forEach(accion => {
@@ -193,9 +196,9 @@ export function usePermissions() {
 
     // Helpers de rol
     esAdmin,
-    esContador,
-    esSupervisor,
-    esGerente,
+    esContabilidad,
+    esAdminObra,
+    esGerencia,
     rol,
 
     // Estado

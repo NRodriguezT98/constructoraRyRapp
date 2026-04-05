@@ -19,7 +19,7 @@ import {
   pdf,
   StyleSheet,
   Text,
-  View
+  View,
 } from '@react-pdf/renderer'
 
 import { getTodayDateString } from '@/lib/utils/date.utils'
@@ -330,10 +330,7 @@ const PDFHeader = ({ cliente }: { cliente: DatosPreviewPDF['cliente'] }) => (
   <View style={styles.header}>
     <View style={styles.headerTop}>
       {/* Logo RyR */}
-      <Image
-        src="/images/logo1.png"
-        style={styles.logo}
-      />
+      <Image src='/images/logo1.png' style={styles.logo} />
 
       <View style={styles.borradorBadge}>
         <Text style={styles.borradorText}>⚠️ BORRADOR - NO VÁLIDO ⚠️</Text>
@@ -342,12 +339,13 @@ const PDFHeader = ({ cliente }: { cliente: DatosPreviewPDF['cliente'] }) => (
 
     <Text style={styles.title}>PREVIEW - NEGOCIACIÓN</Text>
     <Text style={styles.subtitle}>
-      Generado: {new Date().toLocaleDateString('es-CO', {
+      Generado:{' '}
+      {new Date().toLocaleDateString('es-CO', {
         day: 'numeric',
         month: 'long',
         year: 'numeric',
         hour: '2-digit',
-        minute: '2-digit'
+        minute: '2-digit',
       })}
     </Text>
     <Text style={styles.subtitle}>
@@ -356,7 +354,11 @@ const PDFHeader = ({ cliente }: { cliente: DatosPreviewPDF['cliente'] }) => (
   </View>
 )
 
-const SeccionCliente = ({ cliente }: { cliente: DatosPreviewPDF['cliente'] }) => (
+const SeccionCliente = ({
+  cliente,
+}: {
+  cliente: DatosPreviewPDF['cliente']
+}) => (
   <View style={styles.section}>
     <View style={styles.sectionHeader}>
       <Text style={styles.sectionTitle}>• DATOS DEL CLIENTE</Text>
@@ -364,7 +366,9 @@ const SeccionCliente = ({ cliente }: { cliente: DatosPreviewPDF['cliente'] }) =>
     <View style={styles.card}>
       <View style={styles.dataRow}>
         <Text style={styles.dataLabel}>Nombre Completo:</Text>
-        <Text style={styles.dataValue}>{cliente.nombres} {cliente.apellidos}</Text>
+        <Text style={styles.dataValue}>
+          {cliente.nombres} {cliente.apellidos}
+        </Text>
       </View>
       {cliente.cedula ? (
         <View style={styles.dataRowLast}>
@@ -374,14 +378,20 @@ const SeccionCliente = ({ cliente }: { cliente: DatosPreviewPDF['cliente'] }) =>
       ) : (
         <View style={styles.dataRowLast}>
           <Text style={styles.dataLabel}>Documento:</Text>
-          <Text style={[styles.dataLabel, { fontStyle: 'italic' }]}>No especificado</Text>
+          <Text style={[styles.dataLabel, { fontStyle: 'italic' }]}>
+            No especificado
+          </Text>
         </View>
       )}
     </View>
   </View>
 )
 
-const SeccionVivienda = ({ vivienda }: { vivienda: DatosPreviewPDF['vivienda'] }) => (
+const SeccionVivienda = ({
+  vivienda,
+}: {
+  vivienda: DatosPreviewPDF['vivienda']
+}) => (
   <View style={styles.section}>
     <View style={styles.sectionHeader}>
       <Text style={styles.sectionTitle}>• DETALLES DE LA VIVIENDA</Text>
@@ -414,14 +424,18 @@ const SeccionFinanciera = ({ datos }: { datos: DatosPreviewPDF }) => (
     <View style={styles.summaryBox}>
       <View style={styles.summaryRow}>
         <Text style={styles.summaryLabel}>Valor Base:</Text>
-        <Text style={styles.summaryValue}>${datos.valorBase.toLocaleString('es-CO')}</Text>
+        <Text style={styles.summaryValue}>
+          ${datos.valorBase.toLocaleString('es-CO')}
+        </Text>
       </View>
 
       {datos.descuento > 0 && (
         <>
           <View style={styles.summaryRow}>
             <Text style={styles.summaryLabel}>Descuento Aplicado:</Text>
-            <Text style={styles.summaryValue}>-${datos.descuento.toLocaleString('es-CO')}</Text>
+            <Text style={styles.summaryValue}>
+              -${datos.descuento.toLocaleString('es-CO')}
+            </Text>
           </View>
           <View style={styles.summaryDivider} />
         </>
@@ -429,13 +443,19 @@ const SeccionFinanciera = ({ datos }: { datos: DatosPreviewPDF }) => (
 
       <View style={styles.summaryRow}>
         <Text style={styles.summaryLabel}>VALOR FINAL:</Text>
-        <Text style={styles.summaryTotal}>${datos.valorFinal.toLocaleString('es-CO')}</Text>
+        <Text style={styles.summaryTotal}>
+          ${datos.valorFinal.toLocaleString('es-CO')}
+        </Text>
       </View>
     </View>
   </View>
 )
 
-const SeccionFuentesPago = ({ fuentes }: { fuentes: DatosPreviewPDF['fuentesPago'] }) => (
+const SeccionFuentesPago = ({
+  fuentes,
+}: {
+  fuentes: DatosPreviewPDF['fuentesPago']
+}) => (
   <View style={styles.section}>
     <View style={styles.sectionHeader}>
       <Text style={styles.sectionTitle}>• FUENTES DE PAGO</Text>
@@ -453,28 +473,61 @@ const SeccionFuentesPago = ({ fuentes }: { fuentes: DatosPreviewPDF['fuentesPago
         <View style={styles.tableHeader}>
           <Text style={[styles.tableHeaderCell, styles.col40]}>Tipo</Text>
           <Text style={[styles.tableHeaderCell, styles.col30]}>Entidad</Text>
-          <Text style={[styles.tableHeaderCell, styles.col30, { textAlign: 'right' }]}>
+          <Text
+            style={[
+              styles.tableHeaderCell,
+              styles.col30,
+              { textAlign: 'right' },
+            ]}
+          >
             Monto Configurado
           </Text>
         </View>
 
         {/* Filas */}
         {fuentes.map((fuente, index) => (
-          <View key={index} style={index % 2 === 0 ? styles.tableRow : styles.tableRowAlt}>
-            <Text style={[styles.tableCellBold, styles.col40]}>{fuente.tipo}</Text>
-            <Text style={[styles.tableCell, styles.col30]}>{fuente.entidad || 'N/A'}</Text>
-            <Text style={[styles.tableCellBold, styles.col30, { textAlign: 'right' }]}>
+          <View
+            key={index}
+            style={index % 2 === 0 ? styles.tableRow : styles.tableRowAlt}
+          >
+            <Text style={[styles.tableCellBold, styles.col40]}>
+              {fuente.tipo}
+            </Text>
+            <Text style={[styles.tableCell, styles.col30]}>
+              {fuente.entidad || 'N/A'}
+            </Text>
+            <Text
+              style={[
+                styles.tableCellBold,
+                styles.col30,
+                { textAlign: 'right' },
+              ]}
+            >
               ${fuente.monto.toLocaleString('es-CO')}
             </Text>
           </View>
         ))}
 
         {/* Total */}
-        <View style={[styles.tableRow, { backgroundColor: '#FEF2F2', borderTop: '2px solid #C41E3A' }]}>
+        <View
+          style={[
+            styles.tableRow,
+            { backgroundColor: '#FEF2F2', borderTop: '2px solid #C41E3A' },
+          ]}
+        >
           <Text style={[styles.tableCellBold, styles.col40]}>TOTAL</Text>
           <Text style={[styles.tableCell, styles.col30]}></Text>
-          <Text style={[styles.tableCellBold, styles.col30, { textAlign: 'right', color: '#C41E3A', fontSize: 12 }]}>
-            ${fuentes.reduce((sum, f) => sum + f.monto, 0).toLocaleString('es-CO')}
+          <Text
+            style={[
+              styles.tableCellBold,
+              styles.col30,
+              { textAlign: 'right', color: '#C41E3A', fontSize: 12 },
+            ]}
+          >
+            $
+            {fuentes
+              .reduce((sum, f) => sum + f.monto, 0)
+              .toLocaleString('es-CO')}
           </Text>
         </View>
       </View>
@@ -507,9 +560,7 @@ const PDFFooter = () => (
   </View>
 )
 
-const MarcaAgua = () => (
-  <Text style={styles.watermark}>BORRADOR</Text>
-)
+const MarcaAgua = () => <Text style={styles.watermark}>BORRADOR</Text>
 
 // ============================================
 // DOCUMENTO COMPLETO
@@ -517,7 +568,7 @@ const MarcaAgua = () => (
 
 const PDFPreviewDocument = ({ datos }: { datos: DatosPreviewPDF }) => (
   <Document>
-    <Page size="LETTER" style={styles.page}>
+    <Page size='LETTER' style={styles.page}>
       {/* Marca de agua diagonal */}
       <MarcaAgua />
 
@@ -563,7 +614,6 @@ export async function generarPDFPreview(datos: DatosPreviewPDF): Promise<void> {
     // Cleanup
     document.body.removeChild(link)
     URL.revokeObjectURL(url)
-
   } catch (error) {
     logger.error('❌ [PDF] Error al generar preview:', error)
     throw error

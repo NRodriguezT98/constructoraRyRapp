@@ -75,7 +75,7 @@ const HistorialTab = dynamic(
 )
 
 interface ClienteDetalleClientProps {
-  clienteId: string // Puede ser slug o UUID
+  clienteId: string // UUID del cliente (resuelto en el Server Component)
 }
 
 // Badge de estado
@@ -138,7 +138,7 @@ export default function ClienteDetalleClient({
     cerrarModalSubir: _cerrarModalSubir,
     recargarCliente,
     irATabDocumentos: _irATabDocumentos,
-  } = useClienteDetalle({ clienteIdSlug: clienteId })
+  } = useClienteDetalle({ clienteId })
 
   const handleEditar = () => {
     router.push(`/clientes/${clienteId}/editar`)
@@ -401,7 +401,11 @@ export default function ClienteDetalleClient({
           {/* Botón Volver */}
           <motion.div {...styles.animations.fadeInUp}>
             <button
-              onClick={() => router.back()}
+              onClick={() =>
+                window.history.length > 1
+                  ? router.back()
+                  : router.push('/clientes')
+              }
               aria-label='Volver a la lista de clientes'
               className='group inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800'
             >

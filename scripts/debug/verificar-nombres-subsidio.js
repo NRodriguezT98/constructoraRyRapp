@@ -2,7 +2,7 @@ const { Pool } = require('pg')
 require('dotenv').config()
 
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL
+  connectionString: process.env.DATABASE_URL,
 })
 
 async function verificarNombres() {
@@ -32,7 +32,9 @@ async function verificarNombres() {
       ORDER BY tipo_fuente
     `)
     requisitos.rows.forEach(row => {
-      console.log(`   → "${row.tipo_fuente}" (${row.cantidad_requisitos} requisitos)`)
+      console.log(
+        `   → "${row.tipo_fuente}" (${row.cantidad_requisitos} requisitos)`
+      )
     })
 
     // 3. Tipos en fuentes_pago reales
@@ -67,11 +69,12 @@ async function verificarNombres() {
 
     if (todosLosNombres.size > 1) {
       console.log('\n⚠️  PROBLEMA: Hay múltiples variantes del mismo nombre!')
-      console.log('   Esto causa inconsistencias. Se debe estandarizar a UN solo nombre.')
+      console.log(
+        '   Esto causa inconsistencias. Se debe estandarizar a UN solo nombre.'
+      )
     } else {
       console.log('\n✅ OK: Solo hay una variante del nombre')
     }
-
   } catch (error) {
     console.error('❌ Error:', error.message)
   } finally {

@@ -17,7 +17,7 @@ const colors = {
   yellow: '\x1b[33m',
   blue: '\x1b[34m',
   reset: '\x1b[0m',
-  bold: '\x1b[1m'
+  bold: '\x1b[1m',
 }
 
 function log(color, message) {
@@ -35,7 +35,10 @@ function checkFileContains(filePath, searchText) {
 }
 
 function runVerification() {
-  log(colors.blue + colors.bold, '\n🔍 VERIFICANDO LIMPIEZA FINAL - FUENTE PAGO CARD\n')
+  log(
+    colors.blue + colors.bold,
+    '\n🔍 VERIFICANDO LIMPIEZA FINAL - FUENTE PAGO CARD\n'
+  )
 
   let allPassed = true
 
@@ -52,7 +55,7 @@ function runVerification() {
   const specializedComponents = [
     'src/modules/fuentes-pago/components/partials/FuentePagoCardHeader.tsx',
     'src/modules/fuentes-pago/components/partials/FuentePagoCardMetrics.tsx',
-    'src/modules/fuentes-pago/components/partials/FuentePagoCardProgress.tsx'
+    'src/modules/fuentes-pago/components/partials/FuentePagoCardProgress.tsx',
   ]
 
   specializedComponents.forEach(comp => {
@@ -75,14 +78,21 @@ function runVerification() {
 
   // 4. Verificar que vivienda-asignada-tab usa el componente final
   const viviendaTab = 'src/app/clientes/[id]/tabs/vivienda-asignada-tab.tsx'
-  if (checkFileContains(viviendaTab, 'FuentePagoCard') && !checkFileContains(viviendaTab, 'FuentePagoCardRefactored')) {
+  if (
+    checkFileContains(viviendaTab, 'FuentePagoCard') &&
+    !checkFileContains(viviendaTab, 'FuentePagoCardRefactored')
+  ) {
     log(colors.green, '✅ vivienda-asignada-tab.tsx usando FuentePagoCard')
   } else {
-    log(colors.yellow, '⚠️  vivienda-asignada-tab.tsx NO actualizado correctamente')
+    log(
+      colors.yellow,
+      '⚠️  vivienda-asignada-tab.tsx NO actualizado correctamente'
+    )
   }
 
   // 5. Verificar que el componente legacy fue eliminado
-  const legacyPath = 'src/modules/fuentes-pago/components/FuentePagoCardConProgreso.tsx'
+  const legacyPath =
+    'src/modules/fuentes-pago/components/FuentePagoCardConProgreso.tsx'
   if (!checkFileExists(legacyPath)) {
     log(colors.green, '✅ Componente legacy eliminado correctamente')
   } else {
@@ -91,7 +101,10 @@ function runVerification() {
 
   // 6. Verificar exports
   const indexPath = 'src/modules/fuentes-pago/components/index.ts'
-  if (checkFileContains(indexPath, 'FuentePagoCard') && !checkFileContains(indexPath, 'FuentePagoCardRefactored')) {
+  if (
+    checkFileContains(indexPath, 'FuentePagoCard') &&
+    !checkFileContains(indexPath, 'FuentePagoCardRefactored')
+  ) {
     log(colors.green, '✅ FuentePagoCard exportado correctamente')
   } else {
     log(colors.red, '❌ FuentePagoCard NO exportado o referencias incorrectas')
@@ -101,7 +114,10 @@ function runVerification() {
   // Resumen
   log(colors.blue + colors.bold, '\n📋 RESUMEN FINAL:')
   if (allPassed) {
-    log(colors.green + colors.bold, '🎉 LIMPIEZA COMPLETADA - Migración y renombrado exitosos')
+    log(
+      colors.green + colors.bold,
+      '🎉 LIMPIEZA COMPLETADA - Migración y renombrado exitosos'
+    )
     log(colors.yellow, '\n✅ TRABAJO COMPLETADO:')
     log(colors.reset, '1. ✅ Refactorización arquitectónica completa')
     log(colors.reset, '2. ✅ Separación de responsabilidades implementada')
@@ -109,7 +125,10 @@ function runVerification() {
     log(colors.reset, '4. ✅ Componente legacy eliminado')
     log(colors.reset, '5. ✅ Nombres finales aplicados: FuentePagoCard')
   } else {
-    log(colors.red + colors.bold, '❌ LIMPIEZA INCOMPLETA - Hay problemas que resolver')
+    log(
+      colors.red + colors.bold,
+      '❌ LIMPIEZA INCOMPLETA - Hay problemas que resolver'
+    )
   }
 
   log(colors.reset, '')

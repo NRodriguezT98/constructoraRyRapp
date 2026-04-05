@@ -59,14 +59,14 @@ export function RequisitosTipoSelector({
               : styles.selector.buttonInactive
           }`}
         >
-          <Share2 className="w-3.5 h-3.5" />
+          <Share2 className='h-3.5 w-3.5' />
           <span>Compartidos</span>
           {conteoCompartidos > 0 && (
             <span
-              className={`ml-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold ${
+              className={`ml-1 rounded-full px-1.5 py-0.5 text-[10px] font-bold ${
                 isCompartidosActive
                   ? 'bg-white/30 text-white'
-                  : 'bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300'
+                  : 'bg-gray-200 text-gray-700 dark:bg-gray-600 dark:text-gray-300'
               }`}
             >
               {conteoCompartidos}
@@ -75,7 +75,7 @@ export function RequisitosTipoSelector({
         </motion.button>
 
         {/* ── Divisor visual ── */}
-        <div className="w-px h-7 bg-gray-300 dark:bg-gray-600 self-center" />
+        <div className='h-7 w-px self-center bg-gray-300 dark:bg-gray-600' />
 
         {/* ── Pestañas de fuentes específicas ── */}
         {tiposFuente.map(({ value, label }, index) => {
@@ -92,16 +92,18 @@ export function RequisitosTipoSelector({
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.98 }}
               className={`${styles.selector.button} ${
-                isActive ? styles.selector.buttonActive : styles.selector.buttonInactive
+                isActive
+                  ? styles.selector.buttonActive
+                  : styles.selector.buttonInactive
               }`}
             >
               <span>{label}</span>
               {count > 0 && (
                 <span
-                  className={`ml-1.5 px-1.5 py-0.5 rounded-full text-[10px] font-bold ${
+                  className={`ml-1.5 rounded-full px-1.5 py-0.5 text-[10px] font-bold ${
                     isActive
                       ? 'bg-white/30 text-white'
-                      : 'bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300'
+                      : 'bg-gray-200 text-gray-700 dark:bg-gray-600 dark:text-gray-300'
                   }`}
                 >
                   {count}

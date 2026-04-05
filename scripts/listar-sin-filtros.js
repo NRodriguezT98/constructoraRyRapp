@@ -29,7 +29,9 @@ async function listarTodosDirecto() {
       console.log('')
     })
   } else {
-    console.log('⚠️ No se pudieron recuperar los documentos (posible problema de RLS)')
+    console.log(
+      '⚠️ No se pudieron recuperar los documentos (posible problema de RLS)'
+    )
   }
 }
 

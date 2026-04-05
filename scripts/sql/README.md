@@ -11,18 +11,21 @@ Esta carpeta contiene scripts SQL de utilidades para análisis y generación de 
 ## 🎯 Uso
 
 ### Generar Documentación
+
 ```sql
 -- Ejecutar generar-doc-markdown.sql en Supabase SQL Editor
 -- Copiar el resultado para actualizar la documentación
 ```
 
 ### Verificar Tablas
+
 ```sql
 -- Ejecutar queries-verificacion-tablas.sql
 -- Revisar que todas las tablas existan y tengan la estructura correcta
 ```
 
 ### Extraer Esquema
+
 ```sql
 -- Ejecutar extraer-schema-completo.sql
 -- Guardar resultado en docs/database/esquema-completo-limpio.txt

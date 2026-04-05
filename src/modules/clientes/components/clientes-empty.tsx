@@ -19,13 +19,17 @@ export function ClientesEmpty({ onNuevoCliente, mensaje }: ClientesEmptyProps) {
     <EmptyState
       icon={Users}
       title={mensaje || 'No hay clientes registrados'}
-      description="Comienza agregando tu primer cliente para gestionar tus relaciones comerciales"
-      action={onNuevoCliente ? {
-        label: 'Crear Primer Cliente',
-        onClick: onNuevoCliente,
-        icon: UserPlus,
-      } : undefined}
-      moduleName="clientes"
+      description='Comienza agregando tu primer cliente para gestionar tus relaciones comerciales'
+      action={
+        onNuevoCliente
+          ? {
+              label: 'Crear Primer Cliente',
+              onClick: onNuevoCliente,
+              icon: UserPlus,
+            }
+          : undefined
+      }
+      moduleName='clientes'
     />
   )
 }

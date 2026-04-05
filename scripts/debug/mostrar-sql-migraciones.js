@@ -10,7 +10,9 @@ console.log('\n========================================')
 console.log('  📋 SQL PARA COPIAR EN SUPABASE DASHBOARD')
 console.log('========================================\n')
 
-console.log('🔗 URL: https://supabase.com/dashboard/project/swyjhwgvkfcfdtemkyad/sql/new\n')
+console.log(
+  '🔗 URL: https://supabase.com/dashboard/project/swyjhwgvkfcfdtemkyad/sql/new\n'
+)
 
 // Migración 1
 const file1 = 'supabase/migrations/20251115000001_sistema_estados_version.sql'
@@ -23,7 +25,8 @@ console.log(sql1)
 console.log('\n')
 
 // Migración 2
-const file2 = 'supabase/migrations/20251115000002_reemplazo_archivo_metadata.sql'
+const file2 =
+  'supabase/migrations/20251115000002_reemplazo_archivo_metadata.sql'
 const sql2 = fs.readFileSync(file2, 'utf-8')
 
 console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
