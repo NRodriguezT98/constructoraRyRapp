@@ -1,12 +1,12 @@
 /**
- * Tab de Historial de Cliente (CON MEJORAS UX)
- * Timeline visual de todos los eventos con métricas y filtros avanzados
+ * Tab de Historial del Cliente
+ * Línea de tiempo cronológica con todos los movimientos del cliente:
+ * creación, ediciones, negociaciones, abonos, renuncias, intereses, documentos y notas manuales.
  *
  * ARQUITECTURA:
- * - Componente orquestador (< 120 líneas)
- * - Separación de responsabilidades completa
- * - Componentes extraídos en historial/components/
- * - Métricas + Filtros avanzados + Diseño compacto
+ * - Componente orquestador (< 150 líneas)
+ * - Lógica en useHistorialCliente hook
+ * - UI separada en historial/components/
  */
 
 'use client'
@@ -18,6 +18,7 @@ import { AnimatePresence } from 'framer-motion'
 import { Clock, Filter, X } from 'lucide-react'
 import { toast } from 'sonner'
 
+import { formatDateCompact } from '@/lib/utils/date.utils'
 import { logger } from '@/lib/utils/logger'
 import { useHistorialCliente } from '@/modules/clientes/hooks/useHistorialCliente'
 import { useNotasHistorial } from '@/modules/clientes/hooks/useNotasHistorial'
@@ -28,12 +29,11 @@ import { LoadingState } from '@/shared/components/layout/LoadingState'
 import { useModal } from '@/shared/components/modals'
 
 import {
-  FiltrosYBusqueda,
-  GrupoEventosFecha,
-  MetricasHistorial,
+  HistorialFiltros,
+  HistorialResumen,
+  NotaModal,
+  TimelineGrupoFecha,
 } from './historial/components'
-import { NotaModal } from './historial/components/NotaModal'
-import { historialStyles } from './historial/historial-tab.styles'
 
 interface HistorialTabProps {
   clienteId: string
@@ -52,49 +52,39 @@ export function HistorialTab({ clienteId, clienteNombre }: HistorialTabProps) {
   const {
     eventosAgrupados,
     estadisticas,
-    usuariosDisponibles,
     isLoading,
     error,
     busqueda,
     setBusqueda,
-    tipoEvento,
-    setTipoEvento,
-    modulo,
-    setModulo,
-    usuarioFiltro,
-    setUsuarioFiltro,
+    categoria,
+    setCategoria,
     limpiarFiltros,
     tieneAplicados,
   } = useHistorialCliente({ clienteId })
 
-  // ✅ Calcular todos los eventos (aplanado)
+  // Aplanar eventos para calcular permisos
   const todosLosEventos = useMemo(() => {
-    return eventosAgrupados.flatMap(grupo => grupo.eventos)
+    return eventosAgrupados.flatMap(g => g.eventos)
   }, [eventosAgrupados])
 
-  // ✅ Verificar permisos de forma SINCRÓNICA (instantáneo, sin delays)
   const { notasEditables } = usePermisosNotasHistorial(todosLosEventos)
 
+  // Formatear fecha del primer evento para el resumen
+  const primerEventoFormateado = estadisticas.primerEvento
+    ? formatDateCompact(estadisticas.primerEvento)
+    : null
+
   // ========== HANDLERS DE NOTAS ==========
-  /**
-   * ✅ REACT QUERY PRO: Pre-fetch antes de abrir modal
-   * - Carga datos en cache ANTES de abrir
-   * - Modal usa datos del cache (instantáneo)
-   * - Sin flashes de loading
-   */
   const handleEditarNota = async (notaId: string) => {
     try {
-      // 1. Pre-fetch: Cargar datos en cache ANTES de abrir modal
       await queryClient.prefetchQuery({
         queryKey: ['nota-historial', notaId],
         queryFn: () => notasHistorialService.obtenerNotaPorId(notaId),
       })
-
-      // 2. Datos YA están en cache, abrir modal instantáneamente
       setNotaIdSeleccionado(notaId)
       setMostrarModalNota(true)
-    } catch (error) {
-      logger.error('Error cargando nota:', error)
+    } catch (err) {
+      logger.error('Error cargando nota:', err)
       toast.error('Error al cargar la nota')
     }
   }
@@ -108,12 +98,11 @@ export function HistorialTab({ clienteId, clienteNombre }: HistorialTabProps) {
       cancelText: 'Cancelar',
       variant: 'danger',
     })
-
     if (confirmado) {
       try {
         await eliminarNota(notaId)
-      } catch (error) {
-        logger.error('Error eliminando nota:', error)
+      } catch (err) {
+        logger.error('Error eliminando nota:', err)
       }
     }
   }
@@ -123,7 +112,7 @@ export function HistorialTab({ clienteId, clienteNombre }: HistorialTabProps) {
     setNotaIdSeleccionado(null)
   }
 
-  // ========== ESTADOS DE CARGA Y ERROR ==========
+  // ========== ESTADOS ==========
   if (isLoading) {
     return (
       <div className='py-12'>
@@ -134,7 +123,7 @@ export function HistorialTab({ clienteId, clienteNombre }: HistorialTabProps) {
 
   if (error) {
     return (
-      <div className={historialStyles.empty.container}>
+      <div className='p-6'>
         <EmptyState
           icon={<X className='h-12 w-12 text-red-500' />}
           title='Error al cargar historial'
@@ -146,7 +135,7 @@ export function HistorialTab({ clienteId, clienteNombre }: HistorialTabProps) {
 
   if (estadisticas.total === 0) {
     return (
-      <div className={historialStyles.empty.container}>
+      <div className='p-6'>
         <EmptyState
           icon={<Clock className='h-12 w-12 text-gray-400' />}
           title='Sin historial'
@@ -156,41 +145,34 @@ export function HistorialTab({ clienteId, clienteNombre }: HistorialTabProps) {
     )
   }
 
-  // ========== CONTENIDO PRINCIPAL ==========
+  // ========== RENDER ==========
   return (
-    <div className={historialStyles.container.root}>
-      {/* Panel de Métricas */}
-      <MetricasHistorial
+    <div className='space-y-4 py-4'>
+      {/* Resumen del ciclo de vida */}
+      <HistorialResumen
         total={estadisticas.total}
         estaSemana={estadisticas.estaSemana}
         esteMes={estadisticas.esteMes}
         criticos={estadisticas.criticos}
+        primerEvento={primerEventoFormateado}
       />
 
-      {/* Header con búsqueda y filtros avanzados */}
-      <FiltrosYBusqueda
-        clienteNombre={clienteNombre}
-        estadisticasFiltrados={estadisticas.filtrados}
-        estadisticasTotal={estadisticas.total}
+      {/* Filtros */}
+      <HistorialFiltros
         busqueda={busqueda}
         onBusquedaChange={setBusqueda}
+        categoriaActiva={categoria}
+        onCategoriaChange={setCategoria}
+        totalFiltrados={estadisticas.filtrados}
+        totalGeneral={estadisticas.total}
         tieneAplicados={tieneAplicados}
         onLimpiarFiltros={limpiarFiltros}
-        // Nuevos filtros
-        tipoEvento={tipoEvento}
-        onTipoEventoChange={setTipoEvento}
-        modulo={modulo}
-        onModuloChange={setModulo}
-        usuario={usuarioFiltro}
-        onUsuarioChange={setUsuarioFiltro}
-        usuariosDisponibles={usuariosDisponibles}
-        // Botón agregar nota
         onAgregarNota={() => setMostrarModalNota(true)}
       />
 
-      {/* Timeline de eventos */}
+      {/* Timeline */}
       {estadisticas.filtrados === 0 ? (
-        <div className={historialStyles.empty.sinResultados}>
+        <div className='py-8'>
           <EmptyState
             icon={<Filter className='h-12 w-12 text-gray-400' />}
             title='Sin resultados'
@@ -198,10 +180,13 @@ export function HistorialTab({ clienteId, clienteNombre }: HistorialTabProps) {
           />
         </div>
       ) : (
-        <div className={historialStyles.timeline.container}>
+        <div className='relative pl-8'>
+          {/* Línea vertical del timeline */}
+          <div className='absolute bottom-4 left-[15px] top-0 w-[2px] bg-gradient-to-b from-cyan-300 via-cyan-200 to-transparent dark:from-cyan-700 dark:via-cyan-800' />
+
           <AnimatePresence>
             {eventosAgrupados.map(grupo => (
-              <GrupoEventosFecha
+              <TimelineGrupoFecha
                 key={grupo.fecha}
                 fecha={grupo.fecha}
                 fechaFormateada={grupo.fechaFormateada}
@@ -216,8 +201,7 @@ export function HistorialTab({ clienteId, clienteNombre }: HistorialTabProps) {
         </div>
       )}
 
-      {/* Modal para agregar/editar notas */}
-      {/* ✅ React Query: notaId resuelve datos desde cache (instantáneo) */}
+      {/* Modal de nota */}
       <NotaModal
         isOpen={mostrarModalNota}
         onClose={handleCerrarModal}

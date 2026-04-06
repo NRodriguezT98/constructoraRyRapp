@@ -34,6 +34,56 @@ import type {
 } from '../types/historial.types'
 
 /**
+ * Campos técnicos internos que no aportan valor al usuario.
+ * Usado tanto en la generación de descripciones como en extraerDetalles.
+ */
+const CAMPOS_EXCLUIDOS = new Set([
+  'id',
+  'cliente_id',
+  'negociacion_id',
+  'vivienda_id',
+  'proyecto_id',
+  'usuario_id',
+  'fuente_pago_id',
+  'registrado_por',
+  'usuario_registro',
+  'usuario_creacion',
+  'subido_por',
+  'created_at',
+  'updated_at',
+  'fecha_creacion',
+  'fecha_actualizacion',
+  'version_actual',
+  'version_lock',
+  'fecha_ultima_modificacion',
+  'activo',
+  'fuente_pago_relacionada',
+  'estado_documento',
+  'razon_obsolescencia',
+  'fecha_obsolescencia',
+  'reemplazada_por',
+  'razon_inactivacion',
+  'fecha_inactivacion',
+  'estado_fuente',
+  'version_negociacion',
+  'nombre_archivo',
+  'nombre_original',
+  'tamano_bytes',
+  'tipo_mime',
+  'es_version_actual',
+  'documento_padre_id',
+  'documento_identidad_url',
+  'documento_identidad_titulo',
+  'metadata',
+  'etiquetas',
+  'total_fuentes_pago',
+  'total_abonado',
+  'porcentaje_pagado',
+  'porcentaje_completado',
+  'nombre_completo',
+])
+
+/**
  * Humanizar un evento de audit_log
  * Convierte JSON raw en información legible
  */
@@ -50,6 +100,7 @@ export function humanizarEvento(
     id: evento.id,
     tipo,
     accion: evento.accion, // Acción genérica de audit_log
+    tabla: evento.tabla, // Tabla de origen (para filtrado por categoría)
     titulo,
     descripcion,
     fecha: evento.fecha_evento,
@@ -156,14 +207,21 @@ function generarTextos(
         descripcion: `Se creó el cliente ${datos_nuevos?.nombres || ''} ${datos_nuevos?.apellidos || ''} en la aplicación con los siguientes datos`,
       }
 
-    case 'cliente_actualizado':
-      const camposModificados = cambios_especificos
-        ? Object.keys(cambios_especificos).join(', ')
-        : 'información del perfil'
+    case 'cliente_actualizado': {
+      const camposVisibles = cambios_especificos
+        ? Object.keys(cambios_especificos).filter(
+            campo => !CAMPOS_EXCLUIDOS.has(campo)
+          )
+        : []
+      const descripcionCampos =
+        camposVisibles.length > 0
+          ? camposVisibles.join(', ')
+          : 'información del perfil'
       return {
         titulo: 'Perfil actualizado',
-        descripcion: `Se modificó ${camposModificados} del cliente`,
+        descripcion: `Se modificó ${descripcionCampos} del cliente`,
       }
+    }
 
     case 'cliente_estado_cambiado':
       const estadoAnterior = cambios_especificos?.estado?.antes || 'desconocido'
@@ -364,13 +422,103 @@ function obtenerColor(tipo: TipoEventoHistorial): ColorEvento {
 }
 
 /**
- * Extraer detalles de cambios (para eventos UPDATE)
+ * Extraer detalles de cambios (para eventos CREATE/UPDATE)
  */
 function extraerDetalles(
   evento: EventoHistorialCliente,
   tipo: TipoEventoHistorial
 ): DetalleEvento[] {
   const { cambios_especificos, datos_nuevos, accion } = evento
+
+  // CAMPOS_EXCLUIDOS está definido al nivel de módulo (ver constante al inicio del archivo)
+
+  // Mapa central de campos → etiquetas legibles en español
+  const ETIQUETAS: Record<string, string> = {
+    // === CLIENTE ===
+    nombres: 'Nombres',
+    apellidos: 'Apellidos',
+    tipo_documento: 'Tipo de documento',
+    numero_documento: 'Número de documento',
+    telefono: 'Teléfono',
+    celular: 'Celular',
+    telefono_alternativo: 'Teléfono alternativo',
+    email: 'Correo electrónico',
+    direccion: 'Dirección',
+    ciudad: 'Ciudad',
+    departamento: 'Departamento',
+    barrio: 'Barrio',
+    fecha_nacimiento: 'Fecha de nacimiento',
+    estado_civil: 'Estado civil',
+    estado: 'Estado',
+    origen: 'Origen',
+    referido_por: 'Referido por',
+    ocupacion: 'Ocupación',
+    empresa: 'Empresa',
+    ingresos_mensuales: 'Ingresos mensuales',
+    tipo_vivienda_actual: 'Tipo de vivienda actual',
+    notas: 'Notas',
+    // === NEGOCIACIÓN ===
+    valor_negociado: 'Valor negociado',
+    descuento_aplicado: 'Descuento aplicado',
+    valor_total: 'Valor total',
+    saldo_pendiente: 'Saldo pendiente',
+    promesa_compraventa_url: 'Promesa de compraventa',
+    promesa_firmada_url: 'Promesa firmada',
+    escritura_url: 'Escritura',
+    fecha_negociacion: 'Fecha de negociación',
+    fecha_completada: 'Fecha de cierre',
+    tipo_descuento: 'Tipo de descuento',
+    motivo_descuento: 'Motivo del descuento',
+    porcentaje_descuento: 'Porcentaje de descuento',
+    valor_escritura_publica: 'Valor escritura pública',
+    // === ABONO ===
+    monto: 'Monto del abono',
+    metodo_pago: 'Método de pago',
+    fecha_abono: 'Fecha del abono',
+    numero_referencia: 'Número de referencia',
+    comprobante_url: 'Comprobante',
+    // === RENUNCIA ===
+    motivo: 'Motivo de renuncia',
+    fecha_renuncia: 'Fecha de renuncia',
+    monto_devolucion: 'Monto de devolución',
+    monto_a_devolver: 'Monto a devolver',
+    fecha_renuncia_efectiva: 'Fecha efectiva',
+    // === INTERÉS ===
+    presupuesto: 'Presupuesto',
+    tipo_vivienda: 'Tipo de vivienda',
+    // === DOCUMENTO ===
+    titulo: 'Título',
+    descripcion: 'Descripción',
+    categoria_id: 'Categoría',
+    url_storage: 'Archivo',
+    fecha_documento: 'Fecha del documento',
+    fecha_vencimiento: 'Fecha de vencimiento',
+    es_importante: 'Marcado como importante',
+    es_documento_identidad: 'Documento de identidad',
+    tipo_documento_doc: 'Tipo de documento',
+    observaciones: 'Observaciones',
+    // === FUENTE DE PAGO ===
+    tipo: 'Tipo de fuente',
+    monto_aprobado: 'Monto aprobado',
+    monto_recibido: 'Monto recibido',
+    entidad: 'Entidad',
+    carta_aprobacion_url: 'Carta de aprobación',
+  }
+
+  // Helper para construir detalle de CREATE a partir de campos específicos
+  const buildCreateDetalles = (
+    campos: string[],
+    src: Record<string, unknown>
+  ): DetalleEvento[] =>
+    campos
+      .filter(c => src[c] != null && src[c] !== '')
+      .map(c => ({
+        campo: c,
+        etiqueta: ETIQUETAS[c] ?? c,
+        valorAnterior: null,
+        valorNuevo: src[c],
+        tipo: detectarTipoCampo(c),
+      }))
 
   // Para CREATE de cliente, mostrar TODOS los campos del formulario
   if (tipo === 'cliente_creado' && accion === 'CREATE' && datos_nuevos) {
@@ -530,46 +678,101 @@ function extraerDetalles(
     return detalles
   }
 
-  if (!cambios_especificos || evento.accion !== 'UPDATE') return []
-
-  const detalles: DetalleEvento[] = []
-
-  // Mapeo de campos a etiquetas legibles
-  const etiquetas: Record<string, string> = {
-    nombres: 'Nombres',
-    apellidos: 'Apellidos',
-    tipo_documento: 'Tipo de documento',
-    numero_documento: 'Número de documento',
-    telefono: 'Teléfono',
-    email: 'Correo electrónico',
-    direccion: 'Dirección',
-    ciudad: 'Ciudad',
-    departamento: 'Departamento',
-    fecha_nacimiento: 'Fecha de nacimiento',
-    estado: 'Estado',
-    origen: 'Origen',
-    referido_por: 'Referido por',
-    ocupacion: 'Ocupación',
-    empresa: 'Empresa',
-    ingresos_mensuales: 'Ingresos mensuales',
-    valor_total: 'Valor total',
-    cuota_inicial: 'Cuota inicial',
-    saldo_pendiente: 'Saldo pendiente',
-    valor_abono: 'Valor del abono',
-    metodo_pago: 'Método de pago',
+  // === CREATE: Negociación ===
+  if (tipo === 'negociacion_creada' && accion === 'CREATE' && datos_nuevos) {
+    return buildCreateDetalles(
+      [
+        'valor_negociado',
+        'descuento_aplicado',
+        'tipo_descuento',
+        'motivo_descuento',
+        'porcentaje_descuento',
+        'valor_total',
+        'saldo_pendiente',
+        'valor_escritura_publica',
+        'estado',
+        'fecha_negociacion',
+        'notas',
+      ],
+      datos_nuevos as Record<string, unknown>
+    )
   }
 
-  for (const [campo, cambio] of Object.entries(cambios_especificos)) {
-    detalles.push({
-      campo,
-      etiqueta: etiquetas[campo] || campo,
-      valorAnterior: cambio.antes,
-      valorNuevo: cambio.despues,
-      tipo: detectarTipoCampo(campo),
-    })
+  // === CREATE: Abono ===
+  if (tipo === 'abono_registrado' && accion === 'CREATE' && datos_nuevos) {
+    return buildCreateDetalles(
+      [
+        'monto',
+        'metodo_pago',
+        'fecha_abono',
+        'numero_referencia',
+        'comprobante_url',
+        'notas',
+        'observaciones',
+      ],
+      datos_nuevos as Record<string, unknown>
+    )
   }
 
-  return detalles
+  // === CREATE: Interés ===
+  if (tipo === 'interes_registrado' && accion === 'CREATE' && datos_nuevos) {
+    return buildCreateDetalles(
+      ['presupuesto', 'tipo_vivienda', 'estado', 'observaciones', 'notas'],
+      datos_nuevos as Record<string, unknown>
+    )
+  }
+
+  // === CREATE: Renuncia ===
+  if (tipo === 'renuncia_creada' && accion === 'CREATE' && datos_nuevos) {
+    return buildCreateDetalles(
+      [
+        'motivo',
+        'estado',
+        'monto_devolucion',
+        'monto_a_devolver',
+        'fecha_renuncia',
+        'observaciones',
+      ],
+      datos_nuevos as Record<string, unknown>
+    )
+  }
+
+  // === CREATE: Documento ===
+  if (tipo === 'documento_subido' && accion === 'CREATE' && datos_nuevos) {
+    return buildCreateDetalles(
+      [
+        'titulo',
+        'descripcion',
+        'estado',
+        'fecha_documento',
+        'fecha_vencimiento',
+        'es_importante',
+        'es_documento_identidad',
+        'observaciones',
+      ],
+      datos_nuevos as Record<string, unknown>
+    )
+  }
+
+  // === UPDATE: Todas las tablas (el trigger siempre calcula cambios_especificos) ===
+  if (accion === 'UPDATE' && cambios_especificos) {
+    const detalles: DetalleEvento[] = []
+
+    for (const [campo, cambio] of Object.entries(cambios_especificos)) {
+      if (CAMPOS_EXCLUIDOS.has(campo)) continue
+      detalles.push({
+        campo,
+        etiqueta: ETIQUETAS[campo] ?? campo,
+        valorAnterior: (cambio as { antes: unknown }).antes,
+        valorNuevo: (cambio as { despues: unknown }).despues,
+        tipo: detectarTipoCampo(campo),
+      })
+    }
+
+    return detalles
+  }
+
+  return []
 }
 
 /**

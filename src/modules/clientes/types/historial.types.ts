@@ -35,6 +35,7 @@ export interface EventoHistorialHumanizado {
   id: string
   tipo: TipoEventoHistorial
   accion: 'CREATE' | 'UPDATE' | 'DELETE' // Tipo genérico de acción
+  tabla: string // Nombre de la tabla en audit_log (para filtrado por categoría)
   titulo: string
   descripcion: string
   fecha: string

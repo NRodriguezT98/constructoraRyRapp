@@ -31,6 +31,7 @@ export function convertirNotaAEvento(
     id: `nota-${nota.id}`,
     tipo: 'nota_manual', // Tipo especial para notas
     accion: 'CREATE', // Notas siempre son tipo CREATE visualmente
+    tabla: 'notas', // Tabla virtual para filtrado por categoría
     titulo: nota.titulo,
     descripcion: nota.contenido,
     fecha: nota.fecha_creacion,

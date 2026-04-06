@@ -1,7 +1,6 @@
 /**
- * Modal para Crear/Editar Notas Manuales en Historial
- * ✅ Usa React Query para carga optimizada (cache + pre-fetch)
- * Permite agregar contexto adicional no capturado por eventos automáticos
+ * NotaModal - Modal para crear/editar notas manuales en el historial
+ * Permite agregar contexto adicional al timeline del cliente
  */
 
 'use client'
@@ -20,7 +19,7 @@ interface NotaModalProps {
   onClose: () => void
   clienteId: string
   clienteNombre: string
-  notaId?: string | null // Para modo edición
+  notaId?: string | null
 }
 
 export function NotaModal({
@@ -37,19 +36,14 @@ export function NotaModal({
   const modoEdicion = !!notaId
   const { crearNota, actualizarNota, isCreando, isActualizando } =
     useNotasHistorial(clienteId)
-
-  // ✅ REACT QUERY: Datos desde cache (pre-cargados, instantáneos)
   const { data: notaData } = useNotaPorId(notaId)
 
-  // Sincronizar formulario cuando cambien los datos
   useEffect(() => {
     if (notaData && modoEdicion) {
-      // Modo edición: datos desde cache (instantáneo)
       setTitulo(notaData.titulo)
       setContenido(notaData.contenido)
       setEsImportante(notaData.es_importante)
     } else if (!modoEdicion) {
-      // Reset para nueva nota
       setTitulo('')
       setContenido('')
       setEsImportante(false)
@@ -58,20 +52,12 @@ export function NotaModal({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-
-    if (titulo.trim().length < 3) {
-      return
-    }
-
-    if (contenido.trim().length < 10) {
-      return
-    }
+    if (titulo.trim().length < 3 || contenido.trim().length < 10) return
 
     try {
       let result
 
       if (modoEdicion && notaId) {
-        // Modo edición
         result = await actualizarNota({
           notaId,
           datos: {
@@ -81,7 +67,6 @@ export function NotaModal({
           },
         })
       } else {
-        // Modo creación
         result = await crearNota({
           cliente_id: clienteId,
           titulo: titulo.trim(),
@@ -90,7 +75,6 @@ export function NotaModal({
         })
       }
 
-      // Si fue exitoso, resetear form y cerrar modal
       if (result.success) {
         setTitulo('')
         setContenido('')
@@ -98,12 +82,15 @@ export function NotaModal({
         onClose()
       }
     } catch (error) {
-      // Error ya manejado por el hook (toast.error)
-      logger.error('Error en handleSubmit:', error)
+      logger.error('Error en handleSubmit nota:', error)
     }
   }
 
   if (!isOpen) return null
+
+  const isLoading = isCreando || isActualizando
+  const isDisabled =
+    isLoading || titulo.trim().length < 3 || contenido.trim().length < 10
 
   return (
     <div className='fixed inset-0 z-50 flex items-center justify-center p-4'>
@@ -140,6 +127,7 @@ export function NotaModal({
               </div>
             </div>
             <button
+              type='button'
               onClick={onClose}
               className='flex h-8 w-8 items-center justify-center rounded-lg bg-white/20 text-white transition-colors hover:bg-white/30'
             >
@@ -150,7 +138,6 @@ export function NotaModal({
 
         {/* Form */}
         <form onSubmit={handleSubmit} className='space-y-4 p-6'>
-          {/* Título */}
           <div>
             <label className='mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300'>
               Título de la nota *
@@ -159,7 +146,7 @@ export function NotaModal({
               type='text'
               value={titulo}
               onChange={e => setTitulo(e.target.value)}
-              placeholder='Ej: Llamada telefónica - Consulta sobre disponibilidad'
+              placeholder='Ej: Llamada telefónica — Consulta sobre disponibilidad'
               maxLength={200}
               className='w-full rounded-lg border-2 border-gray-200 bg-gray-50 px-4 py-2.5 text-sm transition-all focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 dark:border-gray-700 dark:bg-gray-800'
               required
@@ -169,7 +156,6 @@ export function NotaModal({
             </p>
           </div>
 
-          {/* Contenido */}
           <div>
             <label className='mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300'>
               Contenido de la nota *
@@ -191,22 +177,21 @@ export function NotaModal({
           <div className='flex items-start gap-3 rounded-lg border border-yellow-200 bg-yellow-50 p-3 dark:border-yellow-800 dark:bg-yellow-950/30'>
             <input
               type='checkbox'
-              id='es-importante'
+              id='nota-importante'
               checked={esImportante}
               onChange={e => setEsImportante(e.target.checked)}
-              className='mt-0.5 h-4 w-4 rounded border-gray-300 bg-gray-100 text-yellow-600 focus:ring-2 focus:ring-yellow-500'
+              className='mt-0.5 h-4 w-4 rounded border-gray-300 text-yellow-600 focus:ring-2 focus:ring-yellow-500'
             />
             <div className='flex-1'>
               <label
-                htmlFor='es-importante'
+                htmlFor='nota-importante'
                 className='flex cursor-pointer items-center gap-2 text-sm font-semibold text-yellow-900 dark:text-yellow-100'
               >
                 <Star className='h-4 w-4' />
                 Marcar como importante
               </label>
               <p className='mt-0.5 text-xs text-yellow-700 dark:text-yellow-300'>
-                Las notas importantes se destacarán con una estrella en el
-                historial
+                Las notas importantes se destacarán en el historial
               </p>
             </div>
           </div>
@@ -215,9 +200,8 @@ export function NotaModal({
           <div className='flex items-start gap-2 rounded-lg border border-blue-200 bg-blue-50 p-3 dark:border-blue-800 dark:bg-blue-950/30'>
             <AlertCircle className='mt-0.5 h-4 w-4 shrink-0 text-blue-600 dark:text-blue-400' />
             <p className='text-xs text-blue-800 dark:text-blue-200'>
-              Esta nota se agregará al historial del cliente y será visible para
-              todos los usuarios. Solo tú o un administrador podrán editarla o
-              eliminarla.
+              Esta nota quedará registrada en el historial del cliente. Solo tú
+              o un administrador podrán editarla o eliminarla.
             </p>
           </div>
 
@@ -226,24 +210,19 @@ export function NotaModal({
             <button
               type='button'
               onClick={onClose}
-              disabled={isCreando || isActualizando}
+              disabled={isLoading}
               className='rounded-lg px-4 py-2 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-100 disabled:opacity-50 dark:text-gray-300 dark:hover:bg-gray-800'
             >
               Cancelar
             </button>
             <motion.button
               type='submit'
-              disabled={
-                isCreando ||
-                isActualizando ||
-                titulo.trim().length < 3 ||
-                contenido.trim().length < 10
-              }
+              disabled={isDisabled}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               className='flex items-center gap-2 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 px-6 py-2 text-sm font-semibold text-white shadow-lg transition-all hover:from-purple-700 hover:to-indigo-700 disabled:cursor-not-allowed disabled:opacity-50'
             >
-              {isCreando || isActualizando ? (
+              {isLoading ? (
                 <>
                   <Loader2 className='h-4 w-4 animate-spin' />
                   {modoEdicion ? 'Actualizando...' : 'Guardando...'}

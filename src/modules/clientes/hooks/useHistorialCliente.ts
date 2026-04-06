@@ -38,6 +38,8 @@ export function useHistorialCliente({
   const [tipoEvento, setTipoEvento] = useState('')
   const [modulo, setModulo] = useState('')
   const [usuarioFiltro, setUsuarioFiltro] = useState('')
+  // Filtro por categoría (tabla: 'clientes' | 'negociaciones' | etc. | 'notas' | 'todos')
+  const [categoria, setCategoria] = useState('todos')
 
   // ========== QUERIES (Eventos automáticos + Notas manuales) ==========
   const {
@@ -104,6 +106,15 @@ export function useHistorialCliente({
   const eventosFiltrados = useMemo(() => {
     let eventos = todosLosEventos
 
+    // Filtrar por categoría (tabla) - nuevo sistema simplificado
+    if (categoria && categoria !== 'todos') {
+      if (categoria === 'notas') {
+        eventos = eventos.filter(e => e.tabla === 'notas')
+      } else {
+        eventos = eventos.filter(e => e.tabla === categoria)
+      }
+    }
+
     // Filtrar por tipo de evento (CREATE, UPDATE, DELETE)
     if (tipoEvento) {
       eventos = eventos.filter(e => e.accion === tipoEvento)
@@ -151,7 +162,15 @@ export function useHistorialCliente({
     }
 
     return eventos
-  }, [todosLosEventos, filtros, busqueda, tipoEvento, modulo, usuarioFiltro])
+  }, [
+    todosLosEventos,
+    filtros,
+    busqueda,
+    tipoEvento,
+    modulo,
+    usuarioFiltro,
+    categoria,
+  ])
 
   // ========== AGRUPAR POR FECHA ==========
   const eventosAgrupados = useMemo(() => {
@@ -222,16 +241,22 @@ export function useHistorialCliente({
       if (evento.accion === 'DELETE' || evento.color === 'red') criticos++
     })
 
+    // Primer evento (el más antiguo = elemento al final del array ya ordenado desc)
+    const primerEvento =
+      todosLosEventos.length > 0
+        ? todosLosEventos[todosLosEventos.length - 1].fecha
+        : null
+
     return {
       total,
       porTipo,
       porColor,
       filtrados: eventosFiltrados.length,
       grupos: eventosAgrupados.length,
-      // Nuevas métricas
       estaSemana,
       esteMes,
       criticos,
+      primerEvento,
     }
   }, [todosLosEventos, eventosFiltrados, eventosAgrupados])
 
@@ -246,6 +271,7 @@ export function useHistorialCliente({
     setTipoEvento('')
     setModulo('')
     setUsuarioFiltro('')
+    setCategoria('todos')
   }
 
   const tieneAplicados =
@@ -253,7 +279,8 @@ export function useHistorialCliente({
     busqueda.trim() !== '' ||
     tipoEvento !== '' ||
     modulo !== '' ||
-    usuarioFiltro !== ''
+    usuarioFiltro !== '' ||
+    categoria !== 'todos'
 
   // ========== RETORNO ==========
   return {
@@ -277,10 +304,12 @@ export function useHistorialCliente({
     tipoEvento,
     modulo,
     usuarioFiltro,
+    categoria,
     setBusqueda,
     setTipoEvento,
     setModulo,
     setUsuarioFiltro,
+    setCategoria,
     aplicarFiltros,
     limpiarFiltros,
     tieneAplicados,

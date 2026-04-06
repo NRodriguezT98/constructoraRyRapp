@@ -1,9 +1,9 @@
 /**
- * Barrel Export - Componentes de Historial
+ * Barrel Export - Componentes del Historial Tab
  */
 
-export { EventoCard } from './EventoCard'
-export { FiltrosYBusqueda } from './FiltrosYBusqueda'
-export { GrupoEventosFecha } from './GrupoEventosFecha'
-export { MetricasHistorial } from './MetricasHistorial'
+export { HistorialFiltros } from './HistorialFiltros'
+export { HistorialResumen } from './HistorialResumen'
 export { NotaModal } from './NotaModal'
+export { TimelineEventoCard } from './TimelineEventoCard'
+export { TimelineGrupoFecha } from './TimelineGrupoFecha'
