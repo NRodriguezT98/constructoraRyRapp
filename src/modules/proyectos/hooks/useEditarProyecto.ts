@@ -5,13 +5,14 @@
 
 'use client'
 
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
 import { useRouter } from 'next/navigation'
 
+import { useUnsavedChanges } from '@/contexts/unsaved-changes-context'
 import type {
   SectionStatus,
   SummaryItem,
@@ -29,6 +30,7 @@ import {
   PASOS_PROYECTO_EDICION,
   convertirAGenerico,
   parsearUbicacion,
+  validarFechasProyecto,
 } from '../utils/editar-proyecto-accordion.utils'
 
 import { useDetectarCambios } from './useDetectarCambios'
@@ -40,6 +42,7 @@ export { CATEGORIAS_CAMBIOS_PROYECTO, PASOS_PROYECTO_EDICION }
 export function useEditarProyecto(proyectoId: string) {
   const router = useRouter()
   const queryClient = useQueryClient()
+  const { setHasUnsavedChanges, setMessage } = useUnsavedChanges()
 
   const [pasoActual, setPasoActual] = useState(1)
   const [pasosCompletados, setPasosCompletados] = useState<Set<number>>(
@@ -59,15 +62,19 @@ export function useEditarProyecto(proyectoId: string) {
     isError,
   } = useProyectoConValidacion(proyectoId)
 
-  // ── Transformar datos cargados en initialData para el formulario ──
-  const initialData = useMemo((): Partial<ProyectoFormData> | undefined => {
-    if (!proyectoConValidacion) return undefined
+  // ── Transformar datos cargados: parsear ubicación una sola vez ──
+  // Un único memo computa ambas formas (initialData + proyectoOriginal) evitando
+  // llamar a parsearUbicacion() dos veces con el mismo argumento.
+  const proyectoTransformado = useMemo(() => {
+    if (!proyectoConValidacion) {
+      return { formData: undefined, proyectoOriginal: null }
+    }
 
     const { departamento, ciudad, direccion } = parsearUbicacion(
       proyectoConValidacion.ubicacion
     )
 
-    return {
+    const formData: Partial<ProyectoFormData> = {
       id: proyectoConValidacion.id,
       nombre: proyectoConValidacion.nombre,
       descripcion: proyectoConValidacion.descripcion,
@@ -91,17 +98,8 @@ export function useEditarProyecto(proyectoId: string) {
         motivoBloqueado: m.motivoBloqueado,
       })),
     }
-  }, [proyectoConValidacion])
 
-  // ── Proyecto original como tipo Proyecto para detección de cambios ──
-  const proyectoOriginalParaCambios = useMemo((): Proyecto | null => {
-    if (!proyectoConValidacion) return null
-
-    const { departamento, ciudad, direccion } = parsearUbicacion(
-      proyectoConValidacion.ubicacion
-    )
-
-    return {
+    const proyectoOriginal: Proyecto = {
       id: proyectoConValidacion.id,
       nombre: proyectoConValidacion.nombre,
       descripcion: proyectoConValidacion.descripcion,
@@ -127,7 +125,12 @@ export function useEditarProyecto(proyectoId: string) {
       fechaCreacion: proyectoConValidacion.fechaCreacion,
       fechaActualizacion: proyectoConValidacion.fechaActualizacion,
     }
+
+    return { formData, proyectoOriginal }
   }, [proyectoConValidacion])
+
+  const initialData = proyectoTransformado.formData
+  const proyectoOriginalParaCambios = proyectoTransformado.proyectoOriginal
 
   // ── Detección de cambios EN TIEMPO REAL (proyecto original vs formulario actual) ──
   // Se computa con los datos pendientes de confirmar (si existen) o con watch() en vivo
@@ -166,6 +169,8 @@ export function useEditarProyecto(proyectoId: string) {
         }),
       ])
       // 3. Formulario muestra celebración de éxito
+      setHasUnsavedChanges(false)
+      setMessage(null)
       setIsSubmitting(false)
       setShowSuccess(true)
       setTimeout(() => router.push('/proyectos'), 2000)
@@ -178,7 +183,14 @@ export function useEditarProyecto(proyectoId: string) {
       toast.error(message)
       setDatosFormularioPendiente(null)
     }
-  }, [datosFormularioPendiente, proyectoId, queryClient, router])
+  }, [
+    datosFormularioPendiente,
+    proyectoId,
+    queryClient,
+    router,
+    setHasUnsavedChanges,
+    setMessage,
+  ])
 
   // ── Cancelar confirmación ──
   const cancelarConfirmacion = useCallback(() => {
@@ -198,6 +210,17 @@ export function useEditarProyecto(proyectoId: string) {
     onSubmit: handleSubmitInterceptor,
     isEditing: true,
   })
+
+  // En edición: pre-marcar todos los pasos como completados cuando los datos cargan,
+  // para que el usuario pueda navegar libremente sin el flujo secuencial de creación.
+  useEffect(() => {
+    if (proyectoConValidacion) {
+      const totalPasos = PASOS_PROYECTO_EDICION.length
+      const todos = Array.from({ length: totalPasos }, (_, i) => i + 1)
+      // Todos menos el paso 1 (activo por defecto) quedan como 'completed'
+      setPasosCompletados(new Set(todos.filter(p => p !== 1)))
+    }
+  }, [proyectoConValidacion])
 
   const {
     register,
@@ -249,11 +272,39 @@ export function useEditarProyecto(proyectoId: string) {
 
   const hayCambios = resumenCambiosLive.hayCambios
 
+  // ── Sincronizar cambios sin guardar con el contexto global (guard de navegación) ──
+  useEffect(() => {
+    setHasUnsavedChanges(hayCambios)
+    if (hayCambios) {
+      const nombre = proyectoConValidacion?.nombre ?? ''
+      setMessage(
+        nombre
+          ? `El proyecto "${nombre}" tiene cambios sin guardar.`
+          : 'El proyecto tiene cambios sin guardar.'
+      )
+    } else {
+      setMessage(null)
+    }
+  }, [
+    hayCambios,
+    proyectoConValidacion?.nombre,
+    setHasUnsavedChanges,
+    setMessage,
+  ])
+
+  // Limpiar al desmontar
+  useEffect(() => {
+    return () => {
+      setHasUnsavedChanges(false)
+      setMessage(null)
+    }
+  }, [setHasUnsavedChanges, setMessage])
+
   // ── Estado de cada sección ───────────────────────────────────────
   const getEstadoPaso = useCallback(
     (paso: number): SectionStatus => {
+      if (paso === pasoActual) return 'active' // activo siempre gana
       if (pasosCompletados.has(paso)) return 'completed'
-      if (paso === pasoActual) return 'active'
       return 'pending'
     },
     [pasoActual, pasosCompletados]
@@ -329,43 +380,17 @@ export function useEditarProyecto(proyectoId: string) {
           const fechaFin = watch('fechaFinEstimada') as string | undefined
           const estado = watch('estado') as string | undefined
 
-          if (
-            fechaInicio &&
-            fechaFin &&
-            fechaInicio.trim() !== '' &&
-            fechaFin.trim() !== ''
-          ) {
-            const dateInicio = new Date(fechaInicio)
-            const dateFin = new Date(fechaFin)
-            const ahora = new Date()
-
-            if (dateFin <= dateInicio) {
-              setError('fechaFinEstimada', {
-                type: 'manual',
-                message:
-                  'La fecha de fin debe ser posterior a la fecha de inicio',
-              })
-              return false
-            }
-            if (estado === 'completado' && dateFin > ahora) {
-              setError('fechaFinEstimada', {
-                type: 'manual',
-                message:
-                  'Un proyecto completado no puede tener fecha de fin futura',
-              })
-              return false
-            }
-            if (
-              (estado === 'en_proceso' || estado === 'en_construccion') &&
-              dateInicio > ahora
-            ) {
-              setError('fechaInicio', {
-                type: 'manual',
-                message:
-                  'Un proyecto en proceso o en construcción no puede tener fecha de inicio futura',
-              })
-              return false
-            }
+          const errorFechas = validarFechasProyecto(
+            fechaInicio,
+            fechaFin,
+            estado
+          )
+          if (errorFechas) {
+            setError(errorFechas.campo, {
+              type: 'manual',
+              message: errorFechas.mensaje,
+            })
+            return false
           }
           return true
         }
@@ -393,18 +418,12 @@ export function useEditarProyecto(proyectoId: string) {
 
   const irAPaso = useCallback(
     (paso: number) => {
-      if (pasosCompletados.has(paso)) {
-        setPasosCompletados(prev => {
-          const next = new Set(prev)
-          for (let i = paso; i <= PASOS_PROYECTO_EDICION.length; i++) {
-            next.delete(i)
-          }
-          return next
-        })
-        setPasoActual(paso)
-      }
+      // En edición: navegación libre sin validar pasos anteriores.
+      // Añadir el paso actual a completados para que muestre resumen.
+      setPasosCompletados(prev => new Set(prev).add(pasoActual))
+      setPasoActual(paso)
     },
-    [pasosCompletados]
+    [pasoActual]
   )
 
   const handleSubmit = useCallback(async () => {

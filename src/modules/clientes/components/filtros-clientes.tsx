@@ -1,14 +1,11 @@
 /**
  * 🔍 Filtros Premium de Clientes
  * Búsqueda y filtros por estado con pill buttons visibles
- * ✅ Toggle vista cards/tabla integrado en fila de búsqueda
  */
 
 'use client'
 
-import { LayoutGrid, Search, Table, X } from 'lucide-react'
-
-import type { TipoVista } from '@/shared/hooks/useVistaPreference'
+import { Search, X } from 'lucide-react'
 
 import { clientesListaStyles as styles } from '../styles/clientes-lista.styles'
 import type { EstadoCliente } from '../types'
@@ -20,9 +17,6 @@ interface FiltrosClientesProps {
   onEstadoChange: (estado: EstadoCliente | 'Todos') => void
   totalResultados: number
   totalClientes: number
-  // Toggle de vista
-  vista?: TipoVista
-  onCambiarVista?: (vista: TipoVista) => void
 }
 
 const ESTADOS: Array<{
@@ -88,10 +82,6 @@ export function FiltrosClientes({
   onEstadoChange,
   totalResultados,
   totalClientes,
-  vista = 'cards',
-  onCambiarVista = (_vista: TipoVista) => {
-    /* noop: prop opcional sin handler */
-  },
 }: FiltrosClientesProps) {
   const handleClearSearch = () => {
     onBusquedaChange('')
@@ -154,36 +144,8 @@ export function FiltrosClientes({
         })}
       </div>
 
-      {/* FOOTER: Toggle Vista + Contador + Limpiar */}
+      {/* FOOTER: Contador + Limpiar */}
       <div className={styles.filtros.footer}>
-        {/* Toggle Vista Cards/Tabla */}
-        <div className='flex flex-shrink-0 items-center gap-1 rounded-lg bg-gray-100 p-1 dark:bg-gray-800/80'>
-          <button
-            onClick={() => onCambiarVista('cards')}
-            className={`flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium transition-all ${
-              vista === 'cards'
-                ? 'bg-white text-cyan-600 shadow-sm dark:bg-gray-700 dark:text-cyan-400'
-                : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
-            }`}
-            title='Vista de cards'
-          >
-            <LayoutGrid className='h-3.5 w-3.5' />
-            <span className='hidden sm:inline'>Cards</span>
-          </button>
-          <button
-            onClick={() => onCambiarVista('tabla')}
-            className={`flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium transition-all ${
-              vista === 'tabla'
-                ? 'bg-white text-cyan-600 shadow-sm dark:bg-gray-700 dark:text-cyan-400'
-                : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
-            }`}
-            title='Vista de tabla'
-          >
-            <Table className='h-3.5 w-3.5' />
-            <span className='hidden sm:inline'>Tabla</span>
-          </button>
-        </div>
-
         <div className='flex items-center gap-3'>
           <p className={styles.filtros.resultCount}>
             <span>

@@ -3,16 +3,12 @@ export * from './clientes-empty'
 export * from './clientes-header'
 export * from './clientes-page-main'
 export * from './clientes-skeleton'
+export { ClientesTabla } from './ClientesTabla'
 export * from './detalle-cliente'
 export * from './estadisticas-clientes'
 export * from './estado-badge'
 export * from './filtros-clientes'
 export { FormularioCliente } from './formulario-cliente-modern'
-export * from './lista-clientes'
-
-// Nuevos componentes compactos
-export { ClienteCardCompacta } from './cards/cliente-card-compacta'
-export { ClientesTabla } from './ClientesTabla'
 
 // Componentes de asignar vivienda
 export * from './fuente-pago-card'

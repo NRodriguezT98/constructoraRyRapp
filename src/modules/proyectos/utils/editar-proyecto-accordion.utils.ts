@@ -169,6 +169,60 @@ export function formatManzanaValor(
   return partes.join(', ') || '—'
 }
 
+// ── Validación de fechas (pura, testeable) ────────────────────────
+
+/**
+ * Valida las reglas de negocio para las fechas de un proyecto.
+ * Función pura: no tiene efectos secundarios, fácilmente testeable.
+ *
+ * @returns `null` si las fechas son válidas, o `{ campo, mensaje }` con el primer error encontrado.
+ */
+export function validarFechasProyecto(
+  fechaInicio: string | undefined,
+  fechaFin: string | undefined,
+  estado: string | undefined
+): { campo: 'fechaInicio' | 'fechaFinEstimada'; mensaje: string } | null {
+  if (
+    !fechaInicio ||
+    !fechaFin ||
+    fechaInicio.trim() === '' ||
+    fechaFin.trim() === ''
+  ) {
+    return null
+  }
+
+  const dateInicio = new Date(fechaInicio)
+  const dateFin = new Date(fechaFin)
+  const ahora = new Date()
+
+  if (dateFin <= dateInicio) {
+    return {
+      campo: 'fechaFinEstimada',
+      mensaje: 'La fecha de fin debe ser posterior a la fecha de inicio',
+    }
+  }
+
+  if (estado === 'completado' && dateFin > ahora) {
+    return {
+      campo: 'fechaFinEstimada',
+      mensaje: 'Un proyecto completado no puede tener fecha de fin futura',
+    }
+  }
+
+  if (
+    (estado === 'en_proceso' || estado === 'en_construccion') &&
+    dateInicio > ahora
+  ) {
+    return {
+      campo: 'fechaInicio',
+      mensaje:
+        'Un proyecto en proceso o en construcción no puede tener fecha de inicio futura',
+    }
+  }
+
+  return null
+}
+
 /** Parsea el campo `ubicacion` de la DB en sus 3 campos separados */
 export function parsearUbicacion(ubicacion: string): {
   departamento: string

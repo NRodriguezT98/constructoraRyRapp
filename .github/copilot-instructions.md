@@ -1248,7 +1248,10 @@ export class MiComponenteService {
 #### 📏 **LÍMITES ESTRICTOS:**
 
 - **Componente `.tsx`**: Máximo **150 líneas** (si excede → refactorizar)
-- **Hook `use*.ts`**: Máximo **200 líneas** (si excede → dividir en sub-hooks)
+- **Hook `use*.ts`**: Dos niveles según tipo:
+  - **Hook de feature / leaf** (`useManzanasEditables`, `useDetectarCambios`, etc.) → hace **una sola cosa** → ≤ **200 líneas**
+  - **Hook orquestador de flujo/página** (`useEditarProyecto`, `useNuevoProyecto`, etc.) → solo compone sub-hooks y gestiona estado de wizard → ≤ **600 líneas**
+  - **Diagnóstico rápido**: Si el hook contiene llamadas a DB directas (`supabase`) o lógica de negocio no delegada → dividir, sin importar el tamaño
 - **Service `.service.ts`**: Máximo **300 líneas** (si excede → dividir por dominio)
 - **Estilos `.styles.ts`**: Sin límite (pero organizados por secciones)
 - **String de Tailwind inline**: Máximo **80 caracteres** (si excede → extraer a `.styles.ts`)

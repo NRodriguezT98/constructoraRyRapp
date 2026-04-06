@@ -260,10 +260,13 @@ export const miComponenteStyles = {
 | Tipo de Archivo | Responsabilidad | Líneas Máx | Si excede... |
 |------------------|----------------|------------|--------------|
 | **Componente `.tsx`** | UI presentacional | **150** | Dividir en sub-componentes |
-| **Hook `use*.ts`** | Lógica de negocio | **200** | Dividir en sub-hooks |
+| **Hook leaf `use*.ts`** | Una sola responsabilidad (`useDetectarCambios`, `useManzanasEditables`) | **200** | Dividir en sub-hooks |
+| **Hook orquestador `use*.ts`** | Compone sub-hooks + estado de wizard (`useEditarProyecto`, `useNuevoProyecto`) | **600** | Extraer sub-hooks si contiene lógica de negocio directa |
 | **Service `.service.ts`** | API/DB calls | **300** | Dividir por dominio |
 | **Styles `.styles.ts`** | Estilos | ∞ | Organizar por secciones |
 | **Utils `.ts`** | Funciones puras | **150** | Dividir por categoría |
+
+> **Diagnóstico rápido para hooks**: Si el hook contiene llamadas a DB directas (`supabase`) o lógica de negocio no delegada a sub-hooks → dividir, sin importar el número de líneas.
 
 ---
 

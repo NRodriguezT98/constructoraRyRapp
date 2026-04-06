@@ -45,9 +45,12 @@ src/modules/[modulo]/
 | Archivo | Máximo líneas |
 |---------|--------------|
 | Componente `.tsx` | 150 |
-| Hook `use*.ts` | 200 |
+| Hook leaf `use*.ts` (una responsabilidad) | 200 |
+| Hook orquestador `use*.ts` (compone sub-hooks) | 600 |
 | Service `.service.ts` | 300 |
 | String Tailwind inline | 80 caracteres |
+
+> Hook orquestador: solo compone sub-hooks + estado de wizard. Si contiene `supabase` directo o lógica no delegada → es un leaf hook o debe dividirse.
 
 ---
 

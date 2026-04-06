@@ -8,7 +8,7 @@ export default function Loading() {
   return (
     <ModuleLoadingScreen
       Icon={User}
-      label='Cargando perfil del cliente...'
+      label='Cargando datos del cliente...'
       ringColors='border-t-cyan-500 border-r-blue-500'
       ringBg='from-cyan-500/20 to-blue-500/20'
       iconGradient='from-cyan-600 via-blue-600 to-indigo-600'

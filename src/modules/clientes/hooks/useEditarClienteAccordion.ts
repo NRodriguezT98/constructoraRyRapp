@@ -7,6 +7,17 @@
  * ✅ Detección de cambios en tiempo real
  * ✅ Modal de confirmación + submit
  * ✅ Sanitización antes de guardar
+ * ✅ Guard de cambios no guardados (useUnsavedChanges)
+ *
+ * REGLAS DE NEGOCIO:
+ * - Paso 1 (Datos Personales):
+ *     • Formato de documento válido según tipo (Colombia).
+ *     • Número de documento único en el sistema (verifica solo si cambió).
+ *     • fecha_nacimiento (si se provee): no puede ser futura, no puede ser
+ *       mayor a 120 años, y el cliente debe ser mayor de 18 años (capacidad
+ *       legal para contratos inmobiliarios en Colombia).
+ * - Paso 2 (Contacto): al menos teléfono ó email; departamento + ciudad requeridos.
+ * - Paso 3 (Notas): opcional, máximo 500 caracteres.
  */
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
@@ -17,6 +28,7 @@ import { useForm } from 'react-hook-form'
 
 import { useRouter } from 'next/navigation'
 
+import { useUnsavedChanges } from '@/contexts/unsaved-changes-context'
 import type {
   SectionStatus,
   SummaryItem,
@@ -48,6 +60,7 @@ export { CATEGORIAS_CAMBIOS_CLIENTE, PASOS_CLIENTE_EDICION }
 export function useEditarClienteAccordion(clienteId: string) {
   const router = useRouter()
   const actualizarMutation = useActualizarClienteMutation()
+  const { setHasUnsavedChanges, setMessage } = useUnsavedChanges()
 
   // Cargar datos del cliente
   const { data: cliente, isLoading, isError } = useClienteQuery(clienteId)
@@ -113,6 +126,9 @@ export function useEditarClienteAccordion(clienteId: string) {
       }
       reset(valores)
       setDatosOriginales(valores)
+      // En edición todos los pasos están disponibles de inmediato; el paso 1
+      // arranca activo y los demás se muestran como completados (con resumen).
+      setPasosCompletados(new Set([2, 3]))
     }
   }, [cliente, datosOriginales, reset])
 
@@ -168,6 +184,24 @@ export function useEditarClienteAccordion(clienteId: string) {
 
   const hayCambios = cambiosDetectados.length > 0
 
+  // ── Guard de navegación: avisa si hay cambios sin guardar ──────────
+  useEffect(() => {
+    const nombre = cliente?.nombre_completo
+      ? `"${cliente.nombre_completo}"`
+      : 'este cliente'
+    setHasUnsavedChanges(hayCambios)
+    setMessage(
+      hayCambios ? `El cliente ${nombre} tiene cambios sin guardar.` : null
+    )
+  }, [hayCambios, cliente, setHasUnsavedChanges, setMessage])
+
+  useEffect(() => {
+    return () => {
+      setHasUnsavedChanges(false)
+      setMessage(null)
+    }
+  }, [setHasUnsavedChanges, setMessage])
+
   const cambiosPorPaso = useMemo(
     () => ({
       paso1: cambiosDetectados.filter(c => c.categoria === 'personal').length,
@@ -180,8 +214,8 @@ export function useEditarClienteAccordion(clienteId: string) {
   // ── Estado de sección ───────────────────────────────
   const getEstadoPaso = useCallback(
     (paso: number): SectionStatus => {
+      if (paso === pasoActual) return 'active' // activo siempre gana
       if (pasosCompletados.has(paso)) return 'completed'
-      if (paso === pasoActual) return 'active'
       return 'pending'
     },
     [pasoActual, pasosCompletados]
@@ -289,6 +323,17 @@ export function useEditarClienteAccordion(clienteId: string) {
               erroresEncontrados.push({
                 campo: 'fecha_nacimiento',
                 mensaje: 'Fecha fuera de rango válido',
+              })
+            }
+            // Regla de negocio: el cliente debe ser mayor de 18 años
+            // (capacidad legal para contratos inmobiliarios en Colombia)
+            const edadMinima = new Date()
+            edadMinima.setFullYear(edadMinima.getFullYear() - 18)
+            if (fecha > edadMinima) {
+              erroresEncontrados.push({
+                campo: 'fecha_nacimiento',
+                mensaje:
+                  'El cliente debe ser mayor de 18 años para celebrar contratos',
               })
             }
           }
@@ -405,17 +450,12 @@ export function useEditarClienteAccordion(clienteId: string) {
 
   const irAPaso = useCallback(
     (paso: number) => {
-      if (pasosCompletados.has(paso)) {
-        setPasosCompletados(prev => {
-          const next = new Set(prev)
-          for (let i = paso; i <= PASOS_CLIENTE_EDICION.length; i++)
-            next.delete(i)
-          return next
-        })
-        setPasoActual(paso)
-      }
+      // En edición: navegación libre sin validar pasos anteriores.
+      // Añadir el paso actual a completados para que muestre resumen.
+      setPasosCompletados(prev => new Set(prev).add(pasoActual))
+      setPasoActual(paso)
     },
-    [pasosCompletados]
+    [pasoActual]
   )
 
   // ── Submit: interceptar para mostrar modal ──────────
@@ -454,8 +494,11 @@ export function useEditarClienteAccordion(clienteId: string) {
       const sanitized = sanitizeActualizarClienteDTO(dto)
       await actualizarMutation.mutateAsync({ id: clienteId, datos: sanitized })
 
+      setHasUnsavedChanges(false)
+      setMessage(null)
       setShowSuccess(true)
-      setTimeout(() => router.push('/clientes'), 1800)
+      // Redirigir al detalle del cliente, no a la lista
+      setTimeout(() => router.push(`/clientes/${clienteId}`), 1800)
     } catch (error) {
       if (error instanceof Error && error.message.includes('documento')) {
         setError('numero_documento', { type: 'manual', message: error.message })
@@ -465,7 +508,15 @@ export function useEditarClienteAccordion(clienteId: string) {
     } finally {
       setIsSubmitting(false)
     }
-  }, [getValues, actualizarMutation, clienteId, router, setError])
+  }, [
+    getValues,
+    actualizarMutation,
+    clienteId,
+    router,
+    setError,
+    setHasUnsavedChanges,
+    setMessage,
+  ])
 
   const cancelarConfirmacion = useCallback(() => {
     setMostrarConfirmacion(false)

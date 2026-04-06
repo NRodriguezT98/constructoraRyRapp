@@ -6,6 +6,17 @@
  * ✅ Detección de impacto financiero en negociaciones activas
  * ✅ Race condition prevented with impactoFinancieroSnapshot
  * ✅ Navega a página de detalle de vivienda al guardar exitosamente
+ * ✅ Guard de cambios no guardados (useUnsavedChanges)
+ *
+ * REGLAS DE NEGOCIO:
+ * - Paso 1 (Ubicación): READ-ONLY. Número, manzana y proyecto no se pueden cambiar.
+ * - Paso 2 (Linderos): Los 4 linderos son obligatorios.
+ * - Paso 3 (Legal): Matrícula única; área construida ≤ área lote; ambas áreas > 0.
+ * - Paso 4 (Financiero):
+ *     • Bloqueado completamente cuando estado = 'Entregada'.
+ *     • valor_base no puede ser < total_abonado (ImpactoFinanciero).
+ *     • Si es_esquinera = true, recargo_esquinera debe ser > 0.
+ *     • Cambio de valor_base activa aviso de sincronización con negociación activa.
  */
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
@@ -17,6 +28,7 @@ import { toast } from 'sonner'
 
 import { useRouter } from 'next/navigation'
 
+import { useUnsavedChanges } from '@/contexts/unsaved-changes-context'
 import { errorLog } from '@/lib/utils/logger'
 import { construirURLVivienda } from '@/lib/utils/slug.utils'
 import type {
@@ -58,6 +70,7 @@ interface Props {
 
 export function useEditarViviendaAccordion({ viviendaId }: Props) {
   const router = useRouter()
+  const { setHasUnsavedChanges, setMessage } = useUnsavedChanges()
 
   // ── Carga de datos ───────────────────────────────────────────────────────
   const {
@@ -199,6 +212,24 @@ export function useEditarViviendaAccordion({ viviendaId }: Props) {
   }, [vivienda, formData])
 
   const hayCambios = cambiosDetectados.length > 0
+
+  // ── Guard de navegación: avisa si hay cambios sin guardar ─────────────────
+  useEffect(() => {
+    const nombre = vivienda
+      ? `Mz. ${vivienda.manzanas?.nombre ?? '?'} Casa #${vivienda.numero}`
+      : 'esta vivienda'
+    setHasUnsavedChanges(hayCambios)
+    setMessage(
+      hayCambios ? `La vivienda "${nombre}" tiene cambios sin guardar.` : null
+    )
+  }, [hayCambios, vivienda, setHasUnsavedChanges, setMessage])
+
+  useEffect(() => {
+    return () => {
+      setHasUnsavedChanges(false)
+      setMessage(null)
+    }
+  }, [setHasUnsavedChanges, setMessage])
 
   // ── Cambios por paso (para changeCount badge en cada sección) ────────────
   const cambiosPorPaso = useMemo(
@@ -373,8 +404,23 @@ export function useEditarViviendaAccordion({ viviendaId }: Props) {
           return true
         }
 
-        case 4:
-          return await trigger([...FIELDS_PASO_4])
+        case 4: {
+          const paso4Valid = await trigger([...FIELDS_PASO_4])
+          if (!paso4Valid) return false
+
+          // Regla de negocio: si la vivienda es esquinera, el recargo debe ser > 0
+          const esEsquineraVal = getValues('es_esquinera')
+          const recargoVal = Number(getValues('recargo_esquinera'))
+          if (esEsquineraVal && recargoVal <= 0) {
+            setError('recargo_esquinera', {
+              type: 'manual',
+              message:
+                'La vivienda es esquinera: ingresa el recargo correspondiente (> $0)',
+            })
+            return false
+          }
+          return true
+        }
 
         default:
           return true
@@ -421,6 +467,18 @@ export function useEditarViviendaAccordion({ viviendaId }: Props) {
         setError('area_construida', {
           type: 'manual',
           message: 'El área construida no puede ser mayor al área del lote',
+        })
+        return false
+      }
+
+      // Validación adicional: recargo_esquinera > 0 cuando es_esquinera = true
+      const esEsquineraFull = getValues('es_esquinera')
+      const recargoFull = Number(getValues('recargo_esquinera'))
+      if (esEsquineraFull && recargoFull <= 0) {
+        setError('recargo_esquinera', {
+          type: 'manual',
+          message:
+            'La vivienda es esquinera: ingresa el recargo correspondiente (> $0)',
         })
         return false
       }
@@ -510,6 +568,8 @@ export function useEditarViviendaAccordion({ viviendaId }: Props) {
         }
 
         setEstadoModal('success')
+        setHasUnsavedChanges(false)
+        setMessage(null)
 
         setTimeout(() => {
           setMostrarModalConfirmacion(false)
@@ -545,6 +605,8 @@ export function useEditarViviendaAccordion({ viviendaId }: Props) {
       impactoFinanciero,
       negociacionActiva,
       router,
+      setHasUnsavedChanges,
+      setMessage,
     ]
   )
 

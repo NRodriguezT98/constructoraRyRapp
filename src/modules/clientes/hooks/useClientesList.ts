@@ -42,13 +42,6 @@ export function useClientesList() {
   })
 
   // =====================================================
-  // PAGINACIÓN (para vista cards)
-  // =====================================================
-
-  const [paginaActual, setPaginaActual] = useState(1)
-  const [itemsPorPagina, setItemsPorPagina] = useState(12)
-
-  // =====================================================
   // REACT QUERY
   // =====================================================
 
@@ -141,30 +134,6 @@ export function useClientesList() {
   }, [clientes, filtros.busqueda])
 
   // =====================================================
-  // PAGINACIÓN DE CLIENTES (solo para vista cards)
-  // =====================================================
-
-  const clientesPaginados = useMemo(() => {
-    const inicio = (paginaActual - 1) * itemsPorPagina
-    const fin = inicio + itemsPorPagina
-    return clientesFiltrados.slice(inicio, fin)
-  }, [clientesFiltrados, paginaActual, itemsPorPagina])
-
-  const totalPaginas = useMemo(() => {
-    return Math.ceil(clientesFiltrados.length / itemsPorPagina)
-  }, [clientesFiltrados.length, itemsPorPagina])
-
-  const cambiarPagina = useCallback((nuevaPagina: number) => {
-    setPaginaActual(nuevaPagina)
-    window.scrollTo({ top: 0, behavior: 'smooth' })
-  }, [])
-
-  const cambiarItemsPorPagina = useCallback((nuevoItems: number) => {
-    setItemsPorPagina(nuevoItems)
-    setPaginaActual(1) // Reset a primera página
-  }, [])
-
-  // =====================================================
   // ESTADÍSTICAS COMPUTADAS
   // =====================================================
 
@@ -254,11 +223,11 @@ export function useClientesList() {
 
   return {
     // Datos
-    clientes: clientesPaginados, // Para vista cards (paginados)
-    clientesFiltrados, // Para vista tabla (todos filtrados)
+    clientes: clientesFiltrados,
+    clientesFiltrados,
     todosLosClientes: clientes,
     isLoading,
-    isFetching, // ⭐ NUEVO: indica si está recargando datos
+    isFetching,
     error: error?.message || null,
     estadisticas: estadisticasComputadas,
 
@@ -280,13 +249,6 @@ export function useClientesList() {
     actualizarFiltros,
     limpiarFiltros,
     aplicarBusqueda,
-
-    // Paginación (para vista cards)
-    paginaActual,
-    totalPaginas,
-    itemsPorPagina,
-    cambiarPagina,
-    cambiarItemsPorPagina,
 
     // Acciones
     refrescar: refetch,

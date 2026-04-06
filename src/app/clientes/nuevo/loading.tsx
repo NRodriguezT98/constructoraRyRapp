@@ -1,14 +1,14 @@
 'use client'
 
-import { Users } from 'lucide-react'
+import { UserPlus } from 'lucide-react'
 
 import { ModuleLoadingScreen } from '@/shared/components/ui/ModuleLoadingScreen'
 
 export default function Loading() {
   return (
     <ModuleLoadingScreen
-      Icon={Users}
-      label='Cargando clientes...'
+      Icon={UserPlus}
+      label='Cargando formulario...'
       ringColors='border-t-cyan-500 border-r-blue-500'
       ringBg='from-cyan-500/20 to-blue-500/20'
       iconGradient='from-cyan-600 via-blue-600 to-indigo-600'

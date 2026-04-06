@@ -9,7 +9,6 @@ export * from './useNegociacionesQuery' // 🆕 React Query para negociaciones
 
 // ✅ Component Hooks (Separación de Responsabilidades)
 export * from './useAsignacionVivienda'
-export * from './useClienteCard'
 
 // ✅ NEW: Hooks para Tabs (Separación de Responsabilidades)
 
@@ -32,7 +31,6 @@ export * from './useActividadTab'
 export * from './useHistorialVersiones'
 
 // Legacy Hooks (Compatibilidad)
-export * from './useClienteCardActivo'
 export * from './useClienteIntereses'
 export * from './useClientes'
 export * from './useConfigurarFuentesPago'

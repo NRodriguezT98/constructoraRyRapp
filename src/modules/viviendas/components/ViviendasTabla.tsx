@@ -344,7 +344,7 @@ export function ViviendasTabla({
               <Edit2 className={styles.actions.icon} />
             </button>
           )}
-          {canDelete && onDelete && (
+          {canDelete && onDelete && row.original.estado === 'Disponible' && (
             <button
               onClick={e => {
                 e.stopPropagation()

@@ -10,6 +10,7 @@
 import { cache } from 'react'
 
 import { createServerSupabaseClient } from '@/lib/supabase/server'
+import { errorLog } from '@/lib/utils/logger'
 import type { Usuario } from '@/modules/usuarios/types'
 
 /**
@@ -92,7 +93,7 @@ export const getServerUserProfile = cache(async (): Promise<Usuario | null> => {
         email = payload.user_email || user.email || ''
       }
     } catch (error) {
-      console.error('❌ [AUTH SERVICE] Error decodificando JWT:', error)
+      errorLog('auth-jwt-decode', error)
       // Fallback a valores por defecto
     }
   }

@@ -10,13 +10,8 @@
 
 'use client'
 
-import { useEffect, useState } from 'react'
-
 import { AnimatePresence, motion } from 'framer-motion'
-import { LayoutGrid, Search, Table, X } from 'lucide-react'
-
-import type { TipoVista } from '@/shared/hooks/useVistaPreference'
-import { cn } from '@/shared/utils/helpers'
+import { Search, X } from 'lucide-react'
 
 import type { FiltrosViviendas } from '../types'
 
@@ -28,9 +23,6 @@ interface ViviendasFiltrosPremiumProps {
   onLimpiarFiltros: () => void
   totalResultados: number
   proyectos?: Array<{ id: string; nombre: string }>
-  // Toggle de vista
-  vista?: TipoVista
-  onCambiarVista?: (vista: TipoVista) => void
 }
 
 export function ViviendasFiltrosPremium({
@@ -39,18 +31,7 @@ export function ViviendasFiltrosPremium({
   onLimpiarFiltros,
   totalResultados,
   proyectos = [],
-  vista = 'cards',
-  onCambiarVista = (_vista: TipoVista) => {
-    /* noop: prop opcional sin handler */
-  },
 }: ViviendasFiltrosPremiumProps) {
-  // ✅ FIX HYDRATION: Evitar mismatch entre servidor y cliente
-  const [mounted, setMounted] = useState(false)
-
-  useEffect(() => {
-    setMounted(true)
-  }, [])
-
   const hayFiltros = Boolean(
     filtros.search || filtros.proyecto_id || filtros.estado
   )
@@ -131,40 +112,8 @@ export function ViviendasFiltrosPremium({
         </div>
       </div>
 
-      {/* Footer con toggle de vista, contador y limpiar */}
+      {/* Footer con contador y limpiar */}
       <div className={styles.footer}>
-        {/* Toggle Cards/Tabla - Solo renderizar después de montar */}
-        {mounted && (
-          <div className='flex items-center gap-1 rounded-lg bg-gray-100 p-1 dark:bg-gray-800'>
-            <button
-              onClick={() => onCambiarVista('cards')}
-              className={cn(
-                'flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium transition-all',
-                vista === 'cards'
-                  ? 'bg-white text-orange-600 shadow-sm dark:bg-gray-700 dark:text-orange-400'
-                  : 'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200'
-              )}
-              title='Vista de cards'
-            >
-              <LayoutGrid className='h-3.5 w-3.5' />
-              <span>Cards</span>
-            </button>
-            <button
-              onClick={() => onCambiarVista('tabla')}
-              className={cn(
-                'flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium transition-all',
-                vista === 'tabla'
-                  ? 'bg-white text-orange-600 shadow-sm dark:bg-gray-700 dark:text-orange-400'
-                  : 'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200'
-              )}
-              title='Vista de tabla'
-            >
-              <Table className='h-3.5 w-3.5' />
-              <span>Tabla</span>
-            </button>
-          </div>
-        )}
-
         <p className={styles.resultCount}>
           {totalResultados} {totalResultados === 1 ? 'resultado' : 'resultados'}
         </p>

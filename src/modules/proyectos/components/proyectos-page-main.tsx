@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useMemo, useState } from 'react'
+import { useState } from 'react'
 
 import { motion } from 'framer-motion'
 
@@ -9,8 +9,6 @@ import { useRouter } from 'next/navigation'
 import { construirURLProyecto } from '@/lib/utils/slug.utils'
 import { Modal } from '@/shared/components/ui/Modal'
 import { NoResults } from '@/shared/components/ui/NoResults'
-import { Pagination } from '@/shared/components/ui/Pagination'
-import { useVistaPreference } from '@/shared/hooks/useVistaPreference'
 
 import {
   useEstadisticasProyectosQuery,
@@ -25,7 +23,6 @@ import { RestaurarProyectoModal } from './modals/restaurar-proyecto-modal'
 import { ProyectosEmpty } from './proyectos-empty'
 import { ProyectosFiltrosPremium } from './proyectos-filtros-premium'
 import { ProyectosHeaderPremium } from './proyectos-header-premium'
-import { ProyectosLista } from './proyectos-lista'
 import { ProyectosMetricasPremium } from './proyectos-metricas-premium'
 import { ProyectosSkeleton } from './proyectos-skeleton'
 import { ProyectosTabla } from './proyectos-tabla'
@@ -95,39 +92,6 @@ export function ProyectosPage({
 
   // Detectar si hay filtros activos
   const hayFiltrosActivos = Boolean(filtros.busqueda || filtros.estado)
-
-  // Hook para preferencia de vista (cards vs tabla)
-  const [vista, setVista] = useVistaPreference({ moduleName: 'proyectos' })
-
-  // Paginación para vista de cards
-  const [paginaActual, setPaginaActual] = useState(1)
-  const [itemsPorPagina, setItemsPorPagina] = useState(9)
-
-  const totalPaginas = useMemo(
-    () => Math.max(1, Math.ceil(proyectos.length / itemsPorPagina)),
-    [proyectos.length, itemsPorPagina]
-  )
-
-  const proyectosPaginados = useMemo(
-    () =>
-      proyectos.slice(
-        (paginaActual - 1) * itemsPorPagina,
-        paginaActual * itemsPorPagina
-      ),
-    [proyectos, paginaActual, itemsPorPagina]
-  )
-
-  const cambiarPagina = useCallback(
-    (pagina: number) => {
-      setPaginaActual(Math.max(1, Math.min(pagina, totalPaginas)))
-    },
-    [totalPaginas]
-  )
-
-  const cambiarItemsPorPagina = useCallback((items: number) => {
-    setItemsPorPagina(items)
-    setPaginaActual(1)
-  }, [])
 
   // Proyecto que se va a eliminar (lookup por ID)
   const proyectoEliminando = proyectos.find(p => p.id === proyectoEliminar)
@@ -219,14 +183,12 @@ export function ProyectosPage({
           completados={estadisticas.completados}
         />
 
-        {/* Filtros Premium con toggle de vista */}
+        {/* Filtros Premium */}
         <ProyectosFiltrosPremium
           totalResultados={proyectos.length}
           filtros={filtros}
           onActualizarFiltros={actualizarFiltros}
           onLimpiarFiltros={limpiarFiltros}
-          vista={vista}
-          onCambiarVista={setVista}
         />
 
         {/* Contenido Principal */}
@@ -254,29 +216,6 @@ export function ProyectosPage({
               onCrear={canCreate ? handleAbrirModal : undefined}
             />
           )
-        ) : vista === 'cards' ? (
-          <div className='space-y-4'>
-            <ProyectosLista
-              proyectos={proyectosPaginados}
-              onEdit={canEdit ? handleEditarProyecto : undefined}
-              onDelete={canDelete ? handleEliminarProyecto : undefined}
-              onArchive={canEdit ? handleArchivarProyecto : undefined}
-              onRestore={canEdit ? handleRestaurarProyecto : undefined}
-              canEdit={canEdit}
-              canDelete={canDelete}
-            />
-
-            {totalPaginas > 1 ? (
-              <Pagination
-                currentPage={paginaActual}
-                totalPages={totalPaginas}
-                totalItems={proyectos.length}
-                itemsPerPage={itemsPorPagina}
-                onPageChange={cambiarPagina}
-                onItemsPerPageChange={cambiarItemsPorPagina}
-              />
-            ) : null}
-          </div>
         ) : (
           <ProyectosTabla
             proyectos={proyectos}

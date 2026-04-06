@@ -457,18 +457,22 @@ export function ClientesTabla({
               <Edit2 className='h-3.5 w-3.5' />
             </button>
           )}
-          {canDelete && onDelete && (
-            <button
-              onClick={e => {
-                e.stopPropagation()
-                onDelete(row.original.id)
-              }}
-              className={cn(styles.actions.button, styles.actions.delete)}
-              title='Eliminar'
-            >
-              <Trash2 className='h-3.5 w-3.5' />
-            </button>
-          )}
+          {canDelete &&
+            onDelete &&
+            row.original.estadisticas.negociaciones_activas === 0 &&
+            row.original.estado !== 'Propietario' &&
+            row.original.estado !== 'En Proceso de Renuncia' && (
+              <button
+                onClick={e => {
+                  e.stopPropagation()
+                  onDelete(row.original.id)
+                }}
+                className={cn(styles.actions.button, styles.actions.delete)}
+                title='Eliminar'
+              >
+                <Trash2 className='h-3.5 w-3.5' />
+              </button>
+            )}
         </div>
       ),
     },

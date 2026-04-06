@@ -24,7 +24,6 @@ import { useRouter } from 'next/navigation'
 import { construirURLCliente } from '@/lib/utils/slug.utils'
 import { ModalConfirmacion } from '@/shared'
 import { NoResults } from '@/shared/components/ui/NoResults'
-import { useVistaPreference } from '@/shared/hooks/useVistaPreference'
 
 import {
   ClientesHeader,
@@ -38,7 +37,6 @@ import type { ClienteResumen, EstadoCliente } from '../types'
 
 import { ClientesEmpty } from './clientes-empty'
 import { ClientesSkeleton } from './clientes-skeleton'
-import { ClientesVistaCards } from './ClientesVistaCards'
 import { ClientesVistaTabla } from './ClientesVistaTabla'
 import { MensajeEliminarCliente } from './MensajeEliminarCliente'
 
@@ -60,7 +58,6 @@ export function ClientesPageMain({
   const router = useRouter()
 
   const {
-    clientes,
     clientesFiltrados,
     isLoading,
     isFetching,
@@ -78,15 +75,9 @@ export function ClientesPageMain({
     cancelarEliminar,
     filtros: _filtros,
     actualizarFiltros,
-    paginaActual,
-    totalPaginas,
-    itemsPorPagina,
-    cambiarPagina,
-    cambiarItemsPorPagina,
     totalFiltrados,
   } = useClientesList()
 
-  const [vista, setVista] = useVistaPreference({ moduleName: 'clientes' })
   const [busqueda, setBusqueda] = useState('')
   const [estadoFiltro, setEstadoFiltro] = useState<EstadoCliente | 'Todos'>(
     'Todos'
@@ -121,14 +112,14 @@ export function ClientesPageMain({
     [router]
   )
 
-  const handleEliminarCliente = useCallback(
+  const _handleEliminarCliente = useCallback(
     (cliente: ClienteResumen) => {
       abrirModalEliminar(cliente.id)
     },
     [abrirModalEliminar]
   )
 
-  const handleIniciarAsignacion = useCallback(
+  const _handleIniciarAsignacion = useCallback(
     (cliente: ClienteResumen) => {
       const url = construirURLCliente({
         id: cliente.id,
@@ -167,8 +158,6 @@ export function ClientesPageMain({
           onEstadoChange={setEstadoFiltro}
           totalResultados={totalFiltrados}
           totalClientes={estadisticas.total}
-          vista={vista}
-          onCambiarVista={setVista}
         />
 
         {isLoading ? (
@@ -188,24 +177,6 @@ export function ClientesPageMain({
               onNuevoCliente={canCreate ? handleNuevoCliente : undefined}
             />
           )
-        ) : vista === 'cards' ? (
-          <ClientesVistaCards
-            clientes={clientes}
-            isFetching={isFetching}
-            paginaActual={paginaActual}
-            totalPaginas={totalPaginas}
-            totalFiltrados={totalFiltrados}
-            itemsPorPagina={itemsPorPagina}
-            canEdit={canEdit}
-            canDelete={canDelete}
-            canCreate={canCreate}
-            onVer={handleVerCliente}
-            onEditar={handleEditarCliente}
-            onEliminar={handleEliminarCliente}
-            onIniciarAsignacion={handleIniciarAsignacion}
-            onCambiarPagina={cambiarPagina}
-            onCambiarItemsPorPagina={cambiarItemsPorPagina}
-          />
         ) : (
           <ClientesVistaTabla
             clientes={clientesFiltrados}

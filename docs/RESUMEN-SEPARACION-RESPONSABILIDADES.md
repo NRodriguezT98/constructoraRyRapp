@@ -74,9 +74,12 @@ export class MiService {
 | Tipo | Máx Líneas | Acción si excede |
 |------|-----------|------------------|
 | Componente | **150** | Dividir en sub-componentes |
-| Hook | **200** | Dividir en sub-hooks |
+| Hook leaf (una sola cosa) | **200** | Dividir en sub-hooks |
+| Hook orquestador (compone sub-hooks) | **600** | Extraer sub-hooks si tiene lógica de negocio directa |
 | Service | **300** | Dividir por dominio |
 | String Tailwind | **80 chars** | Mover a .styles.ts |
+
+> Diagnóstico: ¿el hook llama a `supabase` directamente o tiene lógica de negocio no delegada? Si sí → dividir independientemente del tamaño.
 
 ---
 

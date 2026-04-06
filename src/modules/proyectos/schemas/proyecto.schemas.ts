@@ -10,26 +10,42 @@ import {
   validarCiudadDepartamento,
 } from '@/shared/data/colombia-locations'
 
-export const manzanaSchema = z.object({
-  id: z.string().optional(),
-  nombre: z
-    .string()
-    .min(1, 'El nombre de la manzana es obligatorio')
-    .regex(
-      /^[a-zA-ZáéíóúÁÉÍÓÚñÃ'0-9\s\-_().]+$/,
-      'Solo se permiten letras, números, espacios, guiones, paréntesis y puntos'
-    ),
-  totalViviendas: z
-    .number({
-      message: 'La cantidad de viviendas es obligatoria',
-    })
-    .min(1, 'Mínimo 1 vivienda')
-    .max(100, 'Máximo 100 viviendas')
-    .int('Debe ser un número entero'),
-  cantidadViviendasCreadas: z.number().optional(),
-  esEditable: z.boolean().optional(),
-  motivoBloqueado: z.string().optional(),
-})
+export const manzanaSchema = z
+  .object({
+    id: z.string().optional(),
+    nombre: z
+      .string()
+      .min(1, 'El nombre de la manzana es obligatorio')
+      .regex(
+        /^[a-zA-ZáéíóúÁÉÍÓÚñÃ'0-9\s\-_().]+$/,
+        'Solo se permiten letras, números, espacios, guiones, paréntesis y puntos'
+      ),
+    totalViviendas: z
+      .number({
+        message: 'La cantidad de viviendas es obligatoria',
+      })
+      .min(1, 'Mínimo 1 vivienda')
+      .max(100, 'Máximo 100 viviendas')
+      .int('Debe ser un número entero'),
+    cantidadViviendasCreadas: z.number().optional(),
+    esEditable: z.boolean().optional(),
+    motivoBloqueado: z.string().optional(),
+  })
+  .superRefine((data, ctx) => {
+    // Regla de negocio: no permitir reducir totalViviendas por debajo
+    // de las viviendas que ya están creadas en esta manzana.
+    if (
+      data.cantidadViviendasCreadas !== undefined &&
+      data.cantidadViviendasCreadas > 0 &&
+      data.totalViviendas < data.cantidadViviendasCreadas
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['totalViviendas'],
+        message: `No puedes reducir a ${data.totalViviendas}. Ya existen ${data.cantidadViviendasCreadas} vivienda(s) creada(s) en esta manzana.`,
+      })
+    }
+  })
 
 export const proyectoSchema = z
   .object({

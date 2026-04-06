@@ -8,13 +8,8 @@
 
 'use client'
 
-import { useEffect, useState } from 'react'
-
 import { AnimatePresence, motion } from 'framer-motion'
-import { Filter, LayoutGrid, Search, Table, X } from 'lucide-react'
-
-import type { TipoVista } from '@/shared/hooks/useVistaPreference'
-import { cn } from '@/shared/utils/helpers'
+import { Filter, Search, X } from 'lucide-react'
 
 import { ESTADOS_PROYECTO } from '../constants'
 import { proyectosPageStyles as styles } from '../styles/proyectos-page.styles'
@@ -26,9 +21,6 @@ interface ProyectosFiltrosPremiumProps {
   filtros?: FiltroProyecto
   onActualizarFiltros?: (filtros: Partial<FiltroProyecto>) => void
   onLimpiarFiltros?: () => void
-  // ✅ Props para toggle de vista
-  vista?: TipoVista
-  onCambiarVista?: (vista: TipoVista) => void
 }
 
 export function ProyectosFiltrosPremium({
@@ -40,18 +32,7 @@ export function ProyectosFiltrosPremium({
   onLimpiarFiltros = () => {
     /* noop: prop opcional sin handler */
   },
-  vista = 'cards',
-  onCambiarVista = (_vista: TipoVista) => {
-    /* noop: prop opcional sin handler */
-  },
 }: ProyectosFiltrosPremiumProps) {
-  // ✅ FIX HYDRATION: Evitar mismatch entre servidor y cliente
-  const [mounted, setMounted] = useState(false)
-
-  useEffect(() => {
-    setMounted(true)
-  }, [])
-
   const hasFilters = Boolean(
     filtros.busqueda || filtros.estado || filtros.verArchivados
   )
@@ -165,39 +146,9 @@ export function ProyectosFiltrosPremium({
         </div>
       </div>
 
-      {/* Footer con toggle de vista, contador y limpiar */}
+      {/* Footer con contador y limpiar */}
       <div className={styles.filtros.footer}>
-        {/* Toggle Cards/Tabla - Solo renderizar después de montar para evitar hydration mismatch */}
-        {mounted && (
-          <div className='flex items-center gap-1 rounded-lg bg-gray-100 p-1 dark:bg-gray-800'>
-            <button
-              onClick={() => onCambiarVista('cards')}
-              className={cn(
-                'flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium transition-all',
-                vista === 'cards'
-                  ? 'bg-white text-orange-600 shadow-sm dark:bg-gray-700 dark:text-orange-400'
-                  : 'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200'
-              )}
-              title='Vista de cards'
-            >
-              <LayoutGrid className='h-3.5 w-3.5' />
-              <span>Cards</span>
-            </button>
-            <button
-              onClick={() => onCambiarVista('tabla')}
-              className={cn(
-                'flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium transition-all',
-                vista === 'tabla'
-                  ? 'bg-white text-orange-600 shadow-sm dark:bg-gray-700 dark:text-orange-400'
-                  : 'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200'
-              )}
-              title='Vista de tabla'
-            >
-              <Table className='h-3.5 w-3.5' />
-              <span>Tabla</span>
-            </button>
-          </div>
-        )}
+        {/* Toggle Cards/Tabla - eliminado: solo vista tabla */}
 
         <p className={styles.filtros.resultCount}>
           {totalResultados} {totalResultados === 1 ? 'resultado' : 'resultados'}

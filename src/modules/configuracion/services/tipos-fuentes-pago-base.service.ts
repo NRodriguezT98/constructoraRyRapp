@@ -1,6 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 
 import { supabase as supabaseSingleton } from '@/lib/supabase/client'
+import { errorLog } from '@/lib/utils/logger'
 
 import type {
   OrderDirection,
@@ -199,7 +200,8 @@ export class TiposFuentesPagoBaseService {
       if (excludeId) query = query.neq('id', excludeId)
       const { count } = await query
       return (count ?? 0) > 0
-    } catch {
+    } catch (error) {
+      errorLog('tipos-fuentes-pago/existe-nombre', error)
       return false
     }
   }
@@ -217,7 +219,8 @@ export class TiposFuentesPagoBaseService {
       if (excludeId) query = query.neq('id', excludeId)
       const { count } = await query
       return (count ?? 0) > 0
-    } catch {
+    } catch (error) {
+      errorLog('tipos-fuentes-pago/existe-codigo', error)
       return false
     }
   }

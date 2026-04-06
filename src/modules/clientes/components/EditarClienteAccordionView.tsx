@@ -8,7 +8,7 @@
 
 'use client'
 
-import { Edit3, Loader2 } from 'lucide-react'
+import { Edit3 } from 'lucide-react'
 
 import Link from 'next/link'
 
@@ -20,6 +20,7 @@ import {
   AccordionWizardSuccess,
 } from '@/shared/components/accordion-wizard'
 import { ConfirmarCambiosModal } from '@/shared/components/modulos/ConfirmarCambiosModal'
+import { ModuleLoadingScreen } from '@/shared/components/ui/ModuleLoadingScreen'
 
 import {
   PASOS_CLIENTE_EDICION,
@@ -79,14 +80,18 @@ export function EditarClienteAccordionView({
 
   if (isLoading) {
     return (
-      <div className='flex min-h-screen items-center justify-center'>
-        <div className='space-y-3 text-center'>
-          <Loader2 className='mx-auto h-10 w-10 animate-spin text-cyan-500' />
-          <p className='text-sm text-gray-600 dark:text-gray-400'>
-            Cargando datos del cliente...
-          </p>
-        </div>
-      </div>
+      <ModuleLoadingScreen
+        Icon={Edit3}
+        label='Cargando datos del cliente...'
+        ringColors='border-t-cyan-500 border-r-blue-500'
+        ringBg='from-cyan-500/20 to-blue-500/20'
+        iconGradient='from-cyan-600 via-blue-600 to-indigo-600'
+        iconShadow='shadow-cyan-500/50'
+        pageBg='via-cyan-50/30 to-blue-50/30'
+        pageBgDark='dark:via-cyan-950/20 dark:to-blue-950/20'
+        labelColor='text-cyan-600 dark:text-cyan-400'
+        sparkleColor='text-cyan-500'
+      />
     )
   }
 

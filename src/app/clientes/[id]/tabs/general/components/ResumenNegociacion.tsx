@@ -1,7 +1,14 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { ArrowRight, CheckCircle2, Clock, DollarSign } from 'lucide-react'
+import {
+  ArrowRight,
+  Building2,
+  CheckCircle2,
+  DollarSign,
+  Home,
+  TrendingUp,
+} from 'lucide-react'
 
 import { formatCurrency } from '@/lib/utils/format.utils'
 import type { Negociacion } from '@/modules/clientes/types'
@@ -27,20 +34,13 @@ export function ResumenNegociacion({
   const manzana = negociacion.viviendas?.manzanas?.nombre
   const numero = negociacion.viviendas?.numero
 
-  const ubicacion = [
-    manzana && `Manzana ${manzana}`,
-    numero && `Casa ${numero}`,
-  ]
-    .filter(Boolean)
-    .join(' · ')
-
   const progressColor = estaCompleta
-    ? 'bg-emerald-500'
+    ? 'from-emerald-400 to-emerald-500'
     : porcentaje >= 60
-      ? 'bg-blue-500'
+      ? 'from-blue-400 to-cyan-500'
       : porcentaje >= 30
-        ? 'bg-amber-500'
-        : 'bg-red-400'
+        ? 'from-amber-400 to-orange-400'
+        : 'from-red-400 to-rose-400'
 
   return (
     <motion.div
@@ -49,117 +49,145 @@ export function ResumenNegociacion({
       transition={{ delay: 0.05 }}
       className='relative overflow-hidden rounded-xl border border-gray-200/60 bg-white shadow-sm dark:border-gray-700/60 dark:bg-gray-800'
     >
-      {/* Top accent bar */}
+      {/* Top accent */}
       <div
-        className={`absolute left-0 right-0 top-0 h-0.5 ${estaCompleta ? 'bg-emerald-500' : 'bg-cyan-500'}`}
+        className={`absolute left-0 right-0 top-0 h-0.5 bg-gradient-to-r ${estaCompleta ? 'from-emerald-400 to-teal-400' : 'from-cyan-500 to-blue-500'}`}
       />
 
-      <div className='p-4'>
-        {/* Header row */}
-        <div className='mb-3 flex items-center justify-between'>
-          <div className='flex items-center gap-2.5'>
-            <div
-              className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg ${
+      {/* ── Header ─────────────────────────────────────── */}
+      <div className='flex items-center justify-between px-4 py-3'>
+        {/* Left: badge + breadcrumb */}
+        <div className='flex flex-col gap-1'>
+          {/* Status badge */}
+          <div className='flex items-center gap-2'>
+            <span
+              className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-bold ${
                 estaCompleta
-                  ? 'bg-emerald-100 dark:bg-emerald-900/30'
-                  : 'bg-cyan-100 dark:bg-cyan-900/30'
+                  ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300'
+                  : 'bg-cyan-100 text-cyan-700 dark:bg-cyan-900/40 dark:text-cyan-300'
               }`}
             >
               {estaCompleta ? (
-                <CheckCircle2 className='h-4 w-4 text-emerald-600 dark:text-emerald-400' />
+                <CheckCircle2 className='h-3 w-3' />
               ) : (
-                <DollarSign className='h-4 w-4 text-cyan-600 dark:text-cyan-400' />
+                <DollarSign className='h-3 w-3' />
               )}
-            </div>
-            <div>
-              <p className='text-xs font-bold text-gray-800 dark:text-gray-100'>
-                {estaCompleta ? 'Negociación Completada' : 'Negociación Activa'}
-              </p>
-              {proyecto && (
-                <p className='text-xs text-gray-500 dark:text-gray-400'>
-                  {proyecto}
-                  {ubicacion ? ` · ${ubicacion}` : ''}
-                </p>
-              )}
-            </div>
+              {estaCompleta ? 'Negociación Completada' : 'Negociación Activa'}
+            </span>
           </div>
 
-          <a
-            href={`/abonos/${clienteId}`}
-            className='flex items-center gap-1 text-xs font-medium text-cyan-600 transition-colors hover:text-cyan-800 dark:text-cyan-400 dark:hover:text-cyan-200'
-          >
-            <Clock className='h-3 w-3' />
-            Ver abonos
-            <ArrowRight className='h-3 w-3' />
-          </a>
+          {/* Location breadcrumb */}
+          {(proyecto || manzana || numero) && (
+            <div className='flex items-center gap-1.5 text-[11px] text-gray-500 dark:text-gray-400'>
+              {proyecto && (
+                <>
+                  <Building2 className='h-3 w-3 flex-shrink-0 text-gray-400 dark:text-gray-500' />
+                  <span className='font-medium text-gray-700 dark:text-gray-300'>
+                    {proyecto}
+                  </span>
+                </>
+              )}
+              {(manzana || numero) && (
+                <>
+                  <span className='text-gray-300 dark:text-gray-600'>·</span>
+                  <Home className='h-3 w-3 flex-shrink-0 text-gray-400 dark:text-gray-500' />
+                  <span>
+                    {[
+                      manzana && `Manzana ${manzana}`,
+                      numero && `Casa ${numero}`,
+                    ]
+                      .filter(Boolean)
+                      .join(' · ')}
+                  </span>
+                </>
+              )}
+            </div>
+          )}
         </div>
 
-        {/* Financial stats row */}
-        <div className='mb-3 grid grid-cols-3 gap-3'>
-          <div className='rounded-lg border border-gray-100 bg-gray-50 p-2.5 text-center dark:border-gray-700/50 dark:bg-gray-900/40'>
-            <p className='mb-0.5 text-[10px] font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400'>
-              Valor Total
-            </p>
-            <p className='text-sm font-bold text-gray-800 dark:text-gray-100'>
-              {formatCurrency(valorTotal)}
-            </p>
-            <p className='mt-0.5 text-[10px] text-gray-400 dark:text-gray-500'>
-              Precio de la vivienda
-            </p>
-          </div>
-          <div className='rounded-lg border border-emerald-100 bg-emerald-50 p-2.5 text-center dark:border-emerald-800/40 dark:bg-emerald-900/20'>
-            <p className='mb-0.5 text-[10px] font-medium uppercase tracking-wide text-emerald-600 dark:text-emerald-500'>
-              Abonado
-            </p>
-            <p className='text-sm font-bold text-emerald-700 dark:text-emerald-400'>
-              {formatCurrency(totalAbonado)}
-            </p>
-            <p className='mt-0.5 text-[10px] text-emerald-500/70 dark:text-emerald-500/50'>
-              Total pagado a la fecha
-            </p>
-          </div>
-          <div
-            className={`rounded-lg border p-2.5 text-center ${
-              saldoPendiente > 0
-                ? 'border-amber-100 bg-amber-50 dark:border-amber-800/40 dark:bg-amber-900/20'
-                : 'border-emerald-100 bg-emerald-50 dark:border-emerald-800/40 dark:bg-emerald-900/20'
+        {/* Right: CTA */}
+        <a
+          href={`/abonos/${clienteId}`}
+          className='flex items-center gap-1.5 rounded-lg border border-cyan-200 bg-cyan-50 px-2.5 py-1.5 text-xs font-semibold text-cyan-700 transition-colors hover:bg-cyan-100 dark:border-cyan-800/50 dark:bg-cyan-900/20 dark:text-cyan-400 dark:hover:bg-cyan-900/40'
+        >
+          <TrendingUp className='h-3 w-3' />
+          Ver abonos
+          <ArrowRight className='h-3 w-3' />
+        </a>
+      </div>
+
+      {/* ── Metrics ────────────────────────────────────── */}
+      <div className='grid grid-cols-3 border-t border-gray-100 dark:border-gray-700/60'>
+        {/* Valor Total — contexto */}
+        <div className='border-r border-gray-100 px-4 py-3 dark:border-gray-700/60'>
+          <p className='mb-1 text-[10px] font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-500'>
+            Valor Total
+          </p>
+          <p className='text-xl font-black tabular-nums tracking-tight text-gray-700 dark:text-gray-300'>
+            {formatCurrency(valorTotal)}
+          </p>
+          <p className='mt-0.5 text-[10px] text-gray-400 dark:text-gray-500'>
+            Precio vivienda
+          </p>
+        </div>
+
+        {/* Abonado — positivo */}
+        <div className='border-r border-gray-100 bg-emerald-50/50 px-4 py-3 dark:border-gray-700/60 dark:bg-emerald-900/10'>
+          <p className='mb-1 text-[10px] font-semibold uppercase tracking-widest text-emerald-600 dark:text-emerald-500'>
+            Abonado
+          </p>
+          <p className='text-xl font-black tabular-nums tracking-tight text-emerald-700 dark:text-emerald-400'>
+            {formatCurrency(totalAbonado)}
+          </p>
+          <p className='mt-0.5 text-[10px] text-emerald-500/80 dark:text-emerald-500/60'>
+            Total pagado
+          </p>
+        </div>
+
+        {/* Saldo — héroe */}
+        <div
+          className={`px-4 py-3 ${
+            estaCompleta
+              ? 'bg-emerald-50/80 dark:bg-emerald-900/15'
+              : 'bg-amber-50/60 dark:bg-amber-900/10'
+          }`}
+        >
+          <p
+            className={`mb-1 text-[10px] font-semibold uppercase tracking-widest ${
+              estaCompleta
+                ? 'text-emerald-600 dark:text-emerald-500'
+                : 'text-amber-600 dark:text-amber-500'
             }`}
           >
-            <p
-              className={`mb-0.5 text-[10px] font-medium uppercase tracking-wide ${
-                saldoPendiente > 0
-                  ? 'text-amber-600 dark:text-amber-500'
-                  : 'text-emerald-600 dark:text-emerald-500'
-              }`}
-            >
-              Saldo
-            </p>
-            <p
-              className={`text-sm font-bold ${
-                saldoPendiente > 0
-                  ? 'text-amber-700 dark:text-amber-400'
-                  : 'text-emerald-700 dark:text-emerald-400'
-              }`}
-            >
-              {formatCurrency(saldoPendiente)}
-            </p>
-            <p className='mt-0.5 text-[10px] text-gray-400 dark:text-gray-500'>
-              Resta por pagar
-            </p>
-          </div>
+            Saldo
+          </p>
+          <p
+            className={`text-xl font-black tabular-nums tracking-tight ${
+              estaCompleta
+                ? 'text-emerald-700 dark:text-emerald-400'
+                : 'text-amber-700 dark:text-amber-400'
+            }`}
+          >
+            {formatCurrency(saldoPendiente)}
+          </p>
+          <p className='mt-0.5 text-[10px] text-gray-400 dark:text-gray-500'>
+            Resta por pagar
+          </p>
         </div>
+      </div>
 
-        {/* Progress bar */}
-        <div className='flex items-center gap-2.5'>
-          <div className='h-2 flex-1 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700'>
+      {/* ── Progress bar ───────────────────────────────── */}
+      <div className='px-4 py-2.5'>
+        <div className='flex items-center gap-2'>
+          <div className='h-1.5 flex-1 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700'>
             <motion.div
-              className={`h-full rounded-full ${progressColor}`}
+              className={`h-full rounded-full bg-gradient-to-r ${progressColor}`}
               initial={{ width: 0 }}
               animate={{ width: `${porcentaje}%` }}
-              transition={{ duration: 0.8, ease: 'easeOut', delay: 0.2 }}
+              transition={{ duration: 0.9, ease: 'easeOut', delay: 0.2 }}
             />
           </div>
-          <span className='w-10 text-right text-xs font-bold text-gray-600 dark:text-gray-400'>
+          <span className='text-[11px] font-bold tabular-nums text-gray-500 dark:text-gray-400'>
             {Math.round(porcentaje)}%
           </span>
         </div>

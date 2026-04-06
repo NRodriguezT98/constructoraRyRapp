@@ -15,7 +15,6 @@ import {
   CheckCircle2,
   Clock,
   Edit2,
-  Eye,
   MapPin,
   Trash2,
 } from 'lucide-react'
@@ -203,21 +202,12 @@ export function ProyectosTabla({
       size: 120,
       cell: ({ row }) => (
         <div className={styles.actions.container}>
-          {onView && (
+          {canEdit && onEdit && !row.original.archivado && (
             <button
-              onClick={() => onView(row.original)}
-              className={cn(
-                styles.actions.button.base,
-                styles.actions.button.view
-              )}
-              title='Ver detalles'
-            >
-              <Eye className={styles.actions.icon} />
-            </button>
-          )}
-          {canEdit && onEdit && (
-            <button
-              onClick={() => onEdit(row.original)}
+              onClick={e => {
+                e.stopPropagation()
+                onEdit(row.original)
+              }}
               className={cn(
                 styles.actions.button.base,
                 styles.actions.button.edit
@@ -231,7 +221,10 @@ export function ProyectosTabla({
             ? canEdit &&
               onRestore && (
                 <button
-                  onClick={() => onRestore(row.original.id)}
+                  onClick={e => {
+                    e.stopPropagation()
+                    onRestore(row.original.id)
+                  }}
                   className={cn(
                     styles.actions.button.base,
                     'text-green-600 hover:bg-green-50 dark:text-green-400 dark:hover:bg-green-900/20'
@@ -244,7 +237,10 @@ export function ProyectosTabla({
             : canEdit &&
               onArchive && (
                 <button
-                  onClick={() => onArchive(row.original.id)}
+                  onClick={e => {
+                    e.stopPropagation()
+                    onArchive(row.original.id)
+                  }}
                   className={cn(
                     styles.actions.button.base,
                     'text-amber-600 hover:bg-amber-50 dark:text-amber-400 dark:hover:bg-amber-900/20'
@@ -254,9 +250,12 @@ export function ProyectosTabla({
                   <Archive className={styles.actions.icon} />
                 </button>
               )}
-          {canDelete && onDelete && (
+          {canDelete && onDelete && row.original.manzanas.length === 0 && (
             <button
-              onClick={() => onDelete(row.original.id)}
+              onClick={e => {
+                e.stopPropagation()
+                onDelete(row.original.id)
+              }}
               className={cn(
                 styles.actions.button.base,
                 styles.actions.button.delete
@@ -278,6 +277,7 @@ export function ProyectosTabla({
       gradientColor='green'
       pageSize={10}
       showPagination={true}
+      onRowClick={onView}
     />
   )
 }
