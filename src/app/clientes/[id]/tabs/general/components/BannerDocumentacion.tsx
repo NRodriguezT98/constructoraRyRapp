@@ -1,18 +1,20 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { AlertCircle, CheckCircle, Circle } from 'lucide-react'
+import { AlertCircle, ArrowRight, CheckCircle, Circle } from 'lucide-react'
 
 interface BannerDocumentacionProps {
   tieneDocumento: boolean
   cargandoValidacion: boolean
   tieneNegociacionActiva: boolean
+  onIrADocumentos?: () => void
 }
 
 export function BannerDocumentacion({
   tieneDocumento,
   cargandoValidacion,
   tieneNegociacionActiva,
+  onIrADocumentos,
 }: BannerDocumentacionProps) {
   // No mostrar si ya tiene negociación activa
   if (tieneNegociacionActiva) return null
@@ -55,6 +57,15 @@ export function BannerDocumentacion({
               ? 'Todos los documentos verificados. Usa el botón "Asignar Vivienda" arriba.'
               : 'Sube la cédula en la pestaña "Documentos" para poder asignar vivienda.'}
           </p>
+          {!tieneDocumento && onIrADocumentos ? (
+            <button
+              onClick={onIrADocumentos}
+              className='mt-1.5 inline-flex items-center gap-1 rounded-lg bg-white/20 px-2.5 py-1 text-xs font-semibold text-white backdrop-blur-sm transition-colors hover:bg-white/30'
+            >
+              Ir a Documentos
+              <ArrowRight className='h-3.5 w-3.5' />
+            </button>
+          ) : null}
         </div>
 
         {/* Checklist compacto - solo íconos en móvil, texto en desktop */}

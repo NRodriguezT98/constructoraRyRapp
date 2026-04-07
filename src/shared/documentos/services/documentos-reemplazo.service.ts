@@ -308,6 +308,8 @@ export class DocumentosReemplazoService {
           tipo_operacion: 'REEMPLAZO_ARCHIVO',
           tipo_entidad: tipoEntidad,
           entidad_id: entidadId,
+          ...(tipoEntidad === 'cliente' && { cliente_id: entidadId }),
+          titulo: documento.titulo,
           motivo_reemplazo: motivo,
           archivo_original: {
             nombre: documento.nombre_archivo,
@@ -351,7 +353,7 @@ export class DocumentosReemplazoService {
             timestamp: new Date().toISOString(),
           },
         },
-        modulo: 'documentos',
+        modulo: tipoEntidad === 'cliente' ? 'clientes' : 'documentos',
       })
     } catch (auditError) {
       logger.error(

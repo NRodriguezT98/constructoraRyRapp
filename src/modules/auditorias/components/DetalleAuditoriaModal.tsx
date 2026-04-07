@@ -26,6 +26,7 @@ import {
   User,
   X,
 } from 'lucide-react'
+import { createPortal } from 'react-dom'
 
 import { useDetalleAuditoria } from '../hooks'
 import { detalleModalStyles as styles } from '../styles/detalle-modal.styles'
@@ -41,6 +42,7 @@ import {
   ViviendaDetalleRender,
 } from './detalle-renders'
 import { getAuditoriaRenderer } from './renderers'
+import { ActualizacionDocumentoClienteRenderer } from './renderers/clientes/ActualizacionDocumentoClienteRenderer'
 import { AccionBadge } from './shared'
 
 interface DetalleAuditoriaModalProps {
@@ -83,6 +85,21 @@ export function DetalleAuditoriaModal({
       )
     }
 
+    // Edición de documento de cliente → renderer específico con diff
+    if (
+      registro.tabla === 'documentos_cliente' &&
+      registro.accion === 'UPDATE' &&
+      metadata.tipo_operacion === 'edicion_documento'
+    ) {
+      return (
+        <ActualizacionDocumentoClienteRenderer
+          metadata={metadata}
+          datosNuevos={registro.datosNuevos}
+          datosAnteriores={registro.datosAnteriores}
+        />
+      )
+    }
+
     // Renders legacy para otros módulos (mantener compatibilidad)
     switch (registro.modulo) {
       case 'viviendas':
@@ -98,7 +115,7 @@ export function DetalleAuditoriaModal({
     }
   }
 
-  return (
+  const modalContent = (
     <>
       {/* Overlay */}
       <motion.div
@@ -281,4 +298,6 @@ export function DetalleAuditoriaModal({
       </motion.div>
     </>
   )
+
+  return createPortal(modalContent, document.body)
 }

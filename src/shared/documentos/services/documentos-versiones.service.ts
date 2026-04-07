@@ -4,6 +4,7 @@
 
 import { supabase } from '@/lib/supabase/client'
 import { logger } from '@/lib/utils/logger'
+import { auditService } from '@/services/audit.service'
 
 import type {
   DocumentoProyecto,
@@ -97,7 +98,14 @@ export class DocumentosVersionesService {
       .from(config.bucket)
       .upload(storagePath, archivo)
 
-    if (uploadError) throw uploadError
+    if (uploadError) {
+      // ↩️ Restaurar es_version_actual del documento original antes de lanzar error
+      await supabase
+        .from(config.tabla)
+        .update({ es_version_actual: true })
+        .eq('id', documentoIdOriginal)
+      throw uploadError
+    }
 
     // 7. Crear nuevo registro de documento
     const insertData: Record<string, unknown> = {
@@ -152,7 +160,7 @@ export class DocumentosVersionesService {
       .select(
         `
         *,
-        usuario:usuarios (
+        usuario:usuarios!${config.fkSubidoPor} (
           nombres,
           apellidos,
           email
@@ -164,7 +172,41 @@ export class DocumentosVersionesService {
     if (insertError) {
       // Limpiar archivo si falla la BD
       await supabase.storage.from(config.bucket).remove([storagePath])
+      // ↩️ Restaurar es_version_actual del documento original
+      await supabase
+        .from(config.tabla)
+        .update({ es_version_actual: true })
+        .eq('id', documentoIdOriginal)
       throw insertError
+    }
+
+    // Auditar nueva versión en historial del cliente
+    if (tipoEntidad === 'cliente') {
+      try {
+        const doc = nuevaVersionDoc as unknown as Record<string, unknown>
+        await auditService.registrarAccion({
+          tabla: 'documentos_cliente',
+          accion: 'UPDATE',
+          registroId: documentoPadreId,
+          metadata: {
+            cliente_id: doc.cliente_id as string,
+            titulo: doc.titulo as string,
+            tipo_operacion: 'NUEVA_VERSION_DOCUMENTO',
+            version_nueva: nuevaVersion,
+            version_anterior_id: documentoIdOriginal,
+            nombre_archivo_anterior: docOriginal.nombre_original,
+            url_storage_anterior: docOriginal.url_storage,
+            nombre_archivo_nuevo: archivo.name,
+            url_storage_nuevo: storagePath,
+            tamano_bytes: archivo.size,
+            tipo_mime: archivo.type,
+            cambios: cambios || null,
+          },
+          modulo: 'clientes',
+        })
+      } catch (e) {
+        logger.warn('Auditoría de nueva versión falló:', e)
+      }
     }
 
     return nuevaVersionDoc as unknown as DocumentoProyecto
@@ -195,7 +237,7 @@ export class DocumentosVersionesService {
       .select(
         `
         *,
-        usuario:usuarios (
+        usuario:usuarios!${config.fkSubidoPor} (
           nombres,
           apellidos,
           email
@@ -428,7 +470,7 @@ export class DocumentosVersionesService {
       .select(
         `
         *,
-        usuario:usuarios (
+        usuario:usuarios!${config.fkSubidoPor} (
           nombres,
           apellidos,
           email

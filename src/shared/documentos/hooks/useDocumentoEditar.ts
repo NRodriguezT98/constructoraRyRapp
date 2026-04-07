@@ -4,14 +4,10 @@ import { useState } from 'react'
 
 import { toast } from 'sonner'
 
-import { supabase } from '@/lib/supabase/client'
 import { formatDateForDB } from '@/lib/utils/date.utils'
-import { logger } from '@/lib/utils/logger'
 
-import {
-  type TipoEntidad,
-  obtenerConfiguracionEntidad,
-} from '../types/entidad.types'
+import DocumentosBaseService from '../services/documentos-base.service'
+import { type TipoEntidad } from '../types/entidad.types'
 
 interface EditarMetadatosData {
   titulo?: string
@@ -50,40 +46,31 @@ export function useDocumentoEditar() {
         }
       }
 
-      // Preparar datos para actualizar (solo campos que cambiaron)
-      const updateData: Record<string, unknown> = {
-        fecha_actualizacion: new Date().toISOString(),
-      }
+      // Preparar updates (solo campos que cambiaron)
+      const updates: Record<string, unknown> = {}
 
-      if (data.titulo !== undefined) updateData.titulo = data.titulo.trim()
+      if (data.titulo !== undefined) updates.titulo = data.titulo.trim()
       if (data.descripcion !== undefined)
-        updateData.descripcion = data.descripcion?.trim() || null
+        updates.descripcion = data.descripcion?.trim() || null
       if (data.categoria_id !== undefined)
-        updateData.categoria_id = data.categoria_id || null
+        updates.categoria_id = data.categoria_id || null
       if (data.fecha_documento !== undefined) {
-        updateData.fecha_documento = data.fecha_documento
+        updates.fecha_documento = data.fecha_documento
           ? formatDateForDB(data.fecha_documento)
           : null
       }
       if (data.fecha_vencimiento !== undefined) {
-        updateData.fecha_vencimiento = data.fecha_vencimiento
+        updates.fecha_vencimiento = data.fecha_vencimiento
           ? formatDateForDB(data.fecha_vencimiento)
           : null
       }
 
-      // Obtener tabla correcta según tipo de entidad
-      const { tabla } = obtenerConfiguracionEntidad(tipoEntidad)
-
-      // Actualizar en base de datos
-      const { error: updateError } = await supabase
-        .from(tabla)
-        .update(updateData)
-        .eq('id', documentoId)
-
-      if (updateError) {
-        logger.error('Error al actualizar metadatos:', updateError)
-        throw new Error('No se pudo actualizar el documento')
-      }
+      // Delegar al service centralizado (incluye auditoría automática)
+      await DocumentosBaseService.actualizarDocumento(
+        documentoId,
+        updates,
+        tipoEntidad
+      )
 
       toast.success('Documento actualizado correctamente', {
         description: 'Los cambios se guardaron exitosamente',

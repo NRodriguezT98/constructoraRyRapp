@@ -92,7 +92,10 @@ export function useDocumentosLista({
     cargando: cargandoDocumentos,
     refrescar,
   } = useDocumentosQuery(entidadId, tipoEntidad)
-  const { categorias } = useCategoriasQuery(user?.id, moduloCategoria)
+  const { categorias, cargando: cargandoCategorias } = useCategoriasQuery(
+    user?.id,
+    moduloCategoria
+  )
 
   // ✅ REACT QUERY: Mutations - GENÉRICO
   const eliminarMutation = useEliminarDocumentoMutation(entidadId, tipoEntidad)
@@ -403,7 +406,7 @@ export function useDocumentosLista({
     // Datos
     documentosFiltrados,
     categorias,
-    cargandoDocumentos,
+    cargandoDocumentos: cargandoDocumentos || cargandoCategorias,
     hasDocumentos,
     tipoEntidad,
 

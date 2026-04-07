@@ -102,7 +102,11 @@ export function DocumentoReemplazarArchivoModal({
   return (
     <AnimatePresence>
       {isOpen && (
-        <div key='modal-reemplazar-archivo' className={styles.backdrop}>
+        <div
+          key='modal-reemplazar-archivo'
+          className={styles.backdrop}
+          onClick={e => e.stopPropagation()}
+        >
           {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}

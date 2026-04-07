@@ -7,6 +7,7 @@
 
 import { motion } from 'framer-motion'
 import { Clock, User, X } from 'lucide-react'
+import { createPortal } from 'react-dom'
 
 import type { EventoHistorialHumanizado } from '@/modules/clientes/types/historial.types'
 
@@ -38,7 +39,7 @@ export function EventoDetalleModal({
     minute: '2-digit',
   })
 
-  return (
+  return createPortal(
     <div className={styles.modal.overlay}>
       {/* Backdrop */}
       <motion.div
@@ -104,6 +105,7 @@ export function EventoDetalleModal({
           <Renderer evento={evento} />
         </div>
       </motion.div>
-    </div>
+    </div>,
+    document.body
   )
 }

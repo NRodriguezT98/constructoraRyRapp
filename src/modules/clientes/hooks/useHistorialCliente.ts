@@ -70,7 +70,14 @@ export function useHistorialCliente({
 
   // ========== HUMANIZAR EVENTOS + CONVERTIR NOTAS ==========
   const eventosHumanizados = useMemo(() => {
-    return humanizarEventos(eventosRaw)
+    return humanizarEventos(eventosRaw).filter(
+      ev =>
+        !(
+          ev.tipo === 'documento_actualizado' &&
+          (ev.metadata?.tipo_operacion as string | undefined) ===
+            'REEMPLAZO_ARCHIVO'
+        )
+    )
   }, [eventosRaw])
 
   const notasComoEventos = useMemo(() => {

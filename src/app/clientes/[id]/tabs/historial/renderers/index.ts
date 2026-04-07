@@ -41,6 +41,7 @@ const RENDERERS: Partial<Record<string, RendererComponent>> = {
   // Documentos
   documento_subido: DocumentoRenderer,
   documento_actualizado: DocumentoRenderer,
+  documento_eliminado: DocumentoRenderer,
 
   // Interés y genérico
   interes_registrado: CambioGenericoRenderer,

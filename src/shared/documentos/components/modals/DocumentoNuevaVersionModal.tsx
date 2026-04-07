@@ -5,7 +5,7 @@
  *
  * Modal compacto diseño basado en Document Edit Metadatos Modal
  * - Campos: archivo, título editable, fecha documento, fecha vencimiento opcional, descripción cambios
- * - Colores: Verde/Esmeralda (tema Proyectos)
+ * - Colores: Cyan/Azul (tema Clientes)
  * - Portal rendering para z-index garantizado
  */
 
@@ -115,17 +115,17 @@ export function DocumentoNuevaVersionModal({
     }
 
     // ✅ Validación: Fecha de vencimiento no puede ser anterior a fecha de documento
-    if (fechaDocumento && fechaVencimiento) {
-      const fechaDoc = new Date(fechaDocumento)
-      const fechaVenc = new Date(fechaVencimiento)
-
-      if (fechaVenc < fechaDoc) {
-        setError(
-          'La fecha de vencimiento no puede ser anterior a la fecha del documento'
-        )
-        toast.error('Fecha de vencimiento inválida')
-        return
-      }
+    // Comparar strings YYYY-MM-DD para evitar timezone shift
+    if (
+      fechaDocumento &&
+      fechaVencimiento &&
+      fechaVencimiento < fechaDocumento
+    ) {
+      setError(
+        'La fecha de vencimiento no puede ser anterior a la fecha del documento'
+      )
+      toast.error('Fecha de vencimiento inválida')
+      return
     }
 
     if (!user) {
@@ -166,12 +166,14 @@ export function DocumentoNuevaVersionModal({
       handleClose()
     } catch (error: unknown) {
       logger.error('Error al crear nueva versión:', error)
-      setError(
+      const mensaje =
         error instanceof Error
           ? error.message
-          : 'Error al subir la nueva versión'
-      )
-      toast.error('Error al crear nueva versión')
+          : typeof error === 'object' && error !== null && 'message' in error
+            ? String((error as Record<string, unknown>).message)
+            : 'Error al subir la nueva versión'
+      setError(mensaje)
+      toast.error('Error al crear nueva versión', { description: mensaje })
     } finally {
       setSubiendo(false)
     }
@@ -199,21 +201,23 @@ export function DocumentoNuevaVersionModal({
   if (!isOpen) return null
 
   // ✅ Advertencia si fecha nueva es anterior a la actual
-  const fechaActual = documento.fecha_documento
-    ? new Date(documento.fecha_documento)
+  // Comparar solo la parte YYYY-MM-DD para evitar timezone shift con new Date()
+  const fechaActualStr = documento.fecha_documento
+    ? documento.fecha_documento.slice(0, 10)
     : null
-  const fechaNueva = fechaDocumento ? new Date(fechaDocumento) : null
   const mostrarAdvertenciaFecha =
-    fechaActual && fechaNueva && fechaNueva < fechaActual
+    fechaActualStr && fechaDocumento && fechaDocumento < fechaActualStr
 
   // ✅ Validación en tiempo real: Fecha de vencimiento vs Fecha de documento
-  const fechaDoc = fechaDocumento ? new Date(fechaDocumento) : null
-  const fechaVenc = fechaVencimiento ? new Date(fechaVencimiento) : null
-  const fechaVencimientoInvalida = fechaDoc && fechaVenc && fechaVenc < fechaDoc
+  const fechaVencimientoInvalida =
+    fechaDocumento && fechaVencimiento && fechaVencimiento < fechaDocumento
 
   const modalContent = (
     <AnimatePresence>
-      <div className='fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm'>
+      <div
+        className='fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm'
+        onClick={e => e.stopPropagation()}
+      >
         <motion.div
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -221,7 +225,7 @@ export function DocumentoNuevaVersionModal({
           className='relative max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white shadow-2xl dark:bg-gray-800'
         >
           {/* Header - Verde/Esmeralda (tema Proyectos) */}
-          <div className='sticky top-0 z-10 rounded-t-2xl bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 px-6 py-4'>
+          <div className='sticky top-0 z-10 rounded-t-2xl bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 px-6 py-4'>
             <div className='flex items-center justify-between'>
               <div className='flex items-center gap-3'>
                 <div className='flex h-10 w-10 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm'>
@@ -268,10 +272,10 @@ export function DocumentoNuevaVersionModal({
               {!archivo ? (
                 <label
                   htmlFor='file-upload-version'
-                  className='group flex cursor-pointer flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed border-green-300 bg-green-50 p-6 transition-all hover:border-green-500 hover:bg-green-100 dark:border-green-700 dark:bg-green-950/30 dark:hover:border-green-600'
+                  className='group flex cursor-pointer flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed border-cyan-300 bg-cyan-50 p-6 transition-all hover:border-cyan-500 hover:bg-cyan-100 dark:border-cyan-700 dark:bg-cyan-950/30 dark:hover:border-cyan-600'
                 >
-                  <div className='rounded-full bg-green-100 p-3 group-hover:bg-green-200 dark:bg-green-900/30'>
-                    <Upload className='h-6 w-6 text-green-600 dark:text-green-400' />
+                  <div className='rounded-full bg-cyan-100 p-3 group-hover:bg-cyan-200 dark:bg-cyan-900/30'>
+                    <Upload className='h-6 w-6 text-cyan-600 dark:text-cyan-400' />
                   </div>
                   <div className='text-center'>
                     <p className='text-sm font-semibold text-gray-700 dark:text-gray-300'>
@@ -291,8 +295,8 @@ export function DocumentoNuevaVersionModal({
                   />
                 </label>
               ) : (
-                <div className='flex items-center gap-3 rounded-xl border-2 border-green-200 bg-green-50 p-3 dark:border-green-800 dark:bg-green-950/30'>
-                  <div className='flex h-10 w-10 items-center justify-center rounded-lg bg-green-600 text-white'>
+                <div className='flex items-center gap-3 rounded-xl border-2 border-cyan-200 bg-cyan-50 p-3 dark:border-cyan-800 dark:bg-cyan-950/30'>
+                  <div className='flex h-10 w-10 items-center justify-center rounded-lg bg-cyan-600 text-white'>
                     <FileText className='h-5 w-5' />
                   </div>
                   <div className='min-w-0 flex-1'>
@@ -334,7 +338,7 @@ export function DocumentoNuevaVersionModal({
                     value={titulo}
                     onChange={e => setTitulo(e.target.value)}
                     placeholder='Ej: Certificado de Tradición Actualizado'
-                    className='w-full rounded-lg border-2 border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-900 transition-all focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500/20 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:bg-gray-900/50 dark:text-white dark:focus:border-green-600'
+                    className='w-full rounded-lg border-2 border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-900 transition-all focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:bg-gray-900/50 dark:text-white dark:focus:border-cyan-600'
                     disabled={subiendo}
                     required
                   />
@@ -359,7 +363,7 @@ export function DocumentoNuevaVersionModal({
                       type='date'
                       value={fechaDocumento}
                       onChange={e => setFechaDocumento(e.target.value)}
-                      className='w-full rounded-lg border-2 border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-900 transition-all focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500/20 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:bg-gray-900/50 dark:text-white dark:focus:border-green-600'
+                      className='w-full rounded-lg border-2 border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-900 transition-all focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:bg-gray-900/50 dark:text-white dark:focus:border-cyan-600'
                       disabled={subiendo}
                     />
                   </div>
@@ -378,7 +382,7 @@ export function DocumentoNuevaVersionModal({
                       type='date'
                       value={fechaVencimiento}
                       onChange={e => setFechaVencimiento(e.target.value)}
-                      className='w-full rounded-lg border-2 border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-900 transition-all focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500/20 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:bg-gray-900/50 dark:text-white dark:focus:border-green-600'
+                      className='w-full rounded-lg border-2 border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-900 transition-all focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:bg-gray-900/50 dark:text-white dark:focus:border-cyan-600'
                       disabled={subiendo}
                     />
                   </div>
@@ -433,7 +437,7 @@ export function DocumentoNuevaVersionModal({
                     onChange={e => setCambios(e.target.value)}
                     placeholder='Ej: Actualización con información más reciente del cliente'
                     rows={3}
-                    className='w-full rounded-lg border-2 border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-900 transition-all focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500/20 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:bg-gray-900/50 dark:text-white dark:focus:border-green-600'
+                    className='w-full rounded-lg border-2 border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-900 transition-all focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:bg-gray-900/50 dark:text-white dark:focus:border-cyan-600'
                     disabled={subiendo}
                   />
                   <p className='mt-1.5 text-xs text-gray-500 dark:text-gray-400'>
@@ -461,7 +465,7 @@ export function DocumentoNuevaVersionModal({
                   subiendo ||
                   !!fechaVencimientoInvalida
                 }
-                className='flex-1 rounded-lg bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 px-4 py-2.5 text-sm font-medium text-white shadow-lg shadow-green-500/20 transition-all hover:from-green-700 hover:via-emerald-700 hover:to-teal-700 disabled:cursor-not-allowed disabled:opacity-50'
+                className='flex-1 rounded-lg bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 px-4 py-2.5 text-sm font-medium text-white shadow-lg shadow-cyan-500/20 transition-all hover:from-cyan-700 hover:via-blue-700 hover:to-indigo-700 disabled:cursor-not-allowed disabled:opacity-50'
               >
                 {subiendo ? (
                   <div className='flex items-center justify-center gap-2'>

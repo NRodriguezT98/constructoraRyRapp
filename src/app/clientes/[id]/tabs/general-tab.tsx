@@ -79,6 +79,11 @@ export function GeneralTab({ cliente }: GeneralTabProps) {
           tieneDocumento={tieneDocumento}
           cargandoValidacion={cargandoValidacion}
           tieneNegociacionActiva={tieneNegociacionActiva}
+          onIrADocumentos={() =>
+            window.dispatchEvent(
+              new CustomEvent('cambiar-tab', { detail: 'documentos' })
+            )
+          }
         />
       )}
 
