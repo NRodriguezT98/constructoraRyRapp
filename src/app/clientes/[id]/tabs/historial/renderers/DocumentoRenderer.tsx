@@ -7,12 +7,14 @@
 
 'use client'
 
+import { useQuery } from '@tanstack/react-query'
 import {
   Archive,
   ArrowRight,
   CalendarDays,
   ExternalLink,
   FileText,
+  Hash,
   Info,
   Loader2,
   RotateCcw,
@@ -21,11 +23,29 @@ import {
   Trash2,
 } from 'lucide-react'
 
+import { supabase } from '@/lib/supabase/client'
 import { useVerDocumentoHistorial } from '@/modules/clientes/hooks/useVerDocumentoHistorial'
 import type { EventoHistorialHumanizado } from '@/modules/clientes/types/historial.types'
 import { MOTIVOS_ARCHIVADO } from '@/shared/documentos/constants/archivado.constants'
 
 import { formatearValor } from './formatearValor'
+
+/** Regex para detectar UUID v4 */
+const UUID_REGEX =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
+function useCategoriasLookup() {
+  return useQuery({
+    queryKey: ['categorias_documento_lookup'],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('categorias_documento')
+        .select('id, nombre')
+      return Object.fromEntries((data ?? []).map(c => [c.id, c.nombre]))
+    },
+    staleTime: 10 * 60 * 1000,
+  })
+}
 
 interface Props {
   evento: EventoHistorialHumanizado
@@ -40,7 +60,20 @@ export function DocumentoRenderer({ evento }: Props) {
   const urlStorage = meta.url_storage as string | undefined
   const tipoMime = (meta.tipo_mime as string | undefined) ?? ''
 
+  const { data: categoriasMap = {} } = useCategoriasLookup()
   const { verDocumento, cargando, esCargando } = useVerDocumentoHistorial()
+
+  /** Formatea un valor de diff resolviendo UUIDs de categoría a nombre */
+  const formatearValorCampo = (campo: string, valor: unknown): string => {
+    if (
+      campo === 'categoria_id' &&
+      typeof valor === 'string' &&
+      UUID_REGEX.test(valor)
+    ) {
+      return categoriasMap[valor] ?? '(categoría no encontrada)'
+    }
+    return formatearValor(valor)
+  }
 
   const tipoOp = (meta.tipo_operacion as string | undefined) ?? ''
 
@@ -169,32 +202,144 @@ export function DocumentoRenderer({ evento }: Props) {
     evento.tipo === 'documento_actualizado' &&
     tipoOp === 'ELIMINAR_DOCUMENTO_SOFTDELETE'
   ) {
+    const nombreArchivoSoft = meta.nombre_original as string | undefined
+    const categoriaIdSoft = meta.categoria_id as string | undefined
+    const categoriaNombreSoft = categoriaIdSoft
+      ? (categoriasMap[categoriaIdSoft] ?? null)
+      : null
+    const esIdentidadSoft = meta.es_documento_identidad as boolean | undefined
+
     return (
       <div className='space-y-3'>
         <DocHeader color='red' />
         <div className='flex items-start gap-2.5 rounded-xl border border-red-100 bg-red-50 px-3 py-3 dark:border-red-900/30 dark:bg-red-950/20'>
           <Trash2 className='mt-0.5 h-4 w-4 shrink-0 text-red-500' />
           <p className='text-sm text-red-800 dark:text-red-200'>
-            El documento fue marcado como{' '}
-            <span className='font-semibold'>eliminado</span> del sistema.
+            El documento fue movido a la{' '}
+            <span className='font-semibold'>papelera</span>.
           </p>
         </div>
+        {(categoriaNombreSoft ?? nombreArchivoSoft ?? esIdentidadSoft) ? (
+          <div className='overflow-hidden rounded-xl border border-gray-100 bg-white dark:border-gray-800 dark:bg-gray-900/50'>
+            {categoriaNombreSoft ? (
+              <div className='flex items-start gap-2.5 border-b border-gray-100 px-3 py-2 dark:border-gray-800'>
+                <Tag className='mt-0.5 h-4 w-4 shrink-0 text-gray-400' />
+                <div>
+                  <p className='text-[11px] font-semibold uppercase tracking-wide text-gray-400'>
+                    Categoría
+                  </p>
+                  <p className='mt-0.5 text-sm text-gray-900 dark:text-white'>
+                    {categoriaNombreSoft}
+                  </p>
+                </div>
+              </div>
+            ) : null}
+            {nombreArchivoSoft ? (
+              <div className='flex items-start gap-2.5 border-b border-gray-100 px-3 py-2 dark:border-gray-800'>
+                <FileText className='mt-0.5 h-4 w-4 shrink-0 text-gray-400' />
+                <div className='min-w-0 flex-1'>
+                  <p className='text-[11px] font-semibold uppercase tracking-wide text-gray-400'>
+                    Archivo
+                  </p>
+                  <p className='mt-0.5 truncate font-mono text-sm text-gray-700 dark:text-gray-300'>
+                    {nombreArchivoSoft}
+                  </p>
+                </div>
+              </div>
+            ) : null}
+            {esIdentidadSoft ? (
+              <div className='flex items-start gap-2.5 px-3 py-2'>
+                <Info className='mt-0.5 h-4 w-4 shrink-0 text-amber-500' />
+                <p className='text-sm font-semibold text-amber-700 dark:text-amber-400'>
+                  Era el documento de identidad del cliente
+                </p>
+              </div>
+            ) : null}
+          </div>
+        ) : null}
       </div>
     )
   }
 
   // ── ELIMINAR (desde papelera — accion DELETE) ─────────────────────────────
   if (evento.tipo === 'documento_eliminado') {
+    const numVersiones = meta.numero_versiones as number | undefined
+    const categoriaIdDel = get('categoria_id')
+    const categoriaNombreDel =
+      typeof categoriaIdDel === 'string'
+        ? (categoriasMap[categoriaIdDel] ?? null)
+        : null
+    const nombreArchivoDel = get('nombre_original')
+    const esIdentidadDel = get('es_documento_identidad')
+
+    const versionesTexto =
+      numVersiones && numVersiones > 1
+        ? ` junto a ${numVersiones - 1} versión${numVersiones > 2 ? 'es' : ''} anterior${numVersiones > 2 ? 'es' : ''}`
+        : ''
+
     return (
       <div className='space-y-3'>
         <DocHeader color='red' />
         <div className='flex items-start gap-2.5 rounded-xl border border-red-100 bg-red-50 px-3 py-3 dark:border-red-900/30 dark:bg-red-950/20'>
           <Trash2 className='mt-0.5 h-4 w-4 shrink-0 text-red-500' />
           <p className='text-sm text-red-800 dark:text-red-200'>
-            El documento y todas sus versiones fueron enviados a la{' '}
-            <span className='font-semibold'>papelera</span>.
+            El documento fue enviado a la papelera{versionesTexto}.
           </p>
         </div>
+        {(categoriaNombreDel ??
+        nombreArchivoDel ??
+        numVersiones ??
+        esIdentidadDel) ? (
+          <div className='overflow-hidden rounded-xl border border-gray-100 bg-white dark:border-gray-800 dark:bg-gray-900/50'>
+            {categoriaNombreDel ? (
+              <div className='flex items-start gap-2.5 border-b border-gray-100 px-3 py-2 dark:border-gray-800'>
+                <Tag className='mt-0.5 h-4 w-4 shrink-0 text-gray-400' />
+                <div>
+                  <p className='text-[11px] font-semibold uppercase tracking-wide text-gray-400'>
+                    Categoría
+                  </p>
+                  <p className='mt-0.5 text-sm text-gray-900 dark:text-white'>
+                    {categoriaNombreDel}
+                  </p>
+                </div>
+              </div>
+            ) : null}
+            {typeof nombreArchivoDel === 'string' ? (
+              <div className='flex items-start gap-2.5 border-b border-gray-100 px-3 py-2 dark:border-gray-800'>
+                <FileText className='mt-0.5 h-4 w-4 shrink-0 text-gray-400' />
+                <div className='min-w-0 flex-1'>
+                  <p className='text-[11px] font-semibold uppercase tracking-wide text-gray-400'>
+                    Archivo
+                  </p>
+                  <p className='mt-0.5 truncate font-mono text-sm text-gray-700 dark:text-gray-300'>
+                    {nombreArchivoDel}
+                  </p>
+                </div>
+              </div>
+            ) : null}
+            {numVersiones ? (
+              <div className='flex items-start gap-2.5 border-b border-gray-100 px-3 py-2 dark:border-gray-800'>
+                <Hash className='mt-0.5 h-4 w-4 shrink-0 text-gray-400' />
+                <div>
+                  <p className='text-[11px] font-semibold uppercase tracking-wide text-gray-400'>
+                    Versiones eliminadas
+                  </p>
+                  <p className='mt-0.5 text-sm text-gray-900 dark:text-white'>
+                    {numVersiones}
+                  </p>
+                </div>
+              </div>
+            ) : null}
+            {esIdentidadDel ? (
+              <div className='flex items-start gap-2.5 px-3 py-2'>
+                <Info className='mt-0.5 h-4 w-4 shrink-0 text-amber-500' />
+                <p className='text-sm font-semibold text-amber-700 dark:text-amber-400'>
+                  Era el documento de identidad del cliente
+                </p>
+              </div>
+            ) : null}
+          </div>
+        ) : null}
       </div>
     )
   }
@@ -425,7 +570,7 @@ export function DocumentoRenderer({ evento }: Props) {
                       Antes
                     </p>
                     <p className='break-words text-sm text-red-800 line-through dark:text-red-300'>
-                      {formatearValor(det.valorAnterior)}
+                      {formatearValorCampo(det.campo, det.valorAnterior)}
                     </p>
                   </div>
                   <div className='flex items-center bg-gray-50 px-1.5 dark:bg-gray-800/50'>
@@ -436,7 +581,7 @@ export function DocumentoRenderer({ evento }: Props) {
                       Ahora
                     </p>
                     <p className='break-words text-sm font-semibold text-green-900 dark:text-green-200'>
-                      {formatearValor(det.valorNuevo)}
+                      {formatearValorCampo(det.campo, det.valorNuevo)}
                     </p>
                   </div>
                 </div>

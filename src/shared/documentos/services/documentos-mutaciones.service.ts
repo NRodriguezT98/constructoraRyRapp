@@ -248,10 +248,14 @@ export class DocumentosMutacionesService {
       try {
         const docAntesMap = docAntes as unknown as Record<string, unknown>
 
+        // Campos que no tienen relevancia de negocio y no deben aparecer en historial
+        const CAMPOS_NO_AUDITABLES = new Set(['es_importante', 'anclado_at'])
+
         // Calcular solo los campos que realmente cambiaron
         type DiffEntry = { anterior: unknown; nuevo: unknown }
         const cambios: Record<string, DiffEntry> = {}
         for (const [campo, nuevoValor] of Object.entries(updates)) {
+          if (CAMPOS_NO_AUDITABLES.has(campo)) continue
           const anteriorValor = docAntesMap[campo]
           if (
             normalizeForComparison(anteriorValor) !==
@@ -315,31 +319,13 @@ export class DocumentosMutacionesService {
   ): Promise<void> {
     const tabla = getTablaDocumentos(tipoEntidad)
 
-    const { data: docInfo } =
-      tipoEntidad === 'cliente'
-        ? await supabase
-            .from('documentos_cliente' as const)
-            .select('cliente_id, titulo')
-            .eq('id', documentoId)
-            .single()
-        : { data: null }
-
     const { error } = await supabase
       .from(tabla)
       .update({ es_importante: esImportante })
       .eq('id', documentoId)
     if (error) throw error
 
-    if (docInfo) {
-      const info = docInfo as unknown as { cliente_id: string; titulo: string }
-      await DocumentosMutacionesService.auditarOperacion(
-        documentoId,
-        tipoEntidad,
-        info,
-        'edicion_documento',
-        { es_importante: { anterior: !esImportante, nuevo: esImportante } }
-      )
-    }
+    // No auditar toggle de importancia — es preferencia de UI, no evento de negocio
   }
 
   /** Soft-delete de un documento. */
@@ -353,7 +339,9 @@ export class DocumentosMutacionesService {
       tipoEntidad === 'cliente'
         ? await supabase
             .from('documentos_cliente' as const)
-            .select('cliente_id, titulo, estado')
+            .select(
+              'cliente_id, titulo, estado, categoria_id, nombre_original, url_storage, es_documento_identidad, es_importante, tipo_mime, tamano_bytes'
+            )
             .eq('id', documentoId)
             .single()
         : { data: null }
@@ -365,18 +353,32 @@ export class DocumentosMutacionesService {
     if (error) throw error
 
     if (docInfo) {
-      const info = docInfo as unknown as {
-        cliente_id: string
-        titulo: string
-        estado: string
+      const snap = docInfo as unknown as Record<string, unknown>
+      try {
+        await auditService.registrarAccion({
+          tabla: 'documentos_cliente',
+          accion: 'UPDATE',
+          registroId: documentoId,
+          datosAnteriores: snap,
+          metadata: {
+            cliente_id: snap.cliente_id,
+            titulo: snap.titulo,
+            tipo_operacion: 'ELIMINAR_DOCUMENTO_SOFTDELETE',
+            campos_actualizados: ['estado'],
+            cambios: { estado: { anterior: snap.estado, nuevo: 'Eliminado' } },
+            // Snapshot para el renderer del historial
+            nombre_original: snap.nombre_original,
+            categoria_id: snap.categoria_id,
+            es_documento_identidad: snap.es_documento_identidad,
+            es_importante: snap.es_importante,
+            tipo_mime: snap.tipo_mime,
+            tamano_bytes: snap.tamano_bytes,
+          },
+          modulo: 'clientes',
+        })
+      } catch (e) {
+        logger.warn('Auditoría de eliminación de documento falló:', e)
       }
-      await DocumentosMutacionesService.auditarOperacion(
-        documentoId,
-        tipoEntidad,
-        info,
-        'ELIMINAR_DOCUMENTO_SOFTDELETE',
-        { estado: { anterior: info.estado, nuevo: 'Eliminado' } }
-      )
     }
   }
 

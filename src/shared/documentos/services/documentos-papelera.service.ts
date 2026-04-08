@@ -69,21 +69,24 @@ export class DocumentosPapeleraService {
       try {
         const { data: docCompleto } = await supabase
           .from(tabla as 'documentos_cliente')
-          .select('id, titulo, cliente_id')
+          .select(
+            'id, titulo, cliente_id, categoria_id, nombre_original, url_storage, es_documento_identidad, es_importante, fecha_documento, tipo_mime, tamano_bytes'
+          )
           .eq('id', documentoPadreId)
           .single()
 
         if (docCompleto) {
+          const snap = docCompleto as unknown as Record<string, unknown>
           await auditService.registrarAccion({
             tabla: 'documentos_cliente',
             accion: 'DELETE',
             registroId: documentoPadreId,
+            datosAnteriores: snap,
             metadata: {
-              cliente_id: (docCompleto as unknown as Record<string, unknown>)
-                .cliente_id,
-              titulo: (docCompleto as unknown as Record<string, unknown>)
-                .titulo,
+              cliente_id: snap.cliente_id,
+              titulo: snap.titulo,
               tipo_operacion: 'ELIMINAR_DOCUMENTO',
+              numero_versiones: versiones?.length ?? 1,
             },
             modulo: 'clientes',
           })

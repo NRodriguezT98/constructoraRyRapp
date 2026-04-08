@@ -7,8 +7,10 @@
 
 'use client'
 
+import { useQuery } from '@tanstack/react-query'
 import { ArrowRight, Calendar, FileText, Tag, Type } from 'lucide-react'
 
+import { supabase } from '@/lib/supabase/client'
 import { formatDateForDisplay } from '@/lib/utils/date.utils'
 import type { RendererAuditoriaProps } from '@/modules/auditorias/types'
 
@@ -33,11 +35,41 @@ const CAMPO_ICONS: Record<
   fecha_vencimiento: Calendar,
 }
 
+/** Regex para detectar si un string es un UUID v4 */
+const UUID_REGEX =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
+/** Hook mínimo para resolver UUIDs de categorías a nombres legibles */
+function useCategoriasLookup() {
+  return useQuery({
+    queryKey: ['categorias_documento_lookup'],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('categorias_documento')
+        .select('id, nombre')
+      return Object.fromEntries((data ?? []).map(c => [c.id, c.nombre]))
+    },
+    staleTime: 10 * 60 * 1000, // 10 min — datos casi estáticos
+  })
+}
+
 /** Formatea un valor para mostrarlo de forma legible */
-function formatValor(campo: string, valor: unknown): string {
+function formatValor(
+  campo: string,
+  valor: unknown,
+  categoriasMap: Record<string, string>
+): string {
   if (valor == null || valor === '') return '(vacío)'
   if (campo.startsWith('fecha_') && typeof valor === 'string') {
     return formatDateForDisplay(valor)
+  }
+  // Resolver UUID de categoría a nombre legible (soporte para registros históricos)
+  if (
+    campo === 'categoria_id' &&
+    typeof valor === 'string' &&
+    UUID_REGEX.test(valor)
+  ) {
+    return categoriasMap[valor] ?? '(categoría no encontrada)'
   }
   return String(valor)
 }
@@ -50,6 +82,8 @@ interface CambioEntry {
 export function ActualizacionDocumentoClienteRenderer({
   metadata,
 }: RendererAuditoriaProps) {
+  const { data: categoriasMap = {} } = useCategoriasLookup()
+
   const titulo = metadata?.titulo as string | undefined
   const cambios = (metadata?.cambios ?? {}) as Record<string, CambioEntry>
   const camposModificados = Object.keys(cambios)
@@ -86,8 +120,12 @@ export function ActualizacionDocumentoClienteRenderer({
         {camposModificados.map(campo => {
           const Icon = CAMPO_ICONS[campo] ?? FileText
           const label = CAMPO_LABELS[campo] ?? campo
-          const anterior = formatValor(campo, cambios[campo].anterior)
-          const nuevo = formatValor(campo, cambios[campo].nuevo)
+          const anterior = formatValor(
+            campo,
+            cambios[campo].anterior,
+            categoriasMap
+          )
+          const nuevo = formatValor(campo, cambios[campo].nuevo, categoriasMap)
 
           return (
             <div

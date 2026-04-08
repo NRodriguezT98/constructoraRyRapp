@@ -70,14 +70,39 @@ export function useHistorialCliente({
 
   // ========== HUMANIZAR EVENTOS + CONVERTIR NOTAS ==========
   const eventosHumanizados = useMemo(() => {
-    return humanizarEventos(eventosRaw).filter(
-      ev =>
-        !(
-          ev.tipo === 'documento_actualizado' &&
-          (ev.metadata?.tipo_operacion as string | undefined) ===
-            'REEMPLAZO_ARCHIVO'
-        )
-    )
+    const CAMPOS_UI = new Set(['es_importante', 'anclado_at'])
+
+    return humanizarEventos(eventosRaw).filter(ev => {
+      // Excluir reemplazos de archivo del historial visual
+      if (
+        ev.tipo === 'documento_actualizado' &&
+        (ev.metadata?.tipo_operacion as string | undefined) ===
+          'REEMPLAZO_ARCHIVO'
+      )
+        return false
+
+      // Excluir ediciones de documento cuyo diff solo contenga campos de UI
+      if (
+        ev.tipo === 'documento_actualizado' &&
+        (ev.metadata?.tipo_operacion as string | undefined) ===
+          'edicion_documento'
+      ) {
+        const cambios = ev.metadata?.cambios as
+          | Record<string, unknown>
+          | undefined
+        if (cambios) {
+          const camposModificados = Object.keys(cambios)
+          if (
+            camposModificados.length > 0 &&
+            camposModificados.every(c => CAMPOS_UI.has(c))
+          ) {
+            return false
+          }
+        }
+      }
+
+      return true
+    })
   }, [eventosRaw])
 
   const notasComoEventos = useMemo(() => {
