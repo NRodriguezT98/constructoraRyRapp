@@ -32,6 +32,7 @@ import {
   calcularTablaAmortizacion,
   fechaCuotaParaBD,
 } from '@/modules/fuentes-pago/utils/calculos-credito'
+import { auditService } from '@/services/audit.service'
 import { esCuotaInicial } from '@/shared/constants/fuentes-pago.constants'
 
 // Re-export Negociacion del index
@@ -138,7 +139,7 @@ class NegociacionesService {
         .from('negociaciones')
         .insert(datosNegociacion)
         .select(
-          'id, cliente_id, vivienda_id, valor_negociado, descuento_aplicado, tipo_descuento, motivo_descuento, valor_escritura_publica, notas, estado, fecha_negociacion, fecha_completada, fecha_creacion, fecha_actualizacion'
+          'id, cliente_id, vivienda_id, valor_negociado, descuento_aplicado, tipo_descuento, motivo_descuento, valor_escritura_publica, valor_total_pagar, notas, estado, fecha_negociacion, fecha_completada, fecha_creacion, fecha_actualizacion'
         )
         .single()
 
@@ -344,6 +345,72 @@ class NegociacionesService {
       // ==========================================
       // ?? NOTA: El sistema de plantillas de proceso fue eliminado.
       // Se reemplazará con sistema de checklist en Fuentes de Pago.
+
+      // ==========================================
+      // PASO 6: Auditoría enriquecida (no crítica)
+      // ==========================================
+      try {
+        const [{ data: viviendaAudit }, { data: clienteAudit }] =
+          await Promise.all([
+            supabase
+              .from('viviendas')
+              .select(
+                'id, numero, tipo_vivienda, area_construida, area_lote, es_esquinera, recargo_esquinera, gastos_notariales, valor_base, manzanas(nombre, proyectos(id, nombre))'
+              )
+              .eq('id', datosSanitizados.vivienda_id)
+              .single(),
+            supabase
+              .from('clientes')
+              .select('id, nombres, apellidos, numero_documento')
+              .eq('id', datosSanitizados.cliente_id)
+              .single(),
+          ])
+
+        const manzana = viviendaAudit?.manzanas as
+          | { nombre: string; proyectos: { id: string; nombre: string } }
+          | null
+          | undefined
+
+        const viviendaParaAudit: Record<string, unknown> = {
+          id: viviendaAudit?.id,
+          numero: viviendaAudit?.numero,
+          tipo_vivienda: viviendaAudit?.tipo_vivienda,
+          area_construida: viviendaAudit?.area_construida,
+          area_lote: viviendaAudit?.area_lote,
+          es_esquinera: viviendaAudit?.es_esquinera,
+          recargo_esquinera: viviendaAudit?.recargo_esquinera,
+          gastos_notariales: viviendaAudit?.gastos_notariales,
+          valor_base: viviendaAudit?.valor_base,
+          manzana_nombre: manzana?.nombre ?? null,
+        }
+
+        const proyectoParaAudit: Record<string, unknown> | undefined =
+          manzana?.proyectos
+            ? { id: manzana.proyectos.id, nombre: manzana.proyectos.nombre }
+            : undefined
+
+        const fuentesSnapshot = (datosSanitizados.fuentes_pago ?? []).map(
+          f => ({
+            tipo: f.tipo,
+            monto_aprobado: f.monto_aprobado,
+            entidad: f.entidad ?? null,
+            numero_referencia: f.numero_referencia ?? null,
+          })
+        )
+
+        await auditService.auditarCreacionNegociacion(
+          negociacion as unknown as Record<string, unknown>,
+          clienteAudit ?? undefined,
+          viviendaParaAudit,
+          proyectoParaAudit,
+          fuentesSnapshot
+        )
+      } catch (auditError) {
+        logger.warn(
+          '⚠️ [CLIENTES] Error en auditoría de negociación (no crítico):',
+          auditError
+        )
+      }
 
       return negociacion as unknown as Negociacion
     } catch (error) {

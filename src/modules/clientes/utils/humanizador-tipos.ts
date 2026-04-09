@@ -39,6 +39,7 @@ export function detectarTipoEvento(
   if (tabla === 'abonos_historial') {
     if (accion === 'CREATE') return 'abono_registrado'
     if (accion === 'DELETE') return 'abono_anulado'
+    if (accion === 'ANULAR') return 'abono_anulado'
   }
 
   // ========== RENUNCIA ==========

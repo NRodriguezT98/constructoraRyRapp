@@ -33,8 +33,14 @@ export function useAbonosDetalle(clienteId: string) {
   )
 
   // Historial de abonos con React Query (reemplaza useEffect manual)
-  const { data: abonos = [], isLoading: loadingAbonos } =
+  const { data: todosLosAbonos = [], isLoading: loadingAbonos } =
     useHistorialAbonosQuery(negociacion?.id ?? null)
+
+  // Solo mostrar abonos activos (excluir anulados del timeline)
+  const abonos = useMemo(
+    () => todosLosAbonos.filter(a => a.estado === 'Activo'),
+    [todosLosAbonos]
+  )
 
   // Función para recargar todos los datos (invalida caché React Query)
   const recargarDatos = () => {

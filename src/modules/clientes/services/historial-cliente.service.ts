@@ -40,7 +40,7 @@ class HistorialClienteService {
         supabase
           .from('audit_log')
           .select(
-            'id,tabla,accion,registro_id,fecha_evento,usuario_id,datos_anteriores,datos_nuevos,cambios_especificos,metadata,modulo'
+            'id,tabla,accion,registro_id,fecha_evento,usuario_id,usuario_email,usuario_nombres,datos_anteriores,datos_nuevos,cambios_especificos,metadata,modulo'
           )
           .eq('tabla', 'clientes')
           .eq('registro_id', clienteId)
@@ -49,7 +49,7 @@ class HistorialClienteService {
         supabase
           .from('audit_log')
           .select(
-            'id,tabla,accion,registro_id,fecha_evento,usuario_id,datos_anteriores,datos_nuevos,cambios_especificos,metadata,modulo'
+            'id,tabla,accion,registro_id,fecha_evento,usuario_id,usuario_email,usuario_nombres,datos_anteriores,datos_nuevos,cambios_especificos,metadata,modulo'
           )
           .eq('tabla', 'negociaciones')
           .contains('metadata', { cliente_id: clienteId })
@@ -58,7 +58,7 @@ class HistorialClienteService {
         supabase
           .from('audit_log')
           .select(
-            'id,tabla,accion,registro_id,fecha_evento,usuario_id,datos_anteriores,datos_nuevos,cambios_especificos,metadata,modulo'
+            'id,tabla,accion,registro_id,fecha_evento,usuario_id,usuario_email,usuario_nombres,datos_anteriores,datos_nuevos,cambios_especificos,metadata,modulo'
           )
           .eq('tabla', 'abonos_historial')
           .contains('metadata', { cliente_id: clienteId })
@@ -67,7 +67,7 @@ class HistorialClienteService {
         supabase
           .from('audit_log')
           .select(
-            'id,tabla,accion,registro_id,fecha_evento,usuario_id,datos_anteriores,datos_nuevos,cambios_especificos,metadata,modulo'
+            'id,tabla,accion,registro_id,fecha_evento,usuario_id,usuario_email,usuario_nombres,datos_anteriores,datos_nuevos,cambios_especificos,metadata,modulo'
           )
           .eq('tabla', 'renuncias')
           .contains('metadata', { cliente_id: clienteId })
@@ -76,7 +76,7 @@ class HistorialClienteService {
         supabase
           .from('audit_log')
           .select(
-            'id,tabla,accion,registro_id,fecha_evento,usuario_id,datos_anteriores,datos_nuevos,cambios_especificos,metadata,modulo'
+            'id,tabla,accion,registro_id,fecha_evento,usuario_id,usuario_email,usuario_nombres,datos_anteriores,datos_nuevos,cambios_especificos,metadata,modulo'
           )
           .eq('tabla', 'intereses')
           .contains('metadata', { cliente_id: clienteId })
@@ -85,7 +85,7 @@ class HistorialClienteService {
         supabase
           .from('audit_log')
           .select(
-            'id,tabla,accion,registro_id,fecha_evento,usuario_id,datos_anteriores,datos_nuevos,cambios_especificos,metadata,modulo'
+            'id,tabla,accion,registro_id,fecha_evento,usuario_id,usuario_email,usuario_nombres,datos_anteriores,datos_nuevos,cambios_especificos,metadata,modulo'
           )
           .eq('tabla', 'documentos_cliente')
           .contains('metadata', { cliente_id: clienteId })
@@ -145,9 +145,20 @@ class HistorialClienteService {
           accion: evento.accion,
           registro_id: evento.registro_id,
           fecha_evento: evento.fecha_evento,
-          // ✅ Datos reales del usuario desde query separado
-          usuario_email: usuario?.email || 'Sistema',
-          usuario_nombres: nombreCompleto,
+          // ✅ Prioridad: (1) usuarios table JOIN, (2) audit_log columns, (3) 'Sistema'
+          usuario_email:
+            usuario?.email ||
+            (typeof evento.usuario_email === 'string' &&
+            evento.usuario_email &&
+            !evento.usuario_email.includes('@backfill')
+              ? evento.usuario_email
+              : null) ||
+            'Sistema',
+          usuario_nombres:
+            nombreCompleto ||
+            (typeof evento.usuario_nombres === 'string'
+              ? evento.usuario_nombres
+              : null),
           usuario_rol: usuario?.rol || null,
           datos_anteriores: evento.datos_anteriores,
           datos_nuevos: evento.datos_nuevos,
@@ -185,7 +196,7 @@ class HistorialClienteService {
       let query = supabase
         .from('audit_log')
         .select(
-          'id,tabla,accion,registro_id,fecha_evento,usuario_id,datos_anteriores,datos_nuevos,cambios_especificos,metadata,modulo'
+          'id,tabla,accion,registro_id,fecha_evento,usuario_id,usuario_email,usuario_nombres,datos_anteriores,datos_nuevos,cambios_especificos,metadata,modulo'
         )
         .eq('tabla', tabla)
 

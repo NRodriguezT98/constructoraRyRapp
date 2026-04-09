@@ -101,7 +101,8 @@ export const historialStyles = {
     usuarioRow:
       'mt-2 flex items-center gap-2 border-t border-gray-100 pt-2 dark:border-gray-700/50',
     usuarioIcon: 'h-3 w-3 text-gray-400 dark:text-gray-500',
-    usuarioName: 'text-[10px] font-medium text-gray-600 dark:text-gray-400',
+    usuarioLabel: 'text-[10px] font-medium text-gray-400 dark:text-gray-500',
+    usuarioName: 'text-[10px] font-semibold text-gray-700 dark:text-gray-300',
     usuarioRol: 'text-[10px] font-semibold text-cyan-600 dark:text-cyan-400',
     // Nota badge
     notaBadge:

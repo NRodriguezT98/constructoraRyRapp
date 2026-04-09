@@ -195,7 +195,7 @@ export function PasoLegalNuevo({ register, errors }: PasoLegalProps) {
               id='area_lote'
               type='text'
               inputMode='decimal'
-              placeholder='120.50'
+              placeholder='66.125'
               onKeyDown={handleDecimalKeyDown}
               onInput={handleDecimalInput}
               className={cn(
@@ -229,7 +229,7 @@ export function PasoLegalNuevo({ register, errors }: PasoLegalProps) {
               id='area_construida'
               type='text'
               inputMode='decimal'
-              placeholder='80.00'
+              placeholder='41.00'
               onKeyDown={handleDecimalKeyDown}
               onInput={handleDecimalInput}
               className={cn(

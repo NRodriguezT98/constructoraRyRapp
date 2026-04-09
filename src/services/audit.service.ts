@@ -422,44 +422,70 @@ class AuditService {
    *
    * @example
    * ```ts
-   * await auditService.auditarCreacionNegociacion(negociacion, cliente, vivienda, proyecto)
+   * await auditService.auditarCreacionNegociacion(negociacion, cliente, vivienda, proyecto, fuentesPago)
    * ```
    */
   async auditarCreacionNegociacion(
     negociacion: EntidadAuditable,
     cliente?: EntidadAuditable,
     vivienda?: EntidadAuditable,
-    proyecto?: EntidadAuditable
+    proyecto?: EntidadAuditable,
+    fuentesPago?: Array<{
+      tipo: string
+      monto_aprobado: number
+      entidad?: string | null
+      numero_referencia?: string | null
+    }>
   ): Promise<void> {
+    // Valores financieros calculados al momento de creación
+    const valorNegociado = Number(negociacion.valor_negociado ?? 0)
+    const descuentoAplicado = Number(negociacion.descuento_aplicado ?? 0)
+    // valor_total_pagar es calculado por trigger en BD:
+    // valor_base + gastos_notariales + recargo_esquinera - descuento_aplicado
+    const valorTotalPagar = Number(negociacion.valor_total_pagar ?? 0)
+    const valorEscritura = Number(negociacion.valor_escritura_publica ?? 0)
+
     const metadataDetallada = {
-      // Información de la negociación
+      // ── Negociación ──────────────────────────────────────────
       negociacion_estado: negociacion.estado,
-      negociacion_valor_total:
-        negociacion.valor_total || negociacion.valorTotal,
-      negociacion_valor_formateado: `$${Number(negociacion.valor_total || negociacion.valorTotal || 0).toLocaleString('es-CO')}`,
-      negociacion_cuota_inicial:
-        negociacion.cuota_inicial || negociacion.cuotaInicial,
-      negociacion_saldo_pendiente:
-        negociacion.saldo_pendiente || negociacion.saldoPendiente,
-      negociacion_tipo_pago: negociacion.tipo_pago || negociacion.tipoPago,
+      negociacion_valor_negociado: valorNegociado,
+      negociacion_descuento_aplicado: descuentoAplicado,
+      negociacion_tipo_descuento: negociacion.tipo_descuento ?? null,
+      negociacion_motivo_descuento: negociacion.motivo_descuento ?? null,
+      negociacion_valor_total: valorTotalPagar,
+      negociacion_saldo_pendiente: valorTotalPagar,
+      negociacion_valor_escritura: valorEscritura,
+      negociacion_notas: negociacion.notas ?? null,
+      negociacion_fecha: negociacion.fecha_negociacion ?? null,
 
-      // Información del cliente
-      cliente_id: cliente?.id || negociacion.cliente_id,
+      // ── Cliente ───────────────────────────────────────────────
+      cliente_id: cliente?.id ?? negociacion.cliente_id,
       cliente_nombre: cliente
-        ? `${cliente.nombres} ${cliente.apellidos}`
+        ? `${String(cliente.nombres ?? '')} ${String(cliente.apellidos ?? '')}`.trim()
         : null,
-      cliente_documento: cliente?.numero_documento,
+      cliente_documento: cliente?.numero_documento ?? null,
 
-      // Información de la vivienda
-      vivienda_id: vivienda?.id || negociacion.vivienda_id,
-      vivienda_nombre: vivienda?.nombre,
-      vivienda_numero: vivienda?.numero || vivienda?.vivienda_numero,
+      // ── Vivienda (jerarquía completa) ─────────────────────────
+      vivienda_id: vivienda?.id ?? negociacion.vivienda_id,
+      vivienda_numero: vivienda?.numero ?? null,
+      vivienda_tipo_vivienda: vivienda?.tipo_vivienda ?? null,
+      vivienda_area_construida: vivienda?.area_construida ?? null,
+      vivienda_area_lote: vivienda?.area_lote ?? null,
+      vivienda_es_esquinera: vivienda?.es_esquinera ?? null,
+      vivienda_recargo_esquinera: vivienda?.recargo_esquinera ?? null,
+      vivienda_gastos_notariales: vivienda?.gastos_notariales ?? null,
+      vivienda_valor_base: vivienda?.valor_base ?? null,
 
-      // Información del proyecto
-      proyecto_id: proyecto?.id || vivienda?.proyecto_id,
-      proyecto_nombre: proyecto?.nombre,
+      // ── Manzana y Proyecto ────────────────────────────────────
+      manzana_nombre: vivienda?.manzana_nombre ?? null,
+      proyecto_id: proyecto?.id ?? null,
+      proyecto_nombre: proyecto?.nombre ?? null,
 
-      // Timestamp
+      // ── Fuentes de pago configuradas (snapshot) ───────────────
+      fuentes_pago: fuentesPago ?? [],
+      fuentes_count: fuentesPago?.length ?? 0,
+
+      // ── Timestamp ─────────────────────────────────────────────
       timestamp_creacion: new Date().toISOString(),
     }
 

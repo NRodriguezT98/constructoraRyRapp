@@ -131,6 +131,9 @@ export function TimelineEventoCard({
             <div className={styles.eventoCard.usuarioRow}>
               <User className={styles.eventoCard.usuarioIcon} />
               <div className='flex flex-1 items-center gap-1.5'>
+                <span className={styles.eventoCard.usuarioLabel}>
+                  Realizado por:
+                </span>
                 <span className={styles.eventoCard.usuarioName}>
                   {evento.usuario.nombres || evento.usuario.email}
                 </span>

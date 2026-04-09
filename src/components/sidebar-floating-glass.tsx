@@ -126,7 +126,6 @@ export function SidebarFloatingGlass() {
             isAdmin={vm.isAdmin}
             initials={vm.initials}
             displayName={vm.displayName}
-            email={vm.user?.email}
             rol={vm.perfil?.rol}
             rolGradient={vm.rolGradient}
             rolBadgeColor={vm.rolBadgeColor}

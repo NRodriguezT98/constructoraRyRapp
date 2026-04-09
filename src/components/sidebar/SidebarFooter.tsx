@@ -14,7 +14,6 @@ interface SidebarFooterProps {
   isAdmin: boolean
   initials: string
   displayName: string
-  email: string | undefined
   rol: string | null | undefined
   rolGradient: string
   rolBadgeColor: string
@@ -27,7 +26,6 @@ export function SidebarFooter({
   isAdmin,
   initials,
   displayName,
-  email,
   rol,
   rolGradient,
   rolBadgeColor,
@@ -71,9 +69,6 @@ export function SidebarFooter({
               <div className='min-w-0 flex-1 space-y-0.5'>
                 <p className='line-clamp-1 text-xs font-bold text-gray-900 dark:text-white'>
                   {displayName}
-                </p>
-                <p className='line-clamp-1 text-[10px] text-gray-500 dark:text-gray-400'>
-                  {email ?? ''}
                 </p>
                 <div className='flex items-center'>
                   <span

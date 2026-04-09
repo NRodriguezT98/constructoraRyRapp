@@ -106,11 +106,11 @@ export async function PATCH(request: NextRequest) {
   const anulado_por_nombre =
     `${adminData.nombres} ${adminData.apellidos}`.trim()
 
-  // 4. Obtener el abono (verificar existencia y estado)
+  // 4. Obtener el abono (verificar existencia y estado) + contexto completo en paralelo
   const { data: abono, error: fetchError } = await supabaseAdmin
     .from('abonos_historial')
     .select(
-      'id, comprobante_url, negociacion_id, fuente_pago_id, monto, estado, numero_recibo'
+      'id, negociacion_id, fuente_pago_id, monto, estado, numero_recibo, metodo_pago, fecha_abono, numero_referencia, notas, mora_incluida, comprobante_url'
     )
     .eq('id', abono_id)
     .maybeSingle()
@@ -125,6 +125,34 @@ export async function PATCH(request: NextRequest) {
       { status: 409 }
     )
   }
+
+  // 4b. Contexto enriquecido para metadata del audit_log (en paralelo)
+  const [{ data: contexto }, { data: fuente }] = await Promise.all([
+    supabaseAdmin
+      .from('negociaciones')
+      .select(
+        'id, cliente_id, valor_total_pagar, saldo_pendiente, clientes(id, nombres, apellidos), viviendas(numero, manzanas(nombre, proyectos(nombre)))'
+      )
+      .eq('id', abono.negociacion_id)
+      .single(),
+    supabaseAdmin
+      .from('fuentes_pago')
+      .select('tipo, monto_aprobado')
+      .eq('id', abono.fuente_pago_id)
+      .single(),
+  ])
+
+  const clienteCtx = contexto?.clientes as
+    | { id: string; nombres: string; apellidos: string }
+    | null
+    | undefined
+  const viviendaCtx = contexto?.viviendas as
+    | {
+        numero: string
+        manzanas: { nombre: string; proyectos: { nombre: string } }
+      }
+    | null
+    | undefined
 
   // 5. Soft delete — UPDATE estado = 'Anulado' (trigger recalculará saldos)
   const { data: abonoActualizado, error: updateError } = await supabaseAdmin
@@ -148,7 +176,7 @@ export async function PATCH(request: NextRequest) {
     )
   }
 
-  // 6. Registrar en audit_log
+  // 6. Registrar en audit_log con metadata completa (mismos nombres de campo que el renderer)
   await supabaseAdmin
     .from('audit_log')
     .insert({
@@ -163,6 +191,9 @@ export async function PATCH(request: NextRequest) {
         estado: 'Activo',
         monto: abono.monto,
         numero_recibo: abono.numero_recibo,
+        metodo_pago: abono.metodo_pago,
+        fecha_abono: abono.fecha_abono,
+        numero_referencia: abono.numero_referencia,
         negociacion_id: abono.negociacion_id,
         fuente_pago_id: abono.fuente_pago_id,
       },
@@ -174,10 +205,40 @@ export async function PATCH(request: NextRequest) {
         fecha_anulacion: abonoActualizado.fecha_anulacion,
       },
       metadata: {
+        // ─── CLAVE CRÍTICA para que el historial del cliente lo muestre ───
+        cliente_id: contexto?.cliente_id ?? null,
+        cliente_nombre: clienteCtx
+          ? `${String(clienteCtx.nombres ?? '')} ${String(clienteCtx.apellidos ?? '')}`.trim()
+          : null,
+
+        // ─── Datos del abono original (mismo naming que AbonoRegistradoRenderer) ───
+        abono_monto: abono.monto,
+        abono_numero_recibo: abono.numero_recibo,
+        abono_metodo_pago: abono.metodo_pago,
+        abono_fecha_abono: abono.fecha_abono,
+        abono_numero_referencia: abono.numero_referencia ?? null,
+        abono_notas: abono.notas ?? null,
+        abono_mora_incluida: abono.mora_incluida ?? null,
+        abono_comprobante_url: abono.comprobante_url ?? null,
+
+        // ─── Fuente de pago ───
+        fuente_tipo: fuente?.tipo ?? null,
+        fuente_monto_aprobado: fuente?.monto_aprobado ?? null,
+
+        // ─── Negociación ───
+        negociacion_id: abono.negociacion_id,
+        negociacion_valor_total_pagar: contexto?.valor_total_pagar ?? null,
+
+        // ─── Vivienda / Proyecto ───
+        vivienda_numero: viviendaCtx?.numero ?? null,
+        manzana_nombre: viviendaCtx?.manzanas?.nombre ?? null,
+        proyecto_nombre: viviendaCtx?.manzanas?.proyectos?.nombre ?? null,
+
+        // ─── Datos de la anulación ───
         motivo_categoria,
         motivo_detalle: motivo_detalle ?? null,
-        monto_anulado: abono.monto,
-        numero_recibo: abono.numero_recibo,
+        anulado_por_nombre,
+        fecha_anulacion: abonoActualizado.fecha_anulacion,
       },
       modulo: 'abonos',
     })

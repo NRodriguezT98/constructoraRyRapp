@@ -2,6 +2,8 @@
  * Genera el título y descripción legibles para cada tipo de evento.
  */
 
+import { formatearNumeroRecibo } from '@/modules/abonos/utils/formato-recibo'
+
 import type {
   EventoHistorialCliente,
   TipoEventoHistorial,
@@ -57,14 +59,20 @@ export function generarTextos(
 
     // ========== NEGOCIACIÓN ==========
     case 'negociacion_creada': {
-      const viviendaNombre =
-        metadata?.vivienda_nombre || metadata?.vivienda_numero || 'N/A'
-      const valorTotal = datos_nuevos?.valor_total
-        ? `$${(datos_nuevos.valor_total as number).toLocaleString('es-CO')}`
-        : 'N/A'
+      const manzanaParte = metadata?.manzana_nombre
+        ? `Mza. ${metadata.manzana_nombre}`
+        : null
+      const casaParte = metadata?.vivienda_numero
+        ? `Casa ${metadata.vivienda_numero}`
+        : (metadata?.vivienda_nombre ?? null)
+      const viviendaLabel =
+        [manzanaParte, casaParte].filter(Boolean).join(' · ') || 'N/A'
+      const proyectoParte = metadata?.proyecto_nombre
+        ? ` del proyecto ${metadata.proyecto_nombre}`
+        : ''
       return {
         titulo: 'Negociación iniciada',
-        descripcion: `Nueva negociación para vivienda ${viviendaNombre} por ${valorTotal}`,
+        descripcion: `Se asignó la vivienda ${viviendaLabel}${proyectoParte}`,
       }
     }
 
@@ -93,22 +101,48 @@ export function generarTextos(
 
     // ========== ABONO ==========
     case 'abono_registrado': {
-      const valorAbono = datos_nuevos?.valor_abono
-        ? `$${(datos_nuevos.valor_abono as number).toLocaleString('es-CO')}`
-        : 'N/A'
+      const montoVal =
+        (metadata?.abono_monto as number | undefined) ??
+        (datos_nuevos?.monto as number | undefined)
+      const montoStr = montoVal ? `$${montoVal.toLocaleString('es-CO')}` : 'N/A'
+      const consecutivo = metadata?.abono_numero_recibo
+        ? formatearNumeroRecibo(Number(metadata.abono_numero_recibo))
+        : null
+      const fuente = metadata?.fuente_tipo ? String(metadata.fuente_tipo) : null
+      const metodo = metadata?.abono_metodo_pago
+        ? String(metadata.abono_metodo_pago)
+        : null
+      const partes = [
+        consecutivo ? `Consecutivo: ${consecutivo}` : null,
+        `Valor: ${montoStr}`,
+        fuente ? `Fuente: ${fuente}` : null,
+        metodo ? `Método: ${metodo}` : null,
+      ].filter(Boolean)
       return {
         titulo: 'Abono registrado',
-        descripcion: `Pago de ${valorAbono} aplicado a la negociación`,
+        descripcion: `Se registró abono — ${partes.join(' · ')}`,
       }
     }
 
     case 'abono_anulado': {
-      const valorAnulado = datos_anteriores?.valor_abono
-        ? `$${(datos_anteriores.valor_abono as number).toLocaleString('es-CO')}`
-        : 'N/A'
+      const montoVal =
+        (metadata?.abono_monto as number | undefined) ??
+        (datos_anteriores?.monto as number | undefined)
+      const montoStr = montoVal ? `$${montoVal.toLocaleString('es-CO')}` : 'N/A'
+      const consecutivo = metadata?.abono_numero_recibo
+        ? formatearNumeroRecibo(Number(metadata.abono_numero_recibo))
+        : null
+      const motivo = metadata?.motivo_categoria
+        ? String(metadata.motivo_categoria)
+        : null
+      const partes = [
+        consecutivo ? `Consecutivo: ${consecutivo}` : null,
+        `Valor: ${montoStr}`,
+        motivo ? `Motivo: ${motivo}` : null,
+      ].filter(Boolean)
       return {
         titulo: 'Abono anulado',
-        descripcion: `Se anuló un pago de ${valorAnulado}`,
+        descripcion: `Se anuló abono — ${partes.join(' · ')}`,
       }
     }
 

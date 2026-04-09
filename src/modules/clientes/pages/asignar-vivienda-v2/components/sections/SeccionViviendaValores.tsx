@@ -5,6 +5,7 @@ import { useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import {
   AlertCircle,
+  Building2,
   Calculator,
   Calendar,
   DollarSign,
@@ -148,9 +149,13 @@ export function SeccionViviendaValores({
               setValue('vivienda_id', '')
               onClearErrorApi?.()
             }}
-            disabled={cargandoProyectos}
+            disabled={cargandoProyectos || proyectos.length === 0}
           >
-            <option value=''>Seleccionar proyecto</option>
+            <option value=''>
+              {!cargandoProyectos && proyectos.length === 0
+                ? 'Sin proyectos disponibles'
+                : 'Seleccionar proyecto'}
+            </option>
             {proyectos.map(p => (
               <option key={p.id} value={p.id}>
                 {p.nombre}
@@ -188,6 +193,23 @@ export function SeccionViviendaValores({
           )}
         </div>
       </div>
+
+      {/* Aviso: sin proyectos con viviendas disponibles */}
+      {!cargandoProyectos && proyectos.length === 0 ? (
+        <div className='flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-800/50 dark:bg-amber-950/30'>
+          <Building2 className='mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400' />
+          <div>
+            <p className='text-sm font-semibold text-amber-800 dark:text-amber-300'>
+              Sin viviendas disponibles
+            </p>
+            <p className='mt-0.5 text-xs text-amber-700 dark:text-amber-400'>
+              Ningún proyecto tiene viviendas en estado{' '}
+              <strong>Disponible</strong> en este momento. Revisa el inventario
+              de viviendas antes de continuar.
+            </p>
+          </div>
+        </div>
+      ) : null}
 
       {/* Chips de valores — aparecen al seleccionar vivienda */}
       <AnimatePresence>
