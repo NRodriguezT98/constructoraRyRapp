@@ -73,6 +73,7 @@ export type TipoEventoHistorial =
   | 'renuncia_creada'
   | 'renuncia_aprobada'
   | 'renuncia_rechazada'
+  | 'renuncia_devolucion_procesada'
   // Interés
   | 'interes_registrado'
   // Notas manuales

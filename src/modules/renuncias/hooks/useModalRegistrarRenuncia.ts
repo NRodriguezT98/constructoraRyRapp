@@ -6,6 +6,8 @@ import { useRegistrarRenuncia, useValidarRenuncia } from './useRenunciasQuery'
 
 const MOTIVO_MAX_CHARS = 500
 const CELEBRATION_DELAY_MS = 3000
+const MAX_FILE_BYTES = 10 * 1024 * 1024 // 10 MB
+const VALID_FILE_MIME_TYPES = ['application/pdf', 'image/png', 'image/jpeg']
 
 export interface UseModalRegistrarRenunciaProps {
   negociacionId: string
@@ -85,6 +87,16 @@ export function useModalRegistrarRenuncia({
   }, [])
 
   const handleFormularioChange = useCallback((file: File | null) => {
+    if (file) {
+      if (file.size > MAX_FILE_BYTES) {
+        setError('El archivo no puede superar 10 MB')
+        return
+      }
+      if (!VALID_FILE_MIME_TYPES.includes(file.type)) {
+        setError('Solo se permiten archivos PDF, PNG o JPG')
+        return
+      }
+    }
     setFormularioRenuncia(file)
     setError(null)
   }, [])

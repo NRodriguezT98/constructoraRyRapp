@@ -22,6 +22,7 @@ import type { Cliente } from '@/modules/clientes/types'
 import { usePermisosQuery } from '@/modules/usuarios/hooks/usePermisosQuery'
 import { useCierreFinanciero } from '@/shared/hooks/useCierreFinanciero'
 
+import { useDescuentoMutation } from './useDescuentoMutation'
 import { useDocumentosPendientesNeg } from './useDocumentosPendientesNeg'
 import { useRebalanceoMutation } from './useRebalanceoMutation'
 
@@ -140,7 +141,9 @@ export function useNegociacionTab({ cliente }: UseNegociacionTabProps) {
     queryFn: async () => {
       const { data } = await supabase
         .from('tipos_fuentes_pago')
-        .select('nombre, icono, color, descripcion, requiere_entidad')
+        .select(
+          'nombre, icono, color, descripcion, requiere_entidad, codigo, tipo_entidad_requerido'
+        )
         .eq('activo', true)
         .order('orden')
       return (data ?? []) as {
@@ -149,6 +152,27 @@ export function useNegociacionTab({ cliente }: UseNegociacionTabProps) {
         color: string
         descripcion: string
         requiere_entidad: boolean
+        codigo: string
+        tipo_entidad_requerido: string | null
+      }[]
+    },
+    staleTime: 5 * 60_000,
+  })
+
+  // ─── Entidades financieras (bancos, cajas, etc.) ──────────────────────
+  const { data: entidadesFinancieras = [] } = useQuery({
+    queryKey: ['entidades-financieras-activas'],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('entidades_financieras')
+        .select('id, nombre, tipo, orden')
+        .eq('activo', true)
+        .order('orden')
+      return (data ?? []) as {
+        id: string
+        nombre: string
+        tipo: string
+        orden: number
       }[]
     },
     staleTime: 5 * 60_000,
@@ -158,6 +182,20 @@ export function useNegociacionTab({ cliente }: UseNegociacionTabProps) {
     const usados = new Set(fuentesPago.map(f => f.tipo))
     return tiposFuentes.filter(t => !usados.has(t.nombre as string))
   }, [tiposFuentes, fuentesPago])
+
+  // Mapa: tipo_entidad → nombres de entidades financieras (cargados desde BD)
+  const entidadesPorTipoEntidad = useMemo(() => {
+    const map = new Map<string, string[]>()
+    for (const ef of entidadesFinancieras) {
+      const list = map.get(ef.tipo) ?? []
+      list.push(ef.nombre)
+      map.set(ef.tipo, list)
+    }
+    return map
+  }, [entidadesFinancieras])
+
+  // Tipos enriquecidos con tipo_entidad_requerido desde BD (columna real)
+  const tiposConfigConEntidad = useMemo(() => tiposFuentes, [tiposFuentes])
 
   // ─── Requisitos obligatorios por tipo (para warnings del modal) ─────────
   const { data: requisitosConfig = [] } = useQuery({
@@ -243,6 +281,12 @@ export function useNegociacionTab({ cliente }: UseNegociacionTabProps) {
     valorVivienda,
   })
 
+  // ─── Descuento mutation (sub-hook) ─────────────────────────────────────
+  const descuento = useDescuentoMutation({
+    negociacionId: negociacion?.id,
+    clienteId: cliente.id,
+  })
+
   return {
     // Data
     negociacion,
@@ -255,7 +299,9 @@ export function useNegociacionTab({ cliente }: UseNegociacionTabProps) {
     estaBalanceado,
     tiposDisponibles,
     tiposFuentes,
+    tiposConfigConEntidad,
     requisitosMap,
+    entidadesPorTipoEntidad,
 
     // Estado
     isLoading: isLoadingNeg || isLoadingFuentes,
@@ -267,6 +313,9 @@ export function useNegociacionTab({ cliente }: UseNegociacionTabProps) {
 
     // Rebalanceo (delegado a sub-hook)
     ...rebalanceo,
+
+    // Descuento (delegado a sub-hook)
+    ...descuento,
 
     // Actions
     refetchFuentes,

@@ -1,8 +1,15 @@
+import { logger } from '@/lib/utils/logger'
+
 import type {
   EstadoRenuncia,
   RenunciaCompletaRow,
   RenunciaConInfo,
 } from '../types'
+
+const VALID_ESTADOS: readonly EstadoRenuncia[] = [
+  'Pendiente Devolución',
+  'Cerrada',
+]
 
 /**
  * Transforma una fila plana de la vista SQL a estructura anidada para componentes.
@@ -10,6 +17,11 @@ import type {
 export function transformarRenunciaRow(
   row: RenunciaCompletaRow
 ): RenunciaConInfo {
+  const estadoRaw = (row.estado ?? 'Pendiente Devolución') as EstadoRenuncia
+  if (!VALID_ESTADOS.includes(estadoRaw)) {
+    logger.warn('[renuncias.utils] Estado de renuncia desconocido:', estadoRaw)
+  }
+
   return {
     id: row.id,
     consecutivo: row.consecutivo,
@@ -18,7 +30,7 @@ export function transformarRenunciaRow(
     cliente_id: row.cliente_id,
     motivo: row.motivo,
     fecha_renuncia: row.fecha_renuncia,
-    estado: (row.estado ?? 'Pendiente Devolución') as EstadoRenuncia,
+    estado: estadoRaw,
     monto_a_devolver: row.monto_a_devolver,
     requiere_devolucion: row.requiere_devolucion,
     retencion_monto: row.retencion_monto,

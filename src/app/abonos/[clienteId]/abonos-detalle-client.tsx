@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { Loader2, Wallet } from 'lucide-react'
+import { AlertTriangle, Loader2, Wallet } from 'lucide-react'
 
 import { useRouter } from 'next/navigation'
 
@@ -35,6 +35,7 @@ export default function AbonosDetalleClient({
     loadingAbonos,
     modalAbonoOpen,
     validarFuentePago,
+    estaBalanceado,
     handleRegistrarAbono,
     handleCerrarModal,
     handleAbonoRegistrado,
@@ -92,12 +93,45 @@ export default function AbonosDetalleClient({
               negociacion.fuentes_pago?.[0] &&
               handleRegistrarAbono(negociacion.fuentes_pago[0])
             }
-            canCreate={true}
+            canCreate={estaBalanceado}
           />
         </div>
 
         {/* Métricas */}
         {metricas && <MetricasCards metricas={metricas} />}
+
+        {/* Banner de descuadre financiero */}
+        {!estaBalanceado &&
+        negociacion.fuentes_pago &&
+        negociacion.fuentes_pago.length > 0 ? (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className='relative overflow-hidden rounded-xl border border-red-300 bg-gradient-to-r from-red-50 via-red-50 to-orange-50 dark:border-red-800/60 dark:from-red-950/40 dark:via-red-950/30 dark:to-orange-950/20'
+          >
+            <div className='absolute left-0 top-0 h-full w-1 bg-red-500' />
+            <div className='flex items-center gap-3 px-5 py-3'>
+              <div className='relative flex-shrink-0'>
+                <div className='flex h-9 w-9 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/40'>
+                  <AlertTriangle className='h-5 w-5 text-red-600 dark:text-red-400' />
+                </div>
+                <span className='absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full border-2 border-red-50 bg-red-500 dark:border-red-950'>
+                  <span className='absolute inset-0 animate-ping rounded-full bg-red-400 opacity-75' />
+                </span>
+              </div>
+              <div className='min-w-0 flex-1'>
+                <p className='text-sm font-bold text-red-800 dark:text-red-300'>
+                  Descuadre en Cierre Financiero — Registro Bloqueado
+                </p>
+                <p className='mt-0.5 text-xs text-red-700 dark:text-red-400'>
+                  Las fuentes de pago no coinciden con el valor total de la
+                  negociación. No es posible registrar abonos hasta corregir
+                  este descuadre desde el módulo de Negociación.
+                </p>
+              </div>
+            </div>
+          </motion.div>
+        ) : null}
 
         {/* Fuentes de pago */}
         <motion.div
@@ -131,7 +165,7 @@ export default function AbonosDetalleClient({
                   onRegistrarAbono={handleRegistrarAbono}
                   onAbonoRegistrado={handleAbonoRegistrado}
                   index={index}
-                  canCreate={true}
+                  canCreate={estaBalanceado}
                   validacion={validarFuentePago[fuente.id]}
                 />
               ))}

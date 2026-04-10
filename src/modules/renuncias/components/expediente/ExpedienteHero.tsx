@@ -37,9 +37,13 @@ import { expedienteStyles as styles } from './ExpedienteRenunciaPage.styles'
 
 interface ExpedienteHeroProps {
   datos: ExpedienteData
+  onProcesarDevolucion?: () => void
 }
 
-export function ExpedienteHero({ datos }: ExpedienteHeroProps) {
+export function ExpedienteHero({
+  datos,
+  onProcesarDevolucion,
+}: ExpedienteHeroProps) {
   const { renuncia, duracionDias } = datos
   const esPendiente = renuncia.estado === 'Pendiente Devolución'
   const badgeClass = esPendiente
@@ -118,15 +122,27 @@ export function ExpedienteHero({ datos }: ExpedienteHeroProps) {
       >
         <div className={styles.hero.pattern} />
         <div className={styles.hero.content}>
-          {/* Top: consecutivo + estado */}
+          {/* Top: consecutivo + estado + acción */}
           <div className={styles.hero.topRow}>
             <span className={styles.hero.consecutivoBadge}>
               <FileX className='h-4 w-4' />
               {renuncia.consecutivo}
             </span>
-            <span className={badgeClass}>
-              {esPendiente ? '⏳' : '✅'} {renuncia.estado}
-            </span>
+            <div className='flex flex-col items-end gap-2'>
+              <span className={badgeClass}>
+                {esPendiente ? '⏳' : '✅'} {renuncia.estado}
+              </span>
+              {esPendiente && onProcesarDevolucion ? (
+                <button
+                  type='button'
+                  onClick={onProcesarDevolucion}
+                  className='inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-green-500 via-emerald-500 to-teal-500 px-3 py-1.5 text-xs font-semibold text-white shadow-lg shadow-green-500/30 transition-all hover:from-green-600 hover:via-emerald-600 hover:to-teal-600'
+                >
+                  <Receipt className='h-3.5 w-3.5' />
+                  Procesar Devolución
+                </button>
+              ) : null}
+            </div>
           </div>
 
           {/* Cliente */}

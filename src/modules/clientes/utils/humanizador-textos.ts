@@ -20,11 +20,18 @@ export function generarTextos(
 
   switch (tipo) {
     // ========== CLIENTE ==========
-    case 'cliente_creado':
+    case 'cliente_creado': {
+      const nombre = [datos_nuevos?.nombres, datos_nuevos?.apellidos]
+        .filter(Boolean)
+        .join(' ')
+        .trim()
       return {
-        titulo: 'Cliente registrado',
-        descripcion: `Se creó el cliente ${datos_nuevos?.nombres || ''} ${datos_nuevos?.apellidos || ''} en la aplicación con los siguientes datos`,
+        titulo: 'Nuevo cliente',
+        descripcion: nombre
+          ? `${nombre} registrado en el sistema`
+          : 'Cliente registrado en el sistema',
       }
+    }
 
     case 'cliente_actualizado': {
       const camposVisibles = cambios_especificos
@@ -34,11 +41,11 @@ export function generarTextos(
         : []
       const descripcionCampos =
         camposVisibles.length > 0
-          ? camposVisibles.join(', ')
+          ? camposVisibles.map(c => ETIQUETAS[c] ?? c).join(', ')
           : 'información del perfil'
       return {
-        titulo: 'Perfil actualizado',
-        descripcion: `Se modificó ${descripcionCampos} del cliente`,
+        titulo: 'Datos del cliente actualizados',
+        descripcion: `Campos modificados: ${descripcionCampos}`,
       }
     }
 
@@ -46,16 +53,23 @@ export function generarTextos(
       const estadoAnterior = cambios_especificos?.estado?.antes || 'desconocido'
       const estadoNuevo = cambios_especificos?.estado?.despues || 'desconocido'
       return {
-        titulo: 'Estado modificado',
-        descripcion: `Estado cambió de "${estadoAnterior}" a "${estadoNuevo}"`,
+        titulo: 'Cambio de estado',
+        descripcion: `De "${estadoAnterior}" a "${estadoNuevo}"`,
       }
     }
 
-    case 'cliente_eliminado':
+    case 'cliente_eliminado': {
+      const nombre = [datos_anteriores?.nombres, datos_anteriores?.apellidos]
+        .filter(Boolean)
+        .join(' ')
+        .trim()
       return {
         titulo: 'Cliente eliminado',
-        descripcion: `Se eliminó el registro del cliente ${datos_anteriores?.nombres || ''} ${datos_anteriores?.apellidos || ''}`,
+        descripcion: nombre
+          ? `Se eliminó el registro de ${nombre}`
+          : 'Se eliminó el registro del cliente',
       }
+    }
 
     // ========== NEGOCIACIÓN ==========
     case 'negociacion_creada': {
@@ -66,20 +80,27 @@ export function generarTextos(
         ? `Casa ${metadata.vivienda_numero}`
         : (metadata?.vivienda_nombre ?? null)
       const viviendaLabel =
-        [manzanaParte, casaParte].filter(Boolean).join(' · ') || 'N/A'
+        [manzanaParte, casaParte].filter(Boolean).join(' · ') || null
       const proyectoParte = metadata?.proyecto_nombre
-        ? ` del proyecto ${metadata.proyecto_nombre}`
-        : ''
+        ? String(metadata.proyecto_nombre)
+        : null
+      const partes = [
+        viviendaLabel ? `Vivienda: ${viviendaLabel}` : null,
+        proyectoParte ? `Proyecto: ${proyectoParte}` : null,
+      ].filter(Boolean)
       return {
-        titulo: 'Negociación iniciada',
-        descripcion: `Se asignó la vivienda ${viviendaLabel}${proyectoParte}`,
+        titulo: 'Nueva negociación',
+        descripcion:
+          partes.length > 0
+            ? `Vivienda asignada: ${[viviendaLabel, proyectoParte].filter(Boolean).join(' · ')}`
+            : 'Vivienda asignada al cliente',
       }
     }
 
     case 'negociacion_actualizada':
       return {
         titulo: 'Negociación actualizada',
-        descripcion: `Se modificaron los términos de la negociación`,
+        descripcion: 'Términos de la negociación modificados',
       }
 
     case 'negociacion_estado_cambiada': {
@@ -88,15 +109,15 @@ export function generarTextos(
       const negEstadoNuevo =
         cambios_especificos?.estado?.despues || 'desconocido'
       return {
-        titulo: 'Estado de negociación cambió',
-        descripcion: `De "${negEstadoAnterior}" a "${negEstadoNuevo}"`,
+        titulo: 'Cambio en negociación',
+        descripcion: `Estado: "${negEstadoAnterior}" → "${negEstadoNuevo}"`,
       }
     }
 
     case 'negociacion_completada':
       return {
-        titulo: '¡Negociación completada!',
-        descripcion: `La negociación se finalizó exitosamente`,
+        titulo: 'Negociación completada',
+        descripcion: 'La negociación se finalizó exitosamente',
       }
 
     // ========== ABONO ==========
@@ -113,14 +134,14 @@ export function generarTextos(
         ? String(metadata.abono_metodo_pago)
         : null
       const partes = [
-        consecutivo ? `Consecutivo: ${consecutivo}` : null,
+        consecutivo ? `Recibo: ${consecutivo}` : null,
         `Valor: ${montoStr}`,
         fuente ? `Fuente: ${fuente}` : null,
         metodo ? `Método: ${metodo}` : null,
       ].filter(Boolean)
       return {
-        titulo: 'Abono registrado',
-        descripcion: `Se registró abono — ${partes.join(' · ')}`,
+        titulo: 'Nuevo abono',
+        descripcion: partes.join(' · '),
       }
     }
 
@@ -136,54 +157,119 @@ export function generarTextos(
         ? String(metadata.motivo_categoria)
         : null
       const partes = [
-        consecutivo ? `Consecutivo: ${consecutivo}` : null,
+        consecutivo ? `Recibo: ${consecutivo}` : null,
         `Valor: ${montoStr}`,
         motivo ? `Motivo: ${motivo}` : null,
       ].filter(Boolean)
       return {
         titulo: 'Abono anulado',
-        descripcion: `Se anuló abono — ${partes.join(' · ')}`,
+        descripcion: partes.join(' · '),
       }
     }
 
     // ========== RENUNCIA ==========
-    case 'renuncia_creada':
+    case 'renuncia_creada': {
+      const manzanaParte = metadata?.manzana_nombre
+        ? `Mza. ${metadata.manzana_nombre}`
+        : null
+      const casaParte = metadata?.vivienda_numero
+        ? `Casa ${metadata.vivienda_numero}`
+        : null
+      const viviendaLabel =
+        [manzanaParte, casaParte].filter(Boolean).join(' · ') || null
+      const proyectoParte = metadata?.proyecto_nombre
+        ? String(metadata.proyecto_nombre)
+        : null
+      const montoDevolucion = metadata?.monto_a_devolver as
+        | number
+        | null
+        | undefined
+      const requiereDevolucion = metadata?.requiere_devolucion as
+        | boolean
+        | undefined
+      const devolucionStr =
+        requiereDevolucion === false
+          ? 'Sin devolución pendiente'
+          : montoDevolucion
+            ? `Devolución pendiente: $${Number(montoDevolucion).toLocaleString('es-CO')}`
+            : null
+      const partes = [viviendaLabel, proyectoParte, devolucionStr].filter(
+        Boolean
+      )
       return {
-        titulo: 'Renuncia solicitada',
-        descripcion: `Se registró una solicitud de renuncia a la negociación`,
+        titulo:
+          requiereDevolucion === false
+            ? 'Renuncia sin devolución'
+            : 'Nueva renuncia',
+        descripcion:
+          partes.length > 0
+            ? partes.join(' · ')
+            : 'Renuncia registrada a la negociación',
       }
+    }
 
     case 'renuncia_aprobada':
       return {
         titulo: 'Renuncia aprobada',
-        descripcion: `La solicitud de renuncia fue aprobada`,
+        descripcion: 'La solicitud de renuncia fue aprobada',
       }
 
     case 'renuncia_rechazada':
       return {
         titulo: 'Renuncia rechazada',
-        descripcion: `La solicitud de renuncia fue rechazada`,
+        descripcion: 'La solicitud de renuncia fue rechazada',
       }
+
+    case 'renuncia_devolucion_procesada': {
+      const manzanaParte2 = metadata?.manzana_nombre
+        ? `Mza. ${metadata.manzana_nombre}`
+        : null
+      const casaParte2 = metadata?.vivienda_numero
+        ? `Casa ${metadata.vivienda_numero}`
+        : null
+      const viviendaLabel2 =
+        [manzanaParte2, casaParte2].filter(Boolean).join(' · ') || null
+      const proyecto2 = metadata?.proyecto_nombre
+        ? String(metadata.proyecto_nombre)
+        : null
+      const monto2 = metadata?.monto_devuelto as number | null | undefined
+      const montoStr2 = monto2
+        ? `$${Number(monto2).toLocaleString('es-CO')} devueltos`
+        : null
+      const metodo2 = metadata?.metodo_devolucion
+        ? String(metadata.metodo_devolucion)
+        : null
+      const partes2 = [viviendaLabel2, proyecto2, montoStr2, metodo2].filter(
+        Boolean
+      )
+      return {
+        titulo: 'Devolución realizada',
+        descripcion:
+          partes2.length > 0
+            ? `Renuncia cerrada · ${partes2.join(' · ')}`
+            : 'Renuncia cerrada · Devolución procesada exitosamente',
+      }
+    }
 
     // ========== INTERÉS ==========
     case 'interes_registrado': {
       const proyectoNombre = metadata?.proyecto_nombre || 'N/A'
       return {
-        titulo: 'Interés registrado',
-        descripcion: `Cliente mostró interés en proyecto "${proyectoNombre}"`,
+        titulo: 'Nuevo interés',
+        descripcion: `Interés en proyecto "${proyectoNombre}"`,
       }
     }
 
     case 'interes_actualizado':
       return {
         titulo: 'Interés actualizado',
-        descripcion: `Se modificó el registro de interés del cliente`,
+        descripcion: 'Registro de interés del cliente modificado',
       }
 
     case 'interes_descartado':
       return {
         titulo: 'Interés descartado',
-        descripcion: `El cliente descartó el interés en este proyecto`,
+        descripcion: 'El cliente descartó su interés en el proyecto',
       }
 
     // ========== DOCUMENTO ==========
@@ -191,7 +277,7 @@ export function generarTextos(
       const nombreDoc = datos_nuevos?.titulo || 'documento'
       return {
         titulo: 'Documento cargado',
-        descripcion: `Se subió el documento "${nombreDoc}"`,
+        descripcion: `"${nombreDoc}"`,
       }
     }
 
@@ -204,33 +290,33 @@ export function generarTextos(
       if (tipoOp === 'ARCHIVAR_DOCUMENTO') {
         return {
           titulo: 'Documento archivado',
-          descripcion: `Se archivó el documento "${docTitulo}"`,
+          descripcion: `"${docTitulo}" movido al archivo`,
         }
       }
       if (tipoOp === 'RESTAURAR_DOCUMENTO_ARCHIVADO') {
         return {
           titulo: 'Documento restaurado',
-          descripcion: `Se restauró el documento "${docTitulo}" del archivo`,
+          descripcion: `"${docTitulo}" restaurado del archivo`,
         }
       }
       if (tipoOp === 'ELIMINAR_DOCUMENTO_SOFTDELETE') {
         return {
           titulo: 'Documento eliminado',
-          descripcion: `Se eliminó el documento "${docTitulo}"`,
+          descripcion: `"${docTitulo}"`,
         }
       }
       if (tipoOp === 'NUEVA_VERSION_DOCUMENTO') {
         const versionNueva = metadata?.version_nueva as number | undefined
-        const sufijo = versionNueva ? ` (v${versionNueva})` : ''
+        const sufijo = versionNueva ? ` v${versionNueva}` : ''
         return {
           titulo: 'Nueva versión cargada',
-          descripcion: `Se subió una nueva versión${sufijo} de "${docTitulo}"`,
+          descripcion: `"${docTitulo}"${sufijo}`,
         }
       }
       if (tipoOp === 'REEMPLAZO_ARCHIVO') {
         return {
           titulo: 'Archivo reemplazado',
-          descripcion: `Se reemplazó el archivo de "${docTitulo}"`,
+          descripcion: `Archivo de "${docTitulo}" reemplazado`,
         }
       }
       const camposActualizados = metadata?.campos_actualizados as
@@ -239,10 +325,10 @@ export function generarTextos(
       const resumen =
         camposActualizados && camposActualizados.length > 0
           ? camposActualizados.map(c => ETIQUETAS[c] ?? c).join(', ')
-          : 'sus campos'
+          : 'campos'
       return {
         titulo: 'Documento editado',
-        descripcion: `Se editó ${resumen} del documento "${docTitulo}"`,
+        descripcion: `"${docTitulo}" · Campos: ${resumen}`,
       }
     }
 
@@ -253,7 +339,7 @@ export function generarTextos(
         'documento'
       return {
         titulo: 'Documento eliminado',
-        descripcion: `Se eliminó el documento "${docEliminado}"`,
+        descripcion: `"${docEliminado}"`,
       }
     }
 
@@ -261,7 +347,7 @@ export function generarTextos(
     default:
       return {
         titulo: 'Evento registrado',
-        descripcion: `Acción ${evento.accion} en ${evento.tabla}`,
+        descripcion: `Acción: ${evento.accion} · Tabla: ${evento.tabla}`,
       }
   }
 }

@@ -7,7 +7,7 @@
  * Sub-componentes extraídos en ./rebalancear/
  */
 
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { AnimatePresence, motion } from 'framer-motion'
 import { AlertTriangle, CheckCircle2, Lock, Plus, X } from 'lucide-react'
@@ -25,7 +25,12 @@ import type { AjusteLocal, DatosRebalanceo, FuAlteNueva } from '../hooks'
 import { MOTIVOS_AJUSTE, getFuenteColor } from '../hooks'
 
 import type { CambioEnriquecido, NuevaEnriquecida } from './rebalancear'
-import { AdvertenciaDocumentos, FilaFuente, FilaNueva } from './rebalancear'
+import {
+  AdvertenciaDocumentos,
+  FilaFuente,
+  FilaNueva,
+  getEntidadesParaTipo,
+} from './rebalancear'
 
 // ============================================
 // COMPONENTE PRINCIPAL
@@ -43,9 +48,14 @@ interface RebalancearModalProps {
     color?: string
   }[]
   /** Todos los tipos activos (no solo los disponibles), para lookup de config: requiere_entidad, etc. */
-  tiposConfig: { nombre: string; requiere_entidad?: boolean }[]
-  /** Mapa tipo_fuente → títulos de documentos obligatorios (desde requisitos_fuentes_pago_config) */
+  tiposConfig: {
+    nombre: string
+    requiere_entidad?: boolean
+    tipo_entidad_requerido?: string | null
+  }[] /** Mapa tipo_fuente → títulos de documentos obligatorios (desde requisitos_fuentes_pago_config) */
   requisitosMap: Map<string, string[]>
+  /** Mapa tipo_entidad → nombres de entidades financieras (cargado desde BD) */
+  entidadesPorTipoEntidad: Map<string, string[]>
   onGuardar: (datos: DatosRebalanceo) => void
   isGuardando: boolean
 }
@@ -58,6 +68,7 @@ export function RebalancearModal({
   tiposDisponibles,
   tiposConfig,
   requisitosMap,
+  entidadesPorTipoEntidad,
   onGuardar,
   isGuardando,
 }: RebalancearModalProps) {
@@ -74,6 +85,18 @@ export function RebalancearModal({
   const tiposConfigMap = useMemo(
     () => new Map(tiposConfig.map(t => [t.nombre, t])),
     [tiposConfig]
+  )
+
+  // Resolver entidades para un tipo de fuente dado
+  const resolverEntidades = useCallback(
+    (tipoFuente: string): string[] => {
+      const config = tiposConfigMap.get(tipoFuente)
+      return getEntidadesParaTipo(
+        config?.tipo_entidad_requerido,
+        entidadesPorTipoEntidad
+      )
+    },
+    [tiposConfigMap, entidadesPorTipoEntidad]
   )
 
   // Sincronizar cuando abren el modal
@@ -144,6 +167,54 @@ export function RebalancearModal({
   const diferencia = valorVivienda - subtotal
   const estaBalanceado = Math.abs(diferencia) < 1
 
+  // ── Validación: montos individuales > 0 ──────────────────────────────────
+  // Nuevas fuentes con monto cero (el default al agregarlas)
+  const nuevasConMontoCero = useMemo(
+    () =>
+      new Set(
+        nuevas.map((n, i) => (n.monto <= 0 ? i : -1)).filter(i => i >= 0)
+      ),
+    [nuevas]
+  )
+
+  // Ajustes existentes editables con monto cero o negativo
+  const ajustesConMontoInvalido = useMemo(() => {
+    const ids = new Set<string>()
+    for (const a of ajustes) {
+      if (a.paraEliminar) continue
+      const r = restriccionesMap.get(a.id)
+      if (!r || !r.puedeEditarMonto) continue // bloqueados los maneja la BD
+      if (a.montoEditable <= 0) ids.add(a.id)
+    }
+    return ids
+  }, [ajustes, restriccionesMap])
+
+  // Ajustes existentes que requieren entidad pero no tienen ninguna seleccionada
+  const ajustesConEntidadFaltante = useMemo(() => {
+    const ids = new Set<string>()
+    for (const a of ajustes) {
+      if (a.paraEliminar) continue
+      const cfg = tiposConfigMap.get(a.tipo)
+      if (!cfg?.requiere_entidad) continue
+      if (!a.entidadEditable.trim()) ids.add(a.id)
+    }
+    return ids
+  }, [ajustes, tiposConfigMap])
+
+  // Nuevas fuentes que requieren entidad pero no tienen ninguna seleccionada
+  const nuevasConEntidadFaltante = useMemo(
+    () =>
+      new Set(
+        nuevas
+          .map((n, i) => {
+            const cfg = tiposConfigMap.get(n.tipo)
+            return cfg?.requiere_entidad && !n.entidad.trim() ? i : -1
+          })
+          .filter(i => i >= 0)
+      ),
+    [nuevas, tiposConfigMap]
+  )
+
   // ── Validación global antes de guardar ────────────────────
   const erroresRebalanceo = useMemo(() => {
     return validarRebalanceo(
@@ -169,6 +240,10 @@ export function RebalancearModal({
   const puedeGuardar =
     estaBalanceado &&
     erroresRebalanceo.length === 0 &&
+    nuevasConMontoCero.size === 0 &&
+    ajustesConMontoInvalido.size === 0 &&
+    ajustesConEntidadFaltante.size === 0 &&
+    nuevasConEntidadFaltante.size === 0 &&
     motivo !== '' &&
     (!motivoRequiereNotas || notas.trim() !== '') &&
     !isGuardando
@@ -355,6 +430,11 @@ export function RebalancearModal({
                           tiposConfigMap.get(ajuste.tipo)?.requiere_entidad ??
                           false
                         }
+                        entidades={resolverEntidades(ajuste.tipo)}
+                        hasMontoError={ajustesConMontoInvalido.has(ajuste.id)}
+                        hasEntidadError={ajustesConEntidadFaltante.has(
+                          ajuste.id
+                        )}
                       />
                     )
                   })}
@@ -377,6 +457,9 @@ export function RebalancearModal({
                           tiposConfigMap.get(fuente.tipo)?.requiere_entidad ??
                           false
                         }
+                        entidades={resolverEntidades(fuente.tipo)}
+                        hasError={nuevasConMontoCero.has(i)}
+                        hasEntidadError={nuevasConEntidadFaltante.has(i)}
                       />
                     ))}
                   </div>

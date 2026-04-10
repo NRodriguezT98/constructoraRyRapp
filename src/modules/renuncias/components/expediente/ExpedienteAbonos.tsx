@@ -11,6 +11,7 @@ import {
 } from 'lucide-react'
 
 import { formatDateCompact } from '@/lib/utils/date.utils'
+import { formatearNumeroRecibo } from '@/modules/abonos/utils/formato-recibo'
 
 import type { AbonoExpediente } from '../../types'
 import { formatCOP } from '../../utils/renuncias.utils'
@@ -121,7 +122,7 @@ function AbonosTable({ abonos }: { abonos: AbonoExpediente[] }) {
       <table className={styles.abonos.table}>
         <thead className={styles.abonos.thead}>
           <tr>
-            <th className={styles.abonos.th}>#</th>
+            <th className={styles.abonos.th}>Recibo #</th>
             <th className={styles.abonos.th}>Fecha</th>
             <th className={styles.abonos.th}>Fuente</th>
             <th className={styles.abonos.th}>Monto</th>
@@ -134,7 +135,11 @@ function AbonosTable({ abonos }: { abonos: AbonoExpediente[] }) {
         <tbody className={styles.abonos.tbody}>
           {abonos.map(abono => (
             <tr key={abono.id} className={styles.abonos.tr}>
-              <td className={styles.abonos.td}>{abono.numero_recibo ?? '—'}</td>
+              <td className={styles.abonos.td}>
+                {abono.numero_recibo != null
+                  ? formatearNumeroRecibo(abono.numero_recibo)
+                  : '—'}
+              </td>
               <td className={styles.abonos.td}>
                 {formatDateCompact(abono.fecha_abono)}
               </td>
@@ -183,8 +188,10 @@ function AbonosMobile({ abonos }: { abonos: AbonoExpediente[] }) {
         <div key={abono.id} className={styles.abonos.mobileCard}>
           <div className={styles.abonos.mobileRow}>
             <span className='text-xs text-gray-500'>
-              #{abono.numero_recibo ?? '—'} •{' '}
-              {formatDateCompact(abono.fecha_abono)}
+              {abono.numero_recibo != null
+                ? formatearNumeroRecibo(abono.numero_recibo)
+                : '—'}{' '}
+              • {formatDateCompact(abono.fecha_abono)}
             </span>
             <span
               className={

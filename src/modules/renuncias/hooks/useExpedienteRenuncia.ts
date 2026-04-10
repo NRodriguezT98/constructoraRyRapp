@@ -152,7 +152,9 @@ export function useExpedienteRenuncia(
       })
     }
 
-    return hitos
+    return hitos.sort(
+      (a, b) => new Date(a.fecha).getTime() - new Date(b.fecha).getTime()
+    )
   }, [renuncia, abonos, negociacion])
 
   const fuentes = useMemo((): FuenteExpediente[] => {

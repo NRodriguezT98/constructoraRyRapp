@@ -2,6 +2,7 @@
  * Estilos Centralizados - Historial Tab (Timeline de Ciclo de Vida)
  * Separación de responsabilidades: Solo clases de Tailwind
  */
+import type { TipoEventoHistorial } from '@/modules/clientes/types/historial.types'
 
 export const historialStyles = {
   // ========== CONTENEDOR PRINCIPAL ==========
@@ -127,8 +128,7 @@ export const historialStyles = {
     backdrop: 'absolute inset-0 bg-black/60 backdrop-blur-sm',
     container:
       'relative max-h-[85vh] w-full max-w-2xl overflow-hidden rounded-2xl bg-white shadow-2xl dark:bg-gray-900',
-    header:
-      'bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 px-6 py-4',
+    header: 'px-6 py-4',
     headerRow: 'flex items-center justify-between',
     headerTitleGroup: 'flex items-center gap-3',
     headerIconBox:
@@ -247,3 +247,69 @@ export const coloresEvento = {
 } as const
 
 export type ColorEventoKey = keyof typeof coloresEvento
+
+/**
+ * Gradiente del header del modal según el MÓDULO de origen del evento.
+ * Independiente del color semántico (verde=creación, rojo=eliminación)
+ * que se usa en los puntos y bordes del timeline.
+ *
+ * Módulos y su paleta:
+ *   Clientes      → cyan / azul / índigo
+ *   Negociaciones → rosa / púrpura / índigo
+ *   Abonos        → azul / índigo / púrpura
+ *   Renuncias     → naranja oscuro / rojo / rosa (alerta)
+ *   Documentos    → rojo / rosa / pink
+ *   Intereses     → violeta / púrpura / índigo
+ *   Notas/Genérico → gris / slate
+ */
+export const HEADER_GRADIENTS_POR_TIPO: Record<TipoEventoHistorial, string> = {
+  // ── Módulo Clientes (cyan → azul → índigo) ──────────────────────────
+  cliente_creado: 'bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600',
+  cliente_actualizado:
+    'bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600',
+  cliente_eliminado:
+    'bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600',
+  cliente_estado_cambiado:
+    'bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600',
+
+  // ── Módulo Negociaciones (rosa → púrpura → índigo) ───────────────────
+  negociacion_creada:
+    'bg-gradient-to-r from-pink-600 via-purple-600 to-indigo-600',
+  negociacion_actualizada:
+    'bg-gradient-to-r from-pink-600 via-purple-600 to-indigo-600',
+  negociacion_estado_cambiada:
+    'bg-gradient-to-r from-pink-600 via-purple-600 to-indigo-600',
+  negociacion_completada:
+    'bg-gradient-to-r from-pink-600 via-purple-600 to-indigo-600',
+
+  // ── Módulo Abonos (azul → índigo → púrpura) ──────────────────────────
+  abono_registrado:
+    'bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600',
+  abono_anulado: 'bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600',
+
+  // ── Módulo Renuncias (naranja → rojo → rosa, tono alarma) ─────────────
+  renuncia_creada: 'bg-gradient-to-r from-orange-700 via-red-600 to-rose-600',
+  renuncia_aprobada: 'bg-gradient-to-r from-orange-700 via-red-600 to-rose-600',
+  renuncia_rechazada:
+    'bg-gradient-to-r from-orange-700 via-red-600 to-rose-600',
+  renuncia_devolucion_procesada:
+    'bg-gradient-to-r from-green-700 via-emerald-600 to-teal-600',
+
+  // ── Módulo Documentos (rojo → rosa → pink) ────────────────────────────
+  documento_subido: 'bg-gradient-to-r from-red-600 via-rose-600 to-pink-600',
+  documento_actualizado:
+    'bg-gradient-to-r from-red-600 via-rose-600 to-pink-600',
+  documento_eliminado: 'bg-gradient-to-r from-red-600 via-rose-600 to-pink-600',
+
+  // ── Intereses (violeta → púrpura → índigo) ────────────────────────────
+  interes_registrado:
+    'bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600',
+  interes_actualizado:
+    'bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600',
+  interes_descartado:
+    'bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600',
+
+  // ── Notas y genérico (gris neutro) ────────────────────────────────────
+  nota_manual: 'bg-gradient-to-r from-gray-600 via-slate-600 to-zinc-600',
+  evento_generico: 'bg-gradient-to-r from-gray-600 via-slate-600 to-zinc-600',
+}

@@ -16,6 +16,7 @@ import { DollarSign, FileText, XCircle } from 'lucide-react'
 
 interface AccionesSectionProps {
   estado: string
+  estaBalanceado?: boolean
   onRegistrarAbono: () => void
   onRenunciar: () => void
   onGenerarPDF: () => void
@@ -24,12 +25,13 @@ interface AccionesSectionProps {
 
 export function AccionesSection({
   estado,
+  estaBalanceado = true,
   onRegistrarAbono,
   onRenunciar,
   onGenerarPDF,
   disabled = false,
 }: AccionesSectionProps) {
-  const puedeRegistrarAbono = estado === 'Activa'
+  const puedeRegistrarAbono = estado === 'Activa' && estaBalanceado
 
   return (
     <div className='grid grid-cols-1 gap-2 sm:grid-cols-3'>

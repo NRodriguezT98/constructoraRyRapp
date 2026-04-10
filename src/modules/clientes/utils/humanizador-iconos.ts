@@ -5,6 +5,7 @@
 import {
   AlertCircle,
   CheckCircle,
+  CheckCircle2,
   DollarSign,
   Edit3,
   FileCheck,
@@ -40,6 +41,7 @@ const ICONOS: Record<TipoEventoHistorial, LucideIcon> = {
   renuncia_creada: FileText,
   renuncia_aprobada: FileCheck,
   renuncia_rechazada: FileX,
+  renuncia_devolucion_procesada: CheckCircle2,
   interes_registrado: Heart,
   nota_manual: Edit3,
   interes_actualizado: Edit3,
@@ -51,26 +53,38 @@ const ICONOS: Record<TipoEventoHistorial, LucideIcon> = {
 }
 
 const COLORES: Record<TipoEventoHistorial, ColorEvento> = {
+  // Verde: creación / positivo
   cliente_creado: 'green',
-  cliente_actualizado: 'yellow',
-  cliente_eliminado: 'red',
-  cliente_estado_cambiado: 'blue',
   negociacion_creada: 'green',
-  negociacion_actualizada: 'yellow',
-  negociacion_estado_cambiada: 'blue',
-  negociacion_completada: 'purple',
+  negociacion_completada: 'green',
   abono_registrado: 'green',
-  abono_anulado: 'red',
-  renuncia_creada: 'orange',
   renuncia_aprobada: 'green',
+  renuncia_devolucion_procesada: 'green',
+  documento_subido: 'green',
+  interes_registrado: 'green',
+
+  // Rojo: destrucción / negativo
+  cliente_eliminado: 'red',
+  abono_anulado: 'red',
   renuncia_rechazada: 'red',
-  interes_registrado: 'cyan',
-  nota_manual: 'gray',
-  interes_actualizado: 'yellow',
-  interes_descartado: 'orange',
-  documento_subido: 'cyan',
-  documento_actualizado: 'cyan',
   documento_eliminado: 'red',
+  interes_descartado: 'red',
+
+  // Amarillo: cambio neutral
+  cliente_actualizado: 'yellow',
+  cliente_estado_cambiado: 'yellow',
+  negociacion_actualizada: 'yellow',
+  negociacion_estado_cambiada: 'yellow',
+  documento_actualizado: 'yellow',
+  interes_actualizado: 'yellow',
+
+  // Naranja: alerta estructural (renuncia siempre es alarma)
+  renuncia_creada: 'orange',
+
+  // Púrpura: notas manuales del equipo
+  nota_manual: 'purple',
+
+  // Gris: fallback genérico
   evento_generico: 'gray',
 }
 

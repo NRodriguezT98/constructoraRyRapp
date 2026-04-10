@@ -9,7 +9,6 @@ import type { RestriccionesFuente } from '@/shared/utils/reglas-cierre-financier
 import type { AjusteLocal } from '../../hooks'
 import { getFuenteColor } from '../../hooks'
 
-import { getEntidadesParaTipo } from './entidades'
 import { formatMontoInput } from './helpers'
 
 interface FilaFuenteProps {
@@ -19,6 +18,9 @@ interface FilaFuenteProps {
   onCambioEntidad: (id: string, entidad: string) => void
   onToggleEliminar: (id: string) => void
   requiereEntidad: boolean
+  entidades: string[]
+  hasMontoError?: boolean
+  hasEntidadError?: boolean
 }
 
 export function FilaFuente({
@@ -28,12 +30,14 @@ export function FilaFuente({
   onCambioEntidad,
   onToggleEliminar,
   requiereEntidad,
+  entidades,
+  hasMontoError = false,
+  hasEntidadError = false,
 }: FilaFuenteProps) {
   const color = getFuenteColor(ajuste.tipo)
   const [inputValue, setInputValue] = useState(
     formatMontoInput(ajuste.montoEditable)
   )
-  const entidades = getEntidadesParaTipo(ajuste.tipo)
   const mostrarEntidad = requiereEntidad
 
   useEffect(() => {
@@ -74,19 +78,31 @@ export function FilaFuente({
           ) : null
         ) : mostrarEntidad ? (
           entidades.length > 0 ? (
-            <select
-              value={ajuste.entidadEditable}
-              onChange={e => onCambioEntidad(ajuste.id, e.target.value)}
-              disabled={!restricciones.puedeEditarEntidad}
-              className={`mt-1 w-full rounded-md border border-gray-200 bg-gray-50 px-2 py-1 text-xs text-gray-700 focus:border-cyan-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700/60 dark:text-gray-300 ${!restricciones.puedeEditarEntidad ? 'cursor-not-allowed opacity-60' : ''}`}
-            >
-              <option value=''>Seleccionar entidad...</option>
-              {entidades.map(e => (
-                <option key={e} value={e}>
-                  {e}
-                </option>
-              ))}
-            </select>
+            <>
+              <select
+                value={ajuste.entidadEditable}
+                onChange={e => onCambioEntidad(ajuste.id, e.target.value)}
+                disabled={!restricciones.puedeEditarEntidad}
+                className={`mt-1 w-full rounded-md border px-2 py-1 text-xs text-gray-700 focus:border-cyan-500 focus:outline-none dark:text-gray-300 ${
+                  hasEntidadError
+                    ? 'border-red-400 bg-red-50 dark:border-red-600 dark:bg-red-900/20'
+                    : 'border-gray-200 bg-gray-50 dark:border-gray-600 dark:bg-gray-700/60'
+                } ${!restricciones.puedeEditarEntidad ? 'cursor-not-allowed opacity-60' : ''}`}
+              >
+                <option value=''>Seleccionar entidad... *</option>
+                {entidades.map(e => (
+                  <option key={e} value={e}>
+                    {e}
+                  </option>
+                ))}
+              </select>
+              {hasEntidadError ? (
+                <p className='mt-0.5 flex items-center gap-1 text-[10px] text-red-500 dark:text-red-400'>
+                  <AlertTriangle className='h-2.5 w-2.5 flex-shrink-0' />
+                  Selecciona una entidad
+                </p>
+              ) : null}
+            </>
           ) : (
             <input
               type='text'
@@ -120,10 +136,20 @@ export function FilaFuente({
               value={inputValue}
               onChange={e => handleChange(e.target.value)}
               disabled={!restricciones.puedeEditarMonto}
-              className={`w-36 rounded-lg border border-gray-200 bg-gray-50 px-2.5 py-1.5 text-right text-sm font-semibold tabular-nums text-gray-900 focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 dark:border-gray-600 dark:bg-gray-700/60 dark:text-white ${!restricciones.puedeEditarMonto ? 'cursor-not-allowed opacity-60' : ''}`}
+              className={`w-36 rounded-lg border px-2.5 py-1.5 text-right text-sm font-semibold tabular-nums text-gray-900 focus:outline-none focus:ring-2 dark:text-white ${
+                hasMontoError && restricciones.puedeEditarMonto
+                  ? 'border-red-400 bg-red-50 focus:border-red-500 focus:ring-red-500/20 dark:border-red-600 dark:bg-red-900/20'
+                  : 'border-gray-200 bg-gray-50 focus:border-cyan-500 focus:ring-cyan-500/20 dark:border-gray-600 dark:bg-gray-700/60'
+              } ${!restricciones.puedeEditarMonto ? 'cursor-not-allowed opacity-60' : ''}`}
               placeholder='0'
             />
           </div>
+          {hasMontoError && restricciones.puedeEditarMonto ? (
+            <p className='flex items-center gap-1 text-[10px] text-red-500 dark:text-red-400'>
+              <AlertTriangle className='h-2.5 w-2.5 flex-shrink-0' />
+              El monto debe ser mayor a $0
+            </p>
+          ) : null}
           {restricciones.razonBloqueoMonto ? (
             <p className='flex max-w-[220px] items-center gap-1 text-right text-[10px] text-amber-600 dark:text-amber-400'>
               <Lock className='h-2.5 w-2.5 flex-shrink-0' />

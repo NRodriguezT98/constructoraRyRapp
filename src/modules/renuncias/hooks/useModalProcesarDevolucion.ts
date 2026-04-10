@@ -9,14 +9,20 @@ import { METODOS_DEVOLUCION, type MetodoDevolucion } from '../types'
 import { useProcesarDevolucion } from './useRenunciasQuery'
 
 const CELEBRATION_DELAY_MS = 2000
+const MAX_FILE_SIZE_MB = 10
+const MAX_FILE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024
+const VALID_FILE_MIME_TYPES = ['application/pdf', 'image/png', 'image/jpeg']
 
 export interface UseModalProcesarDevolucionProps {
   renunciaId: string
+  /** Fecha mínima permitida para la devolución (YYYY-MM-DD). Igual a fecha_renuncia. */
+  fechaRenuncia: string
   onExitosa?: () => void
 }
 
 export function useModalProcesarDevolucion({
   renunciaId,
+  fechaRenuncia,
   onExitosa,
 }: UseModalProcesarDevolucionProps) {
   // ── Mutation ───────────────────────────────────────────────────────────
@@ -45,12 +51,32 @@ export function useModalProcesarDevolucion({
     }
   }, [])
 
-  // ── Validaciones ───────────────────────────────────────────────────────
-  const fechaValida = fechaDevolucion.trim().length > 0
-  const formularioValido = fechaValida && !procesando
+  // ── Validaciones de fecha ──────────────────────────────────────────────
+  const fechaVacia = fechaDevolucion.trim().length === 0
+  const fechaAnteriorARenuncia = !fechaVacia && fechaDevolucion < fechaRenuncia
+  const fechaFutura = !fechaVacia && fechaDevolucion > getTodayDateString()
+  const fechaValida = !fechaVacia && !fechaAnteriorARenuncia && !fechaFutura
+
+  const fechaError: string | null = fechaAnteriorARenuncia
+    ? 'La fecha no puede ser anterior al registro de la renuncia'
+    : fechaFutura
+      ? 'La fecha de devolución no puede ser en el futuro'
+      : null
+
+  const formularioValido = fechaValida && !!comprobante && !procesando
 
   // ── Handlers ──────────────────────────────────────────────────────────
   const handleComprobanteChange = useCallback((file: File | null) => {
+    if (file) {
+      if (file.size > MAX_FILE_BYTES) {
+        setError(`El archivo supera el límite de ${MAX_FILE_SIZE_MB} MB`)
+        return
+      }
+      if (!VALID_FILE_MIME_TYPES.includes(file.type)) {
+        setError('Solo se permiten archivos PDF, PNG o JPG')
+        return
+      }
+    }
     setComprobante(file)
     setError(null)
   }, [])
@@ -68,7 +94,7 @@ export function useModalProcesarDevolucion({
           numero_comprobante: numeroComprobante.trim() || undefined,
           notas_cierre: notasCierre.trim() || undefined,
         },
-        comprobante: comprobante ?? undefined,
+        comprobante,
       })
 
       setExitoso(true)
@@ -104,6 +130,7 @@ export function useModalProcesarDevolucion({
     handleComprobanteChange,
     // Validación
     formularioValido,
+    fechaError,
     // Estado
     procesando,
     error,

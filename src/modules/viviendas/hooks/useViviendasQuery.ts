@@ -12,6 +12,8 @@ import { toast } from 'sonner'
 import { viviendasService } from '../services/viviendas.service'
 import type { FiltrosViviendas, ViviendaFormData } from '../types'
 
+import { viviendaKeys } from './useViviendaQuery'
+
 // ============================================
 // QUERY KEYS (Cache keys centralizadas)
 // ============================================
@@ -215,9 +217,12 @@ export function useActualizarViviendaMutation() {
       data: Partial<ViviendaFormData>
     }) => viviendasService.actualizar(id, data),
     onSuccess: (viviendaActualizada, variables) => {
-      // Invalidar detalle específico
+      // Invalidar detalle específico (ambas query key factories)
       queryClient.invalidateQueries({
         queryKey: viviendasKeys.detail(variables.id),
+      })
+      queryClient.invalidateQueries({
+        queryKey: viviendaKeys.detail(variables.id),
       })
 
       // Invalidar listas (con filtros)

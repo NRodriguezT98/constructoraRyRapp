@@ -12,7 +12,7 @@ import { createPortal } from 'react-dom'
 import type { EventoHistorialHumanizado } from '@/modules/clientes/types/historial.types'
 
 import {
-  coloresEvento,
+  HEADER_GRADIENTS_POR_TIPO,
   historialStyles as styles,
 } from '../historial-tab.styles'
 import { getEventoRenderer } from '../renderers'
@@ -26,9 +26,11 @@ export function EventoDetalleModal({
   evento,
   onClose,
 }: EventoDetalleModalProps) {
-  const colores = coloresEvento[evento.color] ?? coloresEvento.gray
   const IconoEvento = evento.icono
   const Renderer = getEventoRenderer(evento.tipo)
+  const headerGradient =
+    HEADER_GRADIENTS_POR_TIPO[evento.tipo] ??
+    'bg-gradient-to-r from-gray-600 via-slate-600 to-zinc-600'
 
   const fechaFormateada = new Date(evento.fecha).toLocaleString('es-CO', {
     weekday: 'long',
@@ -58,7 +60,7 @@ export function EventoDetalleModal({
         className={styles.modal.container}
       >
         {/* Header con gradiente de color del evento */}
-        <div className={`${styles.modal.header} ${colores.headerGradient}`}>
+        <div className={`${styles.modal.header} ${headerGradient}`}>
           <div className={styles.modal.headerRow}>
             <div className={styles.modal.headerTitleGroup}>
               <div className='flex h-9 w-9 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm'>

@@ -2238,6 +2238,7 @@ export type Database = {
           orden: number
           permite_multiples_abonos: boolean
           requiere_entidad: boolean
+          tipo_entidad_requerido: string | null
           updated_at: string
           updated_by: string | null
         }
@@ -2257,6 +2258,7 @@ export type Database = {
           orden?: number
           permite_multiples_abonos?: boolean
           requiere_entidad?: boolean
+          tipo_entidad_requerido?: string | null
           updated_at?: string
           updated_by?: string | null
         }
@@ -2276,6 +2278,7 @@ export type Database = {
           orden?: number
           permite_multiples_abonos?: boolean
           requiere_entidad?: boolean
+          tipo_entidad_requerido?: string | null
           updated_at?: string
           updated_by?: string | null
         }

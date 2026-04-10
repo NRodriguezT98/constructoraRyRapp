@@ -1,18 +1,28 @@
 'use client'
 
-import { useRef } from 'react'
+import { useCallback, useRef, useState } from 'react'
 
 import { motion } from 'framer-motion'
 import {
   AlertTriangle,
+  Calendar,
   CheckCircle,
   DollarSign,
+  Eye,
+  Home,
   Loader2,
+  MapPin,
   Sparkles,
   Upload,
   User,
   X,
 } from 'lucide-react'
+
+import {
+  formatDateCompact,
+  formatDateForInput,
+  getTodayDateString,
+} from '@/lib/utils/date.utils'
 
 import { useModalProcesarDevolucion } from '../../hooks/useModalProcesarDevolucion'
 import type { MetodoDevolucion, RenunciaConInfo } from '../../types'
@@ -86,6 +96,7 @@ export function ProcesarDevolucionModal({
   onExitosa,
 }: ProcesarDevolucionModalProps) {
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const [isDragging, setIsDragging] = useState(false)
 
   const {
     fechaDevolucion,
@@ -99,12 +110,50 @@ export function ProcesarDevolucionModal({
     comprobante,
     handleComprobanteChange,
     formularioValido,
+    fechaError,
     procesando,
     error,
     exitoso,
     handleConfirmar,
     metodosDisponibles,
-  } = useModalProcesarDevolucion({ renunciaId: renuncia.id, onExitosa })
+  } = useModalProcesarDevolucion({
+    renunciaId: renuncia.id,
+    fechaRenuncia: formatDateForInput(renuncia.fecha_renuncia),
+    onExitosa,
+  })
+
+  // ── Drag & drop ──────────────────────────────────────────────────────
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragging(true)
+  }, [])
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragging(false)
+  }, [])
+
+  const handleDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault()
+      setIsDragging(false)
+      const file = e.dataTransfer.files[0] ?? null
+      if (file) handleComprobanteChange(file)
+    },
+    [handleComprobanteChange]
+  )
+
+  const handlePreview = useCallback(() => {
+    if (!comprobante) return
+    const url = URL.createObjectURL(comprobante)
+    window.open(url, '_blank')
+  }, [comprobante])
+
+  const formatFileSize = (bytes: number): string => {
+    if (bytes < 1024) return `${bytes} B`
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+  }
 
   // ── Procesando ─────────────────────────────────────────────────────────
   if (procesando) {
@@ -259,6 +308,26 @@ export function ProcesarDevolucionModal({
               <span className={s.infoValue}>{renuncia.cliente.nombre}</span>
             </div>
             <div className={s.infoRow}>
+              <Home className={s.infoIcon} />
+              <span className={s.infoLabel}>Vivienda:</span>
+              <span className={s.infoValue}>
+                Manzana {renuncia.vivienda.manzana} · Casa{' '}
+                {renuncia.vivienda.numero}
+              </span>
+            </div>
+            <div className={s.infoRow}>
+              <MapPin className={s.infoIcon} />
+              <span className={s.infoLabel}>Proyecto:</span>
+              <span className={s.infoValue}>{renuncia.proyecto.nombre}</span>
+            </div>
+            <div className={s.infoRow}>
+              <Calendar className={s.infoIcon} />
+              <span className={s.infoLabel}>Renuncia:</span>
+              <span className={s.infoValue}>
+                {formatDateCompact(renuncia.fecha_renuncia)}
+              </span>
+            </div>
+            <div className={s.infoRow}>
               <DollarSign className={s.infoIcon} />
               <span className={s.infoLabel}>A devolver:</span>
               <span className='text-sm font-bold text-red-600 dark:text-red-400'>
@@ -283,10 +352,18 @@ export function ProcesarDevolucionModal({
             </label>
             <input
               type='date'
-              className={s.input}
+              className={`${s.input} ${fechaError ? 'border-red-400 focus:border-red-500 focus:ring-red-500/20' : ''}`}
               value={fechaDevolucion}
+              min={formatDateForInput(renuncia.fecha_renuncia)}
+              max={getTodayDateString()}
               onChange={e => setFechaDevolucion(e.target.value)}
             />
+            {fechaError ? (
+              <p className='mt-1 text-xs text-red-500'>
+                <AlertTriangle className='mr-1 inline h-3 w-3' />
+                {fechaError}
+              </p>
+            ) : null}
           </div>
 
           {/* Método */}
@@ -329,10 +406,7 @@ export function ProcesarDevolucionModal({
           {/* Upload comprobante */}
           <div>
             <label className={s.label}>
-              Comprobante{' '}
-              <span className='font-normal normal-case text-gray-400'>
-                (opcional)
-              </span>
+              Comprobante <span className='text-red-500'>*</span>
             </label>
             <input
               ref={fileInputRef}
@@ -345,11 +419,26 @@ export function ProcesarDevolucionModal({
             />
             {comprobante ? (
               <div className='flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 p-3 dark:border-green-800 dark:bg-green-950/20'>
-                <CheckCircle className='h-4 w-4 text-green-600' />
-                <span className='flex-1 truncate text-sm text-green-700 dark:text-green-300'>
-                  {comprobante.name}
-                </span>
+                <CheckCircle className='h-4 w-4 flex-shrink-0 text-green-600' />
+                <div className='min-w-0 flex-1'>
+                  <p className='truncate text-sm font-medium text-green-700 dark:text-green-300'>
+                    {comprobante.name}
+                  </p>
+                  <p className='text-xs text-green-600/70 dark:text-green-400/60'>
+                    {formatFileSize(comprobante.size)}
+                  </p>
+                </div>
                 <button
+                  type='button'
+                  onClick={handlePreview}
+                  className='inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-green-700 transition-colors hover:bg-green-100 dark:text-green-300 dark:hover:bg-green-900/30'
+                  title='Ver archivo'
+                >
+                  <Eye className='h-3.5 w-3.5' />
+                  Ver
+                </button>
+                <button
+                  type='button'
                   onClick={() => {
                     handleComprobanteChange(null)
                     if (fileInputRef.current) fileInputRef.current.value = ''
@@ -362,7 +451,10 @@ export function ProcesarDevolucionModal({
             ) : (
               <div
                 onClick={() => fileInputRef.current?.click()}
-                className={s.uploadZone}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+                className={`${s.uploadZone} ${isDragging ? 'border-green-500 bg-green-50 dark:border-green-500 dark:bg-green-950/20' : ''}`}
                 role='button'
                 tabIndex={0}
                 onKeyDown={e => {
@@ -370,8 +462,15 @@ export function ProcesarDevolucionModal({
                     fileInputRef.current?.click()
                 }}
               >
-                <Upload className='mb-1 h-6 w-6 text-gray-400' />
-                <p className='text-xs text-gray-500 dark:text-gray-400'>
+                <Upload
+                  className={`mb-1 h-6 w-6 ${isDragging ? 'text-green-500' : 'text-gray-400'}`}
+                />
+                <p className='text-xs font-medium text-gray-600 dark:text-gray-300'>
+                  {isDragging
+                    ? 'Suelta el archivo aquí'
+                    : 'Clic o arrastra tu archivo aquí'}
+                </p>
+                <p className='text-xs text-gray-400 dark:text-gray-500'>
                   PDF, PNG, JPG (máx 10 MB)
                 </p>
               </div>

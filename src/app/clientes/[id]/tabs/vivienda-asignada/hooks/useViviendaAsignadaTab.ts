@@ -13,7 +13,7 @@
  * @version 1.0.0 - 2025-12-11
  */
 
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 
 import { toast } from 'sonner'
 
@@ -108,6 +108,18 @@ export function useViviendaAsignadaTab({
     negociacionId: viviendaActiva?.id || null,
     enabled: !!viviendaActiva,
   })
+
+  // =====================================================
+  // COMPUTED: Balance financiero
+  // =====================================================
+
+  const estaBalanceado = useMemo(() => {
+    if (!viviendaActiva || fuentesPago.length === 0) return true
+    const valorVivienda =
+      viviendaActiva.valor_total_pagar ?? viviendaActiva.valor_negociado ?? 0
+    const totalFuentes = fuentesPago.reduce((sum, f) => sum + (f.monto || 0), 0)
+    return Math.abs(totalFuentes - valorVivienda) < 1
+  }, [viviendaActiva, fuentesPago])
 
   // =====================================================
   // HOOKS: PDF y Edición
@@ -290,6 +302,7 @@ export function useViviendaAsignadaTab({
     abonos,
     totales,
     diasDesdeUltimoAbono,
+    estaBalanceado,
 
     // Modal de historial
     showHistorial,

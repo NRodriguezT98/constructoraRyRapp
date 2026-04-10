@@ -8,6 +8,7 @@ import {
 import type { FuentePagoConAbonos } from '@/modules/abonos/types'
 import { useDocumentosPendientesObligatorios } from '@/modules/clientes/hooks/useDocumentosPendientesObligatorios'
 import { filtrarPendientesPorFuente } from '@/modules/clientes/utils/documentos-pendientes.utils'
+import { esCreditoConstructora } from '@/shared/constants/fuentes-pago.constants'
 
 /**
  * Hook personalizado para la lógica de negocio del detalle de abonos
@@ -84,7 +85,13 @@ export function useAbonosDetalle(clienteId: string) {
       (sum, f) => sum + (f.monto_aprobado || 0),
       0
     )
-    const interesesTotales = totalComprometido - valorVivienda
+    // Solo contar intereses cuando hay un Crédito Directo con la Constructora
+    const tieneCreditoConstructora = fuentes.some(f =>
+      esCreditoConstructora(f.tipo)
+    )
+    const interesesTotales = tieneCreditoConstructora
+      ? totalComprometido - valorVivienda
+      : 0
     const saldoPendienteReal =
       totalComprometido -
       fuentes.reduce((sum, f) => sum + (f.monto_recibido || 0), 0)
@@ -102,6 +109,17 @@ export function useAbonosDetalle(clienteId: string) {
   // ✅ Validaciones de fuentes de pago
   const validarFuentePago = useMemo(() => {
     if (!negociacion?.fuentes_pago) return {}
+
+    // Calcular si el cierre financiero está balanceado
+    const valorVivienda =
+      negociacion.valor_total_pagar ?? negociacion.valor_total ?? 0
+    const totalFuentes = (negociacion.fuentes_pago || []).reduce(
+      (sum, f) => sum + (f.monto_aprobado || 0),
+      0
+    )
+    const hayDescuadreFinanciero =
+      negociacion.fuentes_pago.length > 0 &&
+      Math.abs(totalFuentes - valorVivienda) >= 1
 
     const validaciones: Record<
       string,
@@ -148,8 +166,14 @@ export function useAbonosDetalle(clienteId: string) {
       let puedeRegistrarAbono = true
       let razonBloqueo: string | undefined
 
-      // 1. Documentos obligatorios pendientes (máxima prioridad de bloqueo)
-      if (documentosObligatoriosPendientes > 0) {
+      // 0. Descuadre financiero (máxima prioridad — bloqueo global)
+      if (hayDescuadreFinanciero) {
+        puedeRegistrarAbono = false
+        razonBloqueo =
+          'Cierre financiero descuadrado — las fuentes de pago no cubren el valor total. Corregir antes de registrar abonos.'
+      }
+      // 1. Documentos obligatorios pendientes
+      else if (documentosObligatoriosPendientes > 0) {
         puedeRegistrarAbono = false
         razonBloqueo = `Tiene ${documentosObligatoriosPendientes} documento${documentosObligatoriosPendientes > 1 ? 's' : ''} obligatorio${documentosObligatoriosPendientes > 1 ? 's' : ''} pendiente${documentosObligatoriosPendientes > 1 ? 's' : ''} de aportar`
       }
@@ -184,6 +208,19 @@ export function useAbonosDetalle(clienteId: string) {
     return validaciones
   }, [negociacion, pendientesObligatorios])
 
+  // ✅ Balance global del cierre financiero (para banner en UI)
+  const estaBalanceado = useMemo(() => {
+    if (!negociacion?.fuentes_pago || negociacion.fuentes_pago.length === 0)
+      return true
+    const valorVivienda =
+      negociacion.valor_total_pagar ?? negociacion.valor_total ?? 0
+    const totalFuentes = negociacion.fuentes_pago.reduce(
+      (sum, f) => sum + (f.monto_aprobado || 0),
+      0
+    )
+    return Math.abs(totalFuentes - valorVivienda) < 1
+  }, [negociacion])
+
   return {
     // Datos
     negociacion,
@@ -200,6 +237,7 @@ export function useAbonosDetalle(clienteId: string) {
 
     // Validaciones
     validarFuentePago,
+    estaBalanceado,
 
     // Handlers
     handleRegistrarAbono,

@@ -74,6 +74,7 @@ export function ViviendaAsignadaTab({ cliente }: ViviendaAsignadaTabProps) {
     abonos,
     totales,
     diasDesdeUltimoAbono,
+    estaBalanceado,
 
     // Validación documento
     tieneDocumentoFisico,
@@ -180,6 +181,7 @@ export function ViviendaAsignadaTab({ cliente }: ViviendaAsignadaTabProps) {
             <div className='sticky top-0 z-20 -mx-1 bg-gray-50/95 px-1 pb-3 pt-2 backdrop-blur-sm dark:bg-gray-900/95'>
               <AccionesSection
                 estado={viviendaActiva.estado}
+                estaBalanceado={estaBalanceado}
                 onRegistrarAbono={() =>
                   navegarARegistrarAbono(viviendaActiva.id)
                 }

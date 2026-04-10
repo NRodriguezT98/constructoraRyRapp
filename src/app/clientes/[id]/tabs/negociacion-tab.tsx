@@ -47,6 +47,7 @@ import { formatCurrency } from '@/shared/utils/format'
 
 import {
   AbonosRecientes,
+  DescuentoModal,
   FuenteMiniCard,
   RebalancearModal,
 } from './negociacion/components'
@@ -312,7 +313,9 @@ export function NegociacionTab({
     estaBalanceado,
     tiposDisponibles,
     tiposFuentes,
+    tiposConfigConEntidad,
     requisitosMap,
+    entidadesPorTipoEntidad,
     isLoading,
     isLoadingAbonos,
     isRebalanceando,
@@ -321,6 +324,11 @@ export function NegociacionTab({
     openRebalancear,
     closeRebalancear,
     handleGuardarRebalanceo,
+    modalDescuentoOpen,
+    openDescuento,
+    closeDescuento,
+    isAplicandoDescuento,
+    handleAplicarDescuento,
     pendientesPorFuente,
     totalDocsPendientes,
     totalDocsObligatoriosPendientes,
@@ -426,18 +434,11 @@ export function NegociacionTab({
           ) : null}
         </div>
 
-        {/* Badges row (solo descuento si aplica) */}
-        {descuento > 0 ? (
-          <div className='flex flex-wrap items-center gap-2 border-b border-gray-100 px-4 py-1.5 dark:border-gray-700/40'>
-            <span className='rounded bg-amber-50 px-1.5 py-0.5 text-[10px] font-medium text-amber-600 dark:bg-amber-900/20 dark:text-amber-400'>
-              -{formatCurrency(descuento)}
-              {pctDescuento > 0 ? ` (${pctDescuento}%)` : ''} dto.
-            </span>
-          </div>
-        ) : null}
-
-        {/* 4 KPIs row */}
-        <div className='grid grid-cols-2 divide-x divide-gray-100 dark:divide-gray-700/40 sm:grid-cols-4'>
+        {/* KPIs row — 5 cols cuando hay descuento, 4 cols si no */}
+        <div
+          className={`grid grid-cols-2 divide-x divide-gray-100 dark:divide-gray-700/40 ${descuento > 0 ? 'sm:grid-cols-5' : 'sm:grid-cols-4'}`}
+        >
+          {/* KPI 1: Valor Total a Pagar */}
           <div className='px-4 py-2.5'>
             <div className='mb-0.5 flex items-center gap-1'>
               <DollarSign className='h-3 w-3 text-cyan-500' />
@@ -449,17 +450,34 @@ export function NegociacionTab({
               {formatCurrency(valorVivienda)}
             </p>
             {valorEscritura > 0 ? (
-              <div className='mt-1 flex items-center gap-1.5'>
+              <div className='mt-1'>
                 <span className='inline-flex items-center gap-1 rounded-md border border-indigo-100 bg-indigo-50 px-1.5 py-0.5 text-[10px] font-medium text-indigo-600 dark:border-indigo-800/40 dark:bg-indigo-950/30 dark:text-indigo-400'>
                   <FileText className='h-2.5 w-2.5' />
-                  Valor en Escritura:{' '}
-                  <span className='font-bold tabular-nums'>
-                    {formatCurrency(valorEscritura)}
-                  </span>
+                  Escritura: {formatCurrency(valorEscritura)}
                 </span>
               </div>
             ) : null}
           </div>
+
+          {/* KPI 2 (condicional): Descuento aplicado */}
+          {descuento > 0 ? (
+            <div className='border-l border-gray-100 px-4 py-2.5 dark:border-gray-700/40'>
+              <div className='mb-0.5 flex items-center gap-1'>
+                <Percent className='h-3 w-3 text-violet-500' />
+                <span className='text-[10px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500'>
+                  Descuento
+                </span>
+              </div>
+              <p className='text-sm font-bold tabular-nums text-violet-600 dark:text-violet-400'>
+                -{formatCurrency(descuento)}
+              </p>
+              {pctDescuento > 0 ? (
+                <p className='mt-0.5 text-[11px] font-medium text-violet-500 dark:text-violet-500'>
+                  {pctDescuento}% del valor
+                </p>
+              ) : null}
+            </div>
+          ) : null}
           <div className='px-4 py-2.5'>
             <div className='mb-0.5 flex items-center gap-1'>
               <Wallet className='h-3 w-3 text-emerald-500' />
@@ -523,44 +541,33 @@ export function NegociacionTab({
             <span className='text-[10px] text-gray-400'>
               ({fuentesPago.length})
             </span>
-            {/* Balance badge inline */}
-            {fuentesPago.length > 0 ? (
-              <span
-                className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium ${
-                  estaBalanceado
-                    ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400'
-                    : diferencia > 0
-                      ? 'bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400'
-                      : 'bg-amber-50 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400'
-                }`}
-              >
-                {estaBalanceado ? (
-                  <>
-                    <CheckCircle2 className='h-3 w-3' />{' '}
-                    {formatCurrency(valorVivienda)} cubierto
-                  </>
-                ) : diferencia > 0 ? (
-                  <>
-                    <AlertTriangle className='h-3 w-3' /> Faltan{' '}
-                    {formatCurrency(diferencia)}
-                  </>
-                ) : (
-                  <>
-                    <AlertTriangle className='h-3 w-3' /> Sobran{' '}
-                    {formatCurrency(Math.abs(diferencia))}
-                  </>
-                )}
+            {/* Balance badge inline (solo si balanceado) */}
+            {fuentesPago.length > 0 && estaBalanceado ? (
+              <span className='inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-medium text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400'>
+                <CheckCircle2 className='h-3 w-3' />
+                Cubierto
               </span>
             ) : null}
           </div>
           {isAdmin ? (
-            <button
-              onClick={openRebalancear}
-              className='inline-flex items-center gap-1.5 rounded-lg border border-cyan-200 bg-cyan-50 px-2.5 py-1.5 text-[11px] font-medium text-cyan-700 transition-colors hover:bg-cyan-100 dark:border-cyan-800/40 dark:bg-cyan-900/20 dark:text-cyan-400 dark:hover:bg-cyan-900/30'
-            >
-              <SlidersHorizontal className='h-3.5 w-3.5' />
-              Redistribuir
-            </button>
+            <div className='flex items-center gap-2'>
+              {negociacion.estado === 'Activa' ? (
+                <button
+                  onClick={openDescuento}
+                  className='inline-flex items-center gap-1.5 rounded-lg border border-violet-200 bg-violet-50 px-2.5 py-1.5 text-[11px] font-semibold text-violet-700 transition-colors hover:bg-violet-100 dark:border-violet-800/40 dark:bg-violet-900/20 dark:text-violet-400 dark:hover:bg-violet-900/30'
+                >
+                  <Percent className='h-3.5 w-3.5' />
+                  {descuento > 0 ? 'Modificar Descuento' : 'Aplicar Descuento'}
+                </button>
+              ) : null}
+              <button
+                onClick={openRebalancear}
+                className='inline-flex items-center gap-1.5 rounded-lg border border-cyan-300 bg-cyan-50 px-3 py-1.5 text-[11px] font-semibold text-cyan-800 shadow-sm transition-colors hover:bg-cyan-100 hover:shadow dark:border-cyan-700/50 dark:bg-cyan-900/30 dark:text-cyan-300 dark:hover:bg-cyan-900/40'
+              >
+                <SlidersHorizontal className='h-3.5 w-3.5' />
+                Ajustar Cierre Financiero
+              </button>
+            </div>
           ) : (
             <span className='inline-flex items-center gap-1 text-[10px] text-gray-400 dark:text-gray-500'>
               <Lock className='h-3 w-3' />
@@ -570,6 +577,43 @@ export function NegociacionTab({
         </div>
 
         <div className='space-y-3 p-3'>
+          {/* ⚠️ ALERTA URGENTE: Descuadre financiero */}
+          {fuentesPago.length > 0 && !estaBalanceado ? (
+            <div className='relative overflow-hidden rounded-lg border border-red-300 bg-gradient-to-r from-red-50 via-red-50 to-orange-50 dark:border-red-800/60 dark:from-red-950/40 dark:via-red-950/30 dark:to-orange-950/20'>
+              <div className='absolute left-0 top-0 h-full w-1 bg-red-500' />
+              <div className='flex items-center gap-3 px-4 py-2.5'>
+                <div className='relative flex-shrink-0'>
+                  <div className='flex h-8 w-8 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/40'>
+                    <AlertTriangle className='h-4 w-4 text-red-600 dark:text-red-400' />
+                  </div>
+                  <span className='absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full border-2 border-red-50 bg-red-500 dark:border-red-950'>
+                    <span className='absolute inset-0 animate-ping rounded-full bg-red-400 opacity-75' />
+                  </span>
+                </div>
+                <div className='min-w-0 flex-1'>
+                  <p className='text-xs font-bold text-red-800 dark:text-red-300'>
+                    Descuadre en Cierre Financiero — Atención Requerida
+                  </p>
+                  <p className='mt-0.5 text-[10px] text-red-700 dark:text-red-400'>
+                    {diferencia > 0
+                      ? `Faltan ${formatCurrency(diferencia)} para cubrir el valor total.`
+                      : `Sobran ${formatCurrency(Math.abs(diferencia))} en las fuentes de pago.`}{' '}
+                    Los registros de abonos permanecerán bloqueados hasta
+                    resolver el descuadre.
+                  </p>
+                </div>
+                {isAdmin ? (
+                  <button
+                    onClick={openRebalancear}
+                    className='flex-shrink-0 rounded-lg bg-red-600 px-3 py-1.5 text-[11px] font-semibold text-white shadow-sm transition-colors hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-600'
+                  >
+                    Corregir ahora
+                  </button>
+                ) : null}
+              </div>
+            </div>
+          ) : null}
+
           {fuentesPago.length === 0 ? (
             <p className='py-4 text-center text-xs text-gray-400 dark:text-gray-500'>
               {isAdmin
@@ -683,6 +727,16 @@ export function NegociacionTab({
             <RefreshCw className='h-3 w-3 animate-spin text-gray-300 dark:text-gray-600' />
           ) : null}
         </div>
+        {/* Banner de bloqueo si hay descuadre */}
+        {fuentesPago.length > 0 && !estaBalanceado ? (
+          <div className='flex items-center gap-2 border-b border-red-200 bg-red-50 px-4 py-2 dark:border-red-900/40 dark:bg-red-950/30'>
+            <Shield className='h-3.5 w-3.5 flex-shrink-0 text-red-500' />
+            <p className='text-[10px] font-medium text-red-700 dark:text-red-400'>
+              Registro de abonos bloqueado hasta corregir el descuadre
+              financiero
+            </p>
+          </div>
+        ) : null}
         <div className='p-3'>
           <AbonosRecientes
             abonos={abonosParaUI}
@@ -708,10 +762,25 @@ export function NegociacionTab({
           fuentesPago={fuentesPago}
           valorVivienda={valorVivienda}
           tiposDisponibles={tiposDisponibles}
-          tiposConfig={tiposFuentes}
+          tiposConfig={tiposConfigConEntidad}
           requisitosMap={requisitosMap}
+          entidadesPorTipoEntidad={entidadesPorTipoEntidad}
           onGuardar={handleGuardarRebalanceo}
           isGuardando={isRebalanceando}
+        />
+      ) : null}
+
+      {/* Modal Admin: Aplicar/Modificar Descuento */}
+      {isAdmin ? (
+        <DescuentoModal
+          isOpen={modalDescuentoOpen}
+          onClose={closeDescuento}
+          onGuardar={handleAplicarDescuento}
+          isGuardando={isAplicandoDescuento}
+          valorNegociado={negociacion.valor_negociado}
+          descuentoActual={descuento}
+          tipoDescuentoActual={negociacion.tipo_descuento}
+          motivoDescuentoActual={negociacion.motivo_descuento}
         />
       ) : null}
 

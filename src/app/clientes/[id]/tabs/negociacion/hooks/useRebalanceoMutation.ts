@@ -91,8 +91,11 @@ export function useRebalanceoMutation({
       toast.success('Plan financiero actualizado correctamente')
       closeRebalancear()
     },
-    onError: () => {
-      toast.error('Error al actualizar el plan financiero. Intenta nuevamente.')
+    onError: (error: Error) => {
+      toast.error(
+        error.message ||
+          'Error al actualizar el plan financiero. Intenta nuevamente.'
+      )
     },
   })
 

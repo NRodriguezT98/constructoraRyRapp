@@ -75,46 +75,40 @@ export async function validarPuedeRenunciar(
     throw new Error('Negociación no encontrada')
   }
 
-  // 2. Obtener cliente
+  // 2. Obtener cliente — falla explícitamente si no existe
   const { data: cliente } = await supabase
     .from('clientes')
     .select('id, nombre_completo, numero_documento')
     .eq('id', neg.cliente_id)
     .single()
 
-  // 3. Obtener vivienda → manzana → proyecto
-  const { data: vivienda } = await supabase
+  if (!cliente) {
+    throw new Error('Cliente no encontrado para esta negociación')
+  }
+
+  // 3. Obtener vivienda → manzana → proyecto (1 query en vez de 3)
+  const { data: viviendaFull } = await supabase
     .from('viviendas')
-    .select('id, numero, manzana_id')
+    .select('id, numero, manzanas(nombre, proyectos(nombre))')
     .eq('id', neg.vivienda_id)
     .single()
 
-  let manzanaNombre = ''
-  let proyectoNombre = ''
-
-  if (vivienda?.manzana_id) {
-    const { data: manzana } = await supabase
-      .from('manzanas')
-      .select('nombre, proyecto_id')
-      .eq('id', vivienda.manzana_id)
-      .single()
-
-    if (manzana) {
-      manzanaNombre = manzana.nombre ?? ''
-      const { data: proyecto } = await supabase
-        .from('proyectos')
-        .select('nombre')
-        .eq('id', manzana.proyecto_id)
-        .single()
-      proyectoNombre = proyecto?.nombre ?? ''
-    }
+  if (!viviendaFull) {
+    throw new Error('Vivienda no encontrada para esta negociación')
   }
+
+  const manzanaData = viviendaFull.manzanas as unknown as {
+    nombre: string
+    proyectos: { nombre: string } | null
+  } | null
+  const manzanaNombre = manzanaData?.nombre ?? ''
+  const proyectoNombre = manzanaData?.proyectos?.nombre ?? ''
 
   const negInfo = {
     id: neg.id,
     estado: neg.estado,
-    cliente_nombre: cliente?.nombre_completo ?? 'N/A',
-    vivienda_numero: vivienda?.numero ?? 'N/A',
+    cliente_nombre: cliente.nombre_completo ?? 'N/A',
+    vivienda_numero: viviendaFull.numero ?? 'N/A',
     manzana_nombre: manzanaNombre,
     proyecto_nombre: proyectoNombre,
   }
@@ -151,6 +145,13 @@ export async function validarPuedeRenunciar(
   }
 
   // 4. Obtener fuentes de pago para validar desembolsos
+  // Tipos bloqueantes: exactamente los mismos que valida la RPC en BD
+  const TIPOS_BLOQUEANTES = [
+    'Crédito Hipotecario',
+    'Subsidio Mi Casa Ya',
+    'Caja de Compensación',
+  ] as const
+
   const { data: fuentes = [] } = await supabase
     .from('fuentes_pago')
     .select('id, tipo, estado, monto_recibido')
@@ -163,10 +164,12 @@ export async function validarPuedeRenunciar(
         tipo: string | null
         estado: string
         monto_recibido: number | null
-      }) => {
-        const esExterna = !['Cuota Inicial'].includes(f.tipo ?? '')
-        return esExterna && (f.monto_recibido ?? 0) > 0
-      }
+      }) =>
+        f.tipo !== null &&
+        TIPOS_BLOQUEANTES.includes(
+          f.tipo as (typeof TIPOS_BLOQUEANTES)[number]
+        ) &&
+        (f.monto_recibido ?? 0) > 0
     )
     .map((f: { tipo: string | null }) => f.tipo ?? 'Desconocida')
 
@@ -223,6 +226,7 @@ export async function procesarDevolucion(
 ) {
   const { data: session } = await supabase.auth.getSession()
   const userId = session?.session?.user?.id ?? null
+  const userEmail = session?.session?.user?.email ?? ''
 
   // Resolver nombre + rol del usuario (mismo formato que registrar_renuncia_completa en DB)
   let usuarioCierreLabel: string | null = userId
@@ -258,6 +262,62 @@ export async function procesarDevolucion(
     logger.error('❌ Error procesando devolución:', error)
     throw new Error(error.message)
   }
+
+  // Registrar en audit_log (fire-and-forget)
+  // cliente_id en metadata es CRÍTICO para que aparezca en el historial del cliente
+  void (async () => {
+    try {
+      // Obtener datos enriquecidos para el metadata
+      const { data: contexto } = await supabase
+        .from('v_renuncias_completas')
+        .select(
+          'cliente_id, consecutivo, vivienda_numero, manzana_nombre, proyecto_nombre, monto_a_devolver'
+        )
+        .eq('id', renunciaId)
+        .single()
+
+      const metadata = {
+        // CLAVE para filtro de historial del cliente
+        cliente_id:
+          (contexto as Record<string, unknown> | null)?.cliente_id ?? null,
+
+        // Datos de la renuncia
+        consecutivo:
+          (contexto as Record<string, unknown> | null)?.consecutivo ?? null,
+        vivienda_numero:
+          (contexto as Record<string, unknown> | null)?.vivienda_numero ?? null,
+        manzana_nombre:
+          (contexto as Record<string, unknown> | null)?.manzana_nombre ?? null,
+        proyecto_nombre:
+          (contexto as Record<string, unknown> | null)?.proyecto_nombre ?? null,
+
+        // Datos de la devolución procesada
+        monto_devuelto:
+          (contexto as Record<string, unknown> | null)?.monto_a_devolver ??
+          null,
+        metodo_devolucion: dto.metodo_devolucion ?? null,
+        numero_comprobante: dto.numero_comprobante?.trim() || null,
+        fecha_devolucion: dto.fecha_devolucion ?? null,
+        notas_cierre: dto.notas_cierre?.trim() || null,
+
+        // Quién procesó
+        procesado_por: usuarioCierreLabel,
+      }
+
+      await supabase.from('audit_log').insert({
+        tabla: 'renuncias',
+        accion: 'UPDATE',
+        registro_id: renunciaId,
+        modulo: 'renuncia_devolucion_procesada',
+        usuario_id: userId,
+        usuario_email: userEmail,
+        metadata:
+          metadata as unknown as import('@/lib/supabase/database.types').Json,
+      })
+    } catch (auditErr) {
+      logger.error('⚠️ Error registrando audit_log de devolución:', auditErr)
+    }
+  })()
 
   return data
 }
@@ -331,11 +391,12 @@ export async function subirFormularioRenuncia(
   renunciaId: string
 ): Promise<string> {
   const ext = file.name.split('.').pop()
-  const filePath = `${renunciaId}/formulario-renuncia.${ext}`
+  // Nombre con timestamp para evitar sobreescritura silenciosa de uploads previos
+  const filePath = `${renunciaId}/formulario-${Date.now()}.${ext}`
 
   const { error: uploadError } = await supabase.storage
     .from('renuncias-comprobantes')
-    .upload(filePath, file, { upsert: true })
+    .upload(filePath, file, { upsert: false })
 
   if (uploadError) {
     logger.error('❌ Error subiendo formulario de renuncia:', uploadError)
@@ -354,6 +415,29 @@ export async function subirFormularioRenuncia(
   }
 
   return filePath
+}
+
+// =====================================================
+// ACTUALIZAR URL DE COMPROBANTE (post-upload)
+// =====================================================
+
+/**
+ * Actualiza la URL del comprobante de devolución después de subirlo.
+ * Solo actualiza el campo comprobante_devolucion_url, sin tocar el estado.
+ */
+export async function actualizarComprobanteDevolucionUrl(
+  renunciaId: string,
+  url: string
+): Promise<void> {
+  const { error } = await supabase
+    .from('renuncias')
+    .update({ comprobante_devolucion_url: url })
+    .eq('id', renunciaId)
+
+  if (error) {
+    logger.error('❌ Error actualizando URL comprobante:', error)
+    throw new Error(`Error al vincular comprobante: ${error.message}`)
+  }
 }
 
 // =====================================================

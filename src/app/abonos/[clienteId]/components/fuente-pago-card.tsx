@@ -121,12 +121,18 @@ export function FuentePagoCard({
     validacion?.documentosObligatoriosPendientes ?? 0
   const docsPendientesNombres = validacion?.documentosPendientesNombres ?? []
   const bloqueadoPorDocs = docsPendientesObligatorios > 0
+  // Descuadre financiero tiene mayor prioridad que docs
+  const hayDescuadreFinanciero = !canCreate
   const pct =
     fuente.monto_aprobado > 0
       ? Math.min((fuente.monto_recibido / fuente.monto_aprobado) * 100, 100)
       : 0
   const puedeAbonar =
-    canCreate && !completada && fuente.saldo_pendiente > 0 && !bloqueadoPorDocs
+    canCreate &&
+    (validacion?.puedeRegistrarAbono ?? true) &&
+    !completada &&
+    fuente.saldo_pendiente > 0 &&
+    !bloqueadoPorDocs
   const colors = getFuenteColors(fuente.tipo)
 
   const [cuotasExpandidas, setCuotasExpandidas] = useState(false)
@@ -204,8 +210,20 @@ export function FuentePagoCard({
 
           {/* Badge completada / botón */}
           <div className='flex shrink-0 items-center gap-2'>
-            {/* Crédito constructora: toggle plan + botón abono independiente */}
-            {esCreditoConstructora ? (
+            {/* Descuadre financiero — máxima prioridad, aplica a todas las fuentes */}
+            {hayDescuadreFinanciero &&
+            !completada &&
+            fuente.saldo_pendiente > 0 ? (
+              <button
+                disabled
+                title='El cierre financiero tiene un descuadre. Corrígelo antes de registrar abonos.'
+                className='inline-flex cursor-not-allowed select-none items-center gap-1.5 rounded-xl border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-400 opacity-90 dark:border-red-800/40 dark:bg-red-950/30 dark:text-red-500'
+              >
+                <Lock className='h-3.5 w-3.5' />
+                {esDesembolsoUnico ? 'Registrar Desembolso' : '+ Abono'}
+              </button>
+            ) : /* Crédito constructora: toggle plan + botón abono independiente */
+            esCreditoConstructora ? (
               <>
                 {puedeAbonar ? (
                   <motion.button
@@ -368,53 +386,57 @@ export function FuentePagoCard({
         </div>
       </div>
 
-      {/* Franja de advertencia: documentos obligatorios pendientes */}
-      {bloqueadoPorDocs && fuente.saldo_pendiente > 0 && (
-        <div className='space-y-2 border-t border-amber-200 bg-amber-50 px-5 py-3 dark:border-amber-500/[0.18] dark:bg-amber-500/[0.08]'>
-          <div className='flex items-start gap-2'>
-            <FileWarning className='mt-0.5 h-4 w-4 flex-shrink-0 text-amber-500 dark:text-amber-400' />
-            <p className='text-xs font-medium leading-tight text-amber-700 dark:text-amber-300'>
-              <span className='font-bold'>Acción bloqueada.</span> Debes aportar{' '}
-              <span className='font-bold'>
-                {docsPendientesObligatorios} documento
-                {docsPendientesObligatorios > 1 ? 's' : ''} obligatorio
-                {docsPendientesObligatorios > 1 ? 's' : ''}
-              </span>{' '}
-              antes de registrar este
-              {esDesembolsoUnico ? ' desembolso' : ' abono'}.
-            </p>
+      {/* Franja de advertencia: documentos obligatorios pendientes
+           Solo se muestra si NO hay descuadre financiero (que tiene prioridad) */}
+      {bloqueadoPorDocs &&
+        !hayDescuadreFinanciero &&
+        fuente.saldo_pendiente > 0 && (
+          <div className='space-y-2 border-t border-amber-200 bg-amber-50 px-5 py-3 dark:border-amber-500/[0.18] dark:bg-amber-500/[0.08]'>
+            <div className='flex items-start gap-2'>
+              <FileWarning className='mt-0.5 h-4 w-4 flex-shrink-0 text-amber-500 dark:text-amber-400' />
+              <p className='text-xs font-medium leading-tight text-amber-700 dark:text-amber-300'>
+                <span className='font-bold'>Acción bloqueada.</span> Debes
+                aportar{' '}
+                <span className='font-bold'>
+                  {docsPendientesObligatorios} documento
+                  {docsPendientesObligatorios > 1 ? 's' : ''} obligatorio
+                  {docsPendientesObligatorios > 1 ? 's' : ''}
+                </span>{' '}
+                antes de registrar este
+                {esDesembolsoUnico ? ' desembolso' : ' abono'}.
+              </p>
+            </div>
+
+            {/* Lista de documentos pendientes */}
+            {docsPendientesNombres.length > 0 && (
+              <ul className='ml-6 space-y-0.5'>
+                {docsPendientesNombres.map((nombre, i) => (
+                  <li
+                    key={i}
+                    className='flex items-center gap-1.5 text-[11px] text-amber-700 dark:text-amber-300'
+                  >
+                    <span className='h-1 w-1 flex-shrink-0 rounded-full bg-amber-500 dark:bg-amber-400' />
+                    {nombre}
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            {/* Acceso directo a documentos del cliente */}
+            {clienteSlug && (
+              <Link
+                href={`/clientes/${clienteSlug}`}
+                onClick={() =>
+                  sessionStorage.setItem('cliente-tab-intent', 'documentos')
+                }
+                className='inline-flex items-center gap-1.5 text-[11px] font-semibold text-amber-700 underline underline-offset-2 transition-colors hover:text-amber-900 dark:text-amber-400 dark:hover:text-amber-200'
+              >
+                <ExternalLink className='h-3 w-3' />
+                Ir a Documentos del cliente
+              </Link>
+            )}
           </div>
-
-          {/* Lista de documentos pendientes */}
-          {docsPendientesNombres.length > 0 && (
-            <ul className='ml-6 space-y-0.5'>
-              {docsPendientesNombres.map((nombre, i) => (
-                <li
-                  key={i}
-                  className='flex items-center gap-1.5 text-[11px] text-amber-700 dark:text-amber-300'
-                >
-                  <span className='h-1 w-1 flex-shrink-0 rounded-full bg-amber-500 dark:bg-amber-400' />
-                  {nombre}
-                </li>
-              ))}
-            </ul>
-          )}
-
-          {/* Acceso directo a documentos del cliente */}
-          {clienteSlug && (
-            <Link
-              href={`/clientes/${clienteSlug}`}
-              onClick={() =>
-                sessionStorage.setItem('cliente-tab-intent', 'documentos')
-              }
-              className='inline-flex items-center gap-1.5 text-[11px] font-semibold text-amber-700 underline underline-offset-2 transition-colors hover:text-amber-900 dark:text-amber-400 dark:hover:text-amber-200'
-            >
-              <ExternalLink className='h-3 w-3' />
-              Ir a Documentos del cliente
-            </Link>
-          )}
-        </div>
-      )}
+        )}
       {/* Plan de cuotas expandible (solo Crédito con la Constructora) */}
       {esCreditoConstructora && cuotasExpandidas ? (
         <div className='border-t border-violet-200 bg-violet-50/50 px-4 py-4 dark:border-violet-800/30 dark:bg-violet-900/5'>

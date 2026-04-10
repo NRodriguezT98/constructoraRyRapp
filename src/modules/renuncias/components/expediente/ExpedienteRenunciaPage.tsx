@@ -19,6 +19,7 @@ import Link from 'next/link'
 import { formatDateCompact } from '@/lib/utils/date.utils'
 
 import { useExpedienteRenuncia } from '../../hooks/useExpedienteRenuncia'
+import { ProcesarDevolucionModal } from '../modals/ProcesarDevolucionModal'
 
 import { ExpedienteAbonos } from './ExpedienteAbonos'
 import { ExpedienteAuditoria } from './ExpedienteAuditoria'
@@ -46,13 +47,10 @@ type TabKey = (typeof TABS)[number]['key']
 export function ExpedienteRenunciaPage({
   consecutivo,
 }: ExpedienteRenunciaPageProps) {
-  const {
-    datos,
-    cargando,
-    error,
-    recargar: _recargar,
-  } = useExpedienteRenuncia(consecutivo)
+  const { datos, cargando, error, recargar } =
+    useExpedienteRenuncia(consecutivo)
   const [tabActiva, setTabActiva] = useState<TabKey>('financiero')
+  const [modalDevolucionAbierto, setModalDevolucionAbierto] = useState(false)
 
   // === LOADING ===
   if (cargando) {
@@ -94,11 +92,18 @@ export function ExpedienteRenunciaPage({
   }
 
   // === CONTENIDO ===
+  const esPendiente = datos.renuncia.estado === 'Pendiente Devolución'
+
   return (
     <div className={styles.page.container}>
       <div className={styles.page.content}>
-        {/* Hero (includes back link + detail cards row) */}
-        <ExpedienteHero datos={datos} />
+        {/* Hero — incluye botón Procesar Devolución cuando es pendiente */}
+        <ExpedienteHero
+          datos={datos}
+          onProcesarDevolucion={
+            esPendiente ? () => setModalDevolucionAbierto(true) : undefined
+          }
+        />
 
         {/* Timeline */}
         <ExpedienteTimeline hitos={datos.timeline} />
@@ -170,6 +175,18 @@ export function ExpedienteRenunciaPage({
           </motion.div>
         </AnimatePresence>
       </div>
+
+      {/* Modal Procesar Devolución */}
+      {esPendiente && modalDevolucionAbierto ? (
+        <ProcesarDevolucionModal
+          renuncia={datos.renuncia}
+          onClose={() => setModalDevolucionAbierto(false)}
+          onExitosa={() => {
+            setModalDevolucionAbierto(false)
+            recargar()
+          }}
+        />
+      ) : null}
     </div>
   )
 }

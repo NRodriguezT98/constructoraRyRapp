@@ -46,6 +46,8 @@ export interface NegociacionDetalle {
   estado: string
   valor_negociado: number
   descuento_aplicado: number
+  tipo_descuento?: string | null
+  motivo_descuento?: string | null
 
   // Valores financieros (vienen de select(*) en obtenerNegociacionesCliente)
   valor_total?: number

@@ -1,47 +1,20 @@
 /**
- * Listas de entidades por tipo de fuente para selects del modal de rebalanceo.
+ * Resolver entidades financieras por tipo de fuente.
+ *
+ * Las entidades se cargan dinámicamente desde `entidades_financieras` (BD)
+ * y se resuelven usando `tipo_entidad_requerido` de `tipos_fuentes_pago`.
  */
 
-import {
-  esCreditoHipotecario,
-  esSubsidioCajaCompensacion,
-} from '@/shared/constants/fuentes-pago.constants'
-
-export const BANCOS_HIPOTECARIO = [
-  'Bancolombia',
-  'Banco de Bogotá',
-  'Davivienda',
-  'BBVA Colombia',
-  'Banco de Occidente',
-  'Banco Popular',
-  'Banco Caja Social',
-  'Banco AV Villas',
-  'Banco Agrario',
-  'Fondo Nacional del Ahorro',
-  'Banco Pichincha',
-  'Scotiabank Colpatria',
-  'Itaú',
-  'Otro',
-] as const
-
-export const CAJAS_COMPENSACION_LIST = [
-  'Comfenalco',
-  'Comfandi',
-  'Compensar',
-  'Comfama',
-  'Cafam',
-  'Comfamiliar',
-  'Comfacor',
-  'Comparta',
-  'Cofrem',
-  'Comfacundi',
-  'Comfaoriente',
-  'Comfamiliar Risaralda',
-  'Otro',
-] as const
-
-export function getEntidadesParaTipo(tipo: string): readonly string[] {
-  if (esCreditoHipotecario(tipo)) return BANCOS_HIPOTECARIO
-  if (esSubsidioCajaCompensacion(tipo)) return CAJAS_COMPENSACION_LIST
-  return []
+/**
+ * Dado un tipo de fuente de pago, retorna las entidades financieras correspondientes.
+ *
+ * @param tipoEntidadRequerido - El tipo de entidad que requiere la fuente (ej: 'Banco', 'Caja de Compensación')
+ * @param entidadesPorTipoEntidad - Mapa tipo_entidad → nombres[], cargado desde BD
+ */
+export function getEntidadesParaTipo(
+  tipoEntidadRequerido: string | null | undefined,
+  entidadesPorTipoEntidad: Map<string, string[]>
+): string[] {
+  if (!tipoEntidadRequerido) return []
+  return entidadesPorTipoEntidad.get(tipoEntidadRequerido) ?? []
 }

@@ -205,7 +205,7 @@ negociación   abono         abono         de renuncia   (si aplica)
 | 3 | Último abono | `MAX(abonos_historial.fecha_abono)` | Si hay > 1 abono |
 | 4 | Solicitud de renuncia | `renuncias.fecha_renuncia` | Siempre |
 | 5 | Cierre de renuncia | `renuncias.fecha_cierre` | Si estado = Cerrada |
-| 6 | Devolución procesada | `renuncias.fecha_devolucion` | Si requiere_devolucion |
+| 6 | sada | `renuncias.fecha_devolucion` | Si requiere_devolucion |
 
 **Diseño**: glassmorphism card, iconos por hito, animación de entrada secuencial con Framer Motion.
 

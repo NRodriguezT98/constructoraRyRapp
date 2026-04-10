@@ -1,7 +1,13 @@
+export {
+  LABELS_TIPO_DESCUENTO,
+  TIPOS_DESCUENTO,
+  useDescuentoMutation,
+} from './useDescuentoMutation'
+export type { DatosDescuento, TipoDescuento } from './useDescuentoMutation'
 export { useDocumentosPendientesNeg } from './useDocumentosPendientesNeg'
 export {
-  MOTIVOS_AJUSTE,
   getFuenteColor,
+  MOTIVOS_AJUSTE,
   useNegociacionTab,
 } from './useNegociacionTab'
 export type {

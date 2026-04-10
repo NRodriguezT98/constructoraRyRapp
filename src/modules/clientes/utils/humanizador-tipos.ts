@@ -46,6 +46,9 @@ export function detectarTipoEvento(
   if (tabla === 'renuncias') {
     if (accion === 'CREATE') return 'renuncia_creada'
     if (accion === 'UPDATE') {
+      // El modulo campo distingue el tipo específico de UPDATE en renuncias
+      if (evento.modulo === 'renuncia_devolucion_procesada')
+        return 'renuncia_devolucion_procesada'
       const estadoNuevo = cambios_especificos?.estado?.despues
       if (estadoNuevo === 'Aprobada') return 'renuncia_aprobada'
       if (estadoNuevo === 'Rechazada') return 'renuncia_rechazada'

@@ -168,23 +168,22 @@ export function useProcesarDevolucion() {
     }: {
       renunciaId: string
       dto: ProcesarDevolucionDTO
-      comprobante?: File
+      comprobante: File
     }) => {
-      let comprobanteUrl: string | undefined
+      // 1. Subir comprobante PRIMERO (obligatorio)
+      const comprobanteUrl = await subirComprobante(comprobante, renunciaId)
 
-      if (comprobante) {
-        comprobanteUrl = await subirComprobante(comprobante, renunciaId)
-      }
-
+      // 2. Procesar devolución CON la URL del comprobante ya lista
       return procesarDevolucion(renunciaId, {
         ...dto,
-        comprobante_devolucion_url:
-          comprobanteUrl ?? dto.comprobante_devolucion_url,
+        comprobante_devolucion_url: comprobanteUrl,
       })
     },
     onSuccess: () => {
       toast.success('Devolución procesada exitosamente')
       queryClient.invalidateQueries({ queryKey: renunciasKeys.all })
+      queryClient.invalidateQueries({ queryKey: ['negociaciones'] })
+      queryClient.invalidateQueries({ queryKey: ['clientes'] })
     },
     onError: (error: Error) => {
       logger.error('❌ Error procesando devolución:', error)

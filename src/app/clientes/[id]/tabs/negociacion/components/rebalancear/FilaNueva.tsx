@@ -2,14 +2,13 @@
 
 import { useState } from 'react'
 
-import { Info, X } from 'lucide-react'
+import { AlertTriangle, Info, X } from 'lucide-react'
 
 import { esCreditoConstructora } from '@/shared/constants/fuentes-pago.constants'
 
 import type { FuAlteNueva } from '../../hooks'
 import { getFuenteColor } from '../../hooks'
 
-import { getEntidadesParaTipo } from './entidades'
 import { formatMontoInput } from './helpers'
 
 interface FilaNuevaProps {
@@ -22,6 +21,9 @@ interface FilaNuevaProps {
   ) => void
   onEliminar: (index: number) => void
   requiereEntidad: boolean
+  entidades: string[]
+  hasError?: boolean
+  hasEntidadError?: boolean
 }
 
 export function FilaNueva({
@@ -30,10 +32,12 @@ export function FilaNueva({
   onChange,
   onEliminar,
   requiereEntidad,
+  entidades,
+  hasError = false,
+  hasEntidadError = false,
 }: FilaNuevaProps) {
   const color = getFuenteColor(fuente.tipo)
   const [inputValue, setInputValue] = useState(formatMontoInput(fuente.monto))
-  const entidades = getEntidadesParaTipo(fuente.tipo)
   const mostrarEntidad = requiereEntidad
   const esCredito = esCreditoConstructora(fuente.tipo)
 
@@ -62,18 +66,30 @@ export function FilaNueva({
         ) : null}
         {mostrarEntidad &&
           (entidades.length > 0 ? (
-            <select
-              value={fuente.entidad}
-              onChange={e => onChange(index, 'entidad', e.target.value)}
-              className='mt-1 w-full rounded-md border border-gray-200 bg-white px-2 py-1 text-xs text-gray-700 focus:border-cyan-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700/60 dark:text-gray-300'
-            >
-              <option value=''>Seleccionar entidad...</option>
-              {entidades.map(e => (
-                <option key={e} value={e}>
-                  {e}
-                </option>
-              ))}
-            </select>
+            <>
+              <select
+                value={fuente.entidad}
+                onChange={e => onChange(index, 'entidad', e.target.value)}
+                className={`mt-1 w-full rounded-md border px-2 py-1 text-xs text-gray-700 focus:border-cyan-500 focus:outline-none dark:text-gray-300 ${
+                  hasEntidadError
+                    ? 'border-red-400 bg-red-50 dark:border-red-600 dark:bg-red-900/20'
+                    : 'border-gray-200 bg-white dark:border-gray-600 dark:bg-gray-700/60'
+                }`}
+              >
+                <option value=''>Seleccionar entidad... *</option>
+                {entidades.map(e => (
+                  <option key={e} value={e}>
+                    {e}
+                  </option>
+                ))}
+              </select>
+              {hasEntidadError ? (
+                <p className='mt-0.5 flex items-center gap-1 text-[10px] text-red-500 dark:text-red-400'>
+                  <AlertTriangle className='h-2.5 w-2.5 flex-shrink-0' />
+                  Selecciona una entidad
+                </p>
+              ) : null}
+            </>
           ) : (
             <input
               type='text'
@@ -98,10 +114,20 @@ export function FilaNueva({
             inputMode='numeric'
             value={inputValue}
             onChange={e => handleChange(e.target.value)}
-            className='w-36 rounded-lg border border-emerald-200 bg-white px-2.5 py-1.5 text-right text-sm font-semibold tabular-nums text-gray-900 focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 dark:border-emerald-800/60 dark:bg-gray-700/60 dark:text-white'
+            className={`w-36 rounded-lg border px-2.5 py-1.5 text-right text-sm font-semibold tabular-nums text-gray-900 focus:outline-none focus:ring-2 dark:bg-gray-700/60 dark:text-white ${
+              hasError
+                ? 'border-red-400 bg-red-50 focus:border-red-500 focus:ring-red-500/20 dark:border-red-600 dark:bg-red-900/20'
+                : 'border-emerald-200 bg-white focus:border-cyan-500 focus:ring-cyan-500/20 dark:border-emerald-800/60'
+            }`}
             placeholder='0'
           />
         </div>
+        {hasError ? (
+          <p className='flex items-center gap-1 text-[10px] text-red-500 dark:text-red-400'>
+            <AlertTriangle className='h-2.5 w-2.5 flex-shrink-0' />
+            El monto debe ser mayor a $0
+          </p>
+        ) : null}
       </div>
 
       <button
