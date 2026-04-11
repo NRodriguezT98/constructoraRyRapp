@@ -56,7 +56,7 @@ export function FilaFuente({
       className={`flex items-center gap-3 rounded-lg p-3 transition-all ${
         ajuste.paraEliminar
           ? 'border-2 border-dashed border-gray-300 bg-gray-50 opacity-40 dark:border-gray-600 dark:bg-gray-800/30'
-          : 'border border-gray-200/80 bg-white dark:border-gray-700/50 dark:bg-gray-800/60'
+          : 'border border-gray-200/80 bg-white dark:border-gray-700/50 dark:bg-gray-800'
       }`}
     >
       <div
@@ -83,10 +83,10 @@ export function FilaFuente({
                 value={ajuste.entidadEditable}
                 onChange={e => onCambioEntidad(ajuste.id, e.target.value)}
                 disabled={!restricciones.puedeEditarEntidad}
-                className={`mt-1 w-full rounded-md border px-2 py-1 text-xs text-gray-700 focus:border-cyan-500 focus:outline-none dark:text-gray-300 ${
+                className={`mt-1 w-full rounded-md border px-2 py-1 text-xs text-gray-700 focus:border-cyan-500 focus:outline-none dark:text-gray-200 dark:[color-scheme:dark] ${
                   hasEntidadError
-                    ? 'border-red-400 bg-red-50 dark:border-red-600 dark:bg-red-900/20'
-                    : 'border-gray-200 bg-gray-50 dark:border-gray-600 dark:bg-gray-700/60'
+                    ? 'border-red-400 bg-red-50 dark:border-red-600 dark:bg-red-900/30'
+                    : 'border-gray-200 bg-gray-50 dark:border-gray-600 dark:bg-gray-700'
                 } ${!restricciones.puedeEditarEntidad ? 'cursor-not-allowed opacity-60' : ''}`}
               >
                 <option value=''>Seleccionar entidad... *</option>
@@ -139,7 +139,7 @@ export function FilaFuente({
               className={`w-36 rounded-lg border px-2.5 py-1.5 text-right text-sm font-semibold tabular-nums text-gray-900 focus:outline-none focus:ring-2 dark:text-white ${
                 hasMontoError && restricciones.puedeEditarMonto
                   ? 'border-red-400 bg-red-50 focus:border-red-500 focus:ring-red-500/20 dark:border-red-600 dark:bg-red-900/20'
-                  : 'border-gray-200 bg-gray-50 focus:border-cyan-500 focus:ring-cyan-500/20 dark:border-gray-600 dark:bg-gray-700/60'
+                  : 'border-gray-200 bg-gray-50 focus:border-cyan-500 focus:ring-cyan-500/20 dark:border-gray-600 dark:bg-gray-700'
               } ${!restricciones.puedeEditarMonto ? 'cursor-not-allowed opacity-60' : ''}`}
               placeholder='0'
             />

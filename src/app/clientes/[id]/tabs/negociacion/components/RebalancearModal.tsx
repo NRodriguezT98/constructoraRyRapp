@@ -373,7 +373,7 @@ export function RebalancearModal({
             className='fixed inset-0 z-[9999] flex items-end justify-center p-0 sm:items-center sm:p-4'
             onClick={e => e.stopPropagation()}
           >
-            <div className='dark:bg-gray-850 relative flex max-h-[90dvh] w-full flex-col overflow-hidden rounded-t-2xl bg-white shadow-2xl sm:max-w-lg sm:rounded-2xl'>
+            <div className='relative flex max-h-[90dvh] w-full flex-col overflow-hidden rounded-t-2xl bg-white shadow-2xl dark:bg-gray-900 sm:max-w-lg sm:rounded-2xl'>
               {/* Header */}
               <div className='flex flex-shrink-0 items-center justify-between bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 px-5 py-4'>
                 <div className='flex items-center gap-2.5'>
@@ -399,7 +399,7 @@ export function RebalancearModal({
               </div>
 
               {/* Subheader: valor objetivo */}
-              <div className='flex-shrink-0 border-b border-gray-200 bg-gray-50 px-5 py-3 dark:border-gray-700/50 dark:bg-gray-800/60'>
+              <div className='flex-shrink-0 border-b border-gray-200 bg-gray-50 px-5 py-3 dark:border-gray-700 dark:bg-gray-800'>
                 <p className='text-xs text-gray-500 dark:text-gray-400'>
                   Valor de la vivienda
                 </p>
@@ -409,7 +409,7 @@ export function RebalancearModal({
               </div>
 
               {/* Body scrollable */}
-              <div className='flex-1 space-y-3 overflow-y-auto px-5 py-4'>
+              <div className='flex-1 space-y-3 overflow-y-auto bg-white px-5 py-4 dark:bg-gray-900'>
                 {/* Fuentes existentes */}
                 <div className='space-y-2'>
                   <p className='text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500'>
@@ -531,7 +531,7 @@ export function RebalancearModal({
                   <select
                     value={motivo}
                     onChange={e => setMotivo(e.target.value)}
-                    className='w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-900 focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 dark:border-gray-600 dark:bg-gray-700/60 dark:text-white'
+                    className='w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-900 focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:[color-scheme:dark]'
                   >
                     <option value=''>Seleccionar motivo...</option>
                     {MOTIVOS_AJUSTE.map(m => (
@@ -547,7 +547,7 @@ export function RebalancearModal({
                       onChange={e => setNotas(e.target.value)}
                       placeholder='Describe el motivo del cambio... (requerido)'
                       rows={2}
-                      className='w-full resize-none rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 dark:border-gray-600 dark:bg-gray-700/60 dark:text-white'
+                      className='w-full resize-none rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder:text-gray-500'
                     />
                   )}
 
@@ -557,14 +557,14 @@ export function RebalancearModal({
                       onChange={e => setNotas(e.target.value)}
                       placeholder='Notas adicionales (opcional)'
                       rows={2}
-                      className='w-full resize-none rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 dark:border-gray-600 dark:bg-gray-700/60 dark:text-white'
+                      className='w-full resize-none rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder:text-gray-500'
                     />
                   )}
                 </div>
               </div>
 
               {/* Footer fijo: balance + botones */}
-              <div className='flex-shrink-0 space-y-3 border-t border-gray-200 px-5 py-4 dark:border-gray-700'>
+              <div className='flex-shrink-0 space-y-3 border-t border-gray-200 bg-white px-5 py-4 dark:border-gray-700 dark:bg-gray-900'>
                 {/* Advertencia: cambios que invalidarán cartas */}
                 <AdvertenciaDocumentos
                   visible={mostrandoAdvertencia}

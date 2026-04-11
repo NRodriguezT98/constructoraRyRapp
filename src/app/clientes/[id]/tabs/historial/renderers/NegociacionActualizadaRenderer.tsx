@@ -258,9 +258,27 @@ function RebalanceoRenderer({
                   </div>
                 ) : null}
 
-                {/* Fuente sin cambio real de monto ni entidad (caso raro, solo informa) */}
+                {/* Caso ambiguo: mismos montos, sin campo cambio_entidad (registro histórico antiguo)
+                    Puede ser un cambio de entidad que no quedó registrado en el audit. */}
                 {ajuste.accion === 'actualizada' &&
-                !ajuste.cambio_entidad &&
+                ajuste.cambio_entidad === undefined &&
+                ajuste.monto_anterior !== undefined &&
+                ajuste.monto_nuevo !== undefined &&
+                ajuste.monto_anterior === ajuste.monto_nuevo ? (
+                  <div className='px-3 py-2'>
+                    <p className='flex items-center gap-1.5 text-xs text-gray-400 dark:text-gray-500'>
+                      <Landmark className='h-3 w-3 shrink-0 text-gray-300 dark:text-gray-600' />
+                      Ajuste sin detalle completo (registro anterior a la v2 del
+                      historial)
+                    </p>
+                  </div>
+                ) : null}
+
+                {/* Caso limpio: fuente marcada como ajustada pero $0 diff y sin cambio_entidad=true */}
+                {ajuste.accion === 'actualizada' &&
+                ajuste.cambio_entidad === false &&
+                ajuste.monto_anterior !== undefined &&
+                ajuste.monto_nuevo !== undefined &&
                 ajuste.monto_anterior === ajuste.monto_nuevo ? (
                   <div className='px-3 py-2'>
                     <p className='text-xs text-gray-400 dark:text-gray-500'>
