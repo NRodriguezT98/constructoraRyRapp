@@ -88,13 +88,13 @@ export function useRebalanceoMutation({
       queryClient.invalidateQueries({
         queryKey: ['docs-pendientes-neg-tab', clienteId],
       })
-      toast.success('Plan financiero actualizado correctamente')
+      toast.success('Cierre financiero ajustado correctamente')
       closeRebalancear()
     },
     onError: (error: Error) => {
       toast.error(
         error.message ||
-          'Error al actualizar el plan financiero. Intenta nuevamente.'
+          'Error al ajustar el cierre financiero. Intenta nuevamente.'
       )
     },
   })

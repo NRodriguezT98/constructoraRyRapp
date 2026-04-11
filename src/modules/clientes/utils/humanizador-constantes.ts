@@ -78,6 +78,7 @@ export const ETIQUETAS: Record<string, string> = {
   valor_negociado: 'Valor negociado',
   descuento_aplicado: 'Descuento aplicado',
   valor_total: 'Valor total',
+  valor_total_pagar: 'Valor total a pagar',
   saldo_pendiente: 'Saldo pendiente',
   promesa_compraventa_url: 'Promesa de compraventa',
   promesa_firmada_url: 'Promesa firmada',

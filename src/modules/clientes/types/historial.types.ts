@@ -49,6 +49,8 @@ export interface EventoHistorialHumanizado {
   color: ColorEvento
   detalles?: DetalleEvento[]
   metadata?: Record<string, unknown>
+  datosAnteriores?: Record<string, unknown> | null
+  datosNuevos?: Record<string, unknown> | null
   modulo?: string // Módulo al que pertenece el evento
 }
 

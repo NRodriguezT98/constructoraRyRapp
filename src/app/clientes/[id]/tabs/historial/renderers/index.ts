@@ -11,6 +11,7 @@ import { ClienteActualizadoRenderer } from './ClienteActualizadoRenderer'
 import { ClienteCreadoRenderer } from './ClienteCreadoRenderer'
 import { DevolucionProcesadaRenderer } from './DevolucionProcesadaRenderer'
 import { DocumentoRenderer } from './DocumentoRenderer'
+import { NegociacionActualizadaRenderer } from './NegociacionActualizadaRenderer'
 import { NegociacionCreadaRenderer } from './NegociacionCreadaRenderer'
 import { RenunciaRenderer } from './RenunciaRenderer'
 
@@ -26,7 +27,7 @@ const RENDERERS: Partial<Record<string, RendererComponent>> = {
 
   // Negociación
   negociacion_creada: NegociacionCreadaRenderer,
-  negociacion_actualizada: CambioGenericoRenderer,
+  negociacion_actualizada: NegociacionActualizadaRenderer,
   negociacion_estado_cambiada: CambioGenericoRenderer,
   negociacion_completada: CambioGenericoRenderer,
 
@@ -61,6 +62,7 @@ export {
   ClienteCreadoRenderer,
   DevolucionProcesadaRenderer,
   DocumentoRenderer,
+  NegociacionActualizadaRenderer,
   NegociacionCreadaRenderer,
   RenunciaRenderer,
 }

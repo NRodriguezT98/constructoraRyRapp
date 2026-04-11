@@ -97,11 +97,56 @@ export function generarTextos(
       }
     }
 
-    case 'negociacion_actualizada':
+    case 'negociacion_actualizada': {
+      // Rebalanceo del plan financiero
+      if (metadata?.accion_tipo === 'rebalanceo_plan_financiero') {
+        const motivo = metadata.motivo ? String(metadata.motivo) : null
+        return {
+          titulo: 'Cierre financiero ajustado',
+          descripcion: motivo
+            ? `Motivo: ${motivo}`
+            : 'Cierre financiero ajustado en la negociación',
+        }
+      }
+      // Descuento aplicado
+      if (
+        datos_nuevos?.descuento_aplicado !== undefined ||
+        datos_nuevos?.tipo_descuento !== undefined
+      ) {
+        const monto = datos_nuevos?.descuento_aplicado as number | undefined
+        const tipo = datos_nuevos?.tipo_descuento as string | undefined
+        const LABELS: Record<string, string> = {
+          comercial: 'comercial',
+          pronto_pago: 'pronto pago',
+          referido: 'por referido',
+          promocional: 'promocional',
+          forma_pago: 'por forma de pago',
+          otro: 'especial',
+        }
+        const tipoLabel = tipo ? (LABELS[tipo] ?? tipo) : null
+        const montoStr = monto ? `$${monto.toLocaleString('es-CO')}` : null
+        const partes = ['Descuento aplicado', tipoLabel, montoStr].filter(
+          Boolean
+        )
+        return {
+          titulo: 'Descuento aplicado',
+          descripcion: partes.join(' · '),
+        }
+      }
+      // Cambio genérico de campos
+      const camposVisibles = cambios_especificos
+        ? Object.keys(cambios_especificos).filter(
+            campo => !CAMPOS_EXCLUIDOS.has(campo)
+          )
+        : []
       return {
         titulo: 'Negociación actualizada',
-        descripcion: 'Términos de la negociación modificados',
+        descripcion:
+          camposVisibles.length > 0
+            ? `Campos modificados: ${camposVisibles.map(c => ETIQUETAS[c] ?? c).join(', ')}`
+            : 'Términos de la negociación modificados',
       }
+    }
 
     case 'negociacion_estado_cambiada': {
       const negEstadoAnterior =

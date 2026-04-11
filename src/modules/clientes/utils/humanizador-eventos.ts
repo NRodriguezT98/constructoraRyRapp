@@ -48,6 +48,8 @@ export function humanizarEvento(
     color,
     detalles: detalles.length > 0 ? detalles : undefined,
     metadata: evento.metadata,
+    datosAnteriores: evento.datos_anteriores,
+    datosNuevos: evento.datos_nuevos,
     modulo: evento.modulo ?? undefined,
   }
 }
