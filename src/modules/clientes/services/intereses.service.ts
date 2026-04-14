@@ -145,8 +145,8 @@ class InteresesService {
         .insert({
           cliente_id: datos.cliente_id,
           proyecto_id: datos.proyecto_id,
-          vivienda_id: datos.vivienda_id,
-          notas: datos.notas,
+          vivienda_id: datos.vivienda_id ?? null,
+          notas: datos.notas?.trim() || null,
           estado: 'Activo',
         })
         .select()
@@ -194,7 +194,7 @@ class InteresesService {
     try {
       return await this.actualizarInteres(id, {
         estado: 'Descartado',
-        motivo_descarte: motivo,
+        motivo_descarte: motivo?.trim() || null,
       })
     } catch (error) {
       const mensaje =

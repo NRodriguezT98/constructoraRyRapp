@@ -8,7 +8,7 @@
 
 'use client'
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { Banknote, ClipboardCheck, Home } from 'lucide-react'
 import { toast } from 'sonner'
@@ -142,6 +142,31 @@ export function useAsignarViviendaV2({
       setErrorApi(errorNegociacion)
     }
   }, [errorNegociacion])
+
+  // ─── Invalidar pasos 2/3 cuando el descuento cambia ──
+  // Si el usuario vuelve al paso 1 y modifica el descuento después de haber
+  // configurado fuentes en el paso 2, el total cambia y las fuentes ya no
+  // cierran. Forzamos al usuario a revisar el paso 2 de nuevo.
+  const prevDescuentoRef = useRef(descuentoAplicado)
+  const prevAplicarDescuentoRef = useRef(aplicarDescuento)
+
+  useEffect(() => {
+    const descuentoCambio =
+      prevDescuentoRef.current !== descuentoAplicado ||
+      prevAplicarDescuentoRef.current !== aplicarDescuento
+    prevDescuentoRef.current = descuentoAplicado
+    prevAplicarDescuentoRef.current = aplicarDescuento
+
+    if (descuentoCambio) {
+      setPasosCompletados(prev => {
+        if (!prev.has(2) && !prev.has(3)) return prev
+        const next = new Set(prev)
+        next.delete(2)
+        next.delete(3)
+        return next
+      })
+    }
+  }, [descuentoAplicado, aplicarDescuento])
 
   // ─── Fuentes de pago ──────────────────────────────────
   const {
@@ -324,6 +349,16 @@ export function useAsignarViviendaV2({
   const handleSubmitFinal = useCallback(async () => {
     setErrorApi(null)
 
+    // Guardia: las fuentes deben seguir cerrando. El usuario puede haber
+    // modificado el descuento (paso 1) después de configurar fuentes (paso 2)
+    // sin pasar por irSiguiente, dejando un desbalance silencioso.
+    if (!sumaCierra) {
+      setErrorApi(
+        'Las fuentes de pago no cubren el total a financiar. Regresa al paso 2 y ajusta los montos.'
+      )
+      return
+    }
+
     const fuentesDTO: CrearFuentePagoDTO[] = fuentes
       .filter(
         (f): f is FuentePagoConfiguracion & { config: FuentePagoConfig } =>
@@ -350,10 +385,16 @@ export function useAsignarViviendaV2({
         }
       })
 
+    // valor_negociado debe ser el precio PRE-descuento, porque useCrearNegociacion
+    // calcula el total a financiar como (valor_negociado - descuento_aplicado)
+    // y lo compara contra la suma de fuentes. Enviar el valor post-descuento
+    // causaría una doble resta y fallaría la validación.
+    const valorPreDescuento = valorTotal + descuentoAplicado
+
     const result = await crearNegociacion({
       cliente_id: clienteId,
       vivienda_id: viviendaId,
-      valor_negociado: valorTotal,
+      valor_negociado: valorPreDescuento,
       descuento_aplicado: descuentoAplicado,
       tipo_descuento: tipoDescuento || undefined,
       motivo_descuento: motivoDescuento || undefined,
@@ -378,6 +419,7 @@ export function useAsignarViviendaV2({
       router.push(`/clientes/${clienteSlug ?? clienteId}`)
     }, 1800)
   }, [
+    sumaCierra,
     fuentes,
     tiposConCampos,
     entidades,

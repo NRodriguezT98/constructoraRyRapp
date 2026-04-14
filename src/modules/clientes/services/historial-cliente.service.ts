@@ -92,10 +92,40 @@ class HistorialClienteService {
           .order('fecha_evento', { ascending: false }),
       ])
 
+      // Campos técnicos que NO aportan información útil al historial.
+      // Si un UPDATE de negociaciones solo modifica estos campos, se descarta.
+      const CAMPOS_TECNICOS_NEGOCIACIONES = new Set([
+        'version_lock',
+        'fecha_actualizacion',
+        'total_fuentes_pago',
+        'total_abonado',
+        'porcentaje_pagado',
+        'porcentaje_completado',
+        'saldo_pendiente',
+        'valor_total_pagar',
+        'valor_total', // nombre real en cambios_especificos (auto-calculado)
+        'version_actual',
+        'updated_at',
+      ])
+
+      const negociacionesFiltradas = (eventosNegociaciones.data || []).filter(
+        evento => {
+          // Siempre incluir INSERT y DELETE
+          if (evento.accion !== 'UPDATE') return true
+          // Si no hay cambios_especificos → incluir (no podemos saber qué cambió)
+          if (!evento.cambios_especificos) return true
+          const camposModificados = Object.keys(evento.cambios_especificos)
+          // Si todos los campos modificados son técnicos → descartar
+          return camposModificados.some(
+            c => !CAMPOS_TECNICOS_NEGOCIACIONES.has(c)
+          )
+        }
+      )
+
       // Consolidar eventos
       const todosEventos = [
         ...(eventosCliente.data || []),
-        ...(eventosNegociaciones.data || []),
+        ...negociacionesFiltradas,
         ...(eventosAbonos.data || []),
         ...(eventosRenuncias.data || []),
         ...(eventosIntereses.data || []),

@@ -38,8 +38,10 @@ export interface ActualizarNegociacionDTO {
   estado?: EstadoNegociacion
   valor_negociado?: number
   descuento_aplicado?: number
-  tipo_descuento?: string
-  motivo_descuento?: string
+  /** null limpia el campo en BD (quitar descuento) */
+  tipo_descuento?: string | null
+  /** null limpia el campo en BD (quitar descuento) */
+  motivo_descuento?: string | null
   valor_escritura_publica?: number
   fecha_completada?: string
   notas?: string
@@ -144,11 +146,11 @@ export function sanitizeActualizarNegociacionDTO(
     sanitized.descuento_aplicado = sanitizeNumber(datos.descuento_aplicado)
   }
   if (datos.tipo_descuento !== undefined) {
-    sanitized.tipo_descuento = sanitizeString(datos.tipo_descuento) ?? undefined
+    // null explícito limpia el campo en BD; string vacío también queda null
+    sanitized.tipo_descuento = sanitizeString(datos.tipo_descuento) ?? null
   }
   if (datos.motivo_descuento !== undefined) {
-    sanitized.motivo_descuento =
-      sanitizeString(datos.motivo_descuento) ?? undefined
+    sanitized.motivo_descuento = sanitizeString(datos.motivo_descuento) ?? null
   }
   if (datos.valor_escritura_publica !== undefined) {
     sanitized.valor_escritura_publica = sanitizeNumber(

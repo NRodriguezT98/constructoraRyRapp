@@ -50,8 +50,8 @@ export function useHistorialVersiones(negociacionId: string) {
       return (data || []) as unknown as SnapshotVersion[]
     },
     enabled: !!negociacionId,
-    staleTime: 0, // Sin caché para debugging
-    gcTime: 0, // Sin caché para debugging
+    staleTime: 5 * 60 * 1000, // 5 minutos
+    gcTime: 10 * 60 * 1000, // 10 minutos
   })
 
   // Query: Versión actual de la negociación

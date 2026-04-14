@@ -14,37 +14,22 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
 import { logger } from '@/lib/utils/logger'
+import {
+  LABELS_TIPO_DESCUENTO,
+  TIPOS_DESCUENTO,
+  type TipoDescuento,
+} from '@/modules/clientes/constants/descuento.constants'
 import { negociacionesQueryKeys } from '@/modules/clientes/hooks/useNegociacionesQuery'
 import { negociacionesService } from '@/modules/clientes/services/negociaciones.service'
 
-// ============================================
-// TYPES
-// ============================================
-
-export const TIPOS_DESCUENTO = [
-  'comercial',
-  'pronto_pago',
-  'referido',
-  'promocional',
-  'forma_pago',
-  'otro',
-] as const
-
-export type TipoDescuento = (typeof TIPOS_DESCUENTO)[number]
-
-export const LABELS_TIPO_DESCUENTO: Record<TipoDescuento, string> = {
-  comercial: 'Descuento Comercial',
-  pronto_pago: 'Descuento por Pronto Pago',
-  referido: 'Descuento por Referido',
-  promocional: 'Descuento Promocional',
-  forma_pago: 'Descuento por Forma de Pago',
-  otro: 'Otro',
-}
+export { LABELS_TIPO_DESCUENTO, TIPOS_DESCUENTO, type TipoDescuento }
 
 export interface DatosDescuento {
   descuento_aplicado: number
-  tipo_descuento: TipoDescuento
-  motivo_descuento: string
+  /** null cuando se elimina el descuento (limpia el campo en BD) */
+  tipo_descuento: TipoDescuento | null
+  /** null cuando se elimina el descuento (limpia el campo en BD) */
+  motivo_descuento: string | null
 }
 
 // ============================================

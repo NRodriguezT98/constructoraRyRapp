@@ -34,6 +34,7 @@ import type {
   FuentePagoConfiguracion,
   ViviendaDetalle,
 } from '@/modules/clientes/components/asignar-vivienda/types'
+import { LABELS_TIPO_DESCUENTO } from '@/modules/clientes/constants/descuento.constants'
 import { obtenerMontoParaCierre } from '@/modules/clientes/utils/fuentes-pago-campos.utils'
 import { useEntidadesFinancierasCombinadas } from '@/modules/configuracion/hooks/useEntidadesFinancierasParaFuentes'
 import type { TipoFuentePagoConCampos } from '@/modules/configuracion/types/campos-dinamicos.types'
@@ -153,6 +154,7 @@ export function SeccionRevision({
   valorTotal,
   valorEscrituraPublica,
   aplicarDescuento,
+  tipoDescuento,
   notas,
   fuentes,
   tiposConCampos,
@@ -381,6 +383,13 @@ export function SeccionRevision({
           <div className={s.revision.financialRow}>
             <span className={s.revision.financialLabel}>
               Descuento ({pctDescuento}%)
+              {tipoDescuento
+                ? ` · ${
+                    LABELS_TIPO_DESCUENTO[
+                      tipoDescuento as keyof typeof LABELS_TIPO_DESCUENTO
+                    ] ?? tipoDescuento
+                  }`
+                : ''}
             </span>
             <span
               className={`${s.revision.financialValue} ${s.revision.descuento}`}

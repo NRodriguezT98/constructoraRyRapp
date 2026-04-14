@@ -95,7 +95,7 @@ export function SeccionFuentesPago({
           <span
             className={
               sumaCierra
-                ? 'font-mono text-[11px] font-semibold text-emerald-500'
+                ? 'font-[family-name:var(--font-jakarta)] text-[11px] font-semibold tabular-nums text-emerald-500'
                 : s.fuentes.progressLabelRight
             }
           >

@@ -8,6 +8,7 @@ import {
   Building2,
   Calculator,
   Calendar,
+  ChevronDown,
   DollarSign,
   FileText,
   Tag,
@@ -25,6 +26,10 @@ import { formatCurrency } from '@/lib/utils/format.utils'
 import { ViviendaCombobox } from '@/modules/clientes/components/asignar-vivienda/components'
 import type { AsignarViviendaFormData } from '@/modules/clientes/components/asignar-vivienda/schemas'
 import type { ViviendaDetalle } from '@/modules/clientes/components/asignar-vivienda/types'
+import {
+  LABELS_TIPO_DESCUENTO,
+  TIPOS_DESCUENTO,
+} from '@/modules/clientes/constants/descuento.constants'
 
 import { styles as s } from '../../styles'
 
@@ -52,16 +57,6 @@ interface SeccionViviendaValoresProps {
   valorTotal: number
   onClearErrorApi?: () => void
 }
-
-const TIPOS_DESCUENTO = [
-  'Trabajador Empresa',
-  'Cliente VIP',
-  'Promoción Especial',
-  'Pronto Pago',
-  'Negociación Comercial',
-  'Liquidación',
-  'Otro',
-] as const
 
 export function SeccionViviendaValores({
   clienteNombre,
@@ -139,29 +134,32 @@ export function SeccionViviendaValores({
         {/* Proyecto */}
         <div>
           <label className={s.field.label}>Proyecto</label>
-          <select
-            className={s.field.select}
-            value={proyectoSeleccionado}
-            onChange={e => {
-              setProyectoSeleccionado(e.target.value)
-              setValue('proyecto_id', e.target.value)
-              setViviendaId('')
-              setValue('vivienda_id', '')
-              onClearErrorApi?.()
-            }}
-            disabled={cargandoProyectos || proyectos.length === 0}
-          >
-            <option value=''>
-              {!cargandoProyectos && proyectos.length === 0
-                ? 'Sin proyectos disponibles'
-                : 'Seleccionar proyecto'}
-            </option>
-            {proyectos.map(p => (
-              <option key={p.id} value={p.id}>
-                {p.nombre}
+          <div className={s.field.selectWrapper}>
+            <select
+              className={s.field.select}
+              value={proyectoSeleccionado}
+              onChange={e => {
+                setProyectoSeleccionado(e.target.value)
+                setValue('proyecto_id', e.target.value)
+                setViviendaId('')
+                setValue('vivienda_id', '')
+                onClearErrorApi?.()
+              }}
+              disabled={cargandoProyectos || proyectos.length === 0}
+            >
+              <option value=''>
+                {!cargandoProyectos && proyectos.length === 0
+                  ? 'Sin proyectos disponibles'
+                  : 'Seleccionar proyecto'}
               </option>
-            ))}
-          </select>
+              {proyectos.map(p => (
+                <option key={p.id} value={p.id}>
+                  {p.nombre}
+                </option>
+              ))}
+            </select>
+            <ChevronDown className={s.field.selectArrow} />
+          </div>
           {errors.proyecto_id && (
             <p className={s.field.error}>
               <AlertCircle className='h-3 w-3' />
@@ -179,6 +177,13 @@ export function SeccionViviendaValores({
             onChange={id => {
               setViviendaId(id)
               setValue('vivienda_id', id)
+              if (!id) {
+                setValue('aplicar_descuento', false)
+                setValue('descuento_aplicado', 0)
+                setValue('tipo_descuento', '')
+                setValue('motivo_descuento', '')
+                setDescuentoDisplay('')
+              }
               onClearErrorApi?.()
             }}
             disabled={!proyectoSeleccionado || cargandoViviendas}
@@ -220,18 +225,22 @@ export function SeccionViviendaValores({
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.2 }}
           >
-            {/* Tres chips */}
-            <div className={s.field.grid3}>
+            {/* Chips: 2 columnas si no aplica esquinera, 3 si aplica */}
+            <div
+              className={`grid gap-2 ${
+                recargoEsquinera > 0 ? 'grid-cols-3' : 'grid-cols-2'
+              }`}
+            >
               <div className={s.valueChip.wrapper}>
                 <DollarSign className={s.valueChip.icon} />
-                <span className={s.valueChip.label}>Valor base</span>
+                <span className={s.valueChip.label}>Valor Vivienda Base</span>
                 <span className={s.valueChip.value}>
                   {formatCurrency(valorBase)}
                 </span>
               </div>
               <div className={s.valueChip.wrapper}>
                 <FileText className={s.valueChip.icon} />
-                <span className={s.valueChip.label}>Gastos Not.</span>
+                <span className={s.valueChip.label}>Gastos Notariales.</span>
                 <span className={s.valueChip.value}>
                   {formatCurrency(gastosNotariales)}
                 </span>
@@ -239,7 +248,7 @@ export function SeccionViviendaValores({
               {recargoEsquinera > 0 && (
                 <div className={s.valueChip.wrapper}>
                   <Tag className={s.valueChip.icon} />
-                  <span className={s.valueChip.label}>Recargo Esq.</span>
+                  <span className={s.valueChip.label}>Recargo Esquinera</span>
                   <span className={s.valueChip.value}>
                     {formatCurrency(recargoEsquinera)}
                   </span>
@@ -261,218 +270,230 @@ export function SeccionViviendaValores({
         )}
       </AnimatePresence>
 
-      {/* Toggle descuento */}
-      <div className={s.discountToggle.wrapper}>
-        <div className={s.discountToggle.left}>
-          <div className={s.discountToggle.iconWrapper}>
-            <Tag className={s.discountToggle.icon} />
+      {/* Campos opcionales — se desbloquean al seleccionar una vivienda */}
+      <motion.div
+        animate={{ opacity: viviendaSeleccionada ? 1 : 0.35 }}
+        transition={{ duration: 0.2 }}
+        style={{ pointerEvents: viviendaSeleccionada ? 'auto' : 'none' }}
+        className='space-y-4'
+      >
+        {/* Toggle descuento */}
+        <div className={s.discountToggle.wrapper}>
+          <div className={s.discountToggle.left}>
+            <div className={s.discountToggle.iconWrapper}>
+              <Tag className={s.discountToggle.icon} />
+            </div>
+            <div>
+              <p className={s.discountToggle.title}>Aplicar descuento</p>
+              <p className={s.discountToggle.subtitle}>
+                Reduce el total a cubrir
+              </p>
+            </div>
           </div>
-          <div>
-            <p className={s.discountToggle.title}>Aplicar descuento</p>
-            <p className={s.discountToggle.subtitle}>
-              Reduce el total a cubrir
-            </p>
-          </div>
-        </div>
-        <button
-          type='button'
-          role='switch'
-          aria-checked={aplicarDescuento}
-          onClick={() => {
-            setValue('aplicar_descuento', !aplicarDescuento)
-            if (aplicarDescuento) {
-              setValue('descuento_aplicado', 0)
-              setValue('tipo_descuento', '')
-              setValue('motivo_descuento', '')
-              setDescuentoDisplay('')
-            }
-          }}
-        >
-          <div className={s.switch.track(aplicarDescuento)}>
-            <div className={s.switch.thumb(aplicarDescuento)} />
-          </div>
-        </button>
-      </div>
-
-      {/* Sub-sección descuento */}
-      <AnimatePresence>
-        {aplicarDescuento && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.25, ease: 'easeInOut' }}
-            style={{ overflow: 'hidden' }}
+          <button
+            type='button'
+            role='switch'
+            aria-checked={aplicarDescuento}
+            onClick={() => {
+              setValue('aplicar_descuento', !aplicarDescuento)
+              if (aplicarDescuento) {
+                setValue('descuento_aplicado', 0)
+                setValue('tipo_descuento', '')
+                setValue('motivo_descuento', '')
+                setDescuentoDisplay('')
+              }
+            }}
           >
-            <div className='space-y-3 pt-1'>
-              <div className={s.field.grid2}>
-                {/* Monto descuento */}
-                <div>
-                  <label className={s.field.label}>Monto descuento</label>
-                  <div className='relative'>
-                    <span className={s.field.prefix}>$</span>
-                    <input
-                      type='text'
-                      inputMode='numeric'
-                      className={`${s.field.inputMono} ${s.field.inputWithPrefix}`}
-                      placeholder='0'
-                      value={descuentoDisplay}
-                      onChange={e => handleDescuentoChange(e.target.value)}
-                    />
+            <div className={s.switch.track(aplicarDescuento)}>
+              <div className={s.switch.thumb(aplicarDescuento)} />
+            </div>
+          </button>
+        </div>
+
+        {/* Sub-sección descuento */}
+        <AnimatePresence>
+          {aplicarDescuento && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.25, ease: 'easeInOut' }}
+              style={{ overflow: 'hidden' }}
+            >
+              <div className='space-y-3 pt-1'>
+                <div className={s.field.grid2}>
+                  {/* Monto descuento */}
+                  <div>
+                    <label className={s.field.label}>Monto descuento</label>
+                    <div className='relative'>
+                      <span className={s.field.prefix}>$</span>
+                      <input
+                        type='text'
+                        inputMode='numeric'
+                        className={`${s.field.inputMono} ${s.field.inputWithPrefix}`}
+                        placeholder='0'
+                        value={descuentoDisplay}
+                        onChange={e => handleDescuentoChange(e.target.value)}
+                      />
+                    </div>
+                    {errors.descuento_aplicado && (
+                      <p className={s.field.error}>
+                        <AlertCircle className='h-3 w-3' />
+                        {String(errors.descuento_aplicado.message)}
+                      </p>
+                    )}
                   </div>
-                  {errors.descuento_aplicado && (
-                    <p className={s.field.error}>
-                      <AlertCircle className='h-3 w-3' />
-                      {String(errors.descuento_aplicado.message)}
-                    </p>
-                  )}
+
+                  {/* Tipo descuento */}
+                  <div>
+                    <label className={s.field.label}>Tipo de descuento</label>
+                    <div className={s.field.selectWrapper}>
+                      <select
+                        className={s.field.select}
+                        {...register('tipo_descuento')}
+                        onChange={e => {
+                          setValue('tipo_descuento', e.target.value)
+                          onClearErrorApi?.()
+                        }}
+                      >
+                        <option value=''>Seleccionar tipo</option>
+                        {TIPOS_DESCUENTO.map(t => (
+                          <option key={t} value={t}>
+                            {LABELS_TIPO_DESCUENTO[t]}
+                          </option>
+                        ))}
+                      </select>
+                      <ChevronDown className={s.field.selectArrow} />
+                    </div>
+                    {errors.tipo_descuento && (
+                      <p className={s.field.error}>
+                        <AlertCircle className='h-3 w-3' />
+                        {String(errors.tipo_descuento.message)}
+                      </p>
+                    )}
+                  </div>
                 </div>
 
-                {/* Tipo descuento */}
+                {/* Motivo */}
                 <div>
-                  <label className={s.field.label}>Tipo de descuento</label>
-                  <select
-                    className={s.field.select}
-                    {...register('tipo_descuento')}
+                  <label className={s.field.label}>Motivo del descuento</label>
+                  <textarea
+                    rows={2}
+                    className={s.field.textarea}
+                    placeholder='Describe el motivo (mín. 10 caracteres)...'
+                    maxLength={500}
+                    {...register('motivo_descuento')}
                     onChange={e => {
-                      setValue('tipo_descuento', e.target.value)
+                      setValue('motivo_descuento', e.target.value)
                       onClearErrorApi?.()
                     }}
-                  >
-                    <option value=''>Seleccionar tipo</option>
-                    {TIPOS_DESCUENTO.map(t => (
-                      <option key={t} value={t}>
-                        {t}
-                      </option>
-                    ))}
-                  </select>
-                  {errors.tipo_descuento && (
-                    <p className={s.field.error}>
-                      <AlertCircle className='h-3 w-3' />
-                      {String(errors.tipo_descuento.message)}
-                    </p>
-                  )}
+                  />
+                  <div className='flex items-center justify-between'>
+                    {errors.motivo_descuento ? (
+                      <p className={s.field.error}>
+                        <AlertCircle className='h-3 w-3' />
+                        {String(errors.motivo_descuento.message)}
+                      </p>
+                    ) : (
+                      <span />
+                    )}
+                    <span className={s.charCounter}>
+                      {motivoDescuento?.length ?? 0}/500 (mín 10)
+                    </span>
+                  </div>
                 </div>
+
+                {/* Línea de resumen */}
+                {descuentoActual > 0 && (
+                  <div className={s.discount.summaryRow}>
+                    <span className={s.discount.original}>
+                      {formatCurrency(valorBaseTotal)}
+                    </span>
+                    <span className={s.discount.arrow}>→</span>
+                    <span className={s.discount.final}>
+                      {formatCurrency(valorTotal)}
+                    </span>
+                    <span className={s.discount.pct}>(-{pctDescuento}%)</span>
+                  </div>
+                )}
               </div>
-
-              {/* Motivo */}
-              <div>
-                <label className={s.field.label}>Motivo del descuento</label>
-                <textarea
-                  rows={2}
-                  className={s.field.textarea}
-                  placeholder='Describe el motivo (mín. 10 caracteres)...'
-                  maxLength={500}
-                  {...register('motivo_descuento')}
-                  onChange={e => {
-                    setValue('motivo_descuento', e.target.value)
-                    onClearErrorApi?.()
-                  }}
-                />
-                <div className='flex items-center justify-between'>
-                  {errors.motivo_descuento ? (
-                    <p className={s.field.error}>
-                      <AlertCircle className='h-3 w-3' />
-                      {String(errors.motivo_descuento.message)}
-                    </p>
-                  ) : (
-                    <span />
-                  )}
-                  <span className={s.charCounter}>
-                    {motivoDescuento?.length ?? 0}/500 (mín 10)
-                  </span>
-                </div>
-              </div>
-
-              {/* Línea de resumen */}
-              {descuentoActual > 0 && (
-                <div className={s.discount.summaryRow}>
-                  <span className={s.discount.original}>
-                    {formatCurrency(valorBaseTotal)}
-                  </span>
-                  <span className={s.discount.arrow}>→</span>
-                  <span className={s.discount.final}>
-                    {formatCurrency(valorTotal)}
-                  </span>
-                  <span className={s.discount.pct}>(-{pctDescuento}%)</span>
-                </div>
-              )}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Valor en Escritura Pública */}
-      <div className={s.field.divider}>
-        <div className='pt-1'>
-          <label className={s.field.label}>
-            Valor en Escritura Pública
-            <span className={s.datoBadge}>Dato legal</span>
-          </label>
-          <p className={s.field.hint}>
-            Solo para efectos legales y bancarios. No afecta el plan financiero.
-          </p>
-          <div className='relative mt-1'>
-            <span className={s.field.prefix}>$</span>
-            <input
-              type='text'
-              inputMode='numeric'
-              className={`${s.field.inputMono} ${s.field.inputWithPrefix}`}
-              value={escrituraDisplay}
-              onChange={e => handleEscrituraChange(e.target.value)}
-            />
-          </div>
-          {valorEscrituraPublica > 0 && valorTotal > 0 && (
-            <p className={s.field.hint}>
-              Diferencia con valor real:{' '}
-              {formatCurrency(Math.abs(valorTotal - valorEscrituraPublica))}
-            </p>
+            </motion.div>
           )}
+        </AnimatePresence>
+
+        {/* Valor en Escritura Pública */}
+        <div className={s.field.divider}>
+          <div className='pt-1'>
+            <label className={s.field.label}>
+              Valor en Escritura Pública
+              <span className={s.datoBadge}>Dato legal</span>
+            </label>
+            <p className={s.field.hint}>
+              Solo para efectos legales y bancarios. No afecta el plan
+              financiero.
+            </p>
+            <div className='relative mt-1'>
+              <span className={s.field.prefix}>$</span>
+              <input
+                type='text'
+                inputMode='numeric'
+                className={`${s.field.inputMono} ${s.field.inputWithPrefix}`}
+                value={escrituraDisplay}
+                onChange={e => handleEscrituraChange(e.target.value)}
+              />
+            </div>
+            {valorEscrituraPublica > 0 && valorTotal > 0 && (
+              <p className={s.field.hint}>
+                Diferencia con valor real:{' '}
+                {formatCurrency(Math.abs(valorTotal - valorEscrituraPublica))}
+              </p>
+            )}
+          </div>
         </div>
-      </div>
 
-      {/* Notas */}
-      <div>
-        <label className={s.field.label}>Notas adicionales (opcional)</label>
-        <textarea
-          rows={2}
-          className={s.field.textarea}
-          placeholder='Observaciones o acuerdos adicionales...'
-          {...register('notas')}
-          onChange={e => setValue('notas', e.target.value)}
-        />
-      </div>
-
-      {/* Fecha de negociación (migración de datos históricos) */}
-      <div className={s.field.divider}>
-        <div className='pt-1'>
-          <label className={s.field.label}>
-            <span className='flex items-center gap-1.5'>
-              <Calendar className='h-3.5 w-3.5' />
-              Fecha de negociación (opcional)
-              <span
-                className={`inline-flex items-center rounded bg-amber-100 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-amber-700 dark:bg-amber-900/30 dark:text-amber-400`}
-              >
-                Migración
-              </span>
-            </span>
-          </label>
-          <p className={s.field.hint}>
-            Solo usar al migrar datos históricos. Si se deja vacío, se usará la
-            fecha de hoy automáticamente.
-          </p>
-          <input
-            type='date'
-            className={`${s.field.input} mt-1`}
-            max={getTodayDateString()}
-            {...register('fecha_negociacion')}
-            onChange={e => {
-              setValue('fecha_negociacion', e.target.value)
-              onClearErrorApi?.()
-            }}
+        {/* Notas */}
+        <div>
+          <label className={s.field.label}>Notas adicionales (opcional)</label>
+          <textarea
+            rows={2}
+            className={s.field.textarea}
+            placeholder='Observaciones o acuerdos adicionales...'
+            {...register('notas')}
+            onChange={e => setValue('notas', e.target.value)}
           />
         </div>
-      </div>
+
+        {/* Fecha de negociación (migración de datos históricos) */}
+        <div className={s.field.divider}>
+          <div className='pt-1'>
+            <label className={s.field.label}>
+              <span className='flex items-center gap-1.5'>
+                <Calendar className='h-3.5 w-3.5' />
+                Fecha de negociación (opcional)
+                <span
+                  className={`inline-flex items-center rounded bg-amber-100 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-amber-700 dark:bg-amber-900/30 dark:text-amber-400`}
+                >
+                  Migración
+                </span>
+              </span>
+            </label>
+            <p className={s.field.hint}>
+              Solo usar al migrar datos históricos. Si se deja vacío, se usará
+              la fecha de hoy automáticamente.
+            </p>
+            <input
+              type='date'
+              className={`${s.field.input} mt-1`}
+              max={getTodayDateString()}
+              {...register('fecha_negociacion')}
+              onChange={e => {
+                setValue('fecha_negociacion', e.target.value)
+                onClearErrorApi?.()
+              }}
+            />
+          </div>
+        </div>
+      </motion.div>
     </div>
   )
 }

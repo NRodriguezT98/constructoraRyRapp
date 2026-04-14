@@ -14,6 +14,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
 import { supabase } from '@/lib/supabase/client'
+import { logger } from '@/lib/utils/logger'
 import { documentosPendientesKeys } from '@/modules/clientes/types/documentos-pendientes.types'
 
 import type { DatosRebalanceo } from './useNegociacionTab'
@@ -92,6 +93,10 @@ export function useRebalanceoMutation({
       closeRebalancear()
     },
     onError: (error: Error) => {
+      logger.error(
+        '[useRebalanceoMutation] Error en rebalanceo:',
+        error.message
+      )
       toast.error(
         error.message ||
           'Error al ajustar el cierre financiero. Intenta nuevamente.'

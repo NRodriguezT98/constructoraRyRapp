@@ -217,11 +217,20 @@ describe('sanitizeActualizarNegociacionDTO', () => {
     expect(result.valor_negociado).toBe(450000)
   })
 
-  it('should sanitize empty tipo_descuento to undefined', () => {
+  it('should sanitize empty tipo_descuento to null (clears DB field)', () => {
     const result = sanitizeActualizarNegociacionDTO({
       tipo_descuento: '   ',
     })
-    expect(result.tipo_descuento).toBeUndefined()
+    expect(result.tipo_descuento).toBeNull()
+  })
+
+  it('should pass null tipo_descuento as null (explicit DB clear)', () => {
+    const result = sanitizeActualizarNegociacionDTO({
+      tipo_descuento: null,
+      motivo_descuento: null,
+    })
+    expect(result.tipo_descuento).toBeNull()
+    expect(result.motivo_descuento).toBeNull()
   })
 
   it('should sanitize invalid fecha_completada to undefined', () => {

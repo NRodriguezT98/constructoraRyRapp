@@ -3,6 +3,7 @@
  */
 
 import { formatearNumeroRecibo } from '@/modules/abonos/utils/formato-recibo'
+import { LABELS_TIPO_DESCUENTO } from '@/modules/clientes/constants/descuento.constants'
 
 import type {
   EventoHistorialCliente,
@@ -108,23 +109,38 @@ export function generarTextos(
             : 'Cierre financiero ajustado en la negociación',
         }
       }
-      // Descuento aplicado
-      if (
-        datos_nuevos?.descuento_aplicado !== undefined ||
-        datos_nuevos?.tipo_descuento !== undefined
-      ) {
-        const monto = datos_nuevos?.descuento_aplicado as number | undefined
-        const tipo = datos_nuevos?.tipo_descuento as string | undefined
-        const LABELS: Record<string, string> = {
-          comercial: 'comercial',
-          pronto_pago: 'pronto pago',
-          referido: 'por referido',
-          promocional: 'promocional',
-          forma_pago: 'por forma de pago',
-          otro: 'especial',
+      // Cambio de descuento (aplicar o eliminar)
+      // ✅ USO cambios_especificos (qué realmente cambió) como señal principal,
+      //    NO datos_nuevos (estado actual de la fila), para evitar falsos
+      //    positivos cuando otros triggers actualizan la fila después de
+      //    cambiar el descuento y datos_nuevos.descuento_aplicado = 0 en todos.
+      const cambioDescuento = cambios_especificos?.descuento_aplicado as
+        | {
+            antes?: unknown
+            despues?: unknown
+            anterior?: unknown
+            nuevo?: unknown
+          }
+        | undefined
+      const tieneCambioDescuento = Boolean(cambioDescuento)
+      if (tieneCambioDescuento) {
+        // Soporta formato del trigger {antes/despues} y el formato legacy {anterior/nuevo}
+        const montoNuevo = (cambioDescuento?.despues ??
+          cambioDescuento?.nuevo) as number | null | undefined
+        // montoNuevo === 0 o null → descuento eliminado
+        if (!montoNuevo) {
+          return {
+            titulo: 'Descuento eliminado',
+            descripcion: 'El descuento fue removido de la negociación',
+          }
         }
-        const tipoLabel = tipo ? (LABELS[tipo] ?? tipo) : null
-        const montoStr = monto ? `$${monto.toLocaleString('es-CO')}` : null
+        const tipo = datos_nuevos?.tipo_descuento as string | undefined
+        const tipoLabel = tipo
+          ? (LABELS_TIPO_DESCUENTO[
+              tipo as keyof typeof LABELS_TIPO_DESCUENTO
+            ] ?? tipo)
+          : null
+        const montoStr = `$${montoNuevo.toLocaleString('es-CO')}`
         const partes = ['Descuento aplicado', tipoLabel, montoStr].filter(
           Boolean
         )

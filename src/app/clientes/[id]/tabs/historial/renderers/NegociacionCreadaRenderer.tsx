@@ -21,6 +21,7 @@ import {
   Tag,
 } from 'lucide-react'
 
+import { LABELS_TIPO_DESCUENTO } from '@/modules/clientes/constants/descuento.constants'
 import type { EventoHistorialHumanizado } from '@/modules/clientes/types/historial.types'
 
 import { formatearMoneda, formatearValor } from './formatearValor'
@@ -104,6 +105,13 @@ export function NegociacionCreadaRenderer({ evento }: Props) {
   const descuentoAplicado = Number(
     meta.negociacion_descuento_aplicado ?? get('descuento_aplicado') ?? 0
   )
+  const tipoDescuento = (meta.negociacion_tipo_descuento as string) || ''
+  const motivoDescuento = (meta.negociacion_motivo_descuento as string) || ''
+  const tipoDescuentoLabel = tipoDescuento
+    ? (LABELS_TIPO_DESCUENTO[
+        tipoDescuento as keyof typeof LABELS_TIPO_DESCUENTO
+      ] ?? tipoDescuento)
+    : ''
   // valor_total usa el campo calculado por trigger en BD. Para registros
   // anteriores donde se almacenó solo (base - descuento), recalcula desde partes.
   const storedTotal = Number(
@@ -289,6 +297,21 @@ export function NegociacionCreadaRenderer({ evento }: Props) {
                 : undefined
             }
           />
+          {descuentoAplicado > 0 && tipoDescuentoLabel ? (
+            <Campo
+              icono={<BadgePercent className='h-4 w-4' />}
+              label='Tipo de descuento'
+              valor={tipoDescuentoLabel}
+              colorValor='text-amber-600 dark:text-amber-400'
+            />
+          ) : null}
+          {descuentoAplicado > 0 && motivoDescuento ? (
+            <Campo
+              icono={<FileText className='h-4 w-4' />}
+              label='Motivo del descuento'
+              valor={motivoDescuento}
+            />
+          ) : null}
           <Campo
             icono={<DollarSign className='h-4 w-4' />}
             label='Valor total a pagar'

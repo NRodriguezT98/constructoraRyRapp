@@ -1247,12 +1247,15 @@ export class MiComponenteService {
 
 #### 📏 **LÍMITES ESTRICTOS:**
 
-- **Componente `.tsx`**: Máximo **150 líneas** (si excede → refactorizar)
+- **Componente `.tsx`**: Dos niveles según responsabilidad:
+  - **Componente hoja** (card, badge, input, field, botón) → renderiza una sola unidad de UI → ≤ **150 líneas**
+  - **Componente orquestador** (tab, page, layout, modal complejo con formulario) → compone sub-componentes + modales + estados loading/empty/error → ≤ **400 líneas**
+  - **Diagnóstico rápido**: Si el componente tiene `useState`/`useEffect` con lógica de negocio → mover a hook. Si tiene sub-componentes inline (funciones de componente definidas dentro del mismo archivo) → extraer a archivos separados
 - **Hook `use*.ts`**: Dos niveles según tipo:
   - **Hook de feature / leaf** (`useManzanasEditables`, `useDetectarCambios`, etc.) → hace **una sola cosa** → ≤ **200 líneas**
   - **Hook orquestador de flujo/página** (`useEditarProyecto`, `useNuevoProyecto`, etc.) → solo compone sub-hooks y gestiona estado de wizard → ≤ **600 líneas**
   - **Diagnóstico rápido**: Si el hook contiene llamadas a DB directas (`supabase`) o lógica de negocio no delegada → dividir, sin importar el tamaño
-- **Service `.service.ts`**: Máximo **300 líneas** (si excede → dividir por dominio)
+- **Service `.service.ts`**: Máximo **500 líneas** (si excede → dividir por dominio, ej: `negociaciones-crud.service.ts` + `negociaciones-financiero.service.ts`)
 - **Estilos `.styles.ts`**: Sin límite (pero organizados por secciones)
 - **String de Tailwind inline**: Máximo **80 caracteres** (si excede → extraer a `.styles.ts`)
 
@@ -1262,7 +1265,9 @@ export class MiComponenteService {
 - [ ] ¿El componente tiene fetch/axios/supabase? → ❌ **Mover a service**
 - [ ] ¿El componente tiene cálculos/transformaciones? → ❌ **Mover a hook con useMemo**
 - [ ] ¿El componente tiene strings de Tailwind > 80 chars? → ❌ **Mover a .styles.ts**
-- [ ] ¿El archivo tiene > 150 líneas? → ❌ **Refactorizar en componentes pequeños**
+- [ ] ¿El componente hoja tiene > 150 líneas? → ❌ **Refactorizar**
+- [ ] ¿El componente orquestador tiene > 400 líneas? → ❌ **Extraer sub-componentes o modales**
+- [ ] ¿El componente tiene sub-componentes definidos inline? → ❌ **Extraer a archivos separados**
 - [ ] ¿Hay código duplicado entre componentes? → ❌ **Extraer a shared/utils**
 
 #### 🎯 **BENEFICIOS INNEGOCIABLES:**
@@ -1516,7 +1521,7 @@ src/modules/[nombre-modulo]/
 - [ ] **Usar Badge** para etiquetas
 - [ ] **Usar LoadingState/EmptyState/ErrorState** para estados de UI
 - [ ] Lógica en hook separado (`use*.ts`)
-- [ ] Componente < 150 líneas
+- [ ] Componente hoja < 150 líneas, orquestador < 400 líneas
 - [ ] `useMemo` para valores calculados
 - [ ] `useCallback` para funciones como props
 - [ ] Tipos TypeScript estrictos (no `any`)
@@ -1781,7 +1786,7 @@ const data = result as any // ← CREAR TYPE CORRECTO
 ❌ **OLVIDAR SINCRONIZAR TIPOS** después de migración (ejecutar `npm run types:generate`)
 ❌ **EDITAR MANUALMENTE database.types.ts** (siempre regenerar con script oficial)
 ❌ **VIOLAR SEPARACIÓN DE RESPONSABILIDADES** (lógica/vista/estilos mezclados)
-❌ **Componentes > 150 líneas** sin refactorizar
+❌ **Componentes hoja > 150 líneas o componentes orquestador > 400 líneas** sin refactorizar
 ❌ **Lógica de negocio en componentes** (useState, useEffect con lógica compleja)
 ❌ **Llamadas a API/DB directas en componentes** (usar services)
 ❌ **Strings de Tailwind > 80 caracteres inline** (extraer a .styles.ts)
@@ -1826,7 +1831,7 @@ const data = result as any // ← CREAR TYPE CORRECTO
 ✅ **Hook personalizado por componente** con toda la lógica
 ✅ **Service por módulo** para llamadas API/DB
 ✅ **Archivo `.styles.ts`** para strings de Tailwind > 80 caracteres
-✅ **Componentes presentacionales puros** (< 150 líneas)
+✅ **Componentes presentacionales puros** (hoja < 150, orquestador < 400 líneas)
 ✅ **useMemo/useCallback** para optimización
 ✅ **Barrel exports (`index.ts`)** en cada carpeta
 ✅ **Tipos TypeScript estrictos** (sin any)

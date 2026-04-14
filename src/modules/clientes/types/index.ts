@@ -493,7 +493,7 @@ export interface CrearInteresDTO {
 
 export interface ActualizarInteresDTO {
   estado?: EstadoInteres
-  motivo_descarte?: string
+  motivo_descarte?: string | null
   notas?: string
 }
 

@@ -9,7 +9,7 @@
  * - Este componente SOLO orquesta la UI
  */
 
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 
 import { AnimatePresence, motion } from 'framer-motion'
 import {
@@ -26,7 +26,6 @@ import {
   Trash2,
   User,
 } from 'lucide-react'
-import { toast } from 'sonner'
 
 import dynamic from 'next/dynamic'
 import { useRouter } from 'next/navigation'
@@ -41,20 +40,16 @@ import {
   useAsignacionVivienda,
   useClienteDetalle,
 } from '@/modules/clientes/hooks'
-import { clientesService } from '@/modules/clientes/services/clientes.service'
+import { useReactivarCliente } from '@/modules/clientes/hooks/useReactivarCliente'
 import { useModal } from '@/shared/components/modals'
 import { Tooltip } from '@/shared/components/ui'
 
 import * as styles from './cliente-detalle.styles'
+import { EstadoBadge } from './components/EstadoBadge'
+import { TabSpinner } from './components/TabSpinner'
 import { GeneralTab } from './tabs/general-tab'
 
 // Tabs pesados — se cargan solo cuando el usuario los abre
-const TabSpinner = () => (
-  <div className='flex items-center justify-center py-12'>
-    <div className='h-6 w-6 animate-spin rounded-full border-2 border-cyan-500 border-t-transparent' />
-  </div>
-)
-
 const InteresesTab = dynamic(
   () => import('./tabs/intereses-tab').then(m => ({ default: m.InteresesTab })),
   { loading: TabSpinner }
@@ -79,41 +74,6 @@ interface ClienteDetalleClientProps {
 }
 
 // Badge de estado
-function EstadoBadge({ estado }: { estado: string }) {
-  const config = {
-    Interesado: {
-      bg: 'bg-blue-100 dark:bg-blue-900/30',
-      text: 'text-blue-700 dark:text-blue-300',
-      dot: 'bg-blue-500',
-    },
-    Activo: {
-      bg: 'bg-green-100 dark:bg-green-900/30',
-      text: 'text-green-700 dark:text-green-300',
-      dot: 'bg-green-500',
-    },
-    Inactivo: {
-      bg: 'bg-gray-100 dark:bg-gray-900/30',
-      text: 'text-gray-700 dark:text-gray-300',
-      dot: 'bg-gray-500',
-    },
-    Renunció: {
-      bg: 'bg-red-100 dark:bg-red-900/30',
-      text: 'text-red-700 dark:text-red-300',
-      dot: 'bg-red-500',
-    },
-  }
-
-  const { bg, text, dot } =
-    config[estado as keyof typeof config] || config.Interesado
-
-  return (
-    <span className={`${bg} ${text} ${styles.headerClasses.statusBadge}`}>
-      <span className={`${dot} ${styles.headerClasses.statusDot}`} />
-      <span className={styles.headerClasses.statusText}>{estado}</span>
-    </span>
-  )
-}
-
 export default function ClienteDetalleClient({
   clienteId,
 }: ClienteDetalleClientProps) {
@@ -162,34 +122,16 @@ export default function ClienteDetalleClient({
   }
 
   // ── Reactivar cliente que renunció ──
-  const [modalReactivarAbierto, setModalReactivarAbierto] = useState(false)
-  const [verificandoRenuncia, setVerificandoRenuncia] = useState(false)
-
-  const handleReactivarCliente = async () => {
-    if (!clienteUUID) return
-    setVerificandoRenuncia(true)
-    try {
-      const resultado =
-        await clientesService.verificarRenunciaPendiente(clienteUUID)
-      if (resultado.pendiente) {
-        toast.error(
-          `No se puede reactivar: la renuncia ${resultado.consecutivo} tiene devolución pendiente. Primero debe cerrarse la renuncia.`,
-          { duration: 6000 }
-        )
-        return
-      }
-      setModalReactivarAbierto(true)
-    } catch {
-      toast.error('Error al verificar el estado de la renuncia')
-    } finally {
-      setVerificandoRenuncia(false)
-    }
-  }
-
-  const handleConfirmarReactivacion = async () => {
-    await clientesService.cambiarEstado(clienteUUID ?? '', 'Interesado')
-    recargarCliente()
-  }
+  const {
+    modalReactivarAbierto,
+    verificandoRenuncia,
+    handleReactivarCliente,
+    handleConfirmarReactivacion,
+    cerrarModalReactivar,
+  } = useReactivarCliente({
+    clienteUUID,
+    onReactivado: recargarCliente,
+  })
 
   // ✅ Hook de asignación de vivienda con validación centralizada
   const clienteSlug = cliente
@@ -653,7 +595,7 @@ export default function ClienteDetalleClient({
         <ReactivarClienteModal
           isOpen={modalReactivarAbierto}
           nombreCliente={cliente?.nombre_completo || ''}
-          onClose={() => setModalReactivarAbierto(false)}
+          onClose={cerrarModalReactivar}
           onConfirm={handleConfirmarReactivacion}
         />
       </motion.div>

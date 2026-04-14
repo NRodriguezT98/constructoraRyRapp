@@ -97,9 +97,9 @@ export const styles = {
     input:
       'w-full bg-white dark:bg-gray-900/50 border-2 border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2.5 text-gray-900 dark:text-white text-sm placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 transition-all',
     inputMono:
-      'w-full bg-white dark:bg-gray-900/50 border-2 border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2.5 text-gray-900 dark:text-white text-sm font-mono placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 transition-all',
+      'w-full bg-white dark:bg-gray-900/50 border-2 border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2.5 text-gray-900 dark:text-white text-sm font-[family-name:var(--font-jakarta)] tabular-nums placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 transition-all',
     select:
-      'w-full bg-white dark:bg-gray-900/50 border-2 border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2.5 text-gray-900 dark:text-white text-sm focus:outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 transition-all appearance-none',
+      'w-full bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2.5 text-gray-900 dark:text-white text-sm focus:outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 transition-all appearance-none [&>option]:bg-white [&>option]:dark:bg-gray-800 [&>option]:text-gray-900 [&>option]:dark:text-white',
     textarea:
       'w-full bg-white dark:bg-gray-900/50 border-2 border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2.5 text-gray-900 dark:text-white text-sm placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 transition-all resize-none',
     error:
@@ -110,6 +110,9 @@ export const styles = {
     inputWithPrefix: 'pl-6',
     grid2: 'grid grid-cols-1 sm:grid-cols-2 gap-3',
     grid3: 'grid grid-cols-3 gap-2',
+    selectWrapper: 'relative',
+    selectArrow:
+      'absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500 pointer-events-none',
     row: 'flex items-center justify-between py-3',
     divider: 'border-t border-gray-200 dark:border-gray-700 my-4',
   },
@@ -136,7 +139,8 @@ export const styles = {
       'bg-white dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700 rounded-lg p-3 flex flex-col gap-1',
     label:
       'text-[10px] uppercase tracking-widest text-gray-500 dark:text-gray-400 block',
-    value: 'text-gray-900 dark:text-white text-sm font-mono font-semibold',
+    value:
+      'text-gray-900 dark:text-white text-sm font-[family-name:var(--font-jakarta)] tabular-nums font-bold',
     icon: 'w-3.5 h-3.5 text-gray-400 dark:text-gray-500 mb-0.5',
   },
 
@@ -150,7 +154,7 @@ export const styles = {
       'flex items-center gap-2 text-[11px] uppercase tracking-widest text-gray-600 dark:text-gray-300 font-semibold',
     labelIcon: 'w-4 h-4 text-cyan-500',
     value:
-      'text-xl font-bold font-mono bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent',
+      'text-xl font-bold font-[family-name:var(--font-jakarta)] tabular-nums tracking-tight bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent',
   },
 
   // ──────────────────────────────
@@ -183,9 +187,10 @@ export const styles = {
   fuentes: {
     progressWrapper:
       'bg-white dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700 rounded-xl p-3 mb-3',
-    progressLabel: 'text-[11px] text-gray-500 dark:text-gray-400 font-mono',
+    progressLabel:
+      'text-[11px] text-gray-500 dark:text-gray-400 font-[family-name:var(--font-jakarta)] tabular-nums',
     progressLabelRight:
-      'text-[11px] text-cyan-600 dark:text-cyan-400 font-mono font-semibold',
+      'text-[11px] text-cyan-600 dark:text-cyan-400 font-[family-name:var(--font-jakarta)] tabular-nums font-semibold',
     progressTrack:
       'mt-2 h-2 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden',
     progressFull:
@@ -201,7 +206,7 @@ export const styles = {
     fuenteNombreOff: 'text-gray-400 dark:text-gray-500 text-sm',
     fuenteNombreOn: 'text-gray-900 dark:text-white text-sm font-semibold',
     fuenteMontoOn:
-      'ml-auto text-cyan-600 dark:text-cyan-400 text-sm font-mono font-bold',
+      'ml-auto text-cyan-600 dark:text-cyan-400 text-sm font-[family-name:var(--font-jakarta)] tabular-nums font-bold',
     fuenteContent: 'ml-11 pb-2 pt-1 space-y-3',
     totalesBox:
       'bg-white dark:bg-gray-800/60 rounded-xl p-4 mt-3 border border-gray-200 dark:border-gray-700 shadow-sm',
@@ -210,7 +215,7 @@ export const styles = {
       'text-gray-500 dark:text-gray-400 text-xs flex items-center gap-1.5',
     totalesLabelIcon: 'w-3.5 h-3.5',
     totalesValue:
-      'text-gray-900 dark:text-white text-sm font-mono font-semibold',
+      'text-gray-900 dark:text-white text-sm font-[family-name:var(--font-jakarta)] tabular-nums font-semibold',
     totalesDivider: 'border-t border-gray-200 dark:border-gray-700 my-2',
     okMsg:
       'flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 text-xs font-bold mt-1',
@@ -239,11 +244,12 @@ export const styles = {
     financialLabel:
       'text-gray-500 dark:text-gray-400 text-xs flex items-center gap-1.5',
     financialLabelIcon: 'w-3.5 h-3.5',
-    financialValue: 'text-gray-900 dark:text-white text-sm font-mono',
+    financialValue:
+      'text-gray-900 dark:text-white text-sm font-[family-name:var(--font-jakarta)] tabular-nums',
     totalLabel:
       'text-gray-900 dark:text-white text-sm font-semibold flex items-center gap-1.5',
     totalValue:
-      'text-lg font-bold font-mono bg-gradient-to-r from-cyan-500 to-blue-500 bg-clip-text text-transparent',
+      'text-lg font-bold font-[family-name:var(--font-jakarta)] tabular-nums tracking-tight bg-gradient-to-r from-cyan-500 to-blue-500 bg-clip-text text-transparent',
     descuento: 'text-amber-500',
     fuentesCard:
       'bg-white dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700 rounded-xl p-4 shadow-sm',
@@ -252,7 +258,7 @@ export const styles = {
       'w-2 h-2 rounded-full bg-gradient-to-r from-cyan-500 to-blue-500 shrink-0 shadow-sm shadow-cyan-500/40',
     fuenteNombre: 'text-gray-900 dark:text-white text-sm',
     fuenteMonto:
-      'ml-auto text-gray-900 dark:text-white text-sm font-mono font-semibold',
+      'ml-auto text-gray-900 dark:text-white text-sm font-[family-name:var(--font-jakarta)] tabular-nums font-semibold',
     fuenteEntidad: 'text-gray-500 dark:text-gray-400 text-xs',
     editLink:
       'flex items-center gap-1 text-gray-500 dark:text-gray-400 text-xs hover:text-cyan-500 transition-colors mt-1',
@@ -283,7 +289,8 @@ export const styles = {
     valueWrapper: 'flex flex-col',
     valueLabel:
       'text-[10px] uppercase tracking-widest text-gray-500 dark:text-gray-400',
-    valueAmount: 'text-base font-bold font-mono text-gray-900 dark:text-white',
+    valueAmount:
+      'text-base font-bold font-[family-name:var(--font-jakarta)] tabular-nums text-gray-900 dark:text-white',
     continueBtn:
       'flex items-center gap-2 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 active:scale-[0.98] text-white font-bold text-sm px-5 py-2.5 rounded-xl transition-all shadow-lg shadow-cyan-500/30 shrink-0',
     cancelBtn:
@@ -296,9 +303,11 @@ export const styles = {
   discount: {
     summaryRow:
       'flex items-center gap-2 mt-3 p-2.5 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200/50 dark:border-emerald-800/40 rounded-lg text-sm',
-    original: 'line-through text-gray-400 dark:text-gray-500 font-mono text-xs',
+    original:
+      'line-through text-gray-400 dark:text-gray-500 font-[family-name:var(--font-jakarta)] tabular-nums text-xs',
     arrow: 'text-gray-400 dark:text-gray-500 text-xs',
-    final: 'text-emerald-600 dark:text-emerald-400 font-bold font-mono',
+    final:
+      'text-emerald-600 dark:text-emerald-400 font-bold font-[family-name:var(--font-jakarta)] tabular-nums',
     pct: 'ml-auto text-emerald-600 dark:text-emerald-400 text-xs font-semibold bg-emerald-100 dark:bg-emerald-900/30 px-1.5 py-0.5 rounded',
   },
 
