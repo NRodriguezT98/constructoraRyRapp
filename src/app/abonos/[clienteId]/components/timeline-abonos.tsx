@@ -4,6 +4,7 @@ import { useState } from 'react'
 
 import { AnimatePresence, motion } from 'framer-motion'
 import {
+  ArrowRightLeft,
   ChevronDown,
   ExternalLink,
   FileText,
@@ -125,6 +126,12 @@ export function TimelineAbonos({ abonos, loading }: TimelineAbonosProps) {
                           {abono.fuente_tipo}
                         </span>
                       )}
+                      {abono.trasladado_desde_negociacion_id ? (
+                        <span className='inline-flex items-center gap-1 rounded-md border border-amber-300 bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold text-amber-700 dark:border-amber-500/25 dark:bg-amber-500/15 dark:text-amber-300'>
+                          <ArrowRightLeft className='h-2.5 w-2.5' />
+                          Trasladado
+                        </span>
+                      ) : null}
                     </div>
                     <div className='mt-1 flex items-center gap-2 text-[11px] text-gray-400 dark:text-white/35'>
                       <span>{formatDateCompact(abono.fecha_abono)}</span>

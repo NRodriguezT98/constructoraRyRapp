@@ -64,6 +64,8 @@ export interface AbonoHistorial {
   anulado_por_id?: string | null
   anulado_por_nombre?: string | null
   fecha_anulacion?: string | null
+  // ── Campo de traslado (migración 020) ──────────────
+  trasladado_desde_negociacion_id?: string | null
   // ── Campo extendido (join fuentes_pago) ──────────────
   fuente_tipo?: string
 }

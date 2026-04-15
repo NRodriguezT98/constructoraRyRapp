@@ -12,7 +12,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { DollarSign, FileText, XCircle } from 'lucide-react'
+import { ArrowRightLeft, DollarSign, FileText, XCircle } from 'lucide-react'
 
 interface AccionesSectionProps {
   estado: string
@@ -20,6 +20,7 @@ interface AccionesSectionProps {
   onRegistrarAbono: () => void
   onRenunciar: () => void
   onGenerarPDF: () => void
+  onTrasladarVivienda?: () => void
   disabled?: boolean
 }
 
@@ -29,12 +30,15 @@ export function AccionesSection({
   onRegistrarAbono,
   onRenunciar,
   onGenerarPDF,
+  onTrasladarVivienda,
   disabled = false,
 }: AccionesSectionProps) {
   const puedeRegistrarAbono = estado === 'Activa' && estaBalanceado
 
+  const puedeTrasladar = estado === 'Activa'
+
   return (
-    <div className='grid grid-cols-1 gap-2 sm:grid-cols-3'>
+    <div className='grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4'>
       {/* Registrar Abono */}
       <motion.button
         whileHover={{ scale: puedeRegistrarAbono ? 1.02 : 1 }}
@@ -62,6 +66,24 @@ export function AccionesSection({
         <FileText className='h-4 w-4' />
         Generar PDF
       </motion.button>
+
+      {/* Traslado de Vivienda */}
+      {onTrasladarVivienda ? (
+        <motion.button
+          whileHover={{ scale: puedeTrasladar ? 1.02 : 1 }}
+          whileTap={{ scale: puedeTrasladar ? 0.98 : 1 }}
+          onClick={onTrasladarVivienda}
+          disabled={!puedeTrasladar || disabled}
+          className={`flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium shadow-md transition-all ${
+            puedeTrasladar && !disabled
+              ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-orange-500/20 hover:from-orange-600 hover:to-amber-600 hover:shadow-lg'
+              : 'cursor-not-allowed bg-gray-300 text-gray-500 dark:bg-gray-700 dark:text-gray-400'
+          }`}
+        >
+          <ArrowRightLeft className='h-4 w-4' />
+          Traslado de Vivienda
+        </motion.button>
+      ) : null}
 
       {/* Renunciar */}
       <motion.button

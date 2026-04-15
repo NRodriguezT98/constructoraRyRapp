@@ -59,6 +59,7 @@ export type EstadoNegociacion =
   | 'Activa'
   | 'Suspendida' // ⭐ NUEVO
   | 'Cerrada por Renuncia' // ⭐ NUEVO (reemplaza 'Renuncia')
+  | 'Cerrada por Traslado' // ⭐ Traslado de vivienda
   | 'Completada'
 
 // Dinámico: los tipos reales se cargan desde tipos_fuentes_pago en BD.
@@ -153,6 +154,13 @@ export interface Negociacion {
 
   // Notas
   notas?: string
+
+  // Traslado de vivienda
+  negociacion_origen_id?: string
+  traslado_destino_id?: string
+  motivo_traslado?: string
+  autorizado_por?: string
+  fecha_traslado?: string
 
   // Auditoría
   fecha_creacion: string
@@ -613,8 +621,9 @@ export const ESTADOS_INTERES: Record<EstadoInteres, string> = {
 
 export const ESTADOS_NEGOCIACION: Record<EstadoNegociacion, string> = {
   Activa: 'Activa',
-  Suspendida: 'Suspendida', // ⭐ NUEVO
-  'Cerrada por Renuncia': 'Cerrada por Renuncia', // ⭐ NUEVO
+  Suspendida: 'Suspendida',
+  'Cerrada por Renuncia': 'Cerrada por Renuncia',
+  'Cerrada por Traslado': 'Cerrada por Traslado',
   Completada: 'Completada',
 }
 

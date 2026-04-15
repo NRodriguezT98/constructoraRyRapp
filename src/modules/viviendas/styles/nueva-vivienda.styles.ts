@@ -100,7 +100,7 @@ export const nuevaViviendaStyles = {
       'w-full pl-10 pr-10 py-2 bg-white dark:bg-gray-900 border-2 border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all outline-none text-sm appearance-none cursor-pointer', // ← py-2, rounded-lg (más compacto)
 
     textarea:
-      'w-full pl-10 pr-3 py-2 bg-white dark:bg-gray-900 border-2 border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all outline-none text-sm resize-none min-h-[60px]', // ← py-2, min-h-[60px] (ultra compacto para rows=2)
+      'w-full pl-10 pr-3 py-2 bg-white dark:bg-gray-900 border-2 border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all outline-none text-sm resize-none min-h-[90px]', // ← py-2, min-h-[90px] (rows=3)
 
     error:
       'flex items-center gap-2 mt-1 text-red-600 dark:text-red-400 text-xs font-medium',

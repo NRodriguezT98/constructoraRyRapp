@@ -110,11 +110,15 @@ export function useAbonosDetalle(clienteId: string) {
   const validarFuentePago = useMemo(() => {
     if (!negociacion?.fuentes_pago) return {}
 
-    // Calcular si el cierre financiero está balanceado
+    // Calcular si el cierre financiero está balanceado.
+    // Para Crédito con la Constructora usamos capital_para_cierre (sin intereses)
+    // porque valor_total_pagar se calcula sobre el capital, no sobre el total
+    // de cuotas (capital + intereses). monto_aprobado incluye intereses y
+    // causaría un falso descuadre de exactamente el monto de los intereses.
     const valorVivienda =
       negociacion.valor_total_pagar ?? negociacion.valor_total ?? 0
     const totalFuentes = (negociacion.fuentes_pago || []).reduce(
-      (sum, f) => sum + (f.monto_aprobado || 0),
+      (sum, f) => sum + (f.capital_para_cierre ?? f.monto_aprobado ?? 0),
       0
     )
     const hayDescuadreFinanciero =
@@ -215,7 +219,7 @@ export function useAbonosDetalle(clienteId: string) {
     const valorVivienda =
       negociacion.valor_total_pagar ?? negociacion.valor_total ?? 0
     const totalFuentes = negociacion.fuentes_pago.reduce(
-      (sum, f) => sum + (f.monto_aprobado || 0),
+      (sum, f) => sum + (f.capital_para_cierre ?? f.monto_aprobado ?? 0),
       0
     )
     return Math.abs(totalFuentes - valorVivienda) < 1

@@ -35,6 +35,7 @@ export type Database = {
           notas: string | null
           numero_recibo: number
           numero_referencia: string | null
+          trasladado_desde_negociacion_id: string | null
           usuario_registro: string | null
         }
         Insert: {
@@ -57,6 +58,7 @@ export type Database = {
           notas?: string | null
           numero_recibo?: number
           numero_referencia?: string | null
+          trasladado_desde_negociacion_id?: string | null
           usuario_registro?: string | null
         }
         Update: {
@@ -79,6 +81,7 @@ export type Database = {
           notas?: string | null
           numero_recibo?: number
           numero_referencia?: string | null
+          trasladado_desde_negociacion_id?: string | null
           usuario_registro?: string | null
         }
         Relationships: [
@@ -113,6 +116,13 @@ export type Database = {
           {
             foreignKeyName: "abonos_historial_negociacion_id_fkey"
             columns: ["negociacion_id"]
+            isOneToOne: false
+            referencedRelation: "negociaciones"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "abonos_historial_trasladado_desde_negociacion_id_fkey"
+            columns: ["trasladado_desde_negociacion_id"]
             isOneToOne: false
             referencedRelation: "negociaciones"
             referencedColumns: ["id"]
@@ -1538,6 +1548,7 @@ export type Database = {
       }
       negociaciones: {
         Row: {
+          autorizado_por: string | null
           cliente_id: string
           descuento_aplicado: number | null
           escritura_url: string | null
@@ -1548,8 +1559,11 @@ export type Database = {
           fecha_creacion: string
           fecha_negociacion: string
           fecha_renuncia_efectiva: string | null
+          fecha_traslado: string | null
           id: string
           motivo_descuento: string | null
+          motivo_traslado: string | null
+          negociacion_origen_id: string | null
           notas: string | null
           otros_documentos: Json | null
           porcentaje_descuento: number | null
@@ -1560,6 +1574,7 @@ export type Database = {
           tipo_descuento: string | null
           total_abonado: number | null
           total_fuentes_pago: number | null
+          traslado_destino_id: string | null
           usuario_creacion: string | null
           valor_escritura_publica: number | null
           valor_negociado: number
@@ -1570,6 +1585,7 @@ export type Database = {
           vivienda_id: string
         }
         Insert: {
+          autorizado_por?: string | null
           cliente_id: string
           descuento_aplicado?: number | null
           escritura_url?: string | null
@@ -1580,8 +1596,11 @@ export type Database = {
           fecha_creacion?: string
           fecha_negociacion?: string
           fecha_renuncia_efectiva?: string | null
+          fecha_traslado?: string | null
           id?: string
           motivo_descuento?: string | null
+          motivo_traslado?: string | null
+          negociacion_origen_id?: string | null
           notas?: string | null
           otros_documentos?: Json | null
           porcentaje_descuento?: number | null
@@ -1592,6 +1611,7 @@ export type Database = {
           tipo_descuento?: string | null
           total_abonado?: number | null
           total_fuentes_pago?: number | null
+          traslado_destino_id?: string | null
           usuario_creacion?: string | null
           valor_escritura_publica?: number | null
           valor_negociado: number
@@ -1602,6 +1622,7 @@ export type Database = {
           vivienda_id: string
         }
         Update: {
+          autorizado_por?: string | null
           cliente_id?: string
           descuento_aplicado?: number | null
           escritura_url?: string | null
@@ -1612,8 +1633,11 @@ export type Database = {
           fecha_creacion?: string
           fecha_negociacion?: string
           fecha_renuncia_efectiva?: string | null
+          fecha_traslado?: string | null
           id?: string
           motivo_descuento?: string | null
+          motivo_traslado?: string | null
+          negociacion_origen_id?: string | null
           notas?: string | null
           otros_documentos?: Json | null
           porcentaje_descuento?: number | null
@@ -1624,6 +1648,7 @@ export type Database = {
           tipo_descuento?: string | null
           total_abonado?: number | null
           total_fuentes_pago?: number | null
+          traslado_destino_id?: string | null
           usuario_creacion?: string | null
           valor_escritura_publica?: number | null
           valor_negociado?: number
@@ -1661,6 +1686,20 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "vista_viviendas_completas"
             referencedColumns: ["cliente_id_data"]
+          },
+          {
+            foreignKeyName: "negociaciones_negociacion_origen_id_fkey"
+            columns: ["negociacion_origen_id"]
+            isOneToOne: false
+            referencedRelation: "negociaciones"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "negociaciones_traslado_destino_id_fkey"
+            columns: ["traslado_destino_id"]
+            isOneToOne: false
+            referencedRelation: "negociaciones"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "negociaciones_vivienda_id_fkey"

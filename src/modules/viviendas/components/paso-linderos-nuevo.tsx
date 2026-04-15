@@ -90,11 +90,11 @@ export function PasoLinderosNuevo({ register, errors }: PasoLinderosProps) {
               <span className={styles.field.required}>*</span>
             </label>
             <div className={styles.field.inputWrapper}>
-              <Compass className={styles.field.inputIcon} />
+              <Compass className='pointer-events-none absolute left-3 top-3 h-5 w-5 text-gray-400 dark:text-gray-500' />
               <textarea
                 {...register(lindero.id as Path<ViviendaSchemaType>)}
                 id={lindero.id}
-                rows={2}
+                rows={3}
                 placeholder={lindero.placeholder}
                 className={cn(
                   styles.field.textarea,

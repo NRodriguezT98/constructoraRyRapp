@@ -19,7 +19,7 @@
 
 'use client'
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 import {
   AlertCircle,
@@ -115,7 +115,8 @@ export function CreditoConstructoraForm({
   }, [capital, tasaNum, cuotas, fechaStr])
 
   // ── Sincronización automática con el formulario padre ────────────────────
-  const onActualizarRef = useCallback(onActualizar, [onActualizar])
+  const onActualizarLatest = useRef(onActualizar)
+  onActualizarLatest.current = onActualizar
   useEffect(() => {
     if (!calculo) return
     const tasaMoraNum = Math.max(
@@ -129,10 +130,10 @@ export function CreditoConstructoraForm({
       fechaInicio: new Date(fechaStr + 'T12:00:00'),
       tasaMoraDiaria: tasaMoraNum,
     }
-    onActualizarRef('monto_aprobado', calculo.montoTotal)
-    onActualizarRef('capital_para_cierre', capital)
-    onActualizarRef('parametrosCredito', params)
-  }, [calculo, tasaMora, capital, cuotas, fechaStr, onActualizarRef, tasaNum])
+    onActualizarLatest.current('monto_aprobado', calculo.montoTotal)
+    onActualizarLatest.current('capital_para_cierre', capital)
+    onActualizarLatest.current('parametrosCredito', params)
+  }, [calculo, tasaMora, capital, cuotas, fechaStr, tasaNum])
 
   // ── Handlers ─────────────────────────────────────────────────────────────
   const handleCapitalChange = (e: React.ChangeEvent<HTMLInputElement>) => {

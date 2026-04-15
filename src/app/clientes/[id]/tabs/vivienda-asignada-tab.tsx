@@ -103,6 +103,7 @@ export function ViviendaAsignadaTab({ cliente }: ViviendaAsignadaTabProps) {
     abrirEditarFuentes,
     cerrarEditarFuentes,
     guardarFuentes,
+    navegarATrasladoVivienda,
   } = useViviendaAsignadaTab({ cliente })
 
   // =====================================================
@@ -189,6 +190,9 @@ export function ViviendaAsignadaTab({ cliente }: ViviendaAsignadaTabProps) {
                   toast.info('❌ Modal de Renuncia en desarrollo')
                 }
                 onGenerarPDF={handleGenerarPDF}
+                onTrasladarVivienda={() =>
+                  navegarATrasladoVivienda(viviendaActiva.id)
+                }
                 disabled={isGenerating}
               />
             </div>

@@ -14,6 +14,7 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import {
   AlertTriangle,
+  ArrowRightLeft,
   ArrowUpRight,
   CheckCircle2,
   CreditCard,
@@ -197,6 +198,19 @@ export function NegociacionTab({
             <ArrowUpRight className='h-3.5 w-3.5' />
             Ir a Abonos
           </button>
+          {negociacion.estado === 'Activa' ? (
+            <button
+              onClick={() =>
+                router.push(
+                  `/clientes/${cliente.id}/traslado-vivienda?negociacion_id=${negociacion.id}&nombre=${encodeURIComponent(`${cliente.nombres} ${cliente.apellidos}`)}`
+                )
+              }
+              className='inline-flex items-center gap-1.5 rounded-lg border border-amber-200 bg-amber-50 px-2.5 py-1 text-[11px] font-semibold text-amber-700 transition-all hover:border-amber-300 hover:bg-amber-100 hover:shadow-sm dark:border-amber-800 dark:bg-amber-900/20 dark:text-amber-400 dark:hover:bg-amber-900/40'
+            >
+              <ArrowRightLeft className='h-3.5 w-3.5' />
+              Trasladar vivienda
+            </button>
+          ) : null}
           {isAdmin &&
           (negociacion.estado === 'Activa' ||
             negociacion.estado === 'Suspendida') ? (

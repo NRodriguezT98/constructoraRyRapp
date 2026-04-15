@@ -276,6 +276,22 @@ export function useViviendaAsignadaTab({
     )
   }
 
+  const navegarATrasladoVivienda = (negociacionId: string) => {
+    const clienteSlug = construirURLCliente({
+      id: cliente.id,
+      nombre_completo: cliente.nombre_completo,
+      nombres: cliente.nombres,
+      apellidos: cliente.apellidos,
+    })
+      .split('/')
+      .pop()
+
+    const nombreCliente = cliente.nombre_completo || cliente.nombres || ''
+    router.push(
+      `/clientes/${clienteSlug}/traslado-vivienda?negociacion_id=${negociacionId}&nombre=${encodeURIComponent(nombreCliente)}`
+    )
+  }
+
   const navegarARegistrarAbono = (viviendaId: string) => {
     const nombreCliente = cliente.nombre_completo || cliente.nombres || ''
     router.push(
@@ -326,6 +342,7 @@ export function useViviendaAsignadaTab({
     verDetalleVivienda,
     volverALista,
     navegarAAsignarVivienda,
+    navegarATrasladoVivienda,
     navegarARegistrarAbono,
 
     // Handlers - Modales
