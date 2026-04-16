@@ -1,16 +1,16 @@
 'use client'
 
-import { ArrowRight, Calendar, CreditCard, Pencil } from 'lucide-react'
+import { ArrowUpRight, Calendar, CreditCard, Tag, Wallet } from 'lucide-react'
 
 import { useRouter } from 'next/navigation'
 
 import { formatDateCompact } from '@/lib/utils/date.utils'
-import type { MetodoPago } from '@/modules/abonos/types'
-import type { AbonoParaEditar } from '@/modules/abonos/types/editar-abono.types'
+import { formatearNumeroRecibo } from '@/modules/abonos/utils/formato-recibo'
 import { formatCurrency } from '@/shared/utils/format'
 
 interface Abono {
   id: string
+  numero_recibo?: number | null
   negociacion_id?: string
   fuente_pago_id?: string
   monto: number
@@ -21,24 +21,33 @@ interface Abono {
   comprobante_url?: string | null
 }
 
+interface FuenteInfo {
+  id: string
+  tipo: string
+  entidad?: string | null
+}
+
 interface AbonosRecientesProps {
   abonos: Abono[]
   totalAbonado: number
   negociacionId: string
+  fuentesPago?: FuenteInfo[]
   isLoading?: boolean
-  isAdmin?: boolean
-  onEditar?: (abono: AbonoParaEditar) => void
 }
+
+// ─── Componente principal ──────────────────────────────────────────────────
 
 export function AbonosRecientes({
   abonos,
   totalAbonado,
   negociacionId,
+  fuentesPago = [],
   isLoading,
-  isAdmin,
-  onEditar,
 }: AbonosRecientesProps) {
   const router = useRouter()
+
+  // Mapa fuente_pago_id → FuenteInfo para lookup O(1)
+  const fuenteMap = new Map(fuentesPago.map(f => [f.id, f]))
 
   if (isLoading) {
     return (
@@ -46,7 +55,7 @@ export function AbonosRecientes({
         {[1, 2, 3].map(i => (
           <div
             key={i}
-            className='h-12 animate-pulse rounded-lg bg-gray-100 dark:bg-gray-700/40'
+            className='h-14 animate-pulse rounded-lg bg-gray-100 dark:bg-gray-700/40'
           />
         ))}
       </div>
@@ -70,70 +79,96 @@ export function AbonosRecientes({
   }
 
   return (
-    <div className='space-y-2'>
-      {abonos.map(abono => (
-        <div
-          key={abono.id}
-          className='flex items-center gap-3 rounded-lg border border-gray-200/80 bg-white px-3.5 py-2.5 dark:border-gray-700/50 dark:bg-gray-800/60'
-        >
-          <div className='flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-900/30'>
-            <CreditCard className='h-4 w-4 text-blue-600 dark:text-blue-400' />
-          </div>
+    <div className='space-y-1.5'>
+      {abonos.map(abono => {
+        const fuente = abono.fuente_pago_id
+          ? (fuenteMap.get(abono.fuente_pago_id) ?? null)
+          : null
+        const fuenteLabel = fuente
+          ? fuente.entidad
+            ? `${fuente.tipo} · ${fuente.entidad}`
+            : fuente.tipo
+          : null
 
-          <div className='min-w-0 flex-1'>
-            <p className='text-sm font-semibold tabular-nums text-gray-900 dark:text-white'>
-              {formatCurrency(abono.monto)}
-            </p>
-            <div className='flex items-center gap-2 text-xs text-gray-400 dark:text-gray-500'>
-              <Calendar className='h-3 w-3' />
-              <span>{formatDateCompact(abono.fecha_abono)}</span>
-              {abono.metodo_pago ? (
-                <>
-                  <span>·</span>
-                  <span>{abono.metodo_pago}</span>
-                </>
-              ) : null}
+        return (
+          <div
+            key={abono.id}
+            className='flex items-center gap-3 rounded-lg border border-gray-200/80 bg-white px-3 py-2.5 dark:border-gray-700/50 dark:bg-gray-800/60'
+          >
+            {/* Icono */}
+            <div className='flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-900/30'>
+              <Wallet className='h-4 w-4 text-blue-600 dark:text-blue-400' />
+            </div>
+
+            {/* Info — columnas con etiquetas claras */}
+            <div className='min-w-0 flex-1 space-y-0.5'>
+              {/* Monto + consecutivo */}
+              <div className='flex items-center gap-2'>
+                <span className='text-xs font-medium text-gray-400 dark:text-gray-500'>
+                  Monto:
+                </span>
+                <span className='text-sm font-bold tabular-nums text-gray-900 dark:text-white'>
+                  {formatCurrency(abono.monto)}
+                </span>
+                {abono.numero_recibo ? (
+                  <span className='inline-flex items-center rounded-md border border-cyan-200 bg-cyan-50 px-1.5 py-0.5 font-mono text-[10px] font-semibold text-cyan-700 dark:border-cyan-800/60 dark:bg-cyan-900/30 dark:text-cyan-400'>
+                    {formatearNumeroRecibo(abono.numero_recibo)}
+                  </span>
+                ) : null}
+              </div>
+
+              {/* Fecha + método + fuente */}
+              <div className='flex flex-wrap items-center gap-x-3 gap-y-0.5'>
+                {/* Fecha */}
+                <div className='flex items-center gap-1 text-[11px] text-gray-500 dark:text-gray-400'>
+                  <Calendar className='h-3 w-3 flex-shrink-0' />
+                  <span className='text-gray-400 dark:text-gray-500'>
+                    Fecha:
+                  </span>
+                  <span>{formatDateCompact(abono.fecha_abono)}</span>
+                </div>
+
+                {/* Método */}
+                {abono.metodo_pago ? (
+                  <div className='flex items-center gap-1 text-[11px] text-gray-500 dark:text-gray-400'>
+                    <span className='text-gray-400 dark:text-gray-500'>
+                      Vía:
+                    </span>
+                    <span>{abono.metodo_pago}</span>
+                  </div>
+                ) : null}
+
+                {/* Fuente */}
+                {fuenteLabel ? (
+                  <div className='flex items-center gap-1 text-[11px] text-gray-500 dark:text-gray-400'>
+                    <Tag className='h-3 w-3 flex-shrink-0' />
+                    <span className='truncate font-medium text-gray-700 dark:text-gray-300'>
+                      {fuenteLabel}
+                    </span>
+                  </div>
+                ) : null}
+              </div>
             </div>
           </div>
+        )
+      })}
 
-          {isAdmin && onEditar ? (
-            <button
-              onClick={() =>
-                onEditar({
-                  id: abono.id,
-                  negociacion_id: abono.negociacion_id ?? negociacionId,
-                  fuente_pago_id: abono.fuente_pago_id ?? '',
-                  monto: abono.monto,
-                  fecha_abono: abono.fecha_abono,
-                  metodo_pago: (abono.metodo_pago ?? null) as MetodoPago | null,
-                  numero_referencia: abono.numero_referencia ?? null,
-                  notas: abono.notas ?? null,
-                  comprobante_url: abono.comprobante_url ?? null,
-                })
-              }
-              className='flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg bg-gray-100 text-gray-400 transition-colors hover:bg-blue-50 hover:text-blue-600 dark:bg-gray-700/50 dark:hover:bg-blue-900/30 dark:hover:text-blue-400'
-              title='Editar abono'
-            >
-              <Pencil className='h-3.5 w-3.5' />
-            </button>
-          ) : null}
-        </div>
-      ))}
-
-      {/* Footer: total y link */}
-      <div className='flex items-center justify-between border-t border-gray-200 pt-2 dark:border-gray-700'>
-        <p className='text-sm text-gray-500 dark:text-gray-400'>
-          Total abonado:{' '}
-          <span className='font-semibold tabular-nums text-gray-900 dark:text-white'>
+      {/* Footer: resumen + CTA al módulo de abonos */}
+      <div className='mt-3 flex items-center justify-between rounded-lg border border-gray-200/60 bg-gray-50 px-3 py-2.5 dark:border-gray-700/40 dark:bg-gray-800/40'>
+        <div>
+          <p className='text-[10px] font-medium uppercase tracking-wide text-gray-400 dark:text-gray-500'>
+            Total abonado
+          </p>
+          <p className='text-sm font-bold tabular-nums text-gray-900 dark:text-white'>
             {formatCurrency(totalAbonado)}
-          </span>
-        </p>
+          </p>
+        </div>
         <button
           onClick={() => router.push(`/abonos?negociacion=${negociacionId}`)}
-          className='inline-flex items-center gap-1.5 text-xs font-medium text-cyan-600 transition-colors hover:text-cyan-700 dark:text-cyan-400 dark:hover:text-cyan-300'
+          className='inline-flex items-center gap-1.5 rounded-lg border border-cyan-200 bg-cyan-50 px-3 py-1.5 text-xs font-semibold text-cyan-700 transition-colors hover:bg-cyan-100 dark:border-cyan-800/60 dark:bg-cyan-900/30 dark:text-cyan-400 dark:hover:bg-cyan-900/50'
         >
-          Ver todos
-          <ArrowRight className='h-3.5 w-3.5' />
+          Gestionar en módulo de Abonos
+          <ArrowUpRight className='h-3.5 w-3.5' />
         </button>
       </div>
     </div>

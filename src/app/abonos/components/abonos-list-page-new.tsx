@@ -23,6 +23,7 @@ import { AbonoDetalleModal } from '@/modules/abonos/components/abono-detalle-mod
 import type { AbonoParaDetalle } from '@/modules/abonos/components/abono-detalle-modal/useAbonoDetalle'
 import { ModalAnularAbono } from '@/modules/abonos/components/modal-anular-abono'
 import { ModalEditarAbono } from '@/modules/abonos/components/modal-editar-abono'
+import type { AbonoConInfo } from '@/modules/abonos/hooks/useAbonosQuery'
 import type { MetodoPago } from '@/modules/abonos/types'
 import type { AbonoParaEditar } from '@/modules/abonos/types/editar-abono.types'
 import { formatearNumeroRecibo } from '@/modules/abonos/utils/formato-recibo'
@@ -52,7 +53,7 @@ export function AbonosListPage({
 }: AbonosListPageProps = {}) {
   const router = useRouter()
   const [abonoSeleccionado, setAbonoSeleccionado] =
-    useState<AbonoParaDetalle | null>(null)
+    useState<AbonoConInfo | null>(null)
   const [modalDetalleOpen, setModalDetalleOpen] = useState(false)
   const [abonoEditando, setAbonoEditando] = useState<AbonoParaEditar | null>(
     null
@@ -61,7 +62,7 @@ export function AbonosListPage({
     null
   )
 
-  const handleAbonoClick = useCallback((abono: AbonoParaDetalle) => {
+  const handleAbonoClick = useCallback((abono: AbonoConInfo) => {
     setAbonoSeleccionado(abono)
     setModalDetalleOpen(true)
   }, [])
@@ -538,6 +539,15 @@ export function AbonosListPage({
           handleCerrarDetalle()
           refetch()
         }}
+        negociacionFinancials={
+          abonoSeleccionado
+            ? {
+                valorTotal: abonoSeleccionado.negociacion_valor_total,
+                totalAbonado: abonoSeleccionado.negociacion_total_abonado,
+                saldoPendiente: abonoSeleccionado.negociacion_saldo_pendiente,
+              }
+            : undefined
+        }
       />
       {isAdmin && abonoEditando ? (
         <ModalEditarAbono

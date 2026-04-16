@@ -306,7 +306,9 @@ export default function ClienteDetalleClient({
       icon: Home,
       count: (
         cliente.negociaciones?.filter(
-          n => n.estado !== 'Cerrada por Renuncia'
+          n =>
+            n.estado !== 'Cerrada por Renuncia' &&
+            n.estado !== 'Cerrada por Traslado'
         ) || []
       ).length,
       badge: null,

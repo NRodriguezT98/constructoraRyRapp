@@ -253,8 +253,13 @@ class ClientesService {
 
     // 3. Calcular estadísticas comerciales
     const negociaciones = clienteData.negociaciones || []
+    const negociacionesReales = negociaciones.filter(
+      n =>
+        n.estado !== 'Cerrada por Renuncia' &&
+        n.estado !== 'Cerrada por Traslado'
+    )
     const estadisticas = {
-      total_negociaciones: negociaciones.length,
+      total_negociaciones: negociacionesReales.length,
       negociaciones_activas: negociaciones.filter(n =>
         ['Activa', 'En Proceso'].includes(n.estado)
       ).length,
@@ -262,7 +267,9 @@ class ClientesService {
         n => n.estado === 'Completada'
       ).length,
       ultima_negociacion:
-        negociaciones.length > 0 ? negociaciones[0].fecha_negociacion : null,
+        negociacionesReales.length > 0
+          ? negociacionesReales[0].fecha_negociacion
+          : null,
     }
 
     // 4. Mapear intereses al formato ClienteInteres

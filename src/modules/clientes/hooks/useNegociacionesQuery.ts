@@ -113,6 +113,7 @@ interface Abono {
   id: string
   monto: number
   fecha_abono: string
+  estado?: string
   metodo_pago?: string
   numero_recibo?: string
   observaciones?: string
@@ -300,7 +301,10 @@ export function useNegociacionDetalle({
    * Todos los abonos de todas las fuentes (ordenados)
    */
   const abonos = useMemo((): Abono[] => {
-    const todosAbonos = fuentesPago.flatMap(fuente => fuente.abonos || [])
+    const todosAbonos = fuentesPago
+      .flatMap(fuente => fuente.abonos || [])
+      // Excluir abonos anulados del cálculo de totales
+      .filter(a => (a.estado ?? 'Activo') !== 'Anulado')
 
     // Ordenar por fecha descendente
     return todosAbonos.sort(

@@ -140,6 +140,7 @@ export function NegociacionTab({
 
   const abonosParaUI = abonos as Array<{
     id: string
+    numero_recibo?: number | null
     negociacion_id?: string
     fuente_pago_id?: string
     monto: number
@@ -582,17 +583,8 @@ export function NegociacionTab({
             abonos={abonosParaUI}
             totalAbonado={totalAbonado}
             negociacionId={negociacion.id}
+            fuentesPago={fuentesPago}
             isLoading={isLoadingAbonos}
-            isAdmin={isAdmin}
-            onEditar={abono => {
-              const fuente = fuentesPago.find(
-                f => f.id === abono.fuente_pago_id
-              )
-              setAbonoEditando({
-                ...abono,
-                fuente_tipo: fuente?.tipo ?? '',
-              })
-            }}
           />
         </div>
       </motion.div>

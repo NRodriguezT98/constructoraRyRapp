@@ -87,6 +87,9 @@ async function fetchAbonosViviendaActivos(
       id: row.fuente_pago_id || '',
       tipo: row.fuente_pago_tipo || 'N/A',
     },
+    negociacion_valor_total: row.negociacion_valor_total ?? 0,
+    negociacion_total_abonado: row.negociacion_total_abonado ?? 0,
+    negociacion_saldo_pendiente: row.negociacion_saldo_pendiente ?? 0,
   }))
 }
 

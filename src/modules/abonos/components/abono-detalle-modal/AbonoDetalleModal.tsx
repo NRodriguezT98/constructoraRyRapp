@@ -1,107 +1,89 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-
 import { AnimatePresence, motion } from 'framer-motion'
 import {
   Ban,
-  Building2,
-  Calendar,
-  CreditCard,
   Download,
   FileText,
-  Home,
   Loader2,
+  Pencil,
   Receipt,
-  StickyNote,
-  User,
   X,
 } from 'lucide-react'
 import { createPortal } from 'react-dom'
 
-import NextImage from 'next/image'
-
-import { formatDateCompact, formatDateForDisplay } from '@/lib/utils/date.utils'
+import { formatDateForDisplay } from '@/lib/utils/date.utils'
+import { formatCurrency } from '@/lib/utils/format.utils'
 import { formatNombreCompleto } from '@/lib/utils/string.utils'
 
 import { formatearNumeroRecibo } from '../../utils/formato-recibo'
 import { ModalAnularAbono } from '../modal-anular-abono'
 
 import { abonoDetalleStyles as s } from './AbonoDetalleModal.styles'
+import { AbonoDetallePreviewPanel } from './AbonoDetallePreviewPanel'
+import { AbonoDetalleSidebarPanel } from './AbonoDetalleSidebarPanel'
 import { type AbonoParaDetalle, useAbonoDetalle } from './useAbonoDetalle'
-
-const formatCurrency = (v: number) =>
-  new Intl.NumberFormat('es-CO', {
-    style: 'currency',
-    currency: 'COP',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(v)
 
 interface AbonoDetalleModalProps {
   abono: AbonoParaDetalle | null
   isOpen: boolean
   onClose: () => void
+  onEditar?: (abono: AbonoParaDetalle) => void
   onAnulado?: () => void
-  /** Abrir modal de registro de nuevo abono (desde el éxito de anulación) */
-  onRegistrarNuevo?: () => void
+  /** Datos financieros de la negociacion (del parent — evita fetch redundante) */
+  negociacionFinancials?: {
+    valorTotal: number
+    totalAbonado: number
+    saldoPendiente: number
+  } | null
 }
 
 export function AbonoDetalleModal({
   abono,
   isOpen,
+  onEditar,
   onClose,
   onAnulado,
-  onRegistrarNuevo: _onRegistrarNuevo,
+  negociacionFinancials,
 }: AbonoDetalleModalProps) {
-  // Evitar SSR crash: createPortal requiere document.body (solo existe en browser)
-  const [mounted, setMounted] = useState(false)
-  useEffect(() => {
-    setMounted(true)
-  }, [])
-
   const {
+    mounted,
+    closeButtonRef,
     comprobanteUrl,
     loadingComprobante,
     tieneComprobante,
+    esImagen,
+    esPDF,
     esNegociacionActiva,
     estaAnulado,
     generandoRecibo,
     showModalAnular,
     setShowModalAnular,
     esAdmin,
+    viviendaLabel,
     handleDescargarComprobante,
     handleGenerarRecibo,
     handleAbonoAnulado,
   } = useAbonoDetalle({
     abono,
+    isOpen,
+    onClose,
+    negociacionFinancials,
     onAnulado: () => {
       onAnulado?.()
       onClose()
     },
   })
 
-  if (!abono) return null
-
-  const esImagen = abono.comprobante_url
-    ? /\.(jpe?g|png|webp)$/i.test(abono.comprobante_url)
-    : false
-  const esPDF = abono.comprobante_url
-    ? /\.pdf$/i.test(abono.comprobante_url)
-    : false
-
-  const viviendaLabel = abono.vivienda.manzana.identificador
-    ? `Mz.${abono.vivienda.manzana.identificador} Casa No. ${abono.vivienda.numero}`
-    : `Casa No. ${abono.vivienda.numero}`
-
-  if (!isOpen || !mounted) return null
+  if (!mounted) return null
 
   return createPortal(
     <AnimatePresence>
-      {isOpen && (
+      {isOpen && abono ? (
         <>
           {/* Overlay */}
           <motion.div
+            key='overlay'
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -111,35 +93,59 @@ export function AbonoDetalleModal({
 
           {/* Modal */}
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            key='modal'
+            initial={{ opacity: 0, scale: 0.98 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.98 }}
+            transition={{ duration: 0.18 }}
             className={s.modal}
+            role='dialog'
+            aria-modal='true'
+            aria-label={`Detalle del abono ${formatearNumeroRecibo(abono.numero_recibo)}`}
           >
-            {/* ─── Header ─────────────────────────────────────────────── */}
-            <div className={s.header.container}>
+            {/* Header */}
+            <div
+              className={
+                estaAnulado ? s.header.containerAnulado : s.header.container
+              }
+            >
               <div className={s.header.left}>
                 <div className={s.header.iconWrap}>
-                  <Receipt className='h-5 w-5 text-white' />
+                  {estaAnulado ? (
+                    <Ban className='h-5 w-5 text-white' />
+                  ) : (
+                    <Receipt className='h-5 w-5 text-white' />
+                  )}
                 </div>
                 <div className='min-w-0'>
-                  <p className={s.header.title}>
-                    {formatearNumeroRecibo(abono.numero_recibo)}
-                    {' · '}
-                    {formatCurrency(abono.monto)}
-                  </p>
-                  <p className={s.header.subtitle}>
+                  <div className='flex items-center gap-2'>
+                    <p className={s.header.title}>
+                      {formatearNumeroRecibo(abono.numero_recibo)}
+                      {' · '}
+                      {formatCurrency(abono.monto)}
+                    </p>
+                    {estaAnulado ? (
+                      <span className={s.header.badgeAnulado}>
+                        <Ban className='h-2.5 w-2.5' />
+                        Anulado
+                      </span>
+                    ) : null}
+                  </div>
+                  <p
+                    className={
+                      estaAnulado ? s.header.subtitleAnulado : s.header.subtitle
+                    }
+                  >
                     {formatNombreCompleto(
                       `${abono.cliente.nombres} ${abono.cliente.apellidos}`
                     )}{' '}
-                    · {formatDateForDisplay(abono.fecha_abono)}
+                    &middot; {formatDateForDisplay(abono.fecha_abono)}
                   </p>
                 </div>
               </div>
 
               <div className={s.header.actions}>
-                {/* Descargar comprobante */}
-                {tieneComprobante && (
+                {tieneComprobante ? (
                   <button
                     onClick={handleDescargarComprobante}
                     className={s.header.btn}
@@ -148,9 +154,8 @@ export function AbonoDetalleModal({
                     <Download className='h-3.5 w-3.5' />
                     Comprobante
                   </button>
-                )}
+                ) : null}
 
-                {/* Generar recibo PDF */}
                 <button
                   onClick={handleGenerarRecibo}
                   disabled={generandoRecibo}
@@ -162,268 +167,62 @@ export function AbonoDetalleModal({
                   ) : (
                     <FileText className='h-3.5 w-3.5' />
                   )}
-                  {generandoRecibo ? 'Generando...' : 'Generar Recibo'}
+                  Generar Recibo
                 </button>
 
-                {/* Anular (solo Admin + negociación activa + no anulado ya) */}
                 {esAdmin && esNegociacionActiva && !estaAnulado ? (
-                  <button
-                    onClick={() => setShowModalAnular(true)}
-                    className={s.header.btnDanger}
-                    title='Anular este abono'
-                  >
-                    <Ban className='h-3.5 w-3.5' />
-                    Anular
-                  </button>
+                  <>
+                    <button
+                      onClick={() => {
+                        onEditar?.(abono)
+                        onClose()
+                      }}
+                      className={s.header.btn}
+                      title='Editar este abono'
+                    >
+                      <Pencil className='h-3.5 w-3.5' />
+                      Editar
+                    </button>
+                    <button
+                      onClick={() => setShowModalAnular(true)}
+                      className={s.header.btnDanger}
+                      title='Anular este abono'
+                    >
+                      <Ban className='h-3.5 w-3.5' />
+                      Anular
+                    </button>
+                  </>
                 ) : null}
 
-                {/* Cerrar */}
-                <button onClick={onClose} className={s.header.btnClose}>
+                <button
+                  ref={closeButtonRef}
+                  onClick={onClose}
+                  className={s.header.btnClose}
+                  aria-label='Cerrar'
+                >
                   <X className='h-4 w-4' />
                 </button>
               </div>
             </div>
 
-            {/* ─── Body split ─────────────────────────────────────────── */}
+            {/* Body */}
             <div className={s.body}>
-              {/* Panel izquierdo: comprobante */}
-              <div className={s.preview.container}>
-                <div className={s.preview.inner}>
-                  {loadingComprobante ? (
-                    <div className={s.preview.loading}>
-                      <div className={s.preview.spinner} />
-                      <p className='text-sm text-gray-500 dark:text-gray-400'>
-                        Cargando comprobante...
-                      </p>
-                    </div>
-                  ) : tieneComprobante && comprobanteUrl ? (
-                    esPDF ? (
-                      <iframe
-                        src={comprobanteUrl}
-                        className={s.preview.iframe}
-                        title='Comprobante de pago'
-                      />
-                    ) : esImagen ? (
-                      <div className={`relative ${s.preview.img}`}>
-                        <NextImage
-                          src={comprobanteUrl}
-                          alt='Comprobante de pago'
-                          fill
-                          className='object-contain'
-                        />
-                      </div>
-                    ) : (
-                      // Tipo desconocido → intentar iframe
-                      <iframe
-                        src={comprobanteUrl}
-                        className={s.preview.iframe}
-                        title='Comprobante de pago'
-                      />
-                    )
-                  ) : (
-                    <div className={s.preview.placeholder}>
-                      <div className={s.preview.placeholderIcon}>
-                        <FileText className='h-8 w-8 text-gray-400 dark:text-gray-500' />
-                      </div>
-                      <p className={s.preview.placeholderTitle}>
-                        Sin comprobante adjunto
-                      </p>
-                      <p className={s.preview.placeholderSub}>
-                        No se adjuntó comprobante al registrar este abono
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Panel derecho: información */}
-              <div className={s.sidebar.container}>
-                {/* Monto */}
-                <div className={s.sidebar.section}>
-                  <p className={s.sidebar.sectionTitle}>
-                    <CreditCard className='h-3 w-3' />
-                    Pago
-                  </p>
-                  <div className='rounded-xl bg-emerald-50 p-3 text-center dark:bg-emerald-900/20'>
-                    <p className={s.sidebar.monto}>
-                      {formatCurrency(abono.monto)}
-                    </p>
-                    <span className={`mt-1 ${s.sidebar.badge}`}>
-                      <Receipt className='h-3 w-3' />
-                      {formatearNumeroRecibo(abono.numero_recibo)}
-                    </span>
-                  </div>
-
-                  {/* Fecha */}
-                  <div className={s.sidebar.row}>
-                    <Calendar
-                      className={`${s.sidebar.rowIcon} h-4 w-4 text-emerald-500`}
-                    />
-                    <div>
-                      <p className={s.sidebar.rowLabel}>Fecha</p>
-                      <p className={s.sidebar.rowValue}>
-                        {formatDateForDisplay(abono.fecha_abono)}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Método */}
-                  <div className={s.sidebar.row}>
-                    <CreditCard
-                      className={`${s.sidebar.rowIcon} h-4 w-4 text-emerald-500`}
-                    />
-                    <div>
-                      <p className={s.sidebar.rowLabel}>Método de pago</p>
-                      <p className={s.sidebar.rowValue}>{abono.metodo_pago}</p>
-                    </div>
-                  </div>
-
-                  {/* Referencia (solo si existe) */}
-                  {abono.numero_referencia ? (
-                    <div className={s.sidebar.row}>
-                      <FileText
-                        className={`${s.sidebar.rowIcon} h-4 w-4 text-emerald-500`}
-                      />
-                      <div>
-                        <p className={s.sidebar.rowLabel}>
-                          {abono.metodo_pago === 'Cheque'
-                            ? 'Número de cheque'
-                            : 'Número de transferencia'}
-                        </p>
-                        <p className={`${s.sidebar.rowValue} font-mono`}>
-                          {abono.numero_referencia}
-                        </p>
-                      </div>
-                    </div>
-                  ) : null}
-
-                  {/* Fuente */}
-                  <div className={s.sidebar.row}>
-                    <Building2
-                      className={`${s.sidebar.rowIcon} h-4 w-4 text-emerald-500`}
-                    />
-                    <div>
-                      <p className={s.sidebar.rowLabel}>Fuente de pago</p>
-                      <p className={s.sidebar.rowValue}>
-                        {abono.fuente_pago.tipo}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-                <div className={s.sidebar.divider} />
-                {/* Cliente */}
-                <div className={s.sidebar.section}>
-                  <p className={s.sidebar.sectionTitle}>
-                    <User className='h-3 w-3' />
-                    Cliente
-                  </p>
-                  <div className={s.sidebar.row}>
-                    <User
-                      className={`${s.sidebar.rowIcon} h-4 w-4 text-blue-500`}
-                    />
-                    <div>
-                      <p className={s.sidebar.rowLabel}>Nombre</p>
-                      <p className={s.sidebar.rowValue}>
-                        {formatNombreCompleto(
-                          `${abono.cliente.nombres} ${abono.cliente.apellidos}`
-                        )}
-                      </p>
-                      <p className={s.sidebar.rowValueSub}>
-                        CC {abono.cliente.numero_documento}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-                <div className={s.sidebar.divider} />
-                {/* Propiedad */}
-                <div className={s.sidebar.section}>
-                  <p className={s.sidebar.sectionTitle}>
-                    <Home className='h-3 w-3' />
-                    Propiedad
-                  </p>
-                  <div className={s.sidebar.row}>
-                    <Home
-                      className={`${s.sidebar.rowIcon} h-4 w-4 text-orange-500`}
-                    />
-                    <div>
-                      <p className={s.sidebar.rowLabel}>Vivienda</p>
-                      <p className={s.sidebar.rowValue}>{viviendaLabel}</p>
-                      <p className={s.sidebar.rowValueSub}>
-                        {abono.proyecto.nombre}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-                {/* Notas (si existen) */}
-                {abono.notas ? (
-                  <>
-                    <div className={s.sidebar.divider} />
-                    <div className={s.sidebar.section}>
-                      <p className={s.sidebar.sectionTitle}>
-                        <StickyNote className='h-3 w-3' />
-                        Observaciones
-                      </p>
-                      <p className='rounded-lg bg-gray-50 p-3 text-xs italic text-gray-600 dark:bg-gray-800 dark:text-gray-400'>
-                        {'“'}
-                        {abono.notas}
-                        {'”'}
-                      </p>
-                    </div>
-                  </>
-                ) : null}
-                {/* Sección ANULADO — solo si estado = Anulado */}
-                {estaAnulado ? (
-                  <>
-                    <div className={s.sidebar.divider} />
-                    <div className={s.sidebar.section}>
-                      <p className='flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-red-500 dark:text-red-400'>
-                        <Ban className='h-3 w-3' />
-                        Anulación
-                      </p>
-                      <div className='space-y-2.5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 dark:border-red-800/50 dark:bg-red-950/30'>
-                        {abono.motivo_categoria ? (
-                          <div>
-                            <p className={s.sidebar.rowLabel}>Motivo</p>
-                            <p className='text-sm font-semibold text-red-900 dark:text-red-200'>
-                              {abono.motivo_categoria}
-                            </p>
-                          </div>
-                        ) : null}
-                        {abono.motivo_detalle ? (
-                          <div>
-                            <p className={s.sidebar.rowLabel}>Detalle</p>
-                            <p className='text-xs italic text-red-800 dark:text-red-300'>
-                              {abono.motivo_detalle}
-                            </p>
-                          </div>
-                        ) : null}
-                        {abono.anulado_por_nombre ? (
-                          <div>
-                            <p className={s.sidebar.rowLabel}>Anulado por</p>
-                            <p className='text-xs font-semibold text-red-800 dark:text-red-200'>
-                              {abono.anulado_por_nombre}
-                            </p>
-                          </div>
-                        ) : null}
-                        {abono.fecha_anulacion ? (
-                          <div>
-                            <p className={s.sidebar.rowLabel}>
-                              Fecha de anulación
-                            </p>
-                            <p className='text-xs text-red-800 dark:text-red-300'>
-                              {formatDateCompact(abono.fecha_anulacion)}
-                            </p>
-                          </div>
-                        ) : null}
-                      </div>
-                    </div>
-                  </>
-                ) : null}{' '}
-              </div>
+              <AbonoDetallePreviewPanel
+                comprobanteUrl={comprobanteUrl}
+                loadingComprobante={loadingComprobante}
+                tieneComprobante={tieneComprobante}
+                esImagen={esImagen}
+                esPDF={esPDF}
+              />
+              <AbonoDetalleSidebarPanel
+                abono={abono}
+                estaAnulado={estaAnulado}
+                viviendaLabel={viviendaLabel}
+              />
             </div>
 
-            {/* ─── Modal de Anulación ──────────────────────────────────── */}
-            {abono && showModalAnular ? (
+            {/* Modal de Anulacion */}
+            {showModalAnular ? (
               <ModalAnularAbono
                 abono={{
                   id: abono.id,
@@ -432,9 +231,7 @@ export function AbonoDetalleModal({
                   fecha_abono: abono.fecha_abono,
                   cliente_nombre:
                     `${abono.cliente.nombres} ${abono.cliente.apellidos}`.trim(),
-                  vivienda_info: abono.vivienda.manzana.identificador
-                    ? `Mz.${abono.vivienda.manzana.identificador} Casa No. ${abono.vivienda.numero}`
-                    : `N°${abono.vivienda.numero}`,
+                  vivienda_info: viviendaLabel,
                   proyecto_nombre: abono.proyecto.nombre,
                   fuente_tipo: abono.fuente_pago.tipo,
                 }}
@@ -447,7 +244,7 @@ export function AbonoDetalleModal({
             ) : null}
           </motion.div>
         </>
-      )}
+      ) : null}
     </AnimatePresence>,
     document.body
   )

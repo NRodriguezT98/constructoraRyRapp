@@ -67,6 +67,10 @@ export interface AbonoCompletoRow {
   proyecto_id: string
   proyecto_nombre: string
   fuente_pago_tipo: string
+  // Financieros de la negociación (para recibo PDF)
+  negociacion_valor_total: number
+  negociacion_total_abonado: number
+  negociacion_saldo_pendiente: number
 }
 
 /** Estructura anidada para consumo en componentes */
@@ -112,6 +116,10 @@ export interface AbonoConInfo {
     id: string
     tipo: string
   }
+  // Financieros de la negociación (para recibo PDF)
+  negociacion_valor_total: number
+  negociacion_total_abonado: number
+  negociacion_saldo_pendiente: number
 }
 
 // ============================================
@@ -174,6 +182,9 @@ function transformarFila(row: AbonoCompletoRow): AbonoConInfo {
       id: row.fuente_pago_id || '',
       tipo: row.fuente_pago_tipo || 'N/A',
     },
+    negociacion_valor_total: row.negociacion_valor_total ?? 0,
+    negociacion_total_abonado: row.negociacion_total_abonado ?? 0,
+    negociacion_saldo_pendiente: row.negociacion_saldo_pendiente ?? 0,
   }
 }
 

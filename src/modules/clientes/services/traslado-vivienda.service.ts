@@ -386,6 +386,78 @@ class TrasladoViviendaService {
         }
       }
 
+      // ── PASO 3.5: Copiar plan de crédito con la constructora ──
+      for (const fuenteOrigen of validacion.fuentesConAbonos) {
+        if (fuenteOrigen.tipo.toLowerCase() !== 'crédito con la constructora')
+          continue
+
+        const fuenteDestinoCreada = (fuentesCreadas ?? []).find(
+          f => f.tipo.toLowerCase() === fuenteOrigen.tipo.toLowerCase()
+        )
+        if (!fuenteDestinoCreada) continue
+
+        // Copiar parámetros financieros del crédito
+        const { data: creditoOrigen } = await supabase
+          .from('creditos_constructora')
+          .select(
+            'capital, tasa_mensual, num_cuotas, fecha_inicio, valor_cuota, interes_total, monto_total, tasa_mora_diaria, version_actual'
+          )
+          .eq('fuente_pago_id', fuenteOrigen.id)
+          .maybeSingle()
+
+        if (!creditoOrigen) continue
+
+        const { error: errorCredito } = await supabase
+          .from('creditos_constructora')
+          .insert({
+            fuente_pago_id: fuenteDestinoCreada.id,
+            capital: creditoOrigen.capital,
+            tasa_mensual: creditoOrigen.tasa_mensual,
+            num_cuotas: creditoOrigen.num_cuotas,
+            fecha_inicio: creditoOrigen.fecha_inicio,
+            valor_cuota: creditoOrigen.valor_cuota,
+            interes_total: creditoOrigen.interes_total,
+            monto_total: creditoOrigen.monto_total,
+            tasa_mora_diaria: creditoOrigen.tasa_mora_diaria,
+            version_actual: creditoOrigen.version_actual,
+          })
+
+        if (errorCredito) {
+          logger.error('Error copiando creditos_constructora:', errorCredito)
+          throw new Error(`Error copiando crédito: ${errorCredito.message}`)
+        }
+
+        // Copiar cuotas del plan vigente
+        const { data: cuotasOrigen } = await supabase
+          .from('cuotas_credito')
+          .select(
+            'numero_cuota, fecha_vencimiento, valor_cuota, version_plan, notas'
+          )
+          .eq('fuente_pago_id', fuenteOrigen.id)
+          .eq('version_plan', creditoOrigen.version_actual)
+          .order('numero_cuota', { ascending: true })
+
+        if (cuotasOrigen && cuotasOrigen.length > 0) {
+          const cuotasParaInsertar = cuotasOrigen.map(c => ({
+            fuente_pago_id: fuenteDestinoCreada.id,
+            numero_cuota: c.numero_cuota,
+            fecha_vencimiento: c.fecha_vencimiento,
+            valor_cuota: c.valor_cuota,
+            version_plan: c.version_plan,
+            notas: c.notas,
+          }))
+
+          const { error: errorCuotas } = await supabase
+            .from('cuotas_credito')
+            .insert(cuotasParaInsertar)
+
+          if (errorCuotas) {
+            logger.error('Error copiando cuotas_credito:', errorCuotas)
+            throw new Error(`Error copiando cuotas: ${errorCuotas.message}`)
+          }
+        }
+      }
+
       // ── PASO 4: Cerrar negociación vieja ──────────
       const { error: errorCerrar } = await supabase
         .from('negociaciones')

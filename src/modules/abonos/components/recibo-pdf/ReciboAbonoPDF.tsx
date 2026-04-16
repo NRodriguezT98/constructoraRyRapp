@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 /**
  * ReciboAbonoPDF
@@ -15,12 +15,16 @@
 
 import {
   Document,
+  Font,
   Image,
   Page,
   StyleSheet,
   Text,
   View,
 } from '@react-pdf/renderer'
+
+// Deshabilitar partición silábica automática para evitar cortes mid-word
+Font.registerHyphenationCallback(word => [word])
 
 import type { AbonoParaDetalle } from '../abono-detalle-modal/useAbonoDetalle'
 
@@ -76,8 +80,8 @@ const styles = StyleSheet.create({
     paddingRight: 6,
   },
   logo: {
-    width: 110,
-    height: 25,
+    width: 145,
+    height: 36,
     objectFit: 'contain',
   },
   empresa: {
@@ -198,14 +202,14 @@ const styles = StyleSheet.create({
   filaEtiqueta: {
     fontSize: 8,
     color: C.grisMedio,
-    maxWidth: '40%',
+    maxWidth: '35%',
   },
   filaValor: {
     fontSize: 9,
     fontFamily: 'Helvetica-Bold',
     color: C.dark,
     textAlign: 'right',
-    maxWidth: '55%',
+    maxWidth: '62%',
   },
   filaValorMono: {
     fontSize: 9,
@@ -262,6 +266,38 @@ const styles = StyleSheet.create({
     fontFamily: 'Helvetica-Bold',
     color: C.verdeOscuro,
   },
+  financieroPorcentaje: {
+    flexDirection: 'column' as const,
+    padding: '8 14',
+    gap: 5,
+    borderBottomWidth: 1,
+    borderBottomColor: C.verdeClaro,
+    backgroundColor: C.grisClaro,
+  },
+  financieroPorcentajeHeader: {
+    flexDirection: 'row' as const,
+    justifyContent: 'space-between' as const,
+  },
+  financieroPorcentajeEtiqueta: {
+    fontSize: 9,
+    color: C.grisMedio,
+  },
+  financieroPorcentajeValor: {
+    fontSize: 9,
+    fontFamily: 'Helvetica-Bold',
+    color: C.gris,
+  },
+  barraFondo: {
+    width: '100%',
+    height: 6,
+    backgroundColor: C.grisBorde,
+    borderRadius: 3,
+  },
+  barraRelleno: {
+    height: 6,
+    backgroundColor: C.verde,
+    borderRadius: 3,
+  },
 
   /* ── NOTA AL PIE ── */
   notaNotas: {
@@ -300,10 +336,23 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   footerBold: {
-    fontSize: 7,
+    fontSize: 8,
     fontFamily: 'Helvetica-Bold',
     color: C.gris,
     textAlign: 'center',
+  },
+  footerDivider: {
+    width: '100%',
+    height: 1,
+    backgroundColor: C.verdeClaro,
+    marginTop: 2,
+    marginBottom: 2,
+  },
+  footerNota: {
+    fontSize: 7,
+    color: C.grisMedio,
+    textAlign: 'center',
+    fontStyle: 'italic',
   },
 })
 
@@ -352,8 +401,14 @@ export function ReciboAbonoPDF({
   logoUrl,
   valorTotal,
   totalAbonado,
-  saldoPendiente,
 }: ReciboAbonoPDFProps) {
+  // Calcular saldo derivado para garantizar coherencia aritmética en el recibo.
+  // No usamos el saldo_pendiente del DB porque ese campo incluye intereses
+  // acumulados, lo que genera una discrepancia visible (total ≠ abonado + saldo).
+  const saldoPendiente =
+    valorTotal !== undefined && totalAbonado !== undefined
+      ? Math.max(0, valorTotal - totalAbonado)
+      : undefined
   const nombreCompleto =
     `${abono.cliente.nombres} ${abono.cliente.apellidos}`.trim()
 
@@ -362,7 +417,7 @@ export function ReciboAbonoPDF({
     : `Casa No. ${abono.vivienda.numero}`
 
   const hoy = new Date()
-  const fechaGeneracion = hoy.toLocaleDateString('es-CO', {
+  const fechaGeneracion = hoy.toLocaleString('es-CO', {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
@@ -398,7 +453,7 @@ export function ReciboAbonoPDF({
               {formatNumeroRecibo(abono.numero_recibo)}
             </Text>
             <Text style={styles.reciboFecha}>
-              {formatFechaPDF(abono.fecha_abono)}
+              Fecha de pago: {formatFechaPDF(abono.fecha_abono)}
             </Text>
           </View>
         </View>
@@ -457,7 +512,7 @@ export function ReciboAbonoPDF({
                     <Text style={styles.filaValor}>{abono.metodo_pago}</Text>
                   </View>
                   <View style={styles.fila}>
-                    <Text style={styles.filaEtiqueta}>Fuente:</Text>
+                    <Text style={styles.filaEtiqueta}>Concepto:</Text>
                     <Text style={styles.filaValor}>
                       {abono.fuente_pago.tipo}
                     </Text>
@@ -469,12 +524,7 @@ export function ReciboAbonoPDF({
                         {abono.numero_referencia}
                       </Text>
                     </View>
-                  ) : (
-                    <View style={styles.filaUltima}>
-                      <Text style={styles.filaEtiqueta}>Referencia:</Text>
-                      <Text style={styles.filaValor}>—</Text>
-                    </View>
-                  )}
+                  ) : null}
                 </View>
               </View>
             </View>
@@ -519,6 +569,29 @@ export function ReciboAbonoPDF({
                   {formatCurrencyPDF(totalAbonado ?? 0)}
                 </Text>
               </View>
+              {valorTotal && valorTotal > 0 ? (
+                <View style={styles.financieroPorcentaje}>
+                  <View style={styles.financieroPorcentajeHeader}>
+                    <Text style={styles.financieroPorcentajeEtiqueta}>
+                      Avance del pago:
+                    </Text>
+                    <Text style={styles.financieroPorcentajeValor}>
+                      {(((totalAbonado ?? 0) / valorTotal) * 100).toFixed(1)}%
+                      completado
+                    </Text>
+                  </View>
+                  <View style={styles.barraFondo}>
+                    <View
+                      style={[
+                        styles.barraRelleno,
+                        {
+                          width: `${Math.min(100, Math.max(0, ((totalAbonado ?? 0) / valorTotal) * 100)).toFixed(1)}%`,
+                        },
+                      ]}
+                    />
+                  </View>
+                </View>
+              ) : null}
               <View style={styles.financieroTotal}>
                 <Text style={styles.financieroTotalEtiqueta}>
                   Saldo pendiente:
@@ -545,16 +618,30 @@ export function ReciboAbonoPDF({
 
         {/* ── FOOTER ──────────────────────────────────────────────────── */}
         <View style={styles.footer}>
+          {/* Identificación empresa */}
           <Text style={styles.footerBold}>Constructora RyR Ltda.</Text>
+          <Text style={styles.footerLinea}>NIT: 805.023.664</Text>
           <Text style={styles.footerLinea}>
-            Este documento es un comprobante oficial de pago emitido por
-            Constructora RyR Ltda.
+            Correo: constructoraryrltda@hotmail.com
           </Text>
+          <Text style={styles.footerLinea}>Telefono: 318 4946116</Text>
+
+          <View style={styles.footerDivider} />
+
+          {/* Texto legal */}
           <Text style={styles.footerLinea}>
-            Conserve este recibo como respaldo de su transacción.
+            Este documento constituye un comprobante de pago emitido por
+            Constructora RyR Ltda, Cualquier verificación o aclaración podrá
+            realizarse presentando este comprobante, Por favor, consérvelo como
+            soporte de su transacción. Este documento no constituye una factura
+            electrónica de venta.
           </Text>
+
+          <View style={styles.footerDivider} />
+
+          {/* Fecha de generación */}
           <Text style={styles.footerLinea}>
-            Generado el {fechaGeneracion} · Sistema de Gestión RyR
+            Fecha de generación de este documento: {fechaGeneracion}
           </Text>
         </View>
       </Page>

@@ -1,25 +1,24 @@
 'use client'
 
-import { useState } from 'react'
-
-import { AnimatePresence, motion } from 'framer-motion'
+import { motion } from 'framer-motion'
 import {
   ArrowRightLeft,
-  ChevronDown,
-  ExternalLink,
-  FileText,
+  Calendar,
+  ChevronRight,
+  CreditCard,
   Hash,
-  MessageSquare,
   Receipt,
 } from 'lucide-react'
 
 import { formatDateCompact } from '@/lib/utils/date.utils'
-import type { AbonoHistorial } from '@/modules/abonos/types'
+import type { AbonoHistorial, FuentePago } from '@/modules/abonos/types'
 import { formatearNumeroRecibo } from '@/modules/abonos/utils/formato-recibo'
 
 interface TimelineAbonosProps {
   abonos: AbonoHistorial[]
+  fuentesPago?: Pick<FuentePago, 'id' | 'tipo'>[]
   loading: boolean
+  onVerDetalle: (abono: AbonoHistorial) => void
 }
 
 const formatCurrency = (v: number) =>
@@ -30,9 +29,14 @@ const formatCurrency = (v: number) =>
     maximumFractionDigits: 0,
   }).format(v)
 
-export function TimelineAbonos({ abonos, loading }: TimelineAbonosProps) {
-  const [expandedId, setExpandedId] = useState<string | null>(null)
-
+export function TimelineAbonos({
+  abonos,
+  fuentesPago = [],
+  loading,
+  onVerDetalle,
+}: TimelineAbonosProps) {
+  const resolveFuenteTipo = (fuente_pago_id: string): string | null =>
+    fuentesPago.find(f => f.id === fuente_pago_id)?.tipo ?? null
   if (loading) {
     return (
       <div className='space-y-3'>
@@ -76,149 +80,97 @@ export function TimelineAbonos({ abonos, loading }: TimelineAbonosProps) {
         }}
       />
 
-      <div className='space-y-3'>
+      <div className='space-y-2.5'>
         {abonos.map((abono, i) => {
-          const isExpanded = expandedId === abono.id
-          const hasDetails =
-            abono.numero_referencia ||
-            abono.comprobante_url ||
-            abono.notas ||
-            abono.usuario_registro
+          const esTrasladado = Boolean(abono.trasladado_desde_negociacion_id)
+          const fuenteTipo = resolveFuenteTipo(abono.fuente_pago_id)
 
           return (
             <motion.div
               key={abono.id}
               initial={{ opacity: 0, x: -12 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: i * 0.05 }}
-              className='flex items-start gap-3'
+              transition={{ delay: i * 0.04 }}
+              className='flex items-center gap-3'
             >
-              {/* Nodo */}
+              {/* Nodo — diferenciado para trasladados */}
               <div className='relative z-10 flex-shrink-0'>
-                <div className='flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 shadow-lg shadow-emerald-900/40 ring-2 ring-white dark:ring-gray-950'>
-                  <Receipt className='h-4 w-4 text-white' />
+                <div
+                  className={`flex h-10 w-10 items-center justify-center rounded-xl shadow-lg ring-2 ring-white dark:ring-gray-950 ${
+                    esTrasladado
+                      ? 'bg-gradient-to-br from-amber-500 to-orange-600 shadow-amber-900/40'
+                      : 'bg-gradient-to-br from-emerald-500 to-teal-600 shadow-emerald-900/40'
+                  }`}
+                >
+                  {esTrasladado ? (
+                    <ArrowRightLeft className='h-4 w-4 text-white' />
+                  ) : (
+                    <Receipt className='h-4 w-4 text-white' />
+                  )}
                 </div>
               </div>
 
-              {/* Card */}
-              <div
-                className={`dark:border-white/8 min-w-0 flex-1 overflow-hidden rounded-2xl border bg-white shadow-sm backdrop-blur transition-colors dark:bg-white/[0.06] dark:shadow-none ${
-                  isExpanded
-                    ? 'border-emerald-200 dark:border-emerald-500/30'
-                    : 'border-gray-200'
-                } ${hasDetails ? 'cursor-pointer' : ''}`}
-                onClick={() =>
-                  hasDetails && setExpandedId(isExpanded ? null : abono.id)
-                }
+              {/* Card — clickeable completa */}
+              <button
+                type='button'
+                onClick={() => onVerDetalle(abono)}
+                className='group min-w-0 flex-1 cursor-pointer overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-all hover:border-emerald-200 hover:shadow-md dark:border-white/[0.08] dark:bg-white/[0.06] dark:shadow-none dark:hover:border-emerald-500/30'
               >
-                {/* Fila principal */}
-                <div className='flex items-start justify-between gap-2 px-4 py-3'>
-                  {/* Left: recibo + fuente + fecha */}
-                  <div className='min-w-0 flex-1'>
-                    <div className='flex flex-wrap items-center gap-2'>
-                      {abono.numero_recibo && (
-                        <span className='inline-flex items-center rounded-md border border-emerald-300 bg-emerald-100 px-2 py-0.5 font-mono text-xs font-semibold text-emerald-700 dark:border-emerald-500/25 dark:bg-emerald-500/15 dark:text-emerald-300'>
+                <div className='flex items-center justify-between gap-3 px-4 py-3'>
+                  {/* Left: consecutivo + fuente + metadata */}
+                  <div className='min-w-0 flex-1 text-left'>
+                    <div className='flex flex-wrap items-center gap-1.5'>
+                      {abono.numero_recibo ? (
+                        <span className='inline-flex items-center rounded-md border border-emerald-300 bg-emerald-100 px-2 py-0.5 font-mono text-xs font-bold text-emerald-700 dark:border-emerald-500/25 dark:bg-emerald-500/15 dark:text-emerald-300'>
                           {formatearNumeroRecibo(abono.numero_recibo)}
                         </span>
-                      )}
-                      {abono.fuente_tipo && (
-                        <span className='truncate text-xs font-semibold text-gray-700 dark:text-white/80'>
-                          {abono.fuente_tipo}
+                      ) : null}
+
+                      {fuenteTipo ? (
+                        <span className='inline-flex items-center rounded-md bg-gray-100 px-2 py-0.5 text-xs font-semibold text-gray-700 dark:bg-white/[0.08] dark:text-white/70'>
+                          {fuenteTipo}
                         </span>
-                      )}
-                      {abono.trasladado_desde_negociacion_id ? (
-                        <span className='inline-flex items-center gap-1 rounded-md border border-amber-300 bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold text-amber-700 dark:border-amber-500/25 dark:bg-amber-500/15 dark:text-amber-300'>
+                      ) : null}
+
+                      {esTrasladado ? (
+                        <span className='inline-flex items-center gap-1 rounded-md bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-semibold text-amber-600 dark:text-amber-400'>
                           <ArrowRightLeft className='h-2.5 w-2.5' />
                           Trasladado
                         </span>
                       ) : null}
                     </div>
-                    <div className='mt-1 flex items-center gap-2 text-[11px] text-gray-400 dark:text-white/35'>
-                      <span>{formatDateCompact(abono.fecha_abono)}</span>
-                      <span>·</span>
-                      <span>{abono.metodo_pago}</span>
-                      {abono.numero_referencia && (
+
+                    <div className='mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] text-gray-400 dark:text-white/35'>
+                      <span className='flex items-center gap-1'>
+                        <Calendar className='h-2.5 w-2.5 opacity-60' />
+                        {formatDateCompact(abono.fecha_abono)}
+                      </span>
+                      <span className='opacity-40'>·</span>
+                      <span className='flex items-center gap-1'>
+                        <CreditCard className='h-2.5 w-2.5 opacity-60' />
+                        {abono.metodo_pago}
+                      </span>
+                      {abono.numero_referencia ? (
                         <>
-                          <span>·</span>
+                          <span className='opacity-40'>·</span>
                           <span className='flex items-center gap-1'>
                             <Hash className='h-2.5 w-2.5' />
                             {abono.numero_referencia}
                           </span>
                         </>
-                      )}
+                      ) : null}
                     </div>
                   </div>
 
-                  {/* Right: monto + chevron */}
+                  {/* Right: monto + hint de acción */}
                   <div className='flex flex-shrink-0 items-center gap-2'>
                     <span className='whitespace-nowrap text-base font-extrabold text-emerald-600 dark:text-emerald-300'>
                       {formatCurrency(abono.monto)}
                     </span>
-                    {hasDetails && (
-                      <motion.div
-                        animate={{ rotate: isExpanded ? 180 : 0 }}
-                        transition={{ duration: 0.2 }}
-                      >
-                        <ChevronDown className='h-4 w-4 text-gray-400 dark:text-white/30' />
-                      </motion.div>
-                    )}
+                    <ChevronRight className='h-4 w-4 text-gray-300 transition-transform group-hover:translate-x-0.5 group-hover:text-emerald-500 dark:text-white/20 dark:group-hover:text-emerald-400' />
                   </div>
                 </div>
-
-                {/* Panel expandible */}
-                <AnimatePresence initial={false}>
-                  {isExpanded && (
-                    <motion.div
-                      key='detail'
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: 'auto', opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.2, ease: 'easeInOut' }}
-                    >
-                      <div className='space-y-2 border-t border-gray-100 px-4 py-3 dark:border-white/[0.06]'>
-                        {/* Notas */}
-                        {abono.notas && (
-                          <div className='flex items-start gap-2'>
-                            <MessageSquare className='mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-gray-400 dark:text-white/30' />
-                            <p className='text-xs italic text-gray-500 dark:text-white/40'>
-                              &quot;{abono.notas}&quot;
-                            </p>
-                          </div>
-                        )}
-
-                        {/* Registrado por */}
-                        {abono.usuario_registro && (
-                          <p className='text-[11px] text-gray-400 dark:text-white/25'>
-                            Registrado por:{' '}
-                            <span className='font-medium text-gray-500 dark:text-white/40'>
-                              {abono.usuario_registro}
-                            </span>
-                          </p>
-                        )}
-
-                        {/* Comprobante */}
-                        {abono.comprobante_url ? (
-                          <a
-                            href={`/api/abonos/comprobante?path=${encodeURIComponent(abono.comprobante_url)}`}
-                            target='_blank'
-                            rel='noopener noreferrer'
-                            onClick={e => e.stopPropagation()}
-                            className='inline-flex items-center gap-1.5 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-medium text-emerald-700 transition-colors hover:bg-emerald-100 dark:border-emerald-500/25 dark:bg-emerald-500/10 dark:text-emerald-300 dark:hover:bg-emerald-500/20'
-                          >
-                            <FileText className='h-3.5 w-3.5' />
-                            Ver comprobante
-                            <ExternalLink className='h-3 w-3 opacity-60' />
-                          </a>
-                        ) : (
-                          <p className='text-[11px] text-gray-300 dark:text-white/20'>
-                            Sin comprobante adjunto
-                          </p>
-                        )}
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
+              </button>
             </motion.div>
           )
         })}

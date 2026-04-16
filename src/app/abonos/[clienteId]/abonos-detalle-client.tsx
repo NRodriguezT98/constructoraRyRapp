@@ -1,5 +1,7 @@
 'use client'
 
+import { useCallback, useState } from 'react'
+
 import { motion } from 'framer-motion'
 import { AlertTriangle, Loader2, Wallet } from 'lucide-react'
 
@@ -7,7 +9,12 @@ import { useRouter } from 'next/navigation'
 
 import { formatDateForInput } from '@/lib/utils/date.utils'
 import { construirURLCliente } from '@/lib/utils/slug.utils'
+import { AbonoDetalleModal } from '@/modules/abonos/components/abono-detalle-modal/AbonoDetalleModal'
+import type { AbonoParaDetalle } from '@/modules/abonos/components/abono-detalle-modal/useAbonoDetalle'
+import { ModalEditarAbono } from '@/modules/abonos/components/modal-editar-abono'
 import { ModalRegistroPago } from '@/modules/abonos/components/modal-registro-pago'
+import type { AbonoHistorial } from '@/modules/abonos/types'
+import type { AbonoParaEditar } from '@/modules/abonos/types/editar-abono.types'
 
 import {
   FuentePagoCard,
@@ -40,6 +47,101 @@ export default function AbonosDetalleClient({
     handleCerrarModal,
     handleAbonoRegistrado,
   } = useAbonosDetalle(clienteId)
+
+  // Modal unificado de detalle (comprobante + acciones)
+  const [abonoDetalle, setAbonoDetalle] = useState<AbonoParaDetalle | null>(
+    null
+  )
+  // Modal de edición (se abre desde dentro del modal de detalle)
+  const [abonoEditando, setAbonoEditando] = useState<AbonoParaEditar | null>(
+    null
+  )
+
+  /** Construye AbonoParaDetalle desde AbonoHistorial + datos del negociacion en memoria */
+  const buildAbonoParaDetalle = useCallback(
+    (abono: AbonoHistorial): AbonoParaDetalle | null => {
+      if (!negociacion) return null
+      return {
+        id: abono.id,
+        numero_recibo: abono.numero_recibo,
+        monto: abono.monto,
+        fecha_abono: abono.fecha_abono,
+        metodo_pago: abono.metodo_pago,
+        numero_referencia: abono.numero_referencia ?? null,
+        comprobante_url: abono.comprobante_url ?? null,
+        notas: abono.notas ?? null,
+        fecha_creacion: abono.fecha_creacion,
+        estado: abono.estado,
+        motivo_categoria: abono.motivo_categoria ?? null,
+        motivo_detalle: abono.motivo_detalle ?? null,
+        anulado_por_nombre: abono.anulado_por_nombre ?? null,
+        fecha_anulacion: abono.fecha_anulacion ?? null,
+        negociacion: {
+          id: negociacion.id,
+          estado: negociacion.estado as
+            | 'Activa'
+            | 'Completada'
+            | 'Suspendida'
+            | 'Cerrada por Renuncia',
+        },
+        cliente: {
+          id: negociacion.cliente.id,
+          nombres: negociacion.cliente.nombres,
+          apellidos: negociacion.cliente.apellidos,
+          numero_documento: negociacion.cliente.numero_documento,
+        },
+        vivienda: {
+          id: negociacion.vivienda.id,
+          numero: negociacion.vivienda.numero,
+          manzana: {
+            identificador: negociacion.vivienda.manzana?.nombre ?? '',
+          },
+        },
+        proyecto: {
+          id: negociacion.proyecto.id,
+          nombre: negociacion.proyecto.nombre,
+        },
+        fuente_pago: {
+          id: abono.fuente_pago_id,
+          tipo:
+            negociacion.fuentes_pago?.find(f => f.id === abono.fuente_pago_id)
+              ?.tipo ??
+            abono.fuente_tipo ??
+            '',
+        },
+      }
+    },
+    [negociacion]
+  )
+
+  const handleVerDetalle = useCallback(
+    (abono: AbonoHistorial) => {
+      const detalle = buildAbonoParaDetalle(abono)
+      if (detalle) setAbonoDetalle(detalle)
+    },
+    [buildAbonoParaDetalle]
+  )
+
+  const handleEditarDesdeDetalle = useCallback((abono: AbonoParaDetalle) => {
+    setAbonoDetalle(null)
+    setAbonoEditando({
+      id: abono.id,
+      negociacion_id: abono.negociacion.id,
+      fuente_pago_id: abono.fuente_pago.id,
+      fuente_tipo: abono.fuente_pago.tipo,
+      monto: abono.monto,
+      fecha_abono: abono.fecha_abono,
+      metodo_pago: abono.metodo_pago as AbonoParaEditar['metodo_pago'],
+      numero_referencia: abono.numero_referencia,
+      notas: abono.notas,
+      comprobante_url: abono.comprobante_url,
+    })
+  }, [])
+
+  const handleEditarSuccess = useCallback(() => {
+    setAbonoEditando(null)
+    handleAbonoRegistrado()
+  }, [handleAbonoRegistrado])
 
   // Construir slug canónico desde los datos resueltos (no desde el parámetro URL)
   const clienteSlug = negociacion
@@ -181,9 +283,14 @@ export default function AbonosDetalleClient({
         </motion.div>
 
         {/* Historial */}
-        <TimelineAbonos abonos={abonos} loading={loadingAbonos} />
+        <TimelineAbonos
+          abonos={abonos}
+          fuentesPago={negociacion.fuentes_pago}
+          loading={loadingAbonos}
+          onVerDetalle={handleVerDetalle}
+        />
 
-        {/* Modal */}
+        {/* Modal de registro de abono */}
         {modalAbonoOpen && fuenteSeleccionada && (
           <ModalRegistroPago
             open={modalAbonoOpen}
@@ -216,6 +323,34 @@ export default function AbonosDetalleClient({
             }
           />
         )}
+
+        {/* Modal unificado de detalle (comprobante + editar + anular + recibo PDF) */}
+        <AbonoDetalleModal
+          abono={abonoDetalle}
+          isOpen={abonoDetalle !== null}
+          onClose={() => setAbonoDetalle(null)}
+          onAnulado={handleAbonoRegistrado}
+          onEditar={handleEditarDesdeDetalle}
+          negociacionFinancials={
+            metricas
+              ? {
+                  valorTotal: metricas.valorVivienda ?? 0,
+                  totalAbonado: metricas.totalAbonado ?? 0,
+                  saldoPendiente: metricas.saldoPendiente ?? 0,
+                }
+              : null
+          }
+        />
+
+        {/* Modal de edición (abierto desde el modal de detalle) */}
+        {abonoEditando ? (
+          <ModalEditarAbono
+            isOpen={true}
+            abono={abonoEditando}
+            onClose={() => setAbonoEditando(null)}
+            onSuccess={handleEditarSuccess}
+          />
+        ) : null}
       </div>
     </motion.div>
   )

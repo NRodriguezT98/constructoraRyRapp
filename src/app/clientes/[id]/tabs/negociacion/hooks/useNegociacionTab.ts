@@ -238,21 +238,23 @@ export function useNegociacionTab({ cliente }: UseNegociacionTabProps) {
       const { data } = await supabase
         .from('abonos_historial')
         .select(
-          'id, monto, fecha_abono, metodo_pago, numero_referencia, fuente_pago_id, notas, comprobante_url, estado'
+          'id, numero_recibo, monto, fecha_abono, metodo_pago, numero_referencia, fuente_pago_id, notas, comprobante_url, estado'
         )
         .eq('negociacion_id', negociacion?.id ?? '')
         .eq('estado', 'Activo')
         .order('fecha_abono', { ascending: false })
-        .limit(5)
+        .limit(20)
       return data ?? []
     },
     enabled: !!negociacion?.id,
     staleTime: 30_000,
   })
 
+  // ⭐ Usar total_abonado del trigger de BD (suma real de TODOS los abonos)
+  // No usar abonos.reduce() porque abonos está limitado a 5 registros (.limit(5))
   const totalAbonado = useMemo(
-    () => abonos.reduce((s, a) => s + (a.monto ?? 0), 0),
-    [abonos]
+    () => negociacion?.total_abonado ?? 0,
+    [negociacion]
   )
 
   // ─── Balance (shared hook — single source of truth) ─────────────────────
