@@ -1,13 +1,11 @@
 'use client'
 
-import type { CSSProperties } from 'react'
-
 import { motion } from 'framer-motion'
 import { AlertCircle, Calendar } from 'lucide-react'
 import type { FieldErrors, Path, UseFormRegister } from 'react-hook-form'
 
 import { getTodayDateString } from '@/lib/utils/date.utils'
-import { moduleThemes, type ModuleName } from '@/shared/config/module-themes'
+import { type ModuleName } from '@/shared/config/module-themes'
 import { cn } from '@/shared/utils/helpers'
 
 import type { DocumentoFormValuesBase } from './documento-form.types'
@@ -19,11 +17,10 @@ interface FechasInputsProps<TFormValues extends DocumentoFormValuesBase> {
 }
 
 export function FechasInputs<TFormValues extends DocumentoFormValuesBase>({
-  moduleName = 'proyectos',
+  moduleName: _moduleName = 'proyectos',
   register,
   errors,
 }: FechasInputsProps<TFormValues>) {
-  const theme = moduleThemes[moduleName]
   const fechaDocumentoField = 'fecha_documento' as Path<TFormValues>
   const fechaVencimientoField = 'fecha_vencimiento' as Path<TFormValues>
 
@@ -44,19 +41,12 @@ export function FechasInputs<TFormValues extends DocumentoFormValuesBase>({
             type='date'
             max={getTodayDateString()}
             className={cn(
-              'w-full rounded-lg border bg-white px-3 py-2 text-sm transition-all dark:bg-gray-900/50',
-              'focus:border-transparent focus:ring-2',
+              'w-full rounded-xl border-2 bg-white px-4 py-2.5 text-sm transition-all dark:bg-gray-900',
+              'focus:outline-none',
               errors.fecha_documento
                 ? 'border-red-500 dark:border-red-500'
                 : 'border-gray-200 dark:border-gray-700'
             )}
-            style={{
-              ...(errors.fecha_documento
-                ? {}
-                : ({
-                    '--tw-ring-color': theme.colors.light,
-                  } as CSSProperties)),
-            }}
           />
           {errors.fecha_documento && (
             <motion.p
@@ -80,19 +70,12 @@ export function FechasInputs<TFormValues extends DocumentoFormValuesBase>({
             {...register(fechaVencimientoField)}
             type='date'
             className={cn(
-              'w-full rounded-lg border bg-white px-3 py-2 text-sm transition-all dark:bg-gray-900/50',
-              'focus:border-transparent focus:ring-2',
+              'w-full rounded-xl border-2 bg-white px-4 py-2.5 text-sm transition-all dark:bg-gray-900',
+              'focus:outline-none',
               errors.fecha_vencimiento
                 ? 'border-red-500 dark:border-red-500'
                 : 'border-gray-200 dark:border-gray-700'
             )}
-            style={{
-              ...(errors.fecha_vencimiento
-                ? {}
-                : ({
-                    '--tw-ring-color': theme.colors.light,
-                  } as CSSProperties)),
-            }}
           />
           {errors.fecha_vencimiento && (
             <motion.p

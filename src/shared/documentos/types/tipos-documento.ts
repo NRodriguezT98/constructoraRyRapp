@@ -46,7 +46,7 @@ export const TIPOS_DOCUMENTO: Record<
     titulo: 'Boleta de Registro',
     descripcion:
       'Boleta de registro de escritura pública en oficina de registro',
-    categoria_sugerida: '4898e798-c188-4f02-bfcf-b2b15be48e34', // Cartas de aprobación, Promesas de Compraventa y Documentos del Proceso
+    categoria_sugerida: 'f84ec757-2f11-4245-a487-5091176feec5', // Comprobante de Pago
     icono: 'FileCheck',
   },
 
@@ -54,8 +54,8 @@ export const TIPOS_DOCUMENTO: Record<
     valor: 'certificado_tradicion',
     titulo: 'Certificado de Tradición',
     descripcion: 'Certificado de tradición y libertad del inmueble',
-    categoria_sugerida: 'bd49740e-d46d-43c8-973f-196f1418765c', // Certificados de Tradición
-    icono: 'FileText',
+    categoria_sugerida: 'bd49740e-d46d-43c8-973f-196f1418765c', // Certificado de Tradición
+    icono: 'BookMarked',
   },
 
   carta_aprobacion_credito: {
@@ -63,8 +63,8 @@ export const TIPOS_DOCUMENTO: Record<
     titulo: 'Carta Aprobación Crédito',
     descripcion:
       'Carta de aprobación de crédito hipotecario por entidad bancaria',
-    categoria_sugerida: '4898e798-c188-4f02-bfcf-b2b15be48e34', // Cartas de aprobación...
-    icono: 'FileSignature',
+    categoria_sugerida: '4898e798-c188-4f02-bfcf-b2b15be48e34', // Carta de Aprobación
+    icono: 'BadgeCheck',
   },
 
   carta_asignacion_subsidio: {
@@ -72,15 +72,15 @@ export const TIPOS_DOCUMENTO: Record<
     titulo: 'Carta Asignación Subsidio',
     descripcion:
       'Carta de asignación de subsidio de vivienda (Mi Casa Ya, Caja de Compensación)',
-    categoria_sugerida: '4898e798-c188-4f02-bfcf-b2b15be48e34', // Cartas de aprobación...
-    icono: 'FileSignature',
+    categoria_sugerida: '4898e798-c188-4f02-bfcf-b2b15be48e34', // Carta de Aprobación
+    icono: 'BadgeCheck',
   },
 
   avaluo_vivienda: {
     valor: 'avaluo_vivienda',
     titulo: 'Avalúo de Vivienda',
     descripcion: 'Avalúo comercial de la vivienda',
-    categoria_sugerida: 'f84ec757-2f11-4245-a487-5091176feec5', // Gastos Notariales, Avalúos...
+    categoria_sugerida: 'bd49740e-d46d-43c8-973f-196f1418765c', // Certificado de Tradición
     icono: 'Home',
   },
 
@@ -104,15 +104,15 @@ export const TIPOS_DOCUMENTO: Record<
     valor: 'promesa_compraventa',
     titulo: 'Promesa de Compraventa',
     descripcion: 'Documento de promesa de compraventa del inmueble',
-    categoria_sugerida: '4898e798-c188-4f02-bfcf-b2b15be48e34', // Cartas de aprobación...
-    icono: 'Handshake',
+    categoria_sugerida: 'c7a1e2f3-4b5c-4d6e-8f7a-1b2c3d4e5f6a', // Promesa de Compraventa
+    icono: 'FilePen',
   },
 
   acta_entrega: {
     valor: 'acta_entrega',
     titulo: 'Acta de Entrega',
     descripcion: 'Acta de entrega física del inmueble',
-    categoria_sugerida: '4898e798-c188-4f02-bfcf-b2b15be48e34', // Cartas de aprobación...
+    categoria_sugerida: 'd8b2f3a4-5c6d-4e7f-9a8b-2c3d4e5f6a7b', // Acta de Entrega
     icono: 'ClipboardCheck',
   },
 
@@ -120,7 +120,7 @@ export const TIPOS_DOCUMENTO: Record<
     valor: 'estudio_titulos',
     titulo: 'Estudio de Títulos',
     descripcion: 'Estudio jurídico de títulos del inmueble',
-    categoria_sugerida: 'f84ec757-2f11-4245-a487-5091176feec5', // Gastos Notariales, Avalúos...
+    categoria_sugerida: 'bd49740e-d46d-43c8-973f-196f1418765c', // Certificado de Tradición
     icono: 'Search',
   },
 }

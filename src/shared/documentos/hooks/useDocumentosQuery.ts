@@ -155,9 +155,9 @@ export function useSubirDocumentoMutation(
       titulo: string
       descripcion?: string
       categoriaId?: string
+      carpetaId?: string | null
       fechaDocumento?: string
       fechaVencimiento?: string
-      esImportante?: boolean
       esDocumentoIdentidad?: boolean
       userId: string
       metadata?: Record<string, unknown> // ✅ Para vincular con requisito (requisito_config_id, fuente_pago_id, etc.)
@@ -167,12 +167,12 @@ export function useSubirDocumentoMutation(
           entidad_id: entidadId,
           tipoEntidad: tipoEntidad,
           categoria_id: params.categoriaId,
+          carpeta_id: params.carpetaId ?? null,
           titulo: params.titulo,
           descripcion: params.descripcion,
           archivo: params.archivo,
           fecha_documento: params.fechaDocumento,
           fecha_vencimiento: params.fechaVencimiento,
-          es_importante: params.esImportante,
           es_documento_identidad: params.esDocumentoIdentidad,
           metadata: params.metadata, // ✅ Pasa requisito_config_id y fuente_pago_id al service
         },

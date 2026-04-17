@@ -225,6 +225,59 @@ export type Database = {
         }
         Relationships: []
       }
+      carpetas_documentos: {
+        Row: {
+          color: string | null
+          creado_por: string | null
+          descripcion: string | null
+          entidad_id: string
+          fecha_actualizacion: string | null
+          fecha_creacion: string | null
+          icono: string | null
+          id: string
+          nombre: string
+          orden: number | null
+          padre_id: string | null
+          tipo_entidad: string
+        }
+        Insert: {
+          color?: string | null
+          creado_por?: string | null
+          descripcion?: string | null
+          entidad_id: string
+          fecha_actualizacion?: string | null
+          fecha_creacion?: string | null
+          icono?: string | null
+          id?: string
+          nombre: string
+          orden?: number | null
+          padre_id?: string | null
+          tipo_entidad: string
+        }
+        Update: {
+          color?: string | null
+          creado_por?: string | null
+          descripcion?: string | null
+          entidad_id?: string
+          fecha_actualizacion?: string | null
+          fecha_creacion?: string | null
+          icono?: string | null
+          id?: string
+          nombre?: string
+          orden?: number | null
+          padre_id?: string | null
+          tipo_entidad?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "carpetas_documentos_padre_id_fkey"
+            columns: ["padre_id"]
+            isOneToOne: false
+            referencedRelation: "carpetas_documentos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       categorias_documento: {
         Row: {
           color: string | null
@@ -332,13 +385,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "clientes"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "cliente_intereses_cliente_id_fkey"
-            columns: ["cliente_id"]
-            isOneToOne: false
-            referencedRelation: "vista_abonos_completos"
-            referencedColumns: ["cliente_id"]
           },
           {
             foreignKeyName: "cliente_intereses_cliente_id_fkey"
@@ -738,6 +784,7 @@ export type Database = {
       documentos_cliente: {
         Row: {
           anclado_at: string | null
+          carpeta_id: string | null
           categoria_id: string | null
           cliente_id: string
           descripcion: string | null
@@ -772,6 +819,7 @@ export type Database = {
         }
         Insert: {
           anclado_at?: string | null
+          carpeta_id?: string | null
           categoria_id?: string | null
           cliente_id: string
           descripcion?: string | null
@@ -806,6 +854,7 @@ export type Database = {
         }
         Update: {
           anclado_at?: string | null
+          carpeta_id?: string | null
           categoria_id?: string | null
           cliente_id?: string
           descripcion?: string | null
@@ -840,6 +889,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "documentos_cliente_carpeta_id_fkey"
+            columns: ["carpeta_id"]
+            isOneToOne: false
+            referencedRelation: "carpetas_documentos"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "documentos_cliente_categoria_id_fkey"
             columns: ["categoria_id"]
             isOneToOne: false
@@ -852,13 +908,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "clientes"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "documentos_cliente_cliente_id_fkey"
-            columns: ["cliente_id"]
-            isOneToOne: false
-            referencedRelation: "vista_abonos_completos"
-            referencedColumns: ["cliente_id"]
           },
           {
             foreignKeyName: "documentos_cliente_cliente_id_fkey"
@@ -935,6 +984,7 @@ export type Database = {
       documentos_proyecto: {
         Row: {
           anclado_at: string | null
+          carpeta_id: string | null
           categoria_id: string | null
           descripcion: string | null
           documento_padre_id: string | null
@@ -965,6 +1015,7 @@ export type Database = {
         }
         Insert: {
           anclado_at?: string | null
+          carpeta_id?: string | null
           categoria_id?: string | null
           descripcion?: string | null
           documento_padre_id?: string | null
@@ -995,6 +1046,7 @@ export type Database = {
         }
         Update: {
           anclado_at?: string | null
+          carpeta_id?: string | null
           categoria_id?: string | null
           descripcion?: string | null
           documento_padre_id?: string | null
@@ -1024,6 +1076,13 @@ export type Database = {
           version_corrige_a?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "documentos_proyecto_carpeta_id_fkey"
+            columns: ["carpeta_id"]
+            isOneToOne: false
+            referencedRelation: "carpetas_documentos"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "documentos_proyecto_categoria_id_fkey"
             columns: ["categoria_id"]
@@ -1099,6 +1158,7 @@ export type Database = {
       documentos_vivienda: {
         Row: {
           anclado_at: string | null
+          carpeta_id: string | null
           categoria_id: string | null
           descripcion: string | null
           documento_padre_id: string | null
@@ -1130,6 +1190,7 @@ export type Database = {
         }
         Insert: {
           anclado_at?: string | null
+          carpeta_id?: string | null
           categoria_id?: string | null
           descripcion?: string | null
           documento_padre_id?: string | null
@@ -1161,6 +1222,7 @@ export type Database = {
         }
         Update: {
           anclado_at?: string | null
+          carpeta_id?: string | null
           categoria_id?: string | null
           descripcion?: string | null
           documento_padre_id?: string | null
@@ -1191,6 +1253,13 @@ export type Database = {
           vivienda_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "documentos_vivienda_carpeta_id_fkey"
+            columns: ["carpeta_id"]
+            isOneToOne: false
+            referencedRelation: "carpetas_documentos"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "documentos_vivienda_categoria_id_fkey"
             columns: ["categoria_id"]
@@ -1670,13 +1739,6 @@ export type Database = {
             foreignKeyName: "negociaciones_cliente_id_fkey"
             columns: ["cliente_id"]
             isOneToOne: false
-            referencedRelation: "vista_abonos_completos"
-            referencedColumns: ["cliente_id"]
-          },
-          {
-            foreignKeyName: "negociaciones_cliente_id_fkey"
-            columns: ["cliente_id"]
-            isOneToOne: false
             referencedRelation: "vista_clientes_resumen"
             referencedColumns: ["id"]
           },
@@ -1894,13 +1956,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "clientes"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "notas_historial_cliente_cliente_id_fkey"
-            columns: ["cliente_id"]
-            isOneToOne: false
-            referencedRelation: "vista_abonos_completos"
-            referencedColumns: ["cliente_id"]
           },
           {
             foreignKeyName: "notas_historial_cliente_cliente_id_fkey"
@@ -2618,13 +2673,6 @@ export type Database = {
             foreignKeyName: "cliente_intereses_cliente_id_fkey"
             columns: ["cliente_id"]
             isOneToOne: false
-            referencedRelation: "vista_abonos_completos"
-            referencedColumns: ["cliente_id"]
-          },
-          {
-            foreignKeyName: "cliente_intereses_cliente_id_fkey"
-            columns: ["cliente_id"]
-            isOneToOne: false
             referencedRelation: "vista_clientes_resumen"
             referencedColumns: ["id"]
           },
@@ -2797,6 +2845,9 @@ export type Database = {
           motivo_detalle: string | null
           negociacion_estado: string | null
           negociacion_id: string | null
+          negociacion_saldo_pendiente: number | null
+          negociacion_total_abonado: number | null
+          negociacion_valor_total: number | null
           notas: string | null
           numero_recibo: number | null
           numero_referencia: string | null
@@ -2841,6 +2892,27 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "negociaciones"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "negociaciones_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "negociaciones_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "vista_clientes_resumen"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "negociaciones_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "vista_viviendas_completas"
+            referencedColumns: ["cliente_id_data"]
           },
         ]
       }

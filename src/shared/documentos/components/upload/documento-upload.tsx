@@ -13,6 +13,7 @@ import { CheckboxDocumentoIdentidad } from './CheckboxDocumentoIdentidad'
 interface DocumentoUploadProps {
   entidadId: string // ✅ GENÉRICO (antes proyectoId)
   tipoEntidad: TipoEntidad // ✅ NUEVO: 'proyecto', 'vivienda', etc.
+  carpetaId?: string | null // 📁 Carpeta destino
   onSuccess?: () => void
   onCancel?: () => void
   moduleName?: ModuleName // 🎨 Tema del módulo
@@ -22,6 +23,7 @@ interface DocumentoUploadProps {
 export function DocumentoUpload({
   entidadId,
   tipoEntidad,
+  carpetaId,
   onSuccess,
   onCancel,
   moduleName, // 🎨 Inferir desde tipoEntidad si no se pasa
@@ -55,7 +57,13 @@ export function DocumentoUpload({
     handleDrop,
     handleFileInputChange,
     limpiarArchivo,
-  } = useDocumentoUpload({ entidadId, tipoEntidad, metadata, onSuccess })
+  } = useDocumentoUpload({
+    entidadId,
+    tipoEntidad,
+    carpetaId,
+    metadata,
+    onSuccess,
+  })
 
   return (
     <>
@@ -70,7 +78,7 @@ export function DocumentoUpload({
             </div>
             <div className='flex-1'>
               <h4 className='mb-1 text-sm font-bold text-blue-900 dark:text-blue-100'>
-                🔗 Vinculación automática activada
+                Vinculación automática activada
               </h4>
               <p className='text-xs text-blue-700 dark:text-blue-300'>
                 Este documento se vinculará automáticamente al requisito{' '}
@@ -112,43 +120,6 @@ export function DocumentoUpload({
                   Documento marcado automáticamente como identificación oficial
                 </p>
               )}
-          </div>
-        )}
-
-      {/* Mensaje informativo si ya existe documento de identidad (SOLO si NO es un requisito específico) */}
-      {tipoEntidad === 'cliente' &&
-        yaExisteDocumentoIdentidad &&
-        !tipoDocumento && (
-          <div className='mb-4 rounded-xl border-2 border-green-200 bg-gradient-to-r from-green-50 to-emerald-50 p-4 dark:border-green-800 dark:from-green-950/30 dark:to-emerald-950/30'>
-            <div className='flex items-start gap-3'>
-              <div className='mt-0.5 flex-shrink-0'>
-                <div className='flex h-10 w-10 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/50'>
-                  <svg
-                    className='h-6 w-6 text-green-600 dark:text-green-400'
-                    fill='none'
-                    viewBox='0 0 24 24'
-                    stroke='currentColor'
-                  >
-                    <path
-                      strokeLinecap='round'
-                      strokeLinejoin='round'
-                      strokeWidth={2}
-                      d='M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z'
-                    />
-                  </svg>
-                </div>
-              </div>
-              <div className='flex-1'>
-                <h4 className='mb-1 text-sm font-bold text-green-900 dark:text-green-100'>
-                  ✓ Este cliente ya tiene un documento de identidad registrado
-                </h4>
-                <p className='text-xs text-green-700 dark:text-green-300'>
-                  Ya no es necesario marcar documentos adicionales como
-                  documento de identidad. Puedes continuar subiendo otros
-                  documentos normalmente.
-                </p>
-              </div>
-            </div>
           </div>
         )}
 

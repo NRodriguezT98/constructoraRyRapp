@@ -3,7 +3,7 @@
 import type { BaseSyntheticEvent, ReactNode, RefObject } from 'react'
 
 import { AnimatePresence, motion } from 'framer-motion'
-import { FileCheck, Info, Loader2 } from 'lucide-react'
+import { FileCheck, Loader2 } from 'lucide-react'
 import type {
   FieldErrors,
   Path,
@@ -13,19 +13,21 @@ import type {
   UseFormWatch,
 } from 'react-hook-form'
 
-import { moduleThemes, type ModuleName } from '@/shared/config/module-themes'
+import {
+  AccordionWizardField,
+  AccordionWizardTextarea,
+  getAccordionWizardStyles,
+} from '@/shared/components/accordion-wizard'
+import { type ModuleName } from '@/shared/config/module-themes'
 import { cn } from '@/shared/utils/helpers'
 
 import { ArchivoSelector } from './ArchivoSelector'
 import { CategoriaSelect } from './CategoriaSelect'
-import { DescripcionTextarea } from './DescripcionTextarea'
 import type {
   CategoriaDocumentoBase,
   DocumentoFormValuesBase,
 } from './documento-form.types'
 import { FechasInputs } from './FechasInputs'
-import { ImportanteToggle } from './ImportanteToggle'
-import { TituloInput } from './TituloInput'
 
 interface DocumentoFormBaseProps<TFormValues extends DocumentoFormValuesBase> {
   mode: 'create' | 'edit'
@@ -40,13 +42,13 @@ interface DocumentoFormBaseProps<TFormValues extends DocumentoFormValuesBase> {
   // Datos del formulario
   categorias: CategoriaDocumentoBase[]
   isSubmitting: boolean
-  esDocumentoIdentidad?: boolean // ✅ Para deshabilitar categoría
-  categoriaIdentidad?: CategoriaDocumentoBase | undefined // ✅ Categoría auto-seleccionada
-  categoriaBloqueada?: boolean // ✅ Para bloquear categoría (requisitos de fuentes)
+  esDocumentoIdentidad?: boolean
+  categoriaIdentidad?: CategoriaDocumentoBase | undefined
+  categoriaBloqueada?: boolean
 
   // React Hook Form
   register: UseFormRegister<TFormValues>
-  handleSubmit: (e?: BaseSyntheticEvent) => Promise<void> // Ya wrapeado
+  handleSubmit: (e?: BaseSyntheticEvent) => Promise<void>
   errors: FieldErrors<TFormValues>
   setValue: UseFormSetValue<TFormValues>
   watch: UseFormWatch<TFormValues>
@@ -96,13 +98,11 @@ export function DocumentoFormBase<TFormValues extends DocumentoFormValuesBase>({
   submitButtonText = 'Subir documento',
   submittingButtonText = 'Subiendo...',
 }: DocumentoFormBaseProps<TFormValues>) {
-  const theme = moduleThemes[moduleName]
+  const styles = getAccordionWizardStyles(moduleName)
   const categoriaIdField = 'categoria_id' as Path<TFormValues>
   const tituloField = 'titulo' as Path<TFormValues>
   const descripcionField = 'descripcion' as Path<TFormValues>
   const categoriaId = (watch(categoriaIdField) as string | undefined) ?? ''
-  const titulo = (watch(tituloField) as string | undefined) ?? ''
-  const descripcion = (watch(descripcionField) as string | undefined) ?? ''
 
   const showArchivoSelector = mode === 'create'
   const showFormFields =
@@ -144,54 +144,52 @@ export function DocumentoFormBase<TFormValues extends DocumentoFormValuesBase>({
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className='space-y-0'
           >
-            {/* Card única con todo el formulario */}
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className='space-y-3 rounded-xl border border-gray-200/50 bg-white/80 p-4 shadow-lg backdrop-blur-xl dark:border-gray-700/50 dark:bg-gray-800/80'
+              className={styles.section.active.replace(
+                'overflow-hidden',
+                'overflow-visible'
+              )}
             >
               {/* Header */}
-              <div className='flex items-center gap-2 border-b border-gray-200 pb-3 dark:border-gray-700'>
-                <div
-                  className={cn(
-                    'flex h-8 w-8 items-center justify-center rounded-lg',
-                    'bg-gradient-to-br',
-                    theme.classes.gradient.primary
-                  )}
-                >
-                  <Info className='h-4 w-4 text-white' />
+              <div className='flex items-center gap-3 border-b border-gray-100 px-6 py-4 dark:border-gray-800'>
+                <div className={styles.stepCircle.active}>
+                  <FileCheck className='h-4 w-4 text-current opacity-70' />
                 </div>
-                <h3
-                  className={cn(
-                    'text-sm font-semibold',
-                    theme.classes.text.primary
-                  )}
-                >
-                  Información del Documento
-                </h3>
+                <div>
+                  <h3 className='text-sm font-semibold text-gray-900 dark:text-white'>
+                    Información del Documento
+                  </h3>
+                  <p className='text-xs text-gray-500 dark:text-gray-400'>
+                    Completa los datos del archivo seleccionado
+                  </p>
+                </div>
               </div>
 
-              {/* Título */}
-              <TituloInput
-                moduleName={moduleName}
-                register={register}
-                errors={errors}
-                value={titulo}
-              />
+              {/* Campos */}
+              <div className='space-y-4 px-6 py-5'>
+                {/* Título */}
+                <AccordionWizardField
+                  label='Título del documento'
+                  moduleName={moduleName}
+                  required
+                  error={errors.titulo?.message as string | undefined}
+                  maxLength={200}
+                  {...register(tituloField)}
+                />
 
-              {/* Descripción */}
-              <DescripcionTextarea
-                moduleName={moduleName}
-                register={register}
-                errors={errors}
-                value={descripcion}
-                rows={2}
-              />
+                {/* Descripción */}
+                <AccordionWizardTextarea
+                  label='Descripción (opcional)'
+                  moduleName={moduleName}
+                  rows={3}
+                  error={errors.descripcion?.message as string | undefined}
+                  {...register(descripcionField)}
+                />
 
-              {/* Grid: Categoría + Importante */}
-              <div className='grid grid-cols-1 gap-3 md:grid-cols-2'>
+                {/* Categoría */}
                 <CategoriaSelect
                   moduleName={moduleName}
                   categorias={categorias}
@@ -203,7 +201,7 @@ export function DocumentoFormBase<TFormValues extends DocumentoFormValuesBase>({
                     )
                   }
                   errors={errors}
-                  disabled={esDocumentoIdentidad || categoriaBloqueada} // ✅ Deshabilitar si es documento de identidad O categoría bloqueada
+                  disabled={esDocumentoIdentidad || categoriaBloqueada}
                   helperText={
                     esDocumentoIdentidad && categoriaIdentidad
                       ? `Categoría: ${categoriaIdentidad.nombre}`
@@ -213,22 +211,16 @@ export function DocumentoFormBase<TFormValues extends DocumentoFormValuesBase>({
                   }
                 />
 
-                <ImportanteToggle
+                {/* Campos específicos del módulo */}
+                {extraFields}
+
+                {/* Fechas */}
+                <FechasInputs
                   moduleName={moduleName}
                   register={register}
-                  watch={watch}
+                  errors={errors}
                 />
               </div>
-
-              {/* 🔥 CAMPOS ESPECÍFICOS DEL MÓDULO (inyectados) */}
-              {extraFields}
-
-              {/* Fechas */}
-              <FechasInputs
-                moduleName={moduleName}
-                register={register}
-                errors={errors}
-              />
             </motion.div>
           </motion.div>
         )}
@@ -239,17 +231,22 @@ export function DocumentoFormBase<TFormValues extends DocumentoFormValuesBase>({
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className='flex items-center justify-between gap-3 border-t border-gray-200 pt-4 dark:border-gray-700'
+          className='flex items-center justify-between gap-3'
         >
-          {onCancel && (
+          {onCancel ? (
             <button
               type='button'
               onClick={onCancel}
               disabled={isSubmitting}
-              className='rounded-lg px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100 disabled:opacity-50 dark:text-gray-300 dark:hover:bg-gray-700'
+              className={cn(
+                styles.navigation.backButton,
+                'disabled:opacity-50'
+              )}
             >
               Cancelar
             </button>
+          ) : (
+            <span />
           )}
 
           <button
@@ -257,11 +254,7 @@ export function DocumentoFormBase<TFormValues extends DocumentoFormValuesBase>({
             disabled={
               (mode === 'create' && !archivoSeleccionado) || isSubmitting
             }
-            className={cn(
-              'flex items-center gap-2 rounded-lg px-6 py-2 text-sm font-medium transition-all',
-              'disabled:cursor-not-allowed disabled:opacity-50',
-              theme.classes.button.primary
-            )}
+            className={styles.navigation.nextButton}
           >
             {isSubmitting ? (
               <>

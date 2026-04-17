@@ -1,6 +1,6 @@
 ﻿'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 
 import { motion } from 'framer-motion'
 import {
@@ -22,12 +22,12 @@ import {
 } from 'lucide-react'
 import { createPortal } from 'react-dom'
 
-import { supabase } from '@/lib/supabase/client'
 import { formatDateCompact } from '@/lib/utils/date.utils'
 import { ConfirmacionModal } from '@/shared/components/modals'
 import { type ModuleName } from '@/shared/config/module-themes'
 
 import { useDocumentoCard } from '../../hooks'
+import { useDocumentoThumbnail } from '../../hooks/useDocumentoThumbnail'
 import {
   CategoriaDocumento,
   DocumentoProyecto,
@@ -35,6 +35,11 @@ import {
   getFileExtension,
 } from '../../types/documento.types'
 import type { TipoEntidad } from '../../types/entidad.types'
+import {
+  getAvatarColor,
+  getFileTypeColor,
+  getInitials,
+} from '../../utils/documento-card.utils'
 import { BadgeEstadoProceso } from '../badge-estado-proceso'
 import {
   DocumentoEditarMetadatosModal,
@@ -53,7 +58,7 @@ interface DocumentoCardHorizontalProps {
   onArchive: (documento: DocumentoProyecto) => void
   onDelete: (documento: DocumentoProyecto) => void
   onRename?: (documento: DocumentoProyecto) => void
-  onAsignarCategoria?: (documento: DocumentoProyecto) => void
+  onMoverACarpeta?: (documento: DocumentoProyecto) => void
   onRefresh?: () => void | Promise<void>
   tipoEntidad?: TipoEntidad
   moduleName?: ModuleName
@@ -70,7 +75,7 @@ export function DocumentoCardHorizontal({
   onArchive,
   onDelete: _onDelete,
   onRename,
-  onAsignarCategoria,
+  onMoverACarpeta,
   onRefresh,
   tipoEntidad = 'proyecto',
   moduleName = 'clientes',
@@ -105,38 +110,19 @@ export function DocumentoCardHorizontal({
     cerrarConfirmacionEliminar,
     ejecutarEliminacion,
     eliminando,
+    // Cálculos de fechas delegados al hook
+    estaVencido,
+    estaProximoAVencer,
+    tieneVersiones,
   } = useDocumentoCard({ documento, esDocumentoProyecto: true })
 
-  const tieneVersiones = documento.version > 1
-
-  // Thumbnail para imágenes
+  // Thumbnail para imágenes — lógica de Storage encapsulada en hook
   const esImagen = documento.tipo_mime?.startsWith('image/')
-  const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null)
-
-  useEffect(() => {
-    if (!esImagen || !documento.url_storage) return
-    const config = {
-      proyecto: 'documentos-proyectos',
-      vivienda: 'documentos-viviendas',
-      cliente: 'documentos-clientes',
-    } as const
-    const bucket = config[tipoEntidad] || 'documentos-proyectos'
-    supabase.storage
-      .from(bucket)
-      .createSignedUrl(documento.url_storage, 3600)
-      .then(({ data }) => {
-        if (data?.signedUrl) setThumbnailUrl(data.signedUrl)
-      })
-  }, [esImagen, documento.url_storage, tipoEntidad])
-
-  const estaProximoAVencer = documento.fecha_vencimiento
-    ? new Date(documento.fecha_vencimiento) <=
-      new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
-    : false
-
-  const estaVencido = documento.fecha_vencimiento
-    ? new Date(documento.fecha_vencimiento) < new Date()
-    : false
+  const thumbnailUrl = useDocumentoThumbnail({
+    esImagen: esImagen ?? false,
+    urlStorage: documento.url_storage,
+    tipoEntidad,
+  })
 
   // Portal positioning para el menú
   const triggerRef = useRef<HTMLButtonElement>(null)
@@ -179,38 +165,12 @@ export function DocumentoCardHorizontal({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -4 }}
       onClick={() => onView(documento)}
-      className='group relative flex cursor-pointer items-center gap-4 overflow-hidden rounded-xl border border-gray-200/80 bg-white py-3 pl-5 pr-4 shadow-sm transition-all duration-150 hover:border-gray-300 hover:shadow-md dark:border-gray-700/80 dark:bg-gray-800 dark:hover:border-gray-600'
+      className='group relative flex cursor-pointer items-center gap-3 overflow-hidden bg-white px-3 py-2 transition-colors duration-100 hover:bg-gray-50/80 dark:bg-transparent dark:hover:bg-gray-800/30'
     >
-      {/* Barra de color lateral + hover tint */}
-      {categoria ? (
-        <>
-          {/* barra sólida 4px */}
-          <div
-            className='absolute left-0 top-0 h-full w-1 transition-all duration-150 group-hover:w-[5px]'
-            style={{ backgroundColor: categoria.color }}
-          />
-          {/* tinte de fondo al hover con el color de la categoría */}
-          <div
-            className='pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-150 group-hover:opacity-100'
-            style={{
-              background: `linear-gradient(to right, ${categoria.color}18, transparent 40%)`,
-            }}
-          />
-        </>
-      ) : (
-        <div
-          className='absolute left-0 top-0 h-full w-1'
-          style={{
-            backgroundImage:
-              'repeating-linear-gradient(to bottom, #94a3b8 0, #94a3b8 4px, transparent 4px, transparent 9px)',
-          }}
-        />
-      )}
-
       {/* ICONO / THUMBNAIL — preview para imágenes, icono para el resto */}
       <div className='relative flex-shrink-0'>
         {esImagen && thumbnailUrl ? (
-          <div className='h-10 w-10 overflow-hidden rounded-lg shadow-sm'>
+          <div className='h-8 w-8 overflow-hidden rounded-md shadow-sm'>
             {/* eslint-disable-next-line @next/next/no-img-element -- Thumbnail de Supabase Storage con dimensiones variables; next/image requeriría width/height fijos */}
             <img
               src={thumbnailUrl}
@@ -219,26 +179,33 @@ export function DocumentoCardHorizontal({
               className='h-full w-full object-cover'
             />
           </div>
-        ) : categoria ? (
+        ) : (
           <div
-            className='flex h-10 w-10 items-center justify-center rounded-lg'
+            className='flex h-8 w-8 items-center justify-center rounded-md'
             style={{
-              background: `linear-gradient(135deg, ${categoria.color}25, ${categoria.color}45)`,
+              background: `${getFileTypeColor(getFileExtension(documento.nombre_archivo), documento.tipo_mime)}18`,
             }}
           >
-            <span style={{ color: categoria.color }}>
-              <FileText size={20} />
-            </span>
-          </div>
-        ) : (
-          <div className='flex h-10 w-10 items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-700'>
-            <FileText size={20} className='text-gray-400' />
+            <FileText
+              size={16}
+              style={{
+                color: getFileTypeColor(
+                  getFileExtension(documento.nombre_archivo),
+                  documento.tipo_mime
+                ),
+              }}
+            />
           </div>
         )}
-        {/* Extensión superpuesta en la esquina */}
+        {/* Extensión superpuesta en la esquina — color por tipo de archivo, no por categoría */}
         <span
           className='absolute -bottom-1 -right-1 rounded px-1 py-px font-mono text-[9px] font-bold uppercase leading-none tracking-wide text-white shadow-sm'
-          style={{ backgroundColor: categoria?.color ?? '#94a3b8' }}
+          style={{
+            backgroundColor: getFileTypeColor(
+              getFileExtension(documento.nombre_archivo),
+              documento.tipo_mime
+            ),
+          }}
         >
           {getFileExtension(documento.nombre_archivo)}
         </span>
@@ -296,116 +263,102 @@ export function DocumentoCardHorizontal({
             </span>
           )}
         </div>
-        <div className='mt-1 flex flex-col gap-0.5'>
-          {/* Fila 1: Categoría */}
-          <div className='flex items-center gap-1 text-xs'>
-            <span className='flex-shrink-0 text-gray-400 dark:text-gray-500'>
-              Categoría del documento:
-            </span>
-            {categoria ? (
-              <span
-                className='truncate font-medium'
-                style={{ color: categoria.color }}
-              >
-                {categoria.nombre}
-              </span>
-            ) : (
-              <span className='italic text-gray-400 dark:text-gray-500'>
-                Sin categoría
-              </span>
-            )}
-          </div>
-          {/* Fila 2: Subido por */}
-          <div className='flex items-center gap-1 text-xs'>
-            <span className='flex-shrink-0 text-gray-400 dark:text-gray-500'>
-              Subido por:
-            </span>
-            <span className='truncate font-medium text-gray-600 dark:text-gray-300'>
-              {documento.usuario
-                ? `${documento.usuario.nombres} ${documento.usuario.apellidos}`
-                : 'Desconocido'}
-            </span>
-          </div>
-        </div>
         {estadoProceso.esDeProceso && estadoProceso.estadoPaso && (
-          <div className='mt-1'>
+          <div className='mt-0.5'>
             <BadgeEstadoProceso estadoPaso={estadoProceso.estadoPaso} />
           </div>
         )}
       </div>
 
-      {/* FECHA — columna fija (incluye tamaño) */}
-      <div className='hidden w-32 flex-shrink-0 flex-col items-end lg:flex'>
-        <span className='text-[10px] text-gray-400 dark:text-gray-500'>
-          Fecha doc.
-        </span>
-        <span className='mt-0.5 text-xs font-medium text-gray-700 dark:text-gray-300'>
-          {documento.fecha_documento
-            ? formatDateCompact(documento.fecha_documento)
-            : '—'}
-        </span>
-        <span className='mt-1.5 text-[10px] text-gray-400 dark:text-gray-500'>
-          Subida
-        </span>
-        <span className='mt-0.5 text-xs text-gray-500 dark:text-gray-400'>
-          {formatDateCompact(documento.fecha_creacion)}
-        </span>
-        <span className='mt-1.5 text-[10px] text-gray-400 dark:text-gray-500'>
-          Tamaño
-        </span>
-        <span className='mt-0.5 text-xs text-gray-500 dark:text-gray-400'>
-          {formatFileSize(documento.tamano_bytes)}
-        </span>
-        {documento.fecha_vencimiento && (
+      {/* CATEGORÍA — w-40 hidden below md */}
+      <div className='hidden w-40 flex-shrink-0 items-center gap-1.5 md:flex'>
+        {categoria ? (
           <>
-            <span className='mt-1.5 text-[10px] text-gray-400 dark:text-gray-500'>
-              Vencimiento
-            </span>
             <span
-              className={`mt-0.5 text-[11px] font-medium ${estaVencido ? 'text-red-500' : estaProximoAVencer ? 'text-orange-500' : 'text-gray-400'}`}
-            >
-              {formatDateCompact(documento.fecha_vencimiento)}
+              className='h-2 w-2 flex-shrink-0 rounded-full'
+              style={{ backgroundColor: categoria.color }}
+            />
+            <span className='truncate text-xs font-medium text-gray-600 dark:text-gray-400'>
+              {categoria.nombre}
             </span>
           </>
+        ) : (
+          <span className='text-xs italic text-gray-400 dark:text-gray-500'>
+            —
+          </span>
         )}
       </div>
 
-      {/* ACCIONES — aparecen en hover, siempre accesibles con teclado */}
+      {/* SUBIDO POR — avatar + nombre, w-[160px], estilo Google Drive */}
+      <div className='hidden w-[160px] flex-shrink-0 items-center gap-2 lg:flex'>
+        {documento.usuario ? (
+          <>
+            <div
+              className='flex h-7 w-7 flex-shrink-0 cursor-default items-center justify-center rounded-full text-[10px] font-bold text-white shadow-sm'
+              style={{
+                backgroundColor: getAvatarColor(
+                  `${documento.usuario.nombres}${documento.usuario.apellidos}`
+                ),
+              }}
+              title={`${documento.usuario.nombres} ${documento.usuario.apellidos}`}
+            >
+              {getInitials(
+                documento.usuario.nombres,
+                documento.usuario.apellidos
+              )}
+            </div>
+            <span
+              className='truncate text-xs text-gray-600 dark:text-gray-400'
+              title={`${documento.usuario.nombres} ${documento.usuario.apellidos}`}
+            >
+              {documento.usuario.nombres} {documento.usuario.apellidos}
+            </span>
+          </>
+        ) : (
+          <span className='text-xs italic text-gray-400 dark:text-gray-500'>
+            —
+          </span>
+        )}
+      </div>
+
+      {/* FECHA SUBIDA — w-[96px] hidden below lg */}
+      <div className='hidden w-[96px] flex-shrink-0 lg:block'>
+        <span className='text-xs tabular-nums text-gray-600 dark:text-gray-400'>
+          {formatDateCompact(documento.fecha_creacion)}
+        </span>
+      </div>
+      {/* TAMAÑO — w-[72px] hidden below lg */}
+      <div className='hidden w-[72px] flex-shrink-0 text-right lg:block'>
+        <span className='text-xs tabular-nums text-gray-500 dark:text-gray-400'>
+          {formatFileSize(documento.tamano_bytes)}
+        </span>
+      </div>
+
+      {/* ACCIONES — w-[68px], visibles en hover */}
       <div
-        className='flex flex-shrink-0 items-center gap-1'
+        className='flex w-[68px] flex-shrink-0 items-center justify-end gap-0.5'
         onClick={e => e.stopPropagation()}
       >
-        <div className='flex items-center gap-1 opacity-0 transition-opacity duration-150 focus-within:opacity-100 group-hover:opacity-100'>
+        <div className='flex items-center gap-0.5 opacity-0 transition-opacity duration-150 focus-within:opacity-100 group-hover:opacity-100'>
           <button
             onClick={() => onDownload(documento)}
-            className='flex items-center justify-center rounded-lg p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white'
+            className='flex items-center justify-center rounded-md p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:text-gray-500 dark:hover:bg-gray-700 dark:hover:text-gray-200'
             title='Descargar'
             aria-label='Descargar documento'
           >
-            <Download size={16} />
+            <Download size={14} />
           </button>
-
-          {onAsignarCategoria && (
-            <button
-              onClick={() => onAsignarCategoria(documento)}
-              className='flex items-center justify-center rounded-lg p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white'
-              title={categoria ? `Cambiar categoría` : 'Asignar categoría'}
-              aria-label='Asignar categoría'
-            >
-              <FolderPlus size={16} />
-            </button>
-          )}
 
           {/* Menú de opciones con portal */}
           <button
             ref={triggerRef}
             type='button'
             onClick={handleAbrirMenu}
-            className='flex items-center justify-center rounded-lg p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white'
+            className='flex items-center justify-center rounded-md p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:text-gray-500 dark:hover:bg-gray-700 dark:hover:text-gray-200'
             title='Más opciones'
             aria-label='Más opciones'
           >
-            <MoreVertical size={16} />
+            <MoreVertical size={14} />
           </button>
 
           {menuAbierto &&
@@ -460,6 +413,22 @@ export function DocumentoCardHorizontal({
                   >
                     <Edit3 size={15} />
                     Renombrar
+                  </button>
+                )}
+
+                {onMoverACarpeta && !esArchivado && (
+                  <button
+                    type='button'
+                    onClick={e => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      onMoverACarpeta(documento)
+                      cerrarMenu()
+                    }}
+                    className='flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
+                  >
+                    <FolderPlus size={15} />
+                    Mover a carpeta
                   </button>
                 )}
 
@@ -632,6 +601,7 @@ export function DocumentoCardHorizontal({
         documento={documento}
         categorias={categorias}
         tipoEntidad={tipoEntidad}
+        moduleName={moduleName}
         onClose={cerrarModalEditar}
         onEditado={async () => {
           cerrarModalEditar()

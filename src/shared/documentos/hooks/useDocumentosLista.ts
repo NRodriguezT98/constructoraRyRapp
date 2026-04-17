@@ -28,6 +28,14 @@ import {
 } from '../types'
 
 import {
+  useActualizarCarpetaMutation,
+  useBreadcrumbsQuery,
+  useCarpetasQuery,
+  useCrearCarpetaMutation,
+  useEliminarCarpetaMutation,
+  useMoverDocumentoACarpetaMutation,
+} from './useCarpetasQuery'
+import {
   useArchivarDocumentoMutation,
   useCategoriasQuery,
   useDocumentosQuery,
@@ -43,6 +51,12 @@ interface UseDocumentosListaProps {
   defaultVista?: 'grid' | 'lista'
 }
 
+export type SortCol =
+  | 'titulo'
+  | 'fecha_creacion'
+  | 'fecha_documento'
+  | 'tamano_bytes'
+
 export function useDocumentosLista({
   entidadId,
   tipoEntidad,
@@ -51,6 +65,7 @@ export function useDocumentosLista({
 }: UseDocumentosListaProps) {
   // Estado local UI
   const [vista, setVista] = useState<'grid' | 'lista'>(defaultVista)
+  const [carpetaActualId, setCarpetaActualId] = useState<string | null>(null)
   const [documentoSeleccionado, setDocumentoSeleccionado] =
     useState<DocumentoProyecto | null>(null)
   const [modalViewerAbierto, setModalViewerAbierto] = useState(false)
@@ -97,6 +112,27 @@ export function useDocumentosLista({
     moduloCategoria
   )
 
+  // ✅ REACT QUERY: Carpetas
+  const { carpetas, cargando: cargandoCarpetas } = useCarpetasQuery(
+    entidadId,
+    tipoEntidad,
+    carpetaActualId
+  )
+  const { breadcrumbs } = useBreadcrumbsQuery(carpetaActualId)
+  const crearCarpetaMutation = useCrearCarpetaMutation(entidadId, tipoEntidad)
+  const actualizarCarpetaMutation = useActualizarCarpetaMutation(
+    entidadId,
+    tipoEntidad
+  )
+  const eliminarCarpetaMutation = useEliminarCarpetaMutation(
+    entidadId,
+    tipoEntidad
+  )
+  const moverDocumentoMutation = useMoverDocumentoACarpetaMutation(
+    entidadId,
+    tipoEntidad
+  )
+
   // ✅ REACT QUERY: Mutations - GENÉRICO
   const eliminarMutation = useEliminarDocumentoMutation(entidadId, tipoEntidad)
   const toggleImportanteMutation = useToggleImportanteMutation(
@@ -109,12 +145,20 @@ export function useDocumentosLista({
     tipoEntidad
   )
 
-  // ✅ ZUSTAND: Solo estado UI (filtros, búsqueda)
-  const { categoriaFiltro, busqueda, soloImportantes } = useDocumentosStore()
+  // ✅ ZUSTAND: Solo estado UI (filtros, búsqueda, vista activa)
+  const { categoriaFiltro, busqueda, soloImportantes, vistaActual } =
+    useDocumentosStore()
 
   // Filtrado de documentos (local)
   const documentosFiltrados = useMemo(() => {
     let filtered = documentos
+
+    // ✅ Filtrar por carpeta actual (null = raíz = docs sin carpeta)
+    filtered = filtered.filter(doc => {
+      const docCarpetaId =
+        (doc as unknown as Record<string, unknown>).carpeta_id ?? null
+      return docCarpetaId === carpetaActualId
+    })
 
     if (categoriaFiltro) {
       filtered = filtered.filter(doc => doc.categoria_id === categoriaFiltro)
@@ -184,7 +228,7 @@ export function useDocumentosLista({
         new Date(a.fecha_creacion).getTime()
       )
     })
-  }, [documentos, categoriaFiltro, busqueda, soloImportantes])
+  }, [documentos, carpetaActualId, categoriaFiltro, busqueda, soloImportantes])
 
   // Handlers
   const handleView = useCallback(
@@ -372,6 +416,66 @@ export function useDocumentosLista({
   }, [])
 
   // Helpers
+  // ─── Ordenamiento de columna (delegado desde documentos-lista.tsx) ───────────
+  const [sortCol, setSortCol] = useState<SortCol>('titulo')
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc')
+
+  const toggleSort = useCallback(
+    (col: SortCol) => {
+      if (sortCol === col) {
+        setSortDir(d => (d === 'asc' ? 'desc' : 'asc'))
+      } else {
+        setSortCol(col)
+        setSortDir('asc')
+      }
+    },
+    [sortCol]
+  )
+
+  // Filtrar por tab activa (activos / archivados)
+  const documentosMostrar = useMemo(
+    () =>
+      documentosFiltrados.filter(doc =>
+        vistaActual === 'archivados'
+          ? doc.estado === 'archivado'
+          : doc.estado === 'activo'
+      ),
+    [documentosFiltrados, vistaActual]
+  )
+
+  // Ordenar lista — anclados SIEMPRE flotan arriba
+  const documentosOrdenados = useMemo(() => {
+    return [...documentosMostrar].sort((a, b) => {
+      if (a.es_importante && !b.es_importante) return -1
+      if (!a.es_importante && b.es_importante) return 1
+
+      if (a.es_importante && b.es_importante) {
+        const aAt = a.anclado_at ? new Date(a.anclado_at).getTime() : 0
+        const bAt = b.anclado_at ? new Date(b.anclado_at).getTime() : 0
+        return aAt - bAt
+      }
+
+      const mult = sortDir === 'asc' ? 1 : -1
+      if (sortCol === 'titulo') return a.titulo.localeCompare(b.titulo) * mult
+      if (sortCol === 'fecha_creacion')
+        return (
+          (new Date(a.fecha_creacion).getTime() -
+            new Date(b.fecha_creacion).getTime()) *
+          mult
+        )
+      if (sortCol === 'fecha_documento')
+        return (
+          ((a.fecha_documento ? new Date(a.fecha_documento).getTime() : 0) -
+            (b.fecha_documento ? new Date(b.fecha_documento).getTime() : 0)) *
+          mult
+        )
+      if (sortCol === 'tamano_bytes')
+        return ((a.tamano_bytes ?? 0) - (b.tamano_bytes ?? 0)) * mult
+      return 0
+    })
+  }, [documentosMostrar, sortCol, sortDir])
+  // ─────────────────────────────────────────────────────────────────────────────
+
   const getCategoriaByDocumento = useCallback(
     (documento: DocumentoProyecto) => {
       return categorias.find(c => c.id === documento.categoria_id)
@@ -380,6 +484,49 @@ export function useDocumentosLista({
   )
 
   const hasDocumentos = documentos.length > 0
+
+  // ✅ Handlers de carpetas
+  const navegarACarpeta = useCallback((carpetaId: string | null) => {
+    setCarpetaActualId(carpetaId)
+  }, [])
+
+  const handleCrearCarpeta = useCallback(
+    async (nombre: string, descripcion?: string) => {
+      await crearCarpetaMutation.mutateAsync({
+        nombre,
+        descripcion,
+        padreId: carpetaActualId,
+      })
+    },
+    [crearCarpetaMutation, carpetaActualId]
+  )
+
+  const handleRenombrarCarpeta = useCallback(
+    async (carpetaId: string, nombre: string) => {
+      await actualizarCarpetaMutation.mutateAsync({
+        carpetaId,
+        updates: { nombre },
+      })
+    },
+    [actualizarCarpetaMutation]
+  )
+
+  const handleEliminarCarpeta = useCallback(
+    async (carpetaId: string) => {
+      await eliminarCarpetaMutation.mutateAsync(carpetaId)
+    },
+    [eliminarCarpetaMutation]
+  )
+
+  const handleMoverDocumento = useCallback(
+    async (documentoId: string, carpetaDestinoId: string | null) => {
+      await moverDocumentoMutation.mutateAsync({
+        documentoId,
+        carpetaId: carpetaDestinoId,
+      })
+    },
+    [moverDocumentoMutation]
+  )
 
   return {
     // Estado UI
@@ -405,10 +552,28 @@ export function useDocumentosLista({
 
     // Datos
     documentosFiltrados,
+    documentosMostrar,
+    documentosOrdenados,
+    sortCol,
+    sortDir,
+    toggleSort,
     categorias,
     cargandoDocumentos: cargandoDocumentos || cargandoCategorias,
     hasDocumentos,
     tipoEntidad,
+
+    // ✅ Carpetas
+    carpetas,
+    carpetaActualId,
+    breadcrumbs,
+    cargandoCarpetas,
+    navegarACarpeta,
+    handleCrearCarpeta,
+    handleRenombrarCarpeta,
+    handleEliminarCarpeta,
+    handleMoverDocumento,
+    crearCarpetaCargando: crearCarpetaMutation.isPending,
+    moverDocumentoCargando: moverDocumentoMutation.isPending,
 
     // Handlers
     handleView,

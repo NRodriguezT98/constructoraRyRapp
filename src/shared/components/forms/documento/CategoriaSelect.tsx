@@ -1,6 +1,5 @@
 'use client'
 
-import type { CSSProperties } from 'react'
 import { useEffect, useRef, useState } from 'react'
 
 import { AnimatePresence, motion } from 'framer-motion'
@@ -69,20 +68,13 @@ export function CategoriaSelect<TFormValues extends DocumentoFormValuesBase>({
           onClick={() => !disabled && setIsOpen(!isOpen)}
           disabled={disabled}
           className={cn(
-            'flex w-full items-center justify-between rounded-lg border bg-white px-3 py-2 text-left text-sm transition-all dark:bg-gray-900/50',
-            'focus:border-transparent focus:ring-2',
+            'flex w-full items-center justify-between rounded-xl border-2 bg-white px-4 py-3 text-left text-sm transition-all dark:bg-gray-900',
+            'focus:outline-none',
             disabled && 'cursor-not-allowed opacity-50',
             errors.categoria_id
               ? 'border-red-500 dark:border-red-500'
               : 'border-gray-200 dark:border-gray-700'
           )}
-          style={{
-            ...(errors.categoria_id
-              ? {}
-              : ({
-                  '--tw-ring-color': theme.colors.light,
-                } as CSSProperties)),
-          }}
         >
           <div className='min-w-0 flex-1'>
             {categoriaSeleccionada ? (
@@ -119,7 +111,7 @@ export function CategoriaSelect<TFormValues extends DocumentoFormValuesBase>({
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.15 }}
-              className='absolute z-50 mt-1 max-h-64 w-full overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-xl dark:border-gray-700 dark:bg-gray-800'
+              className='absolute z-50 mt-1 max-h-64 w-full overflow-y-auto rounded-xl border-2 border-gray-200 bg-white shadow-xl dark:border-gray-700 dark:bg-gray-800'
             >
               {/* Opción "Sin categoría" */}
               <button

@@ -12,7 +12,6 @@ export interface DocumentoFormValuesBase extends FieldValues {
   categoria_id?: string | null
   fecha_documento?: string
   fecha_vencimiento?: string
-  es_importante?: boolean
   es_documento_identidad?: boolean
   metadata?: Record<string, unknown>
 }

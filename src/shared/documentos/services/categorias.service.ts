@@ -43,13 +43,14 @@ export class CategoriasService {
     modulo: 'proyectos' | 'clientes' | 'viviendas'
   ): Promise<CategoriaDocumento[]> {
     void userId
-    // ✅ SOLO categorías globales (visibles para TODOS los usuarios: admin, contadora, ayudante)
+    // ✅ Filtrar por módulo y global directamente en BD (usa índice GIN)
     const { data, error } = await supabase
       .from('categorias_documento')
       .select(
         'id,user_id,nombre,descripcion,color,icono,orden,es_global,modulos_permitidos,fecha_creacion'
       )
-      .eq('es_global', true) // Solo categorías globales del sistema
+      .eq('es_global', true)
+      .contains('modulos_permitidos', [modulo])
       .order('orden', { ascending: true })
       .order('nombre', { ascending: true })
 
@@ -58,18 +59,7 @@ export class CategoriasService {
       throw error
     }
 
-    // Filtrar por módulo en JavaScript
-    const filtradas = (data || []).filter(cat => {
-      // Si tiene modulos_permitidos y contiene el módulo actual
-      if (cat.modulos_permitidos && Array.isArray(cat.modulos_permitidos)) {
-        return cat.modulos_permitidos.includes(modulo)
-      }
-
-      // Si es global sin módulos específicos, incluir en todos
-      return true
-    })
-
-    return filtradas as CategoriaDocumento[]
+    return (data || []) as CategoriaDocumento[]
   }
 
   /**

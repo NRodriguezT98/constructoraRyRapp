@@ -3,14 +3,7 @@
 import { useMemo, useState } from 'react'
 
 import { AnimatePresence, motion } from 'framer-motion'
-import {
-  Calendar,
-  Filter,
-  Pin,
-  Search,
-  SlidersHorizontal,
-  X,
-} from 'lucide-react'
+import { Filter, Pin, Search, SlidersHorizontal, X } from 'lucide-react'
 
 import { moduleThemes, type ModuleName } from '@/shared/config/module-themes'
 
@@ -238,27 +231,16 @@ export function DocumentosFiltros({
           </div>
         )}
 
-        {/* Estadísticas */}
-        <div className='ml-auto flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400'>
-          <div className='flex items-center gap-2'>
-            <div className='h-2 w-2 rounded-full bg-blue-500' />
+        {/* Contador de resultados filtrados (solo cuando hay filtros activos) */}
+        {hayFiltrosActivos &&
+        documentosFiltrados.length !== estadisticas.total ? (
+          <div className='ml-auto flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400'>
+            <div className='h-1.5 w-1.5 rounded-full bg-blue-500' />
             <span>
-              {documentosFiltrados.length} de {estadisticas.total} documentos
+              {documentosFiltrados.length} de {estadisticas.total} docs
             </span>
           </div>
-          {estadisticas.importantes > 0 && (
-            <div className='flex items-center gap-2'>
-              <Pin size={14} className='fill-cyan-500 text-cyan-500' />
-              <span>{estadisticas.importantes} anclados</span>
-            </div>
-          )}
-          {estadisticas.porVencer > 0 && (
-            <div className='flex items-center gap-2'>
-              <Calendar size={14} className='text-orange-500' />
-              <span>{estadisticas.porVencer} por vencer</span>
-            </div>
-          )}
-        </div>
+        ) : null}
       </div>
     </div>
   )

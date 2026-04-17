@@ -30,6 +30,7 @@ import {
 interface UseDocumentoUploadProps {
   entidadId: string
   tipoEntidad: TipoEntidad
+  carpetaId?: string | null
   metadata?: Record<string, unknown> | null // ✅ NUEVO: Metadata para vincular con requisitos
   onSuccess?: () => void
 }
@@ -37,6 +38,7 @@ interface UseDocumentoUploadProps {
 export function useDocumentoUpload({
   entidadId,
   tipoEntidad,
+  carpetaId,
   metadata, // ✅ NUEVO
   onSuccess,
 }: UseDocumentoUploadProps) {
@@ -101,14 +103,12 @@ export function useDocumentoUpload({
       categoria_id: '',
       fecha_documento: undefined,
       fecha_vencimiento: undefined,
-      es_importante: false,
       es_documento_identidad: autoCheckIdentidad, // ✅ Pre-marcar si viene desde contexto de cédula
       metadata: {},
     },
     mode: 'onChange', // Validar mientras el usuario escribe
   })
 
-  const _esImportante = watch('es_importante')
   const esDocumentoIdentidad = watch('es_documento_identidad')
   const categoriaSeleccionada = watch('categoria_id')
 
@@ -264,9 +264,9 @@ export function useDocumentoUpload({
           titulo: data.titulo,
           descripcion: data.descripcion,
           categoriaId: data.categoria_id ?? undefined,
+          carpetaId: carpetaId ?? null,
           fechaDocumento: data.fecha_documento ?? undefined,
           fechaVencimiento: data.fecha_vencimiento,
-          esImportante: data.es_importante,
           esDocumentoIdentidad: data.es_documento_identidad,
           userId: user.id,
           // ✅ Metadata completa: incluye requisito_config_id, fuente_pago_id, tipo_documento, etc.
@@ -301,6 +301,7 @@ export function useDocumentoUpload({
       fuentePagoId,
       metadata,
       tipoDocumento,
+      carpetaId,
     ]
   )
 

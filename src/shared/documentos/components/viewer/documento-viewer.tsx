@@ -3,14 +3,16 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import {
   Calendar,
-  Clock,
+  CalendarClock,
+  CalendarPlus,
   Download,
   Edit,
   FileText,
-  FolderOpen,
+  HardDrive,
+  Layers,
   Star,
   Trash2,
-  User,
+  Upload,
   X,
 } from 'lucide-react'
 import { createPortal } from 'react-dom'
@@ -23,124 +25,11 @@ import {
   formatFileSize,
   getFileIcon,
 } from '../../types/documento.types'
-import { formatearEntidad } from '../../utils/formatear-entidad'
+import {
+  formatearValorMetadata,
+  humanizarCampoMetadata,
+} from '../../utils/documento-viewer.utils'
 import { CategoriaIcon } from '../shared/categoria-icon'
-
-// ============================================
-// HELPER FUNCTIONS
-// ============================================
-
-/**
- * Humanizar nombres de campos del metadata
- */
-function humanizarCampoMetadata(key: string): string {
-  const mapeo: Record<string, string> = {
-    tipo_fuente: 'Tipo de Fuente',
-    entidad: 'Entidad Financiera',
-    monto_aprobado: 'Monto Aprobado',
-    vivienda: 'Vivienda',
-    subido_desde: 'Origen',
-    numero_resolucion: 'Número de Resolución',
-    fecha_resolucion: 'Fecha de Resolución',
-    reemplazo: 'Archivo Reemplazado',
-    version_anterior: 'Versión Anterior',
-    archivo_anterior: 'Archivo Anterior',
-    justificacion_reemplazo: 'Justificación',
-  }
-  return (
-    mapeo[key] || key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
-  )
-}
-
-/**
- * Formatear valor del metadata
- */
-function formatearValorMetadata(
-  key: string,
-  value: unknown,
-  metadata?: Record<string, unknown>
-): string {
-  // ✅ Caso especial: Entidad vacía - inferir del tipo de fuente
-  if (
-    key === 'entidad' &&
-    (value === null || value === undefined || value === '')
-  ) {
-    // Inferir entidad según tipo de fuente
-    if (metadata?.tipo_fuente === 'Subsidio Mi Casa Ya') {
-      return 'Mi Casa Ya'
-    }
-    if (metadata?.tipo_fuente === 'Subsidio Caja Compensación') {
-      return 'Caja Compensación'
-    }
-    if (metadata?.tipo_fuente === 'Crédito Hipotecario') {
-      return 'Entidad Bancaria'
-    }
-    return 'No especifica'
-  }
-
-  // ✅ Formatear entidad financiera con formato de título
-  if (key === 'entidad' && value) {
-    return formatearEntidad(String(value))
-  }
-
-  if (value === null || value === undefined || value === '') {
-    return 'No especifica'
-  }
-
-  // Si es un objeto, intentar extraer información útil
-  if (typeof value === 'object' && !Array.isArray(value)) {
-    const obj = value as Record<string, unknown>
-    // Para el campo reemplazo, mostrar info resumida
-    if (key === 'reemplazo') {
-      const archivo =
-        obj.archivo_anterior || obj.nombreArchivo || 'archivo anterior'
-      const version = obj.version_anterior || obj.version || '?'
-      return `${archivo} (v${version})`
-    }
-
-    // Para otros objetos, intentar JSON.stringify
-    try {
-      return JSON.stringify(value, null, 2)
-    } catch {
-      return '[Objeto complejo]'
-    }
-  }
-
-  // Formatear monto en pesos colombianos
-  if (key === 'monto_aprobado' && typeof value === 'number') {
-    return `$${value.toLocaleString('es-CO')}`
-  }
-
-  // Formatear origen
-  if (key === 'subido_desde') {
-    const origenes: Record<string, string> = {
-      asignacion_vivienda: 'Asignación de Vivienda',
-      negociacion: 'Negociación',
-      documentos: 'Módulo de Documentos',
-    }
-    return origenes[String(value)] || String(value)
-  }
-
-  // Formatear fecha
-  if (key === 'fecha_resolucion' && value) {
-    try {
-      const fecha = new Date(String(value))
-      return fecha.toLocaleDateString('es-CO', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-      })
-    } catch {
-      return String(value)
-    }
-  }
-
-  return String(value)
-}
-
-// ============================================
-// COMPONENT
-// ============================================
 
 interface DocumentoViewerProps {
   documento: DocumentoProyecto | null
@@ -331,218 +220,275 @@ export function DocumentoViewer({
                 </div>
 
                 {/* Sidebar - Metadata */}
-                <div className='w-80 space-y-6 overflow-y-auto border-l border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-900'>
-                  {/* Descripción */}
+                <div className='flex w-80 flex-shrink-0 flex-col overflow-y-auto border-l border-gray-200 bg-gray-50/50 dark:border-gray-700/60 dark:bg-gray-900'>
+                  {/* ── Descripción ─────────────────────────── */}
                   {documento.descripcion && (
-                    <div>
-                      <h3 className='mb-2 flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300'>
-                        <FileText size={16} />
+                    <div className='border-b border-gray-200/80 px-5 py-4 dark:border-gray-700/60'>
+                      <p className='mb-1.5 text-[10px] font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-500'>
                         Descripción
-                      </h3>
-                      <p className='text-sm leading-relaxed text-gray-600 dark:text-gray-400'>
+                      </p>
+                      <p className='text-sm leading-relaxed text-gray-600 dark:text-gray-300'>
                         {documento.descripcion}
                       </p>
                     </div>
                   )}
 
-                  {/* Categoría */}
+                  {/* ── Categoría ───────────────────────────── */}
                   {documento.categoria && (
-                    <div>
-                      <h3 className='mb-2 flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300'>
-                        <FolderOpen size={16} />
+                    <div className='border-b border-gray-200/80 px-5 py-4 dark:border-gray-700/60'>
+                      <p className='mb-2 text-[10px] font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-500'>
                         Categoría
-                      </h3>
-                      <div
-                        className='inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium'
+                      </p>
+                      <span
+                        className='inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold'
                         style={{
-                          backgroundColor: `${documento.categoria.color}20`,
+                          backgroundColor: `${documento.categoria.color}18`,
                           color: documento.categoria.color,
+                          border: `1px solid ${documento.categoria.color}30`,
                         }}
                       >
                         <CategoriaIcon
                           icono={documento.categoria.icono}
-                          size={16}
+                          size={12}
                         />
                         {documento.categoria.nombre}
-                      </div>
+                      </span>
                     </div>
                   )}
 
-                  {/* Fechas */}
-                  <div className='space-y-3'>
-                    <h3 className='mb-2 flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300'>
-                      <Calendar size={16} />
+                  {/* ── Fechas ──────────────────────────────── */}
+                  <div className='border-b border-gray-200/80 px-5 py-4 dark:border-gray-700/60'>
+                    <p className='mb-3 text-[10px] font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-500'>
                       Fechas
-                    </h3>
-
-                    {/* 1. Fecha de emisión/expedición del documento */}
-                    <div className='flex items-start gap-2 text-sm'>
-                      <Calendar
-                        size={16}
-                        className='mt-0.5 flex-shrink-0 text-blue-500 dark:text-blue-400'
-                      />
-                      <div className='flex-1'>
-                        <p className='text-gray-600 dark:text-gray-400'>
-                          Fecha de emisión del documento
-                        </p>
-                        {documento.fecha_documento &&
-                        !isNaN(
-                          new Date(documento.fecha_documento).getTime()
-                        ) ? (
-                          <p className='font-medium text-gray-900 dark:text-white'>
-                            {formatDateCompact(documento.fecha_documento)}
-                          </p>
-                        ) : (
-                          <p className='font-medium text-gray-600 dark:text-gray-400'>
-                            Sin fecha de emisión
-                          </p>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* 2. Fecha de expiración */}
-                    <div className='flex items-start gap-2 text-sm'>
-                      <Clock
-                        size={16}
-                        className='mt-0.5 flex-shrink-0 text-orange-500 dark:text-orange-400'
-                      />
-                      <div className='flex-1'>
-                        <p className='text-gray-600 dark:text-gray-400'>
-                          Fecha de expiración
-                        </p>
-                        {documento.fecha_vencimiento &&
-                        !isNaN(
-                          new Date(documento.fecha_vencimiento).getTime()
-                        ) ? (
-                          <p className='font-medium text-gray-900 dark:text-white'>
-                            {formatDateCompact(documento.fecha_vencimiento)}
-                          </p>
-                        ) : (
-                          <p className='font-medium text-gray-600 dark:text-gray-400'>
-                            Este documento no expira
-                          </p>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* 3. Fecha de carga al sistema */}
-                    {documento.fecha_creacion &&
-                      !isNaN(new Date(documento.fecha_creacion).getTime()) && (
-                        <div className='flex items-start gap-2 text-sm'>
+                    </p>
+                    <div className='space-y-3'>
+                      {/* Fecha de emisión */}
+                      <div className='flex items-start gap-3'>
+                        <div className='mt-0.5 flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-900/20'>
                           <Calendar
-                            size={16}
-                            className='mt-0.5 flex-shrink-0 text-green-500 dark:text-green-400'
+                            size={13}
+                            className='text-blue-500 dark:text-blue-400'
                           />
-                          <div className='flex-1'>
-                            <p className='text-gray-600 dark:text-gray-400'>
-                              Fecha de carga al sistema
-                            </p>
-                            <p className='font-medium text-gray-900 dark:text-white'>
-                              {new Date(
-                                documento.fecha_creacion
-                              ).toLocaleString('es-CO', {
-                                year: 'numeric',
-                                month: 'short',
-                                day: 'numeric',
-                                hour: '2-digit',
-                                minute: '2-digit',
-                              })}
-                            </p>
-                          </div>
                         </div>
-                      )}
+                        <div className='min-w-0 flex-1'>
+                          <p className='text-xs text-gray-400 dark:text-gray-500'>
+                            Emisión del documento
+                          </p>
+                          <p className='text-sm font-medium text-gray-800 dark:text-gray-200'>
+                            {documento.fecha_documento &&
+                            !isNaN(
+                              new Date(documento.fecha_documento).getTime()
+                            ) ? (
+                              formatDateCompact(documento.fecha_documento)
+                            ) : (
+                              <span className='text-gray-400 dark:text-gray-500'>
+                                Sin registrar
+                              </span>
+                            )}
+                          </p>
+                        </div>
+                      </div>
 
-                    {/* 4. Subido por */}
-                    <div className='flex items-start gap-2 text-sm'>
-                      <User
-                        size={16}
-                        className='mt-0.5 flex-shrink-0 text-purple-500 dark:text-purple-400'
-                      />
-                      <div className='flex-1'>
-                        <p className='text-gray-600 dark:text-gray-400'>
-                          Subido por
-                        </p>
-                        <p className='font-medium text-gray-900 dark:text-white'>
-                          {documento.usuario
-                            ? `${documento.usuario.nombres} ${documento.usuario.apellidos}`
-                            : 'Desconocido'}
-                        </p>
+                      {/* Fecha de expiración */}
+                      <div className='flex items-start gap-3'>
+                        <div className='mt-0.5 flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg bg-orange-50 dark:bg-orange-900/20'>
+                          <CalendarClock
+                            size={13}
+                            className='text-orange-500 dark:text-orange-400'
+                          />
+                        </div>
+                        <div className='min-w-0 flex-1'>
+                          <p className='text-xs text-gray-400 dark:text-gray-500'>
+                            Vencimiento
+                          </p>
+                          <p className='text-sm font-medium text-gray-800 dark:text-gray-200'>
+                            {documento.fecha_vencimiento &&
+                            !isNaN(
+                              new Date(documento.fecha_vencimiento).getTime()
+                            ) ? (
+                              formatDateCompact(documento.fecha_vencimiento)
+                            ) : (
+                              <span className='text-gray-400 dark:text-gray-500'>
+                                Sin registrar
+                              </span>
+                            )}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Fecha de carga */}
+                      {documento.fecha_creacion &&
+                        !isNaN(
+                          new Date(documento.fecha_creacion).getTime()
+                        ) && (
+                          <div className='flex items-start gap-3'>
+                            <div className='mt-0.5 flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg bg-emerald-50 dark:bg-emerald-900/20'>
+                              <CalendarPlus
+                                size={13}
+                                className='text-emerald-500 dark:text-emerald-400'
+                              />
+                            </div>
+                            <div className='min-w-0 flex-1'>
+                              <p className='text-xs text-gray-400 dark:text-gray-500'>
+                                Subido al sistema
+                              </p>
+                              <p className='text-sm font-medium text-gray-800 dark:text-gray-200'>
+                                {new Date(
+                                  documento.fecha_creacion
+                                ).toLocaleString('es-CO', {
+                                  year: 'numeric',
+                                  month: 'short',
+                                  day: 'numeric',
+                                  hour: '2-digit',
+                                  minute: '2-digit',
+                                })}
+                              </p>
+                            </div>
+                          </div>
+                        )}
+
+                      {/* Subido por */}
+                      <div className='flex items-start gap-3'>
+                        <div className='mt-0.5 flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg bg-violet-50 dark:bg-violet-900/20'>
+                          <Upload
+                            size={13}
+                            className='text-violet-500 dark:text-violet-400'
+                          />
+                        </div>
+                        <div className='min-w-0 flex-1'>
+                          <p className='text-xs text-gray-400 dark:text-gray-500'>
+                            Subido por
+                          </p>
+                          <p className='text-sm font-medium text-gray-800 dark:text-gray-200'>
+                            {documento.usuario
+                              ? `${documento.usuario.nombres} ${documento.usuario.apellidos}`
+                              : 'Desconocido'}
+                          </p>
+                        </div>
                       </div>
                     </div>
                   </div>
 
-                  {/* Metadata personalizada */}
+                  {/* ── Información adicional (metadata) ────── */}
                   {documento.metadata &&
-                    Object.keys(documento.metadata).length > 0 && (
-                      <div>
-                        <h3 className='mb-2 flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300'>
-                          <FileText size={16} />
-                          Información adicional
-                        </h3>
-                        <div className='space-y-2'>
-                          {Object.entries(documento.metadata)
-                            .filter(([key, value]) => {
-                              // Filtrar campos que no queremos mostrar (técnicos/internos)
-                              const camposOcultos = [
-                                'fuente_pago_id',
-                                'reemplazo', // Info técnica de auditoría
-                                'version_anterior', // Ya se muestra en "Versión"
-                                'archivo_anterior', // Info técnica
-                                'justificacion_reemplazo', // Info de auditoría
-                              ]
-                              if (camposOcultos.includes(key)) return false
-                              return value !== null && value !== undefined
-                            })
-                            .map(([key, value]) => (
-                              <div key={key} className='text-sm'>
-                                <p className='text-gray-600 dark:text-gray-400'>
-                                  {humanizarCampoMetadata(key)}
-                                </p>
-                                <p className='font-medium text-gray-900 dark:text-white'>
-                                  {formatearValorMetadata(
-                                    key,
-                                    value,
-                                    documento.metadata
-                                  )}
-                                </p>
+                    Object.keys(documento.metadata).length > 0 &&
+                    (() => {
+                      const camposOcultos = [
+                        'fuente_pago_id',
+                        'reemplazo',
+                        'version_anterior',
+                        'archivo_anterior',
+                        'justificacion_reemplazo',
+                        'requisito_config_id',
+                        'tipo_documento_sistema',
+                        'auto_check_identidad',
+                        'alcance',
+                        'tipo_fuente',
+                        'entidad',
+                        'entidad_fuente',
+                        'nivel_validacion',
+                        'fuentes_aplicables',
+                      ]
+                      const entradas = Object.entries(
+                        documento.metadata
+                      ).filter(
+                        ([key, value]) =>
+                          !camposOcultos.includes(key) &&
+                          value !== null &&
+                          value !== undefined
+                      )
+                      if (entradas.length === 0) return null
+                      return (
+                        <div className='border-b border-gray-200/80 px-5 py-4 dark:border-gray-700/60'>
+                          <p className='mb-3 text-[10px] font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-500'>
+                            Información adicional
+                          </p>
+                          <div className='space-y-3'>
+                            {entradas.map(([key, value]) => (
+                              <div key={key} className='flex items-start gap-3'>
+                                <div className='mt-0.5 flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-800'>
+                                  <FileText
+                                    size={13}
+                                    className='text-gray-400 dark:text-gray-500'
+                                  />
+                                </div>
+                                <div className='min-w-0 flex-1'>
+                                  <p className='text-xs text-gray-400 dark:text-gray-500'>
+                                    {humanizarCampoMetadata(key)}
+                                  </p>
+                                  <p className='break-words text-sm font-medium text-gray-800 dark:text-gray-200'>
+                                    {formatearValorMetadata(
+                                      key,
+                                      value,
+                                      documento.metadata
+                                    )}
+                                  </p>
+                                </div>
                               </div>
                             ))}
+                          </div>
+                        </div>
+                      )
+                    })()}
+
+                  {/* ── Detalles técnicos ────────────────────── */}
+                  <div className='px-5 py-4'>
+                    <p className='mb-3 text-[10px] font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-500'>
+                      Detalles técnicos
+                    </p>
+                    <div className='space-y-2'>
+                      <div className='flex items-center gap-3'>
+                        <div className='flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-800'>
+                          <FileText
+                            size={13}
+                            className='text-gray-400 dark:text-gray-500'
+                          />
+                        </div>
+                        <div className='flex flex-1 items-center justify-between'>
+                          <p className='text-xs text-gray-400 dark:text-gray-500'>
+                            Tipo
+                          </p>
+                          <span className='rounded-md bg-gray-100 px-2 py-0.5 text-xs font-semibold text-gray-600 dark:bg-gray-800 dark:text-gray-300'>
+                            {documento.nombre_archivo
+                              ?.split('.')
+                              .pop()
+                              ?.toUpperCase() || 'N/A'}
+                          </span>
                         </div>
                       </div>
-                    )}
 
-                  {/* Información del archivo */}
-                  <div className='border-t border-gray-200 pt-4 dark:border-gray-700'>
-                    <h3 className='mb-2 text-sm font-semibold text-gray-700 dark:text-gray-300'>
-                      Detalles técnicos
-                    </h3>
-                    <div className='space-y-2 text-sm'>
-                      <div className='flex justify-between'>
-                        <span className='text-gray-600 dark:text-gray-400'>
-                          Tipo
-                        </span>
-                        <span className='font-medium text-gray-900 dark:text-white'>
-                          {documento.nombre_archivo
-                            ?.split('.')
-                            .pop()
-                            ?.toUpperCase() || 'N/A'}
-                        </span>
+                      <div className='flex items-center gap-3'>
+                        <div className='flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-800'>
+                          <HardDrive
+                            size={13}
+                            className='text-gray-400 dark:text-gray-500'
+                          />
+                        </div>
+                        <div className='flex flex-1 items-center justify-between'>
+                          <p className='text-xs text-gray-400 dark:text-gray-500'>
+                            Tamaño
+                          </p>
+                          <span className='text-xs font-semibold text-gray-600 dark:text-gray-300'>
+                            {formatFileSize(documento.tamano_bytes)}
+                          </span>
+                        </div>
                       </div>
-                      <div className='flex justify-between'>
-                        <span className='text-gray-600 dark:text-gray-400'>
-                          Tamaño
-                        </span>
-                        <span className='font-medium text-gray-900 dark:text-white'>
-                          {formatFileSize(documento.tamano_bytes)}
-                        </span>
-                      </div>
-                      <div className='flex justify-between'>
-                        <span className='text-gray-600 dark:text-gray-400'>
-                          Versión
-                        </span>
-                        <span className='font-medium text-gray-900 dark:text-white'>
-                          v{documento.version}
-                        </span>
+
+                      <div className='flex items-center gap-3'>
+                        <div className='flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-800'>
+                          <Layers
+                            size={13}
+                            className='text-gray-400 dark:text-gray-500'
+                          />
+                        </div>
+                        <div className='flex flex-1 items-center justify-between'>
+                          <p className='text-xs text-gray-400 dark:text-gray-500'>
+                            Versión
+                          </p>
+                          <span className='rounded-full bg-gray-200 px-2 py-0.5 text-xs font-bold text-gray-700 dark:bg-gray-700 dark:text-gray-200'>
+                            v{documento.version}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </div>

@@ -193,7 +193,7 @@ export function useSubirCartaModal({
     setIsUploading(true)
 
     try {
-      // 1. ID fijo de categoría "Cartas de Aprobación" (categoría global del sistema)
+      // 1. ID fijo de categoría "Carta de Aprobación" (categoría global del sistema)
       const CATEGORIA_CARTAS_APROBACION = '4898e798-c188-4f02-bfcf-b2b15be48e34'
 
       // 2. Metadata para vinculación automática

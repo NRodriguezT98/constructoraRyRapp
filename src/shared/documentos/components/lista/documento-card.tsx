@@ -747,7 +747,8 @@ export function DocumentoCard({
         isOpen={modalEditarAbierto}
         documento={documento}
         categorias={categorias}
-        tipoEntidad={tipoEntidad} // ✅ Pasar tipoEntidad al modal
+        tipoEntidad={tipoEntidad}
+        moduleName={moduleName}
         onClose={cerrarModalEditar}
         onEditado={async () => {
           cerrarModalEditar()

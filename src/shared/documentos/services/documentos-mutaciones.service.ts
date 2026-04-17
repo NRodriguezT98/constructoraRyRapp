@@ -42,12 +42,12 @@ export interface SubirDocumentoParams {
   entidad_id: string
   tipoEntidad: TipoEntidad
   categoria_id?: string
+  carpeta_id?: string | null
   titulo: string
   descripcion?: string
   archivo: File
   fecha_documento?: string
   fecha_vencimiento?: string
-  es_importante?: boolean
   es_documento_identidad?: boolean
   tipo_documento?: string
   metadata?: Record<string, unknown>
@@ -77,11 +77,11 @@ export class DocumentosMutacionesService {
       entidad_id,
       tipoEntidad,
       categoria_id,
+      carpeta_id,
       titulo,
       descripcion,
       fecha_documento,
       fecha_vencimiento,
-      es_importante,
       es_documento_identidad,
       metadata,
     } = params
@@ -121,6 +121,7 @@ export class DocumentosMutacionesService {
     const insertData: Record<string, unknown> = {
       [config.campoEntidad]: entidad_id,
       categoria_id: categoria_id || null,
+      carpeta_id: carpeta_id ?? null,
       titulo,
       descripcion: descripcion || null,
       nombre_archivo: nombreArchivo,
@@ -131,7 +132,7 @@ export class DocumentosMutacionesService {
       subido_por: userId,
       fecha_documento: fecha_documento || null,
       fecha_vencimiento: fecha_vencimiento || null,
-      es_importante: es_importante || false,
+      es_importante: false,
       ...(tipoEntidad === 'cliente'
         ? { es_documento_identidad: es_documento_identidad || false }
         : {}),

@@ -9,6 +9,7 @@ import {
   X,
   XCircle,
 } from 'lucide-react'
+import { createPortal } from 'react-dom'
 
 export type ConfirmacionVariant = 'danger' | 'warning' | 'info' | 'success'
 
@@ -87,7 +88,7 @@ export function ConfirmacionModal({
   const cfg = variantConfig[variant]
   const { Icon } = cfg
 
-  return (
+  const modalContent = (
     <AnimatePresence>
       {isOpen && (
         <>
@@ -197,4 +198,6 @@ export function ConfirmacionModal({
       )}
     </AnimatePresence>
   )
+
+  return createPortal(modalContent, document.body)
 }

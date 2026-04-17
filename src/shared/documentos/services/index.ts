@@ -2,6 +2,7 @@
 // BARREL EXPORT: Servicios de Documentos
 // ============================================
 
+export * from './carpetas-documentos.service'
 export * from './categorias.service'
 
 // Servicios especializados (refactorizados)
