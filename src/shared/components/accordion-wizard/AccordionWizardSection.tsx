@@ -139,9 +139,13 @@ export function AccordionWizardSection({
         {/* Description */}
         {description ? (
           <div className='px-6 pb-3'>
-            <p className='rounded-lg border border-gray-100 bg-gray-50 px-3 py-2 text-xs leading-relaxed text-gray-500 dark:border-gray-800 dark:bg-gray-800/50 dark:text-gray-400'>
-              💡 {description}
-            </p>
+            <div className='rounded-lg border border-gray-100 bg-gray-50 px-3 py-2 text-xs leading-relaxed text-gray-500 dark:border-gray-800 dark:bg-gray-800/50 dark:text-gray-400'>
+              {description.split('\n').map((line, i) => (
+                <p key={i} className={i > 0 ? 'mt-1' : ''}>
+                  {i === 0 ? `💡 ${line}` : line}
+                </p>
+              ))}
+            </div>
           </div>
         ) : null}
 

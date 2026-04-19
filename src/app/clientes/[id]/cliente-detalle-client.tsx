@@ -28,6 +28,7 @@ import {
 } from 'lucide-react'
 
 import dynamic from 'next/dynamic'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
 import { construirURLCliente } from '@/lib/utils/slug.utils'
@@ -342,22 +343,6 @@ export default function ClienteDetalleClient({
         className='min-h-screen bg-gradient-to-br from-gray-50 via-white to-cyan-50/30 p-4 dark:from-gray-900 dark:via-gray-900 dark:to-cyan-950/20'
       >
         <div className='mx-auto max-w-7xl space-y-4'>
-          {/* Botón Volver */}
-          <motion.div {...styles.animations.fadeInUp}>
-            <button
-              onClick={() =>
-                window.history.length > 1
-                  ? router.back()
-                  : router.push('/clientes')
-              }
-              aria-label='Volver a la lista de clientes'
-              className='group inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800'
-            >
-              <ArrowLeft className='h-4 w-4 transition-transform group-hover:-translate-x-1' />
-              Volver
-            </button>
-          </motion.div>
-
           {/* Header Mejorado con Glassmorphism */}
           <motion.div
             {...styles.animations.fadeInUp}
@@ -373,16 +358,27 @@ export default function ClienteDetalleClient({
               <div className='bg-grid-white/10 absolute inset-0 [mask-image:linear-gradient(0deg,transparent,black,transparent)]' />
             </div>
 
-            {/* Breadcrumb */}
-            <div className={styles.headerClasses.breadcrumb}>
+            {/* Breadcrumb — navegación semántica con Link funcional */}
+            <nav
+              aria-label='Navegación de migas de pan'
+              className={styles.headerClasses.breadcrumb}
+            >
               <User className={styles.headerClasses.breadcrumbIcon} />
               <ChevronRight className={styles.headerClasses.breadcrumbIcon} />
-              <span>Clientes</span>
+              <Link
+                href='/clientes'
+                className='transition-colors hover:text-white'
+              >
+                Clientes
+              </Link>
               <ChevronRight className={styles.headerClasses.breadcrumbIcon} />
-              <span className={styles.headerClasses.breadcrumbCurrent}>
+              <span
+                className={styles.headerClasses.breadcrumbCurrent}
+                aria-current='page'
+              >
                 {formatNombreCompleto(cliente.nombre_completo)}
               </span>
-            </div>
+            </nav>
 
             {/* Contenido Principal */}
             <div className={styles.headerClasses.contentWrapper}>
@@ -408,11 +404,13 @@ export default function ClienteDetalleClient({
                     {cliente.tipo_documento} {cliente.numero_documento}
                   </p>
 
-                  {/* Chip compacto de vivienda asignada */}
+                  {/* Chip compacto de vivienda asignada — usa negociación ACTIVA */}
                   {cliente.estado === 'Activo' &&
-                    cliente.negociaciones?.[0] &&
                     (() => {
-                      const neg = cliente.negociaciones?.[0]
+                      const neg = cliente.negociaciones?.find(
+                        n => n.estado === 'Activa' || n.estado === 'En Proceso'
+                      )
+                      if (!neg) return null
                       const proyecto =
                         neg?.viviendas?.manzanas?.proyectos?.nombre ||
                         'Sin proyecto'

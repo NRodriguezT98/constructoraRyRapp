@@ -16,7 +16,7 @@
 
 'use client'
 
-import { createContext, useContext } from 'react'
+import { createContext, useContext, useEffect } from 'react'
 
 import type { User } from '@supabase/supabase-js'
 
@@ -28,6 +28,7 @@ import {
   useLogoutMutation,
   type Perfil,
 } from '@/hooks/auth'
+import { createClient } from '@/lib/supabase/client'
 import { debugLog, errorLog, successLog } from '@/lib/utils/logger'
 
 // ============================================
@@ -53,6 +54,30 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 // ============================================
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
+  // ============================================
+  // LIMPIAR SESIÓN INVÁLIDA (Refresh Token No Found)
+  // ============================================
+  // Cuando Supabase detecta un refresh token inválido (sesión expirada/revocada)
+  // emite TOKEN_REFRESH_FAILED y luego SIGNED_OUT automáticamente.
+  // Este listener lo maneja silenciosamente sin producir errores no controlados.
+  useEffect(() => {
+    const supabase = createClient()
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(event => {
+      if (event === 'TOKEN_REFRESHED') {
+        debugLog('🔄 Token refrescado exitosamente')
+      }
+      if (event === 'SIGNED_OUT') {
+        debugLog('🔓 Sesión cerrada — refresh token inválido o sesión expirada')
+      }
+    })
+
+    return () => {
+      subscription.unsubscribe()
+    }
+  }, [])
+
   // Queries de React Query
   const { isLoading: sessionLoading } = useAuthSessionQuery()
   const { data: user, isLoading: userLoading } = useAuthUserQuery()

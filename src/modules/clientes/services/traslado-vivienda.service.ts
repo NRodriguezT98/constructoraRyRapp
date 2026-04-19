@@ -61,6 +61,14 @@ export interface FuenteConAbonos extends FuentePago {
   abonos_count: number
   es_externa: boolean
   bloquea_traslado: boolean
+  /** Parámetros del crédito con la constructora (si aplica) */
+  parametrosCredito?: {
+    capital: number
+    tasaMensual: number
+    numCuotas: number
+    fechaInicio: string
+    tasaMoraDiaria: number
+  } | null
 }
 
 export interface ValidacionTraslado {
@@ -186,11 +194,37 @@ class TrasladoViviendaService {
         )
       }
 
+      // Cargar parámetros del crédito con la constructora (para pre-configurar el formulario)
+      let parametrosCredito: FuenteConAbonos['parametrosCredito'] = null
+      const CREDITO_TIPO = 'crédito con la constructora'
+      if (!esExterna && fuente.tipo.toLowerCase() === CREDITO_TIPO) {
+        const { data: creditoBD } = await supabase
+          .from('creditos_constructora')
+          .select(
+            'capital, tasa_mensual, num_cuotas, fecha_inicio, tasa_mora_diaria'
+          )
+          .eq('fuente_pago_id', fuente.id)
+          .order('version_actual', { ascending: false })
+          .limit(1)
+          .maybeSingle()
+
+        if (creditoBD) {
+          parametrosCredito = {
+            capital: creditoBD.capital,
+            tasaMensual: creditoBD.tasa_mensual,
+            numCuotas: creditoBD.num_cuotas,
+            fechaInicio: creditoBD.fecha_inicio,
+            tasaMoraDiaria: creditoBD.tasa_mora_diaria ?? 0.001,
+          }
+        }
+      }
+
       fuentesConInfo.push({
         ...fuente,
         abonos_count: abonosCount ?? 0,
         es_externa: esExterna,
         bloquea_traslado: bloqueaTraslado,
+        parametrosCredito,
       })
     }
 
@@ -523,6 +557,18 @@ class TrasladoViviendaService {
       // ── PASO 8: Auditoría ──────────────────────────
       try {
         const { auditService } = await import('@/services/audit.service')
+
+        // Extraer datos legibles de vivienda ORIGEN desde el objeto ya cargado
+        const vivOrigen = validacion.negociacion?.viviendas as unknown as {
+          numero?: string
+          manzanas?: { nombre?: string; proyectos?: { nombre?: string } }
+        } | null
+        // Extraer datos legibles de vivienda DESTINO desde el objeto ya cargado
+        const vivDestinoManzana = viviendaDestino.manzanas as unknown as {
+          nombre?: string
+          proyectos?: { nombre?: string }
+        } | null
+
         await auditService.registrarAccion({
           tabla: 'negociaciones',
           accion: 'CREATE',
@@ -538,14 +584,41 @@ class TrasladoViviendaService {
             autorizado_por,
           },
           metadata: {
+            // ── CRÍTICO: cliente_id para que el historial del cliente lo muestre ──
+            cliente_id: clienteId,
             tipo: 'TRASLADO_VIVIENDA',
             negociacion_origen_id,
+            negociacion_nueva_id: nuevaNegId,
+
+            // ── Vivienda origen (legible) ──
             vivienda_origen_id: viviendaOrigenId,
+            vivienda_origen_numero: vivOrigen?.numero ?? null,
+            vivienda_origen_manzana: vivOrigen?.manzanas?.nombre ?? null,
+            vivienda_origen_proyecto:
+              vivOrigen?.manzanas?.proyectos?.nombre ?? null,
+
+            // ── Vivienda destino (legible) ──
             vivienda_destino_id,
+            vivienda_destino_numero: viviendaDestino.numero ?? null,
+            vivienda_destino_manzana: vivDestinoManzana?.nombre ?? null,
+            vivienda_destino_proyecto:
+              vivDestinoManzana?.proyectos?.nombre ?? null,
+
+            // ── Motivo y autorización ──
             motivo,
             autorizado_por,
-            valor_anterior: validacion.negociacion?.valor_negociado,
+
+            // ── Valores económicos ──
+            valor_anterior:
+              validacion.negociacion?.valor_total_pagar ??
+              validacion.negociacion?.valor_negociado ??
+              null,
             valor_nuevo: valor_negociado,
+            descuento_aplicado: descuento_aplicado || 0,
+            tipo_descuento: tipo_descuento ?? null,
+            motivo_descuento: motivo_descuento ?? null,
+
+            // ── Abonos trasladados ──
             abonos_trasladados: fuentesInternesConAbonos.reduce(
               (sum, f) => sum + (f.abonos_count ?? 0),
               0
@@ -554,6 +627,14 @@ class TrasladoViviendaService {
               (sum, f) => sum + (f.monto_recibido ?? 0),
               0
             ),
+
+            // ── Fuentes de pago configuradas en la nueva negociación ──
+            fuentes_pago_destino: fuentes_pago.map(f => ({
+              tipo: f.tipo,
+              monto_aprobado: f.monto_aprobado,
+              entidad: f.entidad ?? null,
+              numero_referencia: f.numero_referencia ?? null,
+            })),
           },
         })
       } catch (auditError) {

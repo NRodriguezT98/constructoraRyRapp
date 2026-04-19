@@ -18,6 +18,8 @@ export const styles = {
     base: baseStyles.field.input,
     success:
       'w-full bg-white dark:bg-gray-900/50 border-2 border-emerald-400 dark:border-emerald-600 rounded-lg px-3 py-2.5 text-gray-900 dark:text-white text-sm focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all',
+    error:
+      'w-full bg-white dark:bg-gray-900/50 border-2 border-red-400 dark:border-red-600 rounded-lg px-3 py-2.5 text-gray-900 dark:text-white text-sm focus:outline-none focus:border-red-500 focus:ring-2 focus:ring-red-500/20 transition-all',
   },
 
   // Alertas (error / warning)

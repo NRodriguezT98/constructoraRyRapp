@@ -7,6 +7,8 @@
 
 'use client'
 
+import { useMemo } from 'react'
+
 import { motion } from 'framer-motion'
 import {
   ArrowRightLeft,
@@ -94,6 +96,15 @@ export function SeccionDestinoFuentes({
   handleFuenteConfigChange,
   fuentesObligatorias,
 }: SeccionDestinoFuentesProps) {
+  // Build minAmounts map for SeccionFuentesPago min-amount badges
+  const minAmounts = useMemo(
+    () =>
+      Object.fromEntries(
+        fuentesObligatorias.map(f => [f.tipo, f.monto_recibido])
+      ),
+    [fuentesObligatorias]
+  )
+
   // Wrapper to block disabling obligatory sources
   const handleToggleFuente = (tipo: TipoFuentePago, enabled: boolean) => {
     // Block disabling of obligatory sources
@@ -284,6 +295,7 @@ export function SeccionDestinoFuentes({
           mostrarErroresFuentes={mostrarErroresFuentes}
           handleFuenteEnabledChange={handleToggleFuente}
           handleFuenteConfigChange={handleFuenteConfigChange}
+          minAmounts={minAmounts}
         />
       ) : null}
     </div>

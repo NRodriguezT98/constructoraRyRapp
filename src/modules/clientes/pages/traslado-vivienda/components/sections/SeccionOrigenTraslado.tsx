@@ -40,6 +40,9 @@ interface SeccionOrigenTrasladoProps {
   setMotivo: (v: string) => void
   autorizadoPor: string
   setAutorizadoPor: (v: string) => void
+  /** Error inline mostrado al intentar avanzar con el campo vacío/corto */
+  errorMotivo?: string | null
+  errorAutorizadoPor?: string | null
 }
 
 export function SeccionOrigenTraslado({
@@ -50,6 +53,8 @@ export function SeccionOrigenTraslado({
   setMotivo,
   autorizadoPor,
   setAutorizadoPor,
+  errorMotivo,
+  errorAutorizadoPor,
 }: SeccionOrigenTrasladoProps) {
   if (cargandoValidacion) {
     return (
@@ -250,11 +255,30 @@ export function SeccionOrigenTraslado({
               onChange={e => setMotivo(e.target.value)}
               placeholder='Describe el motivo del traslado de vivienda (mín. 20 caracteres)...'
               rows={3}
-              className={`${motivo.length >= 20 ? s.input.success : s.input.base} resize-none`}
+              className={`${
+                errorMotivo
+                  ? s.input.error
+                  : motivo.length >= 20
+                    ? s.input.success
+                    : s.input.base
+              } resize-none`}
             />
-            <p className='text-xs text-gray-400'>
-              {motivo.length}/20 caracteres mínimo
-            </p>
+            <div className='flex items-center justify-between'>
+              <span
+                className={`text-xs ${
+                  errorMotivo ? 'font-semibold text-red-500' : 'text-gray-400'
+                }`}
+              >
+                {errorMotivo ?? `${motivo.length}/20 caracteres mínimo`}
+              </span>
+              <span
+                className={`text-xs tabular-nums ${
+                  motivo.length >= 20 ? 'text-emerald-500' : 'text-gray-400'
+                }`}
+              >
+                {motivo.length} / 20
+              </span>
+            </div>
           </div>
 
           {/* Autorizado por */}
@@ -269,9 +293,18 @@ export function SeccionOrigenTraslado({
               onChange={e => setAutorizadoPor(e.target.value)}
               placeholder='Nombre de quien autorizó el traslado'
               className={
-                autorizadoPor.length >= 3 ? s.input.success : s.input.base
+                errorAutorizadoPor
+                  ? s.input.error
+                  : autorizadoPor.length >= 3
+                    ? s.input.success
+                    : s.input.base
               }
             />
+            {errorAutorizadoPor ? (
+              <p className='text-xs font-semibold text-red-500'>
+                {errorAutorizadoPor}
+              </p>
+            ) : null}
           </div>
         </div>
       ) : null}

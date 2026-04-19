@@ -63,6 +63,8 @@ export function TrasladoViviendaPage({
     autorizadoPor,
     setAutorizadoPor,
     paso1Valido: _paso1Valido,
+    errorMotivo,
+    errorAutorizadoPor,
 
     // Paso 2
     proyectos,
@@ -155,6 +157,8 @@ export function TrasladoViviendaPage({
           autorizadoPor={autorizadoPor}
           setMotivo={setMotivo}
           setAutorizadoPor={setAutorizadoPor}
+          errorMotivo={errorMotivo}
+          errorAutorizadoPor={errorAutorizadoPor}
         />
         <AccordionWizardNavigation
           currentStep={1}

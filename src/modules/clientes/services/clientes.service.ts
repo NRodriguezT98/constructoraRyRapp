@@ -252,7 +252,20 @@ class ClientesService {
     }
 
     // 3. Calcular estadísticas comerciales
-    const negociaciones = clienteData.negociaciones || []
+    // Ordenar: Activas/En Proceso primero, luego Cerradas (para que negociaciones[0] = activa)
+    const ORDEN_ESTADO: Record<string, number> = {
+      Activa: 0,
+      'En Proceso': 1,
+      Completada: 2,
+      'Cerrada por Traslado': 3,
+      'Cerrada por Renuncia': 4,
+    }
+    const negociaciones = (clienteData.negociaciones || [])
+      .slice()
+      .sort(
+        (a, b) =>
+          (ORDEN_ESTADO[a.estado] ?? 99) - (ORDEN_ESTADO[b.estado] ?? 99)
+      )
     const negociacionesReales = negociaciones.filter(
       n =>
         n.estado !== 'Cerrada por Renuncia' &&

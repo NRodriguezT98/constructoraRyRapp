@@ -12,7 +12,7 @@
 import { useEffect, useState } from 'react'
 
 import { AnimatePresence } from 'framer-motion'
-import { ArrowLeft, FileText, FolderCog, IdCard, Upload } from 'lucide-react'
+import { ArrowLeft, IdCard } from 'lucide-react'
 
 import { useAuth } from '@/contexts/auth-context'
 import { SeccionDocumentosPendientes } from '@/modules/clientes/components/documentos-pendientes'
@@ -33,7 +33,7 @@ interface DocumentosTabProps {
 export function DocumentosTab({ cliente }: DocumentosTabProps) {
   const { user } = useAuth()
 
-  // Tema cyan/azul para clientes
+  // Tema cyan/azul para clientes (usado en vistas de categorías y upload)
   const theme = moduleThemes.clientes
 
   // ✅ AUTO-SEED: Verificar y crear categorías del sistema
@@ -166,69 +166,6 @@ export function DocumentosTab({ cliente }: DocumentosTabProps) {
 
   return (
     <div className='space-y-4'>
-      {/* Header con acciones - PREMIUM GLASSMORPHISM */}
-      <div
-        className={`relative overflow-hidden rounded-xl border bg-gradient-to-br from-cyan-50/80 via-blue-50/80 to-indigo-50/80 backdrop-blur-xl dark:from-cyan-950/50 dark:via-blue-950/50 dark:to-indigo-950/50 ${theme.classes.border.light} p-4 shadow-2xl shadow-cyan-500/10 dark:shadow-cyan-500/5`}
-      >
-        {/* Pattern overlay */}
-        <div className='bg-grid-white/10 pointer-events-none absolute inset-0 [mask-image:linear-gradient(0deg,transparent,black,transparent)]' />
-
-        <div className='relative z-10 flex items-center justify-between'>
-          <div className='flex items-center gap-3'>
-            <div
-              className={`rounded-xl bg-gradient-to-br ${theme.classes.gradient.primary} p-2.5 shadow-lg shadow-cyan-500/30`}
-            >
-              <FileText className='h-5 w-5 text-white' />
-            </div>
-            <div>
-              <h2 className='bg-gradient-to-br from-cyan-600 via-blue-600 to-indigo-600 bg-clip-text text-base font-bold text-transparent dark:from-cyan-400 dark:via-blue-400 dark:to-indigo-400'>
-                Documentos del Cliente
-              </h2>
-              <p className='text-xs font-medium text-cyan-700 dark:text-cyan-300'>
-                Gestiona cédula, contratos y documentación legal
-              </p>
-            </div>
-          </div>
-
-          <div className='flex gap-2'>
-            {/* Botón especial para subir cédula si no existe - DESTACADO */}
-            {!tieneCedula && (
-              <button
-                onClick={() => mostrarUpload(true)}
-                className='group flex items-center gap-2 rounded-lg bg-gradient-to-r from-orange-500 to-amber-500 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-orange-500/50 ring-2 ring-orange-300/50 ring-offset-2 transition-all hover:scale-[1.02] hover:from-orange-600 hover:to-amber-600 hover:shadow-2xl hover:shadow-orange-500/60 active:scale-[0.98] dark:ring-orange-700/50 dark:ring-offset-gray-900'
-              >
-                <IdCard className='h-4 w-4 transition-transform group-hover:rotate-12' />
-                <span>Subir Cédula/Pasaporte</span>
-              </button>
-            )}
-
-            <button
-              onClick={mostrarCategorias}
-              className={`group flex items-center gap-1.5 rounded-lg border bg-white/60 backdrop-blur-sm hover:bg-white/80 dark:bg-gray-800/60 dark:hover:bg-gray-800/80 ${theme.classes.border.light} px-3 py-1.5 text-xs font-medium transition-all hover:scale-[1.02] hover:shadow-lg active:scale-[0.98]`}
-            >
-              <FolderCog className='h-3.5 w-3.5 text-cyan-600 transition-transform group-hover:rotate-12 dark:text-cyan-400' />
-              <span className='text-gray-700 dark:text-gray-300'>
-                Categorías
-              </span>
-            </button>
-            {/* Botón genérico - primario si tiene cédula, secundario si no */}
-            <button
-              onClick={() => mostrarUpload(false)}
-              className={`group flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all hover:scale-[1.02] active:scale-[0.98] ${
-                tieneCedula
-                  ? `bg-gradient-to-r ${theme.classes.gradient.primary} text-white shadow-lg shadow-cyan-500/30 hover:shadow-xl hover:shadow-cyan-500/40`
-                  : 'border border-gray-300 bg-white/60 text-gray-600 backdrop-blur-sm hover:bg-white/80 hover:shadow-lg dark:border-gray-600 dark:bg-gray-800/60 dark:text-gray-400 dark:hover:bg-gray-800/80'
-              }`}
-            >
-              <Upload className='h-3.5 w-3.5 transition-transform group-hover:-translate-y-0.5' />
-              <span>
-                {tieneCedula ? 'Subir Documento' : 'Otros documentos'}
-              </span>
-            </button>
-          </div>
-        </div>
-      </div>
-
       {/* 🚨 Banner informativo cuando no hay documento de identidad */}
       <AnimatePresence>
         {!tieneCedula &&
@@ -287,7 +224,10 @@ export function DocumentosTab({ cliente }: DocumentosTabProps) {
         tipoEntidad='cliente'
         moduleName='clientes'
         defaultVista='lista'
-        onUploadClick={() => mostrarUpload(false)}
+        onCategoriasClick={mostrarCategorias}
+        onUploadClick={carpetaId =>
+          mostrarUpload(false, carpetaId ? {} : undefined)
+        }
       />
 
       {/* Modal de subir carta de aprobación */}

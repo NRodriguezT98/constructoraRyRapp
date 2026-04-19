@@ -13,11 +13,13 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
+import { useQueryClient } from '@tanstack/react-query'
 import { Banknote, ClipboardCheck, FileText } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { useRouter } from 'next/navigation'
 
+import { getTodayDateString } from '@/lib/utils/date.utils'
 import { formatCurrency } from '@/lib/utils/format.utils'
 import { logger } from '@/lib/utils/logger'
 import { useFuentesPago } from '@/modules/clientes/components/asignar-vivienda/hooks/useFuentesPago'
@@ -26,15 +28,20 @@ import type {
   FuentePagoConfig,
   FuentePagoConfiguracion,
 } from '@/modules/clientes/components/asignar-vivienda/types'
+import { clientesKeys } from '@/modules/clientes/hooks/useClientesQuery'
 import {
   trasladoViviendaService,
   type FuenteConAbonos,
   type FuenteTrasladoDTO,
 } from '@/modules/clientes/services/traslado-vivienda.service'
 import type { TipoFuentePago } from '@/modules/clientes/types'
-import { obtenerMonto } from '@/modules/clientes/utils/fuentes-pago-campos.utils'
+import {
+  obtenerMonto,
+  obtenerMontoParaCierre,
+} from '@/modules/clientes/utils/fuentes-pago-campos.utils'
 import { useEntidadesFinancierasCombinadas } from '@/modules/configuracion/hooks/useEntidadesFinancierasParaFuentes'
 import { useTiposFuentesConCampos } from '@/modules/configuracion/hooks/useTiposFuentesConCampos'
+import type { ParametrosCredito } from '@/modules/fuentes-pago/types'
 import type {
   SectionStatus,
   SummaryItem,
@@ -47,20 +54,29 @@ export const PASOS_TRASLADO: WizardStepConfig[] = [
     id: 1,
     title: 'Negociación Actual',
     description:
-      'Revisa la negociación actual y registra el motivo del traslado.',
+      'Verifica que la negociación esté en estado Activa y sin desembolsos externos (hipotecario, subsidios). ' +
+      'Las fuentes internas con abonos se trasladarán automáticamente y aparecerán marcadas como obligatorias. ' +
+      'Describe el motivo con detalle (mín. 20 caracteres) y registra quién autoriza el traslado.',
     icon: FileText,
   },
   {
     id: 2,
     title: 'Nueva Vivienda y Fuentes de Pago',
-    description:
-      'Selecciona la vivienda destino y configura las fuentes de pago.',
+    description: [
+      'Selecciona el proyecto y la vivienda destino (solo aparecen las disponibles).',
+      'Las fuentes marcadas como obligatorias deben incluirse con un monto ≥ al ya abonado en la negociación actual — no se acepta un monto menor.',
+      'Para Crédito con la Constructora el monto mínimo aplica sobre el capital, no sobre el total con intereses.',
+      'La suma de todas las fuentes debe ser igual al valor total de la nueva vivienda.',
+    ].join('\n'),
     icon: Banknote,
   },
   {
     id: 3,
     title: 'Revisión y Confirmación',
-    description: 'Verifica la comparativa antes → después y confirma.',
+    description:
+      'Revisa la comparativa antes → después. Al confirmar se ejecutarán automáticamente: ' +
+      'cierre de la negociación actual, liberación de la vivienda origen, creación de la nueva negociación, ' +
+      'asignación de la nueva vivienda y traslado de abonos. Esta acción es irreversible.',
     icon: ClipboardCheck,
   },
 ]
@@ -78,6 +94,7 @@ export function useTrasladoVivienda({
   negociacionId,
 }: UseTrasladoViviendaProps) {
   const router = useRouter()
+  const queryClient = useQueryClient()
 
   // ─── Wizard state ────────────────────────────────────
   const [pasoActual, setPasoActual] = useState(1)
@@ -106,6 +123,12 @@ export function useTrasladoVivienda({
   // Paso 1 form fields
   const [motivo, setMotivo] = useState('')
   const [autorizadoPor, setAutorizadoPor] = useState('')
+
+  // Paso 1 inline field errors (shown after user attempts to advance)
+  const [errorMotivo, setErrorMotivo] = useState<string | null>(null)
+  const [errorAutorizadoPor, setErrorAutorizadoPor] = useState<string | null>(
+    null
+  )
 
   // ─── Paso 2: Vivienda destino ──────────────────────────
   const {
@@ -220,7 +243,7 @@ export function useTrasladoVivienda({
     [validacion.fuentesConAbonos]
   )
 
-  // Auto-activar fuentes obligatorias cuando se cargan los tipos
+  // Auto-activar y pre-configurar fuentes obligatorias cuando se cargan los tipos
   const fuentesObligatoriasActivadas = useRef(false)
   useEffect(() => {
     if (
@@ -233,11 +256,54 @@ export function useTrasladoVivienda({
     }
 
     for (const fOblig of fuentesObligatorias) {
+      const tipo = fOblig.tipo as TipoFuentePago
+      const tipoConCampos = tiposConCampos.find(t => t.nombre === fOblig.tipo)
+      const permiteMultiples = tipoConCampos?.permite_multiples_abonos ?? false
+      const esCredito = tipoConCampos?.logica_negocio?.genera_cuotas === true
+
+      // 1. Habilitar la fuente
       const yaActiva = fuentes.find(
         f => f.tipo.toLowerCase() === fOblig.tipo.toLowerCase() && f.enabled
       )
       if (!yaActiva) {
-        handleFuenteEnabledChange(fOblig.tipo as TipoFuentePago, true)
+        handleFuenteEnabledChange(tipo, true)
+      }
+
+      // 2. Pre-configurar con el monto mínimo obligatorio
+      const capital = fOblig.monto_recibido
+
+      if (esCredito) {
+        // Usar parámetros originales del crédito existente si están disponibles.
+        // El capital se reemplaza por el mínimo obligatorio (monto_recibido),
+        // pero tasa, mora y fecha se toman del crédito original para no sorprender al usuario.
+        const orig = fOblig.parametrosCredito
+        const fechaInicio = orig?.fechaInicio
+          ? new Date(orig.fechaInicio + 'T12:00:00')
+          : new Date(getTodayDateString() + 'T12:00:00')
+        const parametrosCredito: ParametrosCredito = {
+          capital,
+          tasaMensual: orig?.tasaMensual ?? 1.5,
+          numCuotas: orig?.numCuotas ?? 12,
+          fechaInicio,
+          tasaMoraDiaria: orig?.tasaMoraDiaria ?? 0.001,
+        }
+        handleFuenteConfigChange(tipo, {
+          tipo,
+          monto_aprobado: capital,
+          capital_para_cierre: capital,
+          parametrosCredito,
+          permite_multiples_abonos: permiteMultiples,
+        })
+      } else {
+        // Para fuentes regulares: pre-llenar monto_aprobado
+        const camposConfig = tipoConCampos?.configuracion_campos?.campos ?? []
+        const campoCampoMonto = camposConfig.find(c => c.rol === 'monto')
+        handleFuenteConfigChange(tipo, {
+          tipo,
+          monto_aprobado: capital,
+          permite_multiples_abonos: permiteMultiples,
+          campos: campoCampoMonto ? { [campoCampoMonto.nombre]: capital } : {},
+        })
       }
     }
     fuentesObligatoriasActivadas.current = true
@@ -245,7 +311,9 @@ export function useTrasladoVivienda({
     fuentes,
     fuentesObligatorias,
     cargandoTiposConCampos,
+    tiposConCampos,
     handleFuenteEnabledChange,
+    handleFuenteConfigChange,
   ])
 
   // ─── Validaciones ─────────────────────────────────────
@@ -287,15 +355,41 @@ export function useTrasladoVivienda({
       )
       if (!fDest) {
         errores[fOblig.tipo] =
-          `Obligatoria: tiene $${fOblig.monto_recibido.toLocaleString('es-CO')} en abonos`
+          `Obligatoria: tiene ${formatCurrency(fOblig.monto_recibido)} en abonos — debe incluirse`
         continue
       }
       const tipoConCampos = tiposConCampos.find(t => t.nombre === fDest.tipo)
       const camposConfig = tipoConCampos?.configuracion_campos?.campos ?? []
-      const monto = fDest.config ? obtenerMonto(fDest.config, camposConfig) : 0
+      const esCredito = tipoConCampos?.logica_negocio?.genera_cuotas === true
+
+      if (esCredito) {
+        // Para crédito constructora el flujo es:
+        // 1. calculo (en CreditoConstructoraForm) solo se computa cuando capital + tasa + cuotas + fecha están completos
+        // 2. Solo entonces se emite capital_para_cierre y parametrosCredito al config
+        // Por eso verificamos primero si parametrosCredito existe (proxy de "calculo efectuado")
+        // y luego si el capital cumple el mínimo.
+        if (!fDest.config?.parametrosCredito) {
+          // calculo aún no se ha efectuado — falta completar tasa/cuotas/fecha
+          errores[fDest.tipo] =
+            'Completa todos los parámetros del crédito: capital, tasa mensual, número de cuotas y fecha de inicio'
+          continue
+        }
+        const capitalCierre = fDest.config.capital_para_cierre ?? 0
+        if (capitalCierre < fOblig.monto_recibido) {
+          errores[fOblig.tipo] =
+            `El capital debe ser mínimo ${formatCurrency(fOblig.monto_recibido)} (ya abonado en la negociación actual)`
+        }
+        continue
+      }
+
+      // Para crédito con la constructora usar capital_para_cierre (no el total con intereses)
+      const monto = fDest.config
+        ? obtenerMontoParaCierre(fDest.config, tipoConCampos, camposConfig)
+        : 0
+
       if (monto < fOblig.monto_recibido) {
         errores[fOblig.tipo] =
-          `Monto mínimo: ${formatCurrency(fOblig.monto_recibido)} (ya abonado)`
+          `El monto debe ser mínimo ${formatCurrency(fOblig.monto_recibido)} (ya abonado en la negociación actual)`
       }
     }
 
@@ -353,7 +447,26 @@ export function useTrasladoVivienda({
     setIsValidating(true)
     try {
       if (pasoActual === 1) {
-        if (!paso1Valido) return
+        // Resetear errores previos
+        setErrorMotivo(null)
+        setErrorAutorizadoPor(null)
+
+        if (!validacion.valido) {
+          // El bloque de errores de validación ya es visible en pantalla — no se necesita toast
+          return
+        }
+        if (motivo.trim().length < 20) {
+          setErrorMotivo(
+            `El motivo debe tener al menos 20 caracteres (actualmente ${motivo.trim().length})`
+          )
+          return
+        }
+        if (autorizadoPor.trim().length < 3) {
+          setErrorAutorizadoPor(
+            'Ingresa el nombre completo de quien autorizó el traslado (mín. 3 caracteres)'
+          )
+          return
+        }
         setPasosCompletados(prev => new Set(prev).add(1))
         setPasoActual(2)
         return
@@ -364,13 +477,18 @@ export function useTrasladoVivienda({
           toast.error('Selecciona una vivienda destino')
           return
         }
-        if (!sumaCierra) {
-          setMostrarErroresFuentes(true)
+        if (!fuentes.some(f => f.enabled)) {
+          toast.error('Configura al menos una fuente de pago')
           return
         }
+        // Validar fuentes PRIMERO para mostrar errores específicos por fuente
+        // (incluye monto mínimo de fuentes obligatorias y parametrosCredito)
         const fuentesOk = validarFuentesManual()
+        setMostrarErroresFuentes(true)
         if (!fuentesOk) {
-          setMostrarErroresFuentes(true)
+          return
+        }
+        if (!sumaCierra) {
           return
         }
         setPasosCompletados(prev => new Set(prev).add(2))
@@ -382,8 +500,11 @@ export function useTrasladoVivienda({
     }
   }, [
     pasoActual,
-    paso1Valido,
+    validacion.valido,
+    motivo,
+    autorizadoPor,
     viviendaDestinoId,
+    fuentes,
     sumaCierra,
     validarFuentesManual,
   ])
@@ -465,6 +586,11 @@ export function useTrasladoVivienda({
         duration: 5000,
       })
 
+      // Invalidar cache del cliente para que el banner y tabs muestren la nueva vivienda
+      await queryClient.invalidateQueries({
+        queryKey: clientesKeys.detail(clienteId),
+      })
+
       setShowSuccess(true)
       setTimeout(() => {
         router.push(`/clientes/${clienteSlug ?? clienteId}`)
@@ -490,6 +616,7 @@ export function useTrasladoVivienda({
     clienteId,
     clienteSlug,
     router,
+    queryClient,
   ])
 
   const clearErrorApi = useCallback(() => {
@@ -520,6 +647,8 @@ export function useTrasladoVivienda({
     autorizadoPor,
     setAutorizadoPor,
     paso1Valido,
+    errorMotivo,
+    errorAutorizadoPor,
 
     // Paso 2 - Vivienda destino
     proyectos,

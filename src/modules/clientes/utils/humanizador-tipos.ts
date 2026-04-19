@@ -25,7 +25,12 @@ export function detectarTipoEvento(
 
   // ========== NEGOCIACIÓN ==========
   if (tabla === 'negociaciones') {
-    if (accion === 'CREATE') return 'negociacion_creada'
+    if (accion === 'CREATE') {
+      // Traslado de vivienda tiene prioridad sobre negociacion_creada genérica
+      const meta = evento.metadata as Record<string, unknown> | null
+      if (meta?.tipo === 'TRASLADO_VIVIENDA') return 'traslado_vivienda'
+      return 'negociacion_creada'
+    }
     if (accion === 'UPDATE') {
       if (cambios_especificos?.estado?.despues === 'Completada') {
         return 'negociacion_completada'
@@ -38,6 +43,7 @@ export function detectarTipoEvento(
   // ========== ABONO ==========
   if (tabla === 'abonos_historial') {
     if (accion === 'CREATE') return 'abono_registrado'
+    if (accion === 'UPDATE') return 'abono_editado'
     if (accion === 'DELETE') return 'abono_anulado'
     if (accion === 'ANULAR') return 'abono_anulado'
   }

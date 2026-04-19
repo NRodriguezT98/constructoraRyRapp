@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 
 import { supabaseAdmin } from '@/lib/supabase/admin'
-import type { TablesUpdate } from '@/lib/supabase/database.types'
+import type { Json, TablesUpdate } from '@/lib/supabase/database.types'
 import { createRouteClient } from '@/lib/supabase/server-route'
 import { logger } from '@/lib/utils/logger'
 
@@ -78,11 +78,11 @@ export async function PATCH(request: NextRequest) {
       )
     }
 
-    // 4. Obtener abono actual
+    // 4. Obtener abono actual (sólo columnas propias para evitar errores de join)
     const { data: abono, error: fetchError } = await supabase
       .from('abonos_historial')
       .select(
-        'id, negociacion_id, fuente_pago_id, monto, fecha_abono, metodo_pago, numero_referencia, notas, comprobante_url'
+        'id, negociacion_id, fuente_pago_id, monto, fecha_abono, metodo_pago, numero_referencia, notas, comprobante_url, numero_recibo'
       )
       .eq('id', abonoId)
       .maybeSingle()
@@ -95,9 +95,11 @@ export async function PATCH(request: NextRequest) {
     }
 
     // 5. Verificar que la negociación esté activa
+    // cliente_id se obtiene sincrónicamente aquí para GARANTIZAR que está
+    // disponible en metadata del audit_log (no depende de joins async)
     const { data: negociacion, error: negError } = await supabase
       .from('negociaciones')
-      .select('estado')
+      .select('estado, cliente_id')
       .eq('id', abono.negociacion_id)
       .single()
 
@@ -224,6 +226,116 @@ export async function PATCH(request: NextRequest) {
         { error: 'Error al actualizar el abono: ' + updateError.message },
         { status: 500 }
       )
+    }
+
+    // 11. Registrar en audit_log (awaited — garantiza persistencia antes de responder)
+    try {
+      const ETIQUETAS_CAMPO: Record<string, string> = {
+        monto: 'Monto del abono',
+        fecha_abono: 'Fecha del abono',
+        metodo_pago: 'Método de pago',
+        numero_referencia: 'Número de referencia',
+        notas: 'Notas',
+        comprobante_url: 'Comprobante',
+      }
+
+      // Construir cambios_especificos desde los campos que realmente cambiaron
+      const cambiosEspecificos: Record<
+        string,
+        { antes: unknown; despues: unknown }
+      > = {}
+      for (const campo of Object.keys(actualizacion)) {
+        const antes = abono[campo as keyof typeof abono]
+        const despues = actualizacion[campo]
+        if (antes !== despues) {
+          cambiosEspecificos[campo] = { antes, despues }
+        }
+      }
+
+      // Contexto enriquecido (vivienda/fuente) — best-effort via admin
+      let ctxVivienda: {
+        numero?: string
+        manzanas?: { nombre?: string; proyectos?: { nombre?: string } }
+      } | null = null
+      let ctxFuenteTipo: string | null = null
+
+      const { data: ctx } = await supabaseAdmin
+        .from('abonos_historial')
+        .select(
+          `fuentes_pago ( tipo ),
+           negociaciones (
+             viviendas ( numero, manzanas ( nombre, proyectos ( nombre ) ) )
+           )`
+        )
+        .eq('id', abonoId)
+        .maybeSingle()
+
+      if (ctx) {
+        ctxFuenteTipo =
+          (ctx.fuentes_pago as { tipo?: string } | null)?.tipo ?? null
+        ctxVivienda =
+          (
+            ctx.negociaciones as {
+              viviendas?: {
+                numero?: string
+                manzanas?: { nombre?: string; proyectos?: { nombre?: string } }
+              } | null
+            } | null
+          )?.viviendas ?? null
+      }
+
+      const { error: auditError } = await supabaseAdmin
+        .from('audit_log')
+        .insert({
+          tabla: 'abonos_historial',
+          accion: 'UPDATE',
+          registro_id: abonoId,
+          usuario_id: user.id,
+          usuario_email: user.email ?? '',
+          usuario_rol: usuarioPerfil.rol,
+          datos_anteriores: {
+            monto: abono.monto,
+            fecha_abono: abono.fecha_abono,
+            metodo_pago: abono.metodo_pago,
+            numero_referencia: abono.numero_referencia,
+            notas: abono.notas,
+            comprobante_url: abono.comprobante_url,
+            numero_recibo: abono.numero_recibo,
+          },
+          datos_nuevos: {
+            ...actualizacion,
+            numero_recibo: abono.numero_recibo,
+          },
+          cambios_especificos: cambiosEspecificos as unknown as Json,
+          metadata: {
+            // cliente_id GARANTIZADO — obtenido en la query de negociacion (paso 5)
+            cliente_id: negociacion.cliente_id,
+            abono_monto_anterior: abono.monto,
+            abono_numero_recibo: abono.numero_recibo,
+            abono_metodo_pago_anterior: abono.metodo_pago,
+            abono_fecha_abono_anterior: abono.fecha_abono,
+            fuente_tipo: ctxFuenteTipo,
+            negociacion_id: abono.negociacion_id,
+            vivienda_numero: ctxVivienda?.numero ?? null,
+            manzana_nombre: ctxVivienda?.manzanas?.nombre ?? null,
+            proyecto_nombre: ctxVivienda?.manzanas?.proyectos?.nombre ?? null,
+            motivo_edicion: String(motivo).trim(),
+            campos_editados: Object.keys(cambiosEspecificos).map(
+              c => ETIQUETAS_CAMPO[c] ?? c
+            ),
+          },
+          modulo: 'abonos',
+        })
+
+      if (auditError) {
+        logger.error(
+          '⚠️ audit_log insert failed (non-blocking):',
+          auditError.message
+        )
+      }
+    } catch (auditErr) {
+      // No fallar el flujo principal si la auditoría falla
+      logger.error('⚠️ audit_log block threw (non-blocking):', auditErr)
     }
 
     return NextResponse.json({ ok: true, abono: abonoActualizado })

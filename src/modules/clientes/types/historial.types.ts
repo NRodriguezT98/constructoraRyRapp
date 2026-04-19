@@ -68,8 +68,10 @@ export type TipoEventoHistorial =
   | 'negociacion_actualizada'
   | 'negociacion_estado_cambiada'
   | 'negociacion_completada'
+  | 'traslado_vivienda'
   // Abono
   | 'abono_registrado'
+  | 'abono_editado'
   | 'abono_anulado'
   // Renuncia
   | 'renuncia_creada'

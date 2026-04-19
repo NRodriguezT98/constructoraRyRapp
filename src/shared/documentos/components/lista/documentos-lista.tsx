@@ -11,8 +11,10 @@ import {
   ChevronUp,
   FileText,
   FileX,
+  FolderCog,
   FolderPlus,
   Pin,
+  Upload,
 } from 'lucide-react'
 
 import { ConfirmacionModal } from '@/shared/components/modals/ConfirmacionModal'
@@ -42,6 +44,7 @@ interface DocumentosListaProps {
   tipoEntidad: TipoEntidad // ✅ NUEVO: 'proyecto', 'vivienda', etc.
   onViewDocumento?: (documento: DocumentoProyecto) => void
   onUploadClick?: (carpetaId?: string | null) => void
+  onCategoriasClick?: () => void // 🗂 Acción de gestionar categorías
   moduleName?: ModuleName // 🎨 Tema del módulo
   defaultVista?: 'grid' | 'lista'
 }
@@ -51,6 +54,7 @@ export function DocumentosLista({
   tipoEntidad,
   onViewDocumento,
   onUploadClick,
+  onCategoriasClick,
   moduleName, // 🎨 Inferir desde tipoEntidad si no se pasa
   defaultVista = 'lista',
 }: DocumentosListaProps) {
@@ -288,31 +292,65 @@ export function DocumentosLista({
             return dias >= 0 && dias <= 30
           }).length
           return (
-            <div className='flex items-center justify-between'>
+            <div className='flex items-center justify-between gap-2'>
               <h3 className='text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500'>
                 Archivos
               </h3>
-              {documentosMostrar.length > 0 ? (
-                <div className='flex items-center gap-3 text-xs text-gray-400 dark:text-gray-500'>
-                  <span>
-                    {documentosMostrar.length}{' '}
-                    {documentosMostrar.length === 1 ? 'doc' : 'docs'}
-                  </span>
-                  {ancladosCount > 0 ? (
-                    <span className='flex items-center gap-1'>
-                      <Pin className='h-3 w-3 fill-cyan-500 text-cyan-500' />
-                      {ancladosCount}{' '}
-                      {ancladosCount === 1 ? 'anclado' : 'anclados'}
+
+              <div className='flex items-center gap-2'>
+                {/* Contadores */}
+                {documentosMostrar.length > 0 ? (
+                  <div className='flex items-center gap-3 text-xs text-gray-400 dark:text-gray-500'>
+                    <span>
+                      {documentosMostrar.length}{' '}
+                      {documentosMostrar.length === 1 ? 'doc' : 'docs'}
                     </span>
-                  ) : null}
-                  {porVencerCount > 0 ? (
-                    <span className='flex items-center gap-1 text-orange-400 dark:text-orange-500'>
-                      <Calendar className='h-3 w-3' />
-                      {porVencerCount} por vencer
-                    </span>
-                  ) : null}
-                </div>
-              ) : null}
+                    {ancladosCount > 0 ? (
+                      <span className='flex items-center gap-1'>
+                        <Pin className='h-3 w-3 fill-cyan-500 text-cyan-500' />
+                        {ancladosCount}{' '}
+                        {ancladosCount === 1 ? 'anclado' : 'anclados'}
+                      </span>
+                    ) : null}
+                    {porVencerCount > 0 ? (
+                      <span className='flex items-center gap-1 text-orange-400 dark:text-orange-500'>
+                        <Calendar className='h-3 w-3' />
+                        {porVencerCount} por vencer
+                      </span>
+                    ) : null}
+                  </div>
+                ) : null}
+
+                {/* Separador visual solo si hay contadores Y botones */}
+                {documentosMostrar.length > 0 &&
+                (onCategoriasClick ?? onUploadClick) ? (
+                  <span className='h-3 w-px bg-gray-300 dark:bg-gray-600' />
+                ) : null}
+
+                {/* Botón Categorías */}
+                {onCategoriasClick ? (
+                  <button
+                    type='button'
+                    onClick={onCategoriasClick}
+                    className='group flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium text-gray-500 transition-all duration-200 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-300'
+                  >
+                    <FolderCog className='h-3.5 w-3.5 transition-transform group-hover:rotate-12' />
+                    Categorías
+                  </button>
+                ) : null}
+
+                {/* Botón Subir Documento */}
+                {onUploadClick ? (
+                  <button
+                    type='button'
+                    onClick={() => onUploadClick(carpetaActualId)}
+                    className='flex items-center gap-1.5 rounded-md bg-cyan-600 px-2.5 py-1 text-xs font-medium text-white transition-all duration-200 hover:bg-cyan-700 dark:bg-cyan-700 dark:hover:bg-cyan-600'
+                  >
+                    <Upload className='h-3.5 w-3.5' />
+                    Subir Documento
+                  </button>
+                ) : null}
+              </div>
             </div>
           )
         })()}

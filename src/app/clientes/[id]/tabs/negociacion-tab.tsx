@@ -192,13 +192,6 @@ export function NegociacionTab({
 
         {/* Row 2: Acciones */}
         <div className='flex items-center justify-end gap-2 border-b border-gray-100 px-4 py-2 dark:border-gray-700/40'>
-          <button
-            onClick={() => router.push(`/abonos?negociacion=${negociacion.id}`)}
-            className='inline-flex items-center gap-1.5 rounded-lg border border-cyan-200 bg-cyan-50 px-2.5 py-1 text-[11px] font-semibold text-cyan-700 transition-all hover:border-cyan-300 hover:bg-cyan-100 hover:shadow-sm dark:border-cyan-800 dark:bg-cyan-900/20 dark:text-cyan-400 dark:hover:bg-cyan-900/40'
-          >
-            <ArrowUpRight className='h-3.5 w-3.5' />
-            Ir a Abonos
-          </button>
           {negociacion.estado === 'Activa' ? (
             <button
               onClick={() =>
@@ -564,9 +557,20 @@ export function NegociacionTab({
               Abonos recibidos
             </h3>
           </div>
-          {isLoadingAbonos ? (
-            <RefreshCw className='h-3 w-3 animate-spin text-gray-300 dark:text-gray-600' />
-          ) : null}
+          <div className='flex items-center gap-2'>
+            {isLoadingAbonos ? (
+              <RefreshCw className='h-3 w-3 animate-spin text-gray-300 dark:text-gray-600' />
+            ) : null}
+            <button
+              onClick={() =>
+                router.push(`/abonos?negociacion=${negociacion.id}`)
+              }
+              className='inline-flex items-center gap-1.5 rounded-lg border border-cyan-200 bg-cyan-50 px-2.5 py-1 text-[11px] font-semibold text-cyan-700 transition-all hover:border-cyan-300 hover:bg-cyan-100 hover:shadow-sm dark:border-cyan-800 dark:bg-cyan-900/20 dark:text-cyan-400 dark:hover:bg-cyan-900/40'
+            >
+              <ArrowUpRight className='h-3.5 w-3.5' />
+              Ir a Abonos
+            </button>
+          </div>
         </div>
         {/* Banner de bloqueo si hay descuadre */}
         {fuentesPago.length > 0 && !estaBalanceado ? (

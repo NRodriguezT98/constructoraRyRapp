@@ -5,12 +5,14 @@ import { useCallback, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import {
   AlertCircle,
+  AlertTriangle,
   Banknote,
   Building2,
   Check,
   CircleDollarSign,
   Home,
   Wallet,
+  XCircle,
 } from 'lucide-react'
 
 import { formatCurrency } from '@/lib/utils/format.utils'
@@ -42,6 +44,8 @@ interface SeccionFuentesPagoProps {
   sumaCierra: boolean
   erroresFuentes: Record<string, string>
   mostrarErroresFuentes: boolean
+  /** Montos mínimos requeridos por fuente (traslado). Keyed by fuente.tipo */
+  minAmounts?: Record<string, number>
   handleFuenteEnabledChange: (tipo: TipoFuentePago, enabled: boolean) => void
   handleFuenteConfigChange: (
     tipo: TipoFuentePago,
@@ -69,6 +73,7 @@ export function SeccionFuentesPago({
   sumaCierra,
   erroresFuentes,
   mostrarErroresFuentes,
+  minAmounts,
   handleFuenteEnabledChange,
   handleFuenteConfigChange,
 }: SeccionFuentesPagoProps) {
@@ -179,6 +184,18 @@ export function SeccionFuentesPago({
                   </div>
                 </button>
               </div>
+
+              {/* Mínimo requerido (traslado) */}
+              {minAmounts?.[fuente.tipo] ? (
+                <div className='mx-2 mb-1 flex items-center gap-1.5 rounded-lg border border-amber-200 bg-amber-50 px-2.5 py-1.5 dark:border-amber-800 dark:bg-amber-950/30'>
+                  <AlertTriangle className='h-3.5 w-3.5 shrink-0 text-amber-500' />
+                  <p className='text-xs text-amber-700 dark:text-amber-300'>
+                    Mínimo requerido:{' '}
+                    <strong>{formatCurrency(minAmounts[fuente.tipo])}</strong>{' '}
+                    (ya abonado en negociación actual)
+                  </p>
+                </div>
+              ) : null}
 
               {/* Contenido expandible */}
               <AnimatePresence>
@@ -370,6 +387,15 @@ function FuenteExpandida({
   if (generaCuotas) {
     return (
       <div className={s.fuentes.fuenteContent}>
+        {/* Error inline para crédito constructora */}
+        {esError && mensajeError ? (
+          <div className='mb-3 flex items-start gap-2 rounded-lg border border-red-300 bg-red-50 px-3 py-2.5 dark:border-red-800 dark:bg-red-950/40'>
+            <XCircle className='mt-0.5 h-4 w-4 shrink-0 text-red-500' />
+            <p className='text-xs font-semibold text-red-700 dark:text-red-300'>
+              {mensajeError}
+            </p>
+          </div>
+        ) : null}
         <CreditoConstructoraForm
           parametrosIniciales={fuente.config?.parametrosCredito}
           onActualizar={handleCreditoActualizar}
@@ -380,6 +406,15 @@ function FuenteExpandida({
 
   return (
     <div className={s.fuentes.fuenteContent}>
+      {/* Error inline para fuentes con monto mínimo */}
+      {esError && mensajeError ? (
+        <div className='mb-3 flex items-start gap-2 rounded-lg border border-red-300 bg-red-50 px-3 py-2.5 dark:border-red-800 dark:bg-red-950/40'>
+          <XCircle className='mt-0.5 h-4 w-4 shrink-0 text-red-500' />
+          <p className='text-xs font-semibold text-red-700 dark:text-red-300'>
+            {mensajeError}
+          </p>
+        </div>
+      ) : null}
       {sorted.map(campo => (
         <CampoFormularioDinamico
           key={campo.nombre}
@@ -387,7 +422,9 @@ function FuenteExpandida({
           value={valores[campo.nombre] ?? null}
           onChange={valor => handleCampoChange(campo.nombre, valor)}
           error={
-            esError && campo.rol === 'referencia' ? mensajeError : undefined
+            esError && (campo.rol === 'referencia' || campo.rol === 'entidad')
+              ? mensajeError
+              : undefined
           }
         />
       ))}

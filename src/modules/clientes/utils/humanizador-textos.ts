@@ -73,6 +73,45 @@ export function generarTextos(
     }
 
     // ========== NEGOCIACIÓN ==========
+    case 'traslado_vivienda': {
+      const origenMza = metadata?.vivienda_origen_manzana
+        ? `Mza. ${metadata.vivienda_origen_manzana}`
+        : null
+      const origenNum = metadata?.vivienda_origen_numero
+        ? `Casa ${metadata.vivienda_origen_numero}`
+        : null
+      const origenLabel =
+        [origenMza, origenNum].filter(Boolean).join(' ') || null
+
+      const destinoMza = metadata?.vivienda_destino_manzana
+        ? `Mza. ${metadata.vivienda_destino_manzana}`
+        : null
+      const destinoNum = metadata?.vivienda_destino_numero
+        ? `Casa ${metadata.vivienda_destino_numero}`
+        : null
+      const destinoLabel =
+        [destinoMza, destinoNum].filter(Boolean).join(' ') || null
+
+      const flecha =
+        origenLabel && destinoLabel ? `${origenLabel} → ${destinoLabel}` : null
+      const proyOrigenStr = metadata?.vivienda_origen_proyecto
+        ? String(metadata.vivienda_origen_proyecto)
+        : null
+      const proyDestinoStr = metadata?.vivienda_destino_proyecto
+        ? String(metadata.vivienda_destino_proyecto)
+        : null
+      const proyInfo =
+        proyOrigenStr === proyDestinoStr
+          ? proyDestinoStr
+          : [proyOrigenStr, proyDestinoStr].filter(Boolean).join(' → ')
+      return {
+        titulo: 'Traslado de vivienda',
+        descripcion:
+          [flecha, proyInfo].filter(Boolean).join(' · ') ||
+          'Cambio de vivienda registrado',
+      }
+    }
+
     case 'negociacion_creada': {
       const manzanaParte = metadata?.manzana_nombre
         ? `Mza. ${metadata.manzana_nombre}`
@@ -202,6 +241,27 @@ export function generarTextos(
       ].filter(Boolean)
       return {
         titulo: 'Nuevo abono',
+        descripcion: partes.join(' · '),
+      }
+    }
+
+    case 'abono_editado': {
+      const camposEditados = metadata?.campos_editados as string[] | undefined
+      const motivo = metadata?.motivo_edicion
+        ? String(metadata.motivo_edicion)
+        : null
+      const numeroRecibo = metadata?.abono_numero_recibo
+        ? formatearNumeroRecibo(Number(metadata.abono_numero_recibo))
+        : null
+      const partes = [
+        numeroRecibo ? `Recibo: ${numeroRecibo}` : null,
+        camposEditados?.length
+          ? `Campos: ${camposEditados.join(', ')}`
+          : 'Datos del abono modificados',
+        motivo ? `Motivo: ${motivo}` : null,
+      ].filter(Boolean)
+      return {
+        titulo: 'Abono editado',
         descripcion: partes.join(' · '),
       }
     }

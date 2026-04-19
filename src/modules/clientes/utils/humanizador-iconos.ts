@@ -4,6 +4,7 @@
 
 import {
   AlertCircle,
+  ArrowRightLeft,
   CheckCircle,
   CheckCircle2,
   DollarSign,
@@ -36,7 +37,9 @@ const ICONOS: Record<TipoEventoHistorial, LucideIcon> = {
   negociacion_actualizada: RefreshCw,
   negociacion_estado_cambiada: RefreshCw,
   negociacion_completada: CheckCircle,
+  traslado_vivienda: ArrowRightLeft,
   abono_registrado: DollarSign,
+  abono_editado: Edit3,
   abono_anulado: XCircle,
   renuncia_creada: FileText,
   renuncia_aprobada: FileCheck,
@@ -57,7 +60,9 @@ const COLORES: Record<TipoEventoHistorial, ColorEvento> = {
   cliente_creado: 'green',
   negociacion_creada: 'green',
   negociacion_completada: 'green',
+  traslado_vivienda: 'orange',
   abono_registrado: 'green',
+  abono_editado: 'yellow',
   renuncia_aprobada: 'green',
   renuncia_devolucion_procesada: 'green',
   documento_subido: 'green',

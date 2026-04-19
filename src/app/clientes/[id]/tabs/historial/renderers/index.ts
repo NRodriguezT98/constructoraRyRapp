@@ -5,6 +5,7 @@
 
 import type { EventoHistorialHumanizado } from '@/modules/clientes/types/historial.types'
 
+import { AbonoEditadoRenderer } from './AbonoEditadoRenderer'
 import { AbonoRegistradoRenderer } from './AbonoRegistradoRenderer'
 import { CambioGenericoRenderer } from './CambioGenericoRenderer'
 import { ClienteActualizadoRenderer } from './ClienteActualizadoRenderer'
@@ -14,6 +15,7 @@ import { DocumentoRenderer } from './DocumentoRenderer'
 import { NegociacionActualizadaRenderer } from './NegociacionActualizadaRenderer'
 import { NegociacionCreadaRenderer } from './NegociacionCreadaRenderer'
 import { RenunciaRenderer } from './RenunciaRenderer'
+import { TrasladoViviendaRenderer } from './TrasladoViviendaRenderer'
 
 type RendererComponent = React.ComponentType<{
   evento: EventoHistorialHumanizado
@@ -27,12 +29,14 @@ const RENDERERS: Partial<Record<string, RendererComponent>> = {
 
   // Negociación
   negociacion_creada: NegociacionCreadaRenderer,
+  traslado_vivienda: TrasladoViviendaRenderer,
   negociacion_actualizada: NegociacionActualizadaRenderer,
   negociacion_estado_cambiada: CambioGenericoRenderer,
   negociacion_completada: CambioGenericoRenderer,
 
   // Abono
   abono_registrado: AbonoRegistradoRenderer,
+  abono_editado: AbonoEditadoRenderer,
   abono_anulado: AbonoRegistradoRenderer,
 
   // Renuncia
@@ -65,4 +69,5 @@ export {
   NegociacionActualizadaRenderer,
   NegociacionCreadaRenderer,
   RenunciaRenderer,
+  TrasladoViviendaRenderer,
 }
