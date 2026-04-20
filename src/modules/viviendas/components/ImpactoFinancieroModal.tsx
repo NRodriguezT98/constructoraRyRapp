@@ -17,13 +17,13 @@ import {
   ArrowUp,
   CheckCircle2,
   DollarSign,
-  Loader2,
   RefreshCw,
   ShieldAlert,
   User,
   XCircle,
 } from 'lucide-react'
 
+import { SectionLoadingSpinner } from '@/shared/components/ui'
 import { Modal } from '@/shared/components/ui/Modal'
 import { formatCurrency } from '@/shared/utils/format'
 
@@ -107,18 +107,16 @@ export function ImpactoFinancieroModal({
           </motion.div>
         ) : estado === 'loading' ? (
           /* ── ESTADO: LOADING ──────────────────────────────── */
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className='flex flex-col items-center justify-center gap-4 py-10'
-          >
-            <Loader2 className='h-10 w-10 animate-spin text-orange-500' />
-            <p className='text-sm font-semibold text-gray-700 dark:text-gray-300'>
-              {sincronizando
+          <SectionLoadingSpinner
+            label={
+              sincronizando
                 ? 'Sincronizando negociación...'
-                : 'Guardando cambios...'}
-            </p>
-          </motion.div>
+                : 'Guardando cambios...'
+            }
+            moduleName='viviendas'
+            icon={RefreshCw}
+            className='flex flex-col items-center justify-center gap-6 py-10'
+          />
         ) : (
           /* ── ESTADO: IDLE ─────────────────────────────── */
           <div className='space-y-4'>

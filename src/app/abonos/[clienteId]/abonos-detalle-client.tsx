@@ -3,7 +3,7 @@
 import { useCallback, useState } from 'react'
 
 import { motion } from 'framer-motion'
-import { AlertTriangle, Loader2, Wallet } from 'lucide-react'
+import { AlertTriangle, Wallet } from 'lucide-react'
 
 import { useRouter } from 'next/navigation'
 
@@ -15,6 +15,7 @@ import { ModalEditarAbono } from '@/modules/abonos/components/modal-editar-abono
 import { ModalRegistroPago } from '@/modules/abonos/components/modal-registro-pago'
 import type { AbonoHistorial } from '@/modules/abonos/types'
 import type { AbonoParaEditar } from '@/modules/abonos/types/editar-abono.types'
+import { SectionLoadingSpinner } from '@/shared/components/ui'
 
 import {
   FuentePagoCard,
@@ -159,7 +160,11 @@ export default function AbonosDetalleClient({
   if (isLoading || !negociacion) {
     return (
       <div className='flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-950'>
-        <Loader2 className='h-10 w-10 animate-spin text-emerald-500' />
+        <SectionLoadingSpinner
+          label='Cargando abonos...'
+          moduleName='abonos'
+          icon={Wallet}
+        />
       </div>
     )
   }

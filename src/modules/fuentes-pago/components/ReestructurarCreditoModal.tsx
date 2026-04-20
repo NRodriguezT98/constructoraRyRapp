@@ -19,6 +19,15 @@ import type {
 } from '@/modules/fuentes-pago/types'
 import { calcularTablaAmortizacion } from '@/modules/fuentes-pago/utils/calculos-credito'
 
+const MOTIVOS_REESTRUCTURACION = [
+  'Dificultad económica del cliente',
+  'Extensión del plazo acordada',
+  'Cambio de condiciones pactadas',
+  'Acuerdo de refinanciación',
+  'Corrección de términos iniciales',
+  'Otro',
+] as const
+
 interface ReestructurarCreditoModalProps {
   fuentePagoId: string
   creditoActual: CreditoConstructora
@@ -41,7 +50,8 @@ export function ReestructurarCreditoModal({
   const [nuevaTasa, setNuevaTasa] = useState(String(creditoActual.tasa_mensual))
   const [nuevasCuotas, setNuevasCuotas] = useState(String(cuotasPendientes))
   const [fechaStr, setFechaStr] = useState(getTodayDateString())
-  const [motivo, setMotivo] = useState('')
+  const [motivo, setMotivo] = useState<string>(MOTIVOS_REESTRUCTURACION[0])
+  const [notas, setNotas] = useState('')
 
   const preview = useMemo(() => {
     const t = parseFloat(nuevaTasa)
@@ -81,6 +91,8 @@ export function ReestructurarCreditoModal({
       nuevaTasaMensual: t,
       nuevasNumCuotas: c,
       nuevaFechaInicio: new Date(fechaStr + 'T12:00:00'),
+      motivo,
+      notas: notas.trim() || undefined,
     })
   }
 
@@ -208,13 +220,30 @@ export function ReestructurarCreditoModal({
 
             <div>
               <label className='mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300'>
-                Notas (opcional)
+                Motivo de reestructuración
               </label>
-              <textarea
+              <select
                 value={motivo}
                 onChange={e => setMotivo(e.target.value)}
+                className='w-full rounded-lg border-2 border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 transition-all focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-700 dark:bg-gray-800 dark:text-white'
+              >
+                {MOTIVOS_REESTRUCTURACION.map(m => (
+                  <option key={m} value={m}>
+                    {m}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className='mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300'>
+                Notas adicionales (opcional)
+              </label>
+              <textarea
+                value={notas}
+                onChange={e => setNotas(e.target.value)}
                 rows={2}
-                placeholder='Ej: Acuerdo de reestructuración por dificultad económica'
+                placeholder='Ej: Acuerdo firmado el 15 de enero'
                 className='w-full rounded-lg border-2 border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 transition-all focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-700 dark:bg-gray-800 dark:text-white'
               />
             </div>

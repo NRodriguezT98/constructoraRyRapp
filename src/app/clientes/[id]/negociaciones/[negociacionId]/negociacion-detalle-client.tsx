@@ -12,7 +12,6 @@ import {
   DollarSign,
   FileText,
   Home,
-  Loader2,
   TrendingUp,
   User,
   XCircle,
@@ -24,7 +23,9 @@ import { useRouter } from 'next/navigation'
 import { ConfigurarFuentesPago } from '@/modules/clientes/components/negociaciones'
 import { useNegociacion } from '@/modules/clientes/hooks'
 import { CuotasCreditoTab } from '@/modules/fuentes-pago/components/CuotasCreditoTab'
+import { usePermisosQuery } from '@/modules/usuarios/hooks/usePermisosQuery'
 import { useModal } from '@/shared/components/modals'
+import { SectionLoadingSpinner } from '@/shared/components/ui'
 import { esCreditoConstructora } from '@/shared/constants/fuentes-pago.constants'
 
 interface NegociacionDetalleClientProps {
@@ -168,6 +169,9 @@ export default function NegociacionDetalleClient({
     estadoLegible,
   } = useNegociacion(negociacionId)
 
+  const { isLoading: permisosLoading, rol } = usePermisosQuery()
+  const isAdmin = !permisosLoading && rol === 'Administrador'
+
   const [motivoCancelacion, setMotivoCancelacion] = useState('')
   const [mostrarModalRenuncia, setMostrarModalRenuncia] = useState(false)
 
@@ -186,12 +190,11 @@ export default function NegociacionDetalleClient({
   if (cargando) {
     return (
       <div className='flex min-h-screen items-center justify-center'>
-        <div className='text-center'>
-          <Loader2 className='mx-auto mb-4 h-16 w-16 animate-spin text-purple-500' />
-          <p className='text-gray-600 dark:text-gray-400'>
-            Cargando negociación...
-          </p>
-        </div>
+        <SectionLoadingSpinner
+          label='Cargando negociación...'
+          moduleName='negociaciones'
+          icon={FileText}
+        />
       </div>
     )
   }
@@ -469,6 +472,7 @@ export default function NegociacionDetalleClient({
                       recargarNegociacion()
                     }}
                     readonly={!esActiva}
+                    isAdmin={isAdmin}
                   />
                 </div>
               ))}

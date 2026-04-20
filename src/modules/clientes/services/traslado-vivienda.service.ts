@@ -18,7 +18,17 @@ import { supabase } from '@/lib/supabase/client'
 import { getTodayDateString } from '@/lib/utils/date.utils'
 import { logger } from '@/lib/utils/logger'
 import type { FuentePago, Negociacion } from '@/modules/clientes/types'
-import { esCuotaInicial } from '@/shared/constants/fuentes-pago.constants'
+import { crearCredito } from '@/modules/fuentes-pago/services/creditos-constructora.service'
+import { crearCuotasCredito } from '@/modules/fuentes-pago/services/cuotas-credito.service'
+// ↑ Importados para PASO 3.5: crear plan de crédito constructora con parámetros del usuario
+import {
+  calcularTablaAmortizacion,
+  fechaCuotaParaBD,
+} from '@/modules/fuentes-pago/utils/calculos-credito'
+import {
+  esCreditoConstructora,
+  esCuotaInicial,
+} from '@/shared/constants/fuentes-pago.constants'
 
 // ── Tipos ───────────────────────────────────────────
 
@@ -196,8 +206,7 @@ class TrasladoViviendaService {
 
       // Cargar parámetros del crédito con la constructora (para pre-configurar el formulario)
       let parametrosCredito: FuenteConAbonos['parametrosCredito'] = null
-      const CREDITO_TIPO = 'crédito con la constructora'
-      if (!esExterna && fuente.tipo.toLowerCase() === CREDITO_TIPO) {
+      if (!esExterna && esCreditoConstructora(fuente.tipo)) {
         const { data: creditoBD } = await supabase
           .from('creditos_constructora')
           .select(
@@ -306,9 +315,13 @@ class TrasladoViviendaService {
           `La fuente "${fuenteOrigen.tipo}" tiene $${fuenteOrigen.monto_recibido.toLocaleString('es-CO')} abonados y debe incluirse en la nueva negociación`
         )
       }
-      if (fuenteDestino.monto_aprobado < fuenteOrigen.monto_recibido) {
+      // Para crédito constructora verificar capital_para_cierre (no monto_aprobado que incluye intereses)
+      const montoEfectivo = esCreditoConstructora(fuenteDestino.tipo)
+        ? (fuenteDestino.capital_para_cierre ?? fuenteDestino.monto_aprobado)
+        : fuenteDestino.monto_aprobado
+      if (montoEfectivo < fuenteOrigen.monto_recibido) {
         throw new Error(
-          `La fuente "${fuenteOrigen.tipo}" debe tener monto mínimo de $${fuenteOrigen.monto_recibido.toLocaleString('es-CO')} (ya abonado). Se configuró $${fuenteDestino.monto_aprobado.toLocaleString('es-CO')}`
+          `La fuente "${fuenteOrigen.tipo}" debe tener capital mínimo de $${fuenteOrigen.monto_recibido.toLocaleString('es-CO')} (ya abonado). Se configuró $${montoEfectivo.toLocaleString('es-CO')}`
         )
       }
     }
@@ -420,76 +433,155 @@ class TrasladoViviendaService {
         }
       }
 
-      // ── PASO 3.5: Copiar plan de crédito con la constructora ──
-      for (const fuenteOrigen of validacion.fuentesConAbonos) {
-        if (fuenteOrigen.tipo.toLowerCase() !== 'crédito con la constructora')
-          continue
+      // ── PASO 3.5: Crear/copiar plan de crédito con la constructora ──
+      //
+      // Prioridad:
+      //   1. Si el DTO trae parametrosCredito configurados por el usuario → generar plan nuevo
+      //   2. Si no (traslado sin reconfigurar) → copiar el plan del crédito origen
+      //
+      // Los IDs de fuentes con crédito creado se acumulan para rollback ante fallos.
+      const fuentesConCreditoCreado: string[] = []
+      try {
+        for (const fuenteDTO of fuentes_pago) {
+          if (!esCreditoConstructora(fuenteDTO.tipo)) continue
 
-        const fuenteDestinoCreada = (fuentesCreadas ?? []).find(
-          f => f.tipo.toLowerCase() === fuenteOrigen.tipo.toLowerCase()
-        )
-        if (!fuenteDestinoCreada) continue
-
-        // Copiar parámetros financieros del crédito
-        const { data: creditoOrigen } = await supabase
-          .from('creditos_constructora')
-          .select(
-            'capital, tasa_mensual, num_cuotas, fecha_inicio, valor_cuota, interes_total, monto_total, tasa_mora_diaria, version_actual'
+          const fuenteDestinoCreada = (fuentesCreadas ?? []).find(
+            f => f.tipo.toLowerCase() === fuenteDTO.tipo.toLowerCase()
           )
-          .eq('fuente_pago_id', fuenteOrigen.id)
-          .maybeSingle()
+          if (!fuenteDestinoCreada) continue
 
-        if (!creditoOrigen) continue
+          if (fuenteDTO.parametrosCredito) {
+            // ── Caso 1: usuario configuró nuevos parámetros → calcular y persitir plan nuevo ──
+            const p = fuenteDTO.parametrosCredito
+            const fechaDate =
+              typeof p.fechaInicio === 'string'
+                ? new Date(p.fechaInicio + 'T12:00:00')
+                : p.fechaInicio
 
-        const { error: errorCredito } = await supabase
-          .from('creditos_constructora')
-          .insert({
-            fuente_pago_id: fuenteDestinoCreada.id,
-            capital: creditoOrigen.capital,
-            tasa_mensual: creditoOrigen.tasa_mensual,
-            num_cuotas: creditoOrigen.num_cuotas,
-            fecha_inicio: creditoOrigen.fecha_inicio,
-            valor_cuota: creditoOrigen.valor_cuota,
-            interes_total: creditoOrigen.interes_total,
-            monto_total: creditoOrigen.monto_total,
-            tasa_mora_diaria: creditoOrigen.tasa_mora_diaria,
-            version_actual: creditoOrigen.version_actual,
-          })
+            const calculo = calcularTablaAmortizacion({
+              capital: p.capital,
+              tasaMensual: p.tasaMensual,
+              numCuotas: p.numCuotas,
+              fechaInicio: fechaDate,
+            })
 
-        if (errorCredito) {
-          logger.error('Error copiando creditos_constructora:', errorCredito)
-          throw new Error(`Error copiando crédito: ${errorCredito.message}`)
-        }
+            const { error: eCredito } = await crearCredito({
+              fuente_pago_id: fuenteDestinoCreada.id,
+              capital: p.capital,
+              tasa_mensual: p.tasaMensual,
+              num_cuotas: p.numCuotas,
+              fecha_inicio: fechaCuotaParaBD(fechaDate),
+              valor_cuota: calculo.valorCuotaMensual,
+              interes_total: calculo.interesTotal,
+              monto_total: calculo.montoTotal,
+              tasa_mora_diaria: p.tasaMoraDiaria ?? 0.001,
+            })
+            if (eCredito)
+              throw new Error(`Error creando crédito: ${eCredito.message}`)
 
-        // Copiar cuotas del plan vigente
-        const { data: cuotasOrigen } = await supabase
-          .from('cuotas_credito')
-          .select(
-            'numero_cuota, fecha_vencimiento, valor_cuota, version_plan, notas'
-          )
-          .eq('fuente_pago_id', fuenteOrigen.id)
-          .eq('version_plan', creditoOrigen.version_actual)
-          .order('numero_cuota', { ascending: true })
+            fuentesConCreditoCreado.push(fuenteDestinoCreada.id)
 
-        if (cuotasOrigen && cuotasOrigen.length > 0) {
-          const cuotasParaInsertar = cuotasOrigen.map(c => ({
-            fuente_pago_id: fuenteDestinoCreada.id,
-            numero_cuota: c.numero_cuota,
-            fecha_vencimiento: c.fecha_vencimiento,
-            valor_cuota: c.valor_cuota,
-            version_plan: c.version_plan,
-            notas: c.notas,
-          }))
+            const { error: eCuotas } = await crearCuotasCredito(
+              fuenteDestinoCreada.id,
+              calculo.cuotas,
+              1
+            )
+            if (eCuotas)
+              throw new Error(`Error creando cuotas: ${eCuotas.message}`)
+          } else {
+            // ── Caso 2: sin reconfiguración → copiar plan existente del origen ──
+            const fuenteOrigen = validacion.fuentesConAbonos.find(f =>
+              esCreditoConstructora(f.tipo)
+            )
+            if (!fuenteOrigen) continue
 
-          const { error: errorCuotas } = await supabase
-            .from('cuotas_credito')
-            .insert(cuotasParaInsertar)
+            const { data: creditoOrigen } = await supabase
+              .from('creditos_constructora')
+              .select(
+                'capital, tasa_mensual, num_cuotas, fecha_inicio, valor_cuota, interes_total, monto_total, tasa_mora_diaria, version_actual'
+              )
+              .eq('fuente_pago_id', fuenteOrigen.id)
+              .maybeSingle()
 
-          if (errorCuotas) {
-            logger.error('Error copiando cuotas_credito:', errorCuotas)
-            throw new Error(`Error copiando cuotas: ${errorCuotas.message}`)
+            if (!creditoOrigen) continue
+
+            const { error: eCredito } = await supabase
+              .from('creditos_constructora')
+              .insert({
+                fuente_pago_id: fuenteDestinoCreada.id,
+                capital: creditoOrigen.capital,
+                tasa_mensual: creditoOrigen.tasa_mensual,
+                num_cuotas: creditoOrigen.num_cuotas,
+                fecha_inicio: creditoOrigen.fecha_inicio,
+                valor_cuota: creditoOrigen.valor_cuota,
+                interes_total: creditoOrigen.interes_total,
+                monto_total: creditoOrigen.monto_total,
+                tasa_mora_diaria: creditoOrigen.tasa_mora_diaria,
+                version_actual: creditoOrigen.version_actual,
+              })
+
+            if (eCredito)
+              throw new Error(`Error copiando crédito: ${eCredito.message}`)
+
+            fuentesConCreditoCreado.push(fuenteDestinoCreada.id)
+
+            const { data: cuotasOrigen } = await supabase
+              .from('cuotas_credito')
+              .select(
+                'numero_cuota, fecha_vencimiento, valor_cuota, version_plan, notas'
+              )
+              .eq('fuente_pago_id', fuenteOrigen.id)
+              .eq('version_plan', creditoOrigen.version_actual)
+              .order('numero_cuota', { ascending: true })
+
+            if (cuotasOrigen && cuotasOrigen.length > 0) {
+              const { error: eCuotas } = await supabase
+                .from('cuotas_credito')
+                .insert(
+                  cuotasOrigen.map(c => ({
+                    fuente_pago_id: fuenteDestinoCreada.id,
+                    numero_cuota: c.numero_cuota,
+                    fecha_vencimiento: c.fecha_vencimiento,
+                    valor_cuota: c.valor_cuota,
+                    version_plan: c.version_plan,
+                    notas: c.notas,
+                  }))
+                )
+              if (eCuotas)
+                throw new Error(`Error copiando cuotas: ${eCuotas.message}`)
+            }
           }
         }
+      } catch (errorPaso35) {
+        // ROLLBACK PASO 3.5: eliminar creditos/cuotas creados en esta operación
+        logger.error(
+          '❌ Error en PASO 3.5 (crédito constructora):',
+          errorPaso35
+        )
+        for (const fid of fuentesConCreditoCreado) {
+          await supabase
+            .from('cuotas_credito')
+            .delete()
+            .eq('fuente_pago_id', fid)
+          await supabase
+            .from('creditos_constructora')
+            .delete()
+            .eq('fuente_pago_id', fid)
+        }
+        // Rollback de lo creado antes: revertir abonos trasladados, fuentes, negociación
+        await supabase
+          .from('abonos_historial')
+          .update({
+            negociacion_id: negociacion_origen_id,
+            trasladado_desde_negociacion_id: null,
+          })
+          .eq('negociacion_id', nuevaNegId)
+        await supabase
+          .from('fuentes_pago')
+          .delete()
+          .eq('negociacion_id', nuevaNegId)
+        await supabase.from('negociaciones').delete().eq('id', nuevaNegId)
+        throw errorPaso35
       }
 
       // ── PASO 4: Cerrar negociación vieja ──────────

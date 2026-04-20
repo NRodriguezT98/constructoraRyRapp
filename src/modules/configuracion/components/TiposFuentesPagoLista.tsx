@@ -32,7 +32,6 @@ import {
   HandCoins,
   Home,
   Landmark,
-  Loader2,
   Plus,
   RefreshCw,
   Search,
@@ -42,6 +41,7 @@ import {
 } from 'lucide-react'
 
 import { useModal } from '@/shared/components/modals'
+import { SectionLoadingSpinner } from '@/shared/components/ui'
 
 import {
   useEliminarTipoFuentePago,
@@ -279,10 +279,12 @@ export function TiposFuentesPagoLista() {
 
       {/* Estados de Carga/Error */}
       {isLoading && (
-        <div className='flex flex-col items-center justify-center py-16 text-gray-500 dark:text-gray-400'>
-          <Loader2 className='mb-4 h-12 w-12 animate-spin text-blue-600' />
-          <p className='text-sm font-medium'>Cargando fuentes de pago...</p>
-        </div>
+        <SectionLoadingSpinner
+          label='Cargando fuentes de pago...'
+          moduleName='abonos'
+          icon={CreditCard}
+          className='flex flex-col items-center justify-center gap-6 py-16'
+        />
       )}
 
       {isError && (

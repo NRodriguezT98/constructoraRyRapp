@@ -12,8 +12,8 @@ export {
 } from './useNegociacionTab'
 export type {
   AjusteLocal,
-  DatosRebalanceo,
+  DatosAjusteCierreFinanciero,
   FuAlteNueva,
   MotivoAjuste,
 } from './useNegociacionTab'
-export { useRebalanceoMutation } from './useRebalanceoMutation'
+export { useAjusteCierreFinanciero } from './useRebalanceoMutation'

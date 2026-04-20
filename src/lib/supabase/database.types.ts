@@ -2305,15 +2305,7 @@ export type Database = {
           usuario_creacion?: string | null
           version?: number
         }
-        Relationships: [
-          {
-            foreignKeyName: "fk_requisitos_categoria_documento"
-            columns: ["categoria_documento"]
-            isOneToOne: false
-            referencedRelation: "categorias_documento"
-            referencedColumns: ["nombre"]
-          },
-        ]
+        Relationships: []
       }
       tipos_fuentes_pago: {
         Row: {
@@ -3434,6 +3426,7 @@ export type Database = {
         Returns: number
       }
       rebalancear_plan_financiero: { Args: { p_payload: Json }; Returns: Json }
+      reestructurar_credito: { Args: { p_payload: Json }; Returns: Json }
       regenerar_pendientes_fuente: {
         Args: { p_fuente_id: string }
         Returns: number

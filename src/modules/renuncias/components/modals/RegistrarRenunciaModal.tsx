@@ -21,6 +21,8 @@ import {
 } from 'lucide-react'
 import { createPortal } from 'react-dom'
 
+import { SectionLoadingSpinner } from '@/shared/components/ui'
+
 import { useModalRegistrarRenuncia } from '../../hooks/useModalRegistrarRenuncia'
 import { formatCOP } from '../../utils/renuncias.utils'
 
@@ -155,10 +157,12 @@ export function RegistrarRenunciaModal({
                 </span>
               </div>
               <div className='flex flex-col items-center justify-center gap-4 py-16'>
-                <Loader2 className='h-8 w-8 animate-spin text-red-500' />
-                <p className='text-sm text-gray-600 dark:text-gray-400'>
-                  Validando negociación...
-                </p>
+                <SectionLoadingSpinner
+                  label='Validando negociación...'
+                  moduleName='renuncias'
+                  icon={FileX}
+                  className='flex flex-col items-center justify-center gap-6 py-16'
+                />
               </div>
             </motion.div>
           </motion.div>,

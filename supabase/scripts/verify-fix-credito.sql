@@ -1,0 +1,1 @@
+SELECT fp.monto_aprobado, fp.capital_para_cierre, fp.monto_recibido, fp.saldo_pendiente, cc.monto_total AS credito_monto_total, cc.capital AS credito_capital FROM fuentes_pago fp JOIN creditos_constructora cc ON cc.fuente_pago_id = fp.id WHERE fp.id = 'e4f5278c-7a14-44cf-9149-7a482b78da3f';

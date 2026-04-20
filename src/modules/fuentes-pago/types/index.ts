@@ -149,6 +149,10 @@ export interface ParametrosReestructuracion {
   nuevaTasaMensual: number
   nuevasNumCuotas: number
   nuevaFechaInicio: Date
+  /** Motivo registrado en el audit log (ej: 'Dificultad económica del cliente') */
+  motivo?: string
+  /** Notas adicionales para el audit log */
+  notas?: string
 }
 
 // ============================================================

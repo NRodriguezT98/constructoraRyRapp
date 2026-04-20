@@ -312,4 +312,11 @@ export const HEADER_GRADIENTS_POR_TIPO: Record<TipoEventoHistorial, string> = {
   // ── Notas y genérico (gris neutro) ────────────────────────────────────
   nota_manual: 'bg-gradient-to-r from-gray-600 via-slate-600 to-zinc-600',
   evento_generico: 'bg-gradient-to-r from-gray-600 via-slate-600 to-zinc-600',
+
+  // ── Traslado de vivienda (esmeralda → teal) ───────────────────────────
+  traslado_vivienda:
+    'bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600',
+
+  // ── Abono editado (azul → índigo → púrpura) ───────────────────────────
+  abono_editado: 'bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600',
 }

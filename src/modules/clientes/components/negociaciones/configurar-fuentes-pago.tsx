@@ -35,6 +35,7 @@ import {
 } from 'lucide-react'
 
 import { CreditoConstructoraForm } from '@/modules/fuentes-pago/components/CreditoConstructoraForm'
+import { SectionLoadingSpinner } from '@/shared/components/ui'
 import {
   esCreditoHipotecario,
   esCuotaInicial,
@@ -223,9 +224,11 @@ export function ConfigurarFuentesPago({
 
   if (cargando) {
     return (
-      <div className='flex items-center justify-center py-12'>
-        <Loader2 className='h-8 w-8 animate-spin text-purple-600' />
-      </div>
+      <SectionLoadingSpinner
+        label='Cargando configuración...'
+        moduleName='negociaciones'
+        icon={Wallet}
+      />
     )
   }
 

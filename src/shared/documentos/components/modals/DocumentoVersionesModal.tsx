@@ -29,6 +29,7 @@ import {
 import { createPortal } from 'react-dom'
 
 import { formatDateCompact } from '@/lib/utils/date.utils'
+import { SectionLoadingSpinner } from '@/shared/components/ui'
 import { moduleThemes, type ModuleName } from '@/shared/config/module-themes'
 import { useDocumentoVersiones } from '@/shared/documentos/hooks/useDocumentoVersiones'
 import type { EstadoVersion } from '@/shared/documentos/types/documento.types'
@@ -203,12 +204,11 @@ export function DocumentoVersionesModal({
           {/* Content - Scrollable */}
           <div className='max-h-[calc(90vh-5rem)] overflow-y-auto p-6'>
             {cargando ? (
-              <div className='flex flex-col items-center justify-center py-12'>
-                <Loader2 className='mb-3 h-8 w-8 animate-spin text-green-600' />
-                <p className='text-sm text-gray-500 dark:text-gray-400'>
-                  Cargando versiones...
-                </p>
-              </div>
+              <SectionLoadingSpinner
+                label='Cargando versiones...'
+                moduleName='documentos'
+                icon={History}
+              />
             ) : versiones.length === 0 ? (
               <div className='flex flex-col items-center justify-center py-12'>
                 <FileText className='mb-3 h-12 w-12 text-gray-400 dark:text-gray-600' />

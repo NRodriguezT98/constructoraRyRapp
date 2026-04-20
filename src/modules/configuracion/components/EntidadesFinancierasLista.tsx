@@ -17,7 +17,6 @@ import {
   Edit2,
   Filter,
   Landmark,
-  Loader2,
   Plus,
   RefreshCw,
   Search,
@@ -25,6 +24,7 @@ import {
 } from 'lucide-react'
 
 import { useModal } from '@/shared/components/modals'
+import { SectionLoadingSpinner } from '@/shared/components/ui'
 
 import {
   useEliminarEntidadFinanciera,
@@ -229,9 +229,11 @@ export function EntidadesFinancierasLista() {
 
   if (isLoading) {
     return (
-      <div className='flex items-center justify-center py-12'>
-        <Loader2 className='h-8 w-8 animate-spin text-blue-600' />
-      </div>
+      <SectionLoadingSpinner
+        label='Cargando entidades...'
+        moduleName='clientes'
+        icon={Building2}
+      />
     )
   }
 

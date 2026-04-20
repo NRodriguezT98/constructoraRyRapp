@@ -43,31 +43,62 @@ import {
 } from '@/modules/clientes/hooks'
 import { useReactivarCliente } from '@/modules/clientes/hooks/useReactivarCliente'
 import { useModal } from '@/shared/components/modals'
-import { Tooltip } from '@/shared/components/ui'
+import { SectionLoadingSpinner, Tooltip } from '@/shared/components/ui'
 
 import * as styles from './cliente-detalle.styles'
 import { EstadoBadge } from './components/EstadoBadge'
-import { TabSpinner } from './components/TabSpinner'
 import { GeneralTab } from './tabs/general-tab'
 
 // Tabs pesados — se cargan solo cuando el usuario los abre
 const InteresesTab = dynamic(
   () => import('./tabs/intereses-tab').then(m => ({ default: m.InteresesTab })),
-  { loading: TabSpinner }
+  {
+    loading: () => (
+      <SectionLoadingSpinner
+        label='Cargando intereses...'
+        moduleName='clientes'
+        icon={Heart}
+      />
+    ),
+  }
 )
 const NegociacionTab = dynamic(
   () =>
     import('./tabs/negociacion-tab').then(m => ({ default: m.NegociacionTab })),
-  { loading: TabSpinner }
+  {
+    loading: () => (
+      <SectionLoadingSpinner
+        label='Cargando negociación...'
+        moduleName='negociaciones'
+        icon={FileText}
+      />
+    ),
+  }
 )
 const DocumentosTab = dynamic(
   () =>
     import('./tabs/documentos-tab').then(m => ({ default: m.DocumentosTab })),
-  { loading: TabSpinner }
+  {
+    loading: () => (
+      <SectionLoadingSpinner
+        label='Cargando documentos...'
+        moduleName='documentos'
+        icon={FileText}
+      />
+    ),
+  }
 )
 const HistorialTab = dynamic(
   () => import('./tabs/historial-tab').then(m => ({ default: m.HistorialTab })),
-  { loading: TabSpinner }
+  {
+    loading: () => (
+      <SectionLoadingSpinner
+        label='Cargando historial...'
+        moduleName='clientes'
+        icon={History}
+      />
+    ),
+  }
 )
 
 interface ClienteDetalleClientProps {
@@ -408,7 +439,7 @@ export default function ClienteDetalleClient({
                   {cliente.estado === 'Activo' &&
                     (() => {
                       const neg = cliente.negociaciones?.find(
-                        n => n.estado === 'Activa' || n.estado === 'En Proceso'
+                        n => n.estado === 'Activa'
                       )
                       if (!neg) return null
                       const proyecto =

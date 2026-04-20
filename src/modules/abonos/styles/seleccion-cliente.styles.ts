@@ -23,7 +23,7 @@ export const seleccionClienteStyles = {
   // 🎨 HEADER HERO
   header: {
     container:
-      'relative overflow-hidden rounded-2xl bg-gradient-to-br from-violet-600 via-purple-600 to-fuchsia-600 dark:from-violet-800 dark:via-purple-900 dark:to-fuchsia-900 p-6 shadow-2xl shadow-violet-500/20',
+      'relative overflow-hidden rounded-2xl bg-gradient-to-br from-violet-600 via-purple-600 to-indigo-600 dark:from-violet-800 dark:via-purple-900 dark:to-indigo-900 p-6 shadow-2xl shadow-violet-500/20',
     pattern:
       'absolute inset-0 bg-grid-white/10 [mask-image:linear-gradient(0deg,transparent,black,transparent)]',
     content: 'relative z-10',
@@ -122,7 +122,7 @@ export const seleccionClienteStyles = {
     container: 'text-center py-16',
     iconWrapper: 'relative inline-block mb-6',
     iconCircle:
-      'w-24 h-24 rounded-3xl bg-gradient-to-br from-violet-500/10 to-fuchsia-500/10 flex items-center justify-center mx-auto',
+      'w-24 h-24 rounded-3xl bg-gradient-to-br from-violet-500/10 to-indigo-500/10 flex items-center justify-center mx-auto',
     icon: 'w-12 h-12 text-violet-500 dark:text-violet-400',
     iconGlow: 'absolute inset-0 blur-3xl bg-violet-500/20 rounded-full',
     title: 'text-xl font-bold text-gray-900 dark:text-gray-100 mb-2',
@@ -145,7 +145,7 @@ export const seleccionClienteStyles = {
 
   // 🎨 GRADIENTES Y COLORES
   gradients: {
-    primary: 'from-violet-600 via-purple-600 to-fuchsia-600',
+    primary: 'from-violet-600 via-purple-600 to-indigo-600',
     secondary: 'from-orange-500 to-amber-500',
     success: 'from-green-500 to-emerald-500',
     warning: 'from-orange-600 to-amber-600',
@@ -160,7 +160,7 @@ export const seleccionClienteStyles = {
 export const metricasIconColors = {
   clientes: {
     gradient: 'from-violet-500 to-purple-600',
-    textGradient: 'from-violet-600 via-purple-600 to-fuchsia-600',
+    textGradient: 'from-violet-600 via-purple-600 to-indigo-600',
     glowColor: 'from-violet-500/20 to-purple-500/20',
   },
   abonado: {

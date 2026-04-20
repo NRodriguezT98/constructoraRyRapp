@@ -193,6 +193,9 @@ async function fetchAbonos(): Promise<AbonoConInfo[]> {
   const { data, error } = await supabase
     .from('vista_abonos_completos')
     .select('*')
+    .order('fecha_abono', { ascending: false })
+    .order('fecha_creacion', { ascending: false })
+    .limit(500)
 
   if (error) {
     logger.error('❌ Error fetching abonos:', error)

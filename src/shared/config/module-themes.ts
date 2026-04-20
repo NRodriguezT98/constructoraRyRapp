@@ -410,24 +410,23 @@ export const moduleThemes: Record<ModuleName, ModuleTheme> = {
     },
   },
 
-  /** 💳 ABONOS - Violet/Púrpura/Fuchsia */
+  /** 💳 ABONOS - Violet/Púrpura/Índigo */
   abonos: {
     name: 'Abonos',
     colors: {
       primary: 'violet',
       secondary: 'purple',
-      tertiary: 'fuchsia',
+      tertiary: 'indigo',
       light: 'violet-50',
       dark: 'violet-900',
     },
     classes: {
       gradient: {
         primary: 'from-violet-600 to-purple-600',
-        triple: 'from-violet-600 via-purple-600 to-fuchsia-600',
-        background: 'from-violet-500 via-purple-500 to-fuchsia-500',
-        backgroundDark: 'from-violet-600 via-purple-600 to-fuchsia-700',
-        hover:
-          'hover:from-violet-700 hover:via-purple-700 hover:to-fuchsia-700',
+        triple: 'from-violet-600 via-purple-600 to-indigo-600',
+        background: 'from-violet-500 via-purple-500 to-indigo-500',
+        backgroundDark: 'from-violet-600 via-purple-600 to-indigo-700',
+        hover: 'hover:from-violet-700 hover:via-purple-700 hover:to-indigo-700',
       },
       button: {
         primary:

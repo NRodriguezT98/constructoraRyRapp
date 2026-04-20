@@ -1,11 +1,12 @@
 ﻿import { useState } from 'react'
 
-import { Calendar, Eye, HardDrive, Loader2, Upload, User } from 'lucide-react'
+import { Calendar, Eye, HardDrive, Upload, User } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { formatDateCompact } from '@/lib/utils/date.utils'
 import { formatFileSize } from '@/lib/utils/format.utils'
 import { logger } from '@/lib/utils/logger'
+import { SectionLoadingSpinner } from '@/shared/components/ui'
 import { Badge } from '@/shared/components/ui/badge'
 import { DocumentosStorageService } from '@/shared/documentos/services/documentos-storage.service'
 import type { DocumentoProyecto } from '@/shared/documentos/types/documento.types'
@@ -58,12 +59,11 @@ export function VersionesList({
 
   if (isLoading) {
     return (
-      <div className='flex flex-col items-center justify-center gap-3 p-8'>
-        <Loader2 className='h-8 w-8 animate-spin text-gray-400' />
-        <p className='text-sm text-gray-500 dark:text-gray-400'>
-          Cargando versiones...
-        </p>
-      </div>
+      <SectionLoadingSpinner
+        label='Cargando versiones...'
+        moduleName='documentos'
+        icon={HardDrive}
+      />
     )
   }
 

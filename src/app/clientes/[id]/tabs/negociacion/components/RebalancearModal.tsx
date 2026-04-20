@@ -21,7 +21,11 @@ import {
   validarRebalanceo,
 } from '@/shared/utils/reglas-cierre-financiero'
 
-import type { AjusteLocal, DatosRebalanceo, FuAlteNueva } from '../hooks'
+import type {
+  AjusteLocal,
+  DatosAjusteCierreFinanciero,
+  FuAlteNueva,
+} from '../hooks'
 import { MOTIVOS_AJUSTE, getFuenteColor } from '../hooks'
 
 import type { CambioEnriquecido, NuevaEnriquecida } from './rebalancear'
@@ -36,7 +40,7 @@ import {
 // COMPONENTE PRINCIPAL
 // ============================================
 
-interface RebalancearModalProps {
+interface AjusteCierreFinancieroModalProps {
   isOpen: boolean
   onClose: () => void
   fuentesPago: FuentePago[]
@@ -56,11 +60,11 @@ interface RebalancearModalProps {
   requisitosMap: Map<string, string[]>
   /** Mapa tipo_entidad → nombres de entidades financieras (cargado desde BD) */
   entidadesPorTipoEntidad: Map<string, string[]>
-  onGuardar: (datos: DatosRebalanceo) => void
+  onGuardar: (datos: DatosAjusteCierreFinanciero) => void
   isGuardando: boolean
 }
 
-export function RebalancearModal({
+export function AjusteCierreFinancieroModal({
   isOpen,
   onClose,
   fuentesPago,
@@ -71,7 +75,7 @@ export function RebalancearModal({
   entidadesPorTipoEntidad,
   onGuardar,
   isGuardando,
-}: RebalancearModalProps) {
+}: AjusteCierreFinancieroModalProps) {
   // ── Estado local ──────────────────────────────────────────
   const [ajustes, setAjustes] = useState<AjusteLocal[]>([])
   const [nuevas, setNuevas] = useState<FuAlteNueva[]>([])

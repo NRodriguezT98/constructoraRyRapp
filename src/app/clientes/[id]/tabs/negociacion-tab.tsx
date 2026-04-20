@@ -39,16 +39,16 @@ import type { AbonoParaEditar } from '@/modules/abonos/types/editar-abono.types'
 import type { Cliente } from '@/modules/clientes/types'
 import { CuotasCreditoTab } from '@/modules/fuentes-pago/components/CuotasCreditoTab'
 import { RegistrarRenunciaModal } from '@/modules/renuncias/components/modals/RegistrarRenunciaModal'
+import { SectionLoadingSpinner } from '@/shared/components/ui'
 import { esCreditoConstructora } from '@/shared/constants/fuentes-pago.constants'
 import { formatCurrency } from '@/shared/utils/format'
 
 import {
   AbonosRecientes,
+  AjusteCierreFinancieroModal,
   DescuentoModal,
   FuenteMiniCard,
   NegociacionCerradaRenuncia,
-  NegociacionSkeleton,
-  RebalancearModal,
   SinNegociacion,
 } from './negociacion/components'
 import { LABELS_TIPO_DESCUENTO, useNegociacionTab } from './negociacion/hooks'
@@ -92,12 +92,12 @@ export function NegociacionTab({
     entidadesPorTipoEntidad,
     isLoading,
     isLoadingAbonos,
-    isRebalanceando,
+    isAjustando,
     isAdmin,
-    modalRebalancearOpen,
-    openRebalancear,
-    closeRebalancear,
-    handleGuardarRebalanceo,
+    modalAjusteOpen,
+    openAjuste,
+    closeAjuste,
+    handleGuardarAjuste,
     modalDescuentoOpen,
     openDescuento,
     closeDescuento,
@@ -110,7 +110,14 @@ export function NegociacionTab({
     refetchAbonos,
   } = useNegociacionTab({ cliente })
 
-  if (isLoading) return <NegociacionSkeleton />
+  if (isLoading)
+    return (
+      <SectionLoadingSpinner
+        label='Cargando negociación...'
+        moduleName='negociaciones'
+        icon={FileText}
+      />
+    )
   if (!negociacion) return <SinNegociacion />
 
   if (negociacion.estado === 'Cerrada por Renuncia')
@@ -385,7 +392,7 @@ export function NegociacionTab({
                 </button>
               ) : null}
               <button
-                onClick={openRebalancear}
+                onClick={openAjuste}
                 className='inline-flex items-center gap-1.5 rounded-lg border border-cyan-300 bg-cyan-50 px-3 py-1.5 text-[11px] font-semibold text-cyan-800 shadow-sm transition-colors hover:bg-cyan-100 hover:shadow dark:border-cyan-700/50 dark:bg-cyan-900/30 dark:text-cyan-300 dark:hover:bg-cyan-900/40'
               >
                 <SlidersHorizontal className='h-3.5 w-3.5' />
@@ -428,7 +435,7 @@ export function NegociacionTab({
                 </div>
                 {isAdmin ? (
                   <button
-                    onClick={openRebalancear}
+                    onClick={openAjuste}
                     className='flex-shrink-0 rounded-lg bg-red-600 px-3 py-1.5 text-[11px] font-semibold text-white shadow-sm transition-colors hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-600'
                   >
                     Corregir ahora
@@ -515,6 +522,7 @@ export function NegociacionTab({
                     negociacionId={negociacion.id}
                     montoFuente={creditoExpandido.monto_aprobado}
                     onPagoCuotaRegistrado={() => refetchFuentes()}
+                    isAdmin={isAdmin}
                   />
                 </div>
               ) : null}
@@ -595,17 +603,17 @@ export function NegociacionTab({
 
       {/* Modal Admin: Redistribuir montos */}
       {isAdmin ? (
-        <RebalancearModal
-          isOpen={modalRebalancearOpen}
-          onClose={closeRebalancear}
+        <AjusteCierreFinancieroModal
+          isOpen={modalAjusteOpen}
+          onClose={closeAjuste}
           fuentesPago={fuentesPago}
           valorVivienda={valorVivienda}
           tiposDisponibles={tiposDisponibles}
           tiposConfig={tiposConfigConEntidad}
           requisitosMap={requisitosMap}
           entidadesPorTipoEntidad={entidadesPorTipoEntidad}
-          onGuardar={handleGuardarRebalanceo}
-          isGuardando={isRebalanceando}
+          onGuardar={handleGuardarAjuste}
+          isGuardando={isAjustando}
         />
       ) : null}
 

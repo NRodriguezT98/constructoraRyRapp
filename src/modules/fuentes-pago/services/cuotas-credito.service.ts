@@ -7,6 +7,7 @@
  */
 
 import { supabase } from '@/lib/supabase/client'
+import type { Json } from '@/lib/supabase/database.types'
 
 import type {
   CuotaCalculo,
@@ -95,46 +96,57 @@ export async function crearCuotasCredito(
 // REESTRUCTURACIÓN
 // ============================================================
 
+// ============================================================
+// REESTRUCTURACIÓN (RPC atómica)
+// ============================================================
+
+export interface PayloadReestructuracion {
+  fuente_pago_id: string
+  credito_id: string
+  usuario_id: string | null
+  capital_pendiente: number
+  nueva_tasa_mensual: number
+  nuevas_num_cuotas: number
+  nuevo_monto_total: number
+  nuevo_valor_cuota: number
+  nuevo_interes_total: number
+  nueva_version: number
+  motivo: string
+  notas: string | null
+  cuotas: Array<{
+    numero_cuota: number
+    fecha_vencimiento: string
+    valor_cuota: number
+  }>
+}
+
 /**
- * Reestructura el crédito:
- * 1. Elimina cuotas del plan anterior
- * 2. Inserta el nuevo calendario
+ * Reestructuración atómica via RPC.
  *
- * Sincroniza monto_aprobado = deuda total (capital + intereses) y
- * capital_para_cierre = solo capital. Así saldo_pendiente refleja la deuda
- * real y el trigger de negociación capea al capital para el balance.
+ * La función SQL ejecuta en una única transacción:
+ *   - Elimina cuotas del plan anterior
+ *   - Actualiza creditos_constructora con nuevos términos
+ *   - Actualiza fuentes_pago.monto_aprobado (sin tocar capital_para_cierre)
+ *   - Inserta el nuevo calendario de cuotas
+ *   - Registra audit_log con snapshot y motivo
  */
 export async function reestructurarCredito(
-  fuentePagoId: string,
-  nuevasCuotas: CuotaCalculo[],
-  nuevoMontoTotal: number,
-  nuevoCapital: number,
-  nuevaVersion: number
+  payload: PayloadReestructuracion
 ): Promise<{ error: Error | null }> {
-  const { error: e1 } = await supabase
-    .from('cuotas_credito')
-    .delete()
-    .eq('fuente_pago_id', fuentePagoId)
-    .lt('version_plan', nuevaVersion)
+  const { data, error } = await supabase.rpc('reestructurar_credito', {
+    p_payload: payload as unknown as Json,
+  })
 
-  if (e1)
-    return { error: new Error(`Error eliminando plan anterior: ${e1.message}`) }
+  if (error) return { error: new Error(error.message) }
 
-  // Sincronizar fuentes_pago con los nuevos parámetros del crédito:
-  // - monto_aprobado = deuda total (capital + intereses) → saldo_pendiente real
-  // - capital_para_cierre = capital puro → para balance de la negociación
-  const { error: e2 } = await supabase
-    .from('fuentes_pago')
-    .update({
-      monto_aprobado: nuevoMontoTotal,
-      capital_para_cierre: nuevoCapital,
-    })
-    .eq('id', fuentePagoId)
-
-  if (e2)
+  const result = data as { success: boolean; error?: string } | null
+  if (!result?.success) {
     return {
-      error: new Error(`Error actualizando monto del crédito: ${e2.message}`),
+      error: new Error(
+        result?.error ?? 'Error desconocido en reestructurar_credito'
+      ),
     }
+  }
 
-  return crearCuotasCredito(fuentePagoId, nuevasCuotas, nuevaVersion)
+  return { error: null }
 }

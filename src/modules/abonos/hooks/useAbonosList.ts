@@ -1,0 +1,243 @@
+'use client'
+
+import { useCallback, useEffect, useMemo, useState } from 'react'
+
+import { useAbonosQuery, type AbonoConInfo } from './useAbonosQuery'
+
+// Re-export para consumidores externos
+export type { AbonoConInfo }
+
+export const PAGE_SIZE = 10
+export const PAGE_SIZE_OPTIONS = [10, 25, 50] as const
+export type PageSizeOption = (typeof PAGE_SIZE_OPTIONS)[number]
+
+export interface FiltrosAbonos {
+  busqueda: string
+  fuente: string // nombre de fuente o 'todas'
+  mes: string // 'YYYY-MM' o 'todos'
+  mostrarActivos: boolean
+  mostrarAnulados: boolean
+  mostrarRenunciados: boolean
+}
+
+export interface EstadisticasAbonos {
+  totalAbonos: number
+  montoTotal: number
+  montoEsteMes: number
+  abonosEsteMes: number
+}
+
+/**
+ * 🎣 HOOK: useAbonosList
+ *
+ * Wrapper de presentación sobre useAbonosQuery (React Query).
+ * Agrega filtrado local, paginación, estadísticas y meses disponibles.
+ */
+export function useAbonosList() {
+  const {
+    abonos,
+    cargando: isLoading,
+    error: queryError,
+    refrescar,
+  } = useAbonosQuery()
+
+  const [filtros, setFiltros] = useState<FiltrosAbonos>({
+    busqueda: '',
+    fuente: 'todas',
+    mes: 'todos',
+    mostrarActivos: true,
+    mostrarAnulados: false,
+    mostrarRenunciados: false,
+  })
+
+  const [paginaActual, setPaginaActual] = useState(1)
+  const [pageSize, setPageSize] = useState<PageSizeOption>(PAGE_SIZE)
+
+  // Desestructurar para deps primitivas en useEffect
+  const {
+    busqueda,
+    fuente,
+    mes,
+    mostrarActivos,
+    mostrarAnulados,
+    mostrarRenunciados,
+  } = filtros
+
+  // Resetear a página 1 al cambiar cualquier filtro o tamaño de página
+  useEffect(() => {
+    setPaginaActual(1)
+  }, [
+    busqueda,
+    fuente,
+    mes,
+    mostrarActivos,
+    mostrarAnulados,
+    mostrarRenunciados,
+    pageSize,
+  ])
+
+  /**
+   * 🔍 Filtrar abonos según criterios
+   */
+  const abonosFiltrados = useMemo(() => {
+    let resultado = [...abonos]
+
+    // Filtrado por categoría (checklist): activos, anulados, renunciados
+    resultado = resultado.filter(a => {
+      const esAnulado = a.estado === 'Anulado'
+      const esDeRenuncia = a.negociacion?.estado === 'Cerrada por Renuncia'
+
+      // Anulados tienen prioridad: un abono anulado de renuncia → anulado
+      if (esAnulado) return filtros.mostrarAnulados
+      if (esDeRenuncia) return filtros.mostrarRenunciados
+      return filtros.mostrarActivos
+    })
+
+    // Filtro por búsqueda (nombre, CC o RYR-XXXX)
+    if (filtros.busqueda.trim()) {
+      const termino = filtros.busqueda.toLowerCase().trim()
+      resultado = resultado.filter(abono => {
+        const nombreCompleto =
+          `${abono.cliente.nombres} ${abono.cliente.apellidos}`.toLowerCase()
+        const documento = abono.cliente.numero_documento.toLowerCase()
+        const recibo =
+          `ryr-${String(abono.numero_recibo).padStart(4, '0')}`.toLowerCase()
+        return (
+          nombreCompleto.includes(termino) ||
+          documento.includes(termino) ||
+          recibo.includes(termino)
+        )
+      })
+    }
+
+    // Filtro por fuente de pago
+    if (filtros.fuente && filtros.fuente !== 'todas') {
+      resultado = resultado.filter(
+        abono => abono.fuente_pago.tipo === filtros.fuente
+      )
+    }
+
+    // Filtro por mes (YYYY-MM)
+    if (filtros.mes && filtros.mes !== 'todos') {
+      resultado = resultado.filter(abono => {
+        const fechaMes = abono.fecha_abono.substring(0, 7)
+        return fechaMes === filtros.mes
+      })
+    }
+
+    return resultado
+  }, [abonos, filtros])
+
+  // ─── Paginación ──────────────────────────────────────────────────────────
+  const totalFiltrado = abonosFiltrados.length
+  const totalPaginas = Math.max(1, Math.ceil(totalFiltrado / pageSize))
+
+  const abonosPaginados = useMemo(() => {
+    const inicio = (paginaActual - 1) * pageSize
+    return abonosFiltrados.slice(inicio, inicio + pageSize)
+  }, [abonosFiltrados, paginaActual, pageSize])
+
+  // ─── Estadísticas (sobre el total filtrado, no solo la página actual) ───
+  const estadisticas = useMemo<EstadisticasAbonos>(() => {
+    const ahora = new Date()
+    const inicioMes = new Date(ahora.getFullYear(), ahora.getMonth(), 1)
+
+    const abonosEsteMes = abonosFiltrados.filter(abono => {
+      const fechaAbono = new Date(abono.fecha_abono)
+      return fechaAbono >= inicioMes
+    })
+
+    return {
+      totalAbonos: abonosFiltrados.length,
+      montoTotal: abonosFiltrados.reduce(
+        (sum, abono) => sum + Number(abono.monto),
+        0
+      ),
+      montoEsteMes: abonosEsteMes.reduce(
+        (sum, abono) => sum + Number(abono.monto),
+        0
+      ),
+      abonosEsteMes: abonosEsteMes.length,
+    }
+  }, [abonosFiltrados])
+
+  // ─── Control de filtros ───────────────────────────────────────────────────
+  const actualizarFiltros = (nuevosFiltros: Partial<FiltrosAbonos>) => {
+    setFiltros(prev => ({ ...prev, ...nuevosFiltros }))
+  }
+
+  const limpiarFiltros = () => {
+    setFiltros({
+      busqueda: '',
+      fuente: 'todas',
+      mes: 'todos',
+      mostrarActivos: true,
+      mostrarAnulados: false,
+      mostrarRenunciados: false,
+    })
+  }
+
+  const toggleMostrarActivos = useCallback(() => {
+    setFiltros(prev => ({ ...prev, mostrarActivos: !prev.mostrarActivos }))
+  }, [])
+
+  const toggleMostrarAnulados = useCallback(() => {
+    setFiltros(prev => ({ ...prev, mostrarAnulados: !prev.mostrarAnulados }))
+  }, [])
+
+  const toggleMostrarRenunciados = useCallback(() => {
+    setFiltros(prev => ({
+      ...prev,
+      mostrarRenunciados: !prev.mostrarRenunciados,
+    }))
+  }, [])
+
+  const fuentesUnicas = useMemo(() => {
+    const set = new Set<string>()
+    abonos.forEach(a => {
+      if (a.fuente_pago.tipo) set.add(a.fuente_pago.tipo)
+    })
+    return Array.from(set).sort()
+  }, [abonos])
+
+  const mesesDisponibles = useMemo(() => {
+    const meses: { value: string; label: string }[] = []
+    const ahora = new Date()
+    for (let i = 0; i < 12; i++) {
+      const d = new Date(ahora.getFullYear(), ahora.getMonth() - i, 1)
+      const value = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+      const label = d.toLocaleDateString('es-CO', {
+        month: 'long',
+        year: 'numeric',
+      })
+      meses.push({
+        value,
+        label: label.charAt(0).toUpperCase() + label.slice(1),
+      })
+    }
+    return meses
+  }, [])
+
+  return {
+    abonos: abonosPaginados,
+    abonosCompletos: abonos,
+    estadisticas,
+    fuentesUnicas,
+    mesesDisponibles,
+    filtros,
+    actualizarFiltros,
+    limpiarFiltros,
+    toggleMostrarActivos,
+    toggleMostrarAnulados,
+    toggleMostrarRenunciados,
+    paginaActual,
+    totalPaginas,
+    totalFiltrado,
+    setPaginaActual,
+    pageSize,
+    setPageSize,
+    isLoading,
+    error: queryError?.message ?? null,
+    refetch: refrescar,
+  }
+}

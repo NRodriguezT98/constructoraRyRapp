@@ -3,6 +3,8 @@
 import { motion } from 'framer-motion'
 import { DollarSign, TrendingUp, Users, Wallet } from 'lucide-react'
 
+import { Tooltip } from '@/shared/components/ui'
+
 import {
   metricasIconColors as colors,
   seleccionClienteStyles as styles,
@@ -33,16 +35,20 @@ export function AbonosMetricasPremium({
     {
       icon: Users,
       label: 'Clientes Activos',
+      tooltip:
+        'Clientes con una negociacion activa registrada actualmente en el sistema',
       displayValue: totalClientes.toString(),
       bg: `bg-gradient-to-br ${colors.clientes.gradient}`,
       shadow: 'shadow-violet-500/50',
       value:
-        'bg-gradient-to-br from-violet-600 via-purple-600 to-fuchsia-600 bg-clip-text text-transparent',
+        'bg-gradient-to-br from-violet-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent',
       glow: colors.clientes.glowColor,
     },
     {
       icon: DollarSign,
       label: 'Total Abonado',
+      tooltip:
+        'Suma de todos los pagos recibidos de los clientes activos hasta hoy',
       displayValue: formatCOP(totalAbonado),
       bg: `bg-gradient-to-br ${colors.abonado.gradient}`,
       shadow: 'shadow-green-500/50',
@@ -53,6 +59,8 @@ export function AbonosMetricasPremium({
     {
       icon: TrendingUp,
       label: 'Total Ventas',
+      tooltip:
+        'Suma del valor de todas las viviendas comprometidas en negociaciones activas',
       displayValue: formatCOP(totalVentas),
       bg: `bg-gradient-to-br ${colors.ventas.gradient}`,
       shadow: 'shadow-purple-500/50',
@@ -63,6 +71,8 @@ export function AbonosMetricasPremium({
     {
       icon: Wallet,
       label: 'Saldo Pendiente',
+      tooltip:
+        'Valor total pendiente por recaudar de las negociaciones activas.p',
       displayValue: formatCOP(saldoPendiente),
       bg: `bg-gradient-to-br ${colors.pendiente.gradient}`,
       shadow: 'shadow-orange-500/50',
@@ -80,27 +90,33 @@ export function AbonosMetricasPremium({
       className={styles.metricas.grid}
     >
       {items.map(item => (
-        <motion.div
+        <Tooltip
           key={item.label}
-          whileHover={{ scale: 1.02, y: -4 }}
-          transition={{ type: 'spring', stiffness: 300 }}
-          className={styles.metricas.card}
+          content={item.tooltip}
+          side='bottom'
+          delayDuration={400}
         >
-          <div className={`${styles.metricas.cardGlow} ${item.glow}`} />
-          <div className={styles.metricas.content}>
-            <div
-              className={`${styles.metricas.iconCircle} ${item.bg} ${item.shadow}`}
-            >
-              <item.icon className={styles.metricas.icon} />
+          <motion.div
+            whileHover={{ scale: 1.02, y: -4 }}
+            transition={{ type: 'spring', stiffness: 300 }}
+            className={styles.metricas.card}
+          >
+            <div className={`${styles.metricas.cardGlow} ${item.glow}`} />
+            <div className={styles.metricas.content}>
+              <div
+                className={`${styles.metricas.iconCircle} ${item.bg} ${item.shadow}`}
+              >
+                <item.icon className={styles.metricas.icon} />
+              </div>
+              <div className={styles.metricas.textGroup}>
+                <p className={`${styles.metricas.value} ${item.value}`}>
+                  {item.displayValue}
+                </p>
+                <p className={styles.metricas.label}>{item.label}</p>
+              </div>
             </div>
-            <div className={styles.metricas.textGroup}>
-              <p className={`${styles.metricas.value} ${item.value}`}>
-                {item.displayValue}
-              </p>
-              <p className={styles.metricas.label}>{item.label}</p>
-            </div>
-          </div>
-        </motion.div>
+          </motion.div>
+        </Tooltip>
       ))}
     </motion.div>
   )

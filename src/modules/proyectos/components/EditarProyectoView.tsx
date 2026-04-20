@@ -1,6 +1,6 @@
 'use client'
 
-import { Edit3, Loader2 } from 'lucide-react'
+import { Building2, Edit3 } from 'lucide-react'
 
 import Link from 'next/link'
 
@@ -12,6 +12,7 @@ import {
   AccordionWizardSuccess,
 } from '@/shared/components/accordion-wizard'
 import { ConfirmarCambiosModal } from '@/shared/components/modulos/ConfirmarCambiosModal'
+import { SectionLoadingSpinner } from '@/shared/components/ui'
 
 import {
   PASOS_PROYECTO_EDICION,
@@ -80,12 +81,11 @@ export function EditarProyectoView({
   if (isLoading) {
     return (
       <div className='flex min-h-screen items-center justify-center'>
-        <div className='space-y-3 text-center'>
-          <Loader2 className='mx-auto h-10 w-10 animate-spin text-green-500' />
-          <p className='text-sm text-gray-600 dark:text-gray-400'>
-            Cargando datos del proyecto...
-          </p>
-        </div>
+        <SectionLoadingSpinner
+          label='Cargando datos del proyecto...'
+          moduleName='proyectos'
+          icon={Building2}
+        />
       </div>
     )
   }

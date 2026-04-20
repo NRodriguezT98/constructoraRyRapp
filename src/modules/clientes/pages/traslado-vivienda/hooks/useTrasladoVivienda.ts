@@ -270,18 +270,23 @@ export function useTrasladoVivienda({
       }
 
       // 2. Pre-configurar con el monto mínimo obligatorio
-      const capital = fOblig.monto_recibido
+      // NOTA: Para crédito constructora usamos el capital ORIGINAL del crédito como
+      // punto de partida (no monto_recibido, que incluye intereses y sobreestimaría
+      // el capital pendiente). El usuario puede ajustarlo; la validación del hook
+      // garantiza que el capital final no sea menor a monto_recibido.
+      const capitalMinimo = fOblig.monto_recibido
+      const capitalInicial = fOblig.parametrosCredito?.capital ?? capitalMinimo
 
       if (esCredito) {
         // Usar parámetros originales del crédito existente si están disponibles.
-        // El capital se reemplaza por el mínimo obligatorio (monto_recibido),
-        // pero tasa, mora y fecha se toman del crédito original para no sorprender al usuario.
+        // capital: capital original del crédito (punto de partida editable por el usuario)
+        // tasa, mora y número de cuotas: se toman del crédito original para no sorprender al usuario
         const orig = fOblig.parametrosCredito
         const fechaInicio = orig?.fechaInicio
           ? new Date(orig.fechaInicio + 'T12:00:00')
           : new Date(getTodayDateString() + 'T12:00:00')
         const parametrosCredito: ParametrosCredito = {
-          capital,
+          capital: capitalInicial,
           tasaMensual: orig?.tasaMensual ?? 1.5,
           numCuotas: orig?.numCuotas ?? 12,
           fechaInicio,
@@ -289,20 +294,23 @@ export function useTrasladoVivienda({
         }
         handleFuenteConfigChange(tipo, {
           tipo,
-          monto_aprobado: capital,
-          capital_para_cierre: capital,
+          monto_aprobado: capitalInicial,
+          capital_para_cierre: capitalInicial,
           parametrosCredito,
           permite_multiples_abonos: permiteMultiples,
+          campos: {},
         })
       } else {
-        // Para fuentes regulares: pre-llenar monto_aprobado
+        // Para fuentes regulares: pre-llenar monto_aprobado con el mínimo obligatorio (ya abonado)
         const camposConfig = tipoConCampos?.configuracion_campos?.campos ?? []
         const campoCampoMonto = camposConfig.find(c => c.rol === 'monto')
         handleFuenteConfigChange(tipo, {
           tipo,
-          monto_aprobado: capital,
+          monto_aprobado: capitalMinimo,
           permite_multiples_abonos: permiteMultiples,
-          campos: campoCampoMonto ? { [campoCampoMonto.nombre]: capital } : {},
+          campos: campoCampoMonto
+            ? { [campoCampoMonto.nombre]: capitalMinimo }
+            : {},
         })
       }
     }
@@ -382,7 +390,7 @@ export function useTrasladoVivienda({
         continue
       }
 
-      // Para crédito con la constructora usar capital_para_cierre (no el total con intereses)
+      // Para fuentes sin genera_cuotas (Cuota Inicial, etc.): verificar monto directo
       const monto = fDest.config
         ? obtenerMontoParaCierre(fDest.config, tipoConCampos, camposConfig)
         : 0

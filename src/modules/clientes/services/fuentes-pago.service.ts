@@ -191,6 +191,15 @@ class FuentesPagoService {
   ): Promise<FuentePago> {
     const datosSanitizados = sanitizeActualizarFuentePagoServiceDTO(datos)
 
+    // Validar balance si se cambia algún monto que afecta total_fuentes_pago
+    const cambiaMontoFinanciero =
+      datosSanitizados.monto_aprobado !== undefined ||
+      'capital_para_cierre' in datosSanitizados
+
+    if (cambiaMontoFinanciero) {
+      await this.validarBalanceNegociacion(id, datosSanitizados)
+    }
+
     const { data, error } = await supabase
       .from('fuentes_pago')
       .update(datosSanitizados)
@@ -200,6 +209,76 @@ class FuentesPagoService {
 
     if (error) throw error
     return data as unknown as FuentePago
+  }
+
+  /**
+   * Valida que cambiar el monto de una fuente no rompa el balance de la negociación.
+   * total_fuentes_pago = SUM(COALESCE(capital_para_cierre, monto_aprobado)) debe
+   * seguir igualando negociaciones.valor_total_pagar después del cambio.
+   */
+  private async validarBalanceNegociacion(
+    fuenteId: string,
+    datos: Pick<
+      ActualizarFuentePagoDTO,
+      'monto_aprobado' | 'capital_para_cierre'
+    >
+  ): Promise<void> {
+    // 1. Obtener fuente actual + negociación
+    const { data: fuenteActual, error: errFuente } = await supabase
+      .from('fuentes_pago')
+      .select('negociacion_id, capital_para_cierre, monto_aprobado')
+      .eq('id', fuenteId)
+      .single()
+
+    if (errFuente || !fuenteActual) return
+
+    const { data: negociacion, error: errNeg } = await supabase
+      .from('negociaciones')
+      .select('valor_total_pagar')
+      .eq('id', fuenteActual.negociacion_id)
+      .single()
+
+    if (errNeg || !negociacion) return
+
+    // 2. Obtener todas las demás fuentes activas
+    const { data: otrasFuentes, error: errOtras } = await supabase
+      .from('fuentes_pago')
+      .select('capital_para_cierre, monto_aprobado')
+      .eq('negociacion_id', fuenteActual.negociacion_id)
+      .eq('estado', 'Activa')
+      .neq('id', fuenteId)
+
+    if (errOtras || !otrasFuentes) return
+
+    // 3. Calcular capital efectivo de esta fuente después del cambio
+    // Misma lógica que el trigger: COALESCE(capital_para_cierre, monto_aprobado)
+    const nuevoCapitalParaCierre =
+      'capital_para_cierre' in datos
+        ? datos.capital_para_cierre
+        : fuenteActual.capital_para_cierre
+    const nuevoMontoAprobado =
+      datos.monto_aprobado ?? Number(fuenteActual.monto_aprobado)
+    const capitalEfectivoNuevo = nuevoCapitalParaCierre ?? nuevoMontoAprobado
+
+    // 4. Calcular nuevo total de la negociación
+    const sumaOtras = otrasFuentes.reduce(
+      (sum, f) => sum + Number(f.capital_para_cierre ?? f.monto_aprobado ?? 0),
+      0
+    )
+    const nuevoTotal = sumaOtras + capitalEfectivoNuevo
+    const valorEsperado = Number(negociacion.valor_total_pagar)
+    const diferencia = Math.abs(nuevoTotal - valorEsperado)
+
+    if (diferencia > 1) {
+      const fmt = (n: number) => '$' + Math.round(n).toLocaleString('es-CO')
+      throw new Error(
+        `El cambio rompería el balance financiero de la negociación. ` +
+          `Nuevo total de fuentes: ${fmt(nuevoTotal)} ≠ ` +
+          `Valor de la negociación: ${fmt(valorEsperado)} ` +
+          `(diferencia: ${fmt(nuevoTotal - valorEsperado)}). ` +
+          `Ajuste las demás fuentes antes de modificar este monto.`
+      )
+    }
   }
 
   /** Registrar monto recibido (abono) */

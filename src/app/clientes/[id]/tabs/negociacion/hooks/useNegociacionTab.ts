@@ -24,7 +24,7 @@ import { useCierreFinanciero } from '@/shared/hooks/useCierreFinanciero'
 
 import { useDescuentoMutation } from './useDescuentoMutation'
 import { useDocumentosPendientesNeg } from './useDocumentosPendientesNeg'
-import { useRebalanceoMutation } from './useRebalanceoMutation'
+import { useAjusteCierreFinanciero } from './useRebalanceoMutation'
 
 /**
  * @deprecated Use `getFuenteColorClasses` from `@/shared/constants/fuentes-pago.constants`
@@ -74,7 +74,7 @@ export interface FuAlteNueva {
   entidad: string
 }
 
-export interface DatosRebalanceo {
+export interface DatosAjusteCierreFinanciero {
   ajustes: AjusteLocal[]
   nuevas: FuAlteNueva[]
   motivo: string
@@ -277,7 +277,7 @@ export function useNegociacionTab({ cliente }: UseNegociacionTabProps) {
   }, [fuentesPago, tiposFuentes])
 
   // ─── Rebalanceo mutation (sub-hook, RPC atómica) ───────────────────────
-  const rebalanceo = useRebalanceoMutation({
+  const rebalanceo = useAjusteCierreFinanciero({
     negociacionId: negociacion?.id,
     clienteId: cliente.id,
     valorVivienda,

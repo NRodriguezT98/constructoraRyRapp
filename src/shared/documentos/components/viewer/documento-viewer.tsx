@@ -18,6 +18,7 @@ import {
 import { createPortal } from 'react-dom'
 
 import { formatDateCompact } from '@/lib/utils/date.utils'
+import { SectionLoadingSpinner } from '@/shared/components/ui'
 import { moduleThemes, type ModuleName } from '@/shared/config/module-themes'
 
 import {
@@ -178,19 +179,12 @@ export function DocumentoViewer({
                       </div>
                     ) : (
                       // Estado de carga mientras se genera la signed URL
-                      <div className='flex h-full items-center justify-center'>
-                        <div className='text-center'>
-                          <div className='mb-4 inline-flex rounded-2xl bg-white p-6 shadow-lg dark:bg-gray-700'>
-                            <div className='h-16 w-16 animate-spin rounded-full border-4 border-gray-200 border-t-blue-500 dark:border-gray-600 dark:border-t-blue-400' />
-                          </div>
-                          <h3 className='mb-2 text-xl font-semibold text-gray-900 dark:text-white'>
-                            Cargando vista previa...
-                          </h3>
-                          <p className='text-gray-600 dark:text-gray-400'>
-                            Generando URL segura del documento
-                          </p>
-                        </div>
-                      </div>
+                      <SectionLoadingSpinner
+                        label='Generando URL segura del documento...'
+                        moduleName='documentos'
+                        icon={FileText}
+                        className='flex h-full flex-col items-center justify-center gap-6'
+                      />
                     )
                   ) : (
                     <div className='flex h-full items-center justify-center'>

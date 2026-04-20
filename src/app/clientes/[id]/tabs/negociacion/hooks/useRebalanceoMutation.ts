@@ -17,27 +17,32 @@ import { supabase } from '@/lib/supabase/client'
 import { logger } from '@/lib/utils/logger'
 import { documentosPendientesKeys } from '@/modules/clientes/types/documentos-pendientes.types'
 
-import type { DatosRebalanceo } from './useNegociacionTab'
+import type { DatosAjusteCierreFinanciero } from './useNegociacionTab'
 
-interface UseRebalanceoMutationProps {
+interface UseAjusteCierreFinancieroProps {
   negociacionId?: string
   clienteId: string
   valorVivienda: number
 }
 
-export function useRebalanceoMutation({
+export function useAjusteCierreFinanciero({
   negociacionId,
   clienteId,
   valorVivienda,
-}: UseRebalanceoMutationProps) {
+}: UseAjusteCierreFinancieroProps) {
   const queryClient = useQueryClient()
-  const [modalRebalancearOpen, setModalRebalancearOpen] = useState(false)
+  const [modalAjusteOpen, setModalAjusteOpen] = useState(false)
 
-  const openRebalancear = useCallback(() => setModalRebalancearOpen(true), [])
-  const closeRebalancear = useCallback(() => setModalRebalancearOpen(false), [])
+  const openAjuste = useCallback(() => setModalAjusteOpen(true), [])
+  const closeAjuste = useCallback(() => setModalAjusteOpen(false), [])
 
-  const rebalancearMutation = useMutation({
-    mutationFn: async ({ ajustes, nuevas, motivo, notas }: DatosRebalanceo) => {
+  const ajusteMutation = useMutation({
+    mutationFn: async ({
+      ajustes,
+      nuevas,
+      motivo,
+      notas,
+    }: DatosAjusteCierreFinanciero) => {
       // Obtener usuario actual
       const {
         data: { user },
@@ -90,11 +95,11 @@ export function useRebalanceoMutation({
         queryKey: ['docs-pendientes-neg-tab', clienteId],
       })
       toast.success('Cierre financiero ajustado correctamente')
-      closeRebalancear()
+      closeAjuste()
     },
     onError: (error: Error) => {
       logger.error(
-        '[useRebalanceoMutation] Error en rebalanceo:',
+        '[useAjusteCierreFinanciero] Error al ajustar cierre financiero:',
         error.message
       )
       toast.error(
@@ -105,10 +110,10 @@ export function useRebalanceoMutation({
   })
 
   return {
-    modalRebalancearOpen,
-    openRebalancear,
-    closeRebalancear,
-    isRebalanceando: rebalancearMutation.isPending,
-    handleGuardarRebalanceo: rebalancearMutation.mutate,
+    modalAjusteOpen,
+    openAjuste,
+    closeAjuste,
+    isAjustando: ajusteMutation.isPending,
+    handleGuardarAjuste: ajusteMutation.mutate,
   }
 }

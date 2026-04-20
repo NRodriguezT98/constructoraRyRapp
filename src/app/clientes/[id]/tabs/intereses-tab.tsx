@@ -36,6 +36,7 @@ import {
 import { ModalDescartarInteres } from '@/modules/clientes/components/modals/modal-descartar-interes'
 import { useInteresesTab } from '@/modules/clientes/hooks'
 import type { Cliente } from '@/modules/clientes/types'
+import { SectionLoadingSpinner } from '@/shared/components/ui'
 
 import { interesesTabStyles } from './intereses-tab.styles'
 
@@ -76,14 +77,11 @@ export function InteresesTab({
 
   if (loading) {
     return (
-      <div className='flex items-center justify-center py-10'>
-        <div className='text-center'>
-          <div className='mx-auto h-10 w-10 animate-spin rounded-full border-4 border-cyan-200 border-t-cyan-600'></div>
-          <p className='mt-3 text-xs text-gray-600 dark:text-gray-400'>
-            Cargando intereses...
-          </p>
-        </div>
-      </div>
+      <SectionLoadingSpinner
+        label='Cargando intereses...'
+        moduleName='clientes'
+        icon={Heart}
+      />
     )
   }
 

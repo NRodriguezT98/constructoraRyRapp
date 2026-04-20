@@ -10,7 +10,9 @@
 
 import { useMemo, useState } from 'react'
 
-import { Loader2 } from 'lucide-react'
+import { CreditCard } from 'lucide-react'
+
+import { SectionLoadingSpinner } from '@/shared/components/ui'
 
 import { useCuotasCredito } from '../hooks/useCuotasCredito'
 
@@ -30,6 +32,11 @@ interface CuotasCreditoTabProps {
    * Usar en Abonos (solo informar). Quitar en Cierre Financiero / Negociación.
    */
   readonly?: boolean
+  /**
+   * Solo los administradores pueden reestructurar un crédito.
+   * Si es false (por defecto), el botón Reestructurar queda oculto.
+   */
+  isAdmin?: boolean
 }
 
 export function CuotasCreditoTab({
@@ -37,6 +44,7 @@ export function CuotasCreditoTab({
   negociacionId,
   montoFuente,
   readonly = false,
+  isAdmin = false,
 }: CuotasCreditoTabProps) {
   const {
     credito,
@@ -71,12 +79,11 @@ export function CuotasCreditoTab({
 
   if (cargando) {
     return (
-      <div className='flex items-center justify-center py-12'>
-        <Loader2 className='h-6 w-6 animate-spin text-indigo-600' />
-        <span className='ml-2 text-sm text-gray-500 dark:text-gray-400'>
-          Cargando cuotas...
-        </span>
-      </div>
+      <SectionLoadingSpinner
+        label='Cargando cuotas...'
+        moduleName='negociaciones'
+        icon={CreditCard}
+      />
     )
   }
 
@@ -121,13 +128,13 @@ export function CuotasCreditoTab({
         progresoCredito={progresoCredito}
         procesando={procesando}
         onReestructurar={
-          readonly ? undefined : () => setMostrarReestructurar(true)
+          !readonly && isAdmin ? () => setMostrarReestructurar(true) : undefined
         }
       />
 
       <TablaAmortizacion periodos={periodos} />
 
-      {!readonly && mostrarReestructurar && credito ? (
+      {!readonly && isAdmin && mostrarReestructurar && credito ? (
         <ReestructurarCreditoModal
           fuentePagoId={fuentePagoId}
           creditoActual={credito}

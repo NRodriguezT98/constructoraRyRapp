@@ -10,7 +10,7 @@
 
 'use client'
 
-import { Compass, DollarSign, Edit3, FileText, Loader2 } from 'lucide-react'
+import { Compass, DollarSign, Edit3, FileText, Home } from 'lucide-react'
 
 import Link from 'next/link'
 
@@ -22,6 +22,7 @@ import {
   AccordionWizardSuccess,
 } from '@/shared/components/accordion-wizard'
 import { ConfirmarCambiosModal } from '@/shared/components/modulos/ConfirmarCambiosModal'
+import { SectionLoadingSpinner } from '@/shared/components/ui'
 
 import {
   PASOS_VIVIENDA_EDICION,
@@ -115,12 +116,11 @@ export function EditarViviendaAccordionView({
   if (cargandoVivienda) {
     return (
       <div className='flex min-h-screen items-center justify-center'>
-        <div className='space-y-3 text-center'>
-          <Loader2 className='mx-auto h-10 w-10 animate-spin text-orange-500' />
-          <p className='text-sm text-gray-600 dark:text-gray-400'>
-            Cargando datos de la vivienda...
-          </p>
-        </div>
+        <SectionLoadingSpinner
+          label='Cargando datos de la vivienda...'
+          moduleName='viviendas'
+          icon={Home}
+        />
       </div>
     )
   }

@@ -18,9 +18,10 @@
 import { useState } from 'react'
 
 import { motion } from 'framer-motion'
-import { Check, Loader2, Lock, Shield, X } from 'lucide-react'
+import { Check, Lock, Shield, X } from 'lucide-react'
 
 import { logger } from '@/lib/utils/logger'
+import { SectionLoadingSpinner } from '@/shared/components/ui'
 
 import {
   useActualizarPermisoMutation,
@@ -57,12 +58,11 @@ export function PermisosMatrix() {
   if (isLoading) {
     return (
       <div className='flex min-h-[400px] items-center justify-center'>
-        <div className='space-y-3 text-center'>
-          <Loader2 className='mx-auto h-8 w-8 animate-spin text-blue-500' />
-          <p className='text-sm text-gray-600 dark:text-gray-400'>
-            Cargando permisos...
-          </p>
-        </div>
+        <SectionLoadingSpinner
+          label='Cargando permisos...'
+          moduleName='auditorias'
+          icon={Shield}
+        />
       </div>
     )
   }
