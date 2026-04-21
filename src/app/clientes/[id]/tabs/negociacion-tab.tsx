@@ -9,7 +9,7 @@
  * 3. Abonos recientes
  */
 
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 
 import { motion } from 'framer-motion'
 import {
@@ -23,6 +23,7 @@ import {
   FileX,
   Home,
   Lock,
+  Pencil,
   Percent,
   RefreshCw,
   Shield,
@@ -30,12 +31,15 @@ import {
   Tag,
   TrendingUp,
   Wallet,
+  X,
 } from 'lucide-react'
+import { toast } from 'sonner'
 
 import { useRouter } from 'next/navigation'
 
 import { ModalEditarAbono } from '@/modules/abonos/components/modal-editar-abono'
 import type { AbonoParaEditar } from '@/modules/abonos/types/editar-abono.types'
+import { negociacionesService } from '@/modules/clientes/services/negociaciones.service'
 import type { Cliente } from '@/modules/clientes/types'
 import { CuotasCreditoTab } from '@/modules/fuentes-pago/components/CuotasCreditoTab'
 import { RegistrarRenunciaModal } from '@/modules/renuncias/components/modals/RegistrarRenunciaModal'
@@ -77,9 +81,16 @@ export function NegociacionTab({
   // ── Estado para modal de renuncia ───────────────────────────────────────
   const [modalRenunciaOpen, setModalRenunciaOpen] = useState(false)
 
+  // ── Estado para edición inline de valor escritura ────────────────────────
+  const [editandoEscritura, setEditandoEscritura] = useState(false)
+  const [valorEscrituraEdit, setValorEscrituraEdit] = useState('')
+  const [guardandoEscritura, setGuardandoEscritura] = useState(false)
+
   const {
     negociacion,
     valorVivienda,
+    totalComprometido,
+    interesesTotales,
     fuentesPago,
     abonos,
     totalAbonado,
@@ -108,7 +119,33 @@ export function NegociacionTab({
     totalDocsObligatoriosPendientes,
     refetchFuentes,
     refetchAbonos,
+    refetchNegociaciones,
   } = useNegociacionTab({ cliente })
+
+  // ── Guardar valor de escritura (debe estar antes de early returns) ─────────
+  const handleGuardarEscritura = useCallback(async () => {
+    if (!negociacion) return
+    const parsed = parseFloat(valorEscrituraEdit.replace(/\D/g, ''))
+    if (isNaN(parsed) || parsed < 0) {
+      toast.error('Ingresa un valor válido para la escritura')
+      return
+    }
+    setGuardandoEscritura(true)
+    try {
+      await negociacionesService.actualizarNegociacion(negociacion.id, {
+        valor_escritura_publica: parsed,
+      })
+      toast.success('Valor de escritura actualizado')
+      setEditandoEscritura(false)
+      await refetchNegociaciones()
+    } catch (err) {
+      toast.error('Error al actualizar', {
+        description: err instanceof Error ? err.message : 'Error desconocido',
+      })
+    } finally {
+      setGuardandoEscritura(false)
+    }
+  }, [valorEscrituraEdit, negociacion, refetchNegociaciones])
 
   if (isLoading)
     return (
@@ -133,10 +170,20 @@ export function NegociacionTab({
   const numero = vivienda?.numero
   const valorEscritura = negociacion.valor_escritura_publica ?? 0
   const notasNeg = negociacion.notas ?? ''
-  const saldo = negociacion.saldo_pendiente ?? valorVivienda - totalAbonado
+  // Cuando hay crédito constructora, el saldo y el % deben basarse en el total real
+  const baseTotal = interesesTotales > 0 ? totalComprometido : valorVivienda
+  const saldo =
+    interesesTotales > 0
+      ? baseTotal - totalAbonado
+      : (negociacion.saldo_pendiente ?? valorVivienda - totalAbonado)
   const pctPagado =
-    negociacion.porcentaje_pagado ??
-    (valorVivienda > 0 ? (totalAbonado / valorVivienda) * 100 : 0)
+    negociacion.porcentaje_pagado !== null &&
+    negociacion.porcentaje_pagado !== undefined &&
+    interesesTotales === 0
+      ? negociacion.porcentaje_pagado
+      : baseTotal > 0
+        ? (totalAbonado / baseTotal) * 100
+        : 0
   const descuento = negociacion.descuento_aplicado ?? 0
   const pctDescuento = negociacion.porcentaje_descuento ?? 0
 
@@ -212,30 +259,109 @@ export function NegociacionTab({
           </div>
         </div>
 
-        {/* KPIs row — 5 cols cuando hay descuento, 4 cols si no */}
+        {/* KPIs row — cols dinámicas: +1 si hay intereses, +1 si hay descuento */}
         <div
-          className={`grid grid-cols-2 divide-x divide-gray-100 dark:divide-gray-700/40 ${descuento > 0 ? 'sm:grid-cols-5' : 'sm:grid-cols-4'}`}
+          className={`grid grid-cols-2 divide-x divide-gray-100 dark:divide-gray-700/40 ${
+            interesesTotales > 0 && descuento > 0
+              ? 'sm:grid-cols-6'
+              : interesesTotales > 0 || descuento > 0
+                ? 'sm:grid-cols-5'
+                : 'sm:grid-cols-4'
+          }`}
         >
-          {/* KPI 1: Valor Total a Pagar */}
+          {/* KPI 1: Precio Vivienda (siempre) */}
           <div className='px-4 py-2.5'>
             <div className='mb-0.5 flex items-center gap-1'>
               <DollarSign className='h-3 w-3 text-cyan-500' />
               <span className='text-[10px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500'>
-                Valor Total a Pagar
+                {interesesTotales > 0
+                  ? 'Precio Vivienda'
+                  : 'Valor Total a Pagar'}
               </span>
             </div>
             <p className='text-sm font-bold tabular-nums text-gray-900 dark:text-white'>
               {formatCurrency(valorVivienda)}
             </p>
-            {valorEscritura > 0 ? (
-              <div className='mt-1'>
-                <span className='inline-flex items-center gap-1 rounded-md border border-indigo-100 bg-indigo-50 px-1.5 py-0.5 text-[10px] font-medium text-indigo-600 dark:border-indigo-800/40 dark:bg-indigo-950/30 dark:text-indigo-400'>
-                  <FileText className='h-2.5 w-2.5' />
-                  Escritura: {formatCurrency(valorEscritura)}
-                </span>
-              </div>
+            {/* Escritura: solo visible cuando el valor difiere del precio de la vivienda */}
+            {valorVivienda > 0 && valorEscritura !== valorVivienda ? (
+              editandoEscritura ? (
+                <div className='mt-1.5 flex items-center gap-1.5'>
+                  <input
+                    aria-label='Valor escritura pública'
+                    autoFocus
+                    className='w-36 rounded-md border-2 border-indigo-400 bg-white px-2 py-0.5 text-[11px] font-medium tabular-nums text-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-indigo-600 dark:bg-gray-900 dark:text-indigo-300'
+                    disabled={guardandoEscritura}
+                    onChange={e => setValorEscrituraEdit(e.target.value)}
+                    onKeyDown={e => {
+                      if (e.key === 'Enter') void handleGuardarEscritura()
+                      if (e.key === 'Escape') setEditandoEscritura(false)
+                    }}
+                    placeholder='Ej: 18000000'
+                    value={valorEscrituraEdit}
+                  />
+                  <button
+                    className='rounded bg-indigo-600 px-2 py-0.5 text-[10px] font-semibold text-white hover:bg-indigo-700 disabled:opacity-50'
+                    disabled={guardandoEscritura}
+                    onClick={() => void handleGuardarEscritura()}
+                    type='button'
+                  >
+                    {guardandoEscritura ? '...' : 'Guardar'}
+                  </button>
+                  <button
+                    className='rounded p-0.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200'
+                    disabled={guardandoEscritura}
+                    onClick={() => setEditandoEscritura(false)}
+                    type='button'
+                  >
+                    <X className='h-3 w-3' />
+                  </button>
+                </div>
+              ) : (
+                <div className='mt-1 flex items-center gap-1'>
+                  <span className='inline-flex items-center gap-1 rounded-md border border-indigo-100 bg-indigo-50 px-1.5 py-0.5 text-[10px] font-medium text-indigo-600 dark:border-indigo-800/40 dark:bg-indigo-950/30 dark:text-indigo-400'>
+                    <FileText className='h-2.5 w-2.5' />
+                    {valorEscritura > 0
+                      ? `Valor en Escritura: ${formatCurrency(valorEscritura)}`
+                      : 'Sin valor escritura'}
+                  </span>
+                  {isAdmin ? (
+                    <button
+                      aria-label='Editar valor de escritura'
+                      className='rounded p-0.5 text-gray-300 hover:text-indigo-500 dark:text-gray-600 dark:hover:text-indigo-400'
+                      onClick={() => {
+                        setValorEscrituraEdit(
+                          valorEscritura > 0 ? String(valorEscritura) : ''
+                        )
+                        setEditandoEscritura(true)
+                      }}
+                      title='Editar valor de escritura'
+                      type='button'
+                    >
+                      <Pencil className='h-3 w-3' />
+                    </button>
+                  ) : null}
+                </div>
+              )
             ) : null}
           </div>
+
+          {/* KPI 1b (condicional): Total a Pagar con intereses — solo cuando hay crédito constructora */}
+          {interesesTotales > 0 ? (
+            <div className='px-4 py-2.5'>
+              <div className='mb-0.5 flex items-center gap-1'>
+                <TrendingUp className='h-3 w-3 text-violet-500' />
+                <span className='text-[10px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500'>
+                  Total a Pagar
+                </span>
+              </div>
+              <p className='text-sm font-bold tabular-nums text-gray-900 dark:text-white'>
+                {formatCurrency(totalComprometido)}
+              </p>
+              <p className='mt-0.5 text-[10px] tabular-nums text-violet-500 dark:text-violet-400'>
+                +{formatCurrency(interesesTotales)} intereses
+              </p>
+            </div>
+          ) : null}
 
           {/* KPI 2 (condicional): Descuento aplicado */}
           {descuento > 0 ? (

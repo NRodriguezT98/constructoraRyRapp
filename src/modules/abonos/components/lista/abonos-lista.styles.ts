@@ -65,12 +65,12 @@ export const abonosListaStyles = {
     th: 'px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400',
     thRight:
       'px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400',
-    tbody: 'divide-y divide-gray-100 dark:divide-gray-800',
+    tbody: '',
   },
 
   // ─── Fila ─────────────────────────────────────────────────────────────────
   fila: {
-    base: 'cursor-pointer border-l-[3px] transition-colors',
+    base: 'cursor-pointer border-l-[3px] border-b border-b-gray-100 transition-colors dark:border-b-gray-800',
     activo:
       'border-l-emerald-500 hover:bg-violet-50/40 dark:hover:bg-violet-950/10',
     anulado: 'border-l-red-400 opacity-60 hover:opacity-75 dark:bg-red-950/5',

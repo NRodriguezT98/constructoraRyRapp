@@ -45,6 +45,12 @@ interface UseCreditoConstructoraReturn {
   recargar: () => Promise<void>
   reestructurar: (params: ParametrosReestructuracion) => Promise<boolean>
   crearPlan: (params: ParametrosCredito) => Promise<boolean>
+  /**
+   * Saldo pendiente real: monto_aprobado − monto_recibido de fuentes_pago.
+   * Cuando hay abonos pagados, es el valor correcto para reestructurar
+   * (interés simple), mejor que el capital amortizado proporcionalmente.
+   */
+  saldoPendienteReal: number | null
 }
 
 export function useCreditoConstructora({
@@ -55,6 +61,9 @@ export function useCreditoConstructora({
   const [cargando, setCargando] = useState(true)
   const [procesando, setProcesando] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [saldoPendienteReal, setSaldoPendienteReal] = useState<number | null>(
+    null
+  )
 
   const resumen = useMemo(
     () => (periodos.length > 0 ? calcularResumenCuotas(periodos) : null),
@@ -68,14 +77,34 @@ export function useCreditoConstructora({
       const [
         { data: creditoData, error: e1 },
         { data: periodosData, error: e2 },
+        { data: fuenteData },
       ] = await Promise.all([
         getCreditoByFuente(fuentePagoId),
         getPeriodosCredito(fuentePagoId),
+        supabase
+          .from('fuentes_pago')
+          .select('monto_recibido')
+          .eq('id', fuentePagoId)
+          .maybeSingle(),
       ])
       if (e1) throw e1
       if (e2) throw e2
       setCredito(creditoData)
       setPeriodos(periodosData ?? [])
+      // Saldo real = monto_total (capital + intereses) − lo ya recibido.
+      // Se usa monto_total del crédito (interés simple) y NO monto_aprobado de
+      // fuentes_pago (que solo contiene el capital).
+      if (
+        creditoData &&
+        fuenteData &&
+        typeof fuenteData.monto_recibido === 'number'
+      ) {
+        setSaldoPendienteReal(
+          Math.max(0, creditoData.monto_total - fuenteData.monto_recibido)
+        )
+      } else {
+        setSaldoPendienteReal(null)
+      }
     } catch (err: unknown) {
       setError(
         err instanceof Error ? err.message : 'Error cargando datos del crédito'
@@ -96,8 +125,11 @@ export function useCreditoConstructora({
         setError(null)
         if (!credito) throw new Error('No hay datos del crédito cargados')
 
+        // Si se especifica nuevoCapital, se usa como base del nuevo plan (ej: descuento aplicado)
+        const capitalEfectivo = params.nuevoCapital ?? params.capitalPendiente
+
         const calculo = calcularTablaAmortizacion({
-          capital: params.capitalPendiente,
+          capital: capitalEfectivo,
           tasaMensual: params.nuevaTasaMensual,
           numCuotas: params.nuevasNumCuotas,
           fechaInicio: params.nuevaFechaInicio,
@@ -112,7 +144,7 @@ export function useCreditoConstructora({
           fuente_pago_id: params.fuentePagoId,
           credito_id: params.creditoId,
           usuario_id: user?.id ?? null,
-          capital_pendiente: params.capitalPendiente,
+          capital_pendiente: capitalEfectivo,
           nueva_tasa_mensual: params.nuevaTasaMensual,
           nuevas_num_cuotas: params.nuevasNumCuotas,
           nuevo_monto_total: calculo.montoTotal,
@@ -197,5 +229,6 @@ export function useCreditoConstructora({
     recargar: cargarDatos,
     reestructurar,
     crearPlan,
+    saldoPendienteReal,
   }
 }

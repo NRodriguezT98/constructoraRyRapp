@@ -13,6 +13,8 @@ import {
 import { formatCurrency } from '@/lib/utils/format.utils'
 import type { Negociacion } from '@/modules/clientes/types'
 
+import { useResumenNegociacion } from '../hooks/useResumenNegociacion'
+
 interface ResumenNegociacionProps {
   negociacion: Negociacion
   clienteId: string
@@ -22,12 +24,16 @@ export function ResumenNegociacion({
   negociacion,
   clienteId,
 }: ResumenNegociacionProps) {
-  const valorTotal =
-    negociacion.valor_total_pagar || negociacion.valor_total || 0
-  const totalAbonado = negociacion.total_abonado || 0
-  const saldoPendiente = negociacion.saldo_pendiente || 0
-  const porcentaje = Math.min(negociacion.porcentaje_pagado || 0, 100)
+  const {
+    valorVivienda,
+    totalComprometido,
+    interesesTotales,
+    totalAbonado,
+    saldo: saldoPendiente,
+    pctPagado,
+  } = useResumenNegociacion({ negociacion })
 
+  const porcentaje = pctPagado
   const estaCompleta = porcentaje >= 100
 
   const proyecto = negociacion.viviendas?.manzanas?.proyectos?.nombre
@@ -117,19 +123,38 @@ export function ResumenNegociacion({
       </div>
 
       {/* ── Metrics ────────────────────────────────────── */}
-      <div className='grid grid-cols-3 border-t border-gray-100 dark:border-gray-700/60'>
-        {/* Valor Total — contexto */}
-        <div className='border-r border-gray-100 px-4 py-3 dark:border-gray-700/60'>
+      <div
+        className={`grid divide-x divide-gray-100 border-t border-gray-100 dark:divide-gray-700/60 dark:border-gray-700/60 ${
+          interesesTotales > 0 ? 'grid-cols-4' : 'grid-cols-3'
+        }`}
+      >
+        {/* Precio vivienda — contexto */}
+        <div className='px-4 py-3'>
           <p className='mb-1 text-[10px] font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-500'>
-            Valor Total
+            {interesesTotales > 0 ? 'Precio Vivienda' : 'Valor Total'}
           </p>
           <p className='text-xl font-black tabular-nums tracking-tight text-gray-700 dark:text-gray-300'>
-            {formatCurrency(valorTotal)}
+            {formatCurrency(valorVivienda)}
           </p>
           <p className='mt-0.5 text-[10px] text-gray-400 dark:text-gray-500'>
             Precio vivienda
           </p>
         </div>
+
+        {/* Total a pagar (solo cuando hay intereses) */}
+        {interesesTotales > 0 ? (
+          <div className='bg-indigo-50/40 px-4 py-3 dark:bg-indigo-900/10'>
+            <p className='mb-1 text-[10px] font-semibold uppercase tracking-widest text-indigo-600 dark:text-indigo-400'>
+              Total a pagar
+            </p>
+            <p className='text-xl font-black tabular-nums tracking-tight text-indigo-700 dark:text-indigo-300'>
+              {formatCurrency(totalComprometido)}
+            </p>
+            <p className='mt-0.5 text-[10px] text-indigo-400 dark:text-indigo-500'>
+              +{formatCurrency(interesesTotales)} intereses
+            </p>
+          </div>
+        ) : null}
 
         {/* Abonado — positivo */}
         <div className='border-r border-gray-100 bg-emerald-50/50 px-4 py-3 dark:border-gray-700/60 dark:bg-emerald-900/10'>

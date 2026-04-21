@@ -75,7 +75,7 @@ export function AbonosListFiltros({
             type='text'
             value={filtros.busqueda}
             onChange={e => actualizarFiltros({ busqueda: e.target.value })}
-            placeholder='Buscar por cliente, CC o RYR-...'
+            placeholder='Nombre, CC, RYR-15, A17, Las Américas...'
             className={s.filtros.searchInput}
           />
         </div>

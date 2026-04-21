@@ -10,7 +10,17 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { AnimatePresence, motion } from 'framer-motion'
-import { AlertTriangle, CheckCircle2, Lock, Plus, X } from 'lucide-react'
+import {
+  AlertTriangle,
+  CheckCircle2,
+  CreditCard,
+  Home,
+  Lock,
+  MessageSquare,
+  Plus,
+  Sparkles,
+  X,
+} from 'lucide-react'
 import { createPortal } from 'react-dom'
 
 import type { FuentePago } from '@/modules/clientes/services/fuentes-pago.service'
@@ -402,23 +412,49 @@ export function AjusteCierreFinancieroModal({
                 </button>
               </div>
 
-              {/* Subheader: valor objetivo */}
-              <div className='flex-shrink-0 border-b border-gray-200 bg-gray-50 px-5 py-3 dark:border-gray-700 dark:bg-gray-800'>
-                <p className='text-xs text-gray-500 dark:text-gray-400'>
-                  Valor de la vivienda
-                </p>
-                <p className='text-xl font-bold tabular-nums text-gray-900 dark:text-white'>
-                  {formatCurrency(valorVivienda)}
-                </p>
+              {/* Subheader: valor objetivo + balance en vivo */}
+              <div className='flex-shrink-0 border-b border-gray-200 bg-gray-50/80 px-5 py-3.5 dark:border-gray-700 dark:bg-gray-800/60'>
+                <div className='flex items-center justify-between gap-4'>
+                  <div className='flex items-center gap-3'>
+                    <div className='flex h-9 w-9 items-center justify-center rounded-xl bg-cyan-100 dark:bg-cyan-900/30'>
+                      <Home className='h-4 w-4 text-cyan-600 dark:text-cyan-400' />
+                    </div>
+                    <div>
+                      <p className='text-xs text-gray-500 dark:text-gray-400'>
+                        Valor de la vivienda
+                      </p>
+                      <p className='text-xl font-bold tabular-nums text-gray-900 dark:text-white'>
+                        {formatCurrency(valorVivienda)}
+                      </p>
+                    </div>
+                  </div>
+                  <div className='text-right'>
+                    <p className='text-xs text-gray-400 dark:text-gray-500'>
+                      Asignado
+                    </p>
+                    <p
+                      className={`text-lg font-bold tabular-nums ${
+                        estaBalanceado
+                          ? 'text-emerald-600 dark:text-emerald-400'
+                          : 'text-amber-600 dark:text-amber-400'
+                      }`}
+                    >
+                      {formatCurrency(subtotal)}
+                    </p>
+                  </div>
+                </div>
               </div>
 
               {/* Body scrollable */}
               <div className='flex-1 space-y-3 overflow-y-auto bg-white px-5 py-4 dark:bg-gray-900'>
                 {/* Fuentes existentes */}
                 <div className='space-y-2'>
-                  <p className='text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500'>
-                    Fuentes configuradas
-                  </p>
+                  <div className='flex items-center gap-1.5'>
+                    <CreditCard className='h-3.5 w-3.5 text-gray-400 dark:text-gray-500' />
+                    <p className='text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500'>
+                      Fuentes configuradas
+                    </p>
+                  </div>
                   {ajustes.map(ajuste => {
                     const restricciones = restriccionesMap.get(ajuste.id)
                     if (!restricciones) return null
@@ -447,9 +483,12 @@ export function AjusteCierreFinancieroModal({
                 {/* Fuentes nuevas */}
                 {nuevas.length > 0 && (
                   <div className='space-y-2'>
-                    <p className='text-xs font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400'>
-                      Nuevas fuentes
-                    </p>
+                    <div className='flex items-center gap-1.5'>
+                      <Sparkles className='h-3.5 w-3.5 text-emerald-500 dark:text-emerald-400' />
+                      <p className='text-xs font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400'>
+                        Nuevas fuentes
+                      </p>
+                    </div>
                     {nuevas.map((fuente, i) => (
                       <FilaNueva
                         key={i}
@@ -476,9 +515,11 @@ export function AjusteCierreFinancieroModal({
                       <button
                         type='button'
                         onClick={() => setMostrarNuevaFuente(true)}
-                        className='flex w-full items-center justify-center gap-2 rounded-lg border-2 border-dashed border-gray-200 py-2.5 text-sm text-gray-400 transition-colors hover:border-cyan-400 hover:text-cyan-600 dark:border-gray-600 dark:text-gray-500 dark:hover:text-cyan-400'
+                        className='flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-gray-200 py-3 text-sm font-medium text-gray-400 transition-all hover:border-cyan-400 hover:bg-cyan-50/50 hover:text-cyan-600 dark:border-gray-600 dark:text-gray-500 dark:hover:border-cyan-700 dark:hover:bg-cyan-900/10 dark:hover:text-cyan-400'
                       >
-                        <Plus className='h-4 w-4' />
+                        <div className='flex h-5 w-5 items-center justify-center rounded-full bg-gray-200 dark:bg-gray-600'>
+                          <Plus className='h-3 w-3' />
+                        </div>
                         Agregar fuente de pago
                       </button>
                     ) : (
@@ -528,8 +569,9 @@ export function AjusteCierreFinancieroModal({
                 )}
 
                 {/* Motivo del cambio */}
-                <div className='space-y-2 border-t border-gray-100 pt-1 dark:border-gray-700/50'>
-                  <label className='text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400'>
+                <div className='space-y-2 border-t border-gray-100 pt-2 dark:border-gray-700/50'>
+                  <label className='flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400'>
+                    <MessageSquare className='h-3.5 w-3.5' />
                     Motivo del cambio <span className='text-red-400'>*</span>
                   </label>
                   <select
@@ -613,10 +655,10 @@ export function AjusteCierreFinancieroModal({
                         className={`text-xs font-semibold ${estaBalanceado ? 'text-emerald-700 dark:text-emerald-300' : 'text-red-600 dark:text-red-400'}`}
                       >
                         {estaBalanceado
-                          ? '✅ Ecuación balanceada'
+                          ? 'Ecuación balanceada'
                           : diferencia > 0
-                            ? `❌ Déficit: ${formatCurrency(Math.abs(diferencia))}`
-                            : `❌ Excedente: ${formatCurrency(Math.abs(diferencia))}`}
+                            ? `Déficit: ${formatCurrency(Math.abs(diferencia))}`
+                            : `Excedente: ${formatCurrency(Math.abs(diferencia))}`}
                       </span>
                       <span className='text-xs tabular-nums text-gray-400'>
                         {formatCurrency(subtotal)} /{' '}

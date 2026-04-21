@@ -10,7 +10,14 @@
 
 import { useMemo, useState } from 'react'
 
-import { ArrowRightLeft, RefreshCw, X } from 'lucide-react'
+import {
+  ArrowRightLeft,
+  ChevronDown,
+  ChevronUp,
+  RefreshCw,
+  X,
+} from 'lucide-react'
+import { createPortal } from 'react-dom'
 
 import { getTodayDateString } from '@/lib/utils/date.utils'
 import type {
@@ -52,12 +59,63 @@ export function ReestructurarCreditoModal({
   const [fechaStr, setFechaStr] = useState(getTodayDateString())
   const [motivo, setMotivo] = useState<string>(MOTIVOS_REESTRUCTURACION[0])
   const [notas, setNotas] = useState('')
+  const [ajustarCapital, setAjustarCapital] = useState(false)
+  // Campo 1: Nuevo capital total del crédito (referencia / auditoría)
+  const [nuevoCapitalTotalStr, setNuevoCapitalTotalStr] = useState(
+    creditoActual.capital.toLocaleString('es-CO')
+  )
+  // Campo 2: Saldo real a reestructurar (editable, no necesariamente proporcional)
+  // El negocio usa interés simple: totalNuevo - pagosYaRealizados
+  const [nuevoSaldoStr, setNuevoSaldoStr] = useState(
+    capitalPendiente.toLocaleString('es-CO')
+  )
+  // Si el usuario editó el saldo manualmente
+  const [saldoManual, setSaldoManual] = useState(false)
+
+  const formatCOP = (raw: string) => {
+    const digits = raw.replace(/\D/g, '')
+    return digits ? parseInt(digits, 10).toLocaleString('es-CO') : ''
+  }
+
+  const parseStr = (str: string) =>
+    parseInt(str.replace(/\./g, '').replace(/,/g, ''), 10) || 0
+
+  const nuevoCapitalTotalNum = ajustarCapital
+    ? Math.max(1, parseStr(nuevoCapitalTotalStr))
+    : creditoActual.capital
+
+  // Cuando cambia el capital total, recalcula el saldo proporcional
+  // (solo si el usuario NO lo ha editado manualmente)
+  const handleCapitalTotalChange = (raw: string) => {
+    const formatted = formatCOP(raw)
+    setNuevoCapitalTotalStr(formatted)
+    if (!saldoManual) {
+      const totalNum = Math.max(1, parseStr(formatted))
+      const proporcional = Math.round(
+        capitalPendiente * (totalNum / creditoActual.capital)
+      )
+      setNuevoSaldoStr(proporcional.toLocaleString('es-CO'))
+    }
+  }
+
+  const handleSaldoChange = (raw: string) => {
+    setSaldoManual(true)
+    setNuevoSaldoStr(formatCOP(raw))
+  }
+
+  // capitalEfectivo: lo que realmente se usa para calcular cuotas
+  const capitalEfectivo = ajustarCapital
+    ? Math.max(1, parseStr(nuevoSaldoStr))
+    : capitalPendiente
+
+  const descuentoTotal = nuevoCapitalTotalNum - creditoActual.capital
+  const ajusteEnSaldo = capitalEfectivo - capitalPendiente
 
   const preview = useMemo(() => {
     const t = parseFloat(nuevaTasa)
     const c = parseInt(nuevasCuotas, 10)
     if (
-      !capitalPendiente ||
+      !capitalEfectivo ||
       !t ||
       !c ||
       isNaN(t) ||
@@ -68,7 +126,7 @@ export function ReestructurarCreditoModal({
       return null
     try {
       return calcularTablaAmortizacion({
-        capital: capitalPendiente,
+        capital: capitalEfectivo,
         tasaMensual: t,
         numCuotas: c,
         fechaInicio: new Date(fechaStr + 'T12:00:00'),
@@ -76,7 +134,7 @@ export function ReestructurarCreditoModal({
     } catch {
       return null
     }
-  }, [capitalPendiente, nuevaTasa, nuevasCuotas, fechaStr])
+  }, [capitalEfectivo, nuevaTasa, nuevasCuotas, fechaStr])
 
   const cuotaMensual = preview?.valorCuotaMensual ?? 0
 
@@ -88,6 +146,8 @@ export function ReestructurarCreditoModal({
       fuentePagoId,
       creditoId: creditoActual.id,
       capitalPendiente,
+      nuevoCapitalTotal: ajustarCapital ? nuevoCapitalTotalNum : undefined,
+      nuevoCapital: ajustarCapital ? capitalEfectivo : undefined,
       nuevaTasaMensual: t,
       nuevasNumCuotas: c,
       nuevaFechaInicio: new Date(fechaStr + 'T12:00:00'),
@@ -96,11 +156,11 @@ export function ReestructurarCreditoModal({
     })
   }
 
-  return (
+  return createPortal(
     <>
       {/* Backdrop */}
       <div
-        className='fixed inset-0 z-50 bg-black/60 backdrop-blur-sm'
+        className='fixed inset-0 z-[9999] bg-black/60 backdrop-blur-sm'
         onClick={onCerrar}
         aria-hidden='true'
       />
@@ -110,7 +170,7 @@ export function ReestructurarCreditoModal({
         role='dialog'
         aria-modal='true'
         aria-labelledby='modal-reestructurar-title'
-        className='fixed inset-x-0 bottom-0 z-50 mx-auto max-w-lg sm:inset-0 sm:flex sm:items-center sm:justify-center'
+        className='fixed inset-x-0 bottom-0 z-[9999] mx-auto max-w-lg sm:inset-0 sm:flex sm:items-center sm:justify-center'
       >
         <div className='w-full rounded-t-2xl bg-white shadow-2xl dark:bg-gray-900 sm:rounded-2xl'>
           {/* Header */}
@@ -174,6 +234,113 @@ export function ReestructurarCreditoModal({
                   </strong>
                 </p>
               </div>
+            </div>
+
+            {/* Ajuste de capital (descuento / modificación) */}
+            <div className='rounded-xl border-2 border-dashed border-gray-200 dark:border-gray-700'>
+              <button
+                type='button'
+                onClick={() => {
+                  const next = !ajustarCapital
+                  setAjustarCapital(next)
+                  if (next) {
+                    setNuevoCapitalTotalStr(
+                      creditoActual.capital.toLocaleString('es-CO')
+                    )
+                    setNuevoSaldoStr(capitalPendiente.toLocaleString('es-CO'))
+                    setSaldoManual(false)
+                  }
+                }}
+                className='flex w-full items-center justify-between px-4 py-2.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-800/50'
+              >
+                <span>Ajustar capital (descuento o corrección)</span>
+                {ajustarCapital ? (
+                  <ChevronUp className='h-4 w-4 text-gray-400' />
+                ) : (
+                  <ChevronDown className='h-4 w-4 text-gray-400' />
+                )}
+              </button>
+              {ajustarCapital && (
+                <div className='space-y-3 border-t border-gray-200 px-4 pb-4 pt-3 dark:border-gray-700'>
+                  {/* Campo 1: Nuevo capital total (referencia auditoría) */}
+                  <div>
+                    <label className='mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300'>
+                      Nuevo capital total del crédito ($)
+                      <span className='ml-1 text-xs font-normal text-gray-400'>
+                        (para auditoría)
+                      </span>
+                    </label>
+                    <input
+                      type='text'
+                      inputMode='numeric'
+                      value={nuevoCapitalTotalStr}
+                      onChange={e => handleCapitalTotalChange(e.target.value)}
+                      placeholder='Ej: 18.000.000'
+                      className='w-full rounded-lg border-2 border-indigo-300 bg-white px-3 py-2 text-sm text-gray-900 transition-all focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-indigo-700 dark:bg-gray-800 dark:text-white'
+                    />
+                    {descuentoTotal !== 0 && (
+                      <p
+                        className={`mt-1 text-xs font-medium ${
+                          descuentoTotal < 0
+                            ? 'text-emerald-600 dark:text-emerald-400'
+                            : 'text-amber-600 dark:text-amber-400'
+                        }`}
+                      >
+                        {descuentoTotal < 0 ? '▼' : '▲'} $
+                        {Math.abs(descuentoTotal).toLocaleString('es-CO')} vs
+                        capital original
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Campo 2: Saldo real a reestructurar (el que importa) */}
+                  <div>
+                    <label className='mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300'>
+                      Saldo real a reestructurar ($)
+                      <span className='ml-1 text-xs font-normal text-gray-400'>
+                        (define las nuevas cuotas)
+                      </span>
+                    </label>
+                    <input
+                      type='text'
+                      inputMode='numeric'
+                      value={nuevoSaldoStr}
+                      onChange={e => handleSaldoChange(e.target.value)}
+                      placeholder='Ej: 2.826.670'
+                      className='w-full rounded-lg border-2 border-emerald-400 bg-white px-3 py-2 text-sm font-medium text-gray-900 transition-all focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 dark:border-emerald-700 dark:bg-gray-800 dark:text-white'
+                    />
+                    {ajusteEnSaldo !== 0 && (
+                      <p
+                        className={`mt-1 text-xs font-medium ${
+                          ajusteEnSaldo < 0
+                            ? 'text-emerald-600 dark:text-emerald-400'
+                            : 'text-amber-600 dark:text-amber-400'
+                        }`}
+                      >
+                        {ajusteEnSaldo < 0 ? '▼ Reduce' : '▲ Aumenta'} el saldo
+                        en ${Math.abs(ajusteEnSaldo).toLocaleString('es-CO')} vs
+                        saldo actual
+                      </p>
+                    )}
+                    {saldoManual && (
+                      <button
+                        type='button'
+                        onClick={() => {
+                          setSaldoManual(false)
+                          const proporcional = Math.round(
+                            capitalPendiente *
+                              (nuevoCapitalTotalNum / creditoActual.capital)
+                          )
+                          setNuevoSaldoStr(proporcional.toLocaleString('es-CO'))
+                        }}
+                        className='mt-1 text-xs text-indigo-500 hover:text-indigo-700 dark:text-indigo-400'
+                      >
+                        ↺ Restaurar cálculo proporcional
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Nuevos parámetros */}
@@ -260,8 +427,21 @@ export function ReestructurarCreditoModal({
                   </span>
                 </div>
                 <p className='mt-1 text-xs text-gray-500 dark:text-gray-400'>
-                  Capital pendiente: ${capitalPendiente.toLocaleString('es-CO')}{' '}
-                  · {nuevasCuotas} cuotas · {nuevaTasa}% mensual
+                  Saldo a reestructurar: $
+                  {capitalEfectivo.toLocaleString('es-CO')} · {nuevasCuotas}{' '}
+                  cuotas · {nuevaTasa}% mensual
+                  {ajustarCapital && descuentoTotal !== 0 && (
+                    <span
+                      className={`ml-1 font-semibold ${
+                        descuentoTotal < 0
+                          ? 'text-emerald-600 dark:text-emerald-400'
+                          : 'text-amber-600 dark:text-amber-400'
+                      }`}
+                    >
+                      · capital total {descuentoTotal < 0 ? '-' : '+'}$
+                      {Math.abs(descuentoTotal).toLocaleString('es-CO')}
+                    </span>
+                  )}
                 </p>
               </div>
             ) : (
@@ -293,6 +473,7 @@ export function ReestructurarCreditoModal({
           </div>
         </div>
       </div>
-    </>
+    </>,
+    document.body
   )
 }

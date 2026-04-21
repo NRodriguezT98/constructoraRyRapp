@@ -48,6 +48,9 @@ export const CAMPOS_EXCLUIDOS = new Set([
   'porcentaje_pagado',
   'porcentaje_completado',
   'nombre_completo',
+  // Campos internos de traslado — no útiles para el usuario
+  'traslado_destino_id',
+  'negociacion_origen_id',
 ])
 
 export const ETIQUETAS: Record<string, string> = {
@@ -89,6 +92,10 @@ export const ETIQUETAS: Record<string, string> = {
   motivo_descuento: 'Motivo del descuento',
   porcentaje_descuento: 'Porcentaje de descuento',
   valor_escritura_publica: 'Valor escritura pública',
+  // === TRASLADO ===
+  motivo_traslado: 'Motivo del traslado',
+  fecha_traslado: 'Fecha del traslado',
+  autorizado_por: 'Autorizado por',
   // === ABONO ===
   monto: 'Monto del abono',
   metodo_pago: 'Método de pago',

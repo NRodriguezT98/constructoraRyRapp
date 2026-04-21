@@ -145,8 +145,18 @@ const styles = StyleSheet.create({
     fontFamily: 'Helvetica-Bold',
     color: C.verde,
   },
+  montoValorAnulado: {
+    fontSize: 30,
+    fontFamily: 'Helvetica-Bold',
+    color: C.grisMedio,
+  },
   estadoBadge: {
     backgroundColor: C.verde,
+    borderRadius: 20,
+    padding: '5 14',
+  },
+  estadoBadgeAnulado: {
+    backgroundColor: C.rojo,
     borderRadius: 20,
     padding: '5 14',
   },
@@ -299,6 +309,30 @@ const styles = StyleSheet.create({
     borderRadius: 3,
   },
 
+  /* ── BANNER ANULADO ── */
+  bannerAnulado: {
+    borderWidth: 1.5,
+    borderColor: C.rojo,
+    borderRadius: 6,
+    overflow: 'hidden' as const,
+  },
+  bannerAnuladoHeader: {
+    backgroundColor: C.rojo,
+    padding: '7 14',
+  },
+  bannerAnuladoHeaderText: {
+    fontSize: 9,
+    fontFamily: 'Helvetica-Bold',
+    color: C.blanco,
+    textTransform: 'uppercase' as const,
+    letterSpacing: 1.2,
+  },
+  bannerAnuladoBody: {
+    backgroundColor: '#fef2f2',
+    padding: '10 14',
+    gap: 7,
+  },
+
   /* ── NOTA AL PIE ── */
   notaNotas: {
     borderWidth: 1,
@@ -409,6 +443,7 @@ export function ReciboAbonoPDF({
     valorTotal !== undefined && totalAbonado !== undefined
       ? Math.max(0, valorTotal - totalAbonado)
       : undefined
+  const estaAnulado = abono.estado === 'Anulado'
   const nombreCompleto =
     `${abono.cliente.nombres} ${abono.cliente.apellidos}`.trim()
 
@@ -461,13 +496,21 @@ export function ReciboAbonoPDF({
         {/* ── MONTO DESTACADO ─────────────────────────────────────────── */}
         <View style={styles.montoBanda}>
           <View style={styles.montoIzquierda}>
-            <Text style={styles.montoEtiqueta}>Valor recibido</Text>
-            <Text style={styles.montoValor}>
+            <Text style={styles.montoEtiqueta}>
+              {estaAnulado ? 'Valor anulado' : 'Valor recibido'}
+            </Text>
+            <Text
+              style={estaAnulado ? styles.montoValorAnulado : styles.montoValor}
+            >
               {formatCurrencyPDF(abono.monto)}
             </Text>
           </View>
-          <View style={styles.estadoBadge}>
-            <Text style={styles.estadoTexto}>✓ PAGO RECIBIDO</Text>
+          <View
+            style={estaAnulado ? styles.estadoBadgeAnulado : styles.estadoBadge}
+          >
+            <Text style={styles.estadoTexto}>
+              {estaAnulado ? '✗ ANULADO' : '✓ PAGO RECIBIDO'}
+            </Text>
           </View>
         </View>
 
@@ -529,7 +572,6 @@ export function ReciboAbonoPDF({
               </View>
             </View>
           </View>
-
           {/* Propiedad */}
           <View style={styles.seccion}>
             <View style={styles.seccionHeader}>
@@ -546,7 +588,6 @@ export function ReciboAbonoPDF({
               </View>
             </View>
           </View>
-
           {/* Resumen financiero (si hay datos disponibles) */}
           {valorTotal !== undefined ? (
             <View style={styles.financiero}>
@@ -602,7 +643,6 @@ export function ReciboAbonoPDF({
               </View>
             </View>
           ) : null}
-
           {/* Observaciones (si existen) */}
           {abono.notas ? (
             <View style={styles.notaNotas}>
@@ -614,6 +654,49 @@ export function ReciboAbonoPDF({
               </Text>
             </View>
           ) : null}
+          {/* Sección anulación (solo si está anulado) */}
+          {estaAnulado ? (
+            <View style={styles.bannerAnulado}>
+              <View style={styles.bannerAnuladoHeader}>
+                <Text style={styles.bannerAnuladoHeaderText}>
+                  ⚠ Este recibo ha sido anulado — no tiene validez como
+                  comprobante de pago
+                </Text>
+              </View>
+              <View style={styles.bannerAnuladoBody}>
+                {abono.motivo_categoria ? (
+                  <View style={styles.fila}>
+                    <Text style={styles.filaEtiqueta}>Motivo:</Text>
+                    <Text style={styles.filaValor}>
+                      {abono.motivo_categoria}
+                    </Text>
+                  </View>
+                ) : null}
+                {abono.motivo_detalle ? (
+                  <View style={styles.fila}>
+                    <Text style={styles.filaEtiqueta}>Detalle:</Text>
+                    <Text style={styles.filaValor}>{abono.motivo_detalle}</Text>
+                  </View>
+                ) : null}
+                {abono.anulado_por_nombre ? (
+                  <View style={styles.fila}>
+                    <Text style={styles.filaEtiqueta}>Anulado por:</Text>
+                    <Text style={styles.filaValor}>
+                      {abono.anulado_por_nombre}
+                    </Text>
+                  </View>
+                ) : null}
+                {abono.fecha_anulacion ? (
+                  <View style={styles.filaUltima}>
+                    <Text style={styles.filaEtiqueta}>Fecha de anulación:</Text>
+                    <Text style={styles.filaValor}>
+                      {formatFechaPDF(abono.fecha_anulacion)}
+                    </Text>
+                  </View>
+                ) : null}
+              </View>
+            </View>
+          ) : null}{' '}
         </View>
 
         {/* ── FOOTER ──────────────────────────────────────────────────── */}

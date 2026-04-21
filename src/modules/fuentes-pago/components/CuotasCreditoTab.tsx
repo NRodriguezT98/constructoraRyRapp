@@ -58,6 +58,7 @@ export function CuotasCreditoTab({
     crearPlan,
     proximaCuota,
     progresoCredito,
+    saldoPendienteReal,
   } = useCuotasCredito({ fuentePagoId, negociacionId })
 
   const [mostrarReestructurar, setMostrarReestructurar] = useState(false)
@@ -71,6 +72,22 @@ export function CuotasCreditoTab({
     )
     return Math.max(0, Math.round(credito.capital - capitalAplicado))
   }, [credito, periodos])
+
+  /**
+   * Saldo a usar como base para reestructuración:
+   * - Si hay abonos recibidos → usar saldo real de la BD (monto_aprobado - monto_recibido)
+   *   → interés simple, correcto para créditos con historial de pagos (ej: traslado)
+   * - Si no hay abonos → usar capital amortizado (comportamiento original)
+   */
+  const capitalParaReestructurar = useMemo(() => {
+    if (saldoPendienteReal !== null && saldoPendienteReal > 0) {
+      // Solo usar saldo real cuando es menor que el capital (hay abonos que lo reducen)
+      if (credito && saldoPendienteReal < credito.capital) {
+        return saldoPendienteReal
+      }
+    }
+    return capitalPendienteReal
+  }, [saldoPendienteReal, capitalPendienteReal, credito])
 
   // Cuotas no cubiertas: Atrasado + En curso + Futuro
   const cuotasNoCubiertas = useMemo(() => {
@@ -138,7 +155,7 @@ export function CuotasCreditoTab({
         <ReestructurarCreditoModal
           fuentePagoId={fuentePagoId}
           creditoActual={credito}
-          capitalPendiente={capitalPendienteReal}
+          capitalPendiente={capitalParaReestructurar}
           cuotasPendientes={cuotasNoCubiertas}
           procesando={procesando}
           onConfirmar={async params => {

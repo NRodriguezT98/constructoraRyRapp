@@ -146,6 +146,17 @@ export interface ParametrosReestructuracion {
   fuentePagoId: string
   creditoId: string
   capitalPendiente: number
+  /**
+   * Nuevo capital total del crédito (para auditoría).
+   * Ej: $18.000.000 cuando se reduce de $18.400.000.
+   */
+  nuevoCapitalTotal?: number
+  /**
+   * Saldo real a reestructurar (define las nuevas cuotas).
+   * Puede diferir del proporcional si el negocio usa interés simple.
+   * Ej: $19.080.000 - 10 cuotas pagadas = $2.826.670
+   */
+  nuevoCapital?: number
   nuevaTasaMensual: number
   nuevasNumCuotas: number
   nuevaFechaInicio: Date

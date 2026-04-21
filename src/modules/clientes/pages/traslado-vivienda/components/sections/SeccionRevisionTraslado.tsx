@@ -118,14 +118,29 @@ export function SeccionRevisionTraslado({
                   Fuentes
                 </p>
                 <div className='space-y-1'>
-                  {fuentesConAbonos.map(f => (
-                    <p
-                      key={f.id}
-                      className='text-xs text-gray-700 dark:text-gray-300'
-                    >
-                      • {f.tipo}: {formatCurrency(f.monto_aprobado)}
-                    </p>
-                  ))}
+                  {fuentesConAbonos.map(f => {
+                    const capitalBase = f.parametrosCredito?.capital ?? null
+                    const tieneDesglose =
+                      capitalBase != null &&
+                      capitalBase > 0 &&
+                      capitalBase < f.monto_aprobado
+                    return (
+                      <div key={f.id} className='space-y-0.5'>
+                        <p className='text-xs text-gray-700 dark:text-gray-300'>
+                          • {f.tipo}:{' '}
+                          <span className='font-semibold'>
+                            {formatCurrency(f.monto_aprobado)}
+                          </span>
+                        </p>
+                        {tieneDesglose ? (
+                          <p className='pl-3 text-[10px] text-gray-400 dark:text-gray-500'>
+                            Capital {formatCurrency(capitalBase)} + int.{' '}
+                            {formatCurrency(f.monto_aprobado - capitalBase)}
+                          </p>
+                        ) : null}
+                      </div>
+                    )
+                  })}
                 </div>
               </div>
             </div>
@@ -173,20 +188,35 @@ export function SeccionRevisionTraslado({
                     )
                     const camposConfig =
                       tipoConCampos?.configuracion_campos?.campos ?? []
-                    const monto = f.config
-                      ? obtenerMontoParaCierre(
-                          f.config,
-                          tipoConCampos,
-                          camposConfig
-                        )
-                      : 0
+                    const montoTotal = f.config?.monto_aprobado
+                      ? f.config.monto_aprobado
+                      : f.config
+                        ? obtenerMontoParaCierre(
+                            f.config,
+                            tipoConCampos,
+                            camposConfig
+                          )
+                        : 0
+                    const capitalBase = f.config?.capital_para_cierre
+                    const tieneDesglose =
+                      capitalBase != null &&
+                      capitalBase > 0 &&
+                      capitalBase < montoTotal
                     return (
-                      <p
-                        key={f.tipo}
-                        className='text-xs text-gray-700 dark:text-gray-300'
-                      >
-                        • {f.tipo}: {formatCurrency(monto)}
-                      </p>
+                      <div key={f.tipo} className='space-y-0.5'>
+                        <p className='text-xs text-gray-700 dark:text-gray-300'>
+                          • {f.tipo}:{' '}
+                          <span className='font-semibold'>
+                            {formatCurrency(montoTotal)}
+                          </span>
+                        </p>
+                        {tieneDesglose && capitalBase != null ? (
+                          <p className='pl-3 text-[10px] text-gray-400 dark:text-gray-500'>
+                            Capital {formatCurrency(capitalBase)} + int.{' '}
+                            {formatCurrency(montoTotal - capitalBase)}
+                          </p>
+                        ) : null}
+                      </div>
                     )
                   })}
                 </div>

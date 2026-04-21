@@ -30,6 +30,7 @@ const RENDERERS: Partial<Record<string, RendererComponent>> = {
   // Negociación
   negociacion_creada: NegociacionCreadaRenderer,
   traslado_vivienda: TrasladoViviendaRenderer,
+  negociacion_cerrada_traslado: CambioGenericoRenderer,
   negociacion_actualizada: NegociacionActualizadaRenderer,
   negociacion_estado_cambiada: CambioGenericoRenderer,
   negociacion_completada: CambioGenericoRenderer,

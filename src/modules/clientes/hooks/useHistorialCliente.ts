@@ -101,6 +101,10 @@ export function useHistorialCliente({
         }
       }
 
+      // Ocultar negociaciones creadas como destino de traslado
+      // (ya están representadas en el evento 'traslado_vivienda')
+      if (ev.tipo === 'negociacion_traslado_interna') return false
+
       return true
     })
   }, [eventosRaw])

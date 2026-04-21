@@ -317,6 +317,14 @@ export const HEADER_GRADIENTS_POR_TIPO: Record<TipoEventoHistorial, string> = {
   traslado_vivienda:
     'bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600',
 
+  // ── Negociación cerrada por traslado (naranja → ámbar) ────────────────
+  negociacion_cerrada_traslado:
+    'bg-gradient-to-r from-orange-600 via-amber-600 to-yellow-600',
+
+  // ── Negociación creada por traslado (gris — nunca se muestra en UI) ───
+  negociacion_traslado_interna:
+    'bg-gradient-to-r from-gray-500 via-gray-600 to-gray-700',
+
   // ── Abono editado (azul → índigo → púrpura) ───────────────────────────
   abono_editado: 'bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600',
 }

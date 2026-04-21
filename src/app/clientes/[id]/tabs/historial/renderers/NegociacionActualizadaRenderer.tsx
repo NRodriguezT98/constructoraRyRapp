@@ -571,10 +571,12 @@ export function NegociacionActualizadaRenderer({ evento }: Props) {
   }
 
   // ── Caso 2: Cambio de descuento ─────────────────────────────────────────────
-  if (
-    datosNuevos.descuento_aplicado !== undefined ||
-    datosNuevos.tipo_descuento !== undefined
-  ) {
+  // Usar evento.detalles (campos que REALMENTE cambiaron) en lugar de
+  // datosNuevos (fila completa), que siempre contiene descuento_aplicado.
+  const esCambioDescuento = evento.detalles?.some(
+    d => d.campo === 'descuento_aplicado' || d.campo === 'tipo_descuento'
+  )
+  if (esCambioDescuento) {
     return (
       <DescuentoCambioRenderer
         datosNuevos={datosNuevos}

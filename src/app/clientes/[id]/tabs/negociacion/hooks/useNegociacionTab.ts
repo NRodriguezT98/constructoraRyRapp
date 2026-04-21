@@ -20,6 +20,7 @@ import type { FuentePago } from '@/modules/clientes/services/fuentes-pago.servic
 import { fuentesPagoService } from '@/modules/clientes/services/fuentes-pago.service'
 import type { Cliente } from '@/modules/clientes/types'
 import { usePermisosQuery } from '@/modules/usuarios/hooks/usePermisosQuery'
+import { esCreditoConstructora } from '@/shared/constants/fuentes-pago.constants'
 import { useCierreFinanciero } from '@/shared/hooks/useCierreFinanciero'
 
 import { useDescuentoMutation } from './useDescuentoMutation'
@@ -257,6 +258,17 @@ export function useNegociacionTab({ cliente }: UseNegociacionTabProps) {
     [negociacion]
   )
 
+  // ─── Total comprometido real (incluye intereses del crédito constructora) ─
+  const totalComprometido = useMemo(
+    () => fuentesPago.reduce((sum, f) => sum + (f.monto_aprobado ?? 0), 0),
+    [fuentesPago]
+  )
+  const interesesTotales = useMemo(() => {
+    const tieneCredito = fuentesPago.some(f => esCreditoConstructora(f.tipo))
+    if (!tieneCredito) return 0
+    return Math.max(0, totalComprometido - valorVivienda)
+  }, [fuentesPago, totalComprometido, valorVivienda])
+
   // ─── Balance (shared hook — single source of truth) ─────────────────────
   const {
     totalParaCierre: totalFuentes,
@@ -293,6 +305,8 @@ export function useNegociacionTab({ cliente }: UseNegociacionTabProps) {
     // Data
     negociacion,
     valorVivienda,
+    totalComprometido,
+    interesesTotales,
     fuentesPago: fuentesOrdenadas,
     abonos,
     totalAbonado,

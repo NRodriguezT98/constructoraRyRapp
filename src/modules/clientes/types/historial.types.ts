@@ -69,6 +69,8 @@ export type TipoEventoHistorial =
   | 'negociacion_estado_cambiada'
   | 'negociacion_completada'
   | 'traslado_vivienda'
+  | 'negociacion_traslado_interna' // Negociación nueva creada como parte de un traslado — se oculta en la UI
+  | 'negociacion_cerrada_traslado' // Negociación vieja cerrada por traslado — se muestra con campos humanizados
   // Abono
   | 'abono_registrado'
   | 'abono_editado'

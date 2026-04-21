@@ -112,6 +112,29 @@ export function generarTextos(
       }
     }
 
+    case 'negociacion_traslado_interna':
+      // Este tipo se filtra en la UI — nunca debería llegar al renderer
+      return {
+        titulo: 'Nueva negociación (traslado)',
+        descripcion: 'Parte de un traslado de vivienda',
+      }
+
+    case 'negociacion_cerrada_traslado': {
+      const estadoAnterior =
+        (cambios_especificos?.estado as { antes?: unknown } | undefined)
+          ?.antes ?? 'Activa'
+      const motivo = cambios_especificos?.motivo_traslado as
+        | { despues?: unknown }
+        | undefined
+      const motivoStr = motivo?.despues ? String(motivo.despues) : null
+      return {
+        titulo: 'Negociación cerrada por traslado',
+        descripcion: motivoStr
+          ? `${String(estadoAnterior)} → Cerrada por Traslado · ${motivoStr}`
+          : `${String(estadoAnterior)} → Cerrada por Traslado`,
+      }
+    }
+
     case 'negociacion_creada': {
       const manzanaParte = metadata?.manzana_nombre
         ? `Mza. ${metadata.manzana_nombre}`

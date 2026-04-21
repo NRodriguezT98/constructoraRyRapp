@@ -26,14 +26,25 @@ export function detectarTipoEvento(
   // ========== NEGOCIACIÓN ==========
   if (tabla === 'negociaciones') {
     if (accion === 'CREATE') {
-      // Traslado de vivienda tiene prioridad sobre negociacion_creada genérica
       const meta = evento.metadata as Record<string, unknown> | null
+      // El traslado crea la entrada principal con este tipo
       if (meta?.tipo === 'TRASLADO_VIVIENDA') return 'traslado_vivienda'
+      // Negociación creada como destino de traslado — redundante, se oculta
+      if (
+        (evento.datos_nuevos as Record<string, unknown> | null)
+          ?.negociacion_origen_id
+      ) {
+        return 'negociacion_traslado_interna'
+      }
       return 'negociacion_creada'
     }
     if (accion === 'UPDATE') {
       if (cambios_especificos?.estado?.despues === 'Completada') {
         return 'negociacion_completada'
+      }
+      // Negociación cerrada porque fue trasladada a otra vivienda
+      if (cambios_especificos?.estado?.despues === 'Cerrada por Traslado') {
+        return 'negociacion_cerrada_traslado'
       }
       if (cambios_especificos?.estado) return 'negociacion_estado_cambiada'
       return 'negociacion_actualizada'

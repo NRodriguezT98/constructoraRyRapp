@@ -93,19 +93,30 @@ export function useAbonosList() {
       return filtros.mostrarActivos
     })
 
-    // Filtro por búsqueda (nombre, CC o RYR-XXXX)
+    // Filtro por búsqueda (nombre, CC, RYR-XXXX, vivienda, proyecto)
     if (filtros.busqueda.trim()) {
       const termino = filtros.busqueda.toLowerCase().trim()
       resultado = resultado.filter(abono => {
         const nombreCompleto =
           `${abono.cliente.nombres} ${abono.cliente.apellidos}`.toLowerCase()
         const documento = abono.cliente.numero_documento.toLowerCase()
-        const recibo =
-          `ryr-${String(abono.numero_recibo).padStart(4, '0')}`.toLowerCase()
+        const recibo = `ryr-${String(abono.numero_recibo).padStart(4, '0')}`
+        // Vivienda: acepta "A17", "17", "a", "mz.a casa 17"…
+        const viviendaRef =
+          `${abono.vivienda.manzana.identificador}${abono.vivienda.numero}`.toLowerCase()
+        const proyectoNombre = abono.proyecto.nombre.toLowerCase()
+        // Manejo inteligente de recibo: "ryr-15" → número 15 → recibo 0015
+        const reciboMatch = (() => {
+          if (recibo.includes(termino)) return true
+          const m = termino.match(/^ryr-(\d+)$/)
+          return m !== null && abono.numero_recibo === parseInt(m[1], 10)
+        })()
         return (
           nombreCompleto.includes(termino) ||
           documento.includes(termino) ||
-          recibo.includes(termino)
+          reciboMatch ||
+          viviendaRef.includes(termino) ||
+          proyectoNombre.includes(termino)
         )
       })
     }

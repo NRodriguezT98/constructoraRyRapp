@@ -38,6 +38,8 @@ const ICONOS: Record<TipoEventoHistorial, LucideIcon> = {
   negociacion_estado_cambiada: RefreshCw,
   negociacion_completada: CheckCircle,
   traslado_vivienda: ArrowRightLeft,
+  negociacion_traslado_interna: HandshakeIcon, // nunca se muestra, solo fallback
+  negociacion_cerrada_traslado: ArrowRightLeft,
   abono_registrado: DollarSign,
   abono_editado: Edit3,
   abono_anulado: XCircle,
@@ -61,6 +63,8 @@ const COLORES: Record<TipoEventoHistorial, ColorEvento> = {
   negociacion_creada: 'green',
   negociacion_completada: 'green',
   traslado_vivienda: 'orange',
+  negociacion_traslado_interna: 'gray', // nunca se muestra, solo fallback
+  negociacion_cerrada_traslado: 'orange',
   abono_registrado: 'green',
   abono_editado: 'yellow',
   renuncia_aprobada: 'green',
