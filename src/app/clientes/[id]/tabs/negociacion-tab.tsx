@@ -167,7 +167,7 @@ export function NegociacionTab({
         transition={{ duration: 0.25 }}
         className='overflow-hidden rounded-xl border border-gray-200/80 bg-white dark:border-gray-700/50 dark:bg-gray-800/50'
       >
-        {/* Row 1: Identificación de vivienda */}
+        {/* Row 1: Identificación de vivienda + acciones */}
         <div className='flex items-center gap-3 border-b border-gray-100 px-4 py-2.5 dark:border-gray-700/40'>
           <div className='flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-cyan-100 dark:bg-cyan-900/30'>
             <Home className='h-4 w-4 text-cyan-600 dark:text-cyan-400' />
@@ -184,45 +184,32 @@ export function NegociacionTab({
               </p>
             ) : null}
           </div>
-          <span
-            className={`flex-shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold ${
-              negociacion.estado === 'Activa'
-                ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
-                : negociacion.estado === 'Cerrada por Renuncia'
-                  ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
-                  : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
-            }`}
-          >
-            {negociacion.estado}
-          </span>
-        </div>
-
-        {/* Row 2: Acciones */}
-        <div className='flex items-center justify-end gap-2 border-b border-gray-100 px-4 py-2 dark:border-gray-700/40'>
-          {negociacion.estado === 'Activa' ? (
-            <button
-              onClick={() =>
-                router.push(
-                  `/clientes/${cliente.id}/traslado-vivienda?negociacion_id=${negociacion.id}&nombre=${encodeURIComponent(`${cliente.nombres} ${cliente.apellidos}`)}`
-                )
-              }
-              className='inline-flex items-center gap-1.5 rounded-lg border border-amber-200 bg-amber-50 px-2.5 py-1 text-[11px] font-semibold text-amber-700 transition-all hover:border-amber-300 hover:bg-amber-100 hover:shadow-sm dark:border-amber-800 dark:bg-amber-900/20 dark:text-amber-400 dark:hover:bg-amber-900/40'
-            >
-              <ArrowRightLeft className='h-3.5 w-3.5' />
-              Trasladar vivienda
-            </button>
-          ) : null}
-          {isAdmin &&
-          (negociacion.estado === 'Activa' ||
-            negociacion.estado === 'Suspendida') ? (
-            <button
-              onClick={() => setModalRenunciaOpen(true)}
-              className='inline-flex items-center gap-1.5 rounded-lg border border-red-200 bg-red-50 px-2.5 py-1 text-[11px] font-semibold text-red-700 transition-all hover:border-red-300 hover:bg-red-100 hover:shadow-sm dark:border-red-800 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/40'
-            >
-              <FileX className='h-3.5 w-3.5' />
-              Registrar Renuncia
-            </button>
-          ) : null}
+          <div className='flex flex-shrink-0 items-center gap-2'>
+            {negociacion.estado === 'Activa' ? (
+              <button
+                onClick={() =>
+                  router.push(
+                    `/clientes/${cliente.id}/traslado-vivienda?negociacion_id=${negociacion.id}&nombre=${encodeURIComponent(`${cliente.nombres} ${cliente.apellidos}`)}`
+                  )
+                }
+                className='inline-flex items-center gap-1.5 rounded-lg border border-amber-200 bg-amber-50 px-2.5 py-1 text-[11px] font-semibold text-amber-700 transition-all hover:border-amber-300 hover:bg-amber-100 hover:shadow-sm dark:border-amber-800 dark:bg-amber-900/20 dark:text-amber-400 dark:hover:bg-amber-900/40'
+              >
+                <ArrowRightLeft className='h-3.5 w-3.5' />
+                Trasladar vivienda
+              </button>
+            ) : null}
+            {isAdmin &&
+            (negociacion.estado === 'Activa' ||
+              negociacion.estado === 'Suspendida') ? (
+              <button
+                onClick={() => setModalRenunciaOpen(true)}
+                className='inline-flex items-center gap-1.5 rounded-lg border border-red-200 bg-red-50 px-2.5 py-1 text-[11px] font-semibold text-red-700 transition-all hover:border-red-300 hover:bg-red-100 hover:shadow-sm dark:border-red-800 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/40'
+              >
+                <FileX className='h-3.5 w-3.5' />
+                Registrar Renuncia
+              </button>
+            ) : null}
+          </div>
         </div>
 
         {/* KPIs row — 5 cols cuando hay descuento, 4 cols si no */}

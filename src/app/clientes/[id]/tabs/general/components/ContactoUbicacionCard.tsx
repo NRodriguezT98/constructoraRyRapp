@@ -26,7 +26,7 @@ export function ContactoUbicacionCard({ cliente }: ContactoUbicacionCardProps) {
     <motion.div
       {...fadeInLeft}
       transition={{ delay: 0.1 }}
-      className='group relative overflow-hidden rounded-xl border border-gray-200/80 bg-white shadow-md transition-all hover:-translate-y-0.5 hover:shadow-lg dark:border-gray-700/60 dark:bg-gray-800/90'
+      className='group relative overflow-hidden rounded-xl border border-gray-200/80 bg-white shadow-md transition-all hover:-translate-y-0.5 hover:shadow-lg dark:border-gray-700/60 dark:bg-gray-800/90 md:row-span-5 md:grid md:grid-rows-subgrid'
     >
       {/* Accent bar left */}
       <div className='absolute inset-y-0 left-0 w-0.5 bg-gradient-to-b from-blue-500 to-indigo-600' />

@@ -19,7 +19,7 @@ import {
 
 import { ConfirmacionModal } from '@/shared/components/modals/ConfirmacionModal'
 import { EmptyState } from '@/shared/components/ui/EmptyState'
-import { LoadingSpinner } from '@/shared/components/ui/Loading'
+import { SectionLoadingSpinner } from '@/shared/components/ui/SectionLoadingSpinner'
 import { type ModuleName } from '@/shared/config/module-themes'
 import type { CarpetaConConteo } from '@/shared/documentos/types/carpeta.types'
 import type { DocumentoProyecto } from '@/shared/documentos/types/documento.types'
@@ -164,9 +164,11 @@ export function DocumentosLista({
 
   if (cargandoDocumentos) {
     return (
-      <div className='flex items-center justify-center py-20'>
-        <LoadingSpinner size='lg' />
-      </div>
+      <SectionLoadingSpinner
+        label='Cargando documentos...'
+        moduleName={moduleName as ModuleName}
+        icon={FileText}
+      />
     )
   }
 

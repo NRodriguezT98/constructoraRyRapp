@@ -1,8 +1,6 @@
 'use client'
 
-import { ArrowUpRight, Calendar, CreditCard, Tag, Wallet } from 'lucide-react'
-
-import { useRouter } from 'next/navigation'
+import { Calendar, CreditCard, Tag, Wallet } from 'lucide-react'
 
 import { formatDateCompact } from '@/lib/utils/date.utils'
 import { formatearNumeroRecibo } from '@/modules/abonos/utils/formato-recibo'
@@ -40,12 +38,10 @@ interface AbonosRecientesProps {
 export function AbonosRecientes({
   abonos,
   totalAbonado,
-  negociacionId,
+  negociacionId: _negociacionId,
   fuentesPago = [],
   isLoading,
 }: AbonosRecientesProps) {
-  const router = useRouter()
-
   // Mapa fuente_pago_id → FuenteInfo para lookup O(1)
   const fuenteMap = new Map(fuentesPago.map(f => [f.id, f]))
 
@@ -153,23 +149,14 @@ export function AbonosRecientes({
         )
       })}
 
-      {/* Footer: resumen + CTA al módulo de abonos */}
-      <div className='mt-3 flex items-center justify-between rounded-lg border border-gray-200/60 bg-gray-50 px-3 py-2.5 dark:border-gray-700/40 dark:bg-gray-800/40'>
-        <div>
-          <p className='text-[10px] font-medium uppercase tracking-wide text-gray-400 dark:text-gray-500'>
-            Total abonado
-          </p>
-          <p className='text-sm font-bold tabular-nums text-gray-900 dark:text-white'>
-            {formatCurrency(totalAbonado)}
-          </p>
-        </div>
-        <button
-          onClick={() => router.push(`/abonos?negociacion=${negociacionId}`)}
-          className='inline-flex items-center gap-1.5 rounded-lg border border-cyan-200 bg-cyan-50 px-3 py-1.5 text-xs font-semibold text-cyan-700 transition-colors hover:bg-cyan-100 dark:border-cyan-800/60 dark:bg-cyan-900/30 dark:text-cyan-400 dark:hover:bg-cyan-900/50'
-        >
-          Gestionar en módulo de Abonos
-          <ArrowUpRight className='h-3.5 w-3.5' />
-        </button>
+      {/* Footer: resumen */}
+      <div className='mt-3 rounded-lg border border-gray-200/60 bg-gray-50 px-3 py-2.5 dark:border-gray-700/40 dark:bg-gray-800/40'>
+        <p className='text-[10px] font-medium uppercase tracking-wide text-gray-400 dark:text-gray-500'>
+          Total abonado
+        </p>
+        <p className='text-sm font-bold tabular-nums text-gray-900 dark:text-white'>
+          {formatCurrency(totalAbonado)}
+        </p>
       </div>
     </div>
   )

@@ -82,7 +82,7 @@ const DocumentosTab = dynamic(
     loading: () => (
       <SectionLoadingSpinner
         label='Cargando documentos...'
-        moduleName='documentos'
+        moduleName='clientes'
         icon={FileText}
       />
     ),
