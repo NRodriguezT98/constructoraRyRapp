@@ -11,7 +11,6 @@ interface PageProps {
 export default async function ProyectoDetallePage({ params }: PageProps) {
   const { id } = await params
 
-  // Resolver slug a UUID si es necesario
   const proyectoUUID = await resolverSlugProyectoServer(id)
 
   if (!proyectoUUID) {

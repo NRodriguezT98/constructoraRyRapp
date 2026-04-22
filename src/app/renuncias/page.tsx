@@ -19,7 +19,7 @@ import RenunciasContent from './components/renuncias-content'
 
 export default async function RenunciasPage() {
   // ✅ Obtener permisos desde el servidor
-  const permisos = await getServerPermissions()
+  const permisos = await getServerPermissions('renuncias')
 
   // ✅ Pasar permisos como props
   return <RenunciasContent {...permisos} />

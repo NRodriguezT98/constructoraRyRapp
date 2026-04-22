@@ -26,6 +26,18 @@ export function useDocumentoCard({
   const { puede } = usePermisosQuery()
   const esAdmin = useMemo(() => perfil?.rol === 'Administrador', [perfil?.rol])
   const puedeEliminar = useMemo(() => puede('documentos', 'eliminar'), [puede])
+  const puedeEditar = useMemo(
+    () => esAdmin || puede('documentos', 'editar'),
+    [esAdmin, puede]
+  )
+  const puedeArchivar = useMemo(
+    () => esAdmin || puede('documentos', 'archivar'),
+    [esAdmin, puede]
+  )
+  const puedeSubir = useMemo(
+    () => esAdmin || puede('documentos', 'subir'),
+    [esAdmin, puede]
+  )
 
   // �️ Confirmación de eliminación inteligente
   const {
@@ -212,6 +224,9 @@ export function useDocumentoCard({
     // 🔐 Auth
     esAdmin,
     puedeEliminar,
+    puedeEditar,
+    puedeArchivar,
+    puedeSubir,
 
     // 📋 Estados de UI - Menú
     menuAbierto,

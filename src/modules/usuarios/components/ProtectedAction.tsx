@@ -150,39 +150,6 @@ export function CanView({ modulo, children, fallback }: SimpleActionProps) {
 }
 
 /**
- * Componente simplificado para verificar permiso de APROBAR
- */
-export function CanApprove({ modulo, children, fallback }: SimpleActionProps) {
-  return (
-    <ProtectedAction modulo={modulo} accion='aprobar' fallback={fallback}>
-      {children}
-    </ProtectedAction>
-  )
-}
-
-/**
- * Componente simplificado para verificar permiso de RECHAZAR
- */
-export function CanReject({ modulo, children, fallback }: SimpleActionProps) {
-  return (
-    <ProtectedAction modulo={modulo} accion='rechazar' fallback={fallback}>
-      {children}
-    </ProtectedAction>
-  )
-}
-
-/**
- * Componente simplificado para verificar permiso de EXPORTAR
- */
-export function CanExport({ modulo, children, fallback }: SimpleActionProps) {
-  return (
-    <ProtectedAction modulo={modulo} accion='exportar' fallback={fallback}>
-      {children}
-    </ProtectedAction>
-  )
-}
-
-/**
  * Componente para verificar si el usuario es Administrador
  */
 interface AdminOnlyProps {

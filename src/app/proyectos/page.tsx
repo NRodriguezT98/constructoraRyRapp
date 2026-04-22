@@ -21,7 +21,7 @@ import { ProyectosPage } from '../../modules/proyectos/components/proyectos-page
 export default async function Proyectos() {
   // ✅ Obtener permisos desde el servidor
   // No hay query a DB aquí - usa React cache del servicio auth
-  const permisos = await getServerPermissions()
+  const permisos = await getServerPermissions('proyectos')
 
   // ✅ Pasar permisos como props
   // El Client Component solo maneja UI

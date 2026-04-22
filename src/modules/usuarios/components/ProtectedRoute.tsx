@@ -72,7 +72,7 @@ export function ProtectedRoute({
   accion,
   acciones,
   requireAll = false,
-  redirectTo = '/dashboard',
+  redirectTo = '/',
   children,
   loading = <LoadingPage />,
 }: ProtectedRouteProps) {
@@ -269,12 +269,12 @@ interface RequireAdminProps {
 }
 
 export function RequireAdmin({
-  redirectTo = '/dashboard',
+  redirectTo = '/',
   children,
 }: RequireAdminProps) {
   const router = useRouter()
   const { perfil, loading: authLoading } = useAuth()
-  const { esAdmin, permisosLoading } = usePermissions()
+  const { esAdmin, isLoading: permisosLoading } = usePermissions()
 
   useEffect(() => {
     // ⭐ SOLUCIÓN IDEAL: Esperar a que cargue autenticación Y permisos

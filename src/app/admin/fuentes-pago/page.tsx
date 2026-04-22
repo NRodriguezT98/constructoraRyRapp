@@ -7,7 +7,7 @@
  * Solo accesible para usuarios con permisos de admin.
  */
 
-import { redirect } from 'next/navigation'
+import { forbidden } from 'next/navigation'
 
 import { getServerPermissions } from '@/lib/auth/server'
 
@@ -20,11 +20,10 @@ export const metadata = {
 }
 
 export default async function FuentesPagoAdminPage() {
-  // Verificar permisos de admin
-  const permisos = await getServerPermissions()
+  const permisos = await getServerPermissions('administracion')
 
   if (!permisos.isAdmin) {
-    redirect('/dashboard')
+    forbidden()
   }
 
   return <FuentesPagoAdminContent />

@@ -3,241 +3,35 @@
  * HOOK: usePermissions
  * ============================================
  *
- * Hook para verificar permisos del usuario actual.
- * Proporciona funciones y helpers para control de acceso.
+ * Re-exporta usePermisosQuery con la misma API para
+ * mantener compatibilidad con código existente.
  *
- * DISEÑO PARA MIGRACIÓN FUTURA:
- * - Actualmente usa permisos estáticos del código
- * - En el futuro, consultará tabla de permisos en DB
- * - La API del hook se mantiene igual (sin breaking changes)
+ * ⭐ Usar usePermisosQuery directamente en código nuevo.
  */
 
 'use client'
 
-import { useMemo } from 'react'
+import type { Rol } from '../types'
 
-import { useAuth } from '@/contexts/auth-context'
-import { logger } from '@/lib/utils/logger'
-
-import type { Accion, Modulo, Rol } from '../types'
 import {
-  DESCRIPCION_PERMISOS,
-  obtenerModulosConAcceso,
-  obtenerPermisos,
-  PERMISOS_POR_ROL,
-  tieneAlgunPermiso as verificarAlgunPermiso,
-  tienePermiso as verificarPermiso,
-  tieneTodosLosPermisos as verificarTodosPermisos,
-} from '../types'
+  useCan as useCanQuery,
+  useIsAdmin as useIsAdminQuery,
+  usePermisosQuery,
+  useRole as useRoleQuery,
+} from './usePermisosQuery'
 
 export function usePermissions() {
-  const { perfil, loading: authLoading } = useAuth()
-  const rol = perfil?.rol as Rol | undefined
-
-  /**
-   * Estado de carga de permisos
-   * - true: Permisos están cargando
-   * - false: Permisos listos para usar o sin sesión
-   */
-  const permisosLoading = useMemo(() => {
-    // Si auth está cargando, permisos también están cargando
-    if (authLoading) {
-      return true
-    }
-
-    // Si NO hay perfil después de cargar auth, no hay sesión
-    if (!perfil) {
-      return false
-    }
-
-    // Si hay perfil pero no rol, permisos aún cargando
-    if (!rol) {
-      return true
-    }
-
-    // Permisos completamente listos: hay perfil Y rol
-    return false
-  }, [authLoading, perfil, rol])
-
-  /**
-   * Verifica si el usuario actual tiene un permiso específico
-   */
-  const puede = useMemo(() => {
-    return (modulo: Modulo, accion: Accion): boolean => {
-      if (!rol) return false
-      return verificarPermiso(rol, modulo, accion)
-    }
-  }, [rol])
-
-  /**
-   * Verifica si el usuario tiene ALGUNO de los permisos
-   */
-  const puedeAlguno = useMemo(() => {
-    return (modulo: Modulo, acciones: Accion[]): boolean => {
-      if (!rol) return false
-      return verificarAlgunPermiso(rol, modulo, acciones)
-    }
-  }, [rol])
-
-  /**
-   * Verifica si el usuario tiene TODOS los permisos
-   */
-  const puedeTodos = useMemo(() => {
-    return (modulo: Modulo, acciones: Accion[]): boolean => {
-      if (!rol) return false
-      return verificarTodosPermisos(rol, modulo, acciones)
-    }
-  }, [rol])
-
-  /**
-   * Obtiene todos los permisos del usuario para un módulo
-   */
-  const permisosModulo = useMemo(() => {
-    return (modulo: Modulo): Accion[] => {
-      if (!rol) return []
-      return obtenerPermisos(rol, modulo)
-    }
-  }, [rol])
-
-  /**
-   * Obtiene todos los módulos a los que el usuario tiene acceso
-   */
-  const modulosConAcceso = useMemo(() => {
-    if (!rol) return []
-
-    // ⚠️ Validación adicional: verificar que el rol existe en PERMISOS_POR_ROL
-    if (!PERMISOS_POR_ROL[rol]) {
-      logger.error(
-        `❌ [PERMISOS] Rol "${rol}" no reconocido en sistema de permisos`
-      )
-      return []
-    }
-
-    return obtenerModulosConAcceso(rol)
-  }, [rol])
-
-  /**
-   * Verifica si el usuario es administrador
-   */
-  const esAdmin = useMemo(() => {
-    return rol === 'Administrador'
-  }, [rol])
-
-  /**
-   * Verifica si el usuario es contabilidad
-   */
-  const esContabilidad = useMemo(() => {
-    return rol === 'Contabilidad'
-  }, [rol])
-
-  /**
-   * Verifica si el usuario es administrador de obra
-   */
-  const esAdminObra = useMemo(() => {
-    return rol === 'Administrador de Obra'
-  }, [rol])
-
-  /**
-   * Verifica si el usuario es gerencia
-   */
-  const esGerencia = useMemo(() => {
-    return rol === 'Gerencia'
-  }, [rol])
-
-  /**
-   * Obtiene la descripción de un permiso
-   */
-  const obtenerDescripcionPermiso = useMemo(() => {
-    return (modulo: Modulo, accion: Accion): string => {
-      return DESCRIPCION_PERMISOS[modulo]?.[accion] || 'Sin descripción'
-    }
-  }, [])
-
-  /**
-   * Obtiene todos los permisos disponibles del usuario
-   * Útil para mostrar en UI de configuración
-   */
-  const todosLosPermisos = useMemo(() => {
-    if (!rol) return []
-
-    // ⚠️ Validación: verificar que el rol existe en PERMISOS_POR_ROL
-    if (!PERMISOS_POR_ROL[rol]) {
-      logger.error(`❌ [PERMISOS] Rol "${rol}" no tiene permisos definidos`)
-      return []
-    }
-
-    const permisos: { modulo: Modulo; accion: Accion; descripcion: string }[] =
-      []
-
-    Object.entries(PERMISOS_POR_ROL[rol]).forEach(([modulo, acciones]) => {
-      acciones.forEach(accion => {
-        permisos.push({
-          modulo: modulo as Modulo,
-          accion,
-          descripcion: DESCRIPCION_PERMISOS[modulo as Modulo]?.[accion] || '',
-        })
-      })
-    })
-
-    return permisos
-  }, [rol])
-
-  return {
-    // Verificación de permisos
-    puede,
-    puedeAlguno,
-    puedeTodos,
-
-    // Información de permisos
-    permisosModulo,
-    modulosConAcceso,
-    todosLosPermisos,
-    obtenerDescripcionPermiso,
-
-    // Helpers de rol
-    esAdmin,
-    esContabilidad,
-    esAdminObra,
-    esGerencia,
-    rol,
-
-    // Estado
-    tieneRol: !!rol,
-    permisosLoading, // ⭐ NUEVO: Exponer estado de carga
-  }
+  return usePermisosQuery()
 }
 
-/**
- * Hook simplificado para verificaciones rápidas de permisos
- *
- * @example
- * const { puede } = useCan()
- * if (puede('clientes', 'crear')) { ... }
- */
 export function useCan() {
-  const { puede, puedeAlguno, puedeTodos } = usePermissions()
-  return { puede, puedeAlguno, puedeTodos }
+  return useCanQuery()
 }
 
-/**
- * Hook para verificar si el usuario es admin
- *
- * @example
- * const isAdmin = useIsAdmin()
- * if (isAdmin) { ... }
- */
 export function useIsAdmin(): boolean {
-  const { esAdmin } = usePermissions()
-  return esAdmin
+  return useIsAdminQuery()
 }
 
-/**
- * Hook para obtener el rol del usuario
- *
- * @example
- * const rol = useRole()
- */
 export function useRole(): Rol | undefined {
-  const { rol } = usePermissions()
-  return rol
+  return useRoleQuery()
 }

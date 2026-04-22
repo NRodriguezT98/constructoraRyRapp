@@ -17,7 +17,6 @@ export default async function ViviendaDetallePage({ params }: PageProps) {
   try {
     const { slug } = await params
 
-    // Resolver slug a UUID completo
     const viviendaId = await resolverSlugViviendaServer(slug)
 
     if (!viviendaId) {

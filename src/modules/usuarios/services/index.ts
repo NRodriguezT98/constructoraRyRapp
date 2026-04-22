@@ -15,4 +15,13 @@ export {
   obtenerTodosLosPermisos,
   verificarPermiso,
 } from './permisos.service'
-export { usuariosService } from './usuarios.service'
+export {
+  actualizarUsuario,
+  cambiarEstadoUsuario,
+  cambiarRolUsuario,
+  crearUsuario,
+  desbloquearUsuario,
+  obtenerEstadisticasUsuarios,
+  obtenerUsuarioPorId,
+  obtenerUsuarios,
+} from './usuarios.service'

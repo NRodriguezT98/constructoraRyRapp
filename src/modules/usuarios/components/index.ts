@@ -1,28 +1,26 @@
 /**
  * ============================================
- * BARREL EXPORT: Componentes de Usuarios
+ * BARREL EXPORT: Componentes de Usuarios v2
  * ============================================
  *
  * ✨ VERSIÓN 2.0.0 - Sistema de Permisos Configurable
  */
 
-export { usuariosPremiumStyles } from '../styles/usuarios-premium.styles'
-export { EstadisticasUsuariosPremium } from './EstadisticasUsuarios'
-export { Modal } from './Modal'
-export { ModalCrearUsuario } from './ModalCrearUsuario'
-export { ModalEditarUsuario } from './ModalEditarUsuario'
-export { usuariosStyles } from './usuarios.styles'
-export { UsuariosHeader } from './UsuariosHeader'
+// ── V2: Módulo reescrito ─────────────────────────────────────────────────
+export { EditarUsuarioView } from './EditarUsuarioView'
+export { NuevoUsuarioView } from './NuevoUsuarioView'
+export { UsuariosHeaderPremium } from './UsuariosHeaderPremium'
+export { UsuariosListaFiltros } from './UsuariosListaFiltros'
+export { UsuariosMetricasPremium } from './UsuariosMetricasPremium'
+export { UsuariosPageMain } from './UsuariosPageMain'
+export { UsuariosTabla } from './UsuariosTabla'
 
-// Componentes de protección de acciones
+// ── Componentes de protección de acciones (compartidos) ──────────────────
 export {
   AdminOnly,
-  CanApprove,
   CanCreate,
   CanDelete,
   CanEdit,
-  CanExport,
-  CanReject,
   CanView,
   ManagerOrAbove,
   ProtectedAction,
@@ -31,7 +29,6 @@ export {
 // Componentes de protección de rutas
 export { ProtectedRoute, RequireAdmin, RequireView } from './ProtectedRoute'
 
-// ✨ NUEVO: Sistema de Tabs + Gestión de Permisos
-export { PermisosMatrix } from './PermisosMatrix'
-export { PermisosMatrixCompact } from './PermisosMatrixCompact' // ⭐ NUEVO: Vista compacta UX moderna
+// Tabs + Gestión de Permisos v2
+export { PermisosView } from './PermisosView'
 export { UsuariosTabs } from './UsuariosTabs'

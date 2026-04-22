@@ -31,10 +31,21 @@ const PUBLIC_ROUTES = ['/login', '/reset-password', '/update-password']
  * Mapeo de rutas a módulo+acción de permisos
  * El middleware consultará permisos_rol en tiempo real
  * Si una ruta no está aquí, es accesible por todos los autenticados
+ *
+ * El orden importa: las rutas más específicas deben ir primero
  */
 const ROUTE_TO_PERMISSION: Record<string, { modulo: string; accion: string }> =
   {
-    // Módulos principales
+    // Sub-rutas específicas (deben ir ANTES que las rutas base)
+    '/proyectos/nuevo': { modulo: 'proyectos', accion: 'crear' },
+    '/viviendas/nueva': { modulo: 'viviendas', accion: 'crear' }, // ✅ era 'nuevo'
+    '/clientes/nuevo': { modulo: 'clientes', accion: 'crear' },
+    '/renuncias/nuevo': { modulo: 'renuncias', accion: 'crear' },
+    '/abonos/nuevo': { modulo: 'abonos', accion: 'crear' },
+    '/abonos/registrar': { modulo: 'abonos', accion: 'crear' }, // ✅ ruta real de registrar abono
+    '/usuarios/nueva': { modulo: 'usuarios', accion: 'crear' },
+
+    // Módulos principales (ver)
     '/viviendas': { modulo: 'viviendas', accion: 'ver' },
     '/clientes': { modulo: 'clientes', accion: 'ver' },
     '/proyectos': { modulo: 'proyectos', accion: 'ver' },
@@ -83,7 +94,36 @@ function canAccessRoute(
     return true
   }
 
-  // Buscar permiso por coincidencia de prefijo
+  // Detectar sub-rutas de edición dinámicas: /modulo/[slug]/editar
+  // Ej: /proyectos/las-americas-2-.../editar → requiere proyectos.editar
+  const editarMatch = pathname.match(
+    /^\/(proyectos|viviendas|clientes|abonos|renuncias|usuarios)\/[^/]+\/editar/
+  )
+  if (editarMatch) {
+    const modulo = editarMatch[1]
+    const permisoRequerido = `${modulo}.editar`
+    if (permisosCache.includes('*.*')) return true
+    return permisosCache.includes(permisoRequerido)
+  }
+
+  // Detectar rutas de asignar/trasladar vivienda → requieren permiso de negociaciones
+  // Ej: /clientes/[slug]/asignar-vivienda → negociaciones.crear
+  const asignarMatch = pathname.match(
+    /^\/clientes\/[^/]+\/asignar-vivienda(-v2)?$/
+  )
+  if (asignarMatch) {
+    if (permisosCache.includes('*.*')) return true
+    return permisosCache.includes('negociaciones.crear')
+  }
+
+  // Ej: /clientes/[slug]/traslado-vivienda → negociaciones.editar
+  const trasladoMatch = pathname.match(/^\/clientes\/[^/]+\/traslado-vivienda$/)
+  if (trasladoMatch) {
+    if (permisosCache.includes('*.*')) return true
+    return permisosCache.includes('negociaciones.editar')
+  }
+
+  // Buscar permiso por coincidencia de prefijo (rutas del mapa)
   for (const [route, permission] of Object.entries(ROUTE_TO_PERMISSION)) {
     if (pathname === route || pathname.startsWith(`${route}/`)) {
       // ✅ OPTIMIZACIÓN: Leer del cache del JWT (0ms, sin query)
@@ -243,18 +283,54 @@ export async function middleware(req: NextRequest) {
     }
 
     // ============================================
-    // 7. VERIFICAR PERMISOS PARA LA RUTA (DESDE JWT CACHE - 0ms)
+    // 7. VERIFICAR PERMISOS PARA LA RUTA (JWT CACHE o FALLBACK BD)
     // ============================================
+
+    // Si el cache está vacío y el usuario no es Admin, consultar BD directamente
+    // Esto ocurre cuando el JWT no fue sincronizado (primer login, después de limpieza, etc.)
+    if (permisosCache.length === 0 && rol !== 'Administrador') {
+      try {
+        const { data: permisosBD } = await supabase
+          .from('permisos_rol')
+          .select('modulo, accion')
+          .eq('rol', rol)
+          .eq('permitido', true)
+
+        if (permisosBD && permisosBD.length > 0) {
+          permisosCache = permisosBD.map(p => `${p.modulo}.${p.accion}`)
+          debugLog('🔄 Permisos cargados desde BD (cache JWT vacío)', {
+            rol,
+            count: permisosCache.length,
+          })
+        }
+      } catch {
+        // Si falla la consulta, dejar cache vacío (acceso denegado)
+      }
+    }
 
     const hasAccess = canAccessRoute(pathname, rol, permisosCache)
 
     if (!hasAccess) {
-      // Sin permiso → Redirigir a dashboard
-      return NextResponse.redirect(new URL('/dashboard', req.url))
+      // Sin permiso → rewrite a página 403 (URL del navegador no cambia)
+      return NextResponse.rewrite(new URL('/acceso-denegado', req.url))
     }
 
     // ============================================
-    // 8. AGREGAR HEADERS CON INFO DE USUARIO
+    // 8. ACTUALIZAR ultimo_acceso (throttle: máx. 1 vez por hora)
+    // ============================================
+    // Solo actualiza si han pasado más de 60 minutos desde el último acceso.
+    // Evita escrituras en cada request sin perder precisión útil.
+
+    try {
+      await supabase.rpc('actualizar_ultimo_acceso_si_necesario', {
+        p_user_id: user.id,
+      })
+    } catch {
+      // No bloquear la request si falla — es un dato secundario
+    }
+
+    // ============================================
+    // 9. AGREGAR HEADERS CON INFO DE USUARIO
     // ============================================
     // IMPORTANTE: Headers solo aceptan ASCII, encodear caracteres especiales
 
@@ -285,6 +361,6 @@ export const config = {
    * - Archivos con extensiones de imagen/CSS/JS
    */
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|robots.txt|.*\\.(?:png|jpg|jpeg|gif|svg|webp|ico|css|js)).*)',
+    '/((?!_next/static|_next/image|favicon.ico|robots.txt|acceso-denegado|.*\\.(?:png|jpg|jpeg|gif|svg|webp|ico|css|js)).*)',
   ],
 }

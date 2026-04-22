@@ -24,6 +24,7 @@ export type ModuleName =
   | 'abonos'
   | 'documentos'
   | 'renuncias'
+  | 'usuarios'
 
 export interface ModuleTheme {
   /** Nombre del módulo */
@@ -575,6 +576,63 @@ export const moduleThemes: Record<ModuleName, ModuleTheme> = {
         secondary: 'bg-rose-600',
       },
       shadow: 'shadow-red-500/10',
+    },
+  },
+
+  /** 👤 USUARIOS - Índigo/Púrpura/Fuchsia */
+  usuarios: {
+    name: 'Usuarios',
+    colors: {
+      primary: 'indigo',
+      secondary: 'purple',
+      tertiary: 'fuchsia',
+      light: 'indigo-50',
+      dark: 'indigo-900',
+    },
+    classes: {
+      gradient: {
+        primary: 'from-indigo-600 to-purple-600',
+        triple: 'from-indigo-600 via-purple-600 to-fuchsia-600',
+        background: 'from-indigo-500 via-purple-500 to-fuchsia-500',
+        backgroundDark: 'from-indigo-600 via-purple-600 to-fuchsia-700',
+        hover:
+          'hover:from-indigo-700 hover:via-purple-700 hover:to-fuchsia-700',
+      },
+      button: {
+        primary:
+          'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-md hover:shadow-lg transition-all',
+        secondary:
+          'border border-indigo-300 bg-white text-indigo-700 hover:bg-indigo-50 dark:border-indigo-700 dark:bg-gray-700 dark:text-indigo-300 dark:hover:bg-gray-600',
+        hover: 'hover:bg-indigo-50 dark:hover:bg-indigo-900/20',
+      },
+      input: {
+        focusBorder: 'focus:border-indigo-500',
+        focusRing: 'focus:ring-2 focus:ring-indigo-500/20',
+      },
+      border: {
+        light: 'border-indigo-200 dark:border-indigo-800',
+        dark: 'border-indigo-800',
+        hover: 'hover:border-indigo-400 dark:hover:border-indigo-500',
+      },
+      bg: {
+        light: 'bg-indigo-50 dark:bg-indigo-900/20',
+        dark: 'bg-indigo-900/20',
+        hover: 'hover:bg-indigo-50 dark:hover:bg-indigo-900/30',
+      },
+      focus: {
+        ring: 'focus:ring-2 focus:ring-indigo-500 focus:border-transparent',
+        ringDark: 'dark:focus:ring-indigo-400',
+      },
+      text: {
+        primary: 'text-indigo-600 dark:text-indigo-400',
+        secondary: 'text-indigo-700 dark:text-indigo-300',
+        dark: 'dark:text-indigo-400',
+      },
+      badge: {
+        primary: 'bg-indigo-600',
+        secondary: 'bg-purple-600',
+      },
+      shadow: 'shadow-indigo-500/10',
     },
   },
 }

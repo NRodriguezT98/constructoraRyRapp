@@ -7,6 +7,9 @@
 
 import type { Metadata } from 'next'
 
+import { forbidden } from 'next/navigation'
+
+import { getServerPermissions } from '@/lib/auth/server'
 import { resolverSlugCliente } from '@/lib/utils/slug.utils'
 import { TrasladoViviendaPage } from '@/modules/clientes/pages/traslado-vivienda'
 
@@ -22,6 +25,12 @@ interface PageProps {
 }
 
 export default async function Page({ params, searchParams }: PageProps) {
+  const { canEdit, isAdmin } = await getServerPermissions('negociaciones')
+
+  if (!canEdit && !isAdmin) {
+    forbidden()
+  }
+
   const { id } = await params
   const search = await searchParams
 

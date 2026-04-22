@@ -65,6 +65,14 @@ const THEME_COLORS = {
     textDark: 'text-red-900 dark:text-red-300',
     hover: 'hover:from-red-700 hover:via-rose-700 hover:to-pink-700',
   },
+  usuarios: {
+    gradient: 'from-indigo-600 via-purple-600 to-fuchsia-600',
+    bgLight: 'bg-indigo-50 dark:bg-indigo-900/20',
+    border: 'border-indigo-200 dark:border-indigo-900/50',
+    text: 'text-indigo-600 dark:text-indigo-400',
+    textDark: 'text-indigo-900 dark:text-indigo-300',
+    hover: 'hover:from-indigo-700 hover:via-purple-700 hover:to-fuchsia-700',
+  },
 }
 
 export const getRestaurarDocumentoModalStyles = (

@@ -11,7 +11,14 @@ import { useCallback, useEffect, useState } from 'react'
 
 import { logger } from '@/lib/utils/logger'
 
-import { usuariosService } from '../services/usuarios.service'
+import {
+  actualizarUsuario as actualizarUsuarioFn,
+  cambiarEstadoUsuario as cambiarEstadoFn,
+  cambiarRolUsuario as cambiarRolFn,
+  crearUsuario as crearUsuarioFn,
+  obtenerEstadisticasUsuarios,
+  obtenerUsuarios,
+} from '../services/usuarios.service'
 import type {
   ActualizarUsuarioData,
   CrearUsuarioData,
@@ -39,7 +46,7 @@ export function useUsuarios() {
       setCargando(true)
       setError(null)
 
-      const data = await usuariosService.obtenerUsuarios(filtros)
+      const data = await obtenerUsuarios(filtros)
       setUsuarios(data)
     } catch (err) {
       logger.error('Error cargando usuarios:', err)
@@ -54,7 +61,7 @@ export function useUsuarios() {
    */
   const cargarEstadisticas = useCallback(async () => {
     try {
-      const stats = await usuariosService.obtenerEstadisticas()
+      const stats = await obtenerEstadisticasUsuarios()
       setEstadisticas(stats)
     } catch (err) {
       logger.error('Error cargando estadísticas:', err)
@@ -70,7 +77,7 @@ export function useUsuarios() {
         setCargando(true)
         setError(null)
 
-        const resultado = await usuariosService.crearUsuario(datos)
+        const resultado = await crearUsuarioFn(datos)
 
         // Recargar lista
         await cargarUsuarios()
@@ -98,7 +105,7 @@ export function useUsuarios() {
         setCargando(true)
         setError(null)
 
-        await usuariosService.actualizarUsuario(id, datos)
+        await actualizarUsuarioFn(id, datos)
 
         // Recargar lista
         await cargarUsuarios()
@@ -124,7 +131,7 @@ export function useUsuarios() {
         setCargando(true)
         setError(null)
 
-        await usuariosService.cambiarRol(id, nuevoRol)
+        await cambiarRolFn(id, nuevoRol)
 
         // Recargar lista
         await cargarUsuarios()
@@ -150,7 +157,7 @@ export function useUsuarios() {
         setCargando(true)
         setError(null)
 
-        await usuariosService.cambiarEstado(id, nuevoEstado)
+        await cambiarEstadoFn(id, nuevoEstado)
 
         // Recargar lista
         await cargarUsuarios()
@@ -176,7 +183,8 @@ export function useUsuarios() {
         setCargando(true)
         setError(null)
 
-        await usuariosService.resetearIntentosFallidos(id)
+        // resetearIntentosFallidos migrado a desbloquearUsuario en v2
+        await cambiarEstadoFn(id, 'Activo')
 
         // Recargar lista
         await cargarUsuarios()
@@ -201,7 +209,7 @@ export function useUsuarios() {
         setCargando(true)
         setError(null)
 
-        await usuariosService.eliminarUsuario(id)
+        await cambiarEstadoFn(id, 'Inactivo')
 
         // Recargar lista
         await cargarUsuarios()

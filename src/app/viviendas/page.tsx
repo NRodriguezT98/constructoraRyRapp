@@ -20,7 +20,7 @@ import { ViviendasPageMain } from '@/modules/viviendas/components/viviendas-page
 export default async function ViviendasPage() {
   // ✅ Obtener permisos desde el servidor
   // No hay query a DB aquí - usa React cache del servicio auth
-  const permisos = await getServerPermissions()
+  const permisos = await getServerPermissions('viviendas')
 
   // ✅ Pasar permisos como props
   // El Client Component solo maneja UI

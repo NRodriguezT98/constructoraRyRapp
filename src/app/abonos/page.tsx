@@ -25,7 +25,7 @@ import { AbonosListPage } from './components/abonos-list-page-new'
 export default async function AbonosPage() {
   // ✅ Obtener permisos desde el servidor
   // No hay query a DB aquí - usa React cache del servicio auth
-  const permisos = await getServerPermissions()
+  const permisos = await getServerPermissions('abonos')
 
   // ✅ Pasar permisos como props
   // El Client Component solo maneja UI

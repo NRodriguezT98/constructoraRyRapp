@@ -2388,6 +2388,7 @@ export type Database = {
           rol: Database["public"]["Enums"]["rol_usuario"]
           telefono: string | null
           ultimo_acceso: string | null
+          ultimo_login: string | null
         }
         Insert: {
           apellidos: string
@@ -2406,6 +2407,7 @@ export type Database = {
           rol: Database["public"]["Enums"]["rol_usuario"]
           telefono?: string | null
           ultimo_acceso?: string | null
+          ultimo_login?: string | null
         }
         Update: {
           apellidos?: string
@@ -2424,6 +2426,7 @@ export type Database = {
           rol?: Database["public"]["Enums"]["rol_usuario"]
           telefono?: string | null
           ultimo_acceso?: string | null
+          ultimo_login?: string | null
         }
         Relationships: []
       }
@@ -3100,6 +3103,7 @@ export type Database = {
           rol: Database["public"]["Enums"]["rol_usuario"] | null
           telefono: string | null
           ultimo_acceso: string | null
+          ultimo_login: string | null
           ultimo_login_auth: string | null
         }
         Relationships: []
@@ -3198,6 +3202,10 @@ export type Database = {
       }
     }
     Functions: {
+      actualizar_ultimo_acceso_si_necesario: {
+        Args: { p_user_id: string }
+        Returns: undefined
+      }
       calcular_cambios_json: {
         Args: { datos_antes: Json; datos_despues: Json }
         Returns: Json

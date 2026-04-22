@@ -1,26 +1,38 @@
-/**
+﻿/**
  * ============================================
- * HOOK: useUsuariosQuery (React Query)
+ * HOOK: useUsuariosQuery
  * ============================================
  *
- * Migración de useUsuarios a React Query.
- * Gestiona usuarios con cache automático y mutations.
+ * React Query: queries, mutations y factory keys del módulo de usuarios.
+ * Separado de la lógica de UI (filtros, modales, selección → useUsuariosList).
  */
 
 'use client'
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { toast } from 'sonner'
 
-import { logger } from '@/lib/utils/logger'
-
-import { usuariosService } from '../services/usuarios.service'
 import {
+  actualizarUsuario,
+  cambiarEstadoUsuario,
+  cambiarRolUsuario,
+  crearUsuario,
+  desbloquearUsuario,
+  obtenerEstadisticasUsuarios,
+  obtenerUsuarioPorId,
+  obtenerUsuarios,
+} from '../services/usuarios.service'
+import type {
   ActualizarUsuarioData,
   CrearUsuarioData,
   EstadoUsuario,
   FiltrosUsuarios,
   Rol,
 } from '../types'
+
+// ============================================
+// FACTORY KEYS
+// ============================================
 
 export const usuariosKeys = {
   all: ['usuarios'] as const,
@@ -32,114 +44,95 @@ export const usuariosKeys = {
   estadisticas: () => [...usuariosKeys.all, 'estadisticas'] as const,
 }
 
+// ============================================
+// QUERIES
+// ============================================
+
 /**
- * Query: Obtener todos los usuarios con filtros
+ * Lista de usuarios con filtros opcionales.
  */
-export function useUsuariosQuery(filtros?: FiltrosUsuarios) {
+export function useUsuariosListQuery(filtros?: FiltrosUsuarios) {
   return useQuery({
     queryKey: usuariosKeys.list(filtros),
-    queryFn: () => usuariosService.obtenerUsuarios(filtros),
-    staleTime: 2 * 60 * 1000, // 2 minutos
-    gcTime: 5 * 60 * 1000, // 5 minutos
+    queryFn: () => obtenerUsuarios(filtros),
+    staleTime: 1000 * 60 * 2, // 2 minutos
   })
 }
 
 /**
- * Query: Obtener estadísticas de usuarios
+ * Detalle de un usuario por ID.
  */
-export function useEstadisticasUsuariosQuery() {
+export function useUsuarioDetailQuery(id: string | null) {
+  return useQuery({
+    queryKey: id ? usuariosKeys.detail(id) : usuariosKeys.details(),
+    queryFn: () => obtenerUsuarioPorId(id as string),
+    enabled: !!id,
+    staleTime: 1000 * 60 * 5, // 5 minutos
+  })
+}
+
+/**
+ * Estadísticas del módulo.
+ */
+export function useUsuariosEstadisticasQuery() {
   return useQuery({
     queryKey: usuariosKeys.estadisticas(),
-    queryFn: () => usuariosService.obtenerEstadisticas(),
-    staleTime: 2 * 60 * 1000,
-    gcTime: 5 * 60 * 1000,
+    queryFn: obtenerEstadisticasUsuarios,
+    staleTime: 1000 * 60 * 3, // 3 minutos
   })
 }
 
-/**
- * Query: Obtener usuario por ID
- */
-export function useUsuarioQuery(id: string | null) {
-  return useQuery({
-    queryKey: usuariosKeys.detail(id ?? ''),
-    queryFn: () => {
-      if (!id) throw new Error('ID no proporcionado')
-      return usuariosService.obtenerUsuarioPorId(id)
-    },
-    enabled: !!id,
-    staleTime: 2 * 60 * 1000,
-    gcTime: 5 * 60 * 1000,
-  })
-}
+// ============================================
+// MUTATIONS
+// ============================================
 
 /**
- * Mutation: Crear nuevo usuario
+ * Crear un nuevo usuario.
  */
 export function useCrearUsuarioMutation() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (datos: CrearUsuarioData) =>
-      usuariosService.crearUsuario(datos),
-
-    onSuccess: () => {
+    mutationFn: (datos: CrearUsuarioData) => crearUsuario(datos),
+    onSuccess: respuesta => {
+      toast.success('Usuario creado exitosamente', {
+        description: respuesta.password_temporal
+          ? `Contraseña temporal: ${respuesta.password_temporal}`
+          : undefined,
+        duration: respuesta.password_temporal ? 10000 : 4000,
+      })
       queryClient.invalidateQueries({ queryKey: usuariosKeys.lists() })
+      queryClient.invalidateQueries({ queryKey: usuariosKeys.estadisticas() })
     },
-
-    onError: error => {
-      logger.error('❌ [MUTATION] Error creando usuario:', error)
+    onError: (error: Error) => {
+      toast.error('Error al crear usuario', { description: error.message })
     },
   })
 }
 
 /**
- * Mutation: Actualizar usuario existente
+ * Actualizar datos de un usuario.
  */
 export function useActualizarUsuarioMutation() {
   const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: ({ id, datos }: { id: string; datos: ActualizarUsuarioData }) =>
-      usuariosService.actualizarUsuario(id, datos),
-
-    onSuccess: (_, variables) => {
+      actualizarUsuario(id, datos),
+    onSuccess: (_, { id }) => {
+      toast.success('Usuario actualizado')
       queryClient.invalidateQueries({ queryKey: usuariosKeys.lists() })
-      queryClient.invalidateQueries({
-        queryKey: usuariosKeys.detail(variables.id),
-      })
+      queryClient.invalidateQueries({ queryKey: usuariosKeys.detail(id) })
+      queryClient.invalidateQueries({ queryKey: usuariosKeys.estadisticas() })
     },
-
-    onError: error => {
-      logger.error('❌ [MUTATION] Error actualizando usuario:', error)
+    onError: (error: Error) => {
+      toast.error('Error al actualizar usuario', { description: error.message })
     },
   })
 }
 
 /**
- * Mutation: Cambiar rol de usuario
- */
-export function useCambiarRolMutation() {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationFn: ({ id, nuevoRol }: { id: string; nuevoRol: Rol }) =>
-      usuariosService.cambiarRol(id, nuevoRol),
-
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: usuariosKeys.lists() })
-      queryClient.invalidateQueries({
-        queryKey: usuariosKeys.detail(variables.id),
-      })
-    },
-
-    onError: error => {
-      logger.error('❌ [MUTATION] Error cambiando rol:', error)
-    },
-  })
-}
-
-/**
- * Mutation: Cambiar estado de usuario
+ * Cambiar estado de un usuario (Activo / Inactivo / Bloqueado).
  */
 export function useCambiarEstadoMutation() {
   const queryClient = useQueryClient()
@@ -151,117 +144,58 @@ export function useCambiarEstadoMutation() {
     }: {
       id: string
       nuevoEstado: EstadoUsuario
-    }) => usuariosService.cambiarEstado(id, nuevoEstado),
-
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: usuariosKeys.lists() })
-      queryClient.invalidateQueries({
-        queryKey: usuariosKeys.detail(variables.id),
-      })
-    },
-
-    onError: error => {
-      logger.error('❌ [MUTATION] Error cambiando estado:', error)
-    },
-  })
-}
-
-/**
- * Mutation: Resetear intentos fallidos
- */
-export function useResetearIntentosMutation() {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationFn: (id: string) => usuariosService.resetearIntentosFallidos(id),
-
-    onSuccess: (_, id) => {
+    }) => cambiarEstadoUsuario(id, nuevoEstado),
+    onSuccess: (_, { id, nuevoEstado }) => {
+      toast.success(`Usuario marcado como ${nuevoEstado}`)
       queryClient.invalidateQueries({ queryKey: usuariosKeys.lists() })
       queryClient.invalidateQueries({ queryKey: usuariosKeys.detail(id) })
+      queryClient.invalidateQueries({ queryKey: usuariosKeys.estadisticas() })
     },
-
-    onError: error => {
-      logger.error('❌ [MUTATION] Error reseteando intentos:', error)
+    onError: (error: Error) => {
+      toast.error('Error al cambiar estado', { description: error.message })
     },
   })
 }
 
 /**
- * Mutation: Eliminar usuario (soft delete)
+ * Cambiar rol de un usuario.
  */
-export function useEliminarUsuarioMutation() {
+export function useCambiarRolMutation() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (id: string) => usuariosService.eliminarUsuario(id),
-
-    onSuccess: () => {
+    mutationFn: ({ id, nuevoRol }: { id: string; nuevoRol: Rol }) =>
+      cambiarRolUsuario(id, nuevoRol),
+    onSuccess: (_, { id }) => {
+      toast.success('Rol actualizado correctamente')
       queryClient.invalidateQueries({ queryKey: usuariosKeys.lists() })
+      queryClient.invalidateQueries({ queryKey: usuariosKeys.detail(id) })
+      queryClient.invalidateQueries({ queryKey: usuariosKeys.estadisticas() })
     },
-
-    onError: error => {
-      logger.error('❌ [MUTATION] Error eliminando usuario:', error)
+    onError: (error: Error) => {
+      toast.error('Error al cambiar rol', { description: error.message })
     },
   })
 }
 
 /**
- * Hook combinado que devuelve queries y mutations
- * Interfaz compatible con useUsuarios antiguo
+ * Desbloquear un usuario.
  */
-export function useUsuariosConMutations(filtros?: FiltrosUsuarios) {
-  const {
-    data: usuarios = [],
-    isLoading: cargando,
-    error,
-  } = useUsuariosQuery(filtros)
-  const { data: estadisticas } = useEstadisticasUsuariosQuery()
-
-  const crearUsuarioMutation = useCrearUsuarioMutation()
-  const actualizarUsuarioMutation = useActualizarUsuarioMutation()
-  const cambiarRolMutation = useCambiarRolMutation()
-  const cambiarEstadoMutation = useCambiarEstadoMutation()
-  const resetearIntentosMutation = useResetearIntentosMutation()
-  const eliminarUsuarioMutation = useEliminarUsuarioMutation()
-
+export function useDesbloquearUsuarioMutation() {
   const queryClient = useQueryClient()
 
-  return {
-    // Estado
-    usuarios,
-    estadisticas: estadisticas || null,
-    cargando,
-    error: error ? (error as Error).message : null,
-
-    // Operaciones CRUD (con mutations)
-    crearUsuario: async (datos: CrearUsuarioData) => {
-      const result = await crearUsuarioMutation.mutateAsync(datos)
-      return result
+  return useMutation({
+    mutationFn: (id: string) => desbloquearUsuario(id),
+    onSuccess: (_, id) => {
+      toast.success('Usuario desbloqueado')
+      queryClient.invalidateQueries({ queryKey: usuariosKeys.lists() })
+      queryClient.invalidateQueries({ queryKey: usuariosKeys.detail(id) })
+      queryClient.invalidateQueries({ queryKey: usuariosKeys.estadisticas() })
     },
-
-    actualizarUsuario: async (id: string, datos: ActualizarUsuarioData) => {
-      await actualizarUsuarioMutation.mutateAsync({ id, datos })
+    onError: (error: Error) => {
+      toast.error('Error al desbloquear usuario', {
+        description: error.message,
+      })
     },
-
-    cambiarRol: async (id: string, nuevoRol: Rol) => {
-      await cambiarRolMutation.mutateAsync({ id, nuevoRol })
-    },
-
-    cambiarEstado: async (id: string, nuevoEstado: EstadoUsuario) => {
-      await cambiarEstadoMutation.mutateAsync({ id, nuevoEstado })
-    },
-
-    resetearIntentos: async (id: string) => {
-      await resetearIntentosMutation.mutateAsync(id)
-    },
-
-    eliminarUsuario: async (id: string) => {
-      await eliminarUsuarioMutation.mutateAsync(id)
-    },
-
-    // Utilidades
-    refrescar: () => {
-      queryClient.invalidateQueries({ queryKey: usuariosKeys.all })
-    },
-  }
+  })
 }

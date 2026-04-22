@@ -89,6 +89,9 @@ export function DocumentoCardHorizontal({
     cerrarMenu,
     estaProtegido,
     puedeEliminar,
+    puedeEditar,
+    puedeArchivar,
+    puedeSubir,
     procesoInfo: _procesoInfo,
     estadoProceso,
     verificando: _verificando,
@@ -349,226 +352,241 @@ export function DocumentoCardHorizontal({
             <Download size={14} />
           </button>
 
-          {/* Menú de opciones con portal */}
-          <button
-            ref={triggerRef}
-            type='button'
-            onClick={handleAbrirMenu}
-            className='flex items-center justify-center rounded-md p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:text-gray-500 dark:hover:bg-gray-700 dark:hover:text-gray-200'
-            title='Más opciones'
-            aria-label='Más opciones'
-          >
-            <MoreVertical size={14} />
-          </button>
-
-          {menuAbierto &&
-            menuPos &&
-            createPortal(
-              <div
-                ref={menuRef}
-                style={{
-                  position: 'fixed',
-                  top: menuPos.top,
-                  bottom: menuPos.bottom,
-                  right: menuPos.right,
-                  maxHeight: menuPos.maxHeight,
-                  overflowY: 'auto',
-                  zIndex: 9999,
-                }}
-                className='min-w-[200px] rounded-xl border border-gray-200 bg-white py-1 shadow-2xl dark:border-gray-700 dark:bg-gray-800'
+          {/* Menú de opciones con portal - solo visible si tiene algún permiso de acción */}
+          {(puedeEditar ||
+            puedeArchivar ||
+            puedeSubir ||
+            puedeEliminar ||
+            esAdmin) && (
+            <>
+              <button
+                ref={triggerRef}
+                type='button'
+                onClick={handleAbrirMenu}
+                className='flex items-center justify-center rounded-md p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:text-gray-500 dark:hover:bg-gray-700 dark:hover:text-gray-200'
+                title='Más opciones'
+                aria-label='Más opciones'
               >
-                <button
-                  type='button'
-                  onClick={e => {
-                    e.preventDefault()
-                    e.stopPropagation()
-                    onToggleImportante(documento)
-                    cerrarMenu()
-                  }}
-                  className='flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
-                >
-                  <Pin
-                    size={15}
-                    className={
-                      documento.es_importante
-                        ? 'fill-cyan-500 text-cyan-500'
-                        : ''
-                    }
-                  />
-                  {documento.es_importante
-                    ? 'Quitar anclado'
-                    : 'Anclar documento'}
-                </button>
+                <MoreVertical size={14} />
+              </button>
 
-                {onRename && (
-                  <button
-                    type='button'
-                    onClick={e => {
-                      e.preventDefault()
-                      e.stopPropagation()
-                      onRename(documento)
-                      cerrarMenu()
+              {menuAbierto &&
+                menuPos &&
+                createPortal(
+                  <div
+                    ref={menuRef}
+                    style={{
+                      position: 'fixed',
+                      top: menuPos.top,
+                      bottom: menuPos.bottom,
+                      right: menuPos.right,
+                      maxHeight: menuPos.maxHeight,
+                      overflowY: 'auto',
+                      zIndex: 9999,
                     }}
-                    className='flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
+                    className='min-w-[200px] rounded-xl border border-gray-200 bg-white py-1 shadow-2xl dark:border-gray-700 dark:bg-gray-800'
                   >
-                    <Edit3 size={15} />
-                    Renombrar
-                  </button>
-                )}
+                    {puedeEditar ? (
+                      <button
+                        type='button'
+                        onClick={e => {
+                          e.preventDefault()
+                          e.stopPropagation()
+                          onToggleImportante(documento)
+                          cerrarMenu()
+                        }}
+                        className='flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
+                      >
+                        <Pin
+                          size={15}
+                          className={
+                            documento.es_importante
+                              ? 'fill-cyan-500 text-cyan-500'
+                              : ''
+                          }
+                        />
+                        {documento.es_importante
+                          ? 'Quitar anclado'
+                          : 'Anclar documento'}
+                      </button>
+                    ) : null}
 
-                {onMoverACarpeta && !esArchivado && (
-                  <button
-                    type='button'
-                    onClick={e => {
-                      e.preventDefault()
-                      e.stopPropagation()
-                      onMoverACarpeta(documento)
-                      cerrarMenu()
-                    }}
-                    className='flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
-                  >
-                    <FolderPlus size={15} />
-                    Mover a carpeta
-                  </button>
-                )}
+                    {onRename && puedeEditar ? (
+                      <button
+                        type='button'
+                        onClick={e => {
+                          e.preventDefault()
+                          e.stopPropagation()
+                          onRename(documento)
+                          cerrarMenu()
+                        }}
+                        className='flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
+                      >
+                        <Edit3 size={15} />
+                        Renombrar
+                      </button>
+                    ) : null}
 
-                <div className='my-1 border-t border-gray-100 dark:border-gray-700' />
+                    {onMoverACarpeta && !esArchivado && puedeEditar ? (
+                      <button
+                        type='button'
+                        onClick={e => {
+                          e.preventDefault()
+                          e.stopPropagation()
+                          onMoverACarpeta(documento)
+                          cerrarMenu()
+                        }}
+                        className='flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
+                      >
+                        <FolderPlus size={15} />
+                        Mover a carpeta
+                      </button>
+                    ) : null}
 
-                <button
-                  type='button'
-                  onClick={e => {
-                    e.preventDefault()
-                    e.stopPropagation()
-                    abrirModalEditar()
-                  }}
-                  className='flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
-                >
-                  <Edit size={15} />
-                  Editar Documento
-                </button>
+                    {puedeEditar ? (
+                      <>
+                        <div className='my-1 border-t border-gray-100 dark:border-gray-700' />
+                        <button
+                          type='button'
+                          onClick={e => {
+                            e.preventDefault()
+                            e.stopPropagation()
+                            abrirModalEditar()
+                          }}
+                          className='flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
+                        >
+                          <Edit size={15} />
+                          Editar Documento
+                        </button>
+                      </>
+                    ) : null}
 
-                {tieneVersiones && (
-                  <>
+                    {tieneVersiones && (
+                      <>
+                        <div className='my-1 border-t border-gray-100 dark:border-gray-700' />
+                        <button
+                          type='button'
+                          onClick={e => {
+                            e.preventDefault()
+                            e.stopPropagation()
+                            abrirModalVersiones()
+                          }}
+                          className='flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
+                        >
+                          <History size={15} />
+                          Ver Historial (v{documento.version})
+                        </button>
+                      </>
+                    )}
+
+                    {esDocumentoDeProceso && puedeSubir ? (
+                      <>
+                        <div className='my-1 border-t border-gray-100 dark:border-gray-700' />
+                        <button
+                          type='button'
+                          onClick={e => {
+                            e.preventDefault()
+                            e.stopPropagation()
+                            abrirModalNuevaVersion()
+                          }}
+                          className='flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
+                        >
+                          <FileUp size={15} />
+                          Nueva Versión
+                        </button>
+                      </>
+                    ) : null}
+
+                    {esAdmin && (
+                      <>
+                        <div className='my-1 border-t border-gray-100 dark:border-gray-700' />
+                        <button
+                          type='button'
+                          onClick={e => {
+                            e.preventDefault()
+                            e.stopPropagation()
+                            abrirModalReemplazar()
+                          }}
+                          className='flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-amber-600 transition-colors hover:bg-gray-100 dark:text-amber-400 dark:hover:bg-gray-700'
+                        >
+                          <RefreshCw size={15} />
+                          <span>Reemplazar Archivo</span>
+                          <Crown
+                            size={12}
+                            className='ml-auto text-amber-500 dark:text-amber-400'
+                          />
+                        </button>
+                      </>
+                    )}
+
                     <div className='my-1 border-t border-gray-100 dark:border-gray-700' />
-                    <button
-                      type='button'
-                      onClick={e => {
-                        e.preventDefault()
-                        e.stopPropagation()
-                        abrirModalVersiones()
-                      }}
-                      className='flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
-                    >
-                      <History size={15} />
-                      Ver Historial (v{documento.version})
-                    </button>
-                  </>
-                )}
 
-                {esDocumentoDeProceso && (
-                  <>
-                    <div className='my-1 border-t border-gray-100 dark:border-gray-700' />
-                    <button
-                      type='button'
-                      onClick={e => {
-                        e.preventDefault()
-                        e.stopPropagation()
-                        abrirModalNuevaVersion()
-                      }}
-                      className='flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
-                    >
-                      <FileUp size={15} />
-                      Nueva Versión
-                    </button>
-                  </>
-                )}
+                    {puedeArchivar ? (
+                      <button
+                        type='button'
+                        onClick={e => {
+                          e.preventDefault()
+                          e.stopPropagation()
+                          onArchive(documento)
+                          cerrarMenu()
+                        }}
+                        className={`flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition-colors ${
+                          esArchivado
+                            ? 'text-emerald-600 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-900/20'
+                            : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
+                        }`}
+                      >
+                        {esArchivado ? (
+                          <RefreshCw size={15} />
+                        ) : (
+                          <Archive size={15} />
+                        )}
+                        {esArchivado ? 'Restaurar' : 'Archivar'}
+                      </button>
+                    ) : null}
 
-                {esAdmin && (
-                  <>
-                    <div className='my-1 border-t border-gray-100 dark:border-gray-700' />
-                    <button
-                      type='button'
-                      onClick={e => {
-                        e.preventDefault()
-                        e.stopPropagation()
-                        abrirModalReemplazar()
-                      }}
-                      className='flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-amber-600 transition-colors hover:bg-gray-100 dark:text-amber-400 dark:hover:bg-gray-700'
-                    >
-                      <RefreshCw size={15} />
-                      <span>Reemplazar Archivo</span>
-                      <Crown
-                        size={12}
-                        className='ml-auto text-amber-500 dark:text-amber-400'
-                      />
-                    </button>
-                  </>
-                )}
+                    {!estaProtegido && puedeEliminar && (
+                      <>
+                        <div className='my-1 border-t border-gray-100 dark:border-gray-700' />
+                        <button
+                          type='button'
+                          onClick={e => {
+                            e.preventDefault()
+                            e.stopPropagation()
+                            cerrarMenu()
+                            abrirConfirmacionEliminar(documento, tipoEntidad)
+                          }}
+                          className='flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-red-600 transition-colors hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20'
+                        >
+                          <Trash2 size={15} />
+                          Eliminar
+                        </button>
+                      </>
+                    )}
 
-                <div className='my-1 border-t border-gray-100 dark:border-gray-700' />
-
-                <button
-                  type='button'
-                  onClick={e => {
-                    e.preventDefault()
-                    e.stopPropagation()
-                    onArchive(documento)
-                    cerrarMenu()
-                  }}
-                  className={`flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition-colors ${
-                    esArchivado
-                      ? 'text-emerald-600 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-900/20'
-                      : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
-                  }`}
-                >
-                  {esArchivado ? (
-                    <RefreshCw size={15} />
-                  ) : (
-                    <Archive size={15} />
-                  )}
-                  {esArchivado ? 'Restaurar' : 'Archivar'}
-                </button>
-
-                {!estaProtegido && puedeEliminar && (
-                  <>
-                    <div className='my-1 border-t border-gray-100 dark:border-gray-700' />
-                    <button
-                      type='button'
-                      onClick={e => {
-                        e.preventDefault()
-                        e.stopPropagation()
-                        cerrarMenu()
-                        abrirConfirmacionEliminar(documento, tipoEntidad)
-                      }}
-                      className='flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-red-600 transition-colors hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20'
-                    >
-                      <Trash2 size={15} />
-                      Eliminar
-                    </button>
-                  </>
-                )}
-
-                {estaProtegido && (
-                  <div className='px-3 py-2.5'>
-                    <div className='flex items-start gap-2'>
-                      <Lock
-                        size={13}
-                        className='mt-0.5 flex-shrink-0 text-emerald-600'
-                      />
-                      <div>
-                        <p className='text-xs font-medium text-emerald-600 dark:text-emerald-400'>
-                          Documento protegido
-                        </p>
-                        <p className='mt-0.5 text-xs leading-relaxed text-gray-500 dark:text-gray-400'>
-                          Pertenece a un proceso completado.
-                        </p>
+                    {estaProtegido && (
+                      <div className='px-3 py-2.5'>
+                        <div className='flex items-start gap-2'>
+                          <Lock
+                            size={13}
+                            className='mt-0.5 flex-shrink-0 text-emerald-600'
+                          />
+                          <div>
+                            <p className='text-xs font-medium text-emerald-600 dark:text-emerald-400'>
+                              Documento protegido
+                            </p>
+                            <p className='mt-0.5 text-xs leading-relaxed text-gray-500 dark:text-gray-400'>
+                              Pertenece a un proceso completado.
+                            </p>
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  </div>
+                    )}
+                  </div>,
+                  document.body
                 )}
-              </div>,
-              document.body
-            )}
+            </>
+          )}
         </div>
         {/* fin hover-actions */}
       </div>

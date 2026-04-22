@@ -22,17 +22,21 @@ export {
 export { useUsuarios } from './useUsuarios'
 
 // ============================================
-// USUARIOS - Sistema Nuevo (React Query) ⭐
+// USUARIOS v2 — Sistema Nuevo (React Query + buenas prácticas) ⭐
 // ============================================
 export {
   useActualizarUsuarioMutation,
   useCambiarEstadoMutation,
   useCambiarRolMutation,
   useCrearUsuarioMutation,
-  useEliminarUsuarioMutation,
-  useEstadisticasUsuariosQuery,
-  useResetearIntentosMutation,
-  useUsuarioQuery,
-  useUsuariosConMutations,
-  useUsuariosQuery,
+  useDesbloquearUsuarioMutation,
+  useUsuarioDetailQuery,
+  useUsuariosEstadisticasQuery,
+  useUsuariosListQuery,
+  usuariosKeys,
 } from './useUsuariosQuery'
+
+export { useEditarUsuario } from './useEditarUsuario'
+export { useNuevoUsuario } from './useNuevoUsuario'
+export { usePermisosAdmin } from './usePermisosAdmin'
+export { useUsuariosList } from './useUsuariosList'

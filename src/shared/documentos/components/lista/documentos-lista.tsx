@@ -17,6 +17,8 @@ import {
   Upload,
 } from 'lucide-react'
 
+import { usePermisosQuery } from '@/modules/usuarios/hooks'
+import type { Modulo } from '@/modules/usuarios/types'
 import { ConfirmacionModal } from '@/shared/components/modals/ConfirmacionModal'
 import { EmptyState } from '@/shared/components/ui/EmptyState'
 import { SectionLoadingSpinner } from '@/shared/components/ui/SectionLoadingSpinner'
@@ -61,6 +63,11 @@ export function DocumentosLista({
   // 🎨 Auto-inferir moduleName desde tipoEntidad si no se especifica
   const config = obtenerConfiguracionEntidad(tipoEntidad)
   const themeModuleName = moduleName || config.moduleName
+
+  // 🔒 Permisos: basados en permisos_rol del módulo 'documentos', no del módulo padre
+  const { puede, esAdmin } = usePermisosQuery()
+  const canUpload = esAdmin || puede('documentos' as Modulo, 'subir')
+  const canCreate = canUpload // "Nueva carpeta" también requiere poder subir
   const vistaActual = useDocumentosStore(state => state.vistaActual)
   const setVistaActual = useDocumentosStore(state => state.setVistaActual)
 
@@ -237,17 +244,19 @@ export function DocumentosLista({
               <h3 className='text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500'>
                 Carpetas
               </h3>
-              <button
-                type='button'
-                onClick={() => {
-                  setCarpetaParaEditar(null)
-                  setModalCarpetaAbierto(true)
-                }}
-                className='flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium text-gray-500 transition-all duration-200 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-300'
-              >
-                <FolderPlus className='h-3.5 w-3.5' />
-                Nueva carpeta
-              </button>
+              {canCreate ? (
+                <button
+                  type='button'
+                  onClick={() => {
+                    setCarpetaParaEditar(null)
+                    setModalCarpetaAbierto(true)
+                  }}
+                  className='flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium text-gray-500 transition-all duration-200 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-300'
+                >
+                  <FolderPlus className='h-3.5 w-3.5' />
+                  Nueva carpeta
+                </button>
+              ) : null}
             </div>
 
             {/* Grid de carpetas */}
@@ -323,14 +332,15 @@ export function DocumentosLista({
                   </div>
                 ) : null}
 
-                {/* Separador visual solo si hay contadores Y botones */}
+                {/* Separador visual solo si hay contadores Y botones visibles */}
                 {documentosMostrar.length > 0 &&
+                canCreate &&
                 (onCategoriasClick ?? onUploadClick) ? (
                   <span className='h-3 w-px bg-gray-300 dark:bg-gray-600' />
                 ) : null}
 
-                {/* Botón Categorías */}
-                {onCategoriasClick ? (
+                {/* Botón Categorías — solo con permiso crear */}
+                {onCategoriasClick && canCreate ? (
                   <button
                     type='button'
                     onClick={onCategoriasClick}
@@ -341,8 +351,8 @@ export function DocumentosLista({
                   </button>
                 ) : null}
 
-                {/* Botón Subir Documento */}
-                {onUploadClick ? (
+                {/* Botón Subir Documento — solo con permiso crear */}
+                {onUploadClick && canCreate ? (
                   <button
                     type='button'
                     onClick={() => onUploadClick(carpetaActualId)}
@@ -373,7 +383,7 @@ export function DocumentosLista({
               title='Sin archivos en esta ubicación'
               description='Puedes subir archivos directamente aquí o navegar a una carpeta'
               action={
-                onUploadClick
+                onUploadClick && canCreate
                   ? {
                       label: 'Subir archivo aquí',
                       onClick: () => onUploadClick?.(carpetaActualId),
@@ -399,7 +409,10 @@ export function DocumentosLista({
                     : 'No hay documentos que coincidan con los filtros aplicados'
               }
               action={
-                !hasDocumentos && onUploadClick && vistaActual === 'activos'
+                !hasDocumentos &&
+                onUploadClick &&
+                canCreate &&
+                vistaActual === 'activos'
                   ? {
                       label: 'Subir primer documento',
                       onClick: () => onUploadClick?.(carpetaActualId),

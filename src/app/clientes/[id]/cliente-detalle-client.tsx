@@ -42,6 +42,7 @@ import {
   useClienteDetalle,
 } from '@/modules/clientes/hooks'
 import { useReactivarCliente } from '@/modules/clientes/hooks/useReactivarCliente'
+import { usePermisosQuery } from '@/modules/usuarios/hooks'
 import { useModal } from '@/shared/components/modals'
 import { SectionLoadingSpinner, Tooltip } from '@/shared/components/ui'
 
@@ -111,6 +112,9 @@ export default function ClienteDetalleClient({
 }: ClienteDetalleClientProps) {
   const router = useRouter()
   const { confirm } = useModal()
+  const { puede, esAdmin } = usePermisosQuery()
+  const canEdit = esAdmin || puede('clientes', 'editar')
+  const canDelete = esAdmin || puede('clientes', 'eliminar')
 
   // ✅ Hook consolidado con TODA la lógica
   const {
@@ -528,18 +532,22 @@ export default function ClienteDetalleClient({
                   </motion.button>
                 )}
 
-                <button
-                  className={styles.headerClasses.actionButton}
-                  onClick={handleEditar}
-                >
-                  <Edit2 className='h-4 w-4' />
-                </button>
-                <button
-                  className={styles.headerClasses.deleteButton}
-                  onClick={handleEliminar}
-                >
-                  <Trash2 className='h-4 w-4' />
-                </button>
+                {canEdit ? (
+                  <button
+                    className={styles.headerClasses.actionButton}
+                    onClick={handleEditar}
+                  >
+                    <Edit2 className='h-4 w-4' />
+                  </button>
+                ) : null}
+                {canDelete ? (
+                  <button
+                    className={styles.headerClasses.deleteButton}
+                    onClick={handleEliminar}
+                  >
+                    <Trash2 className='h-4 w-4' />
+                  </button>
+                ) : null}
               </div>
             </div>
           </motion.div>

@@ -1,4 +1,4 @@
-import { redirect } from 'next/navigation'
+import { forbidden } from 'next/navigation'
 
 import { getServerPermissions } from '@/lib/auth/server'
 
@@ -11,12 +11,10 @@ export const metadata = {
 }
 
 export default async function FuentesPagoHubPage() {
-  // Obtener permisos del usuario autenticado
-  const permisos = await getServerPermissions()
+  const permisos = await getServerPermissions('administracion')
 
-  // Solo admins pueden acceder
-  if (!permisos.canView || !permisos.isAdmin) {
-    redirect('/dashboard')
+  if (!permisos.isAdmin) {
+    forbidden()
   }
 
   return <FuentesPagoHubContent />

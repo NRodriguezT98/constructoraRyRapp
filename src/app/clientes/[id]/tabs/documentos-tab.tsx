@@ -12,7 +12,7 @@
 import { useEffect, useState } from 'react'
 
 import { AnimatePresence } from 'framer-motion'
-import { ArrowLeft, IdCard } from 'lucide-react'
+import { ArrowLeft, IdCard, Lock } from 'lucide-react'
 
 import { useAuth } from '@/contexts/auth-context'
 import { SeccionDocumentosPendientes } from '@/modules/clientes/components/documentos-pendientes'
@@ -21,6 +21,7 @@ import { BannerDocumentoRequerido } from '@/modules/clientes/documentos/componen
 import { useDocumentosTab } from '@/modules/clientes/hooks'
 import { useCategoriasSistemaClientes } from '@/modules/clientes/hooks/useCategoriasSistemaClientes'
 import type { Cliente } from '@/modules/clientes/types'
+import { usePermisosQuery } from '@/modules/usuarios/hooks'
 import { moduleThemes } from '@/shared/config/module-themes'
 import { CategoriasManager } from '@/shared/documentos/components/categorias/categorias-manager'
 import { DocumentosLista } from '@/shared/documentos/components/lista/documentos-lista'
@@ -32,6 +33,11 @@ interface DocumentosTabProps {
 
 export function DocumentosTab({ cliente }: DocumentosTabProps) {
   const { user } = useAuth()
+  const { puede, esAdmin } = usePermisosQuery()
+
+  // 🔒 Permisos de documentos
+  const puedeVerDocumentos = esAdmin || puede('documentos', 'ver')
+  const canCreate = esAdmin || puede('documentos', 'subir')
 
   // Tema cyan/azul para clientes (usado en vistas de categorías y upload)
   const theme = moduleThemes.clientes
@@ -71,8 +77,25 @@ export function DocumentosTab({ cliente }: DocumentosTabProps) {
     onCancelUpload,
   } = useDocumentosTab({ clienteId: cliente.id })
 
+  // 🚫 Sin permiso de ver: mostrar estado de acceso denegado
+  if (!puedeVerDocumentos) {
+    return (
+      <div className='flex flex-col items-center justify-center rounded-xl border border-gray-200 bg-white py-16 text-center shadow-sm dark:border-gray-700 dark:bg-gray-800'>
+        <div className='mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700'>
+          <Lock className='h-7 w-7 text-gray-400 dark:text-gray-500' />
+        </div>
+        <p className='text-sm font-semibold text-gray-700 dark:text-gray-300'>
+          Sin acceso a documentos
+        </p>
+        <p className='mt-1 text-xs text-gray-400 dark:text-gray-500'>
+          No tienes permiso para ver los documentos de este cliente.
+        </p>
+      </div>
+    )
+  }
+
   // Si está mostrando categorías (PATRÓN IGUAL A PROYECTOS)
-  if (mostrandoCategorias && user) {
+  if (mostrandoCategorias && user && canCreate) {
     return (
       <div className='space-y-4'>
         {/* Header con botón volver */}
@@ -110,7 +133,7 @@ export function DocumentosTab({ cliente }: DocumentosTabProps) {
   }
 
   // Si está mostrando formulario de upload (PATRÓN IGUAL A PROYECTOS)
-  if (mostrandoUpload && user) {
+  if (mostrandoUpload && user && canCreate) {
     return (
       <div className='space-y-3'>
         {/* Header premium compacto con glassmorphism */}

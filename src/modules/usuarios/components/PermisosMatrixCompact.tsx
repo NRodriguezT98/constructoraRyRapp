@@ -140,33 +140,33 @@ export function PermisosMatrixCompact() {
 
   return (
     <div className='space-y-4'>
-      {/* Header Compacto */}
+      {/* Header */}
       <div className='flex items-center justify-between'>
         <div className='flex items-center gap-3'>
-          <div className='flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-purple-500 to-indigo-600 shadow-lg'>
+          <div className='flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 shadow-lg shadow-indigo-500/30'>
             <Shield className='h-5 w-5 text-white' />
           </div>
           <div>
-            <h2 className='text-xl font-bold text-gray-900 dark:text-white'>
-              Matriz de Permisos
+            <h2 className='text-base font-bold text-gray-900 dark:text-white'>
+              Matriz de Permisos RBAC
             </h2>
-            <p className='text-xs text-gray-600 dark:text-gray-400'>
+            <p className='text-xs text-gray-500 dark:text-gray-400'>
               {permisosFiltrados.length} de {permisos.length} permisos
             </p>
           </div>
         </div>
 
         {/* Info Badge */}
-        <div className='hidden items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-3 py-1.5 dark:border-blue-800 dark:bg-blue-900/20 sm:flex'>
-          <Info className='h-4 w-4 text-blue-600 dark:text-blue-400' />
-          <span className='text-xs text-blue-700 dark:text-blue-300'>
-            Click para activar/desactivar
+        <div className='hidden items-center gap-2 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-1.5 dark:border-indigo-800/50 dark:bg-indigo-900/20 sm:flex'>
+          <Info className='h-4 w-4 text-indigo-500 dark:text-indigo-400' />
+          <span className='text-xs text-indigo-700 dark:text-indigo-300'>
+            Click para activar / desactivar
           </span>
         </div>
       </div>
 
-      {/* Filtros Horizontales Compactos */}
-      <div className='flex flex-wrap items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-800/50'>
+      {/* Filtros */}
+      <div className='flex flex-wrap items-center gap-2 rounded-xl border border-gray-200/50 bg-white/90 p-3 shadow-lg backdrop-blur-xl dark:border-gray-700/50 dark:bg-gray-800/90'>
         {/* Búsqueda */}
         <div className='relative min-w-[200px] flex-1'>
           <Search className='pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400' />
@@ -175,7 +175,7 @@ export function PermisosMatrixCompact() {
             placeholder='Buscar módulo, acción...'
             value={busqueda}
             onChange={e => setBusqueda(e.target.value)}
-            className='w-full rounded-lg border border-gray-300 bg-white py-1.5 pl-9 pr-3 text-sm transition-all focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 dark:border-gray-700 dark:bg-gray-900'
+            className='w-full rounded-lg border-2 border-gray-200 bg-gray-50 py-1.5 pl-9 pr-3 text-sm transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-700 dark:bg-gray-900/50 dark:text-gray-200'
           />
         </div>
 
@@ -183,7 +183,7 @@ export function PermisosMatrixCompact() {
         <select
           value={filtroRol}
           onChange={e => setFiltroRol(e.target.value as Rol | 'todos')}
-          className='rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm transition-all focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 dark:border-gray-700 dark:bg-gray-900'
+          className='rounded-lg border-2 border-gray-200 bg-gray-50 px-3 py-1.5 text-sm transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-700 dark:bg-gray-900/50 dark:text-gray-200'
         >
           <option value='todos'>📋 Todos los roles</option>
           <option value='Administrador'>👑 Administrador</option>
@@ -196,7 +196,7 @@ export function PermisosMatrixCompact() {
         <select
           value={filtroModulo}
           onChange={e => setFiltroModulo(e.target.value)}
-          className='rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm transition-all focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 dark:border-gray-700 dark:bg-gray-900'
+          className='rounded-lg border-2 border-gray-200 bg-gray-50 px-3 py-1.5 text-sm transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-700 dark:bg-gray-900/50 dark:text-gray-200'
         >
           <option value='todos'>📁 Todos los módulos</option>
           {modulos.map(mod => (
@@ -207,31 +207,31 @@ export function PermisosMatrixCompact() {
         </select>
 
         {/* Limpiar Filtros */}
-        {(filtroRol !== 'todos' || filtroModulo !== 'todos' || busqueda) && (
+        {filtroRol !== 'todos' || filtroModulo !== 'todos' || busqueda ? (
           <button
             onClick={() => {
               setFiltroRol('todos')
               setFiltroModulo('todos')
               setBusqueda('')
             }}
-            className='rounded-lg px-3 py-1.5 text-xs font-medium text-purple-600 transition-colors hover:bg-purple-50 dark:text-purple-400 dark:hover:bg-purple-900/20'
+            className='rounded-lg px-3 py-1.5 text-xs font-semibold text-indigo-600 transition-colors hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-indigo-900/20'
           >
             Limpiar
           </button>
-        )}
+        ) : null}
       </div>
 
-      {/* Tabla Compacta Estilo AWS IAM / Auth0 */}
-      <div className='overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800'>
+      {/* Tabla */}
+      <div className='overflow-hidden rounded-xl border border-gray-200/50 bg-white/80 shadow-lg backdrop-blur-xl dark:border-gray-700/50 dark:bg-gray-800/80'>
         <div className='overflow-x-auto'>
           <table className='w-full text-sm'>
-            <thead className='border-b border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-900/50'>
+            <thead className='border-b border-gray-200 bg-gray-50/80 dark:border-gray-700 dark:bg-gray-900/60'>
               <tr>
-                <th className='sticky left-0 z-20 border-r border-gray-200 bg-gray-50 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-700 dark:border-gray-700 dark:bg-gray-900/50 dark:text-gray-300'>
+                <th className='sticky left-0 z-20 border-r border-gray-200 bg-gray-50/80 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500 dark:border-gray-700 dark:bg-gray-900/60 dark:text-gray-400'>
                   Módulo
                 </th>
                 <th
-                  className='sticky left-0 z-20 bg-gray-50 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-700 dark:bg-gray-900/50 dark:text-gray-300'
+                  className='sticky left-0 z-20 bg-gray-50/80 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500 dark:bg-gray-900/60 dark:text-gray-400'
                   style={{ left: '140px' }}
                 >
                   Acción
@@ -356,18 +356,18 @@ export function PermisosMatrixCompact() {
         </div>
 
         {/* Footer con leyenda */}
-        <div className='flex flex-wrap items-center justify-between gap-3 border-t border-gray-200 bg-gray-50 px-4 py-3 text-xs text-gray-600 dark:border-gray-700 dark:bg-gray-900/50 dark:text-gray-400'>
+        <div className='flex flex-wrap items-center justify-between gap-3 border-t border-gray-200/50 bg-gray-50/80 px-4 py-3 text-xs text-gray-600 dark:border-gray-700/50 dark:bg-gray-900/40 dark:text-gray-400'>
           <div className='flex items-center gap-4'>
-            <span className='flex items-center gap-1'>
+            <span className='flex items-center gap-1.5'>
               <CheckSquare className='h-3.5 w-3.5 text-green-500' />
               Permitido
             </span>
-            <span className='flex items-center gap-1'>
+            <span className='flex items-center gap-1.5'>
               <Square className='h-3.5 w-3.5 text-gray-400' />
               Denegado
             </span>
           </div>
-          <span className='flex items-center gap-1'>
+          <span className='flex items-center gap-1.5'>
             <span>👑</span>
             <span>Administrador tiene control total (no editable)</span>
           </span>

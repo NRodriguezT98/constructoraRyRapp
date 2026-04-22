@@ -2,10 +2,11 @@
 
 import { useState } from 'react'
 
-import { ArrowLeft, Upload } from 'lucide-react'
+import { ArrowLeft, Lock, Upload } from 'lucide-react'
 
 import { useAuth } from '@/contexts/auth-context'
 import type { Proyecto } from '@/modules/proyectos/types'
+import { usePermisosQuery } from '@/modules/usuarios/hooks'
 import { moduleThemes, type ModuleName } from '@/shared/config/module-themes'
 import { CategoriasManager } from '@/shared/documentos/components/categorias/categorias-manager'
 import { DocumentosLista } from '@/shared/documentos/components/lista/documentos-lista'
@@ -22,6 +23,11 @@ export function DocumentosTab({
   moduleName = 'proyectos',
 }: DocumentosTabProps) {
   const { user } = useAuth()
+  const { puede, esAdmin } = usePermisosQuery()
+
+  // 🔒 Permisos de documentos
+  const puedeVerDocumentos = esAdmin || puede('documentos', 'ver')
+  const canCreate = esAdmin || puede('documentos', 'subir')
 
   // Obtener tema dinámico basado en el módulo
   const theme = moduleThemes[moduleName]
@@ -30,8 +36,25 @@ export function DocumentosTab({
   const [showUpload, setShowUpload] = useState(false)
   const [showCategorias, setShowCategorias] = useState(false)
 
-  // Si está mostrando categorías
-  if (showCategorias && user) {
+  // 🚫 Sin permiso de ver: mostrar estado de acceso denegado
+  if (!puedeVerDocumentos) {
+    return (
+      <div className='flex flex-col items-center justify-center rounded-xl border border-gray-200 bg-white py-16 text-center shadow-sm dark:border-gray-700 dark:bg-gray-800'>
+        <div className='mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700'>
+          <Lock className='h-7 w-7 text-gray-400 dark:text-gray-500' />
+        </div>
+        <p className='text-sm font-semibold text-gray-700 dark:text-gray-300'>
+          Sin acceso a documentos
+        </p>
+        <p className='mt-1 text-xs text-gray-400 dark:text-gray-500'>
+          No tienes permiso para ver los documentos de este proyecto.
+        </p>
+      </div>
+    )
+  }
+
+  // Si está mostrando categorías (solo admins/creadores)
+  if (showCategorias && user && canCreate) {
     return (
       <div className='space-y-4'>
         <div
@@ -67,7 +90,7 @@ export function DocumentosTab({
   }
 
   // Si está mostrando formulario de upload
-  if (showUpload && user) {
+  if (showUpload && user && canCreate) {
     return (
       <div className='space-y-3'>
         {/* Header premium upload con gradiente del módulo */}

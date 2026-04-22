@@ -17,22 +17,10 @@ import {
 
 import { useRouter } from 'next/navigation'
 
-import { useAuth } from '@/contexts/auth-context'
-import { ConfirmarCambiosModal } from '@/modules/proyectos/components/confirmar-cambios-modal'
-import { ProyectosBadgesResumen } from '@/modules/proyectos/components/proyectos-badges-resumen'
-import { ProyectosForm } from '@/modules/proyectos/components/proyectos-form'
-import {
-  useProyectoConValidacion,
-  useProyectoQuery,
-  useProyectosQuery,
-} from '@/modules/proyectos/hooks'
-import { useDetectarCambios } from '@/modules/proyectos/hooks/useDetectarCambios'
-import type {
-  EstadoProyecto,
-  Proyecto,
-  ProyectoFormData,
-} from '@/modules/proyectos/types'
+import { construirURLProyecto } from '@/lib/utils/slug.utils'
+import { useProyectoQuery, useProyectosQuery } from '@/modules/proyectos/hooks'
 import { formatearEstadoProyecto } from '@/modules/proyectos/utils/estado.utils'
+import { usePermisosQuery } from '@/modules/usuarios/hooks'
 import { Button } from '@/shared/components/ui/button'
 import { Modal } from '@/shared/components/ui/Modal'
 
@@ -60,69 +48,25 @@ export default function ProyectoDetalleClient({
   proyectoId,
 }: ProyectoDetalleClientProps) {
   const router = useRouter()
-  const { user: _user } = useAuth()
+  const { puede, esAdmin } = usePermisosQuery()
+  const canEdit = esAdmin || puede('proyectos', 'editar')
+  const canDelete = esAdmin || puede('proyectos', 'eliminar')
 
   // ✅ REACT QUERY: Hook de detalle con cache (reemplaza useEffect + service)
   const { proyecto, cargando: loading, error } = useProyectoQuery(proyectoId)
-  const { actualizarProyecto, eliminarProyecto, actualizando } =
-    useProyectosQuery()
+  const { eliminarProyecto } = useProyectosQuery()
 
   // Estados para modales
   const [activeTab, setActiveTab] = useState<TabType>('info')
-  const [modalEditar, setModalEditar] = useState(false)
   const [modalEliminar, setModalEliminar] = useState(false)
-  const [modalConfirmarCambios, setModalConfirmarCambios] = useState(false)
-  const [totalesProyecto, setTotalesProyecto] = useState({
-    totalManzanas: 0,
-    totalViviendas: 0,
-  })
-  const [datosEdicion, setDatosEdicion] = useState<ProyectoFormData | null>(
-    null
-  )
-  const [datosConfirmacion, setDatosConfirmacion] = useState<{
-    proyectoId: string
-    data: ProyectoFormData
-  } | null>(null)
-
-  // ✅ Hook optimizado: Carga proyecto con validación de manzanas
-  const { data: proyectoConValidacion, isLoading: cargandoValidacion } =
-    useProyectoConValidacion(modalEditar ? proyectoId : undefined)
-
-  // Hook para detectar cambios
-  const proyectoEditar: Proyecto | null = proyecto || null
-  const cambiosDetectados = useDetectarCambios(proyectoEditar, datosEdicion)
 
   const handleEdit = () => {
-    setModalEditar(true)
-  }
-
-  const handleActualizarProyecto = async (data: ProyectoFormData) => {
-    // Guardar datos para confirmación
-    setDatosEdicion(data)
-    setDatosConfirmacion({
-      proyectoId: proyectoId,
-      data: data,
+    if (!proyecto) return
+    const url = construirURLProyecto({
+      id: proyecto.id,
+      nombre: proyecto.nombre,
     })
-
-    // Abrir modal de confirmación de cambios
-    setModalConfirmarCambios(true)
-  }
-
-  const confirmarActualizacion = async () => {
-    if (!datosConfirmacion) return
-
-    try {
-      await actualizarProyecto(
-        datosConfirmacion.proyectoId,
-        datosConfirmacion.data
-      )
-      setModalConfirmarCambios(false)
-      setModalEditar(false)
-      setDatosEdicion(null)
-      setDatosConfirmacion(null)
-    } catch {
-      // Error ya manejado por React Query con toast
-    }
+    router.push(`${url}/editar`)
   }
 
   const handleEliminar = () => {
@@ -317,21 +261,27 @@ export default function ProyectoDetalleClient({
                 </div>
               </div>
 
-              {/* Acciones */}
-              <div className={styles.headerClasses.actionsContainer}>
-                <button
-                  className={styles.headerClasses.actionButton}
-                  onClick={handleEdit}
-                >
-                  <Edit2 className='h-4 w-4' />
-                </button>
-                <button
-                  className={styles.headerClasses.deleteButton}
-                  onClick={handleEliminar}
-                >
-                  <Trash2 className='h-4 w-4' />
-                </button>
-              </div>
+              {/* Acciones — solo si tiene permiso */}
+              {(canEdit || canDelete) && (
+                <div className={styles.headerClasses.actionsContainer}>
+                  {canEdit && (
+                    <button
+                      className={styles.headerClasses.actionButton}
+                      onClick={handleEdit}
+                    >
+                      <Edit2 className='h-4 w-4' />
+                    </button>
+                  )}
+                  {canDelete && (
+                    <button
+                      className={styles.headerClasses.deleteButton}
+                      onClick={handleEliminar}
+                    >
+                      <Trash2 className='h-4 w-4' />
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
           </motion.div>
 
@@ -388,73 +338,6 @@ export default function ProyectoDetalleClient({
             )}
           </div>
         </div>
-
-        {/* Modal de Edición */}
-        <Modal
-          isOpen={modalEditar}
-          onClose={() => setModalEditar(false)}
-          title='Editar Proyecto'
-          description='Actualiza la información del proyecto'
-          size='xl'
-          gradientColor='green'
-          icon={<Edit2 className='h-6 w-6 text-white' />}
-          headerExtra={
-            <ProyectosBadgesResumen
-              totalManzanas={totalesProyecto.totalManzanas}
-              totalViviendas={totalesProyecto.totalViviendas}
-            />
-          }
-        >
-          {cargandoValidacion ? (
-            <div className='flex items-center justify-center p-12'>
-              <div className='space-y-3 text-center'>
-                <div className='mx-auto h-12 w-12 animate-spin rounded-full border-4 border-green-500 border-t-transparent' />
-                <p className='text-sm text-gray-600 dark:text-gray-400'>
-                  Cargando datos del proyecto...
-                </p>
-              </div>
-            </div>
-          ) : proyectoConValidacion ? (
-            <ProyectosForm
-              onSubmit={handleActualizarProyecto}
-              onCancel={() => setModalEditar(false)}
-              isLoading={false}
-              initialData={{
-                id: proyectoConValidacion.id,
-                nombre: proyectoConValidacion.nombre,
-                descripcion: proyectoConValidacion.descripcion,
-                fechaInicio: proyectoConValidacion.fechaInicio,
-                fechaFinEstimada: proyectoConValidacion.fechaFinEstimada,
-                presupuesto: proyectoConValidacion.presupuesto,
-                estado: proyectoConValidacion.estado as EstadoProyecto,
-                // ✅ Manzanas CON validación pre-cargada (sin queries adicionales)
-                manzanas: proyectoConValidacion.manzanas.map(m => ({
-                  id: m.id,
-                  nombre: m.nombre,
-                  totalViviendas: m.totalViviendas,
-                  precioBase: 0,
-                  superficieTotal: 0,
-                  ubicacion: '',
-                  // ✅ Datos de validación (para el formulario)
-                  cantidadViviendasCreadas: m.cantidadViviendasCreadas,
-                  esEditable: m.esEditable,
-                  motivoBloqueado: m.motivoBloqueado,
-                })),
-              }}
-              isEditing={true}
-              onTotalsChange={setTotalesProyecto}
-            />
-          ) : null}
-        </Modal>
-
-        {/* Modal Confirmar Cambios */}
-        <ConfirmarCambiosModal
-          isOpen={modalConfirmarCambios}
-          onClose={() => setModalConfirmarCambios(false)}
-          onConfirm={confirmarActualizacion}
-          cambios={cambiosDetectados}
-          isLoading={actualizando}
-        />
 
         {/* Modal de Confirmación de Eliminación */}
         <Modal

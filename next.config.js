@@ -68,6 +68,8 @@ const nextConfig = {
     serverActions: {
       bodySizeLimit: '2mb',
     },
+    // 🔒 Habilita forbidden() y unauthorized() para control de acceso HTTP nativo
+    authInterrupts: true,
   },
 
   // ⚡ WEBPACK OPTIMIZATIONS
@@ -105,6 +107,18 @@ const nextConfig = {
     }
 
     return config
+  },
+
+  // 🔀 REDIRECTS: rutas inexistentes → destino correcto
+  async redirects() {
+    return [
+      // /dashboard no existe — el dashboard real está en '/'
+      {
+        source: '/dashboard',
+        destination: '/',
+        permanent: false,
+      },
+    ]
   },
 
   // 🎯 OTRAS CONFIGURACIONES

@@ -1,4 +1,4 @@
-import { redirect } from 'next/navigation'
+import { forbidden } from 'next/navigation'
 
 import { getServerPermissions } from '@/lib/auth/server'
 
@@ -10,10 +10,10 @@ export const metadata = {
 }
 
 export default async function EntidadesFinancierasAdminPage() {
-  const { isAdmin } = await getServerPermissions()
+  const { isAdmin } = await getServerPermissions('administracion')
 
   if (!isAdmin) {
-    redirect('/dashboard')
+    forbidden()
   }
 
   return <EntidadesFinancierasAdminContent />

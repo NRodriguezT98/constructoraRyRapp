@@ -104,6 +104,18 @@ const THEME_COLORS = {
     focusRing: 'focus:ring-red-500/20',
     hover: 'hover:from-red-700 hover:via-rose-700 hover:to-pink-700',
   },
+  usuarios: {
+    gradient: 'from-indigo-600 via-purple-600 to-fuchsia-600',
+    bg: 'bg-indigo-500',
+    text: 'text-indigo-600 dark:text-indigo-400',
+    border: 'border-indigo-200 dark:border-indigo-900/50',
+    bgLight: 'bg-indigo-50 dark:bg-indigo-900/20',
+    textDark: 'text-indigo-900 dark:text-indigo-300',
+    textMedium: 'text-indigo-800 dark:text-indigo-400',
+    focusBorder: 'focus:border-indigo-500',
+    focusRing: 'focus:ring-indigo-500/20',
+    hover: 'hover:from-indigo-700 hover:via-purple-700 hover:to-fuchsia-700',
+  },
 }
 
 export const getReemplazarArchivoModalStyles = (

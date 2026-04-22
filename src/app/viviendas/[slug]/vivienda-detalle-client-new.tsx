@@ -18,6 +18,7 @@ import {
 import dynamic from 'next/dynamic'
 import { useRouter } from 'next/navigation'
 
+import { usePermisosQuery } from '@/modules/usuarios/hooks'
 import { InfoTab } from '@/modules/viviendas/components/detalle/tabs/InfoTab'
 import { useViviendaQuery } from '@/modules/viviendas/hooks/useViviendaQuery'
 import { Button } from '@/shared/components/ui/button'
@@ -67,6 +68,9 @@ export default function ViviendaDetalleClient({
   viviendaId,
 }: ViviendaDetalleClientProps) {
   const router = useRouter()
+  const { puede, esAdmin } = usePermisosQuery()
+  const canEdit = esAdmin || puede('viviendas', 'editar')
+  const canDelete = esAdmin || puede('viviendas', 'eliminar')
 
   // React Query hook (igual que proyectos)
   const { vivienda, loading, error } = useViviendaQuery(viviendaId)
@@ -261,20 +265,26 @@ export default function ViviendaDetalleClient({
               </div>
 
               {/* Acciones */}
-              <div className={styles.headerClasses.actionsContainer}>
-                <button
-                  className={styles.headerClasses.actionButton}
-                  onClick={() =>
-                    router.push(window.location.pathname + '/editar')
-                  }
-                  title='Editar vivienda'
-                >
-                  <Edit2 className='h-4 w-4' />
-                </button>
-                <button className={styles.headerClasses.deleteButton}>
-                  <Trash2 className='h-4 w-4' />
-                </button>
-              </div>
+              {(canEdit || canDelete) && (
+                <div className={styles.headerClasses.actionsContainer}>
+                  {canEdit ? (
+                    <button
+                      className={styles.headerClasses.actionButton}
+                      onClick={() =>
+                        router.push(window.location.pathname + '/editar')
+                      }
+                      title='Editar vivienda'
+                    >
+                      <Edit2 className='h-4 w-4' />
+                    </button>
+                  ) : null}
+                  {canDelete ? (
+                    <button className={styles.headerClasses.deleteButton}>
+                      <Trash2 className='h-4 w-4' />
+                    </button>
+                  ) : null}
+                </div>
+              )}
             </div>
           </motion.div>
 

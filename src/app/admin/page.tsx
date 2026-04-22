@@ -6,14 +6,19 @@
  * Server Component que obtiene permisos y renderiza el contenido
  */
 
+import { forbidden } from 'next/navigation'
+
 import { getServerPermissions } from '@/lib/auth/server'
 
 import AdminContent from './admin-content'
 
 export default async function AdminPage() {
-  // Obtener permisos del usuario autenticado
-  const permisos = await getServerPermissions()
+  const permisos = await getServerPermissions('administracion')
 
-  // Renderizar contenido con permisos
+  // Solo administradores pueden acceder al panel de administración
+  if (!permisos.isAdmin) {
+    forbidden()
+  }
+
   return <AdminContent {...permisos} />
 }

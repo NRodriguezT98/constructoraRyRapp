@@ -1,27 +1,62 @@
-import { logger } from '@/lib/utils/logger'
-/**
+﻿/**
  * ============================================
- * TIPOS DEL MÓDULO DE USUARIOS
+ * TIPOS DEL MÓDULO DE USUARIOS v2
  * ============================================
+ *
+ * Fuente única de verdad para tipos, constantes de UI
+ * y helpers de presentación del módulo de usuarios.
+ *
+ * NOTA: Los permisos viven en la tabla `permisos_rol` de la BD.
+ * La lógica de verificación usa `usePermisosQuery` + `permisos.service.ts`.
+ * NO hardcodear permisos aquí.
  */
 
-/**
- * Roles disponibles en el sistema
- */
+// ============================================
+// ROLES Y ESTADOS
+// ============================================
+
+/** Roles disponibles en el sistema */
 export type Rol =
   | 'Administrador'
   | 'Contabilidad'
   | 'Administrador de Obra'
   | 'Gerencia'
 
-/**
- * Estados de usuario
- */
+/** Estados posibles de un usuario */
 export type EstadoUsuario = 'Activo' | 'Inactivo' | 'Bloqueado'
 
-/**
- * Usuario completo de la base de datos
- */
+// ============================================
+// MÓDULOS Y ACCIONES DEL SISTEMA
+// ============================================
+
+/** Módulos disponibles en el sistema (deben coincidir con columna `modulo` en permisos_rol) */
+export type Modulo =
+  | 'proyectos'
+  | 'viviendas'
+  | 'clientes'
+  | 'negociaciones'
+  | 'documentos'
+  | 'abonos'
+  | 'renuncias'
+  | 'usuarios'
+  | 'auditorias'
+  | 'reportes'
+  | 'administracion'
+
+/** Acciones disponibles (deben coincidir con columna `accion` en permisos_rol) */
+export type Accion =
+  | 'ver'
+  | 'crear'
+  | 'subir'
+  | 'editar'
+  | 'eliminar'
+  | 'archivar'
+
+// ============================================
+// ENTIDADES DE USUARIO
+// ============================================
+
+/** Usuario base de la tabla `usuarios` */
 export interface Usuario {
   id: string
   email: string
@@ -35,6 +70,7 @@ export interface Usuario {
   preferencias: Record<string, unknown>
   creado_por: string | null
   ultimo_acceso: string | null
+  ultimo_login: string | null
   fecha_creacion: string
   fecha_actualizacion: string
   debe_cambiar_password: boolean
@@ -42,31 +78,31 @@ export interface Usuario {
   bloqueado_hasta: string | null
 }
 
-/**
- * Usuario completo con información adicional (vista)
- */
+/** Usuario enriquecido desde `vista_usuarios_completos` */
 export interface UsuarioCompleto extends Usuario {
   creado_por_nombre: string | null
   fecha_registro_auth: string
-  ultimo_login_auth: string | null
+  ultimo_login_auth: string | null // alias desde auth.users.last_sign_in_at
 }
 
-/**
- * Datos para crear nuevo usuario
- */
+// ============================================
+// DTOs (Data Transfer Objects)
+// ============================================
+
+/** Datos para crear un nuevo usuario */
 export interface CrearUsuarioData {
   email: string
   nombres: string
   apellidos: string
   telefono?: string
   rol: Rol
-  password?: string // Si no se proporciona, se genera automáticamente
-  enviar_invitacion?: boolean // Enviar email de invitación
+  /** Si no se proporciona, se genera automáticamente */
+  password?: string
+  /** Enviar email de invitación al usuario */
+  enviar_invitacion?: boolean
 }
 
-/**
- * Datos para actualizar usuario existente
- */
+/** Datos para actualizar un usuario existente */
 export interface ActualizarUsuarioData {
   nombres?: string
   apellidos?: string
@@ -77,432 +113,275 @@ export interface ActualizarUsuarioData {
   preferencias?: Record<string, unknown>
 }
 
-/**
- * Filtros para búsqueda de usuarios
- */
-export interface FiltrosUsuarios {
-  busqueda?: string // Búsqueda en nombres, apellidos, email
-  rol?: Rol
-  estado?: EstadoUsuario
-  creado_por?: string
-}
-
-/**
- * Estadísticas de usuarios
- */
-export interface EstadisticasUsuarios {
-  total: number
-  por_rol: Record<Rol, number>
-  por_estado: Record<EstadoUsuario, number>
-  activos_hoy: number
-  bloqueados: number
-}
-
-/**
- * Respuesta de creación de usuario
- */
+/** Respuesta de creación de usuario */
 export interface CrearUsuarioRespuesta {
   usuario: Usuario
-  password_temporal?: string // Solo si se generó automáticamente
+  /** Solo presente si la contraseña fue generada automáticamente */
+  password_temporal?: string
   invitacion_enviada: boolean
 }
 
-/**
- * Opciones de rol con metadata
- */
-export const ROLES: {
+// ============================================
+// FILTROS Y BÚSQUEDA
+// ============================================
+
+/** Filtros disponibles para la lista de usuarios */
+export interface FiltrosUsuarios {
+  busqueda?: string
+  rol?: Rol
+  estado?: EstadoUsuario
+}
+
+// ============================================
+// ESTADÍSTICAS
+// ============================================
+
+/** Estadísticas del módulo de usuarios */
+export interface EstadisticasUsuarios {
+  total: number
+  activos: number
+  inactivos: number
+  bloqueados: number
+  por_rol: Record<Rol, number>
+  activos_hoy: number
+}
+
+// ============================================
+// PERMISOS (tipos para la matriz de la UI)
+// ============================================
+
+/** Fila de la tabla `permisos_rol` */
+export interface PermisoRolRow {
+  id: string
+  rol: Rol
+  modulo: Modulo
+  accion: Accion
+  permitido: boolean
+}
+
+/** Agrupación de permisos de un módulo para la matriz de la UI */
+export interface PermisosModuloUI {
+  modulo: Modulo
+  label: string
+  icono: string
+  acciones: {
+    accion: Accion
+    descripcion: string
+    permitido: boolean
+    permiso_id: string
+  }[]
+}
+
+// ============================================
+// CONSTANTES DE UI
+// ============================================
+
+/** Metadata de roles para mostrar en la UI */
+export const ROLES_UI: {
   value: Rol
   label: string
   descripcion: string
   color: string
+  badgeClass: string
 }[] = [
   {
     value: 'Administrador',
     label: 'Administrador',
-    descripcion: 'Control total del sistema (Usuario en Cali)',
+    descripcion: 'Control total del sistema',
     color: 'red',
-  },
-  {
-    value: 'Contabilidad',
-    label: 'Contabilidad',
-    descripcion: 'Crear/Editar datos, aprobar abonos (sin eliminar)',
-    color: 'blue',
-  },
-  {
-    value: 'Administrador de Obra',
-    label: 'Administrador de Obra',
-    descripcion: 'Solo lectura (Obra Guacarí)',
-    color: 'gray',
+    badgeClass:
+      'bg-red-100 text-red-800 border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-800',
   },
   {
     value: 'Gerencia',
     label: 'Gerencia',
-    descripcion: 'Lectura + Reportes avanzados (Ejecutivos)',
+    descripcion: 'Lectura completa + aprobaciones',
     color: 'purple',
+    badgeClass:
+      'bg-purple-100 text-purple-800 border-purple-200 dark:bg-purple-900/30 dark:text-purple-300 dark:border-purple-800',
+  },
+  {
+    value: 'Contabilidad',
+    label: 'Contabilidad',
+    descripcion: 'Crear, editar y aprobar abonos',
+    color: 'blue',
+    badgeClass:
+      'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800',
+  },
+  {
+    value: 'Administrador de Obra',
+    label: 'Admin de Obra',
+    descripcion: 'Lectura + exportación',
+    color: 'gray',
+    badgeClass:
+      'bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600',
   },
 ]
 
-/**
- * Opciones de estado con metadata
- */
-export const ESTADOS_USUARIO: {
+/** Metadata de estados para mostrar en la UI */
+export const ESTADOS_USUARIO_UI: {
   value: EstadoUsuario
   label: string
   descripcion: string
-  color: string
+  badgeClass: string
+  dotClass: string
 }[] = [
   {
     value: 'Activo',
     label: 'Activo',
-    descripcion: 'Usuario puede acceder al sistema',
-    color: 'green',
+    descripcion: 'Puede acceder al sistema',
+    badgeClass:
+      'bg-green-100 text-green-800 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800',
+    dotClass: 'bg-green-500',
   },
   {
     value: 'Inactivo',
     label: 'Inactivo',
-    descripcion: 'Usuario suspendido temporalmente',
-    color: 'gray',
+    descripcion: 'Acceso suspendido temporalmente',
+    badgeClass:
+      'bg-gray-100 text-gray-600 border-gray-200 dark:bg-gray-700 dark:text-gray-400 dark:border-gray-600',
+    dotClass: 'bg-gray-400',
   },
   {
     value: 'Bloqueado',
     label: 'Bloqueado',
-    descripcion: 'Usuario bloqueado por seguridad',
-    color: 'red',
+    descripcion: 'Bloqueado por seguridad',
+    badgeClass:
+      'bg-red-100 text-red-800 border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-800',
+    dotClass: 'bg-red-500',
   },
 ]
 
-/**
- * Permisos por rol - Sistema granular por módulo y acción
- *
- * DISEÑO PARA MIGRACIÓN FUTURA:
- * Esta estructura está preparada para migrar a base de datos.
- * Los valores aquí definidos serán datos de seed cuando migremos.
- */
-
-// ============================================
-// MÓDULOS Y ACCIONES DEL SISTEMA
-// ============================================
-
-/**
- * Módulos disponibles en el sistema
- */
-export type Modulo =
-  | 'proyectos'
-  | 'viviendas'
-  | 'clientes'
-  | 'documentos'
-  | 'negociaciones'
-  | 'abonos'
-  | 'usuarios'
-  | 'auditorias'
-  | 'reportes'
-  | 'administracion'
-
-/**
- * Acciones disponibles por módulo
- */
-export type Accion =
-  | 'ver'
-  | 'crear'
-  | 'editar'
-  | 'eliminar'
-  | 'aprobar'
-  | 'rechazar'
-  | 'exportar'
-  | 'importar'
-  | 'gestionar'
-
-/**
- * Permiso completo: módulo + acción
- */
-export interface Permiso {
-  modulo: Modulo
-  accion: Accion
-  descripcion?: string
+/** Labels de módulos para la matriz de permisos */
+export const MODULOS_LABELS: Record<Modulo, { label: string }> = {
+  proyectos: { label: 'Proyectos' },
+  viviendas: { label: 'Viviendas' },
+  clientes: { label: 'Clientes' },
+  negociaciones: { label: 'Negociaciones' },
+  documentos: { label: 'Documentos' },
+  abonos: { label: 'Abonos' },
+  renuncias: { label: 'Renuncias' },
+  usuarios: { label: 'Usuarios' },
+  auditorias: { label: 'Auditorías' },
+  reportes: { label: 'Reportes' },
+  administracion: { label: 'Administración' },
 }
 
-// ============================================
-// PERMISOS POR ROL
-// ============================================
-
-export const PERMISOS_POR_ROL: Record<Rol, Record<Modulo, Accion[]>> = {
-  Administrador: {
-    proyectos: ['ver', 'crear', 'editar', 'eliminar', 'exportar'],
-    viviendas: ['ver', 'crear', 'editar', 'eliminar', 'exportar'],
-    clientes: ['ver', 'crear', 'editar', 'eliminar', 'exportar'],
-    documentos: ['ver', 'crear', 'editar', 'eliminar', 'exportar'],
-    negociaciones: ['ver', 'crear', 'editar', 'eliminar', 'aprobar'],
-    abonos: ['ver', 'crear', 'editar', 'eliminar', 'aprobar', 'exportar'],
-    usuarios: ['ver', 'crear', 'editar', 'eliminar', 'gestionar'],
-    auditorias: ['ver', 'exportar'],
-    reportes: ['ver', 'exportar'],
-    administracion: ['ver', 'gestionar'],
-  },
-  Contabilidad: {
-    proyectos: ['ver', 'crear', 'editar', 'exportar'],
-    viviendas: ['ver', 'crear', 'editar', 'exportar'],
-    clientes: ['ver', 'crear', 'editar', 'exportar'],
-    documentos: ['ver', 'crear', 'editar', 'exportar'],
-    negociaciones: ['ver', 'crear', 'editar'],
-    abonos: ['ver', 'crear', 'editar', 'aprobar', 'exportar'],
-    usuarios: ['ver'],
-    auditorias: ['ver', 'exportar'],
-    reportes: ['ver', 'exportar'],
-    administracion: [],
-  },
-  'Administrador de Obra': {
-    proyectos: ['ver', 'exportar'],
-    viviendas: ['ver', 'exportar'],
-    clientes: ['ver', 'exportar'],
-    documentos: ['ver', 'exportar'],
-    negociaciones: ['ver'],
-    abonos: ['ver', 'exportar'],
-    usuarios: [],
-    auditorias: [],
-    reportes: ['ver', 'exportar'],
-    administracion: [],
-  },
-  Gerencia: {
-    proyectos: ['ver', 'exportar'],
-    viviendas: ['ver', 'exportar'],
-    clientes: ['ver', 'exportar'],
-    documentos: ['ver', 'exportar'],
-    negociaciones: ['ver', 'aprobar'],
-    abonos: ['ver', 'aprobar', 'exportar'],
-    usuarios: ['ver'],
-    auditorias: ['ver', 'exportar'],
-    reportes: ['ver', 'exportar'],
-    administracion: ['ver'],
-  },
-}
-
-/**
- * Descripción de cada permiso para UI y auditoría
- */
-export const DESCRIPCION_PERMISOS: Record<Modulo, Record<Accion, string>> = {
+/** Descripciones de acciones por módulo para la UI de permisos */
+export const ACCIONES_DESCRIPCION: Record<
+  Modulo,
+  Partial<Record<Accion, string>>
+> = {
   proyectos: {
-    ver: 'Ver lista y detalles de proyectos',
+    ver: 'Acceder al módulo y ver listado',
     crear: 'Crear nuevos proyectos',
-    editar: 'Modificar proyectos existentes',
+    editar: 'Modificar datos del proyecto',
     eliminar: 'Eliminar proyectos',
-    exportar: 'Exportar datos de proyectos',
-    aprobar: 'N/A',
-    rechazar: 'N/A',
-    importar: 'N/A',
-    gestionar: 'N/A',
   },
   viviendas: {
-    ver: 'Ver lista y detalles de viviendas',
-    crear: 'Crear nuevas viviendas',
-    editar: 'Modificar viviendas existentes',
+    ver: 'Acceder al módulo y ver listado',
+    crear: 'Registrar nuevas viviendas',
+    editar: 'Modificar datos de la vivienda',
     eliminar: 'Eliminar viviendas',
-    exportar: 'Exportar datos de viviendas',
-    aprobar: 'N/A',
-    rechazar: 'N/A',
-    importar: 'N/A',
-    gestionar: 'N/A',
   },
   clientes: {
-    ver: 'Ver lista y detalles de clientes',
+    ver: 'Acceder al módulo y ver listado',
     crear: 'Registrar nuevos clientes',
-    editar: 'Modificar datos de clientes',
+    editar: 'Modificar datos del cliente',
     eliminar: 'Eliminar clientes',
-    exportar: 'Exportar base de datos de clientes',
-    aprobar: 'N/A',
-    rechazar: 'N/A',
-    importar: 'Importar clientes masivamente',
-    gestionar: 'N/A',
-  },
-  documentos: {
-    ver: 'Ver documentos del sistema',
-    crear: 'Subir nuevos documentos',
-    editar: 'Modificar metadatos de documentos',
-    eliminar: 'Eliminar documentos',
-    exportar: 'Descargar documentos',
-    aprobar: 'N/A',
-    rechazar: 'N/A',
-    importar: 'Importar documentos masivamente',
-    gestionar: 'N/A',
   },
   negociaciones: {
-    ver: 'Ver negociaciones activas',
-    crear: 'Crear nuevas negociaciones',
+    ver: 'Ver tab de negociaciones del cliente',
+    crear: 'Crear negociaciones',
     editar: 'Modificar negociaciones',
     eliminar: 'Eliminar negociaciones',
-    aprobar: 'Aprobar negociaciones pendientes',
-    rechazar: 'Rechazar negociaciones',
-    exportar: 'Exportar reporte de negociaciones',
-    importar: 'N/A',
-    gestionar: 'N/A',
+  },
+  documentos: {
+    ver: 'Ver tab de documentos',
+    subir: 'Subir nuevos documentos',
+    editar: 'Renombrar y editar metadatos',
+    eliminar: 'Eliminar documentos',
+    archivar: 'Archivar documentos',
   },
   abonos: {
-    ver: 'Ver lista y detalles de abonos',
-    crear: 'Registrar nuevos abonos',
-    editar: 'Modificar abonos existentes',
+    ver: 'Acceder al módulo y ver listado',
+    crear: 'Registrar abonos',
+    editar: 'Modificar abonos',
     eliminar: 'Eliminar abonos',
-    aprobar: 'Aprobar abonos pendientes',
-    rechazar: 'Rechazar abonos',
-    exportar: 'Exportar reporte de abonos',
-    importar: 'N/A',
-    gestionar: 'N/A',
+  },
+  renuncias: {
+    ver: 'Acceder al módulo y ver listado',
+    crear: 'Registrar renuncias',
+    editar: 'Modificar renuncias',
+    eliminar: 'Eliminar renuncias',
   },
   usuarios: {
-    ver: 'Ver lista de usuarios del sistema',
+    ver: 'Ver lista de usuarios y permisos',
     crear: 'Crear nuevos usuarios',
-    editar: 'Modificar usuarios existentes',
-    eliminar: 'Eliminar usuarios',
-    gestionar: 'Gestión completa de usuarios y permisos',
-    exportar: 'N/A',
-    aprobar: 'N/A',
-    rechazar: 'N/A',
-    importar: 'N/A',
+    editar: 'Modificar datos y rol de usuarios',
+    eliminar: 'Desactivar usuarios',
   },
   auditorias: {
-    ver: 'Ver registros de auditoría del sistema',
-    exportar: 'Exportar registros de auditoría',
-    crear: 'N/A',
-    editar: 'N/A',
-    eliminar: 'N/A',
-    aprobar: 'N/A',
-    rechazar: 'N/A',
-    importar: 'N/A',
-    gestionar: 'N/A',
+    ver: 'Ver registros de auditoría',
   },
   reportes: {
     ver: 'Ver reportes y estadísticas',
-    exportar: 'Exportar reportes',
-    crear: 'N/A',
-    editar: 'N/A',
-    eliminar: 'N/A',
-    aprobar: 'N/A',
-    rechazar: 'N/A',
-    importar: 'N/A',
-    gestionar: 'N/A',
   },
   administracion: {
-    ver: 'Ver panel de administración',
-    gestionar: 'Gestión completa del sistema',
-    crear: 'N/A',
-    editar: 'N/A',
-    eliminar: 'N/A',
-    aprobar: 'N/A',
-    rechazar: 'N/A',
-    exportar: 'N/A',
-    importar: 'N/A',
+    ver: 'Acceder al panel de administración',
   },
 }
 
 // ============================================
-// FUNCIONES DE VERIFICACIÓN DE PERMISOS
+// HELPERS DE PRESENTACIÓN
 // ============================================
 
-/**
- * Verifica si un rol tiene un permiso específico
- *
- * @param rol - Rol del usuario
- * @param modulo - Módulo del sistema
- * @param accion - Acción a verificar
- * @returns true si el rol tiene el permiso
- *
- * @example
- * tienePermiso('Contabilidad', 'clientes', 'crear') // true
- * tienePermiso('Administrador de Obra', 'usuarios', 'crear') // false
- */
-export function tienePermiso(
-  rol: Rol,
-  modulo: Modulo,
-  accion: Accion
-): boolean {
-  const permisosModulo = PERMISOS_POR_ROL[rol]?.[modulo]
-  return permisosModulo?.includes(accion) || false
+/** Obtiene la metadata de UI de un rol */
+export function getRolUI(rol: Rol) {
+  return ROLES_UI.find(r => r.value === rol) ?? ROLES_UI[3]
 }
 
-/**
- * Verifica si un rol tiene ALGUNO de los permisos especificados
- *
- * @param rol - Rol del usuario
- * @param modulo - Módulo del sistema
- * @param acciones - Array de acciones a verificar
- * @returns true si el rol tiene al menos una de las acciones
- *
- * @example
- * tieneAlgunPermiso('Contabilidad', 'clientes', ['crear', 'editar']) // true
- */
-export function tieneAlgunPermiso(
-  rol: Rol,
-  modulo: Modulo,
-  acciones: Accion[]
-): boolean {
-  return acciones.some(accion => tienePermiso(rol, modulo, accion))
-}
-
-/**
- * Verifica si un rol tiene TODOS los permisos especificados
- *
- * @param rol - Rol del usuario
- * @param modulo - Módulo del sistema
- * @param acciones - Array de acciones a verificar
- * @returns true si el rol tiene todas las acciones
- *
- * @example
- * tieneTodosLosPermisos('Administrador', 'clientes', ['crear', 'editar']) // true
- */
-export function tieneTodosLosPermisos(
-  rol: Rol,
-  modulo: Modulo,
-  acciones: Accion[]
-): boolean {
-  return acciones.every(accion => tienePermiso(rol, modulo, accion))
-}
-
-/**
- * Obtiene todos los permisos de un rol para un módulo
- *
- * @param rol - Rol del usuario
- * @param modulo - Módulo del sistema
- * @returns Array de acciones permitidas
- *
- * @example
- * obtenerPermisos('Contabilidad', 'clientes') // ['ver', 'crear', 'editar']
- */
-export function obtenerPermisos(rol: Rol, modulo: Modulo): Accion[] {
-  return PERMISOS_POR_ROL[rol]?.[modulo] || []
-}
-
-/**
- * Obtiene todos los módulos a los que un rol tiene acceso
- *
- * @param rol - Rol del usuario
- * @returns Array de módulos con al menos un permiso
- *
- * @example
- * obtenerModulosConAcceso('Contabilidad') // ['proyectos', 'viviendas', 'clientes', ...]
- */
-export function obtenerModulosConAcceso(rol: Rol): Modulo[] {
-  // ⚠️ Validación: si el rol no existe en PERMISOS_POR_ROL, retornar array vacío
-  const permisos = PERMISOS_POR_ROL[rol]
-  if (!permisos) {
-    logger.warn(
-      `⚠️ [PERMISOS] Rol "${rol}" no tiene permisos definidos. Retornando array vacío.`
-    )
-    return []
-  }
-
-  return (Object.keys(permisos) as Modulo[]).filter(
-    modulo => permisos[modulo].length > 0
+/** Obtiene la metadata de UI de un estado */
+export function getEstadoUI(estado: EstadoUsuario) {
+  return (
+    ESTADOS_USUARIO_UI.find(e => e.value === estado) ?? ESTADOS_USUARIO_UI[0]
   )
 }
 
-/**
- * Helper para obtener color de rol
- */
-export function getColorRol(rol: Rol): string {
-  return ROLES.find(r => r.value === rol)?.color || 'gray'
+/** Retorna el nombre completo de un usuario */
+export function getNombreCompleto(
+  usuario: Pick<Usuario, 'nombres' | 'apellidos'>
+): string {
+  return `${usuario.nombres} ${usuario.apellidos}`.trim()
 }
 
-/**
- * Helper para obtener color de estado
- */
-export function getColorEstado(estado: EstadoUsuario): string {
-  return ESTADOS_USUARIO.find(e => e.value === estado)?.color || 'gray'
+/** Retorna las iniciales de un usuario para el avatar */
+export function getIniciales(
+  usuario: Pick<Usuario, 'nombres' | 'apellidos'>
+): string {
+  const primeraLetraNombre = usuario.nombres.charAt(0).toUpperCase()
+  const primeraLetraApellido = usuario.apellidos.charAt(0).toUpperCase()
+  return `${primeraLetraNombre}${primeraLetraApellido}`
 }
+
+// ============================================
+// LEGACY EXPORTS (compatibilidad con código existente)
+// Migrar gradualmente al nuevo patrón
+// ============================================
+
+/** @deprecated Usar ROLES_UI */
+export const ROLES = ROLES_UI.map(r => ({
+  value: r.value,
+  label: r.label,
+  descripcion: r.descripcion,
+  color: r.color,
+}))
+
+/** @deprecated Usar ESTADOS_USUARIO_UI */
+export const ESTADOS_USUARIO = ESTADOS_USUARIO_UI.map(e => ({
+  value: e.value,
+  label: e.label,
+  descripcion: e.descripcion,
+  color:
+    e.value === 'Activo' ? 'green' : e.value === 'Bloqueado' ? 'red' : 'gray',
+}))

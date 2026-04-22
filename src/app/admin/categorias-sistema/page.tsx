@@ -4,19 +4,17 @@
  * ============================================
  */
 
-import { redirect } from 'next/navigation'
+import { forbidden } from 'next/navigation'
 
 import { getServerPermissions } from '@/lib/auth/server'
 
 import CategoriasSistemaContent from './categorias-sistema-content'
 
 export default async function CategoriasSistemaPage() {
-  // Obtener permisos del usuario autenticado
-  const permisos = await getServerPermissions()
+  const permisos = await getServerPermissions('administracion')
 
-  // Solo admins pueden acceder
-  if (!permisos.canView || !permisos.isAdmin) {
-    redirect('/admin')
+  if (!permisos.isAdmin) {
+    forbidden()
   }
 
   return <CategoriasSistemaContent />
