@@ -93,3 +93,88 @@ export const permisosViewStyles = {
   emptyWrapper: 'py-12 text-center',
   emptyText: 'text-sm text-gray-400 dark:text-gray-500',
 } as const
+
+// ── Exportaciones para PermisosView v4 (accordion + DnD) ─────────────────────
+
+import type { Rol } from '../types'
+
+/** Color de acento (borde izquierdo) por módulo */
+export const MODULE_ACCENT: Record<string, string> = {
+  proyectos: 'bg-emerald-500',
+  viviendas: 'bg-amber-500',
+  clientes: 'bg-cyan-500',
+  documentos: 'bg-rose-500',
+  negociaciones: 'bg-purple-500',
+  abonos: 'bg-indigo-500',
+  usuarios: 'bg-blue-500',
+  auditorias: 'bg-violet-500',
+  reportes: 'bg-teal-500',
+  administracion: 'bg-gray-500',
+}
+
+/** Clases del wrapper de ícono por módulo */
+export const MODULE_ICON_BG: Record<string, string> = {
+  proyectos:
+    'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400',
+  viviendas:
+    'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400',
+  clientes: 'bg-cyan-100 text-cyan-700 dark:bg-cyan-900/40 dark:text-cyan-400',
+  documentos:
+    'bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-400',
+  negociaciones:
+    'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-400',
+  abonos:
+    'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-400',
+  usuarios: 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400',
+  auditorias:
+    'bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-400',
+  reportes: 'bg-teal-100 text-teal-700 dark:bg-teal-900/40 dark:text-teal-400',
+  administracion:
+    'bg-gray-100 text-gray-700 dark:bg-gray-700/60 dark:text-gray-400',
+}
+
+/** Tokens visuales por rol (excluye Administrador) */
+export const ROL_VISUAL: Record<
+  Exclude<Rol, 'Administrador'>,
+  {
+    gradient: string
+    bg: string
+    header: string
+    toggleOn: string
+  }
+> = {
+  Contabilidad: {
+    gradient: 'from-sky-500 to-blue-600',
+    bg: 'bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-300',
+    header: 'text-sky-600 dark:text-sky-400',
+    toggleOn:
+      'bg-sky-500 text-white hover:bg-sky-600 focus:ring-2 focus:ring-sky-500/30',
+  },
+  'Administrador de Obra': {
+    gradient: 'from-amber-500 to-orange-500',
+    bg: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300',
+    header: 'text-amber-600 dark:text-amber-400',
+    toggleOn:
+      'bg-amber-500 text-white hover:bg-amber-600 focus:ring-2 focus:ring-amber-500/30',
+  },
+  Gerencia: {
+    gradient: 'from-violet-500 to-purple-600',
+    bg: 'bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300',
+    header: 'text-violet-600 dark:text-violet-400',
+    toggleOn:
+      'bg-violet-500 text-white hover:bg-violet-600 focus:ring-2 focus:ring-violet-500/30',
+  },
+}
+
+/** Estilos compartidos de filas de la tabla */
+export const sharedStyles = {
+  trModule:
+    'bg-gray-50/80 dark:bg-gray-900/50 border-t border-gray-200 dark:border-gray-700 first:border-t-0',
+  trAction: 'transition-colors hover:bg-gray-50/60 dark:hover:bg-gray-900/30',
+  toggleBase:
+    'inline-flex h-7 w-7 items-center justify-center rounded-lg shadow-sm transition-all hover:scale-105 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed',
+  toggleOff:
+    'bg-gray-200 text-gray-400 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-500 dark:hover:bg-gray-600 focus:ring-2 focus:ring-gray-400/30',
+  toggleAdmin:
+    'inline-flex h-7 w-7 cursor-not-allowed items-center justify-center rounded-lg bg-indigo-100 text-indigo-400 opacity-70 dark:bg-indigo-900/40 dark:text-indigo-500',
+} as const
