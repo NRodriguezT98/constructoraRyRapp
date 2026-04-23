@@ -351,7 +351,7 @@ export default function ClienteDetalleClient({
         ) || []
       ).length,
       badge: null,
-      visible: true,
+      visible: esAdmin || puede('negociaciones', 'ver'),
     },
     {
       id: 'documentos' as const,
