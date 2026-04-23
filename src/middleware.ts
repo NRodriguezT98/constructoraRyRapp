@@ -107,20 +107,20 @@ function canAccessRoute(
   }
 
   // Detectar rutas de asignar/trasladar vivienda → requieren permiso de negociaciones
-  // Ej: /clientes/[slug]/asignar-vivienda → negociaciones.crear
+  // Ej: /clientes/[slug]/asignar-vivienda → negociaciones.asignar
   const asignarMatch = pathname.match(
     /^\/clientes\/[^/]+\/asignar-vivienda(-v2)?$/
   )
   if (asignarMatch) {
     if (permisosCache.includes('*.*')) return true
-    return permisosCache.includes('negociaciones.crear')
+    return permisosCache.includes('negociaciones.asignar')
   }
 
-  // Ej: /clientes/[slug]/traslado-vivienda → negociaciones.editar
+  // Ej: /clientes/[slug]/traslado-vivienda → negociaciones.trasladar
   const trasladoMatch = pathname.match(/^\/clientes\/[^/]+\/traslado-vivienda$/)
   if (trasladoMatch) {
     if (permisosCache.includes('*.*')) return true
-    return permisosCache.includes('negociaciones.editar')
+    return permisosCache.includes('negociaciones.trasladar')
   }
 
   // Buscar permiso por coincidencia de prefijo (rutas del mapa)

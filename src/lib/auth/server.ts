@@ -146,59 +146,6 @@ export async function isAdmin(): Promise<boolean> {
 }
 
 /**
- * Verificar si el usuario puede acceder a un módulo
- * Basado en matriz de permisos por rol
- */
-export async function canAccessModule(modulo: string): Promise<boolean> {
-  const perfil = await getServerUserProfile()
-
-  if (!perfil) {
-    return false
-  }
-
-  // Matriz de permisos: qué roles pueden acceder a qué módulos
-  const modulePermissions: Record<string, string[]> = {
-    viviendas: [
-      'Administrador',
-      'Contabilidad',
-      'Administrador de Obra',
-      'Gerencia',
-    ],
-    clientes: [
-      'Administrador',
-      'Contabilidad',
-      'Administrador de Obra',
-      'Gerencia',
-    ],
-    proyectos: [
-      'Administrador',
-      'Contabilidad',
-      'Administrador de Obra',
-      'Gerencia',
-    ],
-    abonos: ['Administrador', 'Contabilidad', 'Gerencia'],
-    documentos: [
-      'Administrador',
-      'Contabilidad',
-      'Administrador de Obra',
-      'Gerencia',
-    ],
-    negociaciones: ['Administrador', 'Contabilidad', 'Gerencia'],
-    auditorias: ['Administrador', 'Gerencia'],
-    admin: ['Administrador'],
-  }
-
-  const allowedRoles = modulePermissions[modulo]
-
-  if (!allowedRoles) {
-    // Si no está en el mapa, permitir a todos los autenticados
-    return true
-  }
-
-  return allowedRoles.includes(perfil.rol)
-}
-
-/**
  * Obtener permisos granulares del usuario
  * Para usar en Server Components
  *
