@@ -8,17 +8,42 @@
  * Fuerza cierre de sesión de usuarios cuando cambian los permisos de su rol.
  * Esto asegura que vean los permisos actualizados en su próximo login.
  *
- * REQUIERE: SERVICE_ROLE_KEY (server-side only)
+ * REQUIERE: Usuario autenticado con rol Administrador
  */
 
 import { NextResponse } from 'next/server'
 
+import { isAdmin } from '@/lib/auth/server'
+import { createRouteClient } from '@/lib/supabase/server-route'
 import { logger } from '@/lib/utils/logger'
 import { invalidarSesionPorCambioPermisos } from '@/modules/usuarios/services/permisos-jwt.service'
 import type { Rol } from '@/modules/usuarios/types'
 
 export async function POST(request: Request) {
   try {
+    // 1. Verificar sesión activa
+    const supabase = await createRouteClient()
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser()
+
+    if (authError || !user) {
+      return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+    }
+
+    // 2. Solo Administrador puede invalidar sesiones de otros
+    if (!(await isAdmin())) {
+      return NextResponse.json(
+        {
+          error:
+            'Acceso denegado. Solo el Administrador puede invalidar sesiones.',
+        },
+        { status: 403 }
+      )
+    }
+
+    // 3. Validar body
     const { rol } = await request.json()
 
     if (!rol) {
@@ -28,7 +53,7 @@ export async function POST(request: Request) {
       )
     }
 
-    // Invalidar sesiones de usuarios con ese rol
+    // 4. Invalidar sesiones de usuarios con ese rol
     await invalidarSesionPorCambioPermisos(rol as Rol)
 
     return NextResponse.json({

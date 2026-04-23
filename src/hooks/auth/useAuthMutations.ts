@@ -13,7 +13,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
 import { createClient } from '@/lib/supabase/client'
-import { debugLog, errorLog, successLog, warnLog } from '@/lib/utils/logger'
+import { debugLog, errorLog, successLog } from '@/lib/utils/logger'
 
 import type { Perfil } from './useAuthQuery'
 import { authKeys } from './useAuthQuery'
@@ -83,29 +83,11 @@ export function useLoginMutation() {
         throw perfilError
       }
 
-      // ✅ 3. Sincronizar permisos al JWT (async, no bloquea login)
-      try {
-        const syncResponse = await fetch('/api/auth/sync-permisos', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            userId: authData.user.id,
-            rol: perfilData.rol,
-          }),
-        })
+      // ✅ Los permisos se escriben en el JWT automáticamente mediante
+      //    custom_access_token_hook al ejecutar signInWithPassword (arriba).
+      //    No se requiere sincronización manual post-login.
 
-        if (syncResponse.ok) {
-          successLog('Permisos sincronizados al JWT')
-        } else {
-          warnLog('Error sincronizando permisos (no crítico)', {
-            status: syncResponse.status,
-          })
-        }
-      } catch (error) {
-        warnLog('Error sincronizando permisos (no crítico)', error)
-      }
-
-      debugLog('ðŸŽ‰ Login mutation completado exitosamente')
+      debugLog('🎉 Login mutation completado exitosamente')
 
       return {
         session: authData.session,

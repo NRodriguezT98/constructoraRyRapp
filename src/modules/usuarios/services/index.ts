@@ -1,11 +1,4 @@
-export {
-  invalidarSesionPorCambioPermisos,
-  obtenerPermisosParaJWT,
-  sincronizarPermisosAlJWT,
-  sincronizarPermisosPostLogin,
-  tienePermisoEnCache,
-  type PermisoCompacto,
-} from './permisos-jwt.service'
+export { invalidarSesionPorCambioPermisos } from './permisos-jwt.service'
 export {
   actualizarPermiso,
   actualizarPermisosEnLote,
