@@ -115,6 +115,7 @@ export default function ClienteDetalleClient({
   const { puede, esAdmin } = usePermisosQuery()
   const canEdit = esAdmin || puede('clientes', 'editar')
   const canDelete = esAdmin || puede('clientes', 'eliminar')
+  const canVerHistorial = esAdmin || puede('clientes', 'ver_historial')
 
   // ✅ Hook consolidado con TODA la lógica
   const {
@@ -328,6 +329,7 @@ export default function ClienteDetalleClient({
       icon: User,
       count: null,
       badge: null,
+      visible: true,
     },
     {
       id: 'intereses' as const,
@@ -335,6 +337,7 @@ export default function ClienteDetalleClient({
       icon: Heart,
       count: cliente.intereses?.length || 0,
       badge: null,
+      visible: true,
     },
     {
       id: 'negociacion' as const,
@@ -348,6 +351,7 @@ export default function ClienteDetalleClient({
         ) || []
       ).length,
       badge: null,
+      visible: true,
     },
     {
       id: 'documentos' as const,
@@ -357,6 +361,7 @@ export default function ClienteDetalleClient({
       badge: !tieneCedula
         ? { text: '⚠️ Requerido', color: 'orange', pulse: true }
         : null,
+      visible: true,
     },
     {
       id: 'historial' as const,
@@ -364,8 +369,9 @@ export default function ClienteDetalleClient({
       icon: History,
       count: null,
       badge: null,
+      visible: canVerHistorial,
     },
-  ]
+  ].filter(tab => tab.visible)
 
   return (
     <AnimatePresence mode='wait'>

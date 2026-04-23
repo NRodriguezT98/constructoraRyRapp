@@ -1,7 +1,7 @@
 /**
  * Servicio de Historial de Cliente
- * Consulta eventos de audit_log + negociaciones + abonos + renuncias
- * relacionados con un cliente específico
+ * Consulta eventos de audit_log relacionados con un cliente específico
+ * a través de la RPC obtener_historial_cliente (SECURITY DEFINER).
  */
 
 import { supabase } from '@/lib/supabase/client'
@@ -9,161 +9,101 @@ import { logger } from '@/lib/utils/logger'
 
 import type { EventoHistorialCliente } from '../types/historial.types'
 
+// Campos técnicos de negociaciones que no aportan valor al historial visual.
+// Un UPDATE que solo toca estos campos se descarta antes de mostrar.
+const CAMPOS_TECNICOS_NEGOCIACIONES = new Set([
+  'version_lock',
+  'fecha_actualizacion',
+  'total_fuentes_pago',
+  'total_abonado',
+  'porcentaje_pagado',
+  'porcentaje_completado',
+  'saldo_pendiente',
+  'valor_total_pagar',
+  'valor_total',
+  'version_actual',
+  'updated_at',
+])
+
 class HistorialClienteService {
   /**
-   * ✅ REFACTORIZADO: Obtener historial completo de un cliente
+   * Obtener historial completo de un cliente.
    *
-   * MEJORAS ARQUITECTÓNICAS:
-   * 1. ✅ Queries paralelas con Promise.all (rápido y seguro)
-   * 2. ✅ JOIN con usuarios para obtener datos reales
-   * 3. ✅ Consolidación en memoria
-   * 4. ✅ TypeScript estricto
+   * Usa la RPC `obtener_historial_cliente` (SECURITY DEFINER):
+   * - 1 round-trip en lugar de 6+1 queries paralelas anteriores.
+   * - El control de acceso se aplica en la función SQL:
+   *     Administrador → acceso total
+   *     Otros roles   → necesitan permiso RBAC clientes.ver_historial
+   * - Si el usuario no tiene permiso la RPC retorna [] silenciosamente
+   *   (la UI lo interpreta igual que "sin eventos todavía").
+   *   El tab ya debería estar oculto para ese caso, pero es defensa en profundidad.
    *
-   * @param clienteId - ID del cliente
-   * @param limit - Número máximo de eventos a retornar
-   * @returns Array de eventos ordenados por fecha descendente
+   * @param clienteId - UUID del cliente
+   * @param limit     - Máximo de eventos a retornar (default 200)
    */
   async obtenerHistorial(
     clienteId: string,
     limit = 200
   ): Promise<EventoHistorialCliente[]> {
     try {
-      // ✅ PASO 1: Obtener eventos SIN JOIN (más confiable)
-      const [
-        eventosCliente,
-        eventosNegociaciones,
-        eventosAbonos,
-        eventosRenuncias,
-        eventosIntereses,
-        eventosDocumentos,
-      ] = await Promise.all([
-        supabase
-          .from('audit_log')
-          .select(
-            'id,tabla,accion,registro_id,fecha_evento,usuario_id,usuario_email,usuario_nombres,datos_anteriores,datos_nuevos,cambios_especificos,metadata,modulo'
-          )
-          .eq('tabla', 'clientes')
-          .eq('registro_id', clienteId)
-          .order('fecha_evento', { ascending: false }),
-
-        supabase
-          .from('audit_log')
-          .select(
-            'id,tabla,accion,registro_id,fecha_evento,usuario_id,usuario_email,usuario_nombres,datos_anteriores,datos_nuevos,cambios_especificos,metadata,modulo'
-          )
-          .eq('tabla', 'negociaciones')
-          .contains('metadata', { cliente_id: clienteId })
-          .order('fecha_evento', { ascending: false }),
-
-        supabase
-          .from('audit_log')
-          .select(
-            'id,tabla,accion,registro_id,fecha_evento,usuario_id,usuario_email,usuario_nombres,datos_anteriores,datos_nuevos,cambios_especificos,metadata,modulo'
-          )
-          .eq('tabla', 'abonos_historial')
-          .contains('metadata', { cliente_id: clienteId })
-          .order('fecha_evento', { ascending: false }),
-
-        supabase
-          .from('audit_log')
-          .select(
-            'id,tabla,accion,registro_id,fecha_evento,usuario_id,usuario_email,usuario_nombres,datos_anteriores,datos_nuevos,cambios_especificos,metadata,modulo'
-          )
-          .eq('tabla', 'renuncias')
-          .contains('metadata', { cliente_id: clienteId })
-          .order('fecha_evento', { ascending: false }),
-
-        supabase
-          .from('audit_log')
-          .select(
-            'id,tabla,accion,registro_id,fecha_evento,usuario_id,usuario_email,usuario_nombres,datos_anteriores,datos_nuevos,cambios_especificos,metadata,modulo'
-          )
-          .eq('tabla', 'intereses')
-          .contains('metadata', { cliente_id: clienteId })
-          .order('fecha_evento', { ascending: false }),
-
-        supabase
-          .from('audit_log')
-          .select(
-            'id,tabla,accion,registro_id,fecha_evento,usuario_id,usuario_email,usuario_nombres,datos_anteriores,datos_nuevos,cambios_especificos,metadata,modulo'
-          )
-          .eq('tabla', 'documentos_cliente')
-          .contains('metadata', { cliente_id: clienteId })
-          .order('fecha_evento', { ascending: false }),
-      ])
-
-      // Campos técnicos que NO aportan información útil al historial.
-      // Si un UPDATE de negociaciones solo modifica estos campos, se descarta.
-      const CAMPOS_TECNICOS_NEGOCIACIONES = new Set([
-        'version_lock',
-        'fecha_actualizacion',
-        'total_fuentes_pago',
-        'total_abonado',
-        'porcentaje_pagado',
-        'porcentaje_completado',
-        'saldo_pendiente',
-        'valor_total_pagar',
-        'valor_total', // nombre real en cambios_especificos (auto-calculado)
-        'version_actual',
-        'updated_at',
-      ])
-
-      const negociacionesFiltradas = (eventosNegociaciones.data || []).filter(
-        evento => {
-          // Siempre incluir INSERT y DELETE
-          if (evento.accion !== 'UPDATE') return true
-          // Si no hay cambios_especificos → incluir (no podemos saber qué cambió)
-          if (!evento.cambios_especificos) return true
-          const camposModificados = Object.keys(evento.cambios_especificos)
-          // Si todos los campos modificados son técnicos → descartar
-          return camposModificados.some(
-            c => !CAMPOS_TECNICOS_NEGOCIACIONES.has(c)
-          )
-        }
+      // ── PASO 1: Obtener eventos via RPC (1 round-trip) ──────────────
+      const { data: eventosRaw, error: rpcError } = await supabase.rpc(
+        'obtener_historial_cliente',
+        { p_cliente_id: clienteId, p_limit: limit }
       )
 
-      // Consolidar eventos
-      const todosEventos = [
-        ...(eventosCliente.data || []),
-        ...negociacionesFiltradas,
-        ...(eventosAbonos.data || []),
-        ...(eventosRenuncias.data || []),
-        ...(eventosIntereses.data || []),
-        ...(eventosDocumentos.data || []),
-      ]
+      if (rpcError) {
+        throw new Error(rpcError.message)
+      }
 
-      // Ordenar y limitar
-      const eventosOrdenados = todosEventos
-        .sort(
-          (a, b) =>
-            new Date(b.fecha_evento).getTime() -
-            new Date(a.fecha_evento).getTime()
+      const eventos = (eventosRaw ?? []) as Array<{
+        id: string
+        tabla: string
+        accion: string
+        registro_id: string
+        fecha_evento: string
+        usuario_id: string | null
+        usuario_email: string | null
+        usuario_nombres: string | null
+        datos_anteriores: Record<string, unknown> | null
+        datos_nuevos: Record<string, unknown> | null
+        cambios_especificos: Record<string, unknown> | null
+        metadata: Record<string, unknown> | null
+        modulo: string | null
+      }>
+
+      // ── PASO 2: Filtrar UPDATEs de negociaciones con solo campos técnicos ─
+      const eventosFiltrados = eventos.filter(evento => {
+        if (evento.tabla !== 'negociaciones') return true
+        if (evento.accion !== 'UPDATE') return true
+        if (!evento.cambios_especificos) return true
+        const camposModificados = Object.keys(evento.cambios_especificos)
+        return camposModificados.some(
+          c => !CAMPOS_TECNICOS_NEGOCIACIONES.has(c)
         )
-        .slice(0, limit)
+      })
 
-      // ✅ PASO 2: Obtener IDs únicos de usuarios
+      if (eventosFiltrados.length === 0) return []
+
+      // ── PASO 3: Enriquecer con datos de usuarios (1 round-trip) ─────
       const usuarioIds = [
         ...new Set(
-          eventosOrdenados
+          eventosFiltrados
             .map(e => e.usuario_id)
             .filter((id): id is string => Boolean(id))
         ),
       ]
 
-      // ✅ PASO 3: Obtener datos de usuarios en UN SOLO QUERY
       const { data: usuarios } = await supabase
         .from('usuarios')
         .select('id,email,nombres,apellidos,rol')
         .in('id', usuarioIds)
 
-      // Crear map para lookup rápido
-      const usuariosMap = new Map((usuarios || []).map(u => [u.id, u]))
+      const usuariosMap = new Map((usuarios ?? []).map(u => [u.id, u]))
 
-      // ✅ PASO 4: Mapear eventos con datos de usuarios
-      return eventosOrdenados.map(evento => {
+      // ── PASO 4: Mapear al tipo EventoHistorialCliente ────────────────
+      return eventosFiltrados.map(evento => {
         const usuario = usuariosMap.get(evento.usuario_id ?? '')
-
-        // Construir nombre completo (nombres + apellidos)
         const nombreCompleto = usuario
           ? [usuario.nombres, usuario.apellidos].filter(Boolean).join(' ') ||
             null
@@ -175,7 +115,7 @@ class HistorialClienteService {
           accion: evento.accion,
           registro_id: evento.registro_id,
           fecha_evento: evento.fecha_evento,
-          // ✅ Prioridad: (1) usuarios table JOIN, (2) audit_log columns, (3) 'Sistema'
+          // Prioridad: (1) tabla usuarios JOIN, (2) columnas audit_log, (3) 'Sistema'
           usuario_email:
             usuario?.email ||
             (typeof evento.usuario_email === 'string' &&
@@ -189,7 +129,7 @@ class HistorialClienteService {
             (typeof evento.usuario_nombres === 'string'
               ? evento.usuario_nombres
               : null),
-          usuario_rol: usuario?.rol || null,
+          usuario_rol: usuario?.rol ?? null,
           datos_anteriores: evento.datos_anteriores,
           datos_nuevos: evento.datos_nuevos,
           cambios_especificos: evento.cambios_especificos,

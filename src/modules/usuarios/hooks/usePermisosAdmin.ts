@@ -10,7 +10,7 @@
 
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { toast } from 'sonner'
 
@@ -61,6 +61,7 @@ export const ETIQUETA_ACCION: Record<string, string> = {
   editar: 'Editar',
   eliminar: 'Eliminar',
   archivar: 'Archivar',
+  ver_historial: 'Ver Historial',
 }
 
 /**
@@ -81,6 +82,58 @@ export function usePermisosAdmin() {
   const [filtroRol, setFiltroRol] = useState<Rol | 'todos'>('todos')
   const [filtroModulo, setFiltroModulo] = useState<string>('todos')
   const [busqueda, setBusqueda] = useState('')
+
+  // ── Accordion ─────────────────────────────────────────────────────────────
+  const [collapsed, setCollapsed] = useState<Set<string>>(new Set())
+
+  const toggleCollapsed = useCallback((modulo: string) => {
+    setCollapsed(prev => {
+      const next = new Set(prev)
+      if (next.has(modulo)) {
+        next.delete(modulo)
+      } else {
+        next.add(modulo)
+      }
+      return next
+    })
+  }, [])
+
+  // ── Orden personalizado con localStorage ─────────────────────────────────
+  const ORDEN_KEY = 'permisos-modulos-orden'
+
+  const [modulosOrden, setModulosOrden] = useState<string[]>([])
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(ORDEN_KEY)
+      if (saved) {
+        const parsed = JSON.parse(saved) as string[]
+        if (Array.isArray(parsed)) setModulosOrden(parsed)
+      }
+    } catch {
+      // ignorar error de JSON inválido
+    }
+  }, [])
+
+  const reordenarModulos = useCallback((newOrder: string[]) => {
+    setModulosOrden(newOrder)
+    try {
+      localStorage.setItem(ORDEN_KEY, JSON.stringify(newOrder))
+    } catch {
+      // ignorar error de localStorage
+    }
+  }, [])
+
+  const resetOrden = useCallback(() => {
+    setModulosOrden([])
+    try {
+      localStorage.removeItem(ORDEN_KEY)
+    } catch {
+      // ignorar
+    }
+  }, [])
+
+  const tieneOrdenPersonalizado = modulosOrden.length > 0
 
   // ── Datos derivados ───────────────────────────────────────────────────────
 
@@ -133,7 +186,7 @@ export function usePermisosAdmin() {
     return resultado
   }, [permisos, filtroRol, filtroModulo, busqueda])
 
-  /** Módulos visibles según filtros */
+  /** Módulos visibles según filtros, usando orden personalizado cuando aplica */
   const modulosFiltrados = useMemo(() => {
     if (filtroModulo !== 'todos') return [filtroModulo]
     if (busqueda.trim()) {
@@ -144,8 +197,14 @@ export function usePermisosAdmin() {
           Object.keys(matriz[m] ?? {}).some(a => a.toLowerCase().includes(q))
       )
     }
+    // Aplicar orden personalizado si existe
+    if (modulosOrden.length > 0) {
+      const ordenSet = modulosOrden.filter(m => modulos.includes(m))
+      const noEnOrden = modulos.filter(m => !modulosOrden.includes(m))
+      return [...ordenSet, ...noEnOrden]
+    }
     return modulos
-  }, [modulos, filtroModulo, busqueda, matriz])
+  }, [modulos, filtroModulo, busqueda, matriz, modulosOrden])
 
   /** Roles visibles según filtro de rol */
   const rolesFiltrados = useMemo(
@@ -249,6 +308,15 @@ export function usePermisosAdmin() {
     setFiltroModulo,
     setBusqueda,
     limpiarFiltros,
+
+    // Accordion
+    collapsed,
+    toggleCollapsed,
+
+    // Orden DnD
+    tieneOrdenPersonalizado,
+    reordenarModulos,
+    resetOrden,
 
     // Acciones
     handleToggle,

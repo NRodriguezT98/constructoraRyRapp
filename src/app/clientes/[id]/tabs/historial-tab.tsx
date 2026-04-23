@@ -15,7 +15,7 @@ import { useMemo, useState } from 'react'
 
 import { useQueryClient } from '@tanstack/react-query'
 import { AnimatePresence } from 'framer-motion'
-import { Clock, Filter, X } from 'lucide-react'
+import { Clock, Filter, Lock, X } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { formatDateCompact } from '@/lib/utils/date.utils'
@@ -24,6 +24,7 @@ import { useHistorialCliente } from '@/modules/clientes/hooks/useHistorialClient
 import { useNotasHistorial } from '@/modules/clientes/hooks/useNotasHistorial'
 import { usePermisosNotasHistorial } from '@/modules/clientes/hooks/usePermisosNotasHistorial'
 import { notasHistorialService } from '@/modules/clientes/services/notas-historial.service'
+import { usePermisosQuery } from '@/modules/usuarios/hooks'
 import { EmptyState } from '@/shared/components/layout/EmptyState'
 import { useModal } from '@/shared/components/modals'
 import { SectionLoadingSpinner } from '@/shared/components/ui'
@@ -48,6 +49,9 @@ export function HistorialTab({ clienteId, clienteNombre }: HistorialTabProps) {
   )
   const { confirm } = useModal()
   const { eliminarNota } = useNotasHistorial(clienteId)
+  const { puede, esAdmin, isLoading: permisosLoading } = usePermisosQuery()
+
+  const tienePermiso = esAdmin || puede('clientes', 'ver_historial')
 
   const {
     eventosAgrupados,
@@ -60,7 +64,7 @@ export function HistorialTab({ clienteId, clienteNombre }: HistorialTabProps) {
     setCategoria,
     limpiarFiltros,
     tieneAplicados,
-  } = useHistorialCliente({ clienteId })
+  } = useHistorialCliente({ clienteId, habilitado: tienePermiso })
 
   // Aplanar eventos para calcular permisos
   const todosLosEventos = useMemo(() => {
@@ -113,6 +117,28 @@ export function HistorialTab({ clienteId, clienteNombre }: HistorialTabProps) {
   }
 
   // ========== ESTADOS ==========
+  if (permisosLoading) {
+    return (
+      <SectionLoadingSpinner
+        label='Verificando permisos...'
+        moduleName='clientes'
+        icon={Clock}
+      />
+    )
+  }
+
+  if (!tienePermiso) {
+    return (
+      <div className='p-6'>
+        <EmptyState
+          icon={<Lock className='h-12 w-12 text-gray-400' />}
+          title='Sin acceso al historial'
+          description='No tienes permisos para ver el historial de este cliente. Contacta a un administrador si necesitas acceso.'
+        />
+      </div>
+    )
+  }
+
   if (isLoading) {
     return (
       <SectionLoadingSpinner

@@ -51,6 +51,7 @@ export type Accion =
   | 'editar'
   | 'eliminar'
   | 'archivar'
+  | 'ver_historial'
 
 // ============================================
 // ENTIDADES DE USUARIO
