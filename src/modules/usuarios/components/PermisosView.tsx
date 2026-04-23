@@ -46,6 +46,7 @@ import {
   GripVertical,
   Handshake,
   Home,
+  Loader2,
   Minus,
   RotateCcw,
   Search,
@@ -114,7 +115,7 @@ interface SortableModuleSectionProps {
   isDraggingAny: boolean
   rolesFiltrados: Rol[]
   matriz: Record<string, Record<string, Record<string, unknown>>>
-  isSaving: boolean
+  savingIds: Set<string>
   onToggleCollapsed: (modulo: string) => void
   onTogglePermiso: (
     id: string,
@@ -132,7 +133,7 @@ function SortableModuleSection({
   isDraggingAny,
   rolesFiltrados,
   matriz,
-  isSaving,
+  savingIds,
   onToggleCollapsed,
   onTogglePermiso,
 }: SortableModuleSectionProps) {
@@ -278,22 +279,29 @@ function SortableModuleSection({
                             accion
                           )
                         }
-                        disabled={isSaving}
+                        disabled={savingIds.has(permisoRaw.id)}
                         className={[
                           ss.toggleBase,
-                          permisoRaw.permitido
-                            ? (v?.toggleOn ??
-                              'bg-indigo-500 text-white hover:bg-indigo-600 focus:ring-indigo-500/30')
-                            : ss.toggleOff,
+                          savingIds.has(permisoRaw.id)
+                            ? 'cursor-not-allowed bg-gray-100 opacity-70 dark:bg-gray-700'
+                            : permisoRaw.permitido
+                              ? (v?.toggleOn ??
+                                'bg-indigo-500 text-white hover:bg-indigo-600 focus:ring-indigo-500/30')
+                              : ss.toggleOff,
                         ].join(' ')}
                         title={
-                          permisoRaw.descripcion ||
-                          `${ETIQUETA_ACCION[accion] ?? accion} en ${ETIQUETA_MODULO[modulo] ?? modulo} — ${ETIQUETA_ROL[rol]}`
+                          savingIds.has(permisoRaw.id)
+                            ? 'Guardando...'
+                            : permisoRaw.descripcion ||
+                              `${ETIQUETA_ACCION[accion] ?? accion} en ${ETIQUETA_MODULO[modulo] ?? modulo} — ${ETIQUETA_ROL[rol]}`
                         }
                         aria-label={`${permisoRaw.permitido ? 'Desactivar' : 'Activar'} permiso ${accion} en ${modulo} para ${rol}`}
                         aria-pressed={permisoRaw.permitido}
+                        aria-busy={savingIds.has(permisoRaw.id)}
                       >
-                        {permisoRaw.permitido ? (
+                        {savingIds.has(permisoRaw.id) ? (
+                          <Loader2 className='h-3.5 w-3.5 animate-spin text-gray-400 dark:text-gray-500' />
+                        ) : permisoRaw.permitido ? (
                           <Check className='h-3.5 w-3.5' />
                         ) : (
                           <X className='h-3.5 w-3.5' />
@@ -340,7 +348,7 @@ export function PermisosView() {
     rolesFiltrados,
     isLoading,
     error,
-    isSaving,
+    savingIds,
     filtroRol,
     filtroModulo,
     busqueda,
@@ -634,7 +642,7 @@ export function PermisosView() {
                     isDraggingAny={activeDragId !== null}
                     rolesFiltrados={rolesFiltrados}
                     matriz={matriz}
-                    isSaving={isSaving}
+                    savingIds={savingIds}
                     onToggleCollapsed={toggleCollapsed}
                     onTogglePermiso={handleToggle}
                   />

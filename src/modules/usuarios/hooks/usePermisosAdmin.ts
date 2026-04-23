@@ -10,7 +10,7 @@
 
 'use client'
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { toast } from 'sonner'
 
@@ -61,7 +61,13 @@ export const ETIQUETA_ACCION: Record<string, string> = {
   editar: 'Editar',
   eliminar: 'Eliminar',
   archivar: 'Archivar',
-  ver_historial: 'Ver Historial',
+  ver_historial: 'Ver historial',
+  // Acciones específicas de Negociaciones
+  trasladar: 'Trasladar vivienda',
+  renunciar: 'Registrar renuncia',
+  descuento: 'Aplicar descuento',
+  escritura: 'Editar valor escritura',
+  ajustar: 'Ajustar cierre financiero',
 }
 
 /**
@@ -77,6 +83,20 @@ export function usePermisosAdmin() {
   const { data: permisos = [], isLoading, error } = useTodosLosPermisosQuery()
 
   const actualizarMutation = useActualizarPermisoMutation()
+
+  // IDs de permisos que están siendo guardados en este momento
+  const savingIdsRef = useRef<Set<string>>(new Set())
+  const [savingIds, setSavingIds] = useState<Set<string>>(new Set())
+
+  const addSaving = useCallback((ids: string[]) => {
+    ids.forEach(id => savingIdsRef.current.add(id))
+    setSavingIds(new Set(savingIdsRef.current))
+  }, [])
+
+  const removeSaving = useCallback((ids: string[]) => {
+    ids.forEach(id => savingIdsRef.current.delete(id))
+    setSavingIds(new Set(savingIdsRef.current))
+  }, [])
 
   // ── Filtros ──────────────────────────────────────────────────────────────
   const [filtroRol, setFiltroRol] = useState<Rol | 'todos'>('todos')
@@ -258,6 +278,9 @@ export function usePermisosAdmin() {
       }
     }
 
+    const idsInvolucrados = permisosAActualizar.map(p => p.id)
+    addSaving(idsInvolucrados)
+
     try {
       await Promise.all(
         permisosAActualizar.map(p =>
@@ -281,6 +304,8 @@ export function usePermisosAdmin() {
       toast.error('Error al actualizar el permiso', {
         description: (err as Error).message,
       })
+    } finally {
+      removeSaving(idsInvolucrados)
     }
   }
 
@@ -297,7 +322,7 @@ export function usePermisosAdmin() {
     // Estado UI
     isLoading,
     error,
-    isSaving: actualizarMutation.isPending,
+    savingIds,
 
     // Filtros
     filtroRol,
