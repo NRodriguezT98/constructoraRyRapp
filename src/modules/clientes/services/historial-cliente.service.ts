@@ -47,10 +47,15 @@ class HistorialClienteService {
   ): Promise<EventoHistorialCliente[]> {
     try {
       // ── PASO 1: Obtener eventos via RPC (1 round-trip) ──────────────
-      const { data: eventosRaw, error: rpcError } = await supabase.rpc(
-        'obtener_historial_cliente',
-        { p_cliente_id: clienteId, p_limit: limit }
-      )
+      const { data: eventosRaw, error: rpcError } = await (
+        supabase.rpc as (
+          fn: string,
+          args?: Record<string, unknown>
+        ) => ReturnType<typeof supabase.rpc>
+      )('obtener_historial_cliente', {
+        p_cliente_id: clienteId,
+        p_limit: limit,
+      })
 
       if (rpcError) {
         throw new Error(rpcError.message)
