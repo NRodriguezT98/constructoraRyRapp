@@ -273,8 +273,10 @@ export async function middleware(req: NextRequest) {
           nombres = payload.user_nombres || ''
           email = payload.user_email || user.email || ''
 
-          // ✅ OPTIMIZACIÓN: Leer permisos del cache en user_metadata
-          permisosCache = payload.user_metadata?.permisos_cache || []
+          // ✅ OPTIMIZACIÓN: Leer permisos del JWT claim user_permisos
+          // Escrito por custom_access_token_hook en cada login
+          // Fallback a [] si el token es previo al hook (se re-lee desde BD abajo)
+          permisosCache = (payload.user_permisos as string[]) || []
         }
       } catch (error) {
         // Fallback a valores por defecto si falla decodificación

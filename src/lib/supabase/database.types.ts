@@ -3202,6 +3202,10 @@ export type Database = {
       }
     }
     Functions: {
+      actualizar_permisos_batch: {
+        Args: { p_cambios: Json }
+        Returns: undefined
+      }
       actualizar_ultimo_acceso_si_necesario: {
         Args: { p_user_id: string }
         Returns: undefined
@@ -3329,6 +3333,24 @@ export type Database = {
           progreso_porcentaje: number
           tipo_fuente: string
           validacion: Json
+        }[]
+      }
+      obtener_historial_cliente: {
+        Args: { p_cliente_id: string; p_limit?: number }
+        Returns: {
+          accion: string
+          cambios_especificos: Json
+          datos_anteriores: Json
+          datos_nuevos: Json
+          fecha_evento: string
+          id: string
+          metadata: Json
+          modulo: string
+          registro_id: string
+          tabla: string
+          usuario_email: string
+          usuario_id: string
+          usuario_nombres: string
         }[]
       }
       obtener_historial_negociacion: {

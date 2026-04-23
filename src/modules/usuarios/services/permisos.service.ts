@@ -115,23 +115,25 @@ export async function actualizarPermiso(
 }
 
 /**
- * Actualizar múltiples permisos a la vez
+ * Actualizar múltiples permisos en una sola transacción atómica
  *
- * Útil para cambios masivos en matriz de permisos.
+ * Usa el RPC actualizar_permisos_batch para procesar todos los cambios
+ * en una única transacción en la BD (en lugar de N UPDATEs paralelos).
+ *
+ * SOLO para administradores. La función RPC verifica el rol internamente.
  */
 export async function actualizarPermisosEnLote(
   actualizaciones: Array<{ id: string; permitido: boolean }>
 ): Promise<void> {
-  const promesas = actualizaciones.map(({ id, permitido }) =>
-    supabase.from('permisos_rol').update({ permitido }).eq('id', id)
-  )
+  if (actualizaciones.length === 0) return
 
-  const resultados = await Promise.all(promesas)
+  const { error } = await supabase.rpc('actualizar_permisos_batch', {
+    p_cambios: actualizaciones,
+  })
 
-  const errores = resultados.filter(r => r.error)
-  if (errores.length > 0) {
-    logger.error('❌ [SERVICE] Errores en actualización en lote:', errores)
-    throw new Error(`${errores.length} permisos fallaron al actualizar`)
+  if (error) {
+    logger.error('❌ [SERVICE] Error en actualización en lote:', error)
+    throw new Error(`Error al actualizar permisos: ${error.message}`)
   }
 }
 
