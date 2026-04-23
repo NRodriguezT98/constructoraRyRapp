@@ -52,6 +52,13 @@ export type Accion =
   | 'eliminar'
   | 'archivar'
   | 'ver_historial'
+  // Acciones específicas del módulo negociaciones
+  | 'asignar'
+  | 'trasladar'
+  | 'renunciar'
+  | 'descuento'
+  | 'escritura'
+  | 'ajustar'
 
 // ============================================
 // ENTIDADES DE USUARIO

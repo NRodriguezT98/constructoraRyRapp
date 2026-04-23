@@ -244,8 +244,8 @@ export async function getServerPermissions(modulo?: string) {
     const acciones = new Set((permisos ?? []).map(p => p.accion))
 
     return {
-      canCreate: acciones.has('crear'),
-      canEdit: acciones.has('editar'),
+      canCreate: acciones.has('crear') || acciones.has('asignar'),
+      canEdit: acciones.has('editar') || acciones.has('trasladar'),
       canDelete: acciones.has('eliminar'),
       canView: acciones.has('ver'),
       isAdmin: false,

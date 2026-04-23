@@ -105,6 +105,11 @@ export function NegociacionTab({
     isLoadingAbonos,
     isAjustando,
     isAdmin,
+    puedeTrasladar,
+    puedeRenunciar,
+    puedeDescuento,
+    puedeEscritura,
+    puedeAjustar,
     modalAjusteOpen,
     openAjuste,
     closeAjuste,
@@ -232,7 +237,7 @@ export function NegociacionTab({
             ) : null}
           </div>
           <div className='flex flex-shrink-0 items-center gap-2'>
-            {negociacion.estado === 'Activa' ? (
+            {puedeTrasladar && negociacion.estado === 'Activa' ? (
               <button
                 onClick={() =>
                   router.push(
@@ -245,7 +250,7 @@ export function NegociacionTab({
                 Trasladar vivienda
               </button>
             ) : null}
-            {isAdmin &&
+            {puedeRenunciar &&
             (negociacion.estado === 'Activa' ||
               negociacion.estado === 'Suspendida') ? (
               <button
@@ -324,7 +329,7 @@ export function NegociacionTab({
                       ? `Valor en Escritura: ${formatCurrency(valorEscritura)}`
                       : 'Sin valor escritura'}
                   </span>
-                  {isAdmin ? (
+                  {puedeEscritura ? (
                     <button
                       aria-label='Editar valor de escritura'
                       className='rounded p-0.5 text-gray-300 hover:text-indigo-500 dark:text-gray-600 dark:hover:text-indigo-400'
@@ -493,9 +498,9 @@ export function NegociacionTab({
               </span>
             ) : null}
           </div>
-          {isAdmin ? (
+          {puedeDescuento || puedeAjustar ? (
             <div className='flex items-center gap-2'>
-              {negociacion.estado === 'Activa' ? (
+              {puedeDescuento && negociacion.estado === 'Activa' ? (
                 <button
                   onClick={openDescuento}
                   className='inline-flex items-center gap-1.5 rounded-lg border border-violet-200 bg-violet-50 px-2.5 py-1.5 text-[11px] font-semibold text-violet-700 transition-colors hover:bg-violet-100 dark:border-violet-800/40 dark:bg-violet-900/20 dark:text-violet-400 dark:hover:bg-violet-900/30'
@@ -504,13 +509,15 @@ export function NegociacionTab({
                   {descuento > 0 ? 'Modificar Descuento' : 'Aplicar Descuento'}
                 </button>
               ) : null}
-              <button
-                onClick={openAjuste}
-                className='inline-flex items-center gap-1.5 rounded-lg border border-cyan-300 bg-cyan-50 px-3 py-1.5 text-[11px] font-semibold text-cyan-800 shadow-sm transition-colors hover:bg-cyan-100 hover:shadow dark:border-cyan-700/50 dark:bg-cyan-900/30 dark:text-cyan-300 dark:hover:bg-cyan-900/40'
-              >
-                <SlidersHorizontal className='h-3.5 w-3.5' />
-                Ajustar Cierre Financiero
-              </button>
+              {puedeAjustar ? (
+                <button
+                  onClick={openAjuste}
+                  className='inline-flex items-center gap-1.5 rounded-lg border border-cyan-300 bg-cyan-50 px-3 py-1.5 text-[11px] font-semibold text-cyan-800 shadow-sm transition-colors hover:bg-cyan-100 hover:shadow dark:border-cyan-700/50 dark:bg-cyan-900/30 dark:text-cyan-300 dark:hover:bg-cyan-900/40'
+                >
+                  <SlidersHorizontal className='h-3.5 w-3.5' />
+                  Ajustar Cierre Financiero
+                </button>
+              ) : null}
             </div>
           ) : (
             <span className='inline-flex items-center gap-1 text-[10px] text-gray-400 dark:text-gray-500'>
@@ -546,7 +553,7 @@ export function NegociacionTab({
                     resolver el descuadre.
                   </p>
                 </div>
-                {isAdmin ? (
+                {puedeAjustar ? (
                   <button
                     onClick={openAjuste}
                     className='flex-shrink-0 rounded-lg bg-red-600 px-3 py-1.5 text-[11px] font-semibold text-white shadow-sm transition-colors hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-600'
@@ -560,7 +567,7 @@ export function NegociacionTab({
 
           {fuentesPago.length === 0 ? (
             <p className='py-4 text-center text-xs text-gray-400 dark:text-gray-500'>
-              {isAdmin
+              {puedeAjustar
                 ? 'Sin fuentes configuradas. Usa "Redistribuir" para agregarlas.'
                 : 'Sin fuentes de pago configuradas.'}
             </p>
@@ -714,8 +721,8 @@ export function NegociacionTab({
         </div>
       </motion.div>
 
-      {/* Modal Admin: Redistribuir montos */}
-      {isAdmin ? (
+      {/* Modal: Redistribuir montos */}
+      {puedeAjustar ? (
         <AjusteCierreFinancieroModal
           isOpen={modalAjusteOpen}
           onClose={closeAjuste}
@@ -730,8 +737,8 @@ export function NegociacionTab({
         />
       ) : null}
 
-      {/* Modal Admin: Aplicar/Modificar Descuento */}
-      {isAdmin ? (
+      {/* Modal: Aplicar/Modificar Descuento */}
+      {puedeDescuento ? (
         <DescuentoModal
           isOpen={modalDescuentoOpen}
           onClose={closeDescuento}
@@ -758,8 +765,8 @@ export function NegociacionTab({
         />
       ) : null}
 
-      {/* Modal Admin: Registrar Renuncia */}
-      {isAdmin && modalRenunciaOpen ? (
+      {/* Modal: Registrar Renuncia */}
+      {puedeRenunciar && modalRenunciaOpen ? (
         <RegistrarRenunciaModal
           negociacionId={negociacion.id}
           onClose={() => setModalRenunciaOpen(false)}

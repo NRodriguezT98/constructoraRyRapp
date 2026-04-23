@@ -63,6 +63,7 @@ export const ETIQUETA_ACCION: Record<string, string> = {
   archivar: 'Archivar',
   ver_historial: 'Ver historial',
   // Acciones específicas de Negociaciones
+  asignar: 'Asignar vivienda',
   trasladar: 'Trasladar vivienda',
   renunciar: 'Registrar renuncia',
   descuento: 'Aplicar descuento',

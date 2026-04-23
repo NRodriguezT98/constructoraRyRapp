@@ -91,8 +91,15 @@ interface UseNegociacionTabProps {
 }
 
 export function useNegociacionTab({ cliente }: UseNegociacionTabProps) {
-  const { isLoading: permisosLoading, rol } = usePermisosQuery()
-  const isAdmin = !permisosLoading && rol === 'Administrador'
+  const { esAdmin, puede } = usePermisosQuery()
+  // isAdmin se mantiene para casos admin-only (ej: editar abono)
+  const isAdmin = esAdmin
+  // Permisos granulares por acción de negociaciones
+  const puedeTrasladar = isAdmin || puede('negociaciones', 'trasladar')
+  const puedeRenunciar = isAdmin || puede('negociaciones', 'renunciar')
+  const puedeDescuento = isAdmin || puede('negociaciones', 'descuento')
+  const puedeEscritura = isAdmin || puede('negociaciones', 'escritura')
+  const puedeAjustar = isAdmin || puede('negociaciones', 'ajustar')
 
   // ─── Negociación activa ──────────────────────────────────────────────────
   const {
@@ -323,6 +330,11 @@ export function useNegociacionTab({ cliente }: UseNegociacionTabProps) {
     isLoading: isLoadingNeg || isLoadingFuentes,
     isLoadingAbonos,
     isAdmin,
+    puedeTrasladar,
+    puedeRenunciar,
+    puedeDescuento,
+    puedeEscritura,
+    puedeAjustar,
 
     // Documentos pendientes (delegado a sub-hook)
     ...docsPendientes,
