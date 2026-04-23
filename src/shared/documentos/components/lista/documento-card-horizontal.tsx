@@ -56,7 +56,7 @@ interface DocumentoCardHorizontalProps {
   onDownload: (documento: DocumentoProyecto) => void
   onToggleImportante: (documento: DocumentoProyecto) => void
   onArchive: (documento: DocumentoProyecto) => void
-  onDelete: (documento: DocumentoProyecto) => void
+  onDelete?: (documento: DocumentoProyecto) => void
   onRename?: (documento: DocumentoProyecto) => void
   onMoverACarpeta?: (documento: DocumentoProyecto) => void
   onRefresh?: () => void | Promise<void>

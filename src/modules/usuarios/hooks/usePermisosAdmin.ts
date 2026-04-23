@@ -62,6 +62,12 @@ export const ETIQUETA_ACCION: Record<string, string> = {
   eliminar: 'Eliminar',
   archivar: 'Archivar',
   ver_historial: 'Ver historial',
+  // Acciones específicas de Clientes
+  registrar_interes: 'Registrar interés',
+  anotar_historial: 'Agregar nota al historial',
+  // Acciones específicas de Abonos
+  registrar: 'Registrar abono',
+  anular: 'Anular abono',
   // Acciones específicas de Negociaciones
   asignar: 'Asignar vivienda',
   trasladar: 'Trasladar vivienda',

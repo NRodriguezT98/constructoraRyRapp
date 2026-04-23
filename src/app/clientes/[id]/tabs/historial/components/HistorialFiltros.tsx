@@ -48,6 +48,7 @@ interface HistorialFiltrosProps {
   tieneAplicados: boolean
   onLimpiarFiltros: () => void
   onAgregarNota: () => void
+  canAgregarNota?: boolean
 }
 
 export function HistorialFiltros({
@@ -60,6 +61,7 @@ export function HistorialFiltros({
   tieneAplicados,
   onLimpiarFiltros,
   onAgregarNota,
+  canAgregarNota = false,
 }: HistorialFiltrosProps) {
   return (
     <div className={styles.filtros.wrapper}>
@@ -79,14 +81,16 @@ export function HistorialFiltros({
             className={styles.filtros.searchInput}
           />
         </div>
-        <button
-          type='button'
-          onClick={onAgregarNota}
-          className={styles.filtros.notaButton}
-        >
-          <NotebookPen className='h-3.5 w-3.5' />
-          Agregar nota
-        </button>
+        {canAgregarNota ? (
+          <button
+            type='button'
+            onClick={onAgregarNota}
+            className={styles.filtros.notaButton}
+          >
+            <NotebookPen className='h-3.5 w-3.5' />
+            Agregar nota
+          </button>
+        ) : null}
       </div>
 
       {/* Fila de pills de categoría */}

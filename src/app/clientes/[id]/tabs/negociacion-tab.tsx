@@ -43,6 +43,7 @@ import { negociacionesService } from '@/modules/clientes/services/negociaciones.
 import type { Cliente } from '@/modules/clientes/types'
 import { CuotasCreditoTab } from '@/modules/fuentes-pago/components/CuotasCreditoTab'
 import { RegistrarRenunciaModal } from '@/modules/renuncias/components/modals/RegistrarRenunciaModal'
+import { usePermisosQuery } from '@/modules/usuarios/hooks/usePermisosQuery'
 import { SectionLoadingSpinner } from '@/shared/components/ui'
 import { esCreditoConstructora } from '@/shared/constants/fuentes-pago.constants'
 import { formatCurrency } from '@/shared/utils/format'
@@ -67,6 +68,13 @@ export function NegociacionTab({
   onIrADocumentos,
 }: NegociacionTabProps) {
   const router = useRouter()
+  const { esAdmin: esAdminPermisos, puede } = usePermisosQuery()
+  const canVerAbonos = esAdminPermisos || puede('abonos', 'ver')
+  const canAsignarVivienda =
+    esAdminPermisos || puede('negociaciones', 'asignar')
+  const canVerDocumentos =
+    esAdminPermisos ||
+    (puede('documentos', 'ver') && puede('documentos', 'subir'))
   const [cuotasExpandidas, setCuotasExpandidas] = useState<
     Record<string, boolean>
   >({})
@@ -160,7 +168,8 @@ export function NegociacionTab({
         icon={FileText}
       />
     )
-  if (!negociacion) return <SinNegociacion />
+  if (!negociacion)
+    return <SinNegociacion canAsignarVivienda={canAsignarVivienda} />
 
   if (negociacion.estado === 'Cerrada por Renuncia')
     return (
@@ -573,28 +582,32 @@ export function NegociacionTab({
             </p>
           ) : (
             <>
-              {/* Docs pendientes banner (compacto + clickeable) */}
-              {totalDocsPendientes > 0 ? (
+              {/* Docs pendientes banner — solo visible si puede ver/subir documentos */}
+              {totalDocsPendientes > 0 && canVerDocumentos ? (
                 <button
                   type='button'
                   onClick={onIrADocumentos}
-                  className='flex w-full items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-1.5 text-left transition-colors hover:bg-amber-100 dark:border-amber-800/40 dark:bg-amber-950/30 dark:hover:bg-amber-950/50'
+                  className='group relative flex w-full items-center gap-3 overflow-hidden rounded-xl border border-amber-300/70 bg-gradient-to-r from-amber-50 to-orange-50 px-4 py-2.5 text-left shadow-sm transition-all hover:border-amber-400 hover:shadow-md dark:border-amber-700/50 dark:from-amber-950/40 dark:to-orange-950/40 dark:hover:border-amber-600/70'
                 >
-                  <AlertTriangle className='h-3 w-3 flex-shrink-0 text-amber-500' />
-                  <p className='flex-1 text-[10px] text-amber-800 dark:text-amber-300'>
-                    <span className='font-semibold'>{totalDocsPendientes}</span>{' '}
-                    doc{totalDocsPendientes !== 1 ? 's' : ''} pendiente
-                    {totalDocsPendientes !== 1 ? 's' : ''}
+                  {/* barra lateral de acento */}
+                  <span className='absolute inset-y-0 left-0 w-1 rounded-l-xl bg-gradient-to-b from-amber-400 to-orange-500' />
+                  <AlertTriangle className='ml-1 h-4 w-4 flex-shrink-0 text-amber-500 dark:text-amber-400' />
+                  <div className='flex flex-1 items-center gap-1.5 text-[11px]'>
+                    <span className='font-bold text-amber-800 dark:text-amber-200'>
+                      {totalDocsPendientes} doc
+                      {totalDocsPendientes !== 1 ? 's' : ''} pendiente
+                      {totalDocsPendientes !== 1 ? 's' : ''}
+                    </span>
                     {totalDocsObligatoriosPendientes > 0 ? (
-                      <span className='ml-1 font-semibold text-red-600 dark:text-red-400'>
-                        ({totalDocsObligatoriosPendientes} oblig.)
+                      <span className='inline-flex items-center rounded-full bg-red-100 px-1.5 py-0.5 text-[10px] font-semibold text-red-700 dark:bg-red-900/50 dark:text-red-300'>
+                        {totalDocsObligatoriosPendientes} oblig.
                       </span>
                     ) : null}
-                    <span className='ml-1 text-amber-600 underline dark:text-amber-400'>
+                    <span className='ml-auto text-amber-600 underline decoration-dotted group-hover:text-amber-700 dark:text-amber-400 dark:group-hover:text-amber-300'>
                       Ir a <strong>Documentos</strong>
                     </span>
-                  </p>
-                  <ArrowUpRight className='h-3 w-3 flex-shrink-0 text-amber-500' />
+                  </div>
+                  <ArrowUpRight className='h-3.5 w-3.5 flex-shrink-0 text-amber-500 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5 dark:text-amber-400' />
                 </button>
               ) : null}
 
@@ -689,15 +702,17 @@ export function NegociacionTab({
             {isLoadingAbonos ? (
               <RefreshCw className='h-3 w-3 animate-spin text-gray-300 dark:text-gray-600' />
             ) : null}
-            <button
-              onClick={() =>
-                router.push(`/abonos?negociacion=${negociacion.id}`)
-              }
-              className='inline-flex items-center gap-1.5 rounded-lg border border-cyan-200 bg-cyan-50 px-2.5 py-1 text-[11px] font-semibold text-cyan-700 transition-all hover:border-cyan-300 hover:bg-cyan-100 hover:shadow-sm dark:border-cyan-800 dark:bg-cyan-900/20 dark:text-cyan-400 dark:hover:bg-cyan-900/40'
-            >
-              <ArrowUpRight className='h-3.5 w-3.5' />
-              Ir a Abonos
-            </button>
+            {canVerAbonos ? (
+              <button
+                onClick={() =>
+                  router.push(`/abonos?negociacion=${negociacion.id}`)
+                }
+                className='inline-flex items-center gap-1.5 rounded-lg border border-cyan-200 bg-cyan-50 px-2.5 py-1 text-[11px] font-semibold text-cyan-700 transition-all hover:border-cyan-300 hover:bg-cyan-100 hover:shadow-sm dark:border-cyan-800 dark:bg-cyan-900/20 dark:text-cyan-400 dark:hover:bg-cyan-900/40'
+              >
+                <ArrowUpRight className='h-3.5 w-3.5' />
+                Ir a Abonos
+              </button>
+            ) : null}
           </div>
         </div>
         {/* Banner de bloqueo si hay descuadre */}

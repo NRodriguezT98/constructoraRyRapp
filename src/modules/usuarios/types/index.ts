@@ -52,6 +52,12 @@ export type Accion =
   | 'eliminar'
   | 'archivar'
   | 'ver_historial'
+  // Acciones específicas del módulo clientes
+  | 'registrar_interes'
+  | 'anotar_historial'
+  // Acciones específicas del módulo abonos
+  | 'registrar'
+  | 'anular'
   // Acciones específicas del módulo negociaciones
   | 'asignar'
   | 'trasladar'

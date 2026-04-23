@@ -14,6 +14,7 @@ import {
 import { useRouter } from 'next/navigation'
 
 import { formatDateCompact } from '@/lib/utils/date.utils'
+import { usePermisosQuery } from '@/modules/usuarios/hooks/usePermisosQuery'
 
 interface NegociacionCerradaRenunciaProps {
   fechaRenuncia?: string | null
@@ -23,6 +24,8 @@ export function NegociacionCerradaRenuncia({
   fechaRenuncia,
 }: NegociacionCerradaRenunciaProps) {
   const router = useRouter()
+  const { esAdmin, puede } = usePermisosQuery()
+  const canVerRenuncias = esAdmin || puede('renuncias', 'ver')
 
   return (
     <motion.div
@@ -113,13 +116,15 @@ export function NegociacionCerradaRenuncia({
           </div>
         </div>
 
-        <button
-          onClick={() => router.push('/renuncias')}
-          className='mt-3 inline-flex w-full transform items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-red-500 via-rose-600 to-pink-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-red-500/30 transition-all duration-300 hover:scale-[1.02] hover:from-red-600 hover:via-rose-700 hover:to-pink-700 hover:shadow-2xl hover:shadow-red-500/40 active:scale-[0.98]'
-        >
-          <ExternalLink className='h-4 w-4' />
-          Ver en módulo de Renuncias
-        </button>
+        {canVerRenuncias ? (
+          <button
+            onClick={() => router.push('/renuncias')}
+            className='mt-3 inline-flex w-full transform items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-red-500 via-rose-600 to-pink-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-red-500/30 transition-all duration-300 hover:scale-[1.02] hover:from-red-600 hover:via-rose-700 hover:to-pink-700 hover:shadow-2xl hover:shadow-red-500/40 active:scale-[0.98]'
+          >
+            <ExternalLink className='h-4 w-4' />
+            Ver en módulo de Renuncias
+          </button>
+        ) : null}
       </div>
     </motion.div>
   )

@@ -68,6 +68,7 @@ export function DocumentosLista({
   const { puede, esAdmin } = usePermisosQuery()
   const canUpload = esAdmin || puede('documentos' as Modulo, 'subir')
   const canCreate = canUpload // "Nueva carpeta" también requiere poder subir
+  const canDelete = esAdmin || puede('documentos' as Modulo, 'eliminar')
   const vistaActual = useDocumentosStore(state => state.vistaActual)
   const setVistaActual = useDocumentosStore(state => state.setVistaActual)
 
@@ -475,7 +476,7 @@ export function DocumentosLista({
                         onDownload={handleDownload}
                         onToggleImportante={handleToggleImportante}
                         onArchive={handleArchive}
-                        onDelete={handleDelete}
+                        onDelete={canDelete ? handleDelete : undefined}
                         onRefresh={handleRefresh}
                         moduleName={themeModuleName}
                         esArchivado={vistaActual === 'archivados'}
@@ -499,7 +500,7 @@ export function DocumentosLista({
         isOpen={modalViewerAbierto}
         onClose={handleCloseViewer}
         onDownload={handleDownload}
-        onDelete={handleDelete}
+        onDelete={canDelete ? handleDelete : undefined}
         urlPreview={urlPreview}
         moduleName={themeModuleName}
       />

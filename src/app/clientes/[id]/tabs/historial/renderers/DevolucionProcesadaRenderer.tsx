@@ -22,6 +22,7 @@ import Link from 'next/link'
 
 import { formatDateCompact } from '@/lib/utils/date.utils'
 import type { EventoHistorialHumanizado } from '@/modules/clientes/types/historial.types'
+import { usePermisosQuery } from '@/modules/usuarios/hooks/usePermisosQuery'
 
 import { formatearMoneda } from './formatearValor'
 
@@ -31,6 +32,9 @@ interface Props {
 
 export function DevolucionProcesadaRenderer({ evento }: Props) {
   const meta = evento.metadata ?? {}
+
+  const { esAdmin, puede } = usePermisosQuery()
+  const canVerRenuncias = esAdmin || puede('renuncias', 'ver')
 
   const consecutivo = String(meta.consecutivo ?? '').trim() || null
   const montoDevuelto = meta.monto_devuelto as number | null | undefined
@@ -202,7 +206,7 @@ export function DevolucionProcesadaRenderer({ evento }: Props) {
       ) : null}
 
       {/* Enlace al expediente */}
-      {consecutivo ? (
+      {consecutivo && canVerRenuncias ? (
         <div className='space-y-1.5'>
           <Link
             href={`/renuncias/${consecutivo}`}

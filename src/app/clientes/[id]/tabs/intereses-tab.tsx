@@ -36,6 +36,7 @@ import {
 import { ModalDescartarInteres } from '@/modules/clientes/components/modals/modal-descartar-interes'
 import { useInteresesTab } from '@/modules/clientes/hooks'
 import type { Cliente } from '@/modules/clientes/types'
+import { usePermisosQuery } from '@/modules/usuarios/hooks'
 import { SectionLoadingSpinner } from '@/shared/components/ui'
 
 import { interesesTabStyles } from './intereses-tab.styles'
@@ -61,6 +62,9 @@ export function InteresesTab({
   cliente,
   onRegistrarInteres,
 }: InteresesTabProps) {
+  const { puede, esAdmin } = usePermisosQuery()
+  const canEdit = esAdmin || puede('clientes', 'registrar_interes')
+
   // ✅ Hook con TODA la lógica
   const {
     intereses,
@@ -186,13 +190,15 @@ export function InteresesTab({
             </div>
           </div>
 
-          <button
-            onClick={onRegistrarInteres}
-            className={interesesTabStyles.emptyState.ctaButton}
-          >
-            <Plus className='h-4 w-4' />
-            Registrar Nuevo Interés
-          </button>
+          {canEdit ? (
+            <button
+              onClick={onRegistrarInteres}
+              className={interesesTabStyles.emptyState.ctaButton}
+            >
+              <Plus className='h-4 w-4' />
+              Registrar Nuevo Interés
+            </button>
+          ) : null}
         </div>
 
         {/* Footer informativo */}
@@ -322,13 +328,15 @@ export function InteresesTab({
                 Convertidos ({stats.convertidos})
               </button>
             </div>
-            <button
-              onClick={onRegistrarInteres}
-              className='inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-500 px-4 py-2 text-xs font-semibold text-white shadow-md shadow-cyan-500/25 transition-all duration-200 hover:scale-[1.02] hover:from-cyan-600 hover:to-blue-600 hover:shadow-cyan-500/40 active:scale-[0.98]'
-            >
-              <Plus className='h-3.5 w-3.5' />
-              Registrar Interés
-            </button>
+            {canEdit ? (
+              <button
+                onClick={onRegistrarInteres}
+                className='inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-500 px-4 py-2 text-xs font-semibold text-white shadow-md shadow-cyan-500/25 transition-all duration-200 hover:scale-[1.02] hover:from-cyan-600 hover:to-blue-600 hover:shadow-cyan-500/40 active:scale-[0.98]'
+              >
+                <Plus className='h-3.5 w-3.5' />
+                Registrar Interés
+              </button>
+            ) : null}
           </div>
         </div>
 
@@ -516,7 +524,7 @@ export function InteresesTab({
                           )}
                         </span>
                       </div>
-                      {esActivo && (
+                      {esActivo && canEdit ? (
                         <button
                           onClick={() => abrirModalDescartar(interes)}
                           disabled={descartando === interes.id}
@@ -527,7 +535,7 @@ export function InteresesTab({
                             ? 'Descartando...'
                             : 'Descartar'}
                         </button>
-                      )}
+                      ) : null}
                       {esConvertido && (
                         <span className='inline-flex items-center gap-1 text-[10px] font-medium text-indigo-600 dark:text-indigo-400'>
                           <CheckCircle2 className='h-3.5 w-3.5' />

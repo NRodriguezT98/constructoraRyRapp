@@ -116,6 +116,9 @@ export default function ClienteDetalleClient({
   const canEdit = esAdmin || puede('clientes', 'editar')
   const canDelete = esAdmin || puede('clientes', 'eliminar')
   const canVerHistorial = esAdmin || puede('clientes', 'ver_historial')
+  const canAsignarVivienda = esAdmin || puede('negociaciones', 'asignar')
+  const canVerDocumentos = esAdmin || puede('documentos', 'ver')
+  const canSubirDocumentos = esAdmin || puede('documentos', 'subir')
 
   // ✅ Hook consolidado con TODA la lógica
   const {
@@ -361,7 +364,7 @@ export default function ClienteDetalleClient({
       badge: !tieneCedula
         ? { text: '⚠️ Requerido', color: 'orange', pulse: true }
         : null,
-      visible: true,
+      visible: esAdmin || puede('documentos', 'ver'),
     },
     {
       id: 'historial' as const,
@@ -477,8 +480,9 @@ export default function ClienteDetalleClient({
 
               {/* Acciones */}
               <div className={styles.headerClasses.actionsContainer}>
-                {/* ✅ Botón Asignar Vivienda (solo visible para Interesados sin negociación activa) */}
-                {cliente.estado === 'Interesado' &&
+                {/* ✅ Botón Asignar Vivienda (solo visible para Interesados sin negociación activa y con permiso) */}
+                {canAsignarVivienda &&
+                  cliente.estado === 'Interesado' &&
                   !cliente.negociaciones?.filter(
                     n => n.estado !== 'Cerrada por Renuncia'
                   )?.length && (
@@ -605,7 +609,14 @@ export default function ClienteDetalleClient({
             id={`panel-${activeTab}`}
             aria-labelledby={activeTab}
           >
-            {activeTab === 'general' && <GeneralTab cliente={cliente} />}
+            {activeTab === 'general' && (
+              <GeneralTab
+                cliente={cliente}
+                canMostrarBannerDocumentos={
+                  canVerDocumentos && canSubirDocumentos
+                }
+              />
+            )}
             {activeTab === 'intereses' && (
               <InteresesTab
                 cliente={cliente}

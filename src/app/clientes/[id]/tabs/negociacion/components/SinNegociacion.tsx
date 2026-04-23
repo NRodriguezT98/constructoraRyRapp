@@ -7,11 +7,18 @@ import {
   Info,
   ListChecks,
   Lock,
+  ShieldOff,
   TrendingUp,
   Wallet,
 } from 'lucide-react'
 
-export function SinNegociacion() {
+interface SinNegociacionProps {
+  canAsignarVivienda?: boolean
+}
+
+export function SinNegociacion({
+  canAsignarVivienda = false,
+}: SinNegociacionProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -19,7 +26,7 @@ export function SinNegociacion() {
       transition={{ duration: 0.3 }}
       className='space-y-4 rounded-xl border border-gray-200/50 bg-gradient-to-br from-white/90 via-indigo-50/90 to-violet-50/90 p-5 text-center shadow-xl backdrop-blur-xl dark:border-gray-700/50 dark:from-gray-800/90 dark:via-gray-800/80 dark:to-indigo-950/50'
     >
-      {/* Icón con gradiente */}
+      {/* Icono con gradiente */}
       <div className='flex justify-center'>
         <motion.div
           initial={{ scale: 0 }}
@@ -89,22 +96,40 @@ export function SinNegociacion() {
         </div>
       </div>
 
-      {/* Call to Action */}
-      <div className='rounded-xl border border-indigo-200/50 bg-gradient-to-r from-indigo-50 via-violet-50 to-purple-50 p-3 backdrop-blur-sm dark:border-indigo-800/50 dark:from-indigo-950/30 dark:via-violet-950/30 dark:to-purple-950/30'>
-        <div className='flex items-start gap-3 text-left'>
-          <Lock className='mt-1 h-6 w-6 flex-shrink-0 animate-pulse text-indigo-600 dark:text-indigo-400' />
-          <div className='flex-1'>
-            <h4 className='mb-1 text-sm font-bold text-indigo-900 dark:text-indigo-100'>
-              ¿Cómo comenzar?
-            </h4>
-            <p className='text-xs leading-relaxed text-indigo-700 dark:text-indigo-300'>
-              Usa el botón <strong>&ldquo;Asignar Vivienda&rdquo;</strong> en la
-              parte superior de este perfil para vincular una vivienda
-              disponible a este cliente e iniciar la negociación.
-            </p>
+      {/* Call to Action — varía según permiso */}
+      {canAsignarVivienda ? (
+        <div className='rounded-xl border border-indigo-200/50 bg-gradient-to-r from-indigo-50 via-violet-50 to-purple-50 p-3 backdrop-blur-sm dark:border-indigo-800/50 dark:from-indigo-950/30 dark:via-violet-950/30 dark:to-purple-950/30'>
+          <div className='flex items-start gap-3 text-left'>
+            <Lock className='mt-1 h-6 w-6 flex-shrink-0 animate-pulse text-indigo-600 dark:text-indigo-400' />
+            <div className='flex-1'>
+              <h4 className='mb-1 text-sm font-bold text-indigo-900 dark:text-indigo-100'>
+                ¿Cómo comenzar?
+              </h4>
+              <p className='text-xs leading-relaxed text-indigo-700 dark:text-indigo-300'>
+                Usa el botón <strong>&ldquo;Asignar Vivienda&rdquo;</strong> en
+                la parte superior de este perfil para vincular una vivienda
+                disponible a este cliente e iniciar la negociación.
+              </p>
+            </div>
           </div>
         </div>
-      </div>
+      ) : (
+        <div className='rounded-xl border border-gray-200/50 bg-gradient-to-r from-gray-50 via-slate-50 to-gray-50 p-3 backdrop-blur-sm dark:border-gray-700/50 dark:from-gray-900/30 dark:via-slate-900/30 dark:to-gray-900/30'>
+          <div className='flex items-start gap-3 text-left'>
+            <ShieldOff className='mt-1 h-6 w-6 flex-shrink-0 text-gray-400 dark:text-gray-500' />
+            <div className='flex-1'>
+              <h4 className='mb-1 text-sm font-bold text-gray-700 dark:text-gray-300'>
+                Pendiente de asignación
+              </h4>
+              <p className='text-xs leading-relaxed text-gray-500 dark:text-gray-400'>
+                Este cliente aún no tiene una vivienda asignada. Cuando un
+                usuario autorizado realice la asignación, aquí verás toda la
+                información de la negociación.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Footer informativo */}
       <div className='flex items-start gap-3 border-t border-gray-200 pt-3 text-left dark:border-gray-700'>

@@ -12,6 +12,7 @@ import {
 
 import { formatCurrency } from '@/lib/utils/format.utils'
 import type { Negociacion } from '@/modules/clientes/types'
+import { usePermisosQuery } from '@/modules/usuarios/hooks/usePermisosQuery'
 
 import { useResumenNegociacion } from '../hooks/useResumenNegociacion'
 
@@ -32,6 +33,9 @@ export function ResumenNegociacion({
     saldo: saldoPendiente,
     pctPagado,
   } = useResumenNegociacion({ negociacion })
+
+  const { esAdmin, puede } = usePermisosQuery()
+  const canVerAbonos = esAdmin || puede('abonos', 'ver')
 
   const porcentaje = pctPagado
   const estaCompleta = porcentaje >= 100
@@ -112,14 +116,16 @@ export function ResumenNegociacion({
         </div>
 
         {/* Right: CTA */}
-        <a
-          href={`/abonos/${clienteId}`}
-          className='flex items-center gap-1.5 rounded-lg border border-cyan-200 bg-cyan-50 px-2.5 py-1.5 text-xs font-semibold text-cyan-700 transition-colors hover:bg-cyan-100 dark:border-cyan-800/50 dark:bg-cyan-900/20 dark:text-cyan-400 dark:hover:bg-cyan-900/40'
-        >
-          <TrendingUp className='h-3 w-3' />
-          Ver abonos
-          <ArrowRight className='h-3 w-3' />
-        </a>
+        {canVerAbonos ? (
+          <a
+            href={`/abonos/${clienteId}`}
+            className='flex items-center gap-1.5 rounded-lg border border-cyan-200 bg-cyan-50 px-2.5 py-1.5 text-xs font-semibold text-cyan-700 transition-colors hover:bg-cyan-100 dark:border-cyan-800/50 dark:bg-cyan-900/20 dark:text-cyan-400 dark:hover:bg-cyan-900/40'
+          >
+            <TrendingUp className='h-3 w-3' />
+            Ver abonos
+            <ArrowRight className='h-3 w-3' />
+          </a>
+        ) : null}
       </div>
 
       {/* ── Metrics ────────────────────────────────────── */}

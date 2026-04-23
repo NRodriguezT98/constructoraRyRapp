@@ -10,7 +10,8 @@ import { AbonosPaginacion } from './AbonosPaginacion'
 
 interface AbonosTablaProps {
   abonos: AbonoConInfo[]
-  isAdmin: boolean
+  canEdit: boolean
+  canAnular: boolean
   onAbonoClick: (abono: AbonoConInfo) => void
   onEditar: (abono: AbonoParaEditar) => void
   onAnular: (abono: AbonoConInfo) => void
@@ -25,7 +26,8 @@ interface AbonosTablaProps {
 
 export function AbonosTabla({
   abonos,
-  isAdmin,
+  canEdit,
+  canAnular,
   onAbonoClick,
   onEditar,
   onAnular,
@@ -46,7 +48,7 @@ export function AbonosTabla({
             <th className={s.tabla.th}>Vivienda · Proyecto</th>
             <th className={`w-36 ${s.tabla.th}`}>Método</th>
             <th className={`w-40 ${s.tabla.thRight}`}>Monto</th>
-            {isAdmin ? <th className='w-20 px-4 py-3' /> : null}
+            {canEdit || canAnular ? <th className='w-20 px-4 py-3' /> : null}
           </tr>
         </thead>
         <tbody className={s.tabla.tbody}>
@@ -54,7 +56,8 @@ export function AbonosTabla({
             <AbonoFila
               key={abono.id}
               abono={abono}
-              isAdmin={isAdmin}
+              canEdit={canEdit}
+              canAnular={canAnular}
               onAbonoClick={onAbonoClick}
               onEditar={onEditar}
               onAnular={onAnular}

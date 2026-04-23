@@ -36,7 +36,8 @@ function MetodoIcon({ metodo }: { metodo: string | null }) {
 // ─── Props ───────────────────────────────────────────────────────────────────
 interface AbonoFilaProps {
   abono: AbonoConInfo
-  isAdmin: boolean
+  canEdit: boolean
+  canAnular: boolean
   onAbonoClick: (abono: AbonoConInfo) => void
   onEditar: (abono: AbonoParaEditar) => void
   onAnular: (abono: AbonoConInfo) => void
@@ -44,7 +45,8 @@ interface AbonoFilaProps {
 
 export function AbonoFila({
   abono,
-  isAdmin,
+  canEdit,
+  canAnular,
   onAbonoClick,
   onEditar,
   onAnular,
@@ -133,11 +135,11 @@ export function AbonoFila({
         )}
       </td>
 
-      {/* Acciones admin ─────────────────────────────────── */}
-      {isAdmin ? (
+      {/* Acciones ─────────────────────────────────────── */}
+      {canEdit || canAnular ? (
         <td className='px-4 py-3'>
           <div className='flex items-center justify-end gap-1'>
-            {abono.estado !== 'Anulado' ? (
+            {canEdit && abono.estado !== 'Anulado' ? (
               <button
                 onClick={e => {
                   e.stopPropagation()
@@ -161,7 +163,8 @@ export function AbonoFila({
                 <Pencil className='h-3.5 w-3.5' />
               </button>
             ) : null}
-            {abono.estado !== 'Anulado' &&
+            {canAnular &&
+            abono.estado !== 'Anulado' &&
             abono.negociacion.estado === 'Activa' ? (
               <button
                 onClick={e => {

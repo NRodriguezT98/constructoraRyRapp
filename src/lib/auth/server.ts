@@ -98,6 +98,27 @@ export const getServerUserProfile = cache(async (): Promise<Usuario | null> => {
     }
   }
 
+  // 🔧 FIX: Si access_token está vacío (getSession retornó null porque el cookie
+  // store del Server Component es read-only y no pudo persistir un refresh),
+  // obtener el rol directamente desde la tabla usuarios.
+  // La policy de usuarios tiene USING (true) — todos los autenticados pueden leer.
+  if (!session.access_token) {
+    try {
+      const supabase = await createServerSupabaseClient()
+      const { data: usuarioData } = await supabase
+        .from('usuarios')
+        .select('rol, nombres')
+        .eq('id', user.id)
+        .single()
+      if (usuarioData) {
+        rol = usuarioData.rol as typeof rol
+        nombres = usuarioData.nombres || ''
+      }
+    } catch (dbError) {
+      errorLog('auth-db-rol-fallback', dbError)
+    }
+  }
+
   // Construir objeto Usuario básico desde JWT
   // NOTA: Campos adicionales (telefono, apellidos, etc.) solo se obtienen
   // si realmente se necesitan mediante query separada y explícita
@@ -181,19 +202,25 @@ export async function getServerPermissions(modulo?: string) {
   // Si se especifica módulo, consultar permisos específicos desde DB
   if (modulo) {
     const supabase = await createServerSupabaseClient()
+    // ✅ FIX: No filtrar por rol aquí — la RLS de permisos_rol ya filtra
+    // automáticamente por el rol real del usuario en la tabla usuarios.
+    // Esto evita errores cuando el JWT decode falla (access_token vacío)
+    // y perfil.rol cae al default 'Administrador de Obra' incorrecto.
     const { data: permisos } = await supabase
       .from('permisos_rol')
-      .select('accion, permitido')
-      .eq('rol', rol)
+      .select('accion')
       .eq('modulo', modulo)
       .eq('permitido', true)
 
     const acciones = new Set((permisos ?? []).map(p => p.accion))
 
     return {
-      canCreate: acciones.has('crear') || acciones.has('asignar'),
+      canCreate:
+        acciones.has('crear') ||
+        acciones.has('asignar') ||
+        acciones.has('registrar'),
       canEdit: acciones.has('editar') || acciones.has('trasladar'),
-      canDelete: acciones.has('eliminar'),
+      canDelete: acciones.has('eliminar') || acciones.has('anular'),
       canView: acciones.has('ver'),
       isAdmin: false,
     }

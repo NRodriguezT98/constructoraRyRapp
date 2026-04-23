@@ -21,6 +21,7 @@ import {
 import Link from 'next/link'
 
 import type { EventoHistorialHumanizado } from '@/modules/clientes/types/historial.types'
+import { usePermisosQuery } from '@/modules/usuarios/hooks/usePermisosQuery'
 
 import { formatearMoneda } from './formatearValor'
 
@@ -58,6 +59,9 @@ export function RenunciaRenderer({ evento }: Props) {
   const d = evento.detalles ?? []
   const get = (campo: string) => d.find(x => x.campo === campo)?.valorNuevo
   const meta = evento.metadata ?? {}
+
+  const { esAdmin, puede } = usePermisosQuery()
+  const canVerRenuncias = esAdmin || puede('renuncias', 'ver')
 
   // Estado: priorizar detalles (actualizaciones), fallback a metadata
   const estadoRaw = String(
@@ -229,7 +233,7 @@ export function RenunciaRenderer({ evento }: Props) {
       ) : null}
 
       {/* Enlace al expediente */}
-      {consecutivo ? (
+      {consecutivo && canVerRenuncias ? (
         <div className='space-y-1.5'>
           <Link
             href={`/renuncias/${consecutivo}`}

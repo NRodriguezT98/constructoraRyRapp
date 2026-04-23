@@ -30,6 +30,10 @@ interface AbonoDetalleModalProps {
   onClose: () => void
   onEditar?: (abono: AbonoParaDetalle) => void
   onAnulado?: () => void
+  /** Permiso explícito para editar (cuando no es admin, pero tiene abonos.editar) */
+  canEditar?: boolean
+  /** Permiso explícito para anular (cuando no es admin, pero tiene abonos.anular) */
+  canAnular?: boolean
   /** Datos financieros de la negociacion (del parent — evita fetch redundante) */
   negociacionFinancials?: {
     valorTotal: number
@@ -44,6 +48,8 @@ export function AbonoDetalleModal({
   onEditar,
   onClose,
   onAnulado,
+  canEditar,
+  canAnular,
   negociacionFinancials,
 }: AbonoDetalleModalProps) {
   const {
@@ -170,27 +176,31 @@ export function AbonoDetalleModal({
                   Generar Recibo
                 </button>
 
-                {esAdmin && esNegociacionActiva && !estaAnulado ? (
+                {esNegociacionActiva && !estaAnulado ? (
                   <>
-                    <button
-                      onClick={() => {
-                        onEditar?.(abono)
-                        onClose()
-                      }}
-                      className={s.header.btn}
-                      title='Editar este abono'
-                    >
-                      <Pencil className='h-3.5 w-3.5' />
-                      Editar
-                    </button>
-                    <button
-                      onClick={() => setShowModalAnular(true)}
-                      className={s.header.btnDanger}
-                      title='Anular este abono'
-                    >
-                      <Ban className='h-3.5 w-3.5' />
-                      Anular
-                    </button>
+                    {(esAdmin || canEditar) && onEditar ? (
+                      <button
+                        onClick={() => {
+                          onEditar?.(abono)
+                          onClose()
+                        }}
+                        className={s.header.btn}
+                        title='Editar este abono'
+                      >
+                        <Pencil className='h-3.5 w-3.5' />
+                        Editar
+                      </button>
+                    ) : null}
+                    {esAdmin || canAnular ? (
+                      <button
+                        onClick={() => setShowModalAnular(true)}
+                        className={s.header.btnDanger}
+                        title='Anular este abono'
+                      >
+                        <Ban className='h-3.5 w-3.5' />
+                        Anular
+                      </button>
+                    ) : null}
                   </>
                 ) : null}
 

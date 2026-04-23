@@ -40,9 +40,14 @@ import {
 
 interface GeneralTabProps {
   cliente: Cliente
+  /** Solo mostrar el banner de documentación si el usuario puede ver Y subir documentos */
+  canMostrarBannerDocumentos?: boolean
 }
 
-export function GeneralTab({ cliente }: GeneralTabProps) {
+export function GeneralTab({
+  cliente,
+  canMostrarBannerDocumentos = false,
+}: GeneralTabProps) {
   // ✅ Hook de validación real de documento de identidad
   const { tieneCedula: tieneDocumento, cargando: cargandoValidacion } =
     useDocumentoIdentidad({
@@ -73,8 +78,8 @@ export function GeneralTab({ cliente }: GeneralTabProps) {
       {...styles.animations.fadeInUp}
       className='space-y-3'
     >
-      {/* Banner de estado de documentación (oculto si renunció) */}
-      {cliente.estado !== 'Renunció' && (
+      {/* Banner de estado de documentación (oculto si renunció o sin permiso de documentos) */}
+      {canMostrarBannerDocumentos && cliente.estado !== 'Renunció' && (
         <BannerDocumentacion
           tieneDocumento={tieneDocumento}
           cargandoValidacion={cargandoValidacion}

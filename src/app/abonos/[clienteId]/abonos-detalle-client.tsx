@@ -15,6 +15,7 @@ import { ModalEditarAbono } from '@/modules/abonos/components/modal-editar-abono
 import { ModalRegistroPago } from '@/modules/abonos/components/modal-registro-pago'
 import type { AbonoHistorial } from '@/modules/abonos/types'
 import type { AbonoParaEditar } from '@/modules/abonos/types/editar-abono.types'
+import { usePermisosQuery } from '@/modules/usuarios/hooks/usePermisosQuery'
 import { SectionLoadingSpinner } from '@/shared/components/ui'
 
 import {
@@ -48,6 +49,13 @@ export default function AbonosDetalleClient({
     handleCerrarModal,
     handleAbonoRegistrado,
   } = useAbonosDetalle(clienteId)
+
+  // ─── Permisos granulares de abonos ──────────────────────────────────────
+  const { esAdmin, puede } = usePermisosQuery()
+  const canRegistrar =
+    (esAdmin || puede('abonos', 'registrar')) && estaBalanceado
+  const canEditar = esAdmin || puede('abonos', 'editar')
+  const canAnular = esAdmin || puede('abonos', 'anular')
 
   // Modal unificado de detalle (comprobante + acciones)
   const [abonoDetalle, setAbonoDetalle] = useState<AbonoParaDetalle | null>(
@@ -200,7 +208,7 @@ export default function AbonosDetalleClient({
               negociacion.fuentes_pago?.[0] &&
               handleRegistrarAbono(negociacion.fuentes_pago[0])
             }
-            canCreate={estaBalanceado}
+            canCreate={canRegistrar}
           />
         </div>
 
@@ -272,7 +280,7 @@ export default function AbonosDetalleClient({
                   onRegistrarAbono={handleRegistrarAbono}
                   onAbonoRegistrado={handleAbonoRegistrado}
                   index={index}
-                  canCreate={estaBalanceado}
+                  canCreate={canRegistrar}
                   validacion={validarFuentePago[fuente.id]}
                 />
               ))}
@@ -335,7 +343,9 @@ export default function AbonosDetalleClient({
           isOpen={abonoDetalle !== null}
           onClose={() => setAbonoDetalle(null)}
           onAnulado={handleAbonoRegistrado}
-          onEditar={handleEditarDesdeDetalle}
+          onEditar={canEditar ? handleEditarDesdeDetalle : undefined}
+          canEditar={canEditar}
+          canAnular={canAnular}
           negociacionFinancials={
             metricas
               ? {
@@ -348,7 +358,7 @@ export default function AbonosDetalleClient({
         />
 
         {/* Modal de edición (abierto desde el modal de detalle) */}
-        {abonoEditando ? (
+        {canEditar && abonoEditando ? (
           <ModalEditarAbono
             isOpen={true}
             abono={abonoEditando}

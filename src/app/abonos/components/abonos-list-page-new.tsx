@@ -28,6 +28,8 @@ interface AbonosListPageProps {
 
 export function AbonosListPage({
   canCreate = false,
+  canEdit = false,
+  canDelete = false,
   isAdmin = false,
 }: AbonosListPageProps = {}) {
   const router = useRouter()
@@ -152,7 +154,8 @@ export function AbonosListPage({
           ) : (
             <AbonosTabla
               abonos={abonos}
-              isAdmin={isAdmin}
+              canEdit={isAdmin || canEdit}
+              canAnular={isAdmin || canDelete}
               onAbonoClick={handleAbonoClick}
               onEditar={setAbonoEditando}
               onAnular={setAbonoAnulando}
@@ -186,7 +189,7 @@ export function AbonosListPage({
             : undefined
         }
       />
-      {isAdmin && abonoEditando ? (
+      {(isAdmin || canEdit) && abonoEditando ? (
         <ModalEditarAbono
           isOpen={!!abonoEditando}
           abono={abonoEditando}
@@ -197,7 +200,7 @@ export function AbonosListPage({
           }}
         />
       ) : null}
-      {isAdmin && abonoAnulando ? (
+      {(isAdmin || canDelete) && abonoAnulando ? (
         <ModalAnularAbono
           abono={{
             id: abonoAnulando.id,

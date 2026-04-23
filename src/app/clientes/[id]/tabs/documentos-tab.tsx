@@ -12,7 +12,7 @@
 import { useEffect, useState } from 'react'
 
 import { AnimatePresence } from 'framer-motion'
-import { ArrowLeft, IdCard, Lock } from 'lucide-react'
+import { ArrowLeft, IdCard } from 'lucide-react'
 
 import { useAuth } from '@/contexts/auth-context'
 import { SeccionDocumentosPendientes } from '@/modules/clientes/components/documentos-pendientes'
@@ -36,8 +36,9 @@ export function DocumentosTab({ cliente }: DocumentosTabProps) {
   const { puede, esAdmin } = usePermisosQuery()
 
   // 🔒 Permisos de documentos
-  const puedeVerDocumentos = esAdmin || puede('documentos', 'ver')
   const canCreate = esAdmin || puede('documentos', 'subir')
+  const canVerYSubirDocumentos =
+    esAdmin || (puede('documentos', 'ver') && puede('documentos', 'subir'))
 
   // Tema cyan/azul para clientes (usado en vistas de categorías y upload)
   const theme = moduleThemes.clientes
@@ -76,23 +77,6 @@ export function DocumentosTab({ cliente }: DocumentosTabProps) {
     onSuccessUpload,
     onCancelUpload,
   } = useDocumentosTab({ clienteId: cliente.id })
-
-  // 🚫 Sin permiso de ver: mostrar estado de acceso denegado
-  if (!puedeVerDocumentos) {
-    return (
-      <div className='flex flex-col items-center justify-center rounded-xl border border-gray-200 bg-white py-16 text-center shadow-sm dark:border-gray-700 dark:bg-gray-800'>
-        <div className='mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700'>
-          <Lock className='h-7 w-7 text-gray-400 dark:text-gray-500' />
-        </div>
-        <p className='text-sm font-semibold text-gray-700 dark:text-gray-300'>
-          Sin acceso a documentos
-        </p>
-        <p className='mt-1 text-xs text-gray-400 dark:text-gray-500'>
-          No tienes permiso para ver los documentos de este cliente.
-        </p>
-      </div>
-    )
-  }
 
   // Si está mostrando categorías (PATRÓN IGUAL A PROYECTOS)
   if (mostrandoCategorias && user && canCreate) {
@@ -189,9 +173,10 @@ export function DocumentosTab({ cliente }: DocumentosTabProps) {
 
   return (
     <div className='space-y-4'>
-      {/* 🚨 Banner informativo cuando no hay documento de identidad */}
+      {/* 🚨 Banner: solo si tiene permiso ver+subir documentos Y falta la cédula */}
       <AnimatePresence>
-        {!tieneCedula &&
+        {canVerYSubirDocumentos &&
+          !tieneCedula &&
           !cargandoValidacion &&
           (() => {
             // Si ya tiene negociación activa (vivienda asignada), mostrar advertencia suave
@@ -206,40 +191,42 @@ export function DocumentosTab({ cliente }: DocumentosTabProps) {
       </AnimatePresence>
 
       {/* 📄 Sección de documentos pendientes de fuentes (colapsable) */}
-      <SeccionDocumentosPendientes
-        clienteId={cliente.id}
-        onSubirDocumento={(pendienteId, tipoDocumento, metadata) => {
-          // ✅ Solo abrir SubirCartaModal para cartas de aprobación específicas
-          const esCarta = tipoDocumento
-            .toLowerCase()
-            .includes('carta de aprobaci')
-          if (metadata.fuente_pago_id && esCarta) {
-            setFuenteParaCarta({
-              id: metadata.fuente_pago_id as string,
-              tipo: metadata.tipo_fuente as string,
-              // ✅ La vista usa 'entidad_fuente', no 'entidad'
-              entidad: metadata.entidad_fuente as string | undefined,
-              monto_aprobado: (metadata.monto_aprobado as number) || 0,
-              // ✅ Pasar tipo exacto del doc para que la vista haga match al subir
-              tipo_documento_sistema: tipoDocumento,
-              // ✅ FK al requisito: documentos-base.service lo guarda → vista lo detecta por UUID
-              requisito_config_id: metadata.requisito_config_id as
-                | string
-                | undefined,
-              vivienda: metadata.vivienda as
-                | { numero: string; manzana: string }
-                | undefined,
-              cliente: metadata.cliente as
-                | { nombre_completo: string }
-                | undefined,
-            })
-            setModalCartaOpen(true)
-          } else {
-            // Para otros documentos (Solicitud Desembolso, Boleta de Registro, etc.)
-            mostrarUpload(false, metadata)
-          }
-        }}
-      />
+      {canCreate ? (
+        <SeccionDocumentosPendientes
+          clienteId={cliente.id}
+          onSubirDocumento={(pendienteId, tipoDocumento, metadata) => {
+            // ✅ Solo abrir SubirCartaModal para cartas de aprobación específicas
+            const esCarta = tipoDocumento
+              .toLowerCase()
+              .includes('carta de aprobaci')
+            if (metadata.fuente_pago_id && esCarta) {
+              setFuenteParaCarta({
+                id: metadata.fuente_pago_id as string,
+                tipo: metadata.tipo_fuente as string,
+                // ✅ La vista usa 'entidad_fuente', no 'entidad'
+                entidad: metadata.entidad_fuente as string | undefined,
+                monto_aprobado: (metadata.monto_aprobado as number) || 0,
+                // ✅ Pasar tipo exacto del doc para que la vista haga match al subir
+                tipo_documento_sistema: tipoDocumento,
+                // ✅ FK al requisito: documentos-base.service lo guarda → vista lo detecta por UUID
+                requisito_config_id: metadata.requisito_config_id as
+                  | string
+                  | undefined,
+                vivienda: metadata.vivienda as
+                  | { numero: string; manzana: string }
+                  | undefined,
+                cliente: metadata.cliente as
+                  | { nombre_completo: string }
+                  | undefined,
+              })
+              setModalCartaOpen(true)
+            } else {
+              // Para otros documentos (Solicitud Desembolso, Boleta de Registro, etc.)
+              mostrarUpload(false, metadata)
+            }
+          }}
+        />
+      ) : null}
 
       {/* ✅ Lista de documentos - Componente genérico estándar */}
       <DocumentosLista

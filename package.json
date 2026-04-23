@@ -38,6 +38,7 @@
     "db:setup": "npx supabase db reset && npm run db:types",
     "db:exec": "node scripts/ejecutar-sql.js",
     "db:exec:storage-viviendas": "node scripts/ejecutar-sql.js supabase/storage/storage-documentos-viviendas.sql",
+    "rbac:check": "node scripts/check-permisos-rbac.js",
     "errors:analyze": "node scripts/analyze-typescript-errors.js",
     "errors:fix": "node scripts/fix-typescript-errors.js",
     "errors:fix:apply": "node scripts/fix-typescript-errors.js --apply",

@@ -52,6 +52,7 @@ export function HistorialTab({ clienteId, clienteNombre }: HistorialTabProps) {
   const { puede, esAdmin, isLoading: permisosLoading } = usePermisosQuery()
 
   const tienePermiso = esAdmin || puede('clientes', 'ver_historial')
+  const canAnotarHistorial = esAdmin || puede('clientes', 'anotar_historial')
 
   const {
     eventosAgrupados,
@@ -196,6 +197,7 @@ export function HistorialTab({ clienteId, clienteNombre }: HistorialTabProps) {
         tieneAplicados={tieneAplicados}
         onLimpiarFiltros={limpiarFiltros}
         onAgregarNota={() => setMostrarModalNota(true)}
+        canAgregarNota={canAnotarHistorial}
       />
 
       {/* Timeline */}
