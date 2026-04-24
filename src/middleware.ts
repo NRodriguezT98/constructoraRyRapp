@@ -288,9 +288,13 @@ export async function middleware(req: NextRequest) {
     // 7. VERIFICAR PERMISOS PARA LA RUTA (JWT CACHE o FALLBACK BD)
     // ============================================
 
-    // Si el cache está vacío y el usuario no es Admin, consultar BD directamente
-    // Esto ocurre cuando el JWT no fue sincronizado (primer login, después de limpieza, etc.)
-    if (permisosCache.length === 0 && rol !== 'Administrador') {
+    // IMPORTANTE: El JWT puede estar obsoleto si se actualizaron permisos después del login.
+    // Por eso SIEMPRE validamos contra BD para rutas protegidas, no solo si cache está vacío.
+    // Esto asegura que cambios de permisos en admin sean efectivos inmediatamente.
+
+    // Si el usuario no es Admin, siempre consultar BD como fuente de verdad
+    // El JWT es solo una optimización para evitar queries frecuentes, pero NO es confiable
+    if (rol !== 'Administrador') {
       try {
         const { data: permisosBD } = await supabase
           .from('permisos_rol')
@@ -299,14 +303,29 @@ export async function middleware(req: NextRequest) {
           .eq('permitido', true)
 
         if (permisosBD && permisosBD.length > 0) {
+          // ✅ SIEMPRE usar permisos de BD (no confiar en JWT stale)
           permisosCache = permisosBD.map(p => `${p.modulo}.${p.accion}`)
-          debugLog('🔄 Permisos cargados desde BD (cache JWT vacío)', {
+          debugLog('✅ Permisos validados desde BD (fuente de verdad)', {
             rol,
             count: permisosCache.length,
+            pathname,
+          })
+        } else {
+          // Si la BD retorna nada, usuario sin permisos
+          permisosCache = []
+          debugLog('⚠️ Usuario sin permisos registrados en BD', {
+            rol,
+            pathname,
           })
         }
-      } catch {
-        // Si falla la consulta, dejar cache vacío (acceso denegado)
+      } catch (error) {
+        // Si falla la consulta BD, FALLBACK a JWT como último recurso
+        // No bloquear completamente, dejar que el usuario intente
+        debugLog('⚠️ Error consultando BD, usando JWT como fallback', {
+          rol,
+          error: (error as Error).message,
+        })
+        // permisosCache ya tiene valores del JWT
       }
     }
 
