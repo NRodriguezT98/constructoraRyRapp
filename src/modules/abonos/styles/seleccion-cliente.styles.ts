@@ -42,13 +42,13 @@ export const seleccionClienteStyles = {
   // 📊 MÉTRICAS (4 cards)
   metricas: {
     grid: 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3',
-    card: 'group relative overflow-hidden rounded-xl backdrop-blur-xl bg-white/80 dark:bg-gray-800/80 border border-gray-200/50 dark:border-gray-700/50 p-4 shadow-lg hover:shadow-2xl transition-all duration-300',
+    card: 'group relative overflow-hidden rounded-xl backdrop-blur-xl bg-white/80 dark:bg-gray-800/80 border border-gray-200/50 dark:border-gray-700/50 px-4 py-3 shadow-lg hover:shadow-2xl transition-all duration-300',
     cardGlow:
       'absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-10 transition-opacity duration-300',
     content: 'relative z-10 flex items-center gap-3',
     iconCircle:
-      'w-10 h-10 rounded-lg flex items-center justify-center shadow-lg flex-shrink-0',
-    icon: 'w-5 h-5 text-white',
+      'w-8 h-8 rounded-lg flex items-center justify-center shadow-md flex-shrink-0',
+    icon: 'w-4 h-4 text-white',
     textGroup: 'flex-1 min-w-0',
     value: 'text-base font-bold text-gray-900 dark:text-gray-100 leading-tight',
     label: 'text-xs text-gray-500 dark:text-gray-400 mt-0.5 font-medium',

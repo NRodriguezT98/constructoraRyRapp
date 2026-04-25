@@ -1,9 +1,10 @@
 import { EstadoProyecto } from '../types'
 
-// Array de estados SIMPLIFICADOS para filtros (incluyendo "Todos")
+// Array de estados para filtros (incluyendo "Todos")
 export const ESTADOS_PROYECTO = [
-  { value: undefined as unknown as EstadoProyecto, label: 'Todos' }, // Filtro por defecto
+  { value: undefined as unknown as EstadoProyecto, label: 'Todos' },
   { value: 'en_proceso' as EstadoProyecto, label: 'En Proceso' },
+  { value: 'en_construccion' as EstadoProyecto, label: 'En Construcción' },
   { value: 'completado' as EstadoProyecto, label: 'Completado' },
 ]
 

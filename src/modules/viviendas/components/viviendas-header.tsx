@@ -1,9 +1,11 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { Home, Plus } from 'lucide-react'
+import { ChevronRight, Home, LayoutDashboard, Plus } from 'lucide-react'
 
 import { useRouter } from 'next/navigation'
+
+import { ProtectedLink } from '@/shared/components/ui/ProtectedLink'
 
 import { viviendasStyles as styles } from '../styles/viviendas.styles'
 
@@ -27,6 +29,17 @@ export function ViviendasHeader({ totalViviendas }: ViviendasHeaderProps) {
     >
       <div className={styles.header.pattern} />
       <div className={styles.header.content}>
+        <div className='mb-3 flex items-center gap-1.5'>
+          <LayoutDashboard className='h-3 w-3 text-orange-200' />
+          <ProtectedLink
+            href='/dashboard'
+            className='text-xs text-orange-200 transition-colors hover:text-white'
+          >
+            Dashboard
+          </ProtectedLink>
+          <ChevronRight className='h-3 w-3 text-orange-300/60' />
+          <span className='text-xs font-semibold text-white'>Viviendas</span>
+        </div>
         <div className={styles.header.topRow}>
           <div className={styles.header.titleGroup}>
             <div className={styles.header.iconCircle}>

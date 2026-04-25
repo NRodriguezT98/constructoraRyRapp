@@ -50,7 +50,7 @@ export const proyectosPageStyles = {
   // 📊 MÉTRICAS (3 cards - compactas y simplificadas)
   metricas: {
     grid: 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3',
-    card: 'group relative overflow-hidden rounded-xl backdrop-blur-xl bg-white/80 dark:bg-gray-800/80 border border-gray-200/50 dark:border-gray-700/50 p-4 shadow-lg hover:shadow-2xl transition-all duration-300',
+    card: 'group relative overflow-hidden rounded-xl backdrop-blur-xl bg-white/80 dark:bg-gray-800/80 border border-gray-200/50 dark:border-gray-700/50 px-4 py-3 shadow-lg hover:shadow-2xl transition-all duration-300',
     cardGlowGreen:
       'absolute inset-0 bg-gradient-to-br from-green-500/20 to-emerald-500/20 opacity-0 group-hover:opacity-10 transition-opacity duration-300',
     cardGlowTeal:
@@ -61,23 +61,23 @@ export const proyectosPageStyles = {
       'absolute inset-0 bg-gradient-to-br from-purple-500/20 to-pink-500/20 opacity-0 group-hover:opacity-10 transition-opacity duration-300',
     content: 'relative z-10 flex items-center gap-3',
     iconCircleGreen:
-      'w-10 h-10 rounded-lg bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center shadow-lg shadow-green-500/50',
+      'w-8 h-8 rounded-lg bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center shadow-md shadow-green-500/40',
     iconCircleTeal:
-      'w-10 h-10 rounded-lg bg-gradient-to-br from-teal-500 to-cyan-600 flex items-center justify-center shadow-lg shadow-teal-500/50',
+      'w-8 h-8 rounded-lg bg-gradient-to-br from-teal-500 to-cyan-600 flex items-center justify-center shadow-md shadow-teal-500/40',
     iconCircleBlue:
-      'w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/50',
+      'w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-md shadow-blue-500/40',
     iconCirclePurple:
-      'w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center shadow-lg shadow-purple-500/50',
-    icon: 'w-5 h-5 text-white',
+      'w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center shadow-md shadow-purple-500/40',
+    icon: 'w-4 h-4 text-white',
     textGroup: 'flex-1',
     valueGreen:
-      'text-xl font-bold bg-gradient-to-br from-green-600 via-emerald-600 to-teal-600 bg-clip-text text-transparent',
+      'text-lg font-bold bg-gradient-to-br from-green-600 via-emerald-600 to-teal-600 bg-clip-text text-transparent',
     valueTeal:
-      'text-xl font-bold bg-gradient-to-br from-teal-600 via-cyan-600 to-blue-600 bg-clip-text text-transparent',
+      'text-lg font-bold bg-gradient-to-br from-teal-600 via-cyan-600 to-blue-600 bg-clip-text text-transparent',
     valueBlue:
-      'text-xl font-bold bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent',
+      'text-lg font-bold bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent',
     valuePurple:
-      'text-xl font-bold bg-gradient-to-br from-purple-600 via-pink-600 to-rose-600 bg-clip-text text-transparent',
+      'text-lg font-bold bg-gradient-to-br from-purple-600 via-pink-600 to-rose-600 bg-clip-text text-transparent',
     label: 'text-xs text-gray-600 dark:text-gray-400 mt-0.5 font-medium',
   },
 
@@ -103,7 +103,7 @@ export const proyectosPageStyles = {
     pill: 'group relative inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gray-100 dark:bg-gray-700/50 border-2 border-transparent text-gray-700 dark:text-gray-300 text-xs font-medium transition-all hover:border-green-300 dark:hover:border-green-700 hover:bg-green-50 dark:hover:bg-green-900/20 cursor-pointer',
     pillActive:
       'group relative inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 border-2 border-green-400 dark:border-green-600 text-white text-xs font-semibold shadow-lg shadow-green-500/30 cursor-pointer',
-    pillIcon: 'text-base leading-none',
+    pillIcon: 'flex items-center',
     pillLabel: 'leading-none',
     pillCheck:
       'w-4 h-4 flex items-center justify-center rounded-full bg-white/30 text-white text-xs font-bold',

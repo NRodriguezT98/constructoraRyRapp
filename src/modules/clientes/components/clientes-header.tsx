@@ -7,7 +7,9 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { Plus, Users } from 'lucide-react'
+import { ChevronRight, LayoutDashboard, Plus, Users } from 'lucide-react'
+
+import { ProtectedLink } from '@/shared/components/ui/ProtectedLink'
 
 import { clientesListaStyles as styles } from '../styles/clientes-lista.styles'
 
@@ -29,6 +31,17 @@ export function ClientesHeader({
     >
       <div className={styles.header.pattern} />
       <div className={styles.header.content}>
+        <div className='mb-3 flex items-center gap-1.5'>
+          <LayoutDashboard className='h-3 w-3 text-cyan-200' />
+          <ProtectedLink
+            href='/dashboard'
+            className='text-xs text-cyan-200 transition-colors hover:text-white'
+          >
+            Dashboard
+          </ProtectedLink>
+          <ChevronRight className='h-3 w-3 text-cyan-300/60' />
+          <span className='text-xs font-semibold text-white'>Clientes</span>
+        </div>
         <div className={styles.header.topRow}>
           <div className={styles.header.titleGroup}>
             <div className={styles.header.iconCircle}>

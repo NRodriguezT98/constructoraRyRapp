@@ -18,6 +18,8 @@ export const proyectosTablaStyles = {
       'bg-green-100 dark:bg-green-950/40 border border-green-300 dark:border-green-800/50 text-green-700 dark:text-green-300',
     enProceso:
       'bg-blue-100 dark:bg-blue-950/40 border border-blue-300 dark:border-blue-800/50 text-blue-700 dark:text-blue-300',
+    archivado:
+      'bg-amber-100 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-800/50 text-amber-700 dark:text-amber-300',
     default:
       'bg-gray-100 dark:bg-gray-800/40 border border-gray-300 dark:border-gray-600/50 text-gray-700 dark:text-gray-300',
   },
@@ -30,14 +32,14 @@ export const proyectosTablaStyles = {
 
   // Ubicación
   ubicacion: {
-    container: 'flex items-center justify-center gap-1.5',
+    container: 'flex items-center justify-start gap-1.5',
     icon: 'w-3.5 h-3.5 flex-shrink-0 text-green-500',
     text: 'text-sm text-gray-700 dark:text-gray-300 truncate',
   },
 
   // Nombre de proyecto
   nombre: {
-    container: 'flex items-center justify-center gap-2',
+    container: 'flex items-center justify-start gap-2',
     text: 'font-semibold text-sm text-gray-900 dark:text-gray-100 line-clamp-1',
   },
 
@@ -51,7 +53,7 @@ export const proyectosTablaStyles = {
     fillAsignadas:
       'absolute top-0 h-full bg-gradient-to-r from-blue-500 to-indigo-500 transition-all',
     label:
-      'text-[10px] font-bold text-gray-600 dark:text-gray-400 min-w-[35px] text-right',
+      'text-[10px] font-bold text-gray-500 dark:text-gray-400 min-w-[36px] shrink-0',
   },
 
   // Grid de estadísticas
@@ -68,6 +70,13 @@ export const proyectosTablaStyles = {
   // Columna de viviendas (resumen completo)
   viviendas: {
     container: 'flex flex-col gap-1',
+    legend: 'flex items-center gap-2 mt-0.5',
+    legendVendidas:
+      'text-[10px] font-semibold text-green-600 dark:text-green-400',
+    legendAsignadas:
+      'text-[10px] font-semibold text-blue-500 dark:text-blue-400',
+    legendDisponibles:
+      'text-[10px] font-medium text-gray-400 dark:text-gray-400',
   },
 
   // Botones de acciones

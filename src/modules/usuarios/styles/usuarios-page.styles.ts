@@ -39,7 +39,7 @@ export const usuariosPageStyles = {
   // ── Métricas (4 cards) ──────────────────────────────────────────────────
   metricas: {
     grid: 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3',
-    card: 'group relative overflow-hidden rounded-xl backdrop-blur-xl bg-white/80 dark:bg-gray-800/80 border border-gray-200/50 dark:border-gray-700/50 p-4 shadow-lg hover:shadow-2xl transition-all duration-300',
+    card: 'group relative overflow-hidden rounded-xl backdrop-blur-xl bg-white/80 dark:bg-gray-800/80 border border-gray-200/50 dark:border-gray-700/50 px-4 py-3 shadow-lg hover:shadow-2xl transition-all duration-300',
     glowIndigo:
       'absolute inset-0 bg-gradient-to-br from-indigo-500/20 to-purple-500/20 opacity-0 group-hover:opacity-10 transition-opacity duration-300',
     glowGreen:
@@ -50,23 +50,23 @@ export const usuariosPageStyles = {
       'absolute inset-0 bg-gradient-to-br from-amber-500/20 to-orange-500/20 opacity-0 group-hover:opacity-10 transition-opacity duration-300',
     content: 'relative z-10 flex items-center gap-3',
     iconIndigo:
-      'w-10 h-10 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/40',
+      'w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-md shadow-indigo-500/40',
     iconGreen:
-      'w-10 h-10 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-500/40',
+      'w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-md shadow-emerald-500/40',
     iconRed:
-      'w-10 h-10 rounded-lg bg-gradient-to-br from-red-500 to-rose-600 flex items-center justify-center shadow-lg shadow-red-500/40',
+      'w-8 h-8 rounded-lg bg-gradient-to-br from-red-500 to-rose-600 flex items-center justify-center shadow-md shadow-red-500/40',
     iconAmber:
-      'w-10 h-10 rounded-lg bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-lg shadow-amber-500/40',
-    icon: 'w-5 h-5 text-white',
+      'w-8 h-8 rounded-lg bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-md shadow-amber-500/40',
+    icon: 'w-4 h-4 text-white',
     textGroup: 'flex-1',
     valueIndigo:
-      'text-xl font-bold bg-gradient-to-br from-indigo-600 via-purple-600 to-fuchsia-600 bg-clip-text text-transparent',
+      'text-lg font-bold bg-gradient-to-br from-indigo-600 via-purple-600 to-fuchsia-600 bg-clip-text text-transparent',
     valueGreen:
-      'text-xl font-bold bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-600 bg-clip-text text-transparent',
+      'text-lg font-bold bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-600 bg-clip-text text-transparent',
     valueRed:
-      'text-xl font-bold bg-gradient-to-br from-red-600 via-rose-600 to-pink-600 bg-clip-text text-transparent',
+      'text-lg font-bold bg-gradient-to-br from-red-600 via-rose-600 to-pink-600 bg-clip-text text-transparent',
     valueAmber:
-      'text-xl font-bold bg-gradient-to-br from-amber-600 via-orange-600 to-red-500 bg-clip-text text-transparent',
+      'text-lg font-bold bg-gradient-to-br from-amber-600 via-orange-600 to-red-500 bg-clip-text text-transparent',
     label: 'text-xs text-gray-600 dark:text-gray-400 mt-0.5 font-medium',
   },
 

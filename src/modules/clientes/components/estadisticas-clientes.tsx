@@ -74,24 +74,28 @@ export function EstadisticasClientes({
       transition={{ delay: 0.1 }}
       className='grid grid-cols-5 gap-3'
     >
-      {/* ⭐ MÉTRICA HÉROE: Total Clientes — más grande, más prominente */}
+      {/* Total Clientes */}
       <motion.div
         whileHover={{ scale: 1.02, y: -4 }}
         transition={{ type: 'spring', stiffness: 300 }}
-        className='group relative col-span-1 overflow-hidden rounded-xl border-2 border-cyan-200 bg-white/80 p-4 shadow-lg backdrop-blur-xl transition-all duration-300 hover:shadow-xl hover:shadow-cyan-500/10 dark:border-cyan-800/60 dark:bg-gray-800/80'
+        className={styles.metricas.card}
       >
-        <div className='absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-blue-500/5 opacity-0 transition-opacity duration-300 group-hover:opacity-100' />
-        <div className='relative z-10 flex items-center gap-3'>
-          <div className='flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 shadow-lg'>
-            <Users className='h-6 w-6 text-white' />
+        <div
+          className={`${styles.metricas.cardGlow} bg-gradient-to-br from-cyan-500/20 to-blue-500/20`}
+        />
+        <div className={styles.metricas.content}>
+          <div
+            className={`${styles.metricas.iconCircle} bg-gradient-to-br from-cyan-500 to-blue-600`}
+          >
+            <Users className={styles.metricas.icon} />
           </div>
-          <div>
-            <p className='text-3xl font-black leading-none text-gray-900 dark:text-white'>
+          <div className={styles.metricas.textGroup}>
+            <p
+              className={`${styles.metricas.value} bg-gradient-to-br from-cyan-600 via-blue-600 to-indigo-600`}
+            >
               {total}
             </p>
-            <p className='mt-1 text-xs font-semibold text-cyan-600 dark:text-cyan-400'>
-              Total Clientes
-            </p>
+            <p className={styles.metricas.label}>Total Clientes</p>
           </div>
         </div>
       </motion.div>

@@ -11,6 +11,7 @@ import { type ColumnDef } from '@tanstack/react-table'
 import {
   Archive,
   ArchiveRestore,
+  Boxes,
   Building2,
   CheckCircle2,
   Clock,
@@ -49,45 +50,16 @@ export function ProyectosTabla({
   canEdit,
   canDelete,
 }: ProyectosTablaProps) {
-  // ✅ Componente interno para estadísticas de viviendas (usa hook)
+  // Componente interno para estadísticas de viviendas (usa hook)
   function ViviendaEstadisticas({ proyecto }: { proyecto: Proyecto }) {
     const stats = useProyectoTabla(proyecto)
 
     return (
       <div className={styles.viviendas.container}>
-        {/* Estadísticas en grid compacto */}
-        <div className={styles.statsGrid.container}>
-          <div className={styles.statsGrid.cell}>
-            <div className={styles.statsGrid.label}>Disp.</div>
-            <div
-              className={cn(
-                styles.statsGrid.value,
-                styles.statsGrid.disponibles
-              )}
-            >
-              {stats.totalDisponibles}
-            </div>
-          </div>
-          <div className={styles.statsGrid.cell}>
-            <div className={styles.statsGrid.label}>Asig.</div>
-            <div
-              className={cn(styles.statsGrid.value, styles.statsGrid.asignadas)}
-            >
-              {stats.totalAsignadas}
-            </div>
-          </div>
-          <div className={styles.statsGrid.cell}>
-            <div className={styles.statsGrid.label}>Vend.</div>
-            <div
-              className={cn(styles.statsGrid.value, styles.statsGrid.vendidas)}
-            >
-              {stats.totalVendidas}
-            </div>
-          </div>
-        </div>
-
-        {/* Barra de progreso */}
         <div className={styles.progressBar.container}>
+          <span className={styles.progressBar.label}>
+            {stats.totalVendidas + stats.totalAsignadas}/{stats.totalViviendas}
+          </span>
           <div className={styles.progressBar.track}>
             <div
               className={styles.progressBar.fillVendidas}
@@ -101,8 +73,16 @@ export function ProyectosTabla({
               }}
             />
           </div>
-          <span className={styles.progressBar.label}>
-            {stats.totalVendidas + stats.totalAsignadas}/{stats.totalViviendas}
+        </div>
+        <div className={styles.viviendas.legend}>
+          <span className={styles.viviendas.legendVendidas}>
+            • {stats.totalVendidas} vend.
+          </span>
+          <span className={styles.viviendas.legendAsignadas}>
+            • {stats.totalAsignadas} asig.
+          </span>
+          <span className={styles.viviendas.legendDisponibles}>
+            • {stats.totalDisponibles} disp.
           </span>
         </div>
       </div>
@@ -119,15 +99,7 @@ export function ProyectosTabla({
           <div className={styles.iconContainer}>
             <Building2 className={styles.iconSvg} />
           </div>
-          <div className='flex flex-col gap-1'>
-            <span className={styles.nombre.text}>{row.original.nombre}</span>
-            {row.original.archivado && (
-              <span className='inline-flex w-fit items-center gap-1 rounded-md border border-amber-200 bg-amber-100 px-1.5 py-0.5 text-xs font-medium text-amber-700 dark:border-amber-800 dark:bg-amber-900/30 dark:text-amber-400'>
-                <Archive className='h-3 w-3' />
-                Archivado
-              </span>
-            )}
-          </div>
+          <span className={styles.nombre.text}>{row.original.nombre}</span>
         </div>
       ),
     },
@@ -150,9 +122,21 @@ export function ProyectosTabla({
       size: 140,
       cell: ({ row }) => {
         const estado = row.original.estado
+        const archivado = row.original.archivado
         const esEnProceso =
           estado === 'en_proceso' || estado === 'en_construccion'
         const esCompletado = estado === 'completado'
+
+        if (archivado) {
+          return (
+            <div className={styles.cell.center}>
+              <div className={cn(styles.badge.base, styles.badge.archivado)}>
+                <Archive className='h-3 w-3 flex-shrink-0' />
+                <span>Archivado</span>
+              </div>
+            </div>
+          )
+        }
 
         return (
           <div className={styles.cell.center}>
@@ -182,7 +166,7 @@ export function ProyectosTabla({
       cell: ({ row }) => (
         <div className={styles.cell.center}>
           <div className={styles.manzanasBadge}>
-            <Building2 className={styles.manzanasIcon} />
+            <Boxes className={styles.manzanasIcon} />
             <span className={styles.manzanasCount}>
               {row.original.manzanas.length}
             </span>
@@ -250,17 +234,25 @@ export function ProyectosTabla({
                   <Archive className={styles.actions.icon} />
                 </button>
               )}
-          {canDelete && onDelete && row.original.manzanas.length === 0 && (
+          {canDelete && onDelete && (
             <button
               onClick={e => {
+                if (row.original.manzanas.length > 0) return
                 e.stopPropagation()
                 onDelete(row.original.id)
               }}
+              disabled={row.original.manzanas.length > 0}
               className={cn(
                 styles.actions.button.base,
-                styles.actions.button.delete
+                row.original.manzanas.length > 0
+                  ? 'cursor-not-allowed opacity-30'
+                  : styles.actions.button.delete
               )}
-              title='Eliminar proyecto'
+              title={
+                row.original.manzanas.length > 0
+                  ? 'No se puede eliminar: el proyecto tiene manzanas'
+                  : 'Eliminar proyecto'
+              }
             >
               <Trash2 className={styles.actions.icon} />
             </button>

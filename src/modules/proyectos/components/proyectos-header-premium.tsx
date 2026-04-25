@@ -1,15 +1,15 @@
-/**
- * ProyectosHeaderPremium - Header compacto con diseño premium
- * ✅ Estándar de diseño compacto
- * ✅ Gradientes verde/esmeralda/teal
- * ✅ Glassmorphism
- * ✅ Animaciones Framer Motion
- */
-
 'use client'
 
 import { motion } from 'framer-motion'
-import { Building2, Plus } from 'lucide-react'
+import {
+  Building2,
+  ChevronRight,
+  Hash,
+  LayoutDashboard,
+  Plus,
+} from 'lucide-react'
+
+import { ProtectedLink } from '@/shared/components/ui/ProtectedLink'
 
 import { proyectosPageStyles as styles } from '../styles/proyectos-page.styles'
 
@@ -32,6 +32,21 @@ export function ProyectosHeaderPremium({
 
       {/* Content */}
       <div className={styles.header.content}>
+        {/* Breadcrumb */}
+        <div className='mb-3 flex items-center gap-1.5'>
+          <LayoutDashboard className='h-3 w-3 text-green-200' />
+          <ProtectedLink
+            href='/dashboard'
+            modulo='proyectos'
+            accion='ver'
+            className='text-xs text-green-200 transition-colors hover:text-white'
+          >
+            Dashboard
+          </ProtectedLink>
+          <ChevronRight className='h-3 w-3 text-green-300/60' />
+          <span className='text-xs font-semibold text-white'>Proyectos</span>
+        </div>
+
         <div className={styles.header.topRow}>
           {/* Left: Icon + Title */}
           <div className={styles.header.titleGroup}>
@@ -50,7 +65,7 @@ export function ProyectosHeaderPremium({
           {/* Right: Badge + Botón */}
           <div className={styles.header.buttonGroup}>
             <span className={styles.header.badge}>
-              <Building2 className={styles.header.badgeIcon} />
+              <Hash className={styles.header.badgeIcon} />
               {totalProyectos} {totalProyectos === 1 ? 'Proyecto' : 'Proyectos'}
             </span>
             {onNuevoProyecto && (

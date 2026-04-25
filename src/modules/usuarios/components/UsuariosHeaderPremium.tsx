@@ -8,9 +8,11 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { Plus, Users } from 'lucide-react'
+import { ChevronRight, LayoutDashboard, Plus, Users } from 'lucide-react'
 
 import { useRouter } from 'next/navigation'
+
+import { ProtectedLink } from '@/shared/components/ui/ProtectedLink'
 
 import { usuariosPageStyles as styles } from '../styles/usuarios-page.styles'
 
@@ -34,6 +36,17 @@ export function UsuariosHeaderPremium({
       <div className={styles.header.pattern} />
 
       <div className={styles.header.content}>
+        <div className='mb-3 flex items-center gap-1.5'>
+          <LayoutDashboard className='h-3 w-3 text-indigo-200' />
+          <ProtectedLink
+            href='/dashboard'
+            className='text-xs text-indigo-200 transition-colors hover:text-white'
+          >
+            Dashboard
+          </ProtectedLink>
+          <ChevronRight className='h-3 w-3 text-indigo-300/60' />
+          <span className='text-xs font-semibold text-white'>Usuarios</span>
+        </div>
         <div className={styles.header.topRow}>
           {/* Left: icon + título */}
           <div className={styles.header.titleGroup}>

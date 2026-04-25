@@ -63,18 +63,18 @@ export function ProyectosMetricasPremium({
         </div>
       </motion.div>
 
-      {/* Card 3: Completados (Púrpura) */}
+      {/* Card 3: Completados (Teal) */}
       <motion.div
         {...styles.animations.metricaCard}
         className={styles.metricas.card}
       >
-        <div className={styles.metricas.cardGlowPurple} />
+        <div className={styles.metricas.cardGlowTeal} />
         <div className={styles.metricas.content}>
-          <div className={styles.metricas.iconCirclePurple}>
+          <div className={styles.metricas.iconCircleTeal}>
             <CheckCircle2 className={styles.metricas.icon} />
           </div>
           <div className={styles.metricas.textGroup}>
-            <p className={styles.metricas.valuePurple}>{completados}</p>
+            <p className={styles.metricas.valueTeal}>{completados}</p>
             <p className={styles.metricas.label}>Completados</p>
           </div>
         </div>
