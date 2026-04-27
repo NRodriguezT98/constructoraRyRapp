@@ -37,8 +37,6 @@ export function ProyectosHeaderPremium({
           <LayoutDashboard className='h-3 w-3 text-green-200' />
           <ProtectedLink
             href='/dashboard'
-            modulo='proyectos'
-            accion='ver'
             className='text-xs text-green-200 transition-colors hover:text-white'
           >
             Dashboard

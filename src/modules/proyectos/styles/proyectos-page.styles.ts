@@ -86,19 +86,23 @@ export const proyectosPageStyles = {
     container:
       'sticky top-4 z-40 backdrop-blur-xl bg-white/90 dark:bg-gray-800/90 rounded-xl border border-gray-200/50 dark:border-gray-700/50 p-4 shadow-2xl shadow-green-500/10',
 
+    // Fila principal híbrida (búsqueda + pills)
+    mainRow: 'flex flex-col xl:flex-row xl:items-center gap-3',
+
     // Barra de búsqueda
-    searchBar: 'mb-3',
+    searchBar: 'flex-1 min-w-[250px]',
     searchWrapper: 'relative',
     searchIcon:
       'absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500 pointer-events-none',
     searchInput:
-      'w-full pl-10 pr-10 py-2.5 bg-gray-50 dark:bg-gray-900/50 border-2 border-gray-200 dark:border-gray-700 rounded-lg focus:border-green-500 focus:ring-4 focus:ring-green-500/20 transition-all text-sm placeholder:text-gray-400 dark:placeholder:text-gray-500',
+      'w-full pl-10 pr-10 py-2 bg-gray-50 dark:bg-gray-900/50 border-2 border-gray-200 dark:border-gray-700 rounded-lg focus:border-green-500 focus:ring-4 focus:ring-green-500/20 transition-all text-sm placeholder:text-gray-400 dark:placeholder:text-gray-500',
     searchClearButton:
       'absolute right-3 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors',
 
     // Pills de estado
-    pillsSection: 'flex items-center gap-3 pb-3',
-    pillsLabel: 'flex items-center gap-1.5 shrink-0',
+    pillsSection:
+      'flex items-center gap-3 overflow-x-auto pb-1 xl:pb-0 hide-scrollbar',
+    pillsLabel: 'flex items-center gap-1.5 shrink-0 hidden md:flex',
     pillsContainer: 'flex items-center gap-2 flex-wrap',
     pill: 'group relative inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gray-100 dark:bg-gray-700/50 border-2 border-transparent text-gray-700 dark:text-gray-300 text-xs font-medium transition-all hover:border-green-300 dark:hover:border-green-700 hover:bg-green-50 dark:hover:bg-green-900/20 cursor-pointer',
     pillActive:
