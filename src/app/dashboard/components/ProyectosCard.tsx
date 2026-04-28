@@ -1,5 +1,7 @@
 'use client'
 
+import { memo } from 'react'
+
 import { motion } from 'framer-motion'
 import { ArrowRight, Building2 } from 'lucide-react'
 
@@ -45,7 +47,7 @@ interface ProyectosCardProps {
   canNavigate: boolean
 }
 
-export function ProyectosCard({
+function ProyectosCardComponent({
   loading,
   proyectos,
   canNavigate,
@@ -53,24 +55,10 @@ export function ProyectosCard({
   return (
     <motion.div
       variants={itemVariants}
-      onMouseMove={e => {
-        const rect = e.currentTarget.getBoundingClientRect()
-        e.currentTarget.style.setProperty(
-          '--mouse-x',
-          `${e.clientX - rect.left}px`
-        )
-        e.currentTarget.style.setProperty(
-          '--mouse-y',
-          `${e.clientY - rect.top}px`
-        )
-      }}
       className='group relative flex flex-col overflow-hidden rounded-3xl border border-slate-200/60 bg-white/80 p-6 shadow-md backdrop-blur-2xl transition-colors hover:border-emerald-400/50 dark:border-gray-700/50 dark:bg-gray-800/50 dark:shadow-none dark:hover:border-emerald-500/30'
     >
-      {/* Subtle top glow */}
-      <div className='absolute inset-x-0 top-0 z-10 h-[1px] w-full bg-gradient-to-r from-transparent via-emerald-400/50 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100 dark:via-emerald-500/50' />
-
-      {/* Spotlight Overlay */}
-      <div className='pointer-events-none absolute -inset-px z-0 rounded-3xl bg-[radial-gradient(600px_circle_at_var(--mouse-x)_var(--mouse-y),rgba(0,0,0,0.015),transparent_40%)] opacity-0 transition-opacity duration-300 group-hover:opacity-100 dark:bg-[radial-gradient(600px_circle_at_var(--mouse-x)_var(--mouse-y),rgba(255,255,255,0.04),transparent_40%)]' />
+      {/* Subtle top glow - no mouse tracking */}
+      <div className='absolute inset-x-0 top-0 z-10 h-[1px] w-full bg-gradient-to-r from-transparent via-emerald-400/50 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100 dark:via-emerald-500/50' />
 
       <div className='relative z-10 mb-8 flex items-start justify-between'>
         <div>
@@ -112,7 +100,7 @@ export function ProyectosCard({
           </div>
         ) : (
           <div className='flex flex-col gap-6'>
-            {proyectos.list.map(p => {
+            {proyectos.list.slice(0, 6).map(p => {
               const estado = ESTADO_LABELS[p.estado] ?? {
                 label: p.estado,
                 chip: 'text-slate-600 bg-slate-100 border-slate-200 dark:text-white/60 dark:bg-white/5 dark:border-white/10',
@@ -122,9 +110,9 @@ export function ProyectosCard({
                   ? Math.round((p.viviendasVendidas / p.totalViviendas) * 100)
                   : 0
               return (
-                <div key={p.id} className='group/item'>
+                <div key={p.id}>
                   <div className='mb-3 flex items-center justify-between gap-4'>
-                    <span className='truncate text-sm font-medium text-slate-800 transition-colors group-hover/item:text-slate-900 dark:text-white/90 dark:group-hover/item:text-white'>
+                    <span className='truncate text-sm font-medium text-slate-800 dark:text-white/90'>
                       {p.nombre}
                     </span>
                     <span
@@ -136,10 +124,10 @@ export function ProyectosCard({
                   <div className='flex items-center gap-4'>
                     <div className='h-1.5 flex-1 overflow-hidden rounded-full bg-slate-100 dark:bg-white/5'>
                       <motion.div
-                        className='h-full rounded-full bg-emerald-500 dark:bg-emerald-400 dark:shadow-[0_0_10px_rgba(52,211,153,0.5)]'
+                        className='h-full rounded-full bg-emerald-500 dark:bg-emerald-400'
                         initial={{ width: '0%' }}
                         animate={{ width: `${pct}%` }}
-                        transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
+                        transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
                       />
                     </div>
                     <span className='w-8 text-right font-mono text-xs font-medium text-slate-500 dark:text-white/50'>
@@ -155,3 +143,5 @@ export function ProyectosCard({
     </motion.div>
   )
 }
+
+export const ProyectosCard = memo(ProyectosCardComponent)

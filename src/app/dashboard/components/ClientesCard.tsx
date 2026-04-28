@@ -1,5 +1,7 @@
 'use client'
 
+import { memo } from 'react'
+
 import { motion } from 'framer-motion'
 import { ArrowRight } from 'lucide-react'
 
@@ -22,7 +24,7 @@ interface ClientesCardProps {
   canNavigate: boolean
 }
 
-export function ClientesCard({
+function ClientesCardComponent({
   loading,
   clientes,
   canNavigate,
@@ -68,24 +70,10 @@ export function ClientesCard({
   return (
     <motion.div
       variants={itemVariants}
-      onMouseMove={e => {
-        const rect = e.currentTarget.getBoundingClientRect()
-        e.currentTarget.style.setProperty(
-          '--mouse-x',
-          `${e.clientX - rect.left}px`
-        )
-        e.currentTarget.style.setProperty(
-          '--mouse-y',
-          `${e.clientY - rect.top}px`
-        )
-      }}
       className='group relative flex flex-col justify-between overflow-hidden rounded-3xl border border-slate-200/60 bg-white/80 p-6 shadow-md backdrop-blur-2xl transition-colors hover:border-cyan-400/50 dark:border-gray-700/50 dark:bg-gray-800/50 dark:shadow-none dark:hover:border-cyan-500/30 lg:col-span-2'
     >
-      {/* Subtle top glow */}
-      <div className='absolute inset-x-0 top-0 z-10 h-[1px] w-full bg-gradient-to-r from-transparent via-cyan-400/50 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100 dark:via-cyan-500/50' />
-
-      {/* Spotlight Overlay */}
-      <div className='pointer-events-none absolute -inset-px z-0 rounded-3xl bg-[radial-gradient(600px_circle_at_var(--mouse-x)_var(--mouse-y),rgba(0,0,0,0.015),transparent_40%)] opacity-0 transition-opacity duration-300 group-hover:opacity-100 dark:bg-[radial-gradient(600px_circle_at_var(--mouse-x)_var(--mouse-y),rgba(255,255,255,0.04),transparent_40%)]' />
+      {/* Subtle top glow - no mouse tracking */}
+      <div className='absolute inset-x-0 top-0 z-10 h-[1px] w-full bg-gradient-to-r from-transparent via-cyan-400/50 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100 dark:via-cyan-500/50' />
 
       <div className='relative z-10 mb-6 flex items-start justify-between'>
         <div>
@@ -126,8 +114,8 @@ export function ClientesCard({
                   initial={{ width: '0%' }}
                   animate={{ width: `${seg.pct}%` }}
                   transition={{
-                    duration: 1.5,
-                    delay: 0.2,
+                    duration: 1.2,
+                    delay: 0.1,
                     ease: [0.16, 1, 0.3, 1],
                   }}
                 />
@@ -151,3 +139,5 @@ export function ClientesCard({
     </motion.div>
   )
 }
+
+export const ClientesCard = memo(ClientesCardComponent)

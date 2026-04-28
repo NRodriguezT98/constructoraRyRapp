@@ -1,5 +1,7 @@
 'use client'
 
+import { memo } from 'react'
+
 import { motion } from 'framer-motion'
 import { ArrowRight } from 'lucide-react'
 
@@ -38,7 +40,7 @@ interface AccesosRapidosProps {
   modules: ModuleConfig[]
 }
 
-export function AccesosRapidos({ loading, modules }: AccesosRapidosProps) {
+function AccesosRapidosComponent({ loading, modules }: AccesosRapidosProps) {
   return (
     <motion.div variants={itemVariants} className='pb-2 pt-4'>
       <div className='mb-6 flex items-center justify-between'>
@@ -63,21 +65,10 @@ export function AccesosRapidos({ loading, modules }: AccesosRapidosProps) {
             <Link
               key={mod.modulo}
               href={mod.href}
-              onMouseMove={e => {
-                const rect = e.currentTarget.getBoundingClientRect()
-                e.currentTarget.style.setProperty(
-                  '--mouse-x',
-                  `${e.clientX - rect.left}px`
-                )
-                e.currentTarget.style.setProperty(
-                  '--mouse-y',
-                  `${e.clientY - rect.top}px`
-                )
-              }}
               className={`group relative overflow-hidden rounded-2xl border border-slate-200/60 bg-white/60 p-5 backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:bg-white hover:shadow-lg dark:border-white/5 dark:bg-white/[0.02] dark:hover:bg-white/[0.04] dark:hover:shadow-none ${getSpanClass(modules.length, index)} ${mod.glowColor}`}
             >
-              {/* Spotlight Overlay */}
-              <div className='pointer-events-none absolute -inset-px z-0 rounded-2xl bg-[radial-gradient(400px_circle_at_var(--mouse-x)_var(--mouse-y),rgba(0,0,0,0.02),transparent_40%)] opacity-0 transition-opacity duration-300 group-hover:opacity-100 dark:bg-[radial-gradient(400px_circle_at_var(--mouse-x)_var(--mouse-y),rgba(255,255,255,0.06),transparent_40%)]' />
+              {/* Subtle glow on hover - no mouse tracking */}
+              <div className='absolute inset-x-0 top-0 z-0 h-[1px] w-full bg-gradient-to-r from-transparent via-white/50 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-50 dark:via-white/30' />
 
               <div className='relative z-10 flex h-full flex-col justify-between'>
                 <div className='mb-6 flex items-start justify-between'>
@@ -110,3 +101,5 @@ export function AccesosRapidos({ loading, modules }: AccesosRapidosProps) {
     </motion.div>
   )
 }
+
+export const AccesosRapidos = memo(AccesosRapidosComponent)

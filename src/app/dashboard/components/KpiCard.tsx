@@ -1,6 +1,6 @@
 'use client'
 
-import type { ElementType } from 'react'
+import { memo, type ElementType } from 'react'
 
 import { AnimatedCounter } from './AnimatedCounter'
 
@@ -14,7 +14,7 @@ interface KpiCardProps {
   loading: boolean
 }
 
-export function KpiCard({
+function KpiCardComponent({
   label,
   value,
   sub,
@@ -24,22 +24,9 @@ export function KpiCard({
   loading,
 }: KpiCardProps) {
   return (
-    <div
-      onMouseMove={e => {
-        const rect = e.currentTarget.getBoundingClientRect()
-        e.currentTarget.style.setProperty(
-          '--mouse-x',
-          `${e.clientX - rect.left}px`
-        )
-        e.currentTarget.style.setProperty(
-          '--mouse-y',
-          `${e.clientY - rect.top}px`
-        )
-      }}
-      className='group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-200/60 bg-white/60 p-5 shadow-sm backdrop-blur-xl transition-all hover:bg-white dark:border-white/10 dark:bg-white/[0.02] dark:shadow-none dark:hover:bg-white/[0.04]'
-    >
-      {/* Spotlight Overlay */}
-      <div className='pointer-events-none absolute -inset-px z-0 rounded-2xl bg-[radial-gradient(400px_circle_at_var(--mouse-x)_var(--mouse-y),rgba(0,0,0,0.02),transparent_40%)] opacity-0 transition-opacity duration-300 group-hover:opacity-100 dark:bg-[radial-gradient(400px_circle_at_var(--mouse-x)_var(--mouse-y),rgba(255,255,255,0.06),transparent_40%)]' />
+    <div className='group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-200/60 bg-white/60 p-5 shadow-sm backdrop-blur-xl transition-all hover:bg-white dark:border-white/10 dark:bg-white/[0.02] dark:shadow-none dark:hover:bg-white/[0.04]'>
+      {/* Subtle top glow on hover - no mouse tracking */}
+      <div className='pointer-events-none absolute inset-x-0 top-0 z-0 h-[1px] w-full bg-gradient-to-r from-transparent via-slate-200 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100 dark:via-white/20' />
 
       {/* Sparkline SVG */}
       <div className='pointer-events-none absolute bottom-0 left-0 right-0 z-0 h-16 overflow-hidden opacity-[0.08] dark:opacity-20'>
@@ -84,3 +71,5 @@ export function KpiCard({
     </div>
   )
 }
+
+export const KpiCard = memo(KpiCardComponent)

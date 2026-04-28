@@ -38,16 +38,16 @@ const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    transition: { staggerChildren: 0.1, delayChildren: 0.05 },
+    transition: { staggerChildren: 0.05, delayChildren: 0.02 },
   },
 }
 
 const itemVariants = {
-  hidden: { opacity: 0, y: 15 },
+  hidden: { opacity: 0, y: 8 },
   visible: {
     opacity: 1,
     y: 0,
-    transition: { type: 'spring' as const, stiffness: 100, damping: 20 },
+    transition: { type: 'spring' as const, stiffness: 120, damping: 15 },
   },
 }
 
@@ -134,13 +134,8 @@ export default function DashboardContent(_props: DashboardContentProps) {
 
   return (
     <div className='custom-scrollbar min-h-full bg-slate-50 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(120,119,198,0.08),rgba(255,255,255,0))] text-slate-900 transition-colors duration-300 selection:bg-slate-200 selection:text-slate-900 dark:bg-gray-900 dark:text-white dark:selection:bg-white/20 dark:selection:text-white'>
-      {/* Noise Texture Overlay */}
-      <div
-        className='pointer-events-none fixed inset-0 z-0 opacity-[0.02] dark:opacity-[0.015]'
-        style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.5' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
-        }}
-      />
+      {/* Noise Texture Overlay - optimized */}
+      <div className='pointer-events-none fixed inset-0 z-0 bg-[radial-gradient(ellipse_80%_80%_at_50%_50%,rgba(200,200,200,0.02),transparent_50%)] opacity-[0.01] dark:opacity-[0.008]' />
 
       <div className='relative z-10 px-6 py-12 md:py-16 lg:py-24'>
         <motion.div

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { memo, useEffect } from 'react'
 
 import { animate, motion, useMotionValue, useTransform } from 'framer-motion'
 
@@ -10,9 +10,9 @@ interface AnimatedCounterProps {
   className?: string
 }
 
-export function AnimatedCounter({
+function AnimatedCounterComponent({
   value,
-  duration = 1.4,
+  duration = 1,
   className,
 }: AnimatedCounterProps) {
   const count = useMotionValue(0)
@@ -30,3 +30,5 @@ export function AnimatedCounter({
 
   return <motion.span className={className}>{display}</motion.span>
 }
+
+export const AnimatedCounter = memo(AnimatedCounterComponent)
